@@ -5359,12 +5359,15 @@ components:
     AiContextNode:
       type: object
       required:
-        - fundId
         - nodeId
       properties:
         fundId:
           type: integer
           format: int32
+          description: |-
+            `ArrFund.fundId`. Present for a UI-context node or a search hit; absent
+            on a link built from a bare object reference (a tool event's `refs`),
+            where only the node id is known and the fund is not needed to navigate.
         fundVersionId:
           type: integer
           format: int32
@@ -5696,12 +5699,25 @@ components:
             Tool name for TOOL_CALL: a client tool Elza executed (`searchNodes`,
             `getItemTypes`, …) or a provider-internal one (`search_knowledge`, …);
             an unknown name renders as a generic step.
+        label:
+          type: string
+          description: |-
+            Localized, display-ready name of a provider-internal step (from the
+            task-event stream); render in place of `tool`. Absent for a client tool
+            Elza executed itself — the client renders those from `tool`.
         state:
           type: string
           description: RUNNING | DONE | ERROR (open set).
         query:
           type: string
           description: 'Data-like input summary: the fulltext query / the rule-set code.'
+        summary:
+          type: string
+          description: |-
+            Localized, display-ready one-line detail of a provider-internal step: the
+            call's key arguments, or a short result summary once DONE. Secondary text
+            next to `label`; for a client tool the client shows `query`/`resultCount`
+            instead.
         resultCount:
           type: integer
           format: int64

@@ -1,6 +1,8 @@
 package cz.tacr.elza.service.ai;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.Date;
 import java.util.List;
@@ -27,10 +29,12 @@ class AiActivityMapperTest {
 
     AiActivityMapperTest() {
         ReflectionTestUtils.setField(mapper, "objectMapper", new ObjectMapper());
-        // Empty registry: no tool counts as a client tool, so a provider-stream
-        // tool_call is kept (never skipped) — the same shape as the real bug,
-        // where the wire's snake_case name failed to match a client tool.
-        ReflectionTestUtils.setField(mapper, "toolRegistry", new AiToolRegistry(List.of()));
+        // Recognizes Elza's client tools by their camelCase wire name; any other
+        // name (a provider-internal snake_case tool) is not a client tool.
+        AiToolRegistry registry = mock(AiToolRegistry.class);
+        when(registry.isClientTool("searchNodes")).thenReturn(true);
+        when(registry.isClientTool("getArchivalEntity")).thenReturn(true);
+        ReflectionTestUtils.setField(mapper, "toolRegistry", registry);
     }
 
     private static AiRequestEvent event(final String type, final String data, final long time) {
@@ -115,11 +119,11 @@ class AiActivityMapperTest {
 
     @Test
     void runningStepsSettleWhenExchangeFinished() {
-        // A provider-stream client-tool call never receives a tool_result event,
-        // so it stays RUNNING while the exchange runs; once the exchange has
-        // finished it must not keep spinning (the reported bug).
+        // A provider-stream tool_call whose tool_result event never arrives stays
+        // RUNNING while the exchange runs; once the exchange has finished it must
+        // not keep spinning (the reported bug).
         AiRequestEvent providerCall = event(AiRequestEvent.TYPE_PROVIDER_TOOL_CALL, """
-                {"seq":6,"tool":"search_nodes","createdAt":"2026-07-15T07:43:26.021534Z"}
+                {"seq":6,"tool":"search_knowledge","origin":"internal","createdAt":"2026-07-15T07:43:26.021534Z"}
                 """, 1000);
 
         assertThat(mapper.map(List.of(providerCall), false).get(0).getState())
@@ -187,5 +191,65 @@ class AiActivityMapperTest {
         AiRequestEvent output = event(AiRequestEvent.TYPE_OUTPUT, "[]", 2000);
 
         assertThat(mapper.map(List.of(submit, output), false)).isEmpty();
+    }
+
+    @Test
+    void delegatedProviderEventSkippedInFavorOfElzaRecord() {
+        // A delegated call arrives twice: a provider tool_call (origin=client) and
+        // Elza's own TOOL_CALLS with the same callId. Only Elza's (richer) record
+        // becomes an activity — no snake/camel duplicate.
+        AiRequestEvent providerCall = event(AiRequestEvent.TYPE_PROVIDER_TOOL_CALL, """
+                {"seq":7,"tool":"getArchivalEntity","origin":"client","callId":"tu_1",
+                 "label":"Načtení archivní entity","summary":"entita 55","refs":[{"accessPointId":55}]}
+                """, 1000);
+        AiRequestEvent elzaCall = event(AiRequestEvent.TYPE_TOOL_CALLS, """
+                [{"callId":"tu_1","tool":"getArchivalEntity","arguments":{"accessPointId":55}}]
+                """, 1100);
+
+        List<AiRequestActivityVO> activities = mapper.map(List.of(providerCall, elzaCall), false);
+
+        assertThat(activities).hasSize(1);
+        assertThat(activities.get(0).getId()).isEqualTo("tu_1");
+        assertThat(activities.get(0).getTool()).isEqualTo("getArchivalEntity");
+        // Elza's own record carries no provider label — the client renders it itself.
+        assertThat(activities.get(0).getLabel()).isNull();
+    }
+
+    @Test
+    void internalToolCarriesLabelSummaryAndRefLink() {
+        AiRequestEvent call = event(AiRequestEvent.TYPE_PROVIDER_TOOL_CALL, """
+                {"seq":5,"tool":"get_archival_description","origin":"internal","callId":"toolu_3",
+                 "label":"Načtení archivního popisu","summary":"úroveň 88","refs":[{"nodeId":88}]}
+                """, 1000);
+        AiRequestEvent result = event(AiRequestEvent.TYPE_PROVIDER_TOOL_RESULT, """
+                {"seq":6,"tool":"get_archival_description","origin":"internal","callId":"toolu_3",
+                 "summary":"nalezené položky: 12"}
+                """, 2000);
+
+        List<AiRequestActivityVO> activities = mapper.map(List.of(call, result), false);
+
+        assertThat(activities).hasSize(1);
+        AiRequestActivityVO activity = activities.get(0);
+        assertThat(activity.getId()).isEqualTo("toolu_3");
+        assertThat(activity.getTool()).isEqualTo("get_archival_description");
+        assertThat(activity.getLabel()).isEqualTo("Načtení archivního popisu");
+        assertThat(activity.getState()).isEqualTo(AiActivityMapper.STATE_DONE);
+        // The tool_result summary supersedes the call's argument summary.
+        assertThat(activity.getSummary()).isEqualTo("nalezené položky: 12");
+        assertThat(activity.getLinks()).hasSize(1);
+        AiContextNodeVO target = (AiContextNodeVO) activity.getLinks().get(0).getTarget();
+        assertThat(target.getNodeId()).isEqualTo(88);
+        assertThat(target.getType()).isEqualTo(AiContextTypeVO.NODE);
+    }
+
+    @Test
+    void oldProviderDelegatedEventSkippedByToolName() {
+        // A provider < 0.9 sends no origin; a client tool is still recognized by
+        // its camelCase wire name and skipped.
+        AiRequestEvent providerCall = event(AiRequestEvent.TYPE_PROVIDER_TOOL_CALL, """
+                {"seq":3,"tool":"searchNodes","callId":"tu_9"}
+                """, 1000);
+
+        assertThat(mapper.map(List.of(providerCall), false)).isEmpty();
     }
 }

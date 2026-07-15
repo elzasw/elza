@@ -165,6 +165,10 @@ export const aiAssistantMessages = defineMessages({
         id: "aiAssistant.activity.moreLinks",
         defaultMessage: "{count, plural, one {+# další} few {+# další} other {+# dalších}}",
     },
+    activityLinkOpen: {
+        id: "aiAssistant.activity.linkOpen",
+        defaultMessage: "Zobrazit záznam",
+    },
 });
 
 export const aiContextSegmentLabels = {

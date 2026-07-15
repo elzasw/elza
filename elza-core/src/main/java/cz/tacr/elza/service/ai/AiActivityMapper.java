@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.tacr.elza.controller.vo.AiActivityLinkVO;
+import cz.tacr.elza.controller.vo.AiContextAccesspointVO;
 import cz.tacr.elza.controller.vo.AiContextNodeVO;
 import cz.tacr.elza.controller.vo.AiContextTypeVO;
 import cz.tacr.elza.controller.vo.AiRequestActivityVO;
@@ -35,11 +36,15 @@ import cz.tacr.elza.domain.AiRequestEvent;
  * executed these itself, so the full arguments and results are available
  * (query, result size, touched objects as navigable links).</li>
  * <li><b>Provider-internal tools</b> — {@code tool_call}/{@code tool_result}
- * wire events (protocol 0.8 task-event stream) of tools the provider ran
- * itself ({@code search_knowledge}, …). Only a curated summary crosses the
- * wire, so these activities carry the tool name, a best-effort query and an
- * error flag. Wire tool events naming a <i>client</i> tool are skipped —
- * Elza's own records above are strictly richer.</li>
+ * wire events (protocol 0.8+ task-event stream) of tools the provider ran
+ * itself ({@code search_knowledge}, …). From protocol 0.9 each carries a
+ * localized {@code label} and {@code summary} and {@code refs} to the objects
+ * it touched (rendered as links). Wire events of a <i>delegated</i> tool
+ * ({@code origin} = {@code client}) are skipped — Elza's own
+ * {@code TOOL_CALLS}/{@code TOOL_RESULTS} records (paired by the same
+ * {@code callId}) are strictly richer; an older provider without
+ * {@code origin} is recognized by the wire tool name
+ * ({@link AiToolRegistry#isClientTool}).</li>
  * <li><b>Preparation steps</b> — {@code preparation} wire events (e.g.
  * resolving rule-set dictionaries before the model turn).</li>
  * </ul>
@@ -64,6 +69,9 @@ public class AiActivityMapper {
     /** Wire names of the standard tools (provider contract {@code StandardToolName}). */
     private static final String TOOL_SEARCH_NODES = "searchNodes";
     private static final String TOOL_GET_ITEM_TYPES = "getItemTypes";
+
+    /** {@code TaskEvent.origin} value marking a tool the provider delegated to Elza. */
+    private static final String ORIGIN_CLIENT = "client";
 
     /** Detail keys tried for the query summary of a provider-internal tool call. */
     private static final List<String> QUERY_KEYS = List.of("query", "fulltext", "q");
@@ -171,41 +179,54 @@ public class AiActivityMapper {
     }
 
     /**
-     * One activity per provider-internal {@code tool_call} wire event. Calls of
-     * <i>client</i> tools are skipped — the provider echoes them into the stream
-     * too, but Elza's own {@code TOOL_CALLS}/{@code TOOL_RESULTS} records carry
-     * the full payloads and produce the richer activity.
+     * One activity per provider-internal {@code tool_call} wire event, carrying
+     * its localized {@code label}/{@code summary} and {@code refs} links. A
+     * <i>delegated</i> call ({@code origin} = {@code client}, or — for a provider
+     * older than 0.9 with no {@code origin} — a wire name that is a client tool)
+     * is skipped: Elza executed it itself and its own
+     * {@code TOOL_CALLS}/{@code TOOL_RESULTS} records (the same {@code callId})
+     * produce the richer activity.
      */
     private void addProviderCall(final AiRequestEvent event, final Mapping mapping) throws Exception {
         JsonNode wire = readObject(event.getData());
         String tool = text(wire, "tool");
-        if (tool == null || toolRegistry.isClientTool(tool)) {
+        if (tool == null || isDelegated(text(wire, "origin"), tool)) {
             return;
         }
-        JsonNode detail = wire.path("detail");
-        String callId = text(detail, "callId");
+        String callId = text(wire, "callId");
         String key = callId != null ? callId : "e" + text(wire, "seq");
         AiRequestActivityVO activity = new AiRequestActivityVO()
                 .id(key)
                 .kind(KIND_TOOL_CALL)
                 .tool(tool)
+                .label(text(wire, "label"))
                 .state(STATE_RUNNING)
-                .query(extractProviderQuery(detail))
+                .query(extractProviderQuery(wire.path("detail")))
+                .summary(text(wire, "summary"))
                 .startDate(wireDate(wire, event));
+        List<AiActivityLinkVO> links = refLinks(wire.path("refs"));
+        if (!links.isEmpty()) {
+            activity.setLinks(links);
+        }
         mapping.byCallId.put(key, activity);
         mapping.pendingByTool.computeIfAbsent(tool, k -> new ArrayList<>()).add(activity);
     }
 
     /**
      * Completes a provider-internal activity from a {@code tool_result} wire
-     * event: by {@code callId} when the provider sent one, else the oldest
-     * still-running call of the same tool (events arrive in emission order).
+     * event: by {@code callId} when present, else the oldest still-running call
+     * of the same tool (events arrive in emission order). Refreshes the localized
+     * {@code summary} (a {@code tool_result} carries the result summary) and the
+     * {@code refs} links. A delegated result — which does not reach Elza on this
+     * stream — is ignored defensively.
      */
     private void applyProviderResult(final AiRequestEvent event, final Mapping mapping) throws Exception {
         JsonNode wire = readObject(event.getData());
         String tool = text(wire, "tool");
-        JsonNode detail = wire.path("detail");
-        String callId = text(detail, "callId");
+        if (tool != null && isDelegated(text(wire, "origin"), tool)) {
+            return;
+        }
+        String callId = text(wire, "callId");
         AiRequestActivityVO activity = callId != null ? mapping.byCallId.get(callId) : null;
         if (activity == null && tool != null) {
             List<AiRequestActivityVO> pending = mapping.pendingByTool.getOrDefault(tool, List.of());
@@ -217,13 +238,59 @@ public class AiActivityMapper {
             return;
         }
         activity.setEndDate(wireDate(wire, event));
-        String error = text(detail, "error");
+        String summary = text(wire, "summary");
+        if (summary != null) {
+            activity.setSummary(summary);
+        }
+        List<AiActivityLinkVO> links = refLinks(wire.path("refs"));
+        if (!links.isEmpty()) {
+            activity.setLinks(links);
+        }
+        String error = text(wire.path("detail"), "error");
         if (error != null) {
             activity.setState(STATE_ERROR);
             activity.setError(error);
         } else {
             activity.setState(STATE_DONE);
         }
+    }
+
+    /**
+     * True when a tool wire event was <i>delegated</i> to Elza — {@code origin} is
+     * {@code client}, or (a provider older than 0.9 sends no {@code origin}) the
+     * wire tool name is one of Elza's client tools.
+     */
+    private boolean isDelegated(final String origin, final String tool) {
+        if (ORIGIN_CLIENT.equals(origin)) {
+            return true;
+        }
+        return origin == null && toolRegistry.isClientTool(tool);
+    }
+
+    /**
+     * The {@code refs} of a tool event as navigable links: a {@code nodeId}
+     * points at a description level, an {@code accessPointId} at an entity. No
+     * per-object label is set (a reference carries no name — the client supplies
+     * a generic one); an empty list when there are none.
+     */
+    private static List<AiActivityLinkVO> refLinks(final JsonNode refs) {
+        List<AiActivityLinkVO> links = new ArrayList<>();
+        if (!refs.isArray()) {
+            return links;
+        }
+        for (JsonNode ref : refs) {
+            JsonNode nodeId = ref.path("nodeId");
+            JsonNode accessPointId = ref.path("accessPointId");
+            if (nodeId.isNumber()) {
+                links.add(new AiActivityLinkVO().target(
+                        new AiContextNodeVO().nodeId(nodeId.asInt()).type(AiContextTypeVO.NODE)));
+            } else if (accessPointId.isNumber()) {
+                links.add(new AiActivityLinkVO().target(
+                        new AiContextAccesspointVO().accessPointId(accessPointId.asInt())
+                                .type(AiContextTypeVO.ACCESSPOINT)));
+            }
+        }
+        return links;
     }
 
     /** A preparation step ({@code preparation} wire event) as one completed activity. */
@@ -321,8 +388,8 @@ public class AiActivityMapper {
                     }
                     links.add(new AiActivityLinkVO()
                             .label(nodeLabel(node))
-                            .target(new AiContextNodeVO(fundId.asInt(), nodeId.asInt(),
-                                    AiContextTypeVO.NODE)));
+                            .target(new AiContextNodeVO().fundId(fundId.asInt()).nodeId(nodeId.asInt())
+                                    .type(AiContextTypeVO.NODE)));
                 }
             }
             if (!links.isEmpty()) {
