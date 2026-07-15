@@ -13,10 +13,6 @@ import { useAiProviderInfo } from "./useAiProviderInfo";
 import { useCurrentAiContext } from "./useCurrentAiContext";
 import { aiAssistantMessages, aiContextSegmentLabels, aiModuleLabels } from "./messages";
 
-// costUnits are USD cents. CNB USD→CZK fixing rate (09 Jul 2026); update manually.
-const USD_CZK_RATE = 21.213;
-const costUnitsToCzk = (costUnits: number) => (costUnits / 100) * USD_CZK_RATE;
-
 // Requests may run for seconds up to hours; show only the non-zero, largest units.
 function formatDuration(intl: IntlShape, milliseconds: number): string {
     const totalSeconds = Math.max(0, Math.round(milliseconds / 1000));
@@ -559,10 +555,7 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
                                                             values={{
                                                                 input: request.usage.inputTokens,
                                                                 output: request.usage.outputTokens,
-                                                                cost: intl.formatNumber(costUnitsToCzk(request.usage.costUnits), {
-                                                                    style: "currency",
-                                                                    currency: "CZK",
-                                                                }),
+                                                                cost: request.usage.costUnits,
                                                             }}
                                                         />
                                                         {request.profile && (
