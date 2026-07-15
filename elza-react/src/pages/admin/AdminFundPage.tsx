@@ -4,7 +4,7 @@
 import React, { FC, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { Ribbon } from 'components/index.jsx';
-import PageLayout from '../shared/layout/PageLayout';
+import { AdminLayout } from '../shared/layout/AdminLayout';
 import { RibbonGroup } from 'components/shared';
 import storeFromArea from '../../shared/utils/storeFromArea';
 import { AREA_ADMIN_FUND, selectFund } from '../../actions/admin/fund';
@@ -57,12 +57,12 @@ export const AdminFundPage: FC = () => {
             );
         }
 
-        return <Ribbon admin altSection={altSection} itemSection={itemSection} />;
+        return <Ribbon altSection={altSection} itemSection={itemSection} />;
     }
 
 
     return (
-        <PageLayout
+        <AdminLayout
             splitter={splitter}
             className="admin-fund-page"
             ribbon={buildRibbon()}

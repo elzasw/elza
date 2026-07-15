@@ -9,7 +9,7 @@ import React from 'react';
 import './AdminFulltextPage.scss';
 import {connect} from 'react-redux';
 import {AdminFulltextReindex, Ribbon} from 'components/index.jsx';
-import {PageLayout} from 'pages/index.jsx';
+import { AdminLayout } from 'pages/shared/layout/AdminLayout';
 
 const AdminFulltextPage = class AdminFulltextPage extends React.Component {
     constructor(props) {
@@ -19,7 +19,7 @@ const AdminFulltextPage = class AdminFulltextPage extends React.Component {
     }
 
     buildRibbon() {
-        return <Ribbon admin {...this.props} />;
+        return <Ribbon {...this.props} />;
     }
 
     render() {
@@ -32,7 +32,7 @@ const AdminFulltextPage = class AdminFulltextPage extends React.Component {
         );
 
         return (
-            <PageLayout
+            <AdminLayout
                 splitter={splitter}
                 className="admin-fulltext-page"
                 ribbon={this.buildRibbon()}

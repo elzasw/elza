@@ -1,5 +1,5 @@
 import { Icon, Ribbon } from "components/index.jsx";
-import PageLayout from "../shared/layout/PageLayout";
+import { AdminLayout } from "../shared/layout/AdminLayout";
 import { Button } from "@fluentui/react-components";
 import { downloadFile } from "actions/global/download";
 import { Api, basePath } from "api";
@@ -44,7 +44,7 @@ export function ReportsPage() {
     const dispatch = useThunkDispatch();
 
     const buildRibbon = () => {
-        return <Ribbon admin={true} />;
+        return <Ribbon />;
     };
 
     const handleSubmit = async (definition: SubmitDefinition, params: ReportReportParameters) => {
@@ -146,7 +146,7 @@ export function ReportsPage() {
         </div>
     );
 
-    return <PageLayout splitter={splitter} ribbon={buildRibbon()} centerPanel={centerPanel} />;
+    return <AdminLayout splitter={splitter} ribbon={buildRibbon()} centerPanel={centerPanel} />;
 }
 
 export default ReportsPage;

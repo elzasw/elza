@@ -4,29 +4,33 @@
     height: 100%;
     display: flex;
     flex-direction: column;
-    padding-left: 10px;
-    padding-right: 10px;
+    padding: var(--spacingHorizontalS);
     h4 {
         font-weight: bold;
         margin-bottom: 1px;
     }
-    span {
-        display: block;
-    }
+}
+
+.logs-readout {
+    flex-grow: 1;
+    min-height: 0;
+    display: flex;
 }
 
 .logs {
-    width: 100%;
-    display: flex;
-    margin-top: 5px;
-    padding-right: 5px;
-    height: calc(100vh - 120px);
+    flex: 1;
     background-color: black;
     color: #eee;
     font-family: 'Courier New', Courier, monospace;
     padding: 10px;
+    border: 1px solid var(--colorNeutralStroke1);
+    border-radius: var(--borderRadiusXLarge);
+    resize: none;
 }
 
-.log-controll-buttons{
-    margin-top: 5px;
+.log-controll-buttons {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: var(--spacingVerticalXS);
 }

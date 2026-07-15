@@ -7,7 +7,7 @@ import {Table} from 'react-bootstrap';
 import {Button} from '../../components/ui';
 import {AbstractReactComponent, i18n, StoreHorizontalLoader} from 'components/shared';
 import {Ribbon} from 'components/index.jsx';
-import PageLayout from '../shared/layout/PageLayout';
+import { AdminLayout } from '../shared/layout/AdminLayout';
 import * as arrRequestActions from 'actions/arr/arrRequestActions';
 import {
     createDaoLinkName,
@@ -23,7 +23,7 @@ import { showConfirmDialog } from 'components/shared/dialog';
 
 class AdminRequestsQueuePage extends AbstractReactComponent {
     buildRibbon() {
-        return <Ribbon admin {...this.props} />;
+        return <Ribbon {...this.props} />;
     }
 
     componentDidMount() {
@@ -105,7 +105,7 @@ class AdminRequestsQueuePage extends AbstractReactComponent {
         );
 
         return (
-            <PageLayout
+            <AdminLayout
                 splitter={splitter}
                 className="admin-requestsQueue-page"
                 ribbon={this.buildRibbon()}

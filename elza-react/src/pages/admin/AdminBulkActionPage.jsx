@@ -4,14 +4,14 @@ import {connect} from 'react-redux'
 import {AdminBulkList, Ribbon} from 'components';
 
 import './AdminPackagesPage.scss';
-import PageLayout from "../shared/layout/PageLayout";
+import { AdminLayout } from "../shared/layout/AdminLayout";
 
 
 class AdminBulkActionPage extends React.Component {
 
     buildRibbon = () => {
         return (
-            <Ribbon admin {...this.props} />
+            <Ribbon {...this.props} />
         )
     };
 
@@ -23,7 +23,7 @@ class AdminBulkActionPage extends React.Component {
         </div>;
 
         return (
-            <PageLayout
+            <AdminLayout
                 splitter={splitter}
                 className='admin-bulkAction-page'
                 ribbon={this.buildRibbon()}
