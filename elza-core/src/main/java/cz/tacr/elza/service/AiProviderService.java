@@ -193,7 +193,7 @@ public class AiProviderService {
             return cached.api();
         }
         ElzaAiApi api = new ElzaAiApi(new ApiClientAiProvider(extSystem.getUrl(),
-                credentials.keyId(), credentials.secret()));
+                credentials.keyId(), credentials.secret(), acceptLanguage()));
         connectorCache.put(cacheKey, new Connector(extSystem.getUrl(), credentials.secret(), api));
         return api;
     }
