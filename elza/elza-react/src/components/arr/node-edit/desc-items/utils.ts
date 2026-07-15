@@ -1,22 +1,6 @@
 import { DataType, NodeItem } from "elza-api";
 import { useEffect, useState } from "react";
-
-export function useLocalStorage<T>(key: string) {
-  function save(data: T) {
-    localStorage.setItem(key, JSON.stringify(data));
-  }
-
-  function load(): T {
-    const data = localStorage.getItem(key);
-    return JSON.parse(data);
-  }
-
-  function reset() {
-    localStorage.removeItem(key);
-  }
-
-  return [save, load, reset] as [(data: T) => void, () => T, () => void];
-}
+import { useLocalStorage } from "utils/hooks/useLocalStorage";
 
 export function createLocalStorageItemKey(item: NodeItem) {
   return `descItem-${item.nodeId}-${item.itemTypeId}-${item.itemObjectId || "new"}`;
