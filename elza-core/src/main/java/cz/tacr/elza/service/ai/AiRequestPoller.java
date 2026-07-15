@@ -110,6 +110,18 @@ public class AiRequestPoller {
     @Value("${elza.ai.poll-failure-timeout-seconds:300}")
     private long pollFailureTimeoutSeconds;
 
+    /**
+     * Absolute backstop: give up on a request still open this many seconds after
+     * it was submitted, regardless of whether the provider is answering polls, and
+     * mark the exchange {@code error}/{@code TIMEOUT}. Guards against a provider
+     * that keeps a task {@code running} forever without ever finishing it (the
+     * failure-window give-up above never triggers then, because the polls
+     * succeed). Deliberately generous so a legitimately long exchange is never
+     * cut off. Default 30 minutes.
+     */
+    @Value("${elza.ai.request-lifetime-timeout-seconds:1800}")
+    private long requestLifetimeTimeoutSeconds;
+
     private final Set<Integer> active = ConcurrentHashMap.newKeySet();
 
     private final ExecutorService executor = Executors.newFixedThreadPool(4, runnable -> {
@@ -245,6 +257,24 @@ public class AiRequestPoller {
                 if (target == null) {
                     return; // terminal, deleted or never submitted
                 }
+                // Absolute lifetime backstop: an exchange open past the limit is
+                // given up on even while the provider still answers polls (a task
+                // stuck 'running' forever). Checked before the long poll so an
+                // already-expired request settles at once; also catches a request
+                // resumed after a long downtime.
+                if (target.createDate() != null) {
+                    long ageMs = System.currentTimeMillis() - target.createDate().getTime();
+                    if (ageMs >= requestLifetimeTimeoutSeconds * 1000L) {
+                        long ageSeconds = ageMs / 1000;
+                        logger.warn("Giving up on AI request {} (task {}, provider {}): open for {} s"
+                                + " (>= elza.ai.request-lifetime-timeout-seconds={}); marking the exchange"
+                                + " timed out", aiRequestId, target.taskUid, target.externalSystem.getCode(),
+                                ageSeconds, requestLifetimeTimeoutSeconds);
+                        failRequest(aiRequestId, "TIMEOUT", "The exchange exceeded its maximum lifetime of "
+                                + requestLifetimeTimeoutSeconds + " s and was timed out.");
+                        return;
+                    }
+                }
                 Task task;
                 ElzaAiApi api;
                 try {
@@ -320,7 +350,8 @@ public class AiRequestPoller {
             }
             return new PollTarget(request.getTaskUid(), request.getState(),
                     request.getCostUnits(), request.getProgressMessage(), request.getProgressPercent(),
-                    conversation.getAiConversationId(), conversation.getUserId(), externalSystem);
+                    conversation.getAiConversationId(), conversation.getUserId(), externalSystem,
+                    request.getCreateDate());
         });
     }
 
@@ -506,6 +537,6 @@ public class AiRequestPoller {
     private record PollTarget(String taskUid, String state, double costUnits,
             String progressMessage, Double progressPercent,
             Integer conversationId, Integer userId,
-            AiExternalSystem externalSystem) {
+            AiExternalSystem externalSystem, Date createDate) {
     }
 }

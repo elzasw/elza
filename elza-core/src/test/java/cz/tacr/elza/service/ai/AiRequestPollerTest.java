@@ -8,6 +8,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -151,5 +152,26 @@ class AiRequestPollerTest {
         assertThat(request.getErrorCode()).isEqualTo("TIMEOUT");
         assertThat(request.getFinishDate()).isNotNull();
         verify(answerBuffer).clear(7);
+    }
+
+    @Test
+    void givesUpWhenRequestExceedsItsLifetime() {
+        // An exchange open past its absolute lifetime is settled before the poll
+        // even runs — so the provider is never contacted (aiProviderService is
+        // left unset here, proving the check fires first).
+        ReflectionTestUtils.setField(poller, "requestLifetimeTimeoutSeconds", 1L);
+        AiRequest request = request(8, "t8", "running", 80);
+        request.setCreateDate(new Date(System.currentTimeMillis() - 60_000));
+        AiConversation conversation = conversation(800, 8000);
+        when(requestRepository.findById(8)).thenReturn(Optional.of(request));
+        when(conversationRepository.findById(80)).thenReturn(Optional.of(conversation));
+        when(externalSystemRepository.findById(8000)).thenReturn(Optional.of(mock(AiExternalSystem.class)));
+
+        ReflectionTestUtils.invokeMethod(poller, "pollLoop", 8);
+
+        assertThat(request.getState()).isEqualTo("error");
+        assertThat(request.getErrorCode()).isEqualTo("TIMEOUT");
+        assertThat(request.getErrorMessage()).contains("maximum lifetime");
+        verify(answerBuffer).clear(8);
     }
 }
