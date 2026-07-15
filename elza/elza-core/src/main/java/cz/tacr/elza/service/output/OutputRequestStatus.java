@@ -3,6 +3,7 @@ package cz.tacr.elza.service.output;
 /**
  * Stav spuštění generátoru.
  */
+@Deprecated
 public enum OutputRequestStatus {
     /**
      * V pořádku.

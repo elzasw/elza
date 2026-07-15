@@ -5770,13 +5770,13 @@ namespace ElzaAPI.Output {
         /**
          * Template id
          */
-        templateId: integer;
+        templateId?: integer;
         /**
          * List of templates
          */
-        templateIds: integer[];
-        anonymizedAp: ApAccessPointVO;
-        outputFilterId: integer;
+        templateIds?: integer[];
+        anonymizedAp?: ApAccessPointVO;
+        outputFilterId?: integer;
     }
 
     /**
@@ -6007,18 +6007,48 @@ namespace ElzaAPI.Output {
     @get op sendOutput(
         /** output id */
         @path outputId: integer;
-    ): RequestStatus;
+    ): {
+        @Http.statusCode statusCode: 200;
+    };
 
     /**
      * Creating a new named output
      */
-    @route("/{fundVersionId}/create")
-    @put op createNamedOutput(
+    @route("/{fundVersionId}")
+    @post op createNamedOutput(
         /** fund version id */
         @path fundVersionId: integer;
         /** output parameters */
         @body param: NameParam;
     ): Def;
+
+    /**
+     * Deleting named output
+     */
+    @route("/{outputId}/{fundVersionId}")
+    @delete op deleteNamedOutput(
+        /** output id */
+        @path outputId: integer;
+        /** fund version id */
+        @path fundVersionId: integer;
+    ): {
+        @Http.statusCode statusCode: 200;
+    };
+
+    /**
+     * Update output
+     */
+    @route("/{outputId}/{fundVersionId}/update")
+    @put op updateNamedOutput(
+        /** output id */
+        @path outputId: integer;
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** output parameters */
+        @body param: NameParam;
+    ): {
+        @Http.statusCode statusCode: 200;
+    };
 
     /**
      * Adding nodes to output
@@ -6051,19 +6081,6 @@ namespace ElzaAPI.Output {
     };
 
     /**
-     * Deleting named output
-     */
-    @route("/{outputId}/{fundVersionId}")
-    @delete op deleteNamedOutput(
-        /** output id */
-        @path outputId: integer;
-        /** fund version id */
-        @path fundVersionId: integer;
-    ): {
-        @Http.statusCode statusCode: 200;
-    };
-
-    /**
      * Reset status of a named output to "Open"
      */
     @route("/{outputId}/{fundVersionId}/revert")
@@ -6086,21 +6103,6 @@ namespace ElzaAPI.Output {
         /** fund version id */
         @path fundVersionId: integer;
     ): Def;
-
-    /**
-     * Update output
-     */
-    @route("/{outputId}/{fundVersionId}/update")
-    @put op updateNamedOutput(
-        /** output id */
-        @path outputId: integer;
-        /** fund version id */
-        @path fundVersionId: integer;
-        /** output parameters */
-        @body param: NameParam;
-    ): {
-        @Http.statusCode statusCode: 200;
-    };
 
     /**
      * Adding limiting register to output

@@ -3177,6 +3177,7 @@ public class ArrangementController {
         }
     }
 
+    @Deprecated
     public static class GenerateOutputResult {
         private OutputRequestStatus status;
 

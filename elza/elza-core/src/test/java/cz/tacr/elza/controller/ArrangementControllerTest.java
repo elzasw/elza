@@ -68,7 +68,6 @@ import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ArrInhibitedItemVO;
-import cz.tacr.elza.controller.vo.ArrOutputVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateEditVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateMapSpecVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateMapTypeVO;
@@ -79,8 +78,6 @@ import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FulltextFundRequest;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
-import cz.tacr.elza.controller.vo.OutputSettingsVO;
-import cz.tacr.elza.controller.vo.RulOutputTypeVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.filter.Condition;
@@ -119,6 +116,9 @@ import cz.tacr.elza.test.controller.vo.OutputDef;
 import cz.tacr.elza.test.controller.vo.OutputFormData;
 import cz.tacr.elza.test.controller.vo.OutputItem;
 import cz.tacr.elza.test.controller.vo.OutputItemRes;
+import cz.tacr.elza.test.controller.vo.OutputNameParam;
+import cz.tacr.elza.test.controller.vo.OutputSettings;
+import cz.tacr.elza.test.controller.vo.OutputType;
 import cz.tacr.elza.utils.CsvUtils;
 import io.restassured.response.Response;
 
@@ -428,26 +428,30 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     private void outputs(final ArrFundVersionVO fundVersion) {
 
         {
-            List<ArrOutputVO> outputs = getOutputs(fundVersion.getId());
+        	List<OutputDef> outputs = outputApi.outputGetOutputs(fundVersion.getId(), null);
             assertTrue(outputs.size() == 0);
         }
 
         {
-            List<RulOutputTypeVO> outputTypes = getOutputTypes(fundVersion.getId());
+        	List<OutputType> outputTypes = outputApi.outputGetOutputTypes(fundVersion.getId());
             assertTrue(CollectionUtils.isNotEmpty(outputTypes));
 
-            ArrOutputVO output1 = createNamedOutput(fundVersion, "Test", "TST", outputTypes.iterator().next().getId());
-            assertNotNull(output1);
+            OutputNameParam param = new OutputNameParam();
+            param.setName("Test");
+            param.setInternalCode("TST");
+            param.setOutputTypeId(outputTypes.iterator().next().getId());
+            OutputDef outputDef = outputApi.outputCreateNamedOutput(fundVersion.getId(), param);
+            assertNotNull(outputDef);            
         }
 
-        ArrOutputVO output2;
+        OutputDef output2;
         {
-            List<ArrOutputVO> outputs = getOutputs(fundVersion.getId());
+            List<OutputDef> outputs = outputApi.outputGetOutputs(fundVersion.getId(), null);
             assertTrue(outputs.size() == 1);
             output2 = outputs.get(0);
         }
 
-        ArrOutputVO outputDetail = getOutput(fundVersion.getId(), output2.getId());
+        OutputDef outputDetail = outputApi.outputGetOutput(fundVersion.getId(), output2.getId());
 
         assertNotNull(outputDetail);
         assertTrue(outputDetail.getId().equals(output2.getId()));
@@ -458,24 +462,29 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         List<NodeBase> nodes = convertTreeNodes(treeData.getNodes());
         List<Integer> nodeIds = nodes.stream().map(NodeBase::getId).collect(Collectors.toList());
 
-        addNodesNamedOutput(fundVersion.getId(), outputDetail.getId(), nodeIds);
+        outputApi.outputAddNodesNamedOutput(outputDetail.getId(), fundVersion.getId(), nodeIds);
 
-        outputDetail = getOutput(fundVersion.getId(), output2.getId());
+        outputDetail = outputApi.outputGetOutput(fundVersion.getId(), output2.getId());
         assertTrue(outputDetail.getNodes().size() == nodeIds.size());
 
-        removeNodesNamedOutput(fundVersion.getId(), outputDetail.getId(), nodeIds);
+        outputApi.outputRemoveNodesNamedOutput(outputDetail.getId(), fundVersion.getId(), nodeIds);
 
-        outputDetail = getOutput(fundVersion.getId(), output2.getId());
+        outputDetail = outputApi.outputGetOutput(fundVersion.getId(), output2.getId());
         assertTrue(outputDetail.getNodes().size() == 0);
 
-        updateNamedOutput(fundVersion, outputDetail, "Test 2", "TST2");
-        outputDetail = getOutput(fundVersion.getId(), output2.getId());
+        OutputNameParam updateParam = new OutputNameParam();
+        updateParam.setName("Test 2");
+        updateParam.setInternalCode("TST2");
+        updateParam.setOutputTypeId(outputDetail.getOutputTypeId());
+        outputApi.outputUpdateNamedOutput(outputDetail.getId(), fundVersion.getId(), updateParam);
+
+        outputDetail = outputApi.outputGetOutput(fundVersion.getId(), output2.getId());
         assertTrue(outputDetail.getName().equals("Test 2"));
         assertTrue(outputDetail.getInternalCode().equals("TST2"));
 
-        ArrOutputVO output3;
+        OutputDef output3;
         {
-            List<ArrOutputVO> outputs = getOutputs(fundVersion.getId());
+            List<OutputDef> outputs = outputApi.outputGetOutputs(fundVersion.getId(), null);
             output3 = outputs.get(0);
         }
 
@@ -530,13 +539,13 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         assertNull(outputItemResult.getItem());        
 
         // Hodnota atributu musí být prázdná
-        OutputSettingsVO outputSettings = new OutputSettingsVO();
+        OutputSettings outputSettings = new OutputSettings();
         outputSettings.setEvenPageOffsetX(42);
         outputSettings.setEvenPageOffsetY(42);
         outputSettings.setOddPageOffsetX(42);
         outputSettings.setOddPageOffsetY(42);
 
-        super.setOutputSettings(outputDetail.getId(), outputSettings);
+        outputApi.outputUpdateOutputSettings(outputDetail.getId(), outputSettings);
         ArrOutput one = this.helperTestService.getOutputRepository()
                 .findById(outputDetail.getId())
                 .orElseThrow(output(outputDetail.getId()));
@@ -544,21 +553,20 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         String outputSettings1 = one.getOutputSettings();
         ObjectMapper mapper = new ObjectMapper();
         try {
-            OutputSettingsVO settingsVO = mapper.readValue(outputSettings1, OutputSettingsVO.class);
-            assertEquals("42", String.valueOf(settingsVO.getEvenPageOffsetX()));
-            assertEquals("42", String.valueOf(settingsVO.getEvenPageOffsetY()));
-            assertEquals("42", String.valueOf(settingsVO.getOddPageOffsetX()));
-            assertEquals("42", String.valueOf(settingsVO.getOddPageOffsetY()));
-
+            OutputSettings settings = mapper.readValue(outputSettings1, OutputSettings.class);
+            assertEquals("42", String.valueOf(settings.getEvenPageOffsetX()));
+            assertEquals("42", String.valueOf(settings.getEvenPageOffsetY()));
+            assertEquals("42", String.valueOf(settings.getOddPageOffsetX()));
+            assertEquals("42", String.valueOf(settings.getOddPageOffsetY()));
         } catch (IOException e) {
             e.printStackTrace();
         }
-        deleteNamedOutput(fundVersion.getId(), output2.getId());
-        outputDetail = getOutput(fundVersion.getId(), output2.getId());
+        outputApi.outputDeleteNamedOutput(output2.getId(), fundVersion.getId());
+        outputDetail = outputApi.outputGetOutput(fundVersion.getId(), output2.getId());
         assertTrue(outputDetail.getDeleteDate() != null);
 
         {
-            List<ArrOutputVO> outputs = getOutputs(fundVersion.getId());
+            List<OutputDef> outputs = outputApi.outputGetOutputs(fundVersion.getId(), null);
             assertTrue(outputs.size() == 0);
         }
     }

@@ -41,6 +41,7 @@ import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ArrOutputRestrictionScopeVO;
 import cz.tacr.elza.controller.vo.ArrOutputTemplateVO;
+import cz.tacr.elza.controller.vo.OutputSettings;
 import cz.tacr.elza.controller.vo.OutputSettingsVO;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -1601,6 +1602,15 @@ public class OutputService {
         return outputItemCreated;
     }
 
+    public void setOutputSettings(OutputSettings outputConfig, Integer outputId) throws JsonProcessingException {
+        ArrOutput output = outputRepository.findByOutputId(outputId);
+        ObjectMapper mapper = new ObjectMapper();
+        String s = mapper.writeValueAsString(outputConfig);
+        output.setOutputSettings(s);
+        outputRepository.save(output);
+    }
+
+    @Deprecated
     public void setOutputSettings(OutputSettingsVO outputConfig, Integer outputId) throws JsonProcessingException {
         ArrOutput output = outputRepository.findByOutputId(outputId);
         ObjectMapper mapper = new ObjectMapper();
