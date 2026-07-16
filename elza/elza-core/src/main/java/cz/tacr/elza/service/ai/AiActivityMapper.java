@@ -246,10 +246,32 @@ public class AiActivityMapper {
         if (!links.isEmpty()) {
             activity.setLinks(links);
         }
-        String error = text(wire.path("detail"), "error");
-        if (error != null) {
+        applyOutcome(activity, wire.path("detail"));
+    }
+
+    /**
+     * Sets the terminal state of a provider-internal activity from a
+     * {@code tool_result}'s {@code detail.error}. The provider sends a boolean
+     * flag ({@code false} = success, the common case; {@code true} = failure);
+     * an older provider may send a string code/message. Only a {@code true} flag
+     * or a non-blank string is a failure — a boolean {@code false} must never be
+     * read as the error message {@code "false"} (which would flag every
+     * successful step as an error).
+     */
+    private static void applyOutcome(final AiRequestActivityVO activity, final JsonNode detail) {
+        JsonNode errorNode = detail.path("error");
+        boolean failed;
+        String message;
+        if (errorNode.isBoolean()) {
+            failed = errorNode.booleanValue();
+            message = null;
+        } else {
+            message = text(detail, "error");
+            failed = message != null;
+        }
+        if (failed) {
             activity.setState(STATE_ERROR);
-            activity.setError(error);
+            activity.setError(message);
         } else {
             activity.setState(STATE_DONE);
         }

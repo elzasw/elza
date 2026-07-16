@@ -243,6 +243,44 @@ class AiActivityMapperTest {
     }
 
     @Test
+    void internalToolResultErrorFalseIsSuccess() {
+        // The provider sends detail.error as a boolean success flag; false must
+        // not be read as the error message "false" (which flagged every
+        // successful internal search as an error).
+        AiRequestEvent call = event(AiRequestEvent.TYPE_PROVIDER_TOOL_CALL, """
+                {"seq":13,"tool":"search_knowledge","origin":"internal","callId":"c_kb",
+                 "label":"Prohledávání znalostní báze"}
+                """, 1000);
+        AiRequestEvent result = event(AiRequestEvent.TYPE_PROVIDER_TOOL_RESULT, """
+                {"seq":14,"tool":"search_knowledge","origin":"internal","callId":"c_kb",
+                 "summary":"nalezené sekce: 6","detail":{"chars":1904,"error":false}}
+                """, 2000);
+
+        List<AiRequestActivityVO> activities = mapper.map(List.of(call, result), false);
+
+        assertThat(activities).hasSize(1);
+        assertThat(activities.get(0).getState()).isEqualTo(AiActivityMapper.STATE_DONE);
+        assertThat(activities.get(0).getError()).isNull();
+        assertThat(activities.get(0).getSummary()).isEqualTo("nalezené sekce: 6");
+    }
+
+    @Test
+    void internalToolResultErrorTrueIsFailure() {
+        AiRequestEvent call = event(AiRequestEvent.TYPE_PROVIDER_TOOL_CALL, """
+                {"seq":13,"tool":"search_knowledge","origin":"internal","callId":"c_kb",
+                 "label":"Prohledávání znalostní báze"}
+                """, 1000);
+        AiRequestEvent result = event(AiRequestEvent.TYPE_PROVIDER_TOOL_RESULT, """
+                {"seq":14,"tool":"search_knowledge","origin":"internal","callId":"c_kb",
+                 "detail":{"error":true}}
+                """, 2000);
+
+        List<AiRequestActivityVO> activities = mapper.map(List.of(call, result), false);
+
+        assertThat(activities.get(0).getState()).isEqualTo(AiActivityMapper.STATE_ERROR);
+    }
+
+    @Test
     void oldProviderDelegatedEventSkippedByToolName() {
         // A provider < 0.9 sends no origin; a client tool is still recognized by
         // its camelCase wire name and skipped.
