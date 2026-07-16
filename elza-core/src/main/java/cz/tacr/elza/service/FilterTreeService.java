@@ -31,6 +31,7 @@ import cz.tacr.elza.FilterTools;
 import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FilterNodePosition;
+import cz.tacr.elza.controller.vo.FilterNodesPage;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
@@ -178,6 +179,44 @@ public class FilterTreeService {
         }
 
         return createResult(version, subIds, nodeValuesMap);
+    }
+
+    /**
+     * Vrátí podstránku filtrovaných uzlů zabalenou spolu s číslem stránky.
+     * <p>
+     * Stránka se určí buď přímo parametrem {@code page}, nebo se dopočítá z {@code nodeId}
+     * (vrátí se stránka, na které se uzel ve filtrovaném seznamu nachází).
+     *
+     * @param version         verze
+     * @param page            číslo stránky, od 0; použije se, pokud není zadáno nodeId
+     * @param nodeId          id uzlu, jehož stránka se má dopočítat; má přednost před page
+     * @param pageSize        velikost stránky
+     * @param descItemTypeIds id typů atributů, které chceme načíst
+     * @return stránka filtrovaných uzlů včetně jejího čísla
+     */
+    public FilterNodesPage getFilteredDataPage(final ArrFundVersion version,
+                                               final Integer page,
+                                               final Integer nodeId,
+                                               final int pageSize,
+                                               final List<Integer> descItemTypeIds) {
+        ArrayList<Integer> filteredIds = getUserFilterSession().getFilteredIds(version.getFundVersionId());
+
+        int resolvedPage;
+        if (nodeId != null) {
+            int index = filteredIds.indexOf(nodeId);
+            if (index < 0) {
+                // uzel není ve filtrovaném seznamu (odfiltrován nebo není ve fondu)
+                throw new BusinessException("Uzel není ve filtrovaném seznamu",
+                        ArrangementCode.NODE_NOT_FOUND).set("id", nodeId);
+            }
+            resolvedPage = index / pageSize;
+        } else {
+            Assert.notNull(page, "Musí být vyplněno číslo stránky nebo id uzlu");
+            resolvedPage = page;
+        }
+
+        List<FilterNode> rows = getFilteredData(version, resolvedPage, pageSize, descItemTypeIds, false, filteredIds);
+        return new FilterNodesPage(resolvedPage, rows);
     }
 
     /**
