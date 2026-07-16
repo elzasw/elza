@@ -1302,6 +1302,22 @@ export class WebApiCls {
         );
     }
 
+    getFilteredNodes2(versionId, pageIndex, pageSize, descItemTypeIds) {
+        return AjaxUtils.ajaxPut(
+            WebApiCls.arrangementUrl + '/getFilterNodes2/' + versionId,
+            { page: pageIndex, pageSize: pageSize },
+            descItemTypeIds,
+        );
+    }
+
+    getFilteredNodesByNodeId(versionId, nodeId, pageSize, descItemTypeIds) {
+        return AjaxUtils.ajaxPut(
+            WebApiCls.arrangementUrl + '/getFilterNodes2/' + versionId,
+            { nodeId, pageSize },
+            descItemTypeIds,
+        );
+    }
+
     replaceDataValues(versionId, descItemTypeId, specsIds, searchText, replaceText, nodes, selectionType) {
         return AjaxUtils.ajaxPut(
             WebApiCls.arrangementUrl + '/replaceDataValues/' + versionId,
