@@ -4,8 +4,11 @@ import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -29,6 +32,10 @@ public class ParInstitutionType {
 
     @Column(length = 250, nullable = false)
     private String name;
+
+	@ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
+	@JoinColumn(name = "packageId", nullable = true)
+	private RulPackage rulPackage;
 
     /**
      * @return identifikátor
@@ -71,4 +78,12 @@ public class ParInstitutionType {
     public void setCode(final String code) {
         this.code = code;
     }
+
+	public RulPackage getRulPackage() {
+		return rulPackage;
+	}
+
+	public void setRulPackage(RulPackage rulPackage) {
+		this.rulPackage = rulPackage;
+	}
 }

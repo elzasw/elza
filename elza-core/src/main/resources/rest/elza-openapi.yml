@@ -3,6 +3,8 @@ info:
   title: ELZA API
   version: 1.0.0
 tags:
+  - name: institution
+    description: Správa institucí
   - name: output
     description: Výstupy archivních souborů
   - name: rules
@@ -4189,6 +4191,131 @@ paths:
             schema:
               $ref: '#/components/schemas/Sdo.CopyObjectParam'
         description: batch of data to create
+  /institution/:
+    get:
+      operationId: Inst_getAll
+      description: Get list of Institutions
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Institution'
+      tags:
+        - institution
+    post:
+      operationId: Inst_create
+      description: Create institution
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Institution'
+      tags:
+        - institution
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Institution'
+        description: item of institution
+  /institution/types:
+    get:
+      operationId: Inst_getTypes
+      description: Get list of type
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InstitutionType'
+      tags:
+        - institution
+  /institution/{id}:
+    get:
+      operationId: Inst_getById
+      description: Get institution by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: institution id or internalCode
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Institution'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - institution
+    put:
+      operationId: Inst_update
+      description: Update institution
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: institution id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Institution'
+      tags:
+        - institution
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Institution'
+        description: item of institurion
+    delete:
+      operationId: Inst_delete
+      description: Delete institution
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: institution id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - institution
   /io/export:
     post:
       operationId: Io_exportRequest
@@ -7670,6 +7797,42 @@ components:
       required:
         - importType
         - dataFile
+    Institution:
+      type: object
+      required:
+        - id
+        - internalCode
+        - accessPointId
+      properties:
+        id:
+          type: integer
+        internalCode:
+          type: string
+        institutionTypeId:
+          type: integer
+        accessPointId:
+          type: integer
+        name:
+          type: string
+        shortName:
+          type: string
+      description: Institution
+    InstitutionType:
+      type: object
+      required:
+        - id
+        - code
+        - name
+      properties:
+        id:
+          type: integer
+        code:
+          type: string
+        name:
+          type: string
+        packageId:
+          type: integer
+      description: Type of institution
     IntViewDefinition:
       type: object
       required:

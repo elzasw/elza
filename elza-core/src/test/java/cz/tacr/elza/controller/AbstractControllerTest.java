@@ -169,6 +169,7 @@ import cz.tacr.elza.test.controller.AdminApi;
 import cz.tacr.elza.test.controller.DaosApi;
 import cz.tacr.elza.test.controller.DescitemsApi;
 import cz.tacr.elza.test.controller.FundsApi;
+import cz.tacr.elza.test.controller.InstitutionApi;
 import cz.tacr.elza.test.controller.IoApi;
 import cz.tacr.elza.test.controller.NodeApi;
 import cz.tacr.elza.test.controller.OutputApi;
@@ -495,6 +496,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
 	protected OutputApi outputApi;
 
+	protected InstitutionApi institutionApi;
+
 	protected static Map<String, String> cookies = null;
 
 	@Override
@@ -526,6 +529,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 		publicationIntApi = new cz.tacr.elza.test.controller.PublicationInternalApi(elzaApiClient);
 		accesspointIntApi = new cz.tacr.elza.test.controller.AccesspointInternalApi(elzaApiClient);
 		outputApi = new cz.tacr.elza.test.controller.OutputApi(elzaApiClient);
+		institutionApi = new cz.tacr.elza.test.controller.InstitutionApi(elzaApiClient);
 
 		loginAsAdmin();
 
