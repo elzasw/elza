@@ -35,7 +35,7 @@ public interface InstitutionRepository extends JpaRepository<ParInstitution, Int
     @Modifying
     int deleteByInstitutionIdIn(Collection<Integer> partyIds);
 
-    @Query("SELECT i FROM arr_fund f JOIN f.institution i JOIN FETCH i.institutionType t JOIN FETCH i.accessPoint ap WHERE f=?1")
+    @Query("SELECT i FROM arr_fund f JOIN f.institution i LEFT JOIN FETCH i.institutionType t JOIN FETCH i.accessPoint ap WHERE f=?1")
     ParInstitution findByFundFetchTypeAndAccessPoint(ArrFund arrFund);
 
     @Query("SELECT i FROM arr_fund f JOIN f.institution i JOIN FETCH i.accessPoint ap WHERE f.fundId IN ?1")
