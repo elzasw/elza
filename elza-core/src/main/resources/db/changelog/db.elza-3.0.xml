@@ -1549,24 +1549,24 @@
 	        DELETE FROM par_institution
 	        WHERE institution_id NOT IN (SELECT DISTINCT institution_id FROM arr_fund)
 	    </sql>
-	
+
 	    <!-- 4. Fill name / short_name from the preferred part of the linked access point -->
-	    <sql dbms="postgresql">
-	        UPDATE par_institution i
-	        SET name = (SELECT ix.value
-	                    FROM ap_access_point ap
-	                    JOIN ap_index ix ON ix.part_id = ap.preferred_part_id
-	                    WHERE ap.access_point_id = i.access_point_id
-	                      AND ix.index_type = 'DISPLAY_NAME')
-	    </sql>
-	    <sql dbms="postgresql">
-	        UPDATE par_institution i
-	        SET short_name = (SELECT ix.value
-	                          FROM ap_access_point ap
-	                          JOIN ap_index ix ON ix.part_id = ap.preferred_part_id
-	                          WHERE ap.access_point_id = i.access_point_id
-	                            AND ix.index_type = 'SHORT_NAME')
-	    </sql>
+		<sql>
+            UPDATE par_institution i
+            SET name = (SELECT ix.index_value
+                        FROM ap_access_point ap
+                        JOIN ap_index ix ON ix.part_id = ap.preferred_part_id
+                        WHERE ap.access_point_id = i.access_point_id
+                          AND ix.index_type = 'DISPLAY_NAME')
+		</sql>
+		<sql>
+            UPDATE par_institution i
+            SET short_name = (SELECT ix.index_value
+                              FROM ap_access_point ap
+                              JOIN ap_index ix ON ix.part_id = ap.preferred_part_id
+                              WHERE ap.access_point_id = i.access_point_id
+                                AND ix.index_type = 'SHORT_NAME')
+		</sql>
 
 	    <!-- 5. Detach institutions from their type, then wipe the type dictionary -->
 	    <dropNotNullConstraint tableName="par_institution" columnName="institution_type_id"/>
