@@ -2446,26 +2446,11 @@ model AiRequestActivity {
     /** Tool name for TOOL_CALL: `searchNodes`, `getItemTypes`, … */
     tool?: string;
 
-    /**
-     * Localized, display-ready name of a provider-internal step (from the
-     * task-event stream); render in place of `tool`. Absent for a client tool
-     * Elza executed itself — the client renders those from `tool`.
-     */
-    label?: string;
-
     /** RUNNING | DONE | ERROR (open set). */
     state: string;
 
     /** Data-like input summary: the fulltext query / the rule-set code. */
     query?: string;
-
-    /**
-     * Localized, display-ready one-line detail of a provider-internal step: the
-     * call's key arguments, or a short result summary once DONE. Secondary text
-     * next to `label`; for a client tool the client shows `query`/`resultCount`
-     * instead.
-     */
-    summary?: string;
 
     /** Result size once DONE: search hits, dictionary entries. */
     resultCount?: int64;
@@ -2557,12 +2542,7 @@ model AiContextFund extends AiContextObject {
 model AiContextNode extends AiContextObject {
     @invisible(Lifecycle)
     type: AiContextType.NODE;
-    /**
-     * `ArrFund.fundId`. Present for a UI-context node or a search hit; absent on
-     * a link built from a bare object reference (a tool event's `refs`), where
-     * only the node id is known and the fund is not needed to navigate.
-     */
-    fundId?: int32;
+    fundId: int32;
     fundVersionId?: int32;
     nodeId: int32;
 }
@@ -6173,6 +6153,97 @@ namespace ElzaAPI.Output {
     };
 }
 
+/**
+ * Institution
+ */
+model Institution {
+    id: integer;
+    internalCode: string;
+    institutionTypeId?: integer;
+    accessPointId: integer;
+    name?: string;
+    shortName?: string;
+}
+
+/**
+ * Type of institution
+ */
+model InstitutionType {
+    id: integer;
+    code: string;
+    name: string;
+    packageId?: integer;
+}
+
+/**
+ * Institutional management
+ */
+@tag("institution")
+@route("/institution")
+namespace ElzaAPI.Inst {
+    /**
+     * Get list of type 
+     */
+    @route("/types")
+    @get op getTypes(
+    ): InstitutionType[];
+
+    /**
+     * Get list of Institutions
+     */
+    @route("/")
+    @get op getAll(
+    ): Institution[];
+
+    /**
+     * Get institution by id
+     */
+    @route("/{id}")
+    @get op getById(
+        /** institution id or internalCode */
+        id: string;
+    ): Institution | {
+        /** item does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Create institution
+     */
+    @route("/")
+    @post op create(
+        /** item of institution */
+        @body item: Institution;
+    ): Institution;
+
+    /**
+     * Update institution
+     */
+    @route("/{id}")
+    @put op update(
+        /** institution id */
+        id: integer;
+        /** item of institurion */
+        @body item: Institution;
+    ): Institution;
+
+    /**
+     * Delete institution
+     */
+    @route("/{id}")
+    @delete op delete(
+        /** institution id */
+        id: integer;
+    ): {
+        @Http.statusCode statusCode: 200;
+    } | {
+        /** item does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+}
+
 @tag("search")
 namespace ElzaAPI.Search {
     /**
@@ -6295,6 +6366,7 @@ namespace ElzaAPI.Tasks {
 @tagMetadata("accesspoint-internal", #{description: "Access-point API used by the Elza UI"})
 @tagMetadata("rules", #{description: "Pravidla popisu archiválií (typy atributů, datové typy, …)"})
 @tagMetadata("output", #{description: "Výstupy archivních souborů"})
+@tagMetadata("institution", #{description: "Správa institucí"})
 namespace ElzaAPI {
     // add models not used in operations
     union __Types {

@@ -1528,4 +1528,50 @@
         </addColumn>
     </changeSet>
 
+	<changeSet id="20260717100000" author="sergey.iryupin">
+	    <!-- 1. par_institution_type.package_id (nullable) + FK -->
+	    <addColumn tableName="par_institution_type">
+	        <column name="package_id" type="int"/>
+	    </addColumn>
+	    <addForeignKeyConstraint constraintName="fk_par_institution_type_package"
+	                             baseTableName="par_institution_type" baseColumnNames="package_id"
+	                             referencedTableName="rul_package" referencedColumnNames="package_id"
+	                             onDelete="NO ACTION"/>
+
+	    <!-- 2. par_institution.name / short_name (nullable) -->
+	    <addColumn tableName="par_institution">
+	        <column name="name" type="nvarchar(250)"/>
+	        <column name="short_name" type="nvarchar(250)"/>
+	    </addColumn>
+
+	    <!-- 3. Drop orphan institutions (not referenced from arr_fund) -->
+	    <sql dbms="postgresql">
+	        DELETE FROM par_institution
+	        WHERE institution_id NOT IN (SELECT DISTINCT institution_id FROM arr_fund)
+	    </sql>
+	
+	    <!-- 4. Fill name / short_name from the preferred part of the linked access point -->
+	    <sql dbms="postgresql">
+	        UPDATE par_institution i
+	        SET name = (SELECT ix.value
+	                    FROM ap_access_point ap
+	                    JOIN ap_index ix ON ix.part_id = ap.preferred_part_id
+	                    WHERE ap.access_point_id = i.access_point_id
+	                      AND ix.index_type = 'DISPLAY_NAME')
+	    </sql>
+	    <sql dbms="postgresql">
+	        UPDATE par_institution i
+	        SET short_name = (SELECT ix.value
+	                          FROM ap_access_point ap
+	                          JOIN ap_index ix ON ix.part_id = ap.preferred_part_id
+	                          WHERE ap.access_point_id = i.access_point_id
+	                            AND ix.index_type = 'SHORT_NAME')
+	    </sql>
+
+	    <!-- 5. Detach institutions from their type, then wipe the type dictionary -->
+	    <dropNotNullConstraint tableName="par_institution" columnName="institution_type_id"/>
+	    <sql dbms="postgresql">UPDATE par_institution SET institution_type_id = NULL</sql>
+	    <sql dbms="postgresql">DELETE FROM par_institution_type</sql>
+	</changeSet>
+
 </databaseChangeLog>
