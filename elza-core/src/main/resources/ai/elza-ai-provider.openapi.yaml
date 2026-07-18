@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Elza AI Provider API
-  version: 0.9.0
+  version: 0.10.0
   description: |-
     Elza AI Provider API.
 
@@ -1703,6 +1703,13 @@ components:
           allOf:
             - $ref: '#/components/schemas/InstitutionInfo'
           description: Holding institution.
+        rootNodeId:
+          type: integer
+          format: int32
+          description: |-
+            Root level of the fund's open version (`ArrNode.nodeId`); echo-only — the
+            entry point for exploring the fund's arrangement with
+            `getArchivalDescription` (`withChildren` from here walks the tree).
       description: |-
         Basic descriptive information about an archival fund and its holding
         institution — enough for a task to know which fund it operates within, without
@@ -2189,6 +2196,56 @@ components:
             not page: refine the query (sharper terms, `typeCode`, `onlyMainPart`)
             instead of re-asking with the same terms.
       description: Result of the `searchEntities` tool.
+    SearchFundsParams:
+      type: object
+      properties:
+        fulltext:
+          type: string
+          description: |-
+            Query matched against every fund identifier at once: name, internal
+            (evidence) code, fund number and mark/signature (case-insensitive
+            substring) — `127` finds fund number 127 as well as names containing 127.
+        institutionCode:
+          type: string
+          description: Restrict to funds of one holding institution (`InstitutionInfo.code`).
+        from:
+          type: integer
+          format: int32
+          description: 0-based offset of the window (default 0 = the first funds).
+        limit:
+          type: integer
+          format: int32
+          description: Requested maximum funds in the window; the client may cap it lower.
+      description: |-
+        Arguments of the `searchFunds` tool. All optional: an unconstrained call
+        lists the funds the requesting user may read, ordered by name — funds are a
+        bounded ordered list, so (unlike `searchNodes`) listing and windowed paging
+        are the intended access pattern.
+    SearchFundsResult:
+      type: object
+      required:
+        - funds
+        - from
+        - totalCount
+      properties:
+        funds:
+          type: array
+          items:
+            $ref: '#/components/schemas/FundInfo'
+          description: The window's funds, ordered by name.
+        from:
+          type: integer
+          format: int32
+          description: 0-based index of `funds[0]` within the whole matching list.
+        totalCount:
+          type: integer
+          format: int64
+          description: Total matching funds (before windowing).
+      description: |-
+        Result of the `searchFunds` tool: a window of the matching funds, ordered by
+        name. Each fund carries its identity (`fundId` scopes follow-up
+        `searchNodes` calls) and `rootNodeId` (the entry point for
+        `getArchivalDescription` browsing).
     SearchNodesParams:
       type: object
       properties:
@@ -2309,6 +2366,7 @@ components:
         - getArchivalEntity
         - searchEntities
         - getArchivalDescription
+        - searchFunds
       description: |-
         Standard tools — the **closed, contract-owned** set of tools a client can
         execute locally on the provider's request during `awaiting_tools`. The set is
@@ -2351,6 +2409,15 @@ components:
         dominates the cost); ordered, windowed lists of its children and siblings
         (designed for levels with thousands of nodes) and the parent chain are
         opt-in. Executed under the requesting user's fund read permissions.
+        - `searchFunds` — look up / list archival funds by their own identity.
+        Arguments `SearchFundsParams`, result `SearchFundsResult`: one query
+        string matched against every fund identifier at once (name, internal
+        code, fund number, mark), optionally narrowed to one holding institution;
+        funds are a bounded ordered list, so (unlike `searchNodes`) an
+        unconstrained, windowed listing is a legitimate use. Each returned
+        `FundInfo` carries `rootNodeId` — the entry point for browsing the fund
+        with `getArchivalDescription`. Executed under the requesting user's fund
+        read permissions.
     StructuredObjectInfo:
       type: object
       required:

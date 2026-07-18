@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.tacr.elza.controller.vo.AiActivityLinkVO;
 import cz.tacr.elza.controller.vo.AiContextAccesspointVO;
+import cz.tacr.elza.controller.vo.AiContextFundVO;
 import cz.tacr.elza.controller.vo.AiContextNodeVO;
 import cz.tacr.elza.controller.vo.AiContextTypeVO;
 import cz.tacr.elza.controller.vo.AiRequestActivityVO;
@@ -69,6 +70,7 @@ public class AiActivityMapper {
     /** Wire names of the standard tools (provider contract {@code StandardToolName}). */
     private static final String TOOL_SEARCH_NODES = "searchNodes";
     private static final String TOOL_GET_ITEM_TYPES = "getItemTypes";
+    private static final String TOOL_SEARCH_FUNDS = "searchFunds";
 
     /** {@code TaskEvent.origin} value marking a tool the provider delegated to Elza. */
     private static final String ORIGIN_CLIENT = "client";
@@ -389,6 +391,9 @@ public class AiActivityMapper {
         if (TOOL_GET_ITEM_TYPES.equals(tool)) {
             return text(arguments, "ruleSetCode");
         }
+        if (TOOL_SEARCH_FUNDS.equals(tool)) {
+            return text(arguments, "fulltext");
+        }
         return null;
     }
 
@@ -421,6 +426,22 @@ public class AiActivityMapper {
             JsonNode itemTypes = result.path("itemTypes");
             if (itemTypes.isArray()) {
                 activity.setResultCount((long) itemTypes.size());
+            }
+        } else if (TOOL_SEARCH_FUNDS.equals(activity.getTool())) {
+            activity.setResultCount(result.path("totalCount").asLong(0));
+            List<AiActivityLinkVO> links = new ArrayList<>();
+            for (JsonNode fund : result.path("funds")) {
+                JsonNode fundId = fund.path("fundId");
+                if (!fundId.isNumber()) {
+                    continue;
+                }
+                links.add(new AiActivityLinkVO()
+                        .label(text(fund, "name"))
+                        .target(new AiContextFundVO().fundId(fundId.asInt())
+                                .type(AiContextTypeVO.FUND)));
+            }
+            if (!links.isEmpty()) {
+                activity.setLinks(links);
             }
         }
     }

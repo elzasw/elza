@@ -855,19 +855,41 @@ public class AiContextResolver {
             logger.info("AI context fund {} not readable by user; skipped", fundId);
             return Optional.empty();
         }
+        return Optional.of(new FundInfoObject().objectType(ObjectType.ELZA_FUND_INFO)
+                .data(buildFundInfo(fund, version)));
+    }
+
+    /**
+     * Maps a fund to the {@code FundInfo} payload — identity, rule set, holding
+     * institution and the open version's root node (the entry point for
+     * {@code getArchivalDescription} browsing). Pure mapping: no permission check
+     * (the caller enforces fund read permission). Also serves the
+     * {@code searchFunds} tool, whose hits are this payload; {@code version} may
+     * be {@code null} (a fund without an open version) — the version-bound fields
+     * stay absent then.
+     */
+    public FundInfo buildFundInfo(final ArrFund fund, final ArrFundVersion version) {
         FundInfo info = new FundInfo()
                 // lets the model reference the fund in tools, e.g. searchNodes.fundIds
                 .fundId(fund.getFundId())
                 .name(fund.getName())
                 .internalCode(fund.getInternalCode())
-                .ruleSetCode(version.getRuleSet() != null ? version.getRuleSet().getCode() : null)
                 .fundNumber(fund.getFundNumber())
                 .mark(fund.getMark())
                 .unitDate(fund.getUnitdate());
+        if (version != null) {
+            if (version.getRuleSet() != null) {
+                info.ruleSetCode(version.getRuleSet().getCode());
+            }
+            if (version.getRootNode() != null) {
+                // lets the model enter the fund: getArchivalDescription from here
+                info.rootNodeId(version.getRootNode().getNodeId());
+            }
+        }
         if (fund.getInstitution() != null) {
             info.institution(toInstitutionInfo(fund.getInstitution()));
         }
-        return Optional.of(new FundInfoObject().objectType(ObjectType.ELZA_FUND_INFO).data(info));
+        return info;
     }
 
     /** Resolves a fund's open version, or {@code null} when missing or not readable. */

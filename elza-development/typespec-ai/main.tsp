@@ -76,7 +76,7 @@ using TypeSpec.OpenAPI;
  * `GET /ping`. See `SignatureAuth` and the companion `security.md`.
  */
 @service(#{ title: "Elza AI Provider API" })
-@info(#{ version: "0.9.0" })
+@info(#{ version: "0.10.0" })
 @server(
   "{endpoint}",
   "Provider-assigned base endpoint, e.g. https://ai.example.com/elza",
@@ -271,6 +271,13 @@ model FundInfo {
 
   /** Holding institution. */
   institution?: InstitutionInfo;
+
+  /**
+   * Root level of the fund's open version (`ArrNode.nodeId`); echo-only — the
+   * entry point for exploring the fund's arrangement with
+   * `getArchivalDescription` (`withChildren` from here walks the tree).
+   */
+  rootNodeId?: int32;
 }
 
 /** Fund information object. */
@@ -846,6 +853,15 @@ enum TaskState {
  *   dominates the cost); ordered, windowed lists of its children and siblings
  *   (designed for levels with thousands of nodes) and the parent chain are
  *   opt-in. Executed under the requesting user's fund read permissions.
+ * - `searchFunds` — look up / list archival funds by their own identity.
+ *   Arguments `SearchFundsParams`, result `SearchFundsResult`: one query
+ *   string matched against every fund identifier at once (name, internal
+ *   code, fund number, mark), optionally narrowed to one holding institution;
+ *   funds are a bounded ordered list, so (unlike `searchNodes`) an
+ *   unconstrained, windowed listing is a legitimate use. Each returned
+ *   `FundInfo` carries `rootNodeId` — the entry point for browsing the fund
+ *   with `getArchivalDescription`. Executed under the requesting user's fund
+ *   read permissions.
  */
 enum StandardToolName {
   getItemTypes,
@@ -853,6 +869,7 @@ enum StandardToolName {
   getArchivalEntity,
   searchEntities,
   getArchivalDescription,
+  searchFunds,
 }
 
 /** A pending call of a client-declared tool (present while `awaiting_tools`). */
@@ -1246,6 +1263,47 @@ model NodeWindow {
    * — its position among its siblings, and the aim point for a next window.
    */
   nodeIndex?: int32;
+}
+
+/**
+ * Arguments of the `searchFunds` tool. All optional: an unconstrained call
+ * lists the funds the requesting user may read, ordered by name — funds are a
+ * bounded ordered list, so (unlike `searchNodes`) listing and windowed paging
+ * are the intended access pattern.
+ */
+model SearchFundsParams {
+  /**
+   * Query matched against every fund identifier at once: name, internal
+   * (evidence) code, fund number and mark/signature (case-insensitive
+   * substring) — `127` finds fund number 127 as well as names containing 127.
+   */
+  fulltext?: string;
+
+  /** Restrict to funds of one holding institution (`InstitutionInfo.code`). */
+  institutionCode?: string;
+
+  /** 0-based offset of the window (default 0 = the first funds). */
+  from?: int32;
+
+  /** Requested maximum funds in the window; the client may cap it lower. */
+  limit?: int32;
+}
+
+/**
+ * Result of the `searchFunds` tool: a window of the matching funds, ordered by
+ * name. Each fund carries its identity (`fundId` scopes follow-up
+ * `searchNodes` calls) and `rootNodeId` (the entry point for
+ * `getArchivalDescription` browsing).
+ */
+model SearchFundsResult {
+  /** The window's funds, ordered by name. */
+  funds: FundInfo[];
+
+  /** 0-based index of `funds[0]` within the whole matching list. */
+  from: int32;
+
+  /** Total matching funds (before windowing). */
+  totalCount: int64;
 }
 
 /**
