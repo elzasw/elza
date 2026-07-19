@@ -13,6 +13,9 @@ dist
 dist-ssr
 *.local
 
+# This project uses npm (package-lock.json); yarn is not used.
+yarn.lock
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
