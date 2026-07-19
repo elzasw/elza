@@ -2429,6 +2429,51 @@ model AiUsage {
 }
 
 /**
+ * Credit state of the account the user's signing key bills to (their personal
+ * seat, or the shared organizational account). Provider-computed; the client
+ * only displays it, typically as relative consumption
+ * (`spentCredits / allowanceCredits`).
+ */
+model AiAccountUsage {
+    /** Kind of account, e.g. `personal` or `shared` (open set). */
+    accountType?: string;
+    /** Plan label, e.g. `basic`; informational. */
+    plan?: string;
+    /** Credit allowance for the current period; absent = no per-account cap. */
+    allowanceCredits?: float64;
+    /** Credits charged to this account in the current period. */
+    spentCredits: float64;
+    /** Start of the current accounting period. */
+    periodStart: utcDateTime;
+    /** End of the current accounting period — when the allowance resets. */
+    periodEnd?: utcDateTime;
+}
+
+/** Subscriber-level (whole organization) usage state — the outer budget cap. */
+model AiCustomerUsage {
+    /** Subscriber budget for the current period; absent = no cap. */
+    budgetCredits?: float64;
+    /** Credits spent by the whole subscriber in the current period. */
+    spentCredits: float64;
+    /** Start of the current accounting period. */
+    periodStart: utcDateTime;
+}
+
+/**
+ * The user's usage/credit balance at the AI provider — the data behind "how
+ * much have I spent". The provider serves it from the same state its
+ * submit-time budget check uses, so the displayed balance never disagrees
+ * with a quota refusal. Both members are optional: a provider without credit
+ * accounting returns an empty object.
+ */
+model AiUsageBalance {
+    /** Credit state of the account the user's key bills to. */
+    account?: AiAccountUsage;
+    /** Subscriber-level usage state (the outer cap). */
+    customer?: AiCustomerUsage;
+}
+
+/**
  * One user-visible step of an exchange — a client-tool execution the model
  * requested while working on the answer. `kind`, `tool` and `state` are open
  * sets: the client renders an unknown kind/tool as a generic step and treats
@@ -2676,6 +2721,22 @@ namespace ElzaAPI.AiProvider {
         /** AI external system ID or CODE */
         @path id: string;
     ): AiProviderInfo | {
+        /** Id does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * The user's usage/credit balance at the AI provider, read via the
+     * provider's GET /usage under the same key selection as task submission
+     * (the user's personal key when stored, else the instance-wide one). For
+     * panel display; refresh after a finished exchange or a quota refusal.
+     */
+    @route("/{id}/usage")
+    @get op getUsage(
+        /** AI external system ID or CODE */
+        @path id: string;
+    ): AiUsageBalance | {
         /** Id does not exists */
         @Http.statusCode statusCode: 404;
         @body data: BaseException;

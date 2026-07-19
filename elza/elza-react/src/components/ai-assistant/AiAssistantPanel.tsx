@@ -10,8 +10,17 @@ import { AiRequestActivities, activityTitle, isActivityFinished } from "./AiRequ
 import { useAiConversation, isRequestInProgress } from "./useAiConversation";
 import { useAiConversationList } from "./useAiConversationList";
 import { useAiProviderInfo } from "./useAiProviderInfo";
+import { useAiUsageBalance } from "./useAiUsageBalance";
 import { useCurrentAiContext } from "./useCurrentAiContext";
 import { aiAssistantMessages, aiContextSegmentLabels, aiModuleLabels } from "./messages";
+import type { MessageDescriptor } from "react-intl";
+
+// Provider 402 codes rendered as a readable state instead of a raw error.
+const quotaErrorMessages: Record<string, MessageDescriptor> = {
+    NO_SUBSCRIPTION: aiAssistantMessages.errorNoSubscription,
+    QUOTA_EXCEEDED: aiAssistantMessages.errorQuotaExceeded,
+    ACCOUNT_QUOTA_EXCEEDED: aiAssistantMessages.errorAccountQuotaExceeded,
+};
 
 // Requests may run for seconds up to hours; show only the non-zero, largest units.
 function formatDuration(intl: IntlShape, milliseconds: number): string {
@@ -322,6 +331,15 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
     const lastRequestActivityCount = lastRequest?.activities?.length ?? 0;
     const lastRequestFinished = lastRequest ? !isRequestInProgress(lastRequest) : false;
 
+    const { balance, refresh: refreshBalance } = useAiUsageBalance(externalSystemCode);
+
+    // The provider serves the balance from the same state its budget gate uses,
+    // so refetching right after an exchange finishes (incl. a quota refusal)
+    // always shows the post-exchange number.
+    useEffect(() => {
+        if (lastRequestFinished) refreshBalance();
+    }, [lastRequestId, lastRequestFinished, refreshBalance]);
+
     // On a new request, scroll its user message to the top of the viewport so the
     // response reads from the beginning. Only the request id triggers this — not the
     // streaming state — so the view doesn't yank while the answer updates.
@@ -340,6 +358,56 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
         if (!lastRequestFinished) return;
         aiMessageRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, [lastRequestId, lastRequestState, lastRequestFinished]);
+
+    // Balance badge: the account the user's key bills to; the subscriber-level
+    // cap when the provider reports no account (e.g. no per-account allowance).
+    const account = balance?.account;
+    const customer = balance?.customer;
+    const credits = (value: number) => intl.formatNumber(value, { maximumFractionDigits: 1 });
+    const customerLabel = customer
+        ? customer.budgetCredits != null
+            ? intl.formatMessage(aiAssistantMessages.balanceCustomer, {
+                  spent: credits(customer.spentCredits),
+                  budget: credits(customer.budgetCredits),
+              })
+            : intl.formatMessage(aiAssistantMessages.balanceCustomerNoCap, {
+                  spent: credits(customer.spentCredits),
+              })
+        : null;
+    const balanceLabel = account
+        ? account.allowanceCredits != null
+            ? intl.formatMessage(aiAssistantMessages.balanceSpentOfAllowance, {
+                  spent: credits(account.spentCredits),
+                  allowance: credits(account.allowanceCredits),
+              })
+            : intl.formatMessage(aiAssistantMessages.balanceSpent, { spent: credits(account.spentCredits) })
+        : customerLabel;
+    const balanceRatio = account?.allowanceCredits
+        ? account.spentCredits / account.allowanceCredits
+        : null;
+    const balanceColor = balanceRatio == null ? "informative"
+        : balanceRatio >= 0.95 ? "danger"
+        : balanceRatio >= 0.8 ? "warning"
+        : "informative";
+    const balanceDetail: string[] = [];
+    if (account) {
+        if (account.accountType === "personal") {
+            balanceDetail.push(intl.formatMessage(aiAssistantMessages.balanceAccountPersonal));
+        } else if (account.accountType === "shared") {
+            balanceDetail.push(intl.formatMessage(aiAssistantMessages.balanceAccountShared));
+        }
+        if (account.plan) {
+            balanceDetail.push(intl.formatMessage(aiAssistantMessages.balancePlan, { plan: account.plan }));
+        }
+        if (account.periodEnd) {
+            balanceDetail.push(intl.formatMessage(aiAssistantMessages.balanceResets, {
+                date: intl.formatDate(account.periodEnd, { dateStyle: "medium" }),
+            }));
+        }
+        if (customerLabel) {
+            balanceDetail.push(customerLabel);
+        }
+    }
 
     const [listExpanded, setListExpanded] = useState(false);
     const [expanded, setExpanded] = useState(false);
@@ -501,8 +569,14 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
                                 <div ref={isLastRequest ? aiMessageRef : undefined} className={mergeClasses(styles.aiMessage, aiFullWidth && styles.aiMessageFull)}>
                                     {finishedSteps}
                                     <div className={styles.aiError}>
-                                        <FormattedMessage {...aiAssistantMessages.errorPrefix} />
-                                        {request.errorMessage ? `: ${request.errorMessage}` : ""}
+                                        {request.errorCode && quotaErrorMessages[request.errorCode] ? (
+                                            <FormattedMessage {...quotaErrorMessages[request.errorCode]} />
+                                        ) : (
+                                            <>
+                                                <FormattedMessage {...aiAssistantMessages.errorPrefix} />
+                                                {request.errorMessage ? `: ${request.errorMessage}` : ""}
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             ) : isRequestInProgress(request) ? (
@@ -551,13 +625,24 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
                                                     </div>
                                                     <div>
                                                         <FormattedMessage
-                                                            {...aiAssistantMessages.usageDetail}
+                                                            {...aiAssistantMessages.usageTokens}
                                                             values={{
                                                                 input: request.usage.inputTokens,
                                                                 output: request.usage.outputTokens,
-                                                                cost: request.usage.costUnits,
                                                             }}
                                                         />
+                                                        {/* The price is the provider's final charged credits; when the
+                                                            provider does credit-free accounting it sends none, and we
+                                                            show no price rather than leaking internal cost units. */}
+                                                        {request.usage.chargedCredits != null && (
+                                                            <>
+                                                                {" · "}
+                                                                <FormattedMessage
+                                                                    {...aiAssistantMessages.usagePrice}
+                                                                    values={{ credits: request.usage.chargedCredits }}
+                                                                />
+                                                            </>
+                                                        )}
                                                         {request.profile && (
                                                             <>
                                                                 {" · "}
@@ -618,6 +703,16 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
                             </Badge>
                         )}
                         <div className={styles.contextBarActions}>
+                            {balanceLabel && (
+                                <Tooltip
+                                    content={balanceDetail.length > 0 ? balanceDetail.join(" · ") : balanceLabel}
+                                    relationship="description"
+                                >
+                                    <Badge appearance="tint" color={balanceColor} className={styles.taskBadge}>
+                                        {balanceLabel}
+                                    </Badge>
+                                </Tooltip>
+                            )}
                             {profiles.length > 1 && (
                                 <Menu
                                     checkedValues={{ profile: activeProfileCode ? [activeProfileCode] : [] }}

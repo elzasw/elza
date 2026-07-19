@@ -15,6 +15,7 @@ import org.springframework.web.client.RestClientResponseException;
 
 import cz.tacr.elza.aiprovider.client.ElzaAiApi;
 import cz.tacr.elza.aiprovider.client.vo.AiServiceInfo;
+import cz.tacr.elza.aiprovider.client.vo.UsageInfo;
 import cz.tacr.elza.connector.ApiClientAiProvider;
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.domain.AiExternalSystem;
@@ -132,6 +133,32 @@ public class AiProviderService {
      */
     public AiServiceInfo fetchServiceInfo(final AiExternalSystem extSystem, final Integer userId) {
         return serviceInfo(extSystem, userId);
+    }
+
+    /**
+     * The logged user's usage/credit balance at the provider ({@code GET /usage})
+     * — how much of the account's allowance is spent this period, plus the
+     * subscriber-level state. Same key selection as task submission (the user's
+     * personal key when stored, else the instance-wide one), so the balance is
+     * the one the user's tasks bill to. Not cached: the panel refreshes it after
+     * a finished exchange, and the provider serves it from the same (cached)
+     * state its budget gate uses.
+     */
+    @Transactional
+    public UsageInfo getUsage(final AiExternalSystem extSystem) {
+        ElzaAiApi api = createApi(extSystem, loggedUser().getUserId());
+        try {
+            return api.getUsage(OffsetDateTime.now());
+        } catch (RestClientResponseException e) {
+            throw new SystemException("AI provider call failed: HTTP " + e.getStatusCode().value(), e,
+                    ExternalCode.EXTERNAL_SYSTEM_ERROR)
+                            .set("externalSystem", extSystem.getCode())
+                            .set("responseBody", e.getResponseBodyAsString());
+        } catch (RestClientException e) {
+            throw new SystemException("AI provider call failed: " + e.getMessage(), e,
+                    ExternalCode.EXTERNAL_SYSTEM_ERROR)
+                            .set("externalSystem", extSystem.getCode());
+        }
     }
 
     /**

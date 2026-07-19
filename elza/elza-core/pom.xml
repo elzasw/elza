@@ -752,6 +752,9 @@
                                 <modelNameMapping>AiTableColumn=AiTableColumnVO</modelNameMapping>
                                 <modelNameMapping>AiCitation=AiCitationVO</modelNameMapping>
                                 <modelNameMapping>AiUsage=AiUsageVO</modelNameMapping>
+                                <modelNameMapping>AiAccountUsage=AiAccountUsageVO</modelNameMapping>
+                                <modelNameMapping>AiCustomerUsage=AiCustomerUsageVO</modelNameMapping>
+                                <modelNameMapping>AiUsageBalance=AiUsageBalanceVO</modelNameMapping>
                                 <modelNameMapping>AiMyKey=AiMyKeyVO</modelNameMapping>
                                 <modelNameMapping>AiMyKeyUpdate=AiMyKeyUpdateVO</modelNameMapping>
                                 <modelNameMapping>AiProviderInfo=AiProviderInfoVO</modelNameMapping>
