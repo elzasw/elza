@@ -345,6 +345,38 @@
     "defaultMessage": "Searching the archival description",
     "srcHash": "bvAJXkkvNNbf"
   },
+  "aiAssistant.balance.account.personal": {
+    "defaultMessage": "Personal account",
+    "srcHash": "b8s6EZuRDMPA"
+  },
+  "aiAssistant.balance.account.shared": {
+    "defaultMessage": "Shared organization account",
+    "srcHash": "FQNJWoKyK61y"
+  },
+  "aiAssistant.balance.customer": {
+    "defaultMessage": "Organization budget: {spent} / {budget}",
+    "srcHash": "JE_W0okWPLyW"
+  },
+  "aiAssistant.balance.customerNoCap": {
+    "defaultMessage": "Organization total: {spent}",
+    "srcHash": "ToKyPBu7Kour"
+  },
+  "aiAssistant.balance.plan": {
+    "defaultMessage": "Plan: {plan}",
+    "srcHash": "_QrlEK2_g5XP"
+  },
+  "aiAssistant.balance.resets": {
+    "defaultMessage": "Allowance resets: {date}",
+    "srcHash": "JtpcNuo-Xy0T"
+  },
+  "aiAssistant.balance.spent": {
+    "defaultMessage": "Credits: {spent}",
+    "srcHash": "tsL28ZST0AG2"
+  },
+  "aiAssistant.balance.spentOfAllowance": {
+    "defaultMessage": "Credits: {spent} / {allowance}",
+    "srcHash": "I3xauMBuSUcX"
+  },
   "aiAssistant.block.citations": {
     "defaultMessage": "Sources",
     "srcHash": "BO_uQxVmyBkf"
@@ -385,6 +417,18 @@
     "defaultMessage": "Context:",
     "srcHash": "g-NS7D1rL5QJ"
   },
+  "aiAssistant.error.accountQuotaExceeded": {
+    "defaultMessage": "Your credit allowance for this period is exhausted.",
+    "srcHash": "2OkintN7q5w6"
+  },
+  "aiAssistant.error.noSubscription": {
+    "defaultMessage": "The AI service has no active subscription. Contact your administrator.",
+    "srcHash": "qy2_IRlPPFFA"
+  },
+  "aiAssistant.error.quotaExceeded": {
+    "defaultMessage": "The organization's monthly AI budget is exhausted.",
+    "srcHash": "Onsjdy-rycPu"
+  },
   "aiAssistant.input.placeholder": {
     "defaultMessage": "Type a message…",
     "srcHash": "-Sb-aBO8zCrQ"
@@ -409,13 +453,13 @@
     "defaultMessage": "AI is thinking…",
     "srcHash": "-N1FvyhY7A-b"
   },
-  "aiAssistant.usage.detail": {
-    "defaultMessage": "Input tokens: {input}, output tokens: {output}, price: {cost}",
-    "srcHash": "13zp3tAZUt40"
-  },
   "aiAssistant.usage.duration": {
     "defaultMessage": "Processing time: {duration}",
     "srcHash": "CNSPzIru8DFR"
+  },
+  "aiAssistant.usage.price": {
+    "defaultMessage": "Price: {credits} cr.",
+    "srcHash": "CjH0had-zQn7"
   },
   "aiAssistant.usage.profile": {
     "defaultMessage": "Model: {profile}",
@@ -428,6 +472,10 @@
   "aiAssistant.usage.summary": {
     "defaultMessage": "Usage",
     "srcHash": "f3BkkgYRVNZx"
+  },
+  "aiAssistant.usage.tokens": {
+    "defaultMessage": "Input tokens: {input}, output tokens: {output}",
+    "srcHash": "E-t7zpgALTTw"
   },
   "aiAssistant.window.title": {
     "defaultMessage": "AI assistant",

@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.web.client.RestClientResponseException;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -293,12 +294,17 @@ public class AiConversationService {
                     externalSystem.getCode(), externalSystem.getUrl(), e.getMessage());
             logger.debug("AI task submit failure detail (request {})", request.getRequestId(), e);
             request.setState("error");
-            request.setErrorCode("SUBMIT_FAILED");
-            request.setErrorMessage(e.getMessage());
+            // A provider refusal carries a typed ServiceError body ({code, message}) —
+            // keep the provider's code (e.g. QUOTA_EXCEEDED, ACCOUNT_QUOTA_EXCEEDED,
+            // NO_SUBSCRIPTION) so the client can render it meaningfully; anything
+            // else stays the generic SUBMIT_FAILED with the raw exception text.
+            ProviderError providerError = parseProviderError(e);
+            request.setErrorCode(providerError != null ? providerError.code() : "SUBMIT_FAILED");
+            request.setErrorMessage(providerError != null ? providerError.message() : e.getMessage());
             request.setFinishDate(new Date());
             aiRequestRepository.save(request);
             addEvent(request, AiRequestEvent.TYPE_ERROR, toJson(Map.of("message",
-                    StringUtils.defaultString(e.getMessage()))));
+                    StringUtils.defaultString(request.getErrorMessage()))));
             return;
         }
 
@@ -481,6 +487,34 @@ public class AiConversationService {
             return objectMapper.writeValueAsString(value);
         } catch (Exception e) {
             return String.valueOf(value);
+        }
+    }
+
+    /** A provider error body: the protocol's `ServiceError` ({@code code} + {@code message}). */
+    private record ProviderError(String code, String message) {
+    }
+
+    /**
+     * The typed provider error carried by a failed call, when there is one: a
+     * 4xx/5xx response whose body parses to the protocol's {@code ServiceError}
+     * ({@code code}, {@code message}) — e.g. a {@code 402} with
+     * {@code QUOTA_EXCEEDED} / {@code ACCOUNT_QUOTA_EXCEEDED} /
+     * {@code NO_SUBSCRIPTION}. {@code null} for anything else (network failure,
+     * unexpected body); the caller then falls back to the generic error.
+     */
+    private ProviderError parseProviderError(final Exception e) {
+        if (!(e instanceof RestClientResponseException response)) {
+            return null;
+        }
+        try {
+            var body = objectMapper.readTree(response.getResponseBodyAsString());
+            String code = body.path("code").asText(null);
+            String message = body.path("message").asText(null);
+            return StringUtils.isNotBlank(code)
+                    ? new ProviderError(code, StringUtils.defaultString(message, code))
+                    : null;
+        } catch (Exception parseFailure) {
+            return null;
         }
     }
 

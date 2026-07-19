@@ -29,9 +29,13 @@ export const aiAssistantMessages = defineMessages({
         id: "aiAssistant.usage.summary",
         defaultMessage: "Využití",
     },
-    usageDetail: {
-        id: "aiAssistant.usage.detail",
-        defaultMessage: "Vstupní tokeny: {input}, výstupní tokeny: {output}, cena: {cost}",
+    usageTokens: {
+        id: "aiAssistant.usage.tokens",
+        defaultMessage: "Vstupní tokeny: {input}, výstupní tokeny: {output}",
+    },
+    usagePrice: {
+        id: "aiAssistant.usage.price",
+        defaultMessage: "Cena: {credits} kr.",
     },
     usageProfile: {
         id: "aiAssistant.usage.profile",
@@ -44,6 +48,50 @@ export const aiAssistantMessages = defineMessages({
     usageDuration: {
         id: "aiAssistant.usage.duration",
         defaultMessage: "Doba zpracování: {duration}",
+    },
+    balanceSpentOfAllowance: {
+        id: "aiAssistant.balance.spentOfAllowance",
+        defaultMessage: "Kredity: {spent} / {allowance}",
+    },
+    balanceSpent: {
+        id: "aiAssistant.balance.spent",
+        defaultMessage: "Kredity: {spent}",
+    },
+    balanceAccountPersonal: {
+        id: "aiAssistant.balance.account.personal",
+        defaultMessage: "Osobní účet",
+    },
+    balanceAccountShared: {
+        id: "aiAssistant.balance.account.shared",
+        defaultMessage: "Sdílený účet organizace",
+    },
+    balancePlan: {
+        id: "aiAssistant.balance.plan",
+        defaultMessage: "Tarif: {plan}",
+    },
+    balanceResets: {
+        id: "aiAssistant.balance.resets",
+        defaultMessage: "Obnovení přídělu: {date}",
+    },
+    balanceCustomer: {
+        id: "aiAssistant.balance.customer",
+        defaultMessage: "Rozpočet organizace: {spent} / {budget}",
+    },
+    balanceCustomerNoCap: {
+        id: "aiAssistant.balance.customerNoCap",
+        defaultMessage: "Organizace celkem: {spent}",
+    },
+    errorNoSubscription: {
+        id: "aiAssistant.error.noSubscription",
+        defaultMessage: "AI služba nemá aktivní předplatné. Obraťte se na správce.",
+    },
+    errorQuotaExceeded: {
+        id: "aiAssistant.error.quotaExceeded",
+        defaultMessage: "Měsíční rozpočet organizace pro AI služby je vyčerpán.",
+    },
+    errorAccountQuotaExceeded: {
+        id: "aiAssistant.error.accountQuotaExceeded",
+        defaultMessage: "Váš kreditový příděl je pro toto období vyčerpán.",
     },
     unsupportedBlock: {
         id: "aiAssistant.block.unsupported",

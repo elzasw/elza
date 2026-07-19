@@ -8,13 +8,18 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+import cz.tacr.elza.aiprovider.client.vo.AccountUsageInfo;
 import cz.tacr.elza.aiprovider.client.vo.AiServiceInfo;
+import cz.tacr.elza.aiprovider.client.vo.CustomerUsageInfo;
 import cz.tacr.elza.aiprovider.client.vo.ProfileInfo;
 import cz.tacr.elza.aiprovider.client.vo.TaskParameterInfo;
 import cz.tacr.elza.aiprovider.client.vo.TaskTypeInfo;
+import cz.tacr.elza.aiprovider.client.vo.UsageInfo;
+import cz.tacr.elza.controller.vo.AiAccountUsageVO;
 import cz.tacr.elza.controller.vo.AiConversationCreateVO;
 import cz.tacr.elza.controller.vo.AiConversationDetailVO;
 import cz.tacr.elza.controller.vo.AiConversationVO;
+import cz.tacr.elza.controller.vo.AiCustomerUsageVO;
 import cz.tacr.elza.controller.vo.AiRequestCreateVO;
 import cz.tacr.elza.controller.vo.AiRequestEventVO;
 import cz.tacr.elza.controller.vo.AiRequestVO;
@@ -22,6 +27,7 @@ import cz.tacr.elza.controller.vo.AiProfileVO;
 import cz.tacr.elza.controller.vo.AiProviderInfoVO;
 import cz.tacr.elza.controller.vo.AiTaskParameterVO;
 import cz.tacr.elza.controller.vo.AiTaskTypeVO;
+import cz.tacr.elza.controller.vo.AiUsageBalanceVO;
 import cz.tacr.elza.domain.AiExternalSystem;
 import cz.tacr.elza.service.AiProviderService;
 import cz.tacr.elza.service.ai.AiConversationService;
@@ -45,6 +51,36 @@ public class AiProviderController implements AiproviderApi {
     public ResponseEntity<AiProviderInfoVO> aiProviderGetInfo(String id) {
         AiExternalSystem extSystem = aiProviderService.findAiSystemByCodeOrId(id);
         return ResponseEntity.ok(toVO(aiProviderService.getInfo(extSystem)));
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<AiUsageBalanceVO> aiProviderGetUsage(String id) {
+        AiExternalSystem extSystem = aiProviderService.findAiSystemByCodeOrId(id);
+        return ResponseEntity.ok(toVO(aiProviderService.getUsage(extSystem)));
+    }
+
+    /** Maps the provider's /usage document to the client's balance view. */
+    private AiUsageBalanceVO toVO(final UsageInfo usage) {
+        AiUsageBalanceVO vo = new AiUsageBalanceVO();
+        AccountUsageInfo account = usage.getAccount();
+        if (account != null) {
+            vo.setAccount(new AiAccountUsageVO()
+                    .accountType(account.getAccountType())
+                    .plan(account.getPlan())
+                    .allowanceCredits(account.getAllowanceCredits())
+                    .spentCredits(account.getSpentCredits())
+                    .periodStart(account.getPeriodStart())
+                    .periodEnd(account.getPeriodEnd()));
+        }
+        CustomerUsageInfo customer = usage.getCustomer();
+        if (customer != null) {
+            vo.setCustomer(new AiCustomerUsageVO()
+                    .budgetCredits(customer.getBudgetCredits())
+                    .spentCredits(customer.getSpentCredits())
+                    .periodStart(customer.getPeriodStart()));
+        }
+        return vo;
     }
 
     /** Maps the provider's /info document to the client's typed task catalog. */
