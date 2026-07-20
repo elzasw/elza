@@ -279,6 +279,7 @@ class Layout extends AbstractReactComponent {
                                             <Route path="/admin/backgroundProcesses" component={AdminBulkActionPage} />
                                             <Route path="/admin/requestsQueue" component={AdminRequestsQueuePage} />
                                             <Route path="/admin/extSystem" component={AdminExtSystemPage} />
+                                            <Route path="/admin/institution/:id" component={AdminInstitutionPage} />
                                             <Route path="/admin/institution" component={AdminInstitutionPage} />
                                             <Route path="/admin/logs" component={AdminLogsPage} />
                                             <Route path={'/admin/reports'} component={ReportsPage}/>

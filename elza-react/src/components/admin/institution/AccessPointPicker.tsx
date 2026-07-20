@@ -66,8 +66,10 @@ export function AccessPointPicker({ value, onChange, disabled }: Props) {
     const [accessPoints, setAccessPoints] = useState<ApAccessPointVO[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
+    const hasAccessPointId = typeof value === 'number' && !Number.isNaN(value);
+
     useEffect(() => {
-        if (value == null) {
+        if (!hasAccessPointId) {
             setQuery('');
             return;
         }
@@ -115,7 +117,7 @@ export function AccessPointPicker({ value, onChange, disabled }: Props) {
             className={styles.combobox}
             placeholder={messages.placeholder.defaultMessage}
             value={query}
-            selectedOptions={value != null ? [value.toString()] : []}
+            selectedOptions={hasAccessPointId ? [value.toString()] : []}
             onChange={event => {
                 setQuery(event.target.value);
                 setAccessPoints([]);
@@ -127,11 +129,12 @@ export function AccessPointPicker({ value, onChange, disabled }: Props) {
         >
             {accessPoints.map(({ id, name, description, typeId }) => {
                 const typeName = (apTypesMap as Record<number, { name: string }>)?.[typeId]?.name;
+                const meta = [typeName, description].filter(Boolean).join(' · ');
                 return (
-                    <Option key={id} text={name} value={id.toString()} className={styles.option}>
-                        <span>{name}</span>
-                        <span className={styles.optionMeta}>
-                            {[typeName, description].filter(Boolean).join(' · ')}
+                    <Option key={id} text={name} value={id.toString()}>
+                        <span className={styles.option}>
+                            <span>{name}</span>
+                            {meta && <span className={styles.optionMeta}>{meta}</span>}
                         </span>
                     </Option>
                 );

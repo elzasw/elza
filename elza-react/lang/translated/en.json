@@ -55,13 +55,17 @@
     "defaultMessage": "Do you really want to delete this institution?",
     "srcHash": "JHOiroQZObbN"
   },
-  "admin.institution.dialog.createTitle": {
+  "admin.institution.detail.back": {
+    "defaultMessage": "Back",
+    "srcHash": "PiIMeDDyN-8f"
+  },
+  "admin.institution.detail.createTitle": {
     "defaultMessage": "New institution",
     "srcHash": "ayVYD497CozF"
   },
-  "admin.institution.dialog.editTitle": {
-    "defaultMessage": "Edit institution",
-    "srcHash": "JytjS0ItLrtT"
+  "admin.institution.detail.overline": {
+    "defaultMessage": "Institutions",
+    "srcHash": "AMtLLUW_r1z7"
   },
   "admin.institution.empty": {
     "defaultMessage": "No institutions",
@@ -91,9 +95,25 @@
     "defaultMessage": "Select a type",
     "srcHash": "hUSGzdm8qQ7v"
   },
-  "admin.institution.tile.noType": {
-    "defaultMessage": "No type",
-    "srcHash": "vbRcoJULEr2m"
+  "admin.institution.sort.internalCode": {
+    "defaultMessage": "Internal code",
+    "srcHash": "p2eSz8FK6c9N"
+  },
+  "admin.institution.sort.label": {
+    "defaultMessage": "Sort",
+    "srcHash": "JD-Vo3HpL1AE"
+  },
+  "admin.institution.sort.name": {
+    "defaultMessage": "Name",
+    "srcHash": "EQAs0dy3Z5es"
+  },
+  "admin.institution.view.grid": {
+    "defaultMessage": "Tiles",
+    "srcHash": "T1bNp-wN8inB"
+  },
+  "admin.institution.view.list": {
+    "defaultMessage": "List",
+    "srcHash": "lR0bsF8Q5ccq"
   },
   "admin_packages_label_action": {
     "defaultMessage": "Action",
