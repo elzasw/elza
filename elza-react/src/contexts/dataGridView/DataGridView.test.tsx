@@ -112,27 +112,56 @@ describe('DataGridViewProvider', () => {
         expect(result.current.restorePending).toBe(false);
     });
 
-    it('rememberRestoreNode writes the highlight with its column to localStorage', () => {
+    it('requestRestore forces a restore of a specific cell, clearing the prior selection', () => {
+        const { result } = renderView();
+        // A prior in-session view with a page, checked rows and a focused row.
+        act(() => result.current.setPageIndex(2));
+        act(() => result.current.setSelectedIds([1, 2]));
+        act(() => result.current.setSelectedRowIndexes([4]));
+        expect(result.current.restorePending).toBe(false);
+
+        act(() => result.current.requestRestore(55, 3));
+        expect(result.current.restorePending).toBe(true);
+        expect(result.current.view.restoreNodeId).toBe(55);
+        expect(result.current.view.cellFocus).toEqual({ row: 0, col: 3 });
+        // Prior selection/focus is cleared up front so nothing stale shows before the target resolves.
+        expect(result.current.view.selectedIds).toEqual([]);
+        expect(result.current.view.selectedRowIndexes).toEqual([]);
+    });
+
+    it('rememberRestoreNode writes the highlight with its attribute type to localStorage', () => {
         const { result } = renderView();
 
         act(() => result.current.rememberRestoreNode(99, 3));
-        expect(JSON.parse(localStorage.getItem(LAST_HIGHLIGHT_KEY)!)).toEqual({ versionId: VERSION_ID, nodeId: 99, col: 3 });
+        expect(JSON.parse(localStorage.getItem(LAST_HIGHLIGHT_KEY)!)).toEqual({ versionId: VERSION_ID, nodeId: 99, descItemTypeId: 3 });
 
         act(() => result.current.rememberRestoreNode(undefined));
         expect(localStorage.getItem(LAST_HIGHLIGHT_KEY)).toBeNull();
     });
 
-    it('falls back to the localStorage highlight after a reload, restoring node and column', () => {
+    it('falls back to the localStorage highlight after a reload, restoring node and attribute type', () => {
         // Empty cache (as after a reload); localStorage holds the last-visited fund's highlight.
-        localStorage.setItem(LAST_HIGHLIGHT_KEY, JSON.stringify({ versionId: VERSION_ID, nodeId: 77, col: 4 }));
+        localStorage.setItem(LAST_HIGHLIGHT_KEY, JSON.stringify({ versionId: VERSION_ID, nodeId: 77, descItemTypeId: 4 }));
 
         const { result } = renderView();
 
         expect(result.current.view.restoreNodeId).toBe(77);
-        expect(result.current.view.cellFocus.col).toBe(4);
+        // The column index is resolved later by the component; the pending type is carried here.
+        expect(result.current.view.restoreDescItemTypeId).toBe(4);
         expect(result.current.restorePending).toBe(true);
         // Only the highlight is restored, not a saved page.
         expect(result.current.view.pageIndex).toBe(0);
+    });
+
+    it('resolveRestoreColumn sets the focused column and clears the pending attribute type', () => {
+        localStorage.setItem(LAST_HIGHLIGHT_KEY, JSON.stringify({ versionId: VERSION_ID, nodeId: 77, descItemTypeId: 4 }));
+
+        const { result } = renderView();
+        expect(result.current.view.restoreDescItemTypeId).toBe(4);
+
+        act(() => result.current.resolveRestoreColumn(6));
+        expect(result.current.view.cellFocus.col).toBe(6);
+        expect(result.current.view.restoreDescItemTypeId).toBeUndefined();
     });
 
     it('ignores the localStorage highlight when it belongs to another fund', () => {

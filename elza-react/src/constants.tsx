@@ -250,8 +250,16 @@ export const urlFundTree = (fundId: number, versionId?: number) => {
     return fundSub(fundId, versionId, TREE);
 }
 
-export const urlFundGrid = (fundId: number, versionId?: number, filter?: string) => {
-    return `${fundSub(fundId, versionId, GRID)}${filter ? "?filter=" + filter : ""}`;
+export const urlFundGrid = (fundId: number, versionId?: number, filter?: string, nodeId?: number, descItemTypeId?: number) => {
+    // Optional node / desc-item-type path segments deep-link the grid to a specific cell.
+    let sub = GRID;
+    if (nodeId != null) {
+        sub += "/" + nodeId;
+        if (descItemTypeId != null) {
+            sub += "/" + descItemTypeId;
+        }
+    }
+    return `${fundSub(fundId, versionId, sub)}${filter ? "?filter=" + filter : ""}`;
 }
 
 export const urlFundAb = (fundId: number, versionId?: number) => {

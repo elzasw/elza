@@ -143,12 +143,15 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
     }
 
     renderCenterPanel(readMode, closed) {
-        const {descItemTypes, rulDataTypes, ruleSet} = this.props;
+        const {descItemTypes, rulDataTypes, ruleSet, match} = this.props;
         const fund = this.getActiveFund(this.props);
 
         const params = new Proxy(new URLSearchParams(window.location.search), {
             get: (searchParams, prop) => searchParams.get(prop),
         });
+
+        const focusNodeId = match?.params?.nodeId != null ? Number(match.params.nodeId) : undefined;
+        const focusDescItemTypeId = match?.params?.descItemTypeId != null ? Number(match.params.descItemTypeId) : undefined;
 
         return (
             <div className="datagrid-content-container">
@@ -165,6 +168,8 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
                         rulDataTypes={rulDataTypes}
                         ruleSet={ruleSet}
                         urlFilterEncoded={params.filter}
+                        focusNodeId={focusNodeId}
+                        focusDescItemTypeId={focusDescItemTypeId}
                     />
                 )}
             </div>
