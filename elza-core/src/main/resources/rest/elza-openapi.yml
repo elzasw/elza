@@ -2881,15 +2881,45 @@ paths:
             schema:
               $ref: '#/components/schemas/ImportFundData'
         description: Doplnění způsobu importu
-  /funds/out/item/{fundVersionId}/csv/export:
+  /funds/out/:
+    get:
+      operationId: Output_getOutputs
+      description: Getting list of outputs – an output object linked to a named output object
+      parameters:
+        - name: fundVersionId
+          in: query
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+          explode: false
+        - name: state
+          in: query
+          required: false
+          description: output state
+          schema:
+            $ref: '#/components/schemas/Output.State'
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Output.Def'
+      tags:
+        - output
+  /funds/out/item/{outputId}/csv/export:
     get:
       operationId: Output_outputItemCsvExport
       description: Downloading a CSV file from an attribute value
       parameters:
-        - name: fundVersionId
+        - name: outputId
           in: path
           required: true
-          description: fund version id
+          description: output id
           schema:
             type: integer
         - name: descItemObjectId
@@ -2909,15 +2939,15 @@ paths:
                 format: binary
       tags:
         - output
-  /funds/out/item/{fundVersionId}/csv/import:
+  /funds/out/item/{outputId}/csv/import:
     post:
       operationId: Output_outputItemCsvImport
       description: Import a CSV file; a new entry will be created with the file's contents
       parameters:
-        - name: fundVersionId
+        - name: outputId
           in: path
           required: true
-          description: fund version id
+          description: output id
           schema:
             type: integer
       responses:
@@ -2938,22 +2968,79 @@ paths:
             encoding:
               outputVersion:
                 contentType: text/plain
-              outputId:
-                contentType: text/plain
               descItemTypeId:
                 contentType: text/plain
         description: multipart body
-  /funds/out/item/{fundVersionId}/{outputId}/{outputVersion}/undefined/set:
+  /funds/out/item/{outputId}/{outputVersion}/by-type/{itemTypeId}:
+    delete:
+      operationId: Output_deleteOutputItemsByType
+      description: Deleting attribute values ​​by type
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+        - name: outputVersion
+          in: path
+          required: true
+          description: output version
+          schema:
+            type: integer
+        - name: itemTypeId
+          in: path
+          required: true
+          description: item type id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Output.ItemRes'
+      tags:
+        - output
+  /funds/out/item/{outputId}/{outputVersion}/create:
+    post:
+      operationId: Output_createOutputItem
+      description: Create output item
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+        - name: outputVersion
+          in: path
+          required: true
+          description: output version
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Output.ItemRes'
+      tags:
+        - output
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OutputItem'
+        description: body output item
+  /funds/out/item/{outputId}/{outputVersion}/undefined/set:
     put:
       operationId: Output_setNotIdentifiedOutputItem
       description: Set the attribute to "Undefined"
       parameters:
-        - name: fundVersionId
-          in: path
-          required: true
-          description: fund version id
-          schema:
-            type: integer
         - name: outputId
           in: path
           required: true
@@ -2996,53 +3083,15 @@ paths:
                 $ref: '#/components/schemas/Output.ItemRes'
       tags:
         - output
-  /funds/out/item/{fundVersionId}/{outputId}/{outputVersion}/{itemTypeId}:
-    delete:
-      operationId: Output_deleteOutputItemsByType
-      description: Deleting attribute values ​​by type
-      parameters:
-        - name: fundVersionId
-          in: path
-          required: true
-          description: fund version id
-          schema:
-            type: integer
-        - name: outputId
-          in: path
-          required: true
-          description: output id
-          schema:
-            type: integer
-        - name: outputVersion
-          in: path
-          required: true
-          description: output version
-          schema:
-            type: integer
-        - name: itemTypeId
-          in: path
-          required: true
-          description: item type id
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Output.ItemRes'
-      tags:
-        - output
-  /funds/out/item/{fundVersionId}/{outputVersion}/update:
+  /funds/out/item/{outputId}/{outputVersion}/update:
     put:
       operationId: Output_updateOutputItem
       description: Update output item
       parameters:
-        - name: fundVersionId
+        - name: outputId
           in: path
           required: true
-          description: fund version id
+          description: output id
           schema:
             type: integer
         - name: outputVersion
@@ -3067,15 +3116,15 @@ paths:
             schema:
               $ref: '#/components/schemas/OutputItem'
         description: body output item
-  /funds/out/item/{fundVersionId}/{outputVersion}/{outputItemId}:
+  /funds/out/item/{outputId}/{outputVersion}/{outputItemId}:
     delete:
       operationId: Output_deleteOutputItem
       description: Delete output item
       parameters:
-        - name: fundVersionId
+        - name: outputId
           in: path
           required: true
-          description: fund version id
+          description: output id
           schema:
             type: integer
         - name: outputVersion
@@ -3099,15 +3148,15 @@ paths:
                 $ref: '#/components/schemas/Output.ItemRes'
       tags:
         - output
-  /funds/out/item/{fundVersionId}/{outputVersion}/{outputItemObjectId}/undefined/unset:
+  /funds/out/item/{outputId}/{outputVersion}/{outputItemObjectId}/undefined/unset:
     put:
       operationId: Output_unsetNotIdentifiedOutputItem
       description: Reset the attribute setting to "Undefined"
       parameters:
-        - name: fundVersionId
+        - name: outputId
           in: path
           required: true
-          description: fund version id
+          description: output id
           schema:
             type: integer
         - name: outputVersion
@@ -3131,45 +3180,6 @@ paths:
                 $ref: '#/components/schemas/Output.ItemRes'
       tags:
         - output
-  /funds/out/item/{outputId}/{fundVersionId}/{outputVersion}/create:
-    post:
-      operationId: Output_createOutputItem
-      description: Create output item
-      parameters:
-        - name: outputId
-          in: path
-          required: true
-          description: output id
-          schema:
-            type: integer
-        - name: fundVersionId
-          in: path
-          required: true
-          description: fund version id
-          schema:
-            type: integer
-        - name: outputVersion
-          in: path
-          required: true
-          description: output version
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Output.ItemRes'
-      tags:
-        - output
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/OutputItem'
-        description: body output item
   /funds/out/types/{fundVersionId}:
     get:
       operationId: Output_getOutputTypes
@@ -3193,34 +3203,6 @@ paths:
       tags:
         - output
   /funds/out/{fundVersionId}:
-    get:
-      operationId: Output_getOutputs
-      description: Getting list of outputs – an output object linked to a named output object
-      parameters:
-        - name: fundVersionId
-          in: path
-          required: true
-          description: fund version id
-          schema:
-            type: integer
-        - name: state
-          in: query
-          required: false
-          description: output state
-          schema:
-            $ref: '#/components/schemas/Output.State'
-          explode: false
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Output.Def'
-      tags:
-        - output
     post:
       operationId: Output_createNamedOutput
       description: Creating a new named output
@@ -3247,17 +3229,11 @@ paths:
             schema:
               $ref: '#/components/schemas/Output.NameParam'
         description: output parameters
-  /funds/out/{fundVersionId}/{outputId}:
+  /funds/out/{outputId}:
     get:
       operationId: Output_getOutput
       description: 'Getting output details: an output object linked to a named output, with a list of connected nodes.'
       parameters:
-        - name: fundVersionId
-          in: path
-          required: true
-          description: fund version id
-          schema:
-            type: integer
         - name: outputId
           in: path
           required: true
@@ -3271,6 +3247,61 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Output.Def'
+      tags:
+        - output
+    delete:
+      operationId: Output_deleteNamedOutput
+      description: Deleting named output
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+      tags:
+        - output
+  /funds/out/{outputId}/clone:
+    post:
+      operationId: Output_cloneOutput
+      description: Creating copy of output
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Output.Def'
+      tags:
+        - output
+  /funds/out/{outputId}/form:
+    get:
+      operationId: Output_getOutputFormData
+      description: Getting data for the form
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Output.FormData'
       tags:
         - output
   /funds/out/{outputId}/generate:
@@ -3301,6 +3332,56 @@ paths:
                 $ref: '#/components/schemas/Output.RequestStatus'
       tags:
         - output
+  /funds/out/{outputId}/nodes/add:
+    post:
+      operationId: Output_addNodesNamedOutput
+      description: Adding nodes to output
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+      tags:
+        - output
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: integer
+        description: list of node ids
+  /funds/out/{outputId}/nodes/remove:
+    delete:
+      operationId: Output_removeNodesNamedOutput
+      description: Removing nodes from output
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+      tags:
+        - output
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: integer
+        description: list of node ids
   /funds/out/{outputId}/restrict/{scopeId}:
     post:
       operationId: Output_addRestrictedScope
@@ -3341,6 +3422,22 @@ paths:
           in: path
           required: true
           description: scope id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+      tags:
+        - output
+  /funds/out/{outputId}/revert:
+    post:
+      operationId: Output_revertToOpenState
+      description: Reset status of a named output to "Open"
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
           schema:
             type: integer
       responses:
@@ -3434,165 +3531,7 @@ paths:
           description: The request has succeeded.
       tags:
         - output
-  /funds/out/{outputId}/{fundVersionId}:
-    delete:
-      operationId: Output_deleteNamedOutput
-      description: Deleting named output
-      parameters:
-        - name: outputId
-          in: path
-          required: true
-          description: output id
-          schema:
-            type: integer
-        - name: fundVersionId
-          in: path
-          required: true
-          description: fund version id
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: The request has succeeded.
-      tags:
-        - output
-  /funds/out/{outputId}/{fundVersionId}/clone:
-    post:
-      operationId: Output_cloneOutput
-      description: Creating copy of output
-      parameters:
-        - name: outputId
-          in: path
-          required: true
-          description: output id
-          schema:
-            type: integer
-        - name: fundVersionId
-          in: path
-          required: true
-          description: fund version id
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Output.Def'
-      tags:
-        - output
-  /funds/out/{outputId}/{fundVersionId}/form:
-    get:
-      operationId: Output_getOutputFormData
-      description: Getting data for the form
-      parameters:
-        - name: outputId
-          in: path
-          required: true
-          description: output id
-          schema:
-            type: integer
-        - name: fundVersionId
-          in: path
-          required: true
-          description: fund version id
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Output.FormData'
-      tags:
-        - output
-  /funds/out/{outputId}/{fundVersionId}/nodes/add:
-    post:
-      operationId: Output_addNodesNamedOutput
-      description: Adding nodes to output
-      parameters:
-        - name: outputId
-          in: path
-          required: true
-          description: output id
-          schema:
-            type: integer
-        - name: fundVersionId
-          in: path
-          required: true
-          description: fund version id
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: The request has succeeded.
-      tags:
-        - output
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                type: integer
-        description: list of node ids
-  /funds/out/{outputId}/{fundVersionId}/nodes/remove:
-    delete:
-      operationId: Output_removeNodesNamedOutput
-      description: Removing nodes from output
-      parameters:
-        - name: outputId
-          in: path
-          required: true
-          description: output id
-          schema:
-            type: integer
-        - name: fundVersionId
-          in: path
-          required: true
-          description: fund version id
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: The request has succeeded.
-      tags:
-        - output
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                type: integer
-        description: list of node ids
-  /funds/out/{outputId}/{fundVersionId}/revert:
-    post:
-      operationId: Output_revertToOpenState
-      description: Reset status of a named output to "Open"
-      parameters:
-        - name: outputId
-          in: path
-          required: true
-          description: output id
-          schema:
-            type: integer
-        - name: fundVersionId
-          in: path
-          required: true
-          description: fund version id
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: The request has succeeded.
-      tags:
-        - output
-  /funds/out/{outputId}/{fundVersionId}/update:
+  /funds/out/{outputId}/update:
     put:
       operationId: Output_updateNamedOutput
       description: Update output
@@ -3601,12 +3540,6 @@ paths:
           in: path
           required: true
           description: output id
-          schema:
-            type: integer
-        - name: fundVersionId
-          in: path
-          required: true
-          description: fund version id
           schema:
             type: integer
       responses:
@@ -3621,7 +3554,7 @@ paths:
             schema:
               $ref: '#/components/schemas/Output.NameParam'
         description: output parameters
-  /funds/out/{outputId}/{fundVersionId}/{itemTypeId}/{manual}:
+  /funds/out/{outputId}/{itemTypeId}/{manual}:
     put:
       operationId: Output_setOutputItemMode
       description: Set user-defined/automatic attribute type editing
@@ -3630,12 +3563,6 @@ paths:
           in: path
           required: true
           description: output id
-          schema:
-            type: integer
-        - name: fundVersionId
-          in: path
-          required: true
-          description: fund version id
           schema:
             type: integer
         - name: itemTypeId
@@ -8891,9 +8818,6 @@ components:
         outputVersion:
           type: integer
           description: output version
-        outputId:
-          type: integer
-          description: output id
         descItemTypeId:
           type: integer
           description: desc item type id
@@ -8903,7 +8827,6 @@ components:
           description: CSV file
       required:
         - outputVersion
-        - outputId
         - descItemTypeId
         - file
     Output.RequestStatus:

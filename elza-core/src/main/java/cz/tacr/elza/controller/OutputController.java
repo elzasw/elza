@@ -88,14 +88,13 @@ public class OutputController implements OutputApi {
 	private ItemTypeRepository itemTypeRepository;
 
     @Autowired 
-    private OutputFactory outputFactory;    
+    private OutputFactory outputFactory;
 
     /**
-     * POST /funds/out/item/{outputId}/{fundVersionId}/{outputVersion}/create
+     * POST /funds/out/item/{outputId}/{outputVersion}/create
      * Create output item
      *
      * @param outputId output id (required)
-     * @param fundVersionId fund version id (required)
      * @param outputVersion output version (required)
      * @param outputItem body output item (required)
      * @return The request has succeeded. (status code 200)
@@ -103,13 +102,15 @@ public class OutputController implements OutputApi {
     @Override
     @Transactional
     public ResponseEntity<OutputItemRes> outputCreateOutputItem(@PathVariable("outputId") Integer outputId,
-                                                                @PathVariable("fundVersionId") Integer fundVersionId,
                                                                 @PathVariable("outputVersion") Integer outputVersion,
                                                                 @Valid @RequestBody OutputItem outputItem) {
         Assert.notNull(outputItem, "Výstup musí být vyplněn");
 
+        ArrOutput output = outputService.getOutput(outputId);
+        ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(output.getFundId());
+
         ArrOutputItem entity = outputFactory.createOutputItem(outputItem);
-        ArrOutputItem created = outputService.createOutputItem(entity, outputId, outputVersion, fundVersionId);
+        ArrOutputItem created = outputService.createOutputItem(entity, outputId, outputVersion, fundVersion.getFundVersionId());
 
         return ResponseEntity.ok(new OutputItemRes(
         		outputFactory.createDef(created.getOutput()),
@@ -117,23 +118,26 @@ public class OutputController implements OutputApi {
     }
 
     /**
-     * PUT /funds/out/item/{fundVersionId}/{outputVersion}/update/{createNewVersion}
+     * PUT /funds/out/item/{outputId}/{outputVersion}/update/{createNewVersion}
      * Update output item
      *
-     * @param fundVersionId fund version id (required)
+     * @param outputId output id (required)
      * @param outputVersion output version (required)
      * @param outputItem body output item (required)
      * @return The request has succeeded. (status code 200)
      */
     @Override
     @Transactional
-    public ResponseEntity<OutputItemRes> outputUpdateOutputItem(@PathVariable("fundVersionId") Integer fundVersionId,
+    public ResponseEntity<OutputItemRes> outputUpdateOutputItem(@PathVariable("outputId") Integer outputId,
                                                                 @PathVariable("outputVersion") Integer outputVersion,
     		                                                    @Valid @RequestBody OutputItem outputItem) {
         Assert.notNull(outputItem, "Výstup musí být vyplněn");
 
+        ArrOutput output = outputService.getOutput(outputId);
+        ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(output.getFundId());
+
         ArrOutputItem entity = outputFactory.createOutputItem(outputItem);
-        ArrOutputItem updated = outputService.updateOutputItem(entity, outputVersion, fundVersionId);
+        ArrOutputItem updated = outputService.updateOutputItem(entity, outputVersion, fundVersion.getFundVersionId());
 
         return ResponseEntity.ok(new OutputItemRes(
         		outputFactory.createDef(updated.getOutput()),
@@ -141,20 +145,23 @@ public class OutputController implements OutputApi {
     }
 
     /**
-     * DELETE /funds/out/item/{fundVersionId}/{outputVersion}/delete
+     * DELETE /funds/out/item/{outputId}/{outputVersion}/delete
      * Delete output item
      *
-     * @param fundVersionId fund version id (required)
+     * @param outputId output id (required)
      * @param outputVersion output version (required)
      * @param body body output item id (required)
      * @return The request has succeeded. (status code 200)
      */
     @Override
     @Transactional
-    public ResponseEntity<OutputItemRes> outputDeleteOutputItem(@PathVariable("fundVersionId") Integer fundVersionId,
+    public ResponseEntity<OutputItemRes> outputDeleteOutputItem(@PathVariable("outputId") Integer outputId,
                                                                 @PathVariable("outputVersion") Integer outputVersion,
                                                                 @PathVariable("outputItemId") Integer outputItemId) {
-        ArrOutputItem deleted = outputService.deleteOutputItem(outputItemId, outputVersion, fundVersionId);
+        ArrOutput output = outputService.getOutput(outputId);
+        ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(output.getFundId());
+
+        ArrOutputItem deleted = outputService.deleteOutputItem(outputItemId, outputVersion, fundVersion.getFundVersionId());
 
         return ResponseEntity.ok(new OutputItemRes(
         		outputFactory.createDef(deleted.getOutput()),
@@ -162,10 +169,9 @@ public class OutputController implements OutputApi {
     }
 
     /**
-     * DELETE /funds/out/item/{fundVersionId}/{outputId}/{outputVersion}/{itemTypeId}
+     * DELETE /funds/out/item/{outputId}/{outputVersion}/by-type/{itemTypeId}
      * Deleting attribute values ​​by type
      *
-     * @param fundVersionId fund version id (required)
      * @param outputId output id (required)
      * @param outputVersion output version (required)
      * @param itemTypeId item type id (required)
@@ -173,22 +179,23 @@ public class OutputController implements OutputApi {
      */
     @Override
     @Transactional
-    public ResponseEntity<OutputItemRes> outputDeleteOutputItemsByType(@PathVariable("fundVersionId") Integer fundVersionId,
-    		                                                           @PathVariable("outputId") Integer outputId,
+    public ResponseEntity<OutputItemRes> outputDeleteOutputItemsByType(@PathVariable("outputId") Integer outputId,
     		                                                           @PathVariable("outputVersion") Integer outputVersion,
     		                                                           @PathVariable("itemTypeId") Integer itemTypeId) {
-        ArrOutput output = outputService.deleteOutputItemsByType(fundVersionId, outputId, outputVersion, itemTypeId);
+        ArrOutput output = outputService.getOutput(outputId);
+        ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(output.getFundId());
+
+        ArrOutput result = outputService.deleteOutputItemsByType(fundVersion.getFundVersionId(), outputId, outputVersion, itemTypeId);
 
         return ResponseEntity.ok(new OutputItemRes(
-                outputFactory.createDef(output),
+                outputFactory.createDef(result),
                 null));
     }
 
     /**
-     * PUT /funds/out/item/{fundVersionId}/{outputId}/{outputVersion}/undefined/set
+     * PUT /funds/out/item/{outputId}/{outputVersion}/undefined/set
      * Set the attribute to `Undefined`
      *
-     * @param fundVersionId fund version id (required)
      * @param outputId output id (required)
      * @param outputVersion output version (required)
      * @param outputItemTypeId output item type id (required)
@@ -198,13 +205,16 @@ public class OutputController implements OutputApi {
      */
     @Override
     @Transactional
-    public ResponseEntity<OutputItemRes> outputSetNotIdentifiedOutputItem(@PathVariable("fundVersionId") Integer fundVersionId,
-                                                                          @PathVariable("outputId") Integer outputId,
+    public ResponseEntity<OutputItemRes> outputSetNotIdentifiedOutputItem(@PathVariable("outputId") Integer outputId,
                                                                           @PathVariable("outputVersion") Integer outputVersion,
                                                                           @RequestParam(value = "outputItemTypeId", required = true) Integer outputItemTypeId,
                                                                           @RequestParam(value = "outputItemSpecId", required = false) @Nullable Integer outputItemSpecId,
                                                                           @RequestParam(value = "outputItemObjectId", required = false) @Nullable Integer outputItemObjectId) {
-        ArrOutputItem oiSet = outputService.setNotIdentifiedDescItem(outputItemTypeId, outputId, outputVersion, fundVersionId, outputItemSpecId, outputItemObjectId);
+        ArrOutput output = outputService.getOutput(outputId);
+        ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(output.getFundId());
+
+        ArrOutputItem oiSet = outputService.setNotIdentifiedDescItem(
+        		outputItemTypeId, outputId, outputVersion, fundVersion.getFundVersionId(), outputItemSpecId, outputItemObjectId);
 
         return ResponseEntity.ok(new OutputItemRes(
         		outputFactory.createDef(oiSet.getOutput()),
@@ -212,47 +222,51 @@ public class OutputController implements OutputApi {
     }
 
     /**
-     * PUT /funds/out/item/{fundVersionId}/{outputId}/{outputVersion}/undefined/unset
+     * PUT /funds/out/item/{outputId}/{outputId}/{outputVersion}/undefined/unset
      * Reset the attribute setting to `Undefined`
      *
-     * @param fundVersionId fund version id (required)
+     * @param outputId output id (required)
      * @param outputVersion output version (required)
      * @param outputItemObjectId output item object id (required)
      * @return The request has succeeded. (status code 200)
      */
     @Override
     @Transactional
-    public ResponseEntity<OutputItemRes> outputUnsetNotIdentifiedOutputItem(@PathVariable("fundVersionId") Integer fundVersionId,
+    public ResponseEntity<OutputItemRes> outputUnsetNotIdentifiedOutputItem(@PathVariable("outputId") Integer outputId,
                                                                             @PathVariable("outputVersion") Integer outputVersion,
                                                                             @PathVariable("outputItemObjectId") Integer outputItemObjectId) {
-        ArrOutputItem oiDeleted = outputService.deleteOutputItem(outputItemObjectId, outputVersion, fundVersionId);
+        ArrOutput output = outputService.getOutput(outputId);
+        ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(output.getFundId());
+
+        ArrOutputItem oiDeleted = outputService.deleteOutputItem(outputItemObjectId, outputVersion, fundVersion.getFundVersionId());
 
         return ResponseEntity.ok(new OutputItemRes(
         		outputFactory.createDef(oiDeleted.getOutput()),
-        		null));    
+        		null));
     }
 
     /**
-     * POST /funds/out/item/{fundVersionId}/csv/import
+     * POST /funds/out/item/{outputId}/csv/import
      * Import a CSV file; a new entry will be created with the file&#39;s contents
      *
-     * @param fundVersionId fund version id (required)
-     * @param outputVersion output version (required)
      * @param outputId output id (required)
+     * @param outputVersion output version (required)
      * @param descItemTypeId desc item type id (required)
      * @param file CSV file (required)
      * @return The request has succeeded. (status code 200)
      */
     @Override
     @Transactional
-    public ResponseEntity<OutputItemRes> outputOutputItemCsvImport(@PathVariable("fundVersionId") Integer fundVersionId,
+    public ResponseEntity<OutputItemRes> outputOutputItemCsvImport(@PathVariable("outputId") Integer outputId,
     		                                                       @RequestPart("outputVersion") Integer outputVersion,
-    		                                                       @RequestPart("outputId") Integer outputId,
     		                                                       @RequestPart("descItemTypeId") Integer descItemTypeId,
     		                                                       @RequestPart("file") MultipartFile file) {
+        ArrOutput output = outputService.getOutput(outputId);
+        ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(output.getFundId());
+
         ArrOutputItem created;
         try (InputStream is = file.getInputStream()) {
-            created = arrIOService.csvOutputImport(fundVersionId, outputId, outputVersion, descItemTypeId, is);
+            created = arrIOService.csvOutputImport(fundVersion.getFundVersionId(), outputId, outputVersion, descItemTypeId, is);
         } catch (IOException e) {
             throw new SystemException("Chyba při importu CSV", e, BaseCode.IMPORT_FAILED);
         }
@@ -263,18 +277,22 @@ public class OutputController implements OutputApi {
     }
 
     /**
-     * GET /funds/out/item/{fundVersionId}/csv/export
+     * GET /funds/out/item/{outputId}/csv/export
      * Downloading a CSV file from an attribute value
      *
-     * @param fundVersionId fund version id (required)
+     * @param outputId output id (required)
      * @param descItemObjectId desc item object id (required)
      * @return The request has succeeded. (status code 200)
      * @throws IOException 
      */
     @Override
     @Transactional
-    public ResponseEntity<Resource> outputOutputItemCsvExport(@PathVariable("fundVersionId") Integer fundVersionId,
+    public ResponseEntity<Resource> outputOutputItemCsvExport(@PathVariable("outputId") Integer outputId,
     		                                                  @RequestParam(value = "descItemObjectId", required = true) Integer descItemObjectId) {
+        ArrOutput output = outputService.getOutput(outputId);
+        // triggers @AuthParam(FUND) permission check
+        arrangementService.getOpenVersionByFundId(output.getFundId());
+
         ArrOutputItem outputItem = outputService.findOpenOutputItem(descItemObjectId);
         if (!"JSON_TABLE".equals(outputItem.getItemType().getDataType().getCode())) {
             throw new SystemException("Pouze typ JSON_TABLE může být exportován pomocí CSV.", BaseCode.PROPERTY_HAS_INVALID_TYPE)
@@ -300,20 +318,19 @@ public class OutputController implements OutputApi {
     }
 
     /**
-     * GET /funds/out/{outputId}/{fundVersionId}/form
+     * GET /funds/out/{outputId}/form
      * Getting data for the form
      *
      * @param outputId output id (required)
-     * @param fundVersionId fund version id (required)
      * @return The request has succeeded. (status code 200)
      */
 	@Override
     @Transactional
-	public ResponseEntity<OutputFormData> outputGetOutputFormData(@PathVariable("outputId") Integer outputId,
-                                                                  @PathVariable("fundVersionId") Integer fundVersionId) {
-		ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
-		ArrOutput output = outputService.getOutput(outputId);
-		List<ArrOutputItem> outputItems = outputService.getOutputItems(fundVersion, output);
+	public ResponseEntity<OutputFormData> outputGetOutputFormData(@PathVariable("outputId") Integer outputId) {
+	    ArrOutput output = outputService.getOutput(outputId);
+	    ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(output.getFundId());
+
+	    List<ArrOutputItem> outputItems = outputService.getOutputItems(fundVersion, output);
 
 		List<RulItemTypeExt> itemTypes;
 		try {
@@ -340,7 +357,6 @@ public class OutputController implements OutputApi {
      * Set user-defined/automatic attribute type editing
      *
      * @param outputId output id (required)
-     * @param fundVersionId fund version id (required)
      * @param itemTypeId item type id (required)
      * @param manual true/false — manual (user-defined)/automatic (required)
      * @return The request has succeeded. (status code 200)
@@ -349,12 +365,12 @@ public class OutputController implements OutputApi {
 	@Override
     @Transactional
     public ResponseEntity<Void> outputSetOutputItemMode(@PathVariable("outputId") Integer outputId,
-                                                        @PathVariable("fundVersionId") Integer fundVersionId,
                                                         @PathVariable("itemTypeId") Integer itemTypeId,
                                                         @PathVariable("manual") Boolean manual) {
-        ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
-        ArrOutput output = outputService.getOutput(outputId);
-        RulItemType itemType = itemTypeRepository.findById(itemTypeId)
+	    ArrOutput output = outputService.getOutput(outputId);
+	    ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(output.getFundId());
+
+	    RulItemType itemType = itemTypeRepository.findById(itemTypeId)
                 .orElseThrow(() -> new ObjectNotFoundException("Typ atributu neexistuje", BaseCode.ID_NOT_EXIST).setId(itemTypeId));
         outputService.setOutputItemMode(output, fundVersion, itemType, manual);
 
@@ -386,7 +402,7 @@ public class OutputController implements OutputApi {
      */
 	@Override
     @Transactional
-    public ResponseEntity<List<OutputDef>> outputGetOutputs(@PathVariable("fundVersionId") Integer fundVersionId,
+    public ResponseEntity<List<OutputDef>> outputGetOutputs(@RequestParam("fundVersionId") Integer fundVersionId,
     		                                                @RequestParam(value = "state", required = false) @Nullable OutputState state) {
 	    ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
 	    List<ArrOutput> outputs = state == null
@@ -397,19 +413,17 @@ public class OutputController implements OutputApi {
 	}
 
     /**
-     * GET /funds/out/{fundVersionId}/{outputId}
+     * GET /funds/out/{outputId}
      * Getting output details: an output object linked to a named output, with a list of connected nodes.
      *
-     * @param fundVersionId fund version id (required)
      * @param outputId output id (required)
      * @return The request has succeeded. (status code 200)
      */
 	@Override
     @Transactional
-    public ResponseEntity<OutputDef> outputGetOutput(@PathVariable("fundVersionId") Integer fundVersionId,
-    		                                         @PathVariable("outputId") Integer outputId) {
-		ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
+    public ResponseEntity<OutputDef> outputGetOutput(@PathVariable("outputId") Integer outputId) {
 	    ArrOutput output = outputService.getOutput(outputId);
+	    ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(output.getFundId());
 	    outputService.getOutput(fundVersion, output);
 
 	    return ResponseEntity.ok(outputFactory.createDefExt(output, fundVersion));		
@@ -507,121 +521,109 @@ public class OutputController implements OutputApi {
 	}
 
     /**
-     * DELETE /funds/out/{outputId}/{fundVersionId}
+     * DELETE /funds/out/{outputId}
      * Deleting named output
      *
      * @param outputId output id (required)
-     * @param fundVersionId fund version id (required)
      * @return The request has succeeded. (status code 200)
      */
 	@Override
     @Transactional
-	public ResponseEntity<Void> outputDeleteNamedOutput(@PathVariable("outputId") Integer outputId,
-                                                        @PathVariable("fundVersionId") Integer fundVersionId) {
-		ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
-        ArrOutput output = outputService.getOutput(outputId);
+	public ResponseEntity<Void> outputDeleteNamedOutput(@PathVariable("outputId") Integer outputId) {
+	    ArrOutput output = outputService.getOutput(outputId);
+	    ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(output.getFundId());
         outputService.deleteNamedOutput(fundVersion, output);
 
         return ResponseEntity.ok().build();
 	}
 
     /**
-     * PUT /funds/out/{outputId}/{fundVersionId}/update
+     * PUT /funds/out/{outputId}/update
      * Update output
      *
      * @param outputId output id (required)
-     * @param fundVersionId fund version id (required)
      * @param outputNameParam output parameters (required)
      * @return The request has succeeded. (status code 200)
      */
 	@Override
     @Transactional
 	public ResponseEntity<Void> outputUpdateNamedOutput(@PathVariable("outputId") Integer outputId,
-                                                        @PathVariable("fundVersionId") Integer fundVersionId,
                                                         @Valid @RequestBody OutputNameParam param) {
         Assert.notNull(param, "Vstupní data musí být vyplněny");
-        ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
         ArrOutput output = outputService.getOutput(outputId);
+        ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(output.getFundId());
         outputService.updateNamedOutput(fundVersion, output, param.getName(), param.getInternalCode(), param.getTemplateId(), param.getAnonymizedAp(), param.getOutputFilterId());
 
         return ResponseEntity.ok().build();
 	}
 
     /**
-     * POST /funds/out/{outputId}/{fundVersionId}/nodes/add
+     * POST /funds/out/{outputId}/nodes/add
      * Adding nodes to output
      *
      * @param outputId output id (required)
-     * @param fundVersionId fund version id (required)
      * @param requestBody list of node ids (required)
      * @return The request has succeeded. (status code 200)
      */
 	@Override
     @Transactional
 	public ResponseEntity<Void> outputAddNodesNamedOutput(@PathVariable("outputId") Integer outputId,
-                                                          @PathVariable("fundVersionId") Integer fundVersionId,
                                                           @Valid @RequestBody List<Integer> nodeIds) {
-		ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
-        ArrOutput output = outputService.getOutput(outputId);
+	    ArrOutput output = outputService.getOutput(outputId);
+	    ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(output.getFundId());
         outputService.addNodesNamedOutput(fundVersion, output, nodeIds);
 
         return ResponseEntity.ok().build();
 	}
 
     /**
-     * DELETE /funds/out/{outputId}/{fundVersionId}/nodes/remove
+     * DELETE /funds/out/{outputId}/nodes/remove
      * Removing nodes from output
      *
      * @param outputId output id (required)
-     * @param fundVersionId fund version id (required)
      * @param requestBody list of node ids (required)
      * @return The request has succeeded. (status code 200)
      */
 	@Override
     @Transactional
     public ResponseEntity<Void> outputRemoveNodesNamedOutput(@PathVariable("outputId") Integer outputId,
-                                                             @PathVariable("fundVersionId") Integer fundVersionId,
                                                              @Valid @RequestBody List<Integer> nodeIds) {
-		ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
-        ArrOutput output = outputService.getOutput(outputId);
-        outputService.removeNodesNamedOutput(fundVersion, output, nodeIds);
+	    ArrOutput output = outputService.getOutput(outputId);
+	    ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(output.getFundId());
+	    outputService.removeNodesNamedOutput(fundVersion, output, nodeIds);
 
         return ResponseEntity.ok().build();
 	}
  
     /**
-     * POST /funds/out/{outputId}/{fundVersionId}/revert
-     * Reset status of a named output to \&quot;Open\&quot;
+     * POST /funds/out/{outputId}/revert
+     * Reset status of a named output to `Open`;
      *
      * @param outputId output id (required)
-     * @param fundVersionId fund version id (required)
      * @return The request has succeeded. (status code 200)
      */
 	@Override
     @Transactional
-    public ResponseEntity<Void> outputRevertToOpenState(@PathVariable("outputId") Integer outputId,
-                                                        @PathVariable("fundVersionId") Integer fundVersionId) {
-    	ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
-        ArrOutput output = outputService.getOutput(outputId);
-        outputService.revertToOpenState(fundVersion, output);
+    public ResponseEntity<Void> outputRevertToOpenState(@PathVariable("outputId") Integer outputId) {
+	    ArrOutput output = outputService.getOutput(outputId);
+	    ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(output.getFundId());
+	    outputService.revertToOpenState(fundVersion, output);
 
         return ResponseEntity.ok().build();
     }
     
     /**
-     * POST /funds/out/{outputId}/{fundVersionId}/clone
+     * POST /funds/out/{outputId}/clone
      * Creating copy of output
      *
      * @param outputId output id (required)
-     * @param fundVersionId fund version id (required)
      * @return The request has succeeded. (status code 200)
      */
 	@Override
     @Transactional
-    public ResponseEntity<OutputDef> outputCloneOutput(@PathVariable("outputId") Integer outputId,
-                                                       @PathVariable("fundVersionId") Integer fundVersionId) {
-		ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
+    public ResponseEntity<OutputDef> outputCloneOutput(@PathVariable("outputId") Integer outputId) {
 	    ArrOutput output = outputService.getOutput(outputId);
+	    ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(output.getFundId());
 	    OutputData outputData = outputService.cloneOutput(fundVersion, output);
 
 	    return ResponseEntity.ok(outputFactory.createDefExt(outputData.getOutput(), fundVersion));

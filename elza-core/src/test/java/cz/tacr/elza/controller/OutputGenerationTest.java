@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrOutputVO;
 import cz.tacr.elza.controller.vo.RulTemplateVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.core.ResourcePathResolver;
@@ -107,7 +106,7 @@ public class OutputGenerationTest extends AbstractControllerTest {
         List<Integer> nodeIds = nodes.stream().map(NodeBase::getId).collect(Collectors.toList());
         assertTrue(!nodeIds.isEmpty(), "Fond musí mít alespoň jeden uzel");
 
-        outputApi.outputAddNodesNamedOutput(output.getId(), fundVersion.getId(), nodeIds);
+        outputApi.outputAddNodesNamedOutput(output.getId(), nodeIds);
 
         // Spuštění generování (forced=true pro přeskočení kontrol bulk action)
         Response generateResponse = get(
@@ -122,7 +121,7 @@ public class OutputGenerationTest extends AbstractControllerTest {
         helperTestService.waitForWorkers();
 
         // Ověření stavu výstupu
-        OutputDef outputDetail = outputApi.outputGetOutput(fundVersion.getId(), output.getId());
+        OutputDef outputDetail = outputApi.outputGetOutput(output.getId());
         assertEquals(OutputState.FINISHED, outputDetail.getState(),
                 "Výstup by měl být ve stavu FINISHED, error: " + outputDetail.getError());
         assertNotNull(outputDetail.getOutputResultIds(), "OutputResultIds nesmí být null");
@@ -179,7 +178,7 @@ public class OutputGenerationTest extends AbstractControllerTest {
         List<Integer> nodeIds = nodes.stream().map(NodeBase::getId).collect(Collectors.toList());
         assertTrue(!nodeIds.isEmpty(), "Fond musí mít alespoň jeden uzel");
 
-        outputApi.outputAddNodesNamedOutput(output.getId(), fundVersion.getId(), nodeIds);
+        outputApi.outputAddNodesNamedOutput(output.getId(), nodeIds);
 
         // Spuštění generování PDF (forced=true pro přeskočení kontrol bulk action)
         Response generateResponse = get(
@@ -194,7 +193,7 @@ public class OutputGenerationTest extends AbstractControllerTest {
         helperTestService.waitForWorkers();
 
         // Ověření stavu výstupu
-        OutputDef outputDetail = outputApi.outputGetOutput(fundVersion.getId(), output.getId());
+        OutputDef outputDetail = outputApi.outputGetOutput(output.getId());
         assertEquals(OutputState.FINISHED, outputDetail.getState(),
                 "Výstup by měl být ve stavu FINISHED, error: " + outputDetail.getError());
         assertNotNull(outputDetail.getOutputResultIds(), "OutputResultIds nesmí být null");
