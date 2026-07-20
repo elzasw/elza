@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { Button, Textarea, Spinner, ProgressBar, makeStyles, mergeClasses, tokens, Badge, Tooltip, Menu, MenuTrigger, MenuPopover, MenuList, MenuItemCheckbox, MenuItemRadio } from "@fluentui/react-components";
-import { SendRegular, FolderRegular, DocumentRegular, PersonRegular, AppsRegular, AddRegular, SparkleRegular, HistoryRegular, ChevronLeftRegular, ChevronRightRegular, SettingsRegular, ChevronDownRegular } from "@fluentui/react-icons";
+import { Button, Textarea, Spinner, ProgressBar, makeStyles, mergeClasses, tokens, Badge, Tooltip, Menu, MenuTrigger, MenuPopover, MenuList, MenuItem, MenuItemCheckbox, MenuItemRadio, MenuDivider } from "@fluentui/react-components";
+import { SendRegular, FolderRegular, DocumentRegular, PersonRegular, AppsRegular, AddRegular, SparkleRegular, HistoryRegular, ChevronLeftRegular, ChevronRightRegular, SettingsRegular, ChevronDownRegular, MoneyRegular } from "@fluentui/react-icons";
 import { useUserSettings } from "contexts/user";
 import type { AiContextSegmentLabel } from "./useCurrentAiContext";
 import { FormattedMessage, useIntl, IntlShape } from "react-intl";
@@ -11,6 +11,7 @@ import { useAiConversation, isRequestInProgress } from "./useAiConversation";
 import { useAiConversationList } from "./useAiConversationList";
 import { useAiProviderInfo } from "./useAiProviderInfo";
 import { useAiUsageBalance } from "./useAiUsageBalance";
+import { AiUsageDialog } from "./AiUsageDialog";
 import { useCurrentAiContext } from "./useCurrentAiContext";
 import { aiAssistantMessages, aiContextSegmentLabels, aiModuleLabels } from "./messages";
 import type { MessageDescriptor } from "react-intl";
@@ -87,6 +88,21 @@ const useStyles = makeStyles({
     },
     settingsButton: {
         flexShrink: 0,
+    },
+    settingsWrapper: {
+        position: "relative",
+        display: "inline-flex",
+        flexShrink: 0,
+    },
+    settingsDot: {
+        position: "absolute",
+        top: "2px",
+        right: "2px",
+        width: "8px",
+        height: "8px",
+        borderRadius: tokens.borderRadiusCircular,
+        border: `1px solid ${tokens.colorNeutralBackground1}`,
+        pointerEvents: "none",
     },
     contextBarActions: {
         display: "flex",
@@ -359,55 +375,18 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
         aiMessageRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, [lastRequestId, lastRequestState, lastRequestFinished]);
 
-    // Balance badge: the account the user's key bills to; the subscriber-level
-    // cap when the provider reports no account (e.g. no per-account allowance).
-    const account = balance?.account;
-    const customer = balance?.customer;
-    const credits = (value: number) => intl.formatNumber(value, { maximumFractionDigits: 1 });
-    const customerLabel = customer
-        ? customer.budgetCredits != null
-            ? intl.formatMessage(aiAssistantMessages.balanceCustomer, {
-                  spent: credits(customer.spentCredits),
-                  budget: credits(customer.budgetCredits),
-              })
-            : intl.formatMessage(aiAssistantMessages.balanceCustomerNoCap, {
-                  spent: credits(customer.spentCredits),
-              })
+    // Credits stay out of the way — the balance lives in a /usage-style dialog
+    // opened from the settings menu, not in the composer bar. The only ambient
+    // cue is a colored dot on the gear when the allowance runs low, so a user
+    // near the limit is not surprised.
+    const [usageOpen, setUsageOpen] = useState(false);
+    const balanceRatio = balance?.account?.allowanceCredits
+        ? balance.account.spentCredits / balance.account.allowanceCredits
         : null;
-    const balanceLabel = account
-        ? account.allowanceCredits != null
-            ? intl.formatMessage(aiAssistantMessages.balanceSpentOfAllowance, {
-                  spent: credits(account.spentCredits),
-                  allowance: credits(account.allowanceCredits),
-              })
-            : intl.formatMessage(aiAssistantMessages.balanceSpent, { spent: credits(account.spentCredits) })
-        : customerLabel;
-    const balanceRatio = account?.allowanceCredits
-        ? account.spentCredits / account.allowanceCredits
+    const lowCreditsColor = balanceRatio == null ? null
+        : balanceRatio >= 0.95 ? tokens.colorPaletteRedBackground3
+        : balanceRatio >= 0.8 ? tokens.colorPaletteYellowBackground3
         : null;
-    const balanceColor = balanceRatio == null ? "informative"
-        : balanceRatio >= 0.95 ? "danger"
-        : balanceRatio >= 0.8 ? "warning"
-        : "informative";
-    const balanceDetail: string[] = [];
-    if (account) {
-        if (account.accountType === "personal") {
-            balanceDetail.push(intl.formatMessage(aiAssistantMessages.balanceAccountPersonal));
-        } else if (account.accountType === "shared") {
-            balanceDetail.push(intl.formatMessage(aiAssistantMessages.balanceAccountShared));
-        }
-        if (account.plan) {
-            balanceDetail.push(intl.formatMessage(aiAssistantMessages.balancePlan, { plan: account.plan }));
-        }
-        if (account.periodEnd) {
-            balanceDetail.push(intl.formatMessage(aiAssistantMessages.balanceResets, {
-                date: intl.formatDate(account.periodEnd, { dateStyle: "medium" }),
-            }));
-        }
-        if (customerLabel) {
-            balanceDetail.push(customerLabel);
-        }
-    }
 
     const [listExpanded, setListExpanded] = useState(false);
     const [expanded, setExpanded] = useState(false);
@@ -703,16 +682,6 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
                             </Badge>
                         )}
                         <div className={styles.contextBarActions}>
-                            {balanceLabel && (
-                                <Tooltip
-                                    content={balanceDetail.length > 0 ? balanceDetail.join(" · ") : balanceLabel}
-                                    relationship="description"
-                                >
-                                    <Badge appearance="tint" color={balanceColor} className={styles.taskBadge}>
-                                        {balanceLabel}
-                                    </Badge>
-                                </Tooltip>
-                            )}
                             {profiles.length > 1 && (
                                 <Menu
                                     checkedValues={{ profile: activeProfileCode ? [activeProfileCode] : [] }}
@@ -747,11 +716,29 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
                             >
                                 <MenuTrigger disableButtonEnhancement>
                                     <Tooltip content={intl.formatMessage(aiAssistantMessages.settings)} relationship="label">
-                                        <Button className={styles.settingsButton} appearance="subtle" size="small" icon={<SettingsRegular />} />
+                                        <div className={styles.settingsWrapper}>
+                                            <Button className={styles.settingsButton} appearance="subtle" size="small" icon={<SettingsRegular />} />
+                                            {/* Ambient low-credit cue: a small dot on the gear when the
+                                                allowance is ≥80 % spent — the only always-visible credit signal. */}
+                                            {lowCreditsColor && (
+                                                <span
+                                                    className={styles.settingsDot}
+                                                    style={{ backgroundColor: lowCreditsColor }}
+                                                />
+                                            )}
+                                        </div>
                                     </Tooltip>
                                 </MenuTrigger>
                                 <MenuPopover>
                                     <MenuList>
+                                        {balance && (
+                                            <>
+                                                <MenuItem icon={<MoneyRegular />} onClick={() => setUsageOpen(true)}>
+                                                    <FormattedMessage {...aiAssistantMessages.usageMenuItem} />
+                                                </MenuItem>
+                                                <MenuDivider />
+                                            </>
+                                        )}
                                         <MenuItemCheckbox name="width" value="full">
                                             <FormattedMessage {...aiAssistantMessages.fullWidthResponses} />
                                         </MenuItemCheckbox>
@@ -780,6 +767,7 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
                 </div>
             </div>
             </div>
+            <AiUsageDialog open={usageOpen} onClose={() => setUsageOpen(false)} balance={balance} />
         </CollapsibleDragWindow>
     );
 }

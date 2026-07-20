@@ -354,12 +354,12 @@
     "srcHash": "FQNJWoKyK61y"
   },
   "aiAssistant.balance.customer": {
-    "defaultMessage": "Organization budget: {spent} / {budget}",
-    "srcHash": "JE_W0okWPLyW"
+    "defaultMessage": "{spent} of {budget} credits",
+    "srcHash": "wX_fgYsa2bp9"
   },
   "aiAssistant.balance.customerNoCap": {
-    "defaultMessage": "Organization total: {spent}",
-    "srcHash": "ToKyPBu7Kour"
+    "defaultMessage": "{spent} credits",
+    "srcHash": "GKI2sY-Gi-GI"
   },
   "aiAssistant.balance.plan": {
     "defaultMessage": "Plan: {plan}",
@@ -370,12 +370,20 @@
     "srcHash": "JtpcNuo-Xy0T"
   },
   "aiAssistant.balance.spent": {
-    "defaultMessage": "Credits: {spent}",
-    "srcHash": "tsL28ZST0AG2"
+    "defaultMessage": "{spent} credits",
+    "srcHash": "GKI2sY-Gi-GI"
   },
   "aiAssistant.balance.spentOfAllowance": {
-    "defaultMessage": "Credits: {spent} / {allowance}",
-    "srcHash": "I3xauMBuSUcX"
+    "defaultMessage": "{spent} of {allowance} credits",
+    "srcHash": "tVMRNM1mjAzc"
+  },
+  "aiAssistant.balance.unlimited": {
+    "defaultMessage": "No limit",
+    "srcHash": "Hds3G4V55zpj"
+  },
+  "aiAssistant.balance.usedPercent": {
+    "defaultMessage": "{percent}% used",
+    "srcHash": "RIjoc5herJ7m"
   },
   "aiAssistant.block.citations": {
     "defaultMessage": "Sources",
@@ -453,9 +461,33 @@
     "defaultMessage": "AI is thinking…",
     "srcHash": "-N1FvyhY7A-b"
   },
+  "aiAssistant.usage.accountHeading": {
+    "defaultMessage": "Your account",
+    "srcHash": "MkOMwma42RkB"
+  },
+  "aiAssistant.usage.customerHeading": {
+    "defaultMessage": "Organization",
+    "srcHash": "V8WyNWaNZkN6"
+  },
+  "aiAssistant.usage.dialog.close": {
+    "defaultMessage": "Close",
+    "srcHash": "0r4EKpo4ZhJv"
+  },
+  "aiAssistant.usage.dialog.title": {
+    "defaultMessage": "Credit usage",
+    "srcHash": "l6t1alhn6HJX"
+  },
   "aiAssistant.usage.duration": {
     "defaultMessage": "Processing time: {duration}",
     "srcHash": "CNSPzIru8DFR"
+  },
+  "aiAssistant.usage.menuItem": {
+    "defaultMessage": "Credit usage",
+    "srcHash": "l6t1alhn6HJX"
+  },
+  "aiAssistant.usage.noData": {
+    "defaultMessage": "Usage information is not available for this provider.",
+    "srcHash": "QMTYQ7bap5wL"
   },
   "aiAssistant.usage.price": {
     "defaultMessage": "Price: {credits} cr.",
