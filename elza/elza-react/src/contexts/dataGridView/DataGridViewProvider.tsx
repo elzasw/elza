@@ -18,8 +18,10 @@ const LAST_HIGHLIGHT_KEY = 'ELZA-DATAGRID-LAST-HIGHLIGHT';
 interface LastHighlight {
     versionId: number;
     nodeId: number;
-    // Focused column of the highlighted cell; the row is recomputed from the node's position.
-    col: number;
+    // Attribute type of the highlighted cell's column; resolved to a column index at restore time.
+    // Absent for the reference-mark column. Stored as a type id (not a column index) so it survives
+    // the user hiding or reordering columns between sessions.
+    descItemTypeId?: number;
 }
 
 function loadLastHighlight(): LastHighlight | null {
@@ -52,7 +54,7 @@ function loadView(versionId: number): LoadedView {
         const view = {
             ...DATA_GRID_VIEW_DEFAULT,
             restoreNodeId: lastHighlight.nodeId,
-            cellFocus: { row: 0, col: lastHighlight.col ?? 0 },
+            restoreDescItemTypeId: lastHighlight.descItemTypeId,
         };
         return { view, restorePending: true };
     }
@@ -118,11 +120,11 @@ export function DataGridViewProvider({ versionId, children }: Props) {
         setView(prev => ({ ...prev, cellFocus }));
     }, []);
 
-    const rememberRestoreNode = useCallback((nodeId: number | undefined, col = 0) => {
+    const rememberRestoreNode = useCallback((nodeId: number | undefined, descItemTypeId?: number) => {
         setView(prev => ({ ...prev, restoreNodeId: nodeId }));
-        // Persist the single cross-reload highlight (node + focused column) for the last-visited fund.
+        // Persist the single cross-reload highlight (node + attribute type) for the last-visited fund.
         if (nodeId != null) {
-            localStorage.setItem(LAST_HIGHLIGHT_KEY, JSON.stringify({ versionId, nodeId, col }));
+            localStorage.setItem(LAST_HIGHLIGHT_KEY, JSON.stringify({ versionId, nodeId, descItemTypeId }));
         } else {
             const last = loadLastHighlight();
             if (last && last.versionId === versionId) {
@@ -135,6 +137,26 @@ export function DataGridViewProvider({ versionId, children }: Props) {
         setRestorePending(false);
     }, []);
 
+    // Force a restore of a specific cell, overriding the in-memory view (used by the "open in datagrid"
+    // deep link). Clears the prior selection and focus up front so nothing stale shows before the target
+    // cell resolves, and seeds the target column so the row-focus step lands on the right cell.
+    const requestRestore = useCallback((nodeId: number, col: number) => {
+        setView(prev => ({
+            ...prev,
+            restoreNodeId: nodeId,
+            restoreDescItemTypeId: undefined,
+            selectedIds: [],
+            selectedRowIndexes: [],
+            cellFocus: { row: 0, col },
+        }));
+        setRestorePending(true);
+    }, []);
+
+    // Records the column index the component resolved from restoreDescItemTypeId, then clears the pending type.
+    const resolveRestoreColumn = useCallback((col: number) => {
+        setView(prev => ({ ...prev, cellFocus: { ...prev.cellFocus, col }, restoreDescItemTypeId: undefined }));
+    }, []);
+
     const value: DataGridViewContextValue = {
         view,
         setPageIndex,
@@ -144,6 +166,8 @@ export function DataGridViewProvider({ versionId, children }: Props) {
         setSelectedRowIndexes,
         setCellFocus,
         rememberRestoreNode,
+        requestRestore,
+        resolveRestoreColumn,
         restorePending,
         markRestoreDone,
     };

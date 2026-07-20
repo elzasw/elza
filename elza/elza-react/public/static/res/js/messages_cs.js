@@ -424,6 +424,7 @@ var messages = {
     "search.action.noResult": "Nenalezeny žádné záznamy",
 
     "fundTree.action.openInNewTab": "Otevřít v nové záložce",
+    "fundTree.action.openInDataGrid": "Otevřít v tabulce",
     "fundTree.action.open": "Otevřít v aktuální záložce",
     "fundTree.node.name.undefined": "<JP ID={0}>",
     "fundTree.expandLevel": "Rozbalit",

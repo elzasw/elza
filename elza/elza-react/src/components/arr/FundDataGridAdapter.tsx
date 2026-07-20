@@ -52,6 +52,8 @@ function FundDataGridAdapter(props: Props) {
         setSelectedRowIndexes,
         setCellFocus,
         rememberRestoreNode,
+        requestRestore,
+        resolveRestoreColumn,
         restorePending,
         markRestoreDone,
     } = useDataGridView();
@@ -63,16 +65,21 @@ function FundDataGridAdapter(props: Props) {
     const searchedItems = grid?.searchedItems ?? [];
     const searchedCurrentIndex = grid?.searchedCurrentIndex ?? 0;
 
-    // Restore the page from the saved node - once, as soon as the filter is ready. The node whose row
-    // still needs focusing is held in state (not a ref) so the focus effect re-runs even when the
-    // resolved page equals the current page and the rows never change.
-    const restoreDoneRef = useRef(false);
+    // Restore the page from the target node once the filter is ready. Runs on the initial reload restore
+    // and again whenever a new restore is requested (the "open in datagrid" deep link). The node whose
+    // row still needs focusing is held in state so the focus effect re-runs even when the resolved page
+    // equals the current page and the rows never change.
+    const resolvingRef = useRef(false);
     const [focusNodeId, setFocusNodeId] = useState<number | null>(null);
     useEffect(() => {
-        if (!restorePending || restoreDoneRef.current || !fetchedFilter) {
+        if (!restorePending) {
+            resolvingRef.current = false;
             return;
         }
-        restoreDoneRef.current = true;
+        if (resolvingRef.current || !fetchedFilter) {
+            return;
+        }
+        resolvingRef.current = true;
 
         const nodeId = view.restoreNodeId;
         if (nodeId == null) {
@@ -141,17 +148,6 @@ function FundDataGridAdapter(props: Props) {
         }
     }, [items, view.selectedIds, setSelectedIds]);
 
-    // Remember the focused node and its column, so that after a reload we can jump back to its cell.
-    useEffect(() => {
-        if (restorePending) {
-            return;
-        }
-        const focusedRow = view.selectedRowIndexes.length > 0 ? items[view.selectedRowIndexes[0]] : undefined;
-        const restoreNodeId = focusedRow?.node?.id;
-        if (restoreNodeId !== view.restoreNodeId) {
-            rememberRestoreNode(restoreNodeId, view.cellFocus.col);
-        }
-    }, [items, view.selectedRowIndexes, view.restoreNodeId, view.cellFocus.col, restorePending, rememberRestoreNode]);
 
     // Jump to a search hit - computes the page and row from the hit's absolute position.
     const gotoSearchHit = useCallback(
@@ -211,6 +207,10 @@ function FundDataGridAdapter(props: Props) {
             onSetCellFocus={onSetCellFocus}
             onFulltextNextItem={onFulltextNextItem}
             onFulltextPrevItem={onFulltextPrevItem}
+            requestRestore={requestRestore}
+            rememberRestoreNode={rememberRestoreNode}
+            resolveRestoreColumn={resolveRestoreColumn}
+            restoreDescItemTypeId={view.restoreDescItemTypeId}
         />
     );
 }

@@ -225,6 +225,7 @@ class Layout extends AbstractReactComponent {
                                         <Switch>
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${TREE}`} component={ArrPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${NODE}/:nodeId`} component={ArrPage} />
+                                            <Route path={`${URL_FUND}/:id/v/:versionId/${GRID}/:nodeId/:descItemTypeId?`} component={ArrDataGridPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${GRID}`} component={ArrDataGridPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${AIP}`} component={ArrAipPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${MOVEMENTS}`} component={ArrMovementsPage} />
@@ -241,6 +242,7 @@ class Layout extends AbstractReactComponent {
                                         <Switch>
                                             <Route path={`${URL_FUND}/:id/${TREE}`} component={ArrPage} />
                                             <Route path={`${URL_FUND}/:id/${NODE}/:nodeId`} component={ArrPage} />
+                                            <Route path={`${URL_FUND}/:id/${GRID}/:nodeId/:descItemTypeId?`} component={ArrDataGridPage} />
                                             <Route path={`${URL_FUND}/:id/${GRID}`} component={ArrDataGridPage} />
                                             <Route path={`${URL_FUND}/:id/${AIP}`} component={ArrAipPage} />
                                             <Route path={`${URL_FUND}/:id/${PUBLICATION}`} component={ArrPublicationPage} />

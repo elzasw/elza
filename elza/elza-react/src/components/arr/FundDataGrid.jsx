@@ -83,6 +83,10 @@ export const deserializeJson = (str) => {
     }
 }
 
+// DataGrid renders a leading checkbox column (allowRowCheck), so its focus column index is one greater
+// than the corresponding index in this component's cols array.
+const CHECKBOX_COLUMN_OFFSET = 1;
+
 class FundDataGridClass extends AbstractReactComponent {
     dataGridRef = null;
 
@@ -127,6 +131,7 @@ class FundDataGridClass extends AbstractReactComponent {
             'handleToggleExtendedSearch',
             'handleChangeRowIndexes',
             'fetchData',
+            'consumeDeepLink',
         );
 
         var colState = this.getColsStateFromProps(props, { fundDataGrid: {} });
@@ -143,10 +148,81 @@ class FundDataGridClass extends AbstractReactComponent {
 
         this.fetchData(this.props);
         this.setState({}, this.resizeGrid);
+        this.consumeDeepLink();
 
         // Pokud je potřeba aktualizovat, aktualizujeme při přepnutí na grid, ale zachováme stránkování
         if (fundDataGrid.rowsDirty || fundDataGrid.filterDirty) {
             this.props.dispatch(fundDataGridRefreshRows(versionId));
+        }
+    }
+
+    /**
+     * Resolves an attribute type to a column index against the current columns. If the type is not shown
+     * but the rules offer it, the column is enabled and null is returned to signal "retry after rebuild".
+     * A missing/absent type falls back to the first column (0).
+     */
+    resolveColumnForType(descItemTypeId) {
+        const { fund, ruleSet } = this.props;
+        const cols = this.state.cols;
+
+        if (descItemTypeId == null) {
+            return 0;
+        }
+        const index = cols.findIndex(c => String(c.refType.id) === String(descItemTypeId));
+        if (index >= 0) {
+            return index;
+        }
+
+        // Column not shown - try to enable it if the rules offer it.
+        const ruleMap = getMapFromList(ruleSet.items);
+        const gridViews = ruleMap[fund.activeVersion.ruleSetId]?.gridViews || [];
+        const allowed = gridViews.some(gw => String(gw.id) === String(descItemTypeId));
+        if (allowed && !this.columnAutoShown) {
+            this.columnAutoShown = true;
+            const { columnsOrder, visibleColumns } = this.props.fundDataGrid;
+            const newVisibleColumns = { ...visibleColumns, [descItemTypeId]: true };
+            const newColumnsOrder = columnsOrder.includes(descItemTypeId)
+                ? columnsOrder
+                : [...columnsOrder, descItemTypeId];
+            this.props.dispatch(fundDataGridSetColumnsSettings(this.props.versionId, newVisibleColumns, newColumnsOrder));
+            // After the columns rebuild this method runs again and finds the column.
+            return null;
+        }
+        // Column cannot be shown - fall back to the first column.
+        return 0;
+    }
+
+    /**
+     * Focuses the target cell, from either the URL deep link ("open in datagrid") or the cross-reload
+     * highlight restored from localStorage. Both carry an attribute type that is resolved to a column here
+     * (the only place with the built columns). Called repeatedly (also after a column rebuild) until done.
+     */
+    consumeDeepLink() {
+        const { focusNodeId, focusDescItemTypeId, requestRestore, restoreDescItemTypeId, resolveRestoreColumn } = this.props;
+        const cols = this.state.cols;
+        if (!cols || cols.length === 0) {
+            return;
+        }
+
+        // URL deep link: start a restore for the target node + column.
+        if (!this.deepLinkDone && focusNodeId != null && requestRestore) {
+            const colsIndex = this.resolveColumnForType(focusDescItemTypeId);
+            if (colsIndex == null) {
+                return; // auto-showing the column; will retry after rebuild
+            }
+            this.deepLinkDone = true;
+            requestRestore(focusNodeId, this.toGridColumn(colsIndex));
+            return;
+        }
+
+        // Reload highlight: the node restore is already pending, resolve only its column.
+        if (!this.reloadColumnDone && restoreDescItemTypeId != null && resolveRestoreColumn) {
+            const colsIndex = this.resolveColumnForType(restoreDescItemTypeId);
+            if (colsIndex == null) {
+                return; // auto-showing the column; will retry after rebuild
+            }
+            this.reloadColumnDone = true;
+            resolveRestoreColumn(this.toGridColumn(colsIndex));
         }
     }
 
@@ -232,7 +308,10 @@ class FundDataGridClass extends AbstractReactComponent {
             colState = {};
         }
 
-        this.setState(colState, this.resizeGrid);
+        this.setState(colState, () => {
+            this.resizeGrid();
+            this.consumeDeepLink();
+        });
     }
 
     resizeGrid() {
@@ -843,6 +922,39 @@ class FundDataGridClass extends AbstractReactComponent {
 
     handleChangeFocus(row, col) {
         this.props.onSetCellFocus(row, col);
+        this.updateCellUrl(row, col);
+    }
+
+    /**
+     * Reflects the focused cell in the URL (.../grid/{nodeId}/{descItemTypeId}) so it can be shared or
+     * survive a reload. Uses replace, not push, to avoid polluting the browser history on every cell move.
+     */
+    updateCellUrl(row, col) {
+        const { fund, history, fundDataGrid } = this.props;
+
+        const item = fundDataGrid.items[row];
+        const nodeId = item?.node?.id;
+        if (nodeId == null) {
+            return;
+        }
+
+        const colDef = this.state.cols[this.toColsIndex(col)];
+        const typeId = colDef && colDef.refType.id !== COL_REFERENCE_MARK ? colDef.refType.id : undefined;
+
+        history.replace(urlFundGrid(fund.id, undefined, fundDataGrid.serializedFilter, nodeId, typeId));
+
+        // Persist the highlight (node + attribute type) so a later reload can restore this cell.
+        this.props.rememberRestoreNode(nodeId, typeId);
+    }
+
+    // The DataGrid prepends a checkbox column, so its focus column index is offset by one from
+    // this.state.cols (which has no checkbox). These translate between the two indexings.
+    toColsIndex(gridCol) {
+        return gridCol - CHECKBOX_COLUMN_OFFSET;
+    }
+
+    toGridColumn(colsIndex) {
+        return colsIndex + CHECKBOX_COLUMN_OFFSET;
     }
 
     handleChangeRowIndexes(indexes) {
