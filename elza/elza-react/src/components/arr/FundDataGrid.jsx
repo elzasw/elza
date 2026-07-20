@@ -27,12 +27,8 @@ import { modalDialogHide, modalDialogShow } from 'actions/global/modalDialog';
 import {
     FILTER_NULL_VALUE,
     fundBulkModifications,
-    fundDataChangeCellFocus,
-    fundDataChangeRowIndexes,
     fundDataFulltextClear,
     fundDataFulltextExtended,
-    fundDataFulltextNextItem,
-    fundDataFulltextPrevItem,
     fundDataFulltextSearch,
     fundDataGridFetchDataIfNeeded,
     fundDataGridFetchFilterIfNeeded,
@@ -42,9 +38,6 @@ import {
     fundDataGridRefreshRows,
     fundDataGridSetColumnSize,
     fundDataGridSetColumnsSettings,
-    fundDataGridSetPageIndex,
-    fundDataGridSetPageSize,
-    fundDataGridSetSelection,
     fundDataInitIfNeeded,
 } from 'actions/arr/fundDataGrid';
 import { contextMenuHide, contextMenuShow } from 'actions/global/contextMenu';
@@ -90,7 +83,7 @@ export const deserializeJson = (str) => {
     }
 }
 
-class FundDataGrid extends AbstractReactComponent {
+class FundDataGridClass extends AbstractReactComponent {
     dataGridRef = null;
 
     static propTypes = {
@@ -165,7 +158,7 @@ class FundDataGrid extends AbstractReactComponent {
         this.props.dispatch(groups.fetchIfNeeded(this.props.versionId));
         this.props.dispatch(refRulDataTypesFetchIfNeeded());
         this.props.dispatch(fundDataGridFetchFilterIfNeeded(versionId));
-        this.props.dispatch(fundDataGridFetchDataIfNeeded(versionId, fundDataGrid.pageIndex, fundDataGrid.pageSize));
+        this.props.dispatch(fundDataGridFetchDataIfNeeded(versionId, props.view.pageIndex, props.view.pageSize));
 
         // this.props.dispatch(refRuleSetFetchIfNeeded());
         if (ruleSet.fetched && descItemTypes.fetched && fund.activeVersion) {
@@ -544,12 +537,13 @@ class FundDataGrid extends AbstractReactComponent {
     }
 
     handleSelectedIdsChange(ids) {
-        const { versionId } = this.props;
-        this.props.dispatch(fundDataGridSetSelection(versionId, ids));
+        this.props.onSetSelectedIds(ids);
     }
 
     handleFilterClearAll() {
         const { versionId, dispatch, fundId, history } = this.props;
+        // Reset to the first page and clear selection/focus - the filtered result set changed.
+        this.props.onSetPageIndex(0);
         dispatch(fundDataGridFilterClearAll(versionId));
         dispatch(storeSave()); // musíme uložit ihned store, abychom se vyhnuli problémům s opožděným savem
         history.push(urlFundGrid(fundId));
@@ -632,6 +626,8 @@ class FundDataGrid extends AbstractReactComponent {
             }
         }
 
+        // Reset to the first page and clear selection/focus - the filtered result set changed.
+        this.props.onSetPageIndex(0);
         this.props.dispatch(modalDialogHide());
         this.props.dispatch(fundDataGridFilterChange(versionId, filter));
         this.setFilterUrl(filter);
@@ -650,7 +646,7 @@ class FundDataGrid extends AbstractReactComponent {
                     selectionType = 'NODES';
                     break;
                 case 'selected': {
-                    const set = getSetFromIdsList(fundDataGrid.selectedIds);
+                    const set = getSetFromIdsList(this.props.view.selectedIds);
                     nodes = [];
                     selectionType = 'NODES';
                     fundDataGrid.items.forEach(i => {
@@ -663,7 +659,7 @@ class FundDataGrid extends AbstractReactComponent {
                 case 'unselected': {
                     nodes = [];
                     selectionType = 'NODES';
-                    const set = getSetFromIdsList(fundDataGrid.selectedIds);
+                    const set = getSetFromIdsList(this.props.view.selectedIds);
                     fundDataGrid.items.forEach(i => {
                         if (!set[i.id]) {
                             nodes.push({ id: i.node.id, version: i.node.version });
@@ -732,7 +728,7 @@ class FundDataGrid extends AbstractReactComponent {
                     dataType={dataType}
                     onSubmitForm={submit}
                     allItemsCount={fundDataGrid.items.length}
-                    checkedItemsCount={fundDataGrid.selectedIds.length}
+                    checkedItemsCount={this.props.view.selectedIds.length}
                     versionId={versionId}
                     structureTypes={structureTypes}
                 />,
@@ -838,23 +834,19 @@ class FundDataGrid extends AbstractReactComponent {
     }
 
     handleFulltextPrevItem() {
-        const { versionId } = this.props;
-        this.props.dispatch(fundDataFulltextPrevItem(versionId));
+        this.props.onFulltextPrevItem();
     }
 
     handleFulltextNextItem() {
-        const { versionId } = this.props;
-        this.props.dispatch(fundDataFulltextNextItem(versionId));
+        this.props.onFulltextNextItem();
     }
 
     handleChangeFocus(row, col) {
-        const { versionId } = this.props;
-        this.props.dispatch(fundDataChangeCellFocus(versionId, row, col));
+        this.props.onSetCellFocus(row, col);
     }
 
     handleChangeRowIndexes(indexes) {
-        const { versionId } = this.props;
-        this.props.dispatch(fundDataChangeRowIndexes(versionId, indexes));
+        this.props.onSetRowIndexes(indexes);
     }
 
     /**
@@ -934,7 +926,7 @@ class FundDataGrid extends AbstractReactComponent {
     };
 
     render() {
-        const { fundId, fund, fundDataGrid, versionId, rulDataTypes, descItemTypes, dispatch, readMode } = this.props;
+        const { fundId, fund, fundDataGrid, versionId, rulDataTypes, descItemTypes, dispatch, readMode, view } = this.props;
         const { cols, cellForm } = this.state;
 
         // Hledání
@@ -999,10 +991,10 @@ class FundDataGrid extends AbstractReactComponent {
                             ref={ref => (this.dataGridRef = ref)}
                             rows={fundDataGrid.items}
                             cols={cols}
-                            focusRow={fundDataGrid.cellFocus.row}
-                            focusCol={fundDataGrid.cellFocus.col}
-                            selectedIds={fundDataGrid.selectedIds}
-                            selectedRowIndexes={fundDataGrid.selectedRowIndexes}
+                            focusRow={view.cellFocus.row}
+                            focusCol={view.cellFocus.col}
+                            selectedIds={view.selectedIds}
+                            selectedRowIndexes={view.selectedRowIndexes}
                             onColumnResize={this.handleColumnResize}
                             onChangeFocus={this.handleChangeFocus}
                             onChangeRowIndexes={this.handleChangeRowIndexes}
@@ -1010,19 +1002,15 @@ class FundDataGrid extends AbstractReactComponent {
                             onContextMenu={this.handleContextMenu}
                             onEdit={this.handleEdit}
                             disabled={readMode}
-                            startRowIndex={fundDataGrid.pageSize * fundDataGrid.pageIndex}
-                            morePages={getPagesCount(fundDataGrid.itemsCount, fundDataGrid.pageSize) > 1}
+                            startRowIndex={view.pageSize * view.pageIndex}
+                            morePages={getPagesCount(fundDataGrid.itemsCount, view.pageSize) > 1}
                         />
                         <DataGridPagination
                             itemsCount={fundDataGrid.itemsCount}
-                            pageSize={fundDataGrid.pageSize}
-                            pageIndex={fundDataGrid.pageIndex}
-                            onSetPageIndex={pageIndex => {
-                                dispatch(fundDataGridSetPageIndex(versionId, pageIndex));
-                            }}
-                            onChangePageSize={pageSize => {
-                                dispatch(fundDataGridSetPageSize(versionId, pageSize));
-                            }}
+                            pageSize={view.pageSize}
+                            pageIndex={view.pageIndex}
+                            onSetPageIndex={this.props.onSetPageIndex}
+                            onChangePageSize={this.props.onSetPageSize}
                         />
                     </div>
                 </div>
@@ -1048,4 +1036,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default withRouter(connect(mapStateToProps)(FundDataGrid));
+export const FundDataGridConnected = withRouter(connect(mapStateToProps)(FundDataGridClass));
