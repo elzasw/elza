@@ -198,6 +198,7 @@ export const URL_ADMIN = '/admin';
 export const URL_ADMIN_USER = `${URL_ADMIN}/user`;
 export const URL_ADMIN_GROUP = `${URL_ADMIN}/group`;
 export const URL_ADMIN_FUND = `${URL_ADMIN}/fund`;
+export const URL_ADMIN_INSTITUTION = `${URL_ADMIN}/institution`;
 
 export const URL_AIP = '/aip';
 export const URL_COMPONENT = '/component';

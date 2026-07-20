@@ -8,6 +8,7 @@ import { AbstractReactComponent, ContextMenu, ModalDialog, Toastr, Utils, WebSoc
 import keymap from 'src/keymap';
 import {
     AdminExtSystemPage,
+    AdminInstitutionPage,
     AdminFundPage,
     AdminGroupPage,
     AdminLogsPage,
@@ -278,6 +279,7 @@ class Layout extends AbstractReactComponent {
                                             <Route path="/admin/backgroundProcesses" component={AdminBulkActionPage} />
                                             <Route path="/admin/requestsQueue" component={AdminRequestsQueuePage} />
                                             <Route path="/admin/extSystem" component={AdminExtSystemPage} />
+                                            <Route path="/admin/institution" component={AdminInstitutionPage} />
                                             <Route path="/admin/logs" component={AdminLogsPage} />
                                             <Route path={'/admin/reports'} component={ReportsPage}/>
                                             <Route component={AdminPage} />
