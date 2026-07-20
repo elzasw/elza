@@ -68,6 +68,7 @@ public class AiProviderController implements AiproviderApi {
             vo.setAccount(new AiAccountUsageVO()
                     .accountType(account.getAccountType())
                     .plan(account.getPlan())
+                    .planName(account.getPlanName())
                     .allowanceCredits(account.getAllowanceCredits())
                     .spentCredits(account.getSpentCredits())
                     .periodStart(account.getPeriodStart())

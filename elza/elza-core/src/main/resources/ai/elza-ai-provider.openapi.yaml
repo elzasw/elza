@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Elza AI Provider API
-  version: 0.11.0
+  version: 0.12.0
   description: |-
     Elza AI Provider API.
 
@@ -1077,7 +1077,13 @@ components:
           description: Kind of account, e.g. `personal` or `shared` (open set).
         plan:
           type: string
-          description: Plan label, e.g. `basic`; informational.
+          description: Plan label, e.g. `basic`; informational (a code, not for display).
+        planName:
+          type: string
+          description: |-
+            Human-readable plan name for display, e.g. `Osobní – standard` (localized
+            like all display strings). Absent when the provider has no display name —
+            the client then hides the plan rather than showing the raw `plan` code.
         allowanceCredits:
           type: number
           format: double

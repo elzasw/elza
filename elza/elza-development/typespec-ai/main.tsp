@@ -76,7 +76,7 @@ using TypeSpec.OpenAPI;
  * `GET /ping`. See `SignatureAuth` and the companion `security.md`.
  */
 @service(#{ title: "Elza AI Provider API" })
-@info(#{ version: "0.11.0" })
+@info(#{ version: "0.12.0" })
 @server(
   "{endpoint}",
   "Provider-assigned base endpoint, e.g. https://ai.example.com/elza",
@@ -1719,8 +1719,15 @@ model AccountUsageInfo {
   /** Kind of account, e.g. `personal` or `shared` (open set). */
   accountType?: string;
 
-  /** Plan label, e.g. `basic`; informational. */
+  /** Plan label, e.g. `basic`; informational (a code, not for display). */
   plan?: string;
+
+  /**
+   * Human-readable plan name for display, e.g. `Osobní – standard` (localized
+   * like all display strings). Absent when the provider has no display name —
+   * the client then hides the plan rather than showing the raw `plan` code.
+   */
+  planName?: string;
 
   /** Credit allowance for the current period; absent = no per-account cap. */
   allowanceCredits?: float64;

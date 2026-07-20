@@ -51,11 +51,11 @@ export const aiAssistantMessages = defineMessages({
     },
     usageMenuItem: {
         id: "aiAssistant.usage.menuItem",
-        defaultMessage: "Spotřeba kreditů",
+        defaultMessage: "Využití",
     },
     usageDialogTitle: {
         id: "aiAssistant.usage.dialog.title",
-        defaultMessage: "Spotřeba kreditů",
+        defaultMessage: "Využití",
     },
     usageDialogClose: {
         id: "aiAssistant.usage.dialog.close",
@@ -77,17 +77,13 @@ export const aiAssistantMessages = defineMessages({
         id: "aiAssistant.usage.customerHeading",
         defaultMessage: "Rozpočet organizace",
     },
-    balanceSpentOfAllowance: {
-        id: "aiAssistant.balance.spentOfAllowance",
-        defaultMessage: "{spent} z {allowance} kreditů",
-    },
-    balanceSpent: {
-        id: "aiAssistant.balance.spent",
-        defaultMessage: "{spent} kreditů",
-    },
     balanceUsedPercent: {
         id: "aiAssistant.balance.usedPercent",
         defaultMessage: "Vyčerpáno {percent} %",
+    },
+    balanceWeeklyUsedPercent: {
+        id: "aiAssistant.balance.weeklyUsedPercent",
+        defaultMessage: "Tento týden vyčerpáno {percent} %",
     },
     balanceUnlimited: {
         id: "aiAssistant.balance.unlimited",
@@ -99,23 +95,7 @@ export const aiAssistantMessages = defineMessages({
     },
     balanceResets: {
         id: "aiAssistant.balance.resets",
-        defaultMessage: "Obnovení přídělu: {date} ({days, plural, one {za 1 den} few {za # dny} other {za # dní}})",
-    },
-    balanceWeekly: {
-        id: "aiAssistant.balance.weekly",
-        defaultMessage: "Tento týden: {spent} z {allowance} kreditů",
-    },
-    balanceWeeklyResets: {
-        id: "aiAssistant.balance.weeklyResets",
-        defaultMessage: "Týdenní příděl se obnoví {date} ({days, plural, one {za 1 den} few {za # dny} other {za # dní}})",
-    },
-    balanceCustomer: {
-        id: "aiAssistant.balance.customer",
-        defaultMessage: "{spent} z {budget} kreditů",
-    },
-    balanceCustomerNoCap: {
-        id: "aiAssistant.balance.customerNoCap",
-        defaultMessage: "{spent} kreditů",
+        defaultMessage: "Obnoví se {date} ({days, plural, one {za 1 den} few {za # dny} other {za # dní}})",
     },
     errorNoSubscription: {
         id: "aiAssistant.error.noSubscription",
@@ -127,7 +107,7 @@ export const aiAssistantMessages = defineMessages({
     },
     errorAccountQuotaExceeded: {
         id: "aiAssistant.error.accountQuotaExceeded",
-        defaultMessage: "Váš kreditový příděl je pro toto období vyčerpán.",
+        defaultMessage: "Váš kreditový limit je pro toto období vyčerpán.",
     },
     unsupportedBlock: {
         id: "aiAssistant.block.unsupported",
