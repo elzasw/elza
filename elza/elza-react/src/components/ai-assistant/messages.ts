@@ -49,13 +49,45 @@ export const aiAssistantMessages = defineMessages({
         id: "aiAssistant.usage.duration",
         defaultMessage: "Doba zpracování: {duration}",
     },
+    usageMenuItem: {
+        id: "aiAssistant.usage.menuItem",
+        defaultMessage: "Spotřeba kreditů",
+    },
+    usageDialogTitle: {
+        id: "aiAssistant.usage.dialog.title",
+        defaultMessage: "Spotřeba kreditů",
+    },
+    usageDialogClose: {
+        id: "aiAssistant.usage.dialog.close",
+        defaultMessage: "Zavřít",
+    },
+    usageNoData: {
+        id: "aiAssistant.usage.noData",
+        defaultMessage: "Informace o spotřebě nejsou pro tohoto poskytovatele k dispozici.",
+    },
+    usageAccountHeading: {
+        id: "aiAssistant.usage.accountHeading",
+        defaultMessage: "Váš účet",
+    },
+    usageCustomerHeading: {
+        id: "aiAssistant.usage.customerHeading",
+        defaultMessage: "Organizace",
+    },
     balanceSpentOfAllowance: {
         id: "aiAssistant.balance.spentOfAllowance",
-        defaultMessage: "Kredity: {spent} / {allowance}",
+        defaultMessage: "{spent} z {allowance} kreditů",
     },
     balanceSpent: {
         id: "aiAssistant.balance.spent",
-        defaultMessage: "Kredity: {spent}",
+        defaultMessage: "{spent} kreditů",
+    },
+    balanceUsedPercent: {
+        id: "aiAssistant.balance.usedPercent",
+        defaultMessage: "Vyčerpáno {percent} %",
+    },
+    balanceUnlimited: {
+        id: "aiAssistant.balance.unlimited",
+        defaultMessage: "Bez limitu",
     },
     balanceAccountPersonal: {
         id: "aiAssistant.balance.account.personal",
@@ -75,11 +107,11 @@ export const aiAssistantMessages = defineMessages({
     },
     balanceCustomer: {
         id: "aiAssistant.balance.customer",
-        defaultMessage: "Rozpočet organizace: {spent} / {budget}",
+        defaultMessage: "{spent} z {budget} kreditů",
     },
     balanceCustomerNoCap: {
         id: "aiAssistant.balance.customerNoCap",
-        defaultMessage: "Organizace celkem: {spent}",
+        defaultMessage: "{spent} kreditů",
     },
     errorNoSubscription: {
         id: "aiAssistant.error.noSubscription",
