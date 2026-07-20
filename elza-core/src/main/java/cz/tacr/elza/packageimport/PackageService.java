@@ -62,6 +62,7 @@ import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrOutput;
+import cz.tacr.elza.domain.ParInstitutionType;
 import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.domain.RulActionRecommended;
 import cz.tacr.elza.domain.RulArrangementExtension;
@@ -116,6 +117,8 @@ import cz.tacr.elza.packageimport.xml.ExtensionRule;
 import cz.tacr.elza.packageimport.xml.ExtensionRules;
 import cz.tacr.elza.packageimport.xml.ExternalIdType;
 import cz.tacr.elza.packageimport.xml.ExternalIdTypes;
+import cz.tacr.elza.packageimport.xml.InstitutionType;
+import cz.tacr.elza.packageimport.xml.InstitutionTypes;
 import cz.tacr.elza.packageimport.xml.IssueState;
 import cz.tacr.elza.packageimport.xml.IssueStates;
 import cz.tacr.elza.packageimport.xml.IssueType;
@@ -158,6 +161,7 @@ import cz.tacr.elza.repository.ArrangementRuleRepository;
 import cz.tacr.elza.repository.ComponentRepository;
 import cz.tacr.elza.repository.ExportFilterRepository;
 import cz.tacr.elza.repository.ExtensionRuleRepository;
+import cz.tacr.elza.repository.InstitutionTypeRepository;
 import cz.tacr.elza.repository.ItemAptypeRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeActionRepository;
@@ -310,6 +314,11 @@ public class PackageService {
      * typy úkolů
      */
     public static final String TASK_TYPE_XML = "wf_task_type.xml";
+
+    /**
+     * typy institucí (archivů)
+     */
+    public static final String INSTITUTION_TYPE_XML = "par_institution_type.xml";
 
     /**
      * složka templatů
@@ -488,6 +497,9 @@ public class PackageService {
 
     @Autowired
     private WfTaskTypeRepository taskTypeRepository;
+
+    @Autowired
+    private InstitutionTypeRepository institutionTypeRepository;
 
     @Autowired
     private AsyncRequestService asyncRequestService;
@@ -748,6 +760,9 @@ public class PackageService {
 
         TaskTypes taskTypes = pkgCtx.convertXmlStreamToObject(TaskTypes.class, TASK_TYPE_XML);
         processTaskTypes(taskTypes, rulPackage);
+
+        InstitutionTypes institutionTypes = pkgCtx.convertXmlStreamToObject(InstitutionTypes.class, INSTITUTION_TYPE_XML);
+        processInstitutionTypes(institutionTypes, rulPackage);
 
         asyncRequestService.enqueueAp(accessPoints);
 
@@ -1381,6 +1396,40 @@ public class PackageService {
         WfIssueStateDelete.removeAll(wfIssueStatesNew);
 
         issueStateRepository.deleteAll(WfIssueStateDelete);
+    }
+
+    /**
+     * Provede synchronizaci typů institucí (archivů).
+     *
+     * @param institutionTypes typy institucí načtené z balíčku
+     * @param rulPackage       importovaný balíček
+     */
+    private void processInstitutionTypes(final InstitutionTypes institutionTypes, final RulPackage rulPackage) {
+
+        List<ParInstitutionType> existingTypes = institutionTypeRepository.findByRulPackage(rulPackage);
+
+        List<ParInstitutionType> newTypes = new ArrayList<>();
+
+        if (institutionTypes != null && institutionTypes.getInstitutionTypes() != null) {
+            for (InstitutionType institutionType : institutionTypes.getInstitutionTypes()) {
+                ParInstitutionType parInstitutionType = findEntity(existingTypes, institutionType.getCode(),
+                        ParInstitutionType::getCode);
+                if (parInstitutionType == null) {
+                    parInstitutionType = new ParInstitutionType();
+                }
+                parInstitutionType.setCode(institutionType.getCode());
+                parInstitutionType.setName(institutionType.getName());
+                parInstitutionType.setRulPackage(rulPackage);
+                newTypes.add(parInstitutionType);
+            }
+        }
+
+        newTypes = institutionTypeRepository.saveAll(newTypes);
+
+        List<ParInstitutionType> typesToDelete = new ArrayList<>(existingTypes);
+        typesToDelete.removeAll(newTypes);
+
+        institutionTypeRepository.deleteAll(typesToDelete);
     }
 
     /**
@@ -2546,6 +2595,7 @@ public class PackageService {
         settingsRepository.deleteByRulPackage(rulPackage);
         issueStateRepository.deleteByRulPackage(rulPackage);
         issueTypeRepository.deleteByRulPackage(rulPackage);
+        institutionTypeRepository.deleteByRulPackage(rulPackage);
         packageRepository.delete(rulPackage);
 
         entityManager.flush();
@@ -2707,6 +2757,7 @@ public class PackageService {
             exportExternalIdTypes(rulPackage, zos);
             exportIssueTypes(rulPackage, zos);
             exportIssueStates(rulPackage, zos);
+            exportInstitutionTypes(rulPackage, zos);
             exportPartTypes(rulPackage, zos);
         }
     }
@@ -3361,6 +3412,33 @@ public class PackageService {
             issueStates.setIssueStates(issueStateList);
 
             addObjectToZipFile(issueStates, zos, ISSUE_STATE_XML);
+        }
+    }
+
+    /**
+     * Exportování typů institucí (archivů).
+     *
+     * @param rulPackage balíček
+     * @param zos        stream zip souboru
+     */
+    private void exportInstitutionTypes(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
+
+        List<ParInstitutionType> parInstitutionTypes = institutionTypeRepository.findByRulPackage(rulPackage);
+
+        if (!parInstitutionTypes.isEmpty()) {
+
+            List<InstitutionType> institutionTypeList = new ArrayList<>(parInstitutionTypes.size());
+            for (ParInstitutionType parInstitutionType : parInstitutionTypes) {
+                InstitutionType institutionType = new InstitutionType();
+                institutionType.setCode(parInstitutionType.getCode());
+                institutionType.setName(parInstitutionType.getName());
+                institutionTypeList.add(institutionType);
+            }
+
+            InstitutionTypes institutionTypes = new InstitutionTypes();
+            institutionTypes.setInstitutionTypes(institutionTypeList);
+
+            addObjectToZipFile(institutionTypes, zos, INSTITUTION_TYPE_XML);
         }
     }
 
