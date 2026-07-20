@@ -1836,6 +1836,10 @@ var messages = {
     "dataGrid.export.exportType.noSelection.item": "Není vybrán prvek",
     "dataGrid.export.title": "Export tabulkového zobrazení",
 
+    "dataGrid.restore.nodeNotFound": "Dříve vybranou jednotku popisu se nepodařilo obnovit, zobrazuje se uložená stránka.",
+    "dataGrid.restore.nodeNotFound.filtered": "Dříve vybraná jednotka popisu neodpovídá aktuálnímu filtru, zobrazuje se uložená stránka.",
+    "dataGrid.loadFailed": "Načtení dat tabulky se nezdařilo.",
+
     "dataGrid.import.title": "Import prvků popisu",
     "dataGrid.import.format.hint":
         '<p> Pro přidání prvků popisu vložte soubor CSV, kde každý řádek odpovídá jedné jednotce popisu ve tvaru: </p> <p> {<b style="color: var(--color-red)">UUID</b>},{<b style="color: var(--color-blue)">Kód prvku</b>},{<b style="color: var(--color-orange)">Kód specifikace</b>},{<b style="color: var(--color-green)">Hodnota prvku</b>},{<b style="color: var(--color-blue)">Kód prvku</b>},{<b style="color: var(--color-green)">Hodnota prvku</b>}... </p> <p>V jednom řádku je k jedné jednotce popisu možné přidat současně více prvků popisu. Kód specifikace a hodnota prvku jsou povinné/volitelné v závislosti na typu prvku popisu.</p>',
