@@ -2437,8 +2437,14 @@ model AiUsage {
 model AiAccountUsage {
     /** Kind of account, e.g. `personal` or `shared` (open set). */
     accountType?: string;
-    /** Plan label, e.g. `basic`; informational. */
+    /** Plan label, e.g. `basic`; informational (a code, not for display). */
     plan?: string;
+    /**
+     * Human-readable plan name for display, e.g. `Osobní – standard` (localized).
+     * Absent when the provider has no display name — the client then hides the
+     * plan rather than showing the raw `plan` code.
+     */
+    planName?: string;
     /** Credit allowance for the current period; absent = no per-account cap. */
     allowanceCredits?: float64;
     /** Credits charged to this account in the current period. */

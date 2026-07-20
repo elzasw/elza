@@ -433,29 +433,13 @@
     "defaultMessage": "Searching the archival description",
     "srcHash": "bvAJXkkvNNbf"
   },
-  "aiAssistant.balance.customer": {
-    "defaultMessage": "{spent} of {budget} credits",
-    "srcHash": "wX_fgYsa2bp9"
-  },
-  "aiAssistant.balance.customerNoCap": {
-    "defaultMessage": "{spent} credits",
-    "srcHash": "GKI2sY-Gi-GI"
-  },
   "aiAssistant.balance.plan": {
     "defaultMessage": "Plan: {plan}",
     "srcHash": "_QrlEK2_g5XP"
   },
   "aiAssistant.balance.resets": {
-    "defaultMessage": "Allowance resets: {date} ({days, plural, one {in 1 day} other {in # days}})",
-    "srcHash": "08ZEh42HYSGo"
-  },
-  "aiAssistant.balance.spent": {
-    "defaultMessage": "{spent} credits",
-    "srcHash": "GKI2sY-Gi-GI"
-  },
-  "aiAssistant.balance.spentOfAllowance": {
-    "defaultMessage": "{spent} of {allowance} credits",
-    "srcHash": "tVMRNM1mjAzc"
+    "defaultMessage": "Resets {date} ({days, plural, one {in 1 day} other {in # days}})",
+    "srcHash": "LK1QwWFS8WaU"
   },
   "aiAssistant.balance.unlimited": {
     "defaultMessage": "No limit",
@@ -465,13 +449,9 @@
     "defaultMessage": "{percent}% used",
     "srcHash": "RIjoc5herJ7m"
   },
-  "aiAssistant.balance.weekly": {
-    "defaultMessage": "This week: {spent} of {allowance} credits",
-    "srcHash": "-vmlpJAsJvEv"
-  },
-  "aiAssistant.balance.weeklyResets": {
-    "defaultMessage": "Weekly allowance resets {date} ({days, plural, one {in 1 day} other {in # days}})",
-    "srcHash": "97aKjcNyYbs8"
+  "aiAssistant.balance.weeklyUsedPercent": {
+    "defaultMessage": "This week: {percent}% used",
+    "srcHash": "Tt3yHdczuZfz"
   },
   "aiAssistant.block.citations": {
     "defaultMessage": "Sources",
@@ -514,8 +494,8 @@
     "srcHash": "g-NS7D1rL5QJ"
   },
   "aiAssistant.error.accountQuotaExceeded": {
-    "defaultMessage": "Your credit allowance for this period is exhausted.",
-    "srcHash": "2OkintN7q5w6"
+    "defaultMessage": "Your credit limit for this period is exhausted.",
+    "srcHash": "ULxSQM8vrYqj"
   },
   "aiAssistant.error.noSubscription": {
     "defaultMessage": "The AI service has no active subscription. Contact your administrator.",
@@ -562,16 +542,16 @@
     "srcHash": "0r4EKpo4ZhJv"
   },
   "aiAssistant.usage.dialog.title": {
-    "defaultMessage": "Credit usage",
-    "srcHash": "l6t1alhn6HJX"
+    "defaultMessage": "Usage",
+    "srcHash": "f3BkkgYRVNZx"
   },
   "aiAssistant.usage.duration": {
     "defaultMessage": "Processing time: {duration}",
     "srcHash": "CNSPzIru8DFR"
   },
   "aiAssistant.usage.menuItem": {
-    "defaultMessage": "Credit usage",
-    "srcHash": "l6t1alhn6HJX"
+    "defaultMessage": "Usage",
+    "srcHash": "f3BkkgYRVNZx"
   },
   "aiAssistant.usage.noData": {
     "defaultMessage": "Usage information is not available for this provider.",

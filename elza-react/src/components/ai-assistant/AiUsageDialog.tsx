@@ -66,36 +66,46 @@ function daysUntil(date: string | Date): number {
 }
 
 /**
- * On-demand credit-usage panel — the AI assistant's equivalent of a `/usage`
- * dialog, opened from the settings menu so the balance stays out of the way
- * during normal work. All numbers are the provider's final credits; the panel
- * only displays them (and the spent/allowance ratio for the meter), never any
- * multiplier — that stays hidden in the provider/CSC.
+ * Consumed share of a limit as a whole percentage. Anything spent rounds up to
+ * at least 1 % so a nonzero bar is never captioned "0 %".
+ */
+function toPercent(ratio: number): number {
+    return ratio > 0 ? Math.max(1, Math.round(ratio * 100)) : 0;
+}
+
+/** Meter colour tracks how close the limit is to exhaustion. */
+function barColor(ratio: number): "brand" | "warning" | "error" {
+    return ratio >= 0.95 ? "error" : ratio >= 0.8 ? "warning" : "brand";
+}
+
+/**
+ * On-demand usage panel — the AI assistant's equivalent of a `/usage` dialog,
+ * opened from the settings menu so the balance stays out of the way during
+ * normal work. Deliberately soft: it shows relative consumption only (percent
+ * of the limit — credits are an internal accounting unit and never appear),
+ * with a single meter for whichever cap (weekly smoothing or period allowance)
+ * is currently closer to exhaustion, plus that cap's reset date. This is the
+ * same "binding limit" the panel's gear dot tracks, so the dialog always
+ * explains the dot.
  */
 export function AiUsageDialog({ open, onClose, balance }: Props) {
     const styles = useStyles();
     const intl = useIntl();
-    const credits = (value: number) => intl.formatNumber(value, { maximumFractionDigits: 1 });
 
     const account = balance?.account;
     const customer = balance?.customer;
 
-    const accountRatio = account?.allowanceCredits ? account.spentCredits / account.allowanceCredits : null;
-    // Meter colour tracks how close the allowance is to exhaustion.
-    const accountBarColor = accountRatio == null ? "brand"
-        : accountRatio >= 0.95 ? "error"
-        : accountRatio >= 0.8 ? "warning"
-        : "brand";
-
-    // The optional weekly smoothing cap under the monthly allowance — its own
-    // meter with the same thresholds, and its own (always sooner) reset date.
+    const monthlyRatio = account?.allowanceCredits ? account.spentCredits / account.allowanceCredits : null;
     const weeklyRatio = account?.weeklyAllowanceCredits
         ? (account.weeklySpentCredits ?? 0) / account.weeklyAllowanceCredits
         : null;
-    const weeklyBarColor = weeklyRatio == null ? "brand"
-        : weeklyRatio >= 0.95 ? "error"
-        : weeklyRatio >= 0.8 ? "warning"
-        : "brand";
+
+    // The binding limit: the weekly cap when it is the more exhausted one
+    // (labelled "Tento týden"), the period allowance otherwise. Its reset is
+    // the moment the user can actually do more, so it is the one date shown.
+    const weeklyBinds = weeklyRatio != null && (monthlyRatio == null || weeklyRatio > monthlyRatio);
+    const accountRatio = weeklyBinds ? weeklyRatio : monthlyRatio;
+    const accountResetDate = weeklyBinds ? account?.weekEnd : account?.periodEnd;
 
     // The `account` layer is the account the user's own key bills to (their
     // personal seat, or the shared account when they run on the shared key) —
@@ -133,90 +143,45 @@ export function AiUsageDialog({ open, onClose, balance }: Props) {
                                         ? aiAssistantMessages.usageSharedAccountHeading
                                         : aiAssistantMessages.usageAccountHeading)} />
                                 </div>
-                                <div className={styles.amount}>
-                                    {account.allowanceCredits != null ? (
-                                        <FormattedMessage
-                                            {...aiAssistantMessages.balanceSpentOfAllowance}
-                                            values={{
-                                                spent: credits(account.spentCredits),
-                                                allowance: credits(account.allowanceCredits),
-                                            }}
-                                        />
-                                    ) : (
-                                        <FormattedMessage
-                                            {...aiAssistantMessages.balanceSpent}
-                                            values={{ spent: credits(account.spentCredits) }}
-                                        />
-                                    )}
-                                </div>
                                 {accountRatio != null ? (
                                     <>
+                                        <div className={styles.amount}>
+                                            <FormattedMessage
+                                                {...(weeklyBinds
+                                                    ? aiAssistantMessages.balanceWeeklyUsedPercent
+                                                    : aiAssistantMessages.balanceUsedPercent)}
+                                                values={{ percent: toPercent(accountRatio) }}
+                                            />
+                                        </div>
                                         <ProgressBar
                                             className={styles.bar}
                                             value={Math.min(accountRatio, 1)}
-                                            color={accountBarColor}
+                                            color={barColor(accountRatio)}
                                         />
-                                        <div className={styles.meta}>
-                                            <FormattedMessage
-                                                {...aiAssistantMessages.balanceUsedPercent}
-                                                values={{ percent: Math.round(accountRatio * 100) }}
-                                            />
-                                        </div>
+                                        {accountResetDate && (
+                                            <div className={styles.meta}>
+                                                <FormattedMessage
+                                                    {...aiAssistantMessages.balanceResets}
+                                                    values={{
+                                                        date: intl.formatDate(accountResetDate, { dateStyle: "medium" }),
+                                                        days: daysUntil(accountResetDate),
+                                                    }}
+                                                />
+                                            </div>
+                                        )}
                                     </>
                                 ) : (
                                     <div className={styles.meta}>
                                         <FormattedMessage {...aiAssistantMessages.balanceUnlimited} />
                                     </div>
                                 )}
-                                {account.plan && (
+                                {account.planName && (
                                     <div className={styles.meta}>
                                         <FormattedMessage
                                             {...aiAssistantMessages.balancePlan}
-                                            values={{ plan: account.plan }}
+                                            values={{ plan: account.planName }}
                                         />
                                     </div>
-                                )}
-                                {account.periodEnd && (
-                                    <div className={styles.meta}>
-                                        <FormattedMessage
-                                            {...aiAssistantMessages.balanceResets}
-                                            values={{
-                                                date: intl.formatDate(account.periodEnd, { dateStyle: "medium" }),
-                                                days: daysUntil(account.periodEnd),
-                                            }}
-                                        />
-                                    </div>
-                                )}
-                                {account.weeklyAllowanceCredits != null && (
-                                    <>
-                                        <div className={styles.amount}>
-                                            <FormattedMessage
-                                                {...aiAssistantMessages.balanceWeekly}
-                                                values={{
-                                                    spent: credits(account.weeklySpentCredits ?? 0),
-                                                    allowance: credits(account.weeklyAllowanceCredits),
-                                                }}
-                                            />
-                                        </div>
-                                        {weeklyRatio != null && (
-                                            <ProgressBar
-                                                className={styles.bar}
-                                                value={Math.min(weeklyRatio, 1)}
-                                                color={weeklyBarColor}
-                                            />
-                                        )}
-                                        {account.weekEnd && (
-                                            <div className={styles.meta}>
-                                                <FormattedMessage
-                                                    {...aiAssistantMessages.balanceWeeklyResets}
-                                                    values={{
-                                                        date: intl.formatDate(account.weekEnd, { dateStyle: "medium" }),
-                                                        days: daysUntil(account.weekEnd),
-                                                    }}
-                                                />
-                                            </div>
-                                        )}
-                                    </>
                                 )}
                             </div>
                         )}
@@ -225,22 +190,25 @@ export function AiUsageDialog({ open, onClose, balance }: Props) {
                                 <div className={styles.heading}>
                                     <FormattedMessage {...aiAssistantMessages.usageCustomerHeading} />
                                 </div>
-                                <div className={styles.amount}>
-                                    {customer.budgetCredits != null ? (
-                                        <FormattedMessage
-                                            {...aiAssistantMessages.balanceCustomer}
-                                            values={{
-                                                spent: credits(customer.spentCredits),
-                                                budget: credits(customer.budgetCredits),
-                                            }}
+                                {customerRatio != null ? (
+                                    <>
+                                        <div className={styles.amount}>
+                                            <FormattedMessage
+                                                {...aiAssistantMessages.balanceUsedPercent}
+                                                values={{ percent: toPercent(customerRatio) }}
+                                            />
+                                        </div>
+                                        <ProgressBar
+                                            className={styles.bar}
+                                            value={Math.min(customerRatio, 1)}
+                                            color={barColor(customerRatio)}
                                         />
-                                    ) : (
-                                        <FormattedMessage
-                                            {...aiAssistantMessages.balanceCustomerNoCap}
-                                            values={{ spent: credits(customer.spentCredits) }}
-                                        />
-                                    )}
-                                </div>
+                                    </>
+                                ) : (
+                                    <div className={styles.meta}>
+                                        <FormattedMessage {...aiAssistantMessages.balanceUnlimited} />
+                                    </div>
+                                )}
                             </div>
                         )}
                     </DialogContent>
