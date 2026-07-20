@@ -27,6 +27,74 @@
     "defaultMessage": "Connection works — {provider} (protocol {version})",
     "srcHash": "Ej_cusKYW2W_"
   },
+  "admin.institution.action.add": {
+    "defaultMessage": "Add institution",
+    "srcHash": "gycW8wpBf_7g"
+  },
+  "admin.institution.action.delete": {
+    "defaultMessage": "Delete",
+    "srcHash": "oe4iuqXX4rqm"
+  },
+  "admin.institution.action.save": {
+    "defaultMessage": "Save",
+    "srcHash": "eKX-T2uH2Zl7"
+  },
+  "admin.institution.ap.noResults": {
+    "defaultMessage": "No results",
+    "srcHash": "oc4Ghrr84kQ7"
+  },
+  "admin.institution.ap.placeholder": {
+    "defaultMessage": "Search for an access point",
+    "srcHash": "5gBnPpoB3qgy"
+  },
+  "admin.institution.ap.startTyping": {
+    "defaultMessage": "Start typing to search",
+    "srcHash": "1sL2Z7ehmlnS"
+  },
+  "admin.institution.delete.confirm": {
+    "defaultMessage": "Do you really want to delete this institution?",
+    "srcHash": "JHOiroQZObbN"
+  },
+  "admin.institution.dialog.createTitle": {
+    "defaultMessage": "New institution",
+    "srcHash": "ayVYD497CozF"
+  },
+  "admin.institution.dialog.editTitle": {
+    "defaultMessage": "Edit institution",
+    "srcHash": "JytjS0ItLrtT"
+  },
+  "admin.institution.empty": {
+    "defaultMessage": "No institutions",
+    "srcHash": "khDylM4fW5bz"
+  },
+  "admin.institution.field.accessPoint": {
+    "defaultMessage": "Access point",
+    "srcHash": "we58htlMi7T9"
+  },
+  "admin.institution.field.internalCode": {
+    "defaultMessage": "Internal code",
+    "srcHash": "p2eSz8FK6c9N"
+  },
+  "admin.institution.field.name": {
+    "defaultMessage": "Name",
+    "srcHash": "EQAs0dy3Z5es"
+  },
+  "admin.institution.field.shortName": {
+    "defaultMessage": "Short name",
+    "srcHash": "i9nMQ4ncyAZS"
+  },
+  "admin.institution.field.type": {
+    "defaultMessage": "Institution type",
+    "srcHash": "lzNqhHiNJAdk"
+  },
+  "admin.institution.field.typePlaceholder": {
+    "defaultMessage": "Select a type",
+    "srcHash": "hUSGzdm8qQ7v"
+  },
+  "admin.institution.tile.noType": {
+    "defaultMessage": "No type",
+    "srcHash": "vbRcoJULEr2m"
+  },
   "admin_packages_label_action": {
     "defaultMessage": "Action",
     "srcHash": "zI4C_P1sVn28"
@@ -1256,6 +1324,10 @@
   "publication.table.menu.download": {
     "defaultMessage": "Download",
     "srcHash": "xxAzjqAuIzkG"
+  },
+  "ribbon.action.admin.institution": {
+    "defaultMessage": "Institutions",
+    "srcHash": "AMtLLUW_r1z7"
   },
   "ribbon.action.arr.fund.publicationSystems": {
     "defaultMessage": "Publication systems management",

@@ -9,12 +9,17 @@ import {
     URL_ADMIN_USER,
     URL_ADMIN_GROUP,
     URL_ADMIN_FUND,
+    URL_ADMIN_INSTITUTION,
 } from '../../constants';
 
 const messages = defineMessages({
     reports: {
         id: 'ribbon_action_admin_reports',
         defaultMessage: 'Přehledy',
+    },
+    institution: {
+        id: 'ribbon.action.admin.institution',
+        defaultMessage: 'Instituce',
     },
 });
 
@@ -78,6 +83,7 @@ export function AdminNav() {
         { to: URL_ADMIN_USER, glyph: 'fa-user', label: i18n('ribbon.action.admin.user'), visible: administersUser },
         { to: URL_ADMIN_GROUP, glyph: 'fa-group', label: i18n('ribbon.action.admin.group'), visible: administersGroup },
         { to: URL_ADMIN_FUND, glyph: 'fa-database', label: i18n('ribbon.action.admin.fund'), visible: administersGroup || administersUser },
+        { to: URL_ADMIN_INSTITUTION, glyph: 'fa-university', label: <FormattedMessage {...messages.institution} />, visible: isSuperuser },
         { to: '/admin/reports', glyph: 'fa-line-chart', label: <FormattedMessage {...messages.reports} />, visible: canSeeReports },
         { to: '/admin/packages', glyph: 'fa-archive', label: i18n('ribbon.action.admin.packages'), visible: isSuperuser },
         { to: '/admin/extSystem', glyph: 'fa-external-link', label: i18n('ribbon.action.admin.externalSystems'), visible: isSuperuser },
