@@ -69,9 +69,13 @@ export const aiAssistantMessages = defineMessages({
         id: "aiAssistant.usage.accountHeading",
         defaultMessage: "Váš účet",
     },
+    usageSharedAccountHeading: {
+        id: "aiAssistant.usage.sharedAccountHeading",
+        defaultMessage: "Sdílený účet organizace",
+    },
     usageCustomerHeading: {
         id: "aiAssistant.usage.customerHeading",
-        defaultMessage: "Organizace",
+        defaultMessage: "Rozpočet organizace",
     },
     balanceSpentOfAllowance: {
         id: "aiAssistant.balance.spentOfAllowance",
@@ -88,14 +92,6 @@ export const aiAssistantMessages = defineMessages({
     balanceUnlimited: {
         id: "aiAssistant.balance.unlimited",
         defaultMessage: "Bez limitu",
-    },
-    balanceAccountPersonal: {
-        id: "aiAssistant.balance.account.personal",
-        defaultMessage: "Osobní účet",
-    },
-    balanceAccountShared: {
-        id: "aiAssistant.balance.account.shared",
-        defaultMessage: "Sdílený účet organizace",
     },
     balancePlan: {
         id: "aiAssistant.balance.plan",

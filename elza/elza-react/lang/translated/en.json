@@ -413,14 +413,6 @@
     "defaultMessage": "Searching the archival description",
     "srcHash": "bvAJXkkvNNbf"
   },
-  "aiAssistant.balance.account.personal": {
-    "defaultMessage": "Personal account",
-    "srcHash": "b8s6EZuRDMPA"
-  },
-  "aiAssistant.balance.account.shared": {
-    "defaultMessage": "Shared organization account",
-    "srcHash": "FQNJWoKyK61y"
-  },
   "aiAssistant.balance.customer": {
     "defaultMessage": "{spent} of {budget} credits",
     "srcHash": "wX_fgYsa2bp9"
@@ -534,8 +526,8 @@
     "srcHash": "MkOMwma42RkB"
   },
   "aiAssistant.usage.customerHeading": {
-    "defaultMessage": "Organization",
-    "srcHash": "V8WyNWaNZkN6"
+    "defaultMessage": "Organization budget",
+    "srcHash": "h5TfvO6aunX_"
   },
   "aiAssistant.usage.dialog.close": {
     "defaultMessage": "Close",
@@ -564,6 +556,10 @@
   "aiAssistant.usage.profile": {
     "defaultMessage": "Model: {profile}",
     "srcHash": "5bWvPMt2Re76"
+  },
+  "aiAssistant.usage.sharedAccountHeading": {
+    "defaultMessage": "Shared organization account",
+    "srcHash": "FQNJWoKyK61y"
   },
   "aiAssistant.usage.started": {
     "defaultMessage": "Started: {datetime}",

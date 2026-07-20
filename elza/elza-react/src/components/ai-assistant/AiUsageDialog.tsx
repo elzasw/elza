@@ -69,7 +69,6 @@ export function AiUsageDialog({ open, onClose, balance }: Props) {
 
     const account = balance?.account;
     const customer = balance?.customer;
-    const hasData = !!account || !!customer;
 
     const accountRatio = account?.allowanceCredits ? account.spentCredits / account.allowanceCredits : null;
     // Meter colour tracks how close the allowance is to exhaustion.
@@ -77,6 +76,22 @@ export function AiUsageDialog({ open, onClose, balance }: Props) {
         : accountRatio >= 0.95 ? "error"
         : accountRatio >= 0.8 ? "warning"
         : "brand";
+
+    // The `account` layer is the account the user's own key bills to (their
+    // personal seat, or the shared account when they run on the shared key) —
+    // always their own consumption, never another key's. The `customer` layer
+    // is the organization-wide budget cap above all accounts. For a personal
+    // account it is only relevant when its cap is close to (or at) exhaustion:
+    // that cap can refuse the user's task even with personal credits left. An
+    // org line with no cap can never refuse them, so it is pure noise for a
+    // personal user and stays hidden. For a shared account the two layers
+    // describe the same pool, so it is always shown.
+    const customerRatio = customer?.budgetCredits ? customer.spentCredits / customer.budgetCredits : null;
+    const showCustomer = !!customer && (
+        account?.accountType !== "personal"
+        || (customerRatio != null && customerRatio >= 0.8)
+    );
+    const hasData = !!account || showCustomer;
 
     return (
         <Dialog open={open} onOpenChange={(_e, data) => { if (!data.open) onClose(); }}>
@@ -94,7 +109,9 @@ export function AiUsageDialog({ open, onClose, balance }: Props) {
                         {account && (
                             <div className={styles.section}>
                                 <div className={styles.heading}>
-                                    <FormattedMessage {...aiAssistantMessages.usageAccountHeading} />
+                                    <FormattedMessage {...(account.accountType === "shared"
+                                        ? aiAssistantMessages.usageSharedAccountHeading
+                                        : aiAssistantMessages.usageAccountHeading)} />
                                 </div>
                                 <div className={styles.amount}>
                                     {account.allowanceCredits != null ? (
@@ -131,23 +148,14 @@ export function AiUsageDialog({ open, onClose, balance }: Props) {
                                         <FormattedMessage {...aiAssistantMessages.balanceUnlimited} />
                                     </div>
                                 )}
-                                <div className={styles.meta}>
-                                    {account.accountType === "personal" && (
-                                        <FormattedMessage {...aiAssistantMessages.balanceAccountPersonal} />
-                                    )}
-                                    {account.accountType === "shared" && (
-                                        <FormattedMessage {...aiAssistantMessages.balanceAccountShared} />
-                                    )}
-                                    {account.plan && (
-                                        <>
-                                            {account.accountType ? " · " : ""}
-                                            <FormattedMessage
-                                                {...aiAssistantMessages.balancePlan}
-                                                values={{ plan: account.plan }}
-                                            />
-                                        </>
-                                    )}
-                                </div>
+                                {account.plan && (
+                                    <div className={styles.meta}>
+                                        <FormattedMessage
+                                            {...aiAssistantMessages.balancePlan}
+                                            values={{ plan: account.plan }}
+                                        />
+                                    </div>
+                                )}
                                 {account.periodEnd && (
                                     <div className={styles.meta}>
                                         <FormattedMessage
@@ -158,7 +166,7 @@ export function AiUsageDialog({ open, onClose, balance }: Props) {
                                 )}
                             </div>
                         )}
-                        {customer && (
+                        {showCustomer && customer && (
                             <div className={styles.section}>
                                 <div className={styles.heading}>
                                     <FormattedMessage {...aiAssistantMessages.usageCustomerHeading} />
