@@ -76,7 +76,7 @@ using TypeSpec.OpenAPI;
  * `GET /ping`. See `SignatureAuth` and the companion `security.md`.
  */
 @service(#{ title: "Elza AI Provider API" })
-@info(#{ version: "0.12.0" })
+@info(#{ version: "0.13.0" })
 @server(
   "{endpoint}",
   "Provider-assigned base endpoint, e.g. https://ai.example.com/elza",
@@ -152,8 +152,17 @@ model SignedRequest {
  *   without the parts.
  * - `elza.archivalDescription` — a description unit (node) and its related data.
  *   Payload fields are introduced as real tasks need them.
- * - `elza.revisionFindings` — result of `elza.revision`. Payload fields are
- *   introduced as the task's result shape is finalized.
+ * - `elza.archivalOutline` — a compact, ordered outline of part of the
+ *   arrangement tree (payload `ArchivalOutline`): one lightweight row per level
+ *   (id, position, title, dating), ~10–20 tokens each, so hundreds to thousands
+ *   of levels fit one task. The hierarchical context of `elza.revision` (child /
+ *   sibling / branch summaries), and the cheap whole-branch representation for
+ *   checks that read titles, not items.
+ * - `elza.revisionConfig` — configuration of an `elza.revision` run (payload
+ *   `RevisionConfig`): which checks to run, the scope, the expected language.
+ * - `elza.revisionFindings` — result of `elza.revision` (payload
+ *   `RevisionFindings`): advisory findings for professional assessment, each
+ *   anchored to a verbatim excerpt of the reviewed description.
  * - `elza.docCitations` — the knowledge/documentation sources an answer relied on
  *   (payload `DocCitationsPayload`): each cited section as a stable citation id and,
  *   when the provider can resolve one, a full web URL. Returned alongside the text
@@ -178,6 +187,12 @@ enum ObjectType {
 
   /** A description unit (node) and its related data; payload `ArchivalDescription`. */
   archivalDescription: "elza.archivalDescription",
+
+  /** A compact, ordered outline of part of the arrangement tree; payload `ArchivalOutline`. */
+  archivalOutline: "elza.archivalOutline",
+
+  /** Configuration of an `elza.revision` run; payload `RevisionConfig`. */
+  revisionConfig: "elza.revisionConfig",
 
   /** Result of `elza.revision`; payload `RevisionFindings`. */
   revisionFindings: "elza.revisionFindings",
@@ -680,6 +695,15 @@ model ArchivalDescription {
    */
   issues?: NodeIssue[];
 
+  /**
+   * Item-type codes the rule package permits on this level (the POSSIBLE +
+   * REQUIRED types Elza's rules compute for the node) — the catalog a revision
+   * task's element suggestions must stay within (`RevisionFinding.targetItemType`
+   * must be one of these). Filled for the reviewed units of `elza.revision`;
+   * absent in other uses (chat context, tool results).
+   */
+  allowedItemTypes?: string[];
+
   /** The level's description items, in display order. */
   items: DescriptionItem[];
 }
@@ -693,11 +717,181 @@ model ArchivalDescriptionObject extends AiObject {
 }
 
 /**
- * Result of `elza.revision`. Payload fields are added as the task's result shape
- * is finalized; open for additive growth.
+ * One row of an archival outline — a level reduced to its identity and the
+ * lightweight facts tree-level checks and hierarchical reasoning need
+ * (~10–20 tokens). Rows carry no description items; a task that needs a
+ * level's items receives it as a full `elza.archivalDescription` (or pulls it
+ * with the `getArchivalDescription` tool).
+ */
+model OutlineRow {
+  /** Level id (`ArrNode.nodeId`) — the same identity `elza.archivalDescription` uses. */
+  nodeId: int32;
+
+  /** Depth in the arrangement tree; a fund root is depth 0. */
+  depth?: int32;
+
+  /** Reference designation from the fund root, e.g. `["1", "2", "3"]`. */
+  referenceMark?: string[];
+
+  /** Tree title of the level, as in `ArchivalDescription.title`. */
+  title?: string;
+
+  /** Dating of the level (text form of its unit-date item), if set. */
+  unitDate?: string;
+}
+
+/**
+ * A compact, ordered outline of part of the arrangement tree: one `OutlineRow`
+ * per level, in tree order, with parent–child relations readable from
+ * `referenceMark`/`depth`. Built deterministically by the client (no model
+ * involved), so a whole branch of hundreds to thousands of levels costs what a
+ * handful of full descriptions would. Used by `elza.revision` as the
+ * hierarchical context around the reviewed units (children / sibling
+ * summaries), and as the whole-branch representation for checks that read
+ * titles and dating rather than items (naming consistency, repetition across
+ * levels).
+ */
+model ArchivalOutline {
+  /** Fund the outline belongs to (`ArrFund.fundId`); echo-only. */
+  fundId?: int32;
+
+  /** The outline's rows, in arrangement (tree) order. */
+  rows: OutlineRow[];
+}
+
+/** Archival outline object. */
+model ArchivalOutlineObject extends AiObject {
+  @invisible(Lifecycle)
+  objectType: ObjectType.archivalOutline;
+
+  data: ArchivalOutline;
+}
+
+/**
+ * Configuration of an `elza.revision` run — what the client asks the check to
+ * look at. All fields optional: an empty config means "all checks, default
+ * behaviour".
+ */
+model RevisionConfig {
+  /**
+   * Check-category codes to run; omitted = all. An **open, Elza-owned** catalog
+   * (codes are data to the provider's prompt; unknown codes produce no
+   * findings). Defined categories (see the task definition in
+   * `tasks/elza-revision.md`): `hidden_data`, `note_misuse`, `wrong_level`,
+   * `duplicate`, `formulation`, `contradiction`, `inconsistency`,
+   * `access_point_candidate`.
+   */
+  checks?: string[];
+
+  /**
+   * What the payload covers, as a hint for the prompt's framing: `unit` (one
+   * reviewed level with its surroundings) or `branch` (a window of levels of
+   * one subtree). Open set; omitted = derived from the payload.
+   */
+  scope?: string;
+
+  /**
+   * Language of the descriptions AND of the expected findings (BCP-47, e.g.
+   * `cs`). Findings' human-readable texts are written in this language.
+   */
+  language?: string;
+}
+
+/** Revision config object. */
+model RevisionConfigObject extends AiObject {
+  @invisible(Lifecycle)
+  objectType: ObjectType.revisionConfig;
+
+  data: RevisionConfig;
+}
+
+/**
+ * One advisory finding of `elza.revision` — a suggestion for professional
+ * assessment, never an authoritative error: the AI must not declare an archival
+ * statement factually wrong on linguistic evidence alone, and nothing is ever
+ * changed automatically. Every finding is anchored to a verbatim excerpt of the
+ * reviewed description (the anti-hallucination requirement: the archivist
+ * verifies the basis at a glance).
+ */
+model RevisionFinding {
+  /** The reviewed level the finding concerns (`ArchivalDescription.nodeId`). */
+  nodeId: int32;
+
+  /**
+   * Check category the finding belongs to — one of the codes requested in
+   * `RevisionConfig.checks` (Elza-owned open catalog: `hidden_data`,
+   * `note_misuse`, `wrong_level`, `duplicate`, `formulation`, `contradiction`,
+   * `inconsistency`, `access_point_candidate`).
+   */
+  category: string;
+
+  /** Severity for triage ordering: `high`, `medium` or `low` (open set). */
+  severity: string;
+
+  /** The model's own certainty, 0–100; low-confidence findings are suggestions, never errors. */
+  @minValue(0)
+  @maxValue(100)
+  confidence?: int32;
+
+  /**
+   * What kind of statement the finding makes: `rule` (a probable rule
+   * violation), `contradiction` (a content conflict needing professional
+   * verification) or `style` (a clarity/stylistic recommendation). Open set.
+   */
+  kind?: string;
+
+  /** Item-type code of the item the finding is anchored in (`RulItemType.code`). */
+  sourceItemType?: string;
+
+  /** Specification code of the source item, when spec-specific. */
+  sourceItemSpec?: string;
+
+  /**
+   * Verbatim excerpt of the problematic text, quoted exactly from the reviewed
+   * description — the evidence the archivist verifies against.
+   */
+  excerpt: string;
+
+  /**
+   * Why the wording may be problematic — user-facing, self-contained (readable
+   * without the AI context), in the run's `language`.
+   */
+  explanation: string;
+
+  /**
+   * Suggested target element for a hidden/misplaced value — MUST be one of the
+   * level's `allowedItemTypes` (the provider never invents elements outside the
+   * supplied catalog). Absent when no move is suggested.
+   */
+  targetItemType?: string;
+
+  /**
+   * Recommended handling: `move`, `split`, `verify`, `reformulate` or `keep`
+   * (open set). Advisory — the archivist decides.
+   */
+  action?: string;
+
+  /**
+   * Optional proposed wording. Never applied automatically; when a split could
+   * weaken or change meaning, the finding recommends manual assessment instead.
+   */
+  proposedText?: string;
+
+  /**
+   * Other reviewed levels involved (e.g. the parent in a wrong-level finding,
+   * the sibling of an inconsistent pair).
+   */
+  relatedNodeIds?: int32[];
+}
+
+/**
+ * Result of `elza.revision`: the advisory findings of one reviewed payload. An
+ * empty `findings` array is a valid and expected result ("nothing suspicious
+ * found") — the prompt never forces findings.
  */
 model RevisionFindings {
-  ...Record<unknown>;
+  /** The findings, most severe first. */
+  findings: RevisionFinding[];
 }
 
 /** Revision findings object. */
@@ -773,11 +967,20 @@ model DocCitationsObject extends AiObject {
  *   back as an `elza.text` result; declares no parameters. No archival semantics —
  *   exists so both sides can validate the full protocol loop (auth, submit, poll,
  *   typed output, usage metering) cheaply before any real scenario.
- * - `elza.revision` — advisory revision of archival description units: finds
- *   logical inconsistencies, dating mismatches, terminology problems and other
- *   issues that formal (rule-based) validation cannot catch. Read-only;
- *   findings are returned as `elza.revisionFindings`. The first production
- *   scenario.
+ * - `elza.revision` — advisory semantic and language check of archival
+ *   description ("AI obsahová kontrola popisu"): finds what formal (rule-based)
+ *   validation cannot — structured facts hidden in free text, misuse of
+ *   public/internal notes, information at the wrong description level,
+ *   duplicates across items and levels, vague or internal formulations,
+ *   contradictions between text and structured items, naming inconsistency
+ *   within a branch, and access-point candidates. Read-only and strictly
+ *   advisory: findings are suggestions for professional assessment
+ *   (`elza.revisionFindings`), each anchored to a verbatim excerpt; the AI
+ *   never changes description data and never declares an archival statement
+ *   factually wrong on linguistic evidence alone. Input: the reviewed unit(s)
+ *   as `elza.archivalDescription` (with `allowedItemTypes`), a
+ *   `elza.revisionConfig`, and hierarchical context (`elza.archivalOutline`,
+ *   ancestors, `elza.fundInfo`). Task definition: `tasks/elza-revision.md`.
  */
 scalar TaskType extends string;
 

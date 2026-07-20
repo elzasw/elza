@@ -6,8 +6,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
@@ -27,12 +29,18 @@ import org.springframework.beans.factory.annotation.Value;
 
 import cz.tacr.elza.aiprovider.client.vo.AiObject;
 import cz.tacr.elza.aiprovider.client.vo.AiServiceInfo;
+import cz.tacr.elza.aiprovider.client.vo.ArchivalDescriptionObject;
+import cz.tacr.elza.aiprovider.client.vo.ObjectType;
+import cz.tacr.elza.aiprovider.client.vo.RevisionConfig;
+import cz.tacr.elza.aiprovider.client.vo.RevisionConfigObject;
 import cz.tacr.elza.aiprovider.client.vo.SubmitTask;
 import cz.tacr.elza.aiprovider.client.vo.TaskAccepted;
 import cz.tacr.elza.aiprovider.client.vo.TaskMetadata;
 import cz.tacr.elza.aiprovider.client.vo.TaskParameterInfo;
 import cz.tacr.elza.aiprovider.client.vo.TaskTypeInfo;
+import cz.tacr.elza.controller.vo.AiContextNodeVO;
 import cz.tacr.elza.controller.vo.AiContextObjectVO;
+import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.controller.vo.AiConversationCreateVO;
 import cz.tacr.elza.controller.vo.AiConversationDetailVO;
 import cz.tacr.elza.controller.vo.AiConversationVO;
@@ -102,6 +110,9 @@ public class AiConversationService {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private ElzaLocale elzaLocale;
 
     @Autowired
     private AiContextResolver contextResolver;
@@ -265,13 +276,18 @@ public class AiConversationService {
                 .app("elza")
                 .appVersion(appVersion);
 
+        Map<String, AiObject> taskParameters = buildParameters(taskType, parameters, context,
+                externalSystem, conversation.getUserId());
+        List<AiObject> resolvedContext = contextResolver.resolveAll(context);
+        appendOutlineForSubject(taskParameters, parameters, context, resolvedContext);
+
         SubmitTask submitTask = new SubmitTask()
                 .requestId(request.getRequestId())
                 .taskType(taskType)
                 .profile(profile)
                 .userInstructions(userInstructions)
-                .parameters(buildParameters(taskType, parameters, externalSystem, conversation.getUserId()))
-                .context(contextResolver.resolveAll(context))
+                .parameters(taskParameters)
+                .context(resolvedContext)
                 .tools(toolRegistry.toolNames())
                 .parentTaskId(parentTaskUid)
                 .metadata(metadata);
@@ -324,33 +340,114 @@ public class AiConversationService {
      * provider object and assigned to the task's declared parameter whose object
      * type matches (looked up from the provider's {@code GET /info}); a resolved
      * object with no matching declared parameter is skipped.
+     *
+     * <p>Declared parameters the UI did not supply are then filled two ways:
+     * from the panel's <em>context</em> objects (the panel sends only
+     * {@code context} — a task declaring an {@code elza.archivalDescription}
+     * subject takes the current node from it), and by synthesis for parameter
+     * types that need no UI input ({@code elza.revisionConfig} — the run's
+     * language from the deployment locale). This is what lets
+     * {@code elza.revision} run from the panel with no dedicated UI.
      */
     private Map<String, AiObject> buildParameters(final String taskType,
                                                   final List<AiContextObjectVO> parameterContext,
+                                                  final List<AiContextObjectVO> contextObjects,
                                                   final AiExternalSystem externalSystem,
                                                   final Integer userId) {
         Map<String, AiObject> parameters = new HashMap<>();
+        List<TaskParameterInfo> declared = declaredParameters(externalSystem, taskType, userId);
+
         // A parameter is one object per supplied context; resolvePrimary yields
         // the single primary object (a node → its own level, no ancestors/fund).
-        List<AiObject> resolved = new ArrayList<>();
         if (parameterContext != null) {
             for (AiContextObjectVO ctx : parameterContext) {
-                contextResolver.resolvePrimary(ctx).ifPresent(resolved::add);
-            }
-        }
-        if (!resolved.isEmpty()) {
-            List<TaskParameterInfo> declared = declaredParameters(externalSystem, taskType, userId);
-            for (AiObject object : resolved) {
-                declared.stream()
+                contextResolver.resolvePrimary(ctx).ifPresent(object -> declared.stream()
                         .filter(p -> object.getObjectType().equals(p.getType()))
                         .findFirst()
                         .ifPresentOrElse(
                                 p -> parameters.put(p.getName(), object),
                                 () -> logger.info("Task {} declares no parameter of type {}; context object skipped",
-                                        taskType, object.getObjectType()));
+                                        taskType, object.getObjectType())));
             }
         }
+
+        // Unfilled declared parameters: synthesize what needs no UI input, then
+        // fall back to the panel's context objects (resolved lazily, each once).
+        List<AiObject> resolvedContext = null;
+        for (TaskParameterInfo declaredParam : declared) {
+            if (parameters.containsKey(declaredParam.getName())) {
+                continue;
+            }
+            if (ObjectType.ELZA_REVISION_CONFIG.equals(declaredParam.getType())) {
+                parameters.put(declaredParam.getName(), defaultRevisionConfig());
+                continue;
+            }
+            if (contextObjects == null || contextObjects.isEmpty()) {
+                continue;
+            }
+            if (resolvedContext == null) {
+                resolvedContext = new ArrayList<>();
+                for (AiContextObjectVO ctx : contextObjects) {
+                    contextResolver.resolvePrimary(ctx).ifPresent(resolvedContext::add);
+                }
+            }
+            resolvedContext.stream()
+                    .filter(object -> declaredParam.getType().equals(object.getObjectType()))
+                    .findFirst()
+                    .ifPresent(object -> parameters.put(declaredParam.getName(), object));
+        }
         return parameters;
+    }
+
+    /**
+     * The default {@code elza.revisionConfig}: all checks (omitted = all), scope
+     * derived from the payload, findings in the deployment's language. A run
+     * configuration UI (check selection) can replace this later.
+     */
+    private AiObject defaultRevisionConfig() {
+        String language = elzaLocale.getLocale().toLanguageTag();
+        RevisionConfig config = new RevisionConfig();
+        if (StringUtils.isNotBlank(language) && !"und".equals(language)) {
+            config.setLanguage(language);
+        }
+        return new RevisionConfigObject()
+                .objectType(ObjectType.ELZA_REVISION_CONFIG)
+                .data(config);
+    }
+
+    /**
+     * When the task's parameters carry a reviewed level (an
+     * {@code elza.archivalDescription} subject), appends that level's
+     * surroundings — nearest siblings + first children — to the context as a
+     * compact {@code elza.archivalOutline} (tasks/elza-revision.md §2). Tasks
+     * without a level subject (chat, echo) are unaffected.
+     */
+    private void appendOutlineForSubject(final Map<String, AiObject> taskParameters,
+                                         final List<AiContextObjectVO> parameterContext,
+                                         final List<AiContextObjectVO> contextObjects,
+                                         final List<AiObject> resolvedContext) {
+        Set<Integer> subjectNodeIds = new HashSet<>();
+        for (AiObject object : taskParameters.values()) {
+            if (object instanceof ArchivalDescriptionObject description && description.getData() != null
+                    && description.getData().getNodeId() != null) {
+                subjectNodeIds.add(description.getData().getNodeId());
+            }
+        }
+        if (subjectNodeIds.isEmpty()) {
+            return;
+        }
+        List<AiContextObjectVO> candidates = new ArrayList<>();
+        if (parameterContext != null) {
+            candidates.addAll(parameterContext);
+        }
+        if (contextObjects != null) {
+            candidates.addAll(contextObjects);
+        }
+        for (AiContextObjectVO ctx : candidates) {
+            if (ctx instanceof AiContextNodeVO node && subjectNodeIds.remove(node.getNodeId())) {
+                contextResolver.resolveOutline(node).ifPresent(resolvedContext::add);
+            }
+        }
     }
 
     /** The task's declared parameters from the provider's catalog; empty when unavailable. */
