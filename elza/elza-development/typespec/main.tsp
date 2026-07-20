@@ -2447,6 +2447,20 @@ model AiAccountUsage {
     periodStart: utcDateTime;
     /** End of the current accounting period — when the allowance resets. */
     periodEnd?: utcDateTime;
+    /**
+     * Weekly credit allowance — an optional smoothing cap layered under the
+     * period allowance; absent = no weekly cap.
+     */
+    weeklyAllowanceCredits?: float64;
+    /** Credits charged to this account in the current weekly window; absent = no weekly accounting. */
+    weeklySpentCredits?: float64;
+    /**
+     * Start of the current weekly window (the UTC calendar week clamped to the
+     * period start — it never spans a period boundary).
+     */
+    weekStart?: utcDateTime;
+    /** End of the current weekly window — when the weekly allowance resets; never after `periodEnd`. */
+    weekEnd?: utcDateTime;
 }
 
 /** Subscriber-level (whole organization) usage state — the outer budget cap. */

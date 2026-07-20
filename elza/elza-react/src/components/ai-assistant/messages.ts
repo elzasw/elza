@@ -99,7 +99,15 @@ export const aiAssistantMessages = defineMessages({
     },
     balanceResets: {
         id: "aiAssistant.balance.resets",
-        defaultMessage: "Obnovení přídělu: {date}",
+        defaultMessage: "Obnovení přídělu: {date} ({days, plural, one {za 1 den} few {za # dny} other {za # dní}})",
+    },
+    balanceWeekly: {
+        id: "aiAssistant.balance.weekly",
+        defaultMessage: "Tento týden: {spent} z {allowance} kreditů",
+    },
+    balanceWeeklyResets: {
+        id: "aiAssistant.balance.weeklyResets",
+        defaultMessage: "Týdenní příděl se obnoví {date} ({days, plural, one {za 1 den} few {za # dny} other {za # dní}})",
     },
     balanceCustomer: {
         id: "aiAssistant.balance.customer",

@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Elza AI Provider API
-  version: 0.10.0
+  version: 0.11.0
   description: |-
     Elza AI Provider API.
 
@@ -1094,6 +1094,32 @@ components:
           type: string
           format: date-time
           description: End of the current accounting period — when the allowance resets.
+        weeklyAllowanceCredits:
+          type: number
+          format: double
+          description: |-
+            Weekly credit allowance — an optional smoothing cap layered under the
+            period allowance (protecting the rest of the period from one heavy week);
+            absent = no weekly cap.
+        weeklySpentCredits:
+          type: number
+          format: double
+          description: Credits charged to this account in the current weekly window; absent = the provider keeps no weekly accounting.
+        weekStart:
+          type: string
+          format: date-time
+          description: |-
+            Start of the current weekly window. The window is the UTC calendar week
+            (Monday 00:00) clamped to the period start, so it never spans a period
+            boundary — at a mid-week period start the weekly counter resets early
+            together with the period, in the user's favor.
+        weekEnd:
+          type: string
+          format: date-time
+          description: |-
+            End of the current weekly window — when the weekly allowance resets (the
+            earlier of next Monday 00:00 UTC and `periodEnd`; by construction never
+            after `periodEnd`).
       description: |-
         Credit state of the account the signing key selects — the caller's personal
         account (user-scoped key) or the organization's shared account

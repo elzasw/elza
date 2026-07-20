@@ -426,8 +426,8 @@
     "srcHash": "_QrlEK2_g5XP"
   },
   "aiAssistant.balance.resets": {
-    "defaultMessage": "Allowance resets: {date}",
-    "srcHash": "JtpcNuo-Xy0T"
+    "defaultMessage": "Allowance resets: {date} ({days, plural, one {in 1 day} other {in # days}})",
+    "srcHash": "08ZEh42HYSGo"
   },
   "aiAssistant.balance.spent": {
     "defaultMessage": "{spent} credits",
@@ -444,6 +444,14 @@
   "aiAssistant.balance.usedPercent": {
     "defaultMessage": "{percent}% used",
     "srcHash": "RIjoc5herJ7m"
+  },
+  "aiAssistant.balance.weekly": {
+    "defaultMessage": "This week: {spent} of {allowance} credits",
+    "srcHash": "-vmlpJAsJvEv"
+  },
+  "aiAssistant.balance.weeklyResets": {
+    "defaultMessage": "Weekly allowance resets {date} ({days, plural, one {in 1 day} other {in # days}})",
+    "srcHash": "97aKjcNyYbs8"
   },
   "aiAssistant.block.citations": {
     "defaultMessage": "Sources",

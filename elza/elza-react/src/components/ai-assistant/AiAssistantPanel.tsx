@@ -377,12 +377,20 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
 
     // Credits stay out of the way — the balance lives in a /usage-style dialog
     // opened from the settings menu, not in the composer bar. The only ambient
-    // cue is a colored dot on the gear when the allowance runs low, so a user
-    // near the limit is not surprised.
+    // cue is a colored dot on the gear when an allowance runs low, so a user
+    // near a limit is not surprised. Both caps count: the weekly smoothing cap
+    // refuses tasks just like the monthly allowance, so the dot tracks
+    // whichever of the two is closer to exhaustion.
     const [usageOpen, setUsageOpen] = useState(false);
-    const balanceRatio = balance?.account?.allowanceCredits
+    const monthlyRatio = balance?.account?.allowanceCredits
         ? balance.account.spentCredits / balance.account.allowanceCredits
         : null;
+    const weeklyRatio = balance?.account?.weeklyAllowanceCredits
+        ? (balance.account.weeklySpentCredits ?? 0) / balance.account.weeklyAllowanceCredits
+        : null;
+    const balanceRatio = monthlyRatio == null ? weeklyRatio
+        : weeklyRatio == null ? monthlyRatio
+        : Math.max(monthlyRatio, weeklyRatio);
     const lowCreditsColor = balanceRatio == null ? null
         : balanceRatio >= 0.95 ? tokens.colorPaletteRedBackground3
         : balanceRatio >= 0.8 ? tokens.colorPaletteYellowBackground3
