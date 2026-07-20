@@ -19,6 +19,9 @@ import org.springframework.stereotype.Service;
 import cz.tacr.elza.aiprovider.client.vo.AiObject;
 import cz.tacr.elza.aiprovider.client.vo.ArchivalDescription;
 import cz.tacr.elza.aiprovider.client.vo.ArchivalDescriptionObject;
+import cz.tacr.elza.aiprovider.client.vo.ArchivalOutline;
+import cz.tacr.elza.aiprovider.client.vo.ArchivalOutlineObject;
+import cz.tacr.elza.aiprovider.client.vo.OutlineRow;
 import cz.tacr.elza.aiprovider.client.vo.ArchivalEntity;
 import cz.tacr.elza.aiprovider.client.vo.ArchivalEntityInfo;
 import cz.tacr.elza.aiprovider.client.vo.ArchivalEntityObject;
@@ -61,6 +64,8 @@ import cz.tacr.elza.domain.ArrNodeConformityMissing;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.groovy.GroovyResult;
@@ -72,6 +77,7 @@ import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.LevelTreeCacheService;
+import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
@@ -111,6 +117,12 @@ public class AiContextResolver {
 
     private static final Logger logger = LoggerFactory.getLogger(AiContextResolver.class);
 
+    /** Max sibling rows in a level's outline (window centered on the level). */
+    private static final int OUTLINE_SIBLINGS_MAX = 50;
+
+    /** Max child rows in a level's outline (the first children, arrangement order). */
+    private static final int OUTLINE_CHILDREN_MAX = 200;
+
     @Autowired
     private FundRepository fundRepository;
 
@@ -131,6 +143,9 @@ public class AiContextResolver {
 
     @Autowired
     private LevelTreeCacheService levelTreeCacheService;
+
+    @Autowired
+    private RuleService ruleService;
 
     @Autowired
     private StaticDataService staticDataService;
@@ -191,7 +206,14 @@ public class AiContextResolver {
             if (version == null || node.getNodeId() == null) {
                 return Optional.empty();
             }
-            return Optional.ofNullable(buildArchivalDescription(version, node.getNodeId(), true));
+            AiObject object = buildArchivalDescription(version, node.getNodeId(), true);
+            if (object instanceof ArchivalDescriptionObject description && description.getData() != null) {
+                // A primary node is the reviewed *subject* of the task (e.g.
+                // elza.revision) — pin the element catalog its suggestions must
+                // stay within (RevisionFinding.targetItemType).
+                description.getData().setAllowedItemTypes(allowedItemTypes(version, node.getNodeId()));
+            }
+            return Optional.ofNullable(object);
         }
         if (ctx instanceof AiContextAccesspointVO accessPoint) {
             return resolveArchivalEntity(accessPoint.getAccessPointId());
@@ -199,6 +221,96 @@ public class AiContextResolver {
         logger.info("AI context object {} is not resolvable to a provider object yet",
                 ctx == null ? null : ctx.getClass().getSimpleName());
         return Optional.empty();
+    }
+
+    /**
+     * Item-type codes the rule package permits on the level — the REQUIRED,
+     * RECOMMENDED and POSSIBLE types Elza's rules compute for the node
+     * ({@link RuleService#getDescriptionItemTypes}); IMPOSSIBLE types are
+     * excluded. {@code null} when the computation fails (the payload field is
+     * optional; a task then simply gets no catalog to bound suggestions with).
+     */
+    private List<String> allowedItemTypes(final ArrFundVersion version, final Integer nodeId) {
+        try {
+            ArrNode node = nodeRepository.findById(nodeId).orElse(null);
+            if (node == null) {
+                return null;
+            }
+            return ruleService.getDescriptionItemTypes(version, node).stream()
+                    .filter(type -> type.getType() != RulItemType.Type.IMPOSSIBLE)
+                    .map(RulItemTypeExt::getCode)
+                    .toList();
+        } catch (Exception e) {
+            logger.warn("Allowed item types for node {} could not be computed: {}", nodeId, e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * The surroundings of a level as a compact {@code elza.archivalOutline}:
+     * its nearest siblings (a window centered on the level, the level itself
+     * included so its position is visible) followed by its first children, in
+     * arrangement order. Deterministic and cheap (~10–20 tokens per row, no
+     * items loaded) — the hierarchical context of {@code elza.revision}
+     * (tasks/elza-revision.md §2). Rows carry no {@code unitDate} in v1 (it
+     * would cost an item load per row); the field is optional in the contract.
+     * Empty when the fund/level is missing or not readable.
+     */
+    public Optional<AiObject> resolveOutline(final AiContextNodeVO nodeCtx) {
+        ArrFundVersion version = resolveReadableOpenVersion(nodeCtx.getFundId());
+        if (version == null || nodeCtx.getNodeId() == null) {
+            return Optional.empty();
+        }
+        TreeNode treeNode = levelTreeCacheService.getVersionTreeCache(version).get(nodeCtx.getNodeId());
+        if (treeNode == null) {
+            return Optional.empty();
+        }
+
+        List<Integer> ids = new ArrayList<>();
+        if (treeNode.getParent() != null) {
+            List<TreeNode> siblings = treeNode.getParent().getChildren();
+            int index = siblings.indexOf(treeNode);
+            int from = Math.max(0, index - OUTLINE_SIBLINGS_MAX / 2);
+            int to = Math.min(siblings.size(), from + OUTLINE_SIBLINGS_MAX);
+            for (TreeNode sibling : siblings.subList(from, to)) {
+                ids.add(sibling.getId());
+            }
+        }
+        List<TreeNode> children = treeNode.getChildren();
+        if (children != null) {
+            for (TreeNode child : children.subList(0, Math.min(children.size(), OUTLINE_CHILDREN_MAX))) {
+                ids.add(child.getId());
+            }
+        }
+        if (ids.isEmpty()) {
+            return Optional.empty();
+        }
+
+        // Decorate only the outline window: titles come from the same tree-cache
+        // batch call the search hits use.
+        Map<Integer, String> titles = loadTitles(version, ids);
+        Map<Integer, TreeNode> treeMap = levelTreeCacheService.getVersionTreeCache(version);
+        List<OutlineRow> rows = new ArrayList<>(ids.size());
+        for (Integer id : ids) {
+            TreeNode row = treeMap.get(id);
+            if (row == null) {
+                continue;
+            }
+            rows.add(new OutlineRow()
+                    .nodeId(id)
+                    .depth(row.getDepth())
+                    .referenceMark(toReferenceMark(row.getReferenceMark()))
+                    .title(titles.get(id)));
+        }
+        if (rows.isEmpty()) {
+            return Optional.empty();
+        }
+        ArchivalOutline outline = new ArchivalOutline()
+                .fundId(version.getFundId())
+                .rows(rows);
+        return Optional.of(new ArchivalOutlineObject()
+                .objectType(ObjectType.ELZA_ARCHIVAL_OUTLINE)
+                .data(outline));
     }
 
     /** Adds a node's level, its ancestors (root-ward) and its fund, deduplicated. */
