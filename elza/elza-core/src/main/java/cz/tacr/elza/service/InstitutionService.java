@@ -8,10 +8,13 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.controller.vo.Institution;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.ParInstitutionType;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.groovy.GroovyResult;
+import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.InstitutionTypeRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
@@ -25,10 +28,13 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 public class InstitutionService {
 
     @Autowired
+    private InstitutionTypeRepository institutionTypeRepository;
+
+    @Autowired
     private InstitutionRepository institutionRepository;
 
     @Autowired
-    private InstitutionTypeRepository institutionTypeRepository;
+    private ApIndexRepository indexRepository;
 
     @Autowired
     private AccessPointService accessPointService;
@@ -67,9 +73,10 @@ public class InstitutionService {
 
         ParInstitution institution = new ParInstitution();
         institution.setInternalCode(dto.getInternalCode());
-        institution.setShortName(dto.getShortName());
         institution.setInstitutionType(type);
         institution.setAccessPoint(ap);
+        institution.setName(dto.getName() == null ? displayNameOf(ap) : dto.getName());
+        institution.setShortName(dto.getShortName() == null ? shortNameOf(ap) : dto.getShortName());
 
         ParInstitution saved = institutionRepository.save(institution);
         eventNotificationService.publishEvent(new ActionEvent(EventType.INSTITUTION_CHANGE));
@@ -84,11 +91,15 @@ public class InstitutionService {
         Assert.notNull(dto, "Institution must not be null");
         Assert.hasText(dto.getInternalCode(), "internalCode must be filled");
 
+        ParInstitutionType type = requireType(dto.getInstitutionTypeId());
+        ApAccessPoint ap = accessPointService.getAccessPointInternal(dto.getAccessPointId());
+
         ParInstitution institution = requireById(id);
         institution.setInternalCode(dto.getInternalCode());
-        institution.setShortName(dto.getShortName());
-        institution.setName(dto.getName());
-        institution.setInstitutionType(requireType(dto.getInstitutionTypeId()));
+        institution.setInstitutionType(type);
+        institution.setAccessPoint(ap);
+        institution.setName(dto.getName() == null ? displayNameOf(ap) : dto.getName());
+        institution.setShortName(dto.getShortName() == null ? shortNameOf(ap) : dto.getShortName());
 
         ParInstitution saved = institutionRepository.save(institution);
         eventNotificationService.publishEvent(new ActionEvent(EventType.INSTITUTION_CHANGE));
@@ -99,6 +110,16 @@ public class InstitutionService {
         ParInstitution institution = requireById(id);
         institutionRepository.delete(institution);
         eventNotificationService.publishEvent(new ActionEvent(EventType.INSTITUTION_CHANGE));
+    }
+
+    private String displayNameOf(final ApAccessPoint ap) {
+        ApIndex idx = indexRepository.findPreferredPartIndexByAccessPointAndIndexType(ap, GroovyResult.DISPLAY_NAME);
+        return idx != null ? idx.getIndexValue() : null;
+    }
+
+    private String shortNameOf(final ApAccessPoint ap) {
+        ApIndex idx = indexRepository.findPreferredPartIndexByAccessPointAndIndexType(ap, GroovyResult.SHORT_NAME);
+        return idx != null ? idx.getIndexValue() : null;
     }
 
     private ParInstitution requireById(final Integer id) {
