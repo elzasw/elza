@@ -451,7 +451,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
             output2 = outputs.get(0);
         }
 
-        OutputDef outputDetail = outputApi.outputGetOutput(fundVersion.getId(), output2.getId());
+        OutputDef outputDetail = outputApi.outputGetOutput(output2.getId());
 
         assertNotNull(outputDetail);
         assertTrue(outputDetail.getId().equals(output2.getId()));
@@ -462,23 +462,23 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         List<NodeBase> nodes = convertTreeNodes(treeData.getNodes());
         List<Integer> nodeIds = nodes.stream().map(NodeBase::getId).collect(Collectors.toList());
 
-        outputApi.outputAddNodesNamedOutput(outputDetail.getId(), fundVersion.getId(), nodeIds);
+        outputApi.outputAddNodesNamedOutput(outputDetail.getId(), nodeIds);
 
-        outputDetail = outputApi.outputGetOutput(fundVersion.getId(), output2.getId());
+        outputDetail = outputApi.outputGetOutput(output2.getId());
         assertTrue(outputDetail.getNodes().size() == nodeIds.size());
 
-        outputApi.outputRemoveNodesNamedOutput(outputDetail.getId(), fundVersion.getId(), nodeIds);
+        outputApi.outputRemoveNodesNamedOutput(outputDetail.getId(), nodeIds);
 
-        outputDetail = outputApi.outputGetOutput(fundVersion.getId(), output2.getId());
+        outputDetail = outputApi.outputGetOutput(output2.getId());
         assertTrue(outputDetail.getNodes().size() == 0);
 
         OutputNameParam updateParam = new OutputNameParam();
         updateParam.setName("Test 2");
         updateParam.setInternalCode("TST2");
         updateParam.setOutputTypeId(outputDetail.getOutputTypeId());
-        outputApi.outputUpdateNamedOutput(outputDetail.getId(), fundVersion.getId(), updateParam);
+        outputApi.outputUpdateNamedOutput(outputDetail.getId(), updateParam);
 
-        outputDetail = outputApi.outputGetOutput(fundVersion.getId(), output2.getId());
+        outputDetail = outputApi.outputGetOutput(output2.getId());
         assertTrue(outputDetail.getName().equals("Test 2"));
         assertTrue(outputDetail.getInternalCode().equals("TST2"));
 
@@ -495,7 +495,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         textData.setTextValue("test1");
         item.setData(textData);
 
-        OutputItemRes outputItem = outputApi.outputCreateOutputItem(output3.getId(), fundVersion.getId(), output3.getVersion(), item);
+        OutputItemRes outputItem = outputApi.outputCreateOutputItem(output3.getId(), output3.getVersion(), item);
         OutputItem itemCreated = outputItem.getItem();
         assertNotNull(itemCreated);
         assertNotNull(itemCreated.getItemObjectId());
@@ -506,7 +506,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         itemCreatedText.setTextValue("xxx");
         itemCreated.setData(itemCreatedText);
-        outputItem = outputApi.outputUpdateOutputItem(fundVersion.getId(), outputItem.getParent().getVersion(), itemCreated);
+        outputItem = outputApi.outputUpdateOutputItem(outputItem.getParent().getId(), outputItem.getParent().getVersion(), itemCreated);
 
         OutputItem itemUpdated = outputItem.getItem();
         assertNotNull(itemUpdated);
@@ -515,10 +515,10 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         assertTrue(itemUpdated.getData() instanceof DataText);
         assertEquals("xxx", ((DataText) itemUpdated.getData()).getTextValue());
 
-        OutputFormData outputFormData = outputApi.outputGetOutputFormData(outputItem.getParent().getId(), fundVersion.getId());
+        OutputFormData outputFormData = outputApi.outputGetOutputFormData(outputItem.getParent().getId());
         assertNotNull(outputFormData.getParent());
 
-        outputItem = outputApi.outputDeleteOutputItem(fundVersion.getId(), outputItem.getParent().getVersion(), itemCreated.getItemObjectId());
+        outputItem = outputApi.outputDeleteOutputItem(outputItem.getParent().getId(), outputItem.getParent().getVersion(), itemCreated.getItemObjectId());
         OutputDef parent = outputItem.getParent();
 
         OutputItem itemDeleted = outputItem.getItem();
@@ -529,12 +529,11 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         DataText textData2 = new DataText();
         textData2.setTextValue("test1");
         item.setData(textData2);
-        outputItem = outputApi.outputCreateOutputItem(
-                output3.getId(), fundVersion.getId(), parent.getVersion(), item);
+        outputItem = outputApi.outputCreateOutputItem(output3.getId(), parent.getVersion(), item);
         parent = outputItem.getParent();
         itemCreated = outputItem.getItem();
 
-        OutputItemRes outputItemResult = outputApi.outputDeleteOutputItemsByType(fundVersion.getId(), parent.getId(), parent.getVersion(), typeVo.getId());
+        OutputItemRes outputItemResult = outputApi.outputDeleteOutputItemsByType(parent.getId(), parent.getVersion(), typeVo.getId());
         assertNotNull(outputItemResult.getParent());
         assertNull(outputItemResult.getItem());        
 
@@ -561,8 +560,8 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        outputApi.outputDeleteNamedOutput(output2.getId(), fundVersion.getId());
-        outputDetail = outputApi.outputGetOutput(fundVersion.getId(), output2.getId());
+        outputApi.outputDeleteNamedOutput(output2.getId());
+        outputDetail = outputApi.outputGetOutput(output2.getId());
         assertTrue(outputDetail.getDeleteDate() != null);
 
         {

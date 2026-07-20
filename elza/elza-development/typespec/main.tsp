@@ -5789,8 +5789,6 @@ namespace ElzaAPI.Output {
     model OutputItemCsvImportData {
         /** output version */
         outputVersion: HttpPart<integer>;
-        /** output id */
-        outputId: HttpPart<integer>;
         /** desc item type id */
         descItemTypeId: HttpPart<integer>;
         /** CSV file */
@@ -5861,12 +5859,10 @@ namespace ElzaAPI.Output {
     /**
      * Create output item
      */
-    @route("/item/{outputId}/{fundVersionId}/{outputVersion}/create")
+    @route("/item/{outputId}/{outputVersion}/create")
     @post op createOutputItem(
         /** output id */
         @path outputId: integer;
-        /** fund version id */
-        @path fundVersionId: integer;
         /** output version */
         @path outputVersion: integer;
         /** body output item */
@@ -5876,10 +5872,10 @@ namespace ElzaAPI.Output {
     /**
      * Update output item
      */
-    @route("/item/{fundVersionId}/{outputVersion}/update")
+    @route("/item/{outputId}/{outputVersion}/update")
     @put op updateOutputItem(
-        /** fund version id */
-        @path fundVersionId: integer;
+        /** output id */
+        @path outputId: integer;
         /** output version */
         @path outputVersion: integer;
         /** body output item */
@@ -5889,10 +5885,10 @@ namespace ElzaAPI.Output {
     /**
      * Delete output item
      */
-    @route("/item/{fundVersionId}/{outputVersion}/{outputItemId}")
+    @route("/item/{outputId}/{outputVersion}/{outputItemId}")
     @delete op deleteOutputItem(
-        /** fund version id */
-        @path fundVersionId: integer;
+        /** output id */
+        @path outputId: integer;
         /** output version */
         @path outputVersion: integer;
         /** output item id */
@@ -5902,10 +5898,8 @@ namespace ElzaAPI.Output {
     /**
      * Deleting attribute values ​​by type
      */
-    @route("/item/{fundVersionId}/{outputId}/{outputVersion}/{itemTypeId}")
+    @route("/item/{outputId}/{outputVersion}/by-type/{itemTypeId}")
     @delete op deleteOutputItemsByType(
-        /** fund version id */
-        @path fundVersionId: integer;
         /** output id */
         @path outputId: integer;
         /** output version */
@@ -5917,10 +5911,8 @@ namespace ElzaAPI.Output {
     /**
      * Set the attribute to "Undefined"
      */
-    @route("/item/{fundVersionId}/{outputId}/{outputVersion}/undefined/set")
+    @route("/item/{outputId}/{outputVersion}/undefined/set")
     @put op setNotIdentifiedOutputItem(
-        /** fund version id */
-        @path fundVersionId: integer;
         /** output id */
         @path outputId: integer;
         /** output version */
@@ -5936,10 +5928,10 @@ namespace ElzaAPI.Output {
     /**
      * Reset the attribute setting to "Undefined"
      */
-    @route("/item/{fundVersionId}/{outputVersion}/{outputItemObjectId}/undefined/unset")
+    @route("/item/{outputId}/{outputVersion}/{outputItemObjectId}/undefined/unset")
     @put op unsetNotIdentifiedOutputItem(
-        /** fund version id */
-        @path fundVersionId: integer;
+        /** output id */
+        @path outputId: integer;
         /** output version */
         @path outputVersion: integer;
         /** output item object id */
@@ -5949,10 +5941,10 @@ namespace ElzaAPI.Output {
     /**
      * Import a CSV file; a new entry will be created with the file's contents
      */
-    @route("/item/{fundVersionId}/csv/import")
+    @route("/item/{outputId}/csv/import")
     @post op outputItemCsvImport(
-        /** fund version id */
-        @path fundVersionId: integer;
+        /** output id */
+        @path outputId: integer;
         /** multipart body */
         @multipartBody body: OutputItemCsvImportData;
         /** header */
@@ -5962,10 +5954,10 @@ namespace ElzaAPI.Output {
     /**
      * Downloading a CSV file from an attribute value
      */
-    @route("/item/{fundVersionId}/csv/export")
+    @route("/item/{outputId}/csv/export")
     @get op outputItemCsvExport(
-        /** fund version id */
-        @path fundVersionId: integer;
+        /** output id */
+        @path outputId: integer;
         /** desc item object id */
         @query descItemObjectId: integer;
     ): {
@@ -5977,23 +5969,19 @@ namespace ElzaAPI.Output {
     /**
      * Getting data for the form
      */
-    @route("/{outputId}/{fundVersionId}/form")
+    @route("/{outputId}/form")
     @get op getOutputFormData(
         /** output id */
         @path outputId: integer;
-        /** fund version id */
-        @path fundVersionId: integer;
     ): FormData;
 
     /**
      * Set user-defined/automatic attribute type editing
      */
-    @route("/{outputId}/{fundVersionId}/{itemTypeId}/{manual}")
+    @route("/{outputId}/{itemTypeId}/{manual}")
     @put op setOutputItemMode(
         /** output id */
         @path outputId: integer;
-        /** fund version id */
-        @path fundVersionId: integer;
         /** item type id */
         @path itemTypeId: integer;
         /** true/false — manual (user-defined)/automatic */
@@ -6018,10 +6006,10 @@ namespace ElzaAPI.Output {
     /**
      * Getting list of outputs – an output object linked to a named output object
      */
-    @route("/{fundVersionId}")
+    @route("/")
     @get op getOutputs(
         /** fund version id */
-        @path fundVersionId: integer;
+        @query fundVersionId: integer;
         /** output state */
         @query state?: State;
     ): Def[];
@@ -6029,10 +6017,8 @@ namespace ElzaAPI.Output {
     /**
      * Getting output details: an output object linked to a named output, with a list of connected nodes.
      */
-    @route("/{fundVersionId}/{outputId}")
+    @route("/{outputId}")
     @get op getOutput(
-        /** fund version id */
-        @path fundVersionId: integer;
         /** output id */
         @path outputId: integer;
     ): Def;
@@ -6086,12 +6072,10 @@ namespace ElzaAPI.Output {
     /**
      * Deleting named output
      */
-    @route("/{outputId}/{fundVersionId}")
+    @route("/{outputId}")
     @delete op deleteNamedOutput(
         /** output id */
         @path outputId: integer;
-        /** fund version id */
-        @path fundVersionId: integer;
     ): {
         @Http.statusCode statusCode: 200;
     };
@@ -6099,12 +6083,10 @@ namespace ElzaAPI.Output {
     /**
      * Update output
      */
-    @route("/{outputId}/{fundVersionId}/update")
+    @route("/{outputId}/update")
     @put op updateNamedOutput(
         /** output id */
         @path outputId: integer;
-        /** fund version id */
-        @path fundVersionId: integer;
         /** output parameters */
         @body param: NameParam;
     ): {
@@ -6114,12 +6096,10 @@ namespace ElzaAPI.Output {
     /**
      * Adding nodes to output
      */
-    @route("/{outputId}/{fundVersionId}/nodes/add")
+    @route("/{outputId}/nodes/add")
     @post op addNodesNamedOutput(
         /** output id */
         @path outputId: integer;
-        /** fund version id */
-        @path fundVersionId: integer;
         /** list of node ids */
         @body nodeIds: integer[];
     ): {
@@ -6129,12 +6109,10 @@ namespace ElzaAPI.Output {
     /**
      * Removing nodes from output
      */
-    @route("/{outputId}/{fundVersionId}/nodes/remove")
+    @route("/{outputId}/nodes/remove")
     @delete op removeNodesNamedOutput(
         /** output id */
         @path outputId: integer;
-        /** fund version id */
-        @path fundVersionId: integer;
         /** list of node ids */
         @body nodeIds: integer[];
     ): {
@@ -6144,12 +6122,10 @@ namespace ElzaAPI.Output {
     /**
      * Reset status of a named output to "Open"
      */
-    @route("/{outputId}/{fundVersionId}/revert")
+    @route("/{outputId}/revert")
     @post op revertToOpenState(
         /** output id */
         @path outputId: integer;
-        /** fund version id */
-        @path fundVersionId: integer;
     ): {
         @Http.statusCode statusCode: 200;
     };
@@ -6157,12 +6133,10 @@ namespace ElzaAPI.Output {
     /**
      * Creating copy of output
      */
-    @route("/{outputId}/{fundVersionId}/clone")
+    @route("/{outputId}/clone")
     @post op cloneOutput(
         /** output id */
         @path outputId: integer;
-        /** fund version id */
-        @path fundVersionId: integer;
     ): Def;
 
     /**
