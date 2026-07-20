@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<institution-types>
+    <institution-type code="NATIONAL_ARCHIVE">
+        <name>Národní archiv</name>
+    </institution-type>
+    <institution-type code="SECURITY_SERVICES_ARCHIVE">
+        <name>Archiv bezpečnostních složek</name>
+    </institution-type>
+    <institution-type code="STATE_REGIONAL_ARCHIVE">
+        <name>Státní oblastní archiv</name>
+    </institution-type>
+    <institution-type code="SPECIALIZED_ARCHIVE">
+        <name>Specializovaný archiv</name>
+    </institution-type>
+    <institution-type code="SECURITY_ARCHIVE">
+        <name>Bezpečnostní archiv</name>
+    </institution-type>
+    <institution-type code="TERRITORIAL_SELF_GOVERNMENT_ARCHIVE">
+        <name>Archiv územního samosprávného celku</name>
+    </institution-type>
+    <institution-type code="CORPORATE_ARCHIVE">
+        <name>Podnikový archiv</name>
+    </institution-type>
+    <institution-type code="OTHER_PRIVATE_ARCHIVE">
+        <name>Jiný soukromý archiv</name>
+    </institution-type>
+    <institution-type code="OTHER_ARCHIVE">
+        <name>Jiný archiv</name>
+    </institution-type>
+</institution-types>
