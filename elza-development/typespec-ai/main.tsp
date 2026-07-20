@@ -76,7 +76,7 @@ using TypeSpec.OpenAPI;
  * `GET /ping`. See `SignatureAuth` and the companion `security.md`.
  */
 @service(#{ title: "Elza AI Provider API" })
-@info(#{ version: "0.10.0" })
+@info(#{ version: "0.11.0" })
 @server(
   "{endpoint}",
   "Provider-assigned base endpoint, e.g. https://ai.example.com/elza",
@@ -1733,6 +1733,31 @@ model AccountUsageInfo {
 
   /** End of the current accounting period — when the allowance resets. */
   periodEnd?: utcDateTime;
+
+  /**
+   * Weekly credit allowance — an optional smoothing cap layered under the
+   * period allowance (protecting the rest of the period from one heavy week);
+   * absent = no weekly cap.
+   */
+  weeklyAllowanceCredits?: float64;
+
+  /** Credits charged to this account in the current weekly window; absent = the provider keeps no weekly accounting. */
+  weeklySpentCredits?: float64;
+
+  /**
+   * Start of the current weekly window. The window is the UTC calendar week
+   * (Monday 00:00) clamped to the period start, so it never spans a period
+   * boundary — at a mid-week period start the weekly counter resets early
+   * together with the period, in the user's favor.
+   */
+  weekStart?: utcDateTime;
+
+  /**
+   * End of the current weekly window — when the weekly allowance resets (the
+   * earlier of next Monday 00:00 UTC and `periodEnd`; by construction never
+   * after `periodEnd`).
+   */
+  weekEnd?: utcDateTime;
 }
 
 /** Subscriber-level (whole organization) usage state — the outer budget cap. */

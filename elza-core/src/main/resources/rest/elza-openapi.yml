@@ -5938,6 +5938,26 @@ components:
           type: string
           format: date-time
           description: End of the current accounting period — when the allowance resets.
+        weeklyAllowanceCredits:
+          type: number
+          format: double
+          description: |-
+            Weekly credit allowance — an optional smoothing cap layered under the
+            period allowance; absent = no weekly cap.
+        weeklySpentCredits:
+          type: number
+          format: double
+          description: Credits charged to this account in the current weekly window; absent = no weekly accounting.
+        weekStart:
+          type: string
+          format: date-time
+          description: |-
+            Start of the current weekly window (the UTC calendar week clamped to the
+            period start — it never spans a period boundary).
+        weekEnd:
+          type: string
+          format: date-time
+          description: End of the current weekly window — when the weekly allowance resets; never after `periodEnd`.
       description: |-
         Credit state of the account the user's signing key bills to (their personal
         seat, or the shared organizational account). Provider-computed; the client

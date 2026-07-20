@@ -71,7 +71,11 @@ public class AiProviderController implements AiproviderApi {
                     .allowanceCredits(account.getAllowanceCredits())
                     .spentCredits(account.getSpentCredits())
                     .periodStart(account.getPeriodStart())
-                    .periodEnd(account.getPeriodEnd()));
+                    .periodEnd(account.getPeriodEnd())
+                    .weeklyAllowanceCredits(account.getWeeklyAllowanceCredits())
+                    .weeklySpentCredits(account.getWeeklySpentCredits())
+                    .weekStart(account.getWeekStart())
+                    .weekEnd(account.getWeekEnd()));
         }
         CustomerUsageInfo customer = usage.getCustomer();
         if (customer != null) {

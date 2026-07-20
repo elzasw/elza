@@ -56,6 +56,16 @@ interface Props {
 }
 
 /**
+ * Whole days until the given reset instant, rounded up with a minimum of 1 —
+ * a counter always resets at a future midnight UTC, so "za 1 den" is the
+ * smallest truthful answer even minutes before the reset.
+ */
+function daysUntil(date: string | Date): number {
+    const diff = new Date(date).getTime() - Date.now();
+    return Math.max(1, Math.ceil(diff / 86_400_000));
+}
+
+/**
  * On-demand credit-usage panel — the AI assistant's equivalent of a `/usage`
  * dialog, opened from the settings menu so the balance stays out of the way
  * during normal work. All numbers are the provider's final credits; the panel
@@ -75,6 +85,16 @@ export function AiUsageDialog({ open, onClose, balance }: Props) {
     const accountBarColor = accountRatio == null ? "brand"
         : accountRatio >= 0.95 ? "error"
         : accountRatio >= 0.8 ? "warning"
+        : "brand";
+
+    // The optional weekly smoothing cap under the monthly allowance — its own
+    // meter with the same thresholds, and its own (always sooner) reset date.
+    const weeklyRatio = account?.weeklyAllowanceCredits
+        ? (account.weeklySpentCredits ?? 0) / account.weeklyAllowanceCredits
+        : null;
+    const weeklyBarColor = weeklyRatio == null ? "brand"
+        : weeklyRatio >= 0.95 ? "error"
+        : weeklyRatio >= 0.8 ? "warning"
         : "brand";
 
     // The `account` layer is the account the user's own key bills to (their
@@ -160,9 +180,43 @@ export function AiUsageDialog({ open, onClose, balance }: Props) {
                                     <div className={styles.meta}>
                                         <FormattedMessage
                                             {...aiAssistantMessages.balanceResets}
-                                            values={{ date: intl.formatDate(account.periodEnd, { dateStyle: "medium" }) }}
+                                            values={{
+                                                date: intl.formatDate(account.periodEnd, { dateStyle: "medium" }),
+                                                days: daysUntil(account.periodEnd),
+                                            }}
                                         />
                                     </div>
+                                )}
+                                {account.weeklyAllowanceCredits != null && (
+                                    <>
+                                        <div className={styles.amount}>
+                                            <FormattedMessage
+                                                {...aiAssistantMessages.balanceWeekly}
+                                                values={{
+                                                    spent: credits(account.weeklySpentCredits ?? 0),
+                                                    allowance: credits(account.weeklyAllowanceCredits),
+                                                }}
+                                            />
+                                        </div>
+                                        {weeklyRatio != null && (
+                                            <ProgressBar
+                                                className={styles.bar}
+                                                value={Math.min(weeklyRatio, 1)}
+                                                color={weeklyBarColor}
+                                            />
+                                        )}
+                                        {account.weekEnd && (
+                                            <div className={styles.meta}>
+                                                <FormattedMessage
+                                                    {...aiAssistantMessages.balanceWeeklyResets}
+                                                    values={{
+                                                        date: intl.formatDate(account.weekEnd, { dateStyle: "medium" }),
+                                                        days: daysUntil(account.weekEnd),
+                                                    }}
+                                                />
+                                            </div>
+                                        )}
+                                    </>
                                 )}
                             </div>
                         )}
