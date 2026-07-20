@@ -298,6 +298,10 @@ export const urlAdminFund = (fundId: number) => {
     return `${URL_ADMIN_FUND}/${fundId}`;
 }
 
+export const urlAdminInstitution = (institutionId?: number) => {
+    return institutionId == null ? URL_ADMIN_INSTITUTION : `${URL_ADMIN_INSTITUTION}/${institutionId}`;
+}
+
 export const urlEntity = (entityId?: number | string) => {
     return `${URL_ENTITY}/${(entityId == null ? "" : entityId)}`
 }

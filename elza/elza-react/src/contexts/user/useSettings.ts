@@ -143,6 +143,9 @@ export interface UserSettingsData {
     showDebugInfo?: boolean;
     showExperimentalFeatures?: boolean;
     aiFullWidth?: boolean;
+    institutionViewMode?: 'grid' | 'list';
+    institutionSortField?: 'name' | 'internalCode';
+    institutionSortDir?: 'asc' | 'desc';
 }
 
 const LOCAL_STORAGE_KEY = 'ELZA-USER-SETTINGS';
