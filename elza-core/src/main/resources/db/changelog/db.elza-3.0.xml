@@ -1592,4 +1592,19 @@
 	    </sql>
 	</changeSet>
 
+    <changeSet id="20260721143500" author="sergey.iryupin">
+        <sql dbms="postgresql">
+            CREATE INDEX arr_data_coordinates_value_gist_idx
+            ON arr_data_coordinates USING GIST (coordinates_value)
+        </sql>
+        <sql dbms="postgresql">
+            CREATE INDEX arr_data_coordinates_value_geog_gist_idx
+            ON arr_data_coordinates USING GIST ((coordinates_value::geography))
+        </sql>
+        <rollback>
+            <sql dbms="postgresql">DROP INDEX arr_data_coordinates_value_geog_gist_idx</sql>
+            <sql dbms="postgresql">DROP INDEX arr_data_coordinates_value_gist_idx</sql>
+        </rollback>
+    </changeSet>
+
 </databaseChangeLog>
