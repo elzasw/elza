@@ -174,7 +174,7 @@ export function InstitutionDetail({ institution, types, canEdit, onSubmit, onDel
         if (!values.internalCode?.trim()) {
             errors.internalCode = formatMessage(messages.internalCode);
         }
-        if (!isEdit && values.accessPointId == null) {
+        if (values.accessPointId == null) {
             errors.accessPointId = formatMessage(messages.accessPoint);
         }
         return errors;
@@ -249,11 +249,11 @@ export function InstitutionDetail({ institution, types, canEdit, onSubmit, onDel
                         </Field>
                         <Field<number | undefined> name="accessPointId">
                             {({ input }) => (
-                                <FluentField label={formatMessage(messages.accessPoint)} required={!isEdit}>
+                                <FluentField label={formatMessage(messages.accessPoint)} required>
                                     <AccessPointPicker
                                         value={input.value}
                                         onChange={input.onChange}
-                                        disabled={isEdit || !canEdit}
+                                        disabled={!canEdit}
                                     />
                                 </FluentField>
                             )}
