@@ -162,7 +162,6 @@ class FundDataGridClass extends AbstractReactComponent {
      * A missing/absent type falls back to the first column (0).
      */
     resolveColumnForType(descItemTypeId) {
-        const { fund, ruleSet } = this.props;
         const cols = this.state.cols;
 
         if (descItemTypeId == null) {
@@ -173,17 +172,18 @@ class FundDataGridClass extends AbstractReactComponent {
             return index;
         }
 
-        // Column not shown - try to enable it if the rules offer it.
-        const ruleMap = getMapFromList(ruleSet.items);
-        const gridViews = ruleMap[fund.activeVersion.ruleSetId]?.gridViews || [];
-        const allowed = gridViews.some(gw => String(gw.id) === String(descItemTypeId));
+        // Column not shown - enable it if it is a known attribute type (matches the set of
+        // columns the column-settings picker can add).
+        const { descItemTypes } = this.props;
+        const allowed = descItemTypes.itemsMap[descItemTypeId] != null;
         if (allowed && !this.columnAutoShown) {
             this.columnAutoShown = true;
             const { columnsOrder, visibleColumns } = this.props.fundDataGrid;
-            const newVisibleColumns = { ...visibleColumns, [descItemTypeId]: true };
-            const newColumnsOrder = columnsOrder.includes(descItemTypeId)
+            const typeIdKey = String(descItemTypeId);
+            const newVisibleColumns = { ...visibleColumns, [typeIdKey]: true };
+            const newColumnsOrder = columnsOrder.some(id => String(id) === typeIdKey)
                 ? columnsOrder
-                : [...columnsOrder, descItemTypeId];
+                : [...columnsOrder, typeIdKey];
             this.props.dispatch(fundDataGridSetColumnsSettings(this.props.versionId, newVisibleColumns, newColumnsOrder));
             // After the columns rebuild this method runs again and finds the column.
             return null;
