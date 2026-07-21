@@ -1373,6 +1373,14 @@
     "defaultMessage": "UUID",
     "srcHash": "KomLyYqvbJby"
   },
+  "shared.maskedValue.hide": {
+    "defaultMessage": "Hide",
+    "srcHash": "DHMh5qFxi1zF"
+  },
+  "shared.maskedValue.show": {
+    "defaultMessage": "Show",
+    "srcHash": "sipeZrVinjX9"
+  },
   "subNodeForm.descItemType.spec.all": {
     "defaultMessage": "All",
     "srcHash": "5C_lbtoov7Gn"
