@@ -721,6 +721,10 @@
     "defaultMessage": "Replacing entity",
     "srcHash": "zI-X8eoeEy51"
   },
+  "descItemType.action.openInDataGrid": {
+    "defaultMessage": "Show in table",
+    "srcHash": "7jwQD-SqGXED"
+  },
   "desc_item_action_allow": {
     "defaultMessage": "Allow inherited value",
     "srcHash": "M479XnBvnMtQ"
