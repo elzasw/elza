@@ -2,7 +2,6 @@ import * as types from 'actions/constants/ActionTypes';
 import {consolidateState} from 'components/Utils';
 import subNodeForm from './subNodeForm';
 import {nodeFormActions} from 'actions/arr/subNodeForm';
-import {getMapFromList} from 'stores/app/utils';
 import { serializeJson } from 'components/arr/FundDataGrid';
 
 const initialState = {
@@ -13,16 +12,12 @@ const initialState = {
     fetchedData: false,
     rowsDirty: false, // zda jsou data tabulky již neaktuální - počet řádek na serveru již nemusí odpovídat řádkům na klientovi - např. byla přidána nová JP
     filterDirty: false, // pokud nastala od poskledního přefiltrování nějaká změna v hodnotách PP - výsledek filtru již nemusí odpovídat tomu, co se zobrazuje
-    pageSize: 25, // aktuální velikost stránky
-    pageIndex: 0, // aktuální stránka
     items: [],
     itemsCount: 0,
     filter: {}, // mapa id desc item type na filter data
     visibleColumns: {}, // seznam mapa id na boolean viditelných sloupečků   // "4", "5", "8", "9", "11", "14", "17", "38", "42", "44", "50", "53"
     columnsOrder: [], // seznam id desc item type - pořadí zobrazování sloupečků
     columnInfos: {}, // mapa id desc item type na informace o sloupečku, např. jeho šířce atp.
-    selectedIds: [],
-    selectedRowIndexes: [],
     currentDataKey: '',
     subNodeForm: subNodeForm(),
     nodeId: null, // id node právě editovaného řádku
@@ -35,40 +30,17 @@ const initialState = {
     showFilterResult: false,
     searchedItems: [], // výsledky hledání dat
     searchedCurrentIndex: 0, // index aktuálně vybrané položky ve výsledcích hledání
-    cellFocus: {row: 0, col: 0},
 };
 // new Array("4", "5", "8", "9", "11", "14", "17", "38", "42", "44", "50", "53").forEach(a => {
 //     initialState.visibleColumns[a] = true
 // });
 
 function changeSearchedIndex(state, newIndex) {
-    if (state.searchedItems.length === 0) {
-        return {
-            ...state,
-            searchedCurrentIndex: 0,
-        };
-    } else {
-        const info = state.searchedItems[newIndex];
-        var pageIndex = state.pageIndex;
-        var selectedIds = state.selectedIds;
-
-        if (info.index < state.pageIndex * state.pageSize || info.index >= (state.pageIndex + 1) * state.pageSize) {
-            // je mimo aktuálně zobrazovanou stránku
-            pageIndex = Math.floor(info.index / state.pageSize);
-            selectedIds = [];
-        }
-
-        const row = info.index - pageIndex * state.pageSize;
-
-        return {
-            ...state,
-            selectedIds: selectedIds,
-            pageIndex: pageIndex,
-            searchedCurrentIndex: newIndex,
-            selectedRowIndexes: [row],
-            cellFocus: {row, col: state.cellFocus.col},
-        };
-    }
+    // Move the cursor within the search results; the page/row jump is driven by the component via the view context.
+    return {
+        ...state,
+        searchedCurrentIndex: state.searchedItems.length === 0 ? 0 : newIndex,
+    };
 }
 
 export default function fundDataGrid(state = initialState, action = {}) {
@@ -83,6 +55,7 @@ export default function fundDataGrid(state = initialState, action = {}) {
     switch (action.type) {
         case types.STORE_LOAD:
             return {
+                ...initialState,
                 ...state,
                 isFetchingFilter: false,
                 fetchedFilter: false,
@@ -90,22 +63,18 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 fetchedData: false,
                 items: [],
                 itemsCount: 0,
-                selectedIds: [],
-                selectedRowIndexes: [],
                 currentDataKey: '',
                 subNodeForm: subNodeForm(),
                 searchedItems: [],
                 searchedCurrentIndex: 0,
-                cellFocus: {row: 0, col: 0},
                 data: {type: 'FORM'},
             };
         case types.STORE_SAVE: {
-            const {pageSize, initialised, pageIndex, filter, visibleColumns, columnsOrder, columnInfos, serializedFilter} = state;
+            // The view state (page, selection, focus) is held by the context in localStorage, not Redux.
+            const {initialised, filter, visibleColumns, columnsOrder, columnInfos, serializedFilter} = state;
 
             return {
                 initialised,
-                pageSize,
-                pageIndex,
                 filter,
                 serializedFilter,
                 visibleColumns,
@@ -152,16 +121,6 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 fetchedData: false,
             };
         }
-        case types.FUND_FUND_DATA_GRID_CHANGE_SELECTED_ROW_INDEXES:
-            return {
-                ...state,
-                selectedRowIndexes: action.indexes,
-            };
-        case types.FUND_FUND_DATA_GRID_CHANGE_CELL_FOCUS:
-            return {
-                ...state,
-                cellFocus: {row: action.row, col: action.col},
-            };
         case types.FUND_FUND_DATA_GRID_FULLTEXT_NEXT_ITEM:
             return changeSearchedIndex(state, state.searchedCurrentIndex + 1);
         case types.FUND_FUND_DATA_GRID_FULLTEXT_PREV_ITEM: {
@@ -210,22 +169,11 @@ export default function fundDataGrid(state = initialState, action = {}) {
             }
 
             return result;
-        case types.FUND_FUND_DATA_GRID_PAGE_SIZE:
-            const isBiggerPage = action.pageIndex > state.pageIndex;
-            return {
-                ...state,
-                pageSize: action.pageSize,
-                pageIndex: 0,
-                selectedIds: isBiggerPage ? state.selectedIds : [],
-                selectedRowIndexes: isBiggerPage ? state.selectedRowIndexes : [],
-                cellFocus: {row: 0, col: 0},
-            };
         case types.FUND_FUND_DATA_GRID_COLUMNS_SETTINGS:
             return {
                 ...state,
                 visibleColumns: action.visibleColumns,
                 columnsOrder: action.columnsOrder,
-                cellFocus: {row: 0, col: 0},
             };
         case types.FUND_FUND_DATA_GRID_COLUMN_SIZE:
             let columnInfos = {...state.columnInfos};
@@ -236,18 +184,6 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 ...state,
                 columnInfos: columnInfos,
             };
-        case types.FUND_FUND_DATA_GRID_SELECTION:
-            return {
-                ...state,
-                selectedIds: [...action.ids],
-            };
-        case types.FUND_FUND_DATA_GRID_PAGE_INDEX:
-            return {
-                ...state,
-                pageIndex: action.pageIndex,
-                selectedIds: [],
-                cellFocus: {row: 0, col: 0},
-            };
         case types.FUND_FUND_DATA_GRID_FILTER_CHANGE:
             return {
                 ...state,
@@ -256,7 +192,6 @@ export default function fundDataGrid(state = initialState, action = {}) {
                     && Object.keys(action.filter).length > 0
                     ? serializeJson(action.filter) : undefined ,
                 fetchedFilter: false,
-                cellFocus: {row: 0, col: 0},
             };
         case types.FUND_FUND_DATA_GRID_FILTER_REQUEST:
             return {
@@ -264,34 +199,7 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 isFetchingFilter: true,
             };
         case types.FUND_FUND_DATA_GRID_FILTER_RECEIVE:
-            const viewInfo = {
-                pageIndex: state.pageIndex,
-                selectedIds: state.selectedIds,
-                selectedRowIndexes: state.selectedRowIndexes,
-                cellFocus: state.cellFocus,
-            };
-
-            if (action.resetViewState) {
-                // reset stránkování označení atp.
-                viewInfo.pageIndex = 0;
-                viewInfo.selectedIds = [];
-                viewInfo.selectedRowIndexes = [0];
-                viewInfo.cellFocus = {row: 0, col: 0};
-            } else {
-                // Pokud je aktuální zobrazení stránky mimo záznamy, zobrazíme poslední stránku
-                if (viewInfo.pageIndex * state.pageSize >= action.itemsCount) {
-                    viewInfo.pageIndex =
-                        Math.floor(action.itemsCount / state.pageSize) -
-                        (action.itemsCount % state.pageSize > 0 ? 0 : 1);
-                }
-
-                // Cell focus - pokud je mimo řádek, nastavíme na poslední řádek na stránce
-                const restRows = action.itemsCount - viewInfo.pageIndex * state.pageSize;
-                if (viewInfo.cellFocus.row >= restRows) {
-                    viewInfo.cellFocus = {row: restRows - 1, col: viewInfo.cellFocus.col};
-                }
-            }
-
+            // The view state (page reset, focus clamp) is handled by the component via the context, based on resetViewState and itemsCount.
             return {
                 ...state,
                 rowsDirty: false,
@@ -300,7 +208,6 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 fetchedFilter: true,
                 itemsCount: action.itemsCount,
                 currentDataKey: '', // vynucení načtení dat!!!
-                ...viewInfo,
             };
         case types.CHANGE_ADD_LEVEL:
         case types.CHANGE_DELETE_LEVEL:
@@ -330,22 +237,19 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 currentDataKey: action.dataKey,
             };
         case types.FUND_FUND_DATA_GRID_DATA_RECEIVE:
-            // Pokud vrácené záznamy neobsahují ty záznamy, které jsou aktuálně v selectedIds, je selectedIds opraveno
-            const rowsMap = getMapFromList(action.items);
-            const newSelectedIds = [];
-            state.selectedIds.forEach(id => {
-                if (rowsMap[id]) {
-                    newSelectedIds.push(id);
-                }
-            });
-
-            // ---
+            // The component prunes the context's selectedIds to the current page's rows after this.
             return {
                 ...state,
                 isFetchingData: false,
                 fetchedData: true,
                 items: action.items,
-                selectedIds: newSelectedIds,
+            };
+        case types.FUND_FUND_DATA_GRID_DATA_ERROR:
+            // Clear the data key so the same page can be requested again after a failed fetch.
+            return {
+                ...state,
+                isFetchingData: false,
+                currentDataKey: '',
             };
         default:
             return state;

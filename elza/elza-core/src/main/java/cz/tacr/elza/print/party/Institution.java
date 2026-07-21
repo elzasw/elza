@@ -18,8 +18,13 @@ public class Institution {
 
     public Institution(String code, ParInstitutionType institutionType) {
         this.code = code;
-        this.type = institutionType.getName();
-        this.typeCode = institutionType.getCode();
+        if (institutionType != null) {
+        	type = institutionType.getName();
+        	typeCode = institutionType.getCode();
+        } else {
+        	type = null;
+        	typeCode = null;
+        }
     }
 
     public String getCode() {

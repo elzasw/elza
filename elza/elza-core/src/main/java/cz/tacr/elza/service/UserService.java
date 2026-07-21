@@ -1474,6 +1474,23 @@ public class UserService {
     }
 
     /**
+     * Permissions of the given user, served from the same cache the security
+     * context uses. For services that evaluate a specific user's permissions
+     * outside the request security context (e.g. the AI tool executor running
+     * on a poller thread).
+     *
+     * @param userId user id (not the virtual admin account, which has no row)
+     * @return the user's effective permissions
+     */
+    public Collection<UserPermission> getUserPermissions(final Integer userId) {
+        try {
+            return userPermissionsCache.get(userId);
+        } catch (ExecutionException e) {
+            throw new SystemException(e);
+        }
+    }
+
+    /**
      * Vypočítá oprávnění pro uživatele.
      *
      * @param user uživatel

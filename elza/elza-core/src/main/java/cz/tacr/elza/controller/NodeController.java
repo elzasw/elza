@@ -1,6 +1,8 @@
 package cz.tacr.elza.controller;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -59,17 +61,22 @@ public class NodeController implements NodeApi {
 	@Transactional
     // kontrola oprávnění uvnitř metody
 	public ResponseEntity<NodeSearchResult> nodeSearch(SearchParams searchParams) {
-    	var userDetail = userService.getLoggedUserDetail();    
+    	var userDetail = userService.getLoggedUserDetail();
         AuthorizationRequest fundRead = AuthorizationRequest.hasPermission(Permission.ADMIN)
                 .or(Permission.FUND_RD_ALL);
     	if (fundRead.matches(userDetail)) {
-    		return ResponseEntity.ok(nodeSearchService.nodeSearch(searchParams));    		
+    		return ResponseEntity.ok(nodeSearchService.nodeSearch(searchParams));
     	}
-    	// TODO
-        // user can read only some funds -> we have to get list of allowed funds 
-    	// and pass it to search service    	
-
-		throw new AccessDeniedException("User has no permissions to search for nodes.", userDetail.getUserPermission());
+    	// user can read only some funds -> restrict the search to them
+        Set<Integer> allowedFundIds = userDetail.getUserPermission().stream()
+                .filter(p -> p.getPermission() == Permission.FUND_RD)
+                .flatMap(p -> p.getFundIds().stream())
+                .collect(Collectors.toSet());
+        if (allowedFundIds.isEmpty()) {
+            throw new AccessDeniedException("User has no permissions to search for nodes.",
+                    userDetail.getUserPermission());
+        }
+        return ResponseEntity.ok(nodeSearchService.nodeSearch(searchParams, allowedFundIds));
 	}
 
 	// GET /node/search/{fundId}

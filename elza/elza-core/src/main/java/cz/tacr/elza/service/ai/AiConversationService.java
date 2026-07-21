@@ -6,8 +6,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.web.client.RestClientResponseException;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,19 +29,24 @@ import org.springframework.beans.factory.annotation.Value;
 
 import cz.tacr.elza.aiprovider.client.vo.AiObject;
 import cz.tacr.elza.aiprovider.client.vo.AiServiceInfo;
+import cz.tacr.elza.aiprovider.client.vo.ArchivalDescriptionObject;
+import cz.tacr.elza.aiprovider.client.vo.ObjectType;
+import cz.tacr.elza.aiprovider.client.vo.RevisionConfig;
+import cz.tacr.elza.aiprovider.client.vo.RevisionConfigObject;
 import cz.tacr.elza.aiprovider.client.vo.SubmitTask;
 import cz.tacr.elza.aiprovider.client.vo.TaskAccepted;
 import cz.tacr.elza.aiprovider.client.vo.TaskMetadata;
 import cz.tacr.elza.aiprovider.client.vo.TaskParameterInfo;
 import cz.tacr.elza.aiprovider.client.vo.TaskTypeInfo;
+import cz.tacr.elza.controller.vo.AiContextNodeVO;
 import cz.tacr.elza.controller.vo.AiContextObjectVO;
+import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.controller.vo.AiConversationCreateVO;
 import cz.tacr.elza.controller.vo.AiConversationDetailVO;
 import cz.tacr.elza.controller.vo.AiConversationVO;
 import cz.tacr.elza.controller.vo.AiRequestCreateVO;
 import cz.tacr.elza.controller.vo.AiRequestEventVO;
 import cz.tacr.elza.controller.vo.AiRequestVO;
-import cz.tacr.elza.controller.vo.AiUsageVO;
 import cz.tacr.elza.domain.AiConversation;
 import cz.tacr.elza.domain.AiExternalSystem;
 import cz.tacr.elza.domain.AiRequest;
@@ -89,16 +97,22 @@ public class AiConversationService {
     private AiProviderService aiProviderService;
 
     @Autowired
-    private AiBlockMapperRegistry blockMapperRegistry;
+    private AiRequestViewMapper requestViewMapper;
 
     @Autowired
     private AiRequestPoller aiRequestPoller;
+
+    @Autowired
+    private AiEventPoller aiEventPoller;
 
     @Autowired
     private UserService userService;
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private ElzaLocale elzaLocale;
 
     @Autowired
     private AiContextResolver contextResolver;
@@ -207,7 +221,7 @@ public class AiConversationService {
             }
             addEvent(request, AiRequestEvent.TYPE_CANCEL, null);
         }
-        return toVO(request);
+        return requestViewMapper.loadVO(request);
     }
 
     @Transactional
@@ -262,13 +276,18 @@ public class AiConversationService {
                 .app("elza")
                 .appVersion(appVersion);
 
+        Map<String, AiObject> taskParameters = buildParameters(taskType, parameters, context,
+                externalSystem, conversation.getUserId());
+        List<AiObject> resolvedContext = contextResolver.resolveAll(context);
+        appendOutlineForSubject(taskParameters, parameters, context, resolvedContext);
+
         SubmitTask submitTask = new SubmitTask()
                 .requestId(request.getRequestId())
                 .taskType(taskType)
                 .profile(profile)
                 .userInstructions(userInstructions)
-                .parameters(buildParameters(taskType, parameters, externalSystem))
-                .context(contextResolver.resolveAll(context))
+                .parameters(taskParameters)
+                .context(resolvedContext)
                 .tools(toolRegistry.toolNames())
                 .parentTaskId(parentTaskUid)
                 .metadata(metadata);
@@ -291,12 +310,17 @@ public class AiConversationService {
                     externalSystem.getCode(), externalSystem.getUrl(), e.getMessage());
             logger.debug("AI task submit failure detail (request {})", request.getRequestId(), e);
             request.setState("error");
-            request.setErrorCode("SUBMIT_FAILED");
-            request.setErrorMessage(e.getMessage());
+            // A provider refusal carries a typed ServiceError body ({code, message}) —
+            // keep the provider's code (e.g. QUOTA_EXCEEDED, ACCOUNT_QUOTA_EXCEEDED,
+            // NO_SUBSCRIPTION) so the client can render it meaningfully; anything
+            // else stays the generic SUBMIT_FAILED with the raw exception text.
+            ProviderError providerError = parseProviderError(e);
+            request.setErrorCode(providerError != null ? providerError.code() : "SUBMIT_FAILED");
+            request.setErrorMessage(providerError != null ? providerError.message() : e.getMessage());
             request.setFinishDate(new Date());
             aiRequestRepository.save(request);
             addEvent(request, AiRequestEvent.TYPE_ERROR, toJson(Map.of("message",
-                    StringUtils.defaultString(e.getMessage()))));
+                    StringUtils.defaultString(request.getErrorMessage()))));
             return;
         }
 
@@ -305,6 +329,7 @@ public class AiConversationService {
             @Override
             public void afterCommit() {
                 aiRequestPoller.ensurePolling(requestId);
+                aiEventPoller.ensurePolling(requestId);
             }
         });
     }
@@ -315,38 +340,121 @@ public class AiConversationService {
      * provider object and assigned to the task's declared parameter whose object
      * type matches (looked up from the provider's {@code GET /info}); a resolved
      * object with no matching declared parameter is skipped.
+     *
+     * <p>Declared parameters the UI did not supply are then filled two ways:
+     * from the panel's <em>context</em> objects (the panel sends only
+     * {@code context} — a task declaring an {@code elza.archivalDescription}
+     * subject takes the current node from it), and by synthesis for parameter
+     * types that need no UI input ({@code elza.revisionConfig} — the run's
+     * language from the deployment locale). This is what lets
+     * {@code elza.revision} run from the panel with no dedicated UI.
      */
     private Map<String, AiObject> buildParameters(final String taskType,
                                                   final List<AiContextObjectVO> parameterContext,
-                                                  final AiExternalSystem externalSystem) {
+                                                  final List<AiContextObjectVO> contextObjects,
+                                                  final AiExternalSystem externalSystem,
+                                                  final Integer userId) {
         Map<String, AiObject> parameters = new HashMap<>();
+        List<TaskParameterInfo> declared = declaredParameters(externalSystem, taskType, userId);
+
         // A parameter is one object per supplied context; resolvePrimary yields
         // the single primary object (a node → its own level, no ancestors/fund).
-        List<AiObject> resolved = new ArrayList<>();
         if (parameterContext != null) {
             for (AiContextObjectVO ctx : parameterContext) {
-                contextResolver.resolvePrimary(ctx).ifPresent(resolved::add);
-            }
-        }
-        if (!resolved.isEmpty()) {
-            List<TaskParameterInfo> declared = declaredParameters(externalSystem, taskType);
-            for (AiObject object : resolved) {
-                declared.stream()
+                contextResolver.resolvePrimary(ctx).ifPresent(object -> declared.stream()
                         .filter(p -> object.getObjectType().equals(p.getType()))
                         .findFirst()
                         .ifPresentOrElse(
                                 p -> parameters.put(p.getName(), object),
                                 () -> logger.info("Task {} declares no parameter of type {}; context object skipped",
-                                        taskType, object.getObjectType()));
+                                        taskType, object.getObjectType())));
             }
+        }
+
+        // Unfilled declared parameters: synthesize what needs no UI input, then
+        // fall back to the panel's context objects (resolved lazily, each once).
+        List<AiObject> resolvedContext = null;
+        for (TaskParameterInfo declaredParam : declared) {
+            if (parameters.containsKey(declaredParam.getName())) {
+                continue;
+            }
+            if (ObjectType.ELZA_REVISION_CONFIG.equals(declaredParam.getType())) {
+                parameters.put(declaredParam.getName(), defaultRevisionConfig());
+                continue;
+            }
+            if (contextObjects == null || contextObjects.isEmpty()) {
+                continue;
+            }
+            if (resolvedContext == null) {
+                resolvedContext = new ArrayList<>();
+                for (AiContextObjectVO ctx : contextObjects) {
+                    contextResolver.resolvePrimary(ctx).ifPresent(resolvedContext::add);
+                }
+            }
+            resolvedContext.stream()
+                    .filter(object -> declaredParam.getType().equals(object.getObjectType()))
+                    .findFirst()
+                    .ifPresent(object -> parameters.put(declaredParam.getName(), object));
         }
         return parameters;
     }
 
+    /**
+     * The default {@code elza.revisionConfig}: all checks (omitted = all), scope
+     * derived from the payload, findings in the deployment's language. A run
+     * configuration UI (check selection) can replace this later.
+     */
+    private AiObject defaultRevisionConfig() {
+        String language = elzaLocale.getLocale().toLanguageTag();
+        RevisionConfig config = new RevisionConfig();
+        if (StringUtils.isNotBlank(language) && !"und".equals(language)) {
+            config.setLanguage(language);
+        }
+        return new RevisionConfigObject()
+                .objectType(ObjectType.ELZA_REVISION_CONFIG)
+                .data(config);
+    }
+
+    /**
+     * When the task's parameters carry a reviewed level (an
+     * {@code elza.archivalDescription} subject), appends that level's
+     * surroundings — nearest siblings + first children — to the context as a
+     * compact {@code elza.archivalOutline} (tasks/elza-revision.md §2). Tasks
+     * without a level subject (chat, echo) are unaffected.
+     */
+    private void appendOutlineForSubject(final Map<String, AiObject> taskParameters,
+                                         final List<AiContextObjectVO> parameterContext,
+                                         final List<AiContextObjectVO> contextObjects,
+                                         final List<AiObject> resolvedContext) {
+        Set<Integer> subjectNodeIds = new HashSet<>();
+        for (AiObject object : taskParameters.values()) {
+            if (object instanceof ArchivalDescriptionObject description && description.getData() != null
+                    && description.getData().getNodeId() != null) {
+                subjectNodeIds.add(description.getData().getNodeId());
+            }
+        }
+        if (subjectNodeIds.isEmpty()) {
+            return;
+        }
+        List<AiContextObjectVO> candidates = new ArrayList<>();
+        if (parameterContext != null) {
+            candidates.addAll(parameterContext);
+        }
+        if (contextObjects != null) {
+            candidates.addAll(contextObjects);
+        }
+        for (AiContextObjectVO ctx : candidates) {
+            if (ctx instanceof AiContextNodeVO node && subjectNodeIds.remove(node.getNodeId())) {
+                contextResolver.resolveOutline(node).ifPresent(resolvedContext::add);
+            }
+        }
+    }
+
     /** The task's declared parameters from the provider's catalog; empty when unavailable. */
-    private List<TaskParameterInfo> declaredParameters(final AiExternalSystem externalSystem, final String taskType) {
+    private List<TaskParameterInfo> declaredParameters(final AiExternalSystem externalSystem, final String taskType,
+                                                       final Integer userId) {
         try {
-            AiServiceInfo info = aiProviderService.fetchServiceInfo(externalSystem);
+            AiServiceInfo info = aiProviderService.fetchServiceInfo(externalSystem, userId);
             if (info.getTaskTypes() != null) {
                 for (TaskTypeInfo type : info.getTaskTypes()) {
                     if (taskType.equals(type.getCode()) && type.getParameters() != null) {
@@ -402,10 +510,13 @@ public class AiConversationService {
 
     private AiConversationDetailVO getDetail(final AiConversation conversation,
                                              final AiExternalSystem externalSystem) {
+        List<AiRequest> stored = aiRequestRepository
+                .findByAiConversationIdOrderByCreateDateAsc(conversation.getAiConversationId());
+        Map<Integer, List<AiRequestEvent>> eventsByRequest = requestViewMapper.loadEventsByRequest(stored);
         List<AiRequestVO> requests = new ArrayList<>();
-        for (AiRequest request : aiRequestRepository
-                .findByAiConversationIdOrderByCreateDateAsc(conversation.getAiConversationId())) {
-            requests.add(toVO(request));
+        for (AiRequest request : stored) {
+            requests.add(requestViewMapper.toVO(request,
+                    eventsByRequest.getOrDefault(request.getAiRequestId(), List.of())));
         }
         return new AiConversationDetailVO()
                 .conversation(toVO(conversation, externalSystem))
@@ -421,31 +532,6 @@ public class AiConversationService {
                 .context(deserializeContext(conversation.getContext()))
                 .createDate(toOffset(conversation.getCreateDate()))
                 .lastChangeDate(toOffset(conversation.getLastChangeDate()));
-    }
-
-    private AiRequestVO toVO(final AiRequest request) {
-        AiRequestVO vo = new AiRequestVO()
-                .id(request.getAiRequestId())
-                .taskType(request.getTaskType())
-                .state(request.getState())
-                .userInstructions(request.getUserInstructions())
-                .errorCode(request.getErrorCode())
-                .errorMessage(request.getErrorMessage())
-                .promptVersion(request.getPromptVersion())
-                .profile(request.getProfile())
-                .createDate(toOffset(request.getCreateDate()))
-                .finishDate(toOffset(request.getFinishDate()));
-        if ("done".equals(request.getState()) && request.getOutput() != null) {
-            vo.setBlocks(blockMapperRegistry.map(request.getOutput()));
-        }
-        if (request.getFinishDate() != null || !"queued".equals(request.getState())) {
-            vo.setUsage(new AiUsageVO()
-                    .inputTokens(request.getInputTokens())
-                    .outputTokens(request.getOutputTokens())
-                    .costUnits(request.getCostUnits())
-                    .chargedCredits(request.getChargedCredits()));
-        }
-        return vo;
     }
 
     private AiConversation loadOwnConversation(final Integer conversationId) {
@@ -498,6 +584,34 @@ public class AiConversationService {
             return objectMapper.writeValueAsString(value);
         } catch (Exception e) {
             return String.valueOf(value);
+        }
+    }
+
+    /** A provider error body: the protocol's `ServiceError` ({@code code} + {@code message}). */
+    private record ProviderError(String code, String message) {
+    }
+
+    /**
+     * The typed provider error carried by a failed call, when there is one: a
+     * 4xx/5xx response whose body parses to the protocol's {@code ServiceError}
+     * ({@code code}, {@code message}) — e.g. a {@code 402} with
+     * {@code QUOTA_EXCEEDED} / {@code ACCOUNT_QUOTA_EXCEEDED} /
+     * {@code NO_SUBSCRIPTION}. {@code null} for anything else (network failure,
+     * unexpected body); the caller then falls back to the generic error.
+     */
+    private ProviderError parseProviderError(final Exception e) {
+        if (!(e instanceof RestClientResponseException response)) {
+            return null;
+        }
+        try {
+            var body = objectMapper.readTree(response.getResponseBodyAsString());
+            String code = body.path("code").asText(null);
+            String message = body.path("message").asText(null);
+            return StringUtils.isNotBlank(code)
+                    ? new ProviderError(code, StringUtils.defaultString(message, code))
+                    : null;
+        } catch (Exception parseFailure) {
+            return null;
         }
     }
 

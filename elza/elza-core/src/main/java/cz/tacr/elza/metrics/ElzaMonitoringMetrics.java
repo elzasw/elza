@@ -14,9 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.cam.SyncConfig;
-import cz.tacr.elza.cam.SyncConfig.SynchronizationInfo;
+import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState;
+import cz.tacr.elza.repository.ApExternalSystemRepository;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
 import cz.tacr.elza.websocket.WebSocketThreadPoolTaskExecutor;
 import io.micrometer.core.instrument.Gauge;
@@ -53,7 +53,7 @@ public class ElzaMonitoringMetrics implements MeterBinder {
 
     private final ExtSyncsQueueItemRepository extSyncsQueueItemRepository;
 
-    private final SyncConfig syncConfig;
+    private final ApExternalSystemRepository apExternalSystemRepository;
 
     private final InFlightTaskRegistry inFlightTaskRegistry;
 
@@ -67,10 +67,10 @@ public class ElzaMonitoringMetrics implements MeterBinder {
 
     @Autowired
     public ElzaMonitoringMetrics(final ExtSyncsQueueItemRepository extSyncsQueueItemRepository,
-                                 final SyncConfig syncConfig,
+    		                     final ApExternalSystemRepository apExternalSystemRepository,
                                  final InFlightTaskRegistry inFlightTaskRegistry) {
         this.extSyncsQueueItemRepository = extSyncsQueueItemRepository;
-        this.syncConfig = syncConfig;
+        this.apExternalSystemRepository = apExternalSystemRepository;
         this.inFlightTaskRegistry = inFlightTaskRegistry;
     }
 
@@ -141,17 +141,18 @@ public class ElzaMonitoringMetrics implements MeterBinder {
         if (!inFlightTaskRegistry.isActive()) {
             return NOT_APPLICABLE;
         }
-        List<SynchronizationInfo> configs = syncConfig.getConfig();
-        if (configs == null || configs.isEmpty()) {
+        List<ApExternalSystem> systems = apExternalSystemRepository.findAll();
+        if (systems.isEmpty()) {
             return NOT_APPLICABLE;
         }
         // Until a system's first successful poll, measure age from when monitoring became active, so a
         // CAM system that never answers after startup makes the age grow (and eventually alert).
         long baselineMillis = inFlightTaskRegistry.activatedAtMillis();
         long oldestSuccessMillis = Long.MAX_VALUE;
-        for (SynchronizationInfo config : configs) {
-            AtomicLong lastSuccess = lastCamPollSuccessMillis.get(config.getCode());
-            oldestSuccessMillis = Math.min(oldestSuccessMillis, lastSuccess != null ? lastSuccess.get() : baselineMillis);
+        for (ApExternalSystem sys : systems) {
+            AtomicLong lastSuccess = lastCamPollSuccessMillis.get(sys.getCode());
+            oldestSuccessMillis = Math.min(oldestSuccessMillis,
+                    lastSuccess != null ? lastSuccess.get() : baselineMillis);
         }
         return Math.max(0d, (System.currentTimeMillis() - oldestSuccessMillis) / 1000d);
     }

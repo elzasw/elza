@@ -3,6 +3,8 @@ info:
   title: ELZA API
   version: 1.0.0
 tags:
+  - name: institution
+    description: Správa institucí
   - name: output
     description: Výstupy archivních souborů
   - name: rules
@@ -1925,12 +1927,14 @@ paths:
                 $ref: '#/components/schemas/BaseException'
       tags:
         - aiprovider
-  /aiprovider/{id}/my-key:
+  /aiprovider/{id}/usage:
     get:
-      operationId: AiProvider_getMyKey
+      operationId: AiProvider_getUsage
       description: |-
-        Reads whether the current user has a personal signing key for the
-        provider (the secret is never returned).
+        The user's usage/credit balance at the AI provider, read via the
+        provider's GET /usage under the same key selection as task submission
+        (the user's personal key when stored, else the instance-wide one). For
+        panel display; refresh after a finished exchange or a quota refusal.
       parameters:
         - name: id
           in: path
@@ -1944,63 +1948,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AiMyKey'
-        '404':
-          description: The server cannot find the requested resource.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BaseException'
-      tags:
-        - aiprovider
-    put:
-      operationId: AiProvider_setMyKey
-      description: |-
-        Sets/replaces the current user's personal signing key for the provider.
-        The user's subsequent tasks then bill to their personal account.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: AI external system ID or CODE
-          schema:
-            type: string
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AiMyKey'
-        '404':
-          description: The server cannot find the requested resource.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BaseException'
-      tags:
-        - aiprovider
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AiMyKeyUpdate'
-    delete:
-      operationId: AiProvider_deleteMyKey
-      description: |-
-        Removes the current user's personal signing key; tasks fall back to the
-        instance-wide key (the shared organizational account).
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: AI external system ID or CODE
-          schema:
-            type: string
-      responses:
-        '204':
-          description: 'There is no content to send for this request, but the headers may be useful. '
+                $ref: '#/components/schemas/AiUsageBalance'
         '404':
           description: The server cannot find the requested resource.
           content:
@@ -2933,15 +2881,45 @@ paths:
             schema:
               $ref: '#/components/schemas/ImportFundData'
         description: Doplnění způsobu importu
-  /funds/out/item/{fundVersionId}/csv/export:
+  /funds/out/:
+    get:
+      operationId: Output_getOutputs
+      description: Getting list of outputs – an output object linked to a named output object
+      parameters:
+        - name: fundVersionId
+          in: query
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+          explode: false
+        - name: state
+          in: query
+          required: false
+          description: output state
+          schema:
+            $ref: '#/components/schemas/Output.State'
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Output.Def'
+      tags:
+        - output
+  /funds/out/item/{outputId}/csv/export:
     get:
       operationId: Output_outputItemCsvExport
       description: Downloading a CSV file from an attribute value
       parameters:
-        - name: fundVersionId
+        - name: outputId
           in: path
           required: true
-          description: fund version id
+          description: output id
           schema:
             type: integer
         - name: descItemObjectId
@@ -2961,15 +2939,15 @@ paths:
                 format: binary
       tags:
         - output
-  /funds/out/item/{fundVersionId}/csv/import:
+  /funds/out/item/{outputId}/csv/import:
     post:
       operationId: Output_outputItemCsvImport
       description: Import a CSV file; a new entry will be created with the file's contents
       parameters:
-        - name: fundVersionId
+        - name: outputId
           in: path
           required: true
-          description: fund version id
+          description: output id
           schema:
             type: integer
       responses:
@@ -2990,22 +2968,79 @@ paths:
             encoding:
               outputVersion:
                 contentType: text/plain
-              outputId:
-                contentType: text/plain
               descItemTypeId:
                 contentType: text/plain
         description: multipart body
-  /funds/out/item/{fundVersionId}/{outputId}/{outputVersion}/undefined/set:
+  /funds/out/item/{outputId}/{outputVersion}/by-type/{itemTypeId}:
+    delete:
+      operationId: Output_deleteOutputItemsByType
+      description: Deleting attribute values ​​by type
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+        - name: outputVersion
+          in: path
+          required: true
+          description: output version
+          schema:
+            type: integer
+        - name: itemTypeId
+          in: path
+          required: true
+          description: item type id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Output.ItemRes'
+      tags:
+        - output
+  /funds/out/item/{outputId}/{outputVersion}/create:
+    post:
+      operationId: Output_createOutputItem
+      description: Create output item
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+        - name: outputVersion
+          in: path
+          required: true
+          description: output version
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Output.ItemRes'
+      tags:
+        - output
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OutputItem'
+        description: body output item
+  /funds/out/item/{outputId}/{outputVersion}/undefined/set:
     put:
       operationId: Output_setNotIdentifiedOutputItem
       description: Set the attribute to "Undefined"
       parameters:
-        - name: fundVersionId
-          in: path
-          required: true
-          description: fund version id
-          schema:
-            type: integer
         - name: outputId
           in: path
           required: true
@@ -3048,53 +3083,15 @@ paths:
                 $ref: '#/components/schemas/Output.ItemRes'
       tags:
         - output
-  /funds/out/item/{fundVersionId}/{outputId}/{outputVersion}/{itemTypeId}:
-    delete:
-      operationId: Output_deleteOutputItemsByType
-      description: Deleting attribute values ​​by type
-      parameters:
-        - name: fundVersionId
-          in: path
-          required: true
-          description: fund version id
-          schema:
-            type: integer
-        - name: outputId
-          in: path
-          required: true
-          description: output id
-          schema:
-            type: integer
-        - name: outputVersion
-          in: path
-          required: true
-          description: output version
-          schema:
-            type: integer
-        - name: itemTypeId
-          in: path
-          required: true
-          description: item type id
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Output.ItemRes'
-      tags:
-        - output
-  /funds/out/item/{fundVersionId}/{outputVersion}/update:
+  /funds/out/item/{outputId}/{outputVersion}/update:
     put:
       operationId: Output_updateOutputItem
       description: Update output item
       parameters:
-        - name: fundVersionId
+        - name: outputId
           in: path
           required: true
-          description: fund version id
+          description: output id
           schema:
             type: integer
         - name: outputVersion
@@ -3119,15 +3116,15 @@ paths:
             schema:
               $ref: '#/components/schemas/OutputItem'
         description: body output item
-  /funds/out/item/{fundVersionId}/{outputVersion}/{outputItemId}:
+  /funds/out/item/{outputId}/{outputVersion}/{outputItemId}:
     delete:
       operationId: Output_deleteOutputItem
       description: Delete output item
       parameters:
-        - name: fundVersionId
+        - name: outputId
           in: path
           required: true
-          description: fund version id
+          description: output id
           schema:
             type: integer
         - name: outputVersion
@@ -3151,15 +3148,15 @@ paths:
                 $ref: '#/components/schemas/Output.ItemRes'
       tags:
         - output
-  /funds/out/item/{fundVersionId}/{outputVersion}/{outputItemObjectId}/undefined/unset:
+  /funds/out/item/{outputId}/{outputVersion}/{outputItemObjectId}/undefined/unset:
     put:
       operationId: Output_unsetNotIdentifiedOutputItem
       description: Reset the attribute setting to "Undefined"
       parameters:
-        - name: fundVersionId
+        - name: outputId
           in: path
           required: true
-          description: fund version id
+          description: output id
           schema:
             type: integer
         - name: outputVersion
@@ -3183,45 +3180,6 @@ paths:
                 $ref: '#/components/schemas/Output.ItemRes'
       tags:
         - output
-  /funds/out/item/{outputId}/{fundVersionId}/{outputVersion}/create:
-    post:
-      operationId: Output_createOutputItem
-      description: Create output item
-      parameters:
-        - name: outputId
-          in: path
-          required: true
-          description: output id
-          schema:
-            type: integer
-        - name: fundVersionId
-          in: path
-          required: true
-          description: fund version id
-          schema:
-            type: integer
-        - name: outputVersion
-          in: path
-          required: true
-          description: output version
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Output.ItemRes'
-      tags:
-        - output
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/OutputItem'
-        description: body output item
   /funds/out/types/{fundVersionId}:
     get:
       operationId: Output_getOutputTypes
@@ -3245,36 +3203,7 @@ paths:
       tags:
         - output
   /funds/out/{fundVersionId}:
-    get:
-      operationId: Output_getOutputs
-      description: Getting list of outputs – an output object linked to a named output object
-      parameters:
-        - name: fundVersionId
-          in: path
-          required: true
-          description: fund version id
-          schema:
-            type: integer
-        - name: state
-          in: query
-          required: false
-          description: output state
-          schema:
-            $ref: '#/components/schemas/Output.State'
-          explode: false
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Output.Def'
-      tags:
-        - output
-  /funds/out/{fundVersionId}/create:
-    put:
+    post:
       operationId: Output_createNamedOutput
       description: Creating a new named output
       parameters:
@@ -3300,17 +3229,11 @@ paths:
             schema:
               $ref: '#/components/schemas/Output.NameParam'
         description: output parameters
-  /funds/out/{fundVersionId}/{outputId}:
+  /funds/out/{outputId}:
     get:
       operationId: Output_getOutput
       description: 'Getting output details: an output object linked to a named output, with a list of connected nodes.'
       parameters:
-        - name: fundVersionId
-          in: path
-          required: true
-          description: fund version id
-          schema:
-            type: integer
         - name: outputId
           in: path
           required: true
@@ -3324,6 +3247,61 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Output.Def'
+      tags:
+        - output
+    delete:
+      operationId: Output_deleteNamedOutput
+      description: Deleting named output
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+      tags:
+        - output
+  /funds/out/{outputId}/clone:
+    post:
+      operationId: Output_cloneOutput
+      description: Creating copy of output
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Output.Def'
+      tags:
+        - output
+  /funds/out/{outputId}/form:
+    get:
+      operationId: Output_getOutputFormData
+      description: Getting data for the form
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Output.FormData'
       tags:
         - output
   /funds/out/{outputId}/generate:
@@ -3354,6 +3332,56 @@ paths:
                 $ref: '#/components/schemas/Output.RequestStatus'
       tags:
         - output
+  /funds/out/{outputId}/nodes/add:
+    post:
+      operationId: Output_addNodesNamedOutput
+      description: Adding nodes to output
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+      tags:
+        - output
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: integer
+        description: list of node ids
+  /funds/out/{outputId}/nodes/remove:
+    delete:
+      operationId: Output_removeNodesNamedOutput
+      description: Removing nodes from output
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+      tags:
+        - output
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: integer
+        description: list of node ids
   /funds/out/{outputId}/restrict/{scopeId}:
     post:
       operationId: Output_addRestrictedScope
@@ -3401,6 +3429,22 @@ paths:
           description: The request has succeeded.
       tags:
         - output
+  /funds/out/{outputId}/revert:
+    post:
+      operationId: Output_revertToOpenState
+      description: Reset status of a named output to "Open"
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+      tags:
+        - output
   /funds/out/{outputId}/send:
     get:
       operationId: Output_sendOutput
@@ -3415,10 +3459,6 @@ paths:
       responses:
         '200':
           description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Output.RequestStatus'
       tags:
         - output
   /funds/out/{outputId}/settings:
@@ -3491,165 +3531,7 @@ paths:
           description: The request has succeeded.
       tags:
         - output
-  /funds/out/{outputId}/{fundVersionId}:
-    delete:
-      operationId: Output_deleteNamedOutput
-      description: Deleting named output
-      parameters:
-        - name: outputId
-          in: path
-          required: true
-          description: output id
-          schema:
-            type: integer
-        - name: fundVersionId
-          in: path
-          required: true
-          description: fund version id
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: The request has succeeded.
-      tags:
-        - output
-  /funds/out/{outputId}/{fundVersionId}/clone:
-    post:
-      operationId: Output_cloneOutput
-      description: Creating copy of output
-      parameters:
-        - name: outputId
-          in: path
-          required: true
-          description: output id
-          schema:
-            type: integer
-        - name: fundVersionId
-          in: path
-          required: true
-          description: fund version id
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Output.Def'
-      tags:
-        - output
-  /funds/out/{outputId}/{fundVersionId}/form:
-    get:
-      operationId: Output_getOutputFormData
-      description: Getting data for the form
-      parameters:
-        - name: outputId
-          in: path
-          required: true
-          description: output id
-          schema:
-            type: integer
-        - name: fundVersionId
-          in: path
-          required: true
-          description: fund version id
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Output.FormData'
-      tags:
-        - output
-  /funds/out/{outputId}/{fundVersionId}/nodes/add:
-    post:
-      operationId: Output_addNodesNamedOutput
-      description: Adding nodes to output
-      parameters:
-        - name: outputId
-          in: path
-          required: true
-          description: output id
-          schema:
-            type: integer
-        - name: fundVersionId
-          in: path
-          required: true
-          description: fund version id
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: The request has succeeded.
-      tags:
-        - output
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                type: integer
-        description: list of node ids
-  /funds/out/{outputId}/{fundVersionId}/nodes/remove:
-    delete:
-      operationId: Output_removeNodesNamedOutput
-      description: Removing nodes from output
-      parameters:
-        - name: outputId
-          in: path
-          required: true
-          description: output id
-          schema:
-            type: integer
-        - name: fundVersionId
-          in: path
-          required: true
-          description: fund version id
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: The request has succeeded.
-      tags:
-        - output
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                type: integer
-        description: list of node ids
-  /funds/out/{outputId}/{fundVersionId}/revert:
-    post:
-      operationId: Output_revertToOpenState
-      description: Reset status of a named output to "Open"
-      parameters:
-        - name: outputId
-          in: path
-          required: true
-          description: output id
-          schema:
-            type: integer
-        - name: fundVersionId
-          in: path
-          required: true
-          description: fund version id
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: The request has succeeded.
-      tags:
-        - output
-  /funds/out/{outputId}/{fundVersionId}/update:
+  /funds/out/{outputId}/update:
     put:
       operationId: Output_updateNamedOutput
       description: Update output
@@ -3658,12 +3540,6 @@ paths:
           in: path
           required: true
           description: output id
-          schema:
-            type: integer
-        - name: fundVersionId
-          in: path
-          required: true
-          description: fund version id
           schema:
             type: integer
       responses:
@@ -3678,7 +3554,7 @@ paths:
             schema:
               $ref: '#/components/schemas/Output.NameParam'
         description: output parameters
-  /funds/out/{outputId}/{fundVersionId}/{itemTypeId}/{manual}:
+  /funds/out/{outputId}/{itemTypeId}/{manual}:
     put:
       operationId: Output_setOutputItemMode
       description: Set user-defined/automatic attribute type editing
@@ -3687,12 +3563,6 @@ paths:
           in: path
           required: true
           description: output id
-          schema:
-            type: integer
-        - name: fundVersionId
-          in: path
-          required: true
-          description: fund version id
           schema:
             type: integer
         - name: itemTypeId
@@ -4278,6 +4148,131 @@ paths:
             schema:
               $ref: '#/components/schemas/Sdo.CopyObjectParam'
         description: batch of data to create
+  /institution/:
+    get:
+      operationId: Inst_getAll
+      description: Get list of Institutions
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Institution'
+      tags:
+        - institution
+    post:
+      operationId: Inst_create
+      description: Create institution
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Institution'
+      tags:
+        - institution
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Institution'
+        description: item of institution
+  /institution/types:
+    get:
+      operationId: Inst_getTypes
+      description: Get list of type
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InstitutionType'
+      tags:
+        - institution
+  /institution/{id}:
+    get:
+      operationId: Inst_getById
+      description: Get institution by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: institution id or internalCode
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Institution'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - institution
+    put:
+      operationId: Inst_update
+      description: Update institution
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: institution id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Institution'
+      tags:
+        - institution
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Institution'
+        description: item of institurion
+    delete:
+      operationId: Inst_delete
+      description: Delete institution
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: institution id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - institution
   /io/export:
     post:
       operationId: Io_exportRequest
@@ -4992,6 +4987,7 @@ paths:
           description: When set, return only the item types available in this rule set (`RulRuleSet.code`); otherwise all loaded rule sets.
           schema:
             type: string
+          explode: false
         - name: Accept-Language
           in: header
           required: false
@@ -5447,12 +5443,15 @@ components:
     AiContextNode:
       type: object
       required:
-        - fundId
         - nodeId
       properties:
         fundId:
           type: integer
           format: int32
+          description: |-
+            `ArrFund.fundId`. Present for a UI-context node or a search hit; absent
+            on a link built from a bare object reference (a tool event's `refs`),
+            where only the node id is known and the fund is not needed to navigate.
         fundVersionId:
           type: integer
           format: int32
@@ -5679,30 +5678,19 @@ components:
         The knowledge/documentation sources the answer relied on. The server emits no
         label text; the client renders a "Sources" list and supplies the heading
         itself, in the user's language.
-    AiMyKey:
-      type: object
-      properties:
-        keyId:
-          type: string
-          description: KeyId of the personal key; absent = none set (the instance-wide key applies).
-      description: |-
-        The current user's personal AI signing key of one provider — presence only,
-        the secret is never returned. With a personal key the user's tasks bill to
-        their personal account (seat); without one the instance-wide key (the shared
-        organizational account) is used.
-    AiMyKeyUpdate:
+    AiActivityLink:
       type: object
       required:
-        - keyId
-        - secret
+        - target
       properties:
-        keyId:
+        label:
           type: string
-          description: KeyId issued by the provider's account authority (an opaque string).
-        secret:
-          type: string
-          description: The HMAC secret belonging to the KeyId (stored server-side, never returned).
-      description: Sets/replaces the current user's personal AI signing key.
+          description: Display label — node title, reference designation or fund name.
+        target:
+          allOf:
+            - $ref: '#/components/schemas/AiContextObject'
+          description: Navigation target — reuses the UI-context vocabulary (`AiContextType` codes).
+      description: One object an activity touched, renderable as a navigation link.
     AiRequest:
       type: object
       required:
@@ -5729,6 +5717,28 @@ components:
           type: string
         errorMessage:
           type: string
+        progressMessage:
+          type: string
+          description: Short human-readable phase while the request runs (advisory, best-effort; absent once terminal).
+        progressPercent:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+          description: Rough completion estimate 0–100 (advisory).
+        partialAnswer:
+          type: string
+          description: |-
+            Accumulated streamed answer text of a running request (provider protocol
+            0.8+, `answer_delta` events). Provisional: it may still be superseded by
+            the provider — the authoritative answer arrives in `blocks` when state =
+            done. Absent once terminal, when the provider streams nothing, or after a
+            server restart mid-exchange.
+        activities:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiRequestActivity'
+          description: User-visible steps of the exchange (tool executions, preparation steps), oldest first.
         promptVersion:
           type: string
         profile:
@@ -5747,6 +5757,79 @@ components:
         set (`queued`, `running`, `awaiting_tools`, `done`, `error`, `cancelled`);
         a client MUST treat an unknown state as "in progress". `blocks` is present
         when `done` (see AiDisplayBlock for the rendering contract).
+
+        Live updates: while an exchange runs, the server pushes this object to the
+        conversation owner's per-user WebSocket topic `/topic/user/{userId}` as
+        `{eventType: "AI_REQUEST_UPDATE", conversationId, request}`. Each message is
+        a complete snapshot — the client replaces the request by `id` (delivery is
+        best effort; the client refetches the conversation on reconnect).
+    AiRequestActivity:
+      type: object
+      required:
+        - id
+        - kind
+        - state
+        - startDate
+      properties:
+        id:
+          type: string
+          description: Stable id of the step within the exchange (the provider's tool-call id).
+        kind:
+          type: string
+          description: TOOL_CALL | PREPARATION (open set).
+        tool:
+          type: string
+          description: |-
+            Tool name for TOOL_CALL: a client tool Elza executed (`searchNodes`,
+            `getItemTypes`, …) or a provider-internal one (`search_knowledge`, …);
+            an unknown name renders as a generic step.
+        label:
+          type: string
+          description: |-
+            Localized, display-ready name of a provider-internal step (from the
+            task-event stream); render in place of `tool`. Absent for a client tool
+            Elza executed itself — the client renders those from `tool`.
+        state:
+          type: string
+          description: RUNNING | DONE | ERROR (open set).
+        query:
+          type: string
+          description: 'Data-like input summary: the fulltext query / the rule-set code.'
+        summary:
+          type: string
+          description: |-
+            Localized, display-ready one-line detail of a provider-internal step: the
+            call's key arguments, or a short result summary once DONE. Secondary text
+            next to `label`; for a client tool the client shows `query`/`resultCount`
+            instead.
+        resultCount:
+          type: integer
+          format: int64
+          description: 'Result size once DONE: search hits, dictionary entries.'
+        partial:
+          type: boolean
+          description: True when `links` holds only the first hits of a larger result.
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiActivityLink'
+          description: Objects the step touched, as navigable links (search hits).
+        error:
+          type: string
+          description: Failure description when state = ERROR.
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+      description: |-
+        One user-visible step of an exchange — a client-tool execution the model
+        requested while working on the answer. `kind`, `tool` and `state` are open
+        sets: the client renders an unknown kind/tool as a generic step and treats
+        an unknown state as still running. Steps stay with the conversation
+        permanently; a linked object may since have been deleted — the client
+        handles a failed navigation gracefully.
     AiRequestCreate:
       type: object
       properties:
@@ -5777,10 +5860,16 @@ components:
           type: integer
         eventType:
           type: string
-          description: SUBMIT | TOOL_CALLS | TOOL_RESULTS | OUTPUT | ERROR | CANCEL (open set).
+          description: |-
+            SUBMIT | TOOL_CALLS | TOOL_RESULTS | OUTPUT | ERROR | CANCEL (open set).
+            Lowercase codes (`phase`, `tool_call`, `tool_result`, `model_round`, …)
+            are events observed from the provider's task-event stream (protocol
+            0.8+), stored as received.
         data:
           type: string
-          description: Event payload (JSON string); shape depends on eventType.
+          description: |-
+            Event payload (JSON string); shape depends on eventType. For provider
+            wire codes this is the received `TaskEvent` object.
         createDate:
           type: string
           format: date-time
@@ -5821,6 +5910,101 @@ components:
             the account's multiplier — a shared organizational account may burn
             credits faster). What the user sees as the price of the exchange.
       description: Metered usage of one exchange (informative; costUnits is the billable quantity).
+    AiAccountUsage:
+      type: object
+      required:
+        - spentCredits
+        - periodStart
+      properties:
+        accountType:
+          type: string
+          description: Kind of account, e.g. `personal` or `shared` (open set).
+        plan:
+          type: string
+          description: Plan label, e.g. `basic`; informational (a code, not for display).
+        planName:
+          type: string
+          description: |-
+            Human-readable plan name for display, e.g. `Osobní – standard` (localized).
+            Absent when the provider has no display name — the client then hides the
+            plan rather than showing the raw `plan` code.
+        allowanceCredits:
+          type: number
+          format: double
+          description: Credit allowance for the current period; absent = no per-account cap.
+        spentCredits:
+          type: number
+          format: double
+          description: Credits charged to this account in the current period.
+        periodStart:
+          type: string
+          format: date-time
+          description: Start of the current accounting period.
+        periodEnd:
+          type: string
+          format: date-time
+          description: End of the current accounting period — when the allowance resets.
+        weeklyAllowanceCredits:
+          type: number
+          format: double
+          description: |-
+            Weekly credit allowance — an optional smoothing cap layered under the
+            period allowance; absent = no weekly cap.
+        weeklySpentCredits:
+          type: number
+          format: double
+          description: Credits charged to this account in the current weekly window; absent = no weekly accounting.
+        weekStart:
+          type: string
+          format: date-time
+          description: |-
+            Start of the current weekly window (the UTC calendar week clamped to the
+            period start — it never spans a period boundary).
+        weekEnd:
+          type: string
+          format: date-time
+          description: End of the current weekly window — when the weekly allowance resets; never after `periodEnd`.
+      description: |-
+        Credit state of the account the user's signing key bills to (their personal
+        seat, or the shared organizational account). Provider-computed; the client
+        only displays it, typically as relative consumption
+        (`spentCredits / allowanceCredits`).
+    AiCustomerUsage:
+      type: object
+      required:
+        - spentCredits
+        - periodStart
+      properties:
+        budgetCredits:
+          type: number
+          format: double
+          description: Subscriber budget for the current period; absent = no cap.
+        spentCredits:
+          type: number
+          format: double
+          description: Credits spent by the whole subscriber in the current period.
+        periodStart:
+          type: string
+          format: date-time
+          description: Start of the current accounting period.
+      description: Subscriber-level (whole organization) usage state — the outer budget cap.
+    AiUsageBalance:
+      type: object
+      properties:
+        account:
+          allOf:
+            - $ref: '#/components/schemas/AiAccountUsage'
+          description: Credit state of the account the user's key bills to.
+        customer:
+          allOf:
+            - $ref: '#/components/schemas/AiCustomerUsage'
+          description: Subscriber-level usage state (the outer cap).
+      description: |-
+        The user's usage/credit balance at the AI provider — the data behind "how
+        much have I spent". The provider serves it from the same state its
+        submit-time budget check uses, so the displayed balance never disagrees
+        with a quota refusal. Both members are optional: a provider without credit
+        accounting returns an empty object.
     AipDetailFilteredResult:
       type: object
       required:
@@ -7665,6 +7849,42 @@ components:
       required:
         - importType
         - dataFile
+    Institution:
+      type: object
+      required:
+        - id
+        - internalCode
+        - accessPointId
+      properties:
+        id:
+          type: integer
+        internalCode:
+          type: string
+        institutionTypeId:
+          type: integer
+        accessPointId:
+          type: integer
+        name:
+          type: string
+        shortName:
+          type: string
+      description: Institution
+    InstitutionType:
+      type: object
+      required:
+        - id
+        - code
+        - name
+      properties:
+        id:
+          type: integer
+        code:
+          type: string
+        name:
+          type: string
+        packageId:
+          type: integer
+      description: Type of institution
     IntViewDefinition:
       type: object
       required:
@@ -8595,10 +8815,6 @@ components:
         - name
         - internalCode
         - outputTypeId
-        - templateId
-        - templateIds
-        - anonymizedAp
-        - outputFilterId
       properties:
         name:
           type: string
@@ -8628,9 +8844,6 @@ components:
         outputVersion:
           type: integer
           description: output version
-        outputId:
-          type: integer
-          description: output id
         descItemTypeId:
           type: integer
           description: desc item type id
@@ -8640,7 +8853,6 @@ components:
           description: CSV file
       required:
         - outputVersion
-        - outputId
         - descItemTypeId
         - file
     Output.RequestStatus:

@@ -7,6 +7,7 @@ import {Accordion, AccordionCollapse, AccordionHeader, AccordionItem} from 'reac
 import {Shortcuts} from 'react-shortcuts';
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './CollapsablePanelKeymap.jsx';
+import './CollapsablePanel.scss';
 
 class CollapsablePanel extends AbstractReactComponent {
     static contextTypes = {shortcuts: PropTypes.object};
@@ -51,7 +52,7 @@ class CollapsablePanel extends AbstractReactComponent {
                 onSelect={() => this.panelToggle()}
                 accordion
                 {...otherProps}
-                className={isOpen ? 'open' : null}
+                className={'collapsable-panel' + (isOpen ? ' open' : '')}
             >
                 <AccordionItem eventKey={eventKey}>
                     <AccordionHeader>

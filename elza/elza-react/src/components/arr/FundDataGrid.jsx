@@ -27,12 +27,8 @@ import { modalDialogHide, modalDialogShow } from 'actions/global/modalDialog';
 import {
     FILTER_NULL_VALUE,
     fundBulkModifications,
-    fundDataChangeCellFocus,
-    fundDataChangeRowIndexes,
     fundDataFulltextClear,
     fundDataFulltextExtended,
-    fundDataFulltextNextItem,
-    fundDataFulltextPrevItem,
     fundDataFulltextSearch,
     fundDataGridFetchDataIfNeeded,
     fundDataGridFetchFilterIfNeeded,
@@ -42,9 +38,6 @@ import {
     fundDataGridRefreshRows,
     fundDataGridSetColumnSize,
     fundDataGridSetColumnsSettings,
-    fundDataGridSetPageIndex,
-    fundDataGridSetPageSize,
-    fundDataGridSetSelection,
     fundDataInitIfNeeded,
 } from 'actions/arr/fundDataGrid';
 import { contextMenuHide, contextMenuShow } from 'actions/global/contextMenu';
@@ -90,7 +83,11 @@ export const deserializeJson = (str) => {
     }
 }
 
-class FundDataGrid extends AbstractReactComponent {
+// DataGrid renders a leading checkbox column (allowRowCheck), so its focus column index is one greater
+// than the corresponding index in this component's cols array.
+const CHECKBOX_COLUMN_OFFSET = 1;
+
+class FundDataGridClass extends AbstractReactComponent {
     dataGridRef = null;
 
     static propTypes = {
@@ -134,6 +131,7 @@ class FundDataGrid extends AbstractReactComponent {
             'handleToggleExtendedSearch',
             'handleChangeRowIndexes',
             'fetchData',
+            'consumeDeepLink',
         );
 
         var colState = this.getColsStateFromProps(props, { fundDataGrid: {} });
@@ -150,10 +148,81 @@ class FundDataGrid extends AbstractReactComponent {
 
         this.fetchData(this.props);
         this.setState({}, this.resizeGrid);
+        this.consumeDeepLink();
 
         // Pokud je potřeba aktualizovat, aktualizujeme při přepnutí na grid, ale zachováme stránkování
         if (fundDataGrid.rowsDirty || fundDataGrid.filterDirty) {
             this.props.dispatch(fundDataGridRefreshRows(versionId));
+        }
+    }
+
+    /**
+     * Resolves an attribute type to a column index against the current columns. If the type is not shown
+     * but the rules offer it, the column is enabled and null is returned to signal "retry after rebuild".
+     * A missing/absent type falls back to the first column (0).
+     */
+    resolveColumnForType(descItemTypeId) {
+        const { fund, ruleSet } = this.props;
+        const cols = this.state.cols;
+
+        if (descItemTypeId == null) {
+            return 0;
+        }
+        const index = cols.findIndex(c => String(c.refType.id) === String(descItemTypeId));
+        if (index >= 0) {
+            return index;
+        }
+
+        // Column not shown - try to enable it if the rules offer it.
+        const ruleMap = getMapFromList(ruleSet.items);
+        const gridViews = ruleMap[fund.activeVersion.ruleSetId]?.gridViews || [];
+        const allowed = gridViews.some(gw => String(gw.id) === String(descItemTypeId));
+        if (allowed && !this.columnAutoShown) {
+            this.columnAutoShown = true;
+            const { columnsOrder, visibleColumns } = this.props.fundDataGrid;
+            const newVisibleColumns = { ...visibleColumns, [descItemTypeId]: true };
+            const newColumnsOrder = columnsOrder.includes(descItemTypeId)
+                ? columnsOrder
+                : [...columnsOrder, descItemTypeId];
+            this.props.dispatch(fundDataGridSetColumnsSettings(this.props.versionId, newVisibleColumns, newColumnsOrder));
+            // After the columns rebuild this method runs again and finds the column.
+            return null;
+        }
+        // Column cannot be shown - fall back to the first column.
+        return 0;
+    }
+
+    /**
+     * Focuses the target cell, from either the URL deep link ("open in datagrid") or the cross-reload
+     * highlight restored from localStorage. Both carry an attribute type that is resolved to a column here
+     * (the only place with the built columns). Called repeatedly (also after a column rebuild) until done.
+     */
+    consumeDeepLink() {
+        const { focusNodeId, focusDescItemTypeId, requestRestore, restoreDescItemTypeId, resolveRestoreColumn } = this.props;
+        const cols = this.state.cols;
+        if (!cols || cols.length === 0) {
+            return;
+        }
+
+        // URL deep link: start a restore for the target node + column.
+        if (!this.deepLinkDone && focusNodeId != null && requestRestore) {
+            const colsIndex = this.resolveColumnForType(focusDescItemTypeId);
+            if (colsIndex == null) {
+                return; // auto-showing the column; will retry after rebuild
+            }
+            this.deepLinkDone = true;
+            requestRestore(focusNodeId, this.toGridColumn(colsIndex));
+            return;
+        }
+
+        // Reload highlight: the node restore is already pending, resolve only its column.
+        if (!this.reloadColumnDone && restoreDescItemTypeId != null && resolveRestoreColumn) {
+            const colsIndex = this.resolveColumnForType(restoreDescItemTypeId);
+            if (colsIndex == null) {
+                return; // auto-showing the column; will retry after rebuild
+            }
+            this.reloadColumnDone = true;
+            resolveRestoreColumn(this.toGridColumn(colsIndex));
         }
     }
 
@@ -165,7 +234,7 @@ class FundDataGrid extends AbstractReactComponent {
         this.props.dispatch(groups.fetchIfNeeded(this.props.versionId));
         this.props.dispatch(refRulDataTypesFetchIfNeeded());
         this.props.dispatch(fundDataGridFetchFilterIfNeeded(versionId));
-        this.props.dispatch(fundDataGridFetchDataIfNeeded(versionId, fundDataGrid.pageIndex, fundDataGrid.pageSize));
+        this.props.dispatch(fundDataGridFetchDataIfNeeded(versionId, props.view.pageIndex, props.view.pageSize));
 
         // this.props.dispatch(refRuleSetFetchIfNeeded());
         if (ruleSet.fetched && descItemTypes.fetched && fund.activeVersion) {
@@ -239,7 +308,10 @@ class FundDataGrid extends AbstractReactComponent {
             colState = {};
         }
 
-        this.setState(colState, this.resizeGrid);
+        this.setState(colState, () => {
+            this.resizeGrid();
+            this.consumeDeepLink();
+        });
     }
 
     resizeGrid() {
@@ -544,12 +616,13 @@ class FundDataGrid extends AbstractReactComponent {
     }
 
     handleSelectedIdsChange(ids) {
-        const { versionId } = this.props;
-        this.props.dispatch(fundDataGridSetSelection(versionId, ids));
+        this.props.onSetSelectedIds(ids);
     }
 
     handleFilterClearAll() {
         const { versionId, dispatch, fundId, history } = this.props;
+        // Reset to the first page and clear selection/focus - the filtered result set changed.
+        this.props.onSetPageIndex(0);
         dispatch(fundDataGridFilterClearAll(versionId));
         dispatch(storeSave()); // musíme uložit ihned store, abychom se vyhnuli problémům s opožděným savem
         history.push(urlFundGrid(fundId));
@@ -632,6 +705,8 @@ class FundDataGrid extends AbstractReactComponent {
             }
         }
 
+        // Reset to the first page and clear selection/focus - the filtered result set changed.
+        this.props.onSetPageIndex(0);
         this.props.dispatch(modalDialogHide());
         this.props.dispatch(fundDataGridFilterChange(versionId, filter));
         this.setFilterUrl(filter);
@@ -650,7 +725,7 @@ class FundDataGrid extends AbstractReactComponent {
                     selectionType = 'NODES';
                     break;
                 case 'selected': {
-                    const set = getSetFromIdsList(fundDataGrid.selectedIds);
+                    const set = getSetFromIdsList(this.props.view.selectedIds);
                     nodes = [];
                     selectionType = 'NODES';
                     fundDataGrid.items.forEach(i => {
@@ -663,7 +738,7 @@ class FundDataGrid extends AbstractReactComponent {
                 case 'unselected': {
                     nodes = [];
                     selectionType = 'NODES';
-                    const set = getSetFromIdsList(fundDataGrid.selectedIds);
+                    const set = getSetFromIdsList(this.props.view.selectedIds);
                     fundDataGrid.items.forEach(i => {
                         if (!set[i.id]) {
                             nodes.push({ id: i.node.id, version: i.node.version });
@@ -732,7 +807,7 @@ class FundDataGrid extends AbstractReactComponent {
                     dataType={dataType}
                     onSubmitForm={submit}
                     allItemsCount={fundDataGrid.items.length}
-                    checkedItemsCount={fundDataGrid.selectedIds.length}
+                    checkedItemsCount={this.props.view.selectedIds.length}
                     versionId={versionId}
                     structureTypes={structureTypes}
                 />,
@@ -838,23 +913,52 @@ class FundDataGrid extends AbstractReactComponent {
     }
 
     handleFulltextPrevItem() {
-        const { versionId } = this.props;
-        this.props.dispatch(fundDataFulltextPrevItem(versionId));
+        this.props.onFulltextPrevItem();
     }
 
     handleFulltextNextItem() {
-        const { versionId } = this.props;
-        this.props.dispatch(fundDataFulltextNextItem(versionId));
+        this.props.onFulltextNextItem();
     }
 
     handleChangeFocus(row, col) {
-        const { versionId } = this.props;
-        this.props.dispatch(fundDataChangeCellFocus(versionId, row, col));
+        this.props.onSetCellFocus(row, col);
+        this.updateCellUrl(row, col);
+    }
+
+    /**
+     * Reflects the focused cell in the URL (.../grid/{nodeId}/{descItemTypeId}) so it can be shared or
+     * survive a reload. Uses replace, not push, to avoid polluting the browser history on every cell move.
+     */
+    updateCellUrl(row, col) {
+        const { fund, history, fundDataGrid } = this.props;
+
+        const item = fundDataGrid.items[row];
+        const nodeId = item?.node?.id;
+        if (nodeId == null) {
+            return;
+        }
+
+        const colDef = this.state.cols[this.toColsIndex(col)];
+        const typeId = colDef && colDef.refType.id !== COL_REFERENCE_MARK ? colDef.refType.id : undefined;
+
+        history.replace(urlFundGrid(fund.id, undefined, fundDataGrid.serializedFilter, nodeId, typeId));
+
+        // Persist the highlight (node + attribute type) so a later reload can restore this cell.
+        this.props.rememberRestoreNode(nodeId, typeId);
+    }
+
+    // The DataGrid prepends a checkbox column, so its focus column index is offset by one from
+    // this.state.cols (which has no checkbox). These translate between the two indexings.
+    toColsIndex(gridCol) {
+        return gridCol - CHECKBOX_COLUMN_OFFSET;
+    }
+
+    toGridColumn(colsIndex) {
+        return colsIndex + CHECKBOX_COLUMN_OFFSET;
     }
 
     handleChangeRowIndexes(indexes) {
-        const { versionId } = this.props;
-        this.props.dispatch(fundDataChangeRowIndexes(versionId, indexes));
+        this.props.onSetRowIndexes(indexes);
     }
 
     /**
@@ -934,7 +1038,7 @@ class FundDataGrid extends AbstractReactComponent {
     };
 
     render() {
-        const { fundId, fund, fundDataGrid, versionId, rulDataTypes, descItemTypes, dispatch, readMode } = this.props;
+        const { fundId, fund, fundDataGrid, versionId, rulDataTypes, descItemTypes, dispatch, readMode, view } = this.props;
         const { cols, cellForm } = this.state;
 
         // Hledání
@@ -999,10 +1103,10 @@ class FundDataGrid extends AbstractReactComponent {
                             ref={ref => (this.dataGridRef = ref)}
                             rows={fundDataGrid.items}
                             cols={cols}
-                            focusRow={fundDataGrid.cellFocus.row}
-                            focusCol={fundDataGrid.cellFocus.col}
-                            selectedIds={fundDataGrid.selectedIds}
-                            selectedRowIndexes={fundDataGrid.selectedRowIndexes}
+                            focusRow={view.cellFocus.row}
+                            focusCol={view.cellFocus.col}
+                            selectedIds={view.selectedIds}
+                            selectedRowIndexes={view.selectedRowIndexes}
                             onColumnResize={this.handleColumnResize}
                             onChangeFocus={this.handleChangeFocus}
                             onChangeRowIndexes={this.handleChangeRowIndexes}
@@ -1010,19 +1114,15 @@ class FundDataGrid extends AbstractReactComponent {
                             onContextMenu={this.handleContextMenu}
                             onEdit={this.handleEdit}
                             disabled={readMode}
-                            startRowIndex={fundDataGrid.pageSize * fundDataGrid.pageIndex}
-                            morePages={getPagesCount(fundDataGrid.itemsCount, fundDataGrid.pageSize) > 1}
+                            startRowIndex={view.pageSize * view.pageIndex}
+                            morePages={getPagesCount(fundDataGrid.itemsCount, view.pageSize) > 1}
                         />
                         <DataGridPagination
                             itemsCount={fundDataGrid.itemsCount}
-                            pageSize={fundDataGrid.pageSize}
-                            pageIndex={fundDataGrid.pageIndex}
-                            onSetPageIndex={pageIndex => {
-                                dispatch(fundDataGridSetPageIndex(versionId, pageIndex));
-                            }}
-                            onChangePageSize={pageSize => {
-                                dispatch(fundDataGridSetPageSize(versionId, pageSize));
-                            }}
+                            pageSize={view.pageSize}
+                            pageIndex={view.pageIndex}
+                            onSetPageIndex={this.props.onSetPageIndex}
+                            onChangePageSize={this.props.onSetPageSize}
                         />
                     </div>
                 </div>
@@ -1048,4 +1148,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default withRouter(connect(mapStateToProps)(FundDataGrid));
+export const FundDataGridConnected = withRouter(connect(mapStateToProps)(FundDataGridClass));

@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller.vo;
 
+@Deprecated
 public class OutputSettingsVO {
     private Integer evenPageOffsetX;
     private Integer evenPageOffsetY;

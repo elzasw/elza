@@ -51,6 +51,7 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrCachedNode;
 import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.converter.UnitDateConverter;
@@ -104,54 +105,47 @@ public class NodeSearchService {
     }
 
     /**
+     * Výsledek vyhledávání JP bez vazby na HTTP session — pro interní volání
+     * (např. AI tool {@code searchNodes}), které si výsledek zpracuje samo.
+     *
+     * @param fundToNodeLists nalezené JP seskupené po AS
+     * @param totalCount      celkový počet nalezených JP (před ořezáním)
+     * @param partialResult   příznak částečného výsledku (limit počtu/času)
+     */
+    public record NodeSearchData(Collection<ArrFundToNodeList> fundToNodeLists, long totalCount,
+            boolean partialResult) {
+    }
+
+    /**
 	 * Seznam AS podle parametrů vyhledávání.
-	 * 
+	 *
 	 * @param searchParams
 	 * @return
 	 */
 	public NodeSearchResult nodeSearch(SearchParams searchParams) {
-		// uložit čas zahájení procesu vyhledávání
-		long startTime = System.currentTimeMillis();
+		return nodeSearch(searchParams, null);
+	}
 
-		SearchSession searchSession = Search.session(em);
-		SearchPredicateFactory factory = searchSession.scope(ArrCachedNode.class).predicate();
-		SearchPredicate predicate = createSearchPredicate(factory, searchParams);
-
-		// vyhledávání s maximálním limitem počtu záznamů
-        SearchResult<ArrCachedNode> resultList = searchSession.search(ArrCachedNode.class).where(predicate).fetch(nodeSearchLimit);
-        long totalCount = resultList.total().hitCount();
-        boolean partialResult = resultList.timedOut() || totalCount > resultList.hits().size();
-
-        // map: fundId -> ArrFundToNodeList
-        Map<Integer, ArrFundToNodeList> fundToNodeListMap = new HashMap<>();
-
-		for (ArrCachedNode arrCachedNode : resultList.hits()) {
-        	CachedNode cachedNode = nodeCacheService.deserialize(arrCachedNode.getData());
-        	ArrFundToNodeList fundToNodeList = fundToNodeListMap.get(cachedNode.getFundId());
-        	if (fundToNodeList == null) {
-        		fundToNodeList = new ArrFundToNodeList(cachedNode.getFundId(), new ArrayList<>());
-        		fundToNodeListMap.put(cachedNode.getFundId(), fundToNodeList);
-        	}
-        	// omezit počet uzlů pro fond
-        	if (fundToNodeList.getNodeIdList().size() < nodeSearchByFundLimit) {
-        		fundToNodeList.getNodeIdList().add(arrCachedNode.getNodeId());
-        	} else {
-        		partialResult = true;
-        	}
-        	// omezit proces časovým limitem
-        	if (System.currentTimeMillis() - startTime > timeRequestMsLimit) {
-        		partialResult = true;
-        		break;
-        	}
-        }
-
-        Collection<ArrFundToNodeList> fundToNodeList = fundToNodeListMap.values();
+    /**
+     * Seznam AS podle parametrů vyhledávání, omezený na zadané AS.
+     *
+     * @param searchParams       parametry vyhledávání
+     * @param restrictToFundIds  omezení na AS, které smí uživatel číst;
+     *                           {@code null} = bez omezení
+     * @return
+     */
+	public NodeSearchResult nodeSearch(SearchParams searchParams, Collection<Integer> restrictToFundIds) {
+		NodeSearchData data = nodeSearchData(searchParams, restrictToFundIds);
+        Collection<ArrFundToNodeList> fundToNodeList = data.fundToNodeLists();
+        long totalCount = data.totalCount();
+        boolean partialResult = data.partialResult();
 
         // uložit do session uživatele
         fundSearchSession().set(fundToNodeList);
 
         // read all ArrFundVersion by fundIds
-        List<ArrFundVersion> fundVersions = arrangementInternalService.getOpenVersionsByFundIds(fundToNodeListMap.keySet());
+        List<Integer> fundIds = fundToNodeList.stream().map(ArrFundToNodeList::getFundId).toList();
+        List<ArrFundVersion> fundVersions = arrangementInternalService.getOpenVersionsByFundIds(fundIds);
         Map<Integer, ArrFundVersion> fundVersionsMap = fundVersions.stream().collect(Collectors.toMap(ArrFundVersion::getFundId, f -> f));
         
         List<FundSearchResult> result = new ArrayList<>(fundToNodeList.size());
@@ -181,6 +175,54 @@ public class NodeSearchService {
 
         return new NodeSearchResult(result, totalCount, partialResult);
 	}
+
+    /**
+     * Vlastní vyhledání JP podle parametrů — bez uložení do HTTP session (viz
+     * {@link NodeSearchData}). Volitelné omezení na množinu AS se vyhodnocuje
+     * přímo v dotazu (pole {@code fundId} je indexované).
+     *
+     * @param searchParams      parametry vyhledávání
+     * @param restrictToFundIds omezení na AS; {@code null} = bez omezení
+     * @return nalezené JP seskupené po AS
+     */
+    public NodeSearchData nodeSearchData(SearchParams searchParams, Collection<Integer> restrictToFundIds) {
+        // uložit čas zahájení procesu vyhledávání
+        long startTime = System.currentTimeMillis();
+
+        SearchSession searchSession = Search.session(em);
+        SearchPredicateFactory factory = searchSession.scope(ArrCachedNode.class).predicate();
+        SearchPredicate predicate = createSearchPredicate(factory, searchParams, restrictToFundIds);
+
+        // vyhledávání s maximálním limitem počtu záznamů
+        SearchResult<ArrCachedNode> resultList = searchSession.search(ArrCachedNode.class).where(predicate).fetch(nodeSearchLimit);
+        long totalCount = resultList.total().hitCount();
+        boolean partialResult = resultList.timedOut() || totalCount > resultList.hits().size();
+
+        // map: fundId -> ArrFundToNodeList
+        Map<Integer, ArrFundToNodeList> fundToNodeListMap = new HashMap<>();
+
+        for (ArrCachedNode arrCachedNode : resultList.hits()) {
+            CachedNode cachedNode = nodeCacheService.deserialize(arrCachedNode.getData());
+            ArrFundToNodeList fundToNodeList = fundToNodeListMap.get(cachedNode.getFundId());
+            if (fundToNodeList == null) {
+                fundToNodeList = new ArrFundToNodeList(cachedNode.getFundId(), new ArrayList<>());
+                fundToNodeListMap.put(cachedNode.getFundId(), fundToNodeList);
+            }
+            // omezit počet uzlů pro fond
+            if (fundToNodeList.getNodeIdList().size() < nodeSearchByFundLimit) {
+                fundToNodeList.getNodeIdList().add(arrCachedNode.getNodeId());
+            } else {
+                partialResult = true;
+            }
+            // omezit proces časovým limitem
+            if (System.currentTimeMillis() - startTime > timeRequestMsLimit) {
+                partialResult = true;
+                break;
+            }
+        }
+
+        return new NodeSearchData(fundToNodeListMap.values(), totalCount, partialResult);
+    }
 
 	/**
 	 * Seznam uzlů vybraného archivního souboru.
@@ -220,16 +262,23 @@ public class NodeSearchService {
 	/**
 	 * Vytvoření predikátu podle parametrů vyhledávání.
 	 *
-	 * @param factory      továrna predikátů
-	 * @param searchParams parametry vyhledávání
+	 * @param factory           továrna predikátů
+	 * @param searchParams      parametry vyhledávání
+	 * @param restrictToFundIds omezení na AS (oprávnění uživatele); {@code null} = bez omezení
 	 * @return výsledný predikát
 	 */
-	private SearchPredicate createSearchPredicate(SearchPredicateFactory factory, SearchParams searchParams) {
+	private SearchPredicate createSearchPredicate(SearchPredicateFactory factory, SearchParams searchParams,
+	                                              Collection<Integer> restrictToFundIds) {
 	    BooleanPredicateClausesStep<?> bool = factory.bool();
 
 	    // zpracování všech filtrů — každý musí být splněn (AND na nejvyšší úrovni)
 	    for (AbstractFilter filter : searchParams.getFilters()) {
 	        bool.must(filterToPredicate(factory, filter));
+	    }
+
+	    // omezení na AS, které smí uživatel číst (pole fundId je indexované)
+	    if (restrictToFundIds != null) {
+	        bool.must(factory.terms().field(ArrFund.FIELD_FUND_ID).matchingAny(restrictToFundIds).toPredicate());
 	    }
 
 	    return bool.toPredicate();

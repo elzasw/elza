@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Elza AI Provider API
-  version: 0.6.0
+  version: 0.13.0
   description: |-
     Elza AI Provider API.
 
@@ -37,6 +37,14 @@ info:
     per task, so the protocol is **delta-only**: the client never re-sends
     accumulated context, and a completed task can be continued — refined with a
     follow-up — by submitting a new task with `parentTaskId`.
+
+    The poll returns the task's state plus a single advisory `progress` line. A
+    client that wants to show finer live activity — the phases, tool calls and
+    (when the provider streams it) the answer as it is composed — may
+    additionally long-poll `GET /tasks/{taskId}/events`, a cursor-based,
+    replayable stream of execution events. It is **optional and advisory**:
+    authoritative state, result and usage always come from `GET /tasks/{taskId}`,
+    and a provider may emit no events at all.
 
     ## Contract ownership
 
@@ -613,6 +621,171 @@ paths:
                 $ref: '#/components/schemas/ServiceError'
       tags:
         - ElzaAi
+  /tasks/{taskId}/events:
+    get:
+      operationId: getTaskEvents
+      description: |-
+        Stream a task's execution events (long poll) — an **optional** finer-grained
+        companion to `GET /tasks/{taskId}`. Where the poll returns the task's current
+        state and a single advisory `progress`, this returns the append-only sequence
+        of what the task has been *doing* — phases, tool calls, and (when the provider
+        streams it) the answer as it is composed — so a client can show live activity
+        instead of one changing status line.
+
+        Cursor-based and replayable: pass the `seq` of the last event seen as `since`
+        (omit or `0` for the whole history), then use `TaskEvents.nextSince` for the
+        next call. With `wait`, the server holds the request until new events exist or
+        the timeout elapses, then returns whatever accrued (possibly none).
+
+        Consuming this stream is never required: a client drives the task with
+        `GET /tasks/{taskId}` as usual, and a provider may emit no events at all (an
+        empty stream is conformant). Events are advisory — authoritative state,
+        output, usage, and the `toolCalls` to execute all come from
+        `GET /tasks/{taskId}`.
+      parameters:
+        - $ref: '#/components/parameters/SignedRequest'
+        - name: taskId
+          in: path
+          required: true
+          description: Task id from `TaskAccepted`.
+          schema:
+            type: string
+        - name: since
+          in: query
+          required: false
+          description: |-
+            Return only events with `seq` greater than this cursor; omit or `0` for the
+            full history. Use `TaskEvents.nextSince` from the previous call.
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+          explode: false
+        - name: wait
+          in: query
+          required: false
+          description: |-
+            Long-poll timeout in seconds; `0`/absent = answer immediately with whatever
+            events already accrued. Capped by `Limits.maxWaitSeconds` (shared with
+            `GET /tasks/{taskId}`).
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskEvents'
+        '400':
+          description: |-
+            Standard error payload. Notable statuses: `402` — no active subscription or
+            quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+        '401':
+          description: |-
+            Standard error payload. Notable statuses: `402` — no active subscription or
+            quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+        '402':
+          description: |-
+            Standard error payload. Notable statuses: `402` — no active subscription or
+            quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+        '403':
+          description: |-
+            Standard error payload. Notable statuses: `402` — no active subscription or
+            quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+        '404':
+          description: |-
+            Standard error payload. Notable statuses: `402` — no active subscription or
+            quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+        '409':
+          description: |-
+            Standard error payload. Notable statuses: `402` — no active subscription or
+            quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+        '429':
+          description: |-
+            Standard error payload. Notable statuses: `402` — no active subscription or
+            quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+        '500':
+          description: |-
+            Standard error payload. Notable statuses: `402` — no active subscription or
+            quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+      tags:
+        - ElzaAi
   /tasks/{taskId}/tool-results:
     post:
       operationId: submitToolResults
@@ -904,7 +1077,13 @@ components:
           description: Kind of account, e.g. `personal` or `shared` (open set).
         plan:
           type: string
-          description: Plan label, e.g. `basic`; informational.
+          description: Plan label, e.g. `basic`; informational (a code, not for display).
+        planName:
+          type: string
+          description: |-
+            Human-readable plan name for display, e.g. `Osobní – standard` (localized
+            like all display strings). Absent when the provider has no display name —
+            the client then hides the plan rather than showing the raw `plan` code.
         allowanceCredits:
           type: number
           format: double
@@ -921,6 +1100,32 @@ components:
           type: string
           format: date-time
           description: End of the current accounting period — when the allowance resets.
+        weeklyAllowanceCredits:
+          type: number
+          format: double
+          description: |-
+            Weekly credit allowance — an optional smoothing cap layered under the
+            period allowance (protecting the rest of the period from one heavy week);
+            absent = no weekly cap.
+        weeklySpentCredits:
+          type: number
+          format: double
+          description: Credits charged to this account in the current weekly window; absent = the provider keeps no weekly accounting.
+        weekStart:
+          type: string
+          format: date-time
+          description: |-
+            Start of the current weekly window. The window is the UTC calendar week
+            (Monday 00:00) clamped to the period start, so it never spans a period
+            boundary — at a mid-week period start the weekly counter resets early
+            together with the period, in the user's favor.
+        weekEnd:
+          type: string
+          format: date-time
+          description: |-
+            End of the current weekly window — when the weekly allowance resets (the
+            earlier of next Monday 00:00 UTC and `periodEnd`; by construction never
+            after `periodEnd`).
       description: |-
         Credit state of the account the signing key selects — the caller's personal
         account (user-scoped key) or the organization's shared account
@@ -942,8 +1147,11 @@ components:
           elza.text: '#/components/schemas/TextObject'
           elza.markdown: '#/components/schemas/MarkdownObject'
           elza.fundInfo: '#/components/schemas/FundInfoObject'
+          elza.archivalEntityInfo: '#/components/schemas/ArchivalEntityInfoObject'
           elza.archivalEntity: '#/components/schemas/ArchivalEntityObject'
           elza.archivalDescription: '#/components/schemas/ArchivalDescriptionObject'
+          elza.archivalOutline: '#/components/schemas/ArchivalOutlineObject'
+          elza.revisionConfig: '#/components/schemas/RevisionConfigObject'
           elza.revisionFindings: '#/components/schemas/RevisionFindingsObject'
           elza.docCitations: '#/components/schemas/DocCitationsObject'
       description: |-
@@ -1037,6 +1245,16 @@ components:
           description: |-
             Problems found by Elza's automatic checks on this level (0..n); empty or
             absent when the level is valid or has not been validated.
+        allowedItemTypes:
+          type: array
+          items:
+            type: string
+          description: |-
+            Item-type codes the rule package permits on this level (the POSSIBLE +
+            REQUIRED types Elza's rules compute for the node) — the catalog a revision
+            task's element suggestions must stay within (`RevisionFinding.targetItemType`
+            must be one of these). Filled for the reviewed units of `elza.revision`;
+            absent in other uses (chat context, tool results).
         items:
           type: array
           items:
@@ -1046,6 +1264,43 @@ components:
         A description unit (level / node): its identity, its place in the arrangement
         and its description items as codes. Self-contained given the accompanying
         `elza.fundInfo`, whose `ruleSetCode` resolves the item codes.
+    ArchivalDescriptionDetail:
+      type: object
+      required:
+        - node
+        - fundId
+      properties:
+        node:
+          allOf:
+            - $ref: '#/components/schemas/ArchivalDescription'
+          description: The level itself, the same model the client sends as context, items included.
+        fundId:
+          type: integer
+          format: int32
+          description: Fund the level belongs to — scopes follow-up searches (`SearchNodesParams.fundIds`).
+        ruleSetCode:
+          type: string
+          description: |-
+            Rule set of the fund (`RulRuleSet.code`) — resolves the items' type/spec
+            codes, the same way `ArchivalEntity.ruleSetCode` does for a fetched entity.
+        parents:
+          type: array
+          items:
+            $ref: '#/components/schemas/NodeHit'
+          description: Parent chain, root first (when `withParents`; never windowed — depth is small).
+        siblings:
+          allOf:
+            - $ref: '#/components/schemas/NodeWindow'
+          description: Sibling window (when `withSiblings`).
+        children:
+          allOf:
+            - $ref: '#/components/schemas/NodeWindow'
+          description: Children window (when `withChildren`).
+      description: |-
+        Result of the `getArchivalDescription` tool: the level — always with its
+        complete description items (the round-trip dominates the cost; the provider
+        decides how much reaches the model) — plus the requested surroundings in the
+        arrangement tree.
     ArchivalDescriptionObject:
       type: object
       required:
@@ -1058,10 +1313,128 @@ components:
       description: Archival description object.
     ArchivalEntity:
       type: object
-      additionalProperties: {}
+      required:
+        - accessPointId
+      properties:
+        accessPointId:
+          type: integer
+          format: int32
+          description: |-
+            Access point id (`ApAccessPoint.accessPointId`); echo-only — the provider
+            never interprets it, but tools and results can reference the entity by it.
+        uuid:
+          type: string
+          description: Stable access point UUID (`ApAccessPoint.uuid`), for durable cross-request identity.
+        className:
+          type: string
+          description: |-
+            Name of the entity class — the top of the type hierarchy, e.g.
+            "osoba / bytost" (the root, read-only `ApType.name`).
+        classCode:
+          type: string
+          description: Stable code of the entity class (root `ApType.code`), e.g. `PERSON`.
+        typeName:
+          type: string
+          description: |-
+            Name of the entity type (its subclass) — the access point's own type, e.g.
+            "fyzická osoba" or "bytost" (`ApType.name`).
+        typeCode:
+          type: string
+          description: Stable code of the entity type (`ApType.code`), e.g. `PERSON_INDIVIDUAL`.
+        externalSystemCode:
+          type: string
+          description: |-
+            Code of the external system the entity is bound to (`ApExternalSystem.code`),
+            when it originates from or is synchronized with one (e.g. a CAM instance);
+            absent for a purely local entity. An entity is bound to at most one system.
+        externalId:
+          type: string
+          description: |-
+            The entity's identifier within that external system (`ApBinding.value`);
+            present together with `externalSystemCode`.
+        ruleSetCode:
+          type: string
+          description: |-
+            Rule set governing this entity's description, e.g. `ZP2015` (`RulRuleSet.code`)
+            — taken from the entity's scope (`ApScope.rulRuleSet`). Selects the dictionary
+            (the same `getItemTypes` tool that funds use) that resolves the item-type/spec
+            codes carried in the parts' `DescriptionItem`s. Optional: a scope may have no
+            rule set, in which case those codes render unresolved. Not on
+            `ArchivalEntityInfo`, which carries no items to resolve.
+        parts:
+          type: array
+          items:
+            $ref: '#/components/schemas/EntityPart'
+          description: |-
+            Top-level parts of the entity, in display order — the roots of the part tree;
+            each part's sub-parts nest under its own `parts`.
       description: |-
-        A CAM access point / entity. Payload fields are added as real tasks need them;
-        open for additive growth.
+        A CAM access point / archival entity in full: its identity and classification
+        plus its complete structured description as a tree of parts. Sent as context
+        when the user is working on an entity. The name is not repeated at the top
+        level — it is the `value` of the part marked `preferred`.
+    ArchivalEntityInfo:
+      type: object
+      required:
+        - accessPointId
+      properties:
+        accessPointId:
+          type: integer
+          format: int32
+          description: |-
+            Access point id (`ApAccessPoint.accessPointId`); echo-only — the provider
+            never interprets it, but tools and results can reference the entity by it.
+        uuid:
+          type: string
+          description: Stable access point UUID (`ApAccessPoint.uuid`), for durable cross-request identity.
+        className:
+          type: string
+          description: |-
+            Name of the entity class — the top of the type hierarchy, e.g.
+            "osoba / bytost" (the root, read-only `ApType.name`).
+        classCode:
+          type: string
+          description: Stable code of the entity class (root `ApType.code`), e.g. `PERSON`.
+        typeName:
+          type: string
+          description: |-
+            Name of the entity type (its subclass) — the access point's own type, e.g.
+            "fyzická osoba" or "bytost" (`ApType.name`).
+        typeCode:
+          type: string
+          description: Stable code of the entity type (`ApType.code`), e.g. `PERSON_INDIVIDUAL`.
+        externalSystemCode:
+          type: string
+          description: |-
+            Code of the external system the entity is bound to (`ApExternalSystem.code`),
+            when it originates from or is synchronized with one (e.g. a CAM instance);
+            absent for a purely local entity. An entity is bound to at most one system.
+        externalId:
+          type: string
+          description: |-
+            The entity's identifier within that external system (`ApBinding.value`);
+            present together with `externalSystemCode`.
+        preferredName:
+          type: string
+          description: |-
+            Preferred (display) name of the entity — the display-name index of its
+            preferred part (`ApIndex` of type `DISPLAY_NAME`).
+      description: |-
+        Lightweight reference to a CAM access point / archival entity — its identity,
+        classification and preferred name, without the full structured description.
+        Sent on its own as `elza.archivalEntityInfo`, and nested in a `RECORD_REF`
+        description item (`DescriptionItem.entity`) to name what a reference points at.
+        Having no parts, it carries the preferred name directly.
+    ArchivalEntityInfoObject:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: '#/components/schemas/ArchivalEntityInfo'
+      allOf:
+        - $ref: '#/components/schemas/AiObject'
+      description: Lightweight archival entity object — a reference by identity, without the parts.
     ArchivalEntityObject:
       type: object
       required:
@@ -1071,7 +1444,57 @@ components:
           $ref: '#/components/schemas/ArchivalEntity'
       allOf:
         - $ref: '#/components/schemas/AiObject'
-      description: Archival entity object.
+      description: Archival entity object — the full entity with its parts.
+    ArchivalObjectRef:
+      type: object
+      properties:
+        nodeId:
+          type: integer
+          format: int64
+          description: '`nodeId` of an archival description level this event concerns.'
+        accessPointId:
+          type: integer
+          format: int64
+          description: '`accessPointId` of an archival entity (access point) this event concerns.'
+      description: |-
+        A reference to one archival object a tool event concerns (an entry of
+        `TaskEvent.refs`), for linking from the activity feed. Exactly one identifier
+        is set — a level (`nodeId`) or an entity (`accessPointId`); both are optional
+        so the shape is forward-compatible.
+    ArchivalOutline:
+      type: object
+      required:
+        - rows
+      properties:
+        fundId:
+          type: integer
+          format: int32
+          description: Fund the outline belongs to (`ArrFund.fundId`); echo-only.
+        rows:
+          type: array
+          items:
+            $ref: '#/components/schemas/OutlineRow'
+          description: The outline's rows, in arrangement (tree) order.
+      description: |-
+        A compact, ordered outline of part of the arrangement tree: one `OutlineRow`
+        per level, in tree order, with parent–child relations readable from
+        `referenceMark`/`depth`. Built deterministically by the client (no model
+        involved), so a whole branch of hundreds to thousands of levels costs what a
+        handful of full descriptions would. Used by `elza.revision` as the
+        hierarchical context around the reviewed units (children / sibling
+        summaries), and as the whole-branch representation for checks that read
+        titles and dating rather than items (naming consistency, repetition across
+        levels).
+    ArchivalOutlineObject:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: '#/components/schemas/ArchivalOutline'
+      allOf:
+        - $ref: '#/components/schemas/AiObject'
+      description: Archival outline object.
     CustomerUsageInfo:
       type: object
       required:
@@ -1131,8 +1554,8 @@ components:
             The value's data type — the same value the `getItemTypes` dictionary reports
             for this item type (`ItemTypeInfo.dataType`), denormalized here so a block is
             self-describing without the dictionary: it says how to read the value and which
-            reference fields are present, e.g. `RECORD_REF` (→ `accessPointId`),
-            `STRUCTURED` (→ `structuredObjectType`/`structuredObjectId`), `ENUM` (→ `spec`),
+            reference field is present, e.g. `RECORD_REF` (→ `entity`),
+            `STRUCTURED` (→ `structuredObject`), `ENUM` (→ `spec`),
             or a text/number/date type (→ `value`).
         spec:
           type: string
@@ -1145,34 +1568,22 @@ components:
             The item's value in text form for non-enumerated types; absent when the
             meaning is fully carried by `spec`, or the item is value-less. For an
             access-point or structured-object item it holds the human-readable value —
-            the entity's preferred name or the object's serialized name — while the
-            fields below add the machine-readable reference.
-        accessPointId:
-          type: integer
-          format: int32
+            the entity's preferred name or the object's serialized name — while
+            `entity` / `structuredObject` below add the machine-readable reference.
+        entity:
+          allOf:
+            - $ref: '#/components/schemas/ArchivalEntityInfo'
           description: |-
-            For an access-point item (`RECORD_REF`): the referenced access point's id
-            (`ApAccessPoint.accessPointId`). `value` holds its preferred name. Absent for
-            other item types.
-        structuredObjectType:
-          type: string
+            For an access-point item (`RECORD_REF`): the referenced entity as a
+            lightweight `ArchivalEntityInfo` (its id, preferred name and classification).
+            `value` also holds the entity's preferred name. Absent for other item types.
+        structuredObject:
+          allOf:
+            - $ref: '#/components/schemas/StructuredObjectInfo'
           description: |-
             For a structured-object item (`STRUCTURED`, e.g. a storage unit or an
-            accessibility restriction): the structured type code
-            (`RulStructuredType.code`). Absent for other item types.
-        structuredObjectId:
-          type: integer
-          format: int32
-          description: |-
-            For a structured-object item (`STRUCTURED`): the structured object's id
-            (`ArrStructuredObject.structuredObjectId`). `value` holds its serialized
-            name. Absent for other item types.
-        complement:
-          type: string
-          description: |-
-            For a structured-object item (`STRUCTURED`): the object's optional complement
-            (`ArrStructuredObject.complement`) — a supplementary qualifier of the value.
-            Absent when the object has none.
+            accessibility restriction): the referenced object as a `StructuredObjectInfo`.
+            `value` holds the object's serialized name. Absent for other item types.
       description: |-
         One description item (attribute) of a level, as stable codes plus its value.
         The human-readable names of `type`/`spec` are resolved by the provider from
@@ -1233,11 +1644,117 @@ components:
             $ref: '#/components/schemas/DocCitation'
           description: The cited sections, in the order first referenced by the answer.
       description: Payload of `elza.docCitations`.
+    EntityPart:
+      type: object
+      required:
+        - partType
+      properties:
+        partId:
+          type: integer
+          format: int32
+          description: |-
+            Part id (`ApPart.partId`); echo-only — stable within the entity, so items and
+            sub-parts can be tied back to their part.
+        partType:
+          type: string
+          description: Stable part-type code (`RulPartType.code`), e.g. `PT_NAME`, `PT_BODY`.
+        partTypeName:
+          type: string
+          description: Name of the part type (`RulPartType.name`) — its display label.
+        preferred:
+          type: boolean
+          description: |-
+            True for the entity's preferred part — the one whose text is the entity's
+            preferred (display) name (`ApAccessPoint.preferredPart`). Absent or false for
+            the others. Lets a reader identify the entity's name without a naming
+            convention, since `ArchivalEntity` carries no separate `preferredName`.
+        value:
+          type: string
+          description: |-
+            Text representation of the part — its display-name index (`ApIndex` of type
+            `DISPLAY_NAME`), the same text Elza renders for the part. This is how the
+            entity reads in text form. Absent when the part has no rendered display name.
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/DescriptionItem'
+          description: |-
+            The part's description items, in display order — the same `DescriptionItem`
+            shape used for a level's items (item codes resolved through the rule-set
+            dictionary, references carried as nested objects).
+        parts:
+          description: Nested sub-parts of this part (e.g. the name parts under a body part).
+          type: array
+          items:
+            $ref: '#/components/schemas/EntityPart'
+      description: |-
+        One part of an archival entity — a block of its structured description
+        (`ApPart`, e.g. a name or a body of description). A part has a type, a text
+        representation, its own description items and, recursively, nested sub-parts.
+    EntityRelationFilter:
+      type: object
+      required:
+        - accessPointId
+      properties:
+        accessPointId:
+          type: integer
+          format: int32
+          description: The referenced entity (`ApAccessPoint.accessPointId`).
+        relationTypeCode:
+          type: string
+          description: |-
+            Relation item type code (`RulItemType.code`) the reference must use;
+            omitted = any reference anywhere in the description.
+        relationSpecCode:
+          type: string
+          description: Specification code, when the relation type is enumerated (e.g. the kind of kinship).
+      description: '"Has a reference to entity X", optionally narrowed to one relation item type/spec.'
+    EntitySearchArea:
+      type: string
+      enum:
+        - preferNames
+        - allNames
+        - allParts
+      description: Scope of the `searchEntities` full-text match.
+    FundHits:
+      type: object
+      required:
+        - fundId
+        - name
+        - count
+        - nodes
+      properties:
+        fundId:
+          type: integer
+          format: int32
+          description: Fund id (matches `FundInfo.fundId`).
+        name:
+          type: string
+          description: Fund name (`ArrFund.name`).
+        institution:
+          type: string
+          description: Holding institution name, when known.
+        count:
+          type: integer
+          format: int32
+          description: Total hits in this fund; may exceed `nodes.length` when capped.
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/NodeHit'
+          description: The first hits, in arrangement-tree order.
+      description: The hits within one fund.
     FundInfo:
       type: object
       required:
         - name
       properties:
+        fundId:
+          type: integer
+          format: int32
+          description: |-
+            Fund id (`ArrFund.fundId`); echo-only — the provider never interprets it,
+            but tools can reference the fund by it, e.g. `SearchNodesParams.fundIds`.
         name:
           type: string
           description: Fund name (`ArrFund.name`).
@@ -1264,6 +1781,13 @@ components:
           allOf:
             - $ref: '#/components/schemas/InstitutionInfo'
           description: Holding institution.
+        rootNodeId:
+          type: integer
+          format: int32
+          description: |-
+            Root level of the fund's open version (`ArrNode.nodeId`); echo-only — the
+            entry point for exploring the fund's arrangement with
+            `getArchivalDescription` (`withChildren` from here walks the tree).
       description: |-
         Basic descriptive information about an archival fund and its holding
         institution — enough for a task to know which fund it operates within, without
@@ -1278,6 +1802,58 @@ components:
       allOf:
         - $ref: '#/components/schemas/AiObject'
       description: Fund information object.
+    GetArchivalDescriptionParams:
+      type: object
+      properties:
+        nodeId:
+          type: integer
+          format: int32
+          description: Level id (`ArrNode.nodeId`) — the same identity `elza.archivalDescription` and `NodeHit` use.
+        uuid:
+          type: string
+          description: Stable level UUID (`ArrNode.uuid`).
+        withChildren:
+          type: boolean
+          description: Include a window of the direct child levels, in arrangement order (default false).
+        childrenFrom:
+          type: integer
+          format: int32
+          description: 0-based offset of the children window (default 0 = the first children).
+        withSiblings:
+          type: boolean
+          description: |-
+            Include a window of the sibling levels (same parent), in arrangement order
+            (default false). Without `siblingsFrom` the window is centered on the
+            level itself — its neighborhood; the result reports the level's own index.
+        siblingsFrom:
+          type: integer
+          format: int32
+          description: 0-based offset of the siblings window; omitted = centered on the level.
+        withParents:
+          type: boolean
+          description: Include the parent chain, root first (default false).
+        limit:
+          type: integer
+          format: int32
+          description: Requested maximum nodes per window (children / siblings); the client may cap it lower.
+      description: Arguments of the `getArchivalDescription` tool. Exactly one of the ids.
+    GetArchivalEntityParams:
+      type: object
+      properties:
+        accessPointId:
+          type: integer
+          format: int32
+          description: Access point id (`ApAccessPoint.accessPointId`) of the entity to fetch.
+        uuid:
+          type: string
+          description: Stable access point UUID (`ApAccessPoint.uuid`) — durable across installations.
+      description: |-
+        Arguments of the `getArchivalEntity` tool. Exactly one of the identifiers is
+        given; the result is the referenced entity as a full `ArchivalEntity` —
+        identity, classification, `ruleSetCode` and the complete part tree, the same
+        payload the client sends as `elza.archivalEntity` context. An entity the
+        requesting user may not read (or that does not exist) is answered with
+        `ToolResult.error`.
     GetItemTypesParams:
       type: object
       required:
@@ -1297,6 +1873,47 @@ components:
           type: string
           description: Institution name — the preferred name of its access point.
       description: Holding archival institution of a fund.
+    ItemCondition:
+      type: object
+      required:
+        - type
+        - operation
+      properties:
+        type:
+          type: string
+          description: Item-type code (`RulItemType.code`), e.g. `ZP2015_TITLE`.
+        spec:
+          type: string
+          description: |-
+            Specification code (`RulItemSpec.code`), when the condition targets one
+            specification of an enumerated item type.
+        operation:
+          allOf:
+            - $ref: '#/components/schemas/ItemConditionOperation'
+          description: How the item's value is compared with `value`.
+        value:
+          type: string
+          description: |-
+            The comparison value; absent for `NOT_NULL`. Dating items (`UNITDATE`)
+            use Elza's interval syntax, e.g. `1930-1939`.
+      description: |-
+        One condition on a description item, e.g. item `ZP2015_UNIT_DATE`
+        `INTERSECT` `1930-1939`.
+    ItemConditionOperation:
+      type: string
+      enum:
+        - EQ
+        - CONTAINS
+        - GT
+        - GTE
+        - LT
+        - LTE
+        - INTERSECT
+        - NOT_NULL
+      description: |-
+        Comparison operators of `ItemCondition` — a subset of Elza's search
+        operations; may grow additively. `INTERSECT` applies to dating items
+        (`UNITDATE`): true when the item's interval overlaps the queried one.
     ItemTypeDictionary:
       type: object
       required:
@@ -1400,6 +2017,30 @@ components:
           type: string
           description: Formatted text as CommonMark + GFM (no raw HTML); the client renders it.
       description: Payload of `elza.markdown`.
+    NodeHit:
+      type: object
+      required:
+        - nodeId
+      properties:
+        nodeId:
+          type: integer
+          format: int32
+          description: Level id (`ArrNode.nodeId`) — the same identity `elza.archivalDescription` uses.
+        uuid:
+          type: string
+          description: Stable level UUID (`ArrNode.uuid`).
+        title:
+          type: string
+          description: Tree title of the level, as in `ArchivalDescription.title`.
+        referenceMark:
+          type: array
+          items:
+            type: string
+          description: |-
+            Reference designation from the fund root, as in
+            `ArchivalDescription.referenceMark`; its length also tells the hit's depth
+            in the arrangement tree.
+      description: One matching description unit (level).
     NodeIssue:
       type: object
       required:
@@ -1444,6 +2085,37 @@ components:
         Kind of a problem found by Elza's automatic (rule-based) checks on a level.
         The set may grow additively; a client treats an unknown kind as a generic
         problem.
+    NodeWindow:
+      type: object
+      required:
+        - nodes
+        - from
+        - totalCount
+      properties:
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/NodeHit'
+          description: The window's nodes, in arrangement order.
+        from:
+          type: integer
+          format: int32
+          description: 0-based index of `nodes[0]` within the whole ordered list.
+        totalCount:
+          type: integer
+          format: int32
+          description: Size of the whole ordered list.
+        nodeIndex:
+          type: integer
+          format: int32
+          description: |-
+            Siblings only: the anchor level's own 0-based index within the whole list
+            — its position among its siblings, and the aim point for a next window.
+      description: |-
+        One window of an ordered node list. Self-describing — the slice, where it
+        sits and how long the whole list is — because arrangement lists can be huge
+        (thousands of units under one series) and, unlike search results, ordered
+        lists page by design: the caller aims the next window instead of refining.
     ObjectType:
       type: string
       enum:
@@ -1451,7 +2123,10 @@ components:
         - elza.markdown
         - elza.fundInfo
         - elza.archivalEntity
+        - elza.archivalEntityInfo
         - elza.archivalDescription
+        - elza.archivalOutline
+        - elza.revisionConfig
         - elza.revisionFindings
         - elza.docCitations
       description: |-
@@ -1472,17 +2147,59 @@ components:
         - `elza.fundInfo` — basic descriptive information about an archival fund and
         its holding institution (payload `FundInfo`); typically supplied as
         `context`.
-        - `elza.archivalEntity` — a CAM access point / entity. Payload fields are
-        introduced as real tasks need them.
+        - `elza.archivalEntity` — a CAM access point / entity in full (payload
+        `ArchivalEntity`): its identity and classification plus the whole tree of parts.
+        - `elza.archivalEntityInfo` — the lightweight identity of an entity (payload
+        `ArchivalEntityInfo`): names, classification and external-system identity,
+        without the parts.
         - `elza.archivalDescription` — a description unit (node) and its related data.
         Payload fields are introduced as real tasks need them.
-        - `elza.revisionFindings` — result of `elza.revision`. Payload fields are
-        introduced as the task's result shape is finalized.
+        - `elza.archivalOutline` — a compact, ordered outline of part of the
+        arrangement tree (payload `ArchivalOutline`): one lightweight row per level
+        (id, position, title, dating), ~10–20 tokens each, so hundreds to thousands
+        of levels fit one task. The hierarchical context of `elza.revision` (child /
+        sibling / branch summaries), and the cheap whole-branch representation for
+        checks that read titles, not items.
+        - `elza.revisionConfig` — configuration of an `elza.revision` run (payload
+        `RevisionConfig`): which checks to run, the scope, the expected language.
+        - `elza.revisionFindings` — result of `elza.revision` (payload
+        `RevisionFindings`): advisory findings for professional assessment, each
+        anchored to a verbatim excerpt of the reviewed description.
         - `elza.docCitations` — the knowledge/documentation sources an answer relied on
         (payload `DocCitationsPayload`): each cited section as a stable citation id and,
         when the provider can resolve one, a full web URL. Returned alongside the text
         answer of an assistant-style task. Distinct from citing an archival record,
         which will get its own object type.
+    OutlineRow:
+      type: object
+      required:
+        - nodeId
+      properties:
+        nodeId:
+          type: integer
+          format: int32
+          description: Level id (`ArrNode.nodeId`) — the same identity `elza.archivalDescription` uses.
+        depth:
+          type: integer
+          format: int32
+          description: Depth in the arrangement tree; a fund root is depth 0.
+        referenceMark:
+          type: array
+          items:
+            type: string
+          description: Reference designation from the fund root, e.g. `["1", "2", "3"]`.
+        title:
+          type: string
+          description: Tree title of the level, as in `ArchivalDescription.title`.
+        unitDate:
+          type: string
+          description: Dating of the level (text form of its unit-date item), if set.
+      description: |-
+        One row of an archival outline — a level reduced to its identity and the
+        lightweight facts tree-level checks and hierarchical reasoning need
+        (~10–20 tokens). Rows carry no description items; a task that needs a
+        level's items receives it as a full `elza.archivalDescription` (or pulls it
+        with the `getArchivalDescription` tool).
     PingResponse:
       type: object
       required:
@@ -1520,12 +2237,141 @@ components:
           type: boolean
           description: True for the profile used when a submission names none.
       description: A quality/cost tier offered by this provider.
+    RevisionConfig:
+      type: object
+      properties:
+        checks:
+          type: array
+          items:
+            type: string
+          description: |-
+            Check-category codes to run; omitted = all. An **open, Elza-owned** catalog
+            (codes are data to the provider's prompt; unknown codes produce no
+            findings). Defined categories (see the task definition in
+            `tasks/elza-revision.md`): `hidden_data`, `note_misuse`, `wrong_level`,
+            `duplicate`, `formulation`, `contradiction`, `inconsistency`,
+            `access_point_candidate`.
+        scope:
+          type: string
+          description: |-
+            What the payload covers, as a hint for the prompt's framing: `unit` (one
+            reviewed level with its surroundings) or `branch` (a window of levels of
+            one subtree). Open set; omitted = derived from the payload.
+        language:
+          type: string
+          description: |-
+            Language of the descriptions AND of the expected findings (BCP-47, e.g.
+            `cs`). Findings' human-readable texts are written in this language.
+      description: |-
+        Configuration of an `elza.revision` run — what the client asks the check to
+        look at. All fields optional: an empty config means "all checks, default
+        behaviour".
+    RevisionConfigObject:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: '#/components/schemas/RevisionConfig'
+      allOf:
+        - $ref: '#/components/schemas/AiObject'
+      description: Revision config object.
+    RevisionFinding:
+      type: object
+      required:
+        - nodeId
+        - category
+        - severity
+        - excerpt
+        - explanation
+      properties:
+        nodeId:
+          type: integer
+          format: int32
+          description: The reviewed level the finding concerns (`ArchivalDescription.nodeId`).
+        category:
+          type: string
+          description: |-
+            Check category the finding belongs to — one of the codes requested in
+            `RevisionConfig.checks` (Elza-owned open catalog: `hidden_data`,
+            `note_misuse`, `wrong_level`, `duplicate`, `formulation`, `contradiction`,
+            `inconsistency`, `access_point_candidate`).
+        severity:
+          type: string
+          description: 'Severity for triage ordering: `high`, `medium` or `low` (open set).'
+        confidence:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 100
+          description: The model's own certainty, 0–100; low-confidence findings are suggestions, never errors.
+        kind:
+          type: string
+          description: |-
+            What kind of statement the finding makes: `rule` (a probable rule
+            violation), `contradiction` (a content conflict needing professional
+            verification) or `style` (a clarity/stylistic recommendation). Open set.
+        sourceItemType:
+          type: string
+          description: Item-type code of the item the finding is anchored in (`RulItemType.code`).
+        sourceItemSpec:
+          type: string
+          description: Specification code of the source item, when spec-specific.
+        excerpt:
+          type: string
+          description: |-
+            Verbatim excerpt of the problematic text, quoted exactly from the reviewed
+            description — the evidence the archivist verifies against.
+        explanation:
+          type: string
+          description: |-
+            Why the wording may be problematic — user-facing, self-contained (readable
+            without the AI context), in the run's `language`.
+        targetItemType:
+          type: string
+          description: |-
+            Suggested target element for a hidden/misplaced value — MUST be one of the
+            level's `allowedItemTypes` (the provider never invents elements outside the
+            supplied catalog). Absent when no move is suggested.
+        action:
+          type: string
+          description: |-
+            Recommended handling: `move`, `split`, `verify`, `reformulate` or `keep`
+            (open set). Advisory — the archivist decides.
+        proposedText:
+          type: string
+          description: |-
+            Optional proposed wording. Never applied automatically; when a split could
+            weaken or change meaning, the finding recommends manual assessment instead.
+        relatedNodeIds:
+          type: array
+          items:
+            type: integer
+            format: int32
+          description: |-
+            Other reviewed levels involved (e.g. the parent in a wrong-level finding,
+            the sibling of an inconsistent pair).
+      description: |-
+        One advisory finding of `elza.revision` — a suggestion for professional
+        assessment, never an authoritative error: the AI must not declare an archival
+        statement factually wrong on linguistic evidence alone, and nothing is ever
+        changed automatically. Every finding is anchored to a verbatim excerpt of the
+        reviewed description (the anti-hallucination requirement: the archivist
+        verifies the basis at a glance).
     RevisionFindings:
       type: object
-      additionalProperties: {}
+      required:
+        - findings
+      properties:
+        findings:
+          type: array
+          items:
+            $ref: '#/components/schemas/RevisionFinding'
+          description: The findings, most severe first.
       description: |-
-        Result of `elza.revision`. Payload fields are added as the task's result shape
-        is finalized; open for additive growth.
+        Result of `elza.revision`: the advisory findings of one reviewed payload. An
+        empty `findings` array is a valid and expected result ("nothing suspicious
+        found") — the prompt never forces findings.
     RevisionFindingsObject:
       type: object
       required:
@@ -1536,6 +2382,187 @@ components:
       allOf:
         - $ref: '#/components/schemas/AiObject'
       description: Revision findings object.
+    SearchEntitiesParams:
+      type: object
+      properties:
+        fulltext:
+          type: string
+          description: Full-text query over entity names/description (`"…"` = exact phrase).
+        area:
+          allOf:
+            - $ref: '#/components/schemas/EntitySearchArea'
+          description: |-
+            Where the full text matches: the preferred name only, every name part
+            (the default), or the whole description.
+        onlyMainPart:
+          type: boolean
+          description: |-
+            Restrict the full text to the main part of names (`NM_MAIN`) — e.g. a
+            surname-only match for persons.
+        typeCode:
+          type: string
+          description: |-
+            Restrict to one entity class or type (`ApType.code`, e.g. `PERSON` or
+            `PERSON_INDIVIDUAL`); a non-leaf code includes all its subtypes.
+        relatedTo:
+          allOf:
+            - $ref: '#/components/schemas/EntityRelationFilter'
+          description: |-
+            Only entities whose description references a given entity — the incoming
+            relations of that entity (relations are stored one-way: son→father lives
+            on the son, so "find X's children" = entities whose relation items point
+            at X).
+        limit:
+          type: integer
+          format: int32
+          description: |-
+            Requested maximum number of hits; the client may cap it lower (the result
+            then reports `partial`). Omitted = the client's default.
+      description: |-
+        Arguments of the `searchEntities` tool. At least one of `fulltext`,
+        `typeCode`, `relatedTo` must be given (an unconstrained listing is refused).
+    SearchEntitiesResult:
+      type: object
+      required:
+        - entities
+        - totalCount
+        - partial
+      properties:
+        entities:
+          type: array
+          items:
+            $ref: '#/components/schemas/ArchivalEntityInfo'
+          description: The matching entities as lightweight identities, best match first.
+        totalCount:
+          type: integer
+          format: int64
+          description: Total matching entities (before capping).
+        partial:
+          type: boolean
+          description: |-
+            True when the result is incomplete (a hit cap was reached). The tool does
+            not page: refine the query (sharper terms, `typeCode`, `onlyMainPart`)
+            instead of re-asking with the same terms.
+      description: Result of the `searchEntities` tool.
+    SearchFundsParams:
+      type: object
+      properties:
+        fulltext:
+          type: string
+          description: |-
+            Query matched against every fund identifier at once: name, internal
+            (evidence) code, fund number and mark/signature (case-insensitive
+            substring) — `127` finds fund number 127 as well as names containing 127.
+        institutionCode:
+          type: string
+          description: Restrict to funds of one holding institution (`InstitutionInfo.code`).
+        from:
+          type: integer
+          format: int32
+          description: 0-based offset of the window (default 0 = the first funds).
+        limit:
+          type: integer
+          format: int32
+          description: Requested maximum funds in the window; the client may cap it lower.
+      description: |-
+        Arguments of the `searchFunds` tool. All optional: an unconstrained call
+        lists the funds the requesting user may read, ordered by name — funds are a
+        bounded ordered list, so (unlike `searchNodes`) listing and windowed paging
+        are the intended access pattern.
+    SearchFundsResult:
+      type: object
+      required:
+        - funds
+        - from
+        - totalCount
+      properties:
+        funds:
+          type: array
+          items:
+            $ref: '#/components/schemas/FundInfo'
+          description: The window's funds, ordered by name.
+        from:
+          type: integer
+          format: int32
+          description: 0-based index of `funds[0]` within the whole matching list.
+        totalCount:
+          type: integer
+          format: int64
+          description: Total matching funds (before windowing).
+      description: |-
+        Result of the `searchFunds` tool: a window of the matching funds, ordered by
+        name. Each fund carries its identity (`fundId` scopes follow-up
+        `searchNodes` calls) and `rootNodeId` (the entry point for
+        `getArchivalDescription` browsing).
+    SearchNodesParams:
+      type: object
+      properties:
+        fulltext:
+          type: string
+          description: |-
+            Full-text query matched against the whole description unit (all item
+            values). At least one of `fulltext` / `itemConditions` must be given.
+        itemConditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemCondition'
+          description: |-
+            Conditions on individual description items; all must hold (AND). Item
+            types are named by their stable codes — the same vocabulary as
+            `DescriptionItem.type` and the `getItemTypes` dictionary.
+        fundIds:
+          type: array
+          items:
+            type: integer
+            format: int32
+          description: |-
+            Restrict the search to these funds (`FundInfo.fundId`). Omitted = every
+            fund the requesting user may read.
+        referencesEntityId:
+          type: integer
+          format: int32
+          description: |-
+            Only description units with an item referencing this entity
+            (`ApAccessPoint.accessPointId`), regardless of the item type — the
+            description-side usage of an entity. For a type-specific reference match
+            use an `ItemCondition` on the `RECORD_REF` item type with the id as
+            `value` instead (a numeric value on a reference item matches by id).
+        limit:
+          type: integer
+          format: int32
+          description: |-
+            Requested maximum number of hits in total; the client may cap it lower
+            (the result then reports `partial`). Omitted = the client's default.
+      description: |-
+        Arguments of the `searchNodes` tool. Deliberately flat (not Elza's internal
+        filter tree): a full-text query and/or ANDed item conditions, optionally
+        scoped to funds. Extensions grow additively.
+    SearchNodesResult:
+      type: object
+      required:
+        - funds
+        - totalCount
+        - partial
+      properties:
+        funds:
+          type: array
+          items:
+            $ref: '#/components/schemas/FundHits'
+          description: Funds with hits, each carrying its first hits in tree order.
+        totalCount:
+          type: integer
+          format: int64
+          description: Total matching description units across all funds (before capping).
+        partial:
+          type: boolean
+          description: |-
+            True when the result is incomplete — a hit cap, a per-fund cap or the
+            search time limit was reached. The tool does not page: refine the query
+            (sharper terms, `fundIds` scoping) instead of re-asking for more.
+      description: |-
+        Result of the `searchNodes` tool. Hits are grouped by fund with the first
+        hits of each inlined, so the distribution (which funds, how many) is visible
+        even when the hit lists are capped.
     ServiceError:
       type: object
       required:
@@ -1583,6 +2610,11 @@ components:
       type: string
       enum:
         - getItemTypes
+        - searchNodes
+        - getArchivalEntity
+        - searchEntities
+        - getArchivalDescription
+        - searchFunds
       description: |-
         Standard tools — the **closed, contract-owned** set of tools a client can
         execute locally on the provider's request during `awaiting_tools`. The set is
@@ -1600,6 +2632,62 @@ components:
         documentation-aligned) and the provider calls this tool once per
         `FundInfo.ruleSetCode` to turn those codes into names, data types and the
         enumerated spec lists, then caches it.
+        - `searchNodes` — search description units across the archive's funds.
+        Arguments `SearchNodesParams`, result `SearchNodesResult`: the model asks
+        for records the client did not send (full text and/or item conditions);
+        the client executes the search under the requesting user's read
+        permissions and returns a capped hit list grouped by fund.
+        - `getArchivalEntity` — fetch one archival entity (access point) in full.
+        Arguments `GetArchivalEntityParams`, result `ArchivalEntity` (the same
+        model the client sends as `elza.archivalEntity` context): the model asks
+        for an entity the client did not send — typically one referenced from a
+        description item (`RECORD_REF`) or from another entity's parts; the client
+        resolves it under the requesting user's read permissions and returns its
+        identity, classification, `ruleSetCode` and complete part tree.
+        - `searchEntities` — search archival entities (access points). Arguments
+        `SearchEntitiesParams`, result `SearchEntitiesResult`: full text over
+        names/description, optionally constrained to an entity class/type or to
+        entities referencing a given entity (incoming relations); executed under
+        the requesting user's scope read permissions, capped hit list of
+        lightweight identities.
+        - `getArchivalDescription` — fetch one description level in full and/or its
+        surroundings in the arrangement tree. Arguments
+        `GetArchivalDescriptionParams`, result `ArchivalDescriptionDetail`: the
+        level always comes with its complete description items (the round-trip
+        dominates the cost); ordered, windowed lists of its children and siblings
+        (designed for levels with thousands of nodes) and the parent chain are
+        opt-in. Executed under the requesting user's fund read permissions.
+        - `searchFunds` — look up / list archival funds by their own identity.
+        Arguments `SearchFundsParams`, result `SearchFundsResult`: one query
+        string matched against every fund identifier at once (name, internal
+        code, fund number, mark), optionally narrowed to one holding institution;
+        funds are a bounded ordered list, so (unlike `searchNodes`) an
+        unconstrained, windowed listing is a legitimate use. Each returned
+        `FundInfo` carries `rootNodeId` — the entry point for browsing the fund
+        with `getArchivalDescription`. Executed under the requesting user's fund
+        read permissions.
+    StructuredObjectInfo:
+      type: object
+      required:
+        - structuredObjectId
+      properties:
+        structuredObjectId:
+          type: integer
+          format: int32
+          description: Structured object id (`ArrStructuredObject.structuredObjectId`).
+        structuredType:
+          type: string
+          description: Stable structured-type code (`RulStructuredType.code`).
+        complement:
+          type: string
+          description: |-
+            The object's optional complement (`ArrStructuredObject.complement`) — a
+            supplementary qualifier of the value; absent when the object has none.
+      description: |-
+        Reference to a structured object (`ArrStructuredObject`) — a composite value
+        such as a storage unit or an accessibility restriction. Carried by a
+        `STRUCTURED` description item; the item's `value` holds the object's serialized
+        (human-readable) name, this model its machine-readable identity.
     SubmitTask:
       type: object
       required:
@@ -1773,6 +2861,183 @@ components:
           type: string
           description: Human-readable message.
       description: Failure description of a task in state `error`.
+    TaskEvent:
+      type: object
+      required:
+        - seq
+        - type
+        - createdAt
+      properties:
+        seq:
+          type: integer
+          format: int64
+          description: |-
+            Monotonic per-task sequence number, strictly increasing in emission order.
+            The resume cursor: pass the last value seen as `since` to receive only later
+            events. Stable — an event keeps its `seq` across reads.
+        type:
+          allOf:
+            - $ref: '#/components/schemas/TaskEventType'
+          description: What happened; a `TaskEventType` code (an unrecognized one is ignored).
+        createdAt:
+          type: string
+          format: date-time
+          description: When the event was recorded (UTC).
+        message:
+          type: string
+          description: |-
+            Display-ready one-line message, when the event has one — e.g. a `phase`
+            label or the text fragment of an `answer_delta`. In the task's language,
+            suitable for direct display. (A tool event's human name is `label`, not
+            here.)
+        tool:
+          type: string
+          description: |-
+            The tool a `tool_call` / `tool_result` event concerns. For a tool the
+            provider **delegated to the client** (`origin` = `client`) this is the
+            `StandardToolName` code — the same identity as the matching
+            `Task.toolCalls` entry and the `awaiting_tools` pending call — so the client
+            recognizes its own tool directly. For a **provider-internal** tool
+            (`origin` = `internal`) it is the provider's own model-facing name, which
+            the protocol otherwise never exposes: treat it as an opaque label. Absent on
+            non-tool events.
+        origin:
+          allOf:
+            - $ref: '#/components/schemas/ToolOrigin'
+          description: |-
+            Where a tool event's tool ran: `internal` (inside the provider — e.g. a
+            knowledge-base search; the name in `tool` is opaque) or `client` (a
+            `StandardToolName` the provider delegated to the client, executed by it).
+            Lets a client tell its own tools from the provider's without matching names.
+            Present on `tool_call` / `tool_result`; absent otherwise.
+        callId:
+          type: string
+          description: |-
+            Correlation id of a `tool_call` / `tool_result` event: for a delegated tool
+            it equals the `Task.toolCalls[].callId` (and the `awaiting_tools` pending
+            `callId`) the client executes, so a client can fold the event, the pending
+            call and its own execution into one activity item. Absent on non-tool
+            events.
+        label:
+          type: string
+          description: |-
+            Display-ready, localized human name of a tool event's tool — e.g. "Reading
+            the archival description" — for the activity feed, in place of the raw
+            `tool` code. Present on `tool_call` / `tool_result` when the provider
+            localizes it; absent otherwise.
+        summary:
+          type: string
+          description: |-
+            Display-ready, localized one-line summary complementing `label` on a tool
+            event: the call's key arguments (e.g. "level 12345") on a `tool_call`, or a
+            short result summary (e.g. "sections found: 6") on a `tool_result`. Never a
+            full tool result or any knowledge-corpus content. Absent when there is none.
+        refs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ArchivalObjectRef'
+          description: |-
+            The archival objects a `tool_call` / `tool_result` concerns, so a client can
+            turn the activity line into links to them. Each entry references one object
+            (a level or an entity); usually a single entry, but an array so a tool that
+            fetches several objects at once can report them all. Absent when the call
+            targets none (e.g. a knowledge-base search).
+        percent:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+          description: Rough completion estimate for a `phase` event, 0–100; absent otherwise.
+        detail:
+          description: |-
+            Curated, event-specific detail as free JSON, for what has no dedicated field
+            — e.g. the pending `{callId, tool}` list of an `awaiting_tools` event, an
+            error `{code}`, or a `model_round`'s `{round, stopReason}`. The tool-event
+            display and correlation data are first-class fields (`tool`, `origin`,
+            `callId`, `label`, `summary`, `refs`); `detail` never duplicates them.
+            Absent when the event needs none; a client may ignore it entirely.
+      description: |-
+        One observable event in a task's execution — the streamed, append-only
+        counterpart to the point-in-time `TaskProgress` on a `Task`. Advisory (a
+        provider need emit none) and additive (an unknown `type` is ignored); an event
+        never carries authoritative state — a task's state, output and usage always
+        come from `GET /tasks/{taskId}`.
+    TaskEventType:
+      type: string
+      description: |-
+        Task event type — names one observable step in a task's execution. An **open**
+        set of string codes (a plain string on the wire): the provider may introduce
+        new event types without a contract change, and a client **ignores an event
+        whose type it does not recognize** (just as it ignores an unknown object
+        type). Whether any events are emitted at all — and at what granularity — is up
+        to the provider; the stream is advisory, the point-in-time counterpart being
+        `TaskProgress` on a `Task`. The vocabulary a provider may emit:
+
+        Lifecycle (coarse; mirror the task's state changes):
+        - `submitted` — the task was accepted.
+        - `started` — processing began (`queued` → `running`).
+        - `phase` — an advisory progress phase: `message` is display-ready and
+        `percent` a rough estimate (the streamed form of `TaskProgress`).
+        - `awaiting_tools` — the task suspended for client tool calls; `detail` lists
+        the pending calls (`{callId, tool}`). The calls to execute still come from
+        `Task.toolCalls`.
+        - `tools_resolved` — the client's tool results arrived and the task resumed.
+        - `done` — the task finished successfully (its `output` is now readable via
+        `GET /tasks/{taskId}`).
+        - `error` — the task failed; `detail` carries the error `{code}`.
+        - `cancelled` — the task was cancelled.
+
+        Turn internals (fine-grained; a provider may omit them entirely):
+        - `preparation` — a preparatory step before the model turn (e.g. resolving
+        rule-set dictionaries), including any client tool round it drives.
+        - `model_round` — one model request/response completed.
+        - `tool_call` — the provider invoked a tool: `tool` names it, `origin` says
+        whether it ran inside the provider or was delegated to the client, `label` /
+        `summary` are display-ready, `callId` correlates it with `Task.toolCalls`,
+        and `refs` points at the archival object it concerns. Covers both
+        provider-internal tools and the client tools of `StandardToolName`.
+        - `tool_result` — a tool the provider ran internally produced a result:
+        `summary` describes it (a summary only — internal tool results never leave
+        the provider); `tool` / `callId` match the originating `tool_call`.
+        - `answer_delta` — a slice of the answer text as it is composed, in
+        `message`; batched, never per-token.
+
+        A client drives the task with `GET /tasks/{taskId}` regardless; consuming this
+        vocabulary only enriches what it can display.
+    TaskEvents:
+      type: object
+      required:
+        - events
+        - state
+        - nextSince
+      properties:
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskEvent'
+          description: |-
+            Events with `seq` greater than the requested `since`, in ascending `seq`
+            order. Empty when nothing new occurred within the wait.
+        state:
+          allOf:
+            - $ref: '#/components/schemas/TaskState'
+          description: |-
+            The task's current state — lets the client end its polling loop on a
+            terminal state (`done` / `error` / `cancelled`). Authoritative state,
+            output and usage still come from `GET /tasks/{taskId}`.
+        nextSince:
+          type: integer
+          format: int64
+          description: |-
+            Cursor to pass as `since` on the next call: the greatest `seq` in `events`,
+            or the requested `since` unchanged when `events` is empty. Monotonic, so a
+            client always resumes from here without missing or repeating an event.
+      description: |-
+        A batch of task events past a cursor — the `GET /tasks/{taskId}/events`
+        response. Always safe to consume: `events` may be empty (a long poll that
+        timed out with nothing new), and the current `state` is included so a client
+        can stop polling once the task is terminal without a separate `GET /tasks`
+        call.
     TaskMetadata:
       type: object
       properties:
@@ -1863,11 +3128,20 @@ components:
         back as an `elza.text` result; declares no parameters. No archival semantics —
         exists so both sides can validate the full protocol loop (auth, submit, poll,
         typed output, usage metering) cheaply before any real scenario.
-        - `elza.revision` — advisory revision of archival description units: finds
-        logical inconsistencies, dating mismatches, terminology problems and other
-        issues that formal (rule-based) validation cannot catch. Read-only;
-        findings are returned as `elza.revisionFindings`. The first production
-        scenario.
+        - `elza.revision` — advisory semantic and language check of archival
+        description ("AI obsahová kontrola popisu"): finds what formal (rule-based)
+        validation cannot — structured facts hidden in free text, misuse of
+        public/internal notes, information at the wrong description level,
+        duplicates across items and levels, vague or internal formulations,
+        contradictions between text and structured items, naming inconsistency
+        within a branch, and access-point candidates. Read-only and strictly
+        advisory: findings are suggestions for professional assessment
+        (`elza.revisionFindings`), each anchored to a verbatim excerpt; the AI
+        never changes description data and never declares an archival statement
+        factually wrong on linguistic evidence alone. Input: the reviewed unit(s)
+        as `elza.archivalDescription` (with `allowedItemTypes`), a
+        `elza.revisionConfig`, and hierarchical context (`elza.archivalOutline`,
+        ancestors, `elza.fundInfo`). Task definition: `tasks/elza-revision.md`.
     TaskTypeInfo:
       type: object
       required:
@@ -1935,6 +3209,16 @@ components:
         arguments:
           description: Arguments object; conforms to the tool's argument model (e.g. `GetItemTypesParams`).
       description: A pending call of a client-declared tool (present while `awaiting_tools`).
+    ToolOrigin:
+      type: string
+      enum:
+        - internal
+        - client
+      description: |-
+        Where a tool event's tool ran — the recognition key that lets a client tell
+        its own tools from the provider's internal ones (see `TaskEvent.origin`).
+        Binary by nature (a tool either runs in the provider or is delegated to the
+        client), so a closed set.
     ToolResult:
       type: object
       required:

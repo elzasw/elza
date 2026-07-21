@@ -40,6 +40,14 @@ using TypeSpec.OpenAPI;
  * accumulated context, and a completed task can be continued — refined with a
  * follow-up — by submitting a new task with `parentTaskId`.
  *
+ * The poll returns the task's state plus a single advisory `progress` line. A
+ * client that wants to show finer live activity — the phases, tool calls and
+ * (when the provider streams it) the answer as it is composed — may
+ * additionally long-poll `GET /tasks/{taskId}/events`, a cursor-based,
+ * replayable stream of execution events. It is **optional and advisory**:
+ * authoritative state, result and usage always come from `GET /tasks/{taskId}`,
+ * and a provider may emit no events at all.
+ *
  * ## Contract ownership
  *
  * Three things are owned separately. **This contract** owns the typed object
@@ -68,7 +76,7 @@ using TypeSpec.OpenAPI;
  * `GET /ping`. See `SignatureAuth` and the companion `security.md`.
  */
 @service(#{ title: "Elza AI Provider API" })
-@info(#{ version: "0.6.0" })
+@info(#{ version: "0.13.0" })
 @server(
   "{endpoint}",
   "Provider-assigned base endpoint, e.g. https://ai.example.com/elza",
@@ -137,12 +145,24 @@ model SignedRequest {
  * - `elza.fundInfo` — basic descriptive information about an archival fund and
  *   its holding institution (payload `FundInfo`); typically supplied as
  *   `context`.
- * - `elza.archivalEntity` — a CAM access point / entity. Payload fields are
- *   introduced as real tasks need them.
+ * - `elza.archivalEntity` — a CAM access point / entity in full (payload
+ *   `ArchivalEntity`): its identity and classification plus the whole tree of parts.
+ * - `elza.archivalEntityInfo` — the lightweight identity of an entity (payload
+ *   `ArchivalEntityInfo`): names, classification and external-system identity,
+ *   without the parts.
  * - `elza.archivalDescription` — a description unit (node) and its related data.
  *   Payload fields are introduced as real tasks need them.
- * - `elza.revisionFindings` — result of `elza.revision`. Payload fields are
- *   introduced as the task's result shape is finalized.
+ * - `elza.archivalOutline` — a compact, ordered outline of part of the
+ *   arrangement tree (payload `ArchivalOutline`): one lightweight row per level
+ *   (id, position, title, dating), ~10–20 tokens each, so hundreds to thousands
+ *   of levels fit one task. The hierarchical context of `elza.revision` (child /
+ *   sibling / branch summaries), and the cheap whole-branch representation for
+ *   checks that read titles, not items.
+ * - `elza.revisionConfig` — configuration of an `elza.revision` run (payload
+ *   `RevisionConfig`): which checks to run, the scope, the expected language.
+ * - `elza.revisionFindings` — result of `elza.revision` (payload
+ *   `RevisionFindings`): advisory findings for professional assessment, each
+ *   anchored to a verbatim excerpt of the reviewed description.
  * - `elza.docCitations` — the knowledge/documentation sources an answer relied on
  *   (payload `DocCitationsPayload`): each cited section as a stable citation id and,
  *   when the provider can resolve one, a full web URL. Returned alongside the text
@@ -159,11 +179,20 @@ enum ObjectType {
   /** Basic descriptive information about a fund and its institution; payload `FundInfo`. */
   fundInfo: "elza.fundInfo",
 
-  /** A CAM access point / entity; payload `ArchivalEntity`. */
+  /** A CAM access point / entity in full; payload `ArchivalEntity`. */
   archivalEntity: "elza.archivalEntity",
+
+  /** Lightweight identity of a CAM access point / entity; payload `ArchivalEntityInfo`. */
+  archivalEntityInfo: "elza.archivalEntityInfo",
 
   /** A description unit (node) and its related data; payload `ArchivalDescription`. */
   archivalDescription: "elza.archivalDescription",
+
+  /** A compact, ordered outline of part of the arrangement tree; payload `ArchivalOutline`. */
+  archivalOutline: "elza.archivalOutline",
+
+  /** Configuration of an `elza.revision` run; payload `RevisionConfig`. */
+  revisionConfig: "elza.revisionConfig",
 
   /** Result of `elza.revision`; payload `RevisionFindings`. */
   revisionFindings: "elza.revisionFindings",
@@ -227,6 +256,12 @@ model InstitutionInfo {
  * the full arrangement. Mirrors `ArrFund`.
  */
 model FundInfo {
+  /**
+   * Fund id (`ArrFund.fundId`); echo-only — the provider never interprets it,
+   * but tools can reference the fund by it, e.g. `SearchNodesParams.fundIds`.
+   */
+  fundId?: int32;
+
   /** Fund name (`ArrFund.name`). */
   name: string;
 
@@ -251,6 +286,13 @@ model FundInfo {
 
   /** Holding institution. */
   institution?: InstitutionInfo;
+
+  /**
+   * Root level of the fund's open version (`ArrNode.nodeId`); echo-only — the
+   * entry point for exploring the fund's arrangement with
+   * `getArchivalDescription` (`withChildren` from here walks the tree).
+   */
+  rootNodeId?: int32;
 }
 
 /** Fund information object. */
@@ -262,14 +304,155 @@ model FundInfoObject extends AiObject {
 }
 
 /**
- * A CAM access point / entity. Payload fields are added as real tasks need them;
- * open for additive growth.
+ * Shared identity and classification of a CAM access point / archival entity —
+ * the fields common to a lightweight `ArchivalEntityInfo` reference and a full
+ * `ArchivalEntity`. Spread into both, so **neither type is built from the other**;
+ * both independently carry an entity's identity.
+ *
+ * Classification follows Elza's access-point type hierarchy (`ApType`): the
+ * entity's own type is the leaf (the *subclass*, e.g. "fyzická osoba"); its class
+ * is the root of that hierarchy (the read-only super-type, e.g. "osoba / bytost").
+ * Names are the localized display strings — self-explanatory for a model to reason
+ * over — while the codes give stable, language-independent identity.
  */
-model ArchivalEntity {
-  ...Record<unknown>;
+alias ArchivalEntityIdentity = {
+  /**
+   * Access point id (`ApAccessPoint.accessPointId`); echo-only — the provider
+   * never interprets it, but tools and results can reference the entity by it.
+   */
+  accessPointId: int32;
+
+  /** Stable access point UUID (`ApAccessPoint.uuid`), for durable cross-request identity. */
+  uuid?: string;
+
+  /**
+   * Name of the entity class — the top of the type hierarchy, e.g.
+   * "osoba / bytost" (the root, read-only `ApType.name`).
+   */
+  className?: string;
+
+  /** Stable code of the entity class (root `ApType.code`), e.g. `PERSON`. */
+  classCode?: string;
+
+  /**
+   * Name of the entity type (its subclass) — the access point's own type, e.g.
+   * "fyzická osoba" or "bytost" (`ApType.name`).
+   */
+  typeName?: string;
+
+  /** Stable code of the entity type (`ApType.code`), e.g. `PERSON_INDIVIDUAL`. */
+  typeCode?: string;
+
+  /**
+   * Code of the external system the entity is bound to (`ApExternalSystem.code`),
+   * when it originates from or is synchronized with one (e.g. a CAM instance);
+   * absent for a purely local entity. An entity is bound to at most one system.
+   */
+  externalSystemCode?: string;
+
+  /**
+   * The entity's identifier within that external system (`ApBinding.value`);
+   * present together with `externalSystemCode`.
+   */
+  externalId?: string;
+};
+
+/**
+ * Lightweight reference to a CAM access point / archival entity — its identity,
+ * classification and preferred name, without the full structured description.
+ * Sent on its own as `elza.archivalEntityInfo`, and nested in a `RECORD_REF`
+ * description item (`DescriptionItem.entity`) to name what a reference points at.
+ * Having no parts, it carries the preferred name directly.
+ */
+model ArchivalEntityInfo {
+  ...ArchivalEntityIdentity;
+
+  /**
+   * Preferred (display) name of the entity — the display-name index of its
+   * preferred part (`ApIndex` of type `DISPLAY_NAME`).
+   */
+  preferredName?: string;
 }
 
-/** Archival entity object. */
+/** Lightweight archival entity object — a reference by identity, without the parts. */
+model ArchivalEntityInfoObject extends AiObject {
+  @invisible(Lifecycle)
+  objectType: ObjectType.archivalEntityInfo;
+
+  data: ArchivalEntityInfo;
+}
+
+/**
+ * One part of an archival entity — a block of its structured description
+ * (`ApPart`, e.g. a name or a body of description). A part has a type, a text
+ * representation, its own description items and, recursively, nested sub-parts.
+ */
+model EntityPart {
+  /**
+   * Part id (`ApPart.partId`); echo-only — stable within the entity, so items and
+   * sub-parts can be tied back to their part.
+   */
+  partId?: int32;
+
+  /** Stable part-type code (`RulPartType.code`), e.g. `PT_NAME`, `PT_BODY`. */
+  partType: string;
+
+  /** Name of the part type (`RulPartType.name`) — its display label. */
+  partTypeName?: string;
+
+  /**
+   * True for the entity's preferred part — the one whose text is the entity's
+   * preferred (display) name (`ApAccessPoint.preferredPart`). Absent or false for
+   * the others. Lets a reader identify the entity's name without a naming
+   * convention, since `ArchivalEntity` carries no separate `preferredName`.
+   */
+  preferred?: boolean;
+
+  /**
+   * Text representation of the part — its display-name index (`ApIndex` of type
+   * `DISPLAY_NAME`), the same text Elza renders for the part. This is how the
+   * entity reads in text form. Absent when the part has no rendered display name.
+   */
+  value?: string;
+
+  /**
+   * The part's description items, in display order — the same `DescriptionItem`
+   * shape used for a level's items (item codes resolved through the rule-set
+   * dictionary, references carried as nested objects).
+   */
+  items?: DescriptionItem[];
+
+  /** Nested sub-parts of this part (e.g. the name parts under a body part). */
+  parts?: EntityPart[];
+}
+
+/**
+ * A CAM access point / archival entity in full: its identity and classification
+ * plus its complete structured description as a tree of parts. Sent as context
+ * when the user is working on an entity. The name is not repeated at the top
+ * level — it is the `value` of the part marked `preferred`.
+ */
+model ArchivalEntity {
+  ...ArchivalEntityIdentity;
+
+  /**
+   * Rule set governing this entity's description, e.g. `ZP2015` (`RulRuleSet.code`)
+   * — taken from the entity's scope (`ApScope.rulRuleSet`). Selects the dictionary
+   * (the same `getItemTypes` tool that funds use) that resolves the item-type/spec
+   * codes carried in the parts' `DescriptionItem`s. Optional: a scope may have no
+   * rule set, in which case those codes render unresolved. Not on
+   * `ArchivalEntityInfo`, which carries no items to resolve.
+   */
+  ruleSetCode?: string;
+
+  /**
+   * Top-level parts of the entity, in display order — the roots of the part tree;
+   * each part's sub-parts nest under its own `parts`.
+   */
+  parts?: EntityPart[];
+}
+
+/** Archival entity object — the full entity with its parts. */
 model ArchivalEntityObject extends AiObject {
   @invisible(Lifecycle)
   objectType: ObjectType.archivalEntity;
@@ -357,8 +540,8 @@ model DescriptionItem {
    * The value's data type — the same value the `getItemTypes` dictionary reports
    * for this item type (`ItemTypeInfo.dataType`), denormalized here so a block is
    * self-describing without the dictionary: it says how to read the value and which
-   * reference fields are present, e.g. `RECORD_REF` (→ `accessPointId`),
-   * `STRUCTURED` (→ `structuredObjectType`/`structuredObjectId`), `ENUM` (→ `spec`),
+   * reference field is present, e.g. `RECORD_REF` (→ `entity`),
+   * `STRUCTURED` (→ `structuredObject`), `ENUM` (→ `spec`),
    * or a text/number/date type (→ `value`).
    */
   dataType?: DataType;
@@ -373,36 +556,42 @@ model DescriptionItem {
    * The item's value in text form for non-enumerated types; absent when the
    * meaning is fully carried by `spec`, or the item is value-less. For an
    * access-point or structured-object item it holds the human-readable value —
-   * the entity's preferred name or the object's serialized name — while the
-   * fields below add the machine-readable reference.
+   * the entity's preferred name or the object's serialized name — while
+   * `entity` / `structuredObject` below add the machine-readable reference.
    */
   value?: string;
 
   /**
-   * For an access-point item (`RECORD_REF`): the referenced access point's id
-   * (`ApAccessPoint.accessPointId`). `value` holds its preferred name. Absent for
-   * other item types.
+   * For an access-point item (`RECORD_REF`): the referenced entity as a
+   * lightweight `ArchivalEntityInfo` (its id, preferred name and classification).
+   * `value` also holds the entity's preferred name. Absent for other item types.
    */
-  accessPointId?: int32;
+  entity?: ArchivalEntityInfo;
 
   /**
    * For a structured-object item (`STRUCTURED`, e.g. a storage unit or an
-   * accessibility restriction): the structured type code
-   * (`RulStructuredType.code`). Absent for other item types.
+   * accessibility restriction): the referenced object as a `StructuredObjectInfo`.
+   * `value` holds the object's serialized name. Absent for other item types.
    */
-  structuredObjectType?: string;
+  structuredObject?: StructuredObjectInfo;
+}
+
+/**
+ * Reference to a structured object (`ArrStructuredObject`) — a composite value
+ * such as a storage unit or an accessibility restriction. Carried by a
+ * `STRUCTURED` description item; the item's `value` holds the object's serialized
+ * (human-readable) name, this model its machine-readable identity.
+ */
+model StructuredObjectInfo {
+  /** Structured object id (`ArrStructuredObject.structuredObjectId`). */
+  structuredObjectId: int32;
+
+  /** Stable structured-type code (`RulStructuredType.code`). */
+  structuredType?: string;
 
   /**
-   * For a structured-object item (`STRUCTURED`): the structured object's id
-   * (`ArrStructuredObject.structuredObjectId`). `value` holds its serialized
-   * name. Absent for other item types.
-   */
-  structuredObjectId?: int32;
-
-  /**
-   * For a structured-object item (`STRUCTURED`): the object's optional complement
-   * (`ArrStructuredObject.complement`) — a supplementary qualifier of the value.
-   * Absent when the object has none.
+   * The object's optional complement (`ArrStructuredObject.complement`) — a
+   * supplementary qualifier of the value; absent when the object has none.
    */
   complement?: string;
 }
@@ -506,6 +695,15 @@ model ArchivalDescription {
    */
   issues?: NodeIssue[];
 
+  /**
+   * Item-type codes the rule package permits on this level (the POSSIBLE +
+   * REQUIRED types Elza's rules compute for the node) — the catalog a revision
+   * task's element suggestions must stay within (`RevisionFinding.targetItemType`
+   * must be one of these). Filled for the reviewed units of `elza.revision`;
+   * absent in other uses (chat context, tool results).
+   */
+  allowedItemTypes?: string[];
+
   /** The level's description items, in display order. */
   items: DescriptionItem[];
 }
@@ -519,11 +717,181 @@ model ArchivalDescriptionObject extends AiObject {
 }
 
 /**
- * Result of `elza.revision`. Payload fields are added as the task's result shape
- * is finalized; open for additive growth.
+ * One row of an archival outline — a level reduced to its identity and the
+ * lightweight facts tree-level checks and hierarchical reasoning need
+ * (~10–20 tokens). Rows carry no description items; a task that needs a
+ * level's items receives it as a full `elza.archivalDescription` (or pulls it
+ * with the `getArchivalDescription` tool).
+ */
+model OutlineRow {
+  /** Level id (`ArrNode.nodeId`) — the same identity `elza.archivalDescription` uses. */
+  nodeId: int32;
+
+  /** Depth in the arrangement tree; a fund root is depth 0. */
+  depth?: int32;
+
+  /** Reference designation from the fund root, e.g. `["1", "2", "3"]`. */
+  referenceMark?: string[];
+
+  /** Tree title of the level, as in `ArchivalDescription.title`. */
+  title?: string;
+
+  /** Dating of the level (text form of its unit-date item), if set. */
+  unitDate?: string;
+}
+
+/**
+ * A compact, ordered outline of part of the arrangement tree: one `OutlineRow`
+ * per level, in tree order, with parent–child relations readable from
+ * `referenceMark`/`depth`. Built deterministically by the client (no model
+ * involved), so a whole branch of hundreds to thousands of levels costs what a
+ * handful of full descriptions would. Used by `elza.revision` as the
+ * hierarchical context around the reviewed units (children / sibling
+ * summaries), and as the whole-branch representation for checks that read
+ * titles and dating rather than items (naming consistency, repetition across
+ * levels).
+ */
+model ArchivalOutline {
+  /** Fund the outline belongs to (`ArrFund.fundId`); echo-only. */
+  fundId?: int32;
+
+  /** The outline's rows, in arrangement (tree) order. */
+  rows: OutlineRow[];
+}
+
+/** Archival outline object. */
+model ArchivalOutlineObject extends AiObject {
+  @invisible(Lifecycle)
+  objectType: ObjectType.archivalOutline;
+
+  data: ArchivalOutline;
+}
+
+/**
+ * Configuration of an `elza.revision` run — what the client asks the check to
+ * look at. All fields optional: an empty config means "all checks, default
+ * behaviour".
+ */
+model RevisionConfig {
+  /**
+   * Check-category codes to run; omitted = all. An **open, Elza-owned** catalog
+   * (codes are data to the provider's prompt; unknown codes produce no
+   * findings). Defined categories (see the task definition in
+   * `tasks/elza-revision.md`): `hidden_data`, `note_misuse`, `wrong_level`,
+   * `duplicate`, `formulation`, `contradiction`, `inconsistency`,
+   * `access_point_candidate`.
+   */
+  checks?: string[];
+
+  /**
+   * What the payload covers, as a hint for the prompt's framing: `unit` (one
+   * reviewed level with its surroundings) or `branch` (a window of levels of
+   * one subtree). Open set; omitted = derived from the payload.
+   */
+  scope?: string;
+
+  /**
+   * Language of the descriptions AND of the expected findings (BCP-47, e.g.
+   * `cs`). Findings' human-readable texts are written in this language.
+   */
+  language?: string;
+}
+
+/** Revision config object. */
+model RevisionConfigObject extends AiObject {
+  @invisible(Lifecycle)
+  objectType: ObjectType.revisionConfig;
+
+  data: RevisionConfig;
+}
+
+/**
+ * One advisory finding of `elza.revision` — a suggestion for professional
+ * assessment, never an authoritative error: the AI must not declare an archival
+ * statement factually wrong on linguistic evidence alone, and nothing is ever
+ * changed automatically. Every finding is anchored to a verbatim excerpt of the
+ * reviewed description (the anti-hallucination requirement: the archivist
+ * verifies the basis at a glance).
+ */
+model RevisionFinding {
+  /** The reviewed level the finding concerns (`ArchivalDescription.nodeId`). */
+  nodeId: int32;
+
+  /**
+   * Check category the finding belongs to — one of the codes requested in
+   * `RevisionConfig.checks` (Elza-owned open catalog: `hidden_data`,
+   * `note_misuse`, `wrong_level`, `duplicate`, `formulation`, `contradiction`,
+   * `inconsistency`, `access_point_candidate`).
+   */
+  category: string;
+
+  /** Severity for triage ordering: `high`, `medium` or `low` (open set). */
+  severity: string;
+
+  /** The model's own certainty, 0–100; low-confidence findings are suggestions, never errors. */
+  @minValue(0)
+  @maxValue(100)
+  confidence?: int32;
+
+  /**
+   * What kind of statement the finding makes: `rule` (a probable rule
+   * violation), `contradiction` (a content conflict needing professional
+   * verification) or `style` (a clarity/stylistic recommendation). Open set.
+   */
+  kind?: string;
+
+  /** Item-type code of the item the finding is anchored in (`RulItemType.code`). */
+  sourceItemType?: string;
+
+  /** Specification code of the source item, when spec-specific. */
+  sourceItemSpec?: string;
+
+  /**
+   * Verbatim excerpt of the problematic text, quoted exactly from the reviewed
+   * description — the evidence the archivist verifies against.
+   */
+  excerpt: string;
+
+  /**
+   * Why the wording may be problematic — user-facing, self-contained (readable
+   * without the AI context), in the run's `language`.
+   */
+  explanation: string;
+
+  /**
+   * Suggested target element for a hidden/misplaced value — MUST be one of the
+   * level's `allowedItemTypes` (the provider never invents elements outside the
+   * supplied catalog). Absent when no move is suggested.
+   */
+  targetItemType?: string;
+
+  /**
+   * Recommended handling: `move`, `split`, `verify`, `reformulate` or `keep`
+   * (open set). Advisory — the archivist decides.
+   */
+  action?: string;
+
+  /**
+   * Optional proposed wording. Never applied automatically; when a split could
+   * weaken or change meaning, the finding recommends manual assessment instead.
+   */
+  proposedText?: string;
+
+  /**
+   * Other reviewed levels involved (e.g. the parent in a wrong-level finding,
+   * the sibling of an inconsistent pair).
+   */
+  relatedNodeIds?: int32[];
+}
+
+/**
+ * Result of `elza.revision`: the advisory findings of one reviewed payload. An
+ * empty `findings` array is a valid and expected result ("nothing suspicious
+ * found") — the prompt never forces findings.
  */
 model RevisionFindings {
-  ...Record<unknown>;
+  /** The findings, most severe first. */
+  findings: RevisionFinding[];
 }
 
 /** Revision findings object. */
@@ -599,11 +967,20 @@ model DocCitationsObject extends AiObject {
  *   back as an `elza.text` result; declares no parameters. No archival semantics —
  *   exists so both sides can validate the full protocol loop (auth, submit, poll,
  *   typed output, usage metering) cheaply before any real scenario.
- * - `elza.revision` — advisory revision of archival description units: finds
- *   logical inconsistencies, dating mismatches, terminology problems and other
- *   issues that formal (rule-based) validation cannot catch. Read-only;
- *   findings are returned as `elza.revisionFindings`. The first production
- *   scenario.
+ * - `elza.revision` — advisory semantic and language check of archival
+ *   description ("AI obsahová kontrola popisu"): finds what formal (rule-based)
+ *   validation cannot — structured facts hidden in free text, misuse of
+ *   public/internal notes, information at the wrong description level,
+ *   duplicates across items and levels, vague or internal formulations,
+ *   contradictions between text and structured items, naming inconsistency
+ *   within a branch, and access-point candidates. Read-only and strictly
+ *   advisory: findings are suggestions for professional assessment
+ *   (`elza.revisionFindings`), each anchored to a verbatim excerpt; the AI
+ *   never changes description data and never declares an archival statement
+ *   factually wrong on linguistic evidence alone. Input: the reviewed unit(s)
+ *   as `elza.archivalDescription` (with `allowedItemTypes`), a
+ *   `elza.revisionConfig`, and hierarchical context (`elza.archivalOutline`,
+ *   ancestors, `elza.fundInfo`). Task definition: `tasks/elza-revision.md`.
  */
 scalar TaskType extends string;
 
@@ -654,9 +1031,48 @@ enum TaskState {
  *   documentation-aligned) and the provider calls this tool once per
  *   `FundInfo.ruleSetCode` to turn those codes into names, data types and the
  *   enumerated spec lists, then caches it.
+ * - `searchNodes` — search description units across the archive's funds.
+ *   Arguments `SearchNodesParams`, result `SearchNodesResult`: the model asks
+ *   for records the client did not send (full text and/or item conditions);
+ *   the client executes the search under the requesting user's read
+ *   permissions and returns a capped hit list grouped by fund.
+ * - `getArchivalEntity` — fetch one archival entity (access point) in full.
+ *   Arguments `GetArchivalEntityParams`, result `ArchivalEntity` (the same
+ *   model the client sends as `elza.archivalEntity` context): the model asks
+ *   for an entity the client did not send — typically one referenced from a
+ *   description item (`RECORD_REF`) or from another entity's parts; the client
+ *   resolves it under the requesting user's read permissions and returns its
+ *   identity, classification, `ruleSetCode` and complete part tree.
+ * - `searchEntities` — search archival entities (access points). Arguments
+ *   `SearchEntitiesParams`, result `SearchEntitiesResult`: full text over
+ *   names/description, optionally constrained to an entity class/type or to
+ *   entities referencing a given entity (incoming relations); executed under
+ *   the requesting user's scope read permissions, capped hit list of
+ *   lightweight identities.
+ * - `getArchivalDescription` — fetch one description level in full and/or its
+ *   surroundings in the arrangement tree. Arguments
+ *   `GetArchivalDescriptionParams`, result `ArchivalDescriptionDetail`: the
+ *   level always comes with its complete description items (the round-trip
+ *   dominates the cost); ordered, windowed lists of its children and siblings
+ *   (designed for levels with thousands of nodes) and the parent chain are
+ *   opt-in. Executed under the requesting user's fund read permissions.
+ * - `searchFunds` — look up / list archival funds by their own identity.
+ *   Arguments `SearchFundsParams`, result `SearchFundsResult`: one query
+ *   string matched against every fund identifier at once (name, internal
+ *   code, fund number, mark), optionally narrowed to one holding institution;
+ *   funds are a bounded ordered list, so (unlike `searchNodes`) an
+ *   unconstrained, windowed listing is a legitimate use. Each returned
+ *   `FundInfo` carries `rootNodeId` — the entry point for browsing the fund
+ *   with `getArchivalDescription`. Executed under the requesting user's fund
+ *   read permissions.
  */
 enum StandardToolName {
   getItemTypes,
+  searchNodes,
+  getArchivalEntity,
+  searchEntities,
+  getArchivalDescription,
+  searchFunds,
 }
 
 /** A pending call of a client-declared tool (present while `awaiting_tools`). */
@@ -729,6 +1145,368 @@ model ItemTypeDictionary {
 
   /** The rule set's item types, resolving the codes used in `elza.archivalDescription`. */
   itemTypes: ItemTypeInfo[];
+}
+
+/**
+ * Arguments of the `searchNodes` tool. Deliberately flat (not Elza's internal
+ * filter tree): a full-text query and/or ANDed item conditions, optionally
+ * scoped to funds. Extensions grow additively.
+ */
+model SearchNodesParams {
+  /**
+   * Full-text query matched against the whole description unit (all item
+   * values). At least one of `fulltext` / `itemConditions` must be given.
+   */
+  fulltext?: string;
+
+  /**
+   * Conditions on individual description items; all must hold (AND). Item
+   * types are named by their stable codes — the same vocabulary as
+   * `DescriptionItem.type` and the `getItemTypes` dictionary.
+   */
+  itemConditions?: ItemCondition[];
+
+  /**
+   * Restrict the search to these funds (`FundInfo.fundId`). Omitted = every
+   * fund the requesting user may read.
+   */
+  fundIds?: int32[];
+
+  /**
+   * Only description units with an item referencing this entity
+   * (`ApAccessPoint.accessPointId`), regardless of the item type — the
+   * description-side usage of an entity. For a type-specific reference match
+   * use an `ItemCondition` on the `RECORD_REF` item type with the id as
+   * `value` instead (a numeric value on a reference item matches by id).
+   */
+  referencesEntityId?: int32;
+
+  /**
+   * Requested maximum number of hits in total; the client may cap it lower
+   * (the result then reports `partial`). Omitted = the client's default.
+   */
+  limit?: int32;
+}
+
+/**
+ * One condition on a description item, e.g. item `ZP2015_UNIT_DATE`
+ * `INTERSECT` `1930-1939`.
+ */
+model ItemCondition {
+  /** Item-type code (`RulItemType.code`), e.g. `ZP2015_TITLE`. */
+  type: string;
+
+  /**
+   * Specification code (`RulItemSpec.code`), when the condition targets one
+   * specification of an enumerated item type.
+   */
+  spec?: string;
+
+  /** How the item's value is compared with `value`. */
+  operation: ItemConditionOperation;
+
+  /**
+   * The comparison value; absent for `NOT_NULL`. Dating items (`UNITDATE`)
+   * use Elza's interval syntax, e.g. `1930-1939`.
+   */
+  value?: string;
+}
+
+/**
+ * Comparison operators of `ItemCondition` — a subset of Elza's search
+ * operations; may grow additively. `INTERSECT` applies to dating items
+ * (`UNITDATE`): true when the item's interval overlaps the queried one.
+ */
+enum ItemConditionOperation {
+  EQ: "EQ",
+  CONTAINS: "CONTAINS",
+  GT: "GT",
+  GTE: "GTE",
+  LT: "LT",
+  LTE: "LTE",
+  INTERSECT: "INTERSECT",
+  NOT_NULL: "NOT_NULL",
+}
+
+/**
+ * Result of the `searchNodes` tool. Hits are grouped by fund with the first
+ * hits of each inlined, so the distribution (which funds, how many) is visible
+ * even when the hit lists are capped.
+ */
+model SearchNodesResult {
+  /** Funds with hits, each carrying its first hits in tree order. */
+  funds: FundHits[];
+
+  /** Total matching description units across all funds (before capping). */
+  totalCount: int64;
+
+  /**
+   * True when the result is incomplete — a hit cap, a per-fund cap or the
+   * search time limit was reached. The tool does not page: refine the query
+   * (sharper terms, `fundIds` scoping) instead of re-asking for more.
+   */
+  partial: boolean;
+}
+
+/** The hits within one fund. */
+model FundHits {
+  /** Fund id (matches `FundInfo.fundId`). */
+  fundId: int32;
+
+  /** Fund name (`ArrFund.name`). */
+  name: string;
+
+  /** Holding institution name, when known. */
+  institution?: string;
+
+  /** Total hits in this fund; may exceed `nodes.length` when capped. */
+  count: int32;
+
+  /** The first hits, in arrangement-tree order. */
+  nodes: NodeHit[];
+}
+
+/** One matching description unit (level). */
+model NodeHit {
+  /** Level id (`ArrNode.nodeId`) — the same identity `elza.archivalDescription` uses. */
+  nodeId: int32;
+
+  /** Stable level UUID (`ArrNode.uuid`). */
+  uuid?: string;
+
+  /** Tree title of the level, as in `ArchivalDescription.title`. */
+  title?: string;
+
+  /**
+   * Reference designation from the fund root, as in
+   * `ArchivalDescription.referenceMark`; its length also tells the hit's depth
+   * in the arrangement tree.
+   */
+  referenceMark?: string[];
+}
+
+/**
+ * Arguments of the `getArchivalEntity` tool. Exactly one of the identifiers is
+ * given; the result is the referenced entity as a full `ArchivalEntity` —
+ * identity, classification, `ruleSetCode` and the complete part tree, the same
+ * payload the client sends as `elza.archivalEntity` context. An entity the
+ * requesting user may not read (or that does not exist) is answered with
+ * `ToolResult.error`.
+ */
+model GetArchivalEntityParams {
+  /** Access point id (`ApAccessPoint.accessPointId`) of the entity to fetch. */
+  accessPointId?: int32;
+
+  /** Stable access point UUID (`ApAccessPoint.uuid`) — durable across installations. */
+  uuid?: string;
+}
+
+/**
+ * Arguments of the `searchEntities` tool. At least one of `fulltext`,
+ * `typeCode`, `relatedTo` must be given (an unconstrained listing is refused).
+ */
+model SearchEntitiesParams {
+  /** Full-text query over entity names/description (`"…"` = exact phrase). */
+  fulltext?: string;
+
+  /**
+   * Where the full text matches: the preferred name only, every name part
+   * (the default), or the whole description.
+   */
+  area?: EntitySearchArea;
+
+  /**
+   * Restrict the full text to the main part of names (`NM_MAIN`) — e.g. a
+   * surname-only match for persons.
+   */
+  onlyMainPart?: boolean;
+
+  /**
+   * Restrict to one entity class or type (`ApType.code`, e.g. `PERSON` or
+   * `PERSON_INDIVIDUAL`); a non-leaf code includes all its subtypes.
+   */
+  typeCode?: string;
+
+  /**
+   * Only entities whose description references a given entity — the incoming
+   * relations of that entity (relations are stored one-way: son→father lives
+   * on the son, so "find X's children" = entities whose relation items point
+   * at X).
+   */
+  relatedTo?: EntityRelationFilter;
+
+  /**
+   * Requested maximum number of hits; the client may cap it lower (the result
+   * then reports `partial`). Omitted = the client's default.
+   */
+  limit?: int32;
+}
+
+/** Scope of the `searchEntities` full-text match. */
+enum EntitySearchArea {
+  /** The preferred (display) name only. */
+  preferNames,
+
+  /** Every name part (the default). */
+  allNames,
+
+  /** The whole structured description — all parts and items. */
+  allParts,
+}
+
+/** "Has a reference to entity X", optionally narrowed to one relation item type/spec. */
+model EntityRelationFilter {
+  /** The referenced entity (`ApAccessPoint.accessPointId`). */
+  accessPointId: int32;
+
+  /**
+   * Relation item type code (`RulItemType.code`) the reference must use;
+   * omitted = any reference anywhere in the description.
+   */
+  relationTypeCode?: string;
+
+  /** Specification code, when the relation type is enumerated (e.g. the kind of kinship). */
+  relationSpecCode?: string;
+}
+
+/** Result of the `searchEntities` tool. */
+model SearchEntitiesResult {
+  /** The matching entities as lightweight identities, best match first. */
+  entities: ArchivalEntityInfo[];
+
+  /** Total matching entities (before capping). */
+  totalCount: int64;
+
+  /**
+   * True when the result is incomplete (a hit cap was reached). The tool does
+   * not page: refine the query (sharper terms, `typeCode`, `onlyMainPart`)
+   * instead of re-asking with the same terms.
+   */
+  partial: boolean;
+}
+
+/** Arguments of the `getArchivalDescription` tool. Exactly one of the ids. */
+model GetArchivalDescriptionParams {
+  /** Level id (`ArrNode.nodeId`) — the same identity `elza.archivalDescription` and `NodeHit` use. */
+  nodeId?: int32;
+
+  /** Stable level UUID (`ArrNode.uuid`). */
+  uuid?: string;
+
+  /** Include a window of the direct child levels, in arrangement order (default false). */
+  withChildren?: boolean;
+
+  /** 0-based offset of the children window (default 0 = the first children). */
+  childrenFrom?: int32;
+
+  /**
+   * Include a window of the sibling levels (same parent), in arrangement order
+   * (default false). Without `siblingsFrom` the window is centered on the
+   * level itself — its neighborhood; the result reports the level's own index.
+   */
+  withSiblings?: boolean;
+
+  /** 0-based offset of the siblings window; omitted = centered on the level. */
+  siblingsFrom?: int32;
+
+  /** Include the parent chain, root first (default false). */
+  withParents?: boolean;
+
+  /** Requested maximum nodes per window (children / siblings); the client may cap it lower. */
+  limit?: int32;
+}
+
+/**
+ * Result of the `getArchivalDescription` tool: the level — always with its
+ * complete description items (the round-trip dominates the cost; the provider
+ * decides how much reaches the model) — plus the requested surroundings in the
+ * arrangement tree.
+ */
+model ArchivalDescriptionDetail {
+  /** The level itself, the same model the client sends as context, items included. */
+  node: ArchivalDescription;
+
+  /** Fund the level belongs to — scopes follow-up searches (`SearchNodesParams.fundIds`). */
+  fundId: int32;
+
+  /**
+   * Rule set of the fund (`RulRuleSet.code`) — resolves the items' type/spec
+   * codes, the same way `ArchivalEntity.ruleSetCode` does for a fetched entity.
+   */
+  ruleSetCode?: string;
+
+  /** Parent chain, root first (when `withParents`; never windowed — depth is small). */
+  parents?: NodeHit[];
+
+  /** Sibling window (when `withSiblings`). */
+  siblings?: NodeWindow;
+
+  /** Children window (when `withChildren`). */
+  children?: NodeWindow;
+}
+
+/**
+ * One window of an ordered node list. Self-describing — the slice, where it
+ * sits and how long the whole list is — because arrangement lists can be huge
+ * (thousands of units under one series) and, unlike search results, ordered
+ * lists page by design: the caller aims the next window instead of refining.
+ */
+model NodeWindow {
+  /** The window's nodes, in arrangement order. */
+  nodes: NodeHit[];
+
+  /** 0-based index of `nodes[0]` within the whole ordered list. */
+  from: int32;
+
+  /** Size of the whole ordered list. */
+  totalCount: int32;
+
+  /**
+   * Siblings only: the anchor level's own 0-based index within the whole list
+   * — its position among its siblings, and the aim point for a next window.
+   */
+  nodeIndex?: int32;
+}
+
+/**
+ * Arguments of the `searchFunds` tool. All optional: an unconstrained call
+ * lists the funds the requesting user may read, ordered by name — funds are a
+ * bounded ordered list, so (unlike `searchNodes`) listing and windowed paging
+ * are the intended access pattern.
+ */
+model SearchFundsParams {
+  /**
+   * Query matched against every fund identifier at once: name, internal
+   * (evidence) code, fund number and mark/signature (case-insensitive
+   * substring) — `127` finds fund number 127 as well as names containing 127.
+   */
+  fulltext?: string;
+
+  /** Restrict to funds of one holding institution (`InstitutionInfo.code`). */
+  institutionCode?: string;
+
+  /** 0-based offset of the window (default 0 = the first funds). */
+  from?: int32;
+
+  /** Requested maximum funds in the window; the client may cap it lower. */
+  limit?: int32;
+}
+
+/**
+ * Result of the `searchFunds` tool: a window of the matching funds, ordered by
+ * name. Each fund carries its identity (`fundId` scopes follow-up
+ * `searchNodes` calls) and `rootNodeId` (the entry point for
+ * `getArchivalDescription` browsing).
+ */
+model SearchFundsResult {
+  /** The window's funds, ordered by name. */
+  funds: FundInfo[];
+
+  /** 0-based index of `funds[0]` within the whole matching list. */
+  from: int32;
+
+  /** Total matching funds (before windowing). */
+  totalCount: int64;
 }
 
 /**
@@ -926,6 +1704,210 @@ model Task {
 }
 
 // ---------------------------------------------------------------------------
+// Task events (optional live activity stream)
+// ---------------------------------------------------------------------------
+
+/**
+ * Task event type — names one observable step in a task's execution. An **open**
+ * set of string codes (a plain string on the wire): the provider may introduce
+ * new event types without a contract change, and a client **ignores an event
+ * whose type it does not recognize** (just as it ignores an unknown object
+ * type). Whether any events are emitted at all — and at what granularity — is up
+ * to the provider; the stream is advisory, the point-in-time counterpart being
+ * `TaskProgress` on a `Task`. The vocabulary a provider may emit:
+ *
+ * Lifecycle (coarse; mirror the task's state changes):
+ * - `submitted` — the task was accepted.
+ * - `started` — processing began (`queued` → `running`).
+ * - `phase` — an advisory progress phase: `message` is display-ready and
+ *   `percent` a rough estimate (the streamed form of `TaskProgress`).
+ * - `awaiting_tools` — the task suspended for client tool calls; `detail` lists
+ *   the pending calls (`{callId, tool}`). The calls to execute still come from
+ *   `Task.toolCalls`.
+ * - `tools_resolved` — the client's tool results arrived and the task resumed.
+ * - `done` — the task finished successfully (its `output` is now readable via
+ *   `GET /tasks/{taskId}`).
+ * - `error` — the task failed; `detail` carries the error `{code}`.
+ * - `cancelled` — the task was cancelled.
+ *
+ * Turn internals (fine-grained; a provider may omit them entirely):
+ * - `preparation` — a preparatory step before the model turn (e.g. resolving
+ *   rule-set dictionaries), including any client tool round it drives.
+ * - `model_round` — one model request/response completed.
+ * - `tool_call` — the provider invoked a tool: `tool` names it, `origin` says
+ *   whether it ran inside the provider or was delegated to the client, `label` /
+ *   `summary` are display-ready, `callId` correlates it with `Task.toolCalls`,
+ *   and `refs` points at the archival object it concerns. Covers both
+ *   provider-internal tools and the client tools of `StandardToolName`.
+ * - `tool_result` — a tool the provider ran internally produced a result:
+ *   `summary` describes it (a summary only — internal tool results never leave
+ *   the provider); `tool` / `callId` match the originating `tool_call`.
+ * - `answer_delta` — a slice of the answer text as it is composed, in
+ *   `message`; batched, never per-token.
+ *
+ * A client drives the task with `GET /tasks/{taskId}` regardless; consuming this
+ * vocabulary only enriches what it can display.
+ */
+scalar TaskEventType extends string;
+
+/**
+ * One observable event in a task's execution — the streamed, append-only
+ * counterpart to the point-in-time `TaskProgress` on a `Task`. Advisory (a
+ * provider need emit none) and additive (an unknown `type` is ignored); an event
+ * never carries authoritative state — a task's state, output and usage always
+ * come from `GET /tasks/{taskId}`.
+ */
+model TaskEvent {
+  /**
+   * Monotonic per-task sequence number, strictly increasing in emission order.
+   * The resume cursor: pass the last value seen as `since` to receive only later
+   * events. Stable — an event keeps its `seq` across reads.
+   */
+  seq: int64;
+
+  /** What happened; a `TaskEventType` code (an unrecognized one is ignored). */
+  type: TaskEventType;
+
+  /** When the event was recorded (UTC). */
+  createdAt: utcDateTime;
+
+  /**
+   * Display-ready one-line message, when the event has one — e.g. a `phase`
+   * label or the text fragment of an `answer_delta`. In the task's language,
+   * suitable for direct display. (A tool event's human name is `label`, not
+   * here.)
+   */
+  message?: string;
+
+  /**
+   * The tool a `tool_call` / `tool_result` event concerns. For a tool the
+   * provider **delegated to the client** (`origin` = `client`) this is the
+   * `StandardToolName` code — the same identity as the matching
+   * `Task.toolCalls` entry and the `awaiting_tools` pending call — so the client
+   * recognizes its own tool directly. For a **provider-internal** tool
+   * (`origin` = `internal`) it is the provider's own model-facing name, which
+   * the protocol otherwise never exposes: treat it as an opaque label. Absent on
+   * non-tool events.
+   */
+  tool?: string;
+
+  /**
+   * Where a tool event's tool ran: `internal` (inside the provider — e.g. a
+   * knowledge-base search; the name in `tool` is opaque) or `client` (a
+   * `StandardToolName` the provider delegated to the client, executed by it).
+   * Lets a client tell its own tools from the provider's without matching names.
+   * Present on `tool_call` / `tool_result`; absent otherwise.
+   */
+  origin?: ToolOrigin;
+
+  /**
+   * Correlation id of a `tool_call` / `tool_result` event: for a delegated tool
+   * it equals the `Task.toolCalls[].callId` (and the `awaiting_tools` pending
+   * `callId`) the client executes, so a client can fold the event, the pending
+   * call and its own execution into one activity item. Absent on non-tool
+   * events.
+   */
+  callId?: string;
+
+  /**
+   * Display-ready, localized human name of a tool event's tool — e.g. "Reading
+   * the archival description" — for the activity feed, in place of the raw
+   * `tool` code. Present on `tool_call` / `tool_result` when the provider
+   * localizes it; absent otherwise.
+   */
+  label?: string;
+
+  /**
+   * Display-ready, localized one-line summary complementing `label` on a tool
+   * event: the call's key arguments (e.g. "level 12345") on a `tool_call`, or a
+   * short result summary (e.g. "sections found: 6") on a `tool_result`. Never a
+   * full tool result or any knowledge-corpus content. Absent when there is none.
+   */
+  summary?: string;
+
+  /**
+   * The archival objects a `tool_call` / `tool_result` concerns, so a client can
+   * turn the activity line into links to them. Each entry references one object
+   * (a level or an entity); usually a single entry, but an array so a tool that
+   * fetches several objects at once can report them all. Absent when the call
+   * targets none (e.g. a knowledge-base search).
+   */
+  refs?: ArchivalObjectRef[];
+
+  /** Rough completion estimate for a `phase` event, 0–100; absent otherwise. */
+  @minValue(0)
+  @maxValue(100)
+  percent?: float32;
+
+  /**
+   * Curated, event-specific detail as free JSON, for what has no dedicated field
+   * — e.g. the pending `{callId, tool}` list of an `awaiting_tools` event, an
+   * error `{code}`, or a `model_round`'s `{round, stopReason}`. The tool-event
+   * display and correlation data are first-class fields (`tool`, `origin`,
+   * `callId`, `label`, `summary`, `refs`); `detail` never duplicates them.
+   * Absent when the event needs none; a client may ignore it entirely.
+   */
+  detail?: unknown;
+}
+
+/**
+ * Where a tool event's tool ran — the recognition key that lets a client tell
+ * its own tools from the provider's internal ones (see `TaskEvent.origin`).
+ * Binary by nature (a tool either runs in the provider or is delegated to the
+ * client), so a closed set.
+ */
+enum ToolOrigin {
+  /** Executed inside the provider and never leaving it (e.g. a knowledge-base search). */
+  internal,
+
+  /** A client `StandardToolName` the provider delegated to the client to execute. */
+  client,
+}
+
+/**
+ * A reference to one archival object a tool event concerns (an entry of
+ * `TaskEvent.refs`), for linking from the activity feed. Exactly one identifier
+ * is set — a level (`nodeId`) or an entity (`accessPointId`); both are optional
+ * so the shape is forward-compatible.
+ */
+model ArchivalObjectRef {
+  /** `nodeId` of an archival description level this event concerns. */
+  nodeId?: int64;
+
+  /** `accessPointId` of an archival entity (access point) this event concerns. */
+  accessPointId?: int64;
+}
+
+/**
+ * A batch of task events past a cursor — the `GET /tasks/{taskId}/events`
+ * response. Always safe to consume: `events` may be empty (a long poll that
+ * timed out with nothing new), and the current `state` is included so a client
+ * can stop polling once the task is terminal without a separate `GET /tasks`
+ * call.
+ */
+model TaskEvents {
+  /**
+   * Events with `seq` greater than the requested `since`, in ascending `seq`
+   * order. Empty when nothing new occurred within the wait.
+   */
+  events: TaskEvent[];
+
+  /**
+   * The task's current state — lets the client end its polling loop on a
+   * terminal state (`done` / `error` / `cancelled`). Authoritative state,
+   * output and usage still come from `GET /tasks/{taskId}`.
+   */
+  state: TaskState;
+
+  /**
+   * Cursor to pass as `since` on the next call: the greatest `seq` in `events`,
+   * or the requested `since` unchanged when `events` is empty. Monotonic, so a
+   * client always resumes from here without missing or repeating an event.
+   */
+  nextSince: int64;
+}
+
+// ---------------------------------------------------------------------------
 // Usage / credit state
 // ---------------------------------------------------------------------------
 
@@ -940,8 +1922,15 @@ model AccountUsageInfo {
   /** Kind of account, e.g. `personal` or `shared` (open set). */
   accountType?: string;
 
-  /** Plan label, e.g. `basic`; informational. */
+  /** Plan label, e.g. `basic`; informational (a code, not for display). */
   plan?: string;
+
+  /**
+   * Human-readable plan name for display, e.g. `Osobní – standard` (localized
+   * like all display strings). Absent when the provider has no display name —
+   * the client then hides the plan rather than showing the raw `plan` code.
+   */
+  planName?: string;
 
   /** Credit allowance for the current period; absent = no per-account cap. */
   allowanceCredits?: float64;
@@ -954,6 +1943,31 @@ model AccountUsageInfo {
 
   /** End of the current accounting period — when the allowance resets. */
   periodEnd?: utcDateTime;
+
+  /**
+   * Weekly credit allowance — an optional smoothing cap layered under the
+   * period allowance (protecting the rest of the period from one heavy week);
+   * absent = no weekly cap.
+   */
+  weeklyAllowanceCredits?: float64;
+
+  /** Credits charged to this account in the current weekly window; absent = the provider keeps no weekly accounting. */
+  weeklySpentCredits?: float64;
+
+  /**
+   * Start of the current weekly window. The window is the UTC calendar week
+   * (Monday 00:00) clamped to the period start, so it never spans a period
+   * boundary — at a mid-week period start the weekly counter resets early
+   * together with the period, in the user's favor.
+   */
+  weekStart?: utcDateTime;
+
+  /**
+   * End of the current weekly window — when the weekly allowance resets (the
+   * earlier of next Monday 00:00 UTC and `periodEnd`; by construction never
+   * after `periodEnd`).
+   */
+  weekEnd?: utcDateTime;
 }
 
 /** Subscriber-level (whole organization) usage state — the outer budget cap. */
@@ -1229,6 +2243,49 @@ op getTask(
   @minValue(0)
   @query wait?: int32,
 ): Task | ServiceError;
+
+/**
+ * Stream a task's execution events (long poll) — an **optional** finer-grained
+ * companion to `GET /tasks/{taskId}`. Where the poll returns the task's current
+ * state and a single advisory `progress`, this returns the append-only sequence
+ * of what the task has been *doing* — phases, tool calls, and (when the provider
+ * streams it) the answer as it is composed — so a client can show live activity
+ * instead of one changing status line.
+ *
+ * Cursor-based and replayable: pass the `seq` of the last event seen as `since`
+ * (omit or `0` for the whole history), then use `TaskEvents.nextSince` for the
+ * next call. With `wait`, the server holds the request until new events exist or
+ * the timeout elapses, then returns whatever accrued (possibly none).
+ *
+ * Consuming this stream is never required: a client drives the task with
+ * `GET /tasks/{taskId}` as usual, and a provider may emit no events at all (an
+ * empty stream is conformant). Events are advisory — authoritative state,
+ * output, usage, and the `toolCalls` to execute all come from
+ * `GET /tasks/{taskId}`.
+ */
+@route("/tasks/{taskId}/events")
+@get
+op getTaskEvents(
+  ...SignedRequest,
+
+  /** Task id from `TaskAccepted`. */
+  @path taskId: string,
+
+  /**
+   * Return only events with `seq` greater than this cursor; omit or `0` for the
+   * full history. Use `TaskEvents.nextSince` from the previous call.
+   */
+  @minValue(0)
+  @query since?: int64,
+
+  /**
+   * Long-poll timeout in seconds; `0`/absent = answer immediately with whatever
+   * events already accrued. Capped by `Limits.maxWaitSeconds` (shared with
+   * `GET /tasks/{taskId}`).
+   */
+  @minValue(0)
+  @query wait?: int32,
+): TaskEvents | ServiceError;
 
 /**
  * Return the results of the pending tool calls of a task in `awaiting_tools`;

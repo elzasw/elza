@@ -5,7 +5,7 @@ import { AdminPackagesUpload, Ribbon } from 'components';
 import { UrlFactory } from 'actions/index.jsx';
 
 import './AdminPackagesPage.scss';
-import PageLayout from '../shared/layout/PageLayout';
+import { AdminLayout } from '../shared/layout/AdminLayout';
 import { AdminPackagesListFn } from 'components/admin/AdminPackagesList';
 
 /**
@@ -16,7 +16,7 @@ import { AdminPackagesListFn } from 'components/admin/AdminPackagesList';
  */
 class AdminPackagesPage extends React.Component {
     buildRibbon = () => {
-        return <Ribbon admin {...this.props} />;
+        return <Ribbon {...this.props} />;
     };
 
     render() {
@@ -30,7 +30,7 @@ class AdminPackagesPage extends React.Component {
         );
 
         return (
-            <PageLayout
+            <AdminLayout
                 splitter={splitter}
                 className="admin-packages-page"
                 ribbon={this.buildRibbon()}

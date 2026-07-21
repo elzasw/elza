@@ -599,9 +599,11 @@ public class ClientFactoryVO {
 
     public ParInstitutionGen createParInstitutionGen(final ParInstitution institution, final ApIndex displayName) {
         cz.tacr.elza.controller.vo.BaseCode type = new cz.tacr.elza.controller.vo.BaseCode();
-        type.setName(institution.getInstitutionType().getName());
-        type.setCode(institution.getInstitutionType().getCode());
-        type.setId(institution.getInstitutionType().getInstitutionTypeId());
+        if (institution.getInstitutionType() != null) {
+	        type.setName(institution.getInstitutionType().getName());
+	        type.setCode(institution.getInstitutionType().getCode());
+	        type.setId(institution.getInstitutionType().getInstitutionTypeId());
+        }
 
         ParInstitutionGen result = new ParInstitutionGen();
         result.setId(institution.getInstitutionId());

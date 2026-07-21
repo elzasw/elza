@@ -7,7 +7,7 @@ import React from 'react';
 import {connect} from 'react-redux';
 import {Button} from '../../components/ui';
 import {AddGroupForm, GroupDetail, Ribbon} from 'components/index';
-import PageLayout from '../shared/layout/PageLayout';
+import { AdminLayout } from '../shared/layout/AdminLayout';
 import {
     AbstractReactComponent,
     i18n,
@@ -159,7 +159,7 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
             );
         }
 
-        return <Ribbon admin {...this.props} altSection={altSection} itemSection={itemSection} />;
+        return <Ribbon {...this.props} altSection={altSection} itemSection={itemSection} />;
     }
 
     handleDeleteGroup() {
@@ -242,7 +242,7 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
         );
 
         return (
-            <PageLayout
+            <AdminLayout
                 splitter={splitter}
                 className="admin-group-page"
                 ribbon={this.buildRibbon()}

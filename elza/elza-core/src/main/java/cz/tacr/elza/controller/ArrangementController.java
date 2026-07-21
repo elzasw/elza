@@ -83,6 +83,7 @@ import cz.tacr.elza.controller.vo.DataGridExportType;
 import cz.tacr.elza.controller.vo.FileType;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FilterNodePosition;
+import cz.tacr.elza.controller.vo.FilterNodesPage;
 import cz.tacr.elza.controller.vo.FulltextFundRequest;
 import cz.tacr.elza.controller.vo.FundListCountResult;
 import cz.tacr.elza.controller.vo.NodeBase;
@@ -1758,6 +1759,33 @@ public class ArrangementController {
     }
 
     /**
+     * Do filtrovaného seznamu načte hodnoty atributů a vrátí podstránku záznamů zabalenou
+     * spolu s číslem stránky.
+     * <p>
+     * Stránka se určí buď přímo parametrem {@code page}, nebo se dopočítá z {@code nodeId}
+     * (vrátí se stránka, na které se daný uzel ve filtrovaném seznamu nachází). Pokud uzel
+     * ve filtrovaném seznamu není (odfiltrován nebo není ve fondu), volání selže.
+     *
+     * @param versionId       id verze
+     * @param page            číslo stránky, od 0; použije se, pokud není zadáno nodeId
+     * @param nodeId          id uzlu, jehož stránka se má dopočítat; má přednost před page
+     * @param pageSize        velikost stránky
+     * @param descItemTypeIds id typů atributů, které chceme načíst
+     * @return stránka filtrovaných uzlů včetně jejího čísla
+     */
+    @RequestMapping(value = "/getFilterNodes2/{versionId}", method = RequestMethod.PUT)
+    public FilterNodesPage getFilteredNodes2(@PathVariable("versionId") final Integer versionId,
+                                             @RequestParam(value = "page", required = false) final Integer page,
+                                             @RequestParam(value = "nodeId", required = false) final Integer nodeId,
+                                             @RequestParam("pageSize") final Integer pageSize,
+                                             @RequestBody final List<Integer> descItemTypeIds) {
+
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(versionId);
+
+        return filterTreeService.getFilteredDataPage(fundVersion, page, nodeId, pageSize, descItemTypeIds);
+    }
+
+    /**
      * Export dat z tabulkového zobrazení.
      *
      * @param response       http response
@@ -3177,6 +3205,7 @@ public class ArrangementController {
         }
     }
 
+    @Deprecated
     public static class GenerateOutputResult {
         private OutputRequestStatus status;
 

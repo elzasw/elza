@@ -2429,6 +2429,120 @@ model AiUsage {
 }
 
 /**
+ * Credit state of the account the user's signing key bills to (their personal
+ * seat, or the shared organizational account). Provider-computed; the client
+ * only displays it, typically as relative consumption
+ * (`spentCredits / allowanceCredits`).
+ */
+model AiAccountUsage {
+    /** Kind of account, e.g. `personal` or `shared` (open set). */
+    accountType?: string;
+    /** Plan label, e.g. `basic`; informational (a code, not for display). */
+    plan?: string;
+    /**
+     * Human-readable plan name for display, e.g. `Osobní – standard` (localized).
+     * Absent when the provider has no display name — the client then hides the
+     * plan rather than showing the raw `plan` code.
+     */
+    planName?: string;
+    /** Credit allowance for the current period; absent = no per-account cap. */
+    allowanceCredits?: float64;
+    /** Credits charged to this account in the current period. */
+    spentCredits: float64;
+    /** Start of the current accounting period. */
+    periodStart: utcDateTime;
+    /** End of the current accounting period — when the allowance resets. */
+    periodEnd?: utcDateTime;
+    /**
+     * Weekly credit allowance — an optional smoothing cap layered under the
+     * period allowance; absent = no weekly cap.
+     */
+    weeklyAllowanceCredits?: float64;
+    /** Credits charged to this account in the current weekly window; absent = no weekly accounting. */
+    weeklySpentCredits?: float64;
+    /**
+     * Start of the current weekly window (the UTC calendar week clamped to the
+     * period start — it never spans a period boundary).
+     */
+    weekStart?: utcDateTime;
+    /** End of the current weekly window — when the weekly allowance resets; never after `periodEnd`. */
+    weekEnd?: utcDateTime;
+}
+
+/** Subscriber-level (whole organization) usage state — the outer budget cap. */
+model AiCustomerUsage {
+    /** Subscriber budget for the current period; absent = no cap. */
+    budgetCredits?: float64;
+    /** Credits spent by the whole subscriber in the current period. */
+    spentCredits: float64;
+    /** Start of the current accounting period. */
+    periodStart: utcDateTime;
+}
+
+/**
+ * The user's usage/credit balance at the AI provider — the data behind "how
+ * much have I spent". The provider serves it from the same state its
+ * submit-time budget check uses, so the displayed balance never disagrees
+ * with a quota refusal. Both members are optional: a provider without credit
+ * accounting returns an empty object.
+ */
+model AiUsageBalance {
+    /** Credit state of the account the user's key bills to. */
+    account?: AiAccountUsage;
+    /** Subscriber-level usage state (the outer cap). */
+    customer?: AiCustomerUsage;
+}
+
+/**
+ * One user-visible step of an exchange — a client-tool execution the model
+ * requested while working on the answer. `kind`, `tool` and `state` are open
+ * sets: the client renders an unknown kind/tool as a generic step and treats
+ * an unknown state as still running. Steps stay with the conversation
+ * permanently; a linked object may since have been deleted — the client
+ * handles a failed navigation gracefully.
+ */
+model AiRequestActivity {
+    /** Stable id of the step within the exchange (the provider's tool-call id). */
+    id: string;
+
+    /** TOOL_CALL (open set). */
+    kind: string;
+
+    /** Tool name for TOOL_CALL: `searchNodes`, `getItemTypes`, … */
+    tool?: string;
+
+    /** RUNNING | DONE | ERROR (open set). */
+    state: string;
+
+    /** Data-like input summary: the fulltext query / the rule-set code. */
+    query?: string;
+
+    /** Result size once DONE: search hits, dictionary entries. */
+    resultCount?: int64;
+
+    /** True when `links` holds only the first hits of a larger result. */
+    partial?: boolean;
+
+    /** Objects the step touched, as navigable links (search hits). */
+    links?: AiActivityLink[];
+
+    /** Failure description when state = ERROR. */
+    error?: string;
+
+    startDate: utcDateTime;
+    endDate?: utcDateTime;
+}
+
+/** One object an activity touched, renderable as a navigation link. */
+model AiActivityLink {
+    /** Display label — node title, reference designation or fund name. */
+    label?: string;
+
+    /** Navigation target — reuses the UI-context vocabulary (`AiContextType` codes). */
+    target: AiContextObject;
+}
+
+/**
  * One exchange with the AI provider within a conversation. `state` is an open
  * set (`queued`, `running`, `awaiting_tools`, `done`, `error`, `cancelled`);
  * a client MUST treat an unknown state as "in progress". `blocks` is present
@@ -2444,6 +2558,14 @@ model AiRequest {
     blocks?: AiDisplayBlock[];
     errorCode?: string;
     errorMessage?: string;
+    /** Short human-readable phase while the request runs (advisory, best-effort; absent once terminal). */
+    progressMessage?: string;
+    /** Rough completion estimate 0–100 (advisory). */
+    @minValue(0)
+    @maxValue(100)
+    progressPercent?: float32;
+    /** User-visible steps of the exchange (tool executions), oldest first. */
+    activities?: AiRequestActivity[];
     promptVersion?: string;
     /** Profile/model used for this exchange (an `AiProfile.code`); absent = provider default. */
     profile?: string;
@@ -2557,25 +2679,6 @@ model AiRequestEvent {
 }
 
 /**
- * The current user's personal AI signing key of one provider — presence only,
- * the secret is never returned. With a personal key the user's tasks bill to
- * their personal account (seat); without one the instance-wide key (the shared
- * organizational account) is used.
- */
-model AiMyKey {
-    /** KeyId of the personal key; absent = none set (the instance-wide key applies). */
-    keyId?: string;
-}
-
-/** Sets/replaces the current user's personal AI signing key. */
-model AiMyKeyUpdate {
-    /** KeyId issued by the provider's account authority (an opaque string). */
-    keyId: string;
-    /** The HMAC secret belonging to the KeyId (stored server-side, never returned). */
-    secret: string;
-}
-
-/**
  * The AI provider's capabilities — the client's typed view of the provider's
  * `/info` catalog. Drives the panel: which tasks to offer and, per task, which
  * typed parameters to gather. Grows additively (new task types, new object
@@ -2644,6 +2747,22 @@ namespace ElzaAPI.AiProvider {
     };
 
     /**
+     * The user's usage/credit balance at the AI provider, read via the
+     * provider's GET /usage under the same key selection as task submission
+     * (the user's personal key when stored, else the instance-wide one). For
+     * panel display; refresh after a finished exchange or a quota refusal.
+     */
+    @route("/{id}/usage")
+    @get op getUsage(
+        /** AI external system ID or CODE */
+        @path id: string;
+    ): AiUsageBalance | {
+        /** Id does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
      * Starts a new AI conversation: creates the thread, stores and submits its
      * first exchange to the configured provider. State changes are then
      * announced over the WebSocket (event AI_REQUEST carrying conversation and
@@ -2705,52 +2824,6 @@ namespace ElzaAPI.AiProvider {
         /** request id */
         @path id: integer;
     ): AiRequest | {
-        /** Id does not exists */
-        @Http.statusCode statusCode: 404;
-        @body data: BaseException;
-    };
-
-    /**
-     * Reads whether the current user has a personal signing key for the
-     * provider (the secret is never returned).
-     */
-    @route("/{id}/my-key")
-    @get op getMyKey(
-        /** AI external system ID or CODE */
-        @path id: string;
-    ): AiMyKey | {
-        /** Id does not exists */
-        @Http.statusCode statusCode: 404;
-        @body data: BaseException;
-    };
-
-    /**
-     * Sets/replaces the current user's personal signing key for the provider.
-     * The user's subsequent tasks then bill to their personal account.
-     */
-    @route("/{id}/my-key")
-    @put op setMyKey(
-        /** AI external system ID or CODE */
-        @path id: string;
-        @body body: AiMyKeyUpdate;
-    ): AiMyKey | {
-        /** Id does not exists */
-        @Http.statusCode statusCode: 404;
-        @body data: BaseException;
-    };
-
-    /**
-     * Removes the current user's personal signing key; tasks fall back to the
-     * instance-wide key (the shared organizational account).
-     */
-    @route("/{id}/my-key")
-    @delete op deleteMyKey(
-        /** AI external system ID or CODE */
-        @path id: string;
-    ): {
-        /** Removed (or none was set) */
-        @Http.statusCode statusCode: 204;
-    } | {
         /** Id does not exists */
         @Http.statusCode statusCode: 404;
         @body data: BaseException;
@@ -5736,8 +5809,6 @@ namespace ElzaAPI.Output {
     model OutputItemCsvImportData {
         /** output version */
         outputVersion: HttpPart<integer>;
-        /** output id */
-        outputId: HttpPart<integer>;
         /** desc item type id */
         descItemTypeId: HttpPart<integer>;
         /** CSV file */
@@ -5778,13 +5849,13 @@ namespace ElzaAPI.Output {
         /**
          * Template id
          */
-        templateId: integer;
+        templateId?: integer;
         /**
          * List of templates
          */
-        templateIds: integer[];
-        anonymizedAp: ApAccessPointVO;
-        outputFilterId: integer;
+        templateIds?: integer[];
+        anonymizedAp?: ApAccessPointVO;
+        outputFilterId?: integer;
     }
 
     /**
@@ -5808,12 +5879,10 @@ namespace ElzaAPI.Output {
     /**
      * Create output item
      */
-    @route("/item/{outputId}/{fundVersionId}/{outputVersion}/create")
+    @route("/item/{outputId}/{outputVersion}/create")
     @post op createOutputItem(
         /** output id */
         @path outputId: integer;
-        /** fund version id */
-        @path fundVersionId: integer;
         /** output version */
         @path outputVersion: integer;
         /** body output item */
@@ -5823,10 +5892,10 @@ namespace ElzaAPI.Output {
     /**
      * Update output item
      */
-    @route("/item/{fundVersionId}/{outputVersion}/update")
+    @route("/item/{outputId}/{outputVersion}/update")
     @put op updateOutputItem(
-        /** fund version id */
-        @path fundVersionId: integer;
+        /** output id */
+        @path outputId: integer;
         /** output version */
         @path outputVersion: integer;
         /** body output item */
@@ -5836,10 +5905,10 @@ namespace ElzaAPI.Output {
     /**
      * Delete output item
      */
-    @route("/item/{fundVersionId}/{outputVersion}/{outputItemId}")
+    @route("/item/{outputId}/{outputVersion}/{outputItemId}")
     @delete op deleteOutputItem(
-        /** fund version id */
-        @path fundVersionId: integer;
+        /** output id */
+        @path outputId: integer;
         /** output version */
         @path outputVersion: integer;
         /** output item id */
@@ -5849,10 +5918,8 @@ namespace ElzaAPI.Output {
     /**
      * Deleting attribute values ​​by type
      */
-    @route("/item/{fundVersionId}/{outputId}/{outputVersion}/{itemTypeId}")
+    @route("/item/{outputId}/{outputVersion}/by-type/{itemTypeId}")
     @delete op deleteOutputItemsByType(
-        /** fund version id */
-        @path fundVersionId: integer;
         /** output id */
         @path outputId: integer;
         /** output version */
@@ -5864,10 +5931,8 @@ namespace ElzaAPI.Output {
     /**
      * Set the attribute to "Undefined"
      */
-    @route("/item/{fundVersionId}/{outputId}/{outputVersion}/undefined/set")
+    @route("/item/{outputId}/{outputVersion}/undefined/set")
     @put op setNotIdentifiedOutputItem(
-        /** fund version id */
-        @path fundVersionId: integer;
         /** output id */
         @path outputId: integer;
         /** output version */
@@ -5883,10 +5948,10 @@ namespace ElzaAPI.Output {
     /**
      * Reset the attribute setting to "Undefined"
      */
-    @route("/item/{fundVersionId}/{outputVersion}/{outputItemObjectId}/undefined/unset")
+    @route("/item/{outputId}/{outputVersion}/{outputItemObjectId}/undefined/unset")
     @put op unsetNotIdentifiedOutputItem(
-        /** fund version id */
-        @path fundVersionId: integer;
+        /** output id */
+        @path outputId: integer;
         /** output version */
         @path outputVersion: integer;
         /** output item object id */
@@ -5896,10 +5961,10 @@ namespace ElzaAPI.Output {
     /**
      * Import a CSV file; a new entry will be created with the file's contents
      */
-    @route("/item/{fundVersionId}/csv/import")
+    @route("/item/{outputId}/csv/import")
     @post op outputItemCsvImport(
-        /** fund version id */
-        @path fundVersionId: integer;
+        /** output id */
+        @path outputId: integer;
         /** multipart body */
         @multipartBody body: OutputItemCsvImportData;
         /** header */
@@ -5909,10 +5974,10 @@ namespace ElzaAPI.Output {
     /**
      * Downloading a CSV file from an attribute value
      */
-    @route("/item/{fundVersionId}/csv/export")
+    @route("/item/{outputId}/csv/export")
     @get op outputItemCsvExport(
-        /** fund version id */
-        @path fundVersionId: integer;
+        /** output id */
+        @path outputId: integer;
         /** desc item object id */
         @query descItemObjectId: integer;
     ): {
@@ -5924,23 +5989,19 @@ namespace ElzaAPI.Output {
     /**
      * Getting data for the form
      */
-    @route("/{outputId}/{fundVersionId}/form")
+    @route("/{outputId}/form")
     @get op getOutputFormData(
         /** output id */
         @path outputId: integer;
-        /** fund version id */
-        @path fundVersionId: integer;
     ): FormData;
 
     /**
      * Set user-defined/automatic attribute type editing
      */
-    @route("/{outputId}/{fundVersionId}/{itemTypeId}/{manual}")
+    @route("/{outputId}/{itemTypeId}/{manual}")
     @put op setOutputItemMode(
         /** output id */
         @path outputId: integer;
-        /** fund version id */
-        @path fundVersionId: integer;
         /** item type id */
         @path itemTypeId: integer;
         /** true/false — manual (user-defined)/automatic */
@@ -5965,10 +6026,10 @@ namespace ElzaAPI.Output {
     /**
      * Getting list of outputs – an output object linked to a named output object
      */
-    @route("/{fundVersionId}")
+    @route("/")
     @get op getOutputs(
         /** fund version id */
-        @path fundVersionId: integer;
+        @query fundVersionId: integer;
         /** output state */
         @query state?: State;
     ): Def[];
@@ -5976,10 +6037,8 @@ namespace ElzaAPI.Output {
     /**
      * Getting output details: an output object linked to a named output, with a list of connected nodes.
      */
-    @route("/{fundVersionId}/{outputId}")
+    @route("/{outputId}")
     @get op getOutput(
-        /** fund version id */
-        @path fundVersionId: integer;
         /** output id */
         @path outputId: integer;
     ): Def;
@@ -6015,13 +6074,15 @@ namespace ElzaAPI.Output {
     @get op sendOutput(
         /** output id */
         @path outputId: integer;
-    ): RequestStatus;
+    ): {
+        @Http.statusCode statusCode: 200;
+    };
 
     /**
      * Creating a new named output
      */
-    @route("/{fundVersionId}/create")
-    @put op createNamedOutput(
+    @route("/{fundVersionId}")
+    @post op createNamedOutput(
         /** fund version id */
         @path fundVersionId: integer;
         /** output parameters */
@@ -6029,14 +6090,36 @@ namespace ElzaAPI.Output {
     ): Def;
 
     /**
+     * Deleting named output
+     */
+    @route("/{outputId}")
+    @delete op deleteNamedOutput(
+        /** output id */
+        @path outputId: integer;
+    ): {
+        @Http.statusCode statusCode: 200;
+    };
+
+    /**
+     * Update output
+     */
+    @route("/{outputId}/update")
+    @put op updateNamedOutput(
+        /** output id */
+        @path outputId: integer;
+        /** output parameters */
+        @body param: NameParam;
+    ): {
+        @Http.statusCode statusCode: 200;
+    };
+
+    /**
      * Adding nodes to output
      */
-    @route("/{outputId}/{fundVersionId}/nodes/add")
+    @route("/{outputId}/nodes/add")
     @post op addNodesNamedOutput(
         /** output id */
         @path outputId: integer;
-        /** fund version id */
-        @path fundVersionId: integer;
         /** list of node ids */
         @body nodeIds: integer[];
     ): {
@@ -6046,12 +6129,10 @@ namespace ElzaAPI.Output {
     /**
      * Removing nodes from output
      */
-    @route("/{outputId}/{fundVersionId}/nodes/remove")
+    @route("/{outputId}/nodes/remove")
     @delete op removeNodesNamedOutput(
         /** output id */
         @path outputId: integer;
-        /** fund version id */
-        @path fundVersionId: integer;
         /** list of node ids */
         @body nodeIds: integer[];
     ): {
@@ -6059,27 +6140,12 @@ namespace ElzaAPI.Output {
     };
 
     /**
-     * Deleting named output
-     */
-    @route("/{outputId}/{fundVersionId}")
-    @delete op deleteNamedOutput(
-        /** output id */
-        @path outputId: integer;
-        /** fund version id */
-        @path fundVersionId: integer;
-    ): {
-        @Http.statusCode statusCode: 200;
-    };
-
-    /**
      * Reset status of a named output to "Open"
      */
-    @route("/{outputId}/{fundVersionId}/revert")
+    @route("/{outputId}/revert")
     @post op revertToOpenState(
         /** output id */
         @path outputId: integer;
-        /** fund version id */
-        @path fundVersionId: integer;
     ): {
         @Http.statusCode statusCode: 200;
     };
@@ -6087,28 +6153,11 @@ namespace ElzaAPI.Output {
     /**
      * Creating copy of output
      */
-    @route("/{outputId}/{fundVersionId}/clone")
+    @route("/{outputId}/clone")
     @post op cloneOutput(
         /** output id */
         @path outputId: integer;
-        /** fund version id */
-        @path fundVersionId: integer;
     ): Def;
-
-    /**
-     * Update output
-     */
-    @route("/{outputId}/{fundVersionId}/update")
-    @put op updateNamedOutput(
-        /** output id */
-        @path outputId: integer;
-        /** fund version id */
-        @path fundVersionId: integer;
-        /** output parameters */
-        @body param: NameParam;
-    ): {
-        @Http.statusCode statusCode: 200;
-    };
 
     /**
      * Adding limiting register to output
@@ -6156,6 +6205,97 @@ namespace ElzaAPI.Output {
         @path templateId: integer;
     ): {
         @Http.statusCode statusCode: 200;
+    };
+}
+
+/**
+ * Institution
+ */
+model Institution {
+    id: integer;
+    internalCode: string;
+    institutionTypeId?: integer;
+    accessPointId: integer;
+    name?: string;
+    shortName?: string;
+}
+
+/**
+ * Type of institution
+ */
+model InstitutionType {
+    id: integer;
+    code: string;
+    name: string;
+    packageId?: integer;
+}
+
+/**
+ * Institutional management
+ */
+@tag("institution")
+@route("/institution")
+namespace ElzaAPI.Inst {
+    /**
+     * Get list of type 
+     */
+    @route("/types")
+    @get op getTypes(
+    ): InstitutionType[];
+
+    /**
+     * Get list of Institutions
+     */
+    @route("/")
+    @get op getAll(
+    ): Institution[];
+
+    /**
+     * Get institution by id
+     */
+    @route("/{id}")
+    @get op getById(
+        /** institution id or internalCode */
+        id: string;
+    ): Institution | {
+        /** item does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Create institution
+     */
+    @route("/")
+    @post op create(
+        /** item of institution */
+        @body item: Institution;
+    ): Institution;
+
+    /**
+     * Update institution
+     */
+    @route("/{id}")
+    @put op update(
+        /** institution id */
+        id: integer;
+        /** item of institurion */
+        @body item: Institution;
+    ): Institution;
+
+    /**
+     * Delete institution
+     */
+    @route("/{id}")
+    @delete op delete(
+        /** institution id */
+        id: integer;
+    ): {
+        @Http.statusCode statusCode: 200;
+    } | {
+        /** item does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
     };
 }
 
@@ -6281,6 +6421,7 @@ namespace ElzaAPI.Tasks {
 @tagMetadata("accesspoint-internal", #{description: "Access-point API used by the Elza UI"})
 @tagMetadata("rules", #{description: "Pravidla popisu archiválií (typy atributů, datové typy, …)"})
 @tagMetadata("output", #{description: "Výstupy archivních souborů"})
+@tagMetadata("institution", #{description: "Správa institucí"})
 namespace ElzaAPI {
     // add models not used in operations
     union __Types {

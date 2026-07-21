@@ -27,6 +27,94 @@
     "defaultMessage": "Connection works — {provider} (protocol {version})",
     "srcHash": "Ej_cusKYW2W_"
   },
+  "admin.institution.action.add": {
+    "defaultMessage": "Add institution",
+    "srcHash": "gycW8wpBf_7g"
+  },
+  "admin.institution.action.delete": {
+    "defaultMessage": "Delete",
+    "srcHash": "oe4iuqXX4rqm"
+  },
+  "admin.institution.action.save": {
+    "defaultMessage": "Save",
+    "srcHash": "eKX-T2uH2Zl7"
+  },
+  "admin.institution.ap.noResults": {
+    "defaultMessage": "No results",
+    "srcHash": "oc4Ghrr84kQ7"
+  },
+  "admin.institution.ap.placeholder": {
+    "defaultMessage": "Search for an access point",
+    "srcHash": "5gBnPpoB3qgy"
+  },
+  "admin.institution.ap.startTyping": {
+    "defaultMessage": "Start typing to search",
+    "srcHash": "1sL2Z7ehmlnS"
+  },
+  "admin.institution.delete.confirm": {
+    "defaultMessage": "Do you really want to delete this institution?",
+    "srcHash": "JHOiroQZObbN"
+  },
+  "admin.institution.detail.back": {
+    "defaultMessage": "Back",
+    "srcHash": "PiIMeDDyN-8f"
+  },
+  "admin.institution.detail.createTitle": {
+    "defaultMessage": "New institution",
+    "srcHash": "ayVYD497CozF"
+  },
+  "admin.institution.detail.overline": {
+    "defaultMessage": "Institutions",
+    "srcHash": "AMtLLUW_r1z7"
+  },
+  "admin.institution.empty": {
+    "defaultMessage": "No institutions",
+    "srcHash": "khDylM4fW5bz"
+  },
+  "admin.institution.field.accessPoint": {
+    "defaultMessage": "Access point",
+    "srcHash": "we58htlMi7T9"
+  },
+  "admin.institution.field.internalCode": {
+    "defaultMessage": "Internal code",
+    "srcHash": "p2eSz8FK6c9N"
+  },
+  "admin.institution.field.name": {
+    "defaultMessage": "Name",
+    "srcHash": "EQAs0dy3Z5es"
+  },
+  "admin.institution.field.shortName": {
+    "defaultMessage": "Short name",
+    "srcHash": "i9nMQ4ncyAZS"
+  },
+  "admin.institution.field.type": {
+    "defaultMessage": "Institution type",
+    "srcHash": "lzNqhHiNJAdk"
+  },
+  "admin.institution.field.typePlaceholder": {
+    "defaultMessage": "Select a type",
+    "srcHash": "hUSGzdm8qQ7v"
+  },
+  "admin.institution.sort.internalCode": {
+    "defaultMessage": "Internal code",
+    "srcHash": "p2eSz8FK6c9N"
+  },
+  "admin.institution.sort.label": {
+    "defaultMessage": "Sort",
+    "srcHash": "JD-Vo3HpL1AE"
+  },
+  "admin.institution.sort.name": {
+    "defaultMessage": "Name",
+    "srcHash": "EQAs0dy3Z5es"
+  },
+  "admin.institution.view.grid": {
+    "defaultMessage": "Tiles",
+    "srcHash": "T1bNp-wN8inB"
+  },
+  "admin.institution.view.list": {
+    "defaultMessage": "List",
+    "srcHash": "lR0bsF8Q5ccq"
+  },
   "admin_packages_label_action": {
     "defaultMessage": "Action",
     "srcHash": "zI4C_P1sVn28"
@@ -285,6 +373,10 @@
     "defaultMessage": "New conversation",
     "srcHash": "7ajWenFvRbIr"
   },
+  "aiAssistant.action.profile": {
+    "defaultMessage": "Model",
+    "srcHash": "XixhTCPwIjm8"
+  },
   "aiAssistant.action.send": {
     "defaultMessage": "Send",
     "srcHash": "qmmhj7gqjJS4"
@@ -292,6 +384,74 @@
   "aiAssistant.action.settings": {
     "defaultMessage": "Settings",
     "srcHash": "4BNW7MyPieeu"
+  },
+  "aiAssistant.activity.linkOpen": {
+    "defaultMessage": "Show record",
+    "srcHash": "4TJ9uV9Hs2DT"
+  },
+  "aiAssistant.activity.moreLinks": {
+    "defaultMessage": "{count, plural, one {+# more} other {+# more}}",
+    "srcHash": "1Z8ideBGxiey"
+  },
+  "aiAssistant.activity.preparation": {
+    "defaultMessage": "Preparing the task",
+    "srcHash": "J9QeKEBcMdmp"
+  },
+  "aiAssistant.activity.resultCount": {
+    "defaultMessage": "{count, plural, one {# result} other {# results}}",
+    "srcHash": "1rFMijS1rJun"
+  },
+  "aiAssistant.activity.resultPartial": {
+    "defaultMessage": "result truncated",
+    "srcHash": "d04hb-CwvzrF"
+  },
+  "aiAssistant.activity.step.generic": {
+    "defaultMessage": "Processing step",
+    "srcHash": "-4EZv8D-pnLf"
+  },
+  "aiAssistant.activity.steps": {
+    "defaultMessage": "Processing steps",
+    "srcHash": "-4JJfdng1kcz"
+  },
+  "aiAssistant.activity.tool.generic": {
+    "defaultMessage": "Tool {tool}",
+    "srcHash": "7TypIFH6bh5t"
+  },
+  "aiAssistant.activity.tool.getItemTypes": {
+    "defaultMessage": "Loading description item types",
+    "srcHash": "20zA-z4YQBJ5"
+  },
+  "aiAssistant.activity.tool.getSection": {
+    "defaultMessage": "Reading the documentation",
+    "srcHash": "j94O5GNCDzKh"
+  },
+  "aiAssistant.activity.tool.searchKnowledge": {
+    "defaultMessage": "Searching the knowledge base",
+    "srcHash": "B2g4dipaxCxD"
+  },
+  "aiAssistant.activity.tool.searchNodes": {
+    "defaultMessage": "Searching the archival description",
+    "srcHash": "bvAJXkkvNNbf"
+  },
+  "aiAssistant.balance.plan": {
+    "defaultMessage": "Plan: {plan}",
+    "srcHash": "_QrlEK2_g5XP"
+  },
+  "aiAssistant.balance.resets": {
+    "defaultMessage": "Resets {date} ({days, plural, one {in 1 day} other {in # days}})",
+    "srcHash": "LK1QwWFS8WaU"
+  },
+  "aiAssistant.balance.unlimited": {
+    "defaultMessage": "No limit",
+    "srcHash": "Hds3G4V55zpj"
+  },
+  "aiAssistant.balance.usedPercent": {
+    "defaultMessage": "{percent}% used",
+    "srcHash": "RIjoc5herJ7m"
+  },
+  "aiAssistant.balance.weeklyUsedPercent": {
+    "defaultMessage": "This week: {percent}% used",
+    "srcHash": "Tt3yHdczuZfz"
   },
   "aiAssistant.block.citations": {
     "defaultMessage": "Sources",
@@ -333,9 +493,25 @@
     "defaultMessage": "Context:",
     "srcHash": "g-NS7D1rL5QJ"
   },
+  "aiAssistant.error.accountQuotaExceeded": {
+    "defaultMessage": "Your credit limit for this period is exhausted.",
+    "srcHash": "ULxSQM8vrYqj"
+  },
+  "aiAssistant.error.noSubscription": {
+    "defaultMessage": "The AI service has no active subscription. Contact your administrator.",
+    "srcHash": "qy2_IRlPPFFA"
+  },
+  "aiAssistant.error.quotaExceeded": {
+    "defaultMessage": "The organization's monthly AI budget is exhausted.",
+    "srcHash": "Onsjdy-rycPu"
+  },
   "aiAssistant.input.placeholder": {
     "defaultMessage": "Type a message…",
     "srcHash": "-Sb-aBO8zCrQ"
+  },
+  "aiAssistant.profile.default": {
+    "defaultMessage": "Default",
+    "srcHash": "ea14D4gXIsVV"
   },
   "aiAssistant.settings.fullWidthResponses": {
     "defaultMessage": "Full-width responses",
@@ -353,13 +529,57 @@
     "defaultMessage": "AI is thinking…",
     "srcHash": "-N1FvyhY7A-b"
   },
-  "aiAssistant.usage.detail": {
-    "defaultMessage": "Input tokens: {input}, output tokens: {output}, price: {cost}",
-    "srcHash": "13zp3tAZUt40"
+  "aiAssistant.usage.accountHeading": {
+    "defaultMessage": "Your account",
+    "srcHash": "MkOMwma42RkB"
+  },
+  "aiAssistant.usage.customerHeading": {
+    "defaultMessage": "Organization budget",
+    "srcHash": "h5TfvO6aunX_"
+  },
+  "aiAssistant.usage.dialog.close": {
+    "defaultMessage": "Close",
+    "srcHash": "0r4EKpo4ZhJv"
+  },
+  "aiAssistant.usage.dialog.title": {
+    "defaultMessage": "Usage",
+    "srcHash": "f3BkkgYRVNZx"
+  },
+  "aiAssistant.usage.duration": {
+    "defaultMessage": "Processing time: {duration}",
+    "srcHash": "CNSPzIru8DFR"
+  },
+  "aiAssistant.usage.menuItem": {
+    "defaultMessage": "Usage",
+    "srcHash": "f3BkkgYRVNZx"
+  },
+  "aiAssistant.usage.noData": {
+    "defaultMessage": "Usage information is not available for this provider.",
+    "srcHash": "QMTYQ7bap5wL"
+  },
+  "aiAssistant.usage.price": {
+    "defaultMessage": "Price: {credits} cr.",
+    "srcHash": "CjH0had-zQn7"
+  },
+  "aiAssistant.usage.profile": {
+    "defaultMessage": "Model: {profile}",
+    "srcHash": "5bWvPMt2Re76"
+  },
+  "aiAssistant.usage.sharedAccountHeading": {
+    "defaultMessage": "Shared organization account",
+    "srcHash": "FQNJWoKyK61y"
+  },
+  "aiAssistant.usage.started": {
+    "defaultMessage": "Started: {datetime}",
+    "srcHash": "Vir1ka5YTxx4"
   },
   "aiAssistant.usage.summary": {
     "defaultMessage": "Usage",
     "srcHash": "f3BkkgYRVNZx"
+  },
+  "aiAssistant.usage.tokens": {
+    "defaultMessage": "Input tokens: {input}, output tokens: {output}",
+    "srcHash": "E-t7zpgALTTw"
   },
   "aiAssistant.window.title": {
     "defaultMessage": "AI assistant",
@@ -1109,6 +1329,10 @@
     "defaultMessage": "Download",
     "srcHash": "xxAzjqAuIzkG"
   },
+  "ribbon.action.admin.institution": {
+    "defaultMessage": "Institutions",
+    "srcHash": "AMtLLUW_r1z7"
+  },
   "ribbon.action.arr.fund.publicationSystems": {
     "defaultMessage": "Publication systems management",
     "srcHash": "3R1qxdjYgTmM"
@@ -1200,9 +1424,5 @@
   "userSettings.display.showExperimentalFeatures": {
     "defaultMessage": "Show experimental features",
     "srcHash": "3gowqNfmWIKX"
-  },
-  "userSettings.display.useInterFont": {
-    "defaultMessage": "Use alternative font",
-    "srcHash": "ao95n5GBnkn8"
   }
 }
