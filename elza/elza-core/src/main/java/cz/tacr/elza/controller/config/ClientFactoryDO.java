@@ -112,6 +112,7 @@ import cz.tacr.elza.filter.condition.IntervalDescItemCondition;
 import cz.tacr.elza.filter.condition.LeDescItemCondition;
 import cz.tacr.elza.filter.condition.LtDescItemCondition;
 import cz.tacr.elza.filter.condition.NeDescItemCondition;
+import cz.tacr.elza.filter.condition.NearCoordinatesDescItemCondition;
 import cz.tacr.elza.filter.condition.NoValuesCondition;
 import cz.tacr.elza.filter.condition.NotContainDescItemCondition;
 import cz.tacr.elza.filter.condition.NotEmptyDescItemCondition;
@@ -120,6 +121,7 @@ import cz.tacr.elza.filter.condition.NotIntervalDescItemCondition;
 import cz.tacr.elza.filter.condition.SelectedSpecificationsDescItemEnumCondition;
 import cz.tacr.elza.filter.condition.SelectedValuesDescItemEnumCondition;
 import cz.tacr.elza.filter.condition.SelectsNothingCondition;
+import cz.tacr.elza.filter.condition.SubsetCoordinatesDescItemCondition;
 import cz.tacr.elza.filter.condition.SubsetDescItemCondition;
 import cz.tacr.elza.filter.condition.UndefinedDescItemCondition;
 import cz.tacr.elza.filter.condition.UnselectedSpecificationsDescItemEnumCondition;
@@ -805,10 +807,35 @@ public class ClientFactoryDO {
                     break;
                 }
                 case SUBSET: {
-                    Interval<Long> conditionValue = getConditionValueIntervalLong(filter.getCondition());
-                    condition = new SubsetDescItemCondition<>(conditionValue,
-                            ArrDescItem.NORM_FROM,
-                            ArrDescItem.NORM_TO);
+                    if (dataType == DataType.COORDINATES) {
+                        String conditionValue = getConditionValueString(filter.getCondition());
+                        condition = new SubsetCoordinatesDescItemCondition(conditionValue);
+                    } else {
+                        Interval<Long> conditionValue = getConditionValueIntervalLong(filter.getCondition());
+                        condition = new SubsetDescItemCondition<>(conditionValue,
+                                ArrDescItem.NORM_FROM,
+                                ArrDescItem.NORM_TO);
+                    }
+                    break;
+                }
+                case NEAR: {
+                    List<String> values = filter.getCondition();
+                    if (values == null || values.size() < 2) {
+                        throw new BusinessException("Podmínka NEAR vyžaduje bod a vzdálenost.", BaseCode.PROPERTY_IS_INVALID)
+                                .set("property", "conditions");
+                    }
+                    String wkt = values.get(0);
+                    if (StringUtils.isBlank(wkt)) {
+                        throw new BusinessException("Není předán bod podmínky NEAR.", BaseCode.PROPERTY_IS_INVALID)
+                                .set("property", "conditions");
+                    }
+                    String distanceStr = values.get(1);
+                    if (StringUtils.isBlank(distanceStr)) {
+                        throw new BusinessException("Není předána vzdálenost podmínky NEAR.", BaseCode.PROPERTY_IS_INVALID)
+                                .set("property", "conditions");
+                    }
+                    Double distance = Double.valueOf(distanceStr.replace(',', '.'));
+                    condition = new NearCoordinatesDescItemCondition(wkt, distance);
                     break;
                 }
                 default:
