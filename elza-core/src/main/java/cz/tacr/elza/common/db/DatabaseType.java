@@ -1,9 +1,12 @@
 package cz.tacr.elza.common.db;
 
-import org.apache.commons.lang3.Validate;
+import java.util.Objects;
+
 import org.hibernate.Session;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.H2Dialect;
+import org.hibernate.dialect.PostgreSQLDialect;
+import org.hibernate.dialect.SQLServerDialect;
 import org.hibernate.engine.spi.SessionImplementor;
 
 import jakarta.persistence.EntityManager;
@@ -29,6 +32,12 @@ public enum DatabaseType {
         public <T> RecursiveQueryBuilder<T> createRecursiveQueryBuilder(Class<T> entityClass) {
             return new H2RecursiveQueryBuilder<>(entityClass);
         }
+    },
+    POSTGRESQL {
+        @Override
+        public <T> RecursiveQueryBuilder<T> createRecursiveQueryBuilder(Class<T> entityClass) {
+            return new StandardRecursiveQueryBuilder<>(entityClass);
+        }
     };
 
     private static DatabaseType currentDbType;
@@ -40,7 +49,11 @@ public enum DatabaseType {
     public abstract <T> RecursiveQueryBuilder<T> createRecursiveQueryBuilder(Class<T> entityClass);
 
     public static DatabaseType getCurrent() {
-        return Validate.notNull(currentDbType, "Not initialized");
+        return Objects.requireNonNull(currentDbType, "Not initialized");
+    }
+
+    public static boolean isPostgres() {
+    	return currentDbType == POSTGRESQL;
     }
 
     /**
@@ -55,12 +68,14 @@ public enum DatabaseType {
         SessionImplementor si = session.unwrap(SessionImplementor.class);
         Dialect dialect = si.getJdbcServices().getDialect();
 
-        Validate.notNull(dialect);
+        Objects.requireNonNull(dialect);
 
-        if (dialect instanceof org.hibernate.dialect.SQLServerDialect) {
+        if (dialect instanceof SQLServerDialect) {
             currentDbType = DatabaseType.MSSQL;
         } else if (dialect instanceof H2Dialect) {
             currentDbType = DatabaseType.H2;
+        } else if (dialect instanceof PostgreSQLDialect) {
+            currentDbType = DatabaseType.POSTGRESQL;
         } else {
             currentDbType = DatabaseType.GENERIC;
         }
