@@ -120,3 +120,9 @@ multipart.maxFileSize: 10000000
 #      probes:
 #        enabled: true
 #      show-details: always
+# The ldap health indicator is enabled automatically only when LDAP/AD
+# authentication is configured (elza.security.ldap.ad-domain); it then probes the
+# configured elza.security.ldap.ad-server. Set the flag below to override.
+#  health:
+#    ldap:
+#      enabled: false

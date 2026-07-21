@@ -8,6 +8,7 @@ import { AbstractReactComponent, ContextMenu, ModalDialog, Toastr, Utils, WebSoc
 import keymap from 'src/keymap';
 import {
     AdminExtSystemPage,
+    AdminInstitutionPage,
     AdminFundPage,
     AdminGroupPage,
     AdminLogsPage,
@@ -224,6 +225,7 @@ class Layout extends AbstractReactComponent {
                                         <Switch>
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${TREE}`} component={ArrPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${NODE}/:nodeId`} component={ArrPage} />
+                                            <Route path={`${URL_FUND}/:id/v/:versionId/${GRID}/:nodeId/:descItemTypeId?`} component={ArrDataGridPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${GRID}`} component={ArrDataGridPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${AIP}`} component={ArrAipPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${MOVEMENTS}`} component={ArrMovementsPage} />
@@ -240,6 +242,7 @@ class Layout extends AbstractReactComponent {
                                         <Switch>
                                             <Route path={`${URL_FUND}/:id/${TREE}`} component={ArrPage} />
                                             <Route path={`${URL_FUND}/:id/${NODE}/:nodeId`} component={ArrPage} />
+                                            <Route path={`${URL_FUND}/:id/${GRID}/:nodeId/:descItemTypeId?`} component={ArrDataGridPage} />
                                             <Route path={`${URL_FUND}/:id/${GRID}`} component={ArrDataGridPage} />
                                             <Route path={`${URL_FUND}/:id/${AIP}`} component={ArrAipPage} />
                                             <Route path={`${URL_FUND}/:id/${PUBLICATION}`} component={ArrPublicationPage} />
@@ -278,6 +281,8 @@ class Layout extends AbstractReactComponent {
                                             <Route path="/admin/backgroundProcesses" component={AdminBulkActionPage} />
                                             <Route path="/admin/requestsQueue" component={AdminRequestsQueuePage} />
                                             <Route path="/admin/extSystem" component={AdminExtSystemPage} />
+                                            <Route path="/admin/institution/:id" component={AdminInstitutionPage} />
+                                            <Route path="/admin/institution" component={AdminInstitutionPage} />
                                             <Route path="/admin/logs" component={AdminLogsPage} />
                                             <Route path={'/admin/reports'} component={ReportsPage}/>
                                             <Route component={AdminPage} />

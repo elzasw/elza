@@ -1,28 +1,33 @@
 package cz.tacr.elza.cam;
 
 import java.time.Duration;
-import java.util.List;
+import java.time.Instant;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledFuture;
 
 import jakarta.transaction.Transactional;
 
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.SchedulingConfigurer;
-import org.springframework.scheduling.config.ScheduledTaskRegistrar;
+import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
-import cz.tacr.elza.cam.SyncConfig.SynchronizationInfo;
+import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.metrics.ElzaMonitoringMetrics;
+import cz.tacr.elza.repository.ApExternalSystemRepository;
 import cz.tacr.elza.service.AccessPointConnectorService;
+import cz.tacr.elza.service.event.ApExternalSystemEvent;
 
 /**
- * Časovač pro noční synchronizace přístupových bodů s CAM
+ * Časovač pro synchronizace přístupových bodů s CAM.
+ * Interval synchronizace se čte z ap_external_system.sync_delay; změna přes REST API
+ * je promítnuta bez restartu skrz {@link ApExternalSystemEvent}.
  */
 @Service
-public class CamScheduler implements SchedulingConfigurer {
+public class CamScheduler {
 
     private static final Logger log = LoggerFactory.getLogger(CamScheduler.class);
 
@@ -30,49 +35,86 @@ public class CamScheduler implements SchedulingConfigurer {
     private AccessPointConnectorService apConnectService;
 
     @Autowired
-    private SyncConfig syncConfig;
+    private ApExternalSystemRepository apExternalSystemRepository;
 
     @Autowired
     private ElzaMonitoringMetrics monitoringMetrics;
 
-    private boolean enabled = false;
+    @Autowired
+    private TaskScheduler taskScheduler;
 
-    public void start() {
-        enabled = true;
-    }
+    private final Map<Integer, ScheduledFuture<?>> activeFutures = new ConcurrentHashMap<>();
 
-    public void stop() {
-        enabled = false;
-    }
+    private volatile boolean enabled = false;
 
-    @Override
     @Transactional
-    public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
-        List<SynchronizationInfo> siList = syncConfig.getConfig();
-        if (CollectionUtils.isEmpty(siList)) {
+    public synchronized void start() {
+        enabled = true;
+        for (ApExternalSystem sys : apExternalSystemRepository.findAll()) {
+            scheduleFresh(sys);
+        }
+    }
+
+    public synchronized void stop() {
+        enabled = false;
+        activeFutures.values().forEach(f -> f.cancel(false));
+        activeFutures.clear();
+    }
+
+    /**
+     * On create/update/delete of an AP external system, drop the running trigger for it (if any) and
+     * re-read from DB. Handles: hot delay change, re-enable after 0/null, new system added, deletion.
+     */
+    @EventListener
+    public synchronized void onExternalSystemChanged(ApExternalSystemEvent event) {
+        if (!enabled) {
             return;
         }
-        for (SynchronizationInfo si : siList) {
-            configureTask(si, taskRegistrar);
+        Integer sysId = event.getExternalSystem().getExternalSystemId();
+        ScheduledFuture<?> existing = activeFutures.remove(sysId);
+        if (existing != null) {
+            existing.cancel(false);
         }
+        apExternalSystemRepository.findById(sysId).ifPresent(this::scheduleFresh);
     }
 
-    private void configureTask(SynchronizationInfo syncConfig, ScheduledTaskRegistrar taskRegistrar) {
-        if (StringUtils.isNotBlank(syncConfig.getSyncAt())) {
-            taskRegistrar.addCronTask(() -> runSync(syncConfig.getCode()), syncConfig.getResetAt());
+    private void scheduleFresh(ApExternalSystem sys) {
+        Integer delay = sys.getSyncDelay();
+        if (delay == null || delay <= 0) {
+            return;
         }
-        if (syncConfig.getSyncDelay() != null && syncConfig.getSyncDelay() > 0) {
-            taskRegistrar.addFixedDelayTask(() -> runSync(syncConfig.getCode()), Duration.ofSeconds(syncConfig.getSyncDelay()));
-        }
+        Integer sysId = sys.getExternalSystemId();
+        String code = sys.getCode();
+        ScheduledFuture<?> future = taskScheduler.schedule(
+                () -> runSync(code),
+                triggerContext -> {
+                    if (!enabled) {
+                        return null;
+                    }
+                    Integer curDelay = apExternalSystemRepository.findById(sysId)
+                            .map(ApExternalSystem::getSyncDelay)
+                            .orElse(null);
+                    if (curDelay == null || curDelay <= 0) {
+                        // Synchronizace je vypnutá nebo záznam byl smazán. Úkol je ukončen;
+                        // při příštím ApExternalSystemEvent onExternalSystemChanged se spustí nový úkol
+                        return null;
+                    }
+                    Instant last = triggerContext.lastCompletion();
+                    return last != null
+                            ? last.plus(Duration.ofSeconds(curDelay))
+                            : Instant.now();
+                }
+        );
+        activeFutures.put(sysId, future);
     }
 
     private void runSync(String extSysCode) {
-        if (enabled) {
-            log.debug("Accesspoint synchronization started.");
-            apConnectService.getConnector(extSysCode).synchronizeAccessPointsForExternalSystem(extSysCode);
-            // Poll completed without error (including "nothing changed") — record successful CAM communication.
-            monitoringMetrics.recordCamPollSuccess(extSysCode);
-            log.debug("Accesspoint synchronization finished.");
+        if (!enabled) {
+            return;
         }
+        log.debug("Accesspoint synchronization started.");
+        apConnectService.getConnector(extSysCode).synchronizeAccessPointsForExternalSystem(extSysCode);
+        monitoringMetrics.recordCamPollSuccess(extSysCode);
+        log.debug("Accesspoint synchronization finished.");
     }
 }

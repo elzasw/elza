@@ -7,6 +7,8 @@ import * as types from 'actions/constants/ActionTypes';
 import { objectById } from 'stores/app/utils';
 import { COL_REFERENCE_MARK } from 'components/arr/FundDataGridConst';
 import { Api } from 'api';
+import { i18n } from 'components/shared';
+import { addToastrDanger, addToastrWarning } from 'components/shared/toastr/ToastrActions';
 
 // Null hodnota, která se používaná v klientovi pro reprezentaci null hodnoty
 export const FILTER_NULL_VALUE = '____$<NULL>$___';
@@ -20,10 +22,8 @@ export function isFundDataGridAction(action) {
         case types.FUND_FUND_DATA_GRID_FILTER_CHANGE:
         case types.FUND_FUND_DATA_GRID_DATA_REQUEST:
         case types.FUND_FUND_DATA_GRID_DATA_RECEIVE:
-        case types.FUND_FUND_DATA_GRID_PAGE_SIZE:
-        case types.FUND_FUND_DATA_GRID_PAGE_INDEX:
+        case types.FUND_FUND_DATA_GRID_DATA_ERROR:
         case types.FUND_FUND_DATA_GRID_COLUMN_SIZE:
-        case types.FUND_FUND_DATA_GRID_SELECTION:
         case types.FUND_FUND_DATA_GRID_COLUMNS_SETTINGS:
         case types.FUND_FUND_DATA_GRID_FILTER_CLEAR_ALL:
         case types.FUND_FUND_DATA_GRID_PREPARE_EDIT:
@@ -32,8 +32,6 @@ export function isFundDataGridAction(action) {
         case types.FUND_FUND_DATA_GRID_FULLTEXT_EXTENDED:
         case types.FUND_FUND_DATA_GRID_FULLTEXT_NEXT_ITEM:
         case types.FUND_FUND_DATA_GRID_FULLTEXT_PREV_ITEM:
-        case types.FUND_FUND_DATA_GRID_CHANGE_CELL_FOCUS:
-        case types.FUND_FUND_DATA_GRID_CHANGE_SELECTED_ROW_INDEXES:
             return true;
         default:
             return false;
@@ -162,23 +160,6 @@ function fundDataFulltextSearchResult(versionId, filterText, luceneQuery, search
     };
 }
 
-export function fundDataChangeCellFocus(versionId, row, col) {
-    return {
-        type: types.FUND_FUND_DATA_GRID_CHANGE_CELL_FOCUS,
-        versionId,
-        row,
-        col,
-    };
-}
-
-export function fundDataChangeRowIndexes(versionId, indexes) {
-    return {
-        type: types.FUND_FUND_DATA_GRID_CHANGE_SELECTED_ROW_INDEXES,
-        versionId,
-        indexes,
-    };
-}
-
 export function fundDataFulltextExtended(versionId) {
     return {
         type: types.FUND_FUND_DATA_GRID_FULLTEXT_EXTENDED,
@@ -227,10 +208,10 @@ export function fundDataGridFetchFilterIfNeeded(versionId) {
     };
 }
 
-function _fundDataGridKey(state) {
+function _fundDataGridKey(state, pageIndex, pageSize) {
     var str = '';
-    str += '-pg' + state.pageSize;
-    str += '-pi' + state.pageIndex;
+    str += '-pg' + pageSize;
+    str += '-pi' + pageIndex;
     str += '-vc';
     Object.keys(state.visibleColumns)
         .sort()
@@ -297,7 +278,7 @@ export function fundDataGridFilterChange(versionId, filter) {
 }
 
 export function fundDataGridFetchDataIfNeeded(versionId, pageIndex, pageSize, force = false) {
-    return (dispatch, getState) => {
+    return async (dispatch, getState) => {
         const fundDataGrid = getFundDataGrid(getState, versionId);
         if (!fundDataGrid && !force) {
             return;
@@ -308,44 +289,70 @@ export function fundDataGridFetchDataIfNeeded(versionId, pageIndex, pageSize, fo
             return;
         }
 
-        const dataKey = _fundDataGridKey(fundDataGrid);
+        const dataKey = _fundDataGridKey(fundDataGrid, pageIndex, pageSize);
         if (fundDataGrid.currentDataKey !== dataKey || force) {
             dispatch(_dataRequest(versionId, dataKey));
 
-            WebApi.getFilteredNodes(versionId, pageIndex, pageSize, Object.keys(fundDataGrid.visibleColumns)).then(
-                nodes => {
-                    const newState = getState();
-                    const newFund = objectById(newState.arrRegion.funds, versionId, 'versionId');
-                    if (newFund !== null) {
-                        const newFundDataGrid = newFund.fundDataGrid;
-                        const newDataKey = _fundDataGridKey(newFundDataGrid);
+            const descItemTypeIds = Object.keys(fundDataGrid.visibleColumns);
 
-                        if (newDataKey === dataKey) {
-                            // ještě je pořád v tom stavu, pro jaký se načítala data
-                            var items = nodes.map(node => {
-                                const { valuesMap, ...nodeRest } = node;
-                                return {
-                                    id: nodeRest.node.id,
-                                    ...nodeRest,
-                                    ...node.valuesMap,
-                                    referenceMark: node.referenceMark,
-                                };
-                            });
-                            dispatch(_dataReceive(versionId, items));
-                        }
-                    }
-                },
-            );
+            let response;
+            try {
+                response = await WebApi.getFilteredNodes2(versionId, pageIndex, pageSize, descItemTypeIds);
+            } catch (e) {
+                // Reset the fetch state so the same page can be requested again.
+                dispatch(_dataError(versionId));
+                dispatch(addToastrDanger(i18n('dataGrid.loadFailed')));
+                return;
+            }
+
+            const newState = getState();
+            const newFund = objectById(newState.arrRegion.funds, versionId, 'versionId');
+            if (newFund === null) {
+                return;
+            }
+
+            const newFundDataGrid = newFund.fundDataGrid;
+            const newDataKey = _fundDataGridKey(newFundDataGrid, pageIndex, pageSize);
+            if (newDataKey !== dataKey) {
+                return;
+            }
+
+            const items = response.rows.map(node => {
+                const { valuesMap, ...nodeRest } = node;
+                return {
+                    id: nodeRest.node.id,
+                    ...nodeRest,
+                    ...node.valuesMap,
+                    referenceMark: node.referenceMark,
+                };
+            });
+
+            dispatch(_dataReceive(versionId, items));
         }
     };
 }
 
 /**
- * Nastavení velikosti stránky.
+ * Dopočítá stránku, na které se ve filtrovaném seznamu nachází daný uzel.
+ * Vrací číslo stránky, nebo null pokud uzel v seznamu není (odfiltrován / mimo fond).
  */
-export function fundDataGridSetPageSize(versionId, pageSize) {
-    return (dispatch, getState) => {
-        dispatch(_setPageSize(versionId, pageSize));
+export function fundDataGridResolveNodePage(versionId, nodeId, pageSize) {
+    return async (dispatch, getState) => {
+        const fundDataGrid = getFundDataGrid(getState, versionId);
+        const descItemTypeIds = fundDataGrid ? Object.keys(fundDataGrid.visibleColumns) : [];
+        try {
+            const response = await WebApi.getFilteredNodesByNodeId(versionId, nodeId, pageSize, descItemTypeIds);
+            return response.page;
+        } catch (e) {
+            // With an active filter a missing node is expected, so warn only.
+            const hasActiveFilter = fundDataGrid && Object.keys(fundDataGrid.filter).length > 0;
+            if (hasActiveFilter) {
+                dispatch(addToastrWarning(i18n('dataGrid.restore.nodeNotFound.filtered')));
+            } else {
+                dispatch(addToastrDanger(i18n('dataGrid.restore.nodeNotFound')));
+            }
+            return null;
+        }
     };
 }
 
@@ -362,26 +369,6 @@ export function fundDataGridSetColumnsSettings(versionId, visibleColumns, column
 }
 
 /**
- * Nastavení aktuální stránky.
- */
-export function fundDataGridSetPageIndex(versionId, pageIndex) {
-    return (dispatch, getState) => {
-        dispatch(_setPageIndex(versionId, pageIndex));
-    };
-}
-
-/**
- * Nastavení velikosti stránky.
- */
-function _setPageSize(versionId, pageSize) {
-    return {
-        type: types.FUND_FUND_DATA_GRID_PAGE_SIZE,
-        versionId,
-        pageSize,
-    };
-}
-
-/**
  * Nastavení šířky sloupečku.
  */
 export function fundDataGridSetColumnSize(versionId, columnId, width) {
@@ -390,28 +377,6 @@ export function fundDataGridSetColumnSize(versionId, columnId, width) {
         versionId,
         columnId,
         width,
-    };
-}
-
-/**
- * Nastavení označených sloupečků.
- */
-export function fundDataGridSetSelection(versionId, ids) {
-    return {
-        type: types.FUND_FUND_DATA_GRID_SELECTION,
-        versionId,
-        ids,
-    };
-}
-
-/**
- * Nastavení velikosti stránky.
- */
-function _setPageIndex(versionId, pageIndex) {
-    return {
-        type: types.FUND_FUND_DATA_GRID_PAGE_INDEX,
-        versionId,
-        pageIndex,
     };
 }
 
@@ -509,5 +474,15 @@ function _dataReceive(versionId, items) {
         type: types.FUND_FUND_DATA_GRID_DATA_RECEIVE,
         versionId,
         items,
+    };
+}
+
+/**
+ * Načtení dat selhalo - resetuje stav načítání, aby šlo požadavek zopakovat.
+ */
+function _dataError(versionId) {
+    return {
+        type: types.FUND_FUND_DATA_GRID_DATA_ERROR,
+        versionId,
     };
 }

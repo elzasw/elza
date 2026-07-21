@@ -18,15 +18,16 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrOutputVO;
-import cz.tacr.elza.controller.vo.RulOutputTypeVO;
 import cz.tacr.elza.controller.vo.RulTemplateVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.core.ResourcePathResolver;
-import cz.tacr.elza.domain.ArrOutput.OutputState;
 import cz.tacr.elza.service.output.OutputRequestStatus;
 import cz.tacr.elza.test.controller.vo.Fund;
 import cz.tacr.elza.test.controller.vo.NodeBase;
+import cz.tacr.elza.test.controller.vo.OutputDef;
+import cz.tacr.elza.test.controller.vo.OutputNameParam;
+import cz.tacr.elza.test.controller.vo.OutputState;
+import cz.tacr.elza.test.controller.vo.OutputType;
 import io.restassured.response.Response;
 
 /**
@@ -72,8 +73,8 @@ public class OutputGenerationTest extends AbstractControllerTest {
         ArrFundVersionVO fundVersion = getOpenVersion(fund);
 
         // Získání typu výstupu SRD_INVENTORY
-        List<RulOutputTypeVO> outputTypes = getOutputTypes(fundVersion.getId());
-        RulOutputTypeVO inventoryType = outputTypes.stream()
+        List<OutputType> outputTypes = outputApi.outputGetOutputTypes(fundVersion.getId());
+        OutputType inventoryType = outputTypes.stream()
                 .filter(t -> "SRD_INVENTORY".equals(t.getCode()))
                 .findFirst()
                 .orElse(null);
@@ -88,12 +89,12 @@ public class OutputGenerationTest extends AbstractControllerTest {
         assertNotNull(freemarkerTemplate, "Šablona SRD_INVENTORY_FREEMARKER nebyla nalezena");
 
         // Vytvoření výstupu s šablonou
-        ArrangementController.OutputNameParam param = new ArrangementController.OutputNameParam();
+        OutputNameParam param = new OutputNameParam();
         param.setName("Test Output");
         param.setInternalCode("TEST_OUT");
-        param.setOutputTypeId(inventoryType.getId());
+        param.setOutputTypeId(outputTypes.iterator().next().getId());
         param.setTemplateId(freemarkerTemplate.getId());
-        ArrOutputVO output = createNamedOutput(fundVersion.getId(), param);
+        OutputDef output = outputApi.outputCreateNamedOutput(fundVersion.getId(), param);
         assertNotNull(output);
         assertEquals(OutputState.OPEN, output.getState());
 
@@ -105,7 +106,7 @@ public class OutputGenerationTest extends AbstractControllerTest {
         List<Integer> nodeIds = nodes.stream().map(NodeBase::getId).collect(Collectors.toList());
         assertTrue(!nodeIds.isEmpty(), "Fond musí mít alespoň jeden uzel");
 
-        addNodesNamedOutput(fundVersion.getId(), output.getId(), nodeIds);
+        outputApi.outputAddNodesNamedOutput(output.getId(), nodeIds);
 
         // Spuštění generování (forced=true pro přeskočení kontrol bulk action)
         Response generateResponse = get(
@@ -120,7 +121,7 @@ public class OutputGenerationTest extends AbstractControllerTest {
         helperTestService.waitForWorkers();
 
         // Ověření stavu výstupu
-        ArrOutputVO outputDetail = getOutput(fundVersion.getId(), output.getId());
+        OutputDef outputDetail = outputApi.outputGetOutput(output.getId());
         assertEquals(OutputState.FINISHED, outputDetail.getState(),
                 "Výstup by měl být ve stavu FINISHED, error: " + outputDetail.getError());
         assertNotNull(outputDetail.getOutputResultIds(), "OutputResultIds nesmí být null");
@@ -144,8 +145,8 @@ public class OutputGenerationTest extends AbstractControllerTest {
         ArrFundVersionVO fundVersion = getOpenVersion(fund);
 
         // Získání typu výstupu SRD_INVENTORY
-        List<RulOutputTypeVO> outputTypes = getOutputTypes(fundVersion.getId());
-        RulOutputTypeVO inventoryType = outputTypes.stream()
+        List<OutputType> outputTypes = outputApi.outputGetOutputTypes(fundVersion.getId());
+        OutputType inventoryType = outputTypes.stream()
                 .filter(t -> "SRD_INVENTORY".equals(t.getCode()))
                 .findFirst()
                 .orElse(null);
@@ -160,12 +161,12 @@ public class OutputGenerationTest extends AbstractControllerTest {
         assertNotNull(jasperTemplate, "Šablona SRD_INVENTORY_JASPER nebyla nalezena");
 
         // Vytvoření výstupu s Jasper šablonou
-        ArrangementController.OutputNameParam param = new ArrangementController.OutputNameParam();
-        param.setName("Test PDF Output");
-        param.setInternalCode("TEST_PDF_OUT");
-        param.setOutputTypeId(inventoryType.getId());
+        OutputNameParam param = new OutputNameParam();
+        param.setName("Test Output");
+        param.setInternalCode("TEST_OUT");
+        param.setOutputTypeId(outputTypes.iterator().next().getId());
         param.setTemplateId(jasperTemplate.getId());
-        ArrOutputVO output = createNamedOutput(fundVersion.getId(), param);
+        OutputDef output = outputApi.outputCreateNamedOutput(fundVersion.getId(), param);
         assertNotNull(output);
         assertEquals(OutputState.OPEN, output.getState());
 
@@ -177,7 +178,7 @@ public class OutputGenerationTest extends AbstractControllerTest {
         List<Integer> nodeIds = nodes.stream().map(NodeBase::getId).collect(Collectors.toList());
         assertTrue(!nodeIds.isEmpty(), "Fond musí mít alespoň jeden uzel");
 
-        addNodesNamedOutput(fundVersion.getId(), output.getId(), nodeIds);
+        outputApi.outputAddNodesNamedOutput(output.getId(), nodeIds);
 
         // Spuštění generování PDF (forced=true pro přeskočení kontrol bulk action)
         Response generateResponse = get(
@@ -192,7 +193,7 @@ public class OutputGenerationTest extends AbstractControllerTest {
         helperTestService.waitForWorkers();
 
         // Ověření stavu výstupu
-        ArrOutputVO outputDetail = getOutput(fundVersion.getId(), output.getId());
+        OutputDef outputDetail = outputApi.outputGetOutput(output.getId());
         assertEquals(OutputState.FINISHED, outputDetail.getState(),
                 "Výstup by měl být ve stavu FINISHED, error: " + outputDetail.getError());
         assertNotNull(outputDetail.getOutputResultIds(), "OutputResultIds nesmí být null");

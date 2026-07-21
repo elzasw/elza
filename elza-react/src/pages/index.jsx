@@ -1,6 +1,7 @@
 export {default as AdminPage} from 'pages/admin/AdminPage.jsx';
 export {default as AdminPackagesPage} from 'pages/admin/AdminPackagesPage.jsx';
 export {default as AdminExtSystemPage} from 'pages/admin/AdminExtSystemPage.jsx';
+export {AdminInstitutionPage} from 'pages/admin/AdminInstitutionPage';
 export {default as AdminLogsPage} from 'pages/admin/AdminLogsPage.jsx';
 export {default as AdminUserPage} from 'pages/admin/AdminUserPage.jsx';
 export {default as AdminGroupPage} from 'pages/admin/AdminGroupPage.jsx';

@@ -37,6 +37,7 @@ import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
@@ -51,6 +52,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
@@ -298,6 +300,30 @@ public class ApplicationSecurity {
         // allow all header values
         firewall.setAllowedHeaderValues(v -> true);
         return firewall;
+    }
+
+    /**
+     * Dedicated, highest-priority security chain for the Actuator endpoints.
+     *
+     * The management endpoints are published on a loopback-only port (see the
+     * actuator defaults in {@code ElzaWebApp}) and serve the local CSC reporting
+     * client, so they are accessed without authentication. The primary chain
+     * below requires authentication for every request that is not explicitly
+     * permitted; scoping this chain to {@code /actuator/**} and ordering it first
+     * keeps the actuator endpoints reachable while leaving the rest of the
+     * application protected.
+     */
+    @Bean
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    public SecurityFilterChain actuatorSecurityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .securityMatcher(AntPathRequestMatcher.antMatcher("/actuator/**"))
+            .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+            .csrf(AbstractHttpConfigurer::disable)
+            .httpBasic(AbstractHttpConfigurer::disable)
+            .formLogin(AbstractHttpConfigurer::disable)
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        return http.build();
     }
 
     @Bean

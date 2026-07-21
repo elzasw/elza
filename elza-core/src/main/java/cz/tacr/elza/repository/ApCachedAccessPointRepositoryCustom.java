@@ -18,8 +18,9 @@ public interface ApCachedAccessPointRepositoryCustom {
      * @param searchFilter
      * @param apTypeIdTree
      * @param scopeIds
-     * @param state
-     *            might be null
+     * @param states
+     *            restriction to these states (any of them matches); might be
+     *            null or empty = no state restriction
      * @param from
      * @param count
      * @param sdp
@@ -29,7 +30,7 @@ public interface ApCachedAccessPointRepositoryCustom {
                                                                        ApAdvanceSearchFilter searchFilter,
                                                                        Collection<Integer> apTypeIdTree,
                                                                        Collection<Integer> scopeIds,
-                                                                       ApState.StateApproval state,
+                                                                       Collection<ApState.StateApproval> states,
                                                                        RevStateApproval revState,
                                                                        Integer from, Integer count,
                                                                        StaticDataProvider sdp);

@@ -4,6 +4,7 @@ import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME_LOWER;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -73,7 +74,7 @@ public class ApStateSpecification implements Specification<ApState> {
     private ApAdvanceSearchFilter searchFilterVO;
     private Set<Integer> apTypeIdTree;
     private Set<Integer> scopeIds;
-    private ApState.StateApproval state;
+    private Collection<ApState.StateApproval> states;
     private RevStateApproval revState;
     private StaticDataProvider sdp;
     /**
@@ -92,10 +93,21 @@ public class ApStateSpecification implements Specification<ApState> {
     public ApStateSpecification(final ApAdvanceSearchFilter searchFilterVO, Set<Integer> apTypeIdTree, Set<Integer> scopeIds,
                                 ApState.StateApproval state, RevStateApproval revState, final StaticDataProvider sdp,
                                 final Collection<Integer> preResolvedStateIds) {
+        this(searchFilterVO, apTypeIdTree, scopeIds, state != null ? EnumSet.of(state) : null, revState, sdp,
+                preResolvedStateIds);
+    }
+
+    /**
+     * @param states restriction to these states (any of them matches); null or
+     *               empty = no state restriction
+     */
+    public ApStateSpecification(final ApAdvanceSearchFilter searchFilterVO, Set<Integer> apTypeIdTree, Set<Integer> scopeIds,
+                                Collection<ApState.StateApproval> states, RevStateApproval revState, final StaticDataProvider sdp,
+                                final Collection<Integer> preResolvedStateIds) {
         this.searchFilterVO = searchFilterVO;
         this.apTypeIdTree = apTypeIdTree;
         this.scopeIds = scopeIds;
-        this.state = state;
+        this.states = states;
         this.revState = revState;
         this.sdp = sdp;
         this.preResolvedStateIds = preResolvedStateIds;
@@ -131,8 +143,8 @@ public class ApStateSpecification implements Specification<ApState> {
         }
 
         // omezení dle stavu
-        if (state != null) {
-            condition = cb.and(condition, stateRoot.get(ApState.FIELD_STATE_APPROVAL).in(state));
+        if (CollectionUtils.isNotEmpty(states)) {
+            condition = cb.and(condition, stateRoot.get(ApState.FIELD_STATE_APPROVAL).in(states));
         }
 
         Join<ApState, ApRevision> revisionJoin = stateRoot.join(ApState.FIELD_REVISION_LIST, JoinType.LEFT);

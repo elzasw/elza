@@ -3,7 +3,7 @@ import React from 'react';
 import {connect} from 'react-redux';
 import {i18n, Icon, RibbonGroup, Utils} from 'components/shared';
 import {AdminExtSystemDetail, AdminExtSystemList, Ribbon, ExtSystemForm} from 'components/index.jsx';
-import PageLayout from '../shared/layout/PageLayout';
+import { AdminLayout } from '../shared/layout/AdminLayout';
 import {Shortcuts} from 'react-shortcuts';
 import {AREA_EXT_SYSTEM_DETAIL, extSystemCreate, extSystemDelete, extSystemUpdate} from 'actions/admin/extSystem.jsx';
 import {Button} from 'components/ui';
@@ -158,7 +158,7 @@ class AdminExtSystemPage extends AbstractReactComponent {
             );
         }
 
-        return <Ribbon admin altSection={altSection} itemSection={itemSection} {...this.props} />;
+        return <Ribbon altSection={altSection} itemSection={itemSection} {...this.props} />;
     };
 
     /**
@@ -174,7 +174,7 @@ class AdminExtSystemPage extends AbstractReactComponent {
         const centerPanel = <AdminExtSystemDetail />;
 
         return (
-            <PageLayout
+            <AdminLayout
                 splitter={splitter}
                 className="admin-ext-system-page"
                 ribbon={this.buildRibbon()}

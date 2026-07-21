@@ -1,20 +1,42 @@
 import { useEffect, useRef, useState } from "react";
-import { Button, Textarea, Spinner, makeStyles, mergeClasses, tokens, Badge, Tooltip, Menu, MenuTrigger, MenuPopover, MenuList, MenuItemCheckbox } from "@fluentui/react-components";
-import { SendRegular, FolderRegular, DocumentRegular, PersonRegular, AppsRegular, AddRegular, SparkleRegular, HistoryRegular, ChevronLeftRegular, ChevronRightRegular, SettingsRegular } from "@fluentui/react-icons";
+import { Button, Textarea, Spinner, ProgressBar, makeStyles, mergeClasses, tokens, Badge, Tooltip, Menu, MenuTrigger, MenuPopover, MenuList, MenuItem, MenuItemCheckbox, MenuItemRadio, MenuDivider } from "@fluentui/react-components";
+import { SendRegular, FolderRegular, DocumentRegular, PersonRegular, AppsRegular, AddRegular, SparkleRegular, HistoryRegular, ChevronLeftRegular, ChevronRightRegular, SettingsRegular, ChevronDownRegular, MoneyRegular } from "@fluentui/react-icons";
 import { useUserSettings } from "contexts/user";
 import type { AiContextSegmentLabel } from "./useCurrentAiContext";
-import { FormattedMessage, useIntl } from "react-intl";
+import { FormattedMessage, useIntl, IntlShape } from "react-intl";
 import { CollapsibleDragWindow } from "components/shared/dialog/FluentModalDialog";
 import { AiDisplayBlocks } from "./AiDisplayBlocks";
+import { AiRequestActivities, activityTitle, isActivityFinished } from "./AiRequestActivities";
 import { useAiConversation, isRequestInProgress } from "./useAiConversation";
 import { useAiConversationList } from "./useAiConversationList";
 import { useAiProviderInfo } from "./useAiProviderInfo";
+import { useAiUsageBalance } from "./useAiUsageBalance";
+import { AiUsageDialog } from "./AiUsageDialog";
 import { useCurrentAiContext } from "./useCurrentAiContext";
 import { aiAssistantMessages, aiContextSegmentLabels, aiModuleLabels } from "./messages";
+import type { MessageDescriptor } from "react-intl";
 
-// costUnits are USD cents. CNB USD→CZK fixing rate (09 Jul 2026); update manually.
-const USD_CZK_RATE = 21.213;
-const costUnitsToCzk = (costUnits: number) => (costUnits / 100) * USD_CZK_RATE;
+// Provider 402 codes rendered as a readable state instead of a raw error.
+const quotaErrorMessages: Record<string, MessageDescriptor> = {
+    NO_SUBSCRIPTION: aiAssistantMessages.errorNoSubscription,
+    QUOTA_EXCEEDED: aiAssistantMessages.errorQuotaExceeded,
+    ACCOUNT_QUOTA_EXCEEDED: aiAssistantMessages.errorAccountQuotaExceeded,
+};
+
+// Requests may run for seconds up to hours; show only the non-zero, largest units.
+function formatDuration(intl: IntlShape, milliseconds: number): string {
+    const totalSeconds = Math.max(0, Math.round(milliseconds / 1000));
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    const unit = (value: number, unit: "hour" | "minute" | "second") =>
+        intl.formatNumber(value, { style: "unit", unit, unitDisplay: "narrow" });
+    const parts: string[] = [];
+    if (hours > 0) parts.push(unit(hours, "hour"));
+    if (minutes > 0) parts.push(unit(minutes, "minute"));
+    if (seconds > 0 || parts.length === 0) parts.push(unit(seconds, "second"));
+    return intl.formatList(parts, { type: "unit" });
+}
 
 const contextSegmentIcons: Record<AiContextSegmentLabel, JSX.Element> = {
     module: <AppsRegular />,
@@ -66,7 +88,31 @@ const useStyles = makeStyles({
     },
     settingsButton: {
         flexShrink: 0,
+    },
+    settingsWrapper: {
+        position: "relative",
+        display: "inline-flex",
+        flexShrink: 0,
+    },
+    settingsDot: {
+        position: "absolute",
+        top: "2px",
+        right: "2px",
+        width: "8px",
+        height: "8px",
+        borderRadius: tokens.borderRadiusCircular,
+        border: `1px solid ${tokens.colorNeutralBackground1}`,
+        pointerEvents: "none",
+    },
+    contextBarActions: {
+        display: "flex",
+        alignItems: "center",
+        flexShrink: 0,
         marginLeft: "auto",
+        gap: tokens.spacingHorizontalXXS,
+    },
+    profileButton: {
+        maxWidth: "160px",
     },
     conversationList: {
         display: "flex",
@@ -186,8 +232,15 @@ const useStyles = makeStyles({
             backgroundColor: tokens.colorNeutralBackground1Hover,
         },
     },
+    userMessageRow: {
+        alignSelf: "center",
+        width: "100%",
+        maxWidth: "900px",
+        display: "flex",
+        justifyContent: "flex-end",
+        scrollMarginTop: tokens.spacingVerticalM,
+    },
     userMessage: {
-        alignSelf: "flex-end",
         maxWidth: "85%",
         backgroundColor: tokens.colorBrandBackground2,
         borderRadius: tokens.borderRadiusLarge,
@@ -202,6 +255,7 @@ const useStyles = makeStyles({
         backgroundColor: "transparent",
         borderRadius: tokens.borderRadiusLarge,
         padding: `${tokens.spacingVerticalXL} ${tokens.spacingHorizontalXXL}`,
+        scrollMarginTop: tokens.spacingVerticalM,
     },
     aiMessageFull: {
         maxWidth: "95%",
@@ -209,6 +263,27 @@ const useStyles = makeStyles({
     aiError: {
         alignSelf: "flex-start",
         color: tokens.colorPaletteRedForeground1,
+    },
+    steps: {
+        marginBottom: tokens.spacingVerticalS,
+        fontSize: tokens.fontSizeBase200,
+        color: tokens.colorNeutralForeground3,
+    },
+    stepsSummary: {
+        cursor: "pointer",
+    },
+    stepsBody: {
+        marginTop: tokens.spacingVerticalXS,
+    },
+    progressBlock: {
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-start",
+        gap: tokens.spacingVerticalS,
+    },
+    progressBar: {
+        width: "100%",
+        maxWidth: "320px",
     },
     usage: {
         marginTop: tokens.spacingVerticalS,
@@ -248,7 +323,7 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
         externalSystemCode,
         getContext: () => contextRef.current,
     });
-    const { taskTypes } = useAiProviderInfo(externalSystemCode);
+    const { taskTypes, profiles } = useAiProviderInfo(externalSystemCode);
     // The first task type is the default (used by the free-text input); the rest get quick-action bubbles.
     const defaultTaskType = taskTypes[0]?.code;
     const quickTasks = taskTypes.slice(1);
@@ -258,11 +333,68 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
     const currentTaskLabel = currentTask?.name || currentTaskType;
     const { conversations } = useAiConversationList(activeConversationId);
     const [draft, setDraft] = useState("");
-    const messagesEndRef = useRef<HTMLDivElement>(null);
+    // null = follow the provider default; user pick overrides it.
+    const [selectedProfile, setSelectedProfile] = useState<string | null>(null);
+    const defaultProfile = profiles.find(profile => profile.default) ?? profiles[0];
+    const activeProfileCode = selectedProfile ?? defaultProfile?.code;
+    const activeProfile = profiles.find(profile => profile.code === activeProfileCode);
+    const activeProfileLabel = activeProfile?.name || activeProfile?.code;
+    const lastRequestRef = useRef<HTMLDivElement>(null);
+    const aiMessageRef = useRef<HTMLDivElement>(null);
+    const lastRequest = requests[requests.length - 1];
+    const lastRequestId = lastRequest?.id;
+    const lastRequestState = lastRequest?.state;
+    const lastRequestActivityCount = lastRequest?.activities?.length ?? 0;
+    const lastRequestFinished = lastRequest ? !isRequestInProgress(lastRequest) : false;
 
+    const { balance, refresh: refreshBalance } = useAiUsageBalance(externalSystemCode);
+
+    // The provider serves the balance from the same state its budget gate uses,
+    // so refetching right after an exchange finishes (incl. a quota refusal)
+    // always shows the post-exchange number.
     useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [requests, pending]);
+        if (lastRequestFinished) refreshBalance();
+    }, [lastRequestId, lastRequestFinished, refreshBalance]);
+
+    // On a new request, scroll its user message to the top of the viewport so the
+    // response reads from the beginning. Only the request id triggers this — not the
+    // streaming state — so the view doesn't yank while the answer updates.
+    useEffect(() => {
+        lastRequestRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, [lastRequestId]);
+
+    // While the request runs, follow newly added subtasks into view.
+    useEffect(() => {
+        if (lastRequestFinished) return;
+        aiMessageRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }, [lastRequestActivityCount, lastRequestFinished]);
+
+    // When the final message arrives, scroll its beginning to the top of the viewport.
+    useEffect(() => {
+        if (!lastRequestFinished) return;
+        aiMessageRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, [lastRequestId, lastRequestState, lastRequestFinished]);
+
+    // Credits stay out of the way — the balance lives in a /usage-style dialog
+    // opened from the settings menu, not in the composer bar. The only ambient
+    // cue is a colored dot on the gear when an allowance runs low, so a user
+    // near a limit is not surprised. Both caps count: the weekly smoothing cap
+    // refuses tasks just like the monthly allowance, so the dot tracks
+    // whichever of the two is closer to exhaustion.
+    const [usageOpen, setUsageOpen] = useState(false);
+    const monthlyRatio = balance?.account?.allowanceCredits
+        ? balance.account.spentCredits / balance.account.allowanceCredits
+        : null;
+    const weeklyRatio = balance?.account?.weeklyAllowanceCredits
+        ? (balance.account.weeklySpentCredits ?? 0) / balance.account.weeklyAllowanceCredits
+        : null;
+    const balanceRatio = monthlyRatio == null ? weeklyRatio
+        : weeklyRatio == null ? monthlyRatio
+        : Math.max(monthlyRatio, weeklyRatio);
+    const lowCreditsColor = balanceRatio == null ? null
+        : balanceRatio >= 0.95 ? tokens.colorPaletteRedBackground3
+        : balanceRatio >= 0.8 ? tokens.colorPaletteYellowBackground3
+        : null;
 
     const [listExpanded, setListExpanded] = useState(false);
     const [expanded, setExpanded] = useState(false);
@@ -299,7 +431,7 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
 
     const handleSend = () => {
         if (!canSend) return;
-        send(trimmedDraft, defaultTaskType);
+        send(trimmedDraft, defaultTaskType, activeProfileCode);
         setDraft("");
     };
 
@@ -383,7 +515,7 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
                                                 type="button"
                                                 className={styles.quickBubble}
                                                 title={task.description}
-                                                onClick={() => send(label, task.code)}
+                                                onClick={() => send(label, task.code, activeProfileCode)}
                                             >
                                                 {label}
                                             </button>
@@ -393,21 +525,59 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
                             )}
                         </div>
                     )}
-                    {requests.map(request => (
+                    {requests.map(request => {
+                        const activities = request.activities ?? [];
+                        // Collapsed step log of a finished exchange ("how the answer was made").
+                        const finishedSteps = activities.length > 0 && (
+                            <details className={styles.steps}>
+                                <summary className={styles.stepsSummary}>
+                                    <FormattedMessage {...aiAssistantMessages.steps} />
+                                </summary>
+                                <div className={styles.stepsBody}>
+                                    <AiRequestActivities activities={activities} />
+                                </div>
+                            </details>
+                        );
+                        // Live status: a step Elza is executing right now wins over the
+                        // provider's advisory phase (that one is stale while tools run).
+                        const runningActivity = [...activities].reverse().find(activity => !isActivityFinished(activity));
+                        const statusLabel = runningActivity
+                            ? activityTitle(runningActivity, intl)
+                            : request.progressMessage || intl.formatMessage(aiAssistantMessages.thinking);
+                        const isLastRequest = request.id === lastRequest?.id;
+                        return (
                         <div key={request.id} style={{ display: "contents" }}>
                             {request.userInstructions && (
-                                <div className={styles.userMessage}>{request.userInstructions}</div>
+                                <div ref={isLastRequest ? lastRequestRef : undefined} className={mergeClasses(styles.userMessageRow, aiFullWidth && styles.aiMessageFull)}>
+                                    <div className={styles.userMessage}>{request.userInstructions}</div>
+                                </div>
                             )}
                             {request.state === "error" ? (
-                                <div className={styles.aiError}>
-                                    <FormattedMessage {...aiAssistantMessages.errorPrefix} />
-                                    {request.errorMessage ? `: ${request.errorMessage}` : ""}
+                                <div ref={isLastRequest ? aiMessageRef : undefined} className={mergeClasses(styles.aiMessage, aiFullWidth && styles.aiMessageFull)}>
+                                    {finishedSteps}
+                                    <div className={styles.aiError}>
+                                        {request.errorCode && quotaErrorMessages[request.errorCode] ? (
+                                            <FormattedMessage {...quotaErrorMessages[request.errorCode]} />
+                                        ) : (
+                                            <>
+                                                <FormattedMessage {...aiAssistantMessages.errorPrefix} />
+                                                {request.errorMessage ? `: ${request.errorMessage}` : ""}
+                                            </>
+                                        )}
+                                    </div>
                                 </div>
                             ) : isRequestInProgress(request) ? (
-                                <Spinner size="tiny" label={intl.formatMessage(aiAssistantMessages.thinking)} labelPosition="after" />
+                                <div ref={isLastRequest ? aiMessageRef : undefined} className={mergeClasses(styles.aiMessage, styles.progressBlock, aiFullWidth && styles.aiMessageFull)}>
+                                    {activities.length > 0 && <AiRequestActivities activities={activities} />}
+                                    <Spinner size="tiny" label={statusLabel} labelPosition="after" />
+                                    {request.progressPercent != null && (
+                                        <ProgressBar className={styles.progressBar} value={request.progressPercent / 100} />
+                                    )}
+                                </div>
                             ) : (
                                 request.blocks && (
-                                    <div className={mergeClasses(styles.aiMessage, aiFullWidth && styles.aiMessageFull)}>
+                                    <div ref={isLastRequest ? aiMessageRef : undefined} className={mergeClasses(styles.aiMessage, aiFullWidth && styles.aiMessageFull)}>
+                                        {finishedSteps}
                                         <AiDisplayBlocks blocks={request.blocks} />
                                         {request.usage && (
                                             <details className={styles.usage}>
@@ -415,17 +585,63 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
                                                     <FormattedMessage {...aiAssistantMessages.usage} />
                                                 </summary>
                                                 <div className={styles.usageBody}>
-                                                    <FormattedMessage
-                                                        {...aiAssistantMessages.usageDetail}
-                                                        values={{
-                                                            input: request.usage.inputTokens,
-                                                            output: request.usage.outputTokens,
-                                                            cost: intl.formatNumber(costUnitsToCzk(request.usage.costUnits), {
-                                                                style: "currency",
-                                                                currency: "CZK",
-                                                            }),
-                                                        }}
-                                                    />
+                                                    <div>
+                                                        <FormattedMessage
+                                                            {...aiAssistantMessages.usageStarted}
+                                                            values={{
+                                                                datetime: intl.formatDate(request.createDate, {
+                                                                    dateStyle: "short",
+                                                                    timeStyle: "medium",
+                                                                }),
+                                                            }}
+                                                        />
+                                                        {request.finishDate && (
+                                                            <>
+                                                                {" · "}
+                                                                <FormattedMessage
+                                                                    {...aiAssistantMessages.usageDuration}
+                                                                    values={{
+                                                                        duration: formatDuration(
+                                                                            intl,
+                                                                            new Date(request.finishDate).getTime() - new Date(request.createDate).getTime(),
+                                                                        ),
+                                                                    }}
+                                                                />
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                    <div>
+                                                        <FormattedMessage
+                                                            {...aiAssistantMessages.usageTokens}
+                                                            values={{
+                                                                input: request.usage.inputTokens,
+                                                                output: request.usage.outputTokens,
+                                                            }}
+                                                        />
+                                                        {/* The price is the provider's final charged credits; when the
+                                                            provider does credit-free accounting it sends none, and we
+                                                            show no price rather than leaking internal cost units. */}
+                                                        {request.usage.chargedCredits != null && (
+                                                            <>
+                                                                {" · "}
+                                                                <FormattedMessage
+                                                                    {...aiAssistantMessages.usagePrice}
+                                                                    values={{ credits: request.usage.chargedCredits }}
+                                                                />
+                                                            </>
+                                                        )}
+                                                        {request.profile && (
+                                                            <>
+                                                                {" · "}
+                                                                <FormattedMessage
+                                                                    {...aiAssistantMessages.usageProfile}
+                                                                    values={{
+                                                                        profile: profiles.find(profile => profile.code === request.profile)?.name || request.profile,
+                                                                    }}
+                                                                />
+                                                            </>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </details>
                                         )}
@@ -433,9 +649,9 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
                                 )
                             )}
                         </div>
-                    ))}
+                        );
+                    })}
                     {error && <div className={styles.aiError}>{error}</div>}
-                    <div ref={messagesEndRef} />
                 </div>
                 <div className={styles.composer}>
                     <div className={styles.contextBar}>
@@ -473,23 +689,71 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
                                 <FormattedMessage {...aiAssistantMessages.contextNone} />
                             </Badge>
                         )}
-                        <Menu
-                            checkedValues={{ width: aiFullWidth ? ["full"] : [] }}
-                            onCheckedValueChange={(_e, data) => update({ aiFullWidth: data.checkedItems.includes("full") })}
-                        >
-                            <MenuTrigger disableButtonEnhancement>
-                                <Tooltip content={intl.formatMessage(aiAssistantMessages.settings)} relationship="label">
-                                    <Button className={styles.settingsButton} appearance="subtle" size="small" icon={<SettingsRegular />} />
-                                </Tooltip>
-                            </MenuTrigger>
-                            <MenuPopover>
-                                <MenuList>
-                                    <MenuItemCheckbox name="width" value="full">
-                                        <FormattedMessage {...aiAssistantMessages.fullWidthResponses} />
-                                    </MenuItemCheckbox>
-                                </MenuList>
-                            </MenuPopover>
-                        </Menu>
+                        <div className={styles.contextBarActions}>
+                            {profiles.length > 1 && (
+                                <Menu
+                                    checkedValues={{ profile: activeProfileCode ? [activeProfileCode] : [] }}
+                                    onCheckedValueChange={(_e, data) => setSelectedProfile(data.checkedItems[0] ?? null)}
+                                >
+                                    <MenuTrigger disableButtonEnhancement>
+                                        <Tooltip content={intl.formatMessage(aiAssistantMessages.profile)} relationship="label">
+                                            <Button className={styles.profileButton} appearance="subtle" size="small" iconPosition="after" icon={<ChevronDownRegular />}>
+                                                {activeProfileLabel ?? intl.formatMessage(aiAssistantMessages.profileDefault)}
+                                            </Button>
+                                        </Tooltip>
+                                    </MenuTrigger>
+                                    <MenuPopover>
+                                        <MenuList>
+                                            {profiles.map(profile => (
+                                                <MenuItemRadio
+                                                    key={profile.code}
+                                                    name="profile"
+                                                    value={profile.code}
+                                                    title={profile.description}
+                                                >
+                                                    {profile.name || profile.code}
+                                                </MenuItemRadio>
+                                            ))}
+                                        </MenuList>
+                                    </MenuPopover>
+                                </Menu>
+                            )}
+                            <Menu
+                                checkedValues={{ width: aiFullWidth ? ["full"] : [] }}
+                                onCheckedValueChange={(_e, data) => update({ aiFullWidth: data.checkedItems.includes("full") })}
+                            >
+                                <MenuTrigger disableButtonEnhancement>
+                                    <Tooltip content={intl.formatMessage(aiAssistantMessages.settings)} relationship="label">
+                                        <div className={styles.settingsWrapper}>
+                                            <Button className={styles.settingsButton} appearance="subtle" size="small" icon={<SettingsRegular />} />
+                                            {/* Ambient low-credit cue: a small dot on the gear when the
+                                                allowance is ≥80 % spent — the only always-visible credit signal. */}
+                                            {lowCreditsColor && (
+                                                <span
+                                                    className={styles.settingsDot}
+                                                    style={{ backgroundColor: lowCreditsColor }}
+                                                />
+                                            )}
+                                        </div>
+                                    </Tooltip>
+                                </MenuTrigger>
+                                <MenuPopover>
+                                    <MenuList>
+                                        {balance && (
+                                            <>
+                                                <MenuItem icon={<MoneyRegular />} onClick={() => setUsageOpen(true)}>
+                                                    <FormattedMessage {...aiAssistantMessages.usageMenuItem} />
+                                                </MenuItem>
+                                                <MenuDivider />
+                                            </>
+                                        )}
+                                        <MenuItemCheckbox name="width" value="full">
+                                            <FormattedMessage {...aiAssistantMessages.fullWidthResponses} />
+                                        </MenuItemCheckbox>
+                                    </MenuList>
+                                </MenuPopover>
+                            </Menu>
+                        </div>
                     </div>
                     <div className={styles.inputRow}>
                         <Textarea
@@ -511,6 +775,7 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
                 </div>
             </div>
             </div>
+            <AiUsageDialog open={usageOpen} onClose={() => setUsageOpen(false)} balance={balance} />
         </CollapsibleDragWindow>
     );
 }

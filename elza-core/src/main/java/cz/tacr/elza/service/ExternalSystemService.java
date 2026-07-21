@@ -315,6 +315,19 @@ public class ExternalSystemService {
     }
 
     /**
+     * Vyhledání externího systému libovolného typu podle id.
+     *
+     * @param id
+     *            identifikátor externího systému, který hledáme
+     * @return nalezený externí systém
+     */
+    public SysExternalSystem findExternalSystemById(final Integer id) {
+        return externalSystemRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("External system not found, id: " + id, BaseCode.ID_NOT_EXIST)
+                        .set("id", id));
+    }
+
+    /**
      * Vyhledání externího systému podle identifikátoru bez kontroly práv.
      *
      * @param id
@@ -352,6 +365,11 @@ public class ExternalSystemService {
         validateExternalSystem(externalSystem, true);
         externalSystemRepository.save(externalSystem);
         sendCreateExternalSystemNotification(externalSystem.getExternalSystemId());
+
+        // Notify listeners (CamScheduler, cache invalidators) that a new AP external system exists.
+        if (externalSystem instanceof ApExternalSystem extSys) {
+            eventPublisher.publishEvent(new ApExternalSystemEvent(this, extSys));
+        }
 
         staticDataService.reloadOnCommit();
         return externalSystem;
@@ -440,29 +458,33 @@ public class ExternalSystemService {
 
         // if type changed in ApExternalSystem
         if (original instanceof ApExternalSystem origExtSys 
-        		&& newExternalSystem instanceof ApExternalSystem newExtSys) {
-        	if (origExtSys.getType() != newExtSys.getType()) {
+                && newExternalSystem instanceof ApExternalSystem newExtSys
+                && origExtSys.getType() != newExtSys.getType()) {
 
-        	    ApExternalSystemType newExtSysType = newExtSys.getType();
-        	    ApExternalSystemType origExtSysType = origExtSys.getType();
+    	    ApExternalSystemType newExtSysType = newExtSys.getType();
+    	    ApExternalSystemType origExtSysType = origExtSys.getType();
 
-                // if it's a switch between versions
-                if (!newExtSysType.isSameType(origExtSysType)) {
-                    throw new SystemException("Změna typu Externího Systému není možná", BaseCode.INVALID_STATE)
-                        .set("extSystemId", origExtSys.getExternalSystemId())
-                        .set("extSystemType", origExtSysType)
-                        .set("newExtSystemType", newExtSysType);
-                }
-        	}
-            // any ApExternalSystem update may have changed url/apiKey -
-            // notify listeners so cached connector instances get invalidated
-            eventPublisher.publishEvent(new ApExternalSystemEvent(this, origExtSys));
+            // if it's a switch between versions
+            if (!newExtSysType.isSameType(origExtSysType)) {
+                throw new SystemException("Změna typu Externího Systému není možná", BaseCode.INVALID_STATE)
+                    .set("extSystemId", origExtSys.getExternalSystemId())
+                    .set("extSystemType", origExtSysType)
+                    .set("newExtSystemType", newExtSysType);
+            }
         }
 
         validateExternalSystem(newExternalSystem, false);
         sendUpdateExternalSystemNotification(newExternalSystem.getExternalSystemId());
 
-        return externalSystemRepository.save(newExternalSystem);
+        SysExternalSystem extSysSaved = externalSystemRepository.save(newExternalSystem);
+
+        // Publish AFTER save so listeners (CamScheduler, connector cache invalidators) see the new state
+        // when they re-read the entity from the persistence context.
+        if (extSysSaved instanceof ApExternalSystem savedApExtSys) {
+            eventPublisher.publishEvent(new ApExternalSystemEvent(this, savedApExtSys));
+        }
+
+        return extSysSaved;
     }
 
     /**
@@ -1088,7 +1110,7 @@ public class ExternalSystemService {
      * @param extSystemProperty
      * @return
      */
-    public SysExternalSystemProperty storeProperty(ApExternalSystem extSystem, UsrUser user,
+    public SysExternalSystemProperty storeProperty(SysExternalSystem extSystem, UsrUser user,
                                                  ExtSystemProperty extSystemProperty) {
 		List<SysExternalSystemProperty> properties = sysExtSysPropertyRepository.findByExternalSystemAndUser(extSystem, user);
 		SysExternalSystemProperty property = null;

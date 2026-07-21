@@ -13,7 +13,7 @@ import cz.tacr.elza.domain.ParInstitutionType;
  * @since 18.3.2016
  */
 @Repository
-public interface InstitutionTypeRepository extends JpaRepository<ParInstitutionType, Integer> {
+public interface InstitutionTypeRepository extends JpaRepository<ParInstitutionType, Integer>, Packaging<ParInstitutionType> {
 
     ParInstitutionType findByCode(String typeCode);
 

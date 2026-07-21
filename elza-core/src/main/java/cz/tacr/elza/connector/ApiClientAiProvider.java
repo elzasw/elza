@@ -47,12 +47,14 @@ public class ApiClientAiProvider extends ApiClient {
 
     private static final Duration CONNECT_TIMEOUT = Duration.ofMillis(10_000);
 
-    public ApiClientAiProvider(final String url, final String keyId, final String secret) {
-        super(buildRestClient(keyId, secret));
+    public ApiClientAiProvider(final String url, final String keyId, final String secret,
+                              final String acceptLanguage) {
+        super(buildRestClient(keyId, secret, acceptLanguage));
         setBasePath(StringUtils.removeEnd(url, "/"));
     }
 
-    private static RestClient buildRestClient(final String keyId, final String secret) {
+    private static RestClient buildRestClient(final String keyId, final String secret,
+                                              final String acceptLanguage) {
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         requestFactory.setConnectTimeout(CONNECT_TIMEOUT);
         requestFactory.setReadTimeout(READ_TIMEOUT);
@@ -61,7 +63,7 @@ public class ApiClientAiProvider extends ApiClient {
         // ObjectMapper config the generated client uses (typed AiObject subtypes).
         return buildRestClientBuilder(createDefaultObjectMapper(null))
                 .requestFactory(requestFactory)
-                .requestInterceptor(new SigningInterceptor(keyId, secret))
+                .requestInterceptor(new SigningInterceptor(keyId, secret, acceptLanguage))
                 .build();
     }
 
@@ -75,10 +77,12 @@ public class ApiClientAiProvider extends ApiClient {
 
         private final String keyId;
         private final String secret;
+        private final String acceptLanguage;
 
-        SigningInterceptor(final String keyId, final String secret) {
+        SigningInterceptor(final String keyId, final String secret, final String acceptLanguage) {
             this.keyId = keyId;
             this.secret = secret;
+            this.acceptLanguage = acceptLanguage;
         }
 
         @Override
@@ -91,6 +95,17 @@ public class ApiClientAiProvider extends ApiClient {
             headers.set(DATE_HEADER, date);
             headers.set(HttpHeaders.AUTHORIZATION,
                     SCHEME + " KeyId=" + keyId + ",Signature=" + signature);
+
+            // Send the deployment locale on EVERY call (submit, poll, events…),
+            // not just getInfo, so a task with localized output (e.g. elza.help)
+            // is answered in the user's language. Accept-Language is NOT part of
+            // the signed canonical string, so setting it here (after signing) is
+            // safe. Only set it when the operation did not already (getInfo sets
+            // it explicitly via its generated header parameter — no duplicate).
+            if (StringUtils.isNotBlank(acceptLanguage)
+                    && headers.getFirst(HttpHeaders.ACCEPT_LANGUAGE) == null) {
+                headers.set(HttpHeaders.ACCEPT_LANGUAGE, acceptLanguage);
+            }
 
             // The Authorization header carries only the KeyId and the per-request
             // signature (never the secret), so logging the request line and auth

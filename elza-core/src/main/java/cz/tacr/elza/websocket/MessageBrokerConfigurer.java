@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -39,6 +40,9 @@ public class MessageBrokerConfigurer implements WebSocketMessageBrokerConfigurer
     @Qualifier("clientOutboundChannelExecutor")
     private WebSocketThreadPoolTaskExecutor clientOutboundChannelExecutor;
 
+    @Autowired
+    private UserTopicSubscriptionInterceptor userTopicSubscriptionInterceptor;
+
     @Bean
     public TaskScheduler heartbeatTaskScheduler() {
         return new ThreadPoolTaskScheduler();
@@ -53,6 +57,12 @@ public class MessageBrokerConfigurer implements WebSocketMessageBrokerConfigurer
         		.setMessageSizeLimit(512 * 1024);
         //super.configureWebSocketTransport(registration); // TODO Spring Boot v3
         // by https://docs.spring.io/spring-framework/reference/web/websocket/stomp/server-config.html
+    }
+
+    @Override
+    public void configureClientInboundChannel(final ChannelRegistration registration) {
+        // Authorize per-user topic subscriptions; every other message is untouched.
+        registration.interceptors(userTopicSubscriptionInterceptor);
     }
 
     @Override

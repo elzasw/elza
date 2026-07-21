@@ -9,6 +9,7 @@ import cz.tacr.elza.domain.ParInstitution;
  * @author Martin Šlapa
  * @since 21.3.2016
  */
+@Deprecated
 public class ParInstitutionVO {
 
     private Integer id;
@@ -63,9 +64,11 @@ public class ParInstitutionVO {
     
     public static ParInstitutionVO newInstance(final ParInstitution institution, final ApIndex displayName) {
     	ParInstitutionTypeVO type = new ParInstitutionTypeVO();
-    	type.setName(institution.getInstitutionType().getName());
-    	type.setCode(institution.getInstitutionType().getCode());
-    	type.setId(institution.getInstitutionType().getInstitutionTypeId());
+    	if (institution.getInstitutionType() != null) {
+	    	type.setName(institution.getInstitutionType().getName());
+	    	type.setCode(institution.getInstitutionType().getCode());
+	    	type.setId(institution.getInstitutionType().getInstitutionTypeId());
+    	}
 
     	ParInstitutionVO result = new ParInstitutionVO();
     	result.setId(institution.getInstitutionId());

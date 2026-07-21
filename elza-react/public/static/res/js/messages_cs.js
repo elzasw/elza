@@ -424,6 +424,7 @@ var messages = {
     "search.action.noResult": "Nenalezeny žádné záznamy",
 
     "fundTree.action.openInNewTab": "Otevřít v nové záložce",
+    "fundTree.action.openInDataGrid": "Otevřít v tabulce",
     "fundTree.action.open": "Otevřít v aktuální záložce",
     "fundTree.node.name.undefined": "<JP ID={0}>",
     "fundTree.expandLevel": "Rozbalit",
@@ -1475,6 +1476,7 @@ var messages = {
     "admin.extSystem.userInfo.title": "Šablona pro označení uživatele, které je předáváno do externího systému, jako osoby zodpovědné za provedení a zaslání změny.\nStandardně obsahuje 'název instituce: jméno uživatele', pro vyplnění jména lze použít proměnné:\n%u - uživatelské jméno\n%i - ID uživatele\n%n - preferované označení osoby uživatele\n%s - zkrácené označení osoby uživatele",
     "admin.extSystem.type": "Typ",
     "admin.extSystem.sysScope": "Oblast entit",
+    "admin.extSystem.syncDelay": "Interval synchronizace (s)",
     "admin.extSystem.sysDigitalRepository": "Uložiště digitalizátů",
     "admin.extSystem.viewDaoUrl": "DaoURL",
     "admin.extSystem.viewFileUrl": "FileURL",
@@ -1834,6 +1836,10 @@ var messages = {
     "dataGrid.export.exportType.data": "Data",
     "dataGrid.export.exportType.noSelection.item": "Není vybrán prvek",
     "dataGrid.export.title": "Export tabulkového zobrazení",
+
+    "dataGrid.restore.nodeNotFound": "Dříve vybranou jednotku popisu se nepodařilo obnovit, zobrazuje se uložená stránka.",
+    "dataGrid.restore.nodeNotFound.filtered": "Dříve vybraná jednotka popisu neodpovídá aktuálnímu filtru, zobrazuje se uložená stránka.",
+    "dataGrid.loadFailed": "Načtení dat tabulky se nezdařilo.",
 
     "dataGrid.import.title": "Import prvků popisu",
     "dataGrid.import.format.hint":

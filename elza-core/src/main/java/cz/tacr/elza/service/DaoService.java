@@ -1,13 +1,22 @@
 package cz.tacr.elza.service;
 
-import java.util.*;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.DaoViewRequestVO;
 import cz.tacr.elza.controller.vo.ExplorerTreeNode;
 import cz.tacr.elza.controller.vo.ExplorerTreeNodeFile;
-import cz.tacr.elza.controller.vo.LinkedNode;
 import cz.tacr.elza.controller.vo.LinkedNodeVO;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.domain.*;
@@ -27,6 +36,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriUtils;
 
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.core.security.AuthMethod;
@@ -39,6 +49,13 @@ import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.DigitizationCode;
+import cz.tacr.elza.repository.DaoFileRepository;
+import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.DaoLinkRequestRepository;
+import cz.tacr.elza.repository.DaoPackageRepository;
+import cz.tacr.elza.repository.DaoRepository;
+import cz.tacr.elza.repository.DaoRequestDaoRepository;
+import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.service.DaoSyncService.DaoDesctItemProvider;
 import cz.tacr.elza.service.FundLevelService.AddLevelDirection;
 import cz.tacr.elza.service.dao.DaoServiceInternal;
@@ -84,7 +101,7 @@ public class DaoService {
     private EventNotificationService eventNotificationService;
 
     @Autowired
-    ArrangementInternalService arrangementInternalService;
+    private ArrangementInternalService arrangementInternalService;
 
     @Autowired
     private DaoPackageRepository daoPackageRepository;
@@ -96,16 +113,10 @@ public class DaoService {
     private DaoRequestDaoRepository daoRequestDaoRepository;
 
     @Autowired
-    private DaoFileGroupRepository daoFileGroupRepository;
-
-    @Autowired
     private ArrangementCacheService arrangementCacheService;
 
     @Autowired
     private RequestQueueItemRepository requestQueueItemRepository;
-
-    @Autowired
-    private NodeRepository nodeRepository;
 
     @Autowired
     private ExternalSystemService externalSystemService;
@@ -547,19 +558,6 @@ public class DaoService {
         if (fileSystemRepoService.isFileSystemRepository(digiRep)) {
             // URLs for DAOs are not yet implemented
             return null;
-            /*
-            if (contextPath == null || contextPath.equals("/")) {
-                contextPath = "";
-            } else {
-                if (contextPath.endsWith("/")) {
-                    contextPath = contextPath.substring(0, contextPath.length() - 1);
-                }
-            }
-            url = contextPath + "/api/digirepo/{repoId}?filePath={code}";
-            url = "/api/digirepo/{repoId}?filePath={code}";
-            if (StringUtils.isNotBlank(daoCode)) {
-                daoCode = StringUtils.replace(daoCode, "\\", "/");
-            }*/
         }
 
         ElzaTools.UrlParams params = ElzaTools.createUrlParams()
@@ -592,9 +590,10 @@ public class DaoService {
                     contextPath = contextPath.substring(0, contextPath.length() - 1);
                 }
             }
-            url = contextPath + "/api/digirepo/{repoId}?filePath={code}";
+            url = contextPath + "/api/digirepo/{repoId}/{code}";
             if (StringUtils.isNotBlank(daoFileCode)) {
                 daoFileCode = StringUtils.replace(daoFileCode, "\\", "/");
+                daoFileCode = UriUtils.encodePath(daoFileCode, StandardCharsets.UTF_8);
             }
         }
 
@@ -626,10 +625,10 @@ public class DaoService {
                     contextPath = contextPath.substring(0, contextPath.length() - 1);
                 }
             }
-            url = contextPath + "/api/digirepo/{repoId}?filePath={code}";
-
+            url = contextPath + "/api/digirepo/{repoId}/{code}";
             if (StringUtils.isNotBlank(daoFileCode)) {
                 daoFileCode = StringUtils.replace(daoFileCode, "\\", "/");
+                daoFileCode = UriUtils.encodePath(daoFileCode, StandardCharsets.UTF_8);
             }
         }
 

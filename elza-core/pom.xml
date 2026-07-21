@@ -736,6 +736,8 @@
                                 <modelNameMapping>AiRequest=AiRequestVO</modelNameMapping>
                                 <modelNameMapping>AiRequestCreate=AiRequestCreateVO</modelNameMapping>
                                 <modelNameMapping>AiRequestEvent=AiRequestEventVO</modelNameMapping>
+                                <modelNameMapping>AiRequestActivity=AiRequestActivityVO</modelNameMapping>
+                                <modelNameMapping>AiActivityLink=AiActivityLinkVO</modelNameMapping>
                                 <modelNameMapping>AiContextType=AiContextTypeVO</modelNameMapping>
                                 <modelNameMapping>AiContextObject=AiContextObjectVO</modelNameMapping>
                                 <modelNameMapping>AiContextFund=AiContextFundVO</modelNameMapping>
@@ -750,6 +752,9 @@
                                 <modelNameMapping>AiTableColumn=AiTableColumnVO</modelNameMapping>
                                 <modelNameMapping>AiCitation=AiCitationVO</modelNameMapping>
                                 <modelNameMapping>AiUsage=AiUsageVO</modelNameMapping>
+                                <modelNameMapping>AiAccountUsage=AiAccountUsageVO</modelNameMapping>
+                                <modelNameMapping>AiCustomerUsage=AiCustomerUsageVO</modelNameMapping>
+                                <modelNameMapping>AiUsageBalance=AiUsageBalanceVO</modelNameMapping>
                                 <modelNameMapping>AiMyKey=AiMyKeyVO</modelNameMapping>
                                 <modelNameMapping>AiMyKeyUpdate=AiMyKeyUpdateVO</modelNameMapping>
                                 <modelNameMapping>AiProviderInfo=AiProviderInfoVO</modelNameMapping>

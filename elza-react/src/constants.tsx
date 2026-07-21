@@ -198,6 +198,7 @@ export const URL_ADMIN = '/admin';
 export const URL_ADMIN_USER = `${URL_ADMIN}/user`;
 export const URL_ADMIN_GROUP = `${URL_ADMIN}/group`;
 export const URL_ADMIN_FUND = `${URL_ADMIN}/fund`;
+export const URL_ADMIN_INSTITUTION = `${URL_ADMIN}/institution`;
 
 export const URL_AIP = '/aip';
 export const URL_COMPONENT = '/component';
@@ -249,8 +250,16 @@ export const urlFundTree = (fundId: number, versionId?: number) => {
     return fundSub(fundId, versionId, TREE);
 }
 
-export const urlFundGrid = (fundId: number, versionId?: number, filter?: string) => {
-    return `${fundSub(fundId, versionId, GRID)}${filter ? "?filter=" + filter : ""}`;
+export const urlFundGrid = (fundId: number, versionId?: number, filter?: string, nodeId?: number, descItemTypeId?: number) => {
+    // Optional node / desc-item-type path segments deep-link the grid to a specific cell.
+    let sub = GRID;
+    if (nodeId != null) {
+        sub += "/" + nodeId;
+        if (descItemTypeId != null) {
+            sub += "/" + descItemTypeId;
+        }
+    }
+    return `${fundSub(fundId, versionId, sub)}${filter ? "?filter=" + filter : ""}`;
 }
 
 export const urlFundAb = (fundId: number, versionId?: number) => {
@@ -295,6 +304,10 @@ export const urlAdminGroup = (groupId: number) => {
 
 export const urlAdminFund = (fundId: number) => {
     return `${URL_ADMIN_FUND}/${fundId}`;
+}
+
+export const urlAdminInstitution = (institutionId?: number) => {
+    return institutionId == null ? URL_ADMIN_INSTITUTION : `${URL_ADMIN_INSTITUTION}/${institutionId}`;
 }
 
 export const urlEntity = (entityId?: number | string) => {

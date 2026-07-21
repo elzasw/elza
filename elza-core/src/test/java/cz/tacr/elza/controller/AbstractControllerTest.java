@@ -80,7 +80,6 @@ import cz.tacr.elza.controller.vo.ArrDaoVO;
 import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrOutputVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateEditVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateMapTypeVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateVO;
@@ -96,14 +95,12 @@ import cz.tacr.elza.controller.vo.FulltextFundRequest;
 import cz.tacr.elza.controller.vo.FundListCountResult;
 import cz.tacr.elza.controller.vo.LanguageVO;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
-import cz.tacr.elza.controller.vo.OutputSettingsVO;
 import cz.tacr.elza.controller.vo.PackageVO;
 import cz.tacr.elza.controller.vo.ParInstitutionVO;
 import cz.tacr.elza.controller.vo.RulDataTypeVO;
 import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
 import cz.tacr.elza.controller.vo.RulExportFilterVO;
 import cz.tacr.elza.controller.vo.RulOutputFilterVO;
-import cz.tacr.elza.controller.vo.RulOutputTypeVO;
 import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.RulTemplateVO;
@@ -172,6 +169,7 @@ import cz.tacr.elza.test.controller.AdminApi;
 import cz.tacr.elza.test.controller.DaosApi;
 import cz.tacr.elza.test.controller.DescitemsApi;
 import cz.tacr.elza.test.controller.FundsApi;
+import cz.tacr.elza.test.controller.InstitutionApi;
 import cz.tacr.elza.test.controller.IoApi;
 import cz.tacr.elza.test.controller.NodeApi;
 import cz.tacr.elza.test.controller.OutputApi;
@@ -299,19 +297,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	protected static final String PLACE_DATA_VALUES = ARRANGEMENT_CONTROLLER_URL + "/placeDataValues/{versionId}";
 	protected static final String DELETE_DATA_VALUES = ARRANGEMENT_CONTROLLER_URL + "/deleteDataValues/{versionId}";
 	protected static final String FILTER_UNIQUE_VALUES = ARRANGEMENT_CONTROLLER_URL + "/filterUniqueValues/{versionId}";
-
-	// output
-	protected static final String OUTPUTS = ARRANGEMENT_CONTROLLER_URL + "/output";
-	protected static final String OUTPUT_TYPES = OUTPUTS + "/types/{versionId}";
-	protected static final String GET_OUTPUTS = OUTPUTS + "/{fundVersionId}";
-	protected static final String GET_OUTPUT = OUTPUTS + "/{fundVersionId}/{outputId}";
-	protected static final String CREATE_NAMED_OUTPUT = OUTPUTS + "/{fundVersionId}";
-	protected static final String ADD_NODES_NAMED_OUTPUT = OUTPUTS + "/{fundVersionId}/{outputId}/add";
-	protected static final String REMOVE_NODES_NAMED_OUTPUT = OUTPUTS + "/{fundVersionId}/{outputId}/remove";
-	protected static final String DELETE_NAMED_OUTPUT = OUTPUTS + "/{fundVersionId}/{outputId}";
-	protected static final String UPDATE_NAMED_OUTPUT = OUTPUTS + "/{fundVersionId}/{outputId}/update";
-	protected static final String UPDATE_OUTPUT_SETTINGS = OUTPUTS + "/{outputId}/settings";
-	//
 
 	protected static final String FILTER_NODES = ARRANGEMENT_CONTROLLER_URL + "/filterNodes/{versionId}";
 	protected static final String FILTERED_NODES = ARRANGEMENT_CONTROLLER_URL + "/getFilterNodes/{versionId}";
@@ -511,6 +496,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
 	protected OutputApi outputApi;
 
+	protected InstitutionApi institutionApi;
+
 	protected static Map<String, String> cookies = null;
 
 	@Override
@@ -542,6 +529,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 		publicationIntApi = new cz.tacr.elza.test.controller.PublicationInternalApi(elzaApiClient);
 		accesspointIntApi = new cz.tacr.elza.test.controller.AccesspointInternalApi(elzaApiClient);
 		outputApi = new cz.tacr.elza.test.controller.OutputApi(elzaApiClient);
+		institutionApi = new cz.tacr.elza.test.controller.InstitutionApi(elzaApiClient);
 
 		loginAsAdmin();
 
@@ -734,17 +722,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	protected List<RulRuleSetVO> getRuleSets() {
 		Response response = get(RULE_SETS);
 		return Arrays.asList(response.getBody().as(RulRuleSetVO[].class));
-	}
-
-	/**
-	 * Získání seznamu pravidel.
-	 *
-	 * @param versionId verze AP
-	 * @return seznam pravidel
-	 */
-	protected List<RulOutputTypeVO> getOutputTypes(final Integer versionId) {
-		Response response = get(spec -> spec.pathParam("versionId", versionId), OUTPUT_TYPES);
-		return Arrays.asList(response.getBody().as(RulOutputTypeVO[].class));
 	}
 
 	/**
@@ -2735,126 +2712,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	}
 
 	/**
-	 * Načtení seznamu outputů - objekt outputu s vazbou na objekt named output.
-	 *
-	 * @param fundVersionId identfikátor verze AS
-	 * @return seznam outputů
-	 */
-	protected List<ArrOutputVO> getOutputs(final Integer fundVersionId) {
-		return Arrays.asList(get(spec -> spec.pathParam("fundVersionId", fundVersionId), GET_OUTPUTS).getBody()
-				.as(ArrOutputVO[].class));
-	}
-
-	/**
-	 * Načtení detailu outputu objekt output s vazbou na named output a seznamem
-	 * připojených node.
-	 *
-	 * @param fundVersionId identfikátor verze AS
-	 * @param outputId      identifikátor výstupu
-	 * @return output
-	 */
-	protected ArrOutputVO getOutput(final Integer fundVersionId, final Integer outputId) {
-		return get(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("outputId", outputId), GET_OUTPUT)
-				.getBody().as(ArrOutputVO.class);
-	}
-
-	/**
-	 * Vytvoření nového pojmenovaného výstupu.
-	 *
-	 * @param fundVersionId identfikátor verze AS
-	 * @param param         vstupní parametry pro vytvoření outputu
-	 * @return vytvořený výstup
-	 */
-	protected ArrOutputVO createNamedOutput(final Integer fundVersionId,
-			final ArrangementController.OutputNameParam param) {
-		return put(spec -> spec.pathParam("fundVersionId", fundVersionId).body(param), CREATE_NAMED_OUTPUT).getBody()
-				.as(ArrOutputVO.class);
-	}
-
-	/**
-	 * Vytvoření nového pojmenovaného výstupu.
-	 *
-	 * @param fundVersion verze AS
-	 * @param name        název výstupu
-	 * @param code        kód výstupu
-	 * @return vytvořený výstup
-	 */
-	protected ArrOutputVO createNamedOutput(final ArrFundVersionVO fundVersion, final String name, final String code,
-			final Integer outputTypeId) {
-		ArrangementController.OutputNameParam param = new ArrangementController.OutputNameParam();
-		param.setInternalCode(code);
-		param.setName(name);
-		param.setOutputTypeId(outputTypeId);
-		return createNamedOutput(fundVersion.getId(), param);
-	}
-
-	/**
-	 * Přidání uzlů k výstupu.
-	 *
-	 * @param fundVersionId identfikátor verze AS
-	 * @param outputId      identifikátor výstupu
-	 * @param nodeIds       seznam přidáváných identifikátorů uzlů
-	 */
-	protected void addNodesNamedOutput(final Integer fundVersionId, final Integer outputId,
-			final List<Integer> nodeIds) {
-		post(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("outputId", outputId).body(nodeIds),
-				ADD_NODES_NAMED_OUTPUT);
-	}
-
-	/**
-	 * Odebrání uzlů u výstupu.
-	 *
-	 * @param fundVersionId identfikátor verze AS
-	 * @param outputId      identifikátor výstupu
-	 * @param nodeIds       seznam odebíraných identifikátorů uzlů
-	 */
-	protected void removeNodesNamedOutput(final Integer fundVersionId, final Integer outputId,
-			final List<Integer> nodeIds) {
-		post(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("outputId", outputId).body(nodeIds),
-				REMOVE_NODES_NAMED_OUTPUT);
-	}
-
-	/**
-	 * Smazání pojmenovaného výstupu.
-	 *
-	 * @param fundVersionId identfikátor verze AS
-	 * @param outputId      identifikátor výstupu
-	 */
-	protected void deleteNamedOutput(final Integer fundVersionId, final Integer outputId) {
-		delete(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("outputId", outputId),
-				DELETE_NAMED_OUTPUT);
-	}
-
-	/**
-	 * Upravení výstupu.
-	 *
-	 * @param fundVersion verze AS
-	 * @param output      výstup
-	 * @param name        název výstupu
-	 * @param code        kód výstupu
-	 */
-	protected void updateNamedOutput(final ArrFundVersionVO fundVersion, final ArrOutputVO output, final String name,
-			final String code) {
-		ArrangementController.OutputNameParam param = new ArrangementController.OutputNameParam();
-		param.setInternalCode(code);
-		param.setName(name);
-		updateNamedOutput(fundVersion.getId(), output.getId(), param);
-	}
-
-	/**
-	 * Upravení výstupu.
-	 *
-	 * @param fundVersionId identfikátor verze AS
-	 * @param outputId      identfikátor výstupu
-	 * @param param         vstupní parametry pro úpravu outputu
-	 */
-	protected void updateNamedOutput(final Integer fundVersionId, final Integer outputId,
-			final ArrangementController.OutputNameParam param) {
-		post(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("outputId", outputId).body(param),
-				UPDATE_NAMED_OUTPUT);
-	}
-
-	/**
 	 * Vytvoření propojení na DAO
 	 *
 	 * @param fundVersionId identfikátor verze AS
@@ -3097,10 +2954,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
 	protected void copyLevels(final CopyNodesParams copyNodesParams) {
 		post(spec -> spec.body(copyNodesParams), COPY_LEVELS);
-	}
-
-	protected void setOutputSettings(Integer outputId, OutputSettingsVO settings) {
-		put(spec -> spec.pathParam("outputId", outputId).body(settings), UPDATE_OUTPUT_SETTINGS);
 	}
 
 	protected Map<String, PartType> findPartTypesMap() {

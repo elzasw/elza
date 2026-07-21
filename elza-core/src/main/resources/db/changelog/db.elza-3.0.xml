@@ -1496,4 +1496,82 @@
         </addColumn>
     </changeSet>
 
+	<changeSet id="20260710145000" author="sergey.iryupin">
+	    <addColumn tableName="ap_external_system">
+	        <column name="sync_delay" type="int"/>
+	    </addColumn>
+	    <customChange class="cz.tacr.elza.dbchangelog.DbChangeset20260710145000"/>
+    </changeSet>
+
+    <changeSet id="20260713100000" author="ppy">
+        <!-- Advisory live progress of a running exchange, mirrored from the
+             provider's Task.progress by the poller: a short human-readable
+             phase plus a rough percent estimate. Cosmetic display state -
+             overwritten on every observed change, cleared when the request
+             reaches a terminal state. -->
+        <addColumn tableName="ai_request">
+            <column name="progress_message" type="nvarchar(1000)"/>
+            <column name="progress_percent" type="double"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260714120000" author="ppy">
+        <!-- Cursor of the provider's task-event stream (protocol 0.8:
+             GET /tasks/{id}/events): the greatest TaskEvent.seq already
+             consumed and persisted into ai_request_event. The event poller
+             resumes from here after a restart, so no event is stored twice
+             (the provider stream is replayable). -->
+        <addColumn tableName="ai_request">
+            <column name="event_seq" type="bigint" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+	<changeSet id="20260717100000" author="sergey.iryupin">
+	    <!-- 1. par_institution_type.package_id (nullable) + FK -->
+	    <addColumn tableName="par_institution_type">
+	        <column name="package_id" type="int"/>
+	    </addColumn>
+	    <addForeignKeyConstraint constraintName="fk_par_institution_type_package"
+	                             baseTableName="par_institution_type" baseColumnNames="package_id"
+	                             referencedTableName="rul_package" referencedColumnNames="package_id"
+	                             onDelete="NO ACTION"/>
+
+	    <!-- 2. par_institution.name / short_name (nullable) -->
+	    <addColumn tableName="par_institution">
+	        <column name="name" type="nvarchar(250)"/>
+	        <column name="short_name" type="nvarchar(250)"/>
+	    </addColumn>
+
+	    <!-- 3. Drop orphan institutions (not referenced from arr_fund) -->
+	    <sql dbms="postgresql">
+	        DELETE FROM par_institution
+	        WHERE institution_id NOT IN (SELECT DISTINCT institution_id FROM arr_fund)
+	    </sql>
+
+	    <!-- 4. Fill name / short_name from the preferred part of the linked access point -->
+		<sql>
+            UPDATE par_institution i
+            SET name = (SELECT ix.index_value
+                        FROM ap_access_point ap
+                        JOIN ap_index ix ON ix.part_id = ap.preferred_part_id
+                        WHERE ap.access_point_id = i.access_point_id
+                          AND ix.index_type = 'DISPLAY_NAME')
+		</sql>
+		<sql>
+            UPDATE par_institution i
+            SET short_name = (SELECT ix.index_value
+                              FROM ap_access_point ap
+                              JOIN ap_index ix ON ix.part_id = ap.preferred_part_id
+                              WHERE ap.access_point_id = i.access_point_id
+                                AND ix.index_type = 'SHORT_NAME')
+		</sql>
+
+	    <!-- 5. Detach institutions from their type, then wipe the type dictionary -->
+	    <dropNotNullConstraint tableName="par_institution" columnName="institution_type_id"/>
+	    <sql dbms="postgresql">UPDATE par_institution SET institution_type_id = NULL</sql>
+	    <sql dbms="postgresql">DELETE FROM par_institution_type</sql>
+	</changeSet>
+
 </databaseChangeLog>

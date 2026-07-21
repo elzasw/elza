@@ -187,6 +187,16 @@ export class websocket {
         console.info('#ws Websocket connected');
         store.dispatch(webSocketConnect());
         this.stompClient.subscribe('/topic/api/changes', this.onMessage);
+        // Per-user channel: messages addressed to the logged user only (AI request
+        // updates today, other user-targeted events later), routed by eventType
+        // like the broadcast above. The server rejects a subscription to anyone
+        // else's topic (see UserTopicSubscriptionInterceptor).
+        const userId = store.getState().userDetail?.id;
+        if (userId != null) {
+            this.stompClient.subscribe('/topic/user/' + userId, this.onMessage);
+        } else {
+            console.warn('#ws per-user channel not subscribed - no logged user id yet');
+        }
     };
 
     // Handles websocket disconnects
@@ -333,6 +343,8 @@ let eventMap = {
     ISSUE_LIST_CREATE: issueListCreate,
     ISSUE_UPDATE: issueUpdate,
     ISSUE_CREATE: issueCreate,
+    // Handled by useAiConversation through websocket listeners
+    AI_REQUEST_UPDATE: () => { },
 };
 
 if (!window.ws) {

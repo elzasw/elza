@@ -37,7 +37,8 @@ public class GetItemTypesTool implements AiTool {
     }
 
     @Override
-    public Object execute(final Object arguments) {
+    public Object execute(final Object arguments, final AiToolContext context) {
+        // The dictionary is permission-free reference data; the context is unused.
         GetItemTypesParams params = objectMapper.convertValue(arguments, GetItemTypesParams.class);
         if (params == null || params.getRuleSetCode() == null || params.getRuleSetCode().isEmpty()) {
             throw new IllegalArgumentException("getItemTypes requires a non-empty ruleSetCode");

@@ -29,11 +29,11 @@ public class ParInstitution {
     @Access(AccessType.PROPERTY) // required to read id without fetch from db
     private Integer institutionId;
 
-    @Column(length = 250)
+    @Column(length = 250, nullable = false)
     private String internalCode;
 
     @OneToOne(fetch = FetchType.LAZY, targetEntity = ParInstitutionType.class)
-    @JoinColumn(name = "institutionTypeId", nullable = false)
+    @JoinColumn(name = "institutionTypeId", nullable = true)
     private ParInstitutionType institutionType;
 
     @OneToOne(fetch = FetchType.LAZY, targetEntity = ApAccessPoint.class)
@@ -42,6 +42,12 @@ public class ParInstitution {
 
     @Column(updatable = false, insertable = false, nullable = false)
     private Integer accessPointId;
+
+    @Column(length = 250, nullable = true)
+    private String name;
+
+    @Column(length = 250, nullable = true)
+    private String shortName;
 
     /**
      * @return identifikátor
@@ -79,6 +85,16 @@ public class ParInstitution {
     }
 
     /**
+     * @return id typu instituce
+     */
+    public Integer getInstitutionTypeId() {
+    	if (institutionType == null) {
+    		return null;
+    	}
+        return institutionType.getInstitutionTypeId();
+    }
+
+    /**
      * @param institutionType typ instituce
      */
     public void setInstitutionType(final ParInstitutionType institutionType) {
@@ -104,4 +120,20 @@ public class ParInstitution {
     public void setAccessPointId(Integer accessPointId) {
         this.accessPointId = accessPointId;
     }
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getShortName() {
+		return shortName;
+	}
+
+	public void setShortName(String shortName) {
+		this.shortName = shortName;
+	}
 }

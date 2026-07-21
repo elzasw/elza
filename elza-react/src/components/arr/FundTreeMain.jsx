@@ -29,7 +29,8 @@ import {modalDialogShow} from 'actions/global/modalDialog.jsx';
 import {FOCUS_KEYS} from '../../constants.tsx';
 import PersistentSortDialog from './PersisetntSortDialog';
 import {WebApi} from '../../actions/WebApi';
-import {JAVA_ATTR_CLASS} from '../../constants';
+import {JAVA_ATTR_CLASS, urlFundGrid} from '../../constants';
+import {routerNavigate} from 'actions/router.jsx';
 import { showQuoteModal, messages as quoteMessages } from './quote';
 import { FormattedMessage } from 'react-intl';
 
@@ -104,6 +105,9 @@ class FundTreeMain extends React.Component {
                 <Dropdown.Item onClick={this.handleSelectInNewTab.bind(this, node)}>
                     {i18n('fundTree.action.openInNewTab')}
                 </Dropdown.Item>
+                <Dropdown.Item onClick={this.handleOpenInDataGrid.bind(this, node)}>
+                    {i18n('fundTree.action.openInDataGrid')}
+                </Dropdown.Item>
                 <Dropdown.Item onClick={this.handleQuote(node)}>
                     <FormattedMessage {...quoteMessages.quoteTitle}/>
                 </Dropdown.Item>
@@ -132,6 +136,15 @@ class FundTreeMain extends React.Component {
         this.props.dispatch(contextMenuHide());
 
         this.callFundSelectSubNode(node, true, false);
+    };
+
+    /**
+     * Open the node in the table (datagrid) view, focused on its cell.
+     */
+    handleOpenInDataGrid = node => {
+        const {fund, versionId} = this.props;
+        this.props.dispatch(contextMenuHide());
+        this.props.dispatch(routerNavigate(urlFundGrid(fund.id, versionId, undefined, node.id)));
     };
 
     handleOpenPersistentSortDialog = node => {
