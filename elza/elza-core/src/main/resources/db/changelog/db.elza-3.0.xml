@@ -1574,4 +1574,22 @@
 	    <sql dbms="postgresql">DELETE FROM par_institution_type</sql>
 	</changeSet>
 
+	<changeSet id="20260721131500" author="sergey.iryupin">
+	    <sql>
+	        UPDATE par_institution i
+	        SET short_name = (
+	            SELECT ix.index_value
+	            FROM ap_part p
+	            JOIN rul_part_type pt   ON pt.part_type_id  = p.part_type_id  AND pt.code  = 'PT_NAME'
+	            JOIN ap_item it         ON it.part_id       = p.part_id       AND it.delete_change_id IS NULL
+	            JOIN rul_item_type rit  ON rit.item_type_id = it.item_type_id AND rit.code = 'NM_TYPE'
+	            JOIN rul_item_spec ris  ON ris.item_spec_id = it.item_spec_id AND ris.code = 'NT_ACRONYM'
+	            JOIN ap_index ix        ON ix.part_id       = p.part_id       AND ix.index_type = 'DISPLAY_NAME'
+	            WHERE p.access_point_id = i.access_point_id
+	              AND p.delete_change_id IS NULL
+	            LIMIT 1
+	        )
+	    </sql>
+	</changeSet>
+
 </databaseChangeLog>
