@@ -97,6 +97,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrInhibitedItem;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
@@ -113,6 +114,7 @@ import cz.tacr.elza.test.controller.vo.DataType;
 import cz.tacr.elza.test.controller.vo.Fund;
 import cz.tacr.elza.test.controller.vo.ItemDataResult;
 import cz.tacr.elza.test.controller.vo.NodeBase;
+import cz.tacr.elza.test.controller.vo.NodeData;
 import cz.tacr.elza.test.controller.vo.NodeDataParam;
 import cz.tacr.elza.test.controller.vo.NodeItem;
 import cz.tacr.elza.utils.CsvUtils;
@@ -229,6 +231,127 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         // filtry
         filters(fundVersion);
+    }
+
+    /**
+     * Moving a level must invalidate inhibited items (arr_inhibited_item)
+     * whose source desc item is no longer located on an ancestor node.
+     *
+     * <p>Scenario: root → A → B, root → C; desc item on A, its inheritance
+     * inhibited on B. Moving A (with B inside) under C keeps the record
+     * valid; moving B alone under root invalidates it and the node form
+     * data of B must stay readable.
+     *
+     * <p><b>Creates:</b> 1 fund + 3 nodes + 1 desc-item + 1 inhibited item.
+     * <br><b>Cleans up:</b> nothing — fund intentionally left for the class-level cleanup (see class javadoc).
+     */
+    @Test
+    public void moveLevelWithInhibitedItemTest() throws InterruptedException, ExecutionException, IllegalAccessException {
+        Fund fund = createFund("Inhibited item move test", "IIMT");
+        helperTestService.waitForWorkers();
+        ArrFundVersionVO fundVersion = getOpenVersion(fund);
+
+        ArrangementController.FaTreeParam treeParam = new ArrangementController.FaTreeParam();
+        treeParam.setVersionId(fundVersion.getId());
+        TreeData treeData = getFundTree(treeParam);
+        NodeBase rootNode = convertTreeNodeToNodeBase(treeData.getNodes().iterator().next());
+
+        // level A under root
+        helperTestService.waitForWorkers();
+        ArrangementController.NodeWithParent levelA = addLevel(FundLevelService.AddLevelDirection.CHILD,
+                fundVersion, rootNode, rootNode, null);
+        rootNode.setVersion(levelA.getParentNode().getVersion());
+        NodeBase nodeA = convertToNodeBaseTest(levelA.getNode());
+
+        // level B under A
+        helperTestService.waitForWorkers();
+        ArrangementController.NodeWithParent levelB = addLevel(FundLevelService.AddLevelDirection.CHILD,
+                fundVersion, nodeA, nodeA, null);
+        nodeA.setVersion(levelB.getParentNode().getVersion());
+        NodeBase nodeB = convertToNodeBaseTest(levelB.getNode());
+
+        // level C under root
+        helperTestService.waitForWorkers();
+        ArrangementController.NodeWithParent levelC = addLevel(FundLevelService.AddLevelDirection.CHILD,
+                fundVersion, rootNode, rootNode, null);
+        rootNode.setVersion(levelC.getParentNode().getVersion());
+        NodeBase nodeC = convertToNodeBaseTest(levelC.getNode());
+
+        // desc item on A
+        helperTestService.waitForWorkers();
+        NodeItem nodeItem = buildNodeItem("SRD_NAD", null, DataType.INT, 42, nodeA, null);
+        ItemDataResult itemResult = descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem);
+        Integer descItemObjectId = itemResult.getItem().getItemObjectId();
+        nodeA.setVersion(itemResult.getItem().getNodeVersion());
+
+        // inhibit the item of A on B
+        ArrInhibitedItemVO inhibitParam = new ArrInhibitedItemVO();
+        inhibitParam.setNodeId(nodeB.getId());
+        inhibitParam.setDescItemObjectId(descItemObjectId);
+
+        final Map<String, Message<byte[]>> receiptStore = new HashMap<>();
+        MyStompSessionHandler sessionHandler = new MyStompSessionHandler();
+        StompSession session = connectWebSocketStompClient(sessionHandler, receiptStore);
+        session.setAutoReceipt(true);
+        FieldUtils.writeField(StompCommand.RECEIPT, "body", true, true);
+
+        Receiptable receiptable = session.send(INHIBIT_DESC_ITEM, inhibitParam);
+        ReceiptStatus status = waitingForReceipt(receiptable, sessionHandler);
+        assertEquals(ReceiptStatus.RCP_RECEIVED, status);
+
+        Integer inhibitedItemId = inhibitedItemRepository
+                .findByNodeIdAndDescItemObjectId(nodeB.getId(), descItemObjectId)
+                .orElseThrow()
+                .getInhibitedItemId();
+
+        // move A (with B inside) under C, the source item stays on an ancestor of B
+        helperTestService.waitForWorkers();
+        moveLevelUnder(fundVersion, convertToArrNode(nodeC), convertToArrNode(rootNode),
+                Arrays.asList(convertToArrNode(nodeA)), convertToArrNode(rootNode));
+
+        nodeC.setVersion(nodeC.getVersion() + 1);
+        rootNode.setVersion(rootNode.getVersion() + 1);
+        nodeA.setVersion(nodeA.getVersion() + 1);
+
+        // the inhibited item must remain valid
+        ArrInhibitedItem inhibitedItem = inhibitedItemRepository.findById(inhibitedItemId).orElseThrow();
+        assertNull(inhibitedItem.getDeleteChangeId());
+
+        // the item of A is still reported as inherited and inhibited on B
+        NodeDataParam nodeDataParam = new NodeDataParam();
+        nodeDataParam.setNodeId(nodeB.getId());
+        nodeDataParam.setFundVersionId(fundVersion.getId());
+        nodeDataParam.setFormData(true);
+        nodeDataParam.setSiblingsMaxCount(0);
+        nodeDataParam.setParents(false);
+        nodeDataParam.setChildren(false);
+
+        NodeData nodeData = nodeApi.nodeGetNodeData(nodeDataParam);
+        NodeItem inheritedFromA = null;
+        for (NodeItem item : nodeData.getFormData().getDescItems()) {
+            if (descItemObjectId.equals(item.getItemObjectId())) {
+                inheritedFromA = item;
+            }
+        }
+        assertNotNull(inheritedFromA);
+        assertTrue(Boolean.TRUE.equals(inheritedFromA.getInhibited()));
+
+        // move B under root, the source item of A is no longer on an ancestor of B
+        helperTestService.waitForWorkers();
+        moveLevelUnder(fundVersion, convertToArrNode(rootNode), convertToArrNode(rootNode),
+                Arrays.asList(convertToArrNode(nodeB)), convertToArrNode(nodeA));
+
+        // the inhibited item must be invalidated by the move
+        inhibitedItem = inhibitedItemRepository.findById(inhibitedItemId).orElseThrow();
+        assertNotNull(inhibitedItem.getDeleteChangeId());
+
+        // node form data of B must stay readable and must not contain the item of A
+        nodeData = nodeApi.nodeGetNodeData(nodeDataParam);
+        for (NodeItem item : nodeData.getFormData().getDescItems()) {
+            assertFalse(descItemObjectId.equals(item.getItemObjectId()));
+        }
+
+        session.disconnect();
     }
 
     //TODO: odkomentovat po změně importu institucí @Test
