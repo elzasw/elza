@@ -839,6 +839,22 @@ paths:
           description: The request has succeeded.
       tags:
         - admin
+  /admin/arrangement/invalid-inhibited-items:
+    delete:
+      operationId: Admin_deleteInvalidInhibitedItems
+      description: |-
+        Invalidate inhibited items (arr_inhibited_item) whose source desc item
+        no longer lies on an ancestor node
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: integer
+      tags:
+        - admin
   /admin/info:
     get:
       operationId: Admin_info

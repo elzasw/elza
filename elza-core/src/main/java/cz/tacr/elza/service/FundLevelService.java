@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -35,6 +36,7 @@ import cz.tacr.elza.domain.ArrDataUriRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrInhibitedItem;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemType;
@@ -47,6 +49,7 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.DaoRepository;
 import cz.tacr.elza.repository.DataUriRefRepository;
 import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.InhibitedItemRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.DaoSyncService.DaoDesctItemProvider;
@@ -56,6 +59,7 @@ import cz.tacr.elza.service.arrangement.MultipleItemChangeContext;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventDeleteNode;
+import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityManager;
@@ -102,7 +106,10 @@ public class FundLevelService {
 
     @Autowired
     private DescItemRepository descItemRepository;
-    
+
+    @Autowired
+    private InhibitedItemRepository inhibitedItemRepository;
+
     @Autowired
     private DataUriRefRepository dataUriRefRepository;
 
@@ -234,6 +241,11 @@ public class FundLevelService {
 
         entityManager.flush(); //aktualizace verzí v nodech
 
+        if (!transportLevelParent.getNode().equals(staticLevel.getNodeParent())) {
+            // move to another parent, inhibited items in the subtree might become invalid
+            invalidateOrphanedInhibitedItems(version, transportLevels, change);
+        }
+
         eventNotificationService.publishEvent(
                 EventFactory.createMoveEvent(EventType.MOVE_LEVEL_BEFORE, staticLevel, transportLevels, version));
 
@@ -357,6 +369,12 @@ public class FundLevelService {
         }
 
         entityManager.flush(); //aktualizace verzí v nodech
+
+        if (!transportLevelParent.getNode().equals(staticLevel.getNodeParent())) {
+            // move to another parent, inhibited items in the subtree might become invalid
+            invalidateOrphanedInhibitedItems(version, transportLevels, change);
+        }
+
         eventNotificationService.publishEvent(
                 EventFactory.createMoveEvent(EventType.MOVE_LEVEL_AFTER, staticLevel, transportLevels, version));
     }
@@ -415,6 +433,9 @@ public class FundLevelService {
         Integer versionId = version.getFundVersionId();
         arrangementService.isValidAndOpenVersion(version);
 
+        // original parent of the moved levels (levels get re-parented below)
+        ArrNode transportParentNode = transportLevels.get(0).getNodeParent();
+
         List<Integer> transportNodeIds = transportLevels.stream()
                 .map(l -> l.getNodeId()).collect(Collectors.toList());
 
@@ -446,8 +467,85 @@ public class FundLevelService {
 
 
         entityManager.flush(); //aktualizace verzí v nodech
+
+        if (!staticLevel.getNode().getNodeId().equals(transportParentNode.getNodeId())) {
+            // move to another parent, inhibited items in the subtree might become invalid
+            invalidateOrphanedInhibitedItems(version, transportLevels, change);
+        }
+
         eventNotificationService.publishEvent(
                 EventFactory.createMoveEvent(EventType.MOVE_LEVEL_UNDER, staticLevel, transportLevels, version));
+    }
+
+    /**
+     * Invalidates inhibited items in the moved subtrees whose source desc item
+     * is no longer located on an ancestor node after the move.
+     *
+     * Must be called after the moved levels are flushed, in the same transaction.
+     * Invalidated items share the change of the move operation, so reverting the
+     * move restores them. The node cache of affected nodes is synchronized and
+     * clients are notified.
+     *
+     * @param version         fund version
+     * @param transportLevels moved levels, siblings sharing one ancestor chain
+     * @param change          change of the move operation
+     */
+    private void invalidateOrphanedInhibitedItems(final ArrFundVersion version,
+                                                  final List<ArrLevel> transportLevels,
+                                                  final ArrChange change) {
+        // nodeIds of the whole moved subtree (roots included)
+        Set<Integer> subtreeNodeIds = new HashSet<>();
+        for (ArrLevel transportLevel : transportLevels) {
+            levelRepository.findAllChildrenByNode(transportLevel.getNode(), null)
+                    .forEach(l -> subtreeNodeIds.add(l.getNodeId()));
+            subtreeNodeIds.add(transportLevel.getNodeId());
+        }
+
+        // open inhibited items in the subtree
+        List<ArrInhibitedItem> inhibitedItems = ObjectListIterator.findIterable(subtreeNodeIds,
+                inhibitedItemRepository::findByNodeIdsAndDeleteChangeIsNull);
+        if (inhibitedItems.isEmpty()) {
+            return;
+        }
+
+        // nodeIds of source desc items by descItemObjectId
+        Set<Integer> descItemObjectIds = inhibitedItems.stream()
+                .map(ArrInhibitedItem::getDescItemObjectId)
+                .collect(Collectors.toSet());
+        Map<Integer, Integer> sourceNodeIdByObjectId = new HashMap<>();
+        ObjectListIterator.findIterable(descItemObjectIds, descItemRepository::findOpenDescItemsByIds)
+                .forEach(i -> sourceNodeIdByObjectId.put(i.getDescItemObjectId(), i.getNodeId()));
+
+        // valid source nodes = nodes inside the moved subtree + new ancestors of the moved roots
+        Set<Integer> validSourceNodeIds = new HashSet<>(subtreeNodeIds);
+        levelRepository.findAllParentsByNodeId(transportLevels.get(0).getNodeId(), null, false)
+                .forEach(l -> validSourceNodeIds.add(l.getNodeId()));
+
+        // invalidate items whose source item is missing or outside the ancestor chain
+        List<ArrInhibitedItem> invalidatedItems = new ArrayList<>();
+        Set<Integer> affectedNodeIds = new HashSet<>();
+        for (ArrInhibitedItem inhibitedItem : inhibitedItems) {
+            Integer sourceNodeId = sourceNodeIdByObjectId.get(inhibitedItem.getDescItemObjectId());
+            if (sourceNodeId == null || !validSourceNodeIds.contains(sourceNodeId)) {
+                inhibitedItem.setDeleteChange(change);
+                invalidatedItems.add(inhibitedItem);
+                affectedNodeIds.add(inhibitedItem.getNodeId());
+            }
+        }
+        if (invalidatedItems.isEmpty()) {
+            return;
+        }
+        inhibitedItemRepository.saveAll(invalidatedItems);
+        inhibitedItemRepository.flush();
+
+        logger.debug("Invalidated inhibited items after move, count: {}, nodeIds: {}",
+                     invalidatedItems.size(), affectedNodeIds);
+
+        ObjectListIterator.forEachPage(affectedNodeIds, nodeCacheService::syncNodes);
+
+        eventNotificationService.publishEvent(new EventIdsInVersion(EventType.NODES_CHANGE,
+                version.getFundVersionId(),
+                affectedNodeIds.toArray(new Integer[0])));
     }
 
     /**
