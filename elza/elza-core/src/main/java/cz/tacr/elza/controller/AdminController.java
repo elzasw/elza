@@ -175,4 +175,16 @@ public class AdminController implements AdminApi {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * Invalidation of arr_inhibited_item records whose source desc item
+     * no longer lies on an ancestor node
+     */
+    @Override
+    @AuthMethod(permission = { UsrPermission.Permission.ADMIN })
+    @Transactional
+    public ResponseEntity<Integer> adminDeleteInvalidInhibitedItems() {
+        int count = arrangementService.cleanupOrphanedInhibitedItems();
+        return ResponseEntity.ok(count);
+    }
+
 }
