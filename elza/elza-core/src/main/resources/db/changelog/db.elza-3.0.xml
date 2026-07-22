@@ -980,4 +980,13 @@
         </sql>
     </changeSet>
 
+    <changeSet id="20260722100000" author="ppy">
+        <!-- One-time validation of arr_inhibited_item records. Node moves performed
+             before the move operation started checking inhibited items could leave
+             records whose source desc item is no longer on an ancestor node. The
+             cleanup itself runs during application startup (StartupService), where
+             the full service layer is available. -->
+        <customChange class="cz.tacr.elza.dbchangelog.DbChangeset20260722100000"/>
+    </changeSet>
+
 </databaseChangeLog>

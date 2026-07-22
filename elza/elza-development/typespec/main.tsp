@@ -1234,8 +1234,20 @@ namespace ElzaAPI.Admin {
      * Creating missing items in arr_cached_node
      */
     @route("arrangement/missing-cached-nodes")
-    op syncNodeCache(): { 
+    op syncNodeCache(): {
         @Http.statusCode statusCode: 200;
+    };
+
+    /**
+     * Invalidate inhibited items (arr_inhibited_item) whose source desc item
+     * no longer lies on an ancestor node
+     */
+    @route("arrangement/invalid-inhibited-items")
+    @delete op deleteInvalidInhibitedItems(): {
+        @Http.statusCode statusCode: 200;
+        /** Number of invalidated items */
+        @body count: integer;
+        @header contentType: "application/json";
     };
 
     model CopyPermissionParams {
