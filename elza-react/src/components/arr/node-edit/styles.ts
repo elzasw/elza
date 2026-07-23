@@ -148,6 +148,15 @@ export const useStyles = makeStyles({
   fundDataGridPopoverBehindModal: {
     zIndex: "1000 !important",
   },
+  // Off-screen but still in the tab order, so Tab can land here to blur (and save) the
+  // last field. Must not use display/visibility none, which would drop it from tab order.
+  fundDataGridPopoverTabStop: {
+    position: "absolute",
+    width: "1px",
+    height: "1px",
+    overflow: "hidden",
+    clip: "rect(0 0 0 0)",
+  },
   addDescItemButton: {
     borderTopStyle: "dashed",
     borderRightStyle: "dashed",
