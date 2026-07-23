@@ -2,7 +2,7 @@ import { Popover, PopoverSurface, Spinner } from "@fluentui/react-components";
 import { copyDescItemType, nocopyDescItemType } from "actions/arr/nodeSetting";
 import { WebApi } from "actions";
 import { DataType, FormItemType, MandatoryType } from "elza-api";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { defineMessages, FormattedMessage } from "react-intl";
 import { useAppThunkDispatch } from "utils/hooks";
 import { useAppSelector } from "utils/hooks/useAppSelector";
@@ -69,6 +69,10 @@ export function FundDataGridCellForm({ fondsVersionId, nodeId, nodeVersionId, de
 
     const [autoFocusLocalId, setAutoFocusLocalId] = useState<string>();
 
+    // Set when the popover is dismissed via Esc, so the blur that closing triggers on the
+    // active field does not commit its pending edit.
+    const suppressSaveRef = useRef(false);
+
     function addEmptyDescItem(typeId: number, specId?: number, position?: number) {
         const localId = addEmptyDescItemBase(typeId, specId, position);
         setAutoFocusLocalId((current) => current ?? localId);
@@ -76,6 +80,7 @@ export function FundDataGridCellForm({ fondsVersionId, nodeId, nodeVersionId, de
     }
 
     async function createDescItem(item: any, localId: string) {
+        if (suppressSaveRef.current) { return; }
         await createDescItemBase(item, localId);
         const isSingleItem = !descItemTypeEntry || descItemTypeEntry.descItems.length <= 1;
         const hasData = item.data?.dataId != null;
@@ -85,6 +90,7 @@ export function FundDataGridCellForm({ fondsVersionId, nodeId, nodeVersionId, de
     }
 
     async function updateDescItem(item: any, localId?: string) {
+        if (suppressSaveRef.current) { return; }
         await updateDescItemBase(item, localId);
         const isSingleItem = !descItemTypeEntry || descItemTypeEntry.descItems.length <= 1;
         const hasData = item.data?.dataId != null;
@@ -193,6 +199,13 @@ export function FundDataGridCellForm({ fondsVersionId, nodeId, nodeVersionId, de
             <PopoverSurface
                 className={styles.fundDataGridPopover}
                 style={{ width: `${popoverWidthByTypeWidth[descItemTypeEntry?.typeWidth ?? 4] ?? 550}px` }}
+                onKeyDownCapture={(event) => {
+                    // Flag before Fluent's Esc handling blurs the active field, so the resulting
+                    // blur discards the pending edit instead of committing it.
+                    if (event.key === "Escape") {
+                        suppressSaveRef.current = true;
+                    }
+                }}
             >
                 {isLoading || (!descItemTypeEntry && !notAllowed) ? (
                     <Spinner />
@@ -222,6 +235,10 @@ export function FundDataGridCellForm({ fondsVersionId, nodeId, nodeVersionId, de
                             onAutoFocusTaken={() => setAutoFocusLocalId(undefined)}
                             hideCopyButtons
                         />
+                        {/* A focusable tab stop after the fields so Tab moves focus off the last
+                            field, blurring it and committing its value, instead of the focus trap
+                            wrapping straight back into the same field. */}
+                        <span tabIndex={0} className={styles.fundDataGridPopoverTabStop} />
                     </NodeFormContext.Provider>
                 )}
             </PopoverSurface>
