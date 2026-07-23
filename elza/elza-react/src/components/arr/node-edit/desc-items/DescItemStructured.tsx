@@ -233,6 +233,9 @@ export function DescItemStructured({
               paddingRight: compact ? FIELD_HEIGHT.small + 2 : FIELD_HEIGHT.medium + 4,
             }}
             input={{
+              // Keep the input read-only (rather than disabled) while polling an existing
+              // value: disabling it blurs it, which steals the popover's initial focus.
+              readOnly: isLoading,
               style: {
                 minWidth: "30px",
                 fontSize: "1em",
@@ -243,7 +246,7 @@ export function DescItemStructured({
               },
             }}
             listbox={{ style: { maxHeight: "400px", minWidth: "400px" } }}
-            disabled={isDisabled || isLoading}
+            disabled={isDisabled}
           >
             {structures.map(({ value, complement, id }) => {
               return (
