@@ -17,6 +17,7 @@ import {
 import { Api } from 'api';
 import { Button } from '@fluentui/react-components';
 import { FormattedMessage } from 'react-intl';
+import { MaskedValue } from 'components/shared/MaskedValue';
 
 /**
  * Komponenta detailu osoby
@@ -54,6 +55,16 @@ class AdminExtSystemDetail extends AbstractReactComponent {
             return <>
                 <h4>{i18n('admin.extSystem.' + field)}</h4>
                 <span>{value}</span>
+            </>
+        }
+    };
+
+    renderSecret = (extSystem, field) => {
+        const value = extSystem[field];
+        if (value != null) {
+            return <>
+                <h4>{i18n('admin.extSystem.' + field)}</h4>
+                <div><MaskedValue value={value} /></div>
             </>
         }
     };
@@ -194,9 +205,9 @@ class AdminExtSystemDetail extends AbstractReactComponent {
                         {this.renderValue(extSystem, 'code')}
                         {this.renderValue(extSystem, 'url')}
                         {this.renderValue(extSystem, 'username')}
-                        {this.renderValue(extSystem, 'password')}
+                        {this.renderSecret(extSystem, 'password')}
                         {this.renderValue(extSystem, 'apiKeyId')}
-                        {this.renderValue(extSystem, 'apiKeyValue')}
+                        {this.renderSecret(extSystem, 'apiKeyValue')}
                         {this.renderValue(extSystem, 'elzaCode')}
                         {this.renderValue(extSystem, 'userInfo')}
                         {extSystem.publishOnlyApproved != null && (

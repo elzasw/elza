@@ -1066,6 +1066,8 @@ public class RevertingChangesService {
                 { ArrDaoLink.TABLE_NAME, ArrDaoLink.FIELD_NODE, ArrDaoLink.FIELD_DELETE_CHANGE },
                 { ArrDescItem.TABLE_NAME, ArrDescItem.FIELD_NODE, ArrDescItem.FIELD_CREATE_CHANGE },
                 { ArrDescItem.TABLE_NAME, ArrDescItem.FIELD_NODE, ArrDescItem.FIELD_DELETE_CHANGE },
+                { ArrInhibitedItem.TABLE_NAME, ArrInhibitedItem.FIELD_NODE, ArrInhibitedItem.FIELD_CREATE_CHANGE },
+                { ArrInhibitedItem.TABLE_NAME, ArrInhibitedItem.FIELD_NODE, ArrInhibitedItem.FIELD_DELETE_CHANGE },
         };
 
         List<String> hqls = new ArrayList<>();

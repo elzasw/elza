@@ -84,7 +84,7 @@ const REQUIRED_FIELDS = {
     [EXT_SYSTEM_CLASS.ArrDigitalRepository]: ['digitalRepositoryType', 'sendNotification'] as string[],
     [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: [] as string[],
     [EXT_SYSTEM_CLASS.GisExternalSystem]: ['type', 'url'] as string[],
-    [EXT_SYSTEM_CLASS.AiExternalSystem]: ['url', 'apiKeyId', 'apiKeyValue'] as string[],
+    [EXT_SYSTEM_CLASS.AiExternalSystem]: ['url'] as string[],
 };
 
 function validate(values: ExtSystemFormValues) {

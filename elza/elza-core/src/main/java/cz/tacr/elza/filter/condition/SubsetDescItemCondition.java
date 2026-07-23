@@ -28,8 +28,4 @@ public class SubsetDescItemCondition<T extends Interval<IV>, IV> extends Abstrac
 
 		return factory.bool().must(fp).must(tp).toPredicate();
 	}
-//        Query fromQuery = queryBuilder.range().onField(getAttributeNameFrom()).above(from).createQuery();
-//        Query toQuery = queryBuilder.range().onField(getAttributeNameTo()).below(to).createQuery();
-//
-//        return queryBuilder.bool().must(fromQuery).must(toQuery).createQuery();
 }

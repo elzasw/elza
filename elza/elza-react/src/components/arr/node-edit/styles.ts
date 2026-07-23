@@ -139,9 +139,23 @@ export const useStyles = makeStyles({
     flex: 0,
   },
   fundDataGridPopover: {
-    minWidth: "300px",
-    maxWidth: "600px",
     padding: "8px",
+    maxHeight: "600px",
+    overflowY: "auto",
+  },
+  // Fluent sets the portal wrapper's z-index inline; override it to drop the popover
+  // below the Bootstrap modal (backdrop z-index 1050) while a modal is open.
+  fundDataGridPopoverBehindModal: {
+    zIndex: "1000 !important",
+  },
+  // Off-screen but still in the tab order, so Tab can land here to blur (and save) the
+  // last field. Must not use display/visibility none, which would drop it from tab order.
+  fundDataGridPopoverTabStop: {
+    position: "absolute",
+    width: "1px",
+    height: "1px",
+    overflow: "hidden",
+    clip: "rect(0 0 0 0)",
   },
   addDescItemButton: {
     borderTopStyle: "dashed",
