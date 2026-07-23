@@ -2,7 +2,7 @@ import { Popover, PopoverSurface, Spinner } from "@fluentui/react-components";
 import { copyDescItemType, nocopyDescItemType } from "actions/arr/nodeSetting";
 import { WebApi } from "actions";
 import { DataType, FormItemType, MandatoryType } from "elza-api";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { defineMessages, FormattedMessage } from "react-intl";
 import { useAppThunkDispatch } from "utils/hooks";
 import { useAppSelector } from "utils/hooks/useAppSelector";
@@ -61,11 +61,19 @@ export function FundDataGridCellForm({ fondsVersionId, nodeId, nodeVersionId, de
         addedFormItems,
         itemTypes,
         isLoading,
-        addEmptyDescItem,
+        addEmptyDescItem: addEmptyDescItemBase,
         deleteDescItem,
         createDescItem: createDescItemBase,
         updateDescItem: updateDescItemBase,
     } = nodeFormData;
+
+    const [autoFocusLocalId, setAutoFocusLocalId] = useState<string>();
+
+    function addEmptyDescItem(typeId: number, specId?: number, position?: number) {
+        const localId = addEmptyDescItemBase(typeId, specId, position);
+        setAutoFocusLocalId((current) => current ?? localId);
+        return localId;
+    }
 
     async function createDescItem(item: any, localId: string) {
         await createDescItemBase(item, localId);
@@ -137,7 +145,7 @@ export function FundDataGridCellForm({ fondsVersionId, nodeId, nodeVersionId, de
         // race and leave a stray empty field next to the loaded value.
         if (isLoading || !descItemTypeEntry) { return; }
         if (descItemTypeEntry.descItems.length === 0 && !isAnonymousStructured) {
-            addEmptyDescItem(descItemTypeId);
+            addEmptyDescItemBase(descItemTypeId);
         }
     }, [isLoading, descItemTypeEntry, isAnonymousStructured]);
 
@@ -160,6 +168,10 @@ export function FundDataGridCellForm({ fondsVersionId, nodeId, nodeVersionId, de
     return (
         <Popover
             open
+            trapFocus
+            // Keep our own open-focus logic (last editable field / add button); Popover would
+            // otherwise focus its first focusable element instead.
+            unstable_disableAutoFocus
             mountNode={{ className: hasOpenModal ? styles.fundDataGridPopoverBehindModal : undefined }}
             onOpenChange={(_event, data) => {
                 if (data.open) { return; }
@@ -199,12 +211,15 @@ export function FundDataGridCellForm({ fondsVersionId, nodeId, nodeVersionId, de
                             nodeSetting={nodeSetting}
                             isFirstNode={isFirstNode}
                             isAnonymousStructured={isAnonymousStructured}
+                            autoFocusOnOpen
                             handleCopyFromPrev={handleCopyFromPrev}
                             handleCopyToggle={handleCopyToggle}
                             addEmptyDescItem={addEmptyDescItem}
                             deleteDescItem={deleteDescItem}
                             createDescItem={createDescItem}
                             updateDescItem={updateDescItem}
+                            autoFocusLocalId={autoFocusLocalId}
+                            onAutoFocusTaken={() => setAutoFocusLocalId(undefined)}
                             hideCopyButtons
                         />
                     </NodeFormContext.Provider>
