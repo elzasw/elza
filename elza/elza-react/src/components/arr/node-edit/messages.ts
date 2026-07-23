@@ -10,6 +10,10 @@ export const messages = defineMessages({
     id: "desc_item_action_copyToggle",
     defaultMessage: "Nastavení opakovaného kopírování hodnot PP",
   },
+  openInDataGrid: {
+    id: "descItemType.action.openInDataGrid",
+    defaultMessage: "Zobrazit v tabulce",
+  },
   addDescItem: {
     id: "node_action_addDescItem",
     defaultMessage: "Prvek popisu",

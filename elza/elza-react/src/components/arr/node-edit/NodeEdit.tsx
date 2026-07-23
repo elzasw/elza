@@ -1,6 +1,8 @@
 import { Spinner } from "@fluentui/react-components";
 import { WebApi } from "actions";
 import { copyDescItemType, nocopyDescItemType } from "actions/arr/nodeSetting";
+import { routerNavigate } from "actions/router";
+import { getFundVersion, urlFundGrid } from "../../../constants";
 import { useEffect, useMemo, useState } from "react";
 import { NodeFormData, NodeStatus } from "elza-api";
 import { ArrDaoVO } from "typings/dao";
@@ -132,6 +134,14 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId, seedFromParent
     }
   }
 
+  function getOpenInDataGridHref(descItemTypeId: number) {
+    return urlFundGrid(activeFund.id, getFundVersion(activeFund), undefined, nodeId, descItemTypeId);
+  }
+
+  function handleOpenInDataGrid(descItemTypeId: number) {
+    dispatch(routerNavigate(getOpenInDataGridHref(descItemTypeId)));
+  }
+
   // function scrollDescItemIntoView(typeId: number){
   //   const element = refs?.current[typeId];
   //   if (element) {
@@ -206,6 +216,8 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId, seedFromParent
                   isFirstNode={isFirstNode}
                   handleCopyFromPrev={handleCopyFromPrev}
                   handleCopyToggle={handleCopyToggle}
+                  getOpenInDataGridHref={getOpenInDataGridHref}
+                  onOpenInDataGrid={handleOpenInDataGrid}
                   addEmptyDescItem={addEmptyDescItem}
                   deleteDescItem={deleteDescItem}
                   createDescItem={createDescItem}
