@@ -28,6 +28,9 @@ public interface InhibitedItemRepository extends JpaRepository<ArrInhibitedItem,
     @Query("SELECT i FROM arr_inhibited_item i WHERE i.nodeId IN (?1) AND i.deleteChange IS NULL")
 	List<ArrInhibitedItem> findByNodeIdsAndDeleteChangeIsNull(Collection<Integer> nodeIds);
 
+    @Query("SELECT i FROM arr_inhibited_item i WHERE i.deleteChange IS NULL AND i.node IN (SELECT n FROM arr_node n WHERE n.fund = ?1)")
+    List<ArrInhibitedItem> findOpenByNodeFund(ArrFund fund);
+
     @Query("SELECT DISTINCT di.itemId FROM arr_inhibited_item i JOIN arr_desc_item di ON di.descItemObjectId = i.descItemObjectId WHERE i.nodeId IN (?1) AND i.createChange < ?2 AND (i.deleteChange > ?2 OR i.deleteChange IS NULL)")
 	Set<Integer> findItemIdsByNodeIdsAndLockChange(Collection<Integer> nodeIds, ArrChange lockChange);
 

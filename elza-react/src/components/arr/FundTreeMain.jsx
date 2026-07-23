@@ -29,8 +29,8 @@ import {modalDialogShow} from 'actions/global/modalDialog.jsx';
 import {FOCUS_KEYS} from '../../constants.tsx';
 import PersistentSortDialog from './PersisetntSortDialog';
 import {WebApi} from '../../actions/WebApi';
-import {JAVA_ATTR_CLASS, urlFundGrid} from '../../constants';
-import {routerNavigate} from 'actions/router.jsx';
+import {getFundVersion, JAVA_ATTR_CLASS, urlFundGrid} from '../../constants';
+import {Link} from 'react-router-dom';
 import { showQuoteModal, messages as quoteMessages } from './quote';
 import { FormattedMessage } from 'react-intl';
 
@@ -96,16 +96,18 @@ class FundTreeMain extends React.Component {
      * @param e {Object} event
      */
     handleContextMenu = (node, e) => {
-        const {readMode} = this.props;
+        const {readMode, fund} = this.props;
         e.preventDefault();
         e.stopPropagation();
+
+        const dataGridUrl = urlFundGrid(fund.id, getFundVersion(fund), undefined, node.id);
 
         const menu = (
             <ul className="dropdown-menu">
                 <Dropdown.Item onClick={this.handleSelectInNewTab.bind(this, node)}>
                     {i18n('fundTree.action.openInNewTab')}
                 </Dropdown.Item>
-                <Dropdown.Item onClick={this.handleOpenInDataGrid.bind(this, node)}>
+                <Dropdown.Item as={Link} to={dataGridUrl} onClick={() => this.props.dispatch(contextMenuHide())}>
                     {i18n('fundTree.action.openInDataGrid')}
                 </Dropdown.Item>
                 <Dropdown.Item onClick={this.handleQuote(node)}>
@@ -136,15 +138,6 @@ class FundTreeMain extends React.Component {
         this.props.dispatch(contextMenuHide());
 
         this.callFundSelectSubNode(node, true, false);
-    };
-
-    /**
-     * Open the node in the table (datagrid) view, focused on its cell.
-     */
-    handleOpenInDataGrid = node => {
-        const {fund, versionId} = this.props;
-        this.props.dispatch(contextMenuHide());
-        this.props.dispatch(routerNavigate(urlFundGrid(fund.id, versionId, undefined, node.id)));
     };
 
     handleOpenPersistentSortDialog = node => {

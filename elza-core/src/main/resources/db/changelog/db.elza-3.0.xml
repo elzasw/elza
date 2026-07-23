@@ -980,6 +980,15 @@
         </sql>
     </changeSet>
 
+    <changeSet id="20260722100000" author="ppy">
+        <!-- One-time validation of arr_inhibited_item records. Node moves performed
+             before the move operation started checking inhibited items could leave
+             records whose source desc item is no longer on an ancestor node. The
+             cleanup itself runs during application startup (StartupService), where
+             the full service layer is available. -->
+        <customChange class="cz.tacr.elza.dbchangelog.DbChangeset20260722100000"/>
+    </changeSet>
+
     <changeSet id="20260512120000" author="ppy">
         <validCheckSum>ANY</validCheckSum>
         <!-- Publication of archival description: storage for publication types and
@@ -1573,5 +1582,38 @@
 	    <sql dbms="postgresql">UPDATE par_institution SET institution_type_id = NULL</sql>
 	    <sql dbms="postgresql">DELETE FROM par_institution_type</sql>
 	</changeSet>
+
+	<changeSet id="20260721131500" author="sergey.iryupin">
+	    <sql>
+	        UPDATE par_institution i
+	        SET short_name = (
+	            SELECT ix.index_value
+	            FROM ap_part p
+	            JOIN rul_part_type pt   ON pt.part_type_id  = p.part_type_id  AND pt.code  = 'PT_NAME'
+	            JOIN ap_item it         ON it.part_id       = p.part_id       AND it.delete_change_id IS NULL
+	            JOIN rul_item_type rit  ON rit.item_type_id = it.item_type_id AND rit.code = 'NM_TYPE'
+	            JOIN rul_item_spec ris  ON ris.item_spec_id = it.item_spec_id AND ris.code = 'NT_ACRONYM'
+	            JOIN ap_index ix        ON ix.part_id       = p.part_id       AND ix.index_type = 'DISPLAY_NAME'
+	            WHERE p.access_point_id = i.access_point_id
+	              AND p.delete_change_id IS NULL
+	            LIMIT 1
+	        )
+	    </sql>
+	</changeSet>
+
+    <changeSet id="20260721143500" author="sergey.iryupin">
+        <sql dbms="postgresql">
+            CREATE INDEX arr_data_coordinates_value_gist_idx
+            ON arr_data_coordinates USING GIST (coordinates_value)
+        </sql>
+        <sql dbms="postgresql">
+            CREATE INDEX arr_data_coordinates_value_geog_gist_idx
+            ON arr_data_coordinates USING GIST ((coordinates_value::geography))
+        </sql>
+        <rollback>
+            <sql dbms="postgresql">DROP INDEX arr_data_coordinates_value_geog_gist_idx</sql>
+            <sql dbms="postgresql">DROP INDEX arr_data_coordinates_value_gist_idx</sql>
+        </rollback>
+    </changeSet>
 
 </databaseChangeLog>

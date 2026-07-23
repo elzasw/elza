@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Col, Row } from 'react-bootstrap';
 import { FormInputField, Icon } from 'components/shared';
+import { MaskedValue } from 'components/shared/MaskedValue';
 import { defineMessages, FormattedMessage, useIntl } from 'react-intl';
 import { Button } from 'components/ui';
 import { Form as FinalForm, Field } from 'react-final-form';
@@ -210,7 +211,7 @@ export default function ApiKeysSettings() {
                                                 <b>
                                                     <FormattedMessage {...messages.apiKeysItemValue} />:
                                                 </b>{' '}
-                                                {apiKeyValue?.value}
+                                                <MaskedValue value={apiKeyValue?.value} />
                                             </div>
                                         </div>
                                     </div>

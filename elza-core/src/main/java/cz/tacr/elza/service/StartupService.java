@@ -116,6 +116,13 @@ public class StartupService implements SmartLifecycle {
     public static boolean fullTextReindex = false;
 
     /**
+     * One-time validation of inhibited items (arr_inhibited_item), set from
+     * a Liquibase changeset. The cleanup itself runs during startup when the
+     * full service layer is available.
+     */
+    public static boolean inhibitedItemsCleanup = false;
+
+    /**
      * Service should start automatically by default
      *
      * It is possible to disable autoStart, used by tests
@@ -259,6 +266,14 @@ public class StartupService implements SmartLifecycle {
         if (fullTextReindex) {
             logger.info("Full text reindex ...");
             tt.executeWithoutResult(r -> adminService.reindexInternal());
+        }
+
+        if (inhibitedItemsCleanup) {
+            logger.info("Validating inhibited items ...");
+            tt.executeWithoutResult(r -> {
+                int count = arrangementService.cleanupOrphanedInhibitedItems();
+                logger.info("Validation of inhibited items finished, invalidated: {}", count);
+            });
         }
 
         // vyklizení složky pro exportní soubory xml & csv

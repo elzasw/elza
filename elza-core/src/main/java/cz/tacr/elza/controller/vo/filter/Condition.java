@@ -59,9 +59,11 @@ public enum Condition {
 
     END(DataType.TEXT, DataType.STRING, DataType.FORMATTED_TEXT, DataType.UNITID),
 
-    SUBSET(DataType.UNITDATE),
+    INTERSECT(DataType.UNITDATE),
 
-    INTERSECT(DataType.UNITDATE);
+	SUBSET(DataType.UNITDATE, DataType.COORDINATES),
+
+	NEAR(DataType.COORDINATES);
 
     private List<DataType> supportedDescItemTypes;
 

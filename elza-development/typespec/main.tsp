@@ -2187,6 +2187,18 @@ namespace ElzaAPI.Admin {
         @Http.statusCode statusCode: 200;
     };
 
+    /**
+     * Invalidate inhibited items (arr_inhibited_item) whose source desc item
+     * no longer lies on an ancestor node
+     */
+    @route("arrangement/invalid-inhibited-items")
+    @delete op deleteInvalidInhibitedItems(): {
+        @Http.statusCode statusCode: 200;
+        /** Number of invalidated items */
+        @body count: integer;
+        @header contentType: "application/json";
+    };
+
     model CopyPermissionParams {
         fromUserId: integer
     };

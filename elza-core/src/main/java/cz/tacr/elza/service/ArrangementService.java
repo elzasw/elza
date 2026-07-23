@@ -173,6 +173,7 @@ import cz.tacr.elza.repository.InhibitedItemRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.LevelRepositoryCustom.LevelInfo;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.UserRepository;
@@ -2858,4 +2859,102 @@ public class ArrangementService {
 
 		return inhibitedItem.getInhibitedItemId();
 	}
+
+    /**
+     * Validates all open inhibited items (arr_inhibited_item).
+     *
+     * The desc item whose inheritance is inhibited must be located on an
+     * ancestor of the inhibited item's node. Records violating this rule are
+     * marked as deleted and the node cache of affected nodes is synchronized.
+     *
+     * Items of nodes without an open level (deleted nodes) are left unchanged.
+     *
+     * @return number of invalidated items
+     */
+    @Transactional(TxType.MANDATORY)
+    public int cleanupOrphanedInhibitedItems() {
+        int invalidatedCount = 0;
+        for (ArrFundVersion version : fundVersionRepository.findAllOpenVersion()) {
+            invalidatedCount += cleanupOrphanedInhibitedItems(version);
+        }
+        return invalidatedCount;
+    }
+
+    private int cleanupOrphanedInhibitedItems(final ArrFundVersion version) {
+        List<ArrInhibitedItem> inhibitedItems = inhibitedItemRepository.findOpenByNodeFund(version.getFund());
+        if (inhibitedItems.isEmpty()) {
+            return 0;
+        }
+
+        // parent map of the whole fonds tree, nodeId -> parent nodeId (root has null parent)
+        Map<Integer, Integer> parentNodeIds = new HashMap<>();
+        for (LevelInfo levelInfo : levelRepository.readTree(null, version.getRootNodeId())) {
+            parentNodeIds.put(levelInfo.getNodeId(), levelInfo.getParentId());
+        }
+
+        // nodeIds of source desc items by descItemObjectId
+        Set<Integer> descItemObjectIds = inhibitedItems.stream()
+                .map(ArrInhibitedItem::getDescItemObjectId)
+                .collect(Collectors.toSet());
+        Map<Integer, Integer> sourceNodeIdByObjectId = new HashMap<>();
+        ObjectListIterator.findIterable(descItemObjectIds, descItemRepository::findOpenDescItemsByIds)
+                .forEach(i -> sourceNodeIdByObjectId.put(i.getDescItemObjectId(), i.getNodeId()));
+
+        List<ArrInhibitedItem> invalidatedItems = new ArrayList<>();
+        Set<Integer> affectedNodeIds = new HashSet<>();
+        ArrChange change = null;
+        for (ArrInhibitedItem inhibitedItem : inhibitedItems) {
+            if (!parentNodeIds.containsKey(inhibitedItem.getNodeId())) {
+                // node without an open level (deleted node)
+                continue;
+            }
+            if (isInhibitedItemValid(inhibitedItem, parentNodeIds, sourceNodeIdByObjectId)) {
+                continue;
+            }
+            if (change == null) {
+                change = arrangementInternalService.createChange(ArrChange.Type.DELETE_INHIBITED_ITEM);
+            }
+            inhibitedItem.setDeleteChange(change);
+            invalidatedItems.add(inhibitedItem);
+            affectedNodeIds.add(inhibitedItem.getNodeId());
+        }
+        if (invalidatedItems.isEmpty()) {
+            return 0;
+        }
+
+        inhibitedItemRepository.saveAll(invalidatedItems);
+        inhibitedItemRepository.flush();
+
+        ObjectListIterator.forEachPage(affectedNodeIds, nodeCacheService::syncNodes);
+
+        eventNotificationService.publishEvent(new EventIdsInVersion(EventType.NODES_CHANGE,
+                version.getFundVersionId(),
+                affectedNodeIds.toArray(new Integer[0])));
+
+        logger.info("Invalidated orphaned inhibited items, fundId: {}, checked: {}, invalidated: {}, nodeIds: {}",
+                    version.getFundId(), inhibitedItems.size(), invalidatedItems.size(), affectedNodeIds);
+
+        return invalidatedItems.size();
+    }
+
+    /**
+     * The inhibited item is valid when its source desc item exists and lies
+     * on an ancestor of the inhibited item's node.
+     */
+    private boolean isInhibitedItemValid(final ArrInhibitedItem inhibitedItem,
+                                         final Map<Integer, Integer> parentNodeIds,
+                                         final Map<Integer, Integer> sourceNodeIdByObjectId) {
+        Integer sourceNodeId = sourceNodeIdByObjectId.get(inhibitedItem.getDescItemObjectId());
+        if (sourceNodeId == null) {
+            return false;
+        }
+        Integer nodeId = parentNodeIds.get(inhibitedItem.getNodeId());
+        while (nodeId != null) {
+            if (nodeId.equals(sourceNodeId)) {
+                return true;
+            }
+            nodeId = parentNodeIds.get(nodeId);
+        }
+        return false;
+    }
 }

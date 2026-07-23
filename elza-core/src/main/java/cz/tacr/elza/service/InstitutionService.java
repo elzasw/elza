@@ -7,14 +7,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.controller.vo.Institution;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApIndex;
+import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.ParInstitutionType;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.groovy.GroovyResult;
 import cz.tacr.elza.repository.ApIndexRepository;
+import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.InstitutionTypeRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
@@ -27,7 +33,11 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 @Service
 public class InstitutionService {
 
-    @Autowired
+	private static final String PART_TYPE_NAME       = "PT_NAME";
+	private static final String ITEM_TYPE_NAME_FORM  = "NM_TYPE";
+	private static final String ITEM_SPEC_ACRONYM    = "NT_ACRONYM";
+
+	@Autowired
     private InstitutionTypeRepository institutionTypeRepository;
 
     @Autowired
@@ -35,6 +45,12 @@ public class InstitutionService {
 
     @Autowired
     private ApIndexRepository indexRepository;
+
+    @Autowired
+    private ApItemRepository itemRepository;
+
+    @Autowired
+    private StaticDataService staticDataService;
 
     @Autowired
     private AccessPointService accessPointService;
@@ -48,8 +64,8 @@ public class InstitutionService {
 
     public List<ParInstitutionType> findAllTypes() {
         return institutionTypeRepository.findAll();
-    }    
-    
+    }
+
     /** Resolve institution by numeric id or by {@code internalCode}. */
     public ParInstitution findByIdOrCode(final String idOrCode) {
         Assert.notNull(idOrCode, "Identifier must not be null");
@@ -112,14 +128,31 @@ public class InstitutionService {
         eventNotificationService.publishEvent(new ActionEvent(EventType.INSTITUTION_CHANGE));
     }
 
+    /** Preferred-part DISPLAY_NAME of the AP, or {@code null} if it has none. */
     private String displayNameOf(final ApAccessPoint ap) {
-        ApIndex idx = indexRepository.findPreferredPartIndexByAccessPointAndIndexType(ap, GroovyResult.DISPLAY_NAME);
+        ApIndex idx = indexRepository.findPreferredPartIndexByAccessPointAndIndexType(
+                ap, GroovyResult.DISPLAY_NAME);
         return idx != null ? idx.getIndexValue() : null;
     }
 
+    /**
+     * Short name from the first PT_NAME part whose NM_TYPE spec is NT_ACRONYM
+     * (акronym/zkratka). Returns {@code null} if no such part exists.
+     */
     private String shortNameOf(final ApAccessPoint ap) {
-        ApIndex idx = indexRepository.findPreferredPartIndexByAccessPointAndIndexType(ap, GroovyResult.SHORT_NAME);
-        return idx != null ? idx.getIndexValue() : null;
+        StaticDataProvider sdp = staticDataService.getData();
+        RulItemType nmType = sdp.getItemTypeByCode(ITEM_TYPE_NAME_FORM).getEntity();
+
+        List<ApItem> nmItems = itemRepository.findItemsByAccessPointIdAndItemTypeAndPartTypeCode(ap.getAccessPointId(), nmType, PART_TYPE_NAME);
+
+        for (ApItem item : nmItems) {
+            RulItemSpec spec = item.getItemSpec();
+            if (spec != null && ITEM_SPEC_ACRONYM.equals(spec.getCode())) {
+                ApIndex idx = indexRepository.findByPartAndIndexType(item.getPart(), GroovyResult.DISPLAY_NAME);
+                return idx != null ? idx.getIndexValue() : null;
+            }
+        }
+        return null;
     }
 
     private ParInstitution requireById(final Integer id) {

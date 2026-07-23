@@ -1,7 +1,19 @@
-import { Button, Tooltip, mergeClasses } from "@fluentui/react-components";
-import { ClipboardPasteRegular, CopyRegular } from "@fluentui/react-icons";
+import {
+  Menu,
+  MenuDivider,
+  MenuItem,
+  MenuItemLink,
+  MenuList,
+  MenuPopover,
+  MenuTrigger,
+  Button,
+  Tooltip,
+  mergeClasses,
+  tokens,
+} from "@fluentui/react-components";
+import { CheckmarkRegular, ClipboardPasteRegular, CopyRegular, MoreHorizontal20Filled, Table20Regular } from "@fluentui/react-icons";
 import { FormItemType } from "elza-api";
-import { PropsWithChildren, ReactNode, useState } from "react";
+import { PropsWithChildren, ReactNode } from "react";
 import { FormattedMessage } from "react-intl";
 import { DescItemTypeRef, NodeSettings } from "typings/store";
 import { useAppSelector } from "utils/hooks/useAppSelector";
@@ -24,6 +36,10 @@ export interface Props extends PropsWithChildren {
   handleCopyFromPrev: (id: number) => void;
   canCopyFromPrev: boolean;
   handleCopyToggle: (id: number) => void;
+  // Href for the "open in datagrid" menu item, so it behaves as a real link (ctrl/middle-click,
+  // open in new tab). onOpenInDataGrid handles the in-app (SPA) navigation on a plain click.
+  getOpenInDataGridHref?: (id: number) => string;
+  onOpenInDataGrid?: (id: number) => void;
   hideCopyButtons?: boolean;
   extraActions?: ReactNode;
 }
@@ -36,12 +52,13 @@ export function DescItemTypeHeader({
   nodeSettings,
   handleCopyFromPrev,
   handleCopyToggle,
+  getOpenInDataGridHref,
+  onOpenInDataGrid,
   canCopyFromPrev,
   hideCopyButtons = false,
   extraActions,
 }: Props) {
   const styles = useStyles();
-  const [isHovered, setIsHovered] = useState(false);
   const isCopied = nodeSettings?.descItemTypeCopyIds.includes(typeRef.id);
   const { settings } = useUserSettings();
   const compact = settings.compact;
@@ -73,9 +90,7 @@ export function DescItemTypeHeader({
       )}
       onMouseEnter={({ currentTarget }) => {
         currentTarget.style.outline = "none";
-        setIsHovered(true);
       }}
-      onMouseLeave={() => setIsHovered(false)}
     >
       <div
         style={{
@@ -83,7 +98,7 @@ export function DescItemTypeHeader({
           fontWeight: "bold",
           marginRight: "4px",
           display: "flex",
-          alignItems: "flex-end",
+          alignItems: "center",
           // opacity: typeWidth ? 1 - (4 - typeWidth) / 6 : 1,
           // fontSize: `${1 + (typeWidth ? typeWidth * 0.1 : 0.4)}em`,
           // fontSize: '0.8em',
@@ -103,46 +118,66 @@ export function DescItemTypeHeader({
         <DescItemTypeDebugInfo typeRef={typeRef} typeForm={typeForm} />
         {extraActions}
         {!hideCopyButtons && (
-          <div className="actions" >
-            <Tooltip
-              relationship="label"
-              appearance="inverted"
-              content={<FormattedMessage {...messages.copyFromPrev} />}
-            >
-              <Button
-                // className="hidable-button"
-                style={{visibility: isHovered ? "visible" : "hidden"}}
-                size="small"
-                appearance="subtle"
-                icon={<ClipboardPasteRegular />}
-                onClick={() => handleCopyFromPrev(typeRef.id)}
-                disabled={!canCopyFromPrev}
-                tabIndex={-1}
-              />
-            </Tooltip>
-            <Tooltip
-              relationship="label"
-              appearance="inverted"
-              content={<FormattedMessage {...messages.copyToggle} />}
-            >
-              <Button
-              style={{visibility: isHovered || isCopied ? "visible" : "hidden"}}
-                className={
-                  nodeSettings?.descItemTypeCopyIds.includes(typeRef.id)
-                    ? undefined
-                    : "hidable-button"
-                }
-                size="small"
-                appearance={
-                  nodeSettings?.descItemTypeCopyIds.includes(typeRef.id)
-                    ? "primary"
-                    : "subtle"
-                }
-                icon={<CopyRegular />}
-                onClick={() => handleCopyToggle(typeRef.id)}
-                tabIndex={-1}
-              />
-            </Tooltip>
+          <div className="actions" style={{ marginLeft: tokens.spacingHorizontalXS }}>
+            <Menu>
+              <MenuTrigger disableButtonEnhancement>
+                <Button
+                  size="small"
+                  appearance="subtle"
+                  icon={<MoreHorizontal20Filled />}
+                  tabIndex={-1}
+                />
+              </MenuTrigger>
+              <MenuPopover>
+                <MenuList>
+                  <MenuItem
+                    icon={<ClipboardPasteRegular />}
+                    onClick={() => handleCopyFromPrev(typeRef.id)}
+                    disabled={!canCopyFromPrev}
+                  >
+                    <FormattedMessage {...messages.copyFromPrev} />
+                  </MenuItem>
+                  <MenuItem
+                    icon={isCopied ? <CheckmarkRegular /> : <CopyRegular />}
+                    onClick={() => handleCopyToggle(typeRef.id)}
+                  >
+                    <FormattedMessage {...messages.copyToggle} />
+                  </MenuItem>
+                  {onOpenInDataGrid && getOpenInDataGridHref && (
+                    <>
+                      <MenuDivider />
+                      <MenuItemLink
+                        href={getOpenInDataGridHref(typeRef.id)}
+                        icon={<Table20Regular />}
+                        onClick={event => {
+                          // Let ctrl/cmd/shift/middle-click fall through to the browser (open in new tab);
+                          // handle a plain click as in-app navigation.
+                          const opensNewTab = event.ctrlKey || event.metaKey || event.shiftKey || event.button === 1;
+                          if (opensNewTab) {
+                            return;
+                          }
+                          event.preventDefault();
+                          onOpenInDataGrid(typeRef.id);
+                        }}
+                      >
+                        <FormattedMessage {...messages.openInDataGrid} />
+                      </MenuItemLink>
+                    </>
+                  )}
+                </MenuList>
+              </MenuPopover>
+            </Menu>
+            {isCopied && (
+              <Tooltip relationship="label" content={<FormattedMessage {...messages.copyToggle} />}>
+                <Button
+                  size="small"
+                  appearance="primary"
+                  icon={<CopyRegular />}
+                  onClick={() => handleCopyToggle(typeRef.id)}
+                  tabIndex={-1}
+                />
+              </Tooltip>
+            )}
           </div>
         )}
       </div>
