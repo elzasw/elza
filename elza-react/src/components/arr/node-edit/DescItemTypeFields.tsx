@@ -27,8 +27,11 @@ interface Props {
     nodeVersionId?: number;
     nodeSetting?: any;
     isFirstNode: boolean;
+    isAnonymousStructured?: boolean;
     handleCopyFromPrev: (descItemTypeId: number) => void;
     handleCopyToggle: (descItemTypeId: number) => void;
+    getOpenInDataGridHref?: (descItemTypeId: number) => string;
+    onOpenInDataGrid?: (descItemTypeId: number) => void;
     addEmptyDescItem: (typeId: number, specId?: number, position?: number) => string | void;
     deleteDescItem: (item: any, localId: string) => Promise<void>;
     createDescItem: (item: any, localId: string) => Promise<any>;
@@ -49,8 +52,11 @@ export function DescItemTypeFields({
     nodeVersionId,
     nodeSetting,
     isFirstNode,
+    isAnonymousStructured = false,
     handleCopyFromPrev,
     handleCopyToggle,
+    getOpenInDataGridHref,
+    onOpenInDataGrid,
     addEmptyDescItem,
     deleteDescItem,
     createDescItem,
@@ -104,10 +110,20 @@ export function DescItemTypeFields({
     );
 
     const lastItem = sortedDescItems[sortedDescItems.length - 1];
-    const showAddButton =
+    const hasNoItems = sortedDescItems.length === 0;
+
+    const repeatableWithoutEmptyItem =
         typeForm?.repeatable &&
         ((lastItem?.item.data?.dataId != undefined && !lastItem?.item.undefined) ||
             typeRef.useSpecification);
+
+    // Anonymous structured fields have no auto-added empty placeholder, so they need an
+    // explicit "+" whenever another value may still be added: always when repeatable,
+    // and while still empty when not.
+    const anonymousStructuredNeedsButton =
+        isAnonymousStructured && (typeForm?.repeatable || hasNoItems);
+
+    const showAddButton = repeatableWithoutEmptyItem || anonymousStructuredNeedsButton;
 
     return (
         <DescItemTypeHeader
@@ -117,6 +133,8 @@ export function DescItemTypeFields({
             nodeSettings={nodeSetting}
             handleCopyFromPrev={handleCopyFromPrev}
             handleCopyToggle={handleCopyToggle}
+            getOpenInDataGridHref={getOpenInDataGridHref}
+            onOpenInDataGrid={onOpenInDataGrid}
             canCopyFromPrev={!isFirstNode}
             hideCopyButtons={hideCopyButtons}
             extraActions={renderExtraActions?.(typeRef)}
@@ -171,7 +189,7 @@ export function DescItemTypeFields({
                     icon={<AddRegular />}
                     onClick={() => {
                         const nextPosition =
-                            lastItem.item.position > 0 ? lastItem.item.position + 1 : 1;
+                            lastItem?.item.position > 0 ? lastItem.item.position + 1 : 1;
                         addEmptyDescItem(typeRef.id, undefined, nextPosition);
                     }}
                     tabIndex={-1}
