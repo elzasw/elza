@@ -15,7 +15,13 @@ public class ArrInhibitedItem {
 
     public final static String TABLE_NAME = "arr_inhibited_item";
 
+    public final static String FIELD_NODE = "node";
+
+    public final static String FIELD_CREATE_CHANGE = "createChange";
+
     public final static String FIELD_CREATE_CHANGE_ID = "createChangeId";
+
+    public final static String FIELD_DELETE_CHANGE = "deleteChange";
 
     public final static String FIELD_DELETE_CHANGE_ID = "deleteChangeId";
 
