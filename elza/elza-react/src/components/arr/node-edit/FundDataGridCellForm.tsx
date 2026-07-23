@@ -1,7 +1,7 @@
 import { Popover, PopoverSurface, Spinner } from "@fluentui/react-components";
 import { copyDescItemType, nocopyDescItemType } from "actions/arr/nodeSetting";
 import { WebApi } from "actions";
-import { FormItemType, MandatoryType } from "elza-api";
+import { DataType, FormItemType, MandatoryType } from "elza-api";
 import { useEffect, useMemo } from "react";
 import { defineMessages, FormattedMessage } from "react-intl";
 import { useAppThunkDispatch } from "utils/hooks";
@@ -10,6 +10,14 @@ import { useActiveFund, useActiveParent, useNodeFormData, useStrictMode } from "
 import { NodeFormContext } from "./NodeFormContext";
 import { DescItemTypeFields } from "./DescItemTypeFields";
 import { useStyles } from "./styles";
+
+const popoverWidthByTypeWidth: Record<number, number> = {
+    0: 600,
+    1: 300,
+    2: 400,
+    3: 500,
+    4: 600,
+};
 
 const messages = defineMessages({
     notAllowed: {
@@ -34,7 +42,13 @@ export function FundDataGridCellForm({ fondsVersionId, nodeId, nodeVersionId, de
     const styles = useStyles();
 
     const itemTypeRefs = useAppSelector(({ refTables }) => refTables.descItemTypes.itemsMap);
+    const dataTypeRefs = useAppSelector(({ refTables }) => refTables.rulDataTypes.itemsMap);
     const groupRefs = useAppSelector(({ refTables }) => refTables.groups.data);
+    const structureTypes = useAppSelector(
+        ({ refTables }) =>
+            refTables.structureTypes.data?.find(({ versionId }) => versionId === activeFund?.versionId)?.data || [],
+    );
+    const hasOpenModal = useAppSelector(({ modalDialog }) => modalDialog.items.length > 0);
     const nodeSetting = useAppSelector(({ arrRegion }) =>
         arrRegion.nodeSettings.nodes.find(({ id }) => id === activeParent?.id),
     );
@@ -110,11 +124,22 @@ export function FundDataGridCellForm({ fondsVersionId, nodeId, nodeVersionId, de
         return { typeRef, typeForm, typeWidth, descItems };
     }, [formItems, forcedFormItems, addedFormItems, serverTypeForm, notAllowed, groupRefs, typeRef, descItemTypeId]);
 
+    // An anonymous structured field creates its server object as soon as the empty
+    // placeholder mounts, so auto-adding one would persist a spurious blank value.
+    // Other types (incl. non-anonymous structured) just add an empty field to edit in place.
+    const isStructured = dataTypeRefs?.[typeRef?.dataTypeId ?? -1]?.code === DataType.Structured;
+    const isAnonymousStructured =
+        isStructured &&
+        structureTypes.find(({ id }) => id === typeRef?.structureTypeId)?.anonymous === true;
+
     useEffect(() => {
-        if (descItemTypeEntry && descItemTypeEntry.descItems.length === 0) {
+        // Wait for the node data to settle; adding before the server items arrive would
+        // race and leave a stray empty field next to the loaded value.
+        if (isLoading || !descItemTypeEntry) { return; }
+        if (descItemTypeEntry.descItems.length === 0 && !isAnonymousStructured) {
             addEmptyDescItem(descItemTypeId);
         }
-    }, [descItemTypeEntry]);
+    }, [isLoading, descItemTypeEntry, isAnonymousStructured]);
 
     async function handleCopyFromPrev(typeId: number) {
         await WebApi.copyOlderSiblingAttribute(activeFund.versionId, nodeId, nodeVersionId, typeId);
@@ -135,7 +160,15 @@ export function FundDataGridCellForm({ fondsVersionId, nodeId, nodeVersionId, de
     return (
         <Popover
             open
-            onOpenChange={(_e, data) => { if (!data.open) { setTimeout(onClose, 0); } }}
+            mountNode={{ className: hasOpenModal ? styles.fundDataGridPopoverBehindModal : undefined }}
+            onOpenChange={(_event, data) => {
+                if (data.open) { return; }
+                // Opening a child modal (e.g. the structure "add" dialog) shifts focus/clicks
+                // outside the popover, which Fluent reads as a dismiss. Keep the popover open
+                // while any modal dialog is on screen.
+                if (hasOpenModal) { return; }
+                setTimeout(onClose, 0);
+            }}
             positioning={{
                 target,
                 position: "below",
@@ -145,8 +178,11 @@ export function FundDataGridCellForm({ fondsVersionId, nodeId, nodeVersionId, de
                 // overflowBoundary: "viewport"
             }}
         >
-            <PopoverSurface className={styles.fundDataGridPopover}>
-                {isLoading || !descItemTypeEntry && !notAllowed ? (
+            <PopoverSurface
+                className={styles.fundDataGridPopover}
+                style={{ width: `${popoverWidthByTypeWidth[descItemTypeEntry?.typeWidth ?? 4] ?? 550}px` }}
+            >
+                {isLoading || (!descItemTypeEntry && !notAllowed) ? (
                     <Spinner />
                 ) : notAllowed ? (
                     <FormattedMessage {...messages.notAllowed} />
@@ -162,6 +198,7 @@ export function FundDataGridCellForm({ fondsVersionId, nodeId, nodeVersionId, de
                             nodeVersionId={nodeVersionId}
                             nodeSetting={nodeSetting}
                             isFirstNode={isFirstNode}
+                            isAnonymousStructured={isAnonymousStructured}
                             handleCopyFromPrev={handleCopyFromPrev}
                             handleCopyToggle={handleCopyToggle}
                             addEmptyDescItem={addEmptyDescItem}

@@ -139,9 +139,14 @@ export const useStyles = makeStyles({
     flex: 0,
   },
   fundDataGridPopover: {
-    minWidth: "300px",
-    maxWidth: "600px",
     padding: "8px",
+    maxHeight: "600px",
+    overflowY: "auto",
+  },
+  // Fluent sets the portal wrapper's z-index inline; override it to drop the popover
+  // below the Bootstrap modal (backdrop z-index 1050) while a modal is open.
+  fundDataGridPopoverBehindModal: {
+    zIndex: "1000 !important",
   },
   addDescItemButton: {
     borderTopStyle: "dashed",
