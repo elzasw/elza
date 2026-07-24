@@ -2,7 +2,10 @@ package cz.tacr.elza.repository;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +14,7 @@ import java.util.Set;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
+import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
@@ -32,6 +36,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
+import com.google.common.collect.Lists;
+
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -39,6 +45,8 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.service.DataService;
+import cz.tacr.elza.service.vo.NodeIdChangeId;
+import cz.tacr.elza.service.vo.NodeIdChangeIdDescItem;
 
 /**
  * Rozšířený repozitář pro {@link DescItemRepository}.
@@ -62,6 +70,115 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
     	}
     	return searchSession;
     }
+
+    @Override
+    public List<NodeIdChangeIdDescItem> findDescItemsByNodeChangePairs(final Collection<NodeIdChangeId> pairs,
+                                                                       final Collection<Integer> itemTypeIds) {
+
+        if (pairs.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // dedupe defensively: identical (nodeId, changeId) doesn't need to be joined twice
+        List<NodeIdChangeId> uniquePairs = new ArrayList<>(new LinkedHashSet<>(pairs));
+
+        // stay well below the JDBC 65 535 parameter cap (each pair uses 2 params + itemTypeIds)
+        final int CHUNK = 500;
+
+        // pair-to-itemId mapping collected across chunks: [nodeId, changeId, itemId]
+        List<Object[]> mapping = new ArrayList<>();
+        for (int from = 0; from < uniquePairs.size(); from += CHUNK) {
+            List<NodeIdChangeId> chunk = uniquePairs.subList(from, Math.min(from + CHUNK, uniquePairs.size()));
+            mapping.addAll(runPairsChunk(chunk, itemTypeIds));
+        }
+
+        if (mapping.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // load managed ArrDescItem entities with the same fetch-joins as findDescItemsByNodeIds
+        Set<Integer> itemIds = new HashSet<>();
+        for (Object[] row : mapping) {
+            itemIds.add(((Number) row[2]).intValue());
+        }
+
+        Map<Integer, ArrDescItem> byId = new HashMap<>();
+        for (List<Integer> partition : Lists.partition(new ArrayList<>(itemIds), ObjectListIterator.getMaxBatchSize())) {
+            TypedQuery<ArrDescItem> q = entityManager.createQuery(
+                    "SELECT di FROM arr_desc_item di" +
+                            " JOIN FETCH di.node n" +
+                            " JOIN FETCH di.itemType dit" +
+                            " LEFT JOIN FETCH di.itemSpec dis" +
+                            " WHERE di.itemId IN :ids",
+                    ArrDescItem.class);
+            q.setParameter("ids", partition);
+            for (ArrDescItem item : q.getResultList()) {
+                byId.put(item.getItemId(), item);
+            }
+        }
+
+        // reconstruct pair → item associations in the original row order
+        List<NodeIdChangeIdDescItem> result = new ArrayList<>(mapping.size());
+        for (Object[] row : mapping) {
+            Integer nodeId = ((Number) row[0]).intValue();
+            Integer changeId = ((Number) row[1]).intValue();
+            Integer itemId = ((Number) row[2]).intValue();
+            ArrDescItem item = byId.get(itemId);
+            if (item != null) {
+                result.add(new NodeIdChangeIdDescItem(new NodeIdChangeId(nodeId, changeId), item));
+            }
+        }
+        return result;
+    }
+
+    private List<Object[]> runPairsChunk(final List<NodeIdChangeId> pairs,
+                                         final Collection<Integer> itemTypeIds) {
+
+        StringBuilder valuesClause = new StringBuilder(pairs.size() * 8);
+        for (int i = 0; i < pairs.size(); i++) {
+            if (i > 0) {
+                valuesClause.append(", ");
+            }
+            valuesClause.append("(?, ?)");
+        }
+
+        StringBuilder sql = new StringBuilder(512);
+        sql.append("SELECT p.node_id, p.change_id, di.item_id ")
+           .append("FROM arr_desc_item di ")
+           .append("JOIN arr_item i ON i.item_id = di.item_id ")
+           .append("JOIN (VALUES ").append(valuesClause)
+           .append(") AS p(node_id, change_id) ON di.node_id = p.node_id ")
+           .append("WHERE i.create_change_id <= p.change_id ")
+           .append("  AND (i.delete_change_id IS NULL OR i.delete_change_id >= p.change_id)");
+
+        if (CollectionUtils.isNotEmpty(itemTypeIds)) {
+            sql.append(" AND i.item_type_id IN (");
+            for (int i = 0; i < itemTypeIds.size(); i++) {
+                if (i > 0) {
+                    sql.append(", ");
+                }
+                sql.append("?");
+            }
+            sql.append(")");
+        }
+
+        Query q = entityManager.createNativeQuery(sql.toString());
+
+        int idx = 1;
+        for (NodeIdChangeId pair : pairs) {
+            q.setParameter(idx++, pair.nodeId());
+            q.setParameter(idx++, pair.changeId());
+        }
+        if (CollectionUtils.isNotEmpty(itemTypeIds)) {
+            for (Integer typeId : itemTypeIds) {
+                q.setParameter(idx++, typeId);
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        List<Object[]> rows = q.getResultList();
+        return rows;
+    }    
 
     @Override
     public Map<Integer, DescItemTitleInfo> findDescItemTitleInfoByNodeId(final Set<Integer> nodeIds,

@@ -4,7 +4,6 @@ import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -44,8 +43,6 @@ import org.springframework.util.StopWatch;
 
 import cz.tacr.elza.config.ConfigView;
 import cz.tacr.elza.config.view.ViewTitles;
-import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDaoLink;
@@ -67,7 +64,6 @@ import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.domain.ArrRequestQueueItem;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
-import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
@@ -87,6 +83,7 @@ import cz.tacr.elza.service.eventnotification.events.EventStructureDataChange;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.vo.Change;
 import cz.tacr.elza.service.vo.ChangesResult;
+import cz.tacr.elza.service.vo.NodeIdChangeId;
 import cz.tacr.elza.service.vo.TitleItemsByType;
 
 /**
@@ -161,9 +158,6 @@ public class RevertingChangesService {
 
     @Autowired
     private DmsService dmsService;
-    
-    @Autowired
-    private StaticDataService staticDataService;
 
     @Autowired
     private ArrangementInternalService arrangementInternalService;
@@ -196,9 +190,6 @@ public class RevertingChangesService {
             throw new BusinessException("Failed to find valid last change", ArrangementCode.DATA_NOT_FOUND)
                     .set("nodeId", nodeId);
         }
-
-        // dotaz pro celkový počet položek
-        int count = countChange(fundId, nodeId, fromChangeId);
 
         // nalezené změny
         List<ChangeResult> changeList = findChange(fundId, nodeId, maxSize, offset, fromChangeId);
@@ -234,7 +225,7 @@ public class RevertingChangesService {
         changesResult.setMaxSize(maxSize);
         changesResult.setOffset(offset);
         changesResult.setOutdated(fromChange != null && !fromChange.getChangeId().equals(lastChange.getChangeId()));
-        changesResult.setTotalCount(count);
+        changesResult.setTotalCount(null);
         changesResult.setChanges(changes);
 
         return changesResult;
@@ -1222,10 +1213,9 @@ public class RevertingChangesService {
             itemTypeIds = new ArrayList<>(viewTitles.getTreeItem().getItemTypeIds());
         }
 
-        // TODO předělat createNodeLabels()
-        Map<Map.Entry<Integer, Integer>, String> changeNodeMap = createNodeLabels(changeIdNodeIdMap, itemTypeIds,
-                fundVersion.getRuleSetId(),
-                fundVersion.getFund().getFundId());
+        Map<Map.Entry<Integer, Integer>, String> changeNodeMap = createNodeLabels(changeIdNodeIdMap, itemTypeIds, 
+        		fundVersion.getRuleSetId(), 
+        		fundVersion.getFundId());
 
         Map<Integer, Map<Integer, ArrStructuredObject>> changeIdStructuredObjectMap = structObjService.groupStructuredObjectByChange(
                 fundVersion.getFundId(),
@@ -1296,26 +1286,38 @@ public class RevertingChangesService {
     /**
      * Vytvoření mapy popisků JP podle identifikátoru změny/JP.
      *
-     * @param changeIdNodeIdMap
-     *            mapa změny/JP
-     * @param itemTypes
-     *            seznam typů atributů
-     * @param ruleSetId
-     *            identifikátor pravidel
-     * @param fundId
-     *            @return mapa popisků
+     * @param changeIdNodeIdMap mapa změny/JP
+     * @param itemTypes         seznam typů atributů
+     * @param ruleSetId         identifikátor pravidel
+     * @param fundId            fund id
+     * @return mapa popisků
      */
     private Map<Map.Entry<Integer, Integer>, String> createNodeLabels(final Map<Integer, Integer> changeIdNodeIdMap,
                                                                       final List<Integer> itemTypeIds,
                                                                       final Integer ruleSetId,
                                                                       final Integer fundId) {
         Map<Map.Entry<Integer, Integer>, String> result = new HashMap<>();
+        if (changeIdNodeIdMap.isEmpty()) {
+            return result;
+        }
+
+        // (nodeId, changeId) páry na každý řádek historie
+        List<NodeIdChangeId> pairs = changeIdNodeIdMap.entrySet().stream()
+                .map(e -> new NodeIdChangeId(e.getValue(), e.getKey()))
+                .toList();        
+
+        // mapa seznamu názvů podle (nodeId, changeId)  
+        Map<NodeIdChangeId, TitleItemsByType> byPair = descriptionItemService.createNodeValuesByItemTypeIdMap(pairs, itemTypeIds);        
+
+        // výchozí název podle ruleSetId, fundId
+        ViewTitles viewTitles = configView.getViewTitles(ruleSetId, fundId);
+        String defaultTitle = StringUtils.defaultIfEmpty(viewTitles.getDefaultTitle(), null);
 
         for (Map.Entry<Integer, Integer> entry : changeIdNodeIdMap.entrySet()) {
             Integer nodeId = entry.getValue();
-            Map<Integer, TitleItemsByType> nodeValuesMap = descriptionItemService
-                    .createNodeValuesByItemTypeCodeMap(Collections.singleton(nodeId), itemTypeIds, entry.getKey(), null);
-            TitleItemsByType items = nodeValuesMap.get(nodeId);
+            Integer changeId = entry.getKey();
+            NodeIdChangeId key = new NodeIdChangeId(nodeId, changeId);
+            TitleItemsByType items = byPair.get(key);
             if (items != null) {
                 List<String> titles = new ArrayList<>();
                 for (Integer itemTypeId : itemTypeIds) {
@@ -1323,10 +1325,7 @@ public class RevertingChangesService {
                 }
                 result.put(entry, String.join(" ", titles));
             } else {
-                ViewTitles viewTitles = configView.getViewTitles(ruleSetId, fundId);
-                String defaultTitle = viewTitles.getDefaultTitle();
-                defaultTitle = StringUtils.isEmpty(defaultTitle) ? "JP <" + nodeId + ">" : defaultTitle;
-                result.put(entry, defaultTitle);
+                result.put(entry, defaultTitle != null ? defaultTitle : "JP <" + nodeId + ">");
             }
         }
 
@@ -1586,36 +1585,6 @@ public class RevertingChangesService {
     private ChangeResult getLastChange(@NotNull Integer fundId, @Nullable Integer nodeId) {
         List<ChangeResult> changeResultList = findChange(fundId, nodeId, 1, 0, null);
         return changeResultList.size() > 0 ? changeResultList.get(0) : null;
-    }
-
-    /**
-     * Zjištění celkového počtu změn.
-     *
-     * @param fundId       identifikátor AS
-     * @param nodeId       identifikátor JP
-     * @param fromChangeId identifikátor změny, vůči které provádíme vyhledávání
-     * @return počet změn
-     */
-    private int countChange(@NotNull Integer fundId, @Nullable Integer nodeId, @Nullable Integer fromChangeId) {
-
-        String selectParams = "COUNT(*)";
-        String querySpecification = "";
-
-        if (fromChangeId != null) {
-            querySpecification = "WHERE ch.change_id <= :fromChangeId " + querySpecification;
-        }
-
-        Query query = createFindChangeQuery(selectParams, fundId, nodeId, querySpecification);
-
-        query.setParameter("fundId", fundId);
-        if (nodeId != null) {
-            query.setParameter("nodeId", nodeId);
-        }
-        if (fromChangeId != null) {
-            query.setParameter("fromChangeId", fromChangeId);
-        }
-
-        return ((Number) query.getSingleResult()).intValue();
     }
 
     /**

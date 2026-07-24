@@ -143,16 +143,21 @@ export const ArrHistoryFormFn = ({
             }
 
             setFetching(false);
+
+            const requested = toIndex - fromIndex;
+            const isLastPage = changes.length < requested;
+            const count = isLastPage
+                ? fromIndex + changes.length // dosáhli jsme konce – zaznamenáme skutečnou velikost
+                : toIndex + requested; // ještě není konec – necháme si „rezervu“ na jednu stránku dopředu
+
             return {
                 items: changes,
-                count: totalCount,
-                outdated: outdated,
-            };;
+                count,
+                outdated,
+            };
         } catch (error) {
             setFetching(false);
         }
-
-
     };
 
     const handleSelect = (item: ChangeItem, index: number) => {
