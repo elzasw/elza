@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -104,6 +105,8 @@ import cz.tacr.elza.service.arrangement.MultipleItemChangeContext;
 import cz.tacr.elza.service.arrangement.SingleItemChangeContext;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.vo.NodeIdChangeId;
+import cz.tacr.elza.service.vo.NodeIdChangeIdDescItem;
 import cz.tacr.elza.service.vo.TitleItemsByType;
 
 /**
@@ -1686,10 +1689,10 @@ public class DescriptionItemService {
 	}
 
     public Map<Integer, TitleItemsByType> createNodeValuesByItemTypeIdMap(final Collection<Integer> nodeIds,
-                                                                                   final Collection<Integer> descItemTypeIds,
-                                                                                   final Integer changeId,
-                                                                                   @Nullable final TreeNode subtreeRoot,
-                                                                                   final boolean dataExport) {
+                                                                          final Collection<Integer> descItemTypeIds,
+                                                                          final Integer changeId,
+                                                                          @Nullable final TreeNode subtreeRoot,
+                                                                          final boolean dataExport) {
         if (nodeIds.isEmpty() || descItemTypeIds.isEmpty()) {
             return Collections.emptyMap();
         }
@@ -1754,12 +1757,79 @@ public class DescriptionItemService {
      *         nodeId, itemTypeCode, values
      */
     public Map<Integer, TitleItemsByType> createNodeValuesByItemTypeCodeMap(final Collection<Integer> nodeIds,
-                                                                                    final Collection<Integer> descItemTypeIds,
-                                                                                    final Integer changeId,
-                                                                                    @Nullable final TreeNode subtreeRoot) {
+                                                                            final Collection<Integer> descItemTypeIds,
+                                                                            final Integer changeId,
+                                                                            @Nullable final TreeNode subtreeRoot) {
 
         return createNodeValuesByItemTypeIdMap(nodeIds, descItemTypeIds, changeId, subtreeRoot, false);
     }
+
+    /**
+     * Batch variant of {@link #createNodeValuesByItemTypeCodeMap} keyed by (nodeId, changeId).
+     * Each pair is resolved independently: an item that is valid at multiple change points
+     * is contributed to every matching pair's bucket.
+     *
+     * <p>Loads all matching {@link ArrDescItem}s in a single native query, then batch-loads
+     * their {@link ArrData}, referenced access-point names and structured objects — regardless
+     * of how many input pairs there are.
+     */
+    public Map<NodeIdChangeId, TitleItemsByType> createNodeValuesByItemTypeIdMap(final Collection<NodeIdChangeId> pairs,
+                                                                                 final Collection<Integer> descItemTypeIds) {
+        if (pairs.isEmpty() || descItemTypeIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        List<NodeIdChangeIdDescItem> rows = descItemRepository.findDescItemsByNodeChangePairs(pairs, descItemTypeIds);
+
+        if (rows.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        // an item may satisfy several pairs; deduplicate before batch fetches
+        Map<Integer, ArrDescItem> uniqueItems = new LinkedHashMap<>();
+        for (NodeIdChangeIdDescItem row : rows) {
+            uniqueItems.putIfAbsent(row.descItem().getItemId(), row.descItem());
+        }
+        List<ArrDescItem> allItems = new ArrayList<>(uniqueItems.values());
+
+        // batch-load ArrData for the whole set
+        dataService.findItemsWithData(allItems);
+
+        // collect referenced access points and structured objects
+        Set<Integer> accessPointIds = new HashSet<>();
+        Set<Integer> soiIds = new HashSet<>();
+        for (ArrDescItem item : allItems) {
+            if (item.getData() != null) {
+                DataType dataType = DataType.fromId(item.getData().getDataTypeId());
+                switch (dataType) {
+                    case RECORD_REF:
+                        accessPointIds.add(((ArrDataRecordRef) HibernateUtils.unproxy(item.getData())).getRecordId());
+                        break;
+                    case STRUCTURED:
+                        soiIds.add(((ArrDataStructureRef) HibernateUtils.unproxy(item.getData())).getStructuredObjectId());
+                        break;
+                    default:
+                        // other types don't need extra fetching
+                        break;
+                }
+            }
+        }
+
+        if (!soiIds.isEmpty()) {
+            structuredObjectRepository.findAllById(soiIds);
+        }
+        Map<Integer, ApIndex> accessPointNames = accessPointIds.isEmpty() ? Collections.emptyMap()
+                : accessPointService.findPreferredPartIndexMapByIds(accessPointIds);
+
+        // distribute items across their matching (nodeId, changeId) buckets
+        Map<NodeIdChangeId, TitleItemsByType> result = new HashMap<>();
+        for (NodeIdChangeIdDescItem row : rows) {
+            TitleValue titleValue = serviceInternal.createTitleValue(row.descItem(), accessPointNames, false);
+            TitleItemsByType bucket = result.computeIfAbsent(row.key(), k -> new TitleItemsByType());
+            bucket.addItem(row.descItem().getItemTypeId(), titleValue);
+        }
+        return result;
+    }    
 
     /**
      * Nahrazení textu v hodnotách textových atributů.
