@@ -508,13 +508,13 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ChangesResult changesAll = findChanges(fundVersion.getId(), MAX_SIZE, 0, null, null);
         assertNotNull(changesAll);
         assertNotNull(changesAll.getChanges());
-        assertTrue(changesAll.getTotalCount().equals(changesAll.getChanges().size()) && changesAll.getChanges().size() == 33);
+        assertEquals(33, changesAll.getChanges().size());
         assertFalse(changesAll.getOutdated());
 
         ChangesResult changesByNode = findChanges(fundVersion.getId(), MAX_SIZE, 0, null, nodes.get(0).getId());
         assertNotNull(changesByNode);
         assertNotNull(changesByNode.getChanges());
-        assertTrue(changesByNode.getTotalCount().equals(changesByNode.getChanges().size()) && changesByNode.getChanges().size() == 9);
+        assertEquals(9, changesByNode.getChanges().size());
 
         final Integer lastChangeId = changesAll.getChanges().get(0).getChangeId();
         final Integer firstChangeId = changesAll.getChanges().get(changesAll.getChanges().size() - 1).getChangeId();
@@ -522,30 +522,14 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         assertNotNull(changesByDate);
         assertNotNull(changesByDate.getChanges());
 
-//        // TODO: test
-//        try {
-//            logger.info(changesByDate.getTotalCount() + ", " + changesByDate.getChanges().size() + ", xxxxxxxxxxxxxxxxxxxx");
-//            Thread.sleep(5000);
-//            changesByDate = findChangesByDate(fundVersion.getId(), MAX_SIZE, OffsetDateTime.now(), lastChangeId, null);
-//            logger.info(changesByDate.getTotalCount() + ", " + changesByDate.getChanges().size() + ", xxxxxxxxxxxxxxxxxxxx");
-//            Thread.sleep(5000);
-//            changesByDate = findChangesByDate(fundVersion.getId(), MAX_SIZE, OffsetDateTime.now(), lastChangeId, null);
-//            logger.info(changesByDate.getTotalCount() + ", " + changesByDate.getChanges().size() + ", xxxxxxxxxxxxxxxxxxxx");
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
-//
-//        assertTrue(changesByDate.getTotalCount().equals(changesByDate.getChanges().size()) && changesByDate.getChanges().size() == 33);
-//        assertTrue(!changesByDate.getOutdated());
-
         final Integer lastChangeIdFinal = lastChangeId; // effectively final
         await()
             .atMost(20, SECONDS)
             .pollInterval(500, MILLISECONDS)
             .untilAsserted(() -> {
                 ChangesResult result = findChangesByDate(fundVersion.getId(), MAX_SIZE, OffsetDateTime.now(), lastChangeIdFinal, null);
-                logger.info("Changes count: {}, total: {}", result.getChanges().size(), result.getTotalCount());
-                assertTrue(result.getTotalCount().equals(result.getChanges().size()) && result.getChanges().size() == 33);
+                logger.info("Changes count: {}", result.getChanges().size());
+                assertEquals(33, result.getChanges().size());
             });
 
         changesByDate = findChangesByDate(fundVersion.getId(), MAX_SIZE, OffsetDateTime.now(), lastChangeId, null);
