@@ -129,6 +129,10 @@ public class ContentMigration extends BulkActionDFS {
             if (rule.targetDataType == DataType.STRING && !isSingleLine(value)) {
                 continue;
             }
+            // remove double spaces in STRING type
+            if (rule.targetDataType == DataType.STRING) {
+                value = value.trim().replaceAll("\\s{2,}", " ");
+            }
             createItem(node, rule.target, rule.targetDataType, value);
             deleteDescItem(getFondsVersion(), source);
             movedItems++;
