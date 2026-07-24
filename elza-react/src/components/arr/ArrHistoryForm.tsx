@@ -137,7 +137,7 @@ export const ArrHistoryFormFn = ({
                 outdated
             } = await WebApi.findChanges(versionId, getNodeId(), fromIndex, toIndex - fromIndex, changeId)
 
-            if (totalCount > 0 && changeId == null) {
+            if (changes.length > 0 && changeId == null) {
                 // pokud nemáme uložen první changeId, uložíme si ho do state
                 setChangeId(changes[0].changeId)
             }
