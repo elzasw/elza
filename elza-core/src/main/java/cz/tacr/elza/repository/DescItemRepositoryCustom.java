@@ -10,6 +10,8 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.service.vo.NodeIdChangeId;
+import cz.tacr.elza.service.vo.NodeIdChangeIdDescItem;
 import jakarta.annotation.Nullable;
 
 
@@ -20,6 +22,18 @@ import jakarta.annotation.Nullable;
  * @since 2.12.2015
  */
 public interface DescItemRepositoryCustom {
+
+	/**
+	 * Dávkově načtení {@link ArrDescItem} pro každou dvojici (nodeId, changeId)
+	 * jedním native SQL s {@code JOIN (VALUES …)}. Nahrazuje N+1 volání
+	 * {@link #findDescItemsByNodeIds}. Stejná položka může vyhovovat více dvojicím;
+	 * ve výsledku se pak objeví vícekrát s různými klíči.
+	 *
+	 * @param pairs       dvojice (nodeId, changeId), duplicity jsou odstraněny
+	 * @param itemTypeIds volitelný filtr na typy atributů; prázdné = bez filtru
+	 */	
+	List<NodeIdChangeIdDescItem> findDescItemsByNodeChangePairs(Collection<NodeIdChangeId> pairs, 
+			                                                    Collection<Integer> itemTypeIds);
 
     /**
      * Provede načtení popisků uzlu pro seznam id uzlů.
