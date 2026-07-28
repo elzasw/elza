@@ -216,8 +216,8 @@ public class FileSystemRepoService implements RemovalListener<String, FileSystem
 
                     // find parent group
                     String parentName = getRelatPath(repoPath, parentPath);
-                    ArrDaoFileGroup parentDaoFileGroup = existingFileGroups.get(parentName);
-                    if (parentDaoFileGroup == null) {
+                    parentFileGroup = existingFileGroups.get(parentName);
+                    if (parentFileGroup == null) {
                         throw new BusinessException(
                                 "Missing parent group: " + parentName + " for item: " + relatPath,
                                 BaseCode.INVALID_STATE);
