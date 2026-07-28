@@ -299,11 +299,7 @@ public class FileSystemRepoService implements RemovalListener<String, FileSystem
         }
         String repoPath = digiRepo.getUrl().substring(FILE_URI_PREFIX.length());
         Path rootPath = Paths.get(repoPath).toAbsolutePath();
-        if (StringUtils.isNotBlank(filePath)) {
-            return rootPath.resolve(filePath);
-        } else {
-            return rootPath;
-        }
+        return resolveInsideRoot(rootPath, filePath);
     }
 
     public Path getPath(ArrDigitalRepository digiRepo, ArrFund fund) {
@@ -344,10 +340,25 @@ public class FileSystemRepoService implements RemovalListener<String, FileSystem
     }
 
     public Path resolvePath(Path rootRepoPath, String itemPath) {
-        if (StringUtils.isNotBlank(itemPath)) {
-            return rootRepoPath.resolve(itemPath);
-        } else {
-            return rootRepoPath;
+    	return resolveInsideRoot(rootRepoPath, itemPath);
+    }
+
+    /**
+     * Resolves a repository-relative path against a root and asserts the result
+     * stays inside that root. Blocks directory traversal ("../foo") and absolute
+     * paths that would replace the root ("/etc/passwd").
+     */
+    private Path resolveInsideRoot(Path rootPath, String itemPath) {
+        Path normalizedRoot = rootPath.normalize();
+        if (StringUtils.isBlank(itemPath)) {
+            return normalizedRoot;
         }
+        Path resolved = normalizedRoot.resolve(itemPath).normalize();
+        if (!resolved.startsWith(normalizedRoot)) {
+            throw new BusinessException("Path escapes repository root", BaseCode.INVALID_STATE)
+                    .set("root", normalizedRoot.toString())
+                    .set("requested", itemPath);
+        }
+        return resolved;
     }
 }
