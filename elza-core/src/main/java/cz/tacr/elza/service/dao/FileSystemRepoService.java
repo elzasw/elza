@@ -2,6 +2,7 @@ package cz.tacr.elza.service.dao;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -90,7 +91,6 @@ public class FileSystemRepoService implements RemovalListener<String, FileSystem
         // todo cleanup on removcal
         // is it needed?
     }
-
 
     public ArrDao createDao(ArrDigitalRepository digiRepo, ArrFundVersion fundVersion, String itemRelatPath) {
         Path repoPath = getPath(digiRepo, fundVersion.getFund());
@@ -244,15 +244,38 @@ public class FileSystemRepoService implements RemovalListener<String, FileSystem
     }
 
     public String getMimetype(Path fp) {
-        return getMimetype(fp.toString());
+        try {
+            String type = Files.probeContentType(fp);
+            if (type != null) {
+                return type;
+            }
+        } catch (IOException e) {
+        	throw new BusinessException("Failed detecting file type, path: " + fp, e, BaseCode.INVALID_STATE);
+        }
+        return getMimetype(fp.getFileName().toString());
     }
 
     public String getMimetype(String name) {
-        String ext = FilenameUtils.getExtension(name).toLowerCase();
-        if ("jpg".equals(ext) || "jpeg".equals(ext)) {
-            return "image/jpeg";
-        }
-        return null;
+	    String type = URLConnection.guessContentTypeFromName(name);
+	    if (type != null) {
+	        return type;
+	    }
+	    String ext = FilenameUtils.getExtension(name).toLowerCase();
+	    switch (ext) {
+	        case "jpg":
+	        case "jpeg": return "image/jpeg";
+	        case "png":  return "image/png";
+	        case "tif":
+	        case "tiff": return "image/tiff";
+	        case "gif":  return "image/gif";
+	        case "webp": return "image/webp";
+	        case "bmp":  return "image/bmp";
+	        case "pdf":  return "application/pdf";
+	        case "txt":  return "text/plain";
+	        case "xml":  return "application/xml";
+	        case "json": return "application/json";
+	        default:     return null;
+	    }
     }
 
     public boolean isFileSystemRepository(ArrDigitalRepository digiRep) {

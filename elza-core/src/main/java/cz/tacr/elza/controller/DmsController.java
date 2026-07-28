@@ -214,12 +214,14 @@ public class DmsController {
         ArrDigitalRepository digiRep = externalSystemService.getDigitalRepository(repoId);
 
         Path fp = fileSystemRepoService.resolvePath(digiRep, filePath);
-        String contentType = fileSystemRepoService.getMimetype(filePath);
+        String contentType = fileSystemRepoService.getMimetype(fp);
         if (StringUtils.isEmpty(contentType)) {
-            contentType = "application/binary";
-            FileDownload.addContentDispositionAsAttachment(response, fp.getFileName().toString());
+        	contentType = "application/octet-stream";
         }
         response.setContentType(contentType);
+        if (!isInlineRenderable(contentType)) {
+        	FileDownload.addContentDispositionAsAttachment(response, fp.getFileName().toString());
+        }
 
         try (ServletOutputStream out = response.getOutputStream();
                 InputStream in = fileSystemRepoService.getInputStream(digiRep, filePath)) {
@@ -565,5 +567,15 @@ public class DmsController {
         public void setMimeType(String mimeType) {
             this.mimeType = mimeType;
         }
+    }
+
+    private static boolean isInlineRenderable(String contentType) {
+        if (contentType == null) {
+            return false;
+        }
+        String lower = contentType.toLowerCase();
+        return lower.startsWith("image/")
+            || lower.equals("application/pdf")
+            || lower.startsWith("text/");
     }
 }
