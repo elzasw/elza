@@ -98,7 +98,7 @@ public class FileSystemRepoService implements RemovalListener<String, FileSystem
 
         ArrDigitalRepository digiRep = externalSystemService.getDigitalRepository(digiRepo.getExternalSystemId());
         // check if package exists
-        List<ArrDaoPackage> daoPackages = this.daoPackageRepos.findAllByDigitalRepository(digiRep);
+        List<ArrDaoPackage> daoPackages = this.daoPackageRepos.findAllByDigitalRepositoryAndFund(digiRep, fundVersion.getFund());
         ArrDaoPackage daoPackage;
         if (CollectionUtils.isEmpty(daoPackages)) {
             // create package for repo
@@ -116,8 +116,7 @@ public class FileSystemRepoService implements RemovalListener<String, FileSystem
             dao = daos.get(0);
         } else {
             // create dao
-            dao = daoServiceInternal.createDao(daoPackage,
-                                               itemRelatPath, itemRelatPath, null, DaoType.ATTACHMENT);
+            dao = daoServiceInternal.createDao(daoPackage, itemRelatPath, itemRelatPath, null, DaoType.ATTACHMENT);
             dao = daoServiceInternal.persistDao(dao);
         }
 
