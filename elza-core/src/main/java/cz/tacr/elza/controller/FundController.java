@@ -20,8 +20,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import jakarta.transaction.Transactional;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -36,6 +34,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -311,7 +310,7 @@ public class FundController implements FundsApi {
 
     // GET /fund/{fundId}/fsrepos
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public ResponseEntity<List<FsRepo>> fundFsRepos(@PathVariable("fundId") Integer fundId) {
         ArrFund fund = arrangementService.getFund(fundId);
 
@@ -367,7 +366,7 @@ public class FundController implements FundsApi {
 
     // GET /fund/{fundId}/fsrepo/{fsrepoId}/items
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public ResponseEntity<FsItems> fundFsRepoItems(@PathVariable("fundId") Integer fundId,
                                                    @PathVariable("fsrepoId") Integer fsrepoId,
                                                    @RequestParam(value = "filterType", required = false) @Nullable FsItemType filterType,
@@ -494,7 +493,7 @@ public class FundController implements FundsApi {
 
     // GET /fund/{fundId}/fsrepo/{fsrepoId}/item-data
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     @AuthMethod(permission = { Permission.ADMIN, Permission.FUND_RD_ALL, Permission.FUND_RD })
     public ResponseEntity<Resource> fundFsRepoItemData(@AuthParam(type = AuthParam.Type.FUND) @PathVariable("fundId") Integer fundId,
                                                        @PathVariable("fsrepoId") Integer fsrepoId,
