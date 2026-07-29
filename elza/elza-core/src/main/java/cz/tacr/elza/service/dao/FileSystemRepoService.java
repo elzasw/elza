@@ -139,9 +139,16 @@ public class FileSystemRepoService implements RemovalListener<String, FileSystem
         List<ArrDaoFileGroup> daoFileGroups = daoServiceInternal.getFileGroupsByDao(dao);
 
         Map<String, ArrDaoFile> daoFilesMap = daoFiles.stream()
-                .collect(Collectors.toMap(d -> d.getCode(), Function.identity()));
+                .collect(Collectors.toMap(ArrDaoFile::getCode, Function.identity(),
+                        (a, b) -> { throw new BusinessException(
+                                "Duplicate ArrDaoFile.code: " + a.getCode(), BaseCode.INVALID_STATE)
+                                .set("daoId", a.getDao().getDaoId()); }));
+
         Map<String, ArrDaoFileGroup> daoFileGroupsMap = daoFileGroups.stream()
-                .collect(Collectors.toMap(d -> d.getCode(), Function.identity()));
+                .collect(Collectors.toMap(ArrDaoFileGroup::getCode, Function.identity(),
+                        (a, b) -> { throw new BusinessException(
+                                "Duplicate ArrDaoFileGroup.code: " + a.getCode(), BaseCode.INVALID_STATE)
+                                .set("daoId", a.getDao().getDaoId()); }));
 
         List<Path> createFiles = new ArrayList<>();
         Map<String, ArrDaoFile> existingFiles = new HashMap<>();
