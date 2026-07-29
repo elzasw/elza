@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -23,13 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.RemovalListener;
-import com.google.common.cache.RemovalNotification;
-
 import cz.tacr.elza.ElzaTools;
-import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDao.DaoType;
 import cz.tacr.elza.domain.ArrDaoFile;
@@ -45,14 +38,9 @@ import cz.tacr.elza.repository.DaoRepository;
 import cz.tacr.elza.service.ExternalSystemService;
 
 @Service
-public class FileSystemRepoService implements RemovalListener<String, FileSystemImage> {
+public class FileSystemRepoService {
 
     public static String FILE_URI_PREFIX = "file://";
-
-    private Cache<String, FileSystemImage> images = CacheBuilder.newBuilder()
-            .expireAfterAccess(5, TimeUnit.MINUTES)
-            .removalListener(this)
-            .build();
 
     @Autowired
     private DaoPackageRepository daoPackageRepos;
@@ -65,32 +53,6 @@ public class FileSystemRepoService implements RemovalListener<String, FileSystem
 
     @Autowired
     private ExternalSystemService externalSystemService;
-
-    public synchronized FileSystemImage getFileSystemImage(ArrDigitalRepository digiRep) {
-        digiRep = HibernateUtils.unproxy(digiRep);
-
-        if (!isFileSystemRepository(digiRep)) {
-            throw new BusinessException("Not a FileSystemRepository", BaseCode.INVALID_STATE)
-                    .set("RepositoryId", digiRep.getExternalSystemId());
-        }
-
-        // repo path
-        String repoPath = digiRep.getUrl().substring(FILE_URI_PREFIX.length());
-        FileSystemImage fsi = images.getIfPresent(repoPath);
-        if (fsi == null) {
-            fsi = new FileSystemImage(repoPath, digiRep);
-
-            images.put(repoPath, fsi);
-        }
-        return fsi;
-    }
-
-    @Override
-    synchronized public void onRemoval(RemovalNotification<String, FileSystemImage> notification) {
-        FileSystemImage fsi = notification.getValue();
-        // todo cleanup on removcal
-        // is it needed?
-    }
 
     public ArrDao createDao(ArrDigitalRepository digiRepo, ArrFundVersion fundVersion, String itemRelatPath) {
         Path repoPath = getPath(digiRepo, fundVersion.getFund());
@@ -294,8 +256,8 @@ public class FileSystemRepoService implements RemovalListener<String, FileSystem
     }
 
     public InputStream getInputStream(ArrDigitalRepository digiRepo, String filePath) throws IOException {
-        FileSystemImage fsi = getFileSystemImage(digiRepo);
-        return fsi.getInputStream(filePath);
+        Path fp = resolvePath(digiRepo, filePath);
+        return Files.newInputStream(fp);
     }
 
     public Path resolvePath(ArrDigitalRepository digiRepo, String filePath) {
