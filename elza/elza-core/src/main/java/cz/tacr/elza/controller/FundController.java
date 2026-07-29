@@ -30,8 +30,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -53,6 +57,7 @@ import cz.tacr.elza.controller.vo.MultiFundActionRequest;
 import cz.tacr.elza.controller.vo.MultiFundActionResult;
 import cz.tacr.elza.controller.vo.FindFundsResult;
 import cz.tacr.elza.controller.vo.FsItem;
+import cz.tacr.elza.controller.vo.FsItemSortType;
 import cz.tacr.elza.controller.vo.FsItemType;
 import cz.tacr.elza.controller.vo.FsItems;
 import cz.tacr.elza.controller.vo.FsRepo;
@@ -64,6 +69,8 @@ import cz.tacr.elza.controller.vo.UsedItemType;
 import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.security.AuthMethod;
+import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.dataexchange.output.IOExportFundsCsv;
 import cz.tacr.elza.dataexchange.output.IOExportWorker;
 import cz.tacr.elza.domain.ApScope;
@@ -76,6 +83,7 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.BusinessException;
@@ -279,6 +287,7 @@ public class FundController implements FundsApi {
         }
     }
 
+    // PUT /fund/{id}
     @Override
     @Transactional
     public ResponseEntity<FundDetail> fundUpdateFund(@PathVariable("id") String id, @RequestBody UpdateFund updateFund) {
@@ -300,6 +309,7 @@ public class FundController implements FundsApi {
         return ResponseEntity.ok(factoryVo.createFundDetail(fundVersion.getFund(), rootNode.getUuid()));
     }
 
+    // GET /fund/{fundId}/fsrepos
     @Override
     @Transactional
     public ResponseEntity<List<FsRepo>> fundFsRepos(@PathVariable("fundId") Integer fundId) {
@@ -336,6 +346,7 @@ public class FundController implements FundsApi {
         return ResponseEntity.ok(result);
     }
 
+    // POST /fund/{fundId}/node/{nodeId}/mode
     @Override
     @Transactional
     public ResponseEntity<Void> fundSetLevelMode(@PathVariable("fundId") Integer fundId,
@@ -354,13 +365,16 @@ public class FundController implements FundsApi {
         return ResponseEntity.ok(null);
     }
 
+    // GET /fund/{fundId}/fsrepo/{fsrepoId}/items
     @Override
     @Transactional
     public ResponseEntity<FsItems> fundFsRepoItems(@PathVariable("fundId") Integer fundId,
                                                    @PathVariable("fsrepoId") Integer fsrepoId,
-                                                   @RequestParam(value = "filterType", required = false) FsItemType filterType,
-                                                   @RequestParam(value = "path", required = false) String path,
-                                                   @RequestParam(value = "lastKey", required = false) String lastKey) {
+                                                   @RequestParam(value = "filterType", required = false) @Nullable FsItemType filterType,
+                                                   @RequestParam(value = "path", required = false) @Nullable String path,
+                                                   @RequestParam(value = "lastKey", required = false) @Nullable String lastKey,
+                                                   @RequestParam(value = "sortingType", required = false) @Nullable FsItemSortType sortingType,
+                                                   @RequestParam(value = "fileFilter", required = false) @Nullable String fileFilter) {
 
         ArrFund fund = arrangementService.getFund(fundId);
         ArrDigitalRepository digiRepo = externalSystemService.getDigitalRepository(fsrepoId);
@@ -382,7 +396,7 @@ public class FundController implements FundsApi {
         }
         int offset = 0;
         // check if continue in previous list
-        if(lastKey!=null) {
+        if (lastKey != null) {
             // lastKey is simply offset
             // this is just the basic implementation
             offset = Integer.parseInt(lastKey);
@@ -479,20 +493,35 @@ public class FundController implements FundsApi {
         }
     }
 
+    // GET /fund/{fundId}/fsrepo/{fsrepoId}/item-data
     @Override
     @Transactional
-    public ResponseEntity<Resource> fundFsRepoItemData(@PathVariable("fundId") Integer fundId,
-                                                     @PathVariable("fsrepoId") Integer fsrepoId,
-                                                     @RequestParam(value = "path", required = true) String path) {
+    @AuthMethod(permission = { Permission.ADMIN, Permission.FUND_RD_ALL, Permission.FUND_RD })
+    public ResponseEntity<Resource> fundFsRepoItemData(@AuthParam(type = AuthParam.Type.FUND) @PathVariable("fundId") Integer fundId,
+                                                       @PathVariable("fsrepoId") Integer fsrepoId,
+                                                       @RequestParam(value = "path", required = true) String path) {
         ArrFund fund = arrangementService.getFund(fundId);
         ArrDigitalRepository digiRepo = externalSystemService.getDigitalRepository(fsrepoId);
 
         Path filePath = fileSystemRepoService.resolvePath(digiRepo, fund, path);
 
-        FileSystemResource fsr = new FileSystemResource(filePath);
-        return ResponseEntity.ok(fsr);
+        String contentType = fileSystemRepoService.getMimetype(filePath);
+        if (StringUtils.isEmpty(contentType)) {
+            contentType = "application/octet-stream";
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType(contentType));
+        if (!FileSystemRepoService.isInlineRenderable(contentType)) {
+            headers.setContentDisposition(ContentDisposition.attachment()
+                    .filename(filePath.getFileName().toString())
+                    .build());
+        }
+
+        return ResponseEntity.ok().headers(headers).body(new FileSystemResource(filePath));
     }
 
+    // PUT /fund/{fundId}/fsrepo/{fsrepoId}/linkitem/{nodeId}
     @Override
     @Transactional
     public ResponseEntity<Integer> fundFsCreateDAOLink(@PathVariable("fundId") Integer fundId,
@@ -519,6 +548,7 @@ public class FundController implements FundsApi {
         return ResponseEntity.ok(daoLink.getDaoLinkId());
     }
 
+    // GET /fund/{fundId}/usedItemtypes/{fundVersionId}
     @Override
     @Transactional
     public ResponseEntity<List<UsedItemType>> fundUsedItemTypes(@PathVariable("fundId") Integer fundId,

@@ -361,4 +361,14 @@ public class FileSystemRepoService implements RemovalListener<String, FileSystem
         }
         return resolved;
     }
+
+    public static boolean isInlineRenderable(String contentType) {
+        if (contentType == null) {
+            return false;
+        }
+        String lower = contentType.toLowerCase();
+        return lower.startsWith("image/")
+            || lower.equals("application/pdf")
+            || lower.startsWith("text/");
+    }
 }

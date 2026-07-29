@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -40,26 +39,20 @@ import cz.tacr.elza.controller.vo.DmsFileVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrChange.Type;
-import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.domain.DmsFile;
-import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
-import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.DmsService;
-import cz.tacr.elza.service.ExternalSystemService;
-import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.attachment.AttachmentService;
-import cz.tacr.elza.service.dao.FileSystemRepoService;
 
 /**
  * 
@@ -87,15 +80,6 @@ public class DmsController {
 
     @Autowired
     private DmsService dmsService;
-
-    @Autowired
-    private ExternalSystemService externalSystemService;
-
-    @Autowired
-    private FileSystemRepoService fileSystemRepoService;
-    
-    @Autowired
-    private UserService userService;    
 
     /**
      * Načtení seznamu editovatelných mime typů.
@@ -182,49 +166,6 @@ public class DmsController {
 
         try (ServletOutputStream out = response.getOutputStream();
                 InputStream in = dmsService.newInputStream(file);) {
-            IOUtils.copy(in, out);
-        }
-    }
-
-    /**
-     * Stažení souboru z file:// repozitáře digitalizátů (např. pro zobrazení náhledu).
-     * Cesta k souboru je předávána jako path segment {@code {*filePath}} —
-     * Spring ji dekóduje podle pravidel URI (znak '+' zůstává znakem '+',
-     * nezaměňuje se za mezeru jako u query parametru).
-     *
-     * @param response http odpověď, do jejíhož výstupu se zapíše obsah souboru
-     * @param repoId   id úložiště digitalizátů (externí systém typu file://)
-     * @param filePath cesta k souboru relativně ke kořeni úložiště;
-     *                 díky vzoru {@code {*filePath}} začíná znakem '/', který je před resolve odstraněn
-     * @throws IOException při chybě čtení souboru nebo zápisu do odpovědi
-     */
-    @RequestMapping(value = "/api/digirepo/{repoId}/{*filePath}", method = RequestMethod.GET)
-    @Transactional
-    public void getFile(HttpServletResponse response, 
-                        @PathVariable(value = "repoId") Integer repoId,
-                        @PathVariable(value = "filePath") String filePath) throws IOException {
-        // {*filePath} vždy začíná znakem '/', před resolve odstraníme
-        if (filePath.startsWith("/")) {
-            filePath = filePath.substring(1);
-        }
-        // check permissions RD_ALL 
-        userService.authorizeRequest(AuthorizationRequest.hasPermission(UsrPermission.Permission.FUND_RD_ALL));
-
-        // read file repo
-        ArrDigitalRepository digiRep = externalSystemService.getDigitalRepository(repoId);
-
-        Path fp = fileSystemRepoService.resolvePath(digiRep, filePath);
-        String contentType = fileSystemRepoService.getMimetype(fp);
-        if (StringUtils.isEmpty(contentType)) {
-        	contentType = "application/octet-stream";
-        }
-        response.setContentType(contentType);
-        if (!isInlineRenderable(contentType)) {
-        	FileDownload.addContentDispositionAsAttachment(response, fp.getFileName().toString());
-        }
-
-        try (ServletOutputStream out = response.getOutputStream();
-                InputStream in = fileSystemRepoService.getInputStream(digiRep, filePath)) {
             IOUtils.copy(in, out);
         }
     }
@@ -567,15 +508,5 @@ public class DmsController {
         public void setMimeType(String mimeType) {
             this.mimeType = mimeType;
         }
-    }
-
-    private static boolean isInlineRenderable(String contentType) {
-        if (contentType == null) {
-            return false;
-        }
-        String lower = contentType.toLowerCase();
-        return lower.startsWith("image/")
-            || lower.equals("application/pdf")
-            || lower.startsWith("text/");
     }
 }
