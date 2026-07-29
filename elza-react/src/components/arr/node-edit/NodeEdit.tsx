@@ -1,23 +1,19 @@
-import { Spinner } from "@fluentui/react-components";
 import { WebApi } from "actions";
 import { copyDescItemType, nocopyDescItemType } from "actions/arr/nodeSetting";
 import { routerNavigate } from "actions/router";
 import { getFundVersion, urlFundGrid } from "../../../constants";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { NodeFormData, NodeStatus } from "elza-api";
 import { ArrDaoVO } from "typings/dao";
-import { useAppThunkDispatch } from "utils/hooks";
+import { useActiveFund, useActiveParent, useAppThunkDispatch } from "utils/hooks";
 import { useAppSelector } from "utils/hooks/useAppSelector";
-import { FormItemGroup } from "./FormItemGroup";
-import { GroupColumns } from "./GroupColumns";
 import { NodeToolbar } from "./NodeToolbar";
-import { DescItemTypeFields } from "./DescItemTypeFields";
-import { useActiveFund, useActiveParent, useNodeFormData } from "./hooks";
+import { ItemFormBody } from "../item-form/ItemFormBody";
+import { useNodeFormData } from "./hooks";
 import { NodeFormContext } from "./NodeFormContext";
 import { TextFragmentsProvider } from "../text-fragments";
 import { useUserSettings } from "contexts/user";
-import { buildGroupsForm } from "./utils";
-import { useStyles } from "./styles";
+import { useStyles } from "../item-form/styles";
 import DaoLinkDetail from "components/aip/DaoLinkDetail";
 
 interface Props {
@@ -42,10 +38,6 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId, seedFromParent
 
   const [daos, setDaos] = useState<ArrDaoVO[]>();
 
-  const itemTypeRefs = useAppSelector(
-    ({ refTables }) => refTables.descItemTypes.itemsMap,
-  );
-  const groupRefs = useAppSelector(({ refTables }) => refTables.groups.data);
   const nodeSetting = useAppSelector(({ arrRegion }) =>
     arrRegion.nodeSettings.nodes.find(({ id }) => id === activeParent?.id),
   );
@@ -96,25 +88,6 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId, seedFromParent
       })();
     }
   }, [nodeData?.id, activeFund.versionId]);
-
-  const viewDescItemGroupsLocal = useMemo(() => {
-    if (formItems && groupRefs) {
-      return buildGroupsForm(
-        [...formItems, ...forcedFormItems, ...addedFormItems],
-        itemTypes,
-        groupRefs,
-        itemTypeRefs,
-      );
-    }
-    return [];
-  }, [
-    groupRefs,
-    itemTypeRefs,
-    addedFormItems,
-    formItems,
-    forcedFormItems,
-    itemTypes,
-  ]);
 
   async function handleCopyFromPrev(descItemTypeId: number) {
     await WebApi.copyOlderSiblingAttribute(
@@ -169,66 +142,30 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId, seedFromParent
         daos={daos}
       />
       <DaoLinkDetail nodeId={nodeId} />
-      {/* <div
-        style={{
-          position: "fixed",
-          background: "white",
-          padding: "16px",
-          left: "50px",
-          boxShadow: "4px 4px 8px 0 #0003",
-          borderRadius: "8px",
-        }}
-      >
-        {viewDescItemGroups.map(({ descItemTypes }) => {
-          return descItemTypes.map(({ typeRef }) => {
-            return (
-              <div
-                style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
-                onClick={() => scrollDescItemIntoView(typeRef.id)}
-                title={typeRef.name}
-              >
-                {typeRef.shortcut}
-              </div>
-            );
-          });
-        })}
-      </div> */}
       <div style={{ padding: compact ? "4px 8px" : "8px" }}>
-        {viewDescItemGroupsLocal.length === 0 && (
-          <div className={styles.spinnerPadding}>
-            <Spinner />
-          </div>
-        )}
-        <GroupColumns groups={viewDescItemGroupsLocal} columnCount={settings.groupColumns || 1}>
-          {({ group, descItemTypes }) => (
-            <FormItemGroup key={group.code} group={group}>
-              {descItemTypes.map(({ typeRef, typeForm, typeWidth, descItems }) => (
-                <DescItemTypeFields
-                  key={typeRef.id}
-                  typeRef={typeRef}
-                  typeForm={typeForm}
-                  typeWidth={typeWidth}
-                  descItems={descItems}
-                  fondsVersionId={fondsVersionId}
-                  nodeId={nodeId}
-                  nodeVersionId={nodeVersionId}
-                  nodeSetting={nodeSetting}
-                  isFirstNode={isFirstNode}
-                  handleCopyFromPrev={handleCopyFromPrev}
-                  handleCopyToggle={handleCopyToggle}
-                  getOpenInDataGridHref={getOpenInDataGridHref}
-                  onOpenInDataGrid={handleOpenInDataGrid}
-                  addEmptyDescItem={addEmptyDescItem}
-                  deleteDescItem={deleteDescItem}
-                  createDescItem={createDescItem}
-                  updateDescItem={updateDescItem}
-                  autoFocusLocalId={autoFocusLocalId}
-                  onAutoFocusTaken={() => setAutoFocusLocalId(undefined)}
-                />
-              ))}
-            </FormItemGroup>
-          )}
-        </GroupColumns>
+        <ItemFormBody
+          formItems={formItems}
+          forcedFormItems={forcedFormItems}
+          addedFormItems={addedFormItems}
+          itemTypes={itemTypes}
+          columnCount={settings.groupColumns || 1}
+          spinnerWhenEmpty
+          fondsVersionId={fondsVersionId}
+          nodeId={nodeId}
+          nodeVersionId={nodeVersionId}
+          nodeSetting={nodeSetting}
+          isFirstNode={isFirstNode}
+          handleCopyFromPrev={handleCopyFromPrev}
+          handleCopyToggle={handleCopyToggle}
+          getOpenInDataGridHref={getOpenInDataGridHref}
+          onOpenInDataGrid={handleOpenInDataGrid}
+          addEmptyDescItem={addEmptyDescItem}
+          deleteDescItem={deleteDescItem}
+          createDescItem={createDescItem}
+          updateDescItem={updateDescItem}
+          autoFocusLocalId={autoFocusLocalId}
+          onAutoFocusTaken={() => setAutoFocusLocalId(undefined)}
+        />
       </div>
     </div>
     </NodeFormContext.Provider>

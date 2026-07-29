@@ -11,7 +11,7 @@ import { FormItemSpec, FormItemType, MandatoryType } from "elza-api";
 import { ComponentType, useEffect, useRef, useState } from "react";
 import { defineMessages, MessageDescriptor, useIntl } from "react-intl";
 import { DescItemTypeRef } from "typings/store";
-import { useStrictMode } from "../hooks";
+import { useStrictMode } from "utils/hooks";
 import { findInSources } from "./utils";
 import { RulDescItemSpecExtVO } from "api/RulDescItemSpecExtVO";
 import { useStyles } from "./styles";

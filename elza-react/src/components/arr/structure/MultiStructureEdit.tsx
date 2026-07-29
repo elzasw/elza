@@ -13,14 +13,14 @@ import { DescItemTypeRef } from "typings/store";
 import { useAppSelector } from "utils/hooks/useAppSelector";
 import { useAppThunkDispatch } from "utils/hooks";
 import { useUserSettings } from "contexts/user";
-import { AddDescItemTypeForm } from "components/arr/node-edit/AddDescItemType";
-import { DescItemTypeFields } from "components/arr/node-edit/DescItemTypeFields";
-import { FormItemGroup } from "components/arr/node-edit/FormItemGroup";
-import { GroupColumns } from "components/arr/node-edit/GroupColumns";
-import { buildGroupsForm } from "components/arr/node-edit/utils";
-import { messages as nodeEditMessages } from "components/arr/node-edit/messages";
-import { FormItem } from "components/arr/node-edit/hooks";
-import { EditItem } from "components/arr/node-edit/types";
+import { AddDescItemTypeForm } from "components/arr/item-form/AddDescItemType";
+import { DescItemTypeFields } from "components/arr/item-form/DescItemTypeFields";
+import { FormItemGroup } from "components/arr/item-form/FormItemGroup";
+import { GroupColumns } from "components/arr/item-form/GroupColumns";
+import { buildGroupsForm } from "components/arr/item-form/utils";
+import { messages as nodeEditMessages } from "components/arr/item-form/messages";
+import { FormItem } from "components/arr/item-form/formItems";
+import { EditItem } from "components/arr/item-form/types";
 import {
     MultiFormItem,
     SdoBatchPayload,

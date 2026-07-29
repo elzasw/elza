@@ -65,19 +65,20 @@ import { isFundRootId } from "../ArrUtils";
 import SyncNodes from "../SyncNodes";
 import { NodeSettingsModal } from "../node-settings-form";
 import { QuoteModal, messages as quoteMessages } from "../quote";
-import { messages as nodeEditMessages } from "./messages";
+import { messages as nodeEditMessages } from "../item-form/messages";
 import { TextFragmentsWindow } from "../text-fragments";
-import { AddDescItemTypeForm } from "./AddDescItemType";
+import { AddDescItemTypeForm } from "../item-form/AddDescItemType";
 import {
   OverflowMenu,
   ToolbarButtonGroupDef,
   ToolbarOverflowButton,
   // ToolbarOverflowDivider,
 } from "./ToolbarOverflow";
-import { FormItem, useActiveFund, useActiveParent } from "./hooks";
+import { FormItem } from "../item-form/formItems";
+import { useActiveFund, useActiveParent } from "utils/hooks";
 import { useTemplates } from "./templates/templates";
 import { useUserSettings } from "contexts/user";
-import { useStyles } from "./styles";
+import { useStyles } from "../item-form/styles";
 
 export const messages = defineMessages({
   toggleCopyFromPrevious: {

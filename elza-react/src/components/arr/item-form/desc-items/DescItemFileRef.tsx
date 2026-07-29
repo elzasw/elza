@@ -11,7 +11,7 @@ import { useDebouncedEffect } from "utils/hooks/hooks";
 import { useIntl } from "react-intl";
 import { messages as commonMessages } from "./commonMessages";
 import { useStyles } from "./styles";
-import { useActiveFund } from "../hooks";
+import { useActiveFund } from "utils/hooks";
 import { DescItemProps } from "./types";
 
 interface Props extends DescItemProps {
