@@ -2,20 +2,16 @@ package cz.tacr.elza.controller;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -311,35 +307,9 @@ public class FundController implements FundsApi {
     @Transactional(readOnly = true)
     public ResponseEntity<List<FsRepo>> fundFsRepos(@PathVariable("fundId") Integer fundId) {
         ArrFund fund = arrangementService.getFund(fundId);
+        List<ArrDigitalRepository> digitalRepositories = externalSystemService.findDigitalRepository();
+        List<FsRepo> result = fileSystemRepoBrowser.listRepos(fund, digitalRepositories);
 
-        List<ArrDigitalRepository> digitRepositories = externalSystemService.findDigitalRepository();
-
-        List<FsRepo> result = null;
-        if (CollectionUtils.isNotEmpty(digitRepositories)) {
-            for (ArrDigitalRepository digiRepo : digitRepositories) {
-                if (fileSystemRepoService.isFileSystemRepository(digiRepo)) {
-                    Path repoPath = fileSystemRepoService.getPath(digiRepo, fund);
-                    // append only real dirs
-                    if(!Files.isDirectory(repoPath)) {
-                        continue;
-                    }
-                    if (result == null) {
-                        result = new ArrayList<>();
-                    }
-
-                    FsRepo fsRepo = new FsRepo();
-                    fsRepo.setFsRepoId(digiRepo.getExternalSystemId());
-                    fsRepo.setName(digiRepo.getName());
-                    fsRepo.setCode(digiRepo.getCode());
-                    fsRepo.setPath(repoPath.toString());
-                    result.add(fsRepo);
-                }
-            }
-        }
-
-        if (result == null) {
-            result = Collections.emptyList();
-        }
         return ResponseEntity.ok(result);
     }
 

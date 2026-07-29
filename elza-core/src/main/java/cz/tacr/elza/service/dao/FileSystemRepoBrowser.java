@@ -14,11 +14,13 @@ import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import cz.tacr.elza.controller.vo.FsItem;
 import cz.tacr.elza.controller.vo.FsItemSortType;
 import cz.tacr.elza.controller.vo.FsItemType;
 import cz.tacr.elza.controller.vo.FsItems;
+import cz.tacr.elza.controller.vo.FsRepo;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.exception.BusinessException;
@@ -116,5 +118,29 @@ public class FileSystemRepoBrowser {
                 throw new BusinessException("Invalid filter.", BaseCode.INVALID_STATE)
                         .set("filterType", filterType);
         }
+    }
+
+    public List<FsRepo> listRepos(ArrFund fund, List<ArrDigitalRepository> digitalRepositories) {
+        List<FsRepo> result = new ArrayList<>();
+        if (CollectionUtils.isEmpty(digitalRepositories)) {
+            return result;
+        }
+        for (ArrDigitalRepository digiRepo : digitalRepositories) {
+            if (!fileSystemRepoService.isFileSystemRepository(digiRepo)) {
+                continue;
+            }
+            Path repoPath = fileSystemRepoService.getPath(digiRepo, fund);
+            // skip repositories whose (possibly templated) root is not currently available
+            if (!Files.isDirectory(repoPath)) {
+                continue;
+            }
+            FsRepo fsRepo = new FsRepo();
+            fsRepo.setFsRepoId(digiRepo.getExternalSystemId());
+            fsRepo.setName(digiRepo.getName());
+            fsRepo.setCode(digiRepo.getCode());
+            fsRepo.setPath(repoPath.toString());
+            result.add(fsRepo);
+        }
+        return result;
     }
 }
