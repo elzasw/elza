@@ -407,12 +407,11 @@ public class FundController implements FundsApi {
         Function<Path, Boolean> acceptor = prepareFSFilter(filterType);
 
         List<FsItem> fsItemList = new ArrayList<>();
-        try (Stream<Path> ds = Files.walk(itemPath, 1);) {
+        try (Stream<Path> ds = Files.list(itemPath)) {
             int counter = 0;
             Iterator<Path> it = ds.iterator();
-            // skip first item - root
-            it.next();
             // limit to 10k items
+            // TODO: expose truncation flag in FsItems (Phase 2)
             while (it.hasNext() && counter < 10000) {
                 Path item = it.next();
                 if (acceptor.apply(item)) {
