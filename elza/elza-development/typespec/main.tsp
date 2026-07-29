@@ -222,6 +222,20 @@ model FsRepoIdParameter {
 }
 
 /**
+ * File sorting type
+ */
+enum FsItemSortType {
+    /** By name, in ascending */
+    NAME_ASC,
+    /** By name in descending */
+    NAME_DESC,
+    /** By size, in ascending */
+    SIZE_ASC,
+    /** By size in descending */
+    SIZE_DESC,
+}
+
+/**
  * File system item type
  */
 enum FsItemType {
@@ -243,6 +257,8 @@ model FsItem {
     size?: integer;
     /** Time of last change */
     lastChange: offsetDateTime;
+    /** File is linked to a description item */
+    isLinked: boolean;
 }
 
 /**
@@ -3008,7 +3024,7 @@ namespace ElzaAPI.fund {
      * Return list of filesystem items
      */
     @route("{fundId}/fsrepo/{fsrepoId}/items")
-    op fsRepoItems(
+    @get op fsRepoItems(
         ...FundIdParameter,
         ...FsRepoIdParameter,
         /** Optional filter to return only folders or files. If not specified all items are returned */
@@ -3016,14 +3032,18 @@ namespace ElzaAPI.fund {
         /** Optional path in the repository */
         @query path?: string,
         /** Optional parameter to return next batch of items. See FsItems for more details. */
-        @query lastKey?: string
+        @query lastKey?: string,
+        /** File sorting type */
+        @query sortingType?: FsItemSortType,
+        /** File filtering template */
+        @query fileFilter?: string
     ): FsItems;
 
     /**
      * Get file of data
      */
     @route("{fundId}/fsrepo/{fsrepoId}/item-data")
-    op fsRepoItemData(
+    @get op fsRepoItemData(
         ...FundIdParameter,
         ...FsRepoIdParameter,
         /** file path in the repository */
