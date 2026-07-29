@@ -254,7 +254,7 @@ model FsItem {
     /** File or folder name */
     name: string;
     /** File size */
-    size?: integer;
+    size?: int64;
     /** Time of last change */
     lastChange: offsetDateTime;
     /** File is linked to a description item */

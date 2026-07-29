@@ -424,7 +424,7 @@ public class FundController implements FundsApi {
                     BasicFileAttributes attrs = bfav.readAttributes();
                     if (attrs.isRegularFile()) {
                         fsItem.setItemType(FsItemType.FILE);
-                        fsItem.setSize((int) attrs.size());
+                        fsItem.setSize(attrs.size());
                     } else {
                         fsItem.setItemType(FsItemType.FOLDER);
                     }

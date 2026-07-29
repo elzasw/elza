@@ -7626,6 +7626,7 @@ components:
           description: File or folder name
         size:
           type: integer
+          format: int64
           description: File size
         lastChange:
           type: string
