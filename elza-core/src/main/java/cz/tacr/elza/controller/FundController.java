@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.BasicFileAttributeView;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -13,12 +11,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -55,7 +50,6 @@ import cz.tacr.elza.controller.vo.FundsChangeRun;
 import cz.tacr.elza.controller.vo.MultiFundActionRequest;
 import cz.tacr.elza.controller.vo.MultiFundActionResult;
 import cz.tacr.elza.controller.vo.FindFundsResult;
-import cz.tacr.elza.controller.vo.FsItem;
 import cz.tacr.elza.controller.vo.FsItemSortType;
 import cz.tacr.elza.controller.vo.FsItemType;
 import cz.tacr.elza.controller.vo.FsItems;
@@ -97,6 +91,7 @@ import cz.tacr.elza.service.DaoService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.UserService;
+import cz.tacr.elza.service.dao.FileSystemRepoBrowser;
 import cz.tacr.elza.service.dao.FileSystemRepoService;
 
 @RestController
@@ -131,6 +126,9 @@ public class FundController implements FundsApi {
 
     @Autowired
     private ScopeRepository scopeRepository;
+
+    @Autowired
+    private FileSystemRepoBrowser fileSystemRepoBrowser;
 
     @Autowired
     private FileSystemRepoService fileSystemRepoService;
@@ -377,117 +375,13 @@ public class FundController implements FundsApi {
 
         ArrFund fund = arrangementService.getFund(fundId);
         ArrDigitalRepository digiRepo = externalSystemService.getDigitalRepository(fsrepoId);
-
-        Path itemPath = fileSystemRepoService.resolvePath(digiRepo, fund, path);
-        if (!Files.isDirectory(itemPath)) {
-            throw new BusinessException("Item is not directory.", BaseCode.INVALID_STATE)
-                    .set("fsrepoId", fsrepoId)
-                    .set("path", path)
-                    .set("itemPath", itemPath);
-        }
-
-        int maxItems = 1000;
-        if (digiRepo.getCode() != null) {
-            // hack for debugging client
-            if (digiRepo.getCode().endsWith("_DEBUG")) {
-                maxItems = 2;
-            }
-        }
-        int offset = 0;
-        // check if continue in previous list
-        if (lastKey != null) {
-            // lastKey is simply offset
-            // this is just the basic implementation
-            offset = Integer.parseInt(lastKey);
-        }
-
-        FsItems fsItems = new FsItems();
-
-        Function<Path, Boolean> acceptor = prepareFSFilter(filterType);
-
-        List<FsItem> fsItemList = new ArrayList<>();
-        try (Stream<Path> ds = Files.list(itemPath)) {
-            int counter = 0;
-            Iterator<Path> it = ds.iterator();
-            // limit to 10k items
-            // TODO: expose truncation flag in FsItems (Phase 2)
-            while (it.hasNext() && counter < 10000) {
-                Path item = it.next();
-                if (acceptor.apply(item)) {
-                    BasicFileAttributeView bfav = Files.getFileAttributeView(item, BasicFileAttributeView.class);
-
-                    FsItem fsItem = new FsItem();
-                    fsItem.setName(item.getFileName().toString());
-
-                    BasicFileAttributes attrs = bfav.readAttributes();
-                    if (attrs.isRegularFile()) {
-                        fsItem.setItemType(FsItemType.FILE);
-                        fsItem.setSize(attrs.size());
-                    } else {
-                        fsItem.setItemType(FsItemType.FOLDER);
-                    }
-                    OffsetDateTime odt = attrs.lastModifiedTime().toInstant().atOffset(ZoneOffset.UTC);
-                    fsItem.setLastChange(odt);
-
-                    fsItemList.add(fsItem);
-                }
-                counter++;
-            }
-            fsItemList.sort((c1, c2) -> {
-                if (c1.getItemType().equals(FsItemType.FILE)) {
-                    if (c2.getItemType().equals(FsItemType.FOLDER)) {
-                        return 1;
-                    }
-                } else {
-                    // c1 is folder
-                    if (c2.getItemType().equals(FsItemType.FILE)) {
-                        return -1;
-                    }
-                }
-                return c1.getName().compareTo(c2.getName());
-            });
-
-            List<FsItem> appendItems;
-            Integer nextOffset = null;
-            // append selected items
-            if ((fsItemList.size() - offset) <= maxItems) {
-                // last items
-                if (offset == 0) {
-                    appendItems = fsItemList;
-                } else {
-                    appendItems = fsItemList.subList(offset, fsItemList.size());
-                }
-            } else {
-                nextOffset = offset + maxItems;
-                appendItems = fsItemList.subList(offset, nextOffset);
-            }
-
-            fsItems.getItems().addAll(appendItems);
-            if (nextOffset != null) {
-                fsItems.setLastKey(nextOffset.toString());
-            }
+        try {
+            FsItems result = fileSystemRepoBrowser.browseItems(digiRepo, fund, path, filterType, lastKey, sortingType, fileFilter);
+            return ResponseEntity.ok(result);
         } catch (IOException ex) {
             throw new BusinessException("Failed to read.", ex, BaseCode.INVALID_STATE)
                     .set("fsrepoId", fsrepoId)
-                    .set("path", path)
-                    .set("itemPath", itemPath);
-        }
-
-        return ResponseEntity.ok(fsItems);
-    }
-
-    private Function<Path, Boolean> prepareFSFilter(FsItemType filterType) {
-        if (filterType == null) {
-            return p -> true;
-        }
-        switch (filterType) {
-        	case FILE:
-                return p -> Files.isRegularFile(p);
-        	case FOLDER:
-                return p -> Files.isDirectory(p);
-        	default:
-                throw new BusinessException("Invalid filter.", BaseCode.INVALID_STATE)
-                        .set("filterType", filterType);
+                    .set("path", path);
         }
     }
 
