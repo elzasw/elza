@@ -2534,6 +2534,20 @@ paths:
           schema:
             type: string
           explode: false
+        - name: sortingType
+          in: query
+          required: false
+          description: File sorting type
+          schema:
+            $ref: '#/components/schemas/FsItemSortType'
+          explode: false
+        - name: fileFilter
+          in: query
+          required: false
+          description: File filtering template
+          schema:
+            type: string
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -7601,6 +7615,7 @@ components:
         - itemType
         - name
         - lastChange
+        - isLinked
       properties:
         itemType:
           allOf:
@@ -7616,7 +7631,18 @@ components:
           type: string
           format: date-time
           description: Time of last change
+        isLinked:
+          type: boolean
+          description: File is linked to a description item
       description: Single file system item
+    FsItemSortType:
+      type: string
+      enum:
+        - NAME_ASC
+        - NAME_DESC
+        - SIZE_ASC
+        - SIZE_DESC
+      description: File sorting type
     FsItemType:
       type: string
       enum:
