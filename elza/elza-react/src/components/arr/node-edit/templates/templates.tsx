@@ -10,7 +10,7 @@ import { useAppSelector } from 'utils/hooks/useAppSelector';
 import { ItemClass } from '../../../../constants';
 import { getOneSettings, setSettings } from '../../ArrUtils';
 import TemplateForm, { EXISTS_TEMPLATE as exists_template, NEW_TEMPLATE as new_template } from '../../TemplateForm';
-import { useActiveFund } from '../hooks';
+import { useActiveFund } from 'utils/hooks';
 import { convertToNewTemplate, convertToOldDescItem } from './conversionUtils';
 import { hasValue, isValueEqual } from './utils';
 import { ActionTypes } from 'actions/constants/ActionTypes';

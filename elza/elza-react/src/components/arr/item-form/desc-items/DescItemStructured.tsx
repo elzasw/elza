@@ -14,7 +14,7 @@ import { DataStructureRef, DataType, NodeItem } from "elza-api";
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useDebouncedEffect } from "utils/hooks/hooks";
 import { useAppSelector } from "utils/hooks/useAppSelector";
-import { useActiveFund } from "../hooks";
+import { useActiveFund } from "utils/hooks";
 import { FIELD_HEIGHT } from "../../../../constants";
 import { AnonymousStructure } from "./AnonymousStructure";
 import { DescItemProps } from "./types";

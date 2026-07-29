@@ -1,6 +1,6 @@
 import { DataString, DataType } from "elza-api";
 import { DescItemProps } from "./types";
-import { isMaskViewDefinition, maskString } from "components/arr/node-edit/desc-items/maskUtils";
+import { isMaskViewDefinition, maskString } from "components/arr/item-form/desc-items/maskUtils";
 
 export function DescItemString({ item, nodeId, typeRef }: DescItemProps) {
   if (item.data?.dataType !== DataType.String) {

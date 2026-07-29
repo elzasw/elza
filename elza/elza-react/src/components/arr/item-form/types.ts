@@ -1,6 +1,6 @@
 import { FormItemType, ItemData, NodeItem } from "elza-api";
 import { DescItemGroup, DescItemTypeRef } from "typings/store";
-import { FormItem } from "./hooks";
+import { FormItem } from "./formItems";
 
 export interface EditItem {
     itemTypeId?: number;

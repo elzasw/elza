@@ -5,7 +5,7 @@ import { StructureView } from 'components/arr/structure/StructureView';
 import { DataStructureRef } from 'elza-api';
 import { useEffect, useState } from 'react';
 import { StructureType } from 'typings/store';
-import { useActiveFund } from '../hooks';
+import { useActiveFund } from 'utils/hooks';
 
 interface Props {
   data: DataStructureRef;

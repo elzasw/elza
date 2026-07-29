@@ -9,7 +9,7 @@ import { DraggableList } from "./DraggableList";
 import { DescItemTypeHeader } from "./DescItemTypeHeader";
 import { DescItemField } from "./desc-items";
 import { DescItemInfo } from "./NodeDebugInfo";
-import { FormItem } from "./hooks";
+import { FormItem } from "./formItems";
 
 interface DescItem {
     item: FormItem["item"];

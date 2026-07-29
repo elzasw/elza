@@ -1,6 +1,6 @@
 import { makeStyles, Tooltip } from "@fluentui/react-components";
 import { WarningFilled } from "@fluentui/react-icons";
-import { useNodeFormContext } from "../NodeFormContext";
+import { useNodeFormContext } from "../../node-edit/NodeFormContext";
 import { useUserSettings } from "contexts/user";
 import { FIELD_HEIGHT } from "../../../../constants";
 
