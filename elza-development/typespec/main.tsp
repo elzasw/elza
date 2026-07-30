@@ -1415,9 +1415,9 @@ model FormItemType {
     /** opakovatelnost */
     repeatable: boolean;
     /** počítaný */
-    //?cal: integer;
+    cal?: integer;
     /** stav počítanýho atributu: 0/1 vypnutý/zapnutý */
-    //?calSt: integer;
+    calSt?: integer;
     /** atribut se může nastavit jako nedefinovaný 0/1 - nemůže/může */
     undefinable: boolean;
     /** seznam specifikací atributu */
