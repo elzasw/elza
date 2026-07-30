@@ -1415,10 +1415,10 @@ model FormItemType {
     /** opakovatelnost */
     repeatable: boolean;
     /** počítaný */
-    cal?: integer;
-    /** stav počítanýho atributu: 0/1 vypnutý/zapnutý */
-    calSt?: integer;
-    /** atribut se může nastavit jako nedefinovaný 0/1 - nemůže/může */
+    cal?: boolean;
+    /** stav počítanýho atributu: vypnutý/zapnutý */
+    calSt?: boolean;
+    /** atribut se může nastavit jako nedefinovaný nemůže/může */
     undefinable: boolean;
     /** seznam specifikací atributu */
     specs?: FormItemSpec[];
