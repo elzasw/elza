@@ -1202,6 +1202,8 @@ public class ClientFactoryVO {
     		        fit.setItemTypeId(i.getItemTypeId());
     		        fit.setType(MandatoryType.valueOf(i.getType().name()));
     		        fit.setRepeatable(i.getRepeatable());
+    		        fit.setCal(i.getCalculable() ? 1 : 0);
+    		        fit.setCalSt(i.getCalculableState() ? 1 : 0);
     		        fit.setUndefinable(i.getIndefinable());
     		        fit.setSpecs(specs);
     		        fit.setFavoriteSpecIds(null); // TODO

@@ -7592,9 +7592,15 @@ components:
         repeatable:
           type: boolean
           description: opakovatelnost
+        cal:
+          type: integer
+          description: počítaný
+        calSt:
+          type: integer
+          description: 'stav počítanýho atributu: 0/1 vypnutý/zapnutý'
         undefinable:
           type: boolean
-          description: 'počítanýstav počítanýho atributu: 0/1 vypnutý/zapnutýatribut se může nastavit jako nedefinovaný 0/1 - nemůže/může'
+          description: atribut se může nastavit jako nedefinovaný 0/1 - nemůže/může
         specs:
           type: array
           items:
