@@ -17,7 +17,7 @@ import OutputInlineForm from 'components/arr/OutputInlineForm';
 import * as PropTypes from 'prop-types';
 import './ArrOutputDetail.scss';
 import {Shortcuts} from 'react-shortcuts';
-import OutputSubNodeForm from './OutputSubNodeForm';
+import { OutputEdit } from './output/OutputEdit';
 import FundNodesList from './FundNodesList';
 import FundNodesSelectForm from './FundNodesSelectForm';
 import defaultKeymap from './ArrOutputDetailKeymap.jsx';
@@ -223,7 +223,6 @@ class ArrOutputDetail extends AbstractReactComponent<Props> {
             fund,
             versionId,
             descItemTypes,
-            rulDataTypes,
             closed,
             readMode,
             scopeList,
@@ -250,18 +249,7 @@ class ArrOutputDetail extends AbstractReactComponent<Props> {
             return <HorizontalLoader />;
         }
 
-        let form = (
-            <OutputSubNodeForm
-                versionId={versionId}
-                fundId={fund.id}
-                selectedSubNodeId={fundOutputDetail.id}
-                rulDataTypes={rulDataTypes}
-                descItemTypes={descItemTypes}
-                subNodeForm={fundOutputDetail.subNodeForm}
-                closed={!this.isEditable()}
-                readMode={closed || readMode}
-            />
-        );
+        let form = <OutputEdit outputId={fundOutputDetail.id} />;
 
         let readonly = closed || readMode || !this.isEditable();
 

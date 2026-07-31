@@ -1085,6 +1085,18 @@
     "defaultMessage": "Invalidated entities",
     "srcHash": "anb_5TqFryuh"
   },
+  "itemForm.calculate.placeholder": {
+    "defaultMessage": "Value calculated by a function",
+    "srcHash": "bUxfh_c6iECU"
+  },
+  "itemForm.calculate.switchToAuto": {
+    "defaultMessage": "Field is filled in manually, switch to automatic",
+    "srcHash": "kp6ceD92VZpq"
+  },
+  "itemForm.calculate.switchToManual": {
+    "defaultMessage": "Field is filled in automatically, switch to manual",
+    "srcHash": "YU4iA0sg--z8"
+  },
   "mandatoryType.impossible": {
     "defaultMessage": "Impossible",
     "srcHash": "tF8XT_kWW1X_"

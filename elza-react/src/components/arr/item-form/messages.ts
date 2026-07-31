@@ -22,6 +22,18 @@ export const messages = defineMessages({
     id: "subNodeForm.descItemType.title.add",
     defaultMessage: "Přidat prvek popisu",
   },
+  calculateSwitchToAuto: {
+    id: "itemForm.calculate.switchToAuto",
+    defaultMessage: "Pole je vyplňováno uživatelsky, přepnout na automatické",
+  },
+  calculateSwitchToManual: {
+    id: "itemForm.calculate.switchToManual",
+    defaultMessage: "Pole je vyplňováno automaticky, přepnout na uživatelské",
+  },
+  calculatedPlaceholder: {
+    id: "itemForm.calculate.placeholder",
+    defaultMessage: "Hodnota počítána funkcí",
+  },
 });
 
 export const dataTypeFormatMessages: Partial<Record<RulDataTypeCodeEnum, MessageDescriptor>> = defineMessages({
