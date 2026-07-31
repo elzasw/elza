@@ -123,13 +123,13 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         await this.resolveUrls();
         dispatch(templatesFetchIfNeeded());
         dispatch(outputFilters.fetchIfNeeded());
-        dispatch(structureTypesFetchIfNeeded(null));
 
         const fund = this.getActiveFund(this.props);
         const matchId = match.params.outputId;
         const urlOutputId = matchId ? parseInt(matchId) : null;
         dispatch(outputTypesFetchIfNeeded());
         if (fund) {
+            dispatch(structureTypesFetchIfNeeded(fund.versionId));
             dispatch(fundOutputFetchIfNeeded(fund.versionId));
             const outputDetail = fund.fundOutput.fundOutputDetail;
             const outputId = outputDetail.id;
@@ -154,6 +154,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
 
         const fund = this.getActiveFund(nextProps);
         if (fund) {
+            this.props.dispatch(structureTypesFetchIfNeeded(fund.versionId));
             this.props.dispatch(fundOutputFetchIfNeeded(fund.versionId));
             this.props.dispatch(outputTypesFetchIfNeeded());
         }

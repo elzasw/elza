@@ -7,6 +7,8 @@ import {
 } from "elza-api";
 import { EditItem } from "../types";
 import { useState } from "react";
+import { useIntl } from "react-intl";
+import { messages } from "../messages";
 import { DescItemTypeRef } from "typings/store";
 import { useAppSelector } from "utils/hooks/useAppSelector";
 import {
@@ -71,6 +73,8 @@ interface Props {
   fondsVersionId?: number;
   nodeId?: number;
   nodeVersionId?: number;
+  /** When true, the field is shown but cannot be edited (e.g. an automatically calculated item type). */
+  readOnly?: boolean;
   onDelete?: (item: EditItem) => Promise<void>;
   onCreate: (item: EditItem) => Promise<ItemDataResult>;
   onUpdate: (item: EditItem) => Promise<void>;
@@ -100,6 +104,7 @@ export function DescItemField({
   forcedDisplayString,
   fondsVersionId,
   nodeId,
+  readOnly = false,
   onDelete,
   onCreate,
   onUpdate,
@@ -109,6 +114,7 @@ export function DescItemField({
   const [isSaving, setIsSaving] = useState(false);
   const { settings } = useUserSettings();
   const compact = settings.compact;
+  const { formatMessage } = useIntl();
 
   const styles = useStyles();
   const descItemStyles = useDescItemStyles();
@@ -203,13 +209,28 @@ export function DescItemField({
     );
   }
 
+  // Automatically calculated type with no value yet: show the "computed by function"
+  // placeholder instead of an empty disabled field.
+  if (readOnly && !item.data?.dataId) {
+    return (
+      <div className={mergeClasses(styles.descItem, descItemStyles.descItemFieldRow)}>
+        <Input
+          size={compact ? "small" : "medium"}
+          disabled={true}
+          value={formatMessage(messages.calculatedPlaceholder)}
+          style={{ flex: 1, minWidth: "60px", fontStyle: "italic" }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div
       className={mergeClasses(styles.descItem, descItemStyles.descItemFieldRow)}
     >
       {(item.itemSpecId || typeRef.useSpecification) && !isEnum && (
         <DescItemSpec
-          isDisabled={item.undefined || item.nodeId != nodeId || item.inhibited}
+          isDisabled={readOnly || item.undefined || item.nodeId != nodeId || item.inhibited}
           isInhibited={item.inhibited}
           typeForm={typeForm}
           typeRef={typeRef}
@@ -235,10 +256,11 @@ export function DescItemField({
             typeRef={typeRef}
             nodeId={nodeId}
             isDisabled={
-              !isEnum &&
-              typeRef.useSpecification &&
-              item.itemSpecId == undefined &&
-              specId == undefined
+              readOnly ||
+              (!isEnum &&
+                typeRef.useSpecification &&
+                item.itemSpecId == undefined &&
+                specId == undefined)
             }
             selectedSpecId={specId}
             typeWidth={typeWidth}
@@ -249,21 +271,23 @@ export function DescItemField({
         )}
       </div>
       <ErrorDisplay itemObjectId={item.itemObjectId} />
-      <ItemActions
-        item={item}
-        nodeId={nodeId}
-        specId={specId}
-        typeForm={typeForm}
-        typeRef={typeRef}
-        onDelete={() => deleteDescItem(item)}
-        onSetUndefined={() =>
-          handleChange({
-            ...item,
-            undefined: true,
-            data: undefined,
-          })
-        }
-      />
+      {!readOnly && (
+        <ItemActions
+          item={item}
+          nodeId={nodeId}
+          specId={specId}
+          typeForm={typeForm}
+          typeRef={typeRef}
+          onDelete={() => deleteDescItem(item)}
+          onSetUndefined={() =>
+            handleChange({
+              ...item,
+              undefined: true,
+              data: undefined,
+            })
+          }
+        />
+      )}
       <SavingDisplay isSaving={isSaving} />
     </div>
   );

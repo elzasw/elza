@@ -127,7 +127,12 @@ export function DescItemTypeFields({
     const anonymousStructuredNeedsButton =
         isAnonymousStructured && (typeForm?.repeatable || hasNoItems);
 
-    const showAddButton = repeatableWithoutEmptyItem || anonymousStructuredNeedsButton;
+    // A calculable type in automatic mode is filled by the server; its values are read-only
+    // and no new items can be added until the user switches it to manual.
+    const isCalculatedAutomatically = !!typeForm?.cal && !typeForm?.calSt;
+
+    const showAddButton =
+        !isCalculatedAutomatically && (repeatableWithoutEmptyItem || anonymousStructuredNeedsButton);
 
     const lastEditableLocalId = [...sortedDescItems].reverse().find(
         ({ item, forcedDisplayString }) =>
@@ -209,6 +214,7 @@ export function DescItemTypeFields({
                                 nodeId={nodeId}
                                 nodeVersionId={nodeVersionId}
                                 typeWidth={typeWidth}
+                                readOnly={isCalculatedAutomatically}
                                 onDelete={(item) => deleteDescItem(item, localId)}
                                 onCreate={(item) => createDescItem(item, localId)}
                                 onUpdate={(item) => Promise.resolve(updateDescItem(item, localId))}

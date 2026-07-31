@@ -67,6 +67,7 @@ export function DescItemStructured({
   const [structures, setStructures] = useState<any[]>([]);
   const [query, setQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const styles = useStyles();
 
   const structureType = useMemo(() => {
     if (typeRef?.structureTypeId != undefined) {
@@ -186,6 +187,12 @@ export function DescItemStructured({
     });
   }
 
+  // structureTypes ref data may still be loading (e.g. output page opened directly, before
+  // its fetch resolves); render nothing until the type is known rather than crashing.
+  if (!structureType) {
+    return null;
+  }
+
   if (structureType.anonymous) {
     return (
       <AnonymousStructure
@@ -196,7 +203,6 @@ export function DescItemStructured({
     );
   }
 
-  const styles = useStyles();
   const isInherited = item.nodeId != nodeId;
   const isDisabled =
     item.undefined ||
