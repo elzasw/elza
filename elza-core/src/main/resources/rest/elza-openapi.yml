@@ -2534,6 +2534,15 @@ paths:
           schema:
             type: string
           explode: false
+        - name: filterByLink
+          in: query
+          required: false
+          description: Filter for file system items by link status
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/FsItemFilterByLinked'
+            default: ALL
+          explode: false
         - name: sortingType
           in: query
           required: false
@@ -7642,6 +7651,13 @@ components:
           type: boolean
           description: File is linked to a description item
       description: Single file system item
+    FsItemFilterByLinked:
+      type: string
+      enum:
+        - ALL
+        - LINKED
+        - UNLINKED
+      description: Filter for file system items by link status
     FsItemSortType:
       type: string
       enum:
