@@ -5,6 +5,23 @@
     flex-direction: column;
     height: 100%;
 
+    .icon-with-badge {
+        position: relative;
+        display: inline-block;
+
+        .link-badge {
+            position: absolute;
+            right: -4px;
+            bottom: -4px;
+            font-size: 0.6em;
+            color: #444;
+            background: #fff;
+            border-radius: 50%;
+            padding: 1px 2px;
+            line-height: 1;
+        }
+    }
+
     .toolbar {
         display: flex;
         line-height: 1em;
@@ -18,9 +35,67 @@
         .breadcrumbs {
             display: flex;
             align-items: center;
+            flex: 1 1 auto;
+            min-width: 0;
+            overflow: hidden;
+
+            .btn {
+                flex-shrink: 0;
+                white-space: nowrap;
+                max-width: 240px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .ellipsis {
+                flex-shrink: 0;
+                cursor: default;
+                padding: 0 2px;
+                color: var(--text-secondary, #666);
+            }
 
             .divider {
                 padding: 0 5px;
+                flex-shrink: 0;
+            }
+        }
+
+        .filters {
+            margin-left: auto;
+            flex-shrink: 0;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+
+            .sort-label {
+                font-size: 12px;
+                font-weight: normal;
+                white-space: nowrap;
+                display: inline-flex;
+                align-items: center;
+                height: 28px;
+                padding-bottom: 4px;
+            }
+
+            .sort-select,
+            .file-filter {
+                height: 28px;
+                padding: 0 6px;
+                font-size: 12px;
+                border: var(--primary-border);
+                border-radius: 3px;
+                background: var(--surface-background, #fff);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .sort-select {
+                width: 100px;
+            }
+
+            .file-filter {
+                width: 120px;
             }
         }
     }
