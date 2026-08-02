@@ -142,6 +142,10 @@ class ArrDaos extends AbstractReactComponent {
 
         const showPart = !(!daoList.fetched && daoPackageId);
 
+        if (showPart && (!daoList.rows || daoList.rows.length === 0)) {
+            return null;
+        }
+
         let items = {ids: []};
 
         let selectedDao = null;

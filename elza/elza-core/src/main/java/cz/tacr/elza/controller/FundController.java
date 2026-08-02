@@ -46,6 +46,7 @@ import cz.tacr.elza.controller.vo.FundsChangeRun;
 import cz.tacr.elza.controller.vo.MultiFundActionRequest;
 import cz.tacr.elza.controller.vo.MultiFundActionResult;
 import cz.tacr.elza.controller.vo.FindFundsResult;
+import cz.tacr.elza.controller.vo.FsItemFilterByLinked;
 import cz.tacr.elza.controller.vo.FsItemSortType;
 import cz.tacr.elza.controller.vo.FsItemType;
 import cz.tacr.elza.controller.vo.FsItems;
@@ -340,13 +341,14 @@ public class FundController implements FundsApi {
                                                    @RequestParam(value = "filterType", required = false) @Nullable FsItemType filterType,
                                                    @RequestParam(value = "path", required = false) @Nullable String path,
                                                    @RequestParam(value = "lastKey", required = false) @Nullable String lastKey,
+                                                   @RequestParam(value = "filterByLink", required = false, defaultValue = "ALL") FsItemFilterByLinked filterByLink,
                                                    @RequestParam(value = "sortingType", required = false) @Nullable FsItemSortType sortingType,
                                                    @RequestParam(value = "fileFilter", required = false) @Nullable String fileFilter) {
 
         ArrFund fund = arrangementService.getFund(fundId);
         ArrDigitalRepository digiRepo = externalSystemService.getDigitalRepository(fsrepoId);
         try {
-            FsItems result = fileSystemRepoBrowser.browseItems(digiRepo, fund, path, filterType, lastKey, sortingType, fileFilter);
+            FsItems result = fileSystemRepoBrowser.browseItems(digiRepo, fund, path, filterType, lastKey, filterByLink, sortingType, fileFilter);
             return ResponseEntity.ok(result);
         } catch (IOException ex) {
             throw new BusinessException("Failed to read.", ex, BaseCode.INVALID_STATE)

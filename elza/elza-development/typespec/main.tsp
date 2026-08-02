@@ -221,6 +221,18 @@ model FsRepoIdParameter {
     fsrepoId: integer;
 }
 
+/** 
+ * Filter for file system items by link status
+ */
+enum FsItemFilterByLinked {
+    /** All items */
+    ALL,
+    /** Only linked items */
+    LINKED,
+    /** Only unlinked items */
+    UNLINKED
+}
+
 /**
  * File sorting type
  */
@@ -3033,6 +3045,8 @@ namespace ElzaAPI.fund {
         @query path?: string,
         /** Optional parameter to return next batch of items. See FsItems for more details. */
         @query lastKey?: string,
+        /** Filter for file system items by link status */
+        @query filterByLink?: FsItemFilterByLinked = FsItemFilterByLinked.ALL,
         /** File sorting type */
         @query sortingType?: FsItemSortType,
         /** File filtering template */
