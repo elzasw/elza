@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoLink;
+import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.repository.vo.ItemChange;
@@ -104,4 +105,18 @@ public interface DaoLinkRepository extends ElzaJpaRepository<ArrDaoLink, Integer
             " WHERE dl.nodeId = :nodeId" +
             " AND dl.deleteChange is null")
     List<ArrDaoLink> findByNodeIdAndDeleteChangeIsNullFetchAip(@Param("nodeId") Integer nodeId);
+
+    /**
+     * Returns codes of all ArrDao that are currently linked (any node, any fund)
+     * within the given file-system digital repository. Codes are the repository-
+     * relative paths stored on ArrDao. Used to mark browsed items as linked.
+     * Global scope per §8 item 3 of fs-repo-analysis.md — no fund predicate.
+     */
+    @Query("SELECT DISTINCT dl.dao.code" +
+            " FROM arr_dao_link dl" +
+            " JOIN dl.dao.daoPackage p" +
+            " WHERE p.digitalRepository = :digiRepo" +
+            "   AND dl.dao IS NOT NULL" +
+            "   AND dl.deleteChange IS NULL")
+    List<String> findLinkedCodesByDigitalRepository(@Param("digiRepo") ArrDigitalRepository digiRepo);
 }

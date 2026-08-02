@@ -5,11 +5,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.text.Collator;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import cz.tacr.elza.controller.vo.FsItem;
+import cz.tacr.elza.controller.vo.FsItemFilterByLinked;
 import cz.tacr.elza.controller.vo.FsItemSortType;
 import cz.tacr.elza.controller.vo.FsItemType;
 import cz.tacr.elza.controller.vo.FsItems;
@@ -25,6 +31,7 @@ import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.DaoLinkRepository;
 
 /**
  * Directory-listing and browsing operations over a filesystem repository.
@@ -35,12 +42,19 @@ import cz.tacr.elza.exception.codes.BaseCode;
 @Service
 public class FileSystemRepoBrowser {
 
-    @Autowired
+	@Autowired
+	private DaoLinkRepository daoLinkRepository;
+
+	@Autowired
     private FileSystemRepoService fileSystemRepoService;
 
-    public FsItems browseItems(ArrDigitalRepository digiRepo, ArrFund fund,
-                               String path, FsItemType filterType,
-                               String lastKey, FsItemSortType sortingType,
+    public FsItems browseItems(ArrDigitalRepository digiRepo, 
+    		                   ArrFund fund,
+                               String path, 
+                               FsItemType filterType,
+                               String lastKey, 
+                               FsItemFilterByLinked filterByLink, 
+                               FsItemSortType sortingType,
                                String fileFilter) throws IOException {
         Path itemPath = fileSystemRepoService.resolvePath(digiRepo, fund, path);
         if (!Files.isDirectory(itemPath)) {
@@ -49,6 +63,14 @@ public class FileSystemRepoBrowser {
                     .set("path", path)
                     .set("itemPath", itemPath);
         }
+
+	     // Fetch linked paths for this repo (global scope — any fund, any node).
+	     // Codes in DB may use Windows or POSIX separators depending on the server
+	     // that wrote them; normalize both sides to '/' before comparison.
+	     Set<String> linkedPaths = daoLinkRepository.findLinkedCodesByDigitalRepository(digiRepo)
+	             .stream()
+	             .map(code -> code.replace('\\', '/'))
+	             .collect(Collectors.toSet());
 
         int maxItems = 1000;
         if (digiRepo.getCode() != null && digiRepo.getCode().endsWith("_DEBUG")) {
@@ -60,6 +82,12 @@ public class FileSystemRepoBrowser {
         Function<Path, Boolean> acceptor = prepareFSFilter(filterType);
 
         List<FsItem> fsItemList = new ArrayList<>();
+
+        // normalize the substring filter once (Czech locale — lowercase preserves diacritics)
+        String normalizedFilter = (fileFilter != null && !fileFilter.isBlank())
+                ? fileFilter.toLowerCase(new Locale("cs"))
+                : null;
+
         try (Stream<Path> ds = Files.list(itemPath)) {
             Iterator<Path> it = ds.iterator();
             int counter = 0;
@@ -67,11 +95,17 @@ public class FileSystemRepoBrowser {
             while (it.hasNext() && counter < 10000) {
                 Path item = it.next();
                 if (acceptor.apply(item)) {
+                    String name = item.getFileName().toString();
+                    if (normalizedFilter != null
+                            && !name.toLowerCase(new Locale("cs")).contains(normalizedFilter)) {
+                        counter++;
+                        continue;
+                    }
                     BasicFileAttributes attrs = Files
                             .getFileAttributeView(item, BasicFileAttributeView.class)
                             .readAttributes();
                     FsItem fsItem = new FsItem();
-                    fsItem.setName(item.getFileName().toString());
+                    fsItem.setName(name);
                     if (attrs.isRegularFile()) {
                         fsItem.setItemType(FsItemType.FILE);
                         fsItem.setSize(attrs.size());
@@ -79,17 +113,22 @@ public class FileSystemRepoBrowser {
                         fsItem.setItemType(FsItemType.FOLDER);
                     }
                     fsItem.setLastChange(attrs.lastModifiedTime().toInstant().atOffset(ZoneOffset.UTC));
+                    String fullRelatPath = (path == null || path.isEmpty() || path.equals("/"))
+                            ? name
+                            : path.replace('\\', '/') + "/" + name;
+                    boolean isLinked = linkedPaths.contains(fullRelatPath);
+                    fsItem.setIsLinked(isLinked);
+                    if (!matchesLinkFilter(isLinked, filterByLink)) {
+                        counter++;
+                        continue;
+                    }
                     fsItemList.add(fsItem);
                 }
                 counter++;
             }
         }
 
-        fsItemList.sort((c1, c2) -> {
-            if (c1.getItemType() == FsItemType.FILE && c2.getItemType() == FsItemType.FOLDER) return 1;
-            if (c1.getItemType() == FsItemType.FOLDER && c2.getItemType() == FsItemType.FILE) return -1;
-            return c1.getName().compareTo(c2.getName());
-        });
+        fsItemList.sort(comparatorFor(sortingType));
 
         FsItems result = new FsItems();
         Integer nextOffset = null;
@@ -107,6 +146,48 @@ public class FileSystemRepoBrowser {
         return result;
     }
 
+    private Comparator<FsItem> comparatorFor(FsItemSortType sortingType) {
+        Collator collator = Collator.getInstance(new Locale("cs"));
+        collator.setStrength(Collator.SECONDARY);   // case-insensitive, keeps diacritics
+
+        Comparator<FsItem> foldersFirst = (a, b) -> {
+            if (a.getItemType() == FsItemType.FOLDER && b.getItemType() == FsItemType.FILE) return -1;
+            if (a.getItemType() == FsItemType.FILE && b.getItemType() == FsItemType.FOLDER) return 1;
+            return 0;
+        };
+
+        FsItemSortType effective = (sortingType != null) ? sortingType : FsItemSortType.NAME_ASC;
+        switch (effective) {
+            case NAME_ASC:
+                return foldersFirst.thenComparing(FsItem::getName, collator);
+            case NAME_DESC:
+                return foldersFirst.thenComparing((a, b) -> collator.compare(b.getName(), a.getName()));
+            case SIZE_ASC:
+                return foldersFirst.thenComparing(a -> a.getSize() == null ? 0L : a.getSize());
+            case SIZE_DESC:
+                return foldersFirst.thenComparing((a, b) -> Long.compare(
+                        b.getSize() == null ? 0L : b.getSize(),
+                        a.getSize() == null ? 0L : a.getSize()));
+            default:
+                return foldersFirst.thenComparing(FsItem::getName, collator);
+        }
+    }
+
+    private boolean matchesLinkFilter(boolean isLinked, FsItemFilterByLinked filterByLink) {
+        if (filterByLink == null) {
+            return true;
+        }
+        switch (filterByLink) {
+            case LINKED:
+            	return isLinked;
+            case UNLINKED:
+            	return !isLinked;
+            case ALL:
+            default:
+            	return true;
+        }
+    }    
+    
     private Function<Path, Boolean> prepareFSFilter(FsItemType filterType) {
         if (filterType == null) {
             return p -> true;
