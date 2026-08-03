@@ -148,9 +148,6 @@ public class DaoService {
     @Autowired
     private FundVersionRepository fundVersionRepository;
 
-    @Autowired
-    private DigitalRepositoryRepository digitalRepositoryRepository;
-
     /**
      * Poskytuje seznam digitálních entit (DAO), které jsou napojené na konkrétní jednotku popisu (JP) nebo nemá žádné napojení (pouze pod archivní souborem (AS)).
      *

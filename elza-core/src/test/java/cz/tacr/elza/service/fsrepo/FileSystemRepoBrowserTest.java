@@ -3,8 +3,10 @@ package cz.tacr.elza.service.fsrepo;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.Collator;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,6 +18,7 @@ import cz.tacr.elza.controller.vo.FsItemSortType;
 import cz.tacr.elza.controller.vo.FsItemType;
 import cz.tacr.elza.controller.vo.FsItems;
 import cz.tacr.elza.controller.vo.FsRepo;
+import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.exception.BusinessException;
@@ -33,7 +36,8 @@ import static org.mockito.ArgumentMatchers.eq;
 
 public class FileSystemRepoBrowserTest {
 
-    private FileSystemRepoService serviceMock;
+	private ElzaLocale elzaLocaleMock;
+	private FileSystemRepoService serviceMock;
     private DaoLinkRepository daoLinkRepositoryMock;
     private FileSystemRepoBrowser browser;
     private ArrDigitalRepository repo;
@@ -41,7 +45,12 @@ public class FileSystemRepoBrowserTest {
 
     @BeforeEach
     void setUp() {
-        serviceMock = Mockito.mock(FileSystemRepoService.class);
+    	elzaLocaleMock = Mockito.mock(ElzaLocale.class);
+    	Locale csLocale = new Locale("cs");
+    	Mockito.when(elzaLocaleMock.getLocale()).thenReturn(csLocale);
+    	Mockito.when(elzaLocaleMock.getCollator()).thenAnswer(inv -> Collator.getInstance(csLocale));
+
+    	serviceMock = Mockito.mock(FileSystemRepoService.class);
         daoLinkRepositoryMock = Mockito.mock(DaoLinkRepository.class);
         // Default: no linked paths — tests that care override with Mockito.when(...)
         Mockito.when(daoLinkRepositoryMock.findLinkedCodesByDigitalRepository(Mockito.any()))
@@ -50,6 +59,7 @@ public class FileSystemRepoBrowserTest {
         browser = new FileSystemRepoBrowser();
         setField(browser, "fileSystemRepoService", serviceMock);
         setField(browser, "daoLinkRepository", daoLinkRepositoryMock);
+        setField(browser, "elzaLocale", elzaLocaleMock);
 
         repo = new ArrDigitalRepository();
         repo.setExternalSystemId(42);
