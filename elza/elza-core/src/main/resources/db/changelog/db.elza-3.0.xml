@@ -1635,4 +1635,16 @@
         </sql>
     </changeSet>
 
+	<changeSet id="20260803120000" author="sergey.iryupin">
+	    <!-- Normalize path separators in repository-relative codes: '\' → '/'.
+	         Repository-relative paths are OS-independent identifiers; storing
+	         them with the write-time OS separator made cross-platform matching
+	         fragile and required read-time normalization scattered across the code. -->
+	    <sql dbms="postgresql">
+	        UPDATE arr_dao SET code = REPLACE(code, E'\\', '/') WHERE code LIKE E'%\\%';
+	        UPDATE arr_dao_file SET code = REPLACE(code, E'\\', '/') WHERE code LIKE E'%\\%';
+	        UPDATE arr_dao_file_group SET code = REPLACE(code, E'\\', '/') WHERE code LIKE E'%\\%';
+	    </sql>
+	</changeSet>
+
 </databaseChangeLog>

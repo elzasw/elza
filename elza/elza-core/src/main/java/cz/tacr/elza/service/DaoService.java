@@ -594,7 +594,7 @@ public class DaoService {
             }
             Integer fundId = daoFile.getDao().getDaoPackage().getFund().getFundId();
             String encodedPath = StringUtils.isNotBlank(daoFileCode)
-                    ? UriUtils.encodeQueryParam(daoFileCode.replace('\\', '/'), StandardCharsets.UTF_8)
+                    ? UriUtils.encodeQueryParam(daoFileCode, StandardCharsets.UTF_8)
                     : "";
             return contextPath + "/api/v1/fund/" + fundId
                     + "/fsrepo/" + digiRep.getExternalSystemId()
@@ -632,7 +632,7 @@ public class DaoService {
             }
             Integer fundId = daoFile.getDao().getDaoPackage().getFund().getFundId();
             String encodedPath = StringUtils.isNotBlank(daoFileCode)
-                    ? UriUtils.encodeQueryParam(daoFileCode.replace('\\', '/'), StandardCharsets.UTF_8)
+                    ? UriUtils.encodeQueryParam(daoFileCode, StandardCharsets.UTF_8)
                     : "";
             return contextPath + "/api/v1/fund/" + fundId
                     + "/fsrepo/" + digiRep.getExternalSystemId()

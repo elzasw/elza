@@ -9,12 +9,12 @@ import java.text.Collator;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,13 +64,7 @@ public class FileSystemRepoBrowser {
                     .set("itemPath", itemPath);
         }
 
-	     // Fetch linked paths for this repo (global scope — any fund, any node).
-	     // Codes in DB may use Windows or POSIX separators depending on the server
-	     // that wrote them; normalize both sides to '/' before comparison.
-	     Set<String> linkedPaths = daoLinkRepository.findLinkedCodesByDigitalRepository(digiRepo)
-	             .stream()
-	             .map(code -> code.replace('\\', '/'))
-	             .collect(Collectors.toSet());
+        Set<String> linkedPaths = new HashSet<>(daoLinkRepository.findLinkedCodesByDigitalRepository(digiRepo));
 
         int maxItems = 1000;
         if (digiRepo.getCode() != null && digiRepo.getCode().endsWith("_DEBUG")) {
@@ -115,7 +109,7 @@ public class FileSystemRepoBrowser {
                     fsItem.setLastChange(attrs.lastModifiedTime().toInstant().atOffset(ZoneOffset.UTC));
                     String fullRelatPath = (path == null || path.isEmpty() || path.equals("/"))
                             ? name
-                            : path.replace('\\', '/') + "/" + name;
+                            : FileSystemRepoService.normalizeRelatPath(path) + "/" + name;
                     boolean isLinked = linkedPaths.contains(fullRelatPath);
                     fsItem.setIsLinked(isLinked);
                     if (!matchesLinkFilter(isLinked, filterByLink)) {
