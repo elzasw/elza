@@ -291,17 +291,14 @@ public class FileSystemRepoBrowserTest {
     }
 
     @Test
-    void browse_isLinked_windowsSeparators_normalized(@TempDir Path root) throws IOException {
-        Path sub = Files.createDirectory(root.resolve("sub"));
-        Files.createFile(sub.resolve("file.jpg"));
-        Mockito.when(serviceMock.resolvePath(repo, fund, "sub")).thenReturn(sub);
-        // DB stored the code with backslash (Windows-deployed server)
-        Mockito.when(daoLinkRepositoryMock.findLinkedCodesByDigitalRepository(repo))
-                .thenReturn(List.of("sub\\file.jpg"));
-
-        FsItems result = browser.browseItems(repo, fund, "sub", null, null, null, null, null);
-
-        assertTrue(result.getItems().get(0).getIsLinked());
+    void normalizeRelatPath_variants() {
+        assertNull(FileSystemRepoService.normalizeRelatPath(null));
+        assertEquals("", FileSystemRepoService.normalizeRelatPath(""));
+        assertEquals("file.jpg", FileSystemRepoService.normalizeRelatPath("file.jpg"));
+        assertEquals("folder/file.jpg", FileSystemRepoService.normalizeRelatPath("folder/file.jpg"));
+        assertEquals("folder/file.jpg", FileSystemRepoService.normalizeRelatPath("folder\\file.jpg"));
+        assertEquals("a/b/c/d.txt", FileSystemRepoService.normalizeRelatPath("a\\b\\c\\d.txt"));
+        assertEquals("a/b/c/file.jpg", FileSystemRepoService.normalizeRelatPath("a/b\\c/file.jpg"));
     }
 
     // ---------- helper ----------

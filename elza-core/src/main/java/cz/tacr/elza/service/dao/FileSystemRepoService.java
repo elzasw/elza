@@ -55,6 +55,7 @@ public class FileSystemRepoService {
     private ExternalSystemService externalSystemService;
 
     public ArrDao createDao(ArrDigitalRepository digiRepo, ArrFundVersion fundVersion, String itemRelatPath) {
+    	itemRelatPath = normalizeRelatPath(itemRelatPath);
         Path repoPath = getPath(digiRepo, fundVersion.getFund());
         Path filePath = resolvePath(repoPath, itemRelatPath);
 
@@ -91,8 +92,17 @@ public class FileSystemRepoService {
         return dao;
     }
 
-    static public String getRelatPath(Path rootPath, Path itemPath) {
-        return rootPath.relativize(itemPath).toString();
+    /**
+     * Repository-relative paths are stored and compared with forward slashes,
+     * regardless of the OS the server runs on. Call at every write site so
+     * DB values stay consistent.
+     */
+    public static String normalizeRelatPath(String path) {
+        return path == null ? null : path.replace('\\', '/');
+    }
+
+    public static String getRelatPath(Path rootPath, Path itemPath) {
+        return normalizeRelatPath(rootPath.relativize(itemPath).toString());
     }
 
     private void syncFilesAndFolders(ArrDao dao, Path repoPath, Path srcItemPath) throws IOException {
