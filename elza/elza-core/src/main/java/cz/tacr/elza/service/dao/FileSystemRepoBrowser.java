@@ -12,7 +12,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -27,6 +26,7 @@ import cz.tacr.elza.controller.vo.FsItemSortType;
 import cz.tacr.elza.controller.vo.FsItemType;
 import cz.tacr.elza.controller.vo.FsItems;
 import cz.tacr.elza.controller.vo.FsRepo;
+import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.exception.BusinessException;
@@ -42,6 +42,9 @@ import cz.tacr.elza.repository.DaoLinkRepository;
 @Service
 public class FileSystemRepoBrowser {
 
+	@Autowired
+	private ElzaLocale elzaLocale;	
+	
 	@Autowired
 	private DaoLinkRepository daoLinkRepository;
 
@@ -79,7 +82,7 @@ public class FileSystemRepoBrowser {
 
         // normalize the substring filter once (Czech locale — lowercase preserves diacritics)
         String normalizedFilter = (fileFilter != null && !fileFilter.isBlank())
-                ? fileFilter.toLowerCase(new Locale("cs"))
+                ? fileFilter.toLowerCase(elzaLocale.getLocale())
                 : null;
 
         try (Stream<Path> ds = Files.list(itemPath)) {
@@ -91,7 +94,7 @@ public class FileSystemRepoBrowser {
                 if (acceptor.apply(item)) {
                     String name = item.getFileName().toString();
                     if (normalizedFilter != null
-                            && !name.toLowerCase(new Locale("cs")).contains(normalizedFilter)) {
+                            && !name.toLowerCase(elzaLocale.getLocale()).contains(normalizedFilter)) {
                         counter++;
                         continue;
                     }
@@ -141,8 +144,8 @@ public class FileSystemRepoBrowser {
     }
 
     private Comparator<FsItem> comparatorFor(FsItemSortType sortingType) {
-        Collator collator = Collator.getInstance(new Locale("cs"));
-        collator.setStrength(Collator.SECONDARY);   // case-insensitive, keeps diacritics
+        Collator collator = elzaLocale.getCollator();
+        collator.setStrength(Collator.SECONDARY);
 
         Comparator<FsItem> foldersFirst = (a, b) -> {
             if (a.getItemType() == FsItemType.FOLDER && b.getItemType() == FsItemType.FILE) return -1;
