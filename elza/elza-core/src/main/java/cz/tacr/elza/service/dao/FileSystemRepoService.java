@@ -19,6 +19,8 @@ import java.util.stream.Stream;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -39,6 +41,8 @@ import cz.tacr.elza.service.ExternalSystemService;
 
 @Service
 public class FileSystemRepoService {
+
+	private static final Logger log = LoggerFactory.getLogger(FileSystemRepoService.class);
 
     public static String FILE_URI_PREFIX = "file://";
 
@@ -164,8 +168,11 @@ public class FileSystemRepoService {
                         createFiles.add(itemPath);
                     }
                 } else {
-                    throw new BusinessException("Unrecognized path: " + itemPath, BaseCode.INVALID_STATE);
-                }
+                    // Neither a regular file nor a directory: broken symlinks, device/pipe
+                    // files, unreadable reparse points. Skip so a single such entry does
+                    // not fail the whole link. Full reporting to the client will land with
+                    // the Phase 2 link-operation result shape.
+                    log.warn("Skipping unrecognized filesystem entry: {}", itemPath);                }
             });
         }
 
@@ -173,7 +180,7 @@ public class FileSystemRepoService {
         daoServiceInternal.deleteDaoFiles(daoFilesMap.values());
         // drop old groups
         daoServiceInternal.deleteDaoFileGroups(daoFileGroupsMap.values());
-        
+
         // create missing folders
         if(CollectionUtils.isNotEmpty(createFileGroups)) {
             createFileGroups.sort((p1, p2) -> p1.compareTo(p2) );
