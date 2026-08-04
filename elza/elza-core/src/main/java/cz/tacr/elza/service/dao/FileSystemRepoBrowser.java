@@ -42,6 +42,10 @@ import cz.tacr.elza.repository.DaoLinkRepository;
 @Service
 public class FileSystemRepoBrowser {
 
+	private static final int DEFAULT_PAGE_SIZE = 1_000;
+	private static final int MAX_PAGE_SIZE = 10_000;
+	private static final int SCAN_CAP = 10_000;
+
 	@Autowired
 	private ElzaLocale elzaLocale;	
 	
@@ -58,7 +62,9 @@ public class FileSystemRepoBrowser {
                                String lastKey, 
                                FsItemFilterByLinked filterByLink, 
                                FsItemSortType sortingType,
-                               String fileFilter) throws IOException {
+                               String fileFilter,
+                               Integer pageSize,
+                               Boolean foldersFirst) throws IOException {
         Path itemPath = fileSystemRepoService.resolvePath(digiRepo, fund, path);
         if (!Files.isDirectory(itemPath)) {
             throw new BusinessException("Item is not directory.", BaseCode.INVALID_STATE)
@@ -69,16 +75,14 @@ public class FileSystemRepoBrowser {
 
         Set<String> linkedPaths = new HashSet<>(daoLinkRepository.findLinkedCodesByDigitalRepository(digiRepo));
 
-        int maxItems = 1000;
-        if (digiRepo.getCode() != null && digiRepo.getCode().endsWith("_DEBUG")) {
-            // TODO: replace with pageSize request parameter (Phase 2)
-            maxItems = 2;
-        }
+        int effectivePageSize = clampPageSize(pageSize);
+        boolean foldersFirstFlag = foldersFirst == null ? true : foldersFirst;
         int offset = (lastKey != null) ? Integer.parseInt(lastKey) : 0;
 
         Function<Path, Boolean> acceptor = prepareFSFilter(filterType);
 
         List<FsItem> fsItemList = new ArrayList<>();
+        boolean truncated = false;
 
         // normalize the substring filter once (Czech locale — lowercase preserves diacritics)
         String normalizedFilter = (fileFilter != null && !fileFilter.isBlank())
@@ -88,8 +92,11 @@ public class FileSystemRepoBrowser {
         try (Stream<Path> ds = Files.list(itemPath)) {
             Iterator<Path> it = ds.iterator();
             int counter = 0;
-            // TODO: expose truncation flag in FsItems (Phase 2)
-            while (it.hasNext() && counter < 10000) {
+            while (it.hasNext()) {
+            	if (counter >= SCAN_CAP) {
+                    truncated = true;
+                    break;
+                }
                 Path item = it.next();
                 if (acceptor.apply(item)) {
                     String name = item.getFileName().toString();
@@ -125,48 +132,60 @@ public class FileSystemRepoBrowser {
             }
         }
 
-        fsItemList.sort(comparatorFor(sortingType));
+        fsItemList.sort(comparatorFor(sortingType, foldersFirstFlag));
 
         FsItems result = new FsItems();
         Integer nextOffset = null;
         List<FsItem> appendItems;
-        if ((fsItemList.size() - offset) <= maxItems) {
+        if ((fsItemList.size() - offset) <= effectivePageSize) {
             appendItems = (offset == 0) ? fsItemList : fsItemList.subList(offset, fsItemList.size());
         } else {
-            nextOffset = offset + maxItems;
+            nextOffset = offset + effectivePageSize;
             appendItems = fsItemList.subList(offset, nextOffset);
         }
         result.getItems().addAll(appendItems);
         if (nextOffset != null) {
             result.setLastKey(nextOffset.toString());
         }
+        if (truncated) {
+            result.setTruncated(true);
+        }
         return result;
     }
 
-    private Comparator<FsItem> comparatorFor(FsItemSortType sortingType) {
+    private static int clampPageSize(Integer requested) {
+        if (requested == null || requested <= 0) {
+            return DEFAULT_PAGE_SIZE;
+        }
+        return Math.min(requested, MAX_PAGE_SIZE);
+    }    
+
+    private Comparator<FsItem> comparatorFor(FsItemSortType sortingType, boolean foldersFirst) {
         Collator collator = elzaLocale.getCollator();
         collator.setStrength(Collator.SECONDARY);
 
-        Comparator<FsItem> foldersFirst = (a, b) -> {
-            if (a.getItemType() == FsItemType.FOLDER && b.getItemType() == FsItemType.FILE) return -1;
-            if (a.getItemType() == FsItemType.FILE && b.getItemType() == FsItemType.FOLDER) return 1;
-            return 0;
-        };
+        Comparator<FsItem> foldersFirstCmp = foldersFirst
+                ? (a, b) -> {
+                    if (a.getItemType() == FsItemType.FOLDER && b.getItemType() == FsItemType.FILE) return -1;
+                    if (a.getItemType() == FsItemType.FILE && b.getItemType() == FsItemType.FOLDER) return 1;
+                    return 0;
+                }
+                : (a, b) -> 0;
 
         FsItemSortType effective = (sortingType != null) ? sortingType : FsItemSortType.NAME_ASC;
         switch (effective) {
             case NAME_ASC:
-                return foldersFirst.thenComparing(FsItem::getName, collator);
+                return foldersFirstCmp.thenComparing(FsItem::getName, collator);
             case NAME_DESC:
-                return foldersFirst.thenComparing((a, b) -> collator.compare(b.getName(), a.getName()));
+                return foldersFirstCmp.thenComparing((a, b) -> collator.compare(b.getName(), a.getName()));
             case SIZE_ASC:
-                return foldersFirst.thenComparing(a -> a.getSize() == null ? 0L : a.getSize());
+                return foldersFirstCmp.thenComparing(a -> a.getSize() == null ? 0L : a.getSize());
             case SIZE_DESC:
-                return foldersFirst.thenComparing((a, b) -> Long.compare(
+                return foldersFirstCmp.thenComparing((a, b) -> Long.compare(
                         b.getSize() == null ? 0L : b.getSize(),
                         a.getSize() == null ? 0L : a.getSize()));
             default:
-                return foldersFirst.thenComparing(FsItem::getName, collator);
+                return foldersFirstCmp.thenComparing(FsItem::getName, collator);
         }
     }
 

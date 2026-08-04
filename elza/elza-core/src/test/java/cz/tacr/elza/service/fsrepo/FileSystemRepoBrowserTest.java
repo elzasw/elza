@@ -76,7 +76,7 @@ public class FileSystemRepoBrowserTest {
     void browse_emptyDirectory(@TempDir Path root) throws IOException {
         Mockito.when(serviceMock.resolvePath(repo, fund, null)).thenReturn(root);
 
-        FsItems result = browser.browseItems(repo, fund, null, null, null, null, null, null);
+        FsItems result = browser.browseItems(repo, fund, null, null, null, null, null, null, null, null);
 
         assertTrue(result.getItems().isEmpty());
         assertNull(result.getLastKey());
@@ -90,7 +90,7 @@ public class FileSystemRepoBrowserTest {
 
         Mockito.when(serviceMock.resolvePath(repo, fund, null)).thenReturn(root);
 
-        FsItems result = browser.browseItems(repo, fund, null, null, null, null, null, null);
+        FsItems result = browser.browseItems(repo, fund, null, null, null, null, null, null, null, null);
 
         assertEquals(3, result.getItems().size());
         assertEquals(FsItemType.FOLDER, result.getItems().get(0).getItemType());
@@ -106,7 +106,7 @@ public class FileSystemRepoBrowserTest {
         Files.write(file, new byte[] { 1, 2, 3, 4, 5 });
         Mockito.when(serviceMock.resolvePath(repo, fund, null)).thenReturn(root);
 
-        FsItems result = browser.browseItems(repo, fund, null, null, null, null, null, null);
+        FsItems result = browser.browseItems(repo, fund, null, null, null, null, null, null, null, null);
 
         assertEquals(5L, result.getItems().get(0).getSize());
     }
@@ -117,7 +117,7 @@ public class FileSystemRepoBrowserTest {
         Mockito.when(serviceMock.resolvePath(repo, fund, "f.txt")).thenReturn(file);
 
         assertThrows(BusinessException.class,
-                () -> browser.browseItems(repo, fund, "f.txt", null, null, null, null, null));
+                () -> browser.browseItems(repo, fund, "f.txt", null, null, null, null, null, null, null));
     }
 
     @Test
@@ -126,7 +126,7 @@ public class FileSystemRepoBrowserTest {
         Files.createFile(root.resolve("file.txt"));
         Mockito.when(serviceMock.resolvePath(repo, fund, null)).thenReturn(root);
 
-        FsItems result = browser.browseItems(repo, fund, null, FsItemType.FILE, null, null, null, null);
+        FsItems result = browser.browseItems(repo, fund, null, FsItemType.FILE, null, null, null, null, null, null);
 
         assertEquals(1, result.getItems().size());
         assertEquals(FsItemType.FILE, result.getItems().get(0).getItemType());
@@ -134,23 +134,36 @@ public class FileSystemRepoBrowserTest {
 
     @Test
     void browse_pagination_lastKeyAdvances(@TempDir Path root) throws IOException {
-        repo.setCode("REPO_DEBUG");   // triggers maxItems=2
         for (int i = 0; i < 5; i++) {
             Files.createFile(root.resolve(String.format("f%02d.txt", i)));
         }
         Mockito.when(serviceMock.resolvePath(eq(repo), eq(fund), any())).thenReturn(root);
 
-        FsItems page1 = browser.browseItems(repo, fund, null, null, null, null, null, null);
+        FsItems page1 = browser.browseItems(repo, fund, null, null, null, null, null, null, 2, null);
         assertEquals(2, page1.getItems().size());
         assertEquals("2", page1.getLastKey());
 
-        FsItems page2 = browser.browseItems(repo, fund, null, null, "2", null, null, null);
+        FsItems page2 = browser.browseItems(repo, fund, null, null, "2", null, null, null, 2, null);
         assertEquals(2, page2.getItems().size());
         assertEquals("4", page2.getLastKey());
 
-        FsItems page3 = browser.browseItems(repo, fund, null, null, "4", null, null, null);
+        FsItems page3 = browser.browseItems(repo, fund, null, null, "4", null, null, null, 2, null);
         assertEquals(1, page3.getItems().size());
         assertNull(page3.getLastKey());
+    }
+
+    @Test
+    void browse_foldersFirstFalse_sortsUniformlyBySize(@TempDir Path root) throws IOException {
+        Files.createDirectory(root.resolve("a-dir"));
+        Files.write(root.resolve("z-file.bin"), new byte[]{1, 2, 3});
+        Mockito.when(serviceMock.resolvePath(repo, fund, null)).thenReturn(root);
+
+        FsItems result = browser.browseItems(repo, fund, null, null, null, null,
+                FsItemSortType.SIZE_DESC, null, null, false);
+
+        // With foldersFirst=false, the file (size=3) sorts before the folder (size=0).
+        assertEquals("z-file.bin", result.getItems().get(0).getName());
+        assertEquals("a-dir",      result.getItems().get(1).getName());
     }
 
     // ---------- listRepos ----------
@@ -201,7 +214,7 @@ public class FileSystemRepoBrowserTest {
         Files.createFile(root.resolve("b.txt"));
         Mockito.when(serviceMock.resolvePath(repo, fund, null)).thenReturn(root);
 
-        FsItems result = browser.browseItems(repo, fund, null, null, null, null, null, null);
+        FsItems result = browser.browseItems(repo, fund, null, null, null, null, null, null, null, null);
         assertEquals("a.txt", result.getItems().get(0).getName());
         assertEquals("b.txt", result.getItems().get(1).getName());
         assertEquals("c.txt", result.getItems().get(2).getName());
@@ -213,7 +226,7 @@ public class FileSystemRepoBrowserTest {
         Files.createFile(root.resolve("c.txt"));
         Mockito.when(serviceMock.resolvePath(repo, fund, null)).thenReturn(root);
 
-        FsItems result = browser.browseItems(repo, fund, null, null, null, null, FsItemSortType.NAME_DESC, null);
+        FsItems result = browser.browseItems(repo, fund, null, null, null, null, FsItemSortType.NAME_DESC, null, null, null);
         assertEquals("c.txt", result.getItems().get(0).getName());
         assertEquals("a.txt", result.getItems().get(1).getName());
     }
@@ -225,7 +238,7 @@ public class FileSystemRepoBrowserTest {
         Files.write(root.resolve("medium.txt"), new byte[100]);
         Mockito.when(serviceMock.resolvePath(repo, fund, null)).thenReturn(root);
 
-        FsItems result = browser.browseItems(repo, fund, null, null, null, null, FsItemSortType.SIZE_DESC, null);
+        FsItems result = browser.browseItems(repo, fund, null, null, null, null, FsItemSortType.SIZE_DESC, null, null, null);
         assertEquals("large.txt", result.getItems().get(0).getName());
         assertEquals("medium.txt", result.getItems().get(1).getName());
         assertEquals("small.txt", result.getItems().get(2).getName());
@@ -238,7 +251,7 @@ public class FileSystemRepoBrowserTest {
         Files.createFile(root.resolve("dnes.txt"));
         Mockito.when(serviceMock.resolvePath(repo, fund, null)).thenReturn(root);
 
-        FsItems result = browser.browseItems(repo, fund, null, null, null, null, FsItemSortType.NAME_ASC, null);
+        FsItems result = browser.browseItems(repo, fund, null, null, null, null, FsItemSortType.NAME_ASC, null, null, null);
         // In Czech: c < č < d
         assertEquals("cepy.txt", result.getItems().get(0).getName());
         assertEquals("čepy.txt", result.getItems().get(1).getName());
@@ -252,7 +265,7 @@ public class FileSystemRepoBrowserTest {
         Files.createFile(root.resolve("PHOTO_older.jpg"));
         Mockito.when(serviceMock.resolvePath(repo, fund, null)).thenReturn(root);
 
-        FsItems result = browser.browseItems(repo, fund, null, null, null, null, null, "photo");
+        FsItems result = browser.browseItems(repo, fund, null, null, null, null, null, "photo", null, null);
         assertEquals(2, result.getItems().size());
         // Case-insensitive
     }
@@ -263,7 +276,7 @@ public class FileSystemRepoBrowserTest {
         Files.createFile(root.resolve("b.txt"));
         Mockito.when(serviceMock.resolvePath(repo, fund, null)).thenReturn(root);
 
-        FsItems result = browser.browseItems(repo, fund, null, null, null, null, null, "");
+        FsItems result = browser.browseItems(repo, fund, null, null, null, null, null, "", null, null);
         assertEquals(2, result.getItems().size());
     }
 
@@ -277,7 +290,7 @@ public class FileSystemRepoBrowserTest {
         Mockito.when(daoLinkRepositoryMock.findLinkedCodesByDigitalRepository(repo))
                 .thenReturn(List.of("linked.jpg"));
 
-        FsItems result = browser.browseItems(repo, fund, null, null, null, null, null, null);
+        FsItems result = browser.browseItems(repo, fund, null, null, null, null, null, null, null, null);
 
         FsItem linked = result.getItems().stream()
                 .filter(f -> f.getName().equals("linked.jpg")).findFirst().orElseThrow();
@@ -295,7 +308,7 @@ public class FileSystemRepoBrowserTest {
         Mockito.when(daoLinkRepositoryMock.findLinkedCodesByDigitalRepository(repo))
                 .thenReturn(List.of("sub/file.jpg"));
 
-        FsItems result = browser.browseItems(repo, fund, "sub", null, null, null, null, null);
+        FsItems result = browser.browseItems(repo, fund, "sub", null, null, null, null, null, null, null);
 
         assertTrue(result.getItems().get(0).getIsLinked());
     }
