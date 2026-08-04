@@ -8,11 +8,12 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.text.Collator;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -25,6 +26,7 @@ import cz.tacr.elza.controller.vo.FsItemFilterByLinked;
 import cz.tacr.elza.controller.vo.FsItemSortType;
 import cz.tacr.elza.controller.vo.FsItemType;
 import cz.tacr.elza.controller.vo.FsItems;
+import cz.tacr.elza.controller.vo.FsLink;
 import cz.tacr.elza.controller.vo.FsRepo;
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.domain.ArrDigitalRepository;
@@ -73,7 +75,20 @@ public class FileSystemRepoBrowser {
                     .set("itemPath", itemPath);
         }
 
-        Set<String> linkedPaths = new HashSet<>(daoLinkRepository.findLinkedCodesByDigitalRepository(digiRepo));
+        Map<String, List<FsLink>> linksByCode = new HashMap<>();
+        for (Object[] row : daoLinkRepository.findLinksByDigitalRepository(digiRepo)) {
+            String code = (String) row[0];
+            Integer nodeId = (Integer) row[1];
+            Integer fundId = (Integer) row[2];
+            String fundName = (String) row[3];
+            FsLink link = new FsLink();
+            link.setNodeId(nodeId);
+            link.setFundId(fundId);
+            link.setFundName(fundName);
+            // Fallback label until node title is resolved via NodeCacheService (Step B).
+            link.setNodeLabel("Uzel #" + nodeId);
+            linksByCode.computeIfAbsent(code, k -> new ArrayList<>()).add(link);
+        }
 
         int effectivePageSize = clampPageSize(pageSize);
         boolean foldersFirstFlag = foldersFirst == null ? true : foldersFirst;
@@ -120,8 +135,9 @@ public class FileSystemRepoBrowser {
                     String fullRelatPath = (path == null || path.isEmpty() || path.equals("/"))
                             ? name
                             : FileSystemRepoService.normalizeRelatPath(path) + "/" + name;
-                    boolean isLinked = linkedPaths.contains(fullRelatPath);
-                    fsItem.setIsLinked(isLinked);
+                    List<FsLink> itemLinks = linksByCode.getOrDefault(fullRelatPath, Collections.emptyList());
+                    fsItem.setLinks(itemLinks);
+                    boolean isLinked = !itemLinks.isEmpty();
                     if (!matchesLinkFilter(isLinked, filterByLink)) {
                         counter++;
                         continue;

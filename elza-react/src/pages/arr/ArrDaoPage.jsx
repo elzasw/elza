@@ -44,6 +44,7 @@ class ArrDaoPage extends ArrParentPage {
         selectedDaoLeftFileId: null, // vybrané dao v levé části
         selectedDaoRight: null, // vybrané dao v pravé části
         selectedDaoRightFileId: null, // vybrané dao v pravé části
+        fsRefreshCounter: 0,
     };
 
     static propTypes = {
@@ -256,7 +257,11 @@ class ArrDaoPage extends ArrParentPage {
 
         return (
             <div className="tree-left-container">
-                <FileSystemBrowser fundId={fund.id} onSelect={selectFileSystePath} />
+                <FileSystemBrowser
+                    fundId={fund.id}
+                    onSelect={selectFileSystePath}
+                    refreshCounter={this.state.fsRefreshCounter}
+                />
             </div>
         )
     }
@@ -273,6 +278,7 @@ class ArrDaoPage extends ArrParentPage {
         const [repoId, path] = extractRepoIdFromFullPath(selectedFilePath);
         const result = await Api.funds.fundFsCreateDAOLink(fund.id, repoId, fund.fundTreeDaosRight.selectedId, path);
         console.log("#### file link result", result);
+        this.setState(({ fsRefreshCounter }) => ({ fsRefreshCounter: fsRefreshCounter + 1 }));
     }
 
     renderCenterButtons = (readMode) => {
@@ -418,6 +424,7 @@ class ArrDaoPage extends ArrParentPage {
                                 onSelect={(item, daoFileId) => {
                                     this.setState({ selectedDaoRight: item, selectedDaoRightFileId: daoFileId });
                                 }}
+                                onLinkChange={() => this.setState(({ fsRefreshCounter }) => ({ fsRefreshCounter: fsRefreshCounter + 1 }))}
                                 nodeId={fund.fundTreeDaosRight.selectedId ? fund.fundTreeDaosRight.selectedId : null}
                             />
                         )}

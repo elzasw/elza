@@ -107,16 +107,18 @@ public interface DaoLinkRepository extends ElzaJpaRepository<ArrDaoLink, Integer
     List<ArrDaoLink> findByNodeIdAndDeleteChangeIsNullFetchAip(@Param("nodeId") Integer nodeId);
 
     /**
-     * Returns codes of all ArrDao that are currently linked (any node, any fund)
-     * within the given file-system digital repository. Codes are the repository-
-     * relative paths stored on ArrDao. Used to mark browsed items as linked.
-     * Global scope per §8 item 3 of fs-repo-analysis.md — no fund predicate.
+     * Returns all live dao-links within the given file-system digital repository
+     * as (code, nodeId, fundId, fundName) tuples. Codes are the repository-
+     * relative paths stored on ArrDao. Used to mark browsed items as linked and
+     * to expose the linking node/fund in the browser popover. Global scope per
+     * §8 item 3 of fs-repo-analysis.md — no fund predicate.
      */
-    @Query("SELECT DISTINCT dl.dao.code" +
+    @Query("SELECT dl.dao.code, dl.nodeId, n.fund.fundId, n.fund.name" +
             " FROM arr_dao_link dl" +
+            " JOIN dl.node n" +
             " JOIN dl.dao.daoPackage p" +
             " WHERE p.digitalRepository = :digiRepo" +
             "   AND dl.dao IS NOT NULL" +
             "   AND dl.deleteChange IS NULL")
-    List<String> findLinkedCodesByDigitalRepository(@Param("digiRepo") ArrDigitalRepository digiRepo);
+    List<Object[]> findLinksByDigitalRepository(@Param("digiRepo") ArrDigitalRepository digiRepo);
 }

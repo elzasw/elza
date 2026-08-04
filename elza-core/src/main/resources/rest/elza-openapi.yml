@@ -7645,7 +7645,6 @@ components:
         - itemType
         - name
         - lastChange
-        - isLinked
       properties:
         itemType:
           allOf:
@@ -7662,9 +7661,11 @@ components:
           type: string
           format: date-time
           description: Time of last change
-        isLinked:
-          type: boolean
-          description: File is linked to a description item
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/FsLink'
+          description: List of file links
       description: Single file system item
     FsItemFilterByLinked:
       type: string
@@ -7703,6 +7704,25 @@ components:
           type: boolean
           description: True when the directory scan hit its internal cap; the listing is incomplete.
       description: Collection of file system items
+    FsLink:
+      type: object
+      required:
+        - nodeId
+        - fundId
+        - fundName
+        - nodeLabel
+      properties:
+        nodeId:
+          type: integer
+          format: int32
+        fundId:
+          type: integer
+          format: int32
+        fundName:
+          type: string
+        nodeLabel:
+          type: string
+      description: File link data
     FsRepo:
       type: object
       required:
