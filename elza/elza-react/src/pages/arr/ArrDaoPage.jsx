@@ -405,8 +405,8 @@ class ArrDaoPage extends ArrParentPage {
                             area={types.FUND_TREE_AREA_DAOS_RIGHT}
                             {...fund.fundTreeDaosRight}
                         />
-                        {
-                            /*fund.fundTreeDaosRight.selectedId !== null &&*/ <ArrDaos
+                        {fund.fundTreeDaosRight.selectedId !== null && (
+                            <ArrDaos
                                 type="NODE_ASSIGN"
                                 unassigned={false}
                                 fund={fund}
@@ -420,7 +420,7 @@ class ArrDaoPage extends ArrParentPage {
                                 }}
                                 nodeId={fund.fundTreeDaosRight.selectedId ? fund.fundTreeDaosRight.selectedId : null}
                             />
-                        }
+                        )}
                     </div>
                 </div>
             </div>

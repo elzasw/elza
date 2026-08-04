@@ -2534,6 +2534,29 @@ paths:
           schema:
             type: string
           explode: false
+        - name: filterByLink
+          in: query
+          required: false
+          description: Filter for file system items by link status
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/FsItemFilterByLinked'
+            default: ALL
+          explode: false
+        - name: sortingType
+          in: query
+          required: false
+          description: File sorting type
+          schema:
+            $ref: '#/components/schemas/FsItemSortType'
+          explode: false
+        - name: fileFilter
+          in: query
+          required: false
+          description: File filtering template
+          schema:
+            type: string
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -7578,9 +7601,15 @@ components:
         repeatable:
           type: boolean
           description: opakovatelnost
+        cal:
+          type: boolean
+          description: počítaný
+        calSt:
+          type: boolean
+          description: 'stav počítanýho atributu: vypnutý/zapnutý'
         undefinable:
           type: boolean
-          description: 'počítanýstav počítanýho atributu: 0/1 vypnutý/zapnutýatribut se může nastavit jako nedefinovaný 0/1 - nemůže/může'
+          description: atribut se může nastavit jako nedefinovaný nemůže/může
         specs:
           type: array
           items:
@@ -7601,6 +7630,7 @@ components:
         - itemType
         - name
         - lastChange
+        - isLinked
       properties:
         itemType:
           allOf:
@@ -7611,12 +7641,31 @@ components:
           description: File or folder name
         size:
           type: integer
+          format: int64
           description: File size
         lastChange:
           type: string
           format: date-time
           description: Time of last change
+        isLinked:
+          type: boolean
+          description: File is linked to a description item
       description: Single file system item
+    FsItemFilterByLinked:
+      type: string
+      enum:
+        - ALL
+        - LINKED
+        - UNLINKED
+      description: Filter for file system items by link status
+    FsItemSortType:
+      type: string
+      enum:
+        - NAME_ASC
+        - NAME_DESC
+        - SIZE_ASC
+        - SIZE_DESC
+      description: File sorting type
     FsItemType:
       type: string
       enum:

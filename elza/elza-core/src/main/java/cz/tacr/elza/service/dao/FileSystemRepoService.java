@@ -2,6 +2,7 @@ package cz.tacr.elza.service.dao;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -11,7 +12,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -22,13 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.RemovalListener;
-import com.google.common.cache.RemovalNotification;
-
 import cz.tacr.elza.ElzaTools;
-import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDao.DaoType;
 import cz.tacr.elza.domain.ArrDaoFile;
@@ -44,14 +38,9 @@ import cz.tacr.elza.repository.DaoRepository;
 import cz.tacr.elza.service.ExternalSystemService;
 
 @Service
-public class FileSystemRepoService implements RemovalListener<String, FileSystemImage> {
+public class FileSystemRepoService {
 
     public static String FILE_URI_PREFIX = "file://";
-
-    private Cache<String, FileSystemImage> images = CacheBuilder.newBuilder()
-            .expireAfterAccess(5, TimeUnit.MINUTES)
-            .removalListener(this)
-            .build();
 
     @Autowired
     private DaoPackageRepository daoPackageRepos;
@@ -65,40 +54,14 @@ public class FileSystemRepoService implements RemovalListener<String, FileSystem
     @Autowired
     private ExternalSystemService externalSystemService;
 
-    public synchronized FileSystemImage getFileSystemImage(ArrDigitalRepository digiRep) {
-        digiRep = HibernateUtils.unproxy(digiRep);
-
-        if (!isFileSystemRepository(digiRep)) {
-            throw new BusinessException("Not a FileSystemRepository", BaseCode.INVALID_STATE)
-                    .set("RepositoryId", digiRep.getExternalSystemId());
-        }
-
-        // repo path
-        String repoPath = digiRep.getUrl().substring(FILE_URI_PREFIX.length());
-        FileSystemImage fsi = images.getIfPresent(repoPath);
-        if (fsi == null) {
-            fsi = new FileSystemImage(repoPath, digiRep);
-
-            images.put(repoPath, fsi);
-        }
-        return fsi;
-    }
-
-    @Override
-    synchronized public void onRemoval(RemovalNotification<String, FileSystemImage> notification) {
-        FileSystemImage fsi = notification.getValue();
-        // todo cleanup on removcal
-        // is it needed?
-    }
-
-
     public ArrDao createDao(ArrDigitalRepository digiRepo, ArrFundVersion fundVersion, String itemRelatPath) {
+    	itemRelatPath = normalizeRelatPath(itemRelatPath);
         Path repoPath = getPath(digiRepo, fundVersion.getFund());
         Path filePath = resolvePath(repoPath, itemRelatPath);
 
         ArrDigitalRepository digiRep = externalSystemService.getDigitalRepository(digiRepo.getExternalSystemId());
         // check if package exists
-        List<ArrDaoPackage> daoPackages = this.daoPackageRepos.findAllByDigitalRepository(digiRep);
+        List<ArrDaoPackage> daoPackages = this.daoPackageRepos.findAllByDigitalRepositoryAndFund(digiRep, fundVersion.getFund());
         ArrDaoPackage daoPackage;
         if (CollectionUtils.isEmpty(daoPackages)) {
             // create package for repo
@@ -116,8 +79,7 @@ public class FileSystemRepoService implements RemovalListener<String, FileSystem
             dao = daos.get(0);
         } else {
             // create dao
-            dao = daoServiceInternal.createDao(daoPackage,
-                                               itemRelatPath, itemRelatPath, null, DaoType.ATTACHMENT);
+            dao = daoServiceInternal.createDao(daoPackage, itemRelatPath, itemRelatPath, null, DaoType.ATTACHMENT);
             dao = daoServiceInternal.persistDao(dao);
         }
 
@@ -130,8 +92,17 @@ public class FileSystemRepoService implements RemovalListener<String, FileSystem
         return dao;
     }
 
-    static public String getRelatPath(Path rootPath, Path itemPath) {
-        return rootPath.relativize(itemPath).toString();
+    /**
+     * Repository-relative paths are stored and compared with forward slashes,
+     * regardless of the OS the server runs on. Call at every write site so
+     * DB values stay consistent.
+     */
+    public static String normalizeRelatPath(String path) {
+        return path == null ? null : path.replace('\\', '/');
+    }
+
+    public static String getRelatPath(Path rootPath, Path itemPath) {
+        return normalizeRelatPath(rootPath.relativize(itemPath).toString());
     }
 
     private void syncFilesAndFolders(ArrDao dao, Path repoPath, Path srcItemPath) throws IOException {
@@ -139,9 +110,16 @@ public class FileSystemRepoService implements RemovalListener<String, FileSystem
         List<ArrDaoFileGroup> daoFileGroups = daoServiceInternal.getFileGroupsByDao(dao);
 
         Map<String, ArrDaoFile> daoFilesMap = daoFiles.stream()
-                .collect(Collectors.toMap(d -> d.getCode(), Function.identity()));
+                .collect(Collectors.toMap(ArrDaoFile::getCode, Function.identity(),
+                        (a, b) -> { throw new BusinessException(
+                                "Duplicate ArrDaoFile.code: " + a.getCode(), BaseCode.INVALID_STATE)
+                                .set("daoId", a.getDao().getDaoId()); }));
+
         Map<String, ArrDaoFileGroup> daoFileGroupsMap = daoFileGroups.stream()
-                .collect(Collectors.toMap(d -> d.getCode(), Function.identity()));
+                .collect(Collectors.toMap(ArrDaoFileGroup::getCode, Function.identity(),
+                        (a, b) -> { throw new BusinessException(
+                                "Duplicate ArrDaoFileGroup.code: " + a.getCode(), BaseCode.INVALID_STATE)
+                                .set("daoId", a.getDao().getDaoId()); }));
 
         List<Path> createFiles = new ArrayList<>();
         Map<String, ArrDaoFile> existingFiles = new HashMap<>();
@@ -216,8 +194,8 @@ public class FileSystemRepoService implements RemovalListener<String, FileSystem
 
                     // find parent group
                     String parentName = getRelatPath(repoPath, parentPath);
-                    ArrDaoFileGroup parentDaoFileGroup = existingFileGroups.get(parentName);
-                    if (parentDaoFileGroup == null) {
+                    parentFileGroup = existingFileGroups.get(parentName);
+                    if (parentFileGroup == null) {
                         throw new BusinessException(
                                 "Missing parent group: " + parentName + " for item: " + relatPath,
                                 BaseCode.INVALID_STATE);
@@ -244,15 +222,38 @@ public class FileSystemRepoService implements RemovalListener<String, FileSystem
     }
 
     public String getMimetype(Path fp) {
-        return getMimetype(fp.toString());
+        try {
+            String type = Files.probeContentType(fp);
+            if (type != null) {
+                return type;
+            }
+        } catch (IOException e) {
+        	throw new BusinessException("Failed detecting file type, path: " + fp, e, BaseCode.INVALID_STATE);
+        }
+        return getMimetype(fp.getFileName().toString());
     }
 
     public String getMimetype(String name) {
-        String ext = FilenameUtils.getExtension(name).toLowerCase();
-        if ("jpg".equals(ext) || "jpeg".equals(ext)) {
-            return "image/jpeg";
-        }
-        return null;
+	    String type = URLConnection.guessContentTypeFromName(name);
+	    if (type != null) {
+	        return type;
+	    }
+	    String ext = FilenameUtils.getExtension(name).toLowerCase();
+	    switch (ext) {
+	        case "jpg":
+	        case "jpeg": return "image/jpeg";
+	        case "png":  return "image/png";
+	        case "tif":
+	        case "tiff": return "image/tiff";
+	        case "gif":  return "image/gif";
+	        case "webp": return "image/webp";
+	        case "bmp":  return "image/bmp";
+	        case "pdf":  return "application/pdf";
+	        case "txt":  return "text/plain";
+	        case "xml":  return "application/xml";
+	        case "json": return "application/json";
+	        default:     return null;
+	    }
     }
 
     public boolean isFileSystemRepository(ArrDigitalRepository digiRep) {
@@ -265,8 +266,8 @@ public class FileSystemRepoService implements RemovalListener<String, FileSystem
     }
 
     public InputStream getInputStream(ArrDigitalRepository digiRepo, String filePath) throws IOException {
-        FileSystemImage fsi = getFileSystemImage(digiRepo);
-        return fsi.getInputStream(filePath);
+        Path fp = resolvePath(digiRepo, filePath);
+        return Files.newInputStream(fp);
     }
 
     public Path resolvePath(ArrDigitalRepository digiRepo, String filePath) {
@@ -276,11 +277,7 @@ public class FileSystemRepoService implements RemovalListener<String, FileSystem
         }
         String repoPath = digiRepo.getUrl().substring(FILE_URI_PREFIX.length());
         Path rootPath = Paths.get(repoPath).toAbsolutePath();
-        if (StringUtils.isNotBlank(filePath)) {
-            return rootPath.resolve(filePath);
-        } else {
-            return rootPath;
-        }
+        return resolveInsideRoot(rootPath, filePath);
     }
 
     public Path getPath(ArrDigitalRepository digiRepo, ArrFund fund) {
@@ -321,10 +318,35 @@ public class FileSystemRepoService implements RemovalListener<String, FileSystem
     }
 
     public Path resolvePath(Path rootRepoPath, String itemPath) {
-        if (StringUtils.isNotBlank(itemPath)) {
-            return rootRepoPath.resolve(itemPath);
-        } else {
-            return rootRepoPath;
+    	return resolveInsideRoot(rootRepoPath, itemPath);
+    }
+
+    /**
+     * Resolves a repository-relative path against a root and asserts the result
+     * stays inside that root. Blocks directory traversal ("../foo") and absolute
+     * paths that would replace the root ("/etc/passwd").
+     */
+    private Path resolveInsideRoot(Path rootPath, String itemPath) {
+        Path normalizedRoot = rootPath.normalize();
+        if (StringUtils.isBlank(itemPath)) {
+            return normalizedRoot;
         }
+        Path resolved = normalizedRoot.resolve(itemPath).normalize();
+        if (!resolved.startsWith(normalizedRoot)) {
+            throw new BusinessException("Path escapes repository root", BaseCode.INVALID_STATE)
+                    .set("root", normalizedRoot.toString())
+                    .set("requested", itemPath);
+        }
+        return resolved;
+    }
+
+    public static boolean isInlineRenderable(String contentType) {
+        if (contentType == null) {
+            return false;
+        }
+        String lower = contentType.toLowerCase();
+        return lower.startsWith("image/")
+            || lower.equals("application/pdf")
+            || lower.startsWith("text/");
     }
 }

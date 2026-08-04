@@ -148,9 +148,6 @@ public class DaoService {
     @Autowired
     private FundVersionRepository fundVersionRepository;
 
-    @Autowired
-    private DigitalRepositoryRepository digitalRepositoryRepository;
-
     /**
      * Poskytuje seznam digitálních entit (DAO), které jsou napojené na konkrétní jednotku popisu (JP) nebo nemá žádné napojení (pouze pod archivní souborem (AS)).
      *
@@ -578,7 +575,9 @@ public class DaoService {
      * @param repository repository, je předáváno z důvodu výkonu při možných hromadných operacích, jinak se jedná o repository, které je v dohledatelné od DAO
      * @return url
      */
-    public String getDaoFileUrl(String contextPath, final ArrDaoFile daoFile, final ArrDigitalRepository digiRep) {
+    public String getDaoFileUrl(String contextPath, 
+                                final ArrDaoFile daoFile,
+                                final ArrDigitalRepository digiRep) {
         String url = digiRep.getViewFileUrl();
 
         String daoFileCode = daoFile.getCode();
@@ -590,11 +589,13 @@ public class DaoService {
                     contextPath = contextPath.substring(0, contextPath.length() - 1);
                 }
             }
-            url = contextPath + "/api/digirepo/{repoId}/{code}";
-            if (StringUtils.isNotBlank(daoFileCode)) {
-                daoFileCode = StringUtils.replace(daoFileCode, "\\", "/");
-                daoFileCode = UriUtils.encodePath(daoFileCode, StandardCharsets.UTF_8);
-            }
+            Integer fundId = daoFile.getDao().getDaoPackage().getFund().getFundId();
+            String encodedPath = StringUtils.isNotBlank(daoFileCode)
+                    ? UriUtils.encodeQueryParam(daoFileCode, StandardCharsets.UTF_8)
+                    : "";
+            return contextPath + "/api/v1/fund/" + fundId
+                    + "/fsrepo/" + digiRep.getExternalSystemId()
+                    + "/item-data?path=" + encodedPath;
         }
 
         ElzaTools.UrlParams params = ElzaTools.createUrlParams()
@@ -613,7 +614,8 @@ public class DaoService {
      * @return url
      */
     public String getDaoThumbnailUrl(String contextPath,
-                                     final ArrDaoFile daoFile, final ArrDigitalRepository digiRep) {
+                                     final ArrDaoFile daoFile,
+                                     final ArrDigitalRepository digiRep) {
         String url = digiRep.getViewThumbnailUrl();
 
         String daoFileCode = daoFile.getCode();
@@ -625,11 +627,13 @@ public class DaoService {
                     contextPath = contextPath.substring(0, contextPath.length() - 1);
                 }
             }
-            url = contextPath + "/api/digirepo/{repoId}/{code}";
-            if (StringUtils.isNotBlank(daoFileCode)) {
-                daoFileCode = StringUtils.replace(daoFileCode, "\\", "/");
-                daoFileCode = UriUtils.encodePath(daoFileCode, StandardCharsets.UTF_8);
-            }
+            Integer fundId = daoFile.getDao().getDaoPackage().getFund().getFundId();
+            String encodedPath = StringUtils.isNotBlank(daoFileCode)
+                    ? UriUtils.encodeQueryParam(daoFileCode, StandardCharsets.UTF_8)
+                    : "";
+            return contextPath + "/api/v1/fund/" + fundId
+                    + "/fsrepo/" + digiRep.getExternalSystemId()
+                    + "/item-data?path=" + encodedPath;
         }
 
         ElzaTools.UrlParams params = ElzaTools.createUrlParams()
