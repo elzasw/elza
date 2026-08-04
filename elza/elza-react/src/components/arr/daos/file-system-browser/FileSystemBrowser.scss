@@ -5,20 +5,17 @@
     flex-direction: column;
     height: 100%;
 
-    .icon-with-badge {
-        position: relative;
-        display: inline-block;
+    .link-popover-trigger {
+        background: none;
+        border: none;
+        padding: 2px;
+        margin: 0;
+        cursor: pointer;
+        color: var(--text-secondary, #666);
+        line-height: 1;
 
-        .link-badge {
-            position: absolute;
-            right: -4px;
-            bottom: -4px;
-            font-size: 0.6em;
-            color: #444;
-            background: #fff;
-            border-radius: 50%;
-            padding: 1px 2px;
-            line-height: 1;
+        &:hover {
+            color: var(--text-primary, #000);
         }
     }
 
@@ -156,5 +153,54 @@
                 }
             }
         }
+    }
+}
+
+// PopoverSurface is portalled outside the .file-system-browser subtree,
+// so these rules live at the top level.
+.fs-link-popover {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 240px;
+    max-width: 400px;
+
+    &__title {
+        font-weight: 600;
+        font-size: 12px;
+        border-bottom: 1px solid var(--shade-2);
+        padding-bottom: 4px;
+    }
+
+    &__list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        li {
+            display: flex;
+            flex-direction: row;
+            align-items: baseline;
+            gap: 8px;
+            padding: 4px 0;
+            border-bottom: 1px solid var(--shade-1);
+
+            &:last-child {
+                border-bottom: none;
+            }
+        }
+    }
+
+    &__fund {
+        font-weight: 500;
+        font-size: 12px;
+    }
+
+    &__node {
+        font-size: 12px;
+        color: var(--text-secondary, #666);
     }
 }

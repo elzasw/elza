@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.Collator;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -17,6 +18,7 @@ import cz.tacr.elza.controller.vo.FsItem;
 import cz.tacr.elza.controller.vo.FsItemSortType;
 import cz.tacr.elza.controller.vo.FsItemType;
 import cz.tacr.elza.controller.vo.FsItems;
+import cz.tacr.elza.controller.vo.FsLink;
 import cz.tacr.elza.controller.vo.FsRepo;
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.domain.ArrDigitalRepository;
@@ -27,7 +29,6 @@ import cz.tacr.elza.service.dao.FileSystemRepoBrowser;
 import cz.tacr.elza.service.dao.FileSystemRepoService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -52,8 +53,8 @@ public class FileSystemRepoBrowserTest {
 
     	serviceMock = Mockito.mock(FileSystemRepoService.class);
         daoLinkRepositoryMock = Mockito.mock(DaoLinkRepository.class);
-        // Default: no linked paths — tests that care override with Mockito.when(...)
-        Mockito.when(daoLinkRepositoryMock.findLinkedCodesByDigitalRepository(Mockito.any()))
+        // Default: no links — tests that care override with Mockito.when(...)
+        Mockito.when(daoLinkRepositoryMock.findLinksByDigitalRepository(Mockito.any()))
                 .thenReturn(Collections.emptyList());
 
         browser = new FileSystemRepoBrowser();
@@ -283,12 +284,13 @@ public class FileSystemRepoBrowserTest {
     // ---------- daoLinkRepository ----------
     
     @Test
-    void browse_isLinked_matchesFullRelatPath(@TempDir Path root) throws IOException {
+    void browse_links_matchesFullRelatPath(@TempDir Path root) throws IOException {
         Files.createFile(root.resolve("linked.jpg"));
         Files.createFile(root.resolve("unlinked.jpg"));
         Mockito.when(serviceMock.resolvePath(repo, fund, null)).thenReturn(root);
-        Mockito.when(daoLinkRepositoryMock.findLinkedCodesByDigitalRepository(repo))
-                .thenReturn(List.of("linked.jpg"));
+        Object[] linkedRow = {"linked.jpg", 100, 1, "Fond A"};
+        Mockito.when(daoLinkRepositoryMock.findLinksByDigitalRepository(repo))
+                .thenReturn(Collections.<Object[]>singletonList(linkedRow));
 
         FsItems result = browser.browseItems(repo, fund, null, null, null, null, null, null, null, null);
 
@@ -296,21 +298,42 @@ public class FileSystemRepoBrowserTest {
                 .filter(f -> f.getName().equals("linked.jpg")).findFirst().orElseThrow();
         FsItem unlinked = result.getItems().stream()
                 .filter(f -> f.getName().equals("unlinked.jpg")).findFirst().orElseThrow();
-        assertTrue(linked.getIsLinked());
-        assertFalse(unlinked.getIsLinked());
+        assertEquals(1, linked.getLinks().size());
+        FsLink link = linked.getLinks().get(0);
+        assertEquals(Integer.valueOf(100), link.getNodeId());
+        assertEquals(Integer.valueOf(1), link.getFundId());
+        assertEquals("Fond A", link.getFundName());
+        assertEquals("Uzel #100", link.getNodeLabel());
+        assertTrue(unlinked.getLinks().isEmpty());
     }
 
     @Test
-    void browse_isLinked_nestedPath(@TempDir Path root) throws IOException {
+    void browse_links_nestedPath(@TempDir Path root) throws IOException {
         Path sub = Files.createDirectory(root.resolve("sub"));
         Files.createFile(sub.resolve("file.jpg"));
         Mockito.when(serviceMock.resolvePath(repo, fund, "sub")).thenReturn(sub);
-        Mockito.when(daoLinkRepositoryMock.findLinkedCodesByDigitalRepository(repo))
-                .thenReturn(List.of("sub/file.jpg"));
+        Object[] nestedRow = {"sub/file.jpg", 100, 1, "Fond A"};
+        Mockito.when(daoLinkRepositoryMock.findLinksByDigitalRepository(repo))
+                .thenReturn(Collections.<Object[]>singletonList(nestedRow));
 
         FsItems result = browser.browseItems(repo, fund, "sub", null, null, null, null, null, null, null);
 
-        assertTrue(result.getItems().get(0).getIsLinked());
+        assertEquals(1, result.getItems().get(0).getLinks().size());
+    }
+
+    @Test
+    void browse_multipleLinks_returnsAll(@TempDir Path root) throws IOException {
+        Files.createFile(root.resolve("shared.jpg"));
+        Mockito.when(serviceMock.resolvePath(repo, fund, null)).thenReturn(root);
+        Object[] row1 = {"shared.jpg", 100, 1, "Fond A"};
+        Object[] row2 = {"shared.jpg", 200, 2, "Fond B"};
+        Mockito.when(daoLinkRepositoryMock.findLinksByDigitalRepository(repo))
+                .thenReturn(Arrays.<Object[]>asList(row1, row2));
+
+        FsItems result = browser.browseItems(repo, fund, null, null, null, null, null, null, null, null);
+
+        List<FsLink> links = result.getItems().get(0).getLinks();
+        assertEquals(2, links.size());
     }
 
     @Test

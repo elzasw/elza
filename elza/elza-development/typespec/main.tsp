@@ -258,6 +258,16 @@ enum FsItemType {
 }
 
 /**
+ * File link data
+ */
+model FsLink {
+    nodeId: int32;
+    fundId: int32;
+    fundName: string;
+    nodeLabel: string;
+}
+
+/**
  * Single file system item
  */
 model FsItem {
@@ -269,8 +279,8 @@ model FsItem {
     size?: int64;
     /** Time of last change */
     lastChange: offsetDateTime;
-    /** File is linked to a description item */
-    isLinked: boolean;
+    /** List of file links */
+    links?: FsLink[];
 }
 
 /**
