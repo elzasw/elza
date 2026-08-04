@@ -68,8 +68,11 @@ public class FileSystemRepoService {
         List<ArrDaoPackage> daoPackages = this.daoPackageRepos.findAllByDigitalRepositoryAndFund(digiRep, fundVersion.getFund());
         ArrDaoPackage daoPackage;
         if (CollectionUtils.isEmpty(daoPackages)) {
-            // create package for repo
-            daoPackage = daoServiceInternal.createDaoPackage(fundVersion.getFund(), digiRep, repoPath.toString(), null);
+            // arr_dao_package.code has a global UNIQUE constraint, so the raw repository
+            // path cannot be reused across funds — include the fund id in the code to
+            // keep it unique per (repository, fund).
+            String packageCode = repoPath.toString() + "#fund=" + fundVersion.getFundId();
+            daoPackage = daoServiceInternal.createDaoPackage(fundVersion.getFund(), digiRep, packageCode, null);
         } else {
             daoPackage = daoPackages.get(0);
         }
