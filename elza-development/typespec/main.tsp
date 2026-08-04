@@ -280,6 +280,8 @@ model FsItems {
     items: FsItem[];
     /** Optional string to request next items. It is used if there are more items. */
     lastKey?: string;
+    /** True when the directory scan hit its internal cap; the listing is incomplete. */
+    truncated?: boolean;
 }
 
 /** Model ExplorerTreeNode */
@@ -3050,7 +3052,11 @@ namespace ElzaAPI.fund {
         /** File sorting type */
         @query sortingType?: FsItemSortType,
         /** File filtering template */
-        @query fileFilter?: string
+        @query fileFilter?: string,
+        /** Page size (max items per response). Clamped server-side to a configured maximum. */
+        @query pageSize?: int32,
+        /** When true (default), folders are listed before files regardless of sort key. */
+        @query foldersFirst?: boolean = true
     ): FsItems;
 
     /**

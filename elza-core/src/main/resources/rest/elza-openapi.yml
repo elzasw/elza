@@ -2539,8 +2539,7 @@ paths:
           required: false
           description: Filter for file system items by link status
           schema:
-            allOf:
-              - $ref: '#/components/schemas/FsItemFilterByLinked'
+            $ref: '#/components/schemas/FsItemFilterByLinked'
             default: ALL
           explode: false
         - name: sortingType
@@ -2556,6 +2555,22 @@ paths:
           description: File filtering template
           schema:
             type: string
+          explode: false
+        - name: pageSize
+          in: query
+          required: false
+          description: Page size (max items per response). Clamped server-side to a configured maximum.
+          schema:
+            type: integer
+            format: int32
+          explode: false
+        - name: foldersFirst
+          in: query
+          required: false
+          description: When true (default), folders are listed before files regardless of sort key.
+          schema:
+            type: boolean
+            default: true
           explode: false
       responses:
         '200':
@@ -7684,6 +7699,9 @@ components:
         lastKey:
           type: string
           description: Optional string to request next items. It is used if there are more items.
+        truncated:
+          type: boolean
+          description: True when the directory scan hit its internal cap; the listing is incomplete.
       description: Collection of file system items
     FsRepo:
       type: object

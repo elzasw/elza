@@ -343,12 +343,14 @@ public class FundController implements FundsApi {
                                                    @RequestParam(value = "lastKey", required = false) @Nullable String lastKey,
                                                    @RequestParam(value = "filterByLink", required = false, defaultValue = "ALL") FsItemFilterByLinked filterByLink,
                                                    @RequestParam(value = "sortingType", required = false) @Nullable FsItemSortType sortingType,
-                                                   @RequestParam(value = "fileFilter", required = false) @Nullable String fileFilter) {
+                                                   @RequestParam(value = "fileFilter", required = false) @Nullable String fileFilter,
+                                                   @RequestParam(value = "pageSize", required = false) @Nullable Integer pageSize,
+                                                   @RequestParam(value = "foldersFirst", required = false, defaultValue = "true") Boolean foldersFirst) {
 
-        ArrFund fund = arrangementService.getFund(fundId);
+    	ArrFund fund = arrangementService.getFund(fundId);
         ArrDigitalRepository digiRepo = externalSystemService.getDigitalRepository(fsrepoId);
         try {
-            FsItems result = fileSystemRepoBrowser.browseItems(digiRepo, fund, path, filterType, lastKey, filterByLink, sortingType, fileFilter);
+            FsItems result = fileSystemRepoBrowser.browseItems(digiRepo, fund, path, filterType, lastKey, filterByLink, sortingType, fileFilter, pageSize, foldersFirst);
             return ResponseEntity.ok(result);
         } catch (IOException ex) {
             throw new BusinessException("Failed to read.", ex, BaseCode.INVALID_STATE)
