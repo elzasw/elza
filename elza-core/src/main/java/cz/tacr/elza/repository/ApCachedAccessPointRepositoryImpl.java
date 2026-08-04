@@ -282,21 +282,20 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
     		for (ApSearchByItemWithValue ext : searchFilterVO.getExtFilters()) {
     			Objects.requireNonNull(ext.getItemTypeId());
     			RulItemType itemType = sdp.getItemType(ext.getItemTypeId());
+    			// ext.getValue() is JsonNullable<Object>; unwrap to a plain nullable value
+    			Object rawValue = ext.getValue() != null && ext.getValue().isPresent() ? ext.getValue().get() : null;
     			RulItemSpec itemSpec;
     			if(ext.getItemSpecId() != null) {
     				itemSpec = sdp.getItemSpecById(ext.getItemSpecId());
     			} else {
     				itemSpec = null;
-    				if (ext.getValue() == null) {
+    				if (rawValue == null) {
     					// specification nor value defined -> skip this condition
     					// note: this is probably incorrect, exception should be thrown for invalid condition
     					continue;
     				}
     			}
-    			String value = null;
-    			if (ext.getValue() != null) {
-    				value = ext.getValue().toString();
-    			}
+    			String value = rawValue != null ? rawValue.toString() : null;
     			// nelze limitovat cast v niz se hleda
     			if(StringUtils.isNotEmpty(ext.getPartTypeCode()) && value != null) {
     				throw new BusinessException("Vyhledávací dotaz Lucene nelze omezit na typ ApPart", ArrangementCode.REQUEST_INVALID_STATE)

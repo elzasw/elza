@@ -1616,4 +1616,35 @@
         </rollback>
     </changeSet>
 
+    <changeSet id="20260728120000" author="sergey.iryupin">
+        <!-- Repair for A1: FileSystemRepoService.createDao persisted every
+             arr_dao_file with dao_file_group_id = NULL due to variable
+             shadowing. Restore the FK from the parent path stored in code. -->
+        <sql dbms="postgresql">
+            UPDATE arr_dao_file f
+            SET dao_file_group_id = g.dao_file_group_id
+            FROM arr_dao_file_group g
+            WHERE f.dao_file_group_id IS NULL
+              AND f.dao_id = g.dao_id
+              AND (
+                    (position('/' in f.code) > 0
+                     AND g.code = substring(f.code from 1 for length(f.code) - position('/' in reverse(f.code))))
+                 OR (position('\' in f.code) > 0
+                     AND g.code = substring(f.code from 1 for length(f.code) - position('\' in reverse(f.code))))
+              )
+        </sql>
+    </changeSet>
+
+	<changeSet id="20260803120000" author="sergey.iryupin">
+	    <!-- Normalize path separators in repository-relative codes: '\' → '/'.
+	         Repository-relative paths are OS-independent identifiers; storing
+	         them with the write-time OS separator made cross-platform matching
+	         fragile and required read-time normalization scattered across the code. -->
+	    <sql dbms="postgresql">
+	        UPDATE arr_dao SET code = REPLACE(code, E'\\', '/') WHERE code LIKE E'%\\%';
+	        UPDATE arr_dao_file SET code = REPLACE(code, E'\\', '/') WHERE code LIKE E'%\\%';
+	        UPDATE arr_dao_file_group SET code = REPLACE(code, E'\\', '/') WHERE code LIKE E'%\\%';
+	    </sql>
+	</changeSet>
+
 </databaseChangeLog>

@@ -250,17 +250,19 @@ public class ApStateSpecification implements Specification<ApState> {
             if (CollectionUtils.isNotEmpty(searchFilterVO.getExtFilters())) {
                 for (ApSearchByItemWithValue ext : searchFilterVO.getExtFilters()) {
                     ItemType itemType = ext.getItemTypeId() != null ? sdp.getItemTypeById(ext.getItemTypeId()) : null;
-                    String itemTypeCode = itemType != null ? itemType.getCode() : null;  
+                    String itemTypeCode = itemType != null ? itemType.getCode() : null;
                     String itemSpecCode = ext.getItemSpecId() != null ? sdp.getItemSpecById(ext.getItemSpecId()).getCode() : null;
                     // výchozí komparátor
                     QueryComparator comparator = QueryComparator.CT_CONTAIN;
                     // komparátor pro celá čísla (INT) nebo booleovské hodnoty (BIT)
-                    if (itemType != null && 
-                    		(itemType.getDataType().equals(DataType.INT) || itemType.getDataType().equals(DataType.BIT))) {
-                    	comparator = QueryComparator.CT_EQ;
+                    if (itemType != null &&
+                            (itemType.getDataType().equals(DataType.INT) || itemType.getDataType().equals(DataType.BIT))) {
+                        comparator = QueryComparator.CT_EQ;
                     }
-                    and = processValueCondDef(ctx, and, String.valueOf(ext.getValue()), ext.getPartTypeCode(), 
-                                              itemTypeCode, itemSpecCode, comparator, false);
+                    // ext.getValue() is JsonNullable<Object>; unwrap to a plain nullable value
+                    Object rawValue = ext.getValue() != null && ext.getValue().isPresent() ? ext.getValue().get() : null;
+                    String extValue = rawValue != null ? rawValue.toString() : null;
+                    and = processValueCondDef(ctx, and, extValue, ext.getPartTypeCode(), itemTypeCode, itemSpecCode, comparator, false);
                 }
             }
             if (CollectionUtils.isNotEmpty(searchFilterVO.getRelFilters())) {

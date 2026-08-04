@@ -1,14 +1,65 @@
-import React, { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useLayoutEffect } from 'react';
 import { VirtualList } from 'components/shared';
 import { Api } from 'api';
 import classNames from 'classnames';
-import { FsRepo, FsItem, FsItemType } from 'elza-api';
+import { Button } from '@fluentui/react-components';
+import { DeleteRegular } from '@fluentui/react-icons';
+import { FsRepo, FsItem, FsItemType, FsItemSortType, FsItemFilterByLinked } from 'elza-api';
+import { useDebouncedEffect } from 'utils/hooks/hooks';
+import { defineMessages, useIntl } from 'react-intl';
 import { i18n, Icon } from 'components/shared';
 import { humanFileSize } from 'components/Utils.jsx';
 import "./FileSystemBrowser.scss"
 import { Tree, TreeExposedFunctions } from './Tree';
 import { RenderItem, RenderItemType, isListItem, isLastKeyItem } from './types';
 import { extractRepoIdFromFullPath } from './extractRepoIdFromFullPath';
+
+const messages = defineMessages({
+    sortLabel: {
+        id: 'arr.daos.fileSystem.sort.label',
+        defaultMessage: 'Řazení',
+    },
+    sortNameAsc: {
+        id: 'arr.daos.fileSystem.sort.nameAsc',
+        defaultMessage: 'Název A→Z',
+    },
+    sortNameDesc: {
+        id: 'arr.daos.fileSystem.sort.nameDesc',
+        defaultMessage: 'Název Z→A',
+    },
+    sortSizeAsc: {
+        id: 'arr.daos.fileSystem.sort.sizeAsc',
+        defaultMessage: 'Velikost vzestupně',
+    },
+    sortSizeDesc: {
+        id: 'arr.daos.fileSystem.sort.sizeDesc',
+        defaultMessage: 'Velikost sestupně',
+    },
+    filterPlaceholder: {
+        id: 'arr.daos.fileSystem.filter.placeholder',
+        defaultMessage: 'Filtrovat…',
+    },
+    filterClear: {
+        id: 'arr.daos.fileSystem.filter.clear',
+        defaultMessage: 'Vymazat filtr',
+    },
+    filterByLinkLabel: {
+        id: 'arr.daos.fileSystem.filterByLink.label',
+        defaultMessage: 'Propojení',
+    },
+    filterByLinkAll: {
+        id: 'arr.daos.fileSystem.filterByLink.all',
+        defaultMessage: 'Vše',
+    },
+    filterByLinkLinked: {
+        id: 'arr.daos.fileSystem.filterByLink.linked',
+        defaultMessage: 'Propojené',
+    },
+    filterByLinkUnlinked: {
+        id: 'arr.daos.fileSystem.filterByLink.unlinked',
+        defaultMessage: 'Nepropojené',
+    },
+});
 
 interface Props {
     fundId: number;
@@ -21,6 +72,7 @@ export const FileSystemBrowser = ({
 }: Props) => {
     const levelContainerRef = useRef<HTMLDivElement>(null);
     const treeRef = useRef<TreeExposedFunctions>(null);
+    const breadcrumbsRef = useRef<HTMLDivElement>(null);
 
     const [levelList, setLevelList] = useState<RenderItem[]>([]);
     const [selectedTreeItemPath, setSelectedTreeItem] = useState<string>();
@@ -29,9 +81,59 @@ export const FileSystemBrowser = ({
     const [childrenMap, setChildrenMap] = useState<Record<string, boolean>>({});
     const [repos, setRepos] = useState<FsRepo[]>([]);
 
+    const intl = useIntl();
+
+    const [sortType, setSortType] = useState<FsItemSortType>(FsItemSortType.NameAsc);
+    const [filterByLink, setFilterByLink] = useState<FsItemFilterByLinked>(FsItemFilterByLinked.All);
+    const [filterInput, setFilterInput] = useState('');
+    const [debouncedFilter, setDebouncedFilter] = useState('');
+
+    // Number of middle path segments currently collapsed into the "…" separator.
+    // The first segment and the last segment (when depth > 1) always stay visible;
+    // this only ever grows/shrinks to make the breadcrumb row fit its available width.
+    const [hiddenMiddleCount, setHiddenMiddleCount] = useState(0);
+
+    // Path changed → start fully expanded again; the measuring effect below will
+    // collapse only as much as is actually needed for the new path.
+    useEffect(() => {
+        setHiddenMiddleCount(0);
+    }, [selectedTreeItemPath]);
+
+    // Available width changed (e.g. window resize) → re-expand and let the
+    // measuring effect re-collapse from scratch, in case there's now more room.
+    useEffect(() => {
+        const el = breadcrumbsRef.current;
+        if (!el || typeof ResizeObserver === 'undefined') {
+            return;
+        }
+        const observer = new ResizeObserver(() => {
+            setHiddenMiddleCount(0);
+        });
+        observer.observe(el.parentElement || el);
+        return () => observer.disconnect();
+    }, []);
+
+    // After each render, if the breadcrumb row overflows its available width,
+    // collapse one more middle segment and let this effect re-check again.
+    useLayoutEffect(() => {
+        const el = breadcrumbsRef.current;
+        if (!el) {
+            return;
+        }
+        const totalSegments = selectedTreeItemPath ? selectedTreeItemPath.split("/").length : 0;
+        const maxHiddenCount = Math.max(0, totalSegments - 2);
+        if (el.scrollWidth > el.clientWidth && hiddenMiddleCount < maxHiddenCount) {
+            setHiddenMiddleCount((count) => count + 1);
+        }
+    }, [selectedTreeItemPath, hiddenMiddleCount, repos]);
+
+    useDebouncedEffect(() => {
+        setDebouncedFilter(filterInput);
+    }, 300, [filterInput]);
+
     const loadLevel = async (fullPath: string, lastKey: string | undefined, depth: number = 0, filter?: FsItemType) => {
         const [repoId, path] = extractRepoIdFromFullPath(fullPath)
-        const { data: items } = await Api.funds.fundFsRepoItems(fundId, parseInt(repoId, 10), filter, path, lastKey);
+        const { data: items } = await Api.funds.fundFsRepoItems(fundId, parseInt(repoId, 10), filter, path, lastKey, filterByLink, sortType, debouncedFilter || undefined);
         const itemLevel: RenderItem[] = items.items.map((item) => {
             const extendedItemBase: FsItem = {
                 ...item,
@@ -103,7 +205,10 @@ export const FileSystemBrowser = ({
                 }}
             >
                 <span className="item-part left no-shrink" title={item.data.name}>
-                    {item.data.itemType === FsItemType.Folder ? <Icon glyph="fa-folder" /> : <Icon glyph="fa-file" />}
+                    <span className="icon-with-badge">
+                        {item.data.itemType === FsItemType.Folder ? <Icon glyph="fa-folder" /> : <Icon glyph="fa-file" />}
+                        {item.data.isLinked && <Icon glyph="fa-link" className="link-badge" />}
+                    </span>
                 </span>
                 <span className="item-part left" title={item.data.name}>
                     {item.data.name}
@@ -131,13 +236,17 @@ export const FileSystemBrowser = ({
     }
 
     useEffect(() => {
+        let cancelled = false;
         (async () => {
             if (selectedTreeItemPath) {
                 const itemsEx = await loadLevel(selectedTreeItemPath, undefined, 0);
-                setLevelList(itemsEx);
+                if (!cancelled) {
+                    setLevelList(itemsEx);
+                }
             }
-        })()
-    }, [selectedTreeItemPath])
+        })();
+        return () => { cancelled = true; };
+    }, [selectedTreeItemPath, sortType, filterByLink, debouncedFilter])
 
     useEffect(() => {
         return () => {
@@ -171,14 +280,46 @@ export const FileSystemBrowser = ({
             breadcrumbParts.push(partArr.reverse().join("/"))
         })
         const repoName = repos.find((repo) => repo.fsRepoId.toString() === pathParts[0])?.name || pathParts[0];
-        return <div className="breadcrumbs">
+
+        const total = breadcrumbParts.length;
+        // The first and last segments are never collapsed — only clamp for safety,
+        // the measuring effect already keeps hiddenMiddleCount within this bound.
+        const maxHiddenCount = Math.max(0, total - 2);
+        const hiddenCount = Math.min(hiddenMiddleCount, maxHiddenCount);
+        // When collapsing, the hidden range always starts right after the first
+        // segment (index 1) and grows towards the last segment.
+        const hiddenStart = hiddenCount > 0 ? 1 : null;
+        const hiddenEnd = hiddenCount > 0 ? hiddenStart! + hiddenCount - 1 : null;
+
+        return <div className="breadcrumbs" ref={breadcrumbsRef}>
             {breadcrumbParts.map((breadcrumb, index) => {
-                const pathParts = breadcrumb.split("/")
+                const isLast = index === total - 1;
+                const isHidden = hiddenStart !== null && index >= hiddenStart && index <= hiddenEnd!;
+
+                if (isHidden) {
+                    // Render the "…" separator only once, right where the hidden range starts.
+                    if (index !== hiddenStart) {
+                        return null;
+                    }
+                    const hiddenNames = breadcrumbParts
+                        .slice(hiddenStart, hiddenEnd! + 1)
+                        .map((bp) => bp.split("/").pop());
+                    return <>
+                        <span className="ellipsis" title={hiddenNames.join(" / ")}>
+                            &hellip;
+                        </span>
+                        <div className="divider">
+                            <Icon glyph="fa-angle-right" />
+                        </div>
+                    </>
+                }
+
+                const parts = breadcrumb.split("/")
                 return <>
-                    <div className="btn" onClick={() => { setSelectedTreeItem(breadcrumb) }}>
-                        {index === 0 ? repoName : pathParts[pathParts.length - 1]}
+                    <div className="btn" title={breadcrumb} onClick={() => { setSelectedTreeItem(breadcrumb) }}>
+                        {index === 0 ? repoName : parts[parts.length - 1]}
                     </div>
-                    {index < breadcrumbParts.length - 1
+                    {!isLast
                         && <div className="divider">
                             <Icon glyph="fa-angle-right" />
                         </div>}
@@ -200,15 +341,65 @@ export const FileSystemBrowser = ({
         <div className="file-system-browser">
             <div className="toolbar">
                 <div className="actions">
-                    <div
-                        title={i18n("arr.daos.fileSystem.selectParent")}
+                    <div title={i18n("arr.daos.fileSystem.selectParent")}
                         className="btn"
                         onClick={handleSelectParent}>
                         <Icon glyph="fa-angle-up" />
                     </div>
                 </div>
                 {generateBreadcrumbs()}
-
+                <div className="filters">
+                    <label htmlFor="sort-select" className="sort-label">
+                        {intl.formatMessage(messages.sortLabel)}
+                    </label>
+                    <select
+                        id="sort-select"
+                        className="sort-select"
+                        aria-label={intl.formatMessage(messages.sortLabel)}
+                        value={sortType}
+                        onChange={(e) => setSortType(e.target.value as FsItemSortType)}
+                    >
+                        <option value={FsItemSortType.NameAsc}>{intl.formatMessage(messages.sortNameAsc)}</option>
+                        <option value={FsItemSortType.NameDesc}>{intl.formatMessage(messages.sortNameDesc)}</option>
+                        <option value={FsItemSortType.SizeAsc}>{intl.formatMessage(messages.sortSizeAsc)}</option>
+                        <option value={FsItemSortType.SizeDesc}>{intl.formatMessage(messages.sortSizeDesc)}</option>
+                    </select>
+                    <label htmlFor="filter-by-link-select" className="sort-label">
+                        {intl.formatMessage(messages.filterByLinkLabel)}
+                    </label>
+                    <select
+                        id="filter-by-link-select"
+                        className="sort-select"
+                        aria-label={intl.formatMessage(messages.filterByLinkLabel)}
+                        value={filterByLink}
+                        onChange={(e) => setFilterByLink(e.target.value as FsItemFilterByLinked)}
+                    >
+                        <option value={FsItemFilterByLinked.All}>{intl.formatMessage(messages.filterByLinkAll)}</option>
+                        <option value={FsItemFilterByLinked.Linked}>{intl.formatMessage(messages.filterByLinkLinked)}</option>
+                        <option value={FsItemFilterByLinked.Unlinked}>{intl.formatMessage(messages.filterByLinkUnlinked)}</option>
+                    </select>
+                    <input
+                        type="text"
+                        className="file-filter"
+                        placeholder={intl.formatMessage(messages.filterPlaceholder)}
+                        value={filterInput}
+                        onChange={(e) => setFilterInput(e.target.value)}
+                    />
+                    {filterInput && (
+                        <Button
+                            appearance="subtle"
+                            size="small"
+                            icon={<DeleteRegular />}
+                            onClick={() => {
+                                setFilterInput('');
+                                setDebouncedFilter('');
+                            }}
+                            title={intl.formatMessage(messages.filterClear)}
+                            aria-label={intl.formatMessage(messages.filterClear)}
+                            disabled={!filterInput}
+                        />
+                    )}
+                </div>
             </div>
             <div className="main-container">
                 <Tree

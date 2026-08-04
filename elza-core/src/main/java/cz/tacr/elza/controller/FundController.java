@@ -2,27 +2,16 @@ package cz.tacr.elza.controller;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.BasicFileAttributeView;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import jakarta.transaction.Transactional;
-
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -30,8 +19,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -52,7 +46,8 @@ import cz.tacr.elza.controller.vo.FundsChangeRun;
 import cz.tacr.elza.controller.vo.MultiFundActionRequest;
 import cz.tacr.elza.controller.vo.MultiFundActionResult;
 import cz.tacr.elza.controller.vo.FindFundsResult;
-import cz.tacr.elza.controller.vo.FsItem;
+import cz.tacr.elza.controller.vo.FsItemFilterByLinked;
+import cz.tacr.elza.controller.vo.FsItemSortType;
 import cz.tacr.elza.controller.vo.FsItemType;
 import cz.tacr.elza.controller.vo.FsItems;
 import cz.tacr.elza.controller.vo.FsRepo;
@@ -64,6 +59,8 @@ import cz.tacr.elza.controller.vo.UsedItemType;
 import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.security.AuthMethod;
+import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.dataexchange.output.IOExportFundsCsv;
 import cz.tacr.elza.dataexchange.output.IOExportWorker;
 import cz.tacr.elza.domain.ApScope;
@@ -76,6 +73,7 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.BusinessException;
@@ -90,6 +88,7 @@ import cz.tacr.elza.service.DaoService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.UserService;
+import cz.tacr.elza.service.dao.FileSystemRepoBrowser;
 import cz.tacr.elza.service.dao.FileSystemRepoService;
 
 @RestController
@@ -124,6 +123,9 @@ public class FundController implements FundsApi {
 
     @Autowired
     private ScopeRepository scopeRepository;
+
+    @Autowired
+    private FileSystemRepoBrowser fileSystemRepoBrowser;
 
     @Autowired
     private FileSystemRepoService fileSystemRepoService;
@@ -279,6 +281,7 @@ public class FundController implements FundsApi {
         }
     }
 
+    // PUT /fund/{id}
     @Override
     @Transactional
     public ResponseEntity<FundDetail> fundUpdateFund(@PathVariable("id") String id, @RequestBody UpdateFund updateFund) {
@@ -300,42 +303,18 @@ public class FundController implements FundsApi {
         return ResponseEntity.ok(factoryVo.createFundDetail(fundVersion.getFund(), rootNode.getUuid()));
     }
 
+    // GET /fund/{fundId}/fsrepos
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public ResponseEntity<List<FsRepo>> fundFsRepos(@PathVariable("fundId") Integer fundId) {
         ArrFund fund = arrangementService.getFund(fundId);
+        List<ArrDigitalRepository> digitalRepositories = externalSystemService.findDigitalRepository();
+        List<FsRepo> result = fileSystemRepoBrowser.listRepos(fund, digitalRepositories);
 
-        List<ArrDigitalRepository> digitRepositories = externalSystemService.findDigitalRepository();
-
-        List<FsRepo> result = null;
-        if (CollectionUtils.isNotEmpty(digitRepositories)) {
-            for (ArrDigitalRepository digiRepo : digitRepositories) {
-                if (fileSystemRepoService.isFileSystemRepository(digiRepo)) {
-                    Path repoPath = fileSystemRepoService.getPath(digiRepo, fund);
-                    // append only real dirs
-                    if(!Files.isDirectory(repoPath)) {
-                        continue;
-                    }
-                    if (result == null) {
-                        result = new ArrayList<>();
-                    }
-
-                    FsRepo fsRepo = new FsRepo();
-                    fsRepo.setFsRepoId(digiRepo.getExternalSystemId());
-                    fsRepo.setName(digiRepo.getName());
-                    fsRepo.setCode(digiRepo.getCode());
-                    fsRepo.setPath(repoPath.toString());
-                    result.add(fsRepo);
-                }
-            }
-        }
-
-        if (result == null) {
-            result = Collections.emptyList();
-        }
         return ResponseEntity.ok(result);
     }
 
+    // POST /fund/{fundId}/node/{nodeId}/mode
     @Override
     @Transactional
     public ResponseEntity<Void> fundSetLevelMode(@PathVariable("fundId") Integer fundId,
@@ -354,145 +333,59 @@ public class FundController implements FundsApi {
         return ResponseEntity.ok(null);
     }
 
+    // GET /fund/{fundId}/fsrepo/{fsrepoId}/items
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public ResponseEntity<FsItems> fundFsRepoItems(@PathVariable("fundId") Integer fundId,
                                                    @PathVariable("fsrepoId") Integer fsrepoId,
-                                                   @RequestParam(value = "filterType", required = false) FsItemType filterType,
-                                                   @RequestParam(value = "path", required = false) String path,
-                                                   @RequestParam(value = "lastKey", required = false) String lastKey) {
+                                                   @RequestParam(value = "filterType", required = false) @Nullable FsItemType filterType,
+                                                   @RequestParam(value = "path", required = false) @Nullable String path,
+                                                   @RequestParam(value = "lastKey", required = false) @Nullable String lastKey,
+                                                   @RequestParam(value = "filterByLink", required = false, defaultValue = "ALL") FsItemFilterByLinked filterByLink,
+                                                   @RequestParam(value = "sortingType", required = false) @Nullable FsItemSortType sortingType,
+                                                   @RequestParam(value = "fileFilter", required = false) @Nullable String fileFilter) {
 
         ArrFund fund = arrangementService.getFund(fundId);
         ArrDigitalRepository digiRepo = externalSystemService.getDigitalRepository(fsrepoId);
-
-        Path itemPath = fileSystemRepoService.resolvePath(digiRepo, fund, path);
-        if (!Files.isDirectory(itemPath)) {
-            throw new BusinessException("Item is not directory.", BaseCode.INVALID_STATE)
-                    .set("fsrepoId", fsrepoId)
-                    .set("path", path)
-                    .set("itemPath", itemPath);
-        }
-
-        int maxItems = 1000;
-        if (digiRepo.getCode() != null) {
-            // hack for debugging client
-            if (digiRepo.getCode().endsWith("_DEBUG")) {
-                maxItems = 2;
-            }
-        }
-        int offset = 0;
-        // check if continue in previous list
-        if(lastKey!=null) {
-            // lastKey is simply offset
-            // this is just the basic implementation
-            offset = Integer.parseInt(lastKey);
-        }
-
-        FsItems fsItems = new FsItems();
-
-        Function<Path, Boolean> acceptor = prepareFSFilter(filterType);
-
-        List<FsItem> fsItemList = new ArrayList<>();
-        try (Stream<Path> ds = Files.walk(itemPath, 1);) {
-            int counter = 0;
-            Iterator<Path> it = ds.iterator();
-            // skip first item - root
-            it.next();
-            // limit to 10k items
-            while (it.hasNext() && counter < 10000) {
-                Path item = it.next();
-                if (acceptor.apply(item)) {
-                    BasicFileAttributeView bfav = Files.getFileAttributeView(item, BasicFileAttributeView.class);
-
-                    FsItem fsItem = new FsItem();
-                    fsItem.setName(item.getFileName().toString());
-
-                    BasicFileAttributes attrs = bfav.readAttributes();
-                    if (attrs.isRegularFile()) {
-                        fsItem.setItemType(FsItemType.FILE);
-                        fsItem.setSize((int) attrs.size());
-                    } else {
-                        fsItem.setItemType(FsItemType.FOLDER);
-                    }
-                    OffsetDateTime odt = attrs.lastModifiedTime().toInstant().atOffset(ZoneOffset.UTC);
-                    fsItem.setLastChange(odt);
-
-                    fsItemList.add(fsItem);
-                }
-                counter++;
-            }
-            fsItemList.sort((c1, c2) -> {
-                if (c1.getItemType().equals(FsItemType.FILE)) {
-                    if (c2.getItemType().equals(FsItemType.FOLDER)) {
-                        return 1;
-                    }
-                } else {
-                    // c1 is folder
-                    if (c2.getItemType().equals(FsItemType.FILE)) {
-                        return -1;
-                    }
-                }
-                return c1.getName().compareTo(c2.getName());
-            });
-
-            List<FsItem> appendItems;
-            Integer nextOffset = null;
-            // append selected items
-            if ((fsItemList.size() - offset) <= maxItems) {
-                // last items
-                if (offset == 0) {
-                    appendItems = fsItemList;
-                } else {
-                    appendItems = fsItemList.subList(offset, fsItemList.size());
-                }
-            } else {
-                nextOffset = offset + maxItems;
-                appendItems = fsItemList.subList(offset, nextOffset);
-            }
-
-            fsItems.getItems().addAll(appendItems);
-            if (nextOffset != null) {
-                fsItems.setLastKey(nextOffset.toString());
-            }
+        try {
+            FsItems result = fileSystemRepoBrowser.browseItems(digiRepo, fund, path, filterType, lastKey, filterByLink, sortingType, fileFilter);
+            return ResponseEntity.ok(result);
         } catch (IOException ex) {
             throw new BusinessException("Failed to read.", ex, BaseCode.INVALID_STATE)
                     .set("fsrepoId", fsrepoId)
-                    .set("path", path)
-                    .set("itemPath", itemPath);
-        }
-
-        return ResponseEntity.ok(fsItems);
-    }
-
-    private Function<Path, Boolean> prepareFSFilter(FsItemType filterType) {
-        if (filterType == null) {
-            return p -> true;
-        }
-        switch (filterType) {
-        	case FILE:
-                return p -> Files.isRegularFile(p);
-        	case FOLDER:
-                return p -> Files.isDirectory(p);
-        	default:
-                throw new BusinessException("Invalid filter.", BaseCode.INVALID_STATE)
-                        .set("filterType", filterType);
+                    .set("path", path);
         }
     }
 
+    // GET /fund/{fundId}/fsrepo/{fsrepoId}/item-data
     @Override
-    @Transactional
-    public ResponseEntity<Resource> fundFsRepoItemData(@PathVariable("fundId") Integer fundId,
-                                                     @PathVariable("fsrepoId") Integer fsrepoId,
-                                                     @RequestParam(value = "path", required = true) String path) {
+    @Transactional(readOnly = true)
+    @AuthMethod(permission = { Permission.ADMIN, Permission.FUND_RD_ALL, Permission.FUND_RD })
+    public ResponseEntity<Resource> fundFsRepoItemData(@AuthParam(type = AuthParam.Type.FUND) @PathVariable("fundId") Integer fundId,
+                                                       @PathVariable("fsrepoId") Integer fsrepoId,
+                                                       @RequestParam(value = "path", required = true) String path) {
         ArrFund fund = arrangementService.getFund(fundId);
         ArrDigitalRepository digiRepo = externalSystemService.getDigitalRepository(fsrepoId);
 
         Path filePath = fileSystemRepoService.resolvePath(digiRepo, fund, path);
 
-        FileSystemResource fsr = new FileSystemResource(filePath);
-        return ResponseEntity.ok(fsr);
+        String contentType = fileSystemRepoService.getMimetype(filePath);
+        if (StringUtils.isEmpty(contentType)) {
+            contentType = "application/octet-stream";
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType(contentType));
+        if (!FileSystemRepoService.isInlineRenderable(contentType)) {
+            headers.setContentDisposition(ContentDisposition.attachment()
+                    .filename(filePath.getFileName().toString())
+                    .build());
+        }
+
+        return ResponseEntity.ok().headers(headers).body(new FileSystemResource(filePath));
     }
 
+    // PUT /fund/{fundId}/fsrepo/{fsrepoId}/linkitem/{nodeId}
     @Override
     @Transactional
     public ResponseEntity<Integer> fundFsCreateDAOLink(@PathVariable("fundId") Integer fundId,
@@ -519,6 +412,7 @@ public class FundController implements FundsApi {
         return ResponseEntity.ok(daoLink.getDaoLinkId());
     }
 
+    // GET /fund/{fundId}/usedItemtypes/{fundVersionId}
     @Override
     @Transactional
     public ResponseEntity<List<UsedItemType>> fundUsedItemTypes(@PathVariable("fundId") Integer fundId,

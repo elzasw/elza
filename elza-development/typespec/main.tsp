@@ -221,6 +221,32 @@ model FsRepoIdParameter {
     fsrepoId: integer;
 }
 
+/** 
+ * Filter for file system items by link status
+ */
+enum FsItemFilterByLinked {
+    /** All items */
+    ALL,
+    /** Only linked items */
+    LINKED,
+    /** Only unlinked items */
+    UNLINKED
+}
+
+/**
+ * File sorting type
+ */
+enum FsItemSortType {
+    /** By name, in ascending */
+    NAME_ASC,
+    /** By name in descending */
+    NAME_DESC,
+    /** By size, in ascending */
+    SIZE_ASC,
+    /** By size in descending */
+    SIZE_DESC,
+}
+
 /**
  * File system item type
  */
@@ -240,9 +266,11 @@ model FsItem {
     /** File or folder name */
     name: string;
     /** File size */
-    size?: integer;
+    size?: int64;
     /** Time of last change */
     lastChange: offsetDateTime;
+    /** File is linked to a description item */
+    isLinked: boolean;
 }
 
 /**
@@ -1399,10 +1427,10 @@ model FormItemType {
     /** opakovatelnost */
     repeatable: boolean;
     /** počítaný */
-    //?cal: integer;
-    /** stav počítanýho atributu: 0/1 vypnutý/zapnutý */
-    //?calSt: integer;
-    /** atribut se může nastavit jako nedefinovaný 0/1 - nemůže/může */
+    cal?: boolean;
+    /** stav počítanýho atributu: vypnutý/zapnutý */
+    calSt?: boolean;
+    /** atribut se může nastavit jako nedefinovaný nemůže/může */
     undefinable: boolean;
     /** seznam specifikací atributu */
     specs?: FormItemSpec[];
@@ -3008,7 +3036,7 @@ namespace ElzaAPI.fund {
      * Return list of filesystem items
      */
     @route("{fundId}/fsrepo/{fsrepoId}/items")
-    op fsRepoItems(
+    @get op fsRepoItems(
         ...FundIdParameter,
         ...FsRepoIdParameter,
         /** Optional filter to return only folders or files. If not specified all items are returned */
@@ -3016,14 +3044,20 @@ namespace ElzaAPI.fund {
         /** Optional path in the repository */
         @query path?: string,
         /** Optional parameter to return next batch of items. See FsItems for more details. */
-        @query lastKey?: string
+        @query lastKey?: string,
+        /** Filter for file system items by link status */
+        @query filterByLink?: FsItemFilterByLinked = FsItemFilterByLinked.ALL,
+        /** File sorting type */
+        @query sortingType?: FsItemSortType,
+        /** File filtering template */
+        @query fileFilter?: string
     ): FsItems;
 
     /**
      * Get file of data
      */
     @route("{fundId}/fsrepo/{fsrepoId}/item-data")
-    op fsRepoItemData(
+    @get op fsRepoItemData(
         ...FundIdParameter,
         ...FsRepoIdParameter,
         /** file path in the repository */

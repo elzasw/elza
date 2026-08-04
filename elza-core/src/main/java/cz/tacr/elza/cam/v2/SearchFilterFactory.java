@@ -239,7 +239,8 @@ public class SearchFilterFactory {
             }
             if (CollectionUtils.isNotEmpty(filter.getExtFilters())) {
                 for (ApSearchByItemWithValue ext : filter.getExtFilters()) {
-                    QueryValueCondDef valueCondDef = createQueryValueCondDef(ext.getItemTypeId(), ext.getItemSpecId(), QueryComparator.CT_CONTAINS, String.valueOf(ext.getValue()));
+                    String extValue = ext.getValue() != null && ext.getValue().isPresent() ? String.valueOf(ext.getValue().get()) : null;
+                    QueryValueCondDef valueCondDef = createQueryValueCondDef(ext.getItemTypeId(), ext.getItemSpecId(), QueryComparator.CT_CONTAINS, extValue);
                     andCondDefList.add(createQueryPartCondDef(valueCondDef, QueryPartType.fromValue(ext.getPartTypeCode())));
                 }
             }
