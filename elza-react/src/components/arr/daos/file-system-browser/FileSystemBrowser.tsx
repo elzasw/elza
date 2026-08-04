@@ -7,7 +7,7 @@ import { DeleteRegular } from '@fluentui/react-icons';
 import { FsRepo, FsItem, FsItemType, FsItemSortType, FsItemFilterByLinked } from 'elza-api';
 import { useDebouncedEffect } from 'utils/hooks/hooks';
 import { defineMessages, useIntl } from 'react-intl';
-import { i18n, Icon } from 'components/shared';
+import { i18n, Icon, Splitter } from 'components/shared';
 import { humanFileSize } from 'components/Utils.jsx';
 import "./FileSystemBrowser.scss"
 import { Tree, TreeExposedFunctions } from './Tree';
@@ -402,29 +402,36 @@ export const FileSystemBrowser = ({
                 </div>
             </div>
             <div className="main-container">
-                <Tree
-                    ref={treeRef}
-                    fundId={fundId}
-                    selectedItemPath={selectedTreeItemPath}
-                    onSelect={(item) => { setSelectedTreeItem(item.fullPath) }}
-                    expandedItems={expandedItems}
-                    onExpandChange={(itemFullPath, expanded) => { setExpandedItems({ ...expandedItems, [itemFullPath]: expanded }) }}
-                    childrenMap={childrenMap}
-                    repos={repos}
+                <Splitter
+                    leftSize={100}
+                    left={
+                        <Tree
+                            ref={treeRef}
+                            fundId={fundId}
+                            selectedItemPath={selectedTreeItemPath}
+                            onSelect={(item) => { setSelectedTreeItem(item.fullPath) }}
+                            expandedItems={expandedItems}
+                            onExpandChange={(itemFullPath, expanded) => { setExpandedItems({ ...expandedItems, [itemFullPath]: expanded }) }}
+                            childrenMap={childrenMap}
+                            repos={repos}
+                        />
+                    }
+                    center={
+                        <div
+                            className="file-list"
+                            ref={levelContainerRef}
+                        >
+                            <VirtualList
+                                container={levelContainerRef.current || undefined}
+                                items={levelList}
+                                renderItem={(item: RenderItem) => {
+                                    return renderListItem(item);
+                                }}
+                                scrollToIndex={0}
+                            />
+                        </div>
+                    }
                 />
-                <div
-                    className="file-list"
-                    ref={levelContainerRef}
-                >
-                    <VirtualList
-                        container={levelContainerRef.current || undefined}
-                        items={levelList}
-                        renderItem={(item: RenderItem) => {
-                            return renderListItem(item);
-                        }}
-                        scrollToIndex={0}
-                    />
-                </div>
             </div>
             {/* {selectedListItem && <div style={{ border: "var(--primary-border)", display: "flex", justifyContent: "center" }}> */}
             {/*     <img style={{ maxHeight: "200px" }} src={getImageUrl()} /> */}
