@@ -633,6 +633,50 @@
     "defaultMessage": "External system",
     "srcHash": "oGs4SFZv0yF2"
   },
+  "arr.daos.fileSystem.filter.clear": {
+    "defaultMessage": "Clear filter",
+    "srcHash": "LRQK97GHHNDb"
+  },
+  "arr.daos.fileSystem.filter.placeholder": {
+    "defaultMessage": "Filter…",
+    "srcHash": "RDtyYIA9IDO_"
+  },
+  "arr.daos.fileSystem.filterByLink.all": {
+    "defaultMessage": "All",
+    "srcHash": "5C_lbtoov7Gn"
+  },
+  "arr.daos.fileSystem.filterByLink.label": {
+    "defaultMessage": "Link",
+    "srcHash": "gKjzNxVXzRQT"
+  },
+  "arr.daos.fileSystem.filterByLink.linked": {
+    "defaultMessage": "Linked",
+    "srcHash": "5rbAbpjD8TlR"
+  },
+  "arr.daos.fileSystem.filterByLink.unlinked": {
+    "defaultMessage": "Unlinked",
+    "srcHash": "1esyfo4aKzQd"
+  },
+  "arr.daos.fileSystem.sort.label": {
+    "defaultMessage": "Sorting",
+    "srcHash": "JD-Vo3HpL1AE"
+  },
+  "arr.daos.fileSystem.sort.nameAsc": {
+    "defaultMessage": "Name A→Z",
+    "srcHash": "ERn70WrPy1_t"
+  },
+  "arr.daos.fileSystem.sort.nameDesc": {
+    "defaultMessage": "Name Z→A",
+    "srcHash": "W370hofSnS7-"
+  },
+  "arr.daos.fileSystem.sort.sizeAsc": {
+    "defaultMessage": "Size ascending",
+    "srcHash": "ncVb7DLsRFjt"
+  },
+  "arr.daos.fileSystem.sort.sizeDesc": {
+    "defaultMessage": "Size descending",
+    "srcHash": "aAVC9zRaXJAr"
+  },
   "arr.fundDataGrid.cellForm.notAllowed": {
     "defaultMessage": "This description element cannot be added to the description unit.",
     "srcHash": "1vJCdzTLLaix"
