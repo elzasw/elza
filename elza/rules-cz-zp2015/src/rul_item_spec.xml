@@ -843,7 +843,7 @@
     <item-spec code="ZP2015_ENTITY_ROLE_1">
         <name>autor</name>
         <description>5.10.1 - technické výkresy</description>
-        <shortcut></shortcut>
+        <shortcut>autor</shortcut>
         <item-aptypes>
             <item-aptype register-type="PARTY_GROUP"/>
             <item-aptype register-type="PERSON"/>
