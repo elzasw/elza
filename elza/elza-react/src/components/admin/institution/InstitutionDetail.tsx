@@ -14,7 +14,7 @@ import { ArrowLeftRegular, ChevronRightRegular } from '@fluentui/react-icons';
 import { Institution, InstitutionType } from 'elza-api';
 import { Field, Form } from 'react-final-form';
 import { FormattedMessage, defineMessages, useIntl } from 'react-intl';
-import { AccessPointPicker } from './AccessPointPicker';
+import { AccessPointPicker } from 'components/registry';
 
 const messages = defineMessages({
     createTitle: {
