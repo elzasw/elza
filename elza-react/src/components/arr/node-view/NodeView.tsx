@@ -144,6 +144,9 @@ export function NodeView({ fondsVersionId, nodeId, nodeVersionId, seedFromParent
                         const { data } = item;
                         const DataTypeComponent =
                           data?.dataType && dataTypeMap[data.dataType];
+                        const specRef = typeRef.descItemSpecs.find(
+                          ({ id }) => id === item.itemSpecId,
+                        )
                         return (
                           <div key={itemIndex} style={{ display: "flex" }}>
                             {item.itemSpecId &&
@@ -158,11 +161,7 @@ export function NodeView({ fondsVersionId, nodeId, nodeVersionId, seedFromParent
                                       : undefined,
                                   }}
                                 >
-                                  {
-                                    typeRef.descItemSpecs.find(
-                                      ({ id }) => id === item.itemSpecId,
-                                    )?.shortcut
-                                  }
+                                  { specRef?.shortcut || specRef?.name || item.itemSpecId }
                                   :
                                 </div>
                               )}
