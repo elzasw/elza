@@ -181,16 +181,30 @@
         gap: 4px;
 
         li {
-            display: flex;
-            flex-direction: row;
-            align-items: baseline;
-            gap: 8px;
             padding: 4px 0;
             border-bottom: 1px solid var(--shade-1);
 
             &:last-child {
                 border-bottom: none;
             }
+        }
+    }
+
+    &__link {
+        display: flex;
+        flex-direction: row;
+        align-items: baseline;
+        gap: 8px;
+        width: 100%;
+        background: none;
+        border: none;
+        padding: 4px 8px;
+        text-align: left;
+        cursor: pointer;
+        border-radius: 2px;
+
+        &:hover {
+            background: var(--shade-1);
         }
     }
 

@@ -14,9 +14,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -28,12 +32,16 @@ import cz.tacr.elza.controller.vo.FsItemType;
 import cz.tacr.elza.controller.vo.FsItems;
 import cz.tacr.elza.controller.vo.FsLink;
 import cz.tacr.elza.controller.vo.FsRepo;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.LevelTreeCacheService;
 
 /**
  * Directory-listing and browsing operations over a filesystem repository.
@@ -43,6 +51,8 @@ import cz.tacr.elza.repository.DaoLinkRepository;
  */
 @Service
 public class FileSystemRepoBrowser {
+
+	private static final Logger log = LoggerFactory.getLogger(FileSystemRepoBrowser.class);
 
 	private static final int DEFAULT_PAGE_SIZE = 1_000;
 	private static final int MAX_PAGE_SIZE = 10_000;
@@ -56,6 +66,12 @@ public class FileSystemRepoBrowser {
 
 	@Autowired
     private FileSystemRepoService fileSystemRepoService;
+
+	@Autowired
+	private ArrangementService arrangementService;
+
+	@Autowired
+	private LevelTreeCacheService levelTreeCacheService;
 
     public FsItems browseItems(ArrDigitalRepository digiRepo, 
     		                   ArrFund fund,
@@ -76,19 +92,54 @@ public class FileSystemRepoBrowser {
         }
 
         Map<String, List<FsLink>> linksByCode = new HashMap<>();
-        for (Object[] row : daoLinkRepository.findLinksByDigitalRepository(digiRepo)) {
-            String code = (String) row[0];
-            Integer nodeId = (Integer) row[1];
+        List<Object[]> rows = daoLinkRepository.findLinksByDigitalRepository(digiRepo);
+
+        Map<Integer, List<Object[]>> rowsByFund = new HashMap<>();
+        for (Object[] row : rows) {
             Integer fundId = (Integer) row[2];
-            String fundName = (String) row[3];
-            FsLink link = new FsLink();
-            link.setNodeId(nodeId);
-            link.setFundId(fundId);
-            link.setFundName(fundName);
-            // Fallback label until node title is resolved via NodeCacheService (Step B).
-            link.setNodeLabel("Uzel #" + nodeId);
-            linksByCode.computeIfAbsent(code, k -> new ArrayList<>()).add(link);
+            rowsByFund.computeIfAbsent(fundId, k -> new ArrayList<>()).add(row);
         }
+
+        for (Map.Entry<Integer, List<Object[]>> entry : rowsByFund.entrySet()) {
+            Integer linkFundId = entry.getKey();
+            List<Object[]> fundRows = entry.getValue();
+            Set<Integer> nodeIds = fundRows.stream()
+                    .map(r -> (Integer) r[1])
+                    .collect(Collectors.toSet());
+
+            Map<Integer, TreeNodeVO> nodeMap = Collections.emptyMap();
+            try {
+                ArrFund linkFund = arrangementService.getFund(linkFundId);
+                ArrFundVersion linkVersion = arrangementService.getOpenVersionByFund(linkFund);
+                List<TreeNodeVO> treeNodes = levelTreeCacheService.getNodesByIds(nodeIds, linkVersion);
+                nodeMap = treeNodes.stream().collect(Collectors.toMap(TreeNodeVO::getId, Function.identity()));
+            } catch (Exception e) {
+            	log.warn("Failed to resolve tree nodes for fund {}: {}", linkFundId, e.toString(), e);
+            }
+
+            for (Object[] row : fundRows) {
+                String code = (String) row[0];
+                Integer nodeId = (Integer) row[1];
+                String fundName = (String) row[3];
+
+                FsLink link = new FsLink();
+                link.setNodeId(nodeId);
+                link.setFundId(linkFundId);
+                link.setFundName(fundName);
+
+                TreeNodeVO tvo = nodeMap.get(nodeId);
+                if (tvo != null && tvo.getName() != null && !tvo.getName().isBlank()) {
+                    link.setNodeLabel(tvo.getName());
+                    if (tvo.getReferenceMark() != null && tvo.getReferenceMark().length > 0) {
+                        link.setNodePath(String.join(" / ", tvo.getReferenceMark()));
+                    }
+                } else {
+                    link.setNodeLabel("Uzel #" + nodeId);
+                }
+
+                linksByCode.computeIfAbsent(code, k -> new ArrayList<>()).add(link);
+            }
+        }        
 
         int effectivePageSize = clampPageSize(pageSize);
         boolean foldersFirstFlag = foldersFirst == null ? true : foldersFirst;

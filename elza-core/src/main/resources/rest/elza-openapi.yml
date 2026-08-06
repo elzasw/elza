@@ -7722,6 +7722,9 @@ components:
           type: string
         nodeLabel:
           type: string
+        nodePath:
+          type: string
+          description: Breadcrumb path of the node from the root, joined with " / ". Empty when node could not be resolved.
       description: File link data
     FsRepo:
       type: object

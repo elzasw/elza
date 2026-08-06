@@ -6,6 +6,9 @@ import { Button, Popover, PopoverSurface, PopoverTrigger } from '@fluentui/react
 import { DeleteRegular } from '@fluentui/react-icons';
 import { FsRepo, FsItem, FsItemType, FsItemSortType, FsItemFilterByLinked, FsLink } from 'elza-api';
 import { useDebouncedEffect } from 'utils/hooks/hooks';
+import { useAppThunkDispatch } from 'utils/hooks';
+import { routerNavigate } from 'actions/router.jsx';
+import { urlFundNode } from '../../../../constants';
 import { defineMessages, useIntl } from 'react-intl';
 import { i18n, Icon, Splitter } from 'components/shared';
 import { humanFileSize } from 'components/Utils.jsx';
@@ -61,11 +64,11 @@ const messages = defineMessages({
     },
     linksTrigger: {
         id: 'arr.daos.fileSystem.links.trigger',
-        defaultMessage: 'Zobrazit vazby',
+        defaultMessage: 'Seznam vazeb',
     },
     linksTitle: {
         id: 'arr.daos.fileSystem.links.title',
-        defaultMessage: 'Vazby',
+        defaultMessage: 'Přejít k jednotce popisu',
     },
 });
 
@@ -92,6 +95,7 @@ export const FileSystemBrowser = ({
     const [repos, setRepos] = useState<FsRepo[]>([]);
 
     const intl = useIntl();
+    const dispatch = useAppThunkDispatch();
 
     const [sortType, setSortType] = useState<FsItemSortType>(FsItemSortType.NameAsc);
     const [filterByLink, setFilterByLink] = useState<FsItemFilterByLinked>(FsItemFilterByLinked.All);
@@ -238,8 +242,18 @@ export const FileSystemBrowser = ({
                                 <ul className="fs-link-popover__list">
                                     {item.data.links.map((link: FsLink) => (
                                         <li key={`${link.fundId}-${link.nodeId}`}>
-                                            <span className="fs-link-popover__fund">{link.fundName}</span>
-                                            <span className="fs-link-popover__node">{link.nodeLabel}</span>
+                                            <button
+                                                type="button"
+                                                className="fs-link-popover__link"
+                                                title={link.nodePath}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    dispatch(routerNavigate(urlFundNode(link.fundId, undefined, link.nodeId)));
+                                                }}
+                                            >
+                                                <span className="fs-link-popover__fund">{link.fundName}</span>
+                                                <span className="fs-link-popover__node">{link.nodeLabel}</span>
+                                            </button>
                                         </li>
                                     ))}
                                 </ul>

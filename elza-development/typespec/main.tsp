@@ -265,6 +265,8 @@ model FsLink {
     fundId: int32;
     fundName: string;
     nodeLabel: string;
+    /** Breadcrumb path of the node from the root, joined with " / ". Empty when node could not be resolved. */
+    nodePath?: string;
 }
 
 /**
