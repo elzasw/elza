@@ -227,23 +227,27 @@ public class DaoService {
             throw new BusinessException("Nelze připojit digitální entitu k JP, protože je nevalidní", ArrangementCode.INVALID_DAO).level(Level.WARNING);
         }
 
-        Set<Integer> nodeIds = new HashSet<>();
-
-        // Vyhledání stávajících vazeb
         final List<ArrDaoLink> linkList = daoLinkRepository.findByDaoAndDeleteChangeIsNull(dao);
-        if (!CollectionUtils.isNotEmpty(linkList)) {
-            // odstraneni predchozich pripojeni
-            // měla by být jen jedna, ale cyklus ošetří i případnou chybu v datech
-            for (ArrDaoLink arrDaoLink : linkList) {
-                nodeIds.add(arrDaoLink.getNodeId());
-                deleteDaoLink(fundVersion, change, arrDaoLink, true);
+
+        // Existující vazba na stejný node → idempotentně vrátit
+        for (ArrDaoLink existing : linkList) {
+            if (existing.getNodeId().equals(node.getNodeId())) {
+                return existing;
+            }
+        }
+
+		// Zákaz více vazeb podle nastavení repository
+        if (!linkList.isEmpty()) {
+            ArrDigitalRepository repos = dao.getDaoPackage().getDigitalRepository();
+            if (!Boolean.TRUE.equals(repos.getMultipleLinks())) {
+                throw new BusinessException(
+                        "DAO je již připojeno k jiné jednotce popisu; opakované napojení není povoleno.",
+                        ArrangementCode.INVALID_DAO).level(Level.WARNING);
             }
         }
 
         final ArrDaoLink resultDaoLink = createArrDaoLink(fundVersion, change, dao, node, scenario);
-
-        nodeIds.add(node.getNodeId());
-        updateNodeCacheDaoLinks(nodeIds);
+        updateNodeCacheDaoLinks(Collections.singleton(node.getNodeId()));
 
         return resultDaoLink;
     }

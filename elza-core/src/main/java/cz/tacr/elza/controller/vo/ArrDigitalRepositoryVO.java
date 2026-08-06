@@ -21,6 +21,8 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
 
     private DigitalRepositoryType digitalRepositoryType;
 
+    private Boolean multipleLinks;
+
     public String getViewDaoUrl() {
         return viewDaoUrl;
     }
@@ -61,6 +63,14 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
         this.digitalRepositoryType = digitalRepositoryType;
     }
 
+    public Boolean getMultipleLinks() {
+		return multipleLinks;
+	}
+
+	public void setMultipleLinks(Boolean multipleLinks) {
+		this.multipleLinks = multipleLinks;
+	}
+
     @Override
     public SysExternalSystem createEntity(ApScope scope) {
         ArrDigitalRepository entity = new ArrDigitalRepository();
@@ -71,6 +81,7 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
         entity.setViewThumbnailUrl(viewThumbnailUrl);
         entity.setSendNotification(sendNotification);
         entity.setDigitalRepositoryType(digitalRepositoryType);
+        entity.setMultipleLinks(multipleLinks);
 
         return entity;
     }
@@ -94,6 +105,7 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
         vo.setViewThumbnailUrl(src.getViewThumbnailUrl());
         vo.setSendNotification(src.getSendNotification());
         vo.setDigitalRepositoryType(src.getDigitalRepositoryType());
+        vo.setMultipleLinks(src.getMultipleLinks());
         return vo;
     }
 }

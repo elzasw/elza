@@ -186,6 +186,12 @@ class AdminExtSystemDetail extends AbstractReactComponent {
                                     ? i18n('admin.extSystem.sendNotification.true')
                                     : i18n('admin.extSystem.sendNotification.false')}
                             </span>
+                            <h4>{i18n('admin.extSystem.multipleLinks')}</h4>
+                            <span>
+                                {extSystem.multipleLinks
+                                    ? i18n('admin.extSystem.multipleLinks.true')
+                                    : i18n('admin.extSystem.multipleLinks.false')}
+                            </span>
                         </div>
                     )}
                     {classJ === EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk && (

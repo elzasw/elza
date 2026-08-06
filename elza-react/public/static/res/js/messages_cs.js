@@ -1509,6 +1509,9 @@ var messages = {
     "admin.extSystem.apiKeyId": "ApiKey - ID",
     "admin.extSystem.apiKeyValue": "ApiKey - hodnota",
     "admin.extSystem.synchronize": "Synchronizovat",
+    "admin.extSystem.multipleLinks": "Vícenásobné napojení",
+    "admin.extSystem.multipleLinks.true": "Ano",
+    "admin.extSystem.multipleLinks.false": "Ne",
 
     "admin.bulk.detail.queue.empty": "Ve frontě nejsou žádné požadavky",
     "admin.bulk.header.title.NODE": "Validace JP",
