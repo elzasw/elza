@@ -36,7 +36,7 @@ public class ArrDigitalRepository extends SysExternalSystem {
     private DigitalRepositoryType digitalRepositoryType;
 
     @Column(nullable = false)
-    private Boolean multipleLinks;
+    private Boolean multipleLinks = Boolean.FALSE;
 
     public ArrDigitalRepository() {
     }

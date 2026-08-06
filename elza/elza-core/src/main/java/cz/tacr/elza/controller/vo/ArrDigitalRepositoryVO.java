@@ -81,7 +81,9 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
         entity.setViewThumbnailUrl(viewThumbnailUrl);
         entity.setSendNotification(sendNotification);
         entity.setDigitalRepositoryType(digitalRepositoryType);
-        entity.setMultipleLinks(multipleLinks);
+        if (multipleLinks != null) {
+            entity.setMultipleLinks(multipleLinks);
+        }
 
         return entity;
     }
