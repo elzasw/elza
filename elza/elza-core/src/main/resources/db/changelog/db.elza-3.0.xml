@@ -1647,4 +1647,15 @@
 	    </sql>
 	</changeSet>
 
+	<changeSet id="20260806120000" author="sergey.iryupin">
+	    <!-- Přidání příznaku multiple_links na arr_digital_repository.
+	         Řídí, zda lze DAO připojit k více než jedné jednotce popisu.
+	         Ve výchozím nastavení zakázáno (false). -->
+	    <addColumn tableName="arr_digital_repository">
+	        <column name="multiple_links" type="boolean" defaultValueBoolean="false">
+	            <constraints nullable="false"/>
+	        </column>
+	    </addColumn>
+	</changeSet>
+
 </databaseChangeLog>

@@ -44,6 +44,7 @@ class AdminExtSystemPage extends AbstractReactComponent {
                 this,
                 i18n('admin.extSystem.add.title'),
                 <ExtSystemForm
+                    initialValues={{ multipleLinks: false }}
                     onSubmitForm={data => {
                         return this.props.dispatch(extSystemCreate(data));
                     }}

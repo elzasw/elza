@@ -372,6 +372,7 @@ export interface ExternalSystem {
     viewFileUrl?: string;
     viewThumbnailUrl?: string;
     sendNotification?: boolean;
+    multipleLinks?: boolean;
 }
 
 type KMLExternalSystem = Omit<ExternalSystem, "username" | "password" | "elzaCode" | "publishOnlyApproved" | "userInfo" | "viewFileUrl" | "viewThumbnailUrl" | "sendNotification">;

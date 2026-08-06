@@ -66,6 +66,7 @@ type ExtSystemFormValues = {
     viewThumbnailUrl?: string;
     sendNotification?: boolean;
     digitalRepositoryType?: string;
+    multipleLinks?: boolean;
 };
 
 type Scope = {
@@ -248,6 +249,21 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
                         </option>
                         <option key="false" value={false as any}>
                             {i18n('admin.extSystem.sendNotification.false')}
+                        </option>
+                    </Field>
+                    <Field
+                        name="multipleLinks"
+                        type="select"
+                        component={FormInputField}
+                        label={i18n('admin.extSystem.multipleLinks')}
+                        disabled={isUpdate}
+                    >
+                        <option key={null} />
+                        <option key="true" value={true as any}>
+                            {i18n('admin.extSystem.multipleLinks.true')}
+                        </option>
+                        <option key="false" value={false as any}>
+                            {i18n('admin.extSystem.multipleLinks.false')}
                         </option>
                     </Field>
                 </div>
