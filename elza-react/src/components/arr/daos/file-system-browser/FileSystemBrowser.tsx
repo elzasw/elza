@@ -386,24 +386,9 @@ export const FileSystemBrowser = ({
                 </div>
                 {generateBreadcrumbs()}
                 <div className="filters">
-                    <label htmlFor="sort-select" className="sort-label">
-                        {intl.formatMessage(messages.sortLabel)}
-                    </label>
-                    <select
-                        id="sort-select"
-                        className="sort-select"
-                        aria-label={intl.formatMessage(messages.sortLabel)}
-                        value={sortType}
-                        onChange={(e) => setSortType(e.target.value as FsItemSortType)}
-                    >
-                        <option value={FsItemSortType.NameAsc}>{intl.formatMessage(messages.sortNameAsc)}</option>
-                        <option value={FsItemSortType.NameDesc}>{intl.formatMessage(messages.sortNameDesc)}</option>
-                        <option value={FsItemSortType.SizeAsc}>{intl.formatMessage(messages.sortSizeAsc)}</option>
-                        <option value={FsItemSortType.SizeDesc}>{intl.formatMessage(messages.sortSizeDesc)}</option>
-                    </select>
-                    <label htmlFor="filter-by-link-select" className="sort-label">
-                        {intl.formatMessage(messages.filterByLinkLabel)}
-                    </label>
+                    <span className="sort-label" title={intl.formatMessage(messages.filterByLinkLabel)}>
+                        <Icon glyph="fa-filter" className="fa-lg" />
+                    </span>
                     <select
                         id="filter-by-link-select"
                         className="sort-select"
@@ -436,6 +421,21 @@ export const FileSystemBrowser = ({
                             disabled={!filterInput}
                         />
                     )}
+                    <span className="sort-label" title={intl.formatMessage(messages.sortLabel)}>
+                        <Icon glyph="fa-sort-alpha-asc" className="fa-lg" />
+                    </span>
+                    <select
+                        id="sort-select"
+                        className="sort-select"
+                        aria-label={intl.formatMessage(messages.sortLabel)}
+                        value={sortType}
+                        onChange={(e) => setSortType(e.target.value as FsItemSortType)}
+                    >
+                        <option value={FsItemSortType.NameAsc}>{intl.formatMessage(messages.sortNameAsc)}</option>
+                        <option value={FsItemSortType.NameDesc}>{intl.formatMessage(messages.sortNameDesc)}</option>
+                        <option value={FsItemSortType.SizeAsc}>{intl.formatMessage(messages.sortSizeAsc)}</option>
+                        <option value={FsItemSortType.SizeDesc}>{intl.formatMessage(messages.sortSizeDesc)}</option>
+                    </select>
                 </div>
             </div>
             <div className="main-container">
