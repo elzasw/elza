@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Elza AI Provider API
-  version: 0.13.0
+  version: 0.14.0
   description: |-
     Elza AI Provider API.
 
@@ -1154,6 +1154,7 @@ components:
           elza.revisionConfig: '#/components/schemas/RevisionConfigObject'
           elza.revisionFindings: '#/components/schemas/RevisionFindingsObject'
           elza.docCitations: '#/components/schemas/DocCitationsObject'
+          elza.nodeUpdateProposals: '#/components/schemas/NodeUpdateProposalsObject'
       description: |-
         A typed object: an `objectType` tag plus the `data` payload for that type. The
         polymorphic carrier for every typed value on the wire — task parameters,
@@ -1251,10 +1252,11 @@ components:
             type: string
           description: |-
             Item-type codes the rule package permits on this level (the POSSIBLE +
-            REQUIRED types Elza's rules compute for the node) — the catalog a revision
-            task's element suggestions must stay within (`RevisionFinding.targetItemType`
-            must be one of these). Filled for the reviewed units of `elza.revision`;
-            absent in other uses (chat context, tool results).
+            REQUIRED types Elza's rules compute for the node) — the catalog a task's
+            element suggestions must stay within (`RevisionFinding.targetItemType` and
+            `ProposedItemValue.type` must be one of these). Filled for the subject
+            units of `elza.revision` and `elza.enhanceDescription`; absent in other
+            uses (chat context, tool results).
         items:
           type: array
           items:
@@ -1544,6 +1546,14 @@ components:
       required:
         - type
       properties:
+        itemObjectId:
+          type: integer
+          format: int32
+          description: |-
+            Stable id of the item, surviving versioned value changes
+            (`ArrItem.descItemObjectId`; for an entity part's items `ApItem.objectId`);
+            echo-only — the provider never interprets it, but the item operations of
+            `elza.nodeUpdateProposals` anchor the exact item to update or delete by it.
         type:
           type: string
           description: Stable item-type code, e.g. `ZP2015_TITLE` (`RulItemType.code`).
@@ -1914,6 +1924,99 @@ components:
         Comparison operators of `ItemCondition` — a subset of Elza's search
         operations; may grow additively. `INTERSECT` applies to dating items
         (`UNITDATE`): true when the item's interval overlaps the queried one.
+    ItemOperation:
+      type: object
+      required:
+        - kind
+      properties:
+        kind:
+          allOf:
+            - $ref: '#/components/schemas/ItemOperationKind'
+          description: Selects the operation's shape; one of the `ItemOperationKind` codes.
+      discriminator:
+        propertyName: kind
+        mapping:
+          addItem: '#/components/schemas/ItemOperationAdd'
+          updateItem: '#/components/schemas/ItemOperationUpdate'
+          deleteItem: '#/components/schemas/ItemOperationDelete'
+      description: |-
+        One proposed operation on one description item of a level; `kind` selects
+        the concrete shape (`ItemOperationAdd` / `ItemOperationUpdate` /
+        `ItemOperationDelete`). Operations of one `ProposedChange` are applied
+        together; each shape makes its own required fields explicit, so a malformed
+        operation fails the provider's result-shape enforcement (`SCHEMA_ERROR`)
+        instead of reaching the client.
+    ItemOperationAdd:
+      type: object
+      required:
+        - newItem
+      properties:
+        newItem:
+          allOf:
+            - $ref: '#/components/schemas/ProposedItemValue'
+          description: The new item's full state.
+      allOf:
+        - $ref: '#/components/schemas/ItemOperation'
+      description: Add a new item — the first or (for a repeatable type) an additional value.
+    ItemOperationDelete:
+      type: object
+      required:
+        - itemObjectId
+      properties:
+        itemObjectId:
+          type: integer
+          format: int32
+          description: The removed item (`DescriptionItem.itemObjectId`).
+        currentValue:
+          type: string
+          description: |-
+            Verbatim current value of what is removed; the same anchor and staleness
+            semantics as on `ItemOperationUpdate`.
+      allOf:
+        - $ref: '#/components/schemas/ItemOperation'
+      description: Remove an existing item.
+    ItemOperationKind:
+      type: string
+      enum:
+        - addItem
+        - updateItem
+        - deleteItem
+      description: |-
+        Kind of one proposed item operation — the discriminator of `ItemOperation`.
+        A **closed** set modelled as an `enum` (the same reasoning as
+        `StandardToolName`): every kind requires client-side application code, so
+        the set grows additively with a client release, never dynamically. A client
+        that meets an unknown kind must treat the whole containing `ProposedChange`
+        as not applicable — never "apply the operations it understood".
+    ItemOperationUpdate:
+      type: object
+      required:
+        - itemObjectId
+        - newItem
+      properties:
+        itemObjectId:
+          type: integer
+          format: int32
+          description: The changed item (`DescriptionItem.itemObjectId`).
+        currentValue:
+          type: string
+          description: |-
+            Verbatim current value of the item as the task received it — the
+            anti-hallucination anchor (cf. `RevisionFinding.excerpt`) and the
+            staleness guard: the client refuses to apply the operation when the item
+            no longer reads this way. Expected whenever the item has a text form; may
+            be absent for a purely spec-carried value.
+        newItem:
+          allOf:
+            - $ref: '#/components/schemas/ProposedItemValue'
+          description: The item's full new state.
+      allOf:
+        - $ref: '#/components/schemas/ItemOperation'
+      description: |-
+        Replace the state of an existing item. Full-state, not a field patch: the
+        item afterwards reads exactly as `newItem`. The item's type never changes —
+        `newItem.type` equals the anchored item's type; a re-typing is expressed as
+        a `deleteItem` + `addItem` pair within one `ProposedChange`.
     ItemTypeDictionary:
       type: object
       required:
@@ -2085,6 +2188,56 @@ components:
         Kind of a problem found by Elza's automatic (rule-based) checks on a level.
         The set may grow additively; a client treats an unknown kind as a generic
         problem.
+    NodeUpdateProposal:
+      type: object
+      required:
+        - nodeId
+        - changes
+      properties:
+        nodeId:
+          type: integer
+          format: int32
+          description: |-
+            The level the changes concern (`ArrNode.nodeId`) — MUST be a subject node
+            of the task; proposals for other levels are dropped by the client.
+        uuid:
+          type: string
+          description: Stable level UUID (`ArrNode.uuid`), when the subject carried one.
+        changes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProposedChange'
+          description: The proposed changes, in suggested display order.
+      description: |-
+        Proposed changes to the description items of one arrangement level.
+        Strictly propose-only: nothing is ever applied automatically — the client
+        validates every change deterministically (allowed types, repeatability by
+        the rules, anchor staleness) and the user confirms each one; a change that
+        fails validation is shown blocked with the reason, never silently applied.
+    NodeUpdateProposals:
+      type: object
+      required:
+        - proposals
+      properties:
+        proposals:
+          type: array
+          items:
+            $ref: '#/components/schemas/NodeUpdateProposal'
+          description: One entry per affected level.
+      description: |-
+        Result of `elza.enhanceDescription`: the proposed node updates of one run.
+        An empty `proposals` array is a valid result ("nothing appropriate to
+        propose") — the accompanying `elza.markdown` block then explains why.
+    NodeUpdateProposalsObject:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: '#/components/schemas/NodeUpdateProposals'
+      allOf:
+        - $ref: '#/components/schemas/AiObject'
+      description: Node-update-proposals object — proposed description changes for user review.
     NodeWindow:
       type: object
       required:
@@ -2129,6 +2282,7 @@ components:
         - elza.revisionConfig
         - elza.revisionFindings
         - elza.docCitations
+        - elza.nodeUpdateProposals
       description: |-
         Object type — names a typed payload defined by this contract. A **closed**,
         namespaced set of string codes modelled as an `enum`, so code generators
@@ -2170,6 +2324,12 @@ components:
         when the provider can resolve one, a full web URL. Returned alongside the text
         answer of an assistant-style task. Distinct from citing an archival record,
         which will get its own object type.
+        - `elza.nodeUpdateProposals` — proposed changes to the description items of
+        arrangement levels (payload `NodeUpdateProposals`): machine-applicable item
+        operations grouped into user-reviewable changes; the result of
+        `elza.enhanceDescription`. Strictly propose-only — the client validates
+        every change deterministically and the user confirms it; nothing is ever
+        applied automatically.
     OutlineRow:
       type: object
       required:
@@ -2237,6 +2397,81 @@ components:
           type: boolean
           description: True for the profile used when a submission names none.
       description: A quality/cost tier offered by this provider.
+    ProposedChange:
+      type: object
+      required:
+        - reason
+        - operations
+      properties:
+        reason:
+          type: string
+          description: |-
+            Why — user-facing, self-contained (readable without the AI context), in
+            the language of the described material / the user's instruction.
+        confidence:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 100
+          description: |-
+            The model's own certainty, 0–100 (the same semantics as
+            `RevisionFinding.confidence`).
+        operations:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemOperation'
+          description: The operations of this change, applied together.
+      description: |-
+        One logical suggestion on one level — the unit the user accepts or rejects.
+        It contains every operation the suggestion needs to stay consistent: e.g.
+        extracting "width: 5 mm" from a free text into the dedicated element is an
+        `addItem` of the new element **plus** an `updateItem` of the source text
+        without the extracted fragment — applying only half would lose or duplicate
+        information. Changes are independent of each other and individually
+        applicable; the operations within one change are applied together.
+    ProposedItemValue:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          description: |-
+            Stable item-type code (`RulItemType.code`) — MUST be one of the level's
+            `allowedItemTypes` (the provider never invents elements outside the
+            supplied catalog). An update keeps the anchored item's type (see
+            `ItemOperationUpdate`).
+        spec:
+          type: string
+          description: |-
+            Specification code for enumerated item types (`RulItemSpec.code`), from
+            the rule-set dictionary (`ItemTypeInfo.specs`); absent for non-enumerated
+            types.
+        value:
+          type: string
+          description: |-
+            The value in text form, as `DescriptionItem.value` carries it; absent when
+            the meaning is fully carried by `spec`, or for a `RECORD_REF` item (where
+            `accessPointId` is the value).
+        accessPointId:
+          type: integer
+          format: int32
+          description: |-
+            For a `RECORD_REF` item: the referenced access point
+            (`ApAccessPoint.accessPointId`) — an **existing** entity only, one the
+            task received in its input or found via the search tools; the AI never
+            invents entities (the `access_point_candidate` stance of `elza.revision`
+            applies: new entities are only ever candidates for the archivist).
+      description: |-
+        The full proposed state of an item — the machine-oriented payload of an add
+        or update operation. Codes only, the same vocabulary as `DescriptionItem`;
+        the client re-resolves display names from its own data, never from here.
+
+        The proposable data types are a **restricted subset** of `DataType`: the
+        text, number and date kinds (`STRING`, `TEXT`, `FORMATTED_TEXT`, `INT`,
+        `DECIMAL`, `DATE`, `UNITDATE`, `UNITID`), `ENUM` and `RECORD_REF`.
+        Operations on `STRUCTURED`, `FILE_REF`, `COORDINATES` and `JSON_TABLE`
+        items are not proposable; the client blocks them.
     RevisionConfig:
       type: object
       properties:
@@ -3142,6 +3377,18 @@ components:
         as `elza.archivalDescription` (with `allowedItemTypes`), a
         `elza.revisionConfig`, and hierarchical context (`elza.archivalOutline`,
         ancestors, `elza.fundInfo`). Task definition: `tasks/elza-revision.md`.
+        - `elza.enhanceDescription` — user-directed modification of archival
+        description ("AI úprava popisu na pokyn uživatele"): turns the user's
+        instruction (e.g. "extract the dimensions from the text into the dedicated
+        elements") into machine-applicable item operations, returned as
+        `elza.nodeUpdateProposals` alongside an `elza.markdown` narrative of what
+        was proposed and what could not be (and why). Strictly propose-only: the
+        client validates every change deterministically, the user confirms each
+        one, and the task never changes description data itself. Input: the
+        subject level(s) as `elza.archivalDescription` (with `allowedItemTypes`
+        and per-item `itemObjectId`), the instruction in `userInstructions`, and
+        hierarchical context (ancestors, `elza.fundInfo`). Task definition:
+        `tasks/elza-enhance-description.md`.
     TaskTypeInfo:
       type: object
       required:
