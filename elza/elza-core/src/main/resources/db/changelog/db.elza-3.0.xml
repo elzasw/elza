@@ -1658,4 +1658,50 @@
 	    </addColumn>
 	</changeSet>
 
+    <changeSet id="20260806120000" author="ppy">
+        <!-- ai_proposal_decision: the user's decision on one proposed change of an
+             AI node-update proposal (an elza.nodeUpdateProposals result block
+             stored in ai_request.output). change_key addresses the change within
+             the stored output; an APPLIED decision carries the arr_change the
+             application created. Drives the card states in the AI panel and the
+             evaluation metric (acceptance rate per ai_request.prompt_version). -->
+        <createTable tableName="ai_proposal_decision">
+            <column name="ai_proposal_decision_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_ai_proposal_decision" nullable="false"/>
+            </column>
+            <column name="ai_request_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ai_proposal_decision_request"
+                             referencedTableName="ai_request"
+                             referencedColumnNames="ai_request_id"/>
+            </column>
+            <!-- addresses the change within the request's stored output, e.g. "0/2" -->
+            <column name="change_key" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <!-- APPLIED | REJECTED -->
+            <column name="state" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <!-- the versioned change created by an APPLIED decision -->
+            <column name="change_id" type="int">
+                <constraints foreignKeyName="fk_ai_proposal_decision_change"
+                             referencedTableName="arr_change"
+                             referencedColumnNames="change_id"/>
+            </column>
+            <column name="user_id" type="int">
+                <constraints foreignKeyName="fk_ai_proposal_decision_user"
+                             referencedTableName="usr_user"
+                             referencedColumnNames="user_id"/>
+            </column>
+            <column name="decide_date" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex tableName="ai_proposal_decision" indexName="ux_ai_proposal_decision" unique="true">
+            <column name="ai_request_id"/>
+            <column name="change_key"/>
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

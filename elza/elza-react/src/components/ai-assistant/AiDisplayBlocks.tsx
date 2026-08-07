@@ -4,7 +4,8 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
 import rehypeSanitize from "rehype-sanitize";
-import { AiDisplayBlock, AiDisplayBlockType, AiMarkdownBlock, AiTextBlock, AiTableBlock as AiTableBlockVO, AiDocCitationsBlock } from "elza-api";
+import { AiDisplayBlock, AiDisplayBlockType, AiMarkdownBlock, AiTextBlock, AiTableBlock as AiTableBlockVO, AiDocCitationsBlock, AiNodeUpdateProposalsBlock as AiNodeUpdateProposalsBlockVO, AiRequest } from "elza-api";
+import { AiNodeUpdateProposalsBlock } from "./AiNodeUpdateProposalsBlock";
 import { aiAssistantMessages } from "./messages";
 
 const useStyles = makeStyles({
@@ -66,9 +67,15 @@ const useStyles = makeStyles({
 
 interface Props {
     blocks: AiDisplayBlock[];
+    /** Id of the exchange the blocks belong to; enables interactive blocks (proposals). */
+    requestId?: number;
+    /** Receives the refreshed exchange after an interactive block's server action. */
+    onRequestUpdate?: (request: AiRequest) => void;
+    /** Prefills the composer with a clarification quote. */
+    onClarify?: (text: string) => void;
 }
 
-export function AiDisplayBlocks({ blocks }: Props) {
+export function AiDisplayBlocks({ blocks, requestId, onRequestUpdate, onClarify }: Props) {
     const styles = useStyles();
 
     return (
@@ -89,6 +96,16 @@ export function AiDisplayBlocks({ blocks }: Props) {
                         return <AiTableBlock key={index} block={block as AiTableBlockVO} captionClassName={styles.caption} />;
                     case AiDisplayBlockType.DocCitations:
                         return <AiCitationsBlock key={index} block={block as AiDocCitationsBlock} styles={styles} />;
+                    case AiDisplayBlockType.NodeUpdateProposals:
+                        return (
+                            <AiNodeUpdateProposalsBlock
+                                key={index}
+                                block={block as AiNodeUpdateProposalsBlockVO}
+                                requestId={requestId}
+                                onRequestUpdate={onRequestUpdate}
+                                onClarify={onClarify}
+                            />
+                        );
                     default:
                         return (
                             <p key={index} className={styles.unsupported}>

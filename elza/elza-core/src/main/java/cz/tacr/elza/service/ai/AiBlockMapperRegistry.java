@@ -38,8 +38,14 @@ public class AiBlockMapperRegistry {
         }
     }
 
-    /** Maps the stored output (a JSON array of typed blocks) to display blocks. */
-    public List<AiDisplayBlockVO> map(String outputJson) {
+    /**
+     * Maps the stored output (a JSON array of typed blocks) to display blocks.
+     *
+     * @param aiRequestId id of the request the output belongs to; passed to the
+     *            mappers as {@link AiBlockContext} together with each block's
+     *            index within the output array
+     */
+    public List<AiDisplayBlockVO> map(String outputJson, Integer aiRequestId) {
         JsonNode root;
         try {
             root = objectMapper.readTree(outputJson);
@@ -48,14 +54,16 @@ public class AiBlockMapperRegistry {
         }
         List<AiDisplayBlockVO> blocks = new ArrayList<>();
         if (root.isArray()) {
+            int blockIndex = 0;
             for (JsonNode block : root) {
                 String objectType = block.path("objectType").asText(null);
                 AiBlockMapper mapper = objectType == null ? null : byObjectType.get(objectType);
                 if (mapper != null) {
-                    blocks.addAll(mapper.map(block.path("data")));
+                    blocks.addAll(mapper.map(block.path("data"), new AiBlockContext(aiRequestId, blockIndex)));
                 } else {
                     blocks.add(fenced(block));
                 }
+                blockIndex++;
             }
         } else {
             // Not the expected block array (e.g. a legacy or malformed output).

@@ -319,7 +319,7 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
     const context = useCurrentAiContext();
     const contextRef = useRef(context);
     contextRef.current = context;
-    const { requests, pending, error, send, activeConversationId, openConversation, newConversation } = useAiConversation({
+    const { requests, pending, error, send, activeConversationId, openConversation, newConversation, replaceRequest } = useAiConversation({
         externalSystemCode,
         getContext: () => contextRef.current,
     });
@@ -578,7 +578,12 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
                                 request.blocks && (
                                     <div ref={isLastRequest ? aiMessageRef : undefined} className={mergeClasses(styles.aiMessage, aiFullWidth && styles.aiMessageFull)}>
                                         {finishedSteps}
-                                        <AiDisplayBlocks blocks={request.blocks} />
+                                        <AiDisplayBlocks
+                                            blocks={request.blocks}
+                                            requestId={request.id}
+                                            onRequestUpdate={replaceRequest}
+                                            onClarify={(text) => setDraft(text)}
+                                        />
                                         {request.usage && (
                                             <details className={styles.usage}>
                                                 <summary className={styles.usageSummary}>

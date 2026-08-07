@@ -432,8 +432,13 @@ public class AiContextResolver {
 
     /** Maps a level's description item to stable codes plus its display text. */
     private DescriptionItem toDescriptionItem(final ArrDescItem item, final StaticDataProvider sdp) {
-        return buildItem(item.getItemTypeId(), item.getItemSpecId(), item.getData(),
+        DescriptionItem out = buildItem(item.getItemTypeId(), item.getItemSpecId(), item.getData(),
                 item.getFulltextValue(), sdp);
+        if (out != null) {
+            // Stable anchor for item operations (survives versioned value changes).
+            out.itemObjectId(item.getDescItemObjectId());
+        }
+        return out;
     }
 
     /** Maps an access-point item (a part's item) to the same {@link DescriptionItem} shape. */
@@ -445,7 +450,11 @@ public class AiContextResolver {
         String value = data == null || data instanceof ArrDataRecordRef || data instanceof ArrDataStructureRef
                 ? null
                 : data.getFulltextValue();
-        return buildItem(item.getItemTypeId(), item.getItemSpecId(), data, value, sdp);
+        DescriptionItem out = buildItem(item.getItemTypeId(), item.getItemSpecId(), data, value, sdp);
+        if (out != null) {
+            out.itemObjectId(item.getObjectId());
+        }
+        return out;
     }
 
     /**
