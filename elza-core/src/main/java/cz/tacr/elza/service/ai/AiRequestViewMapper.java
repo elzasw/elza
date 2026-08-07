@@ -66,7 +66,7 @@ public class AiRequestViewMapper {
             vo.setActivities(activities);
         }
         if ("done".equals(request.getState()) && request.getOutput() != null) {
-            vo.setBlocks(blockMapperRegistry.map(request.getOutput()));
+            vo.setBlocks(blockMapperRegistry.map(request.getOutput(), request.getAiRequestId()));
         }
         if (request.getFinishDate() != null || !"queued".equals(request.getState())) {
             vo.setUsage(new AiUsageVO()

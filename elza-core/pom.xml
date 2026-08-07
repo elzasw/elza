@@ -750,6 +750,11 @@
                                 <modelNameMapping>AiTableBlock=AiTableBlockVO</modelNameMapping>
                                 <modelNameMapping>AiDocCitationsBlock=AiDocCitationsBlockVO</modelNameMapping>
                                 <modelNameMapping>AiTableColumn=AiTableColumnVO</modelNameMapping>
+                                <modelNameMapping>AiNodeUpdateProposalsBlock=AiNodeUpdateProposalsBlockVO</modelNameMapping>
+                                <modelNameMapping>AiProposalNode=AiProposalNodeVO</modelNameMapping>
+                                <modelNameMapping>AiProposalChange=AiProposalChangeVO</modelNameMapping>
+                                <modelNameMapping>AiProposalOperation=AiProposalOperationVO</modelNameMapping>
+                                <modelNameMapping>AiProposalDecisionRequest=AiProposalDecisionRequestVO</modelNameMapping>
                                 <modelNameMapping>AiCitation=AiCitationVO</modelNameMapping>
                                 <modelNameMapping>AiUsage=AiUsageVO</modelNameMapping>
                                 <modelNameMapping>AiAccountUsage=AiAccountUsageVO</modelNameMapping>

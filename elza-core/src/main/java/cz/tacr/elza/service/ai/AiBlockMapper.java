@@ -30,4 +30,13 @@ public interface AiBlockMapper {
      * @return ordered display blocks for that object
      */
     List<AiDisplayBlockVO> map(JsonNode data);
+
+    /**
+     * Context-aware variant for mappers whose rendering depends on the mapped
+     * request (e.g. merging per-request decisions); the default ignores the
+     * context. The registry always calls this form.
+     */
+    default List<AiDisplayBlockVO> map(JsonNode data, AiBlockContext context) {
+        return map(data);
+    }
 }

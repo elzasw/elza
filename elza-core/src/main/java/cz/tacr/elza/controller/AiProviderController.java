@@ -20,6 +20,7 @@ import cz.tacr.elza.controller.vo.AiConversationCreateVO;
 import cz.tacr.elza.controller.vo.AiConversationDetailVO;
 import cz.tacr.elza.controller.vo.AiConversationVO;
 import cz.tacr.elza.controller.vo.AiCustomerUsageVO;
+import cz.tacr.elza.controller.vo.AiProposalDecisionRequestVO;
 import cz.tacr.elza.controller.vo.AiRequestCreateVO;
 import cz.tacr.elza.controller.vo.AiRequestEventVO;
 import cz.tacr.elza.controller.vo.AiRequestVO;
@@ -31,6 +32,7 @@ import cz.tacr.elza.controller.vo.AiUsageBalanceVO;
 import cz.tacr.elza.domain.AiExternalSystem;
 import cz.tacr.elza.service.AiProviderService;
 import cz.tacr.elza.service.ai.AiConversationService;
+import cz.tacr.elza.service.ai.AiProposalService;
 
 /**
  * Endpoints for AI providers (external systems speaking the
@@ -45,6 +47,9 @@ public class AiProviderController implements AiproviderApi {
 
     @Autowired
     private AiConversationService aiConversationService;
+
+    @Autowired
+    private AiProposalService aiProposalService;
 
     @Override
     @Transactional
@@ -155,6 +160,18 @@ public class AiProviderController implements AiproviderApi {
     @Override
     public ResponseEntity<AiRequestVO> aiProviderCancelRequest(Integer id) {
         return ResponseEntity.ok(aiConversationService.cancelRequest(id));
+    }
+
+    @Override
+    public ResponseEntity<AiRequestVO> aiProviderApplyProposalChange(Integer id,
+            AiProposalDecisionRequestVO aiProposalDecisionRequestVO) {
+        return ResponseEntity.ok(aiProposalService.applyChange(id, aiProposalDecisionRequestVO.getChangeKey()));
+    }
+
+    @Override
+    public ResponseEntity<AiRequestVO> aiProviderRejectProposalChange(Integer id,
+            AiProposalDecisionRequestVO aiProposalDecisionRequestVO) {
+        return ResponseEntity.ok(aiProposalService.rejectChange(id, aiProposalDecisionRequestVO.getChangeKey()));
     }
 
     @Override

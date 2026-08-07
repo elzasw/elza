@@ -2376,6 +2376,8 @@ enum AiDisplayBlockType {
     TABLE,
     /** The knowledge/documentation sources the answer relied on. */
     DOC_CITATIONS,
+    /** Proposed description changes for user review (apply / reject / refine). */
+    NODE_UPDATE_PROPOSALS,
 }
 
 /**
@@ -2445,6 +2447,84 @@ model AiTableColumn {
     key: string;
     /** Column header shown to the user. */
     label: string;
+}
+
+/**
+ * Proposed changes to the description items of arrangement levels — the
+ * render-ready view of an `elza.nodeUpdateProposals` task result
+ * (elza-development/typespec-ai/tasks/elza-enhance-description.md). The client
+ * renders one card per change with old→new diff rows; the user applies or
+ * rejects each change (the consent unit — its operations are applied
+ * together), or refines the request with a follow-up. All names and values
+ * are resolved server-side against the level's current state; nothing is ever
+ * applied without the explicit apply call.
+ */
+model AiNodeUpdateProposalsBlock extends AiDisplayBlock {
+    @invisible(Lifecycle)
+    type: AiDisplayBlockType.NODE_UPDATE_PROPOSALS;
+    /** Proposals grouped per level, in the result's order. */
+    nodes: AiProposalNode[];
+}
+
+/** The proposed changes of one arrangement level. */
+model AiProposalNode {
+    /** The level as a navigable link (label = tree title). */
+    node: AiActivityLink;
+    /** The level's proposed changes, in display order. */
+    changes: AiProposalChange[];
+}
+
+/**
+ * One proposed change — the unit the user accepts or rejects; its operations
+ * are applied together, in one versioned change. `state` is an open set:
+ * `PROPOSED` (awaiting decision), `APPLIED`, `REJECTED`, `BLOCKED` (fails
+ * validation against the level's current state — see `blockedReason`),
+ * `SUPERSEDED` (a newer exchange re-proposed for the same level); a client
+ * renders an unknown state as a read-only card.
+ */
+model AiProposalChange {
+    /** Stable key of the change within the request — the apply/reject address. */
+    changeKey: string;
+    /** Why the change is proposed — user-facing, self-contained. */
+    reason: string;
+    /** The model's certainty, 0–100, when reported. */
+    @minValue(0)
+    @maxValue(100)
+    confidence?: int32;
+    /** PROPOSED | APPLIED | REJECTED | BLOCKED | SUPERSEDED (open set). */
+    state: string;
+    /** User-facing reason when state = BLOCKED. */
+    blockedReason?: string;
+    /** When the APPLIED/REJECTED decision was made. */
+    decideDate?: utcDateTime;
+    /** The change's operations, applied together. */
+    operations: AiProposalOperation[];
+}
+
+/**
+ * One rendered item operation of a proposed change — a diff row. `kind` = `ADD`
+ * (`newValue` only), `UPDATE` (`oldValue` → `newValue`) or `DELETE`
+ * (`oldValue` only); open set, a client renders an unknown kind as plain text.
+ */
+model AiProposalOperation {
+    /** ADD | UPDATE | DELETE (open set). */
+    kind: string;
+    /** Display name of the item type, e.g. `Šířka`. */
+    itemTypeName: string;
+    /** Display name of the specification, for enumerated types. */
+    specName?: string;
+    /** The item's current value (UPDATE/DELETE). */
+    oldValue?: string;
+    /** The proposed value (ADD/UPDATE). */
+    newValue?: string;
+    /** Referenced entity as a navigable link, for access-point values. */
+    entity?: AiActivityLink;
+}
+
+/** Addresses one proposed change of an exchange's proposals block. */
+model AiProposalDecisionRequest {
+    /** `AiProposalChange.changeKey` of the change to decide. */
+    changeKey: string;
 }
 
 /**
@@ -2879,6 +2959,39 @@ namespace ElzaAPI.AiProvider {
         @path id: integer;
     ): AiRequest | {
         /** Id does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Applies one proposed change of a finished exchange: re-validates it
+     * against the level's current state and writes all its item operations in
+     * one versioned change; the decision is recorded. Returns the refreshed
+     * exchange — the proposals block reflects the new state (`APPLIED`, or
+     * `BLOCKED` with the reason when validation newly fails).
+     */
+    @route("/request/{id}/proposal/apply")
+    @post op applyProposalChange(
+        /** request id */
+        @path id: integer;
+        @body body: AiProposalDecisionRequest;
+    ): AiRequest | {
+        /** Request or change does not exist */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Rejects one proposed change (records the decision; the description is
+     * not touched). Returns the refreshed exchange.
+     */
+    @route("/request/{id}/proposal/reject")
+    @post op rejectProposalChange(
+        /** request id */
+        @path id: integer;
+        @body body: AiProposalDecisionRequest;
+    ): AiRequest | {
+        /** Request or change does not exist */
         @Http.statusCode statusCode: 404;
         @body data: BaseException;
     };

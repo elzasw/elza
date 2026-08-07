@@ -513,6 +513,34 @@
     "defaultMessage": "Default",
     "srcHash": "ea14D4gXIsVV"
   },
+  "aiAssistant.proposal.actionFailed": {
+    "defaultMessage": "The action could not be completed: {error}",
+    "srcHash": "MMstn-ynwT6n"
+  },
+  "aiAssistant.proposal.applied": {
+    "defaultMessage": "Applied",
+    "srcHash": "qVkO_P9S8_kL"
+  },
+  "aiAssistant.proposal.apply": {
+    "defaultMessage": "Apply",
+    "srcHash": "GQQ5u8NYPPTv"
+  },
+  "aiAssistant.proposal.clarify": {
+    "defaultMessage": "Refine…",
+    "srcHash": "en19xcjPSZMg"
+  },
+  "aiAssistant.proposal.reject": {
+    "defaultMessage": "Reject",
+    "srcHash": "8wxfcbNP8feA"
+  },
+  "aiAssistant.proposal.rejected": {
+    "defaultMessage": "Rejected",
+    "srcHash": "SkhGuSU6tmOG"
+  },
+  "aiAssistant.proposal.superseded": {
+    "defaultMessage": "Superseded by a newer proposal",
+    "srcHash": "DA45jq9z2d1Q"
+  },
   "aiAssistant.settings.fullWidthResponses": {
     "defaultMessage": "Full-width responses",
     "srcHash": "u04WWMytfMeS"
@@ -632,6 +660,61 @@
   "ap.ext-syncs.ext-system": {
     "defaultMessage": "External system",
     "srcHash": "oGs4SFZv0yF2"
+  },
+  "arr.daos.fileSystem.filter.clear": {
+    "defaultMessage": "Vymazat filtr",
+    "translated": false,
+    "srcHash": "LRQK97GHHNDb"
+  },
+  "arr.daos.fileSystem.filter.placeholder": {
+    "defaultMessage": "Filtrovat…",
+    "translated": false,
+    "srcHash": "RDtyYIA9IDO_"
+  },
+  "arr.daos.fileSystem.filterByLink.all": {
+    "defaultMessage": "Vše",
+    "translated": false,
+    "srcHash": "5C_lbtoov7Gn"
+  },
+  "arr.daos.fileSystem.filterByLink.label": {
+    "defaultMessage": "Propojení",
+    "translated": false,
+    "srcHash": "gKjzNxVXzRQT"
+  },
+  "arr.daos.fileSystem.filterByLink.linked": {
+    "defaultMessage": "Propojené",
+    "translated": false,
+    "srcHash": "5rbAbpjD8TlR"
+  },
+  "arr.daos.fileSystem.filterByLink.unlinked": {
+    "defaultMessage": "Nepropojené",
+    "translated": false,
+    "srcHash": "1esyfo4aKzQd"
+  },
+  "arr.daos.fileSystem.sort.label": {
+    "defaultMessage": "Řazení",
+    "translated": false,
+    "srcHash": "JD-Vo3HpL1AE"
+  },
+  "arr.daos.fileSystem.sort.nameAsc": {
+    "defaultMessage": "Název A→Z",
+    "translated": false,
+    "srcHash": "ERn70WrPy1_t"
+  },
+  "arr.daos.fileSystem.sort.nameDesc": {
+    "defaultMessage": "Název Z→A",
+    "translated": false,
+    "srcHash": "W370hofSnS7-"
+  },
+  "arr.daos.fileSystem.sort.sizeAsc": {
+    "defaultMessage": "Velikost vzestupně",
+    "translated": false,
+    "srcHash": "ncVb7DLsRFjt"
+  },
+  "arr.daos.fileSystem.sort.sizeDesc": {
+    "defaultMessage": "Velikost sestupně",
+    "translated": false,
+    "srcHash": "aAVC9zRaXJAr"
   },
   "arr.fundDataGrid.cellForm.notAllowed": {
     "defaultMessage": "This description element cannot be added to the description unit.",

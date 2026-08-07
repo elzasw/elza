@@ -1883,6 +1883,77 @@ paths:
                 $ref: '#/components/schemas/BaseException'
       tags:
         - aiprovider
+  /aiprovider/request/{id}/proposal/apply:
+    post:
+      operationId: AiProvider_applyProposalChange
+      description: |-
+        Applies one proposed change of a finished exchange: re-validates it
+        against the level's current state and writes all its item operations in
+        one versioned change; the decision is recorded. Returns the refreshed
+        exchange — the proposals block reflects the new state (`APPLIED`, or
+        `BLOCKED` with the reason when validation newly fails).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: request id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiRequest'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aiprovider
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AiProposalDecisionRequest'
+  /aiprovider/request/{id}/proposal/reject:
+    post:
+      operationId: AiProvider_rejectProposalChange
+      description: |-
+        Rejects one proposed change (records the decision; the description is
+        not touched). Returns the refreshed exchange.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: request id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiRequest'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aiprovider
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AiProposalDecisionRequest'
   /aiprovider/request/{id}/event:
     get:
       operationId: AiProvider_listRequestEvents
@@ -5635,6 +5706,7 @@ components:
         - MARKDOWN
         - TABLE
         - DOC_CITATIONS
+        - NODE_UPDATE_PROPOSALS
       description: |-
         Display block type — the discriminator of `AiDisplayBlock`. The client renders
         each block by this code, reading the fields of the matching subtype. Additive:
@@ -5656,6 +5728,7 @@ components:
           MARKDOWN: '#/components/schemas/AiMarkdownBlock'
           TABLE: '#/components/schemas/AiTableBlock'
           DOC_CITATIONS: '#/components/schemas/AiDocCitationsBlock'
+          NODE_UPDATE_PROPOSALS: '#/components/schemas/AiNodeUpdateProposalsBlock'
       description: |-
         One display block of an AI response — THE RENDERING CONTRACT between the
         server and the client. The server (per task type) transforms the provider's
@@ -5732,6 +5805,123 @@ components:
         The knowledge/documentation sources the answer relied on. The server emits no
         label text; the client renders a "Sources" list and supplies the heading
         itself, in the user's language.
+    AiNodeUpdateProposalsBlock:
+      type: object
+      required:
+        - nodes
+      properties:
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiProposalNode'
+          description: Proposals grouped per level, in the result's order.
+      allOf:
+        - $ref: '#/components/schemas/AiDisplayBlock'
+      description: |-
+        Proposed changes to the description items of arrangement levels — the
+        render-ready view of an `elza.nodeUpdateProposals` task result
+        (elza-development/typespec-ai/tasks/elza-enhance-description.md). The client
+        renders one card per change with old→new diff rows; the user applies or
+        rejects each change (the consent unit — its operations are applied
+        together), or refines the request with a follow-up. All names and values
+        are resolved server-side against the level's current state; nothing is ever
+        applied without the explicit apply call.
+    AiProposalNode:
+      type: object
+      required:
+        - node
+        - changes
+      properties:
+        node:
+          allOf:
+            - $ref: '#/components/schemas/AiActivityLink'
+          description: The level as a navigable link (label = tree title).
+        changes:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiProposalChange'
+          description: The level's proposed changes, in display order.
+      description: The proposed changes of one arrangement level.
+    AiProposalChange:
+      type: object
+      required:
+        - changeKey
+        - reason
+        - state
+        - operations
+      properties:
+        changeKey:
+          type: string
+          description: Stable key of the change within the request — the apply/reject address.
+        reason:
+          type: string
+          description: Why the change is proposed — user-facing, self-contained.
+        confidence:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 100
+          description: The model's certainty, 0–100, when reported.
+        state:
+          type: string
+          description: PROPOSED | APPLIED | REJECTED | BLOCKED | SUPERSEDED (open set).
+        blockedReason:
+          type: string
+          description: User-facing reason when state = BLOCKED.
+        decideDate:
+          type: string
+          format: date-time
+          description: When the APPLIED/REJECTED decision was made.
+        operations:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiProposalOperation'
+          description: The change's operations, applied together.
+      description: |-
+        One proposed change — the unit the user accepts or rejects; its operations
+        are applied together, in one versioned change. `state` is an open set:
+        `PROPOSED` (awaiting decision), `APPLIED`, `REJECTED`, `BLOCKED` (fails
+        validation against the level's current state — see `blockedReason`),
+        `SUPERSEDED` (a newer exchange re-proposed for the same level); a client
+        renders an unknown state as a read-only card.
+    AiProposalOperation:
+      type: object
+      required:
+        - kind
+        - itemTypeName
+      properties:
+        kind:
+          type: string
+          description: ADD | UPDATE | DELETE (open set).
+        itemTypeName:
+          type: string
+          description: Display name of the item type, e.g. `Šířka`.
+        specName:
+          type: string
+          description: Display name of the specification, for enumerated types.
+        oldValue:
+          type: string
+          description: The item's current value (UPDATE/DELETE).
+        newValue:
+          type: string
+          description: The proposed value (ADD/UPDATE).
+        entity:
+          allOf:
+            - $ref: '#/components/schemas/AiActivityLink'
+          description: Referenced entity as a navigable link, for access-point values.
+      description: |-
+        One rendered item operation of a proposed change — a diff row. `kind` = `ADD`
+        (`newValue` only), `UPDATE` (`oldValue` → `newValue`) or `DELETE`
+        (`oldValue` only); open set, a client renders an unknown kind as plain text.
+    AiProposalDecisionRequest:
+      type: object
+      required:
+        - changeKey
+      properties:
+        changeKey:
+          type: string
+          description: '`AiProposalChange.changeKey` of the change to decide.'
+      description: Addresses one proposed change of an exchange's proposals block.
     AiActivityLink:
       type: object
       required:
