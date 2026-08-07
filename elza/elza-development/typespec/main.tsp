@@ -267,6 +267,8 @@ model FsLink {
     nodeLabel: string;
     /** Breadcrumb path of the node from the root, joined with " / ". Empty when node could not be resolved. */
     nodePath?: string;
+    /** True when the current user can read this link's fund; controls whether the popover row is clickable. */
+    readable: boolean;
 }
 
 /**

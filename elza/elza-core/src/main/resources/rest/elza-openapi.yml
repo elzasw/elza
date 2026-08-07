@@ -894,16 +894,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/MultiFundActionRequest'
-  /admin/arrangement/missing-cached-nodes:
-    get:
-      operationId: Admin_syncNodeCache
-      description: Creating missing items in arr_cached_node
-      parameters: []
-      responses:
-        '200':
-          description: The request has succeeded.
-      tags:
-        - admin
   /admin/arrangement/invalid-inhibited-items:
     delete:
       operationId: Admin_deleteInvalidInhibitedItems
@@ -918,6 +908,16 @@ paths:
             application/json:
               schema:
                 type: integer
+      tags:
+        - admin
+  /admin/arrangement/missing-cached-nodes:
+    get:
+      operationId: Admin_syncNodeCache
+      description: Creating missing items in arr_cached_node
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
       tags:
         - admin
   /admin/info:
@@ -7901,6 +7901,7 @@ components:
         - fundId
         - fundName
         - nodeLabel
+        - readable
       properties:
         nodeId:
           type: integer
@@ -7915,6 +7916,9 @@ components:
         nodePath:
           type: string
           description: Breadcrumb path of the node from the root, joined with " / ". Empty when node could not be resolved.
+        readable:
+          type: boolean
+          description: True when the current user can read this link's fund; controls whether the popover row is clickable.
       description: File link data
     FsRepo:
       type: object

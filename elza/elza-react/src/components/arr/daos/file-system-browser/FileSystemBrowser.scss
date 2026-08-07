@@ -206,6 +206,15 @@
         &:hover {
             background: var(--shade-1);
         }
+
+        &--disabled {
+            cursor: not-allowed;
+            color: var(--text-secondary, #666);
+
+            &:hover {
+                background: none;
+            }
+        }
     }
 
     &__fund {
