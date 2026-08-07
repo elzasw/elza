@@ -70,6 +70,10 @@ const messages = defineMessages({
         id: 'arr.daos.fileSystem.links.title',
         defaultMessage: 'Přejít k jednotce popisu',
     },
+    linkForbidden: {
+        id: 'arr.daos.fileSystem.links.forbidden',
+        defaultMessage: 'Nemáte oprávnění k tomuto archivnímu souboru',
+    },
 });
 
 interface Props {
@@ -242,18 +246,28 @@ export const FileSystemBrowser = ({
                                 <ul className="fs-link-popover__list">
                                     {item.data.links.map((link: FsLink) => (
                                         <li key={`${link.fundId}-${link.nodeId}`}>
-                                            <button
-                                                type="button"
-                                                className="fs-link-popover__link"
-                                                title={link.nodePath}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    dispatch(routerNavigate(urlFundNode(link.fundId, undefined, link.nodeId)));
-                                                }}
-                                            >
-                                                <span className="fs-link-popover__fund">{link.fundName}</span>
-                                                <span className="fs-link-popover__node">{link.nodeLabel}</span>
-                                            </button>
+                                            {link.readable ? (
+                                                <button
+                                                    type="button"
+                                                    className="fs-link-popover__link"
+                                                    title={link.nodePath}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        dispatch(routerNavigate(urlFundNode(link.fundId, undefined, link.nodeId)));
+                                                    }}
+                                                >
+                                                    <span className="fs-link-popover__fund">{link.fundName}</span>
+                                                    <span className="fs-link-popover__node">{link.nodeLabel}</span>
+                                                </button>
+                                            ) : (
+                                                <div
+                                                    className="fs-link-popover__link fs-link-popover__link--disabled"
+                                                    title={intl.formatMessage(messages.linkForbidden)}
+                                                >
+                                                    <span className="fs-link-popover__fund">{link.fundName}</span>
+                                                    <span className="fs-link-popover__node">{link.nodeLabel}</span>
+                                                </div>
+                                            )}
                                         </li>
                                     ))}
                                 </ul>

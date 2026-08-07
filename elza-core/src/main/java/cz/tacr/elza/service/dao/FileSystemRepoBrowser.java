@@ -108,11 +108,13 @@ public class FileSystemRepoBrowser {
                     .collect(Collectors.toSet());
 
             Map<Integer, TreeNodeVO> nodeMap = Collections.emptyMap();
+            boolean readable = false;
             try {
                 ArrFund linkFund = arrangementService.getFund(linkFundId);
                 ArrFundVersion linkVersion = arrangementService.getOpenVersionByFund(linkFund);
                 List<TreeNodeVO> treeNodes = levelTreeCacheService.getNodesByIds(nodeIds, linkVersion);
                 nodeMap = treeNodes.stream().collect(Collectors.toMap(TreeNodeVO::getId, Function.identity()));
+                readable = true;
             } catch (Exception e) {
             	log.warn("Failed to resolve tree nodes for fund {}: {}", linkFundId, e.toString(), e);
             }
@@ -126,6 +128,7 @@ public class FileSystemRepoBrowser {
                 link.setNodeId(nodeId);
                 link.setFundId(linkFundId);
                 link.setFundName(fundName);
+                link.setReadable(readable);
 
                 TreeNodeVO tvo = nodeMap.get(nodeId);
                 if (tvo != null && tvo.getName() != null && !tvo.getName().isBlank()) {
