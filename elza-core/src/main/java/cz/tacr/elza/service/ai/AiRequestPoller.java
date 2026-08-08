@@ -127,6 +127,12 @@ public class AiRequestPoller {
     private final ExecutorService executor = Executors.newFixedThreadPool(4, runnable -> {
         Thread thread = new Thread(runnable, "ai-poller-" + THREAD_SEQ.incrementAndGet());
         thread.setDaemon(true);
+        // Backstop for anything the poll loop's own handler cannot catch (an
+        // Error, or a failure raised outside it). Submitted tasks bury their
+        // throwable in a Future nobody reads, so without this a dying poller
+        // thread leaves no trace whatsoever.
+        thread.setUncaughtExceptionHandler((t, e) ->
+                logger.error("AI poller thread {} died", t.getName(), e));
         return thread;
     });
 
@@ -218,10 +224,12 @@ public class AiRequestPoller {
      */
     private boolean failRequest(final Integer aiRequestId, final String errorCode, final String message) {
         Integer[] owner = new Integer[1];
-        AiRequestUpdateMessage updateMessage = transactionTemplate.execute(status -> {
+        // Settle first, render after (see applyChange): a request must never
+        // stay open because drawing its error card failed.
+        Boolean settled = transactionTemplate.execute(status -> {
             AiRequest request = aiRequestRepository.findById(aiRequestId).orElse(null);
             if (request == null || TERMINAL_STATES.contains(request.getState())) {
-                return null;
+                return Boolean.FALSE;
             }
             request.setState("error");
             request.setErrorCode(errorCode);
@@ -236,13 +244,13 @@ public class AiRequestPoller {
                     toJson(Map.of("errorCode", errorCode, "message", message)));
             aiConversationRepository.findById(request.getAiConversationId())
                     .ifPresent(conversation -> owner[0] = conversation.getUserId());
-            return requestViewMapper.buildUpdateMessage(request);
+            return Boolean.TRUE;
         });
-        if (updateMessage == null) {
+        if (!Boolean.TRUE.equals(settled)) {
             return false;
         }
         answerBuffer.clear(aiRequestId);
-        pushService.push(owner[0], updateMessage);
+        pushUpdate(aiRequestId, owner[0]);
         return true;
     }
 
@@ -325,6 +333,24 @@ public class AiRequestPoller {
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+        } catch (RuntimeException e) {
+            // Nothing else would ever report this. The loop runs on an executor
+            // whose Future nobody inspects, so an unchecked exception used to
+            // end the thread in complete silence: the request stayed open, no
+            // line was logged, and the user learned of it half an hour later as
+            // a TIMEOUT that named the wrong cause (2026-08-07). An unexpected
+            // failure must be loud AND must settle the exchange it abandoned.
+            logger.error("Polling of AI request {} failed unexpectedly; settling the exchange as failed",
+                         aiRequestId, e);
+            try {
+                failRequest(aiRequestId, "INTERNAL", "The exchange failed while being processed: "
+                        + (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()));
+            } catch (RuntimeException settleFailure) {
+                // Even the settle failed — log it rather than lose it; the
+                // restart sweep is then the last resort for this request.
+                logger.error("Settling AI request {} after the failure above also failed", aiRequestId,
+                             settleFailure);
+            }
         } finally {
             active.remove(aiRequestId);
         }
@@ -368,7 +394,7 @@ public class AiRequestPoller {
                 && Objects.equals(newProgressPercent, target.progressPercent)) {
             return; // long poll expired without a change
         }
-        AiRequestUpdateMessage message = transactionTemplate.execute(status -> {
+        transactionTemplate.execute(status -> {
             AiRequest request = aiRequestRepository.findById(aiRequestId).orElse(null);
             if (request == null || TERMINAL_STATES.contains(request.getState())) {
                 return null;
@@ -420,9 +446,39 @@ public class AiRequestPoller {
             if (TERMINAL_STATES.contains(newState)) {
                 answerBuffer.clear(aiRequestId);
             }
-            return requestViewMapper.buildUpdateMessage(request);
+            return null;
         });
-        pushService.push(target.userId(), message);
+        // The view is built AFTER the result is committed, never inside that
+        // transaction: rendering is derived, the provider's answer is
+        // authoritative. Mapping a result block runs real logic (the proposal
+        // block re-reads the level and validates every change against it), and
+        // when that ran inside the persisting transaction a mapper failure
+        // rolled the received result back — the exchange then hung until its
+        // lifetime backstop reported a misleading TIMEOUT (2026-08-07).
+        pushUpdate(aiRequestId, target.userId());
+    }
+
+    /**
+     * Builds the client snapshot of a request and pushes it to its owner. Never
+     * throws: a rendering failure is logged in full and the push is skipped —
+     * the persisted request is unaffected and the client's next fetch re-renders
+     * it. Failing to draw a result must not endanger the result.
+     */
+    private void pushUpdate(final Integer aiRequestId, final Integer userId) {
+        AiRequestUpdateMessage message;
+        try {
+            message = transactionTemplate.execute(status -> {
+                AiRequest request = aiRequestRepository.findById(aiRequestId).orElse(null);
+                return request == null ? null : requestViewMapper.buildUpdateMessage(request);
+            });
+        } catch (RuntimeException e) {
+            logger.error("Rendering the snapshot of AI request {} failed; the stored request is intact"
+                         + " and the push is skipped", aiRequestId, e);
+            return;
+        }
+        if (message != null) {
+            pushService.push(userId, message);
+        }
     }
 
     /**
@@ -479,18 +535,22 @@ public class AiRequestPoller {
         }
     }
 
-    /** Persists a tool event and pushes the updated snapshot (transparency-log update). */
+    /**
+     * Persists a tool event and pushes the updated snapshot (transparency-log
+     * update). The event is committed first and rendered afterwards, for the
+     * same reason as in {@link #applyChange}: a rendering failure must not roll
+     * back the recorded fact.
+     */
     private void recordToolEvent(final Integer aiRequestId, final PollTarget target,
                                  final String eventType, final String data) {
-        AiRequestUpdateMessage message = transactionTemplate.execute(status -> {
+        transactionTemplate.execute(status -> {
             AiRequest request = aiRequestRepository.findById(aiRequestId).orElse(null);
-            if (request == null) {
-                return null;
+            if (request != null) {
+                addEvent(request, eventType, data);
             }
-            addEvent(request, eventType, data);
-            return requestViewMapper.buildUpdateMessage(request);
+            return null;
         });
-        pushService.push(target.userId(), message);
+        pushUpdate(aiRequestId, target.userId());
     }
 
     private void addEvent(final AiRequest request, final String eventType, final String data) {
