@@ -90,6 +90,7 @@ import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.websocket.UserEventPushService;
+import jakarta.persistence.EntityManager;
 
 /**
  * Server side of the AI node-update proposals ({@code elza.nodeUpdateProposals}
@@ -126,6 +127,9 @@ public class AiProposalService {
             DataType.STRING, DataType.TEXT, DataType.FORMATTED_TEXT, DataType.INT,
             DataType.DECIMAL, DataType.DATE, DataType.UNITDATE, DataType.UNITID,
             DataType.ENUM, DataType.RECORD_REF);
+
+    @Autowired
+    private EntityManager entityManager;
 
     @Autowired
     private AiRequestRepository aiRequestRepository;
@@ -570,7 +574,20 @@ public class AiProposalService {
         }
     }
 
-    /** Resolves the spec for a type that uses specifications; ignores a spec supplied for one that doesn't. */
+    /**
+     * Resolves the spec for a type that uses specifications; ignores a spec
+     * supplied for one that doesn't.
+     *
+     * <p>Validation runs against the static-data catalog, but what is returned
+     * is a <b>managed reference</b>, because the catalog hands out
+     * {@link cz.tacr.elza.core.data.CachedItemSpec} — a copy of
+     * {@link RulItemSpec} that is not a mapped entity. Assigning that copy to an
+     * item compiles (it is a subclass) and then fails at the next flush with
+     * "Unable to locate persister: CachedItemSpec", from whichever query happens
+     * to trigger the flush rather than from the assignment. The same unwrapping
+     * is done wherever else description items are written — see
+     * {@code DescriptionItemService}: "cannot send cached object to the DB".
+     */
     private RulItemSpec resolveSpec(final ItemType itemType, final ProposedItemValue newItem) {
         if (!Boolean.TRUE.equals(itemType.getEntity().getUseSpecification())) {
             return null;
@@ -583,7 +600,7 @@ public class AiProposalService {
             throw new BlockedException("Neplatná specifikace „" + newItem.getSpec()
                     + "“ prvku „" + displayName(itemType) + "“.");
         }
-        return spec;
+        return entityManager.getReference(RulItemSpec.class, spec.getItemSpecId());
     }
 
     /** Builds the item's new value for the type's data kind (the v1 proposable scope). */
