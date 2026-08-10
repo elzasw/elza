@@ -143,6 +143,7 @@ export interface UserSettingsData {
     showDebugInfo?: boolean;
     showExperimentalFeatures?: boolean;
     aiFullWidth?: boolean;
+    outputColumnLayout?: boolean;
     institutionViewMode?: 'grid' | 'list';
     institutionSortField?: 'name' | 'internalCode';
     institutionSortDir?: 'asc' | 'desc';

@@ -10,6 +10,7 @@ import { useUserSettings } from "contexts/user";
 import { AddDescItemTypeForm } from "components/arr/item-form/AddDescItemType";
 import { ItemFormBody } from "components/arr/item-form/ItemFormBody";
 import { messages } from "components/arr/item-form/messages";
+import { useStyles } from "components/arr/item-form/styles";
 import { useOutputFormData } from "./hooks";
 
 interface Props {
@@ -22,6 +23,7 @@ export function OutputEdit({ outputId }: Props) {
     const dispatch = useAppThunkDispatch();
     const { formatMessage } = useIntl();
     const { settings } = useUserSettings();
+    const styles = useStyles();
 
     const {
         formItems,
@@ -90,27 +92,29 @@ export function OutputEdit({ outputId }: Props) {
     }
 
     return (
-        <div style={{ width: "100%" }}>
+        <div className={styles.nodeEditForm} style={{ width: "100%" }}>
             {hasPossibleTypes && (
-                <div style={{ margin: "4px 0 0 4px" }}>
+                <div className={styles.toolbarSticky}>
                     <Button appearance="primary" icon={<AddRegular />} onClick={handleAddDescItemType}>
                         {formatMessage(messages.addDescItem)}
                     </Button>
                 </div>
             )}
-            <ItemFormBody
-                formItems={formItems}
-                forcedFormItems={forcedFormItems}
-                addedFormItems={addedFormItems}
-                itemTypes={itemTypes}
-                columnCount={settings.groupColumns || 1}
-                addEmptyDescItem={addEmptyItem}
-                deleteDescItem={deleteItem}
-                createDescItem={createItem}
-                updateDescItem={updateItem}
-                hideCopyButtons={true}
-                renderExtraActions={renderTypeActions}
-            />
+            <div style={{ padding: settings.compact ? "4px 8px" : "8px" }}>
+                <ItemFormBody
+                    formItems={formItems}
+                    forcedFormItems={forcedFormItems}
+                    addedFormItems={addedFormItems}
+                    itemTypes={itemTypes}
+                    columnCount={settings.groupColumns || 1}
+                    addEmptyDescItem={addEmptyItem}
+                    deleteDescItem={deleteItem}
+                    createDescItem={createItem}
+                    updateDescItem={updateItem}
+                    hideCopyButtons={true}
+                    renderExtraActions={renderTypeActions}
+                />
+            </div>
         </div>
     );
 }

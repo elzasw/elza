@@ -24,6 +24,10 @@ const messages = defineMessages({
         id: 'userSettings.display.showExperimentalFeatures',
         defaultMessage: 'Zobrazit experimentální funkce',
     },
+    outputColumnLayout: {
+        id: 'userSettings.display.outputColumnLayout',
+        defaultMessage: 'Sloupcové rozvržení detailu výstupu',
+    },
 });
 
 export default function DisplaySettings() {
@@ -57,6 +61,13 @@ export default function DisplaySettings() {
                         label={formatMessage(messages.darkMode)}
                         checked={!!settings.darkMode}
                         onChange={(e) => update({ darkMode: e.target.checked })}
+                    />
+                    <Form.Check
+                        type="checkbox"
+                        id="outputColumnLayout"
+                        label={formatMessage(messages.outputColumnLayout)}
+                        checked={!!settings.outputColumnLayout}
+                        onChange={(e) => update({ outputColumnLayout: e.target.checked })}
                     />
                     <Form.Check
                         type="checkbox"
