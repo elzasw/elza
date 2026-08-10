@@ -49,15 +49,15 @@ export const ModalDialogWrapper = ({
             show={true}
             onHide={handleHide}
         >
-            <FluentProvider style={{ flex: 1, display: "block"}}>
+            <FluentProvider style={{ flex: 1, display: "flex", flexDirection: "column"}}>
 
                 {title !== null && (
-                    <Modal.Header closeButton>
+                    <Modal.Header closeButton style={{flexShrink: 0}}>
                         <Modal.Title>{title}</Modal.Title>
                     </Modal.Header>
                 )}
 
-                <div ref={modalBody} className="modal-body-container">
+                <div style={{flexGrow: 1}} ref={modalBody} className="modal-body-container">
                     {children}
                 </div>
             </FluentProvider>
