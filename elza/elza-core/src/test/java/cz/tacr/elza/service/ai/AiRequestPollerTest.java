@@ -228,7 +228,8 @@ class AiRequestPollerTest {
      * check blew up, every completion push was skipped and the panel hung on
      * its progress state until a manual reload re-rendered on an authenticated
      * request thread (2026-08-10). The render must therefore run under the
-     * conversation owner's context, and the pooled thread must be left clean.
+     * conversation owner's context, and the pooled thread's previous context
+     * must be back afterwards — the owner must not leak into later work.
      */
     @Test
     void theSnapshotIsRenderedAsTheOwnerAndTheThreadIsLeftClean() {
@@ -246,13 +247,23 @@ class AiRequestPollerTest {
             return new AiRequestUpdateMessage(11, null);
         });
 
-        ReflectionTestUtils.invokeMethod(poller, "failRequest", 11, "TIMEOUT",
-                "The AI provider stopped responding.");
+        // Plant a known context: the suite shares the JUnit thread and other
+        // tests may have left an authentication behind — the contract under
+        // test is "whatever was there before is back afterwards".
+        SecurityContext preexisting = SecurityContextHolder.createEmptyContext();
+        preexisting.setAuthentication(new UsernamePasswordAuthenticationToken("previous", null, null));
+        SecurityContextHolder.setContext(preexisting);
+        try {
+            ReflectionTestUtils.invokeMethod(poller, "failRequest", 11, "TIMEOUT",
+                    "The AI provider stopped responding.");
 
-        assertThat(observedAtRender).containsExactly(ownerContext);
-        verify(pushService).push(eq(1100), any());
-        // No trace of the owner left on the pooled thread.
-        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+            assertThat(observedAtRender).containsExactly(ownerContext);
+            verify(pushService).push(eq(1100), any());
+            // No trace of the owner left on the pooled thread.
+            assertThat(SecurityContextHolder.getContext()).isSameAs(preexisting);
+        } finally {
+            SecurityContextHolder.clearContext();
+        }
     }
 
     /**
