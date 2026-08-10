@@ -40,7 +40,6 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDao.DaoType;
 import cz.tacr.elza.domain.ArrDaoFile;
-import cz.tacr.elza.domain.ArrDaoFileGroup;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDaoPackage;
 import cz.tacr.elza.domain.ArrDaoRequest;
@@ -59,7 +58,6 @@ import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.DigitizationCode;
 import cz.tacr.elza.exception.codes.PackageCode;
-import cz.tacr.elza.repository.DaoFileGroupRepository;
 import cz.tacr.elza.repository.DaoFileRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoPackageRepository;
@@ -130,9 +128,6 @@ public class DaoSyncService {
 
     @Autowired
     private DaoFileRepository daoFileRepository;
-
-    @Autowired
-    private DaoFileGroupRepository daoFileGroupRepository;
 
     @Autowired
     DescItemRepository descItemRepository;
@@ -566,9 +561,6 @@ public class DaoSyncService {
             return;
         }
 
-        Map<String, ArrDaoFileGroup> groupCache = daoFileGroupRepository.findByCodes(relatedFileGroupList.stream().map(group -> group.getIdentifier()).collect(toList()))
-                .stream().collect(toMap(group -> group.getCode(), group -> group));
-
         for (Folder relatedFileGroup : relatedFileGroupList) {
 
             updateFiles(relatedFileGroup.getFiles());
@@ -668,27 +660,6 @@ public class DaoSyncService {
         } else {
             return DaoType.ATTACHMENT;
         }
-    }
-
-    public ArrDaoFileGroup createArrDaoFileGroup(ArrDao arrDao, Folder relatedFileGroup) {
-        if (StringUtils.isBlank(relatedFileGroup.getIdentifier())) {
-            throw new BusinessException("Nebylo vyplněno povinné pole identifikátoru", DigitizationCode.NOT_FILLED_EXTERNAL_IDENTIRIER)
-                    .set("relatedFileGroup.identifier", relatedFileGroup.getIdentifier());
-        }
-        return daoServiceInternal.createDaoFileGroup(relatedFileGroup.getIdentifier(),
-                                                     relatedFileGroup.getLabel(),
-                                                     arrDao);
-    }
-
-    public ArrDaoFile createArrDaoFileGroup(ArrDaoFileGroup arrDaoFileGroup, File file) {
-        if (StringUtils.isBlank(file.getIdentifier())) {
-            throw new BusinessException("Nebylo vyplněno povinné pole identifikátoru", DigitizationCode.NOT_FILLED_EXTERNAL_IDENTIRIER)
-                    .set("file.identifier", file.getIdentifier());
-        }
-        ArrDaoFile arrDaoFile = new ArrDaoFile();
-        arrDaoFile.setCode(file.getIdentifier());
-        arrDaoFile.setDaoFileGroup(arrDaoFileGroup);
-        return updateArrDaoFile(arrDaoFile, file);
     }
 
     public ArrDaoFile createDaoFile(ArrDao arrDao, File file) {

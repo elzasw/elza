@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -88,7 +89,6 @@ import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoFile;
-import cz.tacr.elza.domain.ArrDaoFileGroup;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDaoLinkRequest;
 import cz.tacr.elza.domain.ArrDaoPackage;
@@ -233,9 +233,6 @@ public class ClientFactoryVO {
     private RequestQueueItemRepository requestQueueItemRepository;
 
     @Autowired
-    private DaoFileRepository daoFileRepository;
-
-    @Autowired
     private DaoLinkRepository daoLinkRepository;
 
     @Autowired
@@ -243,9 +240,6 @@ public class ClientFactoryVO {
 
     @Autowired
     private DaoRequestDaoRepository daoRequestDaoRepository;
-
-    @Autowired
-    private DaoFileGroupRepository daoFileGroupRepository;
 
     @Autowired
     private ConfigView configView;
@@ -2267,8 +2261,10 @@ public class ClientFactoryVO {
             return Collections.emptyList();
         }
         List<ArrDaoVO> voList = new ArrayList<>(arrDaoList.size());
+        // synthetic ids for live-listed filesystem files, unique within this response
+        AtomicInteger fsFileIdSeq = new AtomicInteger();
         for (ArrDao arrDao : arrDaoList) {
-            voList.add(createDao(contextPath, arrDao, detail, version, daoLinkMap));
+            voList.add(createDao(contextPath, arrDao, detail, version, daoLinkMap, fsFileIdSeq));
         }
         return voList;
     }
@@ -2305,7 +2301,8 @@ public class ClientFactoryVO {
     private ArrDaoVO createDao(String contextPath,
                                final ArrDao dao, final boolean detail,
                                final ArrFundVersion version,
-                               final Map<Integer, ArrDaoLink> daoLinkMap) {
+                               final Map<Integer, ArrDaoLink> daoLinkMap,
+                               final AtomicInteger fsFileIdSeq) {
         // read scenarios
         Items items = daoSyncService.unmarshalItemsFromAttributes(dao);
         List<String> scenarios = null;
@@ -2329,27 +2326,19 @@ public class ClientFactoryVO {
         vo.setUrl(url);
 
         if (detail) {
-            final List<ArrDaoFile> daoFileList = daoFileRepository.findByDaoAndDaoFileGroupIsNull(dao);
-            final List<ArrDaoFileVO> daoFileVOList = daoFileList.stream().map(f -> createDaoFile(contextPath, f))
-                    .collect(Collectors.toList());
-            vo.addAllFile(daoFileVOList);
-
-            final List<ArrDaoFileGroup> daoFileGroups = daoFileGroupRepository.findByDaoOrderByCodeAsc(dao);
-            final List<ArrDaoFileGroupVO> daoFileGroupVOList = new ArrayList<>();
-            for (ArrDaoFileGroup daoFileGroup : daoFileGroups) {
-                final ArrDaoFileGroupVO daoFileGroupVO = ArrDaoFileGroupVO.newInstance(daoFileGroup);
-                final List<ArrDaoFile> arrDaoFileList = daoFileRepository.findByDaoAndDaoFileGroup(dao, daoFileGroup);
-                final List<ArrDaoFileVO> groupDaoFileVOList = arrDaoFileList.stream()
-                        .map(f -> createDaoFile(contextPath, f))
-                        .collect(Collectors.toList());
-                daoFileGroupVO.setFiles(groupDaoFileVOList);
-                daoFileGroupVOList.add(daoFileGroupVO);
+            final List<ArrDaoFile> daoFileList = daoService.getDaoFiles(dao);
+            for (ArrDaoFile daoFile : daoFileList) {
+                ArrDaoFileVO fileVo = createDaoFile(contextPath, daoFile);
+                if (fileVo.getId() == null) {
+                    // live-listed filesystem files have no persistent id; assign a
+                    // negative wire id, unique within this response, so the client
+                    // can address the row without colliding with persisted ids
+                    fileVo.setId(-fsFileIdSeq.incrementAndGet());
+                }
+                vo.addFile(fileVo);
             }
-
-            vo.addAllFileGroup(daoFileGroupVOList);
         } else {
-            vo.setFileCount(daoFileRepository.countByDaoAndDaoFileGroupIsNull(dao));
-            vo.setFileGroupCount(daoFileGroupRepository.countByDao(dao));
+            vo.setFileCount(daoService.countDaoFiles(dao));
         }
         return vo;
     }

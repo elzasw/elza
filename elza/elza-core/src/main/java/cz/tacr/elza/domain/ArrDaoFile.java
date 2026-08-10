@@ -40,10 +40,6 @@ public class ArrDaoFile {
     @Column(name = "daoId", nullable = false, insertable = false, updatable = false)
     private Integer daoId;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrDaoFileGroup.class)
-    @JoinColumn(name = "daoFileGroupId")
-    private ArrDaoFileGroup daoFileGroup;
-
     @Column(nullable = false, length = StringLength.LENGTH_250)
     private String checksum;
 
@@ -114,14 +110,6 @@ public class ArrDaoFile {
             return dao.getDaoId();
         }
         return daoId;
-    }
-
-    public ArrDaoFileGroup getDaoFileGroup() {
-        return daoFileGroup;
-    }
-
-    public void setDaoFileGroup(final ArrDaoFileGroup daoFileGroup) {
-        this.daoFileGroup = daoFileGroup;
     }
 
     public String getChecksum() {

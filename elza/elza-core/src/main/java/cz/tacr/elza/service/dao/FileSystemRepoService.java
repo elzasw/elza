@@ -3,35 +3,21 @@ package cz.tacr.elza.service.dao;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLConnection;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.ElzaTools;
-import cz.tacr.elza.controller.vo.CreateDaoResult;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDao.DaoType;
-import cz.tacr.elza.domain.ArrDaoFile;
-import cz.tacr.elza.domain.ArrDaoFileGroup;
 import cz.tacr.elza.domain.ArrDaoPackage;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFund;
@@ -44,8 +30,6 @@ import cz.tacr.elza.service.ExternalSystemService;
 
 @Service
 public class FileSystemRepoService {
-
-	private static final Logger log = LoggerFactory.getLogger(FileSystemRepoService.class);
 
     public static String FILE_URI_PREFIX = "file://";
 
@@ -61,10 +45,16 @@ public class FileSystemRepoService {
     @Autowired
     private ExternalSystemService externalSystemService;
 
-    public CreateDaoResult createDao(ArrDigitalRepository digiRepo, ArrFundVersion fundVersion, String itemRelatPath) {
+    /**
+     * Creates (or reuses) the {@link ArrDao} anchor for a repository-relative path.
+     * The DAO carries only the path in its {@code code}; file content is read live
+     * from the repository, no per-file entities are persisted.
+     */
+    public ArrDao createDao(ArrDigitalRepository digiRepo, ArrFundVersion fundVersion, String itemRelatPath) {
     	itemRelatPath = normalizeRelatPath(itemRelatPath);
         Path repoPath = getPath(digiRepo, fundVersion.getFund());
-        Path filePath = resolvePath(repoPath, itemRelatPath);
+        // containment check only; the resolved path itself is not stored
+        resolvePath(repoPath, itemRelatPath);
 
         ArrDigitalRepository digiRep = externalSystemService.getDigitalRepository(digiRepo.getExternalSystemId());
         // check if package exists
@@ -92,15 +82,7 @@ public class FileSystemRepoService {
             dao = daoServiceInternal.createDao(daoPackage, itemRelatPath, itemRelatPath, null, DaoType.ATTACHMENT);
             dao = daoServiceInternal.persistDao(dao);
         }
-
-        // sync files and folders
-        List<String> skipped;
-        try {
-        	skipped = syncFilesAndFolders(dao, repoPath, filePath);
-        } catch (IOException e) {
-            throw new BusinessException("Failed to sync path: " + filePath, e, BaseCode.INVALID_STATE);
-        }
-        return new CreateDaoResult(dao, skipped);
+        return dao;
     }
 
     /**
@@ -114,141 +96,6 @@ public class FileSystemRepoService {
 
     public static String getRelatPath(Path rootPath, Path itemPath) {
         return normalizeRelatPath(rootPath.relativize(itemPath).toString());
-    }
-
-    private List<String> syncFilesAndFolders(ArrDao dao, Path repoPath, Path srcItemPath) throws IOException {
-        List<ArrDaoFile> daoFiles = daoServiceInternal.getFilesByDao(dao);
-        List<ArrDaoFileGroup> daoFileGroups = daoServiceInternal.getFileGroupsByDao(dao);
-
-        Map<String, ArrDaoFile> daoFilesMap = daoFiles.stream()
-                .collect(Collectors.toMap(ArrDaoFile::getCode, Function.identity(),
-                        (a, b) -> { throw new BusinessException(
-                                "Duplicate ArrDaoFile.code: " + a.getCode(), BaseCode.INVALID_STATE)
-                                .set("daoId", a.getDao().getDaoId()); }));
-
-        Map<String, ArrDaoFileGroup> daoFileGroupsMap = daoFileGroups.stream()
-                .collect(Collectors.toMap(ArrDaoFileGroup::getCode, Function.identity(),
-                        (a, b) -> { throw new BusinessException(
-                                "Duplicate ArrDaoFileGroup.code: " + a.getCode(), BaseCode.INVALID_STATE)
-                                .set("daoId", a.getDao().getDaoId()); }));
-
-        List<Path> createFiles = new ArrayList<>();
-        Map<String, ArrDaoFile> existingFiles = new HashMap<>();
-        List<Path> createFileGroups = new ArrayList<>();
-        Map<String, ArrDaoFileGroup> existingFileGroups = new HashMap<>();
-
-        // Skip root folder
-        Set<Path> skipItems;
-        if (Files.isDirectory(srcItemPath)) {
-            skipItems = Collections.singleton(srcItemPath);
-        } else {
-            skipItems = Collections.emptySet();
-        }
-
-        List<String> skipped = new ArrayList<>();
-        Files.walkFileTree(srcItemPath, new SimpleFileVisitor<Path>() {
-            @Override
-            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
-                if (skipItems.contains(dir)) {
-                    return FileVisitResult.CONTINUE;
-                }
-                // Broken junction/symlink on Windows shows up as a "directory" here —
-                // but opening it will fail. Follow-links check tells us whether the
-                // target actually exists.
-                if (!Files.isDirectory(dir)) {
-                    log.warn("Skipping non-traversable directory-like entry: {}", dir);
-                    skipped.add(getRelatPath(repoPath, dir));
-                    return FileVisitResult.SKIP_SUBTREE;
-                }
-                String relatName = getRelatPath(repoPath, dir);
-                ArrDaoFileGroup daoFileGroup = daoFileGroupsMap.remove(relatName);
-                if (daoFileGroup != null) {
-                    existingFileGroups.put(relatName, daoFileGroup);
-                } else {
-                    createFileGroups.add(dir);
-                }
-                return FileVisitResult.CONTINUE;
-            }
-
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-                if (attrs.isRegularFile()) {
-                    String relatName = getRelatPath(repoPath, file);
-                    ArrDaoFile daoFile = daoFilesMap.remove(relatName);
-                    if (daoFile != null) {
-                        updateDaoFile(daoFile, file);
-                        daoFile = daoServiceInternal.persistDaoFile(daoFile);
-                        existingFiles.put(relatName, daoFile);
-                    } else {
-                        createFiles.add(file);
-                    }
-                } else {
-                    // Broken symlinks, device/pipe files, unreadable reparse points.
-                    log.warn("Skipping unrecognized filesystem entry: {}", file);
-                    skipped.add(getRelatPath(repoPath, file));
-                }
-                return FileVisitResult.CONTINUE;
-            }
-
-            @Override
-            public FileVisitResult visitFileFailed(Path file, IOException exc) {
-                log.warn("Skipping unreadable filesystem entry: {}: {}", file, exc.toString());
-                skipped.add(getRelatPath(repoPath, file));
-                return FileVisitResult.CONTINUE;
-            }
-        });
-
-        // drop old files
-        daoServiceInternal.deleteDaoFiles(daoFilesMap.values());
-        // drop old groups
-        daoServiceInternal.deleteDaoFileGroups(daoFileGroupsMap.values());
-
-        // create missing folders
-        if(CollectionUtils.isNotEmpty(createFileGroups)) {
-            createFileGroups.sort((p1, p2) -> p1.compareTo(p2) );
-            for (Path fileGroupPath : createFileGroups) {
-                String relatPath = getRelatPath(repoPath, fileGroupPath);
-                ArrDaoFileGroup dfg = daoServiceInternal.createDaoFileGroup(relatPath, relatPath, dao);
-                existingFileGroups.put(relatPath, dfg);
-            }
-        }
-        // create files
-        if (CollectionUtils.isNotEmpty(createFiles)) {
-            for (Path fp : createFiles) {
-                String relatPath = getRelatPath(repoPath, fp);
-                ArrDaoFileGroup parentFileGroup = null;
-                Path parentPath = fp.getParent();
-                // do not create skipped items
-                if (!fp.equals(srcItemPath) && !skipItems.contains(parentPath)) {
-
-                    // find parent group
-                    String parentName = getRelatPath(repoPath, parentPath);
-                    parentFileGroup = existingFileGroups.get(parentName);
-                    if (parentFileGroup == null) {
-                        throw new BusinessException(
-                                "Missing parent group: " + parentName + " for item: " + relatPath,
-                                BaseCode.INVALID_STATE);
-                    }
-                }
-                String fileName = fp.getFileName().toString();
-                ArrDaoFile dff = daoServiceInternal.createDaoFile(relatPath, fileName, parentFileGroup, dao);
-                updateDaoFile(dff, fp);
-                dff = daoServiceInternal.persistDaoFile(dff);
-                existingFiles.put(relatPath, dff);
-            }
-        }
-        return skipped;
-    }
-
-    private void updateDaoFile(ArrDaoFile daoFile, Path itemPath) {
-        try {
-            long fileSize = Files.size(itemPath);
-            daoFile.setSize(fileSize);
-        } catch (IOException e) {
-            throw new BusinessException("Failed to get size, path: " + itemPath, e, BaseCode.INVALID_STATE);
-        }
-        String mimetype = getMimetype(itemPath);
-        daoFile.setMimetype(mimetype);
     }
 
     public String getMimetype(Path fp) {

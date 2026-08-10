@@ -1,5 +1,6 @@
 package cz.tacr.elza.service;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,6 +60,7 @@ import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.service.DaoSyncService.DaoDesctItemProvider;
 import cz.tacr.elza.service.FundLevelService.AddLevelDirection;
 import cz.tacr.elza.service.dao.DaoServiceInternal;
+import cz.tacr.elza.service.dao.FileSystemRepoBrowser;
 import cz.tacr.elza.service.dao.FileSystemRepoService;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventIdNodeIdInVersion;
@@ -123,6 +125,9 @@ public class DaoService {
 
     @Autowired
     private FileSystemRepoService fileSystemRepoService;
+
+    @Autowired
+    private FileSystemRepoBrowser fileSystemRepoBrowser;
 
     @Autowired
     private ApplicationContext appCtx;
@@ -462,10 +467,6 @@ public class DaoService {
             final List<ArrDaoFile> daoFileList = daoServiceInternal.getFilesByDao(arrDao);
             daoServiceInternal.deleteDaoFiles(daoFileList);
 
-            // smazat arr_dao_file_group
-            final List<ArrDaoFileGroup> daoFileGroupList = daoServiceInternal.getFileGroupsByDao(arrDao);
-            daoServiceInternal.deleteDaoFileGroups(daoFileGroupList);
-
             // smazat arr_dao_link_request
             final List<ArrDaoLinkRequest> arrDaoLinkRequestList = daoLinkRequestRepository.findByDao(arrDao);
             if (!arrDaoLinkRequestList.isEmpty()) {
@@ -733,6 +734,64 @@ public class DaoService {
      */
     public List<ArrDaoFile> findDaoFiles(List<ArrDao> daos) {
         return daoFileRepository.findByDaoIn(daos);
+    }
+
+    /**
+     * Files of one DAO. Filesystem DAOs are listed live from the repository
+     * (recursive under the DAO's path, capped at
+     * {@link FileSystemRepoBrowser#DAO_FILE_LIMIT}) as transient entities
+     * without a persistent id; other repository types read persisted
+     * arr_dao_file rows.
+     */
+    public List<ArrDaoFile> getDaoFiles(ArrDao dao) {
+        if (isFileSystemDao(dao)) {
+            List<ArrDaoFile> result = new ArrayList<>();
+            for (FileSystemRepoBrowser.FsDaoFile entry : listFsDaoFiles(dao)) {
+                ArrDaoFile daoFile = new ArrDaoFile();
+                daoFile.setDao(dao);
+                daoFile.setCode(entry.relatPath());
+                daoFile.setFileName(entry.fileName());
+                daoFile.setSize(entry.size());
+                daoFile.setMimetype(entry.mimetype());
+                result.add(daoFile);
+            }
+            return result;
+        }
+        return daoFileRepository.findByDao(dao);
+    }
+
+    /**
+     * Number of files of one DAO, counted the same way {@link #getDaoFiles}
+     * lists them (for filesystem DAOs the count is subject to the same cap).
+     */
+    public long countDaoFiles(ArrDao dao) {
+        if (isFileSystemDao(dao)) {
+            return listFsDaoFiles(dao).size();
+        }
+        return daoFileRepository.countByDao(dao);
+    }
+
+    private boolean isFileSystemDao(ArrDao dao) {
+        return fileSystemRepoService.isFileSystemRepository(dao.getDaoPackage().getDigitalRepository());
+    }
+
+    /**
+     * Live listing of a filesystem DAO's files. An unavailable repository or a
+     * vanished path yields an empty list so one broken DAO does not fail the
+     * caller's whole response.
+     */
+    private List<FileSystemRepoBrowser.FsDaoFile> listFsDaoFiles(ArrDao dao) {
+        ArrDaoPackage daoPackage = dao.getDaoPackage();
+        try {
+            return fileSystemRepoBrowser.listDaoFiles(daoPackage.getDigitalRepository(),
+                                                      daoPackage.getFund(),
+                                                      dao.getCode(),
+                                                      FileSystemRepoBrowser.DAO_FILE_LIMIT);
+        } catch (IOException | BusinessException e) {
+            logger.warn("Failed to list files of filesystem DAO {} ({}): {}",
+                        dao.getDaoId(), dao.getCode(), e.toString());
+            return Collections.emptyList();
+        }
     }
 
     @Transactional

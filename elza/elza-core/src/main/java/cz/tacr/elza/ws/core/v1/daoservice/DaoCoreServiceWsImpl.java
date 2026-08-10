@@ -738,21 +738,8 @@ public class DaoCoreServiceWsImpl {
 
             FolderGroup fg = xmlDao.getFolders();
             if (fg != null && fg.getFolder().size() > 0) {
-                // Folders are not fully implemented
+                // Folders are not supported; files arrive as a flat list.
                 throw new SystemException("Folders in DAOs are not supported", DigitizationCode.DAO_NOT_FOUND);
-
-                /*
-                for (Folder folder : fg.getFolder()) {
-
-                    ArrDaoFileGroup arrDaoFileGroup = daoSyncService.createArrDaoFileGroup(dbDao,
-                                                                                           folder);
-
-                    if (folder.getFiles() != null) {
-                        for (File file : folder.getFiles().getFile()) {
-                            daoSyncService.createArrDaoFileGroup(arrDaoFileGroup, file);
-                        }
-                    }
-                }*/
             }
 
             List<File> xmlFileList = xmlDao.getFiles()!=null?

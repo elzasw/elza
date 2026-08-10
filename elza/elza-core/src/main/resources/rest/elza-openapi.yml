@@ -7834,19 +7834,11 @@ components:
       type: object
       required:
         - daoLinkId
-        - skippedEntries
       properties:
         daoLinkId:
           type: integer
           format: int32
           description: ID of the newly created dao-link
-        skippedEntries:
-          type: array
-          items:
-            type: string
-          description: |-
-            Repository-relative paths of entries that were skipped during sync
-            (broken symlinks, device files, unreadable reparse points). Empty when nothing was skipped.
       description: Create dao link result
     FsItem:
       type: object

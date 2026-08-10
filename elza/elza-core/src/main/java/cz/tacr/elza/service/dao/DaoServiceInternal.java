@@ -11,11 +11,9 @@ import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDao.DaoType;
 import cz.tacr.elza.domain.ArrDaoBatchInfo;
 import cz.tacr.elza.domain.ArrDaoFile;
-import cz.tacr.elza.domain.ArrDaoFileGroup;
 import cz.tacr.elza.domain.ArrDaoPackage;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.repository.DaoFileGroupRepository;
 import cz.tacr.elza.repository.DaoFileRepository;
 import cz.tacr.elza.repository.DaoPackageRepository;
 import cz.tacr.elza.repository.DaoRepository;
@@ -31,9 +29,6 @@ public class DaoServiceInternal {
 
     @Autowired
     private DaoFileRepository daoFileRepository;
-
-    @Autowired
-    private DaoFileGroupRepository daoFileGroupRepository;
 
     public ArrDaoPackage createDaoPackage(ArrFund fund,
                                           ArrDigitalRepository repository,
@@ -68,13 +63,9 @@ public class DaoServiceInternal {
         return daoFiles;
     }
 
-    public List<ArrDaoFileGroup> getFileGroupsByDao(ArrDao dao) {
-        return daoFileGroupRepository.findByDaoOrderByCodeAsc(dao);
-    }
-
     /**
      * Delete dao files from DB
-     * 
+     *
      * @param daoFiles
      */
     public void deleteDaoFiles(Collection<ArrDaoFile> daoFiles) {
@@ -83,35 +74,5 @@ public class DaoServiceInternal {
         }
         daoFileRepository.deleteAll(daoFiles);
 
-    }
-
-    public void deleteDaoFileGroups(Collection<ArrDaoFileGroup> daoFileGroups) {
-        if (CollectionUtils.isEmpty(daoFileGroups)) {
-            return;
-        }
-        daoFileGroupRepository.deleteAll(daoFileGroups);
-    }
-
-    public ArrDaoFileGroup createDaoFileGroup(String code, String label, ArrDao dao) {
-        ArrDaoFileGroup daoFileGroup = new ArrDaoFileGroup();
-        daoFileGroup.setCode(code);
-        daoFileGroup.setLabel(label);
-        daoFileGroup.setDao(dao);
-
-        return daoFileGroupRepository.save(daoFileGroup);
-    }
-
-    public ArrDaoFile createDaoFile(String code, String fileName, ArrDaoFileGroup parentFileGroup,
-                                    ArrDao dao) {
-        ArrDaoFile daoFile = new ArrDaoFile();
-        daoFile.setCode(code);
-        daoFile.setDao(dao);
-        daoFile.setDaoFileGroup(parentFileGroup);
-        daoFile.setFileName(fileName);
-        return daoFile;
-    }
-
-    public ArrDaoFile persistDaoFile(final ArrDaoFile daoFile) {
-        return daoFileRepository.save(daoFile);
     }
 }
