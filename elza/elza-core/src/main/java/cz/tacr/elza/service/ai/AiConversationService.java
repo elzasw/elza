@@ -178,7 +178,12 @@ public class AiConversationService {
         aiConversationRepository.save(conversation);
 
         String profile = vo.getProfile() != null ? vo.getProfile() : last.getProfile();
-        submitExchange(conversation, externalSystem, last.getTaskType(), profile,
+        // A follow-up may switch the task type (the "fix this finding" handoff
+        // submits elza.enhanceDescription into a revision thread); the exchange
+        // still continues the conversation — parentTaskId stays the previous
+        // exchange's task, and the provider chains it regardless of type.
+        String taskType = vo.getTaskType() != null ? vo.getTaskType() : last.getTaskType();
+        submitExchange(conversation, externalSystem, taskType, profile,
                        vo.getUserInstructions(), vo.getParameters(), context, last.getTaskUid());
         return getDetail(conversation, externalSystem);
     }
