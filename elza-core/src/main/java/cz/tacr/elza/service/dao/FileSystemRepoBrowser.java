@@ -2,8 +2,8 @@ package cz.tacr.elza.service.dao;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
-import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.Collator;
 import java.time.ZoneOffset;
@@ -174,9 +174,22 @@ public class FileSystemRepoBrowser {
                         counter++;
                         continue;
                     }
-                    BasicFileAttributes attrs = Files
-                            .getFileAttributeView(item, BasicFileAttributeView.class)
-                            .readAttributes();
+                    BasicFileAttributes attrs;
+                    try {
+                        attrs = Files.readAttributes(item, BasicFileAttributes.class);
+                    } catch (IOException e) {
+                        // Broken symlink/junction on Windows, permission denied, and similar issues
+                        // land here. Skip so a single unreadable entry doesn't break the listing.
+                    	log.warn("Skipping unreadable filesystem entry: {}: {}", item, e.toString());
+                        counter++;
+                        continue;
+                    }
+                    if (!attrs.isRegularFile() && !attrs.isDirectory()) {
+                        // Skip unknown entry types: broken symlinks, reparse points, device/pipe files.
+                        log.warn("Skipping unrecognized filesystem entry: {}", item);
+                        counter++;
+                        continue;
+                    }
                     FsItem fsItem = new FsItem();
                     fsItem.setName(name);
                     if (attrs.isRegularFile()) {

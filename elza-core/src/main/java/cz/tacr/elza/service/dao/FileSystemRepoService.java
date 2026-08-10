@@ -3,9 +3,12 @@ package cz.tacr.elza.service.dao;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLConnection;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -14,7 +17,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -25,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.ElzaTools;
+import cz.tacr.elza.controller.vo.CreateDaoResult;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDao.DaoType;
 import cz.tacr.elza.domain.ArrDaoFile;
@@ -58,7 +61,7 @@ public class FileSystemRepoService {
     @Autowired
     private ExternalSystemService externalSystemService;
 
-    public ArrDao createDao(ArrDigitalRepository digiRepo, ArrFundVersion fundVersion, String itemRelatPath) {
+    public CreateDaoResult createDao(ArrDigitalRepository digiRepo, ArrFundVersion fundVersion, String itemRelatPath) {
     	itemRelatPath = normalizeRelatPath(itemRelatPath);
         Path repoPath = getPath(digiRepo, fundVersion.getFund());
         Path filePath = resolvePath(repoPath, itemRelatPath);
@@ -91,12 +94,13 @@ public class FileSystemRepoService {
         }
 
         // sync files and folders
+        List<String> skipped;
         try {
-            syncFilesAndFolders(dao, repoPath, filePath);
+        	skipped = syncFilesAndFolders(dao, repoPath, filePath);
         } catch (IOException e) {
             throw new BusinessException("Failed to sync path: " + filePath, e, BaseCode.INVALID_STATE);
         }
-        return dao;
+        return new CreateDaoResult(dao, skipped);
     }
 
     /**
@@ -112,7 +116,7 @@ public class FileSystemRepoService {
         return normalizeRelatPath(rootPath.relativize(itemPath).toString());
     }
 
-    private void syncFilesAndFolders(ArrDao dao, Path repoPath, Path srcItemPath) throws IOException {
+    private List<String> syncFilesAndFolders(ArrDao dao, Path repoPath, Path srcItemPath) throws IOException {
         List<ArrDaoFile> daoFiles = daoServiceInternal.getFilesByDao(dao);
         List<ArrDaoFileGroup> daoFileGroups = daoServiceInternal.getFileGroupsByDao(dao);
 
@@ -141,43 +145,58 @@ public class FileSystemRepoService {
             skipItems = Collections.emptySet();
         }
 
-        try (Stream<Path> stream = Files.walk(srcItemPath)) {
-            stream.forEachOrdered(itemPath -> {
-                if (skipItems.contains(itemPath)) {
-                    return;
+        List<String> skipped = new ArrayList<>();
+        Files.walkFileTree(srcItemPath, new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+                if (skipItems.contains(dir)) {
+                    return FileVisitResult.CONTINUE;
                 }
+                // Broken junction/symlink on Windows shows up as a "directory" here —
+                // but opening it will fail. Follow-links check tells us whether the
+                // target actually exists.
+                if (!Files.isDirectory(dir)) {
+                    log.warn("Skipping non-traversable directory-like entry: {}", dir);
+                    skipped.add(getRelatPath(repoPath, dir));
+                    return FileVisitResult.SKIP_SUBTREE;
+                }
+                String relatName = getRelatPath(repoPath, dir);
+                ArrDaoFileGroup daoFileGroup = daoFileGroupsMap.remove(relatName);
+                if (daoFileGroup != null) {
+                    existingFileGroups.put(relatName, daoFileGroup);
+                } else {
+                    createFileGroups.add(dir);
+                }
+                return FileVisitResult.CONTINUE;
+            }
 
-                String relatName = getRelatPath(repoPath, itemPath);
-                if (Files.isDirectory(itemPath)) {
-                    ArrDaoFileGroup daoFileGroup = daoFileGroupsMap.remove(relatName);
-                    if (daoFileGroup != null) {
-                        // group exists -> do nothing
-                        existingFileGroups.put(relatName, daoFileGroup);
-                    } else {
-                        // group not found -> add new one
-                        createFileGroups.add(itemPath);
-                    }
-                } else if (Files.isRegularFile(itemPath)) {
-                    // check file existance
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+                if (attrs.isRegularFile()) {
+                    String relatName = getRelatPath(repoPath, file);
                     ArrDaoFile daoFile = daoFilesMap.remove(relatName);
                     if (daoFile != null) {
-                        // file exists -> only update
-                        updateDaoFile(daoFile, itemPath);
+                        updateDaoFile(daoFile, file);
                         daoFile = daoServiceInternal.persistDaoFile(daoFile);
-
                         existingFiles.put(relatName, daoFile);
                     } else {
-                        // file not found -> add new one
-                        createFiles.add(itemPath);
+                        createFiles.add(file);
                     }
                 } else {
-                    // Neither a regular file nor a directory: broken symlinks, device/pipe
-                    // files, unreadable reparse points. Skip so a single such entry does
-                    // not fail the whole link. Full reporting to the client will land with
-                    // the Phase 2 link-operation result shape.
-                    log.warn("Skipping unrecognized filesystem entry: {}", itemPath);                }
-            });
-        }
+                    // Broken symlinks, device/pipe files, unreadable reparse points.
+                    log.warn("Skipping unrecognized filesystem entry: {}", file);
+                    skipped.add(getRelatPath(repoPath, file));
+                }
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFileFailed(Path file, IOException exc) {
+                log.warn("Skipping unreadable filesystem entry: {}: {}", file, exc.toString());
+                skipped.add(getRelatPath(repoPath, file));
+                return FileVisitResult.CONTINUE;
+            }
+        });
 
         // drop old files
         daoServiceInternal.deleteDaoFiles(daoFilesMap.values());
@@ -218,6 +237,7 @@ public class FileSystemRepoService {
                 existingFiles.put(relatPath, dff);
             }
         }
+        return skipped;
     }
 
     private void updateDaoFile(ArrDaoFile daoFile, Path itemPath) {
