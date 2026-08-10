@@ -2610,7 +2610,8 @@ paths:
           required: false
           description: Filter for file system items by link status
           schema:
-            $ref: '#/components/schemas/FsItemFilterByLinked'
+            allOf:
+              - $ref: '#/components/schemas/FsItemFilterByLinked'
             default: ALL
           explode: false
         - name: sortingType
@@ -2672,7 +2673,7 @@ paths:
           content:
             application/json:
               schema:
-                type: integer
+                $ref: '#/components/schemas/FsCreateDaoLinkResult'
       tags:
         - funds
   /fund/{fundId}/fsrepos:
@@ -7829,6 +7830,24 @@ components:
         Odlehčená verze specifikace hodnoty atributu
 
         Náhrada `ItemTypeLiteVO`
+    FsCreateDaoLinkResult:
+      type: object
+      required:
+        - daoLinkId
+        - skippedEntries
+      properties:
+        daoLinkId:
+          type: integer
+          format: int32
+          description: ID of the newly created dao-link
+        skippedEntries:
+          type: array
+          items:
+            type: string
+          description: |-
+            Repository-relative paths of entries that were skipped during sync
+            (broken symlinks, device files, unreadable reparse points). Empty when nothing was skipped.
+      description: Create dao link result
     FsItem:
       type: object
       required:

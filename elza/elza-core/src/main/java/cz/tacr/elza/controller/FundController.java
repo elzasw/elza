@@ -39,6 +39,7 @@ import cz.tacr.elza.common.FactoryUtils;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.BulkActionRunState;
+import cz.tacr.elza.controller.vo.CreateDaoResult;
 import cz.tacr.elza.controller.vo.CreateFund;
 import cz.tacr.elza.controller.vo.FundsActionGroupRequest;
 import cz.tacr.elza.controller.vo.FundsActionGroupResult;
@@ -46,6 +47,7 @@ import cz.tacr.elza.controller.vo.FundsChangeRun;
 import cz.tacr.elza.controller.vo.MultiFundActionRequest;
 import cz.tacr.elza.controller.vo.MultiFundActionResult;
 import cz.tacr.elza.controller.vo.FindFundsResult;
+import cz.tacr.elza.controller.vo.FsCreateDaoLinkResult;
 import cz.tacr.elza.controller.vo.FsItemFilterByLinked;
 import cz.tacr.elza.controller.vo.FsItemSortType;
 import cz.tacr.elza.controller.vo.FsItemType;
@@ -65,7 +67,6 @@ import cz.tacr.elza.dataexchange.output.IOExportFundsCsv;
 import cz.tacr.elza.dataexchange.output.IOExportWorker;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrBulkActionRun;
-import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFund;
@@ -390,7 +391,7 @@ public class FundController implements FundsApi {
     // PUT /fund/{fundId}/fsrepo/{fsrepoId}/linkitem/{nodeId}
     @Override
     @Transactional
-    public ResponseEntity<Integer> fundFsCreateDAOLink(@PathVariable("fundId") Integer fundId,
+    public ResponseEntity<FsCreateDaoLinkResult> fundFsCreateDAOLink(@PathVariable("fundId") Integer fundId,
                                                        @PathVariable("fsrepoId") Integer fsrepoId,
                                                        @PathVariable("nodeId") Integer nodeId,
                                                        @RequestParam(value = "path", required = false) String path) {
@@ -400,18 +401,22 @@ public class FundController implements FundsApi {
 
         ArrDigitalRepository digiRepo = externalSystemService.getDigitalRepository(fsrepoId);
 
-        ArrDao dao = fileSystemRepoService.createDao(digiRepo, fundVersion, path);
+        CreateDaoResult result = fileSystemRepoService.createDao(digiRepo, fundVersion, path);        
 
         // create dao link in separate transaction
         // dao link might create level and data from levelTreeCache are available
         // in new transaction>
-        ArrDaoLink daoLink = daoService.createDaoLink(fundVersion, dao, node);
+        ArrDaoLink daoLink = daoService.createDaoLink(fundVersion, result.dao(), node);
 
         Objects.requireNonNull(daoLink);
         Objects.requireNonNull(daoLink.getDaoLinkId());
         Objects.requireNonNull(daoLink.getNodeId());
 
-        return ResponseEntity.ok(daoLink.getDaoLinkId());
+        FsCreateDaoLinkResult vo = new FsCreateDaoLinkResult();
+        vo.setDaoLinkId(daoLink.getDaoLinkId());
+        vo.setSkippedEntries(result.skippedEntries());
+
+        return ResponseEntity.ok(vo);
     }
 
     // GET /fund/{fundId}/usedItemtypes/{fundVersionId}

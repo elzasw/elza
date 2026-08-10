@@ -258,6 +258,17 @@ enum FsItemType {
 }
 
 /**
+ * Create dao link result
+ */
+model FsCreateDaoLinkResult {
+    /** ID of the newly created dao-link */
+    daoLinkId: int32;
+    /** Repository-relative paths of entries that were skipped during sync
+     *  (broken symlinks, device files, unreadable reparse points). Empty when nothing was skipped. */
+    skippedEntries: string[];
+}
+
+/**
  * File link data
  */
 model FsLink {
@@ -3155,11 +3166,7 @@ namespace ElzaAPI.fund {
         ...FsRepoIdParameter,
         ...NodeIdParameter,
         @query path?: string
-    ): {
-        @Http.statusCode statusCode: 200;
-        @header contentType: "application/json";
-        @body data: integer;
-    };
+    ): FsCreateDaoLinkResult;
 
     /**
      * Return list of filesystem items
