@@ -1704,4 +1704,33 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="20260810120000" author="ppy">
+        <!-- Filesystem repositories no longer persist per-file entities: file
+             listings are read live from disk and arr_dao carries only the
+             repository-relative path. Existing arr_dao_file rows of filesystem
+             repositories are stale link-time snapshots with no reader; drop them.
+             The discriminator is the URL prefix (matches
+             FileSystemRepoService.isFileSystemRepository), NOT
+             digital_repository_type, which was backfilled heuristically. -->
+        <sql dbms="postgresql">
+            DELETE FROM arr_dao_file WHERE dao_id IN (
+              SELECT d.dao_id FROM arr_dao d
+                JOIN arr_dao_package p ON p.dao_package_id = d.dao_package_id
+                JOIN sys_external_system s ON s.external_system_id = p.digital_repository_id
+               WHERE s.url LIKE 'file://%')
+        </sql>
+    </changeSet>
+
+    <changeSet id="20260810120001" author="ppy">
+        <!-- arr_dao_file_group had a single producer (filesystem link sync,
+             removed with the change above) and no reader: the SOAP DAO import
+             rejects folders and no UI component ever rendered the groups.
+             Files of SOAP-imported DAOs arrive as a flat list, so the FK
+             column is always NULL for the surviving rows. -->
+        <delete tableName="arr_dao_file_group"/>
+        <dropForeignKeyConstraint baseTableName="arr_dao_file" constraintName="fk_dao_file_dao_file_group"/>
+        <dropColumn tableName="arr_dao_file" columnName="dao_file_group_id"/>
+        <dropTable tableName="arr_dao_file_group"/>
+    </changeSet>
+
 </databaseChangeLog>

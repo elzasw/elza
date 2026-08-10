@@ -1,9 +1,11 @@
 package cz.tacr.elza.service.dao;
 
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.Collator;
 import java.time.ZoneOffset;
@@ -57,6 +59,9 @@ public class FileSystemRepoBrowser {
 	private static final int DEFAULT_PAGE_SIZE = 1_000;
 	private static final int MAX_PAGE_SIZE = 10_000;
 	private static final int SCAN_CAP = 10_000;
+
+	/** Maximum number of files returned by {@link #listDaoFiles} for one DAO. */
+	public static final int DAO_FILE_LIMIT = 1_000;
 
 	@Autowired
 	private ElzaLocale elzaLocale;	
@@ -298,6 +303,62 @@ public class FileSystemRepoBrowser {
                 throw new BusinessException("Invalid filter.", BaseCode.INVALID_STATE)
                         .set("filterType", filterType);
         }
+    }
+
+    /**
+     * One file of a filesystem DAO, read live from disk.
+     */
+    public record FsDaoFile(String relatPath, String fileName, long size, String mimetype) {
+    }
+
+    /**
+     * Lists files of a filesystem DAO live from disk. The DAO's code is a
+     * repository-relative path: a regular file yields a single entry, a
+     * directory is walked recursively into a flat list ordered by relative
+     * path and capped at {@code maxEntries}. Unreadable entries are skipped
+     * with a logged warning; a path that no longer exists yields an empty
+     * list.
+     */
+    public List<FsDaoFile> listDaoFiles(ArrDigitalRepository digiRepo,
+                                        ArrFund fund,
+                                        String relatPath,
+                                        int maxEntries) throws IOException {
+        Path rootPath = fileSystemRepoService.getPath(digiRepo, fund).normalize();
+        Path itemPath = fileSystemRepoService.resolvePath(rootPath, relatPath);
+        if (Files.isRegularFile(itemPath)) {
+            return Collections.singletonList(createFsDaoFile(rootPath, itemPath, Files.size(itemPath)));
+        }
+        if (!Files.isDirectory(itemPath)) {
+            log.warn("Filesystem DAO path is not available: {}", itemPath);
+            return Collections.emptyList();
+        }
+        List<FsDaoFile> result = new ArrayList<>();
+        Files.walkFileTree(itemPath, new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+                if (result.size() >= maxEntries) {
+                    return FileVisitResult.TERMINATE;
+                }
+                if (attrs.isRegularFile()) {
+                    result.add(createFsDaoFile(rootPath, file, attrs.size()));
+                }
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFileFailed(Path file, IOException exc) {
+                log.warn("Skipping unreadable filesystem entry: {}: {}", file, exc.toString());
+                return FileVisitResult.CONTINUE;
+            }
+        });
+        result.sort(Comparator.comparing(FsDaoFile::relatPath));
+        return result;
+    }
+
+    private FsDaoFile createFsDaoFile(Path rootPath, Path file, long size) {
+        String relatPath = FileSystemRepoService.getRelatPath(rootPath, file);
+        String fileName = file.getFileName().toString();
+        return new FsDaoFile(relatPath, fileName, size, fileSystemRepoService.getMimetype(fileName));
     }
 
     public List<FsRepo> listRepos(ArrFund fund, List<ArrDigitalRepository> digitalRepositories) {

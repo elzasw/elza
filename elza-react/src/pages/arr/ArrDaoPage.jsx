@@ -22,7 +22,6 @@ import { WebApi } from 'actions/index';
 import { urlFundDaos, getFundVersion } from "../../constants";
 import { FileSystemBrowser, extractRepoIdFromFullPath } from 'components/arr/daos';
 import { Api } from "api";
-import { addToastrWarning } from 'components/shared/toastr/ToastrActions';
 
 /**
  * Stránka archivních pomůcek.
@@ -277,13 +276,7 @@ class ArrDaoPage extends ArrParentPage {
         const fund = this.getActiveFund(this.props);
 
         const [repoId, path] = extractRepoIdFromFullPath(selectedFilePath);
-        const { data } = await Api.funds.fundFsCreateDAOLink(fund.id, repoId, fund.fundTreeDaosRight.selectedId, path);
-        if (data && data.skippedEntries && data.skippedEntries.length > 0) {
-            this.props.dispatch(addToastrWarning(
-                i18n('arr.daos.fileSystem.link.skipped.title'),
-                i18n('arr.daos.fileSystem.link.skipped.message', data.skippedEntries.length),
-            ));
-        }
+        await Api.funds.fundFsCreateDAOLink(fund.id, repoId, fund.fundTreeDaosRight.selectedId, path);
         this.setState(({ fsRefreshCounter }) => ({ fsRefreshCounter: fsRefreshCounter + 1 }));
     }
 

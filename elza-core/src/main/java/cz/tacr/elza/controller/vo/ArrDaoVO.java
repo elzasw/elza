@@ -29,10 +29,8 @@ public class ArrDaoVO {
     private Boolean existInArrDaoRequest;
 
     private List<ArrDaoFileVO> fileList = new ArrayList<>();
-    private List<ArrDaoFileGroupVO> fileGroupList = new ArrayList<>();
 
     private long fileCount;
-    private long fileGroupCount;
 
     private ArrDaoPackageVO daoPackage;
 
@@ -71,24 +69,6 @@ public class ArrDaoVO {
     public void addAllFile(Collection<ArrDaoFileVO> files) {
         fileList.addAll(files);
         fileCount = fileList.size();
-    }
-
-    /**
-     * Zařazení nového daoFileGroup do seznamu na vo, zároveň nastaví položku fileGroupCount na novou délku seznamu
-     * @param fileGroup daoFileGroup
-     */
-    public void addFileGroup(ArrDaoFileGroupVO fileGroup) {
-        fileGroupList.add(fileGroup);
-        fileGroupCount = fileList.size();
-    }
-
-    /**
-     * Zařazení seznamu daoFileGroup do seznamu na vo, zároveň nastaví položku fileGroupCount na novou délku seznamu
-     * @param daoFileGroups seznam daoFileGroup
-     */
-    public void addAllFileGroup(Collection<ArrDaoFileGroupVO> daoFileGroups) {
-        fileGroupList.addAll(daoFileGroups);
-        fileGroupCount = fileList.size();
     }
 
     public ArrDaoPackageVO getDaoPackage() {
@@ -155,24 +135,12 @@ public class ArrDaoVO {
         return ListUtils.unmodifiableList(fileList);
     }
 
-    public List<ArrDaoFileGroupVO> getFileGroupList() {
-        return ListUtils.unmodifiableList(fileGroupList);
-    }
-
     public long getFileCount() {
         return fileCount;
     }
 
     public void setFileCount(long fileCount) {
             this.fileCount = fileCount;
-    }
-
-    public long getFileGroupCount() {
-        return fileGroupCount;
-    }
-
-    public void setFileGroupCount(long fileGroupCount) {
-        this.fileGroupCount = fileGroupCount;
     }
 
     public String getUrl() {

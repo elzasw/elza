@@ -336,6 +336,75 @@ public class FileSystemRepoBrowserTest {
         assertEquals(2, links.size());
     }
 
+    // ---------- listDaoFiles ----------
+
+    /** Routes getPath/resolvePath through the real path arithmetic on the temp dir. */
+    private void stubDaoFileResolution(Path root) {
+        Path normRoot = root.normalize();
+        Mockito.when(serviceMock.getPath(repo, fund)).thenReturn(root);
+        Mockito.when(serviceMock.resolvePath(any(Path.class), any()))
+                .thenAnswer(inv -> {
+                    String rel = inv.getArgument(1);
+                    return (rel == null || rel.isBlank()) ? normRoot : normRoot.resolve(rel);
+                });
+    }
+
+    @Test
+    void listDaoFiles_singleFile(@TempDir Path root) throws IOException {
+        Files.write(root.resolve("scan.jpg"), new byte[]{1, 2, 3});
+        stubDaoFileResolution(root);
+        Mockito.when(serviceMock.getMimetype("scan.jpg")).thenReturn("image/jpeg");
+
+        List<FileSystemRepoBrowser.FsDaoFile> result = browser.listDaoFiles(repo, fund, "scan.jpg", 10);
+
+        assertEquals(1, result.size());
+        assertEquals("scan.jpg", result.get(0).relatPath());
+        assertEquals("scan.jpg", result.get(0).fileName());
+        assertEquals(3L, result.get(0).size());
+        assertEquals("image/jpeg", result.get(0).mimetype());
+    }
+
+    @Test
+    void listDaoFiles_recursive_flatSortedByPath(@TempDir Path root) throws IOException {
+        Path dir = Files.createDirectory(root.resolve("dir"));
+        Path sub = Files.createDirectory(dir.resolve("sub"));
+        Files.createFile(dir.resolve("b.txt"));
+        Files.createFile(dir.resolve("a.txt"));
+        Files.createFile(sub.resolve("deep.txt"));
+        stubDaoFileResolution(root);
+
+        List<FileSystemRepoBrowser.FsDaoFile> result = browser.listDaoFiles(repo, fund, "dir", 10);
+
+        // flat list of regular files only, ordered by repository-relative path
+        assertEquals(3, result.size());
+        assertEquals("dir/a.txt", result.get(0).relatPath());
+        assertEquals("dir/b.txt", result.get(1).relatPath());
+        assertEquals("dir/sub/deep.txt", result.get(2).relatPath());
+        assertEquals("deep.txt", result.get(2).fileName());
+    }
+
+    @Test
+    void listDaoFiles_capEnforced(@TempDir Path root) throws IOException {
+        Path dir = Files.createDirectory(root.resolve("dir"));
+        for (int i = 0; i < 5; i++) {
+            Files.createFile(dir.resolve("f" + i + ".txt"));
+        }
+        stubDaoFileResolution(root);
+
+        List<FileSystemRepoBrowser.FsDaoFile> result = browser.listDaoFiles(repo, fund, "dir", 3);
+
+        assertEquals(3, result.size());
+    }
+
+    @Test
+    void listDaoFiles_missingPath_returnsEmpty(@TempDir Path root) throws IOException {
+        stubDaoFileResolution(root);
+
+        List<FileSystemRepoBrowser.FsDaoFile> result = browser.listDaoFiles(repo, fund, "does-not-exist", 10);
+
+        assertTrue(result.isEmpty());
+    }
+
     @Test
     void normalizeRelatPath_variants() {
         assertNull(FileSystemRepoService.normalizeRelatPath(null));

@@ -827,8 +827,6 @@ var messages = {
     "arr.daos.files.title.description": "Popis",
     "arr.daos.fileSystem.loadMore": "Načíst další...",
     "arr.daos.fileSystem.selectParent": "Přejít nahoru",
-    "arr.daos.fileSystem.link.skipped.title": "Přeskočené položky",
-    "arr.daos.fileSystem.link.skipped.message": "Bylo přeskočeno {0} nerozpoznaných položek.",
 
     "arr.syncNodes.title": "Synchronizace JP ze zdrojových AS",
     "arr.syncNodes.templateId": "Šablona",

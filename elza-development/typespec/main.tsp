@@ -263,9 +263,6 @@ enum FsItemType {
 model FsCreateDaoLinkResult {
     /** ID of the newly created dao-link */
     daoLinkId: int32;
-    /** Repository-relative paths of entries that were skipped during sync
-     *  (broken symlinks, device files, unreadable reparse points). Empty when nothing was skipped. */
-    skippedEntries: string[];
 }
 
 /**
