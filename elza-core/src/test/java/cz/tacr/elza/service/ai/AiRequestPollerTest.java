@@ -2,18 +2,23 @@ package cz.tacr.elza.service.ai;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.SimpleTransactionStatus;
@@ -28,6 +33,7 @@ import cz.tacr.elza.repository.AiConversationRepository;
 import cz.tacr.elza.repository.AiExternalSystemRepository;
 import cz.tacr.elza.repository.AiRequestEventRepository;
 import cz.tacr.elza.repository.AiRequestRepository;
+import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.websocket.UserEventPushService;
 
 /**
@@ -47,19 +53,32 @@ class AiRequestPollerTest {
     private final UserEventPushService pushService = mock(UserEventPushService.class);
     private final AiAnswerBuffer answerBuffer = mock(AiAnswerBuffer.class);
     private final PlatformTransactionManager txManager = mock(PlatformTransactionManager.class);
+    private final UserService userService = mock(UserService.class);
 
     private final AiRequestPoller poller = new AiRequestPoller();
+
+    /** Real push component (it holds the render-as-owner logic under test), mock edges. */
+    private final AiRequestPushService requestPushService = new AiRequestPushService();
 
     @BeforeEach
     void setUp() {
         when(txManager.getTransaction(any())).thenReturn(new SimpleTransactionStatus());
         when(viewMapper.buildUpdateMessage(any())).thenReturn(new AiRequestUpdateMessage(1, null));
+        // The snapshot push impersonates the conversation owner; a plain empty
+        // context is enough for the mocked mapper.
+        when(userService.createSecurityContext(any()))
+                .thenAnswer(invocation -> SecurityContextHolder.createEmptyContext());
+        ReflectionTestUtils.setField(requestPushService, "aiRequestRepository", requestRepository);
+        ReflectionTestUtils.setField(requestPushService, "requestViewMapper", viewMapper);
+        ReflectionTestUtils.setField(requestPushService, "pushService", pushService);
+        ReflectionTestUtils.setField(requestPushService, "transactionTemplate",
+                new TransactionTemplate(txManager));
+        ReflectionTestUtils.setField(requestPushService, "userService", userService);
         ReflectionTestUtils.setField(poller, "aiRequestRepository", requestRepository);
         ReflectionTestUtils.setField(poller, "aiConversationRepository", conversationRepository);
         ReflectionTestUtils.setField(poller, "aiExternalSystemRepository", externalSystemRepository);
         ReflectionTestUtils.setField(poller, "aiRequestEventRepository", eventRepository);
-        ReflectionTestUtils.setField(poller, "requestViewMapper", viewMapper);
-        ReflectionTestUtils.setField(poller, "pushService", pushService);
+        ReflectionTestUtils.setField(poller, "requestPushService", requestPushService);
         ReflectionTestUtils.setField(poller, "answerBuffer", answerBuffer);
         ReflectionTestUtils.setField(poller, "transactionTemplate", new TransactionTemplate(txManager));
         ReflectionTestUtils.setField(poller, "objectMapper", new ObjectMapper());
@@ -200,6 +219,40 @@ class AiRequestPollerTest {
         assertThat(request.getErrorCode()).isEqualTo("INTERNAL");
         assertThat(request.getErrorMessage()).contains("conversation lookup exploded");
         assertThat(request.getFinishDate()).isNotNull();
+    }
+
+    /**
+     * The pushed snapshot renders block mappers that run real permission checks
+     * (the proposal block re-reads its level through {@code canRead}), and the
+     * poller thread has no security context of its own — unauthenticated, the
+     * check blew up, every completion push was skipped and the panel hung on
+     * its progress state until a manual reload re-rendered on an authenticated
+     * request thread (2026-08-10). The render must therefore run under the
+     * conversation owner's context, and the pooled thread must be left clean.
+     */
+    @Test
+    void theSnapshotIsRenderedAsTheOwnerAndTheThreadIsLeftClean() {
+        AiRequest request = request(11, "t11", "running", 110);
+        AiConversation conversation = conversation(1100, 11000);
+        when(requestRepository.findById(11)).thenReturn(Optional.of(request));
+        when(conversationRepository.findById(110)).thenReturn(Optional.of(conversation));
+
+        SecurityContext ownerContext = SecurityContextHolder.createEmptyContext();
+        ownerContext.setAuthentication(new UsernamePasswordAuthenticationToken("owner", null, null));
+        when(userService.createSecurityContext(1100)).thenReturn(ownerContext);
+        List<SecurityContext> observedAtRender = new ArrayList<>();
+        when(viewMapper.buildUpdateMessage(any())).thenAnswer(invocation -> {
+            observedAtRender.add(SecurityContextHolder.getContext());
+            return new AiRequestUpdateMessage(11, null);
+        });
+
+        ReflectionTestUtils.invokeMethod(poller, "failRequest", 11, "TIMEOUT",
+                "The AI provider stopped responding.");
+
+        assertThat(observedAtRender).containsExactly(ownerContext);
+        verify(pushService).push(eq(1100), any());
+        // No trace of the owner left on the pooled thread.
+        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
     }
 
     /**

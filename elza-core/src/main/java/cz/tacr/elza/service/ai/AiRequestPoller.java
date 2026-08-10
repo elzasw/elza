@@ -43,8 +43,8 @@ import cz.tacr.elza.service.AiProviderService;
  * Monitors open AI requests: one worker per non-terminal request long-polls
  * the provider (protocol {@code GET /tasks/{id}?wait=30}), persists every
  * observed change ({@code ai_request} state/output/usage + OUTPUT/ERROR
- * events) and pushes the updated request snapshot to the conversation owner's
- * per-user WebSocket topic ({@link cz.tacr.elza.websocket.UserEventPushService}).
+ * events) and pushes the updated request snapshot to the conversation owner
+ * ({@link AiRequestPushService} — committed data rendered as the owner).
  * Polling of open
  * requests resumes on application start, so a restart loses nothing.
  *
@@ -79,10 +79,7 @@ public class AiRequestPoller {
     private AiProviderService aiProviderService;
 
     @Autowired
-    private AiRequestViewMapper requestViewMapper;
-
-    @Autowired
-    private cz.tacr.elza.websocket.UserEventPushService pushService;
+    private AiRequestPushService requestPushService;
 
     @Autowired
     private AiAnswerBuffer answerBuffer;
@@ -250,7 +247,7 @@ public class AiRequestPoller {
             return false;
         }
         answerBuffer.clear(aiRequestId);
-        pushUpdate(aiRequestId, owner[0]);
+        requestPushService.pushUpdate(aiRequestId, owner[0]);
         return true;
     }
 
@@ -455,30 +452,7 @@ public class AiRequestPoller {
         // when that ran inside the persisting transaction a mapper failure
         // rolled the received result back — the exchange then hung until its
         // lifetime backstop reported a misleading TIMEOUT (2026-08-07).
-        pushUpdate(aiRequestId, target.userId());
-    }
-
-    /**
-     * Builds the client snapshot of a request and pushes it to its owner. Never
-     * throws: a rendering failure is logged in full and the push is skipped —
-     * the persisted request is unaffected and the client's next fetch re-renders
-     * it. Failing to draw a result must not endanger the result.
-     */
-    private void pushUpdate(final Integer aiRequestId, final Integer userId) {
-        AiRequestUpdateMessage message;
-        try {
-            message = transactionTemplate.execute(status -> {
-                AiRequest request = aiRequestRepository.findById(aiRequestId).orElse(null);
-                return request == null ? null : requestViewMapper.buildUpdateMessage(request);
-            });
-        } catch (RuntimeException e) {
-            logger.error("Rendering the snapshot of AI request {} failed; the stored request is intact"
-                         + " and the push is skipped", aiRequestId, e);
-            return;
-        }
-        if (message != null) {
-            pushService.push(userId, message);
-        }
+        requestPushService.pushUpdate(aiRequestId, target.userId());
     }
 
     /**
@@ -550,7 +524,7 @@ public class AiRequestPoller {
             }
             return null;
         });
-        pushUpdate(aiRequestId, target.userId());
+        requestPushService.pushUpdate(aiRequestId, target.userId());
     }
 
     private void addEvent(final AiRequest request, final String eventType, final String data) {
