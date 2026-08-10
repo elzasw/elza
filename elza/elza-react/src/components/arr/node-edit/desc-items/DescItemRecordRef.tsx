@@ -298,7 +298,7 @@ export function DescItemRecordRef({
         }}
         listbox={{ style: { maxHeight: "400px", minWidth: "400px" } }}
         expandIcon={{
-          style: { height: "100%", position: "relative", overflow: "hidden" },
+          style: { height: "100%", position: "relative", overflow: "hidden", flexShrink: 0 },
           children: (
             <Tooltip
               relationship="label"
