@@ -2,6 +2,7 @@ package cz.tacr.elza.controller;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -371,6 +372,9 @@ public class FundController implements FundsApi {
         ArrDigitalRepository digiRepo = externalSystemService.getDigitalRepository(fsrepoId);
 
         Path filePath = fileSystemRepoService.resolvePath(digiRepo, fund, path);
+        if (!Files.isRegularFile(filePath)) {
+            return ResponseEntity.notFound().build();
+        }
 
         String contentType = fileSystemRepoService.getMimetype(filePath);
         if (StringUtils.isEmpty(contentType)) {
