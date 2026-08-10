@@ -2407,6 +2407,30 @@ enum AiDisplayBlockType {
 model AiDisplayBlock {
     /** Selects the block shape; one of the defined `AiDisplayBlockType` codes. */
     type: AiDisplayBlockType;
+
+    /**
+     * Server-suggested continuations of the conversation, rendered as buttons
+     * under the block. Clicking one submits a follow-up (`AiRequestCreate`)
+     * with the action's `taskType`/`userInstructions` into the same
+     * conversation — e.g. a check finding's "prepare the fix" action submits
+     * an `elza.enhanceDescription` exchange into the `elza.revision` thread.
+     */
+    followUps?: AiFollowUpAction[];
+}
+
+/**
+ * One server-suggested follow-up: the button label and the exchange it
+ * submits. The same shape a future provider-emitted `elza.taskSuggestion`
+ * result block maps onto — today the server composes these itself (per check
+ * finding).
+ */
+model AiFollowUpAction {
+    /** Button label, in the deployment's language. */
+    label: string;
+    /** Task type of the follow-up exchange; omitted = the conversation's current type. */
+    taskType?: string;
+    /** The seeded user instruction the follow-up submits. */
+    userInstructions: string;
 }
 
 /** Plain-text answer — `content` is rendered verbatim, never parsed as markdown. */

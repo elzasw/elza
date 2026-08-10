@@ -1,5 +1,6 @@
 package cz.tacr.elza.service.ai;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -9,15 +10,20 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import cz.tacr.elza.controller.vo.AiDisplayBlockVO;
+import cz.tacr.elza.controller.vo.AiFollowUpAction;
 import cz.tacr.elza.controller.vo.AiMarkdownBlockVO;
 
 /**
  * Renders an {@code elza.revisionFindings} result block (the advisory findings
- * of {@code elza.revision}, tasks/elza-revision.md §4) as a readable markdown
- * display block — the v1 presentation: findings are shown as text for
- * professional assessment; the structured triage UI ("AI doporučení" cards)
- * and the accept-side {@code WfIssue} conversion come later, reading the same
- * typed block.
+ * of {@code elza.revision}, tasks/elza-revision.md §4) as readable markdown
+ * display blocks — <b>one block per finding</b>, each carrying a "prepare the
+ * fix" follow-up action: clicking it submits an {@code elza.enhanceDescription}
+ * exchange into the same conversation with a seeded instruction naming the
+ * finding (the provider chains the thread via {@code parentTaskId} and replays
+ * the findings into the fix task's material — the revision→fix handoff,
+ * elza-ai-provider {@code doc/enhance-description-proposal.md} §9). The
+ * structured triage UI ("AI doporučení" cards) and the accept-side
+ * {@code WfIssue} conversion come later, reading the same typed block.
  *
  * <p>Labels are Czech: the pilot targets Czech archives and the findings'
  * human-readable texts arrive in the run's configured language ({@code cs});
@@ -27,6 +33,9 @@ import cz.tacr.elza.controller.vo.AiMarkdownBlockVO;
  */
 @Component
 public class RevisionFindingsBlockMapper implements AiBlockMapper {
+
+    /** Task type of the "prepare the fix" follow-up exchange. */
+    static final String ENHANCE_TASK_TYPE = "elza.enhanceDescription";
 
     private static final Map<String, String> CATEGORY_LABELS = Map.of(
             "hidden_data", "Skryté strukturované údaje",
@@ -67,15 +76,13 @@ public class RevisionFindingsBlockMapper implements AiBlockMapper {
         // branch run); a single-unit check would just repeat the same number.
         boolean multiNode = findings.findValuesAsText("nodeId").stream().distinct().count() > 1;
 
-        StringBuilder md = new StringBuilder();
+        List<AiDisplayBlockVO> blocks = new ArrayList<>();
         int order = 0;
         for (JsonNode finding : findings) {
             order++;
-            if (order > 1) {
-                md.append('\n');
-            }
-            md.append("### ").append(order).append(". ")
-                    .append(label(CATEGORY_LABELS, finding.path("category").asText("")));
+            StringBuilder md = new StringBuilder();
+            String category = label(CATEGORY_LABELS, finding.path("category").asText(""));
+            md.append("### ").append(order).append(". ").append(category);
             String severity = label(SEVERITY_LABELS, finding.path("severity").asText(""));
             if (!severity.isBlank()) {
                 md.append(" — závažnost ").append(severity);
@@ -116,8 +123,33 @@ public class RevisionFindingsBlockMapper implements AiBlockMapper {
             if (finding.path("confidence").isNumber()) {
                 md.append("- Jistota: ").append(finding.path("confidence").asInt()).append(" %\n");
             }
+
+            AiMarkdownBlockVO block = new AiMarkdownBlockVO().content(md.toString());
+            block.addFollowUpsItem(new AiFollowUpAction()
+                    .label("Připravit opravu")
+                    .taskType(ENHANCE_TASK_TYPE)
+                    .userInstructions(fixInstruction(order, category, excerpt)));
+            blocks.add(block);
         }
-        return List.of(new AiMarkdownBlockVO().content(md.toString()));
+        return blocks;
+    }
+
+    /**
+     * The seeded instruction of a finding's "prepare the fix" follow-up. The
+     * fix task receives the complete findings replayed through the conversation
+     * chain, so the seed only needs to pin WHICH finding — by number, category
+     * and (when present) the verbatim excerpt.
+     */
+    private static String fixInstruction(final int order, final String category, final String excerpt) {
+        StringBuilder instruction = new StringBuilder("Připrav opravu zjištění č. ").append(order);
+        if (!category.isBlank()) {
+            instruction.append(" (").append(category).append(')');
+        }
+        if (!excerpt.isBlank()) {
+            instruction.append(": „").append(excerpt).append('“');
+        }
+        instruction.append('.');
+        return instruction.toString();
     }
 
     /** The label for a code; an unknown code (the sets are open) is shown raw. */
