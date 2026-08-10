@@ -6078,6 +6078,13 @@ components:
     AiRequestCreate:
       type: object
       properties:
+        taskType:
+          type: string
+          description: |-
+            Task type of this exchange; omitted = reuse the conversation's previous type.
+            A differing type still continues the conversation (the provider chains it via
+            `parentTaskId`) — the "fix this finding" handoff submits `elza.enhanceDescription`
+            into a `elza.revision` thread this way.
         profile:
           type: string
           description: Profile/model for this exchange (an `AiProfile.code`); omitted = reuse the conversation's last.

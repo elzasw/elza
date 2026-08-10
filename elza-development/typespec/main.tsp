@@ -2803,6 +2803,13 @@ model AiConversationCreate {
 
 /** Follow-up exchange submitted into an existing conversation. */
 model AiRequestCreate {
+    /**
+     * Task type of this exchange; omitted = reuse the conversation's previous type.
+     * A differing type still continues the conversation (the provider chains it via
+     * `parentTaskId`) — the "fix this finding" handoff submits `elza.enhanceDescription`
+     * into a `elza.revision` thread this way.
+     */
+    taskType?: string;
     /** Profile/model for this exchange (an `AiProfile.code`); omitted = reuse the conversation's last. */
     profile?: string;
     userInstructions?: string;
