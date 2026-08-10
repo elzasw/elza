@@ -221,7 +221,12 @@ public class SearchEntitiesTool implements AiTool {
      * Resolves the requested entity class/type code to the id set of the type
      * and all its subtypes (a non-leaf code includes the whole subtree), or
      * {@code null} when no type restriction is requested. An unknown code is an
-     * error, not an empty hit list.
+     * error, not an empty hit list — and the error <em>names the valid
+     * classes</em>: the model knows international vocabularies (a live turn
+     * sent {@code CORPORATE_BODY}, the EAC-CPF term, for {@code PARTY_GROUP}),
+     * not this archive's typology, and each failed call costs the conversation
+     * a full suspend/poll round-trip — naming the archive's own top-level
+     * codes lets it correct the call in one retry instead of guessing again.
      */
     private Set<Integer> resolveTypeIds(final String typeCode, final StaticDataProvider sdp) {
         if (StringUtils.isBlank(typeCode)) {
@@ -229,7 +234,13 @@ public class SearchEntitiesTool implements AiTool {
         }
         ApType type = sdp.getApTypeByCode(typeCode.trim());
         if (type == null) {
-            throw new IllegalArgumentException("Unknown entity type code: " + typeCode.trim());
+            String classes = sdp.getApTypes().stream()
+                    .filter(t -> t.getParentApType() == null)
+                    .map(ApType::getCode)
+                    .sorted()
+                    .collect(Collectors.joining(", "));
+            throw new IllegalArgumentException("Unknown entity type code: " + typeCode.trim()
+                    + ". Valid entity classes (each includes its subtypes): " + classes);
         }
         return apTypeRepository.findSubtreeIds(Set.of(type.getApTypeId()));
     }
