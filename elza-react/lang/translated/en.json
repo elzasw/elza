@@ -737,6 +737,54 @@
     "defaultMessage": "This description element cannot be added to the description unit.",
     "srcHash": "1vJCdzTLLaix"
   },
+  "arr.output.form.anonymizedAp": {
+    "defaultMessage": "Anonymized AP",
+    "srcHash": "AhyE-Ql5viof"
+  },
+  "arr.output.form.internalCode": {
+    "defaultMessage": "Output internal code",
+    "srcHash": "00QxuzpXDoQI"
+  },
+  "arr.output.form.name": {
+    "defaultMessage": "Output name",
+    "srcHash": "8uMyaFpXAcJK"
+  },
+  "arr.output.form.outputFilter": {
+    "defaultMessage": "Output filter",
+    "srcHash": "81owipUZcq0v"
+  },
+  "arr.output.form.outputFilterPlaceholder": {
+    "defaultMessage": "Select a filter",
+    "srcHash": "wWR15re_FqXY"
+  },
+  "arr.output.form.outputType": {
+    "defaultMessage": "Output type",
+    "srcHash": "hD5bBOE7z9eZ"
+  },
+  "arr.output.form.required": {
+    "defaultMessage": "This field is required",
+    "srcHash": "5GEi8Ab6Hsc4"
+  },
+  "arr.output.form.template": {
+    "defaultMessage": "Template",
+    "srcHash": "BqmENbGuMyV1"
+  },
+  "arr.output.form.templatePlaceholder": {
+    "defaultMessage": "Add a template",
+    "srcHash": "YrUh9HWGpLYk"
+  },
+  "arr.output.form.templateRemove": {
+    "defaultMessage": "Remove template",
+    "srcHash": "qs97PzzD3WSx"
+  },
+  "arr.output.form.unknownOutputType": {
+    "defaultMessage": "Unknown",
+    "srcHash": "A7-1cydenuYx"
+  },
+  "arr.output.form.unknownTemplate": {
+    "defaultMessage": "Unknown template",
+    "srcHash": "_eYll52DiTZN"
+  },
   "arr.structure.modal.increment": {
     "defaultMessage": "Increment",
     "srcHash": "pcWzMwLcSI6r"
@@ -1540,6 +1588,10 @@
   "userSettings.display.language": {
     "defaultMessage": "Language",
     "srcHash": "ARpdV1qvwAV4"
+  },
+  "userSettings.display.outputColumnLayout": {
+    "defaultMessage": "Column layout for output detail",
+    "srcHash": "vJJZ369SCfqo"
   },
   "userSettings.display.showDebugInfo": {
     "defaultMessage": "Show debug information",

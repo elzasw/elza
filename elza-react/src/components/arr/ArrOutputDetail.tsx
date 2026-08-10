@@ -1,6 +1,7 @@
 import {useCallback, useEffect} from 'react';
+import {mergeClasses, makeStyles} from '@fluentui/react-components';
 import {outputTypesFetchIfNeeded} from 'actions/refTables/outputTypes.jsx';
-import {FormInput, HorizontalLoader, i18n} from 'components/shared';
+import {HorizontalLoader, i18n} from 'components/shared';
 import {
     fundOutputAddNodes,
     fundOutputDetailFetchIfNeeded,
@@ -11,23 +12,31 @@ import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx';
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx';
 import {outputFormActions} from 'actions/arr/subNodeForm';
 import {modalDialogShow} from 'actions/global/modalDialog.jsx';
-import OutputInlineForm from 'components/arr/OutputInlineForm';
 import './ArrOutputDetail.scss';
 import {OutputEdit} from './output/OutputEdit';
-import FundNodesList from './FundNodesList';
+import {OutputColumnLayout} from './output/OutputColumnLayout';
+import {OutputStackedLayout} from './output/OutputStackedLayout';
 import FundNodesSelectForm from './FundNodesSelectForm';
 import FundOutputFiles from './FundOutputFiles';
-import ToggleContent from '../shared/toggle-content/ToggleContent';
 import {ApScopeVO, ArrOutputVO} from '../../typings/Outputs';
 import {AppFetchingStore} from '../../typings/globals';
-import ScopeField from '../admin/ScopeField';
 import * as scopeActions from '../../actions/scopes/scopes';
 import storeFromArea from '../../shared/utils/storeFromArea';
 import {WebApi} from 'actions/index';
-import {ScopeList} from './ScopeList';
 import {showConfirmDialog} from 'components/shared/dialog';
-import {useAppThunkDispatch} from 'utils/hooks';
+import {useAppThunkDispatch, useContainerWidth} from 'utils/hooks';
 import {useAppSelector} from 'utils/hooks/useAppSelector';
+import {useUserSettings} from 'contexts/user/useSettings';
+
+const COLUMN_LAYOUT_MIN_WIDTH = 900;
+
+const useStyles = makeStyles({
+    columnContainer: {
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+    },
+});
 
 const OutputState = {
     OPEN: 'OPEN',
@@ -67,6 +76,9 @@ export function ArrOutputDetail({
     fundOutputDetail,
 }: Props) {
     const dispatch = useAppThunkDispatch();
+    const styles = useStyles();
+    const {settings} = useUserSettings();
+    const [containerRef, containerWidth] = useContainerWidth<HTMLDivElement>();
     const scopeList = useAppSelector(state => storeFromArea(state, scopeActions.AREA_SCOPE_LIST));
 
     useEffect(() => {
@@ -181,41 +193,29 @@ export function ArrOutputDetail({
     const existingScopes = (fundOutputDetail.scopes || []).map(i => i.id);
     const connectableScopes = scopeList.rows && scopeList.rows.filter(s => existingScopes.indexOf(s.id) === -1);
 
+    const fitsColumns = containerWidth === null || containerWidth >= COLUMN_LAYOUT_MIN_WIDTH;
+    const useColumns = !!settings.outputColumnLayout && fitsColumns;
+
+    const layoutProps = {
+        fundOutputDetail,
+        readonly,
+        nodesReadOnly: readonly,
+        connectableScopes,
+        form,
+        outputFiles: renderOutputFiles(),
+        onSaveOutput: handleSaveOutput,
+        onAddScope: handleAddScope,
+        onRemoveScope: handleRemoveScope,
+        onAddNodes: handleAddNodes,
+        onRemoveNode: handleRemoveNode,
+    };
+
     return (
-        <div className="arr-output-detail-container">
-            <div className="output-definition-commons">
-                <OutputInlineForm disabled={readonly} output={fundOutputDetail} onSave={handleSaveOutput} />
-                {fundOutputDetail.error && (
-                    <div>
-                        <FormInput
-                            type="textarea"
-                            value={fundOutputDetail.error}
-                            disabled
-                            label={i18n('arr.output.title.error')}
-                        />
-                    </div>
-                )}
-            </div>
-            <div>
-                <label className="control-label">{i18n('arr.output.title.scopes')}</label>
-                {!readonly && <ScopeField scopes={connectableScopes} onChange={handleAddScope} value={null} />}
-                <ScopeList scopes={fundOutputDetail.scopes || []} onRemove={handleRemoveScope} readOnly={readonly} />
-            </div>
-            <div>
-                <label className="control-label">{i18n('arr.output.title.nodes')}</label>
-                <FundNodesList
-                    nodes={fundOutputDetail.nodes}
-                    onDeleteNode={handleRemoveNode}
-                    onAddNode={handleAddNodes}
-                    readOnly={closed || readMode || !isOutputEditable(fundOutputDetail)}
-                />
-            </div>
-            <hr className="small" />
-            {renderOutputFiles()}
-            <h4 className={'desc-items-title'}>{i18n('developer.title.descItems')}</h4>
-            <ToggleContent opened={true} withText>
-                {form}
-            </ToggleContent>
+        <div
+            ref={containerRef}
+            className={mergeClasses('arr-output-detail-container', useColumns && styles.columnContainer)}
+        >
+            {useColumns ? <OutputColumnLayout {...layoutProps} /> : <OutputStackedLayout {...layoutProps} />}
         </div>
     );
 }
