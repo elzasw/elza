@@ -328,7 +328,9 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
     const defaultTaskType = taskTypes[0]?.code;
     const quickTasks = taskTypes.slice(1);
 
-    const currentTaskType = requests[0]?.taskType;
+    // The conversation's CURRENT mode — a follow-up may switch the task type
+    // (the "fix this finding" handoff), so the badge tracks the last exchange.
+    const currentTaskType = requests[requests.length - 1]?.taskType;
     const currentTask = currentTaskType ? taskTypes.find(task => task.code === currentTaskType) : undefined;
     const currentTaskLabel = currentTask?.name || currentTaskType;
     const { conversations } = useAiConversationList(activeConversationId);
@@ -583,6 +585,8 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
                                             requestId={request.id}
                                             onRequestUpdate={replaceRequest}
                                             onClarify={(text) => setDraft(text)}
+                                            onFollowUp={(action) => send(action.userInstructions, action.taskType ?? undefined, activeProfileCode)}
+                                            followUpDisabled={pending}
                                         />
                                         {request.usage && (
                                             <details className={styles.usage}>

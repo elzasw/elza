@@ -5722,6 +5722,16 @@ components:
           allOf:
             - $ref: '#/components/schemas/AiDisplayBlockType'
           description: Selects the block shape; one of the defined `AiDisplayBlockType` codes.
+        followUps:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiFollowUpAction'
+          description: |-
+            Server-suggested continuations of the conversation, rendered as buttons
+            under the block. Clicking one submits a follow-up (`AiRequestCreate`)
+            with the action's `taskType`/`userInstructions` into the same
+            conversation — e.g. a check finding's "prepare the fix" action submits
+            an `elza.enhanceDescription` exchange into the `elza.revision` thread.
       discriminator:
         propertyName: type
         mapping:
@@ -5742,6 +5752,26 @@ components:
         dropping the block silently). Server-side fallback rule: a task output whose
         object type has no block mapper is rendered as one `MARKDOWN` block containing
         the output JSON in a fenced code block.
+    AiFollowUpAction:
+      type: object
+      required:
+        - label
+        - userInstructions
+      properties:
+        label:
+          type: string
+          description: Button label, in the deployment's language.
+        taskType:
+          type: string
+          description: Task type of the follow-up exchange; omitted = the conversation's current type.
+        userInstructions:
+          type: string
+          description: The seeded user instruction the follow-up submits.
+      description: |-
+        One server-suggested follow-up: the button label and the exchange it
+        submits. The same shape a future provider-emitted `elza.taskSuggestion`
+        result block maps onto — today the server composes these itself (per check
+        finding).
     AiTextBlock:
       type: object
       required:

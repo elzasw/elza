@@ -147,9 +147,13 @@ export function useAiConversation({ externalSystemCode, getContext }: UseAiConve
                     // The panel's context chips show the context read at send time;
                     // sending it keeps the follow-up consistent with them (the server
                     // replaces the conversation's stored context and re-resolves the
-                    // referenced objects' current state).
+                    // referenced objects' current state). A follow-up may carry its
+                    // own taskType (the "fix this finding" handoff submits
+                    // elza.enhanceDescription into a revision thread); omitted, the
+                    // server reuses the conversation's previous type.
                     const { data: fresh } = await Api.aiprovider.aiProviderCreateRequest(
-                        conversationIdRef.current, { userInstructions, profile, context: currentContext?.objects });
+                        conversationIdRef.current,
+                        { taskType, userInstructions, profile, context: currentContext?.objects });
                     setDetail(fresh);
                 }
             } catch (sendError) {
