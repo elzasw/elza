@@ -812,7 +812,7 @@ var messages = {
     "arr.daos.title.file-count": "Počet souborů",
     "arr.daos.title.thumbnail": "Náhled {0}/{1}",
     "arr.daos.title.thumbnail.empty": "Náhled není k dispozici",
-    "arr.daos.title.thumbnail.notFound": "Soubor nebyl nalezen v úložišti",
+    "arr.daos.title.thumbnail.notFound": "Prvek nebyl nalezen v úložišti",
     "arr.daos.title.select-file": "Vybraný soubor",
     "arr.daos.files.title.withoutGroup": "Soubory",
     "arr.daos.files.title.inGroup": "Ostatní soubory",
