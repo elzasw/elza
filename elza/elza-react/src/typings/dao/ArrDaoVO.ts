@@ -7,6 +7,7 @@ export interface ArrDaoVO {
     existInArrDaoRequest?: boolean | null;
     fileCount: number;
     fileList?: any[];
+    truncated?: boolean;
     id: number;
     label?: string;
     url?: string;

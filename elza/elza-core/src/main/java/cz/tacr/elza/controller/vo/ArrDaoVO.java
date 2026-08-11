@@ -32,6 +32,9 @@ public class ArrDaoVO {
 
     private long fileCount;
 
+    /** True when the live filesystem listing hit its cap and more files exist on disk. */
+    private Boolean truncated;
+
     private ArrDaoPackageVO daoPackage;
 
     private ArrDaoLinkVO daoLink; // null pokud vazba neexistuje
@@ -141,6 +144,14 @@ public class ArrDaoVO {
 
     public void setFileCount(long fileCount) {
             this.fileCount = fileCount;
+    }
+
+    public Boolean getTruncated() {
+        return truncated;
+    }
+
+    public void setTruncated(Boolean truncated) {
+        this.truncated = truncated;
     }
 
     public String getUrl() {

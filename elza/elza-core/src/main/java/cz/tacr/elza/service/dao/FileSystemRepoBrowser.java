@@ -311,34 +311,49 @@ public class FileSystemRepoBrowser {
     }
 
     /**
+     * Result of {@link #listDaoFiles(ArrDigitalRepository, ArrFund, String, int)}:
+     * the collected files and a flag telling the caller whether the {@code maxEntries}
+     * cap was hit before all files were listed.
+     */
+    public record FsDaoListing(List<FsDaoFile> files, boolean truncated) {
+    }
+
+    /**
      * Lists files of a filesystem DAO live from disk. The DAO's code is a
      * repository-relative path: a regular file yields a single entry, a
      * directory is walked recursively into a flat list ordered by relative
      * path and capped at {@code maxEntries}. Unreadable entries are skipped
-     * with a logged warning; a path that no longer exists yields an empty
-     * list.
+     * with a logged warning; a path that no longer exists yields a synthetic
+     * "missing" entry so the UI keeps the link visible.
      */
-    public List<FsDaoFile> listDaoFiles(ArrDigitalRepository digiRepo,
-                                        ArrFund fund,
-                                        String relatPath,
-                                        int maxEntries) throws IOException {
+    public FsDaoListing listDaoFiles(ArrDigitalRepository digiRepo,
+                                     ArrFund fund,
+                                     String relatPath,
+                                     int maxEntries) throws IOException {
         Path rootPath = fileSystemRepoService.getPath(digiRepo, fund).normalize();
         Path itemPath = fileSystemRepoService.resolvePath(rootPath, relatPath);
         if (Files.isRegularFile(itemPath)) {
-            return Collections.singletonList(createFsDaoFile(rootPath, itemPath, Files.size(itemPath)));
+            return new FsDaoListing(
+                    Collections.singletonList(createFsDaoFile(rootPath, itemPath, Files.size(itemPath))),
+                    false);
         }
         if (!Files.isDirectory(itemPath)) {
             log.warn("Filesystem DAO path is not available: {}", itemPath);
-            // Return a synthetic entry for the missing path so the UI keeps the link
-            // visible and marks it unavailable (item-data returns 404 → orange placeholder).
+            // Synthetic entry for the missing path — item-data returns 404,
+            // the UI renders the orange placeholder.
             String fileName = itemPath.getFileName().toString();
-            return Collections.singletonList(new FsDaoFile(relatPath, fileName, 0L, fileSystemRepoService.getMimetype(fileName)));
+            return new FsDaoListing(
+                    Collections.singletonList(new FsDaoFile(relatPath, fileName, 0L,
+                            fileSystemRepoService.getMimetype(fileName))),
+                    false);
         }
         List<FsDaoFile> result = new ArrayList<>();
+        boolean[] truncated = {false};
         Files.walkFileTree(itemPath, new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
                 if (result.size() >= maxEntries) {
+                    truncated[0] = true;
                     return FileVisitResult.TERMINATE;
                 }
                 if (attrs.isRegularFile()) {
@@ -354,7 +369,7 @@ public class FileSystemRepoBrowser {
             }
         });
         result.sort(Comparator.comparing(FsDaoFile::relatPath));
-        return result;
+        return new FsDaoListing(result, truncated[0]);
     }
 
     private FsDaoFile createFsDaoFile(Path rootPath, Path file, long size) {

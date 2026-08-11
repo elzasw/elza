@@ -1074,6 +1074,7 @@ var messages = {
     "subNodeDao.dao.files.more": "souborů",
     "subNodeDao.dao.files.one": "soubor",
     "subNodeDao.dao.files.few": "soubory",
+    "subNodeDao.dao.files.truncated": "Zobrazeno pouze prvních 1000 souborů",
 
     "field.unitdate.convertToEstimate.message": "Byla vložena datace velkého rozsahu, pravděpodobně se jedná o odhad. Má se hodnota označit jako odhad?",
     "field.unitdate.convertToEstimate.title": "Potvrzení datace",

@@ -30,12 +30,13 @@ export const SubNodeDaoItem:FC<{
         <div className="links" key={'dao-item-' + index}>
             <div className="link" key={'link'}>
                 {dao.url ?
-                        <a target="_blank" rel="noopener noreferrer" href={dao.url}>
-                            {dao.label} - {dao.fileCount} {i18n(`subNodeDao.dao.files.${getPlurality(dao.fileCount)}`)}
+                        <a target="_blank" rel="noopener noreferrer" href={dao.url}
+                           title={dao.truncated ? i18n('subNodeDao.dao.files.truncated') : undefined}>
+                            {dao.label} - {dao.fileCount}{dao.truncated ? '+' : ''} {i18n(`subNodeDao.dao.files.${getPlurality(dao.fileCount)}`)}
                         </a>
                     :
-                        <span>
-                            {dao.label} - {dao.fileCount} {i18n(`subNodeDao.dao.files.${getPlurality(dao.fileCount)}`)}
+                        <span title={dao.truncated ? i18n('subNodeDao.dao.files.truncated') : undefined}>
+                            {dao.label} - {dao.fileCount}{dao.truncated ? '+' : ''} {i18n(`subNodeDao.dao.files.${getPlurality(dao.fileCount)}`)}
                         </span>
                 }
             </div>
