@@ -1733,4 +1733,72 @@
         <dropTable tableName="arr_dao_file_group"/>
     </changeSet>
 
+    <changeSet id="20260811120000" author="ppy">
+        <!-- FileSystemRepoService used to look the DAO package up by repository
+             only, so the first fund to touch a shared filesystem repository
+             owned its single package and other funds linking files from the
+             same repository stored their DAOs (with dao_links to their own
+             nodes) inside that foreign package. Listing such a package then
+             fails: the link's node cannot be resolved in the level tree of the
+             fund that owns the package. The lookup is fund-scoped now (one
+             package per repository and fund); this moves each legacy DAO whose
+             live links all point to a single other fund into that fund's
+             package on the same repository - an existing package is reused,
+             otherwise one is created with the '#fund=' code convention of
+             FileSystemRepoService. DAOs linked to several funds at once cannot
+             be fixed by a move and are left untouched. The discriminator is
+             the URL prefix (matches FileSystemRepoService.isFileSystemRepository),
+             NOT digital_repository_type, which was backfilled heuristically. -->
+        <sql dbms="postgresql"><![CDATA[
+            WITH movable AS (
+              SELECT d.dao_id,
+                     p.digital_repository_id,
+                     p.code AS src_code,
+                     min(n.fund_id) AS target_fund_id
+                FROM arr_dao d
+                JOIN arr_dao_package p ON p.dao_package_id = d.dao_package_id
+                JOIN sys_external_system s ON s.external_system_id = p.digital_repository_id
+                JOIN arr_dao_link l ON l.dao_id = d.dao_id AND l.delete_change_id IS NULL
+                JOIN arr_node n ON n.node_id = l.node_id
+               WHERE s.url LIKE 'file://%'
+               GROUP BY d.dao_id, p.digital_repository_id, p.code, p.fund_id
+              HAVING count(DISTINCT n.fund_id) = 1 AND min(n.fund_id) <> p.fund_id
+            ),
+            target_new AS (
+              SELECT DISTINCT ON (m.digital_repository_id, m.target_fund_id)
+                     m.digital_repository_id, m.target_fund_id, m.src_code
+                FROM movable m
+               WHERE NOT EXISTS (SELECT 1 FROM arr_dao_package tp
+                                  WHERE tp.digital_repository_id = m.digital_repository_id
+                                    AND tp.fund_id = m.target_fund_id)
+               ORDER BY m.digital_repository_id, m.target_fund_id, m.src_code
+            ),
+            created AS (
+              INSERT INTO arr_dao_package (dao_package_id, code, fund_id, digital_repository_id)
+              SELECT ROW_NUMBER() OVER (ORDER BY t.digital_repository_id, t.target_fund_id)
+                     + COALESCE((SELECT dhs.next_val FROM db_hibernate_sequences dhs
+                                  WHERE dhs.sequence_name = 'arr_dao_package|dao_package_id'), 0),
+                     t.src_code || '#fund=' || t.target_fund_id,
+                     t.target_fund_id,
+                     t.digital_repository_id
+                FROM target_new t
+              RETURNING dao_package_id, fund_id, digital_repository_id
+            ),
+            targets AS (
+              SELECT dao_package_id, fund_id, digital_repository_id FROM created
+              UNION ALL
+              SELECT dao_package_id, fund_id, digital_repository_id FROM arr_dao_package
+            )
+            UPDATE arr_dao d
+               SET dao_package_id = (SELECT min(t.dao_package_id)
+                                       FROM targets t
+                                      WHERE t.digital_repository_id = m.digital_repository_id
+                                        AND t.fund_id = m.target_fund_id)
+              FROM movable m
+             WHERE d.dao_id = m.dao_id
+        ]]></sql>
+        <sql dbms="postgresql">UPDATE db_hibernate_sequences SET next_val = (SELECT (coalesce(max(dao_package_id), 0)+20) FROM arr_dao_package)
+             WHERE sequence_name = 'arr_dao_package|dao_package_id'</sql>
+    </changeSet>
+
 </databaseChangeLog>
