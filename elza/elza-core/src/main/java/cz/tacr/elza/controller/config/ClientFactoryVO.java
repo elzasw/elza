@@ -2255,7 +2255,7 @@ public class ClientFactoryVO {
     }
 
     public List<ArrDaoVO> createDaoList(String contextPath,
-                                        final List<ArrDao> arrDaoList, final boolean detail,
+                                        final Collection<ArrDao> arrDaoList, final boolean detail,
                                         final ArrFundVersion version, final Map<Integer, ArrDaoLink> daoLinkMap) {
         if (CollectionUtils.isEmpty(arrDaoList)) {
             return Collections.emptyList();

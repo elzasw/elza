@@ -410,10 +410,11 @@ public class ArrangementController {
         // read related DB data
         ObjectListIterator.forEachPage(arrDaoList, page -> {
             final List<ArrDaoLink> daoLinkList = daoLinkRepository.findByDaoInAndDeleteChangeIsNull(page);
+            // a DAO from a multiple_links repository can have several live links; the VO carries one
             Map<Integer, ArrDaoLink> daoLinkMap = daoLinkList.stream()
-                    .collect(Collectors.toMap(ArrDaoLink::getDaoId, v -> v));
+                    .collect(Collectors.toMap(ArrDaoLink::getDaoId, v -> v, (a, b) -> a));
             daoList.addAll(factoryVo.createDaoList(contextPath,
-                                                   arrDaoList,
+                                                   page,
                                                    BooleanUtils.isTrue(detail), fundVersion,
                                                    daoLinkMap));
         });
