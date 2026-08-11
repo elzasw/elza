@@ -16,4 +16,59 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
+    <changeSet id="20260812110000" author="ppy">
+        <!-- Filesystem repositories persist no entities (da-migration.md steps
+             3a+3b): the ArrDao anchor rows and their per-fund packages became
+             unreferenced orphans after the 3b link conversion, yet still
+             surfaced in the package and unassigned-entity tabs. Remove them,
+             together with their request references - requests were never
+             meaningful for filesystem repositories (the notification gate
+             always excluded them), so rows recorded against fs daos are
+             historical junk. The guard asserts the 3b conversion left no live
+             legacy link on a filesystem dao; a non-empty fs package would fail
+             on the arr_dao FK, loudly. -->
+        <preConditions onFail="HALT">
+            <sqlCheck expectedResult="0">
+                SELECT count(*) FROM arr_legacy_dao_link ll
+                  JOIN arr_dao d ON d.dao_id = ll.dao_id
+                  JOIN arr_dao_package p ON p.dao_package_id = d.dao_package_id
+                  JOIN arr_digital_repository r ON r.external_system_id = p.digital_repository_id
+                 WHERE r.digital_repository_type = 'FILESYSTEM'
+            </sqlCheck>
+        </preConditions>
+        <sql dbms="postgresql">
+            DELETE FROM arr_request_queue_item
+             WHERE request_id IN (SELECT dlr.request_id FROM arr_dao_link_request dlr
+                                   WHERE dlr.dao_id IN (SELECT d.dao_id FROM arr_dao d
+                                       JOIN arr_dao_package p ON p.dao_package_id = d.dao_package_id
+                                       JOIN arr_digital_repository r ON r.external_system_id = p.digital_repository_id
+                                      WHERE r.digital_repository_type = 'FILESYSTEM'));
+            DELETE FROM arr_dao_link_request
+             WHERE dao_id IN (SELECT d.dao_id FROM arr_dao d
+                                JOIN arr_dao_package p ON p.dao_package_id = d.dao_package_id
+                                JOIN arr_digital_repository r ON r.external_system_id = p.digital_repository_id
+                               WHERE r.digital_repository_type = 'FILESYSTEM');
+            DELETE FROM arr_request br
+             WHERE br.discriminator = 'DAO_LINK'
+               AND NOT EXISTS (SELECT 1 FROM arr_dao_link_request dlr WHERE dlr.request_id = br.request_id);
+            DELETE FROM arr_dao_request_dao
+             WHERE dao_id IN (SELECT d.dao_id FROM arr_dao d
+                                JOIN arr_dao_package p ON p.dao_package_id = d.dao_package_id
+                                JOIN arr_digital_repository r ON r.external_system_id = p.digital_repository_id
+                               WHERE r.digital_repository_type = 'FILESYSTEM');
+            DELETE FROM arr_dao_file
+             WHERE dao_id IN (SELECT d.dao_id FROM arr_dao d
+                                JOIN arr_dao_package p ON p.dao_package_id = d.dao_package_id
+                                JOIN arr_digital_repository r ON r.external_system_id = p.digital_repository_id
+                               WHERE r.digital_repository_type = 'FILESYSTEM');
+            DELETE FROM arr_dao
+             WHERE dao_package_id IN (SELECT p.dao_package_id FROM arr_dao_package p
+                                        JOIN arr_digital_repository r ON r.external_system_id = p.digital_repository_id
+                                       WHERE r.digital_repository_type = 'FILESYSTEM');
+            DELETE FROM arr_dao_package
+             WHERE digital_repository_id IN (SELECT external_system_id FROM arr_digital_repository
+                                              WHERE digital_repository_type = 'FILESYSTEM');
+        </sql>
+    </changeSet>
+
 </databaseChangeLog>
