@@ -3,7 +3,6 @@ package cz.tacr.elza.service.dao;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -330,7 +329,10 @@ public class FileSystemRepoBrowser {
         }
         if (!Files.isDirectory(itemPath)) {
             log.warn("Filesystem DAO path is not available: {}", itemPath);
-            return Collections.emptyList();
+            // Return a synthetic entry for the missing path so the UI keeps the link
+            // visible and marks it unavailable (item-data returns 404 → orange placeholder).
+            String fileName = itemPath.getFileName().toString();
+            return Collections.singletonList(new FsDaoFile(relatPath, fileName, 0L, fileSystemRepoService.getMimetype(fileName)));
         }
         List<FsDaoFile> result = new ArrayList<>();
         Files.walkFileTree(itemPath, new SimpleFileVisitor<Path>() {
