@@ -68,8 +68,8 @@ import cz.tacr.elza.dataexchange.output.IOExportWorker;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrDao;
-import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDigitalRepository;
+import cz.tacr.elza.domain.ArrFsLink;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
@@ -405,12 +405,7 @@ public class FundController implements FundsApi {
 
         ArrDigitalRepository digiRepo = externalSystemService.getDigitalRepository(fsrepoId);
 
-        ArrDao dao = fileSystemRepoService.createDao(digiRepo, fundVersion, path);
-
-        // create dao link in separate transaction
-        // dao link might create level and data from levelTreeCache are available
-        // in new transaction>
-        ArrDaoLink daoLink = daoService.createDaoLink(fundVersion, dao, node);
+        ArrFsLink daoLink = daoService.createFsDaoLink(fundVersion, digiRepo, node, path);
 
         Objects.requireNonNull(daoLink);
         Objects.requireNonNull(daoLink.getDaoLinkId());

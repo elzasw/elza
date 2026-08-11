@@ -1801,20 +1801,5 @@
              WHERE sequence_name = 'arr_dao_package|dao_package_id'</sql>
     </changeSet>
     
-	<changeSet id="20260811135500" author="sergey.iryupin">
-	    <!-- N4: normalize repository type and URL. Rows with a file:// URL become
-	        the sole source of truth for FILESYSTEM type; the file:// prefix is stripped
-	        so the URL column holds a plain path.-->
-	    <sql dbms="postgresql">
-	        UPDATE arr_digital_repository
-	        SET digital_repository_type = 'FILESYSTEM'
-	        WHERE external_system_id IN (
-	            SELECT external_system_id FROM sys_external_system WHERE url LIKE 'file://%'
-	        );
-	        UPDATE sys_external_system
-	        SET url = SUBSTRING(url FROM 8)
-	        WHERE url LIKE 'file://%';
-	    </sql>
-	</changeSet>    
 
 </databaseChangeLog>

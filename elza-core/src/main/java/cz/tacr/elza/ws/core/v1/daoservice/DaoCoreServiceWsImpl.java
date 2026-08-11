@@ -36,7 +36,6 @@ import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDao.DaoType;
 import cz.tacr.elza.domain.ArrDaoBatchInfo;
 import cz.tacr.elza.domain.ArrDaoFile;
-import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDaoPackage;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataString;
@@ -45,6 +44,7 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLegacyDaoLink;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.UISettings;
@@ -55,8 +55,8 @@ import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.DigitizationCode;
 import cz.tacr.elza.packageimport.xml.SettingDaoImportLevel;
+import cz.tacr.elza.repository.ArrLegacyDaoLinkRepository;
 import cz.tacr.elza.repository.DaoBatchInfoRepository;
-import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoPackageRepository;
 import cz.tacr.elza.repository.DaoRepository;
 import cz.tacr.elza.repository.DigitalRepositoryRepository;
@@ -109,7 +109,7 @@ public class DaoCoreServiceWsImpl {
     private GroovyScriptService groovyScriptService;
 
     @Autowired
-    private DaoLinkRepository daoLinkRepository;
+    private ArrLegacyDaoLinkRepository legacyDaoLinkRepository;
 
     @Autowired
     private DigitalRepositoryRepository digitalRepositoryRepository;
@@ -235,7 +235,7 @@ public class DaoCoreServiceWsImpl {
                 }
                 // create daolinks only for pure daos (not DaoType.Level)
                 // if link exists it is updated
-                final ArrDaoLink arrDaoLink = createDaoLink(impCtx, daoLink, dao);
+                final ArrLegacyDaoLink arrDaoLink = createDaoLink(impCtx, daoLink, dao);
                 nodeIds.add(arrDaoLink.getNodeId());
             }
             daoService.updateNodeCacheDaoLinks(nodeIds);
@@ -244,9 +244,9 @@ public class DaoCoreServiceWsImpl {
         // Auto create new levels
         // Daos with DaoType.LEVEL
         List<ArrDao> daos = impCtx.getDaos();
-        List<ArrDaoLink> daoLinks = daoLinkRepository.findActiveByDaos(daos);
-        Map<Integer, ArrDaoLink> daoLinkMap = daoLinks.stream()
-                .collect(Collectors.toMap(ArrDaoLink::getDaoId, Function.identity()));
+        List<ArrLegacyDaoLink> daoLinks = legacyDaoLinkRepository.findActiveByDaos(daos);
+        Map<Integer, ArrLegacyDaoLink> daoLinkMap = daoLinks.stream()
+                .collect(Collectors.toMap(ArrLegacyDaoLink::getDaoId, Function.identity()));
 
         Map<ArrFund, List<ArrDao>> levelDaos = daos.stream().filter(dao -> dao.getDaoType() == DaoType.LEVEL)
                 .collect(Collectors.groupingBy(d -> d.getDaoPackage().getFund(),
@@ -289,8 +289,8 @@ public class DaoCoreServiceWsImpl {
             impCtx.addDaoFiles(daoFiles);
         }
         // Check existing links to remove active scenarios
-        List<ArrDaoLink> daoLinks = daoLinkRepository.findActiveByDaos(daos);
-        for(ArrDaoLink daoLink: daoLinks) {
+        List<ArrLegacyDaoLink> daoLinks = legacyDaoLinkRepository.findActiveByDaos(daos);
+        for(ArrLegacyDaoLink daoLink: daoLinks) {
             String currScenario = daoLink.getScenario();
             // drop items from scenario
             DaoDesctItemProvider provider = daoSyncService.createDescItemProvider(daoLink.getDao(), currScenario);
@@ -409,7 +409,7 @@ public class DaoCoreServiceWsImpl {
      *      daoImport)
      * @return nově založený link
      */
-    private ArrDaoLink createDaoLink(ImportContext impCtx, final DaoLink daoLink, ArrDao dao) {
+    private ArrLegacyDaoLink createDaoLink(ImportContext impCtx, final DaoLink daoLink, ArrDao dao) {
         Validate.notNull(daoLink, "Link musí být vyplněn");
         Validate.notEmpty(daoLink.getDidIdentifier(), "DID identifier musí být vyplněn");
 
@@ -427,7 +427,7 @@ public class DaoCoreServiceWsImpl {
         }
 
         // kontrola existence linku, zrušení
-        final List<ArrDaoLink> daoLinkList = daoLinkRepository.findByDaoAndNodeAndDeleteChangeIsNull(dao, arrNode);
+        final List<ArrLegacyDaoLink> daoLinkList = legacyDaoLinkRepository.findByDaoAndNodeAndDeleteChangeIsNull(dao, arrNode);
         if (daoLinkList.size() > 0) {
             logger.debug("Nalezen existující DaoLink mezi DAO(ID=" + dao.getDaoId() + ") a node(ID=" + arrNode
                     .getNodeId() + ").");
@@ -437,7 +437,7 @@ public class DaoCoreServiceWsImpl {
         ArrChange change = impCtx.getChange(dao.getDaoPackage().getFund());
         ArrFundVersion fundVersion = impCtx.getFundVersion(dao.getDaoPackage().getFund());
 
-        ArrDaoLink arrDaoLink = daoService.createArrDaoLink(fundVersion, change, dao, arrNode, null);
+        ArrLegacyDaoLink arrDaoLink = daoService.createArrDaoLink(fundVersion, change, dao, arrNode, null);
         logger.debug("Automaticky založeno nové propojení mezi DAO(ID=" + dao.getDaoId() + ") a node(ID=" + arrNode
                 .getNodeId() + ").");
         return arrDaoLink;
@@ -468,7 +468,7 @@ public class DaoCoreServiceWsImpl {
                                      ArrFund fund,
                                      List<ArrDao> levelDaos,
                                      Map<Integer, String> daoNodeUuidMap,
-                                     Map<Integer, ArrDaoLink> daoLinkMap) {
+                                     Map<Integer, ArrLegacyDaoLink> daoLinkMap) {
         if (CollectionUtils.isEmpty(levelDaos)) {
             return;
         }
@@ -497,12 +497,12 @@ public class DaoCoreServiceWsImpl {
      * @param daoLevelNodeMap
      * @return List of new links
      */
-    private List<ArrDaoLink> prepareDaoLevels(ImportContext impCtx,
+    private List<ArrLegacyDaoLink> prepareDaoLevels(ImportContext impCtx,
                                               final ArrFund fund,
                                               final LevelImportSettings lis,
                                               final List<ArrDao> levelDaoList,
                                               Map<Integer, String> daoNodeUuidMap,
-                                              Map<Integer, ArrDaoLink> daoLinkMap) {
+                                              Map<Integer, ArrLegacyDaoLink> daoLinkMap) {
         logger.debug("Prepare DAO levels, fundId: " + fund.getFundId());
         // prepare parent level
         final ArrFundVersion fundVersion = impCtx.getFundVersion(fund);
@@ -514,7 +514,7 @@ public class DaoCoreServiceWsImpl {
         // zpracovani jiz napojenych dao
         List<ArrDao> daosWithoutLevel = new ArrayList<>();
         for (ArrDao levelDao : levelDaoList) {
-            ArrDaoLink daoLink = daoLinkMap.get(levelDao.getDaoId());
+            ArrLegacyDaoLink daoLink = daoLinkMap.get(levelDao.getDaoId());
             if (daoLink == null) {
                 // level not found
                 daosWithoutLevel.add(levelDao);
@@ -575,12 +575,12 @@ public class DaoCoreServiceWsImpl {
                                                               descProvider, null,
                                                               change);
 
-        List<ArrDaoLink> daoLinks = new ArrayList<>(daosWithoutLevel.size());
+        List<ArrLegacyDaoLink> daoLinks = new ArrayList<>(daosWithoutLevel.size());
         // attach to the parent
         for (ArrDao dao : daosWithoutLevel) {
         	String uuid = daoNodeUuidMap.get(dao.getDaoId());
 
-        	ArrDaoLink daoLink = prepareDaoLevel(fundVersion, parentLevel, change, dao, uuid);
+        	ArrLegacyDaoLink daoLink = prepareDaoLevel(fundVersion, parentLevel, change, dao, uuid);
             daoLinks.add(daoLink);
         }
         return daoLinks;
@@ -594,7 +594,7 @@ public class DaoCoreServiceWsImpl {
      * @param fundVersion
      * @param impCtx
      */
-    private void updateDaoLevel(ArrDaoLink daoLink, ArrChange change,
+    private void updateDaoLevel(ArrLegacyDaoLink daoLink, ArrChange change,
                                 ArrFundVersion fundVersion,
                                 ImportContext impCtx) {
         // update linked node
@@ -631,7 +631,7 @@ public class DaoCoreServiceWsImpl {
      * @param uuid
      * @return
      */
-    private ArrDaoLink prepareDaoLevel(ArrFundVersion fundVersion, ArrLevel parentLevel,
+    private ArrLegacyDaoLink prepareDaoLevel(ArrFundVersion fundVersion, ArrLevel parentLevel,
     								   ArrChange change, ArrDao dao, String uuid) {
         logger.debug("Preparing DAO level, fundId: {}, daoId: {}", fundVersion.getFundId().toString(), dao.getDaoId());
 
@@ -679,7 +679,7 @@ public class DaoCoreServiceWsImpl {
             }
         }
 
-        ArrDaoLink daoLink = daoService.createOrFindDaoLink(fundVersion, change, dao, linkNode, scenario);
+        ArrLegacyDaoLink daoLink = daoService.createOrFindDaoLink(fundVersion, change, dao, linkNode, scenario);
         return daoLink;
 	}
 

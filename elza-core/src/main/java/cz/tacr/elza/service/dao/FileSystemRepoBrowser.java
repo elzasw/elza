@@ -40,7 +40,7 @@ import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.ArrFsLinkRepository;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 
@@ -66,7 +66,7 @@ public class FileSystemRepoBrowser {
 	private ElzaLocale elzaLocale;	
 	
 	@Autowired
-	private DaoLinkRepository daoLinkRepository;
+	private ArrFsLinkRepository fsLinkRepository;
 
 	@Autowired
     private FileSystemRepoService fileSystemRepoService;
@@ -96,7 +96,7 @@ public class FileSystemRepoBrowser {
         }
 
         Map<String, List<FsLink>> linksByCode = new HashMap<>();
-        List<Object[]> rows = daoLinkRepository.findLinksByDigitalRepository(digiRepo);
+        List<Object[]> rows = fsLinkRepository.findLinksByDigitalRepository(digiRepo);
 
         Map<Integer, List<Object[]>> rowsByFund = new HashMap<>();
         for (Object[] row : rows) {

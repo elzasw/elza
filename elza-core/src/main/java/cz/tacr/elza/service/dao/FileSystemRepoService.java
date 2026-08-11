@@ -6,85 +6,22 @@ import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.List;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.api.DigitalRepositoryType;
-import cz.tacr.elza.domain.ArrDao;
-import cz.tacr.elza.domain.ArrDao.DaoType;
-import cz.tacr.elza.domain.ArrDaoPackage;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.DaoPackageRepository;
-import cz.tacr.elza.repository.DaoRepository;
-import cz.tacr.elza.service.ExternalSystemService;
 
 @Service
 public class FileSystemRepoService {
 
     public static final String FILE_URI_PREFIX = "file://";
-
-    @Autowired
-    private DaoPackageRepository daoPackageRepos;
-
-    @Autowired
-    private DaoRepository daoRepository;
-
-    @Autowired
-    private DaoServiceInternal daoServiceInternal;
-
-    @Autowired
-    private ExternalSystemService externalSystemService;
-
-    /**
-     * Creates (or reuses) the {@link ArrDao} anchor for a repository-relative path.
-     * The DAO carries only the path in its {@code code}; file content is read live
-     * from the repository, no per-file entities are persisted.
-     */
-    public ArrDao createDao(ArrDigitalRepository digiRepo, ArrFundVersion fundVersion, String itemRelatPath) {
-    	itemRelatPath = normalizeRelatPath(itemRelatPath);
-        Path repoPath = getPath(digiRepo, fundVersion.getFund());
-        // containment check only; the resolved path itself is not stored
-        resolvePath(repoPath, itemRelatPath);
-
-        ArrDigitalRepository digiRep = externalSystemService.getDigitalRepository(digiRepo.getExternalSystemId());
-        // check if package exists
-        List<ArrDaoPackage> daoPackages = this.daoPackageRepos.findAllByDigitalRepositoryAndFund(digiRep, fundVersion.getFund());
-        ArrDaoPackage daoPackage;
-        if (CollectionUtils.isEmpty(daoPackages)) {
-            // arr_dao_package.code has a global UNIQUE constraint, so the raw repository
-            // path cannot be reused across funds — include the fund id in the code to
-            // keep it unique per (repository, fund).
-            String packageCode = repoPath.toString() + "#fund=" + fundVersion.getFundId();
-            daoPackage = daoServiceInternal.createDaoPackage(fundVersion.getFund(), digiRep, packageCode, null);
-        } else {
-            daoPackage = daoPackages.get(0);
-        }
-        // Check if Dao exists
-        List<ArrDao> daos = daoRepository.findDettachedByFundAndCodes(digiRep, fundVersion.getFund(),
-                                                                      Collections.singletonList(itemRelatPath));
-
-        ArrDao dao;
-        if (CollectionUtils.isNotEmpty(daos)) {
-            // return first available
-            dao = daos.get(0);
-        } else {
-            // create dao
-            dao = daoServiceInternal.createDao(daoPackage, itemRelatPath, itemRelatPath, null, DaoType.ATTACHMENT);
-            dao = daoServiceInternal.persistDao(dao);
-        }
-        return dao;
-    }
 
     /**
      * Repository-relative paths are stored and compared with forward slashes,

@@ -40,7 +40,6 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDao.DaoType;
 import cz.tacr.elza.domain.ArrDaoFile;
-import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDaoPackage;
 import cz.tacr.elza.domain.ArrDaoRequest;
 import cz.tacr.elza.domain.ArrData;
@@ -48,6 +47,7 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLegacyDaoLink;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.UsrPermission;
@@ -58,8 +58,8 @@ import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.DigitizationCode;
 import cz.tacr.elza.exception.codes.PackageCode;
+import cz.tacr.elza.repository.ArrLegacyDaoLinkRepository;
 import cz.tacr.elza.repository.DaoFileRepository;
-import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoPackageRepository;
 import cz.tacr.elza.repository.DaoRepository;
 import cz.tacr.elza.repository.DaoRequestDaoRepository;
@@ -121,7 +121,7 @@ public class DaoSyncService {
     private DaoRepository daoRepository;
 
     @Autowired
-    private DaoLinkRepository daoLinkRepository;
+    private ArrLegacyDaoLinkRepository legacyDaoLinkRepository;
 
     @Autowired
     private DaoPackageRepository daoPackageRepository;
@@ -352,12 +352,12 @@ public class DaoSyncService {
         if (dao == null) {
             throw new ObjectNotFoundException("ArrDao ID=" + daoId + " not found", DigitizationCode.DAO_NOT_FOUND).set("daoId", daoId);
         }
-        List<ArrDaoLink> daoLinks = daoLinkRepository.findByDaoAndDeleteChangeIsNull(dao);
+        List<ArrLegacyDaoLink> daoLinks = legacyDaoLinkRepository.findByDaoAndDeleteChangeIsNull(dao);
         if (daoLinks.size() != 1) {
             throw new ObjectNotFoundException("ArrDao ID=" + daoId + " missing single dao link",
                     DigitizationCode.DAO_NOT_FOUND).set("daoId", daoId);
         }
-        ArrDaoLink daoLink = daoLinks.get(0);
+        ArrLegacyDaoLink daoLink = daoLinks.get(0);
         ArrNode node = daoLink.getNode();
         ArrFund fund = node.getFund();
         ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(fund.getFundId());
@@ -383,7 +383,7 @@ public class DaoSyncService {
 
     public void setScenario(ArrFundVersion fundVersion, ArrChange change,
                             MultipleItemChangeContext itemChangeContext,
-                            ArrDaoLink daoLink, String scenario) {
+                            ArrLegacyDaoLink daoLink, String scenario) {
         ArrDao dao = daoLink.getDao();
         ArrLevel level = fundLevelService.findLevelByNode(daoLink.getNode());
 
@@ -401,7 +401,7 @@ public class DaoSyncService {
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void syncDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion, ArrNode node) {
 
-        List<ArrDaoLink> daoLinks = daoLinkRepository.findActiveByNode(node);
+        List<ArrLegacyDaoLink> daoLinks = legacyDaoLinkRepository.findActiveByNode(node);
 
         if (!daoLinks.isEmpty()) {
 
@@ -439,14 +439,14 @@ public class DaoSyncService {
 
         List<ArrDao> daos = daoRequestDaoRepository.findDaoByDaoRequest(request);
 
-        List<ArrDaoLink> arrDaoLinks = daoLinkRepository.findActiveByDaos(daos);
+        List<ArrLegacyDaoLink> arrDaoLinks = legacyDaoLinkRepository.findActiveByDaos(daos);
 
         List<DaoSyncRequest> list = arrDaoLinks.stream()
                 .map(arrDaoLink -> createDaoSyncRequest(arrDaoLink.getNode(), arrDaoLink.getDao()))
                 .collect(toList());
 
         Dids dids = new Dids();
-        List<ArrNode> arrNodes = arrDaoLinks.stream().map(ArrDaoLink::getNode).collect(toList());
+        List<ArrNode> arrNodes = arrDaoLinks.stream().map(ArrLegacyDaoLink::getNode).collect(toList());
         if (CollectionUtils.isNotEmpty(arrNodes)) {
             dids.getDid().addAll(groovyScriptService.createDids(arrNodes));
         }

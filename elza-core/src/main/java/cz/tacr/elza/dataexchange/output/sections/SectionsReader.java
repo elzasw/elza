@@ -15,7 +15,7 @@ import cz.tacr.elza.dataexchange.output.context.ExportReader;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.UsrPermission.Permission;
-import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.ArrDaLinkRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.service.DataService;
@@ -33,7 +33,7 @@ public class SectionsReader implements ExportReader {
 
     private final NodeCacheService nodeCacheService;
 
-    private final DaoLinkRepository daoLinkRepository;
+    private final ArrDaLinkRepository daLinkRepository;
 
     private final FundVersionRepository fundVersionRepository;
 
@@ -49,7 +49,7 @@ public class SectionsReader implements ExportReader {
         this.context = context;
         this.levelRepository = initHelper.getLevelRepository();
         this.nodeCacheService = initHelper.getNodeCacheService();
-        this.daoLinkRepository = initHelper.getDaoLinkRepository();
+        this.daLinkRepository = initHelper.getDaLinkRepository();
         this.fundVersionRepository = initHelper.getFundVersionRepository();
         this.userService = initHelper.getUserService();
         this.em = initHelper.getEm();
@@ -105,7 +105,7 @@ public class SectionsReader implements ExportReader {
                                     Collection<Integer> rootNodeIds) {
         ArrChange lockChange = fundVersion.getLockChange();
         SectionContext sectionContext = new SectionContext(fundVersion, context, true,
-                levelInfoListener, nodeCacheService, daoLinkRepository, em,
+                levelInfoListener, nodeCacheService, daLinkRepository, em,
                 this.resourcePathResolver, this.dataService);
         try {
             // read sections levels
@@ -125,7 +125,7 @@ public class SectionsReader implements ExportReader {
     private void readSection(ArrFundVersion fundVersion, LevelInfoListener levelInfoListener, int rootNodeId) {
         ArrChange lockChange = fundVersion.getLockChange();
         SectionContext sectionContext = new SectionContext(fundVersion, context, false,
-                levelInfoListener, nodeCacheService, daoLinkRepository, em,
+                levelInfoListener, nodeCacheService, daLinkRepository, em,
                 this.resourcePathResolver,
                 this.dataService);
         try {
