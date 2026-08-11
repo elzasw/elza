@@ -229,6 +229,28 @@ public class FileSystemRepoBrowserTest {
     }
 
     @Test
+    void listRepos_sortedByNameUsingCollator(@TempDir Path root) {
+        ArrDigitalRepository second = new ArrDigitalRepository();
+        second.setExternalSystemId(43);
+        second.setName("Čepy");
+        ArrDigitalRepository third = new ArrDigitalRepository();
+        third.setExternalSystemId(44);
+        third.setName("cepy");
+        repo.setName("dnes");
+        for (ArrDigitalRepository r : Arrays.asList(repo, second, third)) {
+            Mockito.when(serviceMock.isFileSystemRepository(r)).thenReturn(true);
+            Mockito.when(serviceMock.getPath(r, fund)).thenReturn(root);
+        }
+
+        List<FsRepo> result = browser.listRepos(fund, Arrays.asList(repo, second, third));
+
+        // In Czech: c < č < d
+        assertEquals("cepy", result.get(0).getName());
+        assertEquals("Čepy", result.get(1).getName());
+        assertEquals("dnes", result.get(2).getName());
+    }
+
+    @Test
     void listRepos_nonFsRepoIsSkipped() {
         Mockito.when(serviceMock.isFileSystemRepository(repo)).thenReturn(false);
 
