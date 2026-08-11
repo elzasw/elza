@@ -6,8 +6,8 @@ The #9944 series (2026-07-28 → 2026-08-06) delivered §7 Phases 0–2 and part
 `da-migration.md` revised Phase 3 (2026-08-10) removed the persisted file trees and dropped
 `arr_dao_file_group`.
 **Scope:** `FileSystemRepoService` and the filesystem-repository browser feature
-**Related:** `elza/da-migration.md` — its Phase 3 was revised to match §5.3 of this document;
-its step 3b carries the remaining `arr_dao_link` schema change (§5.4)
+**Related:** `elza/da-migration.md` — its Phase 3 was revised to match §5.3 of this document and
+is fully implemented (steps 3a + 3b); remaining DA-side work (Phases 4-5) is tracked there
 
 ---
 
@@ -35,15 +35,15 @@ always written as "`da-migration.md` Phase N".
 |---|---|---|
 | Contract | `elza-development/typespec/main.tsp` (`FsRepo`, `FsItem`, `FsItems`, `FsLink`) | Paged, sorted, filtered browse contract; `FsItem.links` carries node references incl. a `readable` flag for funds the resolver could not read |
 | Browsing | `FileSystemRepoBrowser` (`browseItems`, `listRepos`, `listDaoFiles`) | All listing logic; live disk reads, nothing persisted |
-| Primitives | `FileSystemRepoService` | Containment-checked path resolution, MIME detection, input streams, and the `ArrDao` anchor creation (`createDao` — path in `code`, no per-file entities since step 3a) |
-| Linking | `FundController.fundFsCreateDAOLink` → `createDao` + `DaoService.createDaoLink` | Creates/reuses the anchor and the `arr_dao_link` row; returns `daoLinkId` |
-| Panel files | `DaoService.getDaoFiles` / `countDaoFiles` | Branch per repository type: filesystem DAOs are listed live via `listDaoFiles` (recursive, flat, path-ordered, capped at `DAO_FILE_LIMIT` = 1000, transient entities); other types read persisted `arr_dao_file` rows |
+| Primitives | `FileSystemRepoService` | Containment-checked path resolution, MIME detection, input streams (no persistence at all since step 3b) |
+| Linking | `FundController.fundFsCreateDAOLink` → `DaoService.createFsDaoLink` | Mints the `ArrFsLink` (`digital_repository_id` + `path`, no `ArrDao`), enforces `multiple_links`, returns `daoLinkId` |
+| Panel files | `DaoService.listFsLinkFiles` + `ClientFactoryVO.createFsDaoList` | fs links render as synthesized `ArrDaoVO`s (wire id `-daoLinkId`); files listed live via `listDaoFiles` (recursive, flat, path-ordered, capped at `DAO_FILE_LIMIT` = 1000); package DAOs of other repository types read persisted `arr_dao_file` rows |
 | Download | `FundController.fundFsRepoItemData` | Single authorized endpoint (`FUND_RD`-checked); streams a `FileSystemResource`, so Content-Length and HTTP Range work; MIME-typed, inline for renderable types |
 | UI | `elza-react/src/components/arr/daos/file-system-browser/{FileSystemBrowser,Tree}.tsx`; DAO panel `ArrDaos.jsx`/`ArrDao.jsx` | Tree + list with toolbar filters and link popovers; panel viewer consumes `ArrDaoVO.fileList` |
 
-Link state is resolved by `DaoLinkRepository.findLinksByDigitalRepository` — a single query per
-repository with **no fund predicate** (§8 item 3), joining through `arr_dao_link.dao_id` and
-`arr_dao.code` until `da-migration.md` step 3b converts links to `(digital_repository_id, path)`.
+Link state is resolved by `ArrFsLinkRepository.findLinksByDigitalRepository` — a single query per
+repository with **no fund predicate** (§8 item 3), reading `(digital_repository_id, path)` from
+`arr_fs_link` directly.
 
 ---
 
@@ -117,9 +117,10 @@ re-raised as a finding later. It does not relax A3/A4, which are fixed.
   selection round-trips these ids through component state; they are **not stable across
   requests** — client code must not persist them.
 - **N3 — `multiple_links` is declared but not enforced.** The flag exists on
-  `arr_digital_repository` and in the admin UI; link creation does not check it. Implement as
-  "is `(repository, path)` already live-linked" so the check survives step 3b unchanged (also
-  recorded in `da-migration.md` §6).
+  `arr_digital_repository` and in the admin UI; link creation does not check it.
+  *Resolved 2026-08-11 (step 3b):* `DaoService.createFsDaoLink` enforces it as
+  "is `(repository, path)` already live-linked"; the legacy package-DAO path enforces it per DAO
+  in `createOrFindDaoLink`.
 - **N4 — Repository type enum and URL can disagree.** `DaoCoreServiceTest` creates a repository
   with `DigitalRepositoryType.FILESYSTEM` but a NULL `url`; `isFileSystemRepository()` (URL-prefix
   check) then treats it as non-filesystem, which is why the SOAP fixture works at all. The
@@ -141,9 +142,9 @@ re-raised as a finding later. It does not relax A3/A4, which are fixed.
 
 The central architectural question was whether to keep the filesystem repository as a specialized
 implementation or migrate it onto the DA/AIP model. It is **settled — it stays specialized**
-(§5.3), and step 3a of the resulting plan is implemented. This section stays as the decision
-record, because the conclusion ran against what `da-migration.md` originally scheduled and the
-reasoning should be reviewable rather than taken on trust.
+(§5.3), and both steps of the resulting plan (3a and 3b) are implemented. This section stays as
+the decision record, because the conclusion ran against what `da-migration.md` originally
+scheduled and the reasoning should be reviewable rather than taken on trust.
 
 ### 5.1 What the DA model actually requires
 
@@ -241,12 +242,13 @@ table — not polymorphic siblings.
    preference to omit node references was decided the other way in implementation: `FsItem.links`
    exposes `nodeId`/`fundId`/`fundName`/`nodeLabel`/`nodePath` cross-fund, rendered as clickable
    references in the popover, with `FsLink.readable = false` marking links whose fund/nodes the
-   resolver could not read. The query joins through `arr_dao.code` today; `da-migration.md`
-   step 3b changes its `WHERE` clause to `(digital_repository_id, path)` — same shape, no join.
+   resolver could not read. Since step 3b the query lives on `ArrFsLinkRepository` and reads
+   `(digital_repository_id, path)` from `arr_fs_link` directly — same tuple shape, no join.
 
 ### 5.4 How filesystem links are represented — no specialization needed
 
-*(This is the specification for `da-migration.md` step 3b — still pending.)*
+*(This was the specification for `da-migration.md` step 3b — **implemented 2026-08-11**. Kept as
+the rationale record; the implemented model is summarized in `da-migration.md` §2.)*
 
 An earlier draft proposed either adding `path` columns to `arr_dao_link` or creating a separate,
 self-standing link table for filesystem repositories. **Both were wrong in the same way** — they
@@ -268,9 +270,9 @@ So "link to the whole thing" versus "link to something inside it" is **already**
 concept in this table, expressed as *"container reference + optional member reference"* — and the
 member reference is nullable precisely so the whole-container case can reuse the same row shape.
 
-**Filesystem linking is the same shape.** `fundFsCreateDAOLink` creates an `ArrDao` whose `code`
-*is* the repository-relative path (since step 3a that anchor is all it creates), then links to it.
-Whether the user selects the repository root, a folder, or a single file, the target is always
+**Filesystem linking is the same shape.** At the time of this analysis `fundFsCreateDAOLink`
+created an `ArrDao` whose `code` *was* the repository-relative path, then linked to it. Whether
+the user selects the repository root, a folder, or a single file, the target is always
 *(repository, relative path)* — a container plus a member, exactly like *(AIP, DaDao)*.
 
 Note also that **DA links never address an individual file either**: there is no `DaDaoFile`
@@ -305,41 +307,28 @@ direct analogue. The two models agree on where linking stops.
 
 **Exclusivity becomes structural.** A link's shape is which subtype row exists, so the previously
 planned `CHECK` constraint over nullable column groups is replaced by the per-subtype NOT NULL
-constraints — a stronger guarantee. This also retires the `da-migration.md` §2.4 risk at the
+constraints — a stronger guarantee. This also retired the former "nullable `dao_id`" risk at the
 root: `dao_id` is NOT NULL again, inside `arr_legacy_dao_link`. One residual gap: nothing at the
 DB level prevents child rows in *two* subtype tables for one `dao_link_id` (Hibernate never
 creates that state, and JOINED type resolution would break on it) — Phase 5 validation keeps a
 verification query for it.
 
-**Costs, verified against the code (2026-08-11):**
+**IMPLEMENTED 2026-08-11** (changesets `20260811180000-180005`, in the last-included changelog
+file per the 2026-08-12 reorganization). Notes that survived implementation and still matter:
 
-- `RevertingChangesService` mutates `arr_dao_link` through HQL
-  (`createSimpleDeleteEntityQuery` / `createSimpleUpdateEntityQuery`,
-  `RevertingChangesService.java:1108-1146`), so Hibernate's multi-table bulk strategy expands the
-  delete over the subtype tables itself; its native-SQL reads touch only base-spine columns
-  (`create_change_id`, `delete_change_id`, `node_id`). `DeleteFundAction` deletes links via the
-  derived `deleteByNodeFund` — polymorphic as well. No hand-written multi-table SQL is needed.
-- The node cache serializes `CachedNode.daoLinks` to JSON. Polymorphic (de)serialization follows
-  the `ArrData` precedent — `@JsonTypeInfo(use = Id.CLASS, property = "@class")` on the base
-  class — but existing cached rows carry no `@class` marker on links, so the step 3b migration
-  deletes `arr_cached_node` rows for nodes present in `arr_dao_link`; the startup sync
-  (`StartupService` → `syncCacheParallel()`, which rebuilds every node missing from the cache)
-  restores them on the next start. Inherited consequence of the `ArrData` precedent: cached JSON
-  binds to fully-qualified class names, so renaming the link classes later invalidates cache rows
-  the same way.
-- `DaoLinkRepository` queries that touch subtype fields (`JOIN FETCH dl.dao`, `dl.aip`) move to
-  subtype-scoped repositories (or `TREAT`); every creation site (`DaoServiceInternal`, the SOAP
-  import, DA linking, fs linking) instantiates its concrete subclass. Reads typed against the
-  base keep compiling.
-
-**Conversion of existing rows** stays mechanical, now expressed as row moves: populate
-`arr_legacy_dao_link` and `arr_da_link` from the current nullable columns; then for each
-filesystem link insert the `arr_fs_link` child — path from the `ArrDao.code` it points at
-(canonical '/' form since changeset `20260803120000`), repository from the DAO's package — set
-`link_type` and delete its `arr_legacy_dao_link` child; finally drop the moved columns (`dao_id`,
-`scenario`, `aip_id`, `da_dao_id`) from the base table. Step 3a already deleted the fs
-`arr_dao_file` rows and the `arr_dao_file_group` table, so the conversion touches only the link
-tables, `arr_dao` and the affected `arr_cached_node` rows.
+- The step 3b wave is guarded by HALT preconditions (no legacy data under DA-type repositories,
+  exactly one target group per row) — a halt means "inspect the data", see `da-migration.md`.
+- Cached link JSON binds to fully-qualified class names (`@JsonTypeInfo(Id.CLASS)`, the `ArrData`
+  precedent) — renaming the link entity classes invalidates `arr_cached_node` rows; pair any
+  rename with a cache-invalidation changeset (the 3b wave shows the pattern; the startup sync
+  rebuilds dropped rows).
+- The filesystem `ArrDao` anchor rows and their packages remain as unreferenced orphans until
+  Phase 5 drops the `arr_dao` family.
+- `LinkType` still carries `AIP`/`PART_AIP`/`COMPONENT_AIP` — the backend-neutral rename was
+  deferred because the enum is part of the OpenAPI contract (see `da-migration.md`, deferred
+  cleanups).
+- Node deletion now severs links of all three subtypes; before the split, DA links silently
+  survived node deletion (the legacy fetch's `JOIN FETCH dl.dao` filtered them out).
 
 ---
 
@@ -391,22 +380,27 @@ Status of the original delivery plan:
 | Phase | Content | Status |
 |---|---|---|
 | 0 — stop the bleeding | A1–A9, C6 | **Done** (#9944) |
-| 1 — give the feature a home | Extract browser service, delete cache, containment-checked resolve; *plus the `arr_dao_link` schema change* | **Done except the schema change**, which moved to `da-migration.md` Phase 3 step 3b |
+| 1 — give the feature a home | Extract browser service, delete cache, containment-checked resolve; *plus the `arr_dao_link` schema change* | **Done** — the schema change shipped as `da-migration.md` step 3b (2026-08-11) |
 | 2 — the contract | Sort/paging/filter parameters, `truncated`, link-state filter, link-operation result shape | **Done.** `linkState` is global (§8 item 3); the link-result shape resolved itself differently — `skippedEntries` shipped with the interim A7 fix and was removed again in step 3a, because linking no longer walks anything |
 | 3 — backend SPI | `DigitalRepositoryBackend` + backend-neutral link-status query | **Open** (see §5.3 points 2 and 5) |
 | 4 — frontend | Refresh, functional updates, structured paths, loading/error states | **Partial** — list refresh done; D1(tree)/D2/D3/D4/D5/D6 open (§6) |
 | 5 — scale and robustness | Keyset cursor (C2), single-pass attributes (C5), async link creation, range requests | **Partial** — range requests and async linking are moot (C7 resolved by `FileSystemResource`; C9 by step 3a); C2 and C5 remain |
 | 6 — optional | "Ingest folder as AIP" (§5.3 point 4) | **Open, only if wanted** |
 
-Remaining work, in dependency order:
+Remaining work, in dependency order (step 3b incl. the path-based `multiple_links` enforcement
+shipped 2026-08-11 and dropped off this list):
 
-1. **`da-migration.md` step 3b** — the `arr_dao_link` schema change and link conversion (§5.4),
-   including the `multiple_links` enforcement (N3) implemented path-based so it lands once.
-2. **Phase 3 — the SPI**, once 3b has removed the `dao_id` join from the link-status query.
-3. **Phase 4 leftovers** — §6 items; independent of 1–2.
-4. **Phase 5 leftovers** — C2 keyset cursor and C5 single-pass attributes (N1, the panel cap
-   indicator, was resolved 2026-08-11).
-5. **Phase 6** — optional ingest-as-AIP.
+1. **Phase 3 — the SPI**: `DigitalRepositoryBackend` (`list`/`open`/`link`/`refresh`) with a
+   `FileSystemBackend` and later a `DaBackend`, plus the backend-neutral paged browse contract
+   (`RepoItem`/`RepoItems` generalizing `FsItem`/`FsItems`). Unblocked — the link-status query no
+   longer joins `arr_dao`. See §5.3 points 2 and 3.
+2. **Phase 4 leftovers** — §6 frontend items; independent of 1.
+3. **Phase 5 leftovers** — C2 keyset cursor, C5 single-pass attributes, N5 (batch the per-DAO
+   disk walks if nodes with many fs links become common).
+4. **Phase 6** — optional ingest-as-AIP (§5.3 point 4), the only sanctioned way a filesystem
+   folder gets real `DaAip` semantics.
+5. **`da-migration.md` Phases 4–5** — the WSDL decision and the removal of the `arr_dao` family
+   (tracked there).
 
 ---
 
@@ -415,15 +409,15 @@ Remaining work, in dependency order:
 All architectural questions raised by this analysis are settled.
 
 1. **Filesystem repositories stay specialized** and are not migrated onto `DaAip`/`DaDao`
-   (§5.3, agreed 2026-07-28). `da-migration.md` Phase 3 was revised accordingly; its step 3a is
-   implemented (2026-08-10). The two documents are consistent.
+   (§5.3, agreed 2026-07-28). `da-migration.md` Phase 3 was revised accordingly; both its steps
+   are implemented (3a 2026-08-10, 3b 2026-08-11). The two documents are consistent.
 
 2. **Links reuse the `arr_dao_link` model, specialized by JOINED inheritance** (§5.4; the
    plain-column form agreed 2026-07-28 was revised 2026-08-11 to the entity hierarchy
    `ArrLegacyDaoLink` / `ArrDaLink` / `ArrFsLink` under an abstract `ArrDaoLink` base). Still no
    `arr_dao_target` normalization; `arr_fs_link` now exists as a table, but as a JOINED subtype
-   of the one link model — not the parallel link model §5.4 rejected. *Pending — this is
-   `da-migration.md` step 3b.*
+   of the one link model — not the parallel link model §5.4 rejected. *Implemented 2026-08-11
+   (`da-migration.md` step 3b).*
 
 3. **"Unlinked" is scoped globally, not per-fund** (agreed 2026-07-28). *Implemented:*
    `findLinksByDigitalRepository` filters on the repository and `delete_change_id IS NULL` only —
@@ -450,17 +444,11 @@ unaffected by the fs changes; its repository fixture was aligned when N4 was res
 
 **For the remaining work:**
 
-- **Step 3b (link conversion).** Verify `linkState=UNLINKED` against a fixture where some paths
-  are linked and some not, including a two-fund case with **a path linked only from fund B,
-  browsed from fund A**: it must report `LINKED` and be hidden by `UNLINKED` — the global-scoping
-  decision (§8 item 3) made executable, and the assertion most likely to be written backwards by
-  someone assuming fund-scoped semantics. Assert the converted query contains no join to
-  `arr_dao`/`arr_node`/`arr_fund`. Migration test: every filesystem link ends as an `arr_fs_link`
-  row (`digital_repository_id` + `path` populated) with its `arr_legacy_dao_link` row gone; DA
-  links end as `arr_da_link` rows untouched in content; no `dao_link_id` has children in two
-  subtype tables; `arr_cached_node` rows of nodes present in `arr_dao_link` are deleted and get
-  rebuilt by the startup sync (restored links deserialize as the correct subclasses via
-  `@class`).
+- **Step 3b — done.** Automated: `FileSystemRepoBrowserTest` covers link resolution incl.
+  multi-fund rows against the `arr_fs_link` query; `DaoCoreServiceTest` exercises the SOAP flow
+  on the hierarchy; `ChangelogRelocationTest` proves changeset-identity preservation for the
+  changelog reorganization. Post-deploy check per installation: the migration guard passed, and
+  `SELECT count(*) FROM arr_legacy_dao_link ll JOIN arr_fs_link fl USING (dao_link_id)` is 0.
 - **Phase 4 (frontend).** Manual: add a file on disk, refresh, confirm it appears without
   reopening the dialog; collapse and re-expand a tree folder and confirm children re-fetch (the
   D1 tree half — currently broken).
