@@ -418,6 +418,9 @@ public class FileSystemRepoBrowser {
             }
             result.add(createFsRepo(digiRepo, repoPath.toString(), available));
         }
+        Collator collator = elzaLocale.getCollator();
+        collator.setStrength(Collator.SECONDARY);
+        result.sort((a, b) -> collator.compare(a.getName(), b.getName()));
         return result;
     }
 
