@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- OPEN - the only file that accepts new changesets. Every new changeset,
+     regardless of subsystem (arrangement, DA, fs-repo, AI, ...), is appended
+     here in chronological order; execution order equals file order in
+     db.changelog-master.yaml, so a changeset may depend on anything in the
+     files above it and on earlier changesets of this file, never on later
+     ones.
+
+     When a release line is cut from main: mark this file FROZEN (header
+     comment with the release and date), never touch it again, and open
+     db.elza-3-part-04.xml as the new last include in
+     db.changelog-master.yaml. The part number is a sequence marker, not an
+     ELZA version - release traceability belongs in the freeze header. -->
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+</databaseChangeLog>
