@@ -71,4 +71,27 @@
         </sql>
     </changeSet>
 
+    <changeSet id="20260812120000" author="ppy">
+        <!-- Settings addressing an external repository system do not apply to a filesystem
+             repository: getDaoUrl returns null for it, file and thumbnail URLs are replaced
+             by the built-in item-data endpoint, notifications are never sent and credentials
+             are read only by the DA/WSDL connector. The administration no longer offers these
+             fields for a filesystem repository, so clear the values existing records still
+             carry - an invisible value must not keep influencing behaviour. -->
+        <sql dbms="postgresql">
+            UPDATE arr_digital_repository
+               SET view_dao_url = NULL,
+                   view_file_url = NULL,
+                   view_thumbnail_url = NULL,
+                   send_notification = false
+             WHERE digital_repository_type = 'FILESYSTEM';
+
+            UPDATE sys_external_system
+               SET username = NULL,
+                   password = NULL
+             WHERE external_system_id IN (SELECT external_system_id FROM arr_digital_repository
+                                           WHERE digital_repository_type = 'FILESYSTEM');
+        </sql>
+    </changeSet>
+
 </databaseChangeLog>

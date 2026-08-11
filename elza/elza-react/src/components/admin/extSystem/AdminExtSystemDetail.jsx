@@ -287,8 +287,8 @@ class AdminExtSystemDetail extends AbstractReactComponent {
                             <span>{DIGITAL_REPOSITORY_TYPE_LABEL[extSystem.digitalRepositoryType]}</span>
 
                             {!isFsRepo && this.renderValue(extSystem, 'viewDaoUrl')}
-                            {this.renderValue(extSystem, 'viewFileUrl')}
-                            {this.renderValue(extSystem, 'viewThumbnailUrl')}
+                            {!isFsRepo && this.renderValue(extSystem, 'viewFileUrl')}
+                            {!isFsRepo && this.renderValue(extSystem, 'viewThumbnailUrl')}
 
                             {!isFsRepo && (
                                 <>
