@@ -233,25 +233,27 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
                         ))}
                     </Field>
                     {!isFsRepo && (
-                        <Field
-                            name="viewDaoUrl"
-                            type="text"
-                            component={FormInputField}
-                            label={i18n('admin.extSystem.viewDaoUrl')}
-                        />
+                        <>
+                            <Field
+                                name="viewDaoUrl"
+                                type="text"
+                                component={FormInputField}
+                                label={i18n('admin.extSystem.viewDaoUrl')}
+                            />
+                            <Field
+                                name="viewFileUrl"
+                                type="text"
+                                component={FormInputField}
+                                label={i18n('admin.extSystem.viewFileUrl')}
+                            />
+                            <Field
+                                name="viewThumbnailUrl"
+                                type="text"
+                                component={FormInputField}
+                                label={i18n('admin.extSystem.viewThumbnailUrl')}
+                            />
+                        </>
                     )}
-                    <Field
-                        name="viewFileUrl"
-                        type="text"
-                        component={FormInputField}
-                        label={i18n('admin.extSystem.viewFileUrl')}
-                    />
-                    <Field
-                        name="viewThumbnailUrl"
-                        type="text"
-                        component={FormInputField}
-                        label={i18n('admin.extSystem.viewThumbnailUrl')}
-                    />
                     {!isFsRepo && (
                         <Field
                             name="sendNotification"

@@ -83,16 +83,23 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
             entity.setUrl(entity.getUrl().substring(FILE_URI_PREFIX.length()));
         }
 
-        entity.setViewDaoUrl(viewDaoUrl);
-        entity.setViewFileUrl(viewFileUrl);
-        entity.setViewThumbnailUrl(viewThumbnailUrl);
-        // Filesystem repositories are never notified, so the flag is not part of their
-        // configuration and the client does not send it.
-        entity.setSendNotification(sendNotification == null
-                && digitalRepositoryType == DigitalRepositoryType.FILESYSTEM
-                        ? Boolean.FALSE
-                        : sendNotification);
         entity.setDigitalRepositoryType(digitalRepositoryType);
+        if (digitalRepositoryType == DigitalRepositoryType.FILESYSTEM) {
+            // Settings addressing an external repository system have no meaning for a
+            // filesystem repository. They are hidden in the UI and cleared here, so a value
+            // left over from an earlier configuration cannot keep influencing anything.
+            entity.setViewDaoUrl(null);
+            entity.setViewFileUrl(null);
+            entity.setViewThumbnailUrl(null);
+            entity.setUsername(null);
+            entity.setPassword(null);
+            entity.setSendNotification(false);
+        } else {
+            entity.setViewDaoUrl(viewDaoUrl);
+            entity.setViewFileUrl(viewFileUrl);
+            entity.setViewThumbnailUrl(viewThumbnailUrl);
+            entity.setSendNotification(sendNotification);
+        }
         if (multipleLinks != null) {
             entity.setMultipleLinks(multipleLinks);
         }
