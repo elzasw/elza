@@ -88,6 +88,15 @@ const REQUIRED_FIELDS = {
     [EXT_SYSTEM_CLASS.AiExternalSystem]: ['url'] as string[],
 };
 
+/**
+ * A filesystem repository is served by ELZA itself — settings describing how to reach and
+ * notify an external repository system do not apply to it and stay hidden.
+ */
+function isFilesystemRepository(values: ExtSystemFormValues) {
+    return values[JAVA_ATTR_CLASS] === EXT_SYSTEM_CLASS.ArrDigitalRepository
+        && values.digitalRepositoryType === DigitalRepositoryType.Filesystem;
+}
+
 function validate(values: ExtSystemFormValues) {
     const classJ = values[JAVA_ATTR_CLASS];
     let requiredFields = [...REQUIRED_FIELDS.abstractExtSystem];
@@ -95,7 +104,10 @@ function validate(values: ExtSystemFormValues) {
     if (classJ === EXT_SYSTEM_CLASS.ApExternalSystem) {
         requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.ApExternalSystem]);
     } else if (classJ === EXT_SYSTEM_CLASS.ArrDigitalRepository) {
-        requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.ArrDigitalRepository]);
+        requiredFields = requiredFields.concat(
+            REQUIRED_FIELDS[EXT_SYSTEM_CLASS.ArrDigitalRepository]
+                .filter((name) => !(name === 'sendNotification' && isFilesystemRepository(values))),
+        );
     } else if (classJ === EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk) {
         requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]);
     } else if (classJ === EXT_SYSTEM_CLASS.GisExternalSystem) {
@@ -120,6 +132,7 @@ const INTERCHANGEABLE_TYPES: AP_EXT_SYSTEM_TYPE[][] = [
 const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; defaultScopes: Scope[] }) => {
     const { values, submitting } = useFormState<ExtSystemFormValues>();
     const classJ = values[JAVA_ATTR_CLASS];
+    const isFsRepo = isFilesystemRepository(values);
     const allowedApTypes = isUpdate
         ? INTERCHANGEABLE_TYPES.find((group) => group.includes(values.type as AP_EXT_SYSTEM_TYPE)) ?? [values.type]
         : Object.values(AP_EXT_SYSTEM_TYPE);
@@ -219,12 +232,14 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
                             </option>
                         ))}
                     </Field>
-                    <Field
-                        name="viewDaoUrl"
-                        type="text"
-                        component={FormInputField}
-                        label={i18n('admin.extSystem.viewDaoUrl')}
-                    />
+                    {!isFsRepo && (
+                        <Field
+                            name="viewDaoUrl"
+                            type="text"
+                            component={FormInputField}
+                            label={i18n('admin.extSystem.viewDaoUrl')}
+                        />
+                    )}
                     <Field
                         name="viewFileUrl"
                         type="text"
@@ -237,20 +252,22 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
                         component={FormInputField}
                         label={i18n('admin.extSystem.viewThumbnailUrl')}
                     />
-                    <Field
-                        name="sendNotification"
-                        type="select"
-                        component={FormInputField}
-                        label={i18n('admin.extSystem.sendNotification')}
-                    >
-                        <option key={null} />
-                        <option key="true" value={true as any}>
-                            {i18n('admin.extSystem.sendNotification.true')}
-                        </option>
-                        <option key="false" value={false as any}>
-                            {i18n('admin.extSystem.sendNotification.false')}
-                        </option>
-                    </Field>
+                    {!isFsRepo && (
+                        <Field
+                            name="sendNotification"
+                            type="select"
+                            component={FormInputField}
+                            label={i18n('admin.extSystem.sendNotification')}
+                        >
+                            <option key={null} />
+                            <option key="true" value={true as any}>
+                                {i18n('admin.extSystem.sendNotification.true')}
+                            </option>
+                            <option key="false" value={false as any}>
+                                {i18n('admin.extSystem.sendNotification.false')}
+                            </option>
+                        </Field>
+                    )}
                     <Field
                         name="multipleLinks"
                         type="select"
@@ -278,7 +295,8 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
             />
             <Field name="name" type="text" component={FormInputField} label={i18n('admin.extSystem.name')} />
             <Field name="url" type="text" component={FormInputField} label={i18n('admin.extSystem.url')} />
-            {classJ !== EXT_SYSTEM_CLASS.ApExternalSystem && classJ !== EXT_SYSTEM_CLASS.GisExternalSystem && (
+            {classJ !== EXT_SYSTEM_CLASS.ApExternalSystem && classJ !== EXT_SYSTEM_CLASS.GisExternalSystem
+                && !isFsRepo && (
                 <>
                     <Field
                         name="username"

@@ -249,6 +249,10 @@ class AdminExtSystemDetail extends AbstractReactComponent {
         let content;
         if (extSystemDetail.fetched && extSystem) {
             const classJ = extSystem[JAVA_ATTR_CLASS];
+            // A filesystem repository is served by ELZA itself — settings describing how to
+            // reach and notify an external repository system do not apply to it.
+            const isFsRepo = classJ === EXT_SYSTEM_CLASS.ArrDigitalRepository
+                && extSystem.digitalRepositoryType === DigitalRepositoryType.Filesystem;
             content = (
                 <div className="ext-system-detail">
                     {classJ === EXT_SYSTEM_CLASS.ApExternalSystem && (
@@ -282,16 +286,20 @@ class AdminExtSystemDetail extends AbstractReactComponent {
                             <h4>{i18n('admin.extSystem.type')}</h4>
                             <span>{DIGITAL_REPOSITORY_TYPE_LABEL[extSystem.digitalRepositoryType]}</span>
 
-                            {this.renderValue(extSystem, 'viewDaoUrl')}
+                            {!isFsRepo && this.renderValue(extSystem, 'viewDaoUrl')}
                             {this.renderValue(extSystem, 'viewFileUrl')}
                             {this.renderValue(extSystem, 'viewThumbnailUrl')}
 
-                            <h4>{i18n('admin.extSystem.sendNotification')}</h4>
-                            <span>
-                                {extSystem.sendNotification
-                                    ? i18n('admin.extSystem.sendNotification.true')
-                                    : i18n('admin.extSystem.sendNotification.false')}
-                            </span>
+                            {!isFsRepo && (
+                                <>
+                                    <h4>{i18n('admin.extSystem.sendNotification')}</h4>
+                                    <span>
+                                        {extSystem.sendNotification
+                                            ? i18n('admin.extSystem.sendNotification.true')
+                                            : i18n('admin.extSystem.sendNotification.false')}
+                                    </span>
+                                </>
+                            )}
                             <h4>{i18n('admin.extSystem.multipleLinks')}</h4>
                             <span>
                                 {extSystem.multipleLinks
@@ -316,8 +324,8 @@ class AdminExtSystemDetail extends AbstractReactComponent {
                         {this.renderValue(extSystem, 'name')}
                         {this.renderValue(extSystem, 'code')}
                         {this.renderValue(extSystem, 'url')}
-                        {this.renderValue(extSystem, 'username')}
-                        {this.renderSecret(extSystem, 'password')}
+                        {!isFsRepo && this.renderValue(extSystem, 'username')}
+                        {!isFsRepo && this.renderSecret(extSystem, 'password')}
                         {this.renderValue(extSystem, 'apiKeyId')}
                         {this.renderSecret(extSystem, 'apiKeyValue')}
                         {this.renderValue(extSystem, 'elzaCode')}
