@@ -37,6 +37,15 @@ class AdminExtSystemDetail extends AbstractReactComponent {
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
+        if (nextProps.extSystemDetail.id !== this.props.extSystemDetail.id) {
+            // Test results describe the previously selected system, not the new one.
+            this.setState({
+                repoTestState: null,
+                repoTestResult: null,
+                aiTestState: null,
+                aiTestInfo: null,
+            });
+        }
         this.fetchIfNeeded(nextProps);
     }
 
@@ -90,9 +99,15 @@ class AdminExtSystemDetail extends AbstractReactComponent {
         Api.aiprovider
             .aiProviderGetInfo(String(id))
             .then(response => {
+                if (this.props.extSystemDetail.id !== id) {
+                    return;
+                }
                 this.setState({aiTestState: 'ok', aiTestInfo: response.data});
             })
             .catch(() => {
+                if (this.props.extSystemDetail.id !== id) {
+                    return;
+                }
                 this.setState({aiTestState: 'failed', aiTestInfo: null});
             });
     }
@@ -103,9 +118,15 @@ class AdminExtSystemDetail extends AbstractReactComponent {
         Api.externalSystems
             .externalSystemTestDigitalRepository(id)
             .then(response => {
+                if (this.props.extSystemDetail.id !== id) {
+                    return;
+                }
                 this.setState({repoTestState: 'done', repoTestResult: response.data});
             })
             .catch(() => {
+                if (this.props.extSystemDetail.id !== id) {
+                    return;
+                }
                 this.setState({repoTestState: 'error', repoTestResult: null});
             });
     }
