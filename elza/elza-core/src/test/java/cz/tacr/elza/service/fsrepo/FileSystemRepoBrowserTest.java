@@ -397,12 +397,16 @@ public class FileSystemRepoBrowserTest {
     }
 
     @Test
-    void listDaoFiles_missingPath_returnsEmpty(@TempDir Path root) throws IOException {
+    void listDaoFiles_missingPath_returnsSyntheticEntry(@TempDir Path root) throws IOException {
         stubDaoFileResolution(root);
 
         List<FileSystemRepoBrowser.FsDaoFile> result = browser.listDaoFiles(repo, fund, "does-not-exist", 10);
 
-        assertTrue(result.isEmpty());
+        assertEquals(1, result.size());
+        FileSystemRepoBrowser.FsDaoFile stub = result.get(0);
+        assertEquals("does-not-exist", stub.relatPath());
+        assertEquals("does-not-exist", stub.fileName());
+        assertEquals(0L, stub.size());
     }
 
     @Test
