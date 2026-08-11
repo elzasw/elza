@@ -74,6 +74,14 @@ const messages = defineMessages({
         id: 'arr.daos.fileSystem.links.forbidden',
         defaultMessage: 'Nemáte oprávnění k tomuto archivnímu souboru',
     },
+    repoUnavailableTitle: {
+        id: 'arr.daos.fileSystem.repo.unavailableTitle',
+        defaultMessage: 'Repozitář není dostupný',
+    },
+    repoUnavailableDetail: {
+        id: 'arr.daos.fileSystem.repo.unavailableDetail',
+        defaultMessage: 'Cesta {path} na serveru neexistuje nebo ji nelze číst. Obsah repozitáře proto nelze zobrazit — zkontrolujte nastavení externího systému.',
+    },
 });
 
 interface Props {
@@ -148,6 +156,13 @@ export const FileSystemBrowser = ({
     useDebouncedEffect(() => {
         setDebouncedFilter(filterInput);
     }, 300, [filterInput]);
+
+    // Repository of the selected tree item; unavailable ones cannot be browsed and
+    // the file list is replaced by an explanation instead.
+    const selectedRepo = selectedTreeItemPath
+        ? repos.find((repo) => repo.fsRepoId.toString() === extractRepoIdFromFullPath(selectedTreeItemPath)[0])
+        : undefined;
+    const isSelectedRepoUnavailable = selectedRepo != undefined && !selectedRepo.available;
 
     const loadLevel = async (fullPath: string, lastKey: string | undefined, depth: number = 0, filter?: FsItemType) => {
         const [repoId, path] = extractRepoIdFromFullPath(fullPath)
@@ -303,6 +318,10 @@ export const FileSystemBrowser = ({
     useEffect(() => {
         let cancelled = false;
         (async () => {
+            if (isSelectedRepoUnavailable) {
+                setLevelList([]);
+                return;
+            }
             if (selectedTreeItemPath) {
                 const itemsEx = await loadLevel(selectedTreeItemPath, undefined, 0);
                 if (!cancelled) {
@@ -311,7 +330,7 @@ export const FileSystemBrowser = ({
             }
         })();
         return () => { cancelled = true; };
-    }, [selectedTreeItemPath, sortType, filterByLink, debouncedFilter, refreshCounter])
+    }, [selectedTreeItemPath, isSelectedRepoUnavailable, sortType, filterByLink, debouncedFilter, refreshCounter])
 
     useEffect(() => {
         return () => {
@@ -482,19 +501,31 @@ export const FileSystemBrowser = ({
                         />
                     }
                     center={
-                        <div
-                            className="file-list"
-                            ref={levelContainerRef}
-                        >
-                            <VirtualList
-                                container={levelContainerRef.current || undefined}
-                                items={levelList}
-                                renderItem={(item: RenderItem) => {
-                                    return renderListItem(item);
-                                }}
-                                scrollToIndex={0}
-                            />
-                        </div>
+                        isSelectedRepoUnavailable ? (
+                            <div className="repo-unavailable">
+                                <Icon glyph="fa-exclamation-triangle" className="fa-lg" />
+                                <div className="repo-unavailable__title">
+                                    {intl.formatMessage(messages.repoUnavailableTitle)}
+                                </div>
+                                <div className="repo-unavailable__detail">
+                                    {intl.formatMessage(messages.repoUnavailableDetail, { path: selectedRepo?.path })}
+                                </div>
+                            </div>
+                        ) : (
+                            <div
+                                className="file-list"
+                                ref={levelContainerRef}
+                            >
+                                <VirtualList
+                                    container={levelContainerRef.current || undefined}
+                                    items={levelList}
+                                    renderItem={(item: RenderItem) => {
+                                        return renderListItem(item);
+                                    }}
+                                    scrollToIndex={0}
+                                />
+                            </div>
+                        )
                     }
                 />
             </div>

@@ -6,6 +6,8 @@ import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -24,12 +26,45 @@ public class FileSystemRepoService {
     public static final String FILE_URI_PREFIX = "file://";
 
     /**
+     * Parameter placeholder in a repository URL, e.g. {@code {fundId}}. Substituted
+     * by {@link #getPath(ArrDigitalRepository, ArrFund)}; see
+     * {@link ElzaTools#bindingUrlParams(String, ElzaTools.UrlParams)}.
+     */
+    private static final Pattern URL_PARAM_PATTERN = Pattern.compile("\\{[a-zA-Z]\\w*\\}");
+
+    /**
      * Repository-relative paths are stored and compared with forward slashes,
      * regardless of the OS the server runs on. Call at every write site so
      * DB values stay consistent.
      */
     public static String normalizeRelatPath(String path) {
         return path == null ? null : path.replace('\\', '/');
+    }
+
+    /**
+     * True when the repository root depends on the fund it is browsed for, i.e. the
+     * configured URL contains parameter placeholders.
+     */
+    public static boolean isTemplatedUrl(String url) {
+        return url != null && URL_PARAM_PATTERN.matcher(url).find();
+    }
+
+    /**
+     * Fixed part of a (possibly templated) repository URL — everything before the path
+     * segment that carries the first parameter. For a URL without parameters this is the
+     * whole URL. Used to validate as much of a fund dependent configuration as possible.
+     */
+    public static String getFixedUrlPrefix(String url) {
+        if (url == null) {
+            return null;
+        }
+        Matcher matcher = URL_PARAM_PATTERN.matcher(url);
+        if (!matcher.find()) {
+            return url;
+        }
+        String head = url.substring(0, matcher.start());
+        int lastSeparator = Math.max(head.lastIndexOf('/'), head.lastIndexOf('\\'));
+        return lastSeparator <= 0 ? head : head.substring(0, lastSeparator);
     }
 
     public static String getRelatPath(Path rootPath, Path itemPath) {

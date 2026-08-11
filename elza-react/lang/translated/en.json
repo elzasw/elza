@@ -27,6 +27,34 @@
     "defaultMessage": "Connection works — {provider} (protocol {version})",
     "srcHash": "Ej_cusKYW2W_"
   },
+  "admin.extSystemDetail.repoTest": {
+    "defaultMessage": "Test configuration",
+    "srcHash": "58BcPg8eZIEa"
+  },
+  "admin.extSystemDetail.repoTestContent": {
+    "defaultMessage": "Content of the root directory (first {count}):",
+    "srcHash": "yMZWzlHkgABy"
+  },
+  "admin.extSystemDetail.repoTestEmpty": {
+    "defaultMessage": "The root directory is empty",
+    "srcHash": "acZutbmHEbDq"
+  },
+  "admin.extSystemDetail.repoTestFailed": {
+    "defaultMessage": "The test could not be performed",
+    "srcHash": "3upjfV5hoJ1E"
+  },
+  "admin.extSystemDetail.repoTestOk": {
+    "defaultMessage": "Repository is available",
+    "srcHash": "2MZj-E6TKGcV"
+  },
+  "admin.extSystemDetail.repoTestPath": {
+    "defaultMessage": "Tested path: {path}",
+    "srcHash": "icWWjJQQyTBz"
+  },
+  "admin.extSystemDetail.repoTestUnavailable": {
+    "defaultMessage": "Repository is not available",
+    "srcHash": "WSrg3PozscWF"
+  },
   "admin.institution.action.add": {
     "defaultMessage": "Add institution",
     "srcHash": "gycW8wpBf_7g"
@@ -677,9 +705,8 @@
     "srcHash": "5C_lbtoov7Gn"
   },
   "arr.daos.fileSystem.filterByLink.label": {
-    "defaultMessage": "Propojení",
-    "translated": false,
-    "srcHash": "gKjzNxVXzRQT"
+    "defaultMessage": "Filter",
+    "srcHash": "ANJpmCaoHHmC"
   },
   "arr.daos.fileSystem.filterByLink.linked": {
     "defaultMessage": "Propojené",
@@ -690,6 +717,30 @@
     "defaultMessage": "Nepropojené",
     "translated": false,
     "srcHash": "1esyfo4aKzQd"
+  },
+  "arr.daos.fileSystem.links.forbidden": {
+    "defaultMessage": "You have no permission for this archival fonds",
+    "srcHash": "bnFyEdP7Xju2"
+  },
+  "arr.daos.fileSystem.links.title": {
+    "defaultMessage": "Go to the description unit",
+    "srcHash": "0gq_aGokBf1v"
+  },
+  "arr.daos.fileSystem.links.trigger": {
+    "defaultMessage": "List of links",
+    "srcHash": "gmYy4uXyxEID"
+  },
+  "arr.daos.fileSystem.repo.unavailable": {
+    "defaultMessage": "Repository is not available — the path {path} does not exist on the server or cannot be read. Check the external system settings.",
+    "srcHash": "E-w-ttgEnHON"
+  },
+  "arr.daos.fileSystem.repo.unavailableDetail": {
+    "defaultMessage": "The path {path} does not exist on the server or cannot be read. The repository content cannot be shown — check the external system settings.",
+    "srcHash": "rfuU4hWLYcDY"
+  },
+  "arr.daos.fileSystem.repo.unavailableTitle": {
+    "defaultMessage": "Repository is not available",
+    "srcHash": "WSrg3PozscWF"
   },
   "arr.daos.fileSystem.sort.label": {
     "defaultMessage": "Řazení",

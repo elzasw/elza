@@ -135,6 +135,15 @@
                 &.repo {
                     font-weight: bold;
                 }
+
+                &.unavailable {
+                    cursor: not-allowed;
+                    color: var(--text-secondary, #666);
+
+                    .unavailable-icon {
+                        color: #f0ad4e;
+                    }
+                }
             }
         }
 
@@ -151,6 +160,27 @@
                 .spacer {
                     flex-grow: 1;
                 }
+            }
+        }
+
+        .repo-unavailable {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 16px;
+            text-align: center;
+            color: #f0ad4e;
+
+            &__title {
+                font-weight: 600;
+            }
+
+            &__detail {
+                max-width: 480px;
+                color: var(--text-secondary, #666);
             }
         }
     }
