@@ -31,7 +31,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDaoLink;
+import cz.tacr.elza.domain.ArrLegacyDaoLink;
 import cz.tacr.elza.domain.ArrDaoLinkRequest;
 import cz.tacr.elza.domain.ArrDaoRequest;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
@@ -46,7 +46,7 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DaoDigitizationRequestNodeRepository;
-import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.ArrLegacyDaoLinkRepository;
 import cz.tacr.elza.repository.DaoRequestDaoRepository;
 import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
 import cz.tacr.elza.repository.ExternalSystemRepository;
@@ -124,7 +124,7 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
     private DaoDigitizationRequestNodeRepository daoDigitizationRequestNodeRepository;
 
     @Autowired
-    private DaoLinkRepository daoLinkRepository;
+    private ArrLegacyDaoLinkRepository legacyDaoLinkRepository;
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -209,9 +209,9 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
         daoLinked.setDaoIdentifier(request.getDao().getCode());
         daoLinked.setUsername(getUsername());
         daoLinked.setSystemIdentifier(request.getDigitalRepository().getElzaCode());
-        List<ArrDaoLink> daoLinks = daoLinkRepository.findByDaoAndDeleteChangeIsNull(request.getDao());
+        List<ArrLegacyDaoLink> daoLinks = legacyDaoLinkRepository.findByDaoAndDeleteChangeIsNull(request.getDao());
         if (CollectionUtils.isNotEmpty(daoLinks)) {
-            final ArrDaoLink arrDaoLink = daoLinks.iterator().next();
+            final ArrLegacyDaoLink arrDaoLink = daoLinks.iterator().next();
             final ArrNode arrNode = arrDaoLink.getNode();
             final Did did = groovyScriptService.createDid(arrNode);
             daoLinked.setDid(did);

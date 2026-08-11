@@ -88,7 +88,7 @@ import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApStateRepository;
-import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.ArrDaLinkRepository;
 import cz.tacr.elza.repository.DataStringRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
@@ -156,7 +156,7 @@ public class DEExportService {
             		       LevelRepository levelRepository,
             		       NodeCacheService nodeCacheService,
             		       ApAccessPointRepository apRepository,
-            		       DaoLinkRepository daoLinkRepository,
+            		       ArrDaLinkRepository daLinkRepository,
             		       FundVersionRepository fundVersionRepository,
             		       ResourcePathResolver resourcePathResolver,
                            final DataService dataService,
@@ -176,7 +176,7 @@ public class DEExportService {
                            final ElzaLocale elzaLocale,
                            final AccessPointCacheService apcService) {
         this.initHelper = new ExportInitHelper(em, userService, levelRepository, nodeCacheService, apRepository,
-                daoLinkRepository,
+                daLinkRepository,
                 fundVersionRepository,
                 resourcePathResolver,
                 dataService, apcService);

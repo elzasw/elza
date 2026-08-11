@@ -77,7 +77,7 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDao.DaoType;
 import cz.tacr.elza.domain.UsrPermission.Permission;
-import cz.tacr.elza.domain.ArrDaoLink;
+import cz.tacr.elza.domain.ArrLegacyDaoLink;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -94,7 +94,7 @@ import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.ArrLegacyDaoLinkRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.LevelRepositoryCustom;
@@ -177,8 +177,8 @@ public class LevelTreeCacheService implements NodePermissionChecker {
     private UserService userService;
 
     @Autowired
-    private DaoLinkRepository daoLinkRepository;
-    
+    private ArrLegacyDaoLinkRepository legacyDaoLinkRepository;
+
     /**
      * Cached node hierarchy (tree).
      * 
@@ -971,8 +971,8 @@ private void processEvent(AbstractEventSimple event) {
             nodes.addAll(nodeRepository.findAllById(nodeIdsSublist));
             // read dao links
             if (displayDaoId) {
-                List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdsAndFetchDao(nodeIdsSublist);
-                for (ArrDaoLink daoLink : daoLinks) {
+                List<ArrLegacyDaoLink> daoLinks = legacyDaoLinkRepository.findByNodeIdsAndFetchDao(nodeIdsSublist);
+                for (ArrLegacyDaoLink daoLink : daoLinks) {
                     if (daoLink.getDao().getDaoType().equals(DaoType.LEVEL)) {
                         daoLevelMap.put(daoLink.getNodeId(), daoLink.getDao());
                     }
@@ -1063,8 +1063,8 @@ private void processEvent(AbstractEventSimple event) {
             nodes.addAll(nodeRepository.findAllById(nodeIdsSublist));
             // read dao links
             if (displayDaoId) {
-                List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdsAndFetchDao(nodeIdsSublist);
-                for (ArrDaoLink daoLink : daoLinks) {
+                List<ArrLegacyDaoLink> daoLinks = legacyDaoLinkRepository.findByNodeIdsAndFetchDao(nodeIdsSublist);
+                for (ArrLegacyDaoLink daoLink : daoLinks) {
                     if (daoLink.getDao().getDaoType().equals(DaoType.LEVEL)) {
                         daoLevelMap.put(daoLink.getNodeId(), daoLink.getDao());
                     }
@@ -2453,8 +2453,8 @@ private void processEvent(AbstractEventSimple event) {
 
             while (iteratorNodeIds.hasNext()) {
                 List<Integer> partNodeIds = iteratorNodeIds.next();
-                List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdsAndFetchDao(partNodeIds);
-                for (ArrDaoLink daoLink : daoLinks) {
+                List<ArrLegacyDaoLink> daoLinks = legacyDaoLinkRepository.findByNodeIdsAndFetchDao(partNodeIds);
+                for (ArrLegacyDaoLink daoLink : daoLinks) {
                     if (daoLink.getDao().getDaoType().equals(DaoType.LEVEL)) {
                         daoLevelMap.put(daoLink.getNodeId(), daoLink.getDao());
                     }

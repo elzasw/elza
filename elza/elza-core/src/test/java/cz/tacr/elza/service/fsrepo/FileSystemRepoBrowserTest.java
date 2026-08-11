@@ -24,7 +24,7 @@ import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.ArrFsLinkRepository;
 import cz.tacr.elza.service.dao.FileSystemRepoBrowser;
 import cz.tacr.elza.service.dao.FileSystemRepoService;
 
@@ -40,7 +40,7 @@ public class FileSystemRepoBrowserTest {
 
 	private ElzaLocale elzaLocaleMock;
 	private FileSystemRepoService serviceMock;
-    private DaoLinkRepository daoLinkRepositoryMock;
+    private ArrFsLinkRepository daoLinkRepositoryMock;
     private FileSystemRepoBrowser browser;
     private ArrDigitalRepository repo;
     private ArrFund fund;
@@ -53,14 +53,14 @@ public class FileSystemRepoBrowserTest {
     	Mockito.when(elzaLocaleMock.getCollator()).thenAnswer(inv -> Collator.getInstance(csLocale));
 
     	serviceMock = Mockito.mock(FileSystemRepoService.class);
-        daoLinkRepositoryMock = Mockito.mock(DaoLinkRepository.class);
+        daoLinkRepositoryMock = Mockito.mock(ArrFsLinkRepository.class);
         // Default: no links — tests that care override with Mockito.when(...)
         Mockito.when(daoLinkRepositoryMock.findLinksByDigitalRepository(Mockito.any()))
                 .thenReturn(Collections.emptyList());
 
         browser = new FileSystemRepoBrowser();
         setField(browser, "fileSystemRepoService", serviceMock);
-        setField(browser, "daoLinkRepository", daoLinkRepositoryMock);
+        setField(browser, "fsLinkRepository", daoLinkRepositoryMock);
         setField(browser, "elzaLocale", elzaLocaleMock);
 
         repo = new ArrDigitalRepository();

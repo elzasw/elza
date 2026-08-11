@@ -6,7 +6,7 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.data.StructType;
 import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDaoLink;
+import cz.tacr.elza.domain.ArrDaLink;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDataUnitdate;
@@ -30,7 +30,7 @@ import cz.tacr.elza.repository.DaDaoFileRepository;
 import cz.tacr.elza.repository.DaDaoItemRepository;
 import cz.tacr.elza.repository.DaDaoRelationRepository;
 import cz.tacr.elza.repository.DaDaoRepository;
-import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.ArrDaLinkRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.DaoLevelViewService;
@@ -99,7 +99,7 @@ public class DaoProcessor {
     @Autowired
     private DaDaoItemRepository daoItemRepository;
     @Autowired
-    private DaoLinkRepository daoLinkRepository;
+    private ArrDaLinkRepository daLinkRepository;
     @Autowired
     private DaoLevelViewService levelViewService;
     @Autowired
@@ -202,7 +202,7 @@ public class DaoProcessor {
         //smazání starých komponent
         Set<DaDao> daDaoSet = new HashSet<>(daDaoMap.values());
 
-        List<ArrDaoLink> daoLinkList = daoLinkRepository.findByDaDaoInAndDeleteChangeIsNull(daDaoSet);
+        List<ArrDaLink> daoLinkList = daLinkRepository.findByDaDaoInAndDeleteChangeIsNull(daDaoSet);
         if (CollectionUtils.isNotEmpty(daoLinkList) && !forceUpdate) {
             throw new IllegalStateException("Nelze smazat dao, které má vazbu na node");
         }
@@ -237,7 +237,7 @@ public class DaoProcessor {
         daoFileFolderRepository.saveAll(daDaoFileFolderSet);
         daoFileRepository.saveAll(daDaoFileSet);
         daoItemRepository.saveAll(daDaoItemSet);
-        daoLinkRepository.saveAll(daoLinkList);
+        daLinkRepository.saveAll(daoLinkList);
     }
 
     private void createRepresentationDaoFromStruct(List<StructMapType> structMap, MetsType.FileSec fileSec, DaChange change) {

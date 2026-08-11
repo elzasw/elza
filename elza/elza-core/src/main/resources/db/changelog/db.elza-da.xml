@@ -700,4 +700,170 @@
         <dropNotNullConstraint tableName="arr_dao_link" columnName="link_type"/>
     </changeSet>
 
+
+    <!-- The changesets below live in db.elza-da.xml (not db.elza-3.0.xml) because
+         they reference structures this file creates (digital_repository_type,
+         aip_id/da_dao_id on arr_dao_link, da_aip, da_dao) - the master changelog
+         runs db.elza-3.0.xml first, so on a fresh database they would fail there.
+         Changeset 20260811135500 was moved here from db.elza-3.0.xml: the move
+         changes its Liquibase identity, so databases that already executed it
+         run it once more - both UPDATEs are idempotent (second run matches no
+         rows). -->
+	<changeSet id="20260811135500" author="sergey.iryupin">
+	    <!-- N4: normalize repository type and URL. Rows with a file:// URL become
+	        the sole source of truth for FILESYSTEM type; the file:// prefix is stripped
+	        so the URL column holds a plain path.-->
+	    <sql dbms="postgresql">
+	        UPDATE arr_digital_repository
+	        SET digital_repository_type = 'FILESYSTEM'
+	        WHERE external_system_id IN (
+	            SELECT external_system_id FROM sys_external_system WHERE url LIKE 'file://%'
+	        );
+	        UPDATE sys_external_system
+	        SET url = SUBSTRING(url FROM 8)
+	        WHERE url LIKE 'file://%';
+	    </sql>
+	</changeSet>
+
+    <changeSet id="20260811180000" author="ppy">
+        <!-- Step 3b guard (da-migration.md Phase 2 + restructure preconditions).
+             Halts the migration when the flat arr_dao_link cannot be split into
+             exclusive subtype rows: legacy data under a DA-type repository (the
+             verified-empty premise of Phase 2), a link carrying both target
+             groups, or a link carrying neither. A halt here means "inspect the
+             data", not "migration bug" - see da-migration.md Phase 2. -->
+        <preConditions onFail="HALT">
+            <sqlCheck expectedResult="0">
+                SELECT count(*) FROM arr_dao d
+                  JOIN arr_dao_package p ON p.dao_package_id = d.dao_package_id
+                  JOIN arr_digital_repository r ON r.external_system_id = p.digital_repository_id
+                 WHERE r.digital_repository_type = 'DA'
+            </sqlCheck>
+            <sqlCheck expectedResult="0">
+                SELECT count(*) FROM arr_dao_link WHERE dao_id IS NOT NULL AND aip_id IS NOT NULL
+            </sqlCheck>
+            <sqlCheck expectedResult="0">
+                SELECT count(*) FROM arr_dao_link WHERE dao_id IS NULL AND aip_id IS NULL
+            </sqlCheck>
+        </preConditions>
+    </changeSet>
+
+    <changeSet id="20260811180001" author="ppy">
+        <!-- Step 3b: split arr_dao_link into a JOINED hierarchy. The base table
+             keeps the shared spine (node, changes, link_type); each target shape
+             gets its own subtype table with real NOT NULL constraints, replacing
+             the convention of nullable column groups. See da-migration.md par. 3
+             and fs-repo-analysis.md par. 5.4. -->
+        <createTable tableName="arr_legacy_dao_link">
+            <column name="dao_link_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_arr_legacy_dao_link" nullable="false"/>
+            </column>
+            <column name="dao_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="scenario" type="nvarchar(250)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="arr_legacy_dao_link" baseColumnNames="dao_link_id"
+                                 constraintName="fk_arr_legacy_dao_link_dao_link"
+                                 referencedTableName="arr_dao_link" referencedColumnNames="dao_link_id"/>
+        <addForeignKeyConstraint baseTableName="arr_legacy_dao_link" baseColumnNames="dao_id"
+                                 constraintName="fk_arr_legacy_dao_link_dao"
+                                 referencedTableName="arr_dao" referencedColumnNames="dao_id"/>
+        <createIndex tableName="arr_legacy_dao_link" indexName="ix_arr_legacy_dao_link_dao">
+            <column name="dao_id"/>
+        </createIndex>
+
+        <createTable tableName="arr_da_link">
+            <column name="dao_link_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_arr_da_link" nullable="false"/>
+            </column>
+            <column name="aip_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="da_dao_id" type="int"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="arr_da_link" baseColumnNames="dao_link_id"
+                                 constraintName="fk_arr_da_link_dao_link"
+                                 referencedTableName="arr_dao_link" referencedColumnNames="dao_link_id"/>
+        <addForeignKeyConstraint baseTableName="arr_da_link" baseColumnNames="aip_id"
+                                 constraintName="fk_arr_da_link_da_aip"
+                                 referencedTableName="da_aip" referencedColumnNames="aip_id"/>
+        <addForeignKeyConstraint baseTableName="arr_da_link" baseColumnNames="da_dao_id"
+                                 constraintName="fk_arr_da_link_da_dao"
+                                 referencedTableName="da_dao" referencedColumnNames="dao_id"/>
+        <createIndex tableName="arr_da_link" indexName="ix_arr_da_link_aip">
+            <column name="aip_id"/>
+        </createIndex>
+
+        <createTable tableName="arr_fs_link">
+            <column name="dao_link_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_arr_fs_link" nullable="false"/>
+            </column>
+            <column name="digital_repository_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="path" type="nvarchar(1000)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="arr_fs_link" baseColumnNames="dao_link_id"
+                                 constraintName="fk_arr_fs_link_dao_link"
+                                 referencedTableName="arr_dao_link" referencedColumnNames="dao_link_id"/>
+        <addForeignKeyConstraint baseTableName="arr_fs_link" baseColumnNames="digital_repository_id"
+                                 constraintName="fk_arr_fs_link_digital_repository"
+                                 referencedTableName="arr_digital_repository" referencedColumnNames="external_system_id"/>
+        <createIndex tableName="arr_fs_link" indexName="ix_arr_fs_link_repo_path">
+            <column name="digital_repository_id"/>
+            <column name="path"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="20260811180002" author="ppy">
+        <!-- Step 3b: move the existing target columns into the subtype tables.
+             Every row has exactly one target group (guarded by 20260811180000). -->
+        <sql dbms="postgresql">
+            INSERT INTO arr_legacy_dao_link (dao_link_id, dao_id, scenario)
+            SELECT dao_link_id, dao_id, scenario FROM arr_dao_link WHERE dao_id IS NOT NULL;
+            INSERT INTO arr_da_link (dao_link_id, aip_id, da_dao_id)
+            SELECT dao_link_id, aip_id, da_dao_id FROM arr_dao_link WHERE aip_id IS NOT NULL;
+        </sql>
+    </changeSet>
+
+    <changeSet id="20260811180003" author="ppy">
+        <!-- Step 3b: convert filesystem links from the legacy shape to ArrFsLink.
+             The ArrDao anchor's code is the canonical repository-relative path
+             (changeset 20260803120000); the repository comes from the DAO's
+             package. The type discriminator is authoritative since 20260811135500.
+             The ArrDao anchor rows themselves stay behind, unreferenced by links;
+             the arr_dao family is dropped wholesale in Phase 5. -->
+        <sql dbms="postgresql">
+            INSERT INTO arr_fs_link (dao_link_id, digital_repository_id, path)
+            SELECT ll.dao_link_id, p.digital_repository_id, d.code
+              FROM arr_legacy_dao_link ll
+              JOIN arr_dao d ON d.dao_id = ll.dao_id
+              JOIN arr_dao_package p ON p.dao_package_id = d.dao_package_id
+              JOIN arr_digital_repository r ON r.external_system_id = p.digital_repository_id
+             WHERE r.digital_repository_type = 'FILESYSTEM';
+            DELETE FROM arr_legacy_dao_link
+             WHERE dao_link_id IN (SELECT dao_link_id FROM arr_fs_link);
+        </sql>
+    </changeSet>
+
+    <changeSet id="20260811180004" author="ppy">
+        <!-- Step 3b: the moved target columns leave the base table; the shared
+             spine (node, changes, link_type) is all that remains there. -->
+        <dropColumn tableName="arr_dao_link" columnName="dao_id"/>
+        <dropColumn tableName="arr_dao_link" columnName="scenario"/>
+        <dropColumn tableName="arr_dao_link" columnName="aip_id"/>
+        <dropColumn tableName="arr_dao_link" columnName="da_dao_id"/>
+    </changeSet>
+
+    <changeSet id="20260811180005" author="ppy">
+        <!-- Step 3b: cached node JSON serialized daoLinks without the @class
+             type marker the JOINED hierarchy now requires; drop cached rows of
+             nodes that carry any link and let the startup sync rebuild them. -->
+        <sql dbms="postgresql">
+            DELETE FROM arr_cached_node
+             WHERE node_id IN (SELECT DISTINCT node_id FROM arr_dao_link)
+        </sql>
+    </changeSet>
+
 </databaseChangeLog>

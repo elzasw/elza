@@ -60,7 +60,8 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ArrRefTemplateRepository;
 import cz.tacr.elza.repository.CachedNodeRepository;
-import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.ArrFsLinkRepository;
+import cz.tacr.elza.repository.ArrLegacyDaoLinkRepository;
 import cz.tacr.elza.repository.DaoRepository;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.InhibitedItemRepository;
@@ -157,7 +158,10 @@ public class NodeCacheService {
     private static final int SYNC_BATCH_NODE_SIZE = 800;
 
     @Autowired
-    private DaoLinkRepository daoLinkRepository;
+    private ArrLegacyDaoLinkRepository legacyDaoLinkRepository;
+
+    @Autowired
+    private ArrFsLinkRepository fsLinkRepository;
 
     @Autowired
     private StructuredObjectRepository structureDataRepository;
@@ -908,7 +912,10 @@ public class NodeCacheService {
         if (nodeIds.isEmpty()) {
             return Collections.emptyMap();
         }
-        List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdsAndFetchDao(nodeIds);
+        // cache nese legacy a fs vazby; da vazby v ní nikdy nebyly
+        List<ArrDaoLink> daoLinks = new ArrayList<>();
+        daoLinks.addAll(legacyDaoLinkRepository.findByNodeIdsAndFetchDao(nodeIds));
+        daoLinks.addAll(fsLinkRepository.findByNodeIdInAndDeleteChangeIsNull(nodeIds));
 
         Map<Integer, List<ArrDaoLink>> nodeIdDaoLinks = new HashMap<>();
         for (ArrDaoLink daoLink : daoLinks) {

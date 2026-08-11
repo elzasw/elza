@@ -114,9 +114,12 @@ class ArrDao extends AbstractReactComponent {
                             <Button variant="action" disabled={!dao.daoLink} onClick={this.handleUnlink}>
                                 <Icon glyph="fa-unlink" />
                             </Button>
-                            <Button variant="action" onClick={this.handleTrash} disabled={dao.existInArrDaoRequest}>
-                                <Icon glyph="fa-trash" />
-                            </Button>
+                            {/* fs položky (syntetické záporné id) nemají ArrDao — požadavek nelze založit */}
+                            {dao.id > 0 && (
+                                <Button variant="action" onClick={this.handleTrash} disabled={dao.existInArrDaoRequest}>
+                                    <Icon glyph="fa-trash" />
+                                </Button>
+                            )}
                         </div>
                     )}
                 </div>
