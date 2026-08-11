@@ -5,7 +5,7 @@ import {AREA_EXT_SYSTEM_DETAIL, extSystemDetailFetchIfNeeded} from 'actions/admi
 import {storeFromArea} from 'shared/utils';
 
 import './AdminExtSystemDetail.scss';
-import {AP_EXT_SYSTEM_TYPE, JAVA_ATTR_CLASS} from '../../../constants';
+import {AP_EXT_SYSTEM_TYPE, DigitalRepositoryType, JAVA_ATTR_CLASS} from '../../../constants';
 import {WebApi} from 'actions/index.jsx';
 import {
     EXT_SYSTEM_CLASS,
@@ -95,6 +95,91 @@ class AdminExtSystemDetail extends AbstractReactComponent {
             .catch(() => {
                 this.setState({aiTestState: 'failed', aiTestInfo: null});
             });
+    }
+
+    handleTestRepository = () => {
+        const { extSystemDetail: {id}, } = this.props;
+        this.setState({repoTestState: 'pending', repoTestResult: null});
+        Api.externalSystems
+            .externalSystemTestDigitalRepository(id)
+            .then(response => {
+                this.setState({repoTestState: 'done', repoTestResult: response.data});
+            })
+            .catch(() => {
+                this.setState({repoTestState: 'error', repoTestResult: null});
+            });
+    }
+
+    renderRepoTestResult = () => {
+        const repoTestState = this.state?.repoTestState;
+        if (repoTestState === 'error') {
+            return (
+                <div className="repo-test-result">
+                    <FormattedMessage
+                        id="admin.extSystemDetail.repoTestFailed"
+                        defaultMessage="Test se nepodařilo provést"
+                    />
+                </div>
+            );
+        }
+        if (repoTestState !== 'done') {
+            return null;
+        }
+
+        const result = this.state?.repoTestResult || {};
+        return (
+            <div className="repo-test-result">
+                <div className={result.available ? 'repo-test-result__ok' : 'repo-test-result__failed'}>
+                    {result.available ? (
+                        <FormattedMessage
+                            id="admin.extSystemDetail.repoTestOk"
+                            defaultMessage="Repozitář je dostupný"
+                        />
+                    ) : (
+                        <FormattedMessage
+                            id="admin.extSystemDetail.repoTestUnavailable"
+                            defaultMessage="Repozitář není dostupný"
+                        />
+                    )}
+                </div>
+                {result.path && (
+                    <div>
+                        <FormattedMessage
+                            id="admin.extSystemDetail.repoTestPath"
+                            defaultMessage="Ověřená cesta: {path}"
+                            values={{path: result.path}}
+                        />
+                    </div>
+                )}
+                {result.message && <div>{result.message}</div>}
+                {result.items?.length > 0 && (
+                    <>
+                        <div>
+                            <FormattedMessage
+                                id="admin.extSystemDetail.repoTestContent"
+                                defaultMessage="Obsah kořenového adresáře (prvních {count}):"
+                                values={{count: result.items.length}}
+                            />
+                        </div>
+                        <ul className="repo-test-result__items">
+                            {result.items.map(item => (
+                                <li key={item.name}>
+                                    {item.itemType === 'FOLDER' ? '📁' : '📄'} {item.name}
+                                </li>
+                            ))}
+                        </ul>
+                    </>
+                )}
+                {result.available && !result.items?.length && (
+                    <div>
+                        <FormattedMessage
+                            id="admin.extSystemDetail.repoTestEmpty"
+                            defaultMessage="Kořenový adresář je prázdný"
+                        />
+                    </div>
+                )}
+            </div>
+        );
     }
 
     renderAiTestResult = () => {
@@ -228,6 +313,21 @@ class AdminExtSystemDetail extends AbstractReactComponent {
                         && <div style={{margin: "8px 0"}}>
                         <Button onClick={this.handleResyncExtSystem}>{i18n('admin.extSystem.synchronize')}</Button>
                     </div>}
+                    {classJ === EXT_SYSTEM_CLASS.ArrDigitalRepository
+                        && extSystem.digitalRepositoryType === DigitalRepositoryType.Filesystem && (
+                        <div style={{margin: "8px 0"}}>
+                            <Button
+                                onClick={this.handleTestRepository}
+                                disabled={this.state?.repoTestState === 'pending'}
+                            >
+                                <FormattedMessage
+                                    id="admin.extSystemDetail.repoTest"
+                                    defaultMessage="Vyzkoušet nastavení"
+                                />
+                            </Button>
+                            {this.renderRepoTestResult()}
+                        </div>
+                    )}
                     {classJ === EXT_SYSTEM_CLASS.AiExternalSystem && (
                         <div style={{margin: "8px 0"}}>
                             <Button

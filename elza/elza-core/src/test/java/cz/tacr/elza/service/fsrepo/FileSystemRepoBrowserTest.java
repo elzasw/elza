@@ -14,6 +14,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
+import cz.tacr.elza.api.DigitalRepositoryType;
+import cz.tacr.elza.controller.vo.DigitalRepositoryTestResult;
 import cz.tacr.elza.controller.vo.FsItem;
 import cz.tacr.elza.controller.vo.FsItemSortType;
 import cz.tacr.elza.controller.vo.FsItemType;
@@ -24,12 +26,14 @@ import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ArrFsLinkRepository;
 import cz.tacr.elza.service.dao.FileSystemRepoBrowser;
 import cz.tacr.elza.service.dao.FileSystemRepoService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -180,17 +184,48 @@ public class FileSystemRepoBrowserTest {
         assertEquals(1, result.size());
         assertEquals(42, result.get(0).getFsRepoId());
         assertEquals("test-repo", result.get(0).getName());
+        assertTrue(result.get(0).getAvailable());
     }
 
     @Test
-    void listRepos_unavailableRepoIsSkipped(@TempDir Path root) {
+    void listRepos_missingFixedRoot_isListedAsUnavailable(@TempDir Path root) {
         Path missing = root.resolve("does-not-exist");
+        repo.setUrl(missing.toString());
+        Mockito.when(serviceMock.isFileSystemRepository(repo)).thenReturn(true);
+        Mockito.when(serviceMock.getPath(repo, fund)).thenReturn(missing);
+
+        List<FsRepo> result = browser.listRepos(fund, Collections.singletonList(repo));
+
+        assertEquals(1, result.size());
+        assertFalse(result.get(0).getAvailable());
+        assertEquals(missing.toString(), result.get(0).getPath());
+    }
+
+    @Test
+    void listRepos_missingTemplatedRoot_isSkipped(@TempDir Path root) {
+        // A fund dependent root that does not exist means the repository holds nothing
+        // for this fund, which is a normal state — not a misconfiguration.
+        Path missing = root.resolve("does-not-exist");
+        repo.setUrl(root + "/{fundId}");
         Mockito.when(serviceMock.isFileSystemRepository(repo)).thenReturn(true);
         Mockito.when(serviceMock.getPath(repo, fund)).thenReturn(missing);
 
         List<FsRepo> result = browser.listRepos(fund, Collections.singletonList(repo));
 
         assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void listRepos_unresolvableRoot_isListedAsUnavailable() {
+        Mockito.when(serviceMock.isFileSystemRepository(repo)).thenReturn(true);
+        Mockito.when(serviceMock.getPath(repo, fund))
+                .thenThrow(new BusinessException("Repository URL is not configured", BaseCode.INVALID_STATE));
+
+        List<FsRepo> result = browser.listRepos(fund, Collections.singletonList(repo));
+
+        assertEquals(1, result.size());
+        assertFalse(result.get(0).getAvailable());
+        assertEquals("", result.get(0).getPath());
     }
 
     @Test
@@ -426,6 +461,106 @@ public class FileSystemRepoBrowserTest {
         assertEquals("does-not-exist", stub.relatPath());
         assertEquals("does-not-exist", stub.fileName());
         assertEquals(0L, stub.size());
+    }
+
+    // ---------- testRepository ----------
+
+    @Test
+    void testRepository_readableRoot_isAvailableAndSamplesItems(@TempDir Path root) throws IOException {
+        Files.createFile(root.resolve("scan.jpg"));
+        Files.createDirectory(root.resolve("sub"));
+        repo.setUrl(root.toString());
+        Mockito.when(serviceMock.isFileSystemRepository(repo)).thenReturn(true);
+
+        DigitalRepositoryTestResult result = browser.testRepository(repo);
+
+        assertTrue(result.getAvailable());
+        assertFalse(result.getTemplated());
+        assertNull(result.getMessage());
+        assertEquals(root.toString(), result.getPath());
+        assertEquals(2, result.getItems().size());
+    }
+
+    @Test
+    void testRepository_missingRoot_reportsUnavailable(@TempDir Path root) {
+        Path missing = root.resolve("does-not-exist");
+        repo.setUrl(missing.toString());
+        Mockito.when(serviceMock.isFileSystemRepository(repo)).thenReturn(true);
+
+        DigitalRepositoryTestResult result = browser.testRepository(repo);
+
+        assertFalse(result.getAvailable());
+        assertEquals(missing.toString(), result.getPath());
+        assertEquals("Path does not exist", result.getMessage());
+    }
+
+    @Test
+    void testRepository_rootIsFile_reportsUnavailable(@TempDir Path root) throws IOException {
+        Path file = Files.createFile(root.resolve("f.txt"));
+        repo.setUrl(file.toString());
+        Mockito.when(serviceMock.isFileSystemRepository(repo)).thenReturn(true);
+
+        DigitalRepositoryTestResult result = browser.testRepository(repo);
+
+        assertFalse(result.getAvailable());
+        assertEquals("Path is not a directory", result.getMessage());
+    }
+
+    @Test
+    void testRepository_blankUrl_reportsUnavailable() {
+        Mockito.when(serviceMock.isFileSystemRepository(repo)).thenReturn(true);
+
+        DigitalRepositoryTestResult result = browser.testRepository(repo);
+
+        assertFalse(result.getAvailable());
+        assertNull(result.getPath());
+        assertEquals("Repository URL is not configured", result.getMessage());
+    }
+
+    @Test
+    void testRepository_nonFsRepository_reportsUnavailable() {
+        repo.setDigitalRepositoryType(DigitalRepositoryType.WSDL);
+        Mockito.when(serviceMock.isFileSystemRepository(repo)).thenReturn(false);
+
+        DigitalRepositoryTestResult result = browser.testRepository(repo);
+
+        assertFalse(result.getAvailable());
+        assertTrue(result.getMessage().contains("WSDL"));
+    }
+
+    @Test
+    void testRepository_templatedUrl_testsFixedPartOfPath(@TempDir Path root) throws IOException {
+        Files.createDirectory(root.resolve("funds"));
+        repo.setUrl(root.resolve("funds") + "/{fundCode}/dao");
+        Mockito.when(serviceMock.isFileSystemRepository(repo)).thenReturn(true);
+
+        DigitalRepositoryTestResult result = browser.testRepository(repo);
+
+        assertTrue(result.getAvailable());
+        assertTrue(result.getTemplated());
+        assertEquals(root.resolve("funds").toString(), result.getPath());
+        assertNotNull(result.getMessage());
+    }
+
+    // ---------- URL templating ----------
+
+    @Test
+    void isTemplatedUrl_variants() {
+        assertFalse(FileSystemRepoService.isTemplatedUrl(null));
+        assertFalse(FileSystemRepoService.isTemplatedUrl("/opt/repo"));
+        assertFalse(FileSystemRepoService.isTemplatedUrl("/opt/repo/{}"));
+        assertTrue(FileSystemRepoService.isTemplatedUrl("/opt/repo/{fundId}"));
+        assertTrue(FileSystemRepoService.isTemplatedUrl("/opt/{fundCode}/dao"));
+    }
+
+    @Test
+    void getFixedUrlPrefix_stripsTemplatedSegments() {
+        assertNull(FileSystemRepoService.getFixedUrlPrefix(null));
+        assertEquals("/opt/repo", FileSystemRepoService.getFixedUrlPrefix("/opt/repo"));
+        assertEquals("/opt/repo", FileSystemRepoService.getFixedUrlPrefix("/opt/repo/{fundId}"));
+        assertEquals("/opt/repo", FileSystemRepoService.getFixedUrlPrefix("/opt/repo/{fundId}/dao"));
+        assertEquals("/opt/repo", FileSystemRepoService.getFixedUrlPrefix("/opt/repo/fund-{fundId}"));
+        assertEquals("C:\\repo", FileSystemRepoService.getFixedUrlPrefix("C:\\repo\\{fundId}"));
     }
 
     @Test

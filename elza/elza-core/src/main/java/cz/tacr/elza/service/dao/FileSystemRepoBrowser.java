@@ -1,9 +1,12 @@
 package cz.tacr.elza.service.dao;
 
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.Collator;
@@ -20,12 +23,14 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import cz.tacr.elza.controller.vo.DigitalRepositoryTestResult;
 import cz.tacr.elza.controller.vo.FsItem;
 import cz.tacr.elza.controller.vo.FsItemFilterByLinked;
 import cz.tacr.elza.controller.vo.FsItemSortType;
@@ -61,6 +66,9 @@ public class FileSystemRepoBrowser {
 
 	/** Maximum number of files returned by {@link #listDaoFiles} for one DAO. */
 	public static final int DAO_FILE_LIMIT = 1_000;
+
+	/** Number of root entries returned by {@link #testRepository} as a configuration sample. */
+	private static final int REPO_TEST_ITEM_LIMIT = 10;
 
 	@Autowired
 	private ElzaLocale elzaLocale;	
@@ -387,18 +395,137 @@ public class FileSystemRepoBrowser {
             if (!fileSystemRepoService.isFileSystemRepository(digiRepo)) {
                 continue;
             }
-            Path repoPath = fileSystemRepoService.getPath(digiRepo, fund);
-            // skip repositories whose (possibly templated) root is not currently available
-            if (!Files.isDirectory(repoPath)) {
+            Path repoPath;
+            try {
+                repoPath = fileSystemRepoService.getPath(digiRepo, fund);
+            } catch (RuntimeException e) {
+                // Unusable configuration (missing URL and similar). Report the repository as
+                // unavailable instead of dropping it, otherwise the misconfiguration is invisible.
+                log.warn("Filesystem repository root cannot be resolved, repository: {}: {}",
+                         digiRepo.getCode(), e.toString());
+                result.add(createFsRepo(digiRepo, StringUtils.defaultString(digiRepo.getUrl()), false));
                 continue;
             }
-            FsRepo fsRepo = new FsRepo();
-            fsRepo.setFsRepoId(digiRepo.getExternalSystemId());
-            fsRepo.setName(digiRepo.getName());
-            fsRepo.setCode(digiRepo.getCode());
-            fsRepo.setPath(repoPath.toString());
-            result.add(fsRepo);
+            boolean available = Files.isDirectory(repoPath);
+            if (!available) {
+                if (FileSystemRepoService.isTemplatedUrl(digiRepo.getUrl())) {
+                    // The root is fund dependent and this fund has none — not a misconfiguration,
+                    // the repository simply holds nothing here.
+                    continue;
+                }
+                log.warn("Filesystem repository root is not available, repository: {}, path: {}",
+                         digiRepo.getCode(), repoPath);
+            }
+            result.add(createFsRepo(digiRepo, repoPath.toString(), available));
         }
         return result;
+    }
+
+    private FsRepo createFsRepo(ArrDigitalRepository digiRepo, String path, boolean available) {
+        FsRepo fsRepo = new FsRepo();
+        fsRepo.setFsRepoId(digiRepo.getExternalSystemId());
+        fsRepo.setName(digiRepo.getName());
+        fsRepo.setCode(digiRepo.getCode());
+        fsRepo.setPath(path);
+        fsRepo.setAvailable(available);
+        return fsRepo;
+    }
+
+    /**
+     * Checks the configuration of a digital repository: whether its root is a readable
+     * directory and what it contains. Never throws for a broken configuration — the
+     * problem is described in the returned result.
+     */
+    public DigitalRepositoryTestResult testRepository(ArrDigitalRepository digiRepo) {
+        DigitalRepositoryTestResult result = new DigitalRepositoryTestResult();
+        result.setTemplated(false);
+        result.setAvailable(false);
+
+        if (!fileSystemRepoService.isFileSystemRepository(digiRepo)) {
+            result.setMessage("Repository type " + digiRepo.getDigitalRepositoryType()
+                    + " has no filesystem root to test");
+            return result;
+        }
+        String url = digiRepo.getUrl();
+        if (StringUtils.isBlank(url)) {
+            result.setMessage("Repository URL is not configured");
+            return result;
+        }
+
+        boolean templated = FileSystemRepoService.isTemplatedUrl(url);
+        result.setTemplated(templated);
+        // A fund dependent root cannot be resolved outside a fund; test its fixed part instead.
+        String testedUrl = templated ? FileSystemRepoService.getFixedUrlPrefix(url) : url;
+
+        Path rootPath;
+        try {
+            rootPath = Paths.get(testedUrl).toAbsolutePath().normalize();
+        } catch (InvalidPathException e) {
+            result.setPath(testedUrl);
+            result.setMessage("Path is not valid: " + e.getMessage());
+            return result;
+        }
+        result.setPath(rootPath.toString());
+
+        if (!Files.exists(rootPath)) {
+            result.setMessage("Path does not exist");
+            return result;
+        }
+        if (!Files.isDirectory(rootPath)) {
+            result.setMessage("Path is not a directory");
+            return result;
+        }
+        if (!Files.isReadable(rootPath)) {
+            result.setMessage("Directory is not readable");
+            return result;
+        }
+
+        try {
+            result.setItems(listFirstItems(rootPath, REPO_TEST_ITEM_LIMIT));
+        } catch (IOException e) {
+            result.setMessage("Directory cannot be listed: " + e.toString());
+            return result;
+        }
+        result.setAvailable(true);
+        if (templated) {
+            result.setMessage("Repository root depends on the fund; only the fixed part of the path was tested");
+        }
+        return result;
+    }
+
+    /**
+     * First {@code maxItems} entries of a directory, in the order the filesystem returns
+     * them. Entries that cannot be read are skipped.
+     */
+    private List<FsItem> listFirstItems(Path dirPath, int maxItems) throws IOException {
+        List<FsItem> items = new ArrayList<>();
+        try (DirectoryStream<Path> ds = Files.newDirectoryStream(dirPath)) {
+            for (Path item : ds) {
+                if (items.size() >= maxItems) {
+                    break;
+                }
+                BasicFileAttributes attrs;
+                try {
+                    attrs = Files.readAttributes(item, BasicFileAttributes.class);
+                } catch (IOException e) {
+                    log.warn("Skipping unreadable filesystem entry: {}: {}", item, e.toString());
+                    continue;
+                }
+                if (!attrs.isRegularFile() && !attrs.isDirectory()) {
+                    continue;
+                }
+                FsItem fsItem = new FsItem();
+                fsItem.setName(item.getFileName().toString());
+                if (attrs.isRegularFile()) {
+                    fsItem.setItemType(FsItemType.FILE);
+                    fsItem.setSize(attrs.size());
+                } else {
+                    fsItem.setItemType(FsItemType.FOLDER);
+                }
+                fsItem.setLastChange(attrs.lastModifiedTime().toInstant().atOffset(ZoneOffset.UTC));
+                items.add(fsItem);
+            }
+        }
+        return items;
     }
 }

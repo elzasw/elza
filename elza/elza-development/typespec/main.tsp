@@ -189,6 +189,30 @@ model FsRepo {
     name: string;
     /** Repository path */
     path: string;
+    /**
+     * False when the configured root is not accessible on the server. Such a repository
+     * is listed so the misconfiguration is visible, but it cannot be browsed.
+     */
+    available: boolean;
+}
+
+/**
+ * Result of a digital repository configuration test
+ */
+model DigitalRepositoryTestResult {
+    /** True when the repository can be used with the current configuration */
+    available: boolean;
+    /** Repository root the configured URL resolves to */
+    path?: string;
+    /**
+     * True when the configured URL contains parameters ({fundId}, {fundCode}, …) and the root
+     * therefore differs per fund. Only the fixed part of the path can be tested.
+     */
+    templated: boolean;
+    /** Description of the result — the reason of a failure, or a note about a fund dependent root */
+    message?: string;
+    /** First few entries of the repository root, as a sanity check of the configured path */
+    items?: FsItem[];
 }
 
 model FundIdParameter {
@@ -2323,6 +2347,24 @@ namespace ElzaAPI.ExternalSystem {
         @Http.statusCode statusCode: 200;
     } | {
         /** Id does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Test the configuration of a digital repository — whether its root is reachable
+     * and what it contains. Available to administrators.
+     */
+    @route("/digitalrepository/{id}/test")
+    @get op testDigitalRepository(
+        /** digital repository (external system) ID */
+        @path id: integer;
+    ): {
+        /** Test result — an unreachable repository is reported in the body, not as an error */
+        @Http.statusCode statusCode: 200;
+        @body data: DigitalRepositoryTestResult;
+    } | {
+        /** External system does not exist or is not a digital repository */
         @Http.statusCode statusCode: 404;
         @body data: BaseException;
     };

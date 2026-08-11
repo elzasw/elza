@@ -12,4 +12,26 @@
         font-weight: bold;
         margin-bottom: 1px;
     }
+
+    .repo-test-result {
+        margin-top: 6px;
+        font-size: small;
+
+        &__ok {
+            font-weight: 600;
+            color: #3c763d;
+        }
+
+        &__failed {
+            font-weight: 600;
+            color: #d9534f;
+        }
+
+        &__items {
+            list-style: none;
+            padding: 0;
+            margin: 4px 0 0 0;
+            font-family: monospace;
+        }
+    }
 }

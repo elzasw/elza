@@ -2309,6 +2309,34 @@ paths:
             schema:
               $ref: '#/components/schemas/NodeItem'
         description: new attribute value
+  /extsystem/digitalrepository/{id}/test:
+    get:
+      operationId: ExternalSystem_testDigitalRepository
+      description: |-
+        Test the configuration of a digital repository — whether its root is reachable
+        and what it contains. Available to administrators.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: digital repository (external system) ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalRepositoryTestResult'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - externalsystems
   /extsystem/property:
     get:
       operationId: ExternalSystem_allProperties
@@ -7266,6 +7294,32 @@ components:
       allOf:
         - $ref: '#/components/schemas/AbstractField'
       description: Node (descItem) field names for filter
+    DigitalRepositoryTestResult:
+      type: object
+      required:
+        - available
+        - templated
+      properties:
+        available:
+          type: boolean
+          description: True when the repository can be used with the current configuration
+        path:
+          type: string
+          description: Repository root the configured URL resolves to
+        templated:
+          type: boolean
+          description: |-
+            True when the configured URL contains parameters ({fundId}, {fundCode}, …) and the root
+            therefore differs per fund. Only the fixed part of the path can be tested.
+        message:
+          type: string
+          description: Description of the result — the reason of a failure, or a note about a fund dependent root
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/FsItem'
+          description: First few entries of the repository root, as a sanity check of the configured path
+      description: Result of a digital repository configuration test
     DigitizationRequest:
       type: object
       required:
@@ -7974,6 +8028,7 @@ components:
         - fsRepoId
         - name
         - path
+        - available
       properties:
         fsRepoId:
           type: integer
@@ -7988,6 +8043,11 @@ components:
         path:
           type: string
           description: Repository path
+        available:
+          type: boolean
+          description: |-
+            False when the configured root is not accessible on the server. Such a repository
+            is listed so the misconfiguration is visible, but it cannot be browsed.
     Fund:
       type: object
       required:
