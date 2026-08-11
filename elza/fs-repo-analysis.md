@@ -1,10 +1,15 @@
 # FileSystemRepoService — architectural analysis and current state
 
-**Status:** original analysis 2026-07-28 (decisions settled the same day, §8); updated 2026-08-10
-to the implemented state — resolved defect details removed, open items kept, new findings added.
-The #9944 series (2026-07-28 → 2026-08-06) delivered §7 Phases 0–2 and part of Phase 4; step 3a of
-`da-migration.md` revised Phase 3 (2026-08-10) removed the persisted file trees and dropped
-`arr_dao_file_group`.
+**Status: the #9944 filesystem-repository work is CLOSED (2026-08-12).** The feature is fully on
+its target architecture: browsing, panel files and downloads are live disk reads; links are
+`ArrFsLink` rows targeting `(repository, path)`; `multiple_links` is enforced; filesystem
+repositories persist **zero** entities (cleanup changeset `20260812110000`). What remains open
+(§7) are enhancements outside #9944's scope — the `DigitalRepositoryBackend` SPI, frontend
+D-items, and the C2/C5/N5 scale items — plus the DA-side Phases 4–5 tracked in
+`da-migration.md`.
+*(History: original analysis 2026-07-28, decisions settled the same day (§8); #9944 delivered §7
+Phases 0–2 and part of Phase 4 by 2026-08-06; step 3a removed persisted file trees 2026-08-10;
+step 3b landed the link model 2026-08-11.)*
 **Scope:** `FileSystemRepoService` and the filesystem-repository browser feature
 **Related:** `elza/da-migration.md` — its Phase 3 was revised to match §5.3 of this document and
 is fully implemented (steps 3a + 3b); remaining DA-side work (Phases 4-5) is tracked there
@@ -322,8 +327,10 @@ file per the 2026-08-12 reorganization). Notes that survived implementation and 
   precedent) — renaming the link entity classes invalidates `arr_cached_node` rows; pair any
   rename with a cache-invalidation changeset (the 3b wave shows the pattern; the startup sync
   rebuilds dropped rows).
-- The filesystem `ArrDao` anchor rows and their packages remain as unreferenced orphans until
-  Phase 5 drops the `arr_dao` family.
+- The filesystem `ArrDao` anchor rows and their packages initially remained as unreferenced
+  orphans (still visible in the package and unassigned-entity tabs); cleanup changeset
+  `20260812110000` removed them together with their request references — filesystem repositories
+  now persist **zero** entities.
 - `LinkType` still carries `AIP`/`PART_AIP`/`COMPONENT_AIP` — the backend-neutral rename was
   deferred because the enum is part of the OpenAPI contract (see `da-migration.md`, deferred
   cleanups).

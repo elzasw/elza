@@ -61,6 +61,7 @@ filesystem repositories; `fundFsCreateDAOLink` is the filesystem path and return
 | Phase 2 — DA repositories carry no legacy data | 2026-08-11 | implemented as a HALT precondition of the 3b wave: legacy `arr_dao` rows under a DA-type repository, or a link with both/neither target groups, stop the migration for inspection |
 | Step 3b — link hierarchy + fs conversion | 2026-08-11 | changesets `20260811180000-180005`: subtype tables, column moves, fs links converted from `ArrDao.code`, cache invalidation; full rationale in `fs-repo-analysis.md` §5.4 |
 | Changelog reorganization | 2026-08-12 | sequential part files, one open file (see `db.changelog-master.yaml`); new changesets go to the **last** included file |
+| fs orphan cleanup | 2026-08-12 | changeset `20260812110000`: the fs `ArrDao` anchors, their per-fund packages and their (meaningless) request references deleted — filesystem repositories now persist **zero** entities and no longer appear in the package/unassigned tabs |
 
 The rejected alternative — migrating filesystem repositories onto `DaAip`/`DaDao` — and its
 reasoning remain recorded in `fs-repo-analysis.md` §5 (decision record).
@@ -106,9 +107,9 @@ legacy rows should the Phase 2 guard ever find any):
    converted or retired per Phase 4, and filesystem links are `ArrFsLink` rows (step 3b). Also
    verify no `dao_link_id` has children in two subtype tables.
 2. Drop table `arr_legacy_dao_link` and entity `ArrLegacyDaoLink`.
-3. Drop tables: `arr_dao_file`, `arr_dao`, `arr_dao_package`, `arr_dao_batch_info`. Note the
-   filesystem `ArrDao` anchor rows and their packages still exist as orphans (nothing references
-   them since step 3b) — they go away here.
+3. Drop tables: `arr_dao_file`, `arr_dao`, `arr_dao_package`, `arr_dao_batch_info`. Filesystem
+   rows are already gone (cleanup changeset `20260812110000`), so at this point the tables hold
+   only WSDL/legacy data resolved by Phase 4.
 4. Remove Java entities: `ArrDao`, `ArrDaoFile`, `ArrDaoPackage`, `ArrDaoBatchInfo`; repositories
    `DaoRepository`, `DaoFileRepository`, `DaoPackageRepository`, `DaoBatchInfoRepository`;
    `ArrLegacyDaoLinkRepository`.
