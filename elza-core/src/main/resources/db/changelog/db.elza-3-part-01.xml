@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- FROZEN (2026-08-12) - do not add changesets to this file. New changesets
+     go ONLY to the last file included by db.changelog-master.yaml.
+
+     Formerly db.elza-3.0.xml; logicalFilePath below pins the original path so
+     every changeset keeps its Liquibase identity (filename::id::author) on
+     databases that executed it under the old name. The physical file name is
+     therefore free to change; the logical path must never change. -->
 <databaseChangeLog
+        logicalFilePath="db/changelog/db.elza-3.0.xml"
         xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">

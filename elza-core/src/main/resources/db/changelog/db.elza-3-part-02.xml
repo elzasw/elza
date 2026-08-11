@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- FROZEN (2026-08-12) - do not add changesets to this file. New changesets
+     go ONLY to the last file included by db.changelog-master.yaml.
+
+     Formerly db.elza-da.xml (the DA-subsystem file - keying a changelog file
+     to a subsystem instead of a point in the execution sequence is what this
+     reorganization removes). logicalFilePath below pins the original path so
+     every changeset keeps its Liquibase identity on databases that executed
+     it under the old name. The physical file name is therefore free to
+     change; the logical path must never change. -->
 <databaseChangeLog
+        logicalFilePath="db/changelog/db.elza-da.xml"
         xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
@@ -701,14 +711,14 @@
     </changeSet>
 
 
-    <!-- The changesets below live in db.elza-da.xml (not db.elza-3.0.xml) because
-         they reference structures this file creates (digital_repository_type,
-         aip_id/da_dao_id on arr_dao_link, da_aip, da_dao) - the master changelog
-         runs db.elza-3.0.xml first, so on a fresh database they would fail there.
-         Changeset 20260811135500 was moved here from db.elza-3.0.xml: the move
-         changes its Liquibase identity, so databases that already executed it
-         run it once more - both UPDATEs are idempotent (second run matches no
-         rows). -->
+    <!-- The changesets below were moved into this file (then named
+         db.elza-da.xml) from the file preceding it in the master changelog,
+         because they reference structures this file creates
+         (digital_repository_type, aip_id/da_dao_id on arr_dao_link, da_aip,
+         da_dao) - on a fresh database they would fail in the earlier file.
+         Changeset 20260811135500 changed its Liquibase identity by that move,
+         so databases that had executed it under the old path run it once
+         more - both UPDATEs are idempotent (second run matches no rows). -->
 	<changeSet id="20260811135500" author="sergey.iryupin">
 	    <!-- N4: normalize repository type and URL. Rows with a file:// URL become
 	        the sole source of truth for FILESYSTEM type; the file:// prefix is stripped

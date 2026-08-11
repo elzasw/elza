@@ -379,7 +379,11 @@ any):
 - `elza-core/.../repository/DaoBatchInfoRepository.java`
 
 ### Migration scripts
-- `elza-core/src/main/resources/db/changelog/db.elza-da.xml` — add migration changesets
+- migration changesets go to the **last** file included by
+  `elza-core/src/main/resources/db/changelog/db.changelog-master.yaml`
+  (`db.elza-3-part-03.xml` at the time of writing); all earlier files are
+  frozen — see the reorganization of 2026-08-12 (former `db.elza-da.xml` is
+  the frozen `db.elza-3-part-02.xml` with a pinned logical path)
 
 ## 6. Risks
 
