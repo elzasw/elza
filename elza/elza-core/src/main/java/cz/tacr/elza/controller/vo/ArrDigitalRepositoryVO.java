@@ -1,5 +1,7 @@
 package cz.tacr.elza.controller.vo;
 
+import static cz.tacr.elza.service.dao.FileSystemRepoService.FILE_URI_PREFIX;
+
 import cz.tacr.elza.api.DigitalRepositoryType;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrDigitalRepository;
@@ -75,6 +77,11 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
     public SysExternalSystem createEntity(ApScope scope) {
         ArrDigitalRepository entity = new ArrDigitalRepository();
         this.fillEntity(entity);
+
+        // Defensive strip of a leftover file:// prefix if the admin pasted a full URI.
+        if (entity.getUrl() != null && entity.getUrl().startsWith(FILE_URI_PREFIX)) {
+            entity.setUrl(entity.getUrl().substring(FILE_URI_PREFIX.length()));
+        }
 
         entity.setViewDaoUrl(viewDaoUrl);
         entity.setViewFileUrl(viewFileUrl);

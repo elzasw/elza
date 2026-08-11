@@ -25,7 +25,6 @@ import com.google.common.base.Objects;
 import cz.tacr.elza.controller.AbstractControllerTest;
 import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.ArrangementController.DescFormDataNewVO;
-import cz.tacr.elza.controller.ArrangementController.DescItemResult;
 import cz.tacr.elza.controller.vo.ArrDaoLinkVO;
 import cz.tacr.elza.controller.vo.ArrDaoVO;
 import cz.tacr.elza.controller.vo.ArrDigitalRepositoryVO;
@@ -76,7 +75,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         digitalRepositoryVO.setCode(DIGIT_REPO_CODE);
         digitalRepositoryVO.setName(DIGIT_REPO_NAME);
         digitalRepositoryVO.setSendNotification(false);
-        digitalRepositoryVO.setDigitalRepositoryType(DigitalRepositoryType.FILESYSTEM);
+        digitalRepositoryVO.setDigitalRepositoryType(DigitalRepositoryType.WSDL);
 
         SysExternalSystemVO digitalRepositoryCreatedVO = createExternalSystem(digitalRepositoryVO);
         assertNotNull(digitalRepositoryCreatedVO.getId());

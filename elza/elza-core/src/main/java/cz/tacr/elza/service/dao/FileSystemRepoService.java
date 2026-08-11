@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.ElzaTools;
+import cz.tacr.elza.api.DigitalRepositoryType;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDao.DaoType;
 import cz.tacr.elza.domain.ArrDaoPackage;
@@ -31,7 +32,7 @@ import cz.tacr.elza.service.ExternalSystemService;
 @Service
 public class FileSystemRepoService {
 
-    public static String FILE_URI_PREFIX = "file://";
+    public static final String FILE_URI_PREFIX = "file://";
 
     @Autowired
     private DaoPackageRepository daoPackageRepos;
@@ -134,12 +135,7 @@ public class FileSystemRepoService {
     }
 
     public boolean isFileSystemRepository(ArrDigitalRepository digiRep) {
-        String repoUrl = digiRep.getUrl();
-        if (StringUtils.isNotEmpty(repoUrl) && repoUrl.startsWith(FILE_URI_PREFIX)) {
-            // we have fileSystemRepo
-            return true;
-        }
-        return false;
+    	return digiRep.getDigitalRepositoryType() == DigitalRepositoryType.FILESYSTEM;
     }
 
     public InputStream getInputStream(ArrDigitalRepository digiRepo, String filePath) throws IOException {
@@ -152,17 +148,25 @@ public class FileSystemRepoService {
             throw new BusinessException("Not a FileSystemRepository", BaseCode.INVALID_STATE)
                     .set("RepositoryId", digiRepo.getExternalSystemId());
         }
-        String repoPath = digiRepo.getUrl().substring(FILE_URI_PREFIX.length());
+        String repoPath = digiRepo.getUrl();
+        if (StringUtils.isBlank(repoPath)) {
+            throw new BusinessException("Repository URL is not configured", BaseCode.INVALID_STATE)
+                    .set("RepositoryId", digiRepo.getExternalSystemId());
+        }
         Path rootPath = Paths.get(repoPath).toAbsolutePath();
         return resolveInsideRoot(rootPath, filePath);
     }
 
     public Path getPath(ArrDigitalRepository digiRepo, ArrFund fund) {
+    	if (StringUtils.isBlank(digiRepo.getUrl())) {
+    	    throw new BusinessException("Repository URL is not configured", BaseCode.INVALID_STATE)
+    	            .set("RepositoryId", digiRepo.getExternalSystemId());
+    	}
         if (!isFileSystemRepository(digiRepo)) {
             throw new BusinessException("Not a FileSystemRepository", BaseCode.INVALID_STATE)
                     .set("RepositoryId", digiRepo.getExternalSystemId());
         }
-        String repoPath = digiRepo.getUrl().substring(FILE_URI_PREFIX.length());
+        String repoPath = digiRepo.getUrl();
 
         ElzaTools.UrlParams params = ElzaTools.createUrlParams()
                 .add("repoId", digiRepo.getExternalSystemId())
