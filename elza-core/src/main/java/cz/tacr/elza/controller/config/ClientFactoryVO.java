@@ -2325,9 +2325,9 @@ public class ClientFactoryVO {
         String url = daoService.getDaoUrl(contextPath, dao, daoLink, digitalRepository);
         vo.setUrl(url);
 
+        DaoService.DaoFileListing listing = daoService.getDaoFileListing(dao);
         if (detail) {
-            final List<ArrDaoFile> daoFileList = daoService.getDaoFiles(dao);
-            for (ArrDaoFile daoFile : daoFileList) {
+            for (ArrDaoFile daoFile : listing.files()) {
                 ArrDaoFileVO fileVo = createDaoFile(contextPath, daoFile);
                 if (fileVo.getId() == null) {
                     // live-listed filesystem files have no persistent id; assign a
@@ -2338,8 +2338,9 @@ public class ClientFactoryVO {
                 vo.addFile(fileVo);
             }
         } else {
-            vo.setFileCount(daoService.countDaoFiles(dao));
+            vo.setFileCount(listing.total());
         }
+        vo.setTruncated(listing.truncated());
         return vo;
     }
 

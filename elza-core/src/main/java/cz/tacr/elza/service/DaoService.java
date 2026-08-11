@@ -737,16 +737,25 @@ public class DaoService {
     }
 
     /**
-     * Files of one DAO. Filesystem DAOs are listed live from the repository
-     * (recursive under the DAO's path, capped at
+     * Files of one DAO plus the total count and a truncation flag for
+     * filesystem DAOs whose live listing hit
+     * {@link FileSystemRepoBrowser#DAO_FILE_LIMIT}.
+     */
+    public record DaoFileListing(List<ArrDaoFile> files, long total, boolean truncated) {
+    }
+
+    /**
+     * Files of one DAO with truncation info. Filesystem DAOs are listed live
+     * from the repository (recursive under the DAO's path, capped at
      * {@link FileSystemRepoBrowser#DAO_FILE_LIMIT}) as transient entities
      * without a persistent id; other repository types read persisted
-     * arr_dao_file rows.
+     * arr_dao_file rows and are never truncated.
      */
-    public List<ArrDaoFile> getDaoFiles(ArrDao dao) {
+    public DaoFileListing getDaoFileListing(ArrDao dao) {
         if (isFileSystemDao(dao)) {
-            List<ArrDaoFile> result = new ArrayList<>();
-            for (FileSystemRepoBrowser.FsDaoFile entry : listFsDaoFiles(dao)) {
+            FileSystemRepoBrowser.FsDaoListing listing = listFsDaoFiles(dao);
+            List<ArrDaoFile> result = new ArrayList<>(listing.files().size());
+            for (FileSystemRepoBrowser.FsDaoFile entry : listing.files()) {
                 ArrDaoFile daoFile = new ArrDaoFile();
                 daoFile.setDao(dao);
                 daoFile.setCode(entry.relatPath());
@@ -755,20 +764,10 @@ public class DaoService {
                 daoFile.setMimetype(entry.mimetype());
                 result.add(daoFile);
             }
-            return result;
+            return new DaoFileListing(result, result.size(), listing.truncated());
         }
-        return daoFileRepository.findByDao(dao);
-    }
-
-    /**
-     * Number of files of one DAO, counted the same way {@link #getDaoFiles}
-     * lists them (for filesystem DAOs the count is subject to the same cap).
-     */
-    public long countDaoFiles(ArrDao dao) {
-        if (isFileSystemDao(dao)) {
-            return listFsDaoFiles(dao).size();
-        }
-        return daoFileRepository.countByDao(dao);
+        List<ArrDaoFile> persisted = daoFileRepository.findByDao(dao);
+        return new DaoFileListing(persisted, persisted.size(), false);
     }
 
     private boolean isFileSystemDao(ArrDao dao) {
@@ -777,10 +776,10 @@ public class DaoService {
 
     /**
      * Live listing of a filesystem DAO's files. An unavailable repository or a
-     * vanished path yields an empty list so one broken DAO does not fail the
-     * caller's whole response.
+     * vanished path yields an empty listing so one broken DAO does not fail
+     * the caller's whole response.
      */
-    private List<FileSystemRepoBrowser.FsDaoFile> listFsDaoFiles(ArrDao dao) {
+    private FileSystemRepoBrowser.FsDaoListing listFsDaoFiles(ArrDao dao) {
         ArrDaoPackage daoPackage = dao.getDaoPackage();
         try {
             return fileSystemRepoBrowser.listDaoFiles(daoPackage.getDigitalRepository(),
@@ -790,7 +789,7 @@ public class DaoService {
         } catch (IOException | BusinessException e) {
             logger.warn("Failed to list files of filesystem DAO {} ({}): {}",
                         dao.getDaoId(), dao.getCode(), e.toString());
-            return Collections.emptyList();
+            return new FileSystemRepoBrowser.FsDaoListing(Collections.emptyList(), false);
         }
     }
 

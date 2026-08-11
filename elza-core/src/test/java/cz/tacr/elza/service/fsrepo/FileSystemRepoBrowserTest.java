@@ -29,6 +29,7 @@ import cz.tacr.elza.service.dao.FileSystemRepoBrowser;
 import cz.tacr.elza.service.dao.FileSystemRepoService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -355,13 +356,14 @@ public class FileSystemRepoBrowserTest {
         stubDaoFileResolution(root);
         Mockito.when(serviceMock.getMimetype("scan.jpg")).thenReturn("image/jpeg");
 
-        List<FileSystemRepoBrowser.FsDaoFile> result = browser.listDaoFiles(repo, fund, "scan.jpg", 10);
+        FileSystemRepoBrowser.FsDaoListing listing = browser.listDaoFiles(repo, fund, "scan.jpg", 10);
 
-        assertEquals(1, result.size());
-        assertEquals("scan.jpg", result.get(0).relatPath());
-        assertEquals("scan.jpg", result.get(0).fileName());
-        assertEquals(3L, result.get(0).size());
-        assertEquals("image/jpeg", result.get(0).mimetype());
+        assertEquals(1, listing.files().size());
+        assertFalse(listing.truncated());
+        assertEquals("scan.jpg", listing.files().get(0).relatPath());
+        assertEquals("scan.jpg", listing.files().get(0).fileName());
+        assertEquals(3L, listing.files().get(0).size());
+        assertEquals("image/jpeg", listing.files().get(0).mimetype());
     }
 
     @Test
@@ -373,37 +375,54 @@ public class FileSystemRepoBrowserTest {
         Files.createFile(sub.resolve("deep.txt"));
         stubDaoFileResolution(root);
 
-        List<FileSystemRepoBrowser.FsDaoFile> result = browser.listDaoFiles(repo, fund, "dir", 10);
+        FileSystemRepoBrowser.FsDaoListing listing = browser.listDaoFiles(repo, fund, "dir", 10);
 
         // flat list of regular files only, ordered by repository-relative path
-        assertEquals(3, result.size());
-        assertEquals("dir/a.txt", result.get(0).relatPath());
-        assertEquals("dir/b.txt", result.get(1).relatPath());
-        assertEquals("dir/sub/deep.txt", result.get(2).relatPath());
-        assertEquals("deep.txt", result.get(2).fileName());
+        assertEquals(3, listing.files().size());
+        assertFalse(listing.truncated());
+        assertEquals("dir/a.txt", listing.files().get(0).relatPath());
+        assertEquals("dir/b.txt", listing.files().get(1).relatPath());
+        assertEquals("dir/sub/deep.txt", listing.files().get(2).relatPath());
+        assertEquals("deep.txt", listing.files().get(2).fileName());
     }
 
     @Test
-    void listDaoFiles_capEnforced(@TempDir Path root) throws IOException {
+    void listDaoFiles_capEnforced_setsTruncated(@TempDir Path root) throws IOException {
         Path dir = Files.createDirectory(root.resolve("dir"));
         for (int i = 0; i < 5; i++) {
             Files.createFile(dir.resolve("f" + i + ".txt"));
         }
         stubDaoFileResolution(root);
 
-        List<FileSystemRepoBrowser.FsDaoFile> result = browser.listDaoFiles(repo, fund, "dir", 3);
+        FileSystemRepoBrowser.FsDaoListing listing = browser.listDaoFiles(repo, fund, "dir", 3);
 
-        assertEquals(3, result.size());
+        assertEquals(3, listing.files().size());
+        assertTrue(listing.truncated());
+    }
+
+    @Test
+    void listDaoFiles_exactlyAtCap_notTruncated(@TempDir Path root) throws IOException {
+        Path dir = Files.createDirectory(root.resolve("dir"));
+        for (int i = 0; i < 3; i++) {
+            Files.createFile(dir.resolve("f" + i + ".txt"));
+        }
+        stubDaoFileResolution(root);
+
+        FileSystemRepoBrowser.FsDaoListing listing = browser.listDaoFiles(repo, fund, "dir", 3);
+
+        assertEquals(3, listing.files().size());
+        assertFalse(listing.truncated());
     }
 
     @Test
     void listDaoFiles_missingPath_returnsSyntheticEntry(@TempDir Path root) throws IOException {
         stubDaoFileResolution(root);
 
-        List<FileSystemRepoBrowser.FsDaoFile> result = browser.listDaoFiles(repo, fund, "does-not-exist", 10);
+        FileSystemRepoBrowser.FsDaoListing listing = browser.listDaoFiles(repo, fund, "does-not-exist", 10);
 
-        assertEquals(1, result.size());
-        FileSystemRepoBrowser.FsDaoFile stub = result.get(0);
+        assertEquals(1, listing.files().size());
+        assertFalse(listing.truncated());
+        FileSystemRepoBrowser.FsDaoFile stub = listing.files().get(0);
         assertEquals("does-not-exist", stub.relatPath());
         assertEquals("does-not-exist", stub.fileName());
         assertEquals(0L, stub.size());
