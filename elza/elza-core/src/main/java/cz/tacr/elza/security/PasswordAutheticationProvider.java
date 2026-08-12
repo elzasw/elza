@@ -60,7 +60,9 @@ public class PasswordAutheticationProvider implements AuthenticationProvider {
 				if (!userService.matchesPassword(password, encodedPassword, username)) {
 					throw new UsernameNotFoundException("Neplatné uživatelské jméno nebo heslo");
 				}
-				
+
+				userService.upgradePasswordEncodingIfNeeded(usrAuthentication, password);
+
 				return userService.createAuthentication(user);
 			});
 			
