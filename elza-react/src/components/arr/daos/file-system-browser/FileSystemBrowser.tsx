@@ -112,6 +112,7 @@ export const FileSystemBrowser = ({
     const [sortType, setSortType] = useState<FsItemSortType>(FsItemSortType.NameAsc);
     const [filterByLink, setFilterByLink] = useState<FsItemFilterByLinked>(FsItemFilterByLinked.All);
     const [filterInput, setFilterInput] = useState('');
+    const [treeSize, setTreeSize] = useState<number>(100);
     const [debouncedFilter, setDebouncedFilter] = useState('');
 
     // Number of middle path segments currently collapsed into the "…" separator.
@@ -487,7 +488,8 @@ export const FileSystemBrowser = ({
             </div>
             <div className="main-container">
                 <Splitter
-                    leftSize={100}
+                    leftSize={treeSize}
+                    onChange={({ leftSize }: { leftSize: number; rightSize: number }) => setTreeSize(leftSize)}
                     left={
                         <Tree
                             ref={treeRef}
