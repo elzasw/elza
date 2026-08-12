@@ -7958,6 +7958,11 @@ components:
           items:
             $ref: '#/components/schemas/FsLink'
           description: List of file links
+        hasChildren:
+          type: boolean
+          description: |-
+            True when this entry is a folder that contains at least one sub-folder;
+            drives the "expand" affordance in the tree UI. Absent/false for files.
       description: Single file system item
     FsItemFilterByLinked:
       type: string

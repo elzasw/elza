@@ -188,13 +188,13 @@ export const Tree = forwardRef<TreeExposedFunctions, TreeProps>(({
                 <span className="item-part no-shrink">
                     <span
                         style={{
-                            visibility: childrenMap[item.fullPath] && !isUnavailable ? "visible" : "hidden",
+                            visibility: (childrenMap[item.fullPath] || (isListItem(item) && item.data.hasChildren)) && !isUnavailable ? "visible" : "hidden",
                             width: `${(item.depth + 1) * TREE_INDENT_PX}px`,
                             display: "inline-flex",
                             justifyContent: "flex-end",
                         }}
                         onClick={(e) => {
-                            if (childrenMap[item.fullPath] && !isUnavailable) {
+                            if ((childrenMap[item.fullPath] || (isListItem(item) && item.data.hasChildren)) && !isUnavailable) {
                                 e.stopPropagation();
                                 toggleItem(item);
                             }

@@ -317,6 +317,9 @@ model FsItem {
     lastChange: offsetDateTime;
     /** List of file links */
     links?: FsLink[];
+    /** True when this entry is a folder that contains at least one sub-folder;
+     *  drives the "expand" affordance in the tree UI. Absent/false for files. */
+    hasChildren?: boolean;
 }
 
 /**

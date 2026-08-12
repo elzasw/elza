@@ -209,6 +209,7 @@ public class FileSystemRepoBrowser {
                         fsItem.setSize(attrs.size());
                     } else {
                         fsItem.setItemType(FsItemType.FOLDER);
+                        fsItem.setHasChildren(directoryHasSubfolders(item));
                     }
                     fsItem.setLastChange(attrs.lastModifiedTime().toInstant().atOffset(ZoneOffset.UTC));
                     String fullRelatPath = (path == null || path.isEmpty() || path.equals("/"))
@@ -530,5 +531,14 @@ public class FileSystemRepoBrowser {
             }
         }
         return items;
+    }
+
+    private boolean directoryHasSubfolders(Path dir) {
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, Files::isDirectory)) {
+            return stream.iterator().hasNext();
+        } catch (IOException e) {
+            log.warn("Failed to probe subfolders in {}: {}", dir, e.toString());
+            return false;
+        }
     }
 }

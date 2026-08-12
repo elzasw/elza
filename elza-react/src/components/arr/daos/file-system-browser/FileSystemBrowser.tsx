@@ -346,6 +346,12 @@ export const FileSystemBrowser = ({
         })()
     }, [])
 
+    useEffect(() => {
+        if (repos.length > 0 && !selectedTreeItemPath) {
+            setSelectedTreeItem(repos[0].fsRepoId.toString());
+        }
+    }, [repos, selectedTreeItemPath])
+
 
     // const getImageUrl = () => {
     //     if (selectedListItem) {
