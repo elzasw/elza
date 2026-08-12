@@ -2,6 +2,7 @@ package cz.tacr.elza.service.dao;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
+import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
@@ -14,14 +15,13 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -160,73 +160,84 @@ public class FileSystemRepoBrowser {
         boolean foldersFirstFlag = foldersFirst == null ? true : foldersFirst;
         int offset = (lastKey != null) ? Integer.parseInt(lastKey) : 0;
 
-        Function<Path, Boolean> acceptor = prepareFSFilter(filterType);
-
         List<FsItem> fsItemList = new ArrayList<>();
-        boolean truncated = false;
+        boolean[] truncated = {false};
+        int[] counter = {0};
 
         // normalize the substring filter once (Czech locale — lowercase preserves diacritics)
         String normalizedFilter = (fileFilter != null && !fileFilter.isBlank())
                 ? fileFilter.toLowerCase(elzaLocale.getLocale())
                 : null;
 
-        try (Stream<Path> ds = Files.list(itemPath)) {
-            Iterator<Path> it = ds.iterator();
-            int counter = 0;
-            while (it.hasNext()) {
-            	if (counter >= SCAN_CAP) {
-                    truncated = true;
-                    break;
+        Files.walkFileTree(itemPath, EnumSet.noneOf(FileVisitOption.class), 1, new SimpleFileVisitor<Path>() {
+
+            @Override
+            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+                if (dir.equals(itemPath)) {
+                    return FileVisitResult.CONTINUE;   // enter the root itself
                 }
-                Path item = it.next();
-                if (acceptor.apply(item)) {
-                    String name = item.getFileName().toString();
-                    if (normalizedFilter != null
-                            && !name.toLowerCase(elzaLocale.getLocale()).contains(normalizedFilter)) {
-                        counter++;
-                        continue;
-                    }
-                    BasicFileAttributes attrs;
-                    try {
-                        attrs = Files.readAttributes(item, BasicFileAttributes.class);
-                    } catch (IOException e) {
-                        // Broken symlink/junction on Windows, permission denied, and similar issues
-                        // land here. Skip so a single unreadable entry doesn't break the listing.
-                    	log.warn("Skipping unreadable filesystem entry: {}: {}", item, e.toString());
-                        counter++;
-                        continue;
-                    }
-                    if (!attrs.isRegularFile() && !attrs.isDirectory()) {
-                        // Skip unknown entry types: broken symlinks, reparse points, device/pipe files.
-                        log.warn("Skipping unrecognized filesystem entry: {}", item);
-                        counter++;
-                        continue;
-                    }
-                    FsItem fsItem = new FsItem();
-                    fsItem.setName(name);
-                    if (attrs.isRegularFile()) {
-                        fsItem.setItemType(FsItemType.FILE);
-                        fsItem.setSize(attrs.size());
-                    } else {
-                        fsItem.setItemType(FsItemType.FOLDER);
-                        fsItem.setHasChildren(directoryHasSubfolders(item));
-                    }
-                    fsItem.setLastChange(attrs.lastModifiedTime().toInstant().atOffset(ZoneOffset.UTC));
-                    String fullRelatPath = (path == null || path.isEmpty() || path.equals("/"))
-                            ? name
-                            : FileSystemRepoService.normalizeRelatPath(path) + "/" + name;
-                    List<FsLink> itemLinks = linksByCode.getOrDefault(fullRelatPath, Collections.emptyList());
-                    fsItem.setLinks(itemLinks);
-                    boolean isLinked = !itemLinks.isEmpty();
-                    if (!matchesLinkFilter(isLinked, filterByLink)) {
-                        counter++;
-                        continue;
-                    }
-                    fsItemList.add(fsItem);
-                }
-                counter++;
+                return processEntry(dir, attrs);
             }
-        }
+
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+                return processEntry(file, attrs);
+            }
+
+            @Override
+            public FileVisitResult visitFileFailed(Path file, IOException exc) {
+                // Broken symlink/junction on Windows, permission denied, etc.
+                log.warn("Skipping unreadable filesystem entry: {}: {}", file, exc.toString());
+                counter[0]++;
+                return counter[0] >= SCAN_CAP ? FileVisitResult.TERMINATE : FileVisitResult.SKIP_SUBTREE;
+            }
+
+            private FileVisitResult processEntry(Path item, BasicFileAttributes attrs) {
+                if (counter[0] >= SCAN_CAP) {
+                    truncated[0] = true;
+                    return FileVisitResult.TERMINATE;
+                }
+                if (!matchesTypeFilter(filterType, attrs)) {
+                    counter[0]++;
+                    return FileVisitResult.SKIP_SUBTREE;
+                }
+                String name = item.getFileName().toString();
+                if (normalizedFilter != null
+                        && !name.toLowerCase(elzaLocale.getLocale()).contains(normalizedFilter)) {
+                    counter[0]++;
+                    return FileVisitResult.SKIP_SUBTREE;
+                }
+                if (!attrs.isRegularFile() && !attrs.isDirectory()) {
+                    // Skip unknown entry types: broken symlinks, reparse points, device/pipe files.
+                    log.warn("Skipping unrecognized filesystem entry: {}", item);
+                    counter[0]++;
+                    return FileVisitResult.SKIP_SUBTREE;
+                }
+                FsItem fsItem = new FsItem();
+                fsItem.setName(name);
+                if (attrs.isRegularFile()) {
+                    fsItem.setItemType(FsItemType.FILE);
+                    fsItem.setSize(attrs.size());
+                } else {
+                    fsItem.setItemType(FsItemType.FOLDER);
+                    fsItem.setHasChildren(directoryHasSubfolders(item));
+                }
+                fsItem.setLastChange(attrs.lastModifiedTime().toInstant().atOffset(ZoneOffset.UTC));
+                String fullRelatPath = (path == null || path.isEmpty() || path.equals("/"))
+                        ? name
+                        : FileSystemRepoService.normalizeRelatPath(path) + "/" + name;
+                List<FsLink> itemLinks = linksByCode.getOrDefault(fullRelatPath, Collections.emptyList());
+                fsItem.setLinks(itemLinks);
+                boolean isLinked = !itemLinks.isEmpty();
+                if (!matchesLinkFilter(isLinked, filterByLink)) {
+                    counter[0]++;
+                    return FileVisitResult.SKIP_SUBTREE;
+                }
+                fsItemList.add(fsItem);
+                counter[0]++;
+                return FileVisitResult.SKIP_SUBTREE;
+            }
+        });
 
         fsItemList.sort(comparatorFor(sortingType, foldersFirstFlag));
 
@@ -243,7 +254,7 @@ public class FileSystemRepoBrowser {
         if (nextOffset != null) {
             result.setLastKey(nextOffset.toString());
         }
-        if (truncated) {
+        if (truncated[0]) {
             result.setTruncated(true);
         }
         return result;
@@ -300,13 +311,13 @@ public class FileSystemRepoBrowser {
         }
     }    
     
-    private Function<Path, Boolean> prepareFSFilter(FsItemType filterType) {
+    private static boolean matchesTypeFilter(FsItemType filterType, BasicFileAttributes attrs) {
         if (filterType == null) {
-            return p -> true;
+            return true;
         }
         switch (filterType) {
-            case FILE:   return Files::isRegularFile;
-            case FOLDER: return Files::isDirectory;
+            case FILE:   return attrs.isRegularFile();
+            case FOLDER: return attrs.isDirectory();
             default:
                 throw new BusinessException("Invalid filter.", BaseCode.INVALID_STATE)
                         .set("filterType", filterType);
