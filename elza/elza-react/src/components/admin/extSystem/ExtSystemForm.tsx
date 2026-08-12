@@ -275,7 +275,6 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
                         type="select"
                         component={FormInputField}
                         label={i18n('admin.extSystem.multipleLinks')}
-                        disabled={isUpdate}
                     >
                         <option key={null} />
                         <option key="true" value={true as any}>
