@@ -1,5 +1,5 @@
 import {makeStyles, tokens} from '@fluentui/react-components';
-import {OutputDefinitionSection} from './OutputDefinitionSection';
+import {OutputDefinition} from './OutputDefinition';
 import {OutputLayoutProps} from './outputLayoutTypes';
 
 const useStyles = makeStyles({
@@ -16,7 +16,7 @@ const useStyles = makeStyles({
     definition: {
         flex: '0 0 440px',
         minWidth: 0,
-        padding: `${tokens.spacingVerticalM} ${tokens.spacingHorizontalL}`,
+        padding: `${tokens.spacingVerticalL} ${tokens.spacingHorizontalXL}`,
         borderRight: `1px solid ${tokens.colorNeutralStroke2}`,
     },
     items: {
@@ -35,7 +35,7 @@ export function OutputColumnLayout({form, ...definitionProps}: OutputLayoutProps
     return (
         <div className={styles.columns}>
             <div className={`${styles.column} ${styles.definition}`}>
-                <OutputDefinitionSection {...definitionProps} />
+                <OutputDefinition {...definitionProps} />
             </div>
             <div className={`${styles.column} ${styles.items}`}>{form}</div>
         </div>
