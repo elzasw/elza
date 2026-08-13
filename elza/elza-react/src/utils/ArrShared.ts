@@ -1,6 +1,9 @@
+import type {NodeInfo} from "elza-api";
 import {fundsSelectFund} from "../actions/fund/fund";
-import {createFundRoot} from "../components/arr/ArrUtils";
+import {selectFundTab} from "../actions/arr/fund";
+import {createFundRoot, getFundFromFundAndVersion} from "../components/arr/ArrUtils";
 import {fundSelectSubNode} from "../actions/arr/node";
+import {WebApi} from "../actions/WebApi";
 import {Api} from "../api";
 
 export {fetchNodeInfo} from "./fetchNodeInfo";
@@ -8,21 +11,50 @@ export {fetchNodeInfo} from "./fetchNodeInfo";
 /**
  * Drive node selection after a node identifier has been resolved to NodeInfo.
  *
- * The caller is expected to have loaded the fund detail (e.g. via
- * ArrParentPage.resolveUrlsRaw) so that arrRegion.funds[active] is populated
- * with the right version. This function only handles selecting the node
- * inside that fund — it fetches the parent chain via getNodeData, picks the
- * immediate parent, and dispatches fundSelectSubNode.
+ * The node-data request below must be addressed to a version of the node's
+ * own fund. The currently active tab may belong to a different fund (e.g.
+ * navigation from the cross-fund search dialog) or to a different version
+ * than the URL requests — in that case the fund detail is fetched and its
+ * tab selected first, the same resolution ArrParentPage.resolveUrlsRaw
+ * performs on a full page load. Only then is the parent chain fetched via
+ * getNodeData and the node selected, always with the tab's own versionId.
+ *
+ * @param nodeInfo resolved node identity (id + fundId)
+ * @param versionId fund version requested by the URL; null selects the open version
  */
-export const processNodeNavigation = (nodeInfo) =>
-    (dispatch, getState) => {
+export const processNodeNavigation = (nodeInfo: NodeInfo, versionId: number | null = null) =>
+    async (dispatch, getState) => {
         dispatch(fundsSelectFund(nodeInfo.fundId));
+
+        const {arrRegion} = getState();
+        const activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
+        const tabMatches = activeFund != null
+            && activeFund.id === nodeInfo.fundId
+            && (versionId == null || activeFund.versionId === versionId);
+
+        if (!tabMatches) {
+            let fund;
+            try {
+                fund = await WebApi.getFundDetail(nodeInfo.fundId);
+            } catch (e) {
+                console.error("Failed to load fund detail", nodeInfo, e);
+                return;
+            }
+            const version = versionId != null
+                ? fund.versions.find((v) => v.id === versionId)
+                : fund.versions.find((v) => !v.lockDate) ?? fund.versions[0];
+            if (!version) {
+                console.error("Fund version not found", nodeInfo, versionId);
+                return;
+            }
+            dispatch(selectFundTab(getFundFromFundAndVersion(fund, version)));
+        }
 
         waitForLoadAS(() => {
             const { arrRegion } = getState();
             const selectFund = arrRegion.funds[arrRegion.activeIndex];
 
-            if (!selectFund?.fundTree?.fetched) {
+            if (selectFund?.id !== nodeInfo.fundId || !selectFund?.fundTree?.fetched) {
                 return true;
             }
 
