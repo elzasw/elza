@@ -7,7 +7,7 @@ import {i18n, Loading} from 'components/shared';
 import {AbstractReactComponent, ArrFundPanel} from 'components/index.jsx';
 import * as types from 'actions/constants/ActionTypes';
 import {fundChangeReadMode, fundsFetchIfNeeded} from 'actions/arr/fund.jsx';
-import {getOneSettings, setSettings, getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx';
+import {getOneSettings, setSettings} from 'components/arr/ArrUtils.jsx';
 import {setFocus} from 'actions/global/focus.jsx';
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx';
 import {routerNavigate} from 'actions/router.jsx';
@@ -28,8 +28,7 @@ import {
     urlFundAb,
 } from '../../constants.tsx';
 import * as groups from '../../actions/refTables/groups';
-import {WebApi} from "../../actions";
-import {selectFundTab} from "../../actions/arr/fund";
+import {resolveFundTab} from "../../utils/ArrShared";
 
 /**
  * Stránka předku archivních pomůcek, např. pro pořádání, přesuny atp. Společným znakem je vybraný aktivní archivní soubor.
@@ -130,24 +129,11 @@ export default class ArrParentPage extends AbstractReactComponent {
         const {dispatch} = this.props;
         const activeFund = this.getActiveFund(this.props);
 
-        // skip loading data, if fund is currently open
-        if(activeFund?.id === fundId){
-            // current/latest version (versionId == undefined) doesn't have lock date
-            if(versionId == undefined && !activeFund?.activeVersion?.lockDate){
-                return activeFund;
-            }
-            else if( activeFund?.activeVersion?.id == versionId){
-                return activeFund;
-            }
-        }
-
+        // The tab may be restored from localStorage with a version that has been
+        // approved (closed) since - the server decides which version is current,
+        // the tab is kept only when it agrees (see resolveFundTab).
         try{
-            const fund = await WebApi.getFundDetail(fundId)
-
-            // select the current version, when it is missing in the path
-            const version = versionId ? fund.versions.find((version) => version.id === versionId) : fund.versions[0];
-            dispatch(selectFundTab(getFundFromFundAndVersion(fund, version)));
-            return fund;
+            return await resolveFundTab(dispatch, activeFund, fundId, versionId ?? null);
         }
         catch(e) {
             console.error("Nepodařilo se získat detail o AS", e, fundId);

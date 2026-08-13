@@ -690,18 +690,15 @@
     "srcHash": "oGs4SFZv0yF2"
   },
   "arr.daos.fileSystem.filter.clear": {
-    "defaultMessage": "Vymazat filtr",
-    "translated": false,
+    "defaultMessage": "Clear filter",
     "srcHash": "LRQK97GHHNDb"
   },
   "arr.daos.fileSystem.filter.placeholder": {
-    "defaultMessage": "Filtrovat…",
-    "translated": false,
+    "defaultMessage": "Filter…",
     "srcHash": "RDtyYIA9IDO_"
   },
   "arr.daos.fileSystem.filterByLink.all": {
-    "defaultMessage": "Vše",
-    "translated": false,
+    "defaultMessage": "All",
     "srcHash": "5C_lbtoov7Gn"
   },
   "arr.daos.fileSystem.filterByLink.label": {
@@ -709,13 +706,11 @@
     "srcHash": "ANJpmCaoHHmC"
   },
   "arr.daos.fileSystem.filterByLink.linked": {
-    "defaultMessage": "Propojené",
-    "translated": false,
+    "defaultMessage": "Linked",
     "srcHash": "5rbAbpjD8TlR"
   },
   "arr.daos.fileSystem.filterByLink.unlinked": {
-    "defaultMessage": "Nepropojené",
-    "translated": false,
+    "defaultMessage": "Unlinked",
     "srcHash": "1esyfo4aKzQd"
   },
   "arr.daos.fileSystem.links.forbidden": {
@@ -743,28 +738,23 @@
     "srcHash": "WSrg3PozscWF"
   },
   "arr.daos.fileSystem.sort.label": {
-    "defaultMessage": "Řazení",
-    "translated": false,
+    "defaultMessage": "Sorting",
     "srcHash": "JD-Vo3HpL1AE"
   },
   "arr.daos.fileSystem.sort.nameAsc": {
-    "defaultMessage": "Název A→Z",
-    "translated": false,
+    "defaultMessage": "Name A→Z",
     "srcHash": "ERn70WrPy1_t"
   },
   "arr.daos.fileSystem.sort.nameDesc": {
-    "defaultMessage": "Název Z→A",
-    "translated": false,
+    "defaultMessage": "Name Z→A",
     "srcHash": "W370hofSnS7-"
   },
   "arr.daos.fileSystem.sort.sizeAsc": {
-    "defaultMessage": "Velikost vzestupně",
-    "translated": false,
+    "defaultMessage": "Size ascending",
     "srcHash": "ncVb7DLsRFjt"
   },
   "arr.daos.fileSystem.sort.sizeDesc": {
-    "defaultMessage": "Velikost sestupně",
-    "translated": false,
+    "defaultMessage": "Size descending",
     "srcHash": "aAVC9zRaXJAr"
   },
   "arr.fundDataGrid.cellForm.notAllowed": {

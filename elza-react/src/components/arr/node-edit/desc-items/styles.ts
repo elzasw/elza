@@ -21,6 +21,7 @@ export const useStyles = makeStyles({
     flex: 1,
     position: "relative",
     flexDirection: "column",
+    minWidth: "30px",
   },
   descItemContainerWithWidth: {
     display: "flex",
