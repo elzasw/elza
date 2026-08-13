@@ -1813,7 +1813,6 @@ export class WebApiCls {
     }
 
     getFundDetail(fundId) {
-        console.warn("11111111111", fundId);
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/getFund/' + fundId).then(json => {
             return {
                 ...json,
