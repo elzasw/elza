@@ -50,8 +50,8 @@ const useStyles = makeStyles({
     counts: {
         display: 'flex',
         flexWrap: 'wrap',
+        alignItems: 'center',
         gap: tokens.spacingHorizontalXS,
-        marginTop: tokens.spacingVerticalXS,
     },
     countBadge: {
         backgroundColor: tokens.colorNeutralBackground1,
@@ -133,9 +133,9 @@ export function OutputRecommendedActionsBar({ outputId, versionId, active, reado
     };
 
     return (
-        <MessageBar intent="warning" icon={null}>
-            <MessageBarBody>
-                {formatMessage(messages.pending)}
+        <MessageBar intent="warning" icon={null} layout="multiline">
+            <MessageBarBody>{formatMessage(messages.pending)}</MessageBarBody>
+            <MessageBarActions>
                 <div className={styles.counts}>
                     <Badge appearance="tint" color="subtle" className={styles.countBadge}>
                         {formatMessage(messages.unprocessed, { count: counts.unprocessed })}
@@ -158,9 +158,7 @@ export function OutputRecommendedActionsBar({ outputId, versionId, active, reado
                         />
                     )}
                 </div>
-            </MessageBarBody>
-            {!readonly && (
-                <MessageBarActions>
+                {!readonly && (
                     <Button
                         appearance="primary"
                         size="small"
@@ -169,8 +167,8 @@ export function OutputRecommendedActionsBar({ outputId, versionId, active, reado
                     >
                         {formatMessage(messages.runAll)}
                     </Button>
-                </MessageBarActions>
-            )}
+                )}
+            </MessageBarActions>
         </MessageBar>
     );
 }
