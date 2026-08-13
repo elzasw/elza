@@ -3418,6 +3418,28 @@ paths:
           description: The request has succeeded.
       tags:
         - output
+  /funds/out/{outputId}/can-generate:
+    get:
+      operationId: Output_canGenerateOutput
+      description: Gettins states actions
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Output.MissingAction'
+      tags:
+        - output
   /funds/out/{outputId}/clone:
     post:
       operationId: Output_cloneOutput
@@ -9129,6 +9151,17 @@ components:
         - AND
         - OR
       description: Operation type for LogicalFilter
+    Output.BulkActionState:
+      type: string
+      enum:
+        - WAITING
+        - PLANNED
+        - RUNNING
+        - FINISHED
+        - ERROR
+        - INTERRUPTED
+        - OUTDATED
+      description: Bulk action run state
     Output.Def:
       type: object
       required:
@@ -9222,6 +9255,22 @@ components:
         item:
           $ref: '#/components/schemas/OutputItem'
       description: Náhrada za `OutputItemResult`
+    Output.MissingAction:
+      type: object
+      required:
+        - code
+      properties:
+        id:
+          type: integer
+          description: Bulk action run id; null when the action was never launched
+        code:
+          type: string
+          description: Bulk action code
+        actionState:
+          allOf:
+            - $ref: '#/components/schemas/Output.BulkActionState'
+          description: State of the latest run; null when never launched
+      description: Recommended action that is missing or not FINISHED for the output
     Output.NameParam:
       type: object
       required:

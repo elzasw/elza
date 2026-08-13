@@ -7,9 +7,6 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.AssociationInverseSide;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.ObjectPath;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.PropertyValue;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
