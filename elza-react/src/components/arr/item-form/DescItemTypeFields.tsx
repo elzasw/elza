@@ -225,20 +225,22 @@ export function DescItemTypeFields({
                 ))}
             </DraggableList>
             {showAddButton && (
-                <Button
-                    ref={addButtonRef}
-                    className={styles.addDescItemButton}
-                    size={compact ? "small" : "medium"}
-                    icon={<AddRegular />}
-                    onClick={() => {
-                        const nextPosition =
-                            lastItem?.item.position > 0 ? lastItem.item.position + 1 : 1;
-                        addEmptyDescItem(typeRef.id, undefined, nextPosition);
-                    }}
-                    tabIndex={autoFocusOnOpen ? 0 : -1}
-                >
-                    {typeRef.shortcut}
-                </Button>
+                <div>
+                    <Button
+                        ref={addButtonRef}
+                        className={styles.addDescItemButton}
+                        size={compact ? "small" : "medium"}
+                        icon={<AddRegular />}
+                        onClick={() => {
+                            const nextPosition =
+                                lastItem?.item.position > 0 ? lastItem.item.position + 1 : 1;
+                            addEmptyDescItem(typeRef.id, undefined, nextPosition);
+                        }}
+                        tabIndex={autoFocusOnOpen ? 0 : -1}
+                    >
+                        {typeRef.shortcut}
+                    </Button>
+                </div>
             )}
         </DescItemTypeHeader>
     );
