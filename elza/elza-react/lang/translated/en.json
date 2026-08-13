@@ -773,10 +773,6 @@
     "defaultMessage": "Not run: {count}",
     "srcHash": "AlyDyg4AHUs3"
   },
-  "arr.output.form.anonymizedAp": {
-    "defaultMessage": "Anonymized AP",
-    "srcHash": "AhyE-Ql5viof"
-  },
   "arr.output.form.cancel": {
     "defaultMessage": "Cancel",
     "srcHash": "bHfYpLCt8F6P"
@@ -833,10 +829,6 @@
     "defaultMessage": "Output name",
     "srcHash": "8uMyaFpXAcJK"
   },
-  "arr.output.form.noScope": {
-    "defaultMessage": "No restriction",
-    "srcHash": "Aqb7vLcsBhJg"
-  },
   "arr.output.form.noTemplate": {
     "defaultMessage": "No template selected",
     "srcHash": "B_jqtCI01BU6"
@@ -876,18 +868,6 @@
   "arr.output.form.save": {
     "defaultMessage": "Save",
     "srcHash": "eKX-T2uH2Zl7"
-  },
-  "arr.output.form.scopeAdd": {
-    "defaultMessage": "Add scope",
-    "srcHash": "VSiNlHg91MAg"
-  },
-  "arr.output.form.scopeRemove": {
-    "defaultMessage": "Remove scope",
-    "srcHash": "fnfiPZetWN7c"
-  },
-  "arr.output.form.scopesLabel": {
-    "defaultMessage": "Restriction to access point scopes",
-    "srcHash": "3mdml8brxxIO"
   },
   "arr.output.form.stateComputing": {
     "defaultMessage": "Recomputing",
