@@ -489,7 +489,7 @@ public class OutputController implements OutputApi {
 	    ArrOutput output = outputService.getOutput(outputId);
 	    ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(output.getFundId());
 
-	    List<BulkActionRunVO> missing = outputService.findMissingRecommendedActions(fundVersion, outputId);
+	    List<BulkActionRunVO> missing = outputService.findMissingRecommendedActions(fundVersion, output);
 
 	    List<OutputMissingAction> result = missing.stream()
 	            .map(vo -> {

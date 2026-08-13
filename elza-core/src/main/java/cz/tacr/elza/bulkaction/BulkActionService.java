@@ -1,6 +1,5 @@
 package cz.tacr.elza.bulkaction;
 
-
 import static cz.tacr.elza.repository.ExceptionThrow.bulkAction;
 import static cz.tacr.elza.repository.ExceptionThrow.node;
 import static cz.tacr.elza.repository.ExceptionThrow.version;
@@ -38,6 +37,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.tacr.elza.controller.vo.AbstractFilter;
 import cz.tacr.elza.controller.vo.BulkAction;
+import cz.tacr.elza.controller.vo.BulkActionRunVO;
 import cz.tacr.elza.controller.vo.FundsActionGroup;
 import cz.tacr.elza.controller.vo.FundsActionGroupResult;
 import cz.tacr.elza.controller.vo.FundsActionSkipped;
@@ -54,6 +54,8 @@ import cz.tacr.elza.domain.ArrFundsChange;
 import cz.tacr.elza.domain.FundsChangeType;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformityExt;
+import cz.tacr.elza.domain.ArrNodeOutput;
+import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.RulRuleSet;
@@ -569,6 +571,49 @@ public class BulkActionService {
 
     public List<RulAction> getRecommendedActions(RulOutputType outputType) {
         return actionRepository.findByRecommendedActionOutputType(outputType);
+    }
+
+    /**
+     * Recommended bulk actions for the given output, each paired with the most
+     * recent run on the output's nodes (VO of the run) or, when no such run
+     * exists, a stub VO carrying only the action code. Order follows the list
+     * of recommended actions of the output's type.
+     *
+     * @param output output whose recommended actions are queried
+     * @return one VO per recommended action of the output's type
+     */
+    public List<BulkActionRunVO> getRecommendedBulkActionsForOutput(ArrOutput output) {
+        List<RulAction> recommendedActions = getRecommendedActions(output.getOutputType());
+        if (recommendedActions.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        Set<Integer> nodeIds = output.getOutputNodes().stream()
+                .filter(nodeOutput -> nodeOutput.getDeleteChange() == null)
+                .map(ArrNodeOutput::getNodeId)
+                .collect(Collectors.toSet());
+        List<ArrBulkActionRun> runs = nodeIds.isEmpty()
+                ? Collections.emptyList()
+                : findBulkActionsByNodeIds(
+                        arrangementService.getOpenVersionByFundId(output.getFund().getFundId()),
+                        nodeIds);
+        runs.sort((a, b) -> b.getChange().getChangeId() - a.getChange().getChangeId());
+
+        List<BulkActionRunVO> result = new ArrayList<>(recommendedActions.size());
+        for (RulAction action : recommendedActions) {
+            String code = action.getCode();
+            ArrBulkActionRun latest = runs.stream()
+                    .filter(r -> code.equals(r.getBulkActionCode()))
+                    .findFirst().orElse(null);
+            if (latest != null) {
+                result.add(BulkActionRunVO.newInstance(latest));
+            } else {
+                BulkActionRunVO stub = new BulkActionRunVO();
+                stub.setCode(code);
+                result.add(stub);
+            }
+        }
+        return result;
     }
 
     public SecurityContext createSecurityContext(ArrBulkActionRun bulkActionRun) {

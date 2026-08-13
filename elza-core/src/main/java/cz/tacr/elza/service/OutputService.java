@@ -1447,28 +1447,6 @@ public class OutputService {
     }
 
     /**
-     * Lists recommended bulk actions that currently block generation of the given
-     * output — actions that were never launched, or whose latest run is in a
-     * non-FINISHED state. Serves the {@code /can-generate} endpoint as a preview
-     * of why {@link #addRequest} without the {@code forced} flag would reject the
-     * output with {@link OutputRequestStatus#RECOMMENDED_ACTION_NOT_RUN}.
-     *
-     * @param fundVersion open version of the fund the output belongs to
-     * @param outputId    id of the checked output
-     * @return recommended actions not yet FINISHED; empty when the output type has
-     *         no recommended actions, or when every recommended action already has
-     *         a FINISHED run
-     */
-    @Transactional
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
-            UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
-    public List<BulkActionRunVO> findMissingRecommendedActions(
-            @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
-            final int outputId) {
-        return outputServiceInternal.findMissingRecommendedActions(fundVersion, outputId);
-    }    
-
-    /**
      * Kontrola, že neměníme typ atributu, který je počítán automaticky.
      *
      * @param output pojmenovaný výstup
@@ -1751,6 +1729,32 @@ public class OutputService {
 
     public ArrOutputItem findOpenOutputItem(Integer descItemObjectId) {
         return outputServiceInternal.findOpenOutputItem(descItemObjectId);
+    }
+
+    /**
+     * Lists recommended bulk actions that currently block generation of the given
+     * output — actions that were never launched, or whose latest run is in a
+     * non-FINISHED state. Serves the {@code /can-generate} endpoint as a preview
+     * of why {@link #addRequest} without the {@code forced} flag would reject the
+     * output with {@link OutputRequestStatus#RECOMMENDED_ACTION_NOT_RUN}. Reuses
+     * {@link BulkActionService#getRecommendedBulkActionsForOutput(ArrOutput)} to
+     * stay in sync with the {@code recommended=true} branch of
+     * {@code GET /api/action/output/{outputId}}.
+     *
+     * @param fundVersion open version of the fund the output belongs to
+     * @param output      checked output
+     * @return recommended actions not yet FINISHED; empty when the output type has
+     *         no recommended actions, or when every recommended action already has
+     *         a FINISHED run
+     */
+    @Transactional
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
+    public List<BulkActionRunVO> findMissingRecommendedActions(
+            @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+            final ArrOutput output) {
+        return bulkActionService.getRecommendedBulkActionsForOutput(output).stream()
+                .filter(vo -> vo.getState() != ArrBulkActionRun.State.FINISHED)
+                .collect(Collectors.toList());
     }
 
 }
