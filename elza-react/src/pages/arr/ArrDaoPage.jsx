@@ -92,7 +92,11 @@ class ArrDaoPage extends ArrParentPage {
 
         const afterCreateCallback = (versionId, node, parentNode) => {
             // Připojení - link
-            WebApi.createDaoLink(fund.versionId, selectedDaoLeft.id, node.id).then(() => {
+            const linkPromise = selectedDaoLeft.id < 0
+                ? Api.funds.fundFsMoveDAOLink(fund.id, selectedDaoLeft.daoLink.id, node.id)
+                : WebApi.createDaoLink(fund.versionId, selectedDaoLeft.id, node.id);
+
+            linkPromise.then(() => {
                 this.setState({ selectedDaoLeft: null });
             });
 
@@ -109,8 +113,13 @@ class ArrDaoPage extends ArrParentPage {
     handleLink = () => {
         const fund = this.getActiveFund(this.props);
         const { selectedDaoLeft } = this.state;
+        const nodeId = fund.fundTreeDaosRight.selectedId;
 
-        WebApi.createDaoLink(fund.versionId, selectedDaoLeft.id, fund.fundTreeDaosRight.selectedId).then(() => {
+        const linkPromise = selectedDaoLeft.id < 0
+            ? Api.funds.fundFsMoveDAOLink(fund.id, selectedDaoLeft.daoLink.id, nodeId)
+            : WebApi.createDaoLink(fund.versionId, selectedDaoLeft.id, nodeId);
+
+        linkPromise.then(() => {
             this.setState({ selectedDaoLeft: null });
         });
     };

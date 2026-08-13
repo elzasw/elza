@@ -2581,6 +2581,29 @@ paths:
             schema:
               $ref: '#/components/schemas/SearchParams'
         description: search parameters
+  /fund/{fundId}/fslink/{daoLinkId}/movelink/{nodeId}:
+    put:
+      operationId: fund_fsMoveDAOLink
+      description: Move existing DAO link
+      parameters:
+        - $ref: '#/components/parameters/FundIdParameter'
+        - name: daoLinkId
+          in: path
+          required: true
+          description: Existing FS dao-link id to be moved
+          schema:
+            type: integer
+            format: int32
+        - $ref: '#/components/parameters/NodeIdParameter'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FsCreateDaoLinkResult'
+      tags:
+        - funds
   /fund/{fundId}/fsrepo/{fsrepoId}/item-data:
     get:
       operationId: fund_fsRepoItemData
