@@ -198,6 +198,7 @@ export function DescItemStructured({
       <AnonymousStructure
         data={data}
         structureType={structureType}
+        readOnly={_isDisabled}
         onCreate={handleCreateAnonymousStructure}
       />
     );
