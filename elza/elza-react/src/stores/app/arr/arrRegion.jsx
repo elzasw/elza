@@ -364,23 +364,8 @@ export default function arrRegion(state = initialState, action) {
             };
         }
         case types.CHANGE_APPROVE_VERSION: {
-            const funds = state.funds;
-            let update = false;
-
-            funds.forEach(fund => {
-                if (fund.versionId == action.versionId) {
-                    if (fund.closed == false) {
-                        update = true;
-                        fund.closed = true;
-                    }
-                }
-            });
-
-            if (update) {
-                return {...state};
-            }
-
-            return state;
+            const index = indexById(state.funds, action.versionId, 'versionId');
+            return processFund(state, action, index);
         }
         case types.VISIBLE_POLICY_REQUEST:
         case types.VISIBLE_POLICY_RECEIVE:
