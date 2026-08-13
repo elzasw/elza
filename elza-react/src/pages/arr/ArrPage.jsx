@@ -151,7 +151,7 @@ class ArrPage extends ArrParentPage {
 
         if(selectedNodeInfo){
             // directly select node with info
-            dispatch(processNodeNavigation(selectedNodeInfo));
+            dispatch(processNodeNavigation(selectedNodeInfo, urlVersionId ?? null));
         } else {
             this.selectNodeFromUrl(activeNode, urlNodeId, urlVersionId);
         }
@@ -196,7 +196,7 @@ class ArrPage extends ArrParentPage {
             // select node from url only when it is not already selected (url inserted into address bar)
             if(activeNode?.selectedSubNodeId.toString() !== nodeId){
                 const info = await fetchNodeInfo(nodeId);
-                dispatch(processNodeNavigation(info));
+                dispatch(processNodeNavigation(info, versionId ?? null));
             }
         }
     }
