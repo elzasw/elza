@@ -1,5 +1,5 @@
 import { Button, Spinner, Tooltip } from "@fluentui/react-components";
-import { AddRegular, CalculatorRegular, CalculatorMultipleRegular } from "@fluentui/react-icons";
+import { AddRegular, EditRegular } from "@fluentui/react-icons";
 import { modalDialogShow } from "actions/global/modalDialog";
 import { MandatoryType } from "elza-api";
 import { useMemo } from "react";
@@ -12,14 +12,16 @@ import { ItemFormBody } from "components/arr/item-form/ItemFormBody";
 import { messages } from "components/arr/item-form/messages";
 import { useStyles } from "components/arr/item-form/styles";
 import { useOutputFormData } from "./hooks";
+import { OutputView } from "./OutputView";
 
 interface Props {
     outputId: number;
+    readonly?: boolean;
 }
 
 export type { Props as OutputEditProps };
 
-export function OutputEdit({ outputId }: Props) {
+export function OutputEdit({ outputId, readonly }: Props) {
     const dispatch = useAppThunkDispatch();
     const { formatMessage } = useIntl();
     const { settings } = useUserSettings();
@@ -62,7 +64,7 @@ export function OutputEdit({ outputId }: Props) {
                 <Button
                     size="small"
                     appearance={isManual ? "primary" : "subtle"}
-                    icon={isManual ? <CalculatorMultipleRegular /> : <CalculatorRegular />}
+                    icon={<EditRegular />}
                     onClick={() => switchCalculating(typeRef.id, !isManual)}
                     tabIndex={-1}
                 />
@@ -89,6 +91,14 @@ export function OutputEdit({ outputId }: Props) {
 
     if (isLoading) {
         return <Spinner />;
+    }
+
+    if (readonly) {
+        return (
+            <div className={styles.nodeEditForm} style={{ width: "100%" }}>
+                <OutputView outputId={outputId} />
+            </div>
+        );
     }
 
     return (

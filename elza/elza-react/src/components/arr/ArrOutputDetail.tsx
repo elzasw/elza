@@ -17,7 +17,7 @@ import {OutputEdit} from './output/OutputEdit';
 import {OutputColumnLayout} from './output/OutputColumnLayout';
 import {OutputStackedLayout} from './output/OutputStackedLayout';
 import FundNodesSelectForm from './FundNodesSelectForm';
-import FundOutputFiles from './FundOutputFiles';
+import {FundOutputFiles} from './output/FundOutputFiles';
 import {ApScopeVO, ArrOutputVO} from '../../typings/Outputs';
 import {AppFetchingStore} from '../../typings/globals';
 import * as scopeActions from '../../actions/scopes/scopes';
@@ -148,10 +148,6 @@ export function ArrOutputDetail({
     }, [dispatch, fund.versionId, fundOutputDetail.id]);
 
     const renderOutputFiles = () => {
-        const {
-            fundOutput: {fundOutputFiles},
-        } = fund;
-
         if (fundOutputDetail.outputResultIds === null || fundOutputDetail.outputResultIds.length === 0) {
             return null;
         }
@@ -160,7 +156,6 @@ export function ArrOutputDetail({
             <FundOutputFiles
                 versionId={versionId}
                 outputId={fundOutputDetail.id}
-                fundOutputFiles={fundOutputFiles}
                 outputResultIds={fundOutputDetail.outputResultIds}
             />
         );
@@ -186,9 +181,9 @@ export function ArrOutputDetail({
         return <HorizontalLoader />;
     }
 
-    const form = <OutputEdit outputId={fundOutputDetail.id} />;
-
     const readonly = closed || readMode || !isOutputEditable(fundOutputDetail);
+
+    const form = <OutputEdit outputId={fundOutputDetail.id} readonly={readonly} />;
 
     const existingScopes = (fundOutputDetail.scopes || []).map(i => i.id);
     const connectableScopes = scopeList.rows && scopeList.rows.filter(s => existingScopes.indexOf(s.id) === -1);
@@ -198,6 +193,7 @@ export function ArrOutputDetail({
 
     const layoutProps = {
         fundOutputDetail,
+        versionId,
         readonly,
         nodesReadOnly: readonly,
         connectableScopes,

@@ -4,6 +4,7 @@ import {AppFetchingStore} from '../../../typings/globals';
 
 export interface OutputLayoutProps {
     fundOutputDetail: ArrOutputVO & AppFetchingStore & {subNodeForm: any; lockDate: any};
+    versionId: number;
     readonly: boolean;
     nodesReadOnly: boolean;
     connectableScopes: any;

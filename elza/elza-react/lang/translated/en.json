@@ -737,9 +737,93 @@
     "defaultMessage": "This description element cannot be added to the description unit.",
     "srcHash": "1vJCdzTLLaix"
   },
+  "arr.output.files.download": {
+    "defaultMessage": "Download file",
+    "srcHash": "us0j-6FJtyPZ"
+  },
+  "arr.output.files.downloadAll": {
+    "defaultMessage": "Download all",
+    "srcHash": "VpVRKrnTESeD"
+  },
+  "arr.output.files.empty": {
+    "defaultMessage": "No files",
+    "srcHash": "mg3CD86mnQ1y"
+  },
+  "arr.output.files.title": {
+    "defaultMessage": "Generated files",
+    "srcHash": "2KdZhZjA9vbZ"
+  },
+  "arr.output.form.actionsError": {
+    "defaultMessage": "Error: {count}",
+    "srcHash": "2Si6k1X55tBR"
+  },
+  "arr.output.form.actionsMenu": {
+    "defaultMessage": "Output actions",
+    "srcHash": "kdcJZ0SM0QP5"
+  },
+  "arr.output.form.actionsOutdated": {
+    "defaultMessage": "Outdated: {count}",
+    "srcHash": "hsJe-iXenDP0"
+  },
+  "arr.output.form.actionsProcessing": {
+    "defaultMessage": "Running: {count}",
+    "srcHash": "obVhMNBqR0db"
+  },
+  "arr.output.form.actionsUnprocessed": {
+    "defaultMessage": "Not run: {count}",
+    "srcHash": "AlyDyg4AHUs3"
+  },
   "arr.output.form.anonymizedAp": {
     "defaultMessage": "Anonymized AP",
     "srcHash": "AhyE-Ql5viof"
+  },
+  "arr.output.form.cancel": {
+    "defaultMessage": "Cancel",
+    "srcHash": "bHfYpLCt8F6P"
+  },
+  "arr.output.form.copyAction": {
+    "defaultMessage": "Copy",
+    "srcHash": "icAZn-5O6k2x"
+  },
+  "arr.output.form.deleteAction": {
+    "defaultMessage": "Delete",
+    "srcHash": "oe4iuqXX4rqm"
+  },
+  "arr.output.form.deleteConfirm": {
+    "defaultMessage": "Do you really want to delete the output?",
+    "srcHash": "jSf3NfG-ZxwQ"
+  },
+  "arr.output.form.editAction": {
+    "defaultMessage": "Edit",
+    "srcHash": "7D1xFD_em0Dr"
+  },
+  "arr.output.form.editDetails": {
+    "defaultMessage": "Edit output details",
+    "srcHash": "Zk7tB_IWLETf"
+  },
+  "arr.output.form.editDialogTitle": {
+    "defaultMessage": "Edit output",
+    "srcHash": "HgfnPF-D1TZD"
+  },
+  "arr.output.form.errorProperties": {
+    "defaultMessage": "Additional parameters",
+    "srcHash": "Dido-57hy0Fk"
+  },
+  "arr.output.form.errorStack": {
+    "defaultMessage": "Stack",
+    "srcHash": "5VFkEkLOckau"
+  },
+  "arr.output.form.errorTitle": {
+    "defaultMessage": "Output error",
+    "srcHash": "eiaZk1N-jC8Q"
+  },
+  "arr.output.form.generateOutput": {
+    "defaultMessage": "Generate output",
+    "srcHash": "PkGxuldlxLxQ"
+  },
+  "arr.output.form.generatedAt": {
+    "defaultMessage": "Generated",
+    "srcHash": "GCV1vJTh_zFv"
   },
   "arr.output.form.internalCode": {
     "defaultMessage": "Output internal code",
@@ -749,21 +833,81 @@
     "defaultMessage": "Output name",
     "srcHash": "8uMyaFpXAcJK"
   },
+  "arr.output.form.noScope": {
+    "defaultMessage": "No restriction",
+    "srcHash": "Aqb7vLcsBhJg"
+  },
+  "arr.output.form.noTemplate": {
+    "defaultMessage": "No template selected",
+    "srcHash": "B_jqtCI01BU6"
+  },
+  "arr.output.form.nodesLabel": {
+    "defaultMessage": "Linked to the arrangement",
+    "srcHash": "yv3cv7bGGveK"
+  },
   "arr.output.form.outputFilter": {
     "defaultMessage": "Output filter",
     "srcHash": "81owipUZcq0v"
   },
   "arr.output.form.outputFilterPlaceholder": {
-    "defaultMessage": "Select a filter",
-    "srcHash": "wWR15re_FqXY"
+    "defaultMessage": "No filter",
+    "srcHash": "wba4fO8L06Cx"
   },
   "arr.output.form.outputType": {
     "defaultMessage": "Output type",
     "srcHash": "hD5bBOE7z9eZ"
   },
+  "arr.output.form.recommendedActionsPending": {
+    "defaultMessage": "Some recommended actions have not been run yet. It is recommended to run them before generating the output.",
+    "srcHash": "uDQTnaMCwroI"
+  },
   "arr.output.form.required": {
     "defaultMessage": "This field is required",
     "srcHash": "5GEi8Ab6Hsc4"
+  },
+  "arr.output.form.revertAction": {
+    "defaultMessage": "Return to preparation",
+    "srcHash": "alaEfktm1Kmo"
+  },
+  "arr.output.form.runAllActions": {
+    "defaultMessage": "Run all",
+    "srcHash": "ah2EqoPZSnyj"
+  },
+  "arr.output.form.save": {
+    "defaultMessage": "Save",
+    "srcHash": "eKX-T2uH2Zl7"
+  },
+  "arr.output.form.scopeAdd": {
+    "defaultMessage": "Add scope",
+    "srcHash": "VSiNlHg91MAg"
+  },
+  "arr.output.form.scopeRemove": {
+    "defaultMessage": "Remove scope",
+    "srcHash": "fnfiPZetWN7c"
+  },
+  "arr.output.form.scopesLabel": {
+    "defaultMessage": "Restriction to access point scopes",
+    "srcHash": "3mdml8brxxIO"
+  },
+  "arr.output.form.stateComputing": {
+    "defaultMessage": "Recomputing",
+    "srcHash": "gPuPdncQnvfK"
+  },
+  "arr.output.form.stateFinished": {
+    "defaultMessage": "Finished",
+    "srcHash": "xWQzBVFQyQ1H"
+  },
+  "arr.output.form.stateGenerating": {
+    "defaultMessage": "Generating",
+    "srcHash": "eGLqVdTHwvld"
+  },
+  "arr.output.form.stateOpen": {
+    "defaultMessage": "In preparation",
+    "srcHash": "s0ER97cHc4CJ"
+  },
+  "arr.output.form.stateOutdated": {
+    "defaultMessage": "Outdated",
+    "srcHash": "lOKs5uOkCosN"
   },
   "arr.output.form.template": {
     "defaultMessage": "Template",

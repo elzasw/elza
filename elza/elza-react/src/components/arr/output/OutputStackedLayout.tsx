@@ -1,12 +1,12 @@
 import {makeStyles, tokens} from '@fluentui/react-components';
 import {i18n} from 'components/shared';
 import ToggleContent from '../../shared/toggle-content/ToggleContent';
-import {OutputDefinitionSection} from './OutputDefinitionSection';
+import {OutputDefinition} from './OutputDefinition';
 import {OutputLayoutProps} from './outputLayoutTypes';
 
 const useStyles = makeStyles({
     definition: {
-        padding: `${tokens.spacingVerticalM} ${tokens.spacingHorizontalL}`,
+        padding: `${tokens.spacingVerticalL} ${tokens.spacingHorizontalXL}`,
     },
 });
 
@@ -19,7 +19,7 @@ export function OutputStackedLayout({form, ...definitionProps}: OutputLayoutProp
     return (
         <>
             <div className={styles.definition}>
-                <OutputDefinitionSection {...definitionProps} />
+                <OutputDefinition {...definitionProps} />
                 <hr className="small" />
                 <h4 className="desc-items-title">{i18n('developer.title.descItems')}</h4>
             </div>
