@@ -67,7 +67,6 @@ import cz.tacr.elza.dataexchange.output.IOExportFundsCsv;
 import cz.tacr.elza.dataexchange.output.IOExportWorker;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrBulkActionRun;
-import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFsLink;
 import cz.tacr.elza.domain.ArrFund;
@@ -414,23 +413,6 @@ public class FundController implements FundsApi {
         FsCreateDaoLinkResult vo = new FsCreateDaoLinkResult();
         vo.setDaoLinkId(daoLink.getDaoLinkId());
 
-        return ResponseEntity.ok(vo);
-    }
-
-    // PUT /fund/{fundId}/fslink/{daoLinkId}/movelink/{nodeId}
-    @Override
-    @Transactional
-    public ResponseEntity<FsCreateDaoLinkResult> fundFsMoveDAOLink(@PathVariable("fundId") Integer fundId,
-                                                                   @PathVariable("daoLinkId") Integer daoLinkId,
-                                                                   @PathVariable("nodeId") Integer nodeId) {
-        ArrFund fund = arrangementService.getFund(fundId);
-        ArrFundVersion fundVersion = arrangementService.getOpenVersionByFund(fund);
-        ArrNode newNode = arrangementService.getNode(nodeId);
-
-        ArrFsLink newLink = daoService.moveFsDaoLink(fundVersion, daoLinkId, newNode);
-
-        FsCreateDaoLinkResult vo = new FsCreateDaoLinkResult();
-        vo.setDaoLinkId(newLink.getDaoLinkId());
         return ResponseEntity.ok(vo);
     }
 
