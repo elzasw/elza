@@ -43,7 +43,6 @@ import {
 import { Field, Form } from 'react-final-form';
 import { FormattedDate, FormattedTime, MessageDescriptor, defineMessages, useIntl } from 'react-intl';
 import { useSelector } from 'react-redux';
-import { AccessPointPicker } from 'components/registry';
 import { outputTypesFetchIfNeeded } from 'actions/refTables/outputTypes';
 import { templatesFetchIfNeeded } from 'actions/refTables/templates';
 import { fundOutputGenerate, fundOutputDelete, fundOutputClone, fundOutputRevert } from 'actions/arr/fundOutput';
@@ -51,7 +50,7 @@ import { showConfirmDialog } from 'components/shared/dialog';
 import { WebApi } from 'actions/index';
 import { useThunkDispatch } from 'utils/hooks';
 import { AppState, OutputType, Template } from 'typings/store';
-import { ApScopeVO, ArrOutputVO } from 'typings/Outputs';
+import { ArrOutputVO } from 'typings/Outputs';
 import { AutoSave } from 'components/shared/form/FinalFormAutoSave';
 import { ApAccessPointVO } from 'api';
 import { ExceptionData } from 'components/shared/exception/Exception';
@@ -88,10 +87,6 @@ const messages = defineMessages({
         id: 'arr.output.form.outputFilterPlaceholder',
         defaultMessage: 'Bez filtru',
     },
-    anonymizedAp: {
-        id: 'arr.output.form.anonymizedAp',
-        defaultMessage: 'Anonymizované AP',
-    },
     required: {
         id: 'arr.output.form.required',
         defaultMessage: 'Toto pole je povinné',
@@ -111,10 +106,6 @@ const messages = defineMessages({
     noTemplate: {
         id: 'arr.output.form.noTemplate',
         defaultMessage: 'Není vybrána šablona',
-    },
-    noScope: {
-        id: 'arr.output.form.noScope',
-        defaultMessage: 'Bez omezení',
     },
     editDetails: {
         id: 'arr.output.form.editDetails',
@@ -160,14 +151,6 @@ const messages = defineMessages({
         id: 'arr.output.form.errorTitle',
         defaultMessage: 'Chyba výstupu',
     },
-    scopeAdd: {
-        id: 'arr.output.form.scopeAdd',
-        defaultMessage: 'Přidat oblast',
-    },
-    scopeRemove: {
-        id: 'arr.output.form.scopeRemove',
-        defaultMessage: 'Odebrat oblast',
-    },
     generatedAt: {
         id: 'arr.output.form.generatedAt',
         defaultMessage: 'Vygenerováno',
@@ -175,10 +158,6 @@ const messages = defineMessages({
     generateOutput: {
         id: 'arr.output.form.generateOutput',
         defaultMessage: 'Vygenerovat výstup',
-    },
-    scopesLabel: {
-        id: 'arr.output.form.scopesLabel',
-        defaultMessage: 'Omezení na oblasti přístupových bodů',
     },
     nodesLabel: {
         id: 'arr.output.form.nodesLabel',
@@ -244,10 +223,6 @@ const useStyles = makeStyles({
     },
     tags: {
         display: 'contents',
-    },
-    subtleTag: {
-        color: tokens.colorNeutralForeground3,
-        fontStyle: 'italic',
     },
     noTemplateTag: {
         backgroundColor: tokens.colorStatusDangerBackground1,
@@ -477,11 +452,8 @@ type Props = Pick<
     | 'versionId'
     | 'readonly'
     | 'nodesReadOnly'
-    | 'connectableScopes'
     | 'outputFiles'
     | 'onSaveOutput'
-    | 'onAddScope'
-    | 'onRemoveScope'
     | 'onAddNodes'
     | 'onRemoveNode'
 >;
@@ -496,11 +468,8 @@ export function OutputDefinition({
     versionId,
     readonly,
     nodesReadOnly,
-    connectableScopes,
     outputFiles,
     onSaveOutput,
-    onAddScope,
-    onRemoveScope,
     onAddNodes,
     onRemoveNode,
 }: Props) {
@@ -832,78 +801,9 @@ export function OutputDefinition({
                                 );
                             }}
                         </Field>
-                        <Field<ApAccessPointVO | undefined> name="anonymizedAp">
-                            {({ input }) => (
-                                <FluentField label={formatMessage(messages.anonymizedAp)}>
-                                    <AccessPointPicker
-                                        value={input.value?.id}
-                                        onChange={accessPointId => {
-                                            input.onChange(accessPointId != null ? { id: accessPointId } : undefined);
-                                            form.submit();
-                                        }}
-                                        clearable
-                                        disabled={readonly}
-                                    />
-                                </FluentField>
-                            )}
-                        </Field>
                     </div>
                 )}
             </Form>
-
-            <FluentField label={formatMessage(messages.scopesLabel)}>
-                <div className={styles.templateRow}>
-                    {(fundOutputDetail.scopes || []).length > 0 && (
-                        <TagGroup
-                            className={styles.tags}
-                            onDismiss={(_event, data) => {
-                                const scope = (fundOutputDetail.scopes || []).find(
-                                    s => s.id.toString() === data.value,
-                                );
-                                if (scope) {
-                                    onRemoveScope(scope);
-                                }
-                            }}
-                        >
-                            {(fundOutputDetail.scopes || []).map(scope => (
-                                <Tag
-                                    key={scope.id}
-                                    value={scope.id.toString()}
-                                    dismissible={readonly ? undefined : true}
-                                    dismissIcon={
-                                        readonly ? undefined : { 'aria-label': formatMessage(messages.scopeRemove) }
-                                    }
-                                >
-                                    {scope.name}
-                                </Tag>
-                            ))}
-                        </TagGroup>
-                    )}
-                    {(fundOutputDetail.scopes || []).length === 0 && (
-                        <Tag className={styles.subtleTag}>{formatMessage(messages.noScope)}</Tag>
-                    )}
-                    {!readonly && connectableScopes && connectableScopes.length > 0 && (
-                        <Menu>
-                            <MenuTrigger disableButtonEnhancement>
-                                <MenuButton
-                                    icon={<AddRegular />}
-                                    aria-label={formatMessage(messages.scopeAdd)}
-                                    title={formatMessage(messages.scopeAdd)}
-                                />
-                            </MenuTrigger>
-                            <MenuPopover>
-                                <MenuList>
-                                    {connectableScopes.map((scope: ApScopeVO) => (
-                                        <MenuItem key={scope.id} onClick={() => onAddScope(scope)}>
-                                            {scope.name}
-                                        </MenuItem>
-                                    ))}
-                                </MenuList>
-                            </MenuPopover>
-                        </Menu>
-                    )}
-                </div>
-            </FluentField>
 
             <div>
                 <label className="control-label">{formatMessage(messages.nodesLabel)}</label>
