@@ -66,7 +66,7 @@ vi.mock('../components/arr/ArrUtils', () => ({
 }));
 
 import { fetchNodeInfo } from './fetchNodeInfo';
-import { processNodeNavigation } from './ArrShared';
+import { processNodeNavigation, resolveFundTab } from './ArrShared';
 
 const NODE_INFO_FIXTURE = {
     id: 42,
@@ -100,6 +100,78 @@ describe('fetchNodeInfo', () => {
         expect(mockGetNodeInfoById).toHaveBeenCalledWith(42);
         expect(mockGetNodeInfoByUuid).not.toHaveBeenCalled();
         expect(result).toEqual(NODE_INFO_FIXTURE);
+    });
+});
+
+describe('resolveFundTab', () => {
+    const FUND_DETAIL = {
+        id: 42,
+        name: 'Fund',
+        versions: [
+            { id: 462, lockDate: null },
+            { id: 42, lockDate: '2020-01-01T00:00:00' },
+        ],
+    };
+
+    beforeEach(() => {
+        mockGetFundDetail.mockReset();
+        mockSelectFundTab.mockReset();
+        mockGetFundDetail.mockResolvedValue(FUND_DETAIL);
+        mockSelectFundTab.mockImplementation((fund) => ({ type: 'SELECT_FUND_TAB', fund }));
+    });
+
+    it('replaces a restored tab whose version has been approved (closed) since it was saved', async () => {
+        // the persisted tab still claims version 42 is open (lockDate null)
+        const staleTab = { id: 42, versionId: 42, activeVersion: { id: 42, lockDate: null } };
+        const dispatch = vi.fn();
+
+        const result = await resolveFundTab(dispatch, staleTab, 42);
+
+        expect(mockGetFundDetail).toHaveBeenCalledWith(42);
+        expect(mockSelectFundTab).toHaveBeenCalledTimes(1);
+        expect(mockSelectFundTab.mock.calls[0][0]).toMatchObject({ id: 42, versionId: 462 });
+        expect(dispatch).toHaveBeenCalledWith({ type: 'SELECT_FUND_TAB', fund: expect.anything() });
+        expect(result).toBe(FUND_DETAIL);
+    });
+
+    it('keeps the tab when the server confirms its version is still the open one', async () => {
+        const tab = { id: 42, versionId: 462, activeVersion: { id: 462, lockDate: null } };
+        const dispatch = vi.fn();
+
+        const result = await resolveFundTab(dispatch, tab, 42);
+
+        expect(mockGetFundDetail).toHaveBeenCalledWith(42);
+        expect(mockSelectFundTab).not.toHaveBeenCalled();
+        expect(dispatch).not.toHaveBeenCalled();
+        expect(result).toBe(tab);
+    });
+
+    it('skips the server round-trip only for a URL-pinned version already displayed', async () => {
+        const tab = { id: 42, versionId: 42, activeVersion: { id: 42, lockDate: '2020-01-01T00:00:00' } };
+        const dispatch = vi.fn();
+
+        const result = await resolveFundTab(dispatch, tab, 42, 42);
+
+        expect(mockGetFundDetail).not.toHaveBeenCalled();
+        expect(dispatch).not.toHaveBeenCalled();
+        expect(result).toBe(tab);
+    });
+
+    it('selects the pinned version when it is not the displayed one', async () => {
+        const tab = { id: 42, versionId: 462, activeVersion: { id: 462, lockDate: null } };
+        const dispatch = vi.fn();
+
+        await resolveFundTab(dispatch, tab, 42, 42);
+
+        expect(mockGetFundDetail).toHaveBeenCalledWith(42);
+        expect(mockSelectFundTab.mock.calls[0][0]).toMatchObject({ id: 42, versionId: 42 });
+    });
+
+    it('throws when the pinned version does not exist', async () => {
+        const dispatch = vi.fn();
+
+        await expect(resolveFundTab(dispatch, null, 42, 999)).rejects.toThrow(/Fund version not found/);
+        expect(mockSelectFundTab).not.toHaveBeenCalled();
     });
 });
 
