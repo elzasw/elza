@@ -3241,6 +3241,17 @@ namespace ElzaAPI.fund {
     ): FsCreateDaoLinkResult;
 
     /**
+     * Move existing DAO link
+     */
+    @route("{fundId}/fslink/{daoLinkId}/movelink/{nodeId}")
+    @put op fsMoveDAOLink(
+        ...FundIdParameter,
+        /** Existing FS dao-link id to be moved */
+        @path daoLinkId: int32,
+        ...NodeIdParameter
+    ): FsCreateDaoLinkResult;
+
+    /**
      * Return list of filesystem items
      */
     @route("{fundId}/fsrepo/{fsrepoId}/items")

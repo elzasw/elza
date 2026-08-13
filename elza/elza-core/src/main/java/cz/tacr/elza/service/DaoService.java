@@ -771,6 +771,64 @@ public class DaoService {
         return result;
     }
 
+    /**
+     * Atomically moves an existing FS dao-link to another node for the same
+     * (repository, path). Both delete of the source link and create of the
+     * target link share one ArrChange so audit reads the pair as a move.
+     * Idempotent when the source is already on the target node.
+     */
+    @Transactional(value = TxType.MANDATORY)
+    @AuthMethod(permission = { UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR })
+    public ArrFsLink moveFsDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion,
+                                   Integer oldDaoLinkId,
+                                   ArrNode newNode) {
+        ArrFsLink oldLink = fsLinkRepository.findById(oldDaoLinkId)
+                .orElseThrow(() -> new BusinessException(
+                        "FS dao-link not found: " + oldDaoLinkId, ArrangementCode.INVALID_DAO));
+        if (oldLink.getDeleteChange() != null) {
+            throw new BusinessException(
+                    "FS dao-link already deleted: " + oldDaoLinkId, ArrangementCode.INVALID_DAO);
+        }
+        if (oldLink.getNodeId().equals(newNode.getNodeId())) {
+            return oldLink;
+        }
+
+        ArrDigitalRepository repo = oldLink.getDigitalRepository();
+        String path = oldLink.getPath();
+
+        // if the target node already has a live link to (repo, path),
+        // don't duplicate — just remove the source and return existing
+        List<ArrFsLink> existing = path == null
+                ? fsLinkRepository.findByDigitalRepositoryAndPathIsNullAndDeleteChangeIsNull(repo)
+                : fsLinkRepository.findByDigitalRepositoryAndPathAndDeleteChangeIsNull(repo, path);
+        for (ArrFsLink link : existing) {
+            if (link.getNodeId().equals(newNode.getNodeId())) {
+                ArrChange delChange = arrangementInternalService.createChange(
+                        ArrChange.Type.DELETE_DAO_LINK, oldLink.getNode());
+                deleteDaoLink(fundVersion, delChange, oldLink);
+                updateNodeCacheDaoLinks(Collections.singletonList(oldLink.getNodeId()));
+                return link;
+            }
+        }
+
+        ArrChange change = arrangementInternalService.createChange(
+                ArrChange.Type.CREATE_DAO_LINK, newNode);
+
+        ArrFsLink newLink = new ArrFsLink();
+        newLink.setCreateChange(change);
+        newLink.setDigitalRepository(repo);
+        newLink.setPath(path);
+        newLink.setNode(newNode);
+        ArrFsLink saved = daoLinkRepository.save(newLink);
+
+        deleteDaoLink(fundVersion, change, oldLink);
+
+        publishEvent(EventType.DAO_LINK_CREATE, fundVersion, saved.getDaoLinkId(), newNode);
+        updateNodeCacheDaoLinks(Arrays.asList(oldLink.getNodeId(), newNode.getNodeId()));
+
+        return saved;
+    }    
+
     @Transactional(value = TxType.MANDATORY)
     @AuthMethod(permission = { UsrPermission.Permission.FUND_ARR_ALL,
             UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_NODE })

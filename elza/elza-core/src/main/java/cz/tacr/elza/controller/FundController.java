@@ -417,6 +417,23 @@ public class FundController implements FundsApi {
         return ResponseEntity.ok(vo);
     }
 
+    // PUT /fund/{fundId}/fslink/{daoLinkId}/movelink/{nodeId}
+    @Override
+    @Transactional
+    public ResponseEntity<FsCreateDaoLinkResult> fundFsMoveDAOLink(@PathVariable("fundId") Integer fundId,
+                                                                   @PathVariable("daoLinkId") Integer daoLinkId,
+                                                                   @PathVariable("nodeId") Integer nodeId) {
+        ArrFund fund = arrangementService.getFund(fundId);
+        ArrFundVersion fundVersion = arrangementService.getOpenVersionByFund(fund);
+        ArrNode newNode = arrangementService.getNode(nodeId);
+
+        ArrFsLink newLink = daoService.moveFsDaoLink(fundVersion, daoLinkId, newNode);
+
+        FsCreateDaoLinkResult vo = new FsCreateDaoLinkResult();
+        vo.setDaoLinkId(newLink.getDaoLinkId());
+        return ResponseEntity.ok(vo);
+    }
+
     // GET /fund/{fundId}/usedItemtypes/{fundVersionId}
     @Override
     @Transactional
