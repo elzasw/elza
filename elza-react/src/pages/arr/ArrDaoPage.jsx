@@ -116,7 +116,7 @@ class ArrDaoPage extends ArrParentPage {
         const nodeId = fund.fundTreeDaosRight.selectedId;
 
         const linkPromise = selectedDaoLeft.id < 0
-            ? Api.funds.fundFsMoveDAOLink(fund.id, selectedDaoLeft.daoLink.id, nodeId)
+            ? Api.node.nodeFsRelink(nodeId, selectedDaoLeft.daoLink.id)
             : WebApi.createDaoLink(fund.versionId, selectedDaoLeft.id, nodeId);
 
         linkPromise.then(() => {
