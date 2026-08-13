@@ -183,7 +183,7 @@ export function DescItemTypeHeader({
           </div>
         )}
       </div>
-      <div>{children}</div>
+      <>{children}</>
     </div>
   );
 }
