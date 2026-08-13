@@ -6,7 +6,6 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -30,7 +29,6 @@ import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.common.TaskExecutor;
 import cz.tacr.elza.controller.vo.ApScopeVO;
-import cz.tacr.elza.controller.vo.BulkActionRunVO;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
@@ -43,7 +41,6 @@ import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItemSettings;
-import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeOutput;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutput.OutputState;
@@ -374,52 +371,6 @@ public class OutputServiceInternal {
                                               Collection<Integer> nodeIds,
                                               OutputState... currentStates) {
         return outputRepository.findOutputsByNodes(fundVersion, nodeIds, currentStates);
-    }
-
-    /**
-     * For each recommended action of the output's type, picks the newest run on
-     * the output's nodes and keeps only those whose latest run is not FINISHED,
-     * plus actions that have no run at all. Actions never launched are returned
-     * as stub VOs carrying only {@code code}; actions with a non-final run are
-     * returned as full VOs of that run.
-     *
-     * @param fundVersion open version of the fund the output belongs to
-     * @param outputId    id of the checked output
-     * @return recommended actions not yet FINISHED; empty when the output type has
-     *         no recommended actions, or when every recommended action already has
-     *         a FINISHED run
-     */    
-    @Transactional(TxType.MANDATORY)
-    public List<BulkActionRunVO> findMissingRecommendedActions(ArrFundVersion fundVersion, int outputId) {
-        ArrOutput output = getOutput(outputId);
-
-        List<RulAction> recommendedActions = actionRepository.findByRecommendedActionOutputType(output.getOutputType());
-        if (recommendedActions.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        List<Integer> nodeIds = getOutputNodes(output, fundVersion.getLockChange()).stream()
-                .map(ArrNodeOutput::getNodeId).collect(Collectors.toList());
-        List<ArrBulkActionRun> runs = nodeIds.isEmpty()
-                ? Collections.emptyList()
-                : bulkActionRunRepository.findBulkActionsByNodes(fundVersion.getFundVersionId(), nodeIds, null);
-        runs.sort((a, b) -> b.getChange().getChangeId() - a.getChange().getChangeId());
-
-        List<BulkActionRunVO> result = new ArrayList<>();
-        for (RulAction action : recommendedActions) {
-            String code = action.getCode();
-            ArrBulkActionRun latest = runs.stream()
-                    .filter(r -> code.equals(r.getBulkActionCode()))
-                    .findFirst().orElse(null);
-            if (latest == null) {
-                BulkActionRunVO vo = new BulkActionRunVO();
-                vo.setCode(code);
-                result.add(vo);
-            } else if (latest.getState() != State.FINISHED) {
-                result.add(BulkActionRunVO.newInstance(latest));
-            }
-        }
-        return result;
     }
 
     /**
