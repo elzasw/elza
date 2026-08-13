@@ -10,6 +10,7 @@ import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
 import {nodesReceive, nodesRequest} from 'actions/arr/node.jsx';
 import {createFundRoot, getFundFromFundAndVersion} from 'components/arr/ArrUtils.jsx';
 import {fundsSelectFund} from 'actions/fund/fund.jsx';
+import {changeApproveVersion} from 'actions/global/change.jsx';
 import {savingApiWrapper} from 'actions/global/status.jsx';
 import {storeLoadData} from 'actions/store/store.jsx';
 import {downloadExportFile} from '../global/downloadExportFile';
@@ -124,8 +125,42 @@ export function approveFund(versionId) {
     return dispatch => {
         return savingApiWrapper(dispatch, WebApi.approveVersion(versionId)).then(json => {
             dispatch(addToastrSuccess(i18n('arr.fund.title.approved')));
-            dispatch(approveFundResult(json.versionId));
+            dispatch(approveFundResult(versionId, json));
         });
+    };
+}
+
+/**
+ * Handle the version-approval event for open fund tabs.
+ *
+ * A tab open on the approved version transitions to the new open version:
+ * their content is identical at the approval instant, and all subsequent
+ * change events carry the new versionId, so a tab left on the closed
+ * version would silently stop receiving updates. The plain
+ * changeApproveVersion action is dispatched first, so the tab is marked
+ * closed immediately (and stays safely closed if the fetch below fails).
+ *
+ * @param {int} fundId id AS
+ * @param {int} versionId schválená (uzavřená) verze AS
+ */
+export function fundVersionApproved(fundId, versionId) {
+    return async (dispatch, getState) => {
+        dispatch(changeApproveVersion(fundId, versionId));
+
+        const {arrRegion} = getState();
+        if (!arrRegion.funds.some(fund => fund.versionId === versionId)) {
+            return;
+        }
+
+        try {
+            const fund = await WebApi.getFundDetail(fundId);
+            const version = fund.versions.find(v => !v.lockDate);
+            if (version) {
+                dispatch(approveFundResult(versionId, version));
+            }
+        } catch (e) {
+            console.error('Nepodařilo se načíst novou verzi AS po schválení', fundId, e);
+        }
     };
 }
 
@@ -206,13 +241,15 @@ export function showRegisterJp(show) {
 }
 
 /**
- * Nová verze AS po jeho schálení.
- * {int} versionId nová verze AS
+ * Přechod záložky AS na novou otevřenou verzi po schválení.
+ * @param {int} versionId schválená (uzavřená) verze AS, podle ní se dohledá záložka
+ * @param {Object} version nová otevřená verze AS
  */
-export function approveFundResult(versionId) {
+export function approveFundResult(versionId, version) {
     return {
         type: types.FUND_FUND_APPROVE_VERSION,
-        versionId: versionId,
+        versionId,
+        version,
     };
 }
 
