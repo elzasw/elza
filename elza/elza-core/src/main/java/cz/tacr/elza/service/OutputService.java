@@ -41,6 +41,7 @@ import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ArrOutputRestrictionScopeVO;
 import cz.tacr.elza.controller.vo.ArrOutputTemplateVO;
+import cz.tacr.elza.controller.vo.BulkActionRunVO;
 import cz.tacr.elza.controller.vo.OutputSettings;
 import cz.tacr.elza.controller.vo.OutputSettingsVO;
 import cz.tacr.elza.core.data.ItemType;
@@ -1444,6 +1445,28 @@ public class OutputService {
         }
         return true;
     }
+
+    /**
+     * Lists recommended bulk actions that currently block generation of the given
+     * output — actions that were never launched, or whose latest run is in a
+     * non-FINISHED state. Serves the {@code /can-generate} endpoint as a preview
+     * of why {@link #addRequest} without the {@code forced} flag would reject the
+     * output with {@link OutputRequestStatus#RECOMMENDED_ACTION_NOT_RUN}.
+     *
+     * @param fundVersion open version of the fund the output belongs to
+     * @param outputId    id of the checked output
+     * @return recommended actions not yet FINISHED; empty when the output type has
+     *         no recommended actions, or when every recommended action already has
+     *         a FINISHED run
+     */
+    @Transactional
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
+            UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
+    public List<BulkActionRunVO> findMissingRecommendedActions(
+            @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+            final int outputId) {
+        return outputServiceInternal.findMissingRecommendedActions(fundVersion, outputId);
+    }    
 
     /**
      * Kontrola, že neměníme typ atributu, který je počítán automaticky.

@@ -31,10 +31,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 import cz.tacr.elza.common.FileDownload;
 import cz.tacr.elza.controller.factory.OutputFactory;
+import cz.tacr.elza.controller.vo.BulkActionRunVO;
+import cz.tacr.elza.controller.vo.OutputBulkActionState;
 import cz.tacr.elza.controller.vo.OutputDef;
 import cz.tacr.elza.controller.vo.OutputFormData;
 import cz.tacr.elza.controller.vo.OutputItem;
 import cz.tacr.elza.controller.vo.OutputItemRes;
+import cz.tacr.elza.controller.vo.OutputMissingAction;
 import cz.tacr.elza.controller.vo.OutputNameParam;
 import cz.tacr.elza.controller.vo.OutputRequestStatus;
 import cz.tacr.elza.controller.vo.OutputRestrictionScope;
@@ -470,6 +473,37 @@ public class OutputController implements OutputApi {
 	    cz.tacr.elza.service.output.OutputRequestStatus outputRequestStatus = outputService.addRequest(outputId, fundVersion, !forced, userId);
 
 	    return ResponseEntity.ok(OutputRequestStatus.valueOf(outputRequestStatus.name()));		
+	}
+
+	/**
+	 * GET /funds/out/{outputId}/can-generate
+	 * Check whether all recommended actions have been launched and finished
+	 * for the output.
+	 *
+	 * @param outputId output id (required)
+	 * @return The request has succeeded. (status code 200)
+	 */
+	@Override
+	@Transactional
+	public ResponseEntity<List<OutputMissingAction>> outputCanGenerateOutput(@PathVariable("outputId") Integer outputId) {
+	    ArrOutput output = outputService.getOutput(outputId);
+	    ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(output.getFundId());
+
+	    List<BulkActionRunVO> missing = outputService.findMissingRecommendedActions(fundVersion, outputId);
+
+	    List<OutputMissingAction> result = missing.stream()
+	            .map(vo -> {
+	                OutputMissingAction ma = new OutputMissingAction();
+	                ma.setId(vo.getId());
+	                ma.setCode(vo.getCode());
+	                if (vo.getState() != null) {
+	                    ma.setActionState(OutputBulkActionState.valueOf(vo.getState().name()));
+	                }
+	                return ma;
+	            })
+	            .collect(toList());
+
+	    return ResponseEntity.ok(result);
 	}
 
     /**

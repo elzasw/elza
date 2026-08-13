@@ -950,10 +950,9 @@ model ArrFundGen {
     unitdate: string;
 }
 
-
-    /**
-     * Stav outputu
-     */
+/**
+ * Stav outputu
+ */
 enum OutputState {
     /**
      * Rozpracovaný
@@ -6012,6 +6011,24 @@ namespace ElzaAPI.Output {
     }
 
     /**
+     * Bulk action run state 
+     */
+    enum BulkActionState {
+        WAITING, PLANNED, RUNNING, FINISHED, ERROR, INTERRUPTED, OUTDATED
+    }
+
+    /** 
+     * Recommended action that is missing or not FINISHED for the output 
+     */
+    model MissingAction {
+        /** Bulk action run id; null when the action was never launched */
+        id?: integer;
+        /** Bulk action code */
+        code: string;
+        /** State of the latest run; null when never launched */
+        actionState?: BulkActionState;
+    }
+    /**
      * Náhrada za `OutputFormDataNewVO`
      */
     model FormData {
@@ -6314,6 +6331,15 @@ namespace ElzaAPI.Output {
     ): {
         @Http.statusCode statusCode: 200;
     };
+
+    /**
+     * Gettins states actions
+     */
+    @route("/{outputId}/can-generate")
+    @get op canGenerateOutput(
+        /** output id */
+        @path outputId: integer;
+    ): MissingAction[];
 
     /**
      * Generate output
