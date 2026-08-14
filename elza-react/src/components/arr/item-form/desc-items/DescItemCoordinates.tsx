@@ -26,6 +26,8 @@ import ImportCoordinateModal from "components/registry/Detail/coordinate/ImportC
 import { WebApi } from "actions";
 import { useRef } from "react";
 import { useStyles } from "./styles";
+import { objectFromWKT, wktFromTypeAndData } from "components/Utils";
+import { parseCoordinateSummary } from "components/shared/coordinates/utils";
 
 const COORDINATE_CROP_LENGTH = 100;
 
@@ -84,6 +86,27 @@ export function DescItemCoordinates({
     finishChange,
   } = useValueManager<string>(data?.value, item);
 
+  const isEdited = value != initialValue;
+  const isTooLong = (value || "").length > COORDINATE_CROP_LENGTH;
+
+  function formatSummary(_value: string) {
+    const summary = parseCoordinateSummary(_value);
+    if (!summary) {
+      return _value.substring(0, COORDINATE_CROP_LENGTH - 1);
+    }
+    const { geometryType, objectCount, coordinateCount } = summary;
+    if (objectCount <= 1) {
+      return `${geometryType} ( ${i18n("global.geometry.label.points")}: ${coordinateCount} )`;
+    }
+    return `${geometryType} ( ${i18n("global.geometry.label.objects")}: ${objectCount} ${i18n("global.geometry.label.points")}: ${coordinateCount} )`;
+  }
+
+  const displayValue = item.undefined
+    ? formatMessage(commonMessages.undefined)
+    : isEdited || !isTooLong
+      ? value || ""
+      : formatSummary(value);
+
   const isInherited = item.nodeId !== nodeId;
   const isDisabled =
     item.undefined ||
@@ -103,8 +126,20 @@ export function DescItemCoordinates({
   }
 
   async function handleChange(force?: boolean) {
-    if (value && initialValue !== value && (!conflictValue || force)) {
-      await handleSave(value);
+    const { type } = objectFromWKT(undefined);
+    const trimmedValue = value?.trim();
+    const normalizedValue = trimmedValue
+      ? wktFromTypeAndData(type, trimmedValue)
+      : trimmedValue;
+    if (normalizedValue !== value) {
+      setValue(normalizedValue);
+    }
+    if (
+      normalizedValue &&
+      initialValue !== normalizedValue &&
+      (!conflictValue || force)
+    ) {
+      await handleSave(normalizedValue);
       finishChange();
     }
   }
@@ -178,22 +213,18 @@ export function DescItemCoordinates({
     setValue(currentTarget.value);
   }
 
-  console.log("#dic - value", item.id, value);
-
   return (
     <div className={styles.descItemContainer}>
       <Input
         size={compact ? "small" : "medium"}
         ref={inputRef}
-        disabled={isDisabled || (value || "").length > COORDINATE_CROP_LENGTH}
+        disabled={isDisabled || (!isEdited && isTooLong)}
         style={{
           flex: 1,
           minWidth: "60px",
           fontSize: "1em",
         }}
-        value={item.undefined
-          ? formatMessage(commonMessages.undefined)
-          : (value || "").substring(0, COORDINATE_CROP_LENGTH - 1)}
+        value={displayValue}
         onChange={handleInputChange}
         onBlur={() => handleChange()}
         contentAfter={
