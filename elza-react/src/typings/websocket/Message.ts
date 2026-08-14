@@ -35,4 +35,17 @@ export interface StructureDataChangeMessage extends Message {
   deleteIds: number[];
 }
 
-export type AnyMessage = ChangeMessage | TestMessage | PolicyChangeMessage | StructureDataChangeMessage;
+export interface OutputItemChangeMessage extends Message {
+  eventType: EventType.OUTPUT_ITEM_CHANGE;
+  versionId: number;
+  itemObjectId: number;
+  outputId: number;
+  version: number;
+}
+
+export type AnyMessage =
+  | ChangeMessage
+  | TestMessage
+  | PolicyChangeMessage
+  | StructureDataChangeMessage
+  | OutputItemChangeMessage;

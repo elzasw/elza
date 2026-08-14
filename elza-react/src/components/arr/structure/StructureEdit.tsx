@@ -5,15 +5,11 @@ import { MandatoryType } from "elza-api";
 import { ReactNode, useMemo } from "react";
 import { useIntl } from "react-intl";
 import { DescItemTypeRef } from "typings/store";
-import { useAppSelector } from "utils/hooks/useAppSelector";
 import { useAppThunkDispatch } from "utils/hooks";
 import { useUserSettings } from "contexts/user";
-import { AddDescItemTypeForm } from "components/arr/node-edit/AddDescItemType";
-import { DescItemTypeFields } from "components/arr/node-edit/DescItemTypeFields";
-import { FormItemGroup } from "components/arr/node-edit/FormItemGroup";
-import { GroupColumns } from "components/arr/node-edit/GroupColumns";
-import { buildGroupsForm } from "components/arr/node-edit/utils";
-import { messages } from "components/arr/node-edit/messages";
+import { AddDescItemTypeForm } from "components/arr/item-form/AddDescItemType";
+import { ItemFormBody } from "components/arr/item-form/ItemFormBody";
+import { messages } from "components/arr/item-form/messages";
 import { useStructureFormData } from "./hooks";
 
 interface Props {
@@ -32,9 +28,6 @@ export function StructureEdit({ fundId, fundVersionId, structureObjectId, plain 
     const { formatMessage } = useIntl();
     const { settings } = useUserSettings();
 
-    const itemTypeRefs = useAppSelector(({ refTables }) => refTables.descItemTypes.itemsMap);
-    const groupRefs = useAppSelector(({ refTables }) => refTables.groups.data);
-
     const {
         formItems,
         forcedFormItems,
@@ -50,11 +43,6 @@ export function StructureEdit({ fundId, fundVersionId, structureObjectId, plain 
     const allItems = useMemo(
         () => [...formItems, ...forcedFormItems, ...addedFormItems],
         [formItems, forcedFormItems, addedFormItems],
-    );
-
-    const groups = useMemo(
-        () => buildGroupsForm(allItems, itemTypes, groupRefs, itemTypeRefs),
-        [allItems, itemTypes, groupRefs, itemTypeRefs],
     );
 
     function handleAddDescItemType() {
@@ -87,31 +75,20 @@ export function StructureEdit({ fundId, fundVersionId, structureObjectId, plain 
                     </Button>
                 </div>
             )}
-            <GroupColumns groups={groups} columnCount={settings.groupColumns || 1}>
-                {({ group, descItemTypes }) => (
-                    <FormItemGroup key={group.code} group={group} plain={plain}>
-                        {descItemTypes.map(({ typeRef, typeForm, typeWidth, descItems }) => (
-                            <DescItemTypeFields
-                                key={typeRef.id}
-                                typeRef={typeRef}
-                                typeForm={typeForm}
-                                typeWidth={typeWidth}
-                                descItems={descItems}
-                                nodeSetting={undefined}
-                                isFirstNode={true}
-                                handleCopyFromPrev={() => {}}
-                                handleCopyToggle={() => {}}
-                                addEmptyDescItem={addEmptyItem}
-                                deleteDescItem={deleteItem}
-                                createDescItem={createItem}
-                                updateDescItem={updateItem}
-                                hideCopyButtons={true}
-                                renderExtraActions={renderExtraActions}
-                            />
-                        ))}
-                    </FormItemGroup>
-                )}
-            </GroupColumns>
+            <ItemFormBody
+                formItems={formItems}
+                forcedFormItems={forcedFormItems}
+                addedFormItems={addedFormItems}
+                itemTypes={itemTypes}
+                columnCount={settings.groupColumns || 1}
+                plain={plain}
+                addEmptyDescItem={addEmptyItem}
+                deleteDescItem={deleteItem}
+                createDescItem={createItem}
+                updateDescItem={updateItem}
+                hideCopyButtons={true}
+                renderExtraActions={renderExtraActions}
+            />
         </div>
     );
 }

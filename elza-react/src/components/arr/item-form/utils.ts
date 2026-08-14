@@ -1,6 +1,6 @@
 import { FormItemType } from "elza-api";
 import { DescItemGroup, DescItemTypeRef } from "typings/store";
-import { FormItem } from "./hooks";
+import { FormItem } from "./formItems";
 import { ViewDescItemGroupsLocal } from "./types";
 
 export function buildGroupsForm(

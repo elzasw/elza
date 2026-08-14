@@ -14,7 +14,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ArrRefTemplateVO } from "types";
 import { useAppThunkDispatch } from "utils/hooks";
 import { ELZA_SCHEME_NODE } from "../../../../constants";
-import { useActiveFund } from "../hooks";
+import { useActiveFund } from "utils/hooks";
 import { ConflictValue } from "./ConflictValue";
 import { EditStateDisplay } from "./EditStateDisplay";
 import { DescItemProps } from "./types";

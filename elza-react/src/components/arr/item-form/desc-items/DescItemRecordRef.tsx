@@ -25,7 +25,7 @@ import {
 import { useAppThunkDispatch } from "utils/hooks";
 import { useAppSelector } from "utils/hooks/useAppSelector";
 import { modalDialogShow } from "actions/global/modalDialog";
-import { useActiveFund } from "../hooks";
+import { useActiveFund } from "utils/hooks";
 import { RegistrySelectPage } from "pages";
 import classNames from "classnames";
 import { FIELD_HEIGHT, MODAL_DIALOG_VARIANT } from "../../../../constants";

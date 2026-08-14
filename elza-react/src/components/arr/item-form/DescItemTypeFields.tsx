@@ -9,7 +9,7 @@ import { DraggableList } from "./DraggableList";
 import { DescItemTypeHeader } from "./DescItemTypeHeader";
 import { DescItemField } from "./desc-items";
 import { DescItemInfo } from "./NodeDebugInfo";
-import { FormItem } from "./hooks";
+import { FormItem } from "./formItems";
 
 interface DescItem {
     item: FormItem["item"];
@@ -127,7 +127,12 @@ export function DescItemTypeFields({
     const anonymousStructuredNeedsButton =
         isAnonymousStructured && (typeForm?.repeatable || hasNoItems);
 
-    const showAddButton = repeatableWithoutEmptyItem || anonymousStructuredNeedsButton;
+    // A calculable type in automatic mode is filled by the server; its values are read-only
+    // and no new items can be added until the user switches it to manual.
+    const isCalculatedAutomatically = !!typeForm?.cal && !typeForm?.calSt;
+
+    const showAddButton =
+        !isCalculatedAutomatically && (repeatableWithoutEmptyItem || anonymousStructuredNeedsButton);
 
     const lastEditableLocalId = [...sortedDescItems].reverse().find(
         ({ item, forcedDisplayString }) =>
@@ -209,6 +214,7 @@ export function DescItemTypeFields({
                                 nodeId={nodeId}
                                 nodeVersionId={nodeVersionId}
                                 typeWidth={typeWidth}
+                                readOnly={isCalculatedAutomatically}
                                 onDelete={(item) => deleteDescItem(item, localId)}
                                 onCreate={(item) => createDescItem(item, localId)}
                                 onUpdate={(item) => Promise.resolve(updateDescItem(item, localId))}
@@ -219,20 +225,22 @@ export function DescItemTypeFields({
                 ))}
             </DraggableList>
             {showAddButton && (
-                <Button
-                    ref={addButtonRef}
-                    className={styles.addDescItemButton}
-                    size={compact ? "small" : "medium"}
-                    icon={<AddRegular />}
-                    onClick={() => {
-                        const nextPosition =
-                            lastItem?.item.position > 0 ? lastItem.item.position + 1 : 1;
-                        addEmptyDescItem(typeRef.id, undefined, nextPosition);
-                    }}
-                    tabIndex={autoFocusOnOpen ? 0 : -1}
-                >
-                    {typeRef.shortcut}
-                </Button>
+                <div>
+                    <Button
+                        ref={addButtonRef}
+                        className={styles.addDescItemButton}
+                        size={compact ? "small" : "medium"}
+                        icon={<AddRegular />}
+                        onClick={() => {
+                            const nextPosition =
+                                lastItem?.item.position > 0 ? lastItem.item.position + 1 : 1;
+                            addEmptyDescItem(typeRef.id, undefined, nextPosition);
+                        }}
+                        tabIndex={autoFocusOnOpen ? 0 : -1}
+                    >
+                        {typeRef.shortcut}
+                    </Button>
+                </div>
             )}
         </DescItemTypeHeader>
     );

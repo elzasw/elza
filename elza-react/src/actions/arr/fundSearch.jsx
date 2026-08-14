@@ -4,7 +4,7 @@
 import * as types from './../../actions/constants/ActionTypes';
 import { Api } from 'api';
 import { FilterType, FieldType } from 'elza-api';
-import { isMaskViewDefinition, matchesMask, unmaskString } from '../../components/arr/node-edit/desc-items/maskUtils';
+import { isMaskViewDefinition, matchesMask, unmaskString } from '../../components/arr/item-form/desc-items/maskUtils';
 
 export const getDataKey = (fulltext, isIdSearch) => {
     return isIdSearch ? `${fulltext}-id` : fulltext;
