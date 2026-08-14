@@ -651,31 +651,37 @@ export function OutputDefinition({
             <div className={styles.detailsHeader}>
                 <div className={styles.detailsFields}>
                     {fundOutputDetail.internalCode && (
+                        <div>
+                            <Tooltip
+                                relationship="description"
+                                appearance="inverted"
+                                content={
+                                    <HeaderHint
+                                        title={formatMessage(messages.internalCode)}
+                                        subtitle={formatMessage(messages.internalCodeHint)}
+                                    />
+                                }
+                            >
+                                <Caption1 className={styles.internalCode}>{fundOutputDetail.internalCode}</Caption1>
+                            </Tooltip>
+                        </div>
+                    )}
+                    <div>
                         <Tooltip
                             relationship="description"
                             appearance="inverted"
                             content={
                                 <HeaderHint
-                                    title={formatMessage(messages.internalCode)}
-                                    subtitle={formatMessage(messages.internalCodeHint)}
+                                    title={formatMessage(messages.name)}
+                                    subtitle={formatMessage(messages.nameHint)}
                                 />
                             }
                         >
-                            <Caption1 className={styles.internalCode}>{fundOutputDetail.internalCode}</Caption1>
+                            <Title3 as="span" className={styles.title}>
+                                {fundOutputDetail.name}
+                            </Title3>
                         </Tooltip>
-                    )}
-                    <Tooltip
-                        relationship="description"
-                        appearance="inverted"
-                        content={
-                            <HeaderHint
-                                title={formatMessage(messages.name)}
-                                subtitle={formatMessage(messages.nameHint)}
-                            />
-                        }
-                    >
-                        <Title3 className={styles.title}>{fundOutputDetail.name}</Title3>
-                    </Tooltip>
+                    </div>
                     <div className={styles.subtitle}>
                         <Tooltip
                             relationship="description"
