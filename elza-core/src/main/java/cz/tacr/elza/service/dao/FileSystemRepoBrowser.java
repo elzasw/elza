@@ -11,6 +11,7 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.Collator;
+import java.time.Duration;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,6 +21,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -70,8 +81,34 @@ public class FileSystemRepoBrowser {
 	/** Number of root entries returned by {@link #testRepository} as a configuration sample. */
 	private static final int REPO_TEST_ITEM_LIMIT = 10;
 
+	/** Per-probe timeout for the availability check in {@link #listRepos}. */
+	private static final Duration AVAILABILITY_CHECK_TIMEOUT = Duration.ofSeconds(2);
+	/** How long an availability result is reused before the next probe fires. */
+	private static final Duration AVAILABILITY_CACHE_TTL = Duration.ofSeconds(30);
+	/** Longer bound for the admin-initiated {@link #testRepository}. */
+	private static final Duration TEST_REPOSITORY_TIMEOUT = Duration.ofSeconds(15);
+
+	/**
+	 * Daemon pool for filesystem probes. A hung NIO call cannot be cancelled — the
+	 * worker stays blocked until the OS mount timeout releases it — but daemon
+	 * threads keep the JVM shutdown clean and the cached pool reuses threads once
+	 * they return.
+	 */
+	private static final ExecutorService PROBE_EXECUTOR = Executors.newCachedThreadPool(new ThreadFactory() {
+		private final AtomicLong seq = new AtomicLong();
+		@Override
+		public Thread newThread(Runnable r) {
+			Thread t = new Thread(r, "fsrepo-probe-" + seq.incrementAndGet());
+			t.setDaemon(true);
+			return t;
+		}
+	});
+
+	/** Cached availability results keyed on (repository id, resolved path). */
+	private final ConcurrentHashMap<AvailabilityKey, AvailabilityEntry> availabilityCache = new ConcurrentHashMap<>();
+
 	@Autowired
-	private ElzaLocale elzaLocale;	
+	private ElzaLocale elzaLocale;
 	
 	@Autowired
 	private ArrFsLinkRepository fsLinkRepository;
@@ -428,7 +465,7 @@ public class FileSystemRepoBrowser {
                 result.add(createFsRepo(digiRepo, StringUtils.defaultString(digiRepo.getUrl()), false));
                 continue;
             }
-            boolean available = Files.isDirectory(repoPath);
+            boolean available = isRepositoryAvailable(digiRepo.getExternalSystemId(), repoPath);
             if (!available) {
                 if (FileSystemRepoService.isTemplatedUrl(digiRepo.getUrl())) {
                     // The root is fund dependent and this fund has none — not a misconfiguration,
@@ -492,26 +529,23 @@ public class FileSystemRepoBrowser {
         }
         result.setPath(rootPath.toString());
 
-        if (!Files.exists(rootPath)) {
-            result.setMessage("Path does not exist");
-            return result;
-        }
-        if (!Files.isDirectory(rootPath)) {
-            result.setMessage("Path is not a directory");
-            return result;
-        }
-        if (!Files.isReadable(rootPath)) {
-            result.setMessage("Directory is not readable");
+        TestOutcome outcome;
+        try {
+            outcome = runWithTimeout(() -> probeRepository(rootPath), TEST_REPOSITORY_TIMEOUT);
+        } catch (TimeoutException e) {
+            result.setMessage("Path check timed out after "
+                    + TEST_REPOSITORY_TIMEOUT.toSeconds() + " s — the filesystem is not responding");
             return result;
         }
 
-        try {
-            result.setItems(listFirstItems(rootPath, REPO_TEST_ITEM_LIMIT));
-        } catch (IOException e) {
-            result.setMessage("Directory cannot be listed: " + e.toString());
+        if (outcome.message() != null) {
+            result.setMessage(outcome.message());
             return result;
         }
+        result.setItems(outcome.items());
         result.setAvailable(true);
+        // on success invalidate the listRepos cache so admin's "path fixed" verdict propagates immediately
+        availabilityCache.remove(new AvailabilityKey(digiRepo.getExternalSystemId(), rootPath.toString()));
         if (templated) {
             result.setMessage("Repository root depends on the fund; only the fixed part of the path was tested");
         }
@@ -561,6 +595,76 @@ public class FileSystemRepoBrowser {
             log.warn("Failed to probe subfolders in {}: {}", dir, e.toString());
             return false;
         }
+    }
+
+    /**
+     * Cached availability check for {@link #listRepos}. On timeout / IO failure the
+     * repository is reported as unavailable — see N7 in fs-repo-analysis.md.
+     */
+    private boolean isRepositoryAvailable(Integer repoId, Path repoPath) {
+        AvailabilityKey key = new AvailabilityKey(repoId, repoPath.toString());
+        long now = System.currentTimeMillis();
+        AvailabilityEntry cached = availabilityCache.get(key);
+        if (cached != null && now - cached.checkedAt() < AVAILABILITY_CACHE_TTL.toMillis()) {
+            return cached.available();
+        }
+        boolean available;
+        try {
+            available = runWithTimeout(() -> Files.isDirectory(repoPath), AVAILABILITY_CHECK_TIMEOUT);
+        } catch (TimeoutException e) {
+            log.warn("Filesystem repository availability check timed out after {} ms, path: {}",
+                     AVAILABILITY_CHECK_TIMEOUT.toMillis(), repoPath);
+            available = false;
+        }
+        availabilityCache.put(key, new AvailabilityEntry(available, now));
+        return available;
+    }
+
+    /**
+     * Runs {@code task} in {@link #PROBE_EXECUTOR}, waiting at most {@code timeout}.
+     * On timeout the future is cancelled (the underlying NIO call may keep running
+     * in the daemon worker until the OS releases it) and {@link TimeoutException}
+     * is thrown. Checked exceptions from the task are wrapped in {@link RuntimeException};
+     * runtime exceptions are unwrapped.
+     */
+    private static <T> T runWithTimeout(Callable<T> task, Duration timeout) throws TimeoutException {
+        Future<T> future = PROBE_EXECUTOR.submit(task);
+        try {
+            return future.get(timeout.toMillis(), TimeUnit.MILLISECONDS);
+        } catch (TimeoutException e) {
+            future.cancel(true);
+            throw e;
+        } catch (ExecutionException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof RuntimeException re) throw re;
+            throw new RuntimeException(cause);
+        } catch (InterruptedException e) {
+            future.cancel(true);
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(e);
+        }
+    }
+
+    /** Result of the admin-initiated repository probe. */
+    private record TestOutcome(String message, List<FsItem> items) {
+    }
+
+    /** Runs the full test-repository probing sequence on the caller's thread. */
+    private TestOutcome probeRepository(Path rootPath) {
+        if (!Files.exists(rootPath))      return new TestOutcome("Path does not exist", null);
+        if (!Files.isDirectory(rootPath)) return new TestOutcome("Path is not a directory", null);
+        if (!Files.isReadable(rootPath))  return new TestOutcome("Directory is not readable", null);
+        try {
+            return new TestOutcome(null, listFirstItems(rootPath, REPO_TEST_ITEM_LIMIT));
+        } catch (IOException e) {
+            return new TestOutcome("Directory cannot be listed: " + e.toString(), null);
+        }
+    }
+
+    private record AvailabilityKey(Integer repoId, String path) {
+    }
+
+    private record AvailabilityEntry(boolean available, long checkedAt) {
     }
 
     /** An {@link FsItem} together with its filesystem {@link Path}, kept only during {@link #browseItems}. */
