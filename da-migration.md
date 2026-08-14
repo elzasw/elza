@@ -55,16 +55,16 @@ filesystem repositories; `fundFsCreateDAOLink` is the filesystem path and return
 
 | Step | Shipped | Substance |
 |------|---------|-----------|
-| fs-repo repair wave (#9944) | 2026-07-28 → 2026-08-06 | defects of `fs-repo-analysis.md` §2, per-(repository, fund) packages, '/' path normalization |
+| fs-repo repair wave (#9944) | 2026-07-28 → 2026-08-06 | the A1–A9 defects of `fs-repo-analysis.md` (write-ups in its git history), per-(repository, fund) packages, '/' path normalization |
 | Step 3a — no persisted file trees | 2026-08-10 | linking writes no per-file rows; DAO panel reads disk live; `arr_dao_file_group` dropped (changesets `20260810120000/1`) |
 | N4 — repository type authoritative | 2026-08-11 | `digitalRepositoryType` is the discriminator; `file://` prefix stripped (changeset `20260811135500`) |
 | Phase 2 — DA repositories carry no legacy data | 2026-08-11 | implemented as a HALT precondition of the 3b wave: legacy `arr_dao` rows under a DA-type repository, or a link with both/neither target groups, stop the migration for inspection |
-| Step 3b — link hierarchy + fs conversion | 2026-08-11 | changesets `20260811180000-180005`: subtype tables, column moves, fs links converted from `ArrDao.code`, cache invalidation; full rationale in `fs-repo-analysis.md` §5.4 |
+| Step 3b — link hierarchy + fs conversion | 2026-08-11 | changesets `20260811180000-180005`: subtype tables, column moves, fs links converted from `ArrDao.code`, cache invalidation; rationale in `fs-repo-analysis.md` §3.4 |
 | Changelog reorganization | 2026-08-12 | sequential part files, one open file (see `db.changelog-master.yaml`); new changesets go to the **last** included file |
 | fs orphan cleanup | 2026-08-12 | changeset `20260812110000`: the fs `ArrDao` anchors, their per-fund packages and their (meaningless) request references deleted — filesystem repositories now persist **zero** entities and no longer appear in the package/unassigned tabs |
 
 The rejected alternative — migrating filesystem repositories onto `DaAip`/`DaDao` — and its
-reasoning remain recorded in `fs-repo-analysis.md` §5 (decision record).
+reasoning remain recorded in `fs-repo-analysis.md` §3 (decision record).
 
 ## 3. Remaining Plan
 
