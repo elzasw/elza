@@ -160,7 +160,9 @@ public class FileSystemRepoBrowser {
         boolean foldersFirstFlag = foldersFirst == null ? true : foldersFirst;
         int offset = (lastKey != null) ? Integer.parseInt(lastKey) : 0;
 
-        List<FsItem> fsItemList = new ArrayList<>();
+        // Path is kept alongside FsItem so the hasChildren probe can be deferred
+        // to entries that survive filtering, sorting and paging (N6).
+        List<FsItemEntry> fsItemList = new ArrayList<>();
         boolean[] truncated = {false};
         int[] counter = {0};
 
@@ -220,7 +222,7 @@ public class FileSystemRepoBrowser {
                     fsItem.setSize(attrs.size());
                 } else {
                     fsItem.setItemType(FsItemType.FOLDER);
-                    fsItem.setHasChildren(directoryHasSubfolders(item));
+                    // hasChildren is filled in after paging — see below.
                 }
                 fsItem.setLastChange(attrs.lastModifiedTime().toInstant().atOffset(ZoneOffset.UTC));
                 String fullRelatPath = (path == null || path.isEmpty() || path.equals("/"))
@@ -233,24 +235,32 @@ public class FileSystemRepoBrowser {
                     counter[0]++;
                     return FileVisitResult.SKIP_SUBTREE;
                 }
-                fsItemList.add(fsItem);
+                fsItemList.add(new FsItemEntry(fsItem, item));
                 counter[0]++;
                 return FileVisitResult.SKIP_SUBTREE;
             }
         });
 
-        fsItemList.sort(comparatorFor(sortingType, foldersFirstFlag));
+        Comparator<FsItem> itemComparator = comparatorFor(sortingType, foldersFirstFlag);
+        fsItemList.sort((a, b) -> itemComparator.compare(a.item(), b.item()));
 
         FsItems result = new FsItems();
         Integer nextOffset = null;
-        List<FsItem> appendItems;
+        List<FsItemEntry> appendEntries;
         if ((fsItemList.size() - offset) <= effectivePageSize) {
-            appendItems = (offset == 0) ? fsItemList : fsItemList.subList(offset, fsItemList.size());
+            appendEntries = (offset == 0) ? fsItemList : fsItemList.subList(offset, fsItemList.size());
         } else {
             nextOffset = offset + effectivePageSize;
-            appendItems = fsItemList.subList(offset, nextOffset);
+            appendEntries = fsItemList.subList(offset, nextOffset);
         }
-        result.getItems().addAll(appendItems);
+        // Only probe folders that reach the returned page — on network shares the
+        // per-folder DirectoryStream is the dominant listing cost (N6).
+        for (FsItemEntry entry : appendEntries) {
+            if (entry.item().getItemType() == FsItemType.FOLDER) {
+                entry.item().setHasChildren(directoryHasSubfolders(entry.path()));
+            }
+            result.getItems().add(entry.item());
+        }
         if (nextOffset != null) {
             result.setLastKey(nextOffset.toString());
         }
@@ -551,5 +561,9 @@ public class FileSystemRepoBrowser {
             log.warn("Failed to probe subfolders in {}: {}", dir, e.toString());
             return false;
         }
+    }
+
+    /** An {@link FsItem} together with its filesystem {@link Path}, kept only during {@link #browseItems}. */
+    private record FsItemEntry(FsItem item, Path path) {
     }
 }
