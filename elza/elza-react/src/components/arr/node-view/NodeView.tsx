@@ -2,7 +2,7 @@ import { DataType, NodeFormData, NodeStatus } from "elza-api";
 import { useMemo } from "react";
 import { useAppSelector } from "utils/hooks/useAppSelector";
 import { useNodeFormData } from "../node-edit/hooks";
-import { buildGroupsForm } from "../node-edit/utils";
+import { buildGroupsForm } from "../item-form/utils";
 import {
   DescItemBit,
   DescItemCoordinates,

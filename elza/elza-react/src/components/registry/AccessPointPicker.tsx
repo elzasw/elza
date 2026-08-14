@@ -56,9 +56,10 @@ interface Props {
     value?: number;
     onChange: (accessPointId: number | undefined) => void;
     disabled?: boolean;
+    clearable?: boolean;
 }
 
-export function AccessPointPicker({ value, onChange, disabled }: Props) {
+export function AccessPointPicker({ value, onChange, disabled, clearable }: Props) {
     const styles = useStyles();
     const apTypesMap = useAppSelector(({ refTables }) => refTables.recordTypes.itemsMap);
 
@@ -104,6 +105,11 @@ export function AccessPointPicker({ value, onChange, disabled }: Props) {
 
     const handleSelect = (_event: SelectionEvents, data: OptionOnSelectData) => {
         if (!data.optionValue) {
+            if (data.selectedOptions.length === 0) {
+                setQuery('');
+                setAccessPoints([]);
+                onChange(undefined);
+            }
             return;
         }
         setQuery(data.optionText ?? '');
@@ -116,6 +122,7 @@ export function AccessPointPicker({ value, onChange, disabled }: Props) {
         <Combobox
             className={styles.combobox}
             placeholder={messages.placeholder.defaultMessage}
+            clearable={clearable}
             value={query}
             selectedOptions={hasAccessPointId ? [value.toString()] : []}
             onChange={event => {

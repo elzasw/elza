@@ -1,69 +1,20 @@
 import { Api } from "api";
-import { RulDataTypeVO } from "api/RulDataTypeVO";
 import { useWebsocket } from "components/shared/web-socket/WebsocketProvider";
 import {
-    DataType,
   FormItemType,
   ItemDataResult,
-  MandatoryType,
   NodeData,
   NodeFormData,
   NodeItem,
   NodeStatus,
 } from "elza-api";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { DescItemTypeRef } from "typings/store";
 import { EventType } from "typings/websocket";
 import { AnyMessage } from "typings/websocket/Message";
 import { useAppSelector } from "utils/hooks/useAppSelector";
-import { getOneSettings } from "../ArrUtils";
-import { createEmptyDescItem } from "./desc-items/utils";
+import { FormItem, getForcedItemTypes, useKeyGen } from "../item-form/formItems";
+import { createEmptyDescItem } from "../item-form/desc-items/utils";
 import { consumePendingTemplateCallback } from "./pendingTemplateItems";
-import { EditItem } from "./types";
-
-export function useStrictMode() {
-  const strictMode: boolean = useAppSelector(({ userDetail, arrRegion }) => {
-    const activeFund = arrRegion.funds[arrRegion.activeIndex];
-    const strictModeSetting = getOneSettings(
-      userDetail.settings,
-      "FUND_STRICT_MODE",
-      "FUND",
-      activeFund.id,
-    );
-    const strictModeValue = strictModeSetting
-      ? JSON.parse(strictModeSetting?.value)
-      : true;
-    return strictModeValue == null ? true : strictModeValue;
-  });
-
-  return strictMode;
-}
-
-export function useActiveFund() {
-  const activeFund = useAppSelector(({ arrRegion }) =>
-    arrRegion.activeIndex != undefined
-      ? arrRegion.funds[arrRegion.activeIndex]
-      : undefined,
-  );
-  return activeFund;
-}
-
-export function useActiveParent() {
-  const activeFund = useActiveFund();
-  const activeParent =
-    activeFund.nodes.activeIndex != undefined
-      ? activeFund.nodes.nodes[activeFund.nodes.activeIndex]
-      : undefined;
-  return activeParent;
-}
-
-export function useActiveNode() {
-  const activeParent = useActiveParent();
-  const activeNode = activeParent.childNodes.find(
-    ({ id }) => id === activeParent.selectedSubNodeId,
-  );
-  return activeNode;
-}
 
 function useWSNodeChanges(nodeId: number, callback: (version: number) => void) {
   const { addListener, removeListener } = useWebsocket();
@@ -90,138 +41,6 @@ function useWSNodeChanges(nodeId: number, callback: (version: number) => void) {
       removeListener(listener);
     };
   }, []);
-}
-
-/**
- * Generates empty placeholder desc items so the form always shows input fields
- * for item types that the user is expected or allowed to fill in.
- *
- * Rules by mandatory level:
- *
- * Required / Recommended types:
- *   - With specification:
- *       - Repeatable:     empty item per Required/Recommended spec missing a value
- *       - Non-repeatable: empty item per Required/Recommended/Possible spec missing a value
- *   - Without specification: empty item if no value exists
- *
- * Possible types (non-repeatable only):
- *   - With or without specification: empty item only when inherited value is inhibited
- *
- * In all cases an inherited-and-inhibited value is treated as "effectively empty"
- * — the parent's value is suppressed, so the user needs a fresh input slot.
- */
-export function getForcedItemTypes(
-  descItems: NodeItem[] = [],
-  itemTypes: FormItemType[],
-  itemTypeRefs: Record<number, DescItemTypeRef>,
-  dataTypeRefs: Record<number, RulDataTypeVO>,
-  nodeId: number,
-  nodeVersionId: number,
-  { skipForcedItems }: { skipForcedItems: boolean },
-) {
-  const forcedDescItems: NodeItem[] = [];
-
-  if (skipForcedItems) {
-    return forcedDescItems;
-  }
-
-  // An item counts as "effectively empty" when it comes from a parent node
-  // and its value has been inhibited (suppressed) on the current node
-  const isInheritedAndInhibited = (item: NodeItem) =>
-    item.nodeId !== nodeId && !!item.inhibited;
-
-  itemTypes.forEach(({ itemTypeId, type, repeatable, specs = [] }) => {
-    const itemTypeRef = itemTypeRefs[itemTypeId];
-    const dataType = dataTypeRefs[itemTypeRef.dataTypeId];
-
-    const isRequiredOrRecommended =
-      type === MandatoryType.Required || type === MandatoryType.Recommended;
-    const isPossible = type === MandatoryType.Possible;
-
-    // Only process Required, Recommended, and Possible types
-    if (!isRequiredOrRecommended && !isPossible) return;
-
-    // Possible types only get forced items when non-repeatable
-    if (isPossible && repeatable) return;
-
-    const existingItemsOfType = descItems.filter(
-      ({ itemTypeId: existingItemTypeId }) => existingItemTypeId === itemTypeId,
-    );
-    const existingItemCount = existingItemsOfType.length;
-
-    // TODO Hotfix - enum types are excluded from spec-based prefilling because
-    // the prefilled value appears saved in UI but is not actually persisted
-    const useSpecification = itemTypeRef.useSpecification && dataType.code !== DataType.Enum;
-
-    if (useSpecification) {
-      // Determine which specs need a forced empty item:
-      // - Required/Recommended type + repeatable:     only Required/Recommended specs
-      // - Required/Recommended type + non-repeatable:  Required/Recommended/Possible specs
-      // - Possible type (always non-repeatable here):  all specs
-      const specsToProcess = isRequiredOrRecommended
-        ? specs.filter(
-            ({ type: specType }) =>
-              specType === MandatoryType.Required ||
-              specType === MandatoryType.Recommended ||
-              (!repeatable && specType === MandatoryType.Possible),
-          )
-        : specs;
-
-      specsToProcess.forEach(({ itemSpecId }) => {
-        const existingItemsOfSpec = existingItemsOfType.filter(
-          ({ itemSpecId: existingItemSpecId }) => existingItemSpecId === itemSpecId,
-        );
-        const specHasValue = existingItemsOfSpec.length > 0;
-        const allSpecItemsInheritedAndInhibited =
-          specHasValue && existingItemsOfSpec.every(isInheritedAndInhibited);
-
-        // Required/Recommended: add when missing or effectively empty
-        // Possible: add only when effectively empty (inherited + inhibited)
-        const shouldAdd = isRequiredOrRecommended
-          ? !specHasValue || allSpecItemsInheritedAndInhibited
-          : allSpecItemsInheritedAndInhibited;
-
-        if (shouldAdd) {
-          forcedDescItems.push({
-            ...createEmptyDescItem(itemTypeId, nodeId, nodeVersionId, existingItemCount, dataType.code),
-            itemSpecId,
-          });
-        }
-      });
-
-      // Required/Recommended: if no specs qualified for processing, still add an empty item
-      if (isRequiredOrRecommended && specsToProcess.length === 0 && existingItemCount === 0) {
-        forcedDescItems.push(
-          createEmptyDescItem(itemTypeId, nodeId, nodeVersionId, existingItemCount, dataType.code),
-        );
-      }
-    } else {
-      const typeHasValue = existingItemsOfType.length > 0;
-      const allTypeItemsInheritedAndInhibited =
-        typeHasValue && existingItemsOfType.every(isInheritedAndInhibited);
-
-      // Required/Recommended: add when missing or effectively empty
-      // Possible (non-repeatable): add only when effectively empty
-      const shouldAdd =
-        (isRequiredOrRecommended && (!typeHasValue || allTypeItemsInheritedAndInhibited)) ||
-        (isPossible && allTypeItemsInheritedAndInhibited);
-
-      if (shouldAdd) {
-        forcedDescItems.push(
-          createEmptyDescItem(itemTypeId, nodeId, nodeVersionId, existingItemCount, dataType.code),
-        );
-      }
-    }
-  });
-
-  return forcedDescItems;
-}
-
-export interface FormItem {
-  item: EditItem;
-  localId: string;
-  // When set, the field renders this string read-only instead of the item's value.
-  forcedDisplayString?: string;
 }
 
 function convertToFormItems(
@@ -628,22 +447,4 @@ export function useNodeFormData(
     updateDescItem,
     parent: formData?.parent,
   };
-}
-
-// Generator stabilnich klicu prvku popisu s moznosti naparovat existujici
-// novy prvek popisu na prvek popisu vytvoreny na serveru po ulozeni
-let counter = 0;
-
-export function useKeyGen(nodeId: number) {
-  useEffect(() => {
-    counter = 0;
-  }, [nodeId]);
-
-  function getKey() {
-    const key = `desc-item-${counter}`;
-    counter++;
-    return key;
-  }
-
-  return { getKey };
 }

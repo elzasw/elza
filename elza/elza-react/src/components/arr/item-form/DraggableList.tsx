@@ -250,7 +250,7 @@ export function DraggableList({
     }
 
     return (
-        <div>
+        <>
             {Children.map(children, (child, index) => {
                 return (
                     <>
@@ -289,6 +289,6 @@ export function DraggableList({
                 && draggedIndex != undefined
             }
             />
-        </div>
+        </>
     );
 }

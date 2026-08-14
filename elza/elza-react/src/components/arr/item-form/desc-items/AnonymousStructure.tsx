@@ -5,7 +5,7 @@ import { StructureView } from 'components/arr/structure/StructureView';
 import { DataStructureRef } from 'elza-api';
 import { useEffect, useState } from 'react';
 import { StructureType } from 'typings/store';
-import { useActiveFund } from '../hooks';
+import { useActiveFund } from 'utils/hooks';
 
 interface Props {
   data: DataStructureRef;
@@ -19,15 +19,16 @@ export function AnonymousStructure({ structureType, data, onCreate, readOnly }: 
   const [structureObjectId, setStructureObjectId] = useState<number>(data.structuredObjectId);
 
   useEffect(() => {
-    if (structureObjectId != undefined) {
+    // Read-only display must not create a structure object; there is simply nothing to show yet.
+    if (structureObjectId != undefined || readOnly) {
       return;
     }
     (async function () {
       const structureData = await WebApi.createStructureData(fundVersionId, structureType.code);
       setStructureObjectId(structureData.id);
-      await onCreate(structureData.id);
+      await onCreate?.(structureData.id);
     })();
-  }, [structureObjectId, fundVersionId, structureType.code, onCreate]);
+  }, [structureObjectId, fundVersionId, structureType.code, onCreate, readOnly]);
 
   return (
     <div
@@ -38,12 +39,11 @@ export function AnonymousStructure({ structureType, data, onCreate, readOnly }: 
         borderRadius: '8px',
         padding: readOnly ? '0px' : '8px',
         overflow: 'auto',
-        margin: '2px',
       }}
       className="desc-item-value desc-item-value-parts"
     >
       {structureObjectId == undefined ? (
-        <Spinner />
+        readOnly ? null : <Spinner />
       ) : readOnly ? (
         <StructureView fundId={fundId} fundVersionId={fundVersionId} structureObjectId={structureObjectId} />
       ) : (

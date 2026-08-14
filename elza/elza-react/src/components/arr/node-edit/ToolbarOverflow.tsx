@@ -20,7 +20,7 @@ import type {
   ToolbarButtonProps,
   MenuItemProps,
 } from "@fluentui/react-components";
-import { useStyles } from "./styles";
+import { useStyles } from "../item-form/styles";
 
 export interface ToolbarButtonDef {
   id: string;

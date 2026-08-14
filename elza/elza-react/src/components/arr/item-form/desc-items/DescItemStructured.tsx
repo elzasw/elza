@@ -14,7 +14,7 @@ import { DataStructureRef, DataType, NodeItem } from "elza-api";
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useDebouncedEffect } from "utils/hooks/hooks";
 import { useAppSelector } from "utils/hooks/useAppSelector";
-import { useActiveFund } from "../hooks";
+import { useActiveFund } from "utils/hooks";
 import { FIELD_HEIGHT } from "../../../../constants";
 import { AnonymousStructure } from "./AnonymousStructure";
 import { DescItemProps } from "./types";
@@ -67,6 +67,7 @@ export function DescItemStructured({
   const [structures, setStructures] = useState<any[]>([]);
   const [query, setQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const styles = useStyles();
 
   const structureType = useMemo(() => {
     if (typeRef?.structureTypeId != undefined) {
@@ -186,17 +187,23 @@ export function DescItemStructured({
     });
   }
 
+  // structureTypes ref data may still be loading (e.g. output page opened directly, before
+  // its fetch resolves); render nothing until the type is known rather than crashing.
+  if (!structureType) {
+    return null;
+  }
+
   if (structureType.anonymous) {
     return (
       <AnonymousStructure
         data={data}
         structureType={structureType}
+        readOnly={_isDisabled}
         onCreate={handleCreateAnonymousStructure}
       />
     );
   }
 
-  const styles = useStyles();
   const isInherited = item.nodeId != nodeId;
   const isDisabled =
     item.undefined ||

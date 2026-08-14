@@ -116,7 +116,9 @@ export function DescItemTypeHeader({
           <div>{typeRef.shortcut}</div>
         </Tooltip>
         <DescItemTypeDebugInfo typeRef={typeRef} typeForm={typeForm} />
-        {extraActions}
+        {extraActions && (
+          <span style={{ marginLeft: tokens.spacingHorizontalXS }}>{extraActions}</span>
+        )}
         {!hideCopyButtons && (
           <div className="actions" style={{ marginLeft: tokens.spacingHorizontalXS }}>
             <Menu>
@@ -181,7 +183,7 @@ export function DescItemTypeHeader({
           </div>
         )}
       </div>
-      <div>{children}</div>
+      <>{children}</>
     </div>
   );
 }

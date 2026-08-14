@@ -1,6 +1,6 @@
 import { Api } from "api/api";
 import { RulDataTypeVO } from "api/RulDataTypeVO";
-import { DataType, FormItemType, MandatoryType, StructuredObjectItem, StructuredObjectItems, StructuredObjectStateEnum } from "elza-api";
+import { DataType, FormItemType, MandatoryType, OutputFormData, OutputItem } from "elza-api";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DescItemTypeRef } from "typings/store";
 import { EventType } from "typings/websocket";
@@ -8,17 +8,15 @@ import { AnyMessage } from "typings/websocket/Message";
 import { useAppSelector } from "utils/hooks/useAppSelector";
 import { useWebsocket } from "components/shared/web-socket/WebsocketProvider";
 import { EditItem } from "components/arr/item-form/types";
+import { FormItem } from "components/arr/item-form/formItems";
 
-function useWSStructureChanges(structureObjectId: number, callback: () => void) {
+function useWSOutputChanges(outputId: number, callback: () => void) {
     const { addListener, removeListener } = useWebsocket();
 
     const handleMessage = (message: AnyMessage) => {
-        // TEMP (unconfirmed) structures report recomputation via tempIds, confirmed ones via updateIds.
         if (
-            message.eventType === EventType.STRUCTURE_DATA_CHANGE &&
-            (message.updateIds.includes(structureObjectId) ||
-                message.tempIds.includes(structureObjectId) ||
-                message.createIds.includes(structureObjectId))
+            message.eventType === EventType.OUTPUT_ITEM_CHANGE &&
+            message.outputId === outputId
         ) {
             callback();
         }
@@ -32,20 +30,15 @@ function useWSStructureChanges(structureObjectId: number, callback: () => void) 
     }, []);
 }
 
-export interface FormItem {
-    item: EditItem;
-    localId: string;
-}
-
 let counter = 0;
 
-function useKeyGen(structureObjectId: number) {
+function useKeyGen(outputId: number) {
     useEffect(() => {
         counter = 0;
-    }, [structureObjectId]);
+    }, [outputId]);
 
     function getKey() {
-        const key = `struct-item-${counter}`;
+        const key = `output-item-${counter}`;
         counter++;
         return key;
     }
@@ -53,11 +46,11 @@ function useKeyGen(structureObjectId: number) {
     return { getKey };
 }
 
-function createEmptyStructureItem(
+function createEmptyOutputItem(
     itemTypeId: number,
     position: number = 1,
     dataTypeCode: DataType,
-): StructuredObjectItem {
+): OutputItem {
     return {
         itemTypeId,
         position,
@@ -68,12 +61,12 @@ function createEmptyStructureItem(
 }
 
 function getForcedItems(
-    items: StructuredObjectItem[],
+    items: OutputItem[],
     itemTypes: FormItemType[],
     itemTypeRefs: Record<number, DescItemTypeRef>,
     dataTypeRefs: Record<number, RulDataTypeVO>,
-): StructuredObjectItem[] {
-    const forced: StructuredObjectItem[] = [];
+): OutputItem[] {
+    const forced: OutputItem[] = [];
 
     itemTypes.forEach(({ itemTypeId, type, repeatable, specs = [] }) => {
         const itemTypeRef = itemTypeRefs[itemTypeId];
@@ -113,21 +106,21 @@ function getForcedItems(
 
                 if (shouldAdd) {
                     forced.push({
-                        ...createEmptyStructureItem(itemTypeId, existingItemCount, dataType.code as DataType),
+                        ...createEmptyOutputItem(itemTypeId, existingItemCount, dataType.code as DataType),
                         itemSpecId,
                     });
                 }
             });
 
             if (isRequiredOrRecommended && specsToProcess.length === 0 && existingItemCount === 0) {
-                forced.push(createEmptyStructureItem(itemTypeId, existingItemCount, dataType.code as DataType));
+                forced.push(createEmptyOutputItem(itemTypeId, existingItemCount, dataType.code as DataType));
             }
         } else {
             const typeHasValue = existingItemCount > 0;
             const shouldAdd = isRequiredOrRecommended && !typeHasValue;
 
             if (shouldAdd) {
-                forced.push(createEmptyStructureItem(itemTypeId, existingItemCount, dataType.code as DataType));
+                forced.push(createEmptyOutputItem(itemTypeId, existingItemCount, dataType.code as DataType));
             }
         }
     });
@@ -136,9 +129,9 @@ function getForcedItems(
 }
 
 function convertToFormItems(
-    items: StructuredObjectItem[],
+    items: OutputItem[],
     oldItems: FormItem[],
-    generateLocalId: (item: StructuredObjectItem) => string,
+    generateLocalId: (item: OutputItem) => string,
 ): FormItem[] {
     return items.map((item) => {
         const oldItem = oldItems.find(
@@ -148,7 +141,7 @@ function convertToFormItems(
     });
 }
 
-export interface UseStructureFormDataResult {
+export interface UseOutputFormDataResult {
     formItems: FormItem[];
     forcedFormItems: FormItem[];
     addedFormItems: FormItem[];
@@ -159,40 +152,41 @@ export interface UseStructureFormDataResult {
     updateItem: (item: EditItem, localId?: string) => Promise<void>;
     deleteItem: (item: EditItem, localId: string) => Promise<void>;
     deleteItemsByType: (itemTypeId: number) => Promise<void>;
+    switchCalculating: (itemTypeId: number, manual: boolean) => Promise<void>;
 }
 
-export function useStructureFormData(
-    fundId: number,
-    fundVersionId: number,
-    structureObjectId: number,
+export function useOutputFormData(
+    outputId: number,
     options?: {
         skipForcedItems?: boolean;
-        confirmOnCreate?: boolean;
     },
-): UseStructureFormDataResult {
+): UseOutputFormDataResult {
     const itemTypeRefs = useAppSelector(({ refTables }) => refTables.descItemTypes.itemsMap);
     const dataTypeRefs = useAppSelector(({ refTables }) => refTables.rulDataTypes.itemsMap);
 
-    const { getKey } = useKeyGen(structureObjectId);
+    const { getKey } = useKeyGen(outputId);
 
     const [itemTypes, setItemTypes] = useState<FormItemType[]>([]);
     const [formItems, setFormItems] = useState<FormItem[]>([]);
     const [forcedFormItems, setForcedFormItems] = useState<FormItem[]>([]);
     const [addedFormItems, setAddedFormItems] = useState<FormItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [storedData, setStoredData] = useState<StructuredObjectItems>();
+    const [storedData, setStoredData] = useState<OutputFormData>();
 
-    const itemsRef = useRef<StructuredObjectItem[]>([]);
+    const itemsRef = useRef<OutputItem[]>([]);
+    // Output version, required by every mutation. Bumped from the `parent` returned by each
+    // mutation and by the initial/refetched form data.
+    const outputVersionRef = useRef<number>();
 
     const applyData = useCallback(
-        (items: StructuredObjectItem[], types: FormItemType[]) => {
+        (items: OutputItem[], types: FormItemType[]) => {
             itemsRef.current = items;
             setItemTypes(types);
             setFormItems((prev) => convertToFormItems(items, prev, getKey));
             const forced = options?.skipForcedItems
                 ? []
                 : getForcedItems(
-                    [...items, ...addedFormItems.map(({ item }) => item)],
+                    [...items, ...addedFormItems.map(({ item }) => item as OutputItem)],
                     types,
                     itemTypeRefs,
                     dataTypeRefs,
@@ -203,13 +197,11 @@ export function useStructureFormData(
     );
 
     const fetchAndStoreData = useCallback(async () => {
-        const { data } = await Api.structure.sdoGetFormStructureItems(fundId, structureObjectId, fundVersionId);
+        const { data } = await Api.output.outputGetOutputFormData(outputId);
+        outputVersionRef.current = data.parent.version;
         setStoredData(data);
-    }, [fundId, structureObjectId, fundVersionId]);
+    }, [outputId]);
 
-    // Apply fetched data through the current applyData closure (which depends on addedFormItems),
-    // so forced items are always recomputed against the up-to-date added items. Mirrors the
-    // storedData→applyStoredData indirection in useNodeFormData.
     useEffect(() => {
         if (storedData) {
             applyData(storedData.items, storedData.itemTypes);
@@ -223,13 +215,10 @@ export function useStructureFormData(
             await fetchAndStoreData();
             setIsLoading(false);
         })();
-    }, [fundId, fundVersionId, structureObjectId]);
+    }, [outputId]);
 
-    // STRUCTURE_DATA_CHANGE is currently not emitted for anonymous (TEMP) structures, so the
-    // form refetches inline after each mutation instead. The listener is kept for the case the
-    // event is emitted for all structure types in the future, at which point it can drive the refetch.
-    useWSStructureChanges(structureObjectId, () => {
-        console.info("STRUCTURE_DATA_CHANGE received for", structureObjectId);
+    useWSOutputChanges(outputId, () => {
+        fetchAndStoreData();
     });
 
     function addEmptyItem(typeId: number, specId?: number) {
@@ -238,31 +227,26 @@ export function useStructureFormData(
         const dataType = dataTypeRefs[itemTypeRef.dataTypeId];
         if (!dataType) { return; }
         const position = itemsRef.current.filter(({ itemTypeId }) => itemTypeId === typeId).length;
-        const newItem: StructuredObjectItem = {
-            ...createEmptyStructureItem(typeId, position, dataType.code as DataType),
+        const newItem: OutputItem = {
+            ...createEmptyOutputItem(typeId, position, dataType.code as DataType),
             itemSpecId: specId,
         };
         setAddedFormItems((prev) => [...prev, { localId: getKey(), item: newItem }]);
     }
 
     async function createItem(item: EditItem, localId: string): Promise<EditItem | undefined> {
-        const { data } = await Api.structure.sdoCreateItem(fundId, structureObjectId, item as StructuredObjectItem);
+        const { data } = await Api.output.outputCreateOutputItem(
+            outputId,
+            outputVersionRef.current,
+            item as OutputItem,
+        );
+        outputVersionRef.current = data.parent.version;
         const created: EditItem = data.item;
         const removeLocalId = (prev: FormItem[]) => prev.filter(({ localId: id }) => id !== localId);
         setAddedFormItems(removeLocalId);
         setForcedFormItems(removeLocalId);
         setFormItems((prev) => [...prev, { localId, item: created }]);
         itemsRef.current = [...itemsRef.current, data.item];
-        // A TEMP structure has no valid items until the first one is created; confirm it then
-        // so it transitions to OK and the server recomputes available item types and specs.
-        // Gated by confirmOnCreate: the add dialog owns the TEMP→OK transition itself (submit,
-        // duplicate, cancel-cleanup all rely on the structure staying TEMP).
-        if (options?.confirmOnCreate && data.parent?.state === StructuredObjectStateEnum.Temp) {
-            await Api.structure.sdoConfirm(fundId, structureObjectId);
-        }
-        // Refetch so available item types/specs and forced items are recomputed server-side.
-        // The STRUCTURE_DATA_CHANGE event is not emitted for anonymous (TEMP) structures,
-        // so the refetch must be triggered explicitly here.
         await fetchAndStoreData();
         return created;
     }
@@ -276,13 +260,23 @@ export function useStructureFormData(
             setAddedFormItems(updateList);
             return;
         }
-        await Api.structure.sdoUpdateItem(fundId, structureObjectId, true, item as StructuredObjectItem);
+        const { data } = await Api.output.outputUpdateOutputItem(
+            outputId,
+            outputVersionRef.current,
+            item as OutputItem,
+        );
+        outputVersionRef.current = data.parent.version;
         await fetchAndStoreData();
     }
 
     async function deleteItem(item: EditItem, localId: string): Promise<void> {
         if (item.data?.dataId != undefined || item.undefined) {
-            await Api.structure.sdoDeleteItem(fundId, structureObjectId, item.itemObjectId!);
+            const { data } = await Api.output.outputDeleteOutputItem(
+                outputId,
+                outputVersionRef.current,
+                item.itemObjectId!,
+            );
+            outputVersionRef.current = data.parent.version;
             await fetchAndStoreData();
             return;
         }
@@ -293,7 +287,7 @@ export function useStructureFormData(
             return;
         }
 
-        const emptyItem = createEmptyStructureItem(
+        const emptyItem = createEmptyOutputItem(
             item.itemTypeId!,
             item.position ?? 1,
             item.data?.dataType as DataType,
@@ -304,7 +298,17 @@ export function useStructureFormData(
     }
 
     async function deleteItemsByType(itemTypeId: number): Promise<void> {
-        await Api.structure.sdoDeleteItemsByType(fundId, structureObjectId, itemTypeId);
+        const { data } = await Api.output.outputDeleteOutputItemsByType(
+            outputId,
+            outputVersionRef.current,
+            itemTypeId,
+        );
+        outputVersionRef.current = data.parent.version;
+        await fetchAndStoreData();
+    }
+
+    async function switchCalculating(itemTypeId: number, manual: boolean): Promise<void> {
+        await Api.output.outputSetOutputItemMode(outputId, itemTypeId, manual);
         await fetchAndStoreData();
     }
 
@@ -319,5 +323,6 @@ export function useStructureFormData(
         updateItem,
         deleteItem,
         deleteItemsByType,
+        switchCalculating,
     };
 }
