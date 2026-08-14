@@ -36,6 +36,8 @@ interface Props {
     deleteDescItem: (item: any, localId: string) => Promise<void>;
     createDescItem: (item: any, localId: string) => Promise<any>;
     updateDescItem: (item: any, localId?: string) => void | Promise<void>;
+    exportCsv?: (item: any) => void;
+    importCsv?: (item: any, file: File) => Promise<void>;
     autoFocusLocalId?: string;
     onAutoFocusTaken?: () => void;
     autoFocusOnOpen?: boolean;
@@ -62,6 +64,8 @@ export function DescItemTypeFields({
     deleteDescItem,
     createDescItem,
     updateDescItem,
+    exportCsv,
+    importCsv,
     autoFocusLocalId,
     onAutoFocusTaken,
     autoFocusOnOpen = false,
@@ -218,6 +222,8 @@ export function DescItemTypeFields({
                                 onDelete={(item) => deleteDescItem(item, localId)}
                                 onCreate={(item) => createDescItem(item, localId)}
                                 onUpdate={(item) => Promise.resolve(updateDescItem(item, localId))}
+                                onExportCsv={exportCsv}
+                                onImportCsv={importCsv}
                             />
                         </div>
                         <DescItemInfo item={item} typeForm={typeForm} localId={localId} nodeId={nodeId} />

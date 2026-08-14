@@ -19,6 +19,7 @@ import {
   DescItemEnum,
   DescItemFileRef,
   DescItemInt,
+  DescItemJsonTable,
   DescItemRecordRef,
   DescItemString,
   DescItemStructured,
@@ -78,6 +79,8 @@ interface Props {
   onDelete?: (item: EditItem) => Promise<void>;
   onCreate: (item: EditItem) => Promise<ItemDataResult>;
   onUpdate: (item: EditItem) => Promise<void>;
+  onExportCsv?: (item: EditItem) => void;
+  onImportCsv?: (item: EditItem, file: File) => Promise<void>;
 }
 
 const dataTypeComponentMap = {
@@ -95,6 +98,7 @@ const dataTypeComponentMap = {
   [DataType.FileRef]: DescItemFileRef,
   [DataType.UriRef]: DescItemUriRef,
   [DataType.Bit]: DescItemBit,
+  [DataType.JsonTable]: DescItemJsonTable,
 };
 
 export function DescItemField({
@@ -108,6 +112,8 @@ export function DescItemField({
   onDelete,
   onCreate,
   onUpdate,
+  onExportCsv,
+  onImportCsv,
   typeWidth,
 }: Props) {
   const [specId, setSpecId] = useState<number | undefined>(item.itemSpecId);
@@ -265,6 +271,8 @@ export function DescItemField({
             selectedSpecId={specId}
             typeWidth={typeWidth}
             compact={compact}
+            onExportCsv={onExportCsv}
+            onImportCsv={onImportCsv}
           />
         ) : (
           "Not implemented"

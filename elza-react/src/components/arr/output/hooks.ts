@@ -153,6 +153,7 @@ export interface UseOutputFormDataResult {
     deleteItem: (item: EditItem, localId: string) => Promise<void>;
     deleteItemsByType: (itemTypeId: number) => Promise<void>;
     switchCalculating: (itemTypeId: number, manual: boolean) => Promise<void>;
+    getOutputVersion: () => number | undefined;
 }
 
 export function useOutputFormData(
@@ -324,5 +325,6 @@ export function useOutputFormData(
         deleteItem,
         deleteItemsByType,
         switchCalculating,
+        getOutputVersion: () => outputVersionRef.current,
     };
 }

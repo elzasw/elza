@@ -11,4 +11,8 @@ export interface DescItemProps {
   selectedSpecId?: number;
   typeWidth?: number;
   compact?: boolean;
+  /** CSV export of the whole table value; provided by the form only for JSON_TABLE items. */
+  onExportCsv?: (item: NodeItem) => void;
+  /** CSV import replacing the whole table value; provided by the form only for JSON_TABLE items. */
+  onImportCsv?: (item: NodeItem, file: File) => Promise<void>;
 }

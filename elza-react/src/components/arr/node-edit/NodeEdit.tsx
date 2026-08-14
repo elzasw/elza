@@ -1,9 +1,10 @@
-import { WebApi } from "actions";
+import { UrlFactory, WebApi } from "actions";
 import { copyDescItemType, nocopyDescItemType } from "actions/arr/nodeSetting";
+import { downloadFile } from "actions/global/download";
 import { routerNavigate } from "actions/router";
 import { getFundVersion, urlFundGrid } from "../../../constants";
 import { useEffect, useState } from "react";
-import { NodeFormData, NodeStatus } from "elza-api";
+import { NodeFormData, NodeItem, NodeStatus } from "elza-api";
 import { ArrDaoVO } from "typings/dao";
 import { useActiveFund, useActiveParent, useAppThunkDispatch } from "utils/hooks";
 import { useAppSelector } from "utils/hooks/useAppSelector";
@@ -61,6 +62,22 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId, seedFromParent
     updateDescItem,
     parent,
   } = nodeFormData;
+
+  function exportCsv(item: NodeItem) {
+    dispatch(
+      downloadFile(UrlFactory.exportItemCsvExport(item.itemObjectId, fondsVersionId, "desc")),
+    );
+  }
+
+  async function importCsv(item: NodeItem, file: File) {
+    await WebApi.descItemCsvImport(
+      fondsVersionId,
+      nodeId,
+      nodeData?.version ?? nodeVersionId,
+      item.itemTypeId,
+      file,
+    );
+  }
 
   // localId of a freshly added field that should receive focus once it has mounted.
   // Tracked here (rather than in a single DescItemTypeFields) so both add paths work:
@@ -163,6 +180,8 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId, seedFromParent
           deleteDescItem={deleteDescItem}
           createDescItem={createDescItem}
           updateDescItem={updateDescItem}
+          exportCsv={exportCsv}
+          importCsv={importCsv}
           autoFocusLocalId={autoFocusLocalId}
           onAutoFocusTaken={() => setAutoFocusLocalId(undefined)}
         />

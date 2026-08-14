@@ -1,7 +1,9 @@
 import { Button, Spinner, Tooltip } from "@fluentui/react-components";
 import { AddRegular, EditRegular } from "@fluentui/react-icons";
 import { modalDialogShow } from "actions/global/modalDialog";
-import { MandatoryType } from "elza-api";
+import { Api } from "api";
+import { downloadBlob } from "actions/global/download";
+import { MandatoryType, NodeItem } from "elza-api";
 import { useMemo } from "react";
 import { useIntl } from "react-intl";
 import { DescItemTypeRef } from "typings/store";
@@ -38,7 +40,24 @@ export function OutputEdit({ outputId, readonly }: Props) {
         updateItem,
         deleteItem,
         switchCalculating,
+        getOutputVersion,
     } = useOutputFormData(outputId);
+
+    async function exportCsv(item: NodeItem) {
+        const { data } = await Api.output.outputOutputItemCsvExport(outputId, item.itemObjectId, {
+            responseType: "blob",
+        });
+        downloadBlob(data, `output-${outputId}-${item.itemObjectId}.csv`);
+    }
+
+    async function importCsv(item: NodeItem, file: File) {
+        await Api.output.outputOutputItemCsvImport(
+            outputId,
+            getOutputVersion(),
+            item.itemTypeId,
+            file,
+        );
+    }
 
     const allItems = useMemo(
         () => [...formItems, ...forcedFormItems, ...addedFormItems],
@@ -121,6 +140,8 @@ export function OutputEdit({ outputId, readonly }: Props) {
                     deleteDescItem={deleteItem}
                     createDescItem={createItem}
                     updateDescItem={updateItem}
+                    exportCsv={exportCsv}
+                    importCsv={importCsv}
                     hideCopyButtons={true}
                     renderExtraActions={renderTypeActions}
                 />
