@@ -57,7 +57,7 @@ export const ModalDialogWrapper = ({
                     </Modal.Header>
                 )}
 
-                <div style={{flexGrow: 1}} ref={modalBody} className="modal-body-container">
+                <div style={{flexGrow: 1, minHeight: 0, minWidth: 0}} ref={modalBody} className="modal-body-container">
                     {children}
                 </div>
             </FluentProvider>
