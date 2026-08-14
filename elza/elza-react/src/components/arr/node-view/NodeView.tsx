@@ -11,6 +11,7 @@ import {
   DescItemEnum,
   DescItemFileRef,
   DescItemInt,
+  DescItemJsonTable,
   DescItemRecordRef,
   DescItemString,
   DescItemStructured,
@@ -48,6 +49,7 @@ const dataTypeMap = {
   [DataType.Structured]: DescItemStructured,
   [DataType.FileRef]: DescItemFileRef,
   [DataType.Bit]: DescItemBit,
+  [DataType.JsonTable]: DescItemJsonTable,
 };
 
 export function NodeView({ fondsVersionId, nodeId, nodeVersionId, seedFromParent, seedFormData, seedNodeStatus, onRefresh }: Props) {

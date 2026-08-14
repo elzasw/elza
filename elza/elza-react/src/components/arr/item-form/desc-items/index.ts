@@ -13,3 +13,4 @@ export * from "./DescItemUriRef";
 export * from "./DescItemFileRef";
 export * from "./DescItemDecimal";
 export * from "./DescItemBit";
+export * from "./DescItemJsonTable";

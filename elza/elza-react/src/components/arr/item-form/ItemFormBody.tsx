@@ -24,6 +24,8 @@ interface Props {
   deleteDescItem: (item: any, localId: string) => Promise<void>;
   createDescItem: (item: any, localId: string) => Promise<any>;
   updateDescItem: (item: any, localId?: string) => void | Promise<void>;
+  exportCsv?: (item: any) => void;
+  importCsv?: (item: any, file: File) => Promise<void>;
   fondsVersionId?: number;
   nodeId?: number;
   nodeVersionId?: number;
@@ -61,6 +63,8 @@ export function ItemFormBody({
   deleteDescItem,
   createDescItem,
   updateDescItem,
+  exportCsv,
+  importCsv,
   fondsVersionId,
   nodeId,
   nodeVersionId,
@@ -123,6 +127,8 @@ export function ItemFormBody({
               deleteDescItem={deleteDescItem}
               createDescItem={createDescItem}
               updateDescItem={updateDescItem}
+              exportCsv={exportCsv}
+              importCsv={importCsv}
               hideCopyButtons={hideCopyButtons}
               renderExtraActions={renderExtraActions}
               autoFocusLocalId={autoFocusLocalId}

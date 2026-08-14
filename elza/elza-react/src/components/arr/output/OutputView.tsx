@@ -1,6 +1,8 @@
-import { DataType } from "elza-api";
+import { DataType, NodeItem } from "elza-api";
 import { useMemo } from "react";
 import { Tooltip } from "@fluentui/react-components";
+import { Api } from "api";
+import { downloadBlob } from "actions/global/download";
 import { useAppSelector } from "utils/hooks/useAppSelector";
 import { buildGroupsForm } from "../item-form/utils";
 import {
@@ -11,6 +13,7 @@ import {
   DescItemEnum,
   DescItemFileRef,
   DescItemInt,
+  DescItemJsonTable,
   DescItemRecordRef,
   DescItemString,
   DescItemStructured,
@@ -42,6 +45,7 @@ const dataTypeMap = {
   [DataType.Structured]: DescItemStructured,
   [DataType.FileRef]: DescItemFileRef,
   [DataType.Bit]: DescItemBit,
+  [DataType.JsonTable]: DescItemJsonTable,
 };
 
 /**
@@ -51,6 +55,13 @@ const dataTypeMap = {
 export function OutputView({ outputId }: Props) {
   const itemTypeRefs = useAppSelector(({ refTables }) => refTables.descItemTypes.itemsMap);
   const groupRefs = useAppSelector(({ refTables }) => refTables.groups.data);
+
+  async function exportCsv(item: NodeItem) {
+    const { data } = await Api.output.outputOutputItemCsvExport(outputId, item.itemObjectId, {
+      responseType: "blob",
+    });
+    downloadBlob(data, `output-${outputId}-${item.itemObjectId}.csv`);
+  }
 
   const { formItems, forcedFormItems, addedFormItems, itemTypes } = useOutputFormData(outputId);
 
@@ -117,6 +128,7 @@ export function OutputView({ outputId }: Props) {
                               nodeId={item.nodeId}
                               typeRef={typeRef}
                               typeForm={typeForm}
+                              onExportCsv={exportCsv}
                             />
                           ) : item.undefined ? (
                             "Nezjištěno"

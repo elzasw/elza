@@ -1025,6 +1025,30 @@
     "defaultMessage": "Replacing entity",
     "srcHash": "zI-X8eoeEy51"
   },
+  "descItem.jsonTable.addRow": {
+    "defaultMessage": "Add row",
+    "srcHash": "tbArpqsCBWBo"
+  },
+  "descItem.jsonTable.empty": {
+    "defaultMessage": "The table is empty",
+    "srcHash": "QeiZhdz0_Y8n"
+  },
+  "descItem.jsonTable.exportCsv": {
+    "defaultMessage": "Export CSV",
+    "srcHash": "Z0L_bRATScol"
+  },
+  "descItem.jsonTable.importCsv": {
+    "defaultMessage": "Import CSV",
+    "srcHash": "ASk9OJGsRz1R"
+  },
+  "descItem.jsonTable.removeRow": {
+    "defaultMessage": "Remove row",
+    "srcHash": "M3JHCiIORJ-j"
+  },
+  "descItem.jsonTable.resetOrder": {
+    "defaultMessage": "Reset order",
+    "srcHash": "OtQE8a7XDQQX"
+  },
   "descItemType.action.openInDataGrid": {
     "defaultMessage": "Show in table",
     "srcHash": "7jwQD-SqGXED"

@@ -8,4 +8,6 @@ export interface DescItemProps {
   typeForm?: FormItemType;
   typeRef: DescItemTypeRef;
   selectedSpecId?: number;
+  /** CSV export of the whole table value; provided only for JSON_TABLE items in read-only views. */
+  onExportCsv?: (item: NodeItem) => void;
 }
