@@ -38,7 +38,7 @@ import {
     DeleteRegular,
     EditRegular,
     ErrorCircle12Filled,
-    MoreHorizontalRegular,
+    MoreHorizontalFilled,
     PlayRegular,
 } from '@fluentui/react-icons';
 import { Field, Form } from 'react-final-form';
@@ -710,7 +710,7 @@ export function OutputDefinition({
                     <MenuTrigger disableButtonEnhancement>
                         <MenuButton
                             appearance="subtle"
-                            icon={<MoreHorizontalRegular />}
+                            icon={<MoreHorizontalFilled />}
                             aria-label={formatMessage(messages.actionsMenu)}
                         />
                     </MenuTrigger>
