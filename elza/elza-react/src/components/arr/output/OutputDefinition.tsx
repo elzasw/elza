@@ -27,6 +27,7 @@ import {
     Tag,
     TagGroup,
     Title3,
+    Tooltip,
     makeStyles,
     tokens,
 } from '@fluentui/react-components';
@@ -70,6 +71,15 @@ const messages = defineMessages({
     outputType: {
         id: 'arr.output.form.outputType',
         defaultMessage: 'Typ výstupu',
+    },
+    nameHint: {
+        id: 'arr.output.form.nameHint',
+        defaultMessage: 'Uvádí se na titulním listu.',
+    },
+    internalCodeHint: {
+        id: 'arr.output.form.internalCodeHint',
+        defaultMessage:
+            'Uvádí se na titulním listu, pokud neexistuje hodnota v poli Číslo archivní pomůcky.',
     },
     template: {
         id: 'arr.output.form.template',
@@ -287,7 +297,30 @@ const useStyles = makeStyles({
         maxHeight: '240px',
         overflowY: 'auto',
     },
+    hintTitle: {
+        fontWeight: tokens.fontWeightSemibold,
+    },
+    hintSubtitle: {
+        marginTop: tokens.spacingVerticalXXS,
+        fontSize: tokens.fontSizeBase200,
+        color: tokens.colorNeutralForegroundInverted2,
+    },
 });
+
+interface HeaderHintProps {
+    title: string;
+    subtitle: string;
+}
+
+function HeaderHint({ title, subtitle }: HeaderHintProps) {
+    const styles = useStyles();
+    return (
+        <div>
+            <div className={styles.hintTitle}>{title}</div>
+            <div className={styles.hintSubtitle}>{subtitle}</div>
+        </div>
+    );
+}
 
 interface DetailsFields {
     name: string;
@@ -618,13 +651,41 @@ export function OutputDefinition({
             <div className={styles.detailsHeader}>
                 <div className={styles.detailsFields}>
                     {fundOutputDetail.internalCode && (
-                        <Caption1 className={styles.internalCode}>{fundOutputDetail.internalCode}</Caption1>
+                        <Tooltip
+                            relationship="description"
+                            appearance="inverted"
+                            content={
+                                <HeaderHint
+                                    title={formatMessage(messages.internalCode)}
+                                    subtitle={formatMessage(messages.internalCodeHint)}
+                                />
+                            }
+                        >
+                            <Caption1 className={styles.internalCode}>{fundOutputDetail.internalCode}</Caption1>
+                        </Tooltip>
                     )}
-                    <Title3 className={styles.title}>{fundOutputDetail.name}</Title3>
+                    <Tooltip
+                        relationship="description"
+                        appearance="inverted"
+                        content={
+                            <HeaderHint
+                                title={formatMessage(messages.name)}
+                                subtitle={formatMessage(messages.nameHint)}
+                            />
+                        }
+                    >
+                        <Title3 className={styles.title}>{fundOutputDetail.name}</Title3>
+                    </Tooltip>
                     <div className={styles.subtitle}>
-                        <Badge appearance="tint" color="informative">
-                            {outputTypeName}
-                        </Badge>
+                        <Tooltip
+                            relationship="description"
+                            appearance="inverted"
+                            content={formatMessage(messages.outputType)}
+                        >
+                            <Badge appearance="tint" color="informative">
+                                {outputTypeName}
+                            </Badge>
+                        </Tooltip>
                         {STATE_BADGE[fundOutputDetail.state] && (
                             <Badge appearance="tint" color={STATE_BADGE[fundOutputDetail.state].color}>
                                 {formatMessage(STATE_BADGE[fundOutputDetail.state].label)}

@@ -849,9 +849,17 @@
     "defaultMessage": "Output internal code",
     "srcHash": "00QxuzpXDoQI"
   },
+  "arr.output.form.internalCodeHint": {
+    "defaultMessage": "Shown on the title page if the Finding aid number field is empty.",
+    "srcHash": "Xur32spFBXwV"
+  },
   "arr.output.form.name": {
     "defaultMessage": "Output name",
     "srcHash": "8uMyaFpXAcJK"
+  },
+  "arr.output.form.nameHint": {
+    "defaultMessage": "Shown on the title page.",
+    "srcHash": "J4hPEkPmHgHY"
   },
   "arr.output.form.noTemplate": {
     "defaultMessage": "No template selected",
