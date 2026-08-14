@@ -93,7 +93,8 @@ const useStyles = makeStyles({
     minWidth: 0,
   },
   grid: {
-    width: "100%",
+    width: "fit-content",
+    maxWidth: "100%",
   },
   toolbar: {
     display: "flex",
@@ -362,6 +363,7 @@ export function DescItemJsonTable({
           getRowId={(indexedRow: IndexedRow) => indexedRow.index}
           focusMode="none"
           resizableColumns
+          resizableColumnsOptions={{ autoFitColumns: false }}
           columnSizingOptions={columnSizingOptions}
           size="small"
         >
