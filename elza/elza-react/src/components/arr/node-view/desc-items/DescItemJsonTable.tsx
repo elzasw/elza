@@ -58,7 +58,8 @@ const useStyles = makeStyles({
     width: "100%",
   },
   grid: {
-    width: "100%",
+    width: "fit-content",
+    maxWidth: "100%",
   },
   cellText: {
     display: "block",
@@ -200,6 +201,7 @@ export function DescItemJsonTable({ item, nodeId, typeRef, onExportCsv }: DescIt
         getRowId={(indexedRow: IndexedRow) => indexedRow.index}
         focusMode="none"
         resizableColumns
+        resizableColumnsOptions={{ autoFitColumns: false }}
         columnSizingOptions={columnSizingOptions}
         size="small"
       >
