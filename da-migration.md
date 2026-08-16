@@ -2,168 +2,149 @@
 
 ## 1. Background
 
-The `da-main` branch introduced `da_xxx` entities for managing digital archival objects (AIPs, DAOs)
-from external digital archives. The original `arr_dao` entity family was not removed — both structures
-coexist, connected through the shared `arr_dao_link` table.
+The `da-main` branch introduced `da_xxx` entities for managing digital archival objects (AIPs,
+DAOs) from external digital archives. The original `arr_dao` entity family was not removed — both
+models coexist and meet in the shared link table `arr_dao_link`.
 
-This document describes the current compatibility status and the gradual migration path toward full
-deprecation of the old `arr_dao` structures.
+As of 2026-08-12 the link model is an entity hierarchy (see §2), filesystem links no longer use
+`arr_dao` at all, and the remaining migration work is the WSDL decision (Phase 4) and the final
+removal of the `arr_dao` family (Phase 5).
 
-## 2. Current Compatibility Status
+## 2. Current State
 
-### 2.1 All Old Endpoints Are Functional
+### 2.1 The link model: one spine, three target shapes
 
-All 10 DAO endpoints from 3.3.x are present and working in da-main:
+`ArrDaoLink` is an abstract JOINED base — the codebase's usual generic-type + specialization
+pattern (`ArrData`, `ArrItem`, `ArrRequest`):
 
-| Endpoint | Method | Status |
-|----------|--------|--------|
-| `GET /daopackages/{fundVersionId}` | findDaoPackages | Unchanged |
-| `GET /daos/{fundVersionId}` | findDaos | Unchanged |
-| `GET /daos/{fundVersionId}/{daoPackageId}` | findDaosByPackage | Unchanged |
-| `PUT /daos/{fundVersionId}/{daoId}/{nodeId}/create` | createDaoLink | Unchanged |
-| `POST /daos/{fundVersionId}/nodes/{nodeId}/sync` | syncDaoLink | Unchanged |
-| `POST /daos/{fundVersionId}/all/sync` | syncDaosByFund | Unchanged |
-| `DELETE /daolinks/{fundVersionId}/{daoLinkId}` | deleteDaoLink | Unchanged |
-| `POST /requests/{fundVersionId}/dao/add` | daoRequestAdd | Unchanged |
-| `POST /daos/{id}/change-scenario` | daoChangeLinkScenario | Unchanged |
-| `PUT /fund/{fundId}/fsrepo/.../dao-link` | fundFsCreateDAOLink | Unchanged |
+| Entity | Table | Own columns | Notes |
+|--------|-------|-------------|-------|
+| `ArrDaoLink` (abstract base) | `arr_dao_link` | `node_id` NOT NULL, `create_change_id` NOT NULL, `delete_change_id`, `link_type` | shared spine |
+| `ArrLegacyDaoLink` | `arr_legacy_dao_link` | `dao_id` NOT NULL, `scenario` | created only by the SOAP/WSDL flow and package-DAO linking; deleted in Phase 5 |
+| `ArrDaLink` | `arr_da_link` | `aip_id` NOT NULL, `da_dao_id` | `da_dao_id` NULL = the whole AIP (`LinkType.AIP`) |
+| `ArrFsLink` | `arr_fs_link` | `digital_repository_id` NOT NULL, `path` | `path` NULL = the repository root; canonical '/' form |
 
-New endpoints were added via `AipController` (10 endpoints) and `DaoController` (2 new endpoints)
-for the DA model — these do not interfere with legacy functionality.
+Every link is a **container reference plus an optional member reference** — `aip_id` + `da_dao_id`
+for DA, `digital_repository_id` + `path` for filesystem — where a NULL member means "the whole
+container". `link_type` (base) encodes that granularity. Exclusivity of the target shapes is
+structural (per-subtype NOT NULL constraints); no DB constraint prevents child rows in two subtype
+tables for one `dao_link_id` — Hibernate never creates that state, and Phase 5 validation includes
+a verification query for it.
 
-### 2.2 Service & Entity Layer
+Filesystem linking creates no `ArrDao`: `DaoService.createFsDaoLink` mints the `ArrFsLink`
+directly and enforces `multiple_links` as "is `(repository, path)` already live-linked". The
+arrangement DAO panel renders fs links as synthesized VOs (wire id `-daoLinkId`, files listed
+live), the fs browser resolves link state from `arr_fs_link` with no join, the native XML export
+writes fs links as `DaoInfo(repositoryCode, path)`, and the print model constructs `Dao` from
+either subtype. Node deletion severs links of **all three** subtypes (before the split, DA links
+silently survived node deletion).
 
-| Component | Status |
-|-----------|--------|
-| `ArrDao` entity | Identical to 3.3.x |
-| `ArrDaoLink` entity | Extended with 3 new nullable fields (`aip`, `daDao`, `linkType`); `dao` field made nullable |
-| `DaoRepository` | Identical — all query methods preserved |
-| `DaoLinkRepository` | Extended — 4 new query methods, all old methods preserved |
-| `DaoServiceInternal` | Identical — all CRUD methods intact |
-| `DaoService` | Extended — new DA methods added, all old methods unchanged |
-| `FileSystemRepoService` | Identical |
-| `DaoSyncService` | Identical |
+The node cache carries legacy and fs links (DA links were never cached); polymorphic JSON uses
+`@JsonTypeInfo(Id.CLASS)` per the `ArrData` precedent, so renaming the link classes invalidates
+cached rows.
 
-### 2.3 Tests
+### 2.2 Old endpoints
 
-All 4 test methods in `DaoCoreServiceTest` are present in both branches. The only change is that
-da-main requires setting `DigitalRepositoryType.FILESYSTEM` on the test digital repository.
+All 10 DAO endpoints from 3.3.x remain functional. `createDaoLink`
+(`PUT /daos/{fundVersionId}/{daoId}/{nodeId}/create`) serves package DAOs only and rejects
+filesystem repositories; `fundFsCreateDAOLink` is the filesystem path and returns `daoLinkId`;
+`daoChangeLinkScenario` and the sync endpoints are legacy-only by nature. `AipController` and
+`DaoController` serve the DA model.
 
-### 2.4 Known Risk: ArrDaoLink.dao Is Now Nullable
+### 2.3 Completed migration steps (history)
 
-In 3.3.x, `dao_id` in `arr_dao_link` was `NOT NULL`. In da-main, it is nullable to support new DA
-links where `da_dao_id` is set instead. Old code paths still set `dao_id`, so this only affects rows
-created through the new `AipController` endpoints. Code that iterates over **all** `ArrDaoLink` rows
-(not filtered by repository type) should handle `dao == null` on newer rows.
+| Step | Shipped | Substance |
+|------|---------|-----------|
+| fs-repo repair wave (#9944) | 2026-07-28 → 2026-08-06 | the A1–A9 defects of `fs-repo-analysis.md` (write-ups in its git history), per-(repository, fund) packages, '/' path normalization |
+| Step 3a — no persisted file trees | 2026-08-10 | linking writes no per-file rows; DAO panel reads disk live; `arr_dao_file_group` dropped (changesets `20260810120000/1`) |
+| N4 — repository type authoritative | 2026-08-11 | `digitalRepositoryType` is the discriminator; `file://` prefix stripped (changeset `20260811135500`) |
+| Phase 2 — DA repositories carry no legacy data | 2026-08-11 | implemented as a HALT precondition of the 3b wave: legacy `arr_dao` rows under a DA-type repository, or a link with both/neither target groups, stop the migration for inspection |
+| Step 3b — link hierarchy + fs conversion | 2026-08-11 | changesets `20260811180000-180005`: subtype tables, column moves, fs links converted from `ArrDao.code`, cache invalidation; rationale in `fs-repo-analysis.md` §3.4 |
+| Changelog reorganization | 2026-08-12 | sequential part files, one open file (see `db.changelog-master.yaml`); new changesets go to the **last** included file |
+| fs orphan cleanup | 2026-08-12 | changeset `20260812110000`: the fs `ArrDao` anchors, their per-fund packages and their (meaningless) request references deleted — filesystem repositories now persist **zero** entities and no longer appear in the package/unassigned tabs |
 
-## 3. The Shared Bridge: arr_dao_link
+The rejected alternative — migrating filesystem repositories onto `DaAip`/`DaDao` — and its
+reasoning remain recorded in `fs-repo-analysis.md` §3 (decision record).
 
-`ArrDaoLink` was extended (changeset `20240717125500`) to serve both models:
+## 3. Remaining Plan
 
-| Column | Target | Old/New | Nullable |
-|--------|--------|---------|----------|
-| `node_id` | `arr_node` | shared | NOT NULL |
-| `dao_id` | `arr_dao` | old | nullable (was NOT NULL) |
-| `create_change_id` | `arr_change` | shared | NOT NULL |
-| `delete_change_id` | `arr_change` | shared | nullable |
-| `scenario` | — | old | nullable |
-| `aip_id` | `da_aip` | **new** | nullable |
-| `da_dao_id` | `da_dao` | **new** | nullable |
-| `link_type` | enum | **new** | nullable |
+### Phase 4: WSDL Repository Data — Deprecate or Migrate
 
-A row with `dao_id != NULL, da_dao_id = NULL` is a legacy link.
-A row with `da_dao_id != NULL` is a new DA link (`dao_id` may be NULL).
+WSDL is the only repository type whose legacy `arr_dao` data may ever need conversion onto the DA
+model — the SOAP import (`DaoCoreServiceWsImpl`) still actively writes `arr_dao`/`arr_dao_file`
+rows with genuine preservation metadata. Identify genuine WSDL repositories by
+`digital_repository_type = 'WSDL'` (authoritative since N4). Decide before Phase 5:
 
-After migration, `arr_dao_link` will be evolved in place — drop `dao_id` and `scenario` columns,
-keep the table as the universal DAO-to-node link table. Renaming to `da_dao_link` is optional
-and low priority.
+- **If WSDL integration is no longer active**, deprecate `DigitalRepositoryType.WSDL` and leave
+  its historical links as `ArrLegacyDaoLink` rows until they are archived/removed by product
+  decision — Phase 5 cannot run while they exist.
+- **If it is still used**, build the conversion machinery here (it was never built — the original
+  Phase 2 turned out to have an empty input set).
 
-## 4. Migration Plan (Gradual)
+**Audit first** — count `arr_dao` records per repository type (classified by
+`digital_repository_type`), identify edge cases: orphaned records, NULL foreign keys, invalid
+JSON in `attributes`.
 
-Migration proceeds per repository type. Both models operate in parallel during the transition.
-Old endpoints remain functional until Phase 5.
+**Contingency note — the preserved conversion recipe** (applies to WSDL migration, or to DA-type
+legacy rows should the Phase 2 guard ever find any):
 
-### Phase 1: Prepare (no data changes)
-
-1. **Audit existing data** — Count `arr_dao` records per repository type (DA, FILESYSTEM, WSDL).
-   Identify edge cases (orphaned records, NULL foreign keys, invalid JSON in `attributes`).
-2. **Define metadata mapping** — Map `ArrDao.attributes` JSON keys to `RulItemType`/`RulItemSpec`
-   pairs for `DaDaoItem` conversion.
-3. **Extend DA services** — Ensure `DaService` can create `DaAip`/`DaDao` from programmatic input
-   (not only from METS/EAD import).
-4. **Hierarchy convention** — Each migrated flat `ArrDao` becomes: one `DaDao` (LOGICAL) + one
-   `DaDao` (REPRESENTATION) linked via `DaDaoRelation`. File groups become `DaDaoFileFolder`.
-5. **AIP granularity** — One `DaAip` per `ArrDao` (each digital object becomes its own AIP).
-
-### Phase 2: Migrate DA-type Repository Data
-
-For repositories where `DigitalRepositoryType = DA`:
-1. For each `ArrDaoLink` with `dao_id != NULL` and matching DA repository:
-   - Create `DaAip` + `DaDao` hierarchy (LOGICAL + REPRESENTATION)
-   - Migrate `ArrDaoFile` -> `DaDaoFile`, `ArrDaoFileGroup` -> `DaDaoFileFolder`
-   - Decompose `ArrDao.attributes` -> `DaDaoItem` records
-   - Update `arr_dao_link`: set `da_dao_id`, `aip_id`, `link_type`; keep `dao_id` for rollback
-   - Create single `DaChange` (type=`AIP_CREATE`) per migrated AIP
-2. Validate: all DA-type links have `da_dao_id` populated.
-
-### Phase 3: Migrate Filesystem Repository Data
-
-For repositories where `DigitalRepositoryType = FILESYSTEM`:
-1. Same entity migration as Phase 2
-2. Update `FileSystemRepoService` to create `DaDao`/`DaDaoFile` instead of `ArrDao`/`ArrDaoFile`
-
-### Phase 4: Migrate WSDL Repository Data (if still used)
-
-Same pattern as Phase 2/3. If WSDL integration is no longer active, deprecate
-`DigitalRepositoryType.WSDL` instead.
+1. Define the metadata mapping: `ArrDao.attributes` JSON keys → `RulItemType`/`RulItemSpec` pairs
+   for `DaDaoItem` conversion; pre-scan for malformed/unmappable `attributes` first.
+2. Extend `DaService` so `DaAip`/`DaDao` can be created from programmatic input (not only from
+   METS/EAD import).
+3. Hierarchy convention: each migrated flat `ArrDao` becomes one `DaDao` (LOGICAL) + one `DaDao`
+   (REPRESENTATION) linked via `DaDaoRelation`; `ArrDaoFile` → `DaDaoFile`.
+4. AIP granularity: one `DaAip` per `ArrDao` (each digital object becomes its own AIP), one
+   `DaChange` (type=`AIP_CREATE`) per migrated AIP.
+5. Convert each link: insert the `arr_da_link` child, delete the `arr_legacy_dao_link` child,
+   and keep the deleted child rows in a backup table until validated (a row cannot carry both
+   target groups).
 
 ### Phase 5: Remove Old Structures
 
-1. Verify all `arr_dao_link.dao_id` values are NULL (all links migrated)
-2. Drop columns from `arr_dao_link`: `dao_id`, `scenario`
-3. Drop tables: `arr_dao_file`, `arr_dao_file_group`, `arr_dao`, `arr_dao_package`, `arr_dao_batch_info`
-4. Remove Java entities: `ArrDao`, `ArrDaoFile`, `ArrDaoFileGroup`, `ArrDaoPackage`, `ArrDaoBatchInfo`
-5. Remove repositories: `DaoRepository`, `DaoFileRepository`, `DaoFileGroupRepository`,
-   `DaoPackageRepository`, `DaoBatchInfoRepository`
-6. Remove old endpoints from `ArrangementController` (or redirect to DA equivalents)
-7. Update `DaoServiceInternal` — remove all `arr_dao` creation methods
-8. Clean up `ArrDaoLink` entity — remove `dao` and `daoId` fields
-9. Update tests, API DTOs, and frontend components that reference old entities
+1. Verify `arr_legacy_dao_link` is empty. The three routes: DA-type links were born as
+   `ArrDaLink` rows (Phase 2 guard proved there was nothing to convert), WSDL-type links were
+   converted or retired per Phase 4, and filesystem links are `ArrFsLink` rows (step 3b). Also
+   verify no `dao_link_id` has children in two subtype tables.
+2. Drop table `arr_legacy_dao_link` and entity `ArrLegacyDaoLink`.
+3. Drop tables: `arr_dao_file`, `arr_dao`, `arr_dao_package`, `arr_dao_batch_info`. Filesystem
+   rows are already gone (cleanup changeset `20260812110000`), so at this point the tables hold
+   only WSDL/legacy data resolved by Phase 4.
+4. Remove Java entities: `ArrDao`, `ArrDaoFile`, `ArrDaoPackage`, `ArrDaoBatchInfo`; repositories
+   `DaoRepository`, `DaoFileRepository`, `DaoPackageRepository`, `DaoBatchInfoRepository`;
+   `ArrLegacyDaoLinkRepository`.
+5. Remove old endpoints from `ArrangementController` (or redirect to DA equivalents); remove
+   `arr_dao` creation methods from `DaoServiceInternal`; retire `DaoSyncService` scenarios
+   (legacy-only).
+6. Update tests, API DTOs, and frontend components referencing old entities. Known readers of
+   `ArrDao`/`ArrDaoFile` beyond the DAO services (audit before dropping): node cache
+   (`DaoService.updateNodeCacheDaoLinks` → `ArrangementCacheService.updateDaoLinks`), native XML
+   export (`dataexchange/output/sections/DaoLoader`, `LevelInfoLoader`), print model
+   (`print/Dao.java`), SOAP WS (`ws/core/v1/daoservice/DaoCoreServiceWsImpl`), the arrangement
+   DAO panel VOs (`ClientFactoryVO.createDaoList`), and the "DAO level" marker in
+   `LevelTreeCacheService`.
 
-## 5. Key Files to Modify
+### Deferred cleanups (optional, any time)
 
-### Entities to remove (after migration)
-- `elza-core/.../domain/ArrDao.java`
-- `elza-core/.../domain/ArrDaoFile.java`
-- `elza-core/.../domain/ArrDaoFileGroup.java`
-- `elza-core/.../domain/ArrDaoPackage.java`
-- `elza-core/.../domain/ArrDaoBatchInfo.java`
+- **`LinkType` backend-neutral naming** (`CONTAINER`/`PART`/`COMPONENT` instead of
+  `AIP`/`PART_AIP`/`COMPONENT_AIP`): deferred in step 3b because the enum leaks into the OpenAPI
+  contract and the React client — the rename is API churn with no functional gain until something
+  consumes fs `link_type`.
+- **Renaming `arr_dao_link` to `da_dao_link`**: optional, low priority.
 
-### Entity to update
-- `elza-core/.../domain/ArrDaoLink.java` — remove `dao`/`daoId` fields
+## 4. Migration Changesets
 
-### Services to update
-- `elza-core/.../service/dao/FileSystemRepoService.java` — create DA entities
-- `elza-core/.../service/dao/DaoServiceInternal.java` — remove arr_dao methods
-- `elza-core/.../service/DaoService.java` — remove arr_dao code paths
-- `elza-core/.../service/da/DaService.java` — extend for migration support
+New changesets go to the **last** file included by
+`elza-core/src/main/resources/db/changelog/db.changelog-master.yaml` (`db.elza-3-part-03.xml` at
+the time of writing); all earlier files are frozen. Former `db.elza-da.xml` is the frozen
+`db.elza-3-part-02.xml` with a pinned logical path.
 
-### Repositories to remove
-- `elza-core/.../repository/DaoRepository.java`
-- `elza-core/.../repository/DaoFileRepository.java`
-- `elza-core/.../repository/DaoFileGroupRepository.java`
-- `elza-core/.../repository/DaoPackageRepository.java`
-- `elza-core/.../repository/DaoBatchInfoRepository.java`
-
-### Migration scripts
-- `elza-core/src/main/resources/db/changelog/db.elza-da.xml` — add migration changesets
-
-## 6. Risks
+## 5. Risks
 
 | Risk | Mitigation |
 |------|------------|
-| Data loss during migration | Run in transaction; keep `dao_id` for rollback until validated |
-| Malformed `attributes` JSON | Pre-scan and report unmappable attributes before migration |
-| `ArrDaoLink.dao` null in old code paths | Audit code iterating all links; add null checks before Phase 5 |
-| Frontend breakage | Identify UI components referencing `ArrDao` DTOs; update in parallel |
-| WSDL integration disruption | Assess usage before deciding on deprecation vs migration |
+| WSDL integration disruption | Phase 4 assesses usage before deciding deprecation vs migration |
+| Malformed `attributes` JSON | Only relevant if the Phase 4 contingency (conversion to `DaDaoItem`) runs; pre-scan and report unmappable attributes before migrating |
+| Data loss during a Phase 4 migration | Run in transaction; keep the replaced `arr_legacy_dao_link` rows in a backup table until validated |
+| Phase 2 premise wrong on some installation (DA-type repository with legacy `arr_dao` rows) | The step 3b guard changeset HALTs the migration before the restructure; a halt means "inspect the data" (mis-typed repository vs. the Phase 4 contingency recipe) |
+| Cached link JSON binds to class names (`@JsonTypeInfo(Id.CLASS)`) | Renaming the link entity classes invalidates `arr_cached_node` rows — pair any rename with a cache-invalidation changeset (the step 3b wave shows the pattern) |

@@ -29,6 +29,7 @@ class ArrDaos extends AbstractReactComponent {
         nodeId: PropTypes.number,
         daoPackageId: PropTypes.number,
         onSelect: PropTypes.func,
+        onLinkChange: PropTypes.func,
         readMode: PropTypes.bool.isRequired,
     };
 
@@ -105,9 +106,12 @@ class ArrDaos extends AbstractReactComponent {
         }
     };
 
-    handleUnlink = dao => {
-        const {fund} = this.props;
-        WebApi.deleteDaoLink(fund.versionId, dao.daoLink.id);
+    handleUnlink = async dao => {
+        const {fund, onLinkChange} = this.props;
+        await WebApi.deleteDaoLink(fund.versionId, dao.daoLink.id);
+        if (onLinkChange) {
+            onLinkChange();
+        }
     };
 
     renderDao = item => {

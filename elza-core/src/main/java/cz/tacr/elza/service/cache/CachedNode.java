@@ -9,6 +9,8 @@ import cz.tacr.elza.common.db.HibernateUtils;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.domain.ArrDaoLink;
+import cz.tacr.elza.domain.ArrFsLink;
+import cz.tacr.elza.domain.ArrLegacyDaoLink;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrInhibitedItem;
@@ -199,7 +201,11 @@ public class CachedNode implements NodeCacheSerializable {
         	Objects.requireNonNull(daoLink.getCreateChangeId());
             // Deleted items should not be stored
             Validate.isTrue(daoLink.getDeleteChangeId() == null);
-            Objects.requireNonNull(daoLink.getDao());
+            if (daoLink instanceof ArrLegacyDaoLink legacyLink) {
+                Objects.requireNonNull(legacyLink.getDao());
+            } else if (daoLink instanceof ArrFsLink fsLink) {
+                Objects.requireNonNull(fsLink.getDigitalRepositoryId());
+            }
             Objects.requireNonNull(daoLink.getDaoLinkId());
             Objects.requireNonNull(daoLink.getNode());
             Objects.requireNonNull(daoLink.getNodeId());

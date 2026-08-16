@@ -57,6 +57,8 @@ import cz.tacr.elza.dataexchange.output.writer.StructObjectInfo;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrDaoLink;
+import cz.tacr.elza.domain.ArrFsLink;
+import cz.tacr.elza.domain.ArrLegacyDaoLink;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrFile;
@@ -84,7 +86,8 @@ import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApStateRepository;
-import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.ArrFsLinkRepository;
+import cz.tacr.elza.repository.ArrLegacyDaoLinkRepository;
 import cz.tacr.elza.repository.ExceptionThrow;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
@@ -186,7 +189,9 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     private final StructuredObjectRepository structObjRepos;
 
-    private final DaoLinkRepository daoLinkRepository;
+    private final ArrLegacyDaoLinkRepository legacyDaoLinkRepository;
+
+    private final ArrFsLinkRepository fsLinkRepository;
 
     /**
      * Provider for attachments
@@ -240,7 +245,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                        final ApItemRepository itemRepository,
                        final ApBindingStateRepository bindingStateRepository,
                        final ApIndexRepository indexRepository,
-                       final DaoLinkRepository daoLinkRepository,
+                       final ArrLegacyDaoLinkRepository legacyDaoLinkRepository,
+                                  final ArrFsLinkRepository fsLinkRepository,
                        final ExportConfig exportConfig,
                        final StructObjService structObjService,
                        final EntityManager em, 
@@ -260,7 +266,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         this.itemRepository = itemRepository;
         this.bindingStateRepository = bindingStateRepository;
         this.indexRepository = indexRepository;
-        this.daoLinkRepository = daoLinkRepository;
+        this.legacyDaoLinkRepository = legacyDaoLinkRepository;
+        this.fsLinkRepository = fsLinkRepository;
         this.exportConfig = exportConfig;
         this.structObjService = structObjService;
         this.soiLoader = new StructObjectInfoLoader(em, 1, staticDataService.getData(), dataService);
@@ -530,9 +537,11 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
             }            
 
         	
-            List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdsAndFetchDao(daosFromNodeIds);
+            List<ArrDaoLink> daoLinks = new ArrayList<>();
+            daoLinks.addAll(legacyDaoLinkRepository.findByNodeIdsAndFetchDao(daosFromNodeIds));
+            daoLinks.addAll(fsLinkRepository.findByNodeIdInAndDeleteChangeIsNull(daosFromNodeIds));
             if(daoLinks.size() < daoLinkMap.size()) {
-            	logger.error("Number of loaded daos ({}) is lower then exptected number ({}) for nodes ({}).", 
+            	logger.error("Number of loaded daos ({}) is lower then exptected number ({}) for nodes ({}).",
             			daoLinks.size(), daoLinkMap.size(), daosFromNodeIds);
             	throw new BusinessException("Number of loaded daos is not the same as exptected number for nodes.", BaseCode.INVALID_STATE);
             }
@@ -545,7 +554,15 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                 	continue;
                 }
 
-                Dao dao = new Dao(daoLink);
+                Dao dao;
+                if (daoLink instanceof ArrLegacyDaoLink legacyLink) {
+                    dao = new Dao(legacyLink);
+                } else if (daoLink instanceof ArrFsLink fsLink) {
+                    dao = new Dao(fsLink);
+                } else {
+                    // da vazby v node cache nejsou, do výstupů se nedostanou
+                    continue;
+                }
                 node.addDao(dao);
             }
         }

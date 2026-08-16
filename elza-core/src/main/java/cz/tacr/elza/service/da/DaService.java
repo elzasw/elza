@@ -24,6 +24,7 @@ import cz.tacr.elza.controller.vo.DaoLinksResult;
 import cz.tacr.elza.controller.vo.UserInfoVO;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDaLink;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDigitalRepository;
@@ -50,6 +51,7 @@ import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.AipRepository;
 import cz.tacr.elza.repository.AipStateRepository;
+import cz.tacr.elza.repository.ArrDaLinkRepository;
 import cz.tacr.elza.repository.DaChangeRepository;
 import cz.tacr.elza.repository.DaDaoFileFolderRepository;
 import cz.tacr.elza.repository.DaDaoFileRepository;
@@ -194,6 +196,8 @@ public class DaService {
     private AipStateRepository aipStateRepository;
     @Autowired
     private DaoLinkRepository daoLinkRepository;
+    @Autowired
+    private ArrDaLinkRepository daLinkRepository;
     @Autowired
     private NodeRepository nodeRepository;
     @Autowired
@@ -1286,7 +1290,7 @@ public class DaService {
             daDao = findDaoById(daoId);
         }
 
-        ArrDaoLink arrDaoLink = new ArrDaoLink();
+        ArrDaLink arrDaoLink = new ArrDaLink();
         arrDaoLink.setNode(node);
         arrDaoLink.setCreateChange(change);
         arrDaoLink.setAip(aip);
@@ -1300,7 +1304,7 @@ public class DaService {
         ArrNode arrNode = nodeRepository.getOneCheckExist(nodeId);
         DaAip daAip = findAipById(daAipId);
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
-        ArrDaoLink arrDaoLink = new ArrDaoLink();
+        ArrDaLink arrDaoLink = new ArrDaLink();
         arrDaoLink.setAip(daAip);
         arrDaoLink.setNode(arrNode);
         arrDaoLink.setLinkType(ArrDaoLink.LinkType.AIP);
@@ -1321,7 +1325,7 @@ public class DaService {
     @Transactional
     public void connectPartToJP(ArrNode arrNode,  DaAip daAip, DaDao daDao) {
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
-        ArrDaoLink arrDaoLink = new ArrDaoLink();
+        ArrDaLink arrDaoLink = new ArrDaLink();
         arrDaoLink.setAip(daAip);
         arrDaoLink.setNode(arrNode);
         arrDaoLink.setLinkType(ArrDaoLink.LinkType.PART_AIP);
@@ -1365,7 +1369,7 @@ public class DaService {
     @Transactional
     public void connectSelectedToJP(ArrNode arrNode, DaAip daAip, DaDao daDao) {
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
-        ArrDaoLink arrDaoLink = new ArrDaoLink();
+        ArrDaLink arrDaoLink = new ArrDaLink();
         arrDaoLink.setAip(daAip);
         arrDaoLink.setNode(arrNode);
         arrDaoLink.setLinkType(ArrDaoLink.LinkType.COMPONENT_AIP);
@@ -1388,7 +1392,7 @@ public class DaService {
     public void createAndLinkFromSelected(ArrNode arrNode, DaAip daAip, DaDao daDao) {
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
         ArrNode newNode = createChildNode(arrNode, change);
-        ArrDaoLink arrDaoLink = new ArrDaoLink();
+        ArrDaLink arrDaoLink = new ArrDaLink();
         arrDaoLink.setAip(daAip);
         arrDaoLink.setNode(newNode);
         arrDaoLink.setLinkType(ArrDaoLink.LinkType.PART_AIP);
@@ -1405,7 +1409,7 @@ public class DaService {
         for (Integer daAipId : daAipIdList) {
             DaAip daAip = findAipById(daAipId);
             ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
-            ArrDaoLink arrDaoLink = new ArrDaoLink();
+            ArrDaLink arrDaoLink = new ArrDaLink();
             arrDaoLink.setAip(daAip);
             arrDaoLink.setNode(arrNode);
             arrDaoLink.setLinkType(ArrDaoLink.LinkType.AIP);
@@ -1442,7 +1446,7 @@ public class DaService {
                 for (DaDaoRelation daDaoRelation : daDaoRelationList) {
                     DaDao dao = daDaoRelation.getDao();
                     if (dao.getType().equals(DaDao.DaoType.LOGICAL) && dao.getAip().equals(daAip)) {
-                        ArrDaoLink arrDaoLink = new ArrDaoLink();
+                        ArrDaLink arrDaoLink = new ArrDaLink();
                         arrDaoLink.setAip(daAip);
                         arrDaoLink.setNode(nodeToConnect);
                         arrDaoLink.setDaDao(dao);
@@ -1489,7 +1493,7 @@ public class DaService {
                 for (DaDaoRelation daDaoRelation : daDaoRelationList) {
                     DaDao dao = daDaoRelation.getDao();
                     if (dao.getType().equals(DaDao.DaoType.LOGICAL) && dao.getAip().equals(daAip)) {
-                        ArrDaoLink arrDaoLink = new ArrDaoLink();
+                        ArrDaLink arrDaoLink = new ArrDaLink();
                         arrDaoLink.setAip(daAip);
                         arrDaoLink.setNode(nodeToConnect);
                         arrDaoLink.setDaDao(dao);
@@ -1630,16 +1634,16 @@ public class DaService {
 
     public DaoLinksResult getDaoLinks(Integer nodeId) {
         List<DaoLink> daoLinkList = new ArrayList<>();
-        List<ArrDaoLink> arrDaoLinks = daoLinkRepository.findByNodeIdAndDeleteChangeIsNullFetchAip(nodeId);
+        List<ArrDaLink> arrDaoLinks = daLinkRepository.findByNodeIdAndDeleteChangeIsNullFetchAip(nodeId);
 
         List<DaAip> aipList = arrDaoLinks.stream()
                 .filter(d -> d.getLinkType() == ArrDaoLink.LinkType.AIP || d.getLinkType() == ArrDaoLink.LinkType.PART_AIP)
-                .map(ArrDaoLink::getAip)
+                .map(ArrDaLink::getAip)
                 .toList();
 
-        List<ArrDaoLink> aipDaoLinks = arrDaoLinks.stream().filter(d -> d.getLinkType() == ArrDaoLink.LinkType.AIP).toList();
-        List<ArrDaoLink> partDaoLinks = arrDaoLinks.stream().filter(d -> d.getLinkType() == ArrDaoLink.LinkType.PART_AIP).toList();
-        List<ArrDaoLink> componentDaoLinks = arrDaoLinks.stream().filter(d -> d.getLinkType() == ArrDaoLink.LinkType.COMPONENT_AIP).collect(Collectors.toList());
+        List<ArrDaLink> aipDaoLinks = arrDaoLinks.stream().filter(d -> d.getLinkType() == ArrDaoLink.LinkType.AIP).toList();
+        List<ArrDaLink> partDaoLinks = arrDaoLinks.stream().filter(d -> d.getLinkType() == ArrDaoLink.LinkType.PART_AIP).toList();
+        List<ArrDaLink> componentDaoLinks = arrDaoLinks.stream().filter(d -> d.getLinkType() == ArrDaoLink.LinkType.COMPONENT_AIP).collect(Collectors.toList());
 
         Map<Integer, Map<Integer, List<DaDao>>> aipDaoMap = daoRelationRepository.findByAipsAndDeleteChangeIsNull(aipList).stream()
                 .collect(Collectors.groupingBy(r -> r.getParentDao().getAip().getAipId(),
@@ -1651,10 +1655,10 @@ public class DaService {
 
         List<DaoLink> resultPartDaoLinks = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(partDaoLinks)) {
-            for (ArrDaoLink partDaoLink : partDaoLinks) {
+            for (ArrDaLink partDaoLink : partDaoLinks) {
                 Integer aipId = partDaoLink.getAip().getAipId();
                 Map<Integer, List<DaDao>> daoMap = aipDaoMap.get(aipId);
-                Map<Integer, ArrDaoLink> daoLinkMap = componentDaoLinks.stream()
+                Map<Integer, ArrDaLink> daoLinkMap = componentDaoLinks.stream()
                         .filter(d -> d.getAip().getAipId().equals(aipId))
                         .collect(Collectors.toMap(d -> d.getDaDao().getDaoId(), d -> d));
 
@@ -1663,10 +1667,10 @@ public class DaService {
         }
 
         if (CollectionUtils.isNotEmpty(aipDaoLinks)) {
-            for (ArrDaoLink aipDaoLink : aipDaoLinks) {
+            for (ArrDaLink aipDaoLink : aipDaoLinks) {
                 Integer aipId = aipDaoLink.getAip().getAipId();
                 Map<Integer, List<DaDao>> daoMap = aipDaoMap.get(aipId);
-                Map<Integer, ArrDaoLink> daoLinkMap = componentDaoLinks.stream()
+                Map<Integer, ArrDaLink> daoLinkMap = componentDaoLinks.stream()
                         .filter(d -> d.getAip().getAipId().equals(aipId))
                         .collect(Collectors.toMap(d -> d.getDaDao().getDaoId(), d -> d));
                 List<DaDao> parentDaoList = aipParentDaoMap.get(aipId);
@@ -1678,7 +1682,7 @@ public class DaService {
         daoLinkList.addAll(resultPartDaoLinks);
 
         if (CollectionUtils.isNotEmpty(componentDaoLinks)) {
-            for (ArrDaoLink componentDaoLink : componentDaoLinks) {
+            for (ArrDaLink componentDaoLink : componentDaoLinks) {
                 daoLinkList.add(createDaoLink(componentDaoLink, false));
             }
         }
@@ -1688,7 +1692,7 @@ public class DaService {
         return daoLinksResult;
     }
 
-    private DaoLink createPartAipDaoLink(ArrDaoLink partDaoLink, Map<Integer, ArrDaoLink> daoLinkMap, Map<Integer, List<DaDao>> daoMap) {
+    private DaoLink createPartAipDaoLink(ArrDaLink partDaoLink, Map<Integer, ArrDaLink> daoLinkMap, Map<Integer, List<DaDao>> daoMap) {
         DaoLink daoLink = createDaoLink(partDaoLink, partDaoLink.getDaDao().getType() == DaDao.DaoType.LOGICAL);
 
         processDao(partDaoLink.getDaDao(), daoLink, daoLinkMap, daoMap, null, new HashMap<>());
@@ -1696,7 +1700,7 @@ public class DaService {
         return daoLink;
     }
 
-    private DaoLink createAipDaoLink(Integer aipId, ArrDaoLink aipDaoLink, Map<Integer, ArrDaoLink> daoLinkMap, Map<Integer, List<DaDao>> daoMap, List<DaDao> parentDaoList) {
+    private DaoLink createAipDaoLink(Integer aipId, ArrDaLink aipDaoLink, Map<Integer, ArrDaLink> daoLinkMap, Map<Integer, List<DaDao>> daoMap, List<DaDao> parentDaoList) {
         DaoLink daoLink = aipDaoLink == null ? createDaoLink(aipId) : createDaoLink(aipDaoLink, false);
 
         Map<Integer, DaoLink> childrenMap = new HashMap<>();
@@ -1711,7 +1715,7 @@ public class DaService {
 
     private void processDao(DaDao parentDao,
                             DaoLink parentDaoLink,
-                            Map<Integer, ArrDaoLink> daoLinkMap,
+                            Map<Integer, ArrDaLink> daoLinkMap,
                             Map<Integer, List<DaDao>> daoMap,
                             @Nullable String path,
                             Map<Integer, DaoLink> childrenMap) {
@@ -1728,7 +1732,7 @@ public class DaService {
                 }
 
                 if (parentDaoLink.getChildrenCount() < 100) {
-                    ArrDaoLink arrDaoLink = daoLinkMap.getOrDefault(dao.getDaoId(), null);
+                    ArrDaLink arrDaoLink = daoLinkMap.getOrDefault(dao.getDaoId(), null);
                     boolean logical = parentDao.getType() == DaDao.DaoType.LOGICAL;
                     DaoLink daoLink = arrDaoLink == null ? createDaoLink(dao, logical) : createDaoLink(arrDaoLink, logical);
                     daoLink.setPath(path);
@@ -1777,7 +1781,7 @@ public class DaService {
         return daoLink;
     }
 
-    private DaoLink createDaoLink(ArrDaoLink arrDaoLink, boolean logical) {
+    private DaoLink createDaoLink(ArrDaLink arrDaoLink, boolean logical) {
         DaDao dao = arrDaoLink.getDaDao();
 
         DaoLink daoLink = new DaoLink();

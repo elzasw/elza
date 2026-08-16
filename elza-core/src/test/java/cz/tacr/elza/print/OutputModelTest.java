@@ -36,7 +36,8 @@ import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApStateRepository;
-import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.ArrFsLinkRepository;
+import cz.tacr.elza.repository.ArrLegacyDaoLinkRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.OutputTypeRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
@@ -88,7 +89,10 @@ public class OutputModelTest extends AbstractServiceTest {
     ApBindingStateRepository bindingStateRepository;
 
     @Autowired
-    DaoLinkRepository daoLinkRepository;
+    ArrLegacyDaoLinkRepository legacyDaoLinkRepository;
+
+    @Autowired
+    ArrFsLinkRepository fsLinkRepository;
 
     @Autowired
     ApIndexRepository indexRepository;
@@ -179,7 +183,7 @@ public class OutputModelTest extends AbstractServiceTest {
                 fundRepository, fundTreeProvider, nodeCacheService, institutionRepository, apStateRepository,
                 bindingRepository, null, structObjRepos, itemRepository,
                 bindingStateRepository, indexRepository,
-                daoLinkRepository, exportConfig, structObjService, em,
+                legacyDaoLinkRepository, fsLinkRepository, exportConfig, structObjService, em,
                 dataService, accessPointCacheService);
 
         ArrOutput output = new ArrOutput();

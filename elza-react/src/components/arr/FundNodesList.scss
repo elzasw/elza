@@ -35,10 +35,23 @@
         flex-direction: row;
         //padding: 0 5px;
 
+        // Let a long node label shrink instead of pushing the remove button out of the row.
+        > .node-label {
+            min-width: 0;
+            flex: 1 1 auto;
+
+            .name {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+        }
+
         .node-register-form-standard-actions {
             @extend .node-register-form-standard-actions;
         };
 
+        .item-actions-container,
         .actions-container {
             flex-shrink: 0;
         }

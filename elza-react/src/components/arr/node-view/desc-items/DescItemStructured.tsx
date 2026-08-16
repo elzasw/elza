@@ -1,6 +1,6 @@
 import { WebApi } from "actions";
-import { AnonymousStructure } from "components/arr/node-edit/desc-items/AnonymousStructure";
-import { useActiveFund } from "components/arr/node-edit/hooks";
+import { AnonymousStructure } from "components/arr/item-form/desc-items/AnonymousStructure";
+import { useActiveFund } from "utils/hooks";
 import { DataStructureRef, DataType } from "elza-api";
 import { useEffect, useMemo, useState } from "react";
 import { useAppSelector } from "utils/hooks/useAppSelector";

@@ -3,10 +3,18 @@ import { VirtualList } from 'components/shared';
 import { Api } from 'api';
 import classNames from 'classnames';
 import { FsRepo, FsItem, FsItemType } from 'elza-api';
+import { defineMessages, useIntl } from 'react-intl';
 import { i18n, Icon } from 'components/shared';
 import "./FileSystemBrowser.scss"
 import { RenderItem, isLastKeyItem, isRepoItem, isListItem, RenderItemType } from './types';
 import { extractRepoIdFromFullPath } from './extractRepoIdFromFullPath';
+
+const messages = defineMessages({
+    repoUnavailable: {
+        id: 'arr.daos.fileSystem.repo.unavailable',
+        defaultMessage: 'Repozitář není dostupný — cesta {path} na serveru neexistuje nebo ji nelze číst. Zkontrolujte nastavení externího systému.',
+    },
+});
 
 interface TreeProps {
     onSelect: (item: RenderItem) => void;
@@ -32,6 +40,7 @@ export const Tree = forwardRef<TreeExposedFunctions, TreeProps>(({
     childrenMap = {},
     repos = [],
 }: TreeProps, ref) => {
+    const intl = useIntl();
     const treeContainerRef = useRef<HTMLDivElement>(null);
     const [workingTree, setWorkingTree] = useState<RenderItem[]>(repos.map((dataItem) => ({
         type: RenderItemType.Repo,
@@ -158,13 +167,18 @@ export const Tree = forwardRef<TreeExposedFunctions, TreeProps>(({
         if (isRepoItem(item) || isListItem(item)) {
             const isExpanded = expandedItems[item.fullPath];
             const isSelected = item.fullPath === selectedItemPath;
+            const isUnavailable = isRepoItem(item) && !item.data.available;
+            const unavailableTitle = isUnavailable
+                ? intl.formatMessage(messages.repoUnavailable, { path: item.data.path })
+                : undefined;
 
             return <div
-                title={item.data.name}
+                title={unavailableTitle || item.data.name}
                 className={classNames(
                     "list-item", {
                     "selected": isSelected,
                     "repo": isRepoItem(item),
+                    "unavailable": isUnavailable,
                 })}
                 onClick={() => {
                     setSelectedItemPath(item.fullPath);
@@ -174,13 +188,13 @@ export const Tree = forwardRef<TreeExposedFunctions, TreeProps>(({
                 <span className="item-part no-shrink">
                     <span
                         style={{
-                            visibility: childrenMap[item.fullPath] ? "visible" : "hidden",
+                            visibility: (childrenMap[item.fullPath] || (isListItem(item) && item.data.hasChildren)) && !isUnavailable ? "visible" : "hidden",
                             width: `${(item.depth + 1) * TREE_INDENT_PX}px`,
                             display: "inline-flex",
                             justifyContent: "flex-end",
                         }}
                         onClick={(e) => {
-                            if (childrenMap[item.fullPath]) {
+                            if ((childrenMap[item.fullPath] || (isListItem(item) && item.data.hasChildren)) && !isUnavailable) {
                                 e.stopPropagation();
                                 toggleItem(item);
                             }
@@ -189,6 +203,11 @@ export const Tree = forwardRef<TreeExposedFunctions, TreeProps>(({
                         {isExpanded ? <Icon glyph="fa-minus-square-o" /> : <Icon glyph="fa-plus-square-o" />}
                     </span>
                 </span>
+                {isUnavailable && (
+                    <span className="item-part no-shrink unavailable-icon">
+                        <Icon glyph="fa-exclamation-triangle" />
+                    </span>
+                )}
                 <span className="item-part">
                     {item.data.name}
                 </span>

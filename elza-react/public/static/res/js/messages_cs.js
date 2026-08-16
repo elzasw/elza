@@ -812,6 +812,7 @@ var messages = {
     "arr.daos.title.file-count": "Počet souborů",
     "arr.daos.title.thumbnail": "Náhled {0}/{1}",
     "arr.daos.title.thumbnail.empty": "Náhled není k dispozici",
+    "arr.daos.title.thumbnail.notFound": "Prvek nebyl nalezen v úložišti",
     "arr.daos.title.select-file": "Vybraný soubor",
     "arr.daos.files.title.withoutGroup": "Soubory",
     "arr.daos.files.title.inGroup": "Ostatní soubory",
@@ -1073,6 +1074,7 @@ var messages = {
     "subNodeDao.dao.files.more": "souborů",
     "subNodeDao.dao.files.one": "soubor",
     "subNodeDao.dao.files.few": "soubory",
+    "subNodeDao.dao.files.truncated": "Zobrazeno pouze prvních 1000 souborů",
 
     "field.unitdate.convertToEstimate.message": "Byla vložena datace velkého rozsahu, pravděpodobně se jedná o odhad. Má se hodnota označit jako odhad?",
     "field.unitdate.convertToEstimate.title": "Potvrzení datace",
@@ -1509,6 +1511,9 @@ var messages = {
     "admin.extSystem.apiKeyId": "ApiKey - ID",
     "admin.extSystem.apiKeyValue": "ApiKey - hodnota",
     "admin.extSystem.synchronize": "Synchronizovat",
+    "admin.extSystem.multipleLinks": "Vícenásobné napojení",
+    "admin.extSystem.multipleLinks.true": "Ano",
+    "admin.extSystem.multipleLinks.false": "Ne",
 
     "admin.bulk.detail.queue.empty": "Ve frontě nejsou žádné požadavky",
     "admin.bulk.header.title.NODE": "Validace JP",

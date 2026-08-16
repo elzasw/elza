@@ -14,12 +14,15 @@ import cz.tacr.elza.controller.vo.NodeInfo;
 import cz.tacr.elza.controller.vo.NodePlainTextRepresentation;
 import cz.tacr.elza.controller.vo.NodeSearchResult;
 import cz.tacr.elza.controller.vo.NodeTreeData;
+import cz.tacr.elza.controller.vo.FsCreateDaoLinkResult;
 import cz.tacr.elza.controller.vo.NodeBase;
 import cz.tacr.elza.controller.vo.NodeData;
 import cz.tacr.elza.controller.vo.NodeDataParam;
 import cz.tacr.elza.controller.vo.SearchParams;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
+import cz.tacr.elza.domain.ArrFsLink;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.exception.AccessDeniedException;
@@ -29,6 +32,7 @@ import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.DaoService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.NodeSearchService;
 import cz.tacr.elza.service.UserService;
@@ -52,6 +56,9 @@ public class NodeController implements NodeApi {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private DaoService daoService;    
 
     @Autowired
     private NodeRepository nodeRepository;
@@ -145,6 +152,21 @@ public class NodeController implements NodeApi {
             throw new ObjectNotFoundException("JP neexistuje", BaseCode.ID_NOT_EXIST).setId(nodeUuid);
         }
         return ResponseEntity.ok(arrangementService.getNodeInfo(node.getFundId(), node));
+    }
+
+    // PUT /node/{nodeId}/fslink/{daoLinkId}/move
+    @Override
+    @Transactional
+    public ResponseEntity<FsCreateDaoLinkResult> nodeFsRelink(final Integer nodeId,
+                                                              final Integer daoLinkId) {
+        ArrNode newNode = arrangementService.getNode(nodeId);
+        ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(newNode.getFundId());
+
+        ArrFsLink newLink = daoService.moveFsDaoLink(fundVersion, daoLinkId, newNode);
+
+        FsCreateDaoLinkResult vo = new FsCreateDaoLinkResult();
+        vo.setDaoLinkId(newLink.getDaoLinkId());
+        return ResponseEntity.ok(vo);
     }
 
 }

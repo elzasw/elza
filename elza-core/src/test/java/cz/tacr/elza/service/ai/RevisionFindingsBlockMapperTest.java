@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
@@ -12,24 +13,38 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.tacr.elza.controller.vo.AiDisplayBlockVO;
+import cz.tacr.elza.controller.vo.AiFollowUpAction;
 import cz.tacr.elza.controller.vo.AiMarkdownBlockVO;
 
-/** Mapping of {@code elza.revisionFindings} payloads into a readable markdown block. */
+/**
+ * Mapping of {@code elza.revisionFindings} payloads into markdown blocks — one
+ * per finding, each carrying its "prepare the fix" follow-up action (the
+ * revision→fix conversation handoff: the action submits an
+ * {@code elza.enhanceDescription} follow-up with a seeded instruction naming
+ * the finding).
+ */
 public class RevisionFindingsBlockMapperTest {
 
     private final RevisionFindingsBlockMapper mapper = new RevisionFindingsBlockMapper();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private String markdown(final String json) {
+    private List<AiDisplayBlockVO> blocks(final String json) {
         try {
             JsonNode data = objectMapper.readTree(json);
             List<AiDisplayBlockVO> blocks = mapper.map(data);
-            assertEquals(1, blocks.size());
-            assertTrue(blocks.get(0) instanceof AiMarkdownBlockVO, "findings map to a markdown block");
-            return ((AiMarkdownBlockVO) blocks.get(0)).getContent();
+            blocks.forEach(block -> assertTrue(block instanceof AiMarkdownBlockVO,
+                    "findings map to markdown blocks"));
+            return blocks;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /** All blocks' markdown joined — for assertions spanning the whole rendering. */
+    private String markdown(final String json) {
+        return blocks(json).stream()
+                .map(block -> ((AiMarkdownBlockVO) block).getContent())
+                .collect(Collectors.joining("\n"));
     }
 
     @Test
@@ -57,6 +72,30 @@ public class RevisionFindingsBlockMapperTest {
         assertTrue(md.contains("Jistota: 85 %"));
         // A single-unit check does not repeat the node id on every finding.
         assertFalse(md.contains("JP 42"));
+    }
+
+    @Test
+    public void eachFindingIsItsOwnBlockWithAPrepareTheFixAction() {
+        List<AiDisplayBlockVO> blocks = blocks("""
+            {"findings":[
+              {"nodeId": 1, "category": "duplicate", "severity": "low",
+               "excerpt": "a", "explanation": "x"},
+              {"nodeId": 2, "category": "formulation", "severity": "medium",
+               "excerpt": "dtto č. 42 - 52", "explanation": "y"}
+            ]}""");
+
+        assertEquals(2, blocks.size(), "one block per finding");
+        for (AiDisplayBlockVO block : blocks) {
+            assertEquals(1, block.getFollowUps().size(), "each finding carries its fix action");
+        }
+        AiFollowUpAction second = blocks.get(1).getFollowUps().get(0);
+        assertEquals("Připravit opravu", second.getLabel());
+        // The handoff: an enhance exchange submitted into the revision thread.
+        assertEquals("elza.enhanceDescription", second.getTaskType());
+        // The seed pins WHICH finding — number, category, verbatim excerpt (the
+        // complete findings reach the fix task through the conversation chain).
+        assertEquals("Připrav opravu zjištění č. 2 (Formulace): „dtto č. 42 - 52“.",
+                second.getUserInstructions());
     }
 
     @Test
@@ -88,9 +127,13 @@ public class RevisionFindingsBlockMapperTest {
     }
 
     @Test
-    public void emptyFindingsRenderTheNothingFoundMessage() {
-        assertTrue(markdown("{\"findings\":[]}")
+    public void emptyFindingsRenderTheNothingFoundMessageWithoutActions() {
+        List<AiDisplayBlockVO> blocks = blocks("{\"findings\":[]}");
+        assertEquals(1, blocks.size());
+        assertTrue(((AiMarkdownBlockVO) blocks.get(0)).getContent()
                 .contains("Nebyly nalezeny podložené sémantické ani formulační nesrovnalosti."));
+        // Nothing to fix — no action button.
+        assertTrue(blocks.get(0).getFollowUps().isEmpty());
         assertTrue(markdown("{}")
                 .contains("Nebyly nalezeny podložené sémantické ani formulační nesrovnalosti."));
     }

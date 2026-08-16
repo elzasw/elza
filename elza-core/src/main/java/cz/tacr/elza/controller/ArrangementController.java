@@ -210,6 +210,9 @@ public class ArrangementController {
     private DaoLinkRepository daoLinkRepository;
 
     @Autowired
+    private ArrLegacyDaoLinkRepository legacyDaoLinkRepository;
+
+    @Autowired
     private ArrangementService arrangementService;
 
     @Autowired
@@ -360,14 +363,20 @@ public class ArrangementController {
         String contextPath = request.getContextPath();
 
         List<ArrDao> arrDaoList;
+        List<ArrFsLink> fsLinks = Collections.emptyList();
         if (nodeId != null) {
             ArrNode node = nodeRepository.getOneCheckExist(nodeId);
             arrDaoList = daoService.findDaos(fundVersion, node, index, maxResults);
+            // fs vazby nemají ArrDao — panel je dostává jako syntetizovaná VO
+            fsLinks = daoService.findFsLinks(fundVersion, node);
         } else {
             arrDaoList = daoService.findDettachedDaos(fundVersion, index, maxResults);
         }
 
-        return factoryVo.createDaoList(contextPath, arrDaoList, BooleanUtils.isTrue(detail), fundVersion);
+        List<ArrDaoVO> result = new ArrayList<>();
+        result.addAll(factoryVo.createDaoList(contextPath, arrDaoList, BooleanUtils.isTrue(detail), fundVersion));
+        result.addAll(factoryVo.createFsDaoList(contextPath, fsLinks, BooleanUtils.isTrue(detail), fundVersion));
+        return result;
     }
 
     /**
@@ -409,11 +418,12 @@ public class ArrangementController {
 
         // read related DB data
         ObjectListIterator.forEachPage(arrDaoList, page -> {
-            final List<ArrDaoLink> daoLinkList = daoLinkRepository.findByDaoInAndDeleteChangeIsNull(page);
-            Map<Integer, ArrDaoLink> daoLinkMap = daoLinkList.stream()
-                    .collect(Collectors.toMap(ArrDaoLink::getDaoId, v -> v));
+            final List<ArrLegacyDaoLink> daoLinkList = legacyDaoLinkRepository.findByDaoInAndDeleteChangeIsNull(page);
+            // a DAO from a multiple_links repository can have several live links; the VO carries one
+            Map<Integer, ArrLegacyDaoLink> daoLinkMap = daoLinkList.stream()
+                    .collect(Collectors.toMap(ArrLegacyDaoLink::getDaoId, v -> v, (a, b) -> a));
             daoList.addAll(factoryVo.createDaoList(contextPath,
-                                                   arrDaoList,
+                                                   page,
                                                    BooleanUtils.isTrue(detail), fundVersion,
                                                    daoLinkMap));
         });
@@ -459,7 +469,7 @@ public class ArrangementController {
         // create dao link in separate transaction
         // dao link might create level and data from levelTreeCache are available
         // in new transaction>
-        ArrDaoLink daoLink = daoService.createDaoLink(fundVersion, dao, node);
+        ArrLegacyDaoLink daoLink = daoService.createDaoLink(fundVersion, dao, node);
 
         Validate.notNull(daoLink);
         Validate.notNull(daoLink.getDaoLinkId());

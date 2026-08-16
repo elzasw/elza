@@ -2,7 +2,7 @@ import { DataType, NodeFormData, NodeStatus } from "elza-api";
 import { useMemo } from "react";
 import { useAppSelector } from "utils/hooks/useAppSelector";
 import { useNodeFormData } from "../node-edit/hooks";
-import { buildGroupsForm } from "../node-edit/utils";
+import { buildGroupsForm } from "../item-form/utils";
 import {
   DescItemBit,
   DescItemCoordinates,
@@ -11,6 +11,7 @@ import {
   DescItemEnum,
   DescItemFileRef,
   DescItemInt,
+  DescItemJsonTable,
   DescItemRecordRef,
   DescItemString,
   DescItemStructured,
@@ -48,6 +49,7 @@ const dataTypeMap = {
   [DataType.Structured]: DescItemStructured,
   [DataType.FileRef]: DescItemFileRef,
   [DataType.Bit]: DescItemBit,
+  [DataType.JsonTable]: DescItemJsonTable,
 };
 
 export function NodeView({ fondsVersionId, nodeId, nodeVersionId, seedFromParent, seedFormData, seedNodeStatus, onRefresh }: Props) {
@@ -144,6 +146,9 @@ export function NodeView({ fondsVersionId, nodeId, nodeVersionId, seedFromParent
                         const { data } = item;
                         const DataTypeComponent =
                           data?.dataType && dataTypeMap[data.dataType];
+                        const specRef = typeRef.descItemSpecs.find(
+                          ({ id }) => id === item.itemSpecId,
+                        )
                         return (
                           <div key={itemIndex} style={{ display: "flex" }}>
                             {item.itemSpecId &&
@@ -158,11 +163,7 @@ export function NodeView({ fondsVersionId, nodeId, nodeVersionId, seedFromParent
                                       : undefined,
                                   }}
                                 >
-                                  {
-                                    typeRef.descItemSpecs.find(
-                                      ({ id }) => id === item.itemSpecId,
-                                    )?.shortcut
-                                  }
+                                  { specRef?.shortcut || specRef?.name || item.itemSpecId }
                                   :
                                 </div>
                               )}

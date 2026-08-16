@@ -211,6 +211,7 @@ public class ArrIOService {
         RulItemType descItemType = itemTypeRepository.getOneCheckExist(descItemTypeId);
 
         ArrDataJsonTable jsonTable = new ArrDataJsonTable();
+        jsonTable.setDataType(descItemType.getDataType());
 
         T item;
         try {

@@ -19,7 +19,10 @@ import cz.tacr.elza.dataexchange.output.loaders.LoadDispatcher;
 import cz.tacr.elza.dataexchange.output.writer.DaoInfo;
 import cz.tacr.elza.dataexchange.output.writer.SectionOutputStream;
 import cz.tacr.elza.domain.ArrDao;
+import cz.tacr.elza.domain.ArrDaLink;
 import cz.tacr.elza.domain.ArrDaoLink;
+import cz.tacr.elza.domain.ArrFsLink;
+import cz.tacr.elza.domain.ArrLegacyDaoLink;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrInhibitedItem;
 import cz.tacr.elza.domain.ArrLevel;
@@ -27,7 +30,7 @@ import cz.tacr.elza.domain.DaAip;
 import cz.tacr.elza.domain.DaDao;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.ArrDaLinkRepository;
 import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
@@ -41,7 +44,7 @@ public class LevelInfoLoader extends AbstractBatchLoader<ArrLevel, LevelInfoImpl
 
     private boolean firstBatch = true;
 
-    private final DaoLinkRepository daoLinkRepository;
+    private final ArrDaLinkRepository daLinkRepository;
 
     private final DaoLoader daoLoader;
 
@@ -66,12 +69,12 @@ public class LevelInfoLoader extends AbstractBatchLoader<ArrLevel, LevelInfoImpl
     public LevelInfoLoader(final EntityManager em,
                            final int batchSize,
                            final NodeCacheService nodeCacheService,
-                           final DaoLinkRepository daoLinkRepository,
+                           final ArrDaLinkRepository daLinkRepository,
                            final boolean includeAccessPoints,
                            final boolean includeUuid,
                            final boolean includeDaos) {
         super(batchSize);
-        this.daoLinkRepository = daoLinkRepository;
+        this.daLinkRepository = daLinkRepository;
         this.daoLoader = new DaoLoader(em, batchSize);
         this.nodeCacheService = nodeCacheService;
         this.includeAccessPoints = includeAccessPoints;
@@ -146,7 +149,11 @@ public class LevelInfoLoader extends AbstractBatchLoader<ArrLevel, LevelInfoImpl
         cachedNodes.forEach((nodeId, restoredNode) -> {
             List<ArrDaoLink> daoLinks = restoredNode.getDaoLinks();
             if (daoLinks != null) {
-                daoLinks.forEach(daoLink -> daoLoader.addRequest(daoLink.getDaoId(), daoDispatcher));
+                daoLinks.forEach(daoLink -> {
+                    if (daoLink instanceof ArrLegacyDaoLink legacyLink) {
+                        daoLoader.addRequest(legacyLink.getDaoId(), daoDispatcher);
+                    }
+                });
             }
         });
 
@@ -168,8 +175,8 @@ public class LevelInfoLoader extends AbstractBatchLoader<ArrLevel, LevelInfoImpl
     private Map<Integer, List<DaoInfo>> loadAipDaoInfos(Collection<Integer> nodeIds) {
         Map<Integer, List<DaoInfo>> daoInfosByNode = new HashMap<>();
         ObjectListIterator.forEachPage(nodeIds, page -> {
-            List<ArrDaoLink> daoLinks = daoLinkRepository.findAipLinksByNodeIdsAndFetchAip(page);
-            for (ArrDaoLink daoLink : daoLinks) {
+            List<ArrDaLink> daoLinks = daLinkRepository.findAipLinksByNodeIdsAndFetchAip(page);
+            for (ArrDaLink daoLink : daoLinks) {
                 DaAip aip = daoLink.getAip();
                 DaDao daDao = daoLink.getDaDao();
                 DaoInfo daoInfo = new DaoInfo(
@@ -241,12 +248,20 @@ public class LevelInfoLoader extends AbstractBatchLoader<ArrLevel, LevelInfoImpl
             List<ArrDaoLink> daoLinks = cachedNode.getDaoLinks();
             if (daoLinks != null) {
                 daoLinks.forEach(daoLink -> {
-                    ArrDao dao = daoMap.get(daoLink.getDaoId());
-                    Objects.requireNonNull(dao, "Missing dao: " + daoLink.getDaoId());
-                    levelInfo.addDao(new DaoInfo(
-                            dao.getDaoPackage().getDigitalRepository().getCode(),
-                            dao.getCode(),
-                            null));
+                    if (daoLink instanceof ArrLegacyDaoLink legacyLink) {
+                        ArrDao dao = daoMap.get(legacyLink.getDaoId());
+                        Objects.requireNonNull(dao, "Missing dao: " + legacyLink.getDaoId());
+                        levelInfo.addDao(new DaoInfo(
+                                dao.getDaoPackage().getDigitalRepository().getCode(),
+                                dao.getCode(),
+                                null));
+                    } else if (daoLink instanceof ArrFsLink fsLink) {
+                        // filesystem link: the repository-relative path is the object's code
+                        levelInfo.addDao(new DaoInfo(
+                                fsLink.getDigitalRepository().getCode(),
+                                fsLink.getPath() != null ? fsLink.getPath() : "",
+                                null));
+                    }
                 });
             }
             // daos referencing an AIP or a selected part of it (loaded from the database)

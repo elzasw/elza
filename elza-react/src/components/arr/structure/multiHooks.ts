@@ -2,7 +2,7 @@ import { Api } from "api/api";
 import { DataType, FormItemType, StructuredObjectItem } from "elza-api";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAppSelector } from "utils/hooks/useAppSelector";
-import { EditItem } from "components/arr/node-edit/types";
+import { EditItem } from "components/arr/item-form/types";
 
 export interface MultiFormItem {
     item: EditItem;

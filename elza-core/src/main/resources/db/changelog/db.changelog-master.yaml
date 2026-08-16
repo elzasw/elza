@@ -6,9 +6,21 @@ databaseChangeLog:
   - property:
       name: type.text
       value: text
+  # Files execute strictly in the order listed here. Every file except the
+  # LAST one is FROZEN - never add changesets to a frozen file, its header
+  # says so too. All new changesets, regardless of subsystem, go to the last
+  # file. When a release line is cut, freeze the last file and open
+  # db.elza-3-part-<next>.xml at the end of this list. Part numbers are
+  # sequence markers, not ELZA versions.
+  #
+  # db.elza-3-part-01.xml and -02.xml carry logicalFilePath pins to their
+  # former names (db.elza-3.0.xml, db.elza-da.xml) so already-migrated
+  # databases keep matching changeset identities - never remove the pins.
   - include:
      file: db/changelog/db.elza-init.xml
   - include:
-     file: db/changelog/db.elza-3.0.xml
+     file: db/changelog/db.elza-3-part-01.xml
   - include:
-     file: db/changelog/db.elza-da.xml
+     file: db/changelog/db.elza-3-part-02.xml
+  - include:
+     file: db/changelog/db.elza-3-part-03.xml

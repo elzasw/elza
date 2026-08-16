@@ -27,6 +27,9 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoLink;
+import cz.tacr.elza.domain.ArrDigitalRepository;
+import cz.tacr.elza.domain.ArrFsLink;
+import cz.tacr.elza.domain.ArrLegacyDaoLink;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataFileRef;
 import cz.tacr.elza.domain.ArrDataRecordRef;
@@ -61,7 +64,7 @@ public class RestoreAction {
     private Map<Integer, List<ArrDataFileRef>> restoreFileRef;
     private Map<Integer, List<ArrDataUriRef>> restoreUriRefTemplate;
     private Map<Integer, List<ArrDataUriRef>> restoreUriRefNode;
-    private Map<Integer, List<ArrDaoLink>> restoreDaoLinks;
+    private Map<Integer, List<ArrLegacyDaoLink>> restoreDaoLinks;
 
     final private StructuredObjectRepository structureDataRepository;
 
@@ -230,7 +233,7 @@ public class RestoreAction {
         }
         if (CollectionUtils.isNotEmpty(restoredNode.getDaoLinks())) {
             for (ArrDaoLink daoLink : restoredNode.getDaoLinks()) {
-                restoreDaoLink(daoLink);
+                restoreDaoLink(node, daoLink);
             }
         }
         if (CollectionUtils.isNotEmpty(restoredNode.getNodeExtensions())) {
@@ -295,18 +298,30 @@ public class RestoreAction {
         }
     }
 
-    private void restoreDaoLink(ArrDaoLink daoLink) {
+    private void restoreDaoLink(ArrNode node, ArrDaoLink daoLink) {
     	Objects.requireNonNull(daoLink.getCreateChangeId());
         ArrChange createChange = em.getReference(ArrChange.class, daoLink.getCreateChangeId());
         daoLink.setCreateChange(createChange, daoLink.getCreateChangeId());
 
-        Objects.requireNonNull(daoLink.getDaoId());
+        if (daoLink instanceof ArrLegacyDaoLink legacyLink) {
+            // dao + node se doplní dávkově v prepareDaoLinks()
+            Objects.requireNonNull(legacyLink.getDaoId());
 
-        if (restoreDaoLinks == null) {
-            restoreDaoLinks = new HashMap<>();
+            if (restoreDaoLinks == null) {
+                restoreDaoLinks = new HashMap<>();
+            }
+            List<ArrLegacyDaoLink> dataList = restoreDaoLinks.computeIfAbsent(legacyLink.getDaoId(),
+                                                                              k -> new ArrayList<>());
+            dataList.add(legacyLink);
+        } else if (daoLink instanceof ArrFsLink fsLink) {
+            Objects.requireNonNull(fsLink.getDigitalRepositoryId());
+            fsLink.setDigitalRepository(em.getReference(ArrDigitalRepository.class,
+                                                        fsLink.getDigitalRepositoryId()));
+            fsLink.setNode(node);
+        } else {
+            throw new SystemException("Unsupported dao link type in node cache: " + daoLink.getClass(),
+                    BaseCode.INVALID_STATE);
         }
-        List<ArrDaoLink> dataList = restoreDaoLinks.computeIfAbsent(daoLink.getDaoId(), k -> new ArrayList<>());
-        dataList.add(daoLink);
     }
 
     private void restoreNodeExt(ArrNodeExtension nodeExt) {
@@ -436,9 +451,9 @@ public class RestoreAction {
                 .collect(Collectors.toMap(ArrNode::getNodeId, Function.identity()));
 
         for (ArrDao dao : daos) {
-            List<ArrDaoLink> dataList = restoreDaoLinks.remove(dao.getDaoId());
+            List<ArrLegacyDaoLink> dataList = restoreDaoLinks.remove(dao.getDaoId());
 
-            for (ArrDaoLink daoLink : dataList) {
+            for (ArrLegacyDaoLink daoLink : dataList) {
                 daoLink.setDao(dao);
                 daoLink.setNode(nodesMap.get(daoLink.getNodeId()));
             }

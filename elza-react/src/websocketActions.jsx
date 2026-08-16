@@ -11,7 +11,6 @@ import { checkUserLogged } from 'actions/global/login.jsx';
 import {
     changeAccessPoint,
     changeAddLevel,
-    changeApproveVersion,
     changeConformityInfo,
     changeDeleteLevel,
     changeFiles,
@@ -54,6 +53,7 @@ import { Client } from '@stomp/stompjs';
 import URLParse from 'url-parse';
 
 import { reloadUserDetail } from 'actions/user/userDetail';
+import { fundVersionApproved } from 'actions/arr/fund.jsx';
 import { fundTreeFetch } from 'actions/arr/fundTree';
 import { fundTreeInvalidate } from 'actions/arr/fundTree';
 import * as types from 'actions/constants/ActionTypes';
@@ -399,7 +399,7 @@ function structureDataChange(value) {
     store.dispatch(structureChange(value));
 }
 function approveVersionChange(value) {
-    store.dispatch(changeApproveVersion(value.fundId, value.versionId));
+    store.dispatch(fundVersionApproved(value.fundId, value.versionId));
 }
 
 function addLevelAfterChange(value) {

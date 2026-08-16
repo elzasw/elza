@@ -28,7 +28,7 @@ public interface DaoRepository extends ElzaJpaRepository<ArrDao, Integer> {
     @Query("SELECT COUNT(d) FROM arr_dao d "
             + " JOIN d.daoPackage dp "
             + " WHERE dp.daoPackageId = :daoPackageId"
-            + " AND NOT EXISTS (SELECT dl FROM arr_dao_link dl WHERE dl.dao = d AND dl.deleteChange IS NULL)")
+            + " AND NOT EXISTS (SELECT dl FROM arr_legacy_dao_link dl WHERE dl.dao = d AND dl.deleteChange IS NULL)")
     long countByDaoPackageIDAndNotExistsDaoLink(@Param("daoPackageId") Integer daoPackageId);
 
     @Query("SELECT COUNT(d) FROM arr_dao d "
@@ -37,12 +37,12 @@ public interface DaoRepository extends ElzaJpaRepository<ArrDao, Integer> {
     long countByDaoPackageID(@Param("daoPackageId") Integer daoPackageId);
 
     @Query("SELECT COUNT(d) > 0 FROM arr_dao d"
-           + " JOIN arr_dao_link l ON l.daoId = d.daoId"
+           + " JOIN arr_legacy_dao_link l ON l.daoId = d.daoId"
            + " WHERE l.nodeId = :nodeId AND d.daoType = 'LEVEL' AND l.deleteChangeId IS NULL")
     boolean existsDaoByNodeAndDaoTypeIsLevel(@Param("nodeId") Integer nodeId);
 
     @Query("SELECT COUNT(d) > 0 FROM arr_dao d"
-            + " JOIN arr_dao_link l ON l.daoId = d.daoId"
+            + " JOIN arr_legacy_dao_link l ON l.daoId = d.daoId"
             + " WHERE l.node IN :nodes AND d.daoType = 'LEVEL' AND l.deleteChangeId IS NULL")
     boolean existsDaoByNodesAndDaoTypeIsLevel(@Param("nodes") Collection<ArrNode> nodes);
 
@@ -86,13 +86,13 @@ public interface DaoRepository extends ElzaJpaRepository<ArrDao, Integer> {
     @Query(value = "SELECT d FROM arr_dao d" +
             " JOIN FETCH d.daoPackage p" +
             " JOIN FETCH p.digitalRepository" +
-            " JOIN arr_dao_link dl ON dl.daoId = d.daoId" +
+            " JOIN arr_legacy_dao_link dl ON dl.daoId = d.daoId" +
             " WHERE d.valid = true" +
             "  AND dl.node = :node" +
             "  AND dl.deleteChange IS NULL" +
             " ORDER BY d.label ASC, d.code ASC", 
            countQuery = "SELECT COUNT(d) FROM arr_dao d" +
-            " JOIN arr_dao_link dl ON dl.daoId = d.daoId" +
+            " JOIN arr_legacy_dao_link dl ON dl.daoId = d.daoId" +
             " WHERE d.valid = true" +
             "  AND dl.node = :node" +
             "  AND dl.deleteChange IS NULL")
@@ -101,7 +101,7 @@ public interface DaoRepository extends ElzaJpaRepository<ArrDao, Integer> {
     @Query("SELECT d FROM arr_dao d" +
             " JOIN d.daoPackage p" +
             " WHERE d.valid = true AND p.fund = :fund" +
-            "  AND NOT EXISTS (SELECT dl FROM arr_dao_link dl" +
+            "  AND NOT EXISTS (SELECT dl FROM arr_legacy_dao_link dl" +
             "  JOIN dl.node n" +
             "  WHERE dl.dao = d" +
             "  AND dl.deleteChange IS NULL)" +
@@ -111,14 +111,14 @@ public interface DaoRepository extends ElzaJpaRepository<ArrDao, Integer> {
     @Query("SELECT d FROM arr_dao d" +
             " JOIN d.daoPackage p" +
             " WHERE d.valid = true AND p = :daoPackage" +
-            "  AND NOT EXISTS (SELECT dl FROM arr_dao_link dl" +
+            "  AND NOT EXISTS (SELECT dl FROM arr_legacy_dao_link dl" +
             "  WHERE dl.dao = d" +
             "  AND dl.deleteChange IS NULL)" +
             " ORDER BY d.label ASC, d.code ASC")
     Page<ArrDao> findDettachedByPackage(@Param("daoPackage") ArrDaoPackage daoPackage, Pageable pageable);
 
     @Query("SELECT d FROM arr_dao d JOIN FETCH d.daoPackage p WHERE d.code IN :codes AND p.fund = :fund" +
-            "  AND NOT EXISTS (SELECT dl FROM arr_dao_link dl" +
+            "  AND NOT EXISTS (SELECT dl FROM arr_legacy_dao_link dl" +
             "  WHERE dl.dao = d" +
             "  AND dl.deleteChange IS NULL)" +
             "AND p.digitalRepository = :repo")

@@ -4,7 +4,7 @@ import jakarta.persistence.EntityManager;
 
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.repository.ApAccessPointRepository;
-import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.ArrDaLinkRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.service.DataService;
@@ -24,7 +24,7 @@ public class ExportInitHelper {
 
     private final ApAccessPointRepository apRepository;
 
-    private final DaoLinkRepository daoLinkRepository;
+    private final ArrDaLinkRepository daLinkRepository;
 
     private final FundVersionRepository fundVersionRepository;
 
@@ -39,7 +39,7 @@ public class ExportInitHelper {
                             final LevelRepository levelRepository,
                             final NodeCacheService nodeCacheService,
                             final ApAccessPointRepository apRepository,
-                            final DaoLinkRepository daoLinkRepository,
+                            final ArrDaLinkRepository daLinkRepository,
                             final FundVersionRepository fundVersionRepository,
                             final ResourcePathResolver resourcePathResolver,
                             final DataService dataService,
@@ -49,7 +49,7 @@ public class ExportInitHelper {
         this.levelRepository = levelRepository;
         this.nodeCacheService = nodeCacheService;
         this.apRepository = apRepository;
-        this.daoLinkRepository = daoLinkRepository;
+        this.daLinkRepository = daLinkRepository;
         this.fundVersionRepository = fundVersionRepository;
         this.resourcePathResolver = resourcePathResolver;
         this.dataService = dataService;
@@ -80,8 +80,8 @@ public class ExportInitHelper {
         return apRepository;
     }
 
-    public DaoLinkRepository getDaoLinkRepository() {
-        return daoLinkRepository;
+    public ArrDaLinkRepository getDaLinkRepository() {
+        return daLinkRepository;
     }
 
     public FundVersionRepository getFundVersionRepository() {

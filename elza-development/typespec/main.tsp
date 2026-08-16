@@ -189,6 +189,30 @@ model FsRepo {
     name: string;
     /** Repository path */
     path: string;
+    /**
+     * False when the configured root is not accessible on the server. Such a repository
+     * is listed so the misconfiguration is visible, but it cannot be browsed.
+     */
+    available: boolean;
+}
+
+/**
+ * Result of a digital repository configuration test
+ */
+model DigitalRepositoryTestResult {
+    /** True when the repository can be used with the current configuration */
+    available: boolean;
+    /** Repository root the configured URL resolves to */
+    path?: string;
+    /**
+     * True when the configured URL contains parameters ({fundId}, {fundCode}, …) and the root
+     * therefore differs per fund. Only the fixed part of the path can be tested.
+     */
+    templated: boolean;
+    /** Description of the result — the reason of a failure, or a note about a fund dependent root */
+    message?: string;
+    /** First few entries of the repository root, as a sanity check of the configured path */
+    items?: FsItem[];
 }
 
 model FundIdParameter {
@@ -258,6 +282,28 @@ enum FsItemType {
 }
 
 /**
+ * Create dao link result
+ */
+model FsCreateDaoLinkResult {
+    /** ID of the newly created dao-link */
+    daoLinkId: int32;
+}
+
+/**
+ * File link data
+ */
+model FsLink {
+    nodeId: int32;
+    fundId: int32;
+    fundName: string;
+    nodeLabel: string;
+    /** Breadcrumb path of the node from the root, joined with " / ". Empty when node could not be resolved. */
+    nodePath?: string;
+    /** True when the current user can read this link's fund; controls whether the popover row is clickable. */
+    readable: boolean;
+}
+
+/**
  * Single file system item
  */
 model FsItem {
@@ -269,8 +315,11 @@ model FsItem {
     size?: int64;
     /** Time of last change */
     lastChange: offsetDateTime;
-    /** File is linked to a description item */
-    isLinked: boolean;
+    /** List of file links */
+    links?: FsLink[];
+    /** True when this entry is a folder that contains at least one sub-folder;
+     *  drives the "expand" affordance in the tree UI. Absent/false for files. */
+    hasChildren?: boolean;
 }
 
 /**
@@ -280,6 +329,8 @@ model FsItems {
     items: FsItem[];
     /** Optional string to request next items. It is used if there are more items. */
     lastKey?: string;
+    /** True when the directory scan hit its internal cap; the listing is incomplete. */
+    truncated?: boolean;
 }
 
 /** Model ExplorerTreeNode */
@@ -899,10 +950,9 @@ model ArrFundGen {
     unitdate: string;
 }
 
-
-    /**
-     * Stav outputu
-     */
+/**
+ * Stav outputu
+ */
 enum OutputState {
     /**
      * Rozpracovaný
@@ -2304,6 +2354,24 @@ namespace ElzaAPI.ExternalSystem {
     };
 
     /**
+     * Test the configuration of a digital repository — whether its root is reachable
+     * and what it contains. Available to administrators.
+     */
+    @route("/digitalrepository/{id}/test")
+    @get op testDigitalRepository(
+        /** digital repository (external system) ID */
+        @path id: integer;
+    ): {
+        /** Test result — an unreachable repository is reported in the body, not as an error */
+        @Http.statusCode statusCode: 200;
+        @body data: DigitalRepositoryTestResult;
+    } | {
+        /** External system does not exist or is not a digital repository */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
      * Return list of all properties of external system
      */
     @route("property")
@@ -2362,6 +2430,8 @@ enum AiDisplayBlockType {
     TABLE,
     /** The knowledge/documentation sources the answer relied on. */
     DOC_CITATIONS,
+    /** Proposed description changes for user review (apply / reject / refine). */
+    NODE_UPDATE_PROPOSALS,
 }
 
 /**
@@ -2381,6 +2451,30 @@ enum AiDisplayBlockType {
 model AiDisplayBlock {
     /** Selects the block shape; one of the defined `AiDisplayBlockType` codes. */
     type: AiDisplayBlockType;
+
+    /**
+     * Server-suggested continuations of the conversation, rendered as buttons
+     * under the block. Clicking one submits a follow-up (`AiRequestCreate`)
+     * with the action's `taskType`/`userInstructions` into the same
+     * conversation — e.g. a check finding's "prepare the fix" action submits
+     * an `elza.enhanceDescription` exchange into the `elza.revision` thread.
+     */
+    followUps?: AiFollowUpAction[];
+}
+
+/**
+ * One server-suggested follow-up: the button label and the exchange it
+ * submits. The same shape a future provider-emitted `elza.taskSuggestion`
+ * result block maps onto — today the server composes these itself (per check
+ * finding).
+ */
+model AiFollowUpAction {
+    /** Button label, in the deployment's language. */
+    label: string;
+    /** Task type of the follow-up exchange; omitted = the conversation's current type. */
+    taskType?: string;
+    /** The seeded user instruction the follow-up submits. */
+    userInstructions: string;
 }
 
 /** Plain-text answer — `content` is rendered verbatim, never parsed as markdown. */
@@ -2431,6 +2525,84 @@ model AiTableColumn {
     key: string;
     /** Column header shown to the user. */
     label: string;
+}
+
+/**
+ * Proposed changes to the description items of arrangement levels — the
+ * render-ready view of an `elza.nodeUpdateProposals` task result
+ * (elza-development/typespec-ai/tasks/elza-enhance-description.md). The client
+ * renders one card per change with old→new diff rows; the user applies or
+ * rejects each change (the consent unit — its operations are applied
+ * together), or refines the request with a follow-up. All names and values
+ * are resolved server-side against the level's current state; nothing is ever
+ * applied without the explicit apply call.
+ */
+model AiNodeUpdateProposalsBlock extends AiDisplayBlock {
+    @invisible(Lifecycle)
+    type: AiDisplayBlockType.NODE_UPDATE_PROPOSALS;
+    /** Proposals grouped per level, in the result's order. */
+    nodes: AiProposalNode[];
+}
+
+/** The proposed changes of one arrangement level. */
+model AiProposalNode {
+    /** The level as a navigable link (label = tree title). */
+    node: AiActivityLink;
+    /** The level's proposed changes, in display order. */
+    changes: AiProposalChange[];
+}
+
+/**
+ * One proposed change — the unit the user accepts or rejects; its operations
+ * are applied together, in one versioned change. `state` is an open set:
+ * `PROPOSED` (awaiting decision), `APPLIED`, `REJECTED`, `BLOCKED` (fails
+ * validation against the level's current state — see `blockedReason`),
+ * `SUPERSEDED` (a newer exchange re-proposed for the same level); a client
+ * renders an unknown state as a read-only card.
+ */
+model AiProposalChange {
+    /** Stable key of the change within the request — the apply/reject address. */
+    changeKey: string;
+    /** Why the change is proposed — user-facing, self-contained. */
+    reason: string;
+    /** The model's certainty, 0–100, when reported. */
+    @minValue(0)
+    @maxValue(100)
+    confidence?: int32;
+    /** PROPOSED | APPLIED | REJECTED | BLOCKED | SUPERSEDED (open set). */
+    state: string;
+    /** User-facing reason when state = BLOCKED. */
+    blockedReason?: string;
+    /** When the APPLIED/REJECTED decision was made. */
+    decideDate?: utcDateTime;
+    /** The change's operations, applied together. */
+    operations: AiProposalOperation[];
+}
+
+/**
+ * One rendered item operation of a proposed change — a diff row. `kind` = `ADD`
+ * (`newValue` only), `UPDATE` (`oldValue` → `newValue`) or `DELETE`
+ * (`oldValue` only); open set, a client renders an unknown kind as plain text.
+ */
+model AiProposalOperation {
+    /** ADD | UPDATE | DELETE (open set). */
+    kind: string;
+    /** Display name of the item type, e.g. `Šířka`. */
+    itemTypeName: string;
+    /** Display name of the specification, for enumerated types. */
+    specName?: string;
+    /** The item's current value (UPDATE/DELETE). */
+    oldValue?: string;
+    /** The proposed value (ADD/UPDATE). */
+    newValue?: string;
+    /** Referenced entity as a navigable link, for access-point values. */
+    entity?: AiActivityLink;
+}
+
+/** Addresses one proposed change of an exchange's proposals block. */
+model AiProposalDecisionRequest {
+    /** `AiProposalChange.changeKey` of the change to decide. */
+    changeKey: string;
 }
 
 /**
@@ -2699,6 +2871,13 @@ model AiConversationCreate {
 
 /** Follow-up exchange submitted into an existing conversation. */
 model AiRequestCreate {
+    /**
+     * Task type of this exchange; omitted = reuse the conversation's previous type.
+     * A differing type still continues the conversation (the provider chains it via
+     * `parentTaskId`) — the "fix this finding" handoff submits `elza.enhanceDescription`
+     * into a `elza.revision` thread this way.
+     */
+    taskType?: string;
     /** Profile/model for this exchange (an `AiProfile.code`); omitted = reuse the conversation's last. */
     profile?: string;
     userInstructions?: string;
@@ -2870,6 +3049,39 @@ namespace ElzaAPI.AiProvider {
     };
 
     /**
+     * Applies one proposed change of a finished exchange: re-validates it
+     * against the level's current state and writes all its item operations in
+     * one versioned change; the decision is recorded. Returns the refreshed
+     * exchange — the proposals block reflects the new state (`APPLIED`, or
+     * `BLOCKED` with the reason when validation newly fails).
+     */
+    @route("/request/{id}/proposal/apply")
+    @post op applyProposalChange(
+        /** request id */
+        @path id: integer;
+        @body body: AiProposalDecisionRequest;
+    ): AiRequest | {
+        /** Request or change does not exist */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Rejects one proposed change (records the decision; the description is
+     * not touched). Returns the refreshed exchange.
+     */
+    @route("/request/{id}/proposal/reject")
+    @post op rejectProposalChange(
+        /** request id */
+        @path id: integer;
+        @body body: AiProposalDecisionRequest;
+    ): AiRequest | {
+        /** Request or change does not exist */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
      * The exchange log of one request — each step with its payload (what
      * exactly was sent to the provider / what came back).
      */
@@ -3026,11 +3238,7 @@ namespace ElzaAPI.fund {
         ...FsRepoIdParameter,
         ...NodeIdParameter,
         @query path?: string
-    ): {
-        @Http.statusCode statusCode: 200;
-        @header contentType: "application/json";
-        @body data: integer;
-    };
+    ): FsCreateDaoLinkResult;
 
     /**
      * Return list of filesystem items
@@ -3050,7 +3258,11 @@ namespace ElzaAPI.fund {
         /** File sorting type */
         @query sortingType?: FsItemSortType,
         /** File filtering template */
-        @query fileFilter?: string
+        @query fileFilter?: string,
+        /** Page size (max items per response). Clamped server-side to a configured maximum. */
+        @query pageSize?: int32,
+        /** When true (default), folders are listed before files regardless of sort key. */
+        @query foldersFirst?: boolean = true
     ): FsItems;
 
     /**
@@ -5454,6 +5666,16 @@ namespace ElzaAPI.Node {
         /** The request has succeeded. */
         @Http.statusCode statusCode: 200;
     };
+
+    /**
+     * Move existing DAO link
+     */
+    @route("/{nodeId}/fslink/{daoLinkId}/move")
+    @put op fsRelink(
+        ...NodeIdParameter,
+        /** Existing FS dao-link id to be moved */
+        @path daoLinkId: int32;
+    ): FsCreateDaoLinkResult;
 }
 
 /**
@@ -5799,6 +6021,24 @@ namespace ElzaAPI.Output {
     }
 
     /**
+     * Bulk action run state 
+     */
+    enum BulkActionState {
+        WAITING, PLANNED, RUNNING, FINISHED, ERROR, INTERRUPTED, OUTDATED
+    }
+
+    /** 
+     * Recommended action that is missing or not FINISHED for the output 
+     */
+    model MissingAction {
+        /** Bulk action run id; null when the action was never launched */
+        id?: integer;
+        /** Bulk action code */
+        code: string;
+        /** State of the latest run; null when never launched */
+        actionState?: BulkActionState;
+    }
+    /**
      * Náhrada za `OutputFormDataNewVO`
      */
     model FormData {
@@ -6101,6 +6341,15 @@ namespace ElzaAPI.Output {
     ): {
         @Http.statusCode statusCode: 200;
     };
+
+    /**
+     * Gettins states actions
+     */
+    @route("/{outputId}/can-generate")
+    @get op canGenerateOutput(
+        /** output id */
+        @path outputId: integer;
+    ): MissingAction[];
 
     /**
      * Generate output

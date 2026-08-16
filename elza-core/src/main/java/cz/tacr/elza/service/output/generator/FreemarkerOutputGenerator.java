@@ -25,7 +25,8 @@ import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApStateRepository;
-import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.ArrFsLinkRepository;
+import cz.tacr.elza.repository.ArrLegacyDaoLinkRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
@@ -60,7 +61,8 @@ public class FreemarkerOutputGenerator extends DmsOutputGenerator {
                               ApIndexRepository indexRepository,
                               EntityManager em,
                               DmsService dmsService,
-                              DaoLinkRepository daoLinkRepository,
+                              ArrLegacyDaoLinkRepository legacyDaoLinkRepository,
+                          ArrFsLinkRepository fsLinkRepository,
                               ExportConfig exportConfig,
                               StructObjService structObjService,
                               final DataService dataService,
@@ -76,7 +78,7 @@ public class FreemarkerOutputGenerator extends DmsOutputGenerator {
                 nodeCacheService, institutionRepository, apStateRepository,
                 bindingRepository, null, structObjRepos, itemRepository,
                 bindingStateRepository, indexRepository,
-                daoLinkRepository, exportConfig, structObjService, em,
+                legacyDaoLinkRepository, fsLinkRepository, exportConfig, structObjService, em,
                 dataService, apCacheService);
     }
 

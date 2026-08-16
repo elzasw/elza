@@ -15,7 +15,8 @@ import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApStateRepository;
-import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.ArrFsLinkRepository;
+import cz.tacr.elza.repository.ArrLegacyDaoLinkRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.service.DataService;
@@ -52,7 +53,9 @@ public class OutputGeneratorFactory {
 
     private final ApItemRepository itemRepository;
 
-    private final DaoLinkRepository daoLinkRepository;
+    private final ArrLegacyDaoLinkRepository legacyDaoLinkRepository;
+
+    private final ArrFsLinkRepository fsLinkRepository;
 
     private final ApplicationContext applicationContext;
 
@@ -84,7 +87,8 @@ public class OutputGeneratorFactory {
                                   final EntityManager em,
                                   final DmsService dmsService,
                                   final DEExportService exportService,
-                                  final DaoLinkRepository daoLinkRepository,
+                                  final ArrLegacyDaoLinkRepository legacyDaoLinkRepository,
+                                  final ArrFsLinkRepository fsLinkRepository,
                                   final ExportConfig exportConfig,
                                   final StructObjService structObjService,
                                   final DataService dataService,
@@ -104,7 +108,8 @@ public class OutputGeneratorFactory {
         this.em = em;
         this.dmsService = dmsService;
         this.exportService = exportService;
-        this.daoLinkRepository = daoLinkRepository;
+        this.legacyDaoLinkRepository = legacyDaoLinkRepository;
+        this.fsLinkRepository = fsLinkRepository;
         this.exportConfig = exportConfig;
         this.structObjService = structObjService;
         this.dataService = dataService;
@@ -130,7 +135,7 @@ public class OutputGeneratorFactory {
                 nodeCacheService,
                 institutionRepository, apStateRepository, bindingRepository, itemRepository,
                 bindingStateRepository, indexRepository, em, dmsService,
-                daoLinkRepository, exportConfig, structObjService,
+                legacyDaoLinkRepository, fsLinkRepository, exportConfig, structObjService,
                 dataService, apCacheService);
     }
 
@@ -140,7 +145,7 @@ public class OutputGeneratorFactory {
                 nodeCacheService,
                 institutionRepository, apStateRepository,
                 bindingRepository, itemRepository, bindingStateRepository,
-                indexRepository, em, dmsService, daoLinkRepository, exportConfig, structObjService,
+                indexRepository, em, dmsService, legacyDaoLinkRepository, fsLinkRepository, exportConfig, structObjService,
                 dataService, apCacheService);
     }
 

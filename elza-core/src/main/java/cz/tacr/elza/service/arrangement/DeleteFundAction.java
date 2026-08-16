@@ -92,9 +92,6 @@ public class DeleteFundAction {
     private DaoFileRepository daoFileRepository;
 
     @Autowired
-    private DaoFileGroupRepository daoFileGroupRepository;
-
-    @Autowired
     private DaoRepository daoRepository;
 
     @Autowired
@@ -407,8 +404,6 @@ public class DeleteFundAction {
 
         // Query is OK
         daoFileRepository.deleteByFund(fund);
-        // Query is OK
-        daoFileGroupRepository.deleteByFund(fund);
         // Query is OK
         daoRepository.deleteByFund(fund);
         // TOOD: rewrite as criteria query

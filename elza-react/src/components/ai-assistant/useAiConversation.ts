@@ -144,8 +144,16 @@ export function useAiConversation({ externalSystemCode, getContext }: UseAiConve
                     conversationIdRef.current = fresh.conversation.id;
                     setDetail(fresh);
                 } else {
+                    // The panel's context chips show the context read at send time;
+                    // sending it keeps the follow-up consistent with them (the server
+                    // replaces the conversation's stored context and re-resolves the
+                    // referenced objects' current state). A follow-up may carry its
+                    // own taskType (the "fix this finding" handoff submits
+                    // elza.enhanceDescription into a revision thread); omitted, the
+                    // server reuses the conversation's previous type.
                     const { data: fresh } = await Api.aiprovider.aiProviderCreateRequest(
-                        conversationIdRef.current, { userInstructions, profile });
+                        conversationIdRef.current,
+                        { taskType, userInstructions, profile, context: currentContext?.objects });
                     setDetail(fresh);
                 }
             } catch (sendError) {
@@ -156,7 +164,22 @@ export function useAiConversation({ externalSystemCode, getContext }: UseAiConve
         [externalSystemCode, getContext]
     );
 
+    // Synchronous counterpart of the websocket push: an endpoint that returns
+    // the refreshed request snapshot (e.g. a proposal decision) applies it
+    // directly, without waiting for the push round-trip.
+    const replaceRequest = useCallback((request: AiRequest) => {
+        setDetail((previous) => {
+            if (previous === null || !previous.requests.some((existing) => existing.id === request.id)) {
+                return previous;
+            }
+            return {
+                ...previous,
+                requests: previous.requests.map((existing) => (existing.id === request.id ? request : existing)),
+            };
+        });
+    }, []);
+
     const requests = detail?.requests ?? [];
 
-    return { requests, pending, error, send, activeConversationId, openConversation, newConversation };
+    return { requests, pending, error, send, activeConversationId, openConversation, newConversation, replaceRequest };
 }

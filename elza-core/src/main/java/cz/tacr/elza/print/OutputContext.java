@@ -12,7 +12,7 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.schema.SchemaManager;
 import cz.tacr.elza.dataexchange.output.context.ExportInitHelper;
 import cz.tacr.elza.repository.ApAccessPointRepository;
-import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.ArrDaLinkRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.service.AccessPointDataService;
@@ -66,7 +66,7 @@ public class OutputContext {
     private ApAccessPointRepository apRepository;
 
     @Autowired
-    private DaoLinkRepository daoLinkRepository;
+    private ArrDaLinkRepository daLinkRepository;
 
     @Autowired
     private FundVersionRepository fundVersionRepository;
@@ -107,7 +107,7 @@ public class OutputContext {
         if (exportInitHelper == null) {
             exportInitHelper = new ExportInitHelper(em, userService, levelRepository, nodeCacheService,
                     apRepository,
-                    daoLinkRepository,
+                    daLinkRepository,
                     fundVersionRepository,
                     resourcePathResolver,
                     dataService,

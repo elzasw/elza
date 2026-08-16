@@ -10,7 +10,6 @@ import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoFile;
-import cz.tacr.elza.domain.ArrDaoFileGroup;
 import cz.tacr.elza.domain.ArrFund;
 
 /**
@@ -21,13 +20,9 @@ import cz.tacr.elza.domain.ArrFund;
 @Repository
 public interface DaoFileRepository extends ElzaJpaRepository<ArrDaoFile, Integer> {
 
-    List<ArrDaoFile> findByDaoAndDaoFileGroupIsNull(ArrDao dao);
-
-    long countByDaoAndDaoFileGroupIsNull(ArrDao arrDao);
-
-    List<ArrDaoFile> findByDaoAndDaoFileGroup(ArrDao arrDao, ArrDaoFileGroup daoFileGroup);
-
     List<ArrDaoFile> findByDao(ArrDao arrDao);
+
+    long countByDao(ArrDao arrDao);
 
     /**
      * Return list of files for list of daos

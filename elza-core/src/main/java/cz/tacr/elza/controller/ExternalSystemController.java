@@ -11,8 +11,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.api.ApExternalSystemType;
+import cz.tacr.elza.controller.vo.DigitalRepositoryTestResult;
 import cz.tacr.elza.controller.vo.ExtSystemProperty;
 import cz.tacr.elza.domain.ApExternalSystem;
+import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.SysExternalSystem;
 import cz.tacr.elza.domain.SysExternalSystemProperty;
 import cz.tacr.elza.domain.UsrPermission;
@@ -21,6 +23,7 @@ import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.UserService;
+import cz.tacr.elza.service.dao.FileSystemRepoBrowser;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -32,8 +35,13 @@ public class ExternalSystemController implements ExternalsystemsApi {
     @Autowired
     UserService userService;
 
+    @Autowired
+    FileSystemRepoBrowser fileSystemRepoBrowser;
+
     final UsrPermission.Permission reqPermissions[] = { UsrPermission.Permission.ADMIN,
             UsrPermission.Permission.AP_EXTERNAL_WR };
+
+    final UsrPermission.Permission adminPermissions[] = { UsrPermission.Permission.ADMIN };
 
     @Override
     @Transactional
@@ -48,6 +56,22 @@ public class ExternalSystemController implements ExternalsystemsApi {
     	extSystemService.deleteBindingSync(extSys);
 
     	return ResponseEntity.ok().build();
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<DigitalRepositoryTestResult> externalSystemTestDigitalRepository(Integer id) {
+        UserDetail loggedDetail = userService.getLoggedUserDetail();
+        if (loggedDetail == null || !loggedDetail.hasPermission(UsrPermission.Permission.ADMIN)) {
+            throw new AccessDeniedException("Only admin can test repository configuration.", adminPermissions);
+        }
+
+        SysExternalSystem extSystem = extSystemService.findExternalSystemById(id);
+        if (!(extSystem instanceof ArrDigitalRepository)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(fileSystemRepoBrowser.testRepository((ArrDigitalRepository) extSystem));
     }
 
     @Override

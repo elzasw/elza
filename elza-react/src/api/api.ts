@@ -15,6 +15,7 @@ import {
     RulesApi,
     TasksApi,
     StructureApi,
+    OutputApi,
     PublicationInternalApi,
     InstitutionApi,
 } from 'elza-api';
@@ -219,6 +220,7 @@ export const Api: {
     report: ReportApi;
     tasks: TasksApi;
     structure: StructureApi;
+    output: OutputApi;
     publication: PublicationInternalApi;
     institution: InstitutionApi;
 } = {
@@ -238,6 +240,7 @@ export const Api: {
     report: new ReportApi(undefined, basePath, axios),
     tasks: new TasksApi(undefined, basePath, axios),
     structure: new StructureApi(undefined, basePath, axios),
+    output: new OutputApi(undefined, basePath, axios),
     publication: new PublicationInternalApi(undefined, basePath, axios),
     institution: new InstitutionApi(undefined, basePath, axios),
 };

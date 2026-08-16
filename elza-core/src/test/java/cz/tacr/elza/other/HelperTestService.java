@@ -55,7 +55,6 @@ import cz.tacr.elza.repository.CachedNodeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DaoBatchInfoRepository;
 import cz.tacr.elza.repository.DaoDigitizationRequestNodeRepository;
-import cz.tacr.elza.repository.DaoFileGroupRepository;
 import cz.tacr.elza.repository.DaoFileRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoLinkRequestRepository;
@@ -240,8 +239,6 @@ public class HelperTestService {
     @Autowired
     private DaoRequestRepository daoRequestRepository;
     @Autowired
-    private DaoFileGroupRepository daoFileGroupRepository;
-    @Autowired
     private DaoRequestDaoRepository daoRequestDaoRepository;
     @Autowired
     private DaoDigitizationRequestNodeRepository daoDigitizationRequestNodeRepository;
@@ -335,7 +332,6 @@ public class HelperTestService {
         daoLinkRequestRepository.deleteAll();
         daoBatchInfoRepository.deleteAll();
         daoPackageRepository.deleteAll();
-        daoFileGroupRepository.deleteAll();
         daoFileRepository.deleteAll();
         daoLinkRepository.deleteAll();
         daoRepository.deleteAll();

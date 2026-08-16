@@ -34,7 +34,7 @@ public class DaoPackageRepositoryImpl implements DaoPackageRepositoryCustom {
             hql += "and exists (select d from arr_dao d\n"
                     + "          WHERE d.daoPackage = dp "
                     + "            AND d.valid = true "
-                    + "            AND NOT exists (SELECT dl FROM arr_dao_link dl "
+                    + "            AND NOT exists (SELECT dl FROM arr_legacy_dao_link dl "
                     + "                             WHERE dl.dao = d "
                     + "                               AND (dl.deleteChange IS NULL)))";
         }
