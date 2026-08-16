@@ -30,14 +30,16 @@ public class ArrDigitalRepository extends SysExternalSystem {
 
     @Column(nullable = false)
     private Boolean sendNotification;
-    
-    public ArrDigitalRepository() {
-    	
-    }
 
     @Enumerated(EnumType.STRING)
     @Column(length = StringLength.LENGTH_ENUM, nullable = false)
     private DigitalRepositoryType digitalRepositoryType;
+
+    @Column(nullable = false)
+    private Boolean multipleLinks = Boolean.FALSE;
+
+    public ArrDigitalRepository() {
+    }
 
     public ArrDigitalRepository(ArrDigitalRepository ardr) {
 		super(ardr);
@@ -46,7 +48,8 @@ public class ArrDigitalRepository extends SysExternalSystem {
 		this.viewThumbnailUrl = ardr.getViewThumbnailUrl();
 		this.sendNotification = ardr.getSendNotification();
 		this.digitalRepositoryType = ardr.getDigitalRepositoryType();
-	}
+		this.multipleLinks = ardr.getMultipleLinks();
+    }
 
 	/**
      * @return url k dao
@@ -111,6 +114,14 @@ public class ArrDigitalRepository extends SysExternalSystem {
     public void setDigitalRepositoryType(DigitalRepositoryType digitalRepositoryType) {
         this.digitalRepositoryType = digitalRepositoryType;
     }
+
+    public Boolean getMultipleLinks() {
+		return multipleLinks;
+	}
+
+	public void setMultipleLinks(Boolean multipleLinks) {
+		this.multipleLinks = multipleLinks;
+	}
 
     @Override
     public String toString() {

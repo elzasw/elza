@@ -6,9 +6,8 @@ export interface ArrDaoVO {
     daoType?: string;
     existInArrDaoRequest?: boolean | null;
     fileCount: number;
-    fileGroupCount?: number;
-    fileGroupList?: any[];
     fileList?: any[];
+    truncated?: boolean;
     id: number;
     label?: string;
     url?: string;

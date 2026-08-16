@@ -59,7 +59,7 @@ import { COL_DEFAULT_WIDTH, COL_REFERENCE_MARK } from './FundDataGridConst';
 import './FundDataGrid.scss';
 import { getPagesCount } from '../shared/datagrid/DataGridPagination';
 import { toDuration } from '../validate';
-import { isMaskViewDefinition, maskString } from './node-edit/desc-items/maskUtils';
+import { isMaskViewDefinition, maskString } from './item-form/desc-items/maskUtils';
 import { DisplayType, urlFundGrid } from '../../constants';
 import Moment from 'moment';
 import * as groups from '../../actions/refTables/groups';

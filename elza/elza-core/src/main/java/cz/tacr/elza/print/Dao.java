@@ -2,7 +2,8 @@ package cz.tacr.elza.print;
 
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDao.DaoType;
-import cz.tacr.elza.domain.ArrDaoLink;
+import cz.tacr.elza.domain.ArrFsLink;
+import cz.tacr.elza.domain.ArrLegacyDaoLink;
 
 public class Dao {
 
@@ -12,11 +13,18 @@ public class Dao {
 
     final String label;
 
-    public Dao(ArrDaoLink daoLink) {
+    public Dao(ArrLegacyDaoLink daoLink) {
         ArrDao dao = daoLink.getDao();
         code = dao.getCode();
         daoType = dao.getDaoType();
         label = dao.getLabel();
+    }
+
+    public Dao(ArrFsLink fsLink) {
+        // filesystem link: the repository-relative path identifies the object
+        code = fsLink.getPath();
+        daoType = DaoType.ATTACHMENT;
+        label = fsLink.getPath();
     }
 
     public String getCode() {

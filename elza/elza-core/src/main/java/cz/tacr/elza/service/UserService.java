@@ -1415,6 +1415,36 @@ public class UserService {
     }
 
     /**
+     * Re-encodes the stored password hash with the current encoder if it uses
+     * an outdated format.
+     *
+     * Must be called only after the raw password was successfully verified,
+     * within an active transaction. The synthetic authentication of the default
+     * user (no ID, password defined in the configuration) is never persisted.
+     *
+     * @param authentication verified authentication of type PASSWORD
+     * @param password       raw password (plaintext)
+     */
+    public void upgradePasswordEncodingIfNeeded(final UsrAuthentication authentication, final String password) {
+        if (authentication.getAuthenticationId() == null) {
+            return;
+        }
+        String authValue = authentication.getAuthValue();
+        boolean upgrade;
+        if (!authValue.startsWith("{")) {
+            upgrade = true;
+        } else {
+            upgrade = encoder.upgradeEncoding(authValue);
+        }
+        if (upgrade) {
+            authentication.setAuthValue(encodePassword(password));
+            authenticationRepository.save(authentication);
+            logger.info("Hash hesla uživatele {} byl automaticky převeden na aktuální formát.",
+                        authentication.getUser().getUsername());
+        }
+    }
+
+    /**
      * Vrací přihlášeného uživatele - DO.
      *
      * @return přihlášený uživatel (null pokud je přihlášený admin nebo je to akce bez přihlášení)

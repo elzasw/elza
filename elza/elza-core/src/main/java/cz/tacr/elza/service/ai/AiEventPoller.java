@@ -44,7 +44,8 @@ import cz.tacr.elza.service.AiProviderService;
  * wire code, {@code data} = the wire event JSON), mirrors {@code phase} events
  * into the request's progress columns, accumulates {@code answer_delta} text
  * in the {@link AiAnswerBuffer}, and pushes the updated request snapshot to
- * the conversation owner ({@link cz.tacr.elza.websocket.UserEventPushService}).
+ * the conversation owner ({@link AiRequestPushService} — committed data
+ * rendered as the owner).
  *
  * <p>Strictly an enhancement next to the authoritative task poll
  * ({@link AiRequestPoller}): the stream is advisory by contract — a provider
@@ -79,10 +80,7 @@ public class AiEventPoller {
     private AiProviderService aiProviderService;
 
     @Autowired
-    private AiRequestViewMapper requestViewMapper;
-
-    @Autowired
-    private cz.tacr.elza.websocket.UserEventPushService pushService;
+    private AiRequestPushService requestPushService;
 
     @Autowired
     private AiAnswerBuffer answerBuffer;
@@ -162,8 +160,13 @@ public class AiEventPoller {
                     Thread.sleep(RETRY_PAUSE_MS);
                     continue;
                 }
-                AiRequestUpdateMessage message = applyBatch(aiRequestId, batch);
-                pushService.push(target.userId(), message);
+                // Commit first, render + push after (and as the owner) — see
+                // AiRequestPushService. Rendering inside the storing transaction
+                // would roll the cursor back on a mapper failure and re-read the
+                // same batch forever.
+                if (applyBatch(aiRequestId, batch)) {
+                    requestPushService.pushUpdate(aiRequestId, target.userId());
+                }
                 if (batch.getState() != null
                         && TERMINAL_STATES.contains(batch.getState().getValue())) {
                     // The final lifecycle event is delivered with the terminal state;
@@ -239,18 +242,21 @@ public class AiEventPoller {
      * every event becomes an {@link AiRequestEvent} row except
      * {@code answer_delta} (in-memory buffer only — provisional text whose
      * durable form is the request's output); {@code phase} events additionally
-     * update the progress columns. Returns the push message, or null when the
-     * batch was empty (long-poll timeout).
+     * update the progress columns. Returns whether anything new was stored (an
+     * empty batch — the long poll expired — advances and pushes nothing). The
+     * snapshot push happens <b>after</b> this transaction commits, through
+     * {@link AiRequestPushService}: rendering in here would tie the cursor's
+     * fate to a derived view.
      */
-    private AiRequestUpdateMessage applyBatch(final Integer aiRequestId, final TaskEvents batch) {
+    private boolean applyBatch(final Integer aiRequestId, final TaskEvents batch) {
         List<TaskEvent> events = batch.getEvents();
         if (events == null || events.isEmpty()) {
-            return null;
+            return false;
         }
-        return transactionTemplate.execute(status -> {
+        return Boolean.TRUE.equals(transactionTemplate.execute(status -> {
             AiRequest request = aiRequestRepository.findById(aiRequestId).orElse(null);
             if (request == null) {
-                return null;
+                return Boolean.FALSE;
             }
             boolean terminal = TERMINAL_STATES.contains(request.getState());
             long cursor = request.getEventSeq();
@@ -271,12 +277,12 @@ public class AiEventPoller {
                 cursor = Math.max(cursor, event.getSeq());
             }
             if (cursor == request.getEventSeq()) {
-                return null; // nothing new
+                return Boolean.FALSE; // nothing new
             }
             request.setEventSeq(batch.getNextSince() != null ? batch.getNextSince() : cursor);
             aiRequestRepository.save(request);
-            return requestViewMapper.buildUpdateMessage(request);
-        });
+            return Boolean.TRUE;
+        }));
     }
 
     /** Stores one wire event as a transparency-log row (local receive time orders the log). */

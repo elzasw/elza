@@ -12,3 +12,4 @@ export * from "./DescItemCoordinates";
 export * from "./DescItemStructured";
 export * from "./DescItemFileRef";
 export * from "./DescItemBit";
+export * from "./DescItemJsonTable";

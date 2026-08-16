@@ -2,6 +2,7 @@ package cz.tacr.elza.controller;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -46,6 +47,7 @@ import cz.tacr.elza.controller.vo.FundsChangeRun;
 import cz.tacr.elza.controller.vo.MultiFundActionRequest;
 import cz.tacr.elza.controller.vo.MultiFundActionResult;
 import cz.tacr.elza.controller.vo.FindFundsResult;
+import cz.tacr.elza.controller.vo.FsCreateDaoLinkResult;
 import cz.tacr.elza.controller.vo.FsItemFilterByLinked;
 import cz.tacr.elza.controller.vo.FsItemSortType;
 import cz.tacr.elza.controller.vo.FsItemType;
@@ -65,9 +67,8 @@ import cz.tacr.elza.dataexchange.output.IOExportFundsCsv;
 import cz.tacr.elza.dataexchange.output.IOExportWorker;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrBulkActionRun;
-import cz.tacr.elza.domain.ArrDao;
-import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDigitalRepository;
+import cz.tacr.elza.domain.ArrFsLink;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
@@ -343,12 +344,14 @@ public class FundController implements FundsApi {
                                                    @RequestParam(value = "lastKey", required = false) @Nullable String lastKey,
                                                    @RequestParam(value = "filterByLink", required = false, defaultValue = "ALL") FsItemFilterByLinked filterByLink,
                                                    @RequestParam(value = "sortingType", required = false) @Nullable FsItemSortType sortingType,
-                                                   @RequestParam(value = "fileFilter", required = false) @Nullable String fileFilter) {
+                                                   @RequestParam(value = "fileFilter", required = false) @Nullable String fileFilter,
+                                                   @RequestParam(value = "pageSize", required = false) @Nullable Integer pageSize,
+                                                   @RequestParam(value = "foldersFirst", required = false, defaultValue = "true") Boolean foldersFirst) {
 
-        ArrFund fund = arrangementService.getFund(fundId);
+    	ArrFund fund = arrangementService.getFund(fundId);
         ArrDigitalRepository digiRepo = externalSystemService.getDigitalRepository(fsrepoId);
         try {
-            FsItems result = fileSystemRepoBrowser.browseItems(digiRepo, fund, path, filterType, lastKey, filterByLink, sortingType, fileFilter);
+            FsItems result = fileSystemRepoBrowser.browseItems(digiRepo, fund, path, filterType, lastKey, filterByLink, sortingType, fileFilter, pageSize, foldersFirst);
             return ResponseEntity.ok(result);
         } catch (IOException ex) {
             throw new BusinessException("Failed to read.", ex, BaseCode.INVALID_STATE)
@@ -368,6 +371,9 @@ public class FundController implements FundsApi {
         ArrDigitalRepository digiRepo = externalSystemService.getDigitalRepository(fsrepoId);
 
         Path filePath = fileSystemRepoService.resolvePath(digiRepo, fund, path);
+        if (!Files.isRegularFile(filePath)) {
+            return ResponseEntity.notFound().build();
+        }
 
         String contentType = fileSystemRepoService.getMimetype(filePath);
         if (StringUtils.isEmpty(contentType)) {
@@ -388,7 +394,7 @@ public class FundController implements FundsApi {
     // PUT /fund/{fundId}/fsrepo/{fsrepoId}/linkitem/{nodeId}
     @Override
     @Transactional
-    public ResponseEntity<Integer> fundFsCreateDAOLink(@PathVariable("fundId") Integer fundId,
+    public ResponseEntity<FsCreateDaoLinkResult> fundFsCreateDAOLink(@PathVariable("fundId") Integer fundId,
                                                        @PathVariable("fsrepoId") Integer fsrepoId,
                                                        @PathVariable("nodeId") Integer nodeId,
                                                        @RequestParam(value = "path", required = false) String path) {
@@ -398,18 +404,16 @@ public class FundController implements FundsApi {
 
         ArrDigitalRepository digiRepo = externalSystemService.getDigitalRepository(fsrepoId);
 
-        ArrDao dao = fileSystemRepoService.createDao(digiRepo, fundVersion, path);
-
-        // create dao link in separate transaction
-        // dao link might create level and data from levelTreeCache are available
-        // in new transaction>
-        ArrDaoLink daoLink = daoService.createDaoLink(fundVersion, dao, node);
+        ArrFsLink daoLink = daoService.createFsDaoLink(fundVersion, digiRepo, node, path);
 
         Objects.requireNonNull(daoLink);
         Objects.requireNonNull(daoLink.getDaoLinkId());
         Objects.requireNonNull(daoLink.getNodeId());
 
-        return ResponseEntity.ok(daoLink.getDaoLinkId());
+        FsCreateDaoLinkResult vo = new FsCreateDaoLinkResult();
+        vo.setDaoLinkId(daoLink.getDaoLinkId());
+
+        return ResponseEntity.ok(vo);
     }
 
     // GET /fund/{fundId}/usedItemtypes/{fundVersionId}

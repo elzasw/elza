@@ -894,16 +894,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/MultiFundActionRequest'
-  /admin/arrangement/missing-cached-nodes:
-    get:
-      operationId: Admin_syncNodeCache
-      description: Creating missing items in arr_cached_node
-      parameters: []
-      responses:
-        '200':
-          description: The request has succeeded.
-      tags:
-        - admin
   /admin/arrangement/invalid-inhibited-items:
     delete:
       operationId: Admin_deleteInvalidInhibitedItems
@@ -918,6 +908,16 @@ paths:
             application/json:
               schema:
                 type: integer
+      tags:
+        - admin
+  /admin/arrangement/missing-cached-nodes:
+    get:
+      operationId: Admin_syncNodeCache
+      description: Creating missing items in arr_cached_node
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
       tags:
         - admin
   /admin/info:
@@ -1883,6 +1883,77 @@ paths:
                 $ref: '#/components/schemas/BaseException'
       tags:
         - aiprovider
+  /aiprovider/request/{id}/proposal/apply:
+    post:
+      operationId: AiProvider_applyProposalChange
+      description: |-
+        Applies one proposed change of a finished exchange: re-validates it
+        against the level's current state and writes all its item operations in
+        one versioned change; the decision is recorded. Returns the refreshed
+        exchange — the proposals block reflects the new state (`APPLIED`, or
+        `BLOCKED` with the reason when validation newly fails).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: request id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiRequest'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aiprovider
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AiProposalDecisionRequest'
+  /aiprovider/request/{id}/proposal/reject:
+    post:
+      operationId: AiProvider_rejectProposalChange
+      description: |-
+        Rejects one proposed change (records the decision; the description is
+        not touched). Returns the refreshed exchange.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: request id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiRequest'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aiprovider
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AiProposalDecisionRequest'
   /aiprovider/request/{id}/event:
     get:
       operationId: AiProvider_listRequestEvents
@@ -2238,6 +2309,34 @@ paths:
             schema:
               $ref: '#/components/schemas/NodeItem'
         description: new attribute value
+  /extsystem/digitalrepository/{id}/test:
+    get:
+      operationId: ExternalSystem_testDigitalRepository
+      description: |-
+        Test the configuration of a digital repository — whether its root is reachable
+        and what it contains. Available to administrators.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: digital repository (external system) ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalRepositoryTestResult'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - externalsystems
   /extsystem/property:
     get:
       operationId: ExternalSystem_allProperties
@@ -2557,6 +2656,22 @@ paths:
           schema:
             type: string
           explode: false
+        - name: pageSize
+          in: query
+          required: false
+          description: Page size (max items per response). Clamped server-side to a configured maximum.
+          schema:
+            type: integer
+            format: int32
+          explode: false
+        - name: foldersFirst
+          in: query
+          required: false
+          description: When true (default), folders are listed before files regardless of sort key.
+          schema:
+            type: boolean
+            default: true
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -2586,7 +2701,7 @@ paths:
           content:
             application/json:
               schema:
-                type: integer
+                $ref: '#/components/schemas/FsCreateDaoLinkResult'
       tags:
         - funds
   /fund/{fundId}/fsrepos:
@@ -3301,6 +3416,28 @@ paths:
       responses:
         '200':
           description: The request has succeeded.
+      tags:
+        - output
+  /funds/out/{outputId}/can-generate:
+    get:
+      operationId: Output_canGenerateOutput
+      description: Gettins states actions
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Output.MissingAction'
       tags:
         - output
   /funds/out/{outputId}/clone:
@@ -4614,6 +4751,28 @@ paths:
                 $ref: '#/components/schemas/BaseException'
       tags:
         - node
+  /node/{nodeId}/fslink/{daoLinkId}/move:
+    put:
+      operationId: Node_fsRelink
+      description: Move existing DAO link
+      parameters:
+        - $ref: '#/components/parameters/NodeIdParameter'
+        - name: daoLinkId
+          in: path
+          required: true
+          description: Existing FS dao-link id to be moved
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FsCreateDaoLinkResult'
+      tags:
+        - node
   /publication/types:
     get:
       operationId: PublicationTypeAdmin_listPublicationTypes
@@ -5620,6 +5779,7 @@ components:
         - MARKDOWN
         - TABLE
         - DOC_CITATIONS
+        - NODE_UPDATE_PROPOSALS
       description: |-
         Display block type — the discriminator of `AiDisplayBlock`. The client renders
         each block by this code, reading the fields of the matching subtype. Additive:
@@ -5634,6 +5794,16 @@ components:
           allOf:
             - $ref: '#/components/schemas/AiDisplayBlockType'
           description: Selects the block shape; one of the defined `AiDisplayBlockType` codes.
+        followUps:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiFollowUpAction'
+          description: |-
+            Server-suggested continuations of the conversation, rendered as buttons
+            under the block. Clicking one submits a follow-up (`AiRequestCreate`)
+            with the action's `taskType`/`userInstructions` into the same
+            conversation — e.g. a check finding's "prepare the fix" action submits
+            an `elza.enhanceDescription` exchange into the `elza.revision` thread.
       discriminator:
         propertyName: type
         mapping:
@@ -5641,6 +5811,7 @@ components:
           MARKDOWN: '#/components/schemas/AiMarkdownBlock'
           TABLE: '#/components/schemas/AiTableBlock'
           DOC_CITATIONS: '#/components/schemas/AiDocCitationsBlock'
+          NODE_UPDATE_PROPOSALS: '#/components/schemas/AiNodeUpdateProposalsBlock'
       description: |-
         One display block of an AI response — THE RENDERING CONTRACT between the
         server and the client. The server (per task type) transforms the provider's
@@ -5653,6 +5824,26 @@ components:
         dropping the block silently). Server-side fallback rule: a task output whose
         object type has no block mapper is rendered as one `MARKDOWN` block containing
         the output JSON in a fenced code block.
+    AiFollowUpAction:
+      type: object
+      required:
+        - label
+        - userInstructions
+      properties:
+        label:
+          type: string
+          description: Button label, in the deployment's language.
+        taskType:
+          type: string
+          description: Task type of the follow-up exchange; omitted = the conversation's current type.
+        userInstructions:
+          type: string
+          description: The seeded user instruction the follow-up submits.
+      description: |-
+        One server-suggested follow-up: the button label and the exchange it
+        submits. The same shape a future provider-emitted `elza.taskSuggestion`
+        result block maps onto — today the server composes these itself (per check
+        finding).
     AiTextBlock:
       type: object
       required:
@@ -5717,6 +5908,123 @@ components:
         The knowledge/documentation sources the answer relied on. The server emits no
         label text; the client renders a "Sources" list and supplies the heading
         itself, in the user's language.
+    AiNodeUpdateProposalsBlock:
+      type: object
+      required:
+        - nodes
+      properties:
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiProposalNode'
+          description: Proposals grouped per level, in the result's order.
+      allOf:
+        - $ref: '#/components/schemas/AiDisplayBlock'
+      description: |-
+        Proposed changes to the description items of arrangement levels — the
+        render-ready view of an `elza.nodeUpdateProposals` task result
+        (elza-development/typespec-ai/tasks/elza-enhance-description.md). The client
+        renders one card per change with old→new diff rows; the user applies or
+        rejects each change (the consent unit — its operations are applied
+        together), or refines the request with a follow-up. All names and values
+        are resolved server-side against the level's current state; nothing is ever
+        applied without the explicit apply call.
+    AiProposalNode:
+      type: object
+      required:
+        - node
+        - changes
+      properties:
+        node:
+          allOf:
+            - $ref: '#/components/schemas/AiActivityLink'
+          description: The level as a navigable link (label = tree title).
+        changes:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiProposalChange'
+          description: The level's proposed changes, in display order.
+      description: The proposed changes of one arrangement level.
+    AiProposalChange:
+      type: object
+      required:
+        - changeKey
+        - reason
+        - state
+        - operations
+      properties:
+        changeKey:
+          type: string
+          description: Stable key of the change within the request — the apply/reject address.
+        reason:
+          type: string
+          description: Why the change is proposed — user-facing, self-contained.
+        confidence:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 100
+          description: The model's certainty, 0–100, when reported.
+        state:
+          type: string
+          description: PROPOSED | APPLIED | REJECTED | BLOCKED | SUPERSEDED (open set).
+        blockedReason:
+          type: string
+          description: User-facing reason when state = BLOCKED.
+        decideDate:
+          type: string
+          format: date-time
+          description: When the APPLIED/REJECTED decision was made.
+        operations:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiProposalOperation'
+          description: The change's operations, applied together.
+      description: |-
+        One proposed change — the unit the user accepts or rejects; its operations
+        are applied together, in one versioned change. `state` is an open set:
+        `PROPOSED` (awaiting decision), `APPLIED`, `REJECTED`, `BLOCKED` (fails
+        validation against the level's current state — see `blockedReason`),
+        `SUPERSEDED` (a newer exchange re-proposed for the same level); a client
+        renders an unknown state as a read-only card.
+    AiProposalOperation:
+      type: object
+      required:
+        - kind
+        - itemTypeName
+      properties:
+        kind:
+          type: string
+          description: ADD | UPDATE | DELETE (open set).
+        itemTypeName:
+          type: string
+          description: Display name of the item type, e.g. `Šířka`.
+        specName:
+          type: string
+          description: Display name of the specification, for enumerated types.
+        oldValue:
+          type: string
+          description: The item's current value (UPDATE/DELETE).
+        newValue:
+          type: string
+          description: The proposed value (ADD/UPDATE).
+        entity:
+          allOf:
+            - $ref: '#/components/schemas/AiActivityLink'
+          description: Referenced entity as a navigable link, for access-point values.
+      description: |-
+        One rendered item operation of a proposed change — a diff row. `kind` = `ADD`
+        (`newValue` only), `UPDATE` (`oldValue` → `newValue`) or `DELETE`
+        (`oldValue` only); open set, a client renders an unknown kind as plain text.
+    AiProposalDecisionRequest:
+      type: object
+      required:
+        - changeKey
+      properties:
+        changeKey:
+          type: string
+          description: '`AiProposalChange.changeKey` of the change to decide.'
+      description: Addresses one proposed change of an exchange's proposals block.
     AiActivityLink:
       type: object
       required:
@@ -5872,6 +6180,13 @@ components:
     AiRequestCreate:
       type: object
       properties:
+        taskType:
+          type: string
+          description: |-
+            Task type of this exchange; omitted = reuse the conversation's previous type.
+            A differing type still continues the conversation (the provider chains it via
+            `parentTaskId`) — the "fix this finding" handoff submits `elza.enhanceDescription`
+            into a `elza.revision` thread this way.
         profile:
           type: string
           description: Profile/model for this exchange (an `AiProfile.code`); omitted = reuse the conversation's last.
@@ -7023,6 +7338,32 @@ components:
       allOf:
         - $ref: '#/components/schemas/AbstractField'
       description: Node (descItem) field names for filter
+    DigitalRepositoryTestResult:
+      type: object
+      required:
+        - available
+        - templated
+      properties:
+        available:
+          type: boolean
+          description: True when the repository can be used with the current configuration
+        path:
+          type: string
+          description: Repository root the configured URL resolves to
+        templated:
+          type: boolean
+          description: |-
+            True when the configured URL contains parameters ({fundId}, {fundCode}, …) and the root
+            therefore differs per fund. Only the fixed part of the path can be tested.
+        message:
+          type: string
+          description: Description of the result — the reason of a failure, or a note about a fund dependent root
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/FsItem'
+          description: First few entries of the repository root, as a sanity check of the configured path
+      description: Result of a digital repository configuration test
     DigitizationRequest:
       type: object
       required:
@@ -7624,13 +7965,22 @@ components:
         Odlehčená verze specifikace hodnoty atributu
 
         Náhrada `ItemTypeLiteVO`
+    FsCreateDaoLinkResult:
+      type: object
+      required:
+        - daoLinkId
+      properties:
+        daoLinkId:
+          type: integer
+          format: int32
+          description: ID of the newly created dao-link
+      description: Create dao link result
     FsItem:
       type: object
       required:
         - itemType
         - name
         - lastChange
-        - isLinked
       properties:
         itemType:
           allOf:
@@ -7647,9 +7997,16 @@ components:
           type: string
           format: date-time
           description: Time of last change
-        isLinked:
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/FsLink'
+          description: List of file links
+        hasChildren:
           type: boolean
-          description: File is linked to a description item
+          description: |-
+            True when this entry is a folder that contains at least one sub-folder;
+            drives the "expand" affordance in the tree UI. Absent/false for files.
       description: Single file system item
     FsItemFilterByLinked:
       type: string
@@ -7684,13 +8041,43 @@ components:
         lastKey:
           type: string
           description: Optional string to request next items. It is used if there are more items.
+        truncated:
+          type: boolean
+          description: True when the directory scan hit its internal cap; the listing is incomplete.
       description: Collection of file system items
+    FsLink:
+      type: object
+      required:
+        - nodeId
+        - fundId
+        - fundName
+        - nodeLabel
+        - readable
+      properties:
+        nodeId:
+          type: integer
+          format: int32
+        fundId:
+          type: integer
+          format: int32
+        fundName:
+          type: string
+        nodeLabel:
+          type: string
+        nodePath:
+          type: string
+          description: Breadcrumb path of the node from the root, joined with " / ". Empty when node could not be resolved.
+        readable:
+          type: boolean
+          description: True when the current user can read this link's fund; controls whether the popover row is clickable.
+      description: File link data
     FsRepo:
       type: object
       required:
         - fsRepoId
         - name
         - path
+        - available
       properties:
         fsRepoId:
           type: integer
@@ -7705,6 +8092,11 @@ components:
         path:
           type: string
           description: Repository path
+        available:
+          type: boolean
+          description: |-
+            False when the configured root is not accessible on the server. Such a repository
+            is listed so the misconfiguration is visible, but it cannot be browsed.
     Fund:
       type: object
       required:
@@ -8781,6 +9173,17 @@ components:
         - AND
         - OR
       description: Operation type for LogicalFilter
+    Output.BulkActionState:
+      type: string
+      enum:
+        - WAITING
+        - PLANNED
+        - RUNNING
+        - FINISHED
+        - ERROR
+        - INTERRUPTED
+        - OUTDATED
+      description: Bulk action run state
     Output.Def:
       type: object
       required:
@@ -8874,6 +9277,22 @@ components:
         item:
           $ref: '#/components/schemas/OutputItem'
       description: Náhrada za `OutputItemResult`
+    Output.MissingAction:
+      type: object
+      required:
+        - code
+      properties:
+        id:
+          type: integer
+          description: Bulk action run id; null when the action was never launched
+        code:
+          type: string
+          description: Bulk action code
+        actionState:
+          allOf:
+            - $ref: '#/components/schemas/Output.BulkActionState'
+          description: State of the latest run; null when never launched
+      description: Recommended action that is missing or not FINISHED for the output
     Output.NameParam:
       type: object
       required:

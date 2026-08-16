@@ -44,6 +44,7 @@ class ArrDaoPage extends ArrParentPage {
         selectedDaoLeftFileId: null, // vybrané dao v levé části
         selectedDaoRight: null, // vybrané dao v pravé části
         selectedDaoRightFileId: null, // vybrané dao v pravé části
+        fsRefreshCounter: 0,
     };
 
     static propTypes = {
@@ -91,7 +92,11 @@ class ArrDaoPage extends ArrParentPage {
 
         const afterCreateCallback = (versionId, node, parentNode) => {
             // Připojení - link
-            WebApi.createDaoLink(fund.versionId, selectedDaoLeft.id, node.id).then(() => {
+            const linkPromise = selectedDaoLeft.id < 0
+                ? Api.funds.fundFsMoveDAOLink(fund.id, selectedDaoLeft.daoLink.id, node.id)
+                : WebApi.createDaoLink(fund.versionId, selectedDaoLeft.id, node.id);
+
+            linkPromise.then(() => {
                 this.setState({ selectedDaoLeft: null });
             });
 
@@ -108,8 +113,13 @@ class ArrDaoPage extends ArrParentPage {
     handleLink = () => {
         const fund = this.getActiveFund(this.props);
         const { selectedDaoLeft } = this.state;
+        const nodeId = fund.fundTreeDaosRight.selectedId;
 
-        WebApi.createDaoLink(fund.versionId, selectedDaoLeft.id, fund.fundTreeDaosRight.selectedId).then(() => {
+        const linkPromise = selectedDaoLeft.id < 0
+            ? Api.node.nodeFsRelink(nodeId, selectedDaoLeft.daoLink.id)
+            : WebApi.createDaoLink(fund.versionId, selectedDaoLeft.id, nodeId);
+
+        linkPromise.then(() => {
             this.setState({ selectedDaoLeft: null });
         });
     };
@@ -256,7 +266,11 @@ class ArrDaoPage extends ArrParentPage {
 
         return (
             <div className="tree-left-container">
-                <FileSystemBrowser fundId={fund.id} onSelect={selectFileSystePath} />
+                <FileSystemBrowser
+                    fundId={fund.id}
+                    onSelect={selectFileSystePath}
+                    refreshCounter={this.state.fsRefreshCounter}
+                />
             </div>
         )
     }
@@ -271,8 +285,8 @@ class ArrDaoPage extends ArrParentPage {
         const fund = this.getActiveFund(this.props);
 
         const [repoId, path] = extractRepoIdFromFullPath(selectedFilePath);
-        const result = await Api.funds.fundFsCreateDAOLink(fund.id, repoId, fund.fundTreeDaosRight.selectedId, path);
-        console.log("#### file link result", result);
+        await Api.funds.fundFsCreateDAOLink(fund.id, repoId, fund.fundTreeDaosRight.selectedId, path);
+        this.setState(({ fsRefreshCounter }) => ({ fsRefreshCounter: fsRefreshCounter + 1 }));
     }
 
     renderCenterButtons = (readMode) => {
@@ -418,6 +432,7 @@ class ArrDaoPage extends ArrParentPage {
                                 onSelect={(item, daoFileId) => {
                                     this.setState({ selectedDaoRight: item, selectedDaoRightFileId: daoFileId });
                                 }}
+                                onLinkChange={() => this.setState(({ fsRefreshCounter }) => ({ fsRefreshCounter: fsRefreshCounter + 1 }))}
                                 nodeId={fund.fundTreeDaosRight.selectedId ? fund.fundTreeDaosRight.selectedId : null}
                             />
                         )}

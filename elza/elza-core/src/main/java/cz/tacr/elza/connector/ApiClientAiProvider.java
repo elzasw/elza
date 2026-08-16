@@ -9,6 +9,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
+import java.util.UUID;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -41,6 +42,9 @@ public class ApiClientAiProvider extends ApiClient {
     public static final String SCHEME = "ELZA-AI-HMAC-SHA256";
 
     public static final String DATE_HEADER = "X-AI-Date";
+
+    /** Per-request uniqueness, signed as the canonical string's seventh line (security.md). */
+    public static final String NONCE_HEADER = "X-AI-Nonce";
 
     /** Long-poll friendly read timeout (protocol wait is capped at 60 s). */
     private static final Duration READ_TIMEOUT = Duration.ofMillis(90_000);
@@ -89,10 +93,12 @@ public class ApiClientAiProvider extends ApiClient {
         public ClientHttpResponse intercept(HttpRequest request, byte[] body,
                                             ClientHttpRequestExecution execution) throws IOException {
             String date = Instant.now().truncatedTo(ChronoUnit.SECONDS).toString();
-            String signature = sign(secret, stringToSign(request, body, date));
+            String nonce = UUID.randomUUID().toString();
+            String signature = sign(secret, stringToSign(request, body, date, nonce));
 
             HttpHeaders headers = request.getHeaders();
             headers.set(DATE_HEADER, date);
+            headers.set(NONCE_HEADER, nonce);
             headers.set(HttpHeaders.AUTHORIZATION,
                     SCHEME + " KeyId=" + keyId + ",Signature=" + signature);
 
@@ -142,8 +148,14 @@ public class ApiClientAiProvider extends ApiClient {
         }
     }
 
-    /** The six-line canonical string (LF-joined, no trailing newline). */
-    private static String stringToSign(HttpRequest request, byte[] body, String date) {
+    /**
+     * The canonical string (LF-joined, no trailing newline): the six fixed lines
+     * plus {@code X-AI-Nonce} as the seventh (security.md). The nonce is what
+     * makes each request unique — {@code X-AI-Date} has one-second granularity,
+     * so polling the same task twice within a second would otherwise sign
+     * identical bytes and the provider would refuse the second as a replay.
+     */
+    private static String stringToSign(HttpRequest request, byte[] body, String date, String nonce) {
         URI uri = request.getURI();
         String host = uri.getHost();
         int port = uri.getPort();
@@ -156,7 +168,8 @@ public class ApiClientAiProvider extends ApiClient {
                 StringUtils.defaultString(uri.getRawPath()),
                 StringUtils.defaultString(uri.getRawQuery()),
                 date,
-                sha256Hex(body == null ? new byte[0] : body));
+                sha256Hex(body == null ? new byte[0] : body),
+                nonce);
     }
 
     private static int defaultPort(String scheme) {

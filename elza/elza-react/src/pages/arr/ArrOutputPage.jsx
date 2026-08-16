@@ -123,13 +123,13 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         await this.resolveUrls();
         dispatch(templatesFetchIfNeeded());
         dispatch(outputFilters.fetchIfNeeded());
-        dispatch(structureTypesFetchIfNeeded(null));
 
         const fund = this.getActiveFund(this.props);
         const matchId = match.params.outputId;
         const urlOutputId = matchId ? parseInt(matchId) : null;
         dispatch(outputTypesFetchIfNeeded());
         if (fund) {
+            dispatch(structureTypesFetchIfNeeded(fund.versionId));
             dispatch(fundOutputFetchIfNeeded(fund.versionId));
             const outputDetail = fund.fundOutput.fundOutputDetail;
             const outputId = outputDetail.id;
@@ -154,6 +154,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
 
         const fund = this.getActiveFund(nextProps);
         if (fund) {
+            this.props.dispatch(structureTypesFetchIfNeeded(fund.versionId));
             this.props.dispatch(fundOutputFetchIfNeeded(fund.versionId));
             this.props.dispatch(outputTypesFetchIfNeeded());
         }
@@ -346,22 +347,6 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
                         </div>
                     </Button>,
                 );
-                if (isDetailIdNotNull && !closed) {
-                    altActions.push(
-                        <Button
-                            key="generate-output"
-                            onClick={() => {
-                                this.handleGenerateOutput(outputDetail.id);
-                            }}
-                            disabled={!isDetailLoaded || !this.isOutputGeneratingAllowed(outputDetail)}
-                        >
-                            <Icon glyph="fa-youtube-play" />
-                            <div>
-                                <span className="btnText">{i18n('ribbon.action.arr.output.generate')}</span>
-                            </div>
-                        </Button>,
-                    );
-                }
                 if (isDetailIdNotNull && !closed && allowSendOutput) {
                     altActions.push(
                         <Button
@@ -381,89 +366,32 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
             }
 
             if (isDetailIdNotNull && isDetailLoaded && !readMode) {
-                const runnable =
-                    !closed &&
-                    outputDetail.state !== OutputState.FINISHED &&
-                    outputDetail.state !== OutputState.OUTDATED;
-                if (hasPersmission) {
-                    if (runnable) {
-                        itemActions.push(
-                            <Button key="add-item" onClick={this.handleAddDescItemType}>
-                                <Icon glyph="fa-plus-circle" />
-                                <div>
-                                    <span className="btnText">{i18n('ribbon.action.arr.output.item.add')}</span>
-                                </div>
-                            </Button>,
-                        );
-                        /**
-                         *  Skrytí tlačítka - pravděpodobně nebudeme verzovat
-                         */
-                        /*
-                        itemActions.push(
-                            <Button key="fund-output-usage-end" onClick={this.handleUsageEnd}><Icon glyph="fa-clock-o"/>
-                                <div><span className="btnText">{i18n('ribbon.action.arr.output.usageEnd')}</span></div>
-                            </Button>
-                        );
-                        */
-                    }
+                // const runnable =
+                //     !closed &&
+                //     outputDetail.state !== OutputState.FINISHED &&
+                //     outputDetail.state !== OutputState.OUTDATED;
 
-                    itemActions.push(
-                        <Button key="fund-output-delete" onClick={this.handleDelete} disabled={!isDetailLoaded}>
-                            <Icon glyph="fa-trash" />
-                            <div>
-                                <span className="btnText">{i18n('ribbon.action.arr.output.delete')}</span>
-                            </div>
-                        </Button>,
-                    );
-
-                    if (
-                        outputDetail.generatedDate &&
-                        (outputDetail.state === OutputState.FINISHED || outputDetail.state === OutputState.OUTDATED)
-                    ) {
-                        itemActions.push(
-                            <Button
-                                key="fund-output-revert"
-                                onClick={this.handleRevertToOpen}
-                                disabled={!isDetailLoaded}
-                            >
-                                <Icon glyph="fa-undo" />
-                                <div>
-                                    <span className="btnText">{i18n('ribbon.action.arr.output.revert')}</span>
-                                </div>
-                            </Button>,
-                        );
-                    }
-                    itemActions.push(
-                        <Button key="fund-output-clone" onClick={this.handleClone} disabled={!isDetailLoaded}>
-                            <Icon glyph="fa-clone" />
-                            <div>
-                                <span className="btnText">{i18n('ribbon.action.arr.output.clone')}</span>
-                            </div>
-                        </Button>,
-                    );
-                }
-
-                if (runnable && outputDetail.nodes.length > 0) {
-                    if (userDetail.hasOne(perms.FUND_BA_ALL, {type: perms.FUND_BA, fundId: fund.id})) {
-                        // právo na hromadné akce
-                        itemActions.push(
-                            <Button key="fund-output-other-action" onClick={this.handleOtherActionDialog}>
-                                <Icon glyph="fa-cog" />
-                                <div>
-                                    <span className="btnText">{i18n('ribbon.action.arr.output.otherAction')}</span>
-                                </div>
-                            </Button>,
-                        );
-                        itemActions.push(
-                            <Button key="fund-output-bulk-actions" onClick={this.handleBulkActions}>
-                                <Icon glyph="fa-cog" />
-                                <div>
-                                    <span className="btnText">{i18n('ribbon.action.arr.output.bulkActions')}</span>
-                                </div>
-                            </Button>,
-                        );
-                    }
-                }
+                // if (runnable && outputDetail.nodes.length > 0) {
+                //     if (userDetail.hasOne(perms.FUND_BA_ALL, {type: perms.FUND_BA, fundId: fund.id})) {
+                //         // právo na hromadné akce
+                //         itemActions.push(
+                //             <Button key="fund-output-other-action" onClick={this.handleOtherActionDialog}>
+                //                 <Icon glyph="fa-cog" />
+                //                 <div>
+                //                     <span className="btnText">{i18n('ribbon.action.arr.output.otherAction')}</span>
+                //                 </div>
+                //             </Button>,
+                //         );
+                //         itemActions.push(
+                //             <Button key="fund-output-bulk-actions" onClick={this.handleBulkActions}>
+                //                 <Icon glyph="fa-cog" />
+                //                 <div>
+                //                     <span className="btnText">{i18n('ribbon.action.arr.output.bulkActions')}</span>
+                //                 </div>
+                //             </Button>,
+                //         );
+                //     }
+                // }
             }
         }
 

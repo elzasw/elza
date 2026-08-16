@@ -22,9 +22,34 @@ class ArrDao extends AbstractReactComponent {
         readMode: PropTypes.bool.isRequired,
     };
 
-    componentDidMount() {}
+    state = {
+        imageError: false,
+    };
 
-    UNSAFE_componentWillReceiveProps(nextProps) {}
+    componentDidMount() {
+        this.checkFileAvailability();
+    }
+
+    UNSAFE_componentWillReceiveProps(nextProps) {
+        if (nextProps.daoFile !== this.props.daoFile) {
+            this.setState({imageError: false});
+            this.checkFileAvailability(nextProps.daoFile);
+        }
+    }
+
+    checkFileAvailability = async (daoFile = this.props.daoFile) => {
+        if (!daoFile || !daoFile.url) {
+            return;
+        }
+        try {
+            const res = await fetch(daoFile.url, {method: 'HEAD'});
+            if (res.status === 404 && this.props.daoFile === daoFile) {
+                this.setState({imageError: true});
+            }
+        } catch (e) {
+            // Network error — do not mark the file as missing; leave the state as is.
+        }
+    };
 
     handleUnlink = async () => {
         const {onUnlink, dispatch} = this.props;
@@ -89,16 +114,20 @@ class ArrDao extends AbstractReactComponent {
                             <Button variant="action" disabled={!dao.daoLink} onClick={this.handleUnlink}>
                                 <Icon glyph="fa-unlink" />
                             </Button>
-                            <Button variant="action" onClick={this.handleTrash} disabled={dao.existInArrDaoRequest}>
-                                <Icon glyph="fa-trash" />
-                            </Button>
+                            {/* fs položky (syntetické záporné id) nemají ArrDao — požadavek nelze založit */}
+                            {dao.id > 0 && (
+                                <Button variant="action" onClick={this.handleTrash} disabled={dao.existInArrDaoRequest}>
+                                    <Icon glyph="fa-trash" />
+                                </Button>
+                            )}
                         </div>
                     )}
                 </div>
                 <div key="info" className="dao-info">
                     {this.renderLabel('arr.daos.title.id', dao.id)}
                     {this.renderLabel('arr.daos.title.code', dao.code, true)}
-                    {this.renderLabel('arr.daos.title.file-count', dao.fileList.length)}
+                    {this.renderLabel('arr.daos.title.file-count',
+                        dao.fileList.length + (dao.truncated ? '+' : ''))}
                 </div>
             </div>
         );
@@ -106,22 +135,51 @@ class ArrDao extends AbstractReactComponent {
 
     renderThumbnail = () => {
         const {daoFile} = this.props;
-        const exists = daoFile.thumbnailUrl;
-        const cls = exists ? 'thumbnail' : 'thumbnail empty';
+        const {imageError} = this.state;
+        const isImage = daoFile.mimetype && daoFile.mimetype.startsWith('image/');
+        const hasThumbnail = isImage && daoFile.thumbnailUrl && !imageError;
+        const cls = hasThumbnail ? 'thumbnail' : 'thumbnail empty';
 
-        let img = exists ? (
-            <>
-                <img className="img-blur" src={daoFile.thumbnailUrl} alt="" />
-                <img src={daoFile.thumbnailUrl} alt="" />
-            </>
-        ) : (
-            <div className="empty-img" style={{overflow:"hidden"}}>
-                <Icon glyph="fa-remove" />
-            </div>
-        );
+        let img;
+        if (hasThumbnail) {
+            img = (
+                <>
+                    <img className="img-blur" src={daoFile.thumbnailUrl} alt="" />
+                    <img
+                        src={daoFile.thumbnailUrl}
+                        alt=""
+                        onError={() => this.setState({imageError: true})}
+                    />
+                </>
+            );
+        } else if (imageError) {
+            img = (
+                <div className="empty-img error">
+                    <Icon glyph="fa-exclamation-triangle" />
+                    <div className="message">
+                        {i18n('arr.daos.title.thumbnail.notFound')}
+                    </div>
+                </div>
+            );
+        } else {
+            img = (
+                <div className="empty-img no-preview">
+                    <Icon glyph="fa-eye-slash" />
+                    <div className="message">
+                        {i18n('arr.daos.title.thumbnail.empty')}
+                    </div>
+                </div>
+            );
+        }
+
+        const title = imageError
+            ? i18n('arr.daos.title.thumbnail.notFound')
+            : hasThumbnail
+                ? daoFile.thumbnailUrl
+                : i18n('arr.daos.title.thumbnail.empty');
 
         return (
-            <div title={exists ? daoFile.thumbnailUrl : i18n('arr.daos.title.thumbnail.empty')} className={cls}>
+            <div title={title} className={cls}>
                 {img}
             </div>
         );

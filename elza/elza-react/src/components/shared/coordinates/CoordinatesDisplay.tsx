@@ -11,8 +11,7 @@ import { useThunkDispatch } from 'utils/hooks';
 import { ExportCoordinateModal } from './ExportCoordinateModal';
 import './CoordinatesDisplay.scss';
 import WKT from 'ol/format/WKT';
-import { Geometry } from 'ol/geom';
-import { isGeometryCollection, isPoint, isMultiPoint, isLineString, isMultiLineString, isPolygon, isMultiPolygon } from './utils';
+import { getGeometryFormatData } from './utils';
 import { useIntl } from 'react-intl';
 import { globalMessages } from '../lang';
 
@@ -23,61 +22,6 @@ interface Props {
     isUndefined?: boolean;
   isInherited?: boolean;
   isInhibited?: boolean;
-}
-
-const getFormatData = (geometry: Geometry) => {
-    const formatData = {
-        coordinateCount: 0,
-        objectCount: 0,
-    }
-
-    if (isGeometryCollection(geometry)) {
-        const geometries = geometry.getGeometries();
-        geometries.forEach((geometry) => {
-            const { coordinateCount, objectCount } = getFormatData(geometry)
-            formatData.coordinateCount += coordinateCount;
-            formatData.objectCount += objectCount;
-        })
-    }
-    else if (isPoint(geometry)) {
-        formatData.coordinateCount += 1;
-        formatData.objectCount += 1;
-    }
-    else if (isMultiPoint(geometry)) {
-        const coordinates = geometry.getCoordinates();
-        formatData.coordinateCount += coordinates.length;
-        formatData.objectCount += coordinates.length;
-    }
-    else if (isLineString(geometry)) {
-        const coordinates = geometry.getCoordinates();
-        formatData.coordinateCount += coordinates.length;
-        formatData.objectCount += 1;
-    }
-    else if (isMultiLineString(geometry)) {
-        const coordinates = geometry.getCoordinates();
-        coordinates.forEach((coordinate) => {
-            formatData.coordinateCount += coordinate.length;
-            formatData.objectCount += 1;
-        })
-    }
-    else if (isPolygon(geometry)) {
-        const coordinates = geometry.getCoordinates();
-        coordinates.forEach((polygonPart) => {
-            formatData.coordinateCount += polygonPart.length;
-        })
-        formatData.objectCount += 1;
-    }
-    else if (isMultiPolygon(geometry)) {
-        const coordinates = geometry.getCoordinates();
-        coordinates.forEach((polygon) => {
-            polygon.forEach((polygonPart) => {
-                formatData.coordinateCount += polygonPart.length;
-            })
-            formatData.objectCount += 1;
-        })
-    }
-
-    return formatData;
 }
 
 export const CoordinatesDisplay: React.FC<Props> = ({
@@ -121,7 +65,7 @@ export const CoordinatesDisplay: React.FC<Props> = ({
         const wkt = new WKT();
         const geometry = wkt.readGeometry(value);
         const geometryType = geometry.getType();
-        const { objectCount, coordinateCount } = getFormatData(geometry);
+        const { objectCount, coordinateCount } = getGeometryFormatData(geometry);
 
         if (objectCount === 0 || coordinateCount === 1) {
             return geometryType;

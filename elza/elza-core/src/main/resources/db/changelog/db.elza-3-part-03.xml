@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- OPEN - the only file that accepts new changesets. Every new changeset,
+     regardless of subsystem (arrangement, DA, fs-repo, AI, ...), is appended
+     here in chronological order; execution order equals file order in
+     db.changelog-master.yaml, so a changeset may depend on anything in the
+     files above it and on earlier changesets of this file, never on later
+     ones.
+
+     When a release line is cut from main: mark this file FROZEN (header
+     comment with the release and date), never touch it again, and open
+     db.elza-3-part-04.xml as the new last include in
+     db.changelog-master.yaml. The part number is a sequence marker, not an
+     ELZA version - release traceability belongs in the freeze header. -->
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <changeSet id="20260812110000" author="ppy">
+        <!-- Filesystem repositories persist no entities (da-migration.md steps
+             3a+3b): the ArrDao anchor rows and their per-fund packages became
+             unreferenced orphans after the 3b link conversion, yet still
+             surfaced in the package and unassigned-entity tabs. Remove them,
+             together with their request references - requests were never
+             meaningful for filesystem repositories (the notification gate
+             always excluded them), so rows recorded against fs daos are
+             historical junk. The guard asserts the 3b conversion left no live
+             legacy link on a filesystem dao; a non-empty fs package would fail
+             on the arr_dao FK, loudly. -->
+        <preConditions onFail="HALT">
+            <sqlCheck expectedResult="0">
+                SELECT count(*) FROM arr_legacy_dao_link ll
+                  JOIN arr_dao d ON d.dao_id = ll.dao_id
+                  JOIN arr_dao_package p ON p.dao_package_id = d.dao_package_id
+                  JOIN arr_digital_repository r ON r.external_system_id = p.digital_repository_id
+                 WHERE r.digital_repository_type = 'FILESYSTEM'
+            </sqlCheck>
+        </preConditions>
+        <sql dbms="postgresql">
+            DELETE FROM arr_request_queue_item
+             WHERE request_id IN (SELECT dlr.request_id FROM arr_dao_link_request dlr
+                                   WHERE dlr.dao_id IN (SELECT d.dao_id FROM arr_dao d
+                                       JOIN arr_dao_package p ON p.dao_package_id = d.dao_package_id
+                                       JOIN arr_digital_repository r ON r.external_system_id = p.digital_repository_id
+                                      WHERE r.digital_repository_type = 'FILESYSTEM'));
+            DELETE FROM arr_dao_link_request
+             WHERE dao_id IN (SELECT d.dao_id FROM arr_dao d
+                                JOIN arr_dao_package p ON p.dao_package_id = d.dao_package_id
+                                JOIN arr_digital_repository r ON r.external_system_id = p.digital_repository_id
+                               WHERE r.digital_repository_type = 'FILESYSTEM');
+            DELETE FROM arr_request br
+             WHERE br.discriminator = 'DAO_LINK'
+               AND NOT EXISTS (SELECT 1 FROM arr_dao_link_request dlr WHERE dlr.request_id = br.request_id);
+            DELETE FROM arr_dao_request_dao
+             WHERE dao_id IN (SELECT d.dao_id FROM arr_dao d
+                                JOIN arr_dao_package p ON p.dao_package_id = d.dao_package_id
+                                JOIN arr_digital_repository r ON r.external_system_id = p.digital_repository_id
+                               WHERE r.digital_repository_type = 'FILESYSTEM');
+            DELETE FROM arr_dao_file
+             WHERE dao_id IN (SELECT d.dao_id FROM arr_dao d
+                                JOIN arr_dao_package p ON p.dao_package_id = d.dao_package_id
+                                JOIN arr_digital_repository r ON r.external_system_id = p.digital_repository_id
+                               WHERE r.digital_repository_type = 'FILESYSTEM');
+            DELETE FROM arr_dao
+             WHERE dao_package_id IN (SELECT p.dao_package_id FROM arr_dao_package p
+                                        JOIN arr_digital_repository r ON r.external_system_id = p.digital_repository_id
+                                       WHERE r.digital_repository_type = 'FILESYSTEM');
+            DELETE FROM arr_dao_package
+             WHERE digital_repository_id IN (SELECT external_system_id FROM arr_digital_repository
+                                              WHERE digital_repository_type = 'FILESYSTEM');
+        </sql>
+    </changeSet>
+
+    <changeSet id="20260812120000" author="ppy">
+        <!-- Settings addressing an external repository system do not apply to a filesystem
+             repository: getDaoUrl returns null for it, file and thumbnail URLs are replaced
+             by the built-in item-data endpoint, notifications are never sent and credentials
+             are read only by the DA/WSDL connector. The administration no longer offers these
+             fields for a filesystem repository, so clear the values existing records still
+             carry - an invisible value must not keep influencing behaviour. -->
+        <sql dbms="postgresql">
+            UPDATE arr_digital_repository
+               SET view_dao_url = NULL,
+                   view_file_url = NULL,
+                   view_thumbnail_url = NULL,
+                   send_notification = false
+             WHERE digital_repository_type = 'FILESYSTEM';
+
+            UPDATE sys_external_system
+               SET username = NULL,
+                   password = NULL
+             WHERE external_system_id IN (SELECT external_system_id FROM arr_digital_repository
+                                           WHERE digital_repository_type = 'FILESYSTEM');
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

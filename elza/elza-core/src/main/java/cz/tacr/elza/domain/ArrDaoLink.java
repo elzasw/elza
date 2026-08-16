@@ -9,20 +9,31 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import cz.tacr.elza.domain.enumeration.StringLength;
 
 
 /**
- * Digitální archivní objekt (digitalizát).
- *
+ * Propojení jednotky popisu s digitálním obsahem — společná páteř všech tří
+ * variant vazby. Cíl vazby určuje konkrétní podtyp ({@link ArrLegacyDaoLink},
+ * {@link ArrDaLink}, {@link ArrFsLink}); každá vazba je odkaz na kontejner
+ * plus volitelný odkaz na člen uvnitř kontejneru, kde NULL člen znamená
+ * "celý kontejner".
  */
 @Table
 @Entity(name = "arr_dao_link")
-public class ArrDaoLink {
+@Inheritance(strategy = InheritanceType.JOINED)
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
+public abstract class ArrDaoLink {
 
     public static final String TABLE_NAME = "arr_dao_link";
 
@@ -46,13 +57,6 @@ public class ArrDaoLink {
     @Column(name = "nodeId", updatable = false, insertable = false)
     private Integer nodeId;
 
-	@ManyToOne(fetch=FetchType.LAZY, targetEntity = ArrDao.class)
-    @JoinColumn(name = "daoId")
-    private ArrDao dao;
-
-    @Column(name = "daoId", updatable = false, insertable = false)
-    private Integer daoId;
-
 	@ManyToOne(fetch=FetchType.LAZY, targetEntity = ArrChange.class)
     @JoinColumn(name = FIELD_CREATE_CHANGE_ID, nullable = false)
     private ArrChange createChange;
@@ -66,17 +70,6 @@ public class ArrDaoLink {
 
     @Column(name = FIELD_DELETE_CHANGE_ID, updatable = false, insertable = false)
     private Integer deleteChangeId;
-
-    @Column(length = StringLength.LENGTH_250)
-    private String scenario;
-
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = DaAip.class)
-    @JoinColumn(name = "aip_id")
-    private DaAip aip;
-
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = DaDao.class)
-    @JoinColumn(name = "da_dao_id")
-    private DaDao daDao;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "link_type", length = StringLength.LENGTH_ENUM)
@@ -105,15 +98,6 @@ public class ArrDaoLink {
         this.nodeId = node == null ? null : node.getNodeId();
     }
 
-    public ArrDao getDao() {
-        return dao;
-    }
-
-    public void setDao(final ArrDao dao) {
-        this.dao = dao;
-        this.daoId = dao == null ? null : dao.getDaoId();
-    }
-
     public ArrChange getCreateChange() {
         return createChange;
     }
@@ -140,14 +124,6 @@ public class ArrDaoLink {
         this.nodeId = nodeId;
     }
 
-    public Integer getDaoId() {
-        return daoId;
-    }
-
-    public void setDaoId(final Integer daoId) {
-        this.daoId = daoId;
-    }
-
     public Integer getCreateChangeId() {
         return createChangeId;
     }
@@ -168,30 +144,6 @@ public class ArrDaoLink {
                                 final Integer createChangeId) {
         this.createChange = createChange;
         this.createChangeId = createChangeId;
-    }
-
-    public String getScenario() {
-        return scenario;
-    }
-
-    public void setScenario(String scenario) {
-        this.scenario = scenario;
-    }
-
-    public DaAip getAip() {
-        return aip;
-    }
-
-    public void setAip(DaAip aip) {
-        this.aip = aip;
-    }
-
-    public DaDao getDaDao() {
-        return daDao;
-    }
-
-    public void setDaDao(DaDao daDao) {
-        this.daDao = daDao;
     }
 
     public LinkType getLinkType() {

@@ -27,6 +27,34 @@
     "defaultMessage": "Connection works — {provider} (protocol {version})",
     "srcHash": "Ej_cusKYW2W_"
   },
+  "admin.extSystemDetail.repoTest": {
+    "defaultMessage": "Test configuration",
+    "srcHash": "58BcPg8eZIEa"
+  },
+  "admin.extSystemDetail.repoTestContent": {
+    "defaultMessage": "Content of the root directory (first {count}):",
+    "srcHash": "yMZWzlHkgABy"
+  },
+  "admin.extSystemDetail.repoTestEmpty": {
+    "defaultMessage": "The root directory is empty",
+    "srcHash": "acZutbmHEbDq"
+  },
+  "admin.extSystemDetail.repoTestFailed": {
+    "defaultMessage": "The test could not be performed",
+    "srcHash": "3upjfV5hoJ1E"
+  },
+  "admin.extSystemDetail.repoTestOk": {
+    "defaultMessage": "Repository is available",
+    "srcHash": "2MZj-E6TKGcV"
+  },
+  "admin.extSystemDetail.repoTestPath": {
+    "defaultMessage": "Tested path: {path}",
+    "srcHash": "icWWjJQQyTBz"
+  },
+  "admin.extSystemDetail.repoTestUnavailable": {
+    "defaultMessage": "Repository is not available",
+    "srcHash": "WSrg3PozscWF"
+  },
   "admin.institution.action.add": {
     "defaultMessage": "Add institution",
     "srcHash": "gycW8wpBf_7g"
@@ -513,6 +541,34 @@
     "defaultMessage": "Default",
     "srcHash": "ea14D4gXIsVV"
   },
+  "aiAssistant.proposal.actionFailed": {
+    "defaultMessage": "The action could not be completed: {error}",
+    "srcHash": "MMstn-ynwT6n"
+  },
+  "aiAssistant.proposal.applied": {
+    "defaultMessage": "Applied",
+    "srcHash": "qVkO_P9S8_kL"
+  },
+  "aiAssistant.proposal.apply": {
+    "defaultMessage": "Apply",
+    "srcHash": "GQQ5u8NYPPTv"
+  },
+  "aiAssistant.proposal.clarify": {
+    "defaultMessage": "Refine…",
+    "srcHash": "en19xcjPSZMg"
+  },
+  "aiAssistant.proposal.reject": {
+    "defaultMessage": "Reject",
+    "srcHash": "8wxfcbNP8feA"
+  },
+  "aiAssistant.proposal.rejected": {
+    "defaultMessage": "Rejected",
+    "srcHash": "SkhGuSU6tmOG"
+  },
+  "aiAssistant.proposal.superseded": {
+    "defaultMessage": "Superseded by a newer proposal",
+    "srcHash": "DA45jq9z2d1Q"
+  },
   "aiAssistant.settings.fullWidthResponses": {
     "defaultMessage": "Full-width responses",
     "srcHash": "u04WWMytfMeS"
@@ -633,9 +689,257 @@
     "defaultMessage": "External system",
     "srcHash": "oGs4SFZv0yF2"
   },
+  "arr.daos.fileSystem.filter.clear": {
+    "defaultMessage": "Clear filter",
+    "srcHash": "LRQK97GHHNDb"
+  },
+  "arr.daos.fileSystem.filter.placeholder": {
+    "defaultMessage": "Filter…",
+    "srcHash": "RDtyYIA9IDO_"
+  },
+  "arr.daos.fileSystem.filterByLink.all": {
+    "defaultMessage": "All",
+    "srcHash": "5C_lbtoov7Gn"
+  },
+  "arr.daos.fileSystem.filterByLink.label": {
+    "defaultMessage": "Filter",
+    "srcHash": "ANJpmCaoHHmC"
+  },
+  "arr.daos.fileSystem.filterByLink.linked": {
+    "defaultMessage": "Linked",
+    "srcHash": "5rbAbpjD8TlR"
+  },
+  "arr.daos.fileSystem.filterByLink.unlinked": {
+    "defaultMessage": "Unlinked",
+    "srcHash": "1esyfo4aKzQd"
+  },
+  "arr.daos.fileSystem.links.forbidden": {
+    "defaultMessage": "You do not have permission to access this archival file",
+    "srcHash": "bnFyEdP7Xju2"
+  },
+  "arr.daos.fileSystem.links.title": {
+    "defaultMessage": "Go to description unit",
+    "srcHash": "0gq_aGokBf1v"
+  },
+  "arr.daos.fileSystem.links.trigger": {
+    "defaultMessage": "List of links",
+    "srcHash": "gmYy4uXyxEID"
+  },
+  "arr.daos.fileSystem.repo.unavailable": {
+    "defaultMessage": "Repository is unavailable — the path {path} does not exist on the server or cannot be read. Check the external system settings.",
+    "srcHash": "E-w-ttgEnHON"
+  },
+  "arr.daos.fileSystem.repo.unavailableDetail": {
+    "defaultMessage": "The path {path} does not exist on the server or cannot be read. The repository content therefore cannot be displayed — check the external system settings.",
+    "srcHash": "rfuU4hWLYcDY"
+  },
+  "arr.daos.fileSystem.repo.unavailableTitle": {
+    "defaultMessage": "Repository is unavailable",
+    "srcHash": "WSrg3PozscWF"
+  },
+  "arr.daos.fileSystem.sort.label": {
+    "defaultMessage": "Sorting",
+    "srcHash": "JD-Vo3HpL1AE"
+  },
+  "arr.daos.fileSystem.sort.nameAsc": {
+    "defaultMessage": "Name A→Z",
+    "srcHash": "ERn70WrPy1_t"
+  },
+  "arr.daos.fileSystem.sort.nameDesc": {
+    "defaultMessage": "Name Z→A",
+    "srcHash": "W370hofSnS7-"
+  },
+  "arr.daos.fileSystem.sort.sizeAsc": {
+    "defaultMessage": "Size ascending",
+    "srcHash": "ncVb7DLsRFjt"
+  },
+  "arr.daos.fileSystem.sort.sizeDesc": {
+    "defaultMessage": "Size descending",
+    "srcHash": "aAVC9zRaXJAr"
+  },
   "arr.fundDataGrid.cellForm.notAllowed": {
     "defaultMessage": "This description element cannot be added to the description unit.",
     "srcHash": "1vJCdzTLLaix"
+  },
+  "arr.output.files.download": {
+    "defaultMessage": "Download file",
+    "srcHash": "us0j-6FJtyPZ"
+  },
+  "arr.output.files.downloadAll": {
+    "defaultMessage": "Download all",
+    "srcHash": "VpVRKrnTESeD"
+  },
+  "arr.output.files.empty": {
+    "defaultMessage": "No files",
+    "srcHash": "mg3CD86mnQ1y"
+  },
+  "arr.output.files.title": {
+    "defaultMessage": "Generated files",
+    "srcHash": "2KdZhZjA9vbZ"
+  },
+  "arr.output.form.actionsError": {
+    "defaultMessage": "Error: {count}",
+    "srcHash": "2Si6k1X55tBR"
+  },
+  "arr.output.form.actionsMenu": {
+    "defaultMessage": "Output actions",
+    "srcHash": "kdcJZ0SM0QP5"
+  },
+  "arr.output.form.actionsOutdated": {
+    "defaultMessage": "Outdated: {count}",
+    "srcHash": "hsJe-iXenDP0"
+  },
+  "arr.output.form.actionsProcessing": {
+    "defaultMessage": "Running: {count}",
+    "srcHash": "obVhMNBqR0db"
+  },
+  "arr.output.form.actionsUnprocessed": {
+    "defaultMessage": "Not run: {count}",
+    "srcHash": "AlyDyg4AHUs3"
+  },
+  "arr.output.form.cancel": {
+    "defaultMessage": "Cancel",
+    "srcHash": "bHfYpLCt8F6P"
+  },
+  "arr.output.form.copyAction": {
+    "defaultMessage": "Copy",
+    "srcHash": "icAZn-5O6k2x"
+  },
+  "arr.output.form.deleteAction": {
+    "defaultMessage": "Delete",
+    "srcHash": "oe4iuqXX4rqm"
+  },
+  "arr.output.form.deleteConfirm": {
+    "defaultMessage": "Do you really want to delete the output?",
+    "srcHash": "jSf3NfG-ZxwQ"
+  },
+  "arr.output.form.editAction": {
+    "defaultMessage": "Edit",
+    "srcHash": "7D1xFD_em0Dr"
+  },
+  "arr.output.form.editDetails": {
+    "defaultMessage": "Edit output details",
+    "srcHash": "Zk7tB_IWLETf"
+  },
+  "arr.output.form.editDialogTitle": {
+    "defaultMessage": "Edit output",
+    "srcHash": "HgfnPF-D1TZD"
+  },
+  "arr.output.form.errorProperties": {
+    "defaultMessage": "Additional parameters",
+    "srcHash": "Dido-57hy0Fk"
+  },
+  "arr.output.form.errorStack": {
+    "defaultMessage": "Stack",
+    "srcHash": "5VFkEkLOckau"
+  },
+  "arr.output.form.errorTitle": {
+    "defaultMessage": "Output error",
+    "srcHash": "eiaZk1N-jC8Q"
+  },
+  "arr.output.form.generateOutput": {
+    "defaultMessage": "Generate output",
+    "srcHash": "PkGxuldlxLxQ"
+  },
+  "arr.output.form.generatedAt": {
+    "defaultMessage": "Generated",
+    "srcHash": "GCV1vJTh_zFv"
+  },
+  "arr.output.form.internalCode": {
+    "defaultMessage": "Output internal code",
+    "srcHash": "00QxuzpXDoQI"
+  },
+  "arr.output.form.internalCodeHint": {
+    "defaultMessage": "Shown on the title page if the Finding aid number field is empty.",
+    "srcHash": "Xur32spFBXwV"
+  },
+  "arr.output.form.name": {
+    "defaultMessage": "Output name",
+    "srcHash": "8uMyaFpXAcJK"
+  },
+  "arr.output.form.nameHint": {
+    "defaultMessage": "Shown on the title page.",
+    "srcHash": "J4hPEkPmHgHY"
+  },
+  "arr.output.form.noTemplate": {
+    "defaultMessage": "No template selected",
+    "srcHash": "B_jqtCI01BU6"
+  },
+  "arr.output.form.nodesLabel": {
+    "defaultMessage": "Linked to the arrangement",
+    "srcHash": "yv3cv7bGGveK"
+  },
+  "arr.output.form.outputFilter": {
+    "defaultMessage": "Output filter",
+    "srcHash": "81owipUZcq0v"
+  },
+  "arr.output.form.outputFilterPlaceholder": {
+    "defaultMessage": "No filter",
+    "srcHash": "wba4fO8L06Cx"
+  },
+  "arr.output.form.outputType": {
+    "defaultMessage": "Output type",
+    "srcHash": "hD5bBOE7z9eZ"
+  },
+  "arr.output.form.recommendedActionsPending": {
+    "defaultMessage": "Some recommended actions have not been run yet. It is recommended to run them before generating the output.",
+    "srcHash": "uDQTnaMCwroI"
+  },
+  "arr.output.form.required": {
+    "defaultMessage": "This field is required",
+    "srcHash": "5GEi8Ab6Hsc4"
+  },
+  "arr.output.form.revertAction": {
+    "defaultMessage": "Return to preparation",
+    "srcHash": "alaEfktm1Kmo"
+  },
+  "arr.output.form.runAllActions": {
+    "defaultMessage": "Run all",
+    "srcHash": "ah2EqoPZSnyj"
+  },
+  "arr.output.form.save": {
+    "defaultMessage": "Save",
+    "srcHash": "eKX-T2uH2Zl7"
+  },
+  "arr.output.form.stateComputing": {
+    "defaultMessage": "Recomputing",
+    "srcHash": "gPuPdncQnvfK"
+  },
+  "arr.output.form.stateFinished": {
+    "defaultMessage": "Finished",
+    "srcHash": "xWQzBVFQyQ1H"
+  },
+  "arr.output.form.stateGenerating": {
+    "defaultMessage": "Generating",
+    "srcHash": "eGLqVdTHwvld"
+  },
+  "arr.output.form.stateOpen": {
+    "defaultMessage": "In preparation",
+    "srcHash": "s0ER97cHc4CJ"
+  },
+  "arr.output.form.stateOutdated": {
+    "defaultMessage": "Outdated",
+    "srcHash": "lOKs5uOkCosN"
+  },
+  "arr.output.form.template": {
+    "defaultMessage": "Template",
+    "srcHash": "BqmENbGuMyV1"
+  },
+  "arr.output.form.templatePlaceholder": {
+    "defaultMessage": "Add a template",
+    "srcHash": "YrUh9HWGpLYk"
+  },
+  "arr.output.form.templateRemove": {
+    "defaultMessage": "Remove template",
+    "srcHash": "qs97PzzD3WSx"
+  },
+  "arr.output.form.unknownOutputType": {
+    "defaultMessage": "Unknown",
+    "srcHash": "A7-1cydenuYx"
+  },
+  "arr.output.form.unknownTemplate": {
+    "defaultMessage": "Unknown template",
+    "srcHash": "_eYll52DiTZN"
   },
   "arr.structure.modal.increment": {
     "defaultMessage": "Increment",
@@ -720,6 +1024,30 @@
   "deleted_entity_table_column_replacedBy": {
     "defaultMessage": "Replacing entity",
     "srcHash": "zI-X8eoeEy51"
+  },
+  "descItem.jsonTable.addRow": {
+    "defaultMessage": "Add row",
+    "srcHash": "tbArpqsCBWBo"
+  },
+  "descItem.jsonTable.empty": {
+    "defaultMessage": "The table is empty",
+    "srcHash": "QeiZhdz0_Y8n"
+  },
+  "descItem.jsonTable.exportCsv": {
+    "defaultMessage": "Export CSV",
+    "srcHash": "Z0L_bRATScol"
+  },
+  "descItem.jsonTable.importCsv": {
+    "defaultMessage": "Import CSV",
+    "srcHash": "ASk9OJGsRz1R"
+  },
+  "descItem.jsonTable.removeRow": {
+    "defaultMessage": "Remove row",
+    "srcHash": "M3JHCiIORJ-j"
+  },
+  "descItem.jsonTable.resetOrder": {
+    "defaultMessage": "Reset order",
+    "srcHash": "OtQE8a7XDQQX"
   },
   "descItemType.action.openInDataGrid": {
     "defaultMessage": "Show in table",
@@ -984,6 +1312,18 @@
   "invalidated_entities": {
     "defaultMessage": "Invalidated entities",
     "srcHash": "anb_5TqFryuh"
+  },
+  "itemForm.calculate.placeholder": {
+    "defaultMessage": "Value calculated by a function",
+    "srcHash": "bUxfh_c6iECU"
+  },
+  "itemForm.calculate.switchToAuto": {
+    "defaultMessage": "Field is filled in manually, switch to automatic",
+    "srcHash": "kp6ceD92VZpq"
+  },
+  "itemForm.calculate.switchToManual": {
+    "defaultMessage": "Field is filled in automatically, switch to manual",
+    "srcHash": "YU4iA0sg--z8"
   },
   "mandatoryType.impossible": {
     "defaultMessage": "Impossible",
@@ -1428,6 +1768,10 @@
   "userSettings.display.language": {
     "defaultMessage": "Language",
     "srcHash": "ARpdV1qvwAV4"
+  },
+  "userSettings.display.outputColumnLayout": {
+    "defaultMessage": "Column layout for output detail",
+    "srcHash": "vJJZ369SCfqo"
   },
   "userSettings.display.showDebugInfo": {
     "defaultMessage": "Show debug information",

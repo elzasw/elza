@@ -44,7 +44,7 @@ export function activityTitle(activity: AiRequestActivity, intl: IntlShape): str
     return intl.formatMessage(aiAssistantMessages.activityStepGeneric);
 }
 
-function linkPath(target: AiActivityLink["target"]): string | null {
+export function linkPath(target: AiActivityLink["target"]): string | null {
     switch (target.type) {
         case AiContextType.Node:
             return urlNode((target as AiContextNode).nodeId);

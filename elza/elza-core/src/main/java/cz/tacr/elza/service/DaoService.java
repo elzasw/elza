@@ -1,5 +1,6 @@
 package cz.tacr.elza.service;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,6 +50,9 @@ import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.DigitizationCode;
+import cz.tacr.elza.repository.ArrDaLinkRepository;
+import cz.tacr.elza.repository.ArrFsLinkRepository;
+import cz.tacr.elza.repository.ArrLegacyDaoLinkRepository;
 import cz.tacr.elza.repository.DaoFileRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoLinkRequestRepository;
@@ -59,6 +63,7 @@ import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.service.DaoSyncService.DaoDesctItemProvider;
 import cz.tacr.elza.service.FundLevelService.AddLevelDirection;
 import cz.tacr.elza.service.dao.DaoServiceInternal;
+import cz.tacr.elza.service.dao.FileSystemRepoBrowser;
 import cz.tacr.elza.service.dao.FileSystemRepoService;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventIdNodeIdInVersion;
@@ -98,6 +103,15 @@ public class DaoService {
     private DaoLinkRepository daoLinkRepository;
 
     @Autowired
+    private ArrLegacyDaoLinkRepository legacyDaoLinkRepository;
+
+    @Autowired
+    private ArrDaLinkRepository daLinkRepository;
+
+    @Autowired
+    private ArrFsLinkRepository fsLinkRepository;
+
+    @Autowired
     private EventNotificationService eventNotificationService;
 
     @Autowired
@@ -123,6 +137,9 @@ public class DaoService {
 
     @Autowired
     private FileSystemRepoService fileSystemRepoService;
+
+    @Autowired
+    private FileSystemRepoBrowser fileSystemRepoBrowser;
 
     @Autowired
     private ApplicationContext appCtx;
@@ -166,6 +183,20 @@ public class DaoService {
         Pageable pageable = PageRequest.of(index, maxResults);
 
         return daoRepository.findAttachedByNode(node, pageable).toList();
+    }
+
+    /**
+     * Živé vazby jednotky popisu na souborové repozitáře. Doplněk k
+     * {@link #findDaos} — fs vazby nemají {@link ArrDao} a do jeho výsledku
+     * se nedostanou.
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
+    public List<ArrFsLink> findFsLinks(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+                                       final ArrNode node) {
+        Validate.notNull(fundVersion, "Verze AS musí být vyplněna");
+        Validate.notNull(node, "Node musí být vyplněn");
+
+        return fsLinkRepository.findByNodeAndDeleteChangeIsNull(node);
     }
 
     @AuthMethod(permission = { UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD })
@@ -220,35 +251,39 @@ public class DaoService {
      * @return nalezené nebo vytvořené propojení
      */
     @Transactional(value = TxType.MANDATORY)
-    public ArrDaoLink createOrFindDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+    public ArrLegacyDaoLink createOrFindDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
     									   @Nullable final ArrChange change,
                                            final ArrDao dao, final ArrNode node, final String scenario) {
         if (!dao.getValid()) {
             throw new BusinessException("Nelze připojit digitální entitu k JP, protože je nevalidní", ArrangementCode.INVALID_DAO).level(Level.WARNING);
         }
 
-        Set<Integer> nodeIds = new HashSet<>();
+        final List<ArrLegacyDaoLink> linkList = legacyDaoLinkRepository.findByDaoAndDeleteChangeIsNull(dao);
 
-        // Vyhledání stávajících vazeb
-        final List<ArrDaoLink> linkList = daoLinkRepository.findByDaoAndDeleteChangeIsNull(dao);
-        if (!CollectionUtils.isNotEmpty(linkList)) {
-            // odstraneni predchozich pripojeni
-            // měla by být jen jedna, ale cyklus ošetří i případnou chybu v datech
-            for (ArrDaoLink arrDaoLink : linkList) {
-                nodeIds.add(arrDaoLink.getNodeId());
-                deleteDaoLink(fundVersion, change, arrDaoLink, true);
+        // Existující vazba na stejný node → idempotentně vrátit
+        for (ArrLegacyDaoLink existing : linkList) {
+            if (existing.getNodeId().equals(node.getNodeId())) {
+                return existing;
             }
         }
 
-        final ArrDaoLink resultDaoLink = createArrDaoLink(fundVersion, change, dao, node, scenario);
+		// Zákaz více vazeb podle nastavení repository
+        if (!linkList.isEmpty()) {
+            ArrDigitalRepository repos = dao.getDaoPackage().getDigitalRepository();
+            if (!Boolean.TRUE.equals(repos.getMultipleLinks())) {
+                throw new BusinessException(
+                        "DAO je již připojeno k jiné jednotce popisu; opakované napojení není povoleno.",
+                        ArrangementCode.INVALID_DAO).level(Level.WARNING);
+            }
+        }
 
-        nodeIds.add(node.getNodeId());
-        updateNodeCacheDaoLinks(nodeIds);
+        final ArrLegacyDaoLink resultDaoLink = createArrDaoLink(fundVersion, change, dao, node, scenario);
+        updateNodeCacheDaoLinks(Collections.singleton(node.getNodeId()));
 
         return resultDaoLink;
     }
 
-    public ArrDaoLink createArrDaoLink(ArrFundVersion fundVersion,
+    public ArrLegacyDaoLink createArrDaoLink(ArrFundVersion fundVersion,
     									@Nullable ArrChange createChange,
     								    ArrDao dao,
                                         ArrNode node, String scenario) {
@@ -258,17 +293,17 @@ public class DaoService {
     	}
 
         // vytvořit připojení
-        final ArrDaoLink daoLink = new ArrDaoLink();
+        final ArrLegacyDaoLink daoLink = new ArrLegacyDaoLink();
         daoLink.setCreateChange(createChange);
         daoLink.setDao(dao);
         daoLink.setNode(node);
         daoLink.setScenario(scenario);
 
         logger.debug("Založeno nové propojení mezi DAO(ID=" + dao.getDaoId() + ") a node(ID=" + node.getNodeId() + ").");
-        ArrDaoLink resultDaoLink = daoLinkRepository.save(daoLink);
+        ArrLegacyDaoLink resultDaoLink = daoLinkRepository.save(daoLink);
 
         // poslat i websockety o připojení
-        publishEvent(EventType.DAO_LINK_CREATE, fundVersion, dao, node);
+        publishEvent(EventType.DAO_LINK_CREATE, fundVersion, dao.getDaoId(), node);
 
         // poslat notifikaci pouze pokud je zapnutá u digitálního uložiště a nejedná se o souborové úložiště
         ArrDigitalRepository repos = dao.getDaoPackage().getDigitalRepository();
@@ -296,28 +331,35 @@ public class DaoService {
     						  @Nullable ArrChange change,
                               final ArrDaoLink daoLink) {
 
-        final ArrDao dao = daoLink.getDao();
-
-        switch (dao.getDaoType()) {
-        case LEVEL:
-            // odstraneni urovne
-            ArrNode deleteNode = daoLink.getNode();
-            FundLevelService fundLevelService = appCtx.getBean(FundLevelService.class);
-            fundLevelService.deleteLevel(fundVersion, deleteNode, null, true);
-            break;
-        case ATTACHMENT:
-            ArrDaoLink result = deleteDaoLink(fundVersion, change, daoLink, true);
+        if (daoLink instanceof ArrLegacyDaoLink legacyLink) {
+            switch (legacyLink.getDao().getDaoType()) {
+            case LEVEL:
+                // odstraneni urovne
+                ArrNode deleteNode = daoLink.getNode();
+                FundLevelService fundLevelService = appCtx.getBean(FundLevelService.class);
+                fundLevelService.deleteLevel(fundVersion, deleteNode, null, true);
+                break;
+            case ATTACHMENT:
+                deleteDaoLink(fundVersion, change, daoLink, true);
+                updateNodeCacheDaoLinks(Collections.singletonList(daoLink.getNodeId()));
+                break;
+            default:
+                throw new SystemException("Unrecognized dao type");
+            }
+        } else {
+            // fs a da vazby nemají typovou specializaci — prosté rozpojení
+            deleteDaoLink(fundVersion, change, daoLink, true);
             updateNodeCacheDaoLinks(Collections.singletonList(daoLink.getNodeId()));
-            break;
-        default:
-            throw new SystemException("Unrecognized dao type");
         }
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public List<ArrDaoLink> deleteDaoLinkByNodes(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                                  ArrChange deleteChange, final Collection<ArrNode> nodes) {
-        List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodesAndFetchNodeAndDao(nodes);
+        List<ArrDaoLink> daoLinks = new ArrayList<>();
+        daoLinks.addAll(legacyDaoLinkRepository.findByNodesAndFetchNodeAndDao(nodes));
+        daoLinks.addAll(fsLinkRepository.findByNodeInAndDeleteChangeIsNull(nodes));
+        daoLinks.addAll(daLinkRepository.findByNodeInAndDeleteChangeIsNull(nodes));
         Set<ArrNode> clearNodes = new HashSet<>();
         for (ArrDaoLink daoLink : daoLinks) {
             ArrDaoLink savedDaoLink = deleteDaoLink(fundVersion, deleteChange, daoLink, true);
@@ -347,15 +389,20 @@ public class DaoService {
         logger.debug("Zadané propojení arrDaoLink(ID=" + daoLink.getDaoLinkId() + ") bylo zneplatněno novou změnou.");
         final ArrDaoLink resultDaoLink = daoLinkRepository.save(daoLink);
 
-        // poslat websockety o odpojení
-        publishEvent(EventType.DAO_LINK_DELETE, fundVersion, daoLink.getDao(), daoLink.getNode());
+        if (daoLink instanceof ArrLegacyDaoLink legacyLink) {
+            // poslat websockety o odpojení
+            publishEvent(EventType.DAO_LINK_DELETE, fundVersion, legacyLink.getDao().getDaoId(), daoLink.getNode());
 
-        // poslat notifikaci pouze pokud je zapnutá u digitálního uložiště
-        ArrDigitalRepository repos = daoLink.getDao().getDaoPackage().getDigitalRepository();
-        if (notify && repos.getSendNotification() && !fileSystemRepoService.isFileSystemRepository(repos) ) {
-        	// vytvořit požadavek pro externí systém na odpojení
-            final ArrDaoLinkRequest request = requestService.createDaoLinkRequest(fundVersion, daoLink.getDao(), deleteChange, Type.UNLINK, daoLink.getNode());
-            requestQueueService.sendRequest(request, fundVersion);
+            // poslat notifikaci pouze pokud je zapnutá u digitálního uložiště
+            ArrDigitalRepository repos = legacyLink.getDao().getDaoPackage().getDigitalRepository();
+            if (notify && repos.getSendNotification() && !fileSystemRepoService.isFileSystemRepository(repos) ) {
+            	// vytvořit požadavek pro externí systém na odpojení
+                final ArrDaoLinkRequest request = requestService.createDaoLinkRequest(fundVersion, legacyLink.getDao(), deleteChange, Type.UNLINK, daoLink.getNode());
+                requestQueueService.sendRequest(request, fundVersion);
+            }
+        } else {
+            // fs a da vazby: událost nese id vazby, externí notifikace se neposílají
+            publishEvent(EventType.DAO_LINK_DELETE, fundVersion, daoLink.getDaoLinkId(), daoLink.getNode());
         }
 
         return resultDaoLink;
@@ -442,9 +489,9 @@ public class DaoService {
         for (ArrDao arrDao : arrDaos) {
         	logger.debug("Deleting dao {}", arrDao.getDaoId());
             // smazat arr_dao_link
-            List<ArrDaoLink> arrDaoLinkList = daoLinkRepository.findByDao(arrDao);
+            List<ArrLegacyDaoLink> arrDaoLinkList = legacyDaoLinkRepository.findByDao(arrDao);
 
-            for (ArrDaoLink arrDaoLink : arrDaoLinkList) {
+            for (ArrLegacyDaoLink arrDaoLink : arrDaoLinkList) {
                 if (arrDaoLink.getDeleteChangeId() == null) {
                     Integer fundId = arrDaoLink.getNode().getFundId();
                     deleteDaoLink(fundVersion, change, arrDaoLink);
@@ -457,10 +504,6 @@ public class DaoService {
             // smazat arr_dao_file
             final List<ArrDaoFile> daoFileList = daoServiceInternal.getFilesByDao(arrDao);
             daoServiceInternal.deleteDaoFiles(daoFileList);
-
-            // smazat arr_dao_file_group
-            final List<ArrDaoFileGroup> daoFileGroupList = daoServiceInternal.getFileGroupsByDao(arrDao);
-            daoServiceInternal.deleteDaoFileGroups(daoFileGroupList);
 
             // smazat arr_dao_link_request
             final List<ArrDaoLinkRequest> arrDaoLinkRequestList = daoLinkRequestRepository.findByDao(arrDao);
@@ -511,8 +554,8 @@ public class DaoService {
             ArrChange change = null;
 
             // zrušit linky a poslat notifikace
-            final List<ArrDaoLink> arrDaoLinkList = daoLinkRepository.findByDaoAndDeleteChangeIsNull(arrDao);
-            for (ArrDaoLink arrDaoLink : arrDaoLinkList) {
+            final List<ArrLegacyDaoLink> arrDaoLinkList = legacyDaoLinkRepository.findByDaoAndDeleteChangeIsNull(arrDao);
+            for (ArrLegacyDaoLink arrDaoLink : arrDaoLinkList) {
                 ArrNode node = arrDaoLink.getNode();
                 ArrDaoLink savedDaoLink = deleteDaoLink(fundVersion, change, arrDaoLink, notify);
                 if(change==null) {
@@ -659,21 +702,137 @@ public class DaoService {
 
     public void updateNodeCacheDaoLinks(Collection<Integer> nodeIds) {
         if (CollectionUtils.isNotEmpty(nodeIds)) {
-            List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdsAndFetchDao(nodeIds);
+            // cache nese legacy a fs vazby; da vazby v ní nikdy nebyly
+            List<ArrDaoLink> daoLinks = new ArrayList<>();
+            daoLinks.addAll(legacyDaoLinkRepository.findByNodeIdsAndFetchDao(nodeIds));
+            daoLinks.addAll(fsLinkRepository.findByNodeIdInAndDeleteChangeIsNull(nodeIds));
             arrangementCacheService.updateDaoLinks(nodeIds, daoLinks);
         }
     }
 
-    private void publishEvent(EventType type, ArrFundVersion fundVersion, ArrDao dao, ArrNode node) {
+    private void publishEvent(EventType type, ArrFundVersion fundVersion, Integer id, ArrNode node) {
         EventIdNodeIdInVersion event = new EventIdNodeIdInVersion(type, fundVersion.getFundVersionId(),
-                dao.getDaoId(), Collections.singletonList(node.getNodeId()));
+                id, Collections.singletonList(node.getNodeId()));
         eventNotificationService.publishEvent(event);
     }
+
+    /**
+     * Připojí položku souborového repozitáře (cesta relativní ke kořeni, NULL =
+     * kořen) k jednotce popisu. Existující živá vazba na stejnou JP se vrátí
+     * idempotentně; vazbu na jinou JP povoluje jen repozitář s multiple_links.
+     */
+    @Transactional(value = TxType.MANDATORY)
+    @AuthMethod(permission = { UsrPermission.Permission.FUND_ARR_ALL,
+            UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_NODE })
+    public ArrFsLink createFsDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion,
+                                     ArrDigitalRepository digiRepo,
+                                     @AuthParam(type = AuthParam.Type.NODE) ArrNode node,
+                                     String path) {
+        path = FileSystemRepoService.normalizeRelatPath(StringUtils.trimToNull(path));
+
+        // containment check only; the resolved path itself is not stored
+        java.nio.file.Path repoPath = fileSystemRepoService.getPath(digiRepo, fundVersion.getFund());
+        fileSystemRepoService.resolvePath(repoPath, path);
+
+        List<ArrFsLink> existing = path == null
+                ? fsLinkRepository.findByDigitalRepositoryAndPathIsNullAndDeleteChangeIsNull(digiRepo)
+                : fsLinkRepository.findByDigitalRepositoryAndPathAndDeleteChangeIsNull(digiRepo, path);
+
+        // existující vazba na stejný node → idempotentně vrátit
+        for (ArrFsLink link : existing) {
+            if (link.getNodeId().equals(node.getNodeId())) {
+                return link;
+            }
+        }
+
+        // zákaz více vazeb podle nastavení repository
+        if (!existing.isEmpty() && !Boolean.TRUE.equals(digiRepo.getMultipleLinks())) {
+            throw new BusinessException(
+                    "Položka souborového repozitáře je již připojena k jiné jednotce popisu;"
+                            + " opakované napojení není povoleno.",
+                    ArrangementCode.INVALID_DAO).level(Level.WARNING);
+        }
+
+        ArrChange createChange = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, node);
+
+        ArrFsLink link = new ArrFsLink();
+        link.setCreateChange(createChange);
+        link.setDigitalRepository(digiRepo);
+        link.setPath(path);
+        link.setNode(node);
+
+        ArrFsLink result = daoLinkRepository.save(link);
+        logger.debug("Založeno nové propojení mezi fs repozitářem(ID={}, path={}) a node(ID={}).",
+                     digiRepo.getExternalSystemId(), path, node.getNodeId());
+
+        publishEvent(EventType.DAO_LINK_CREATE, fundVersion, result.getDaoLinkId(), node);
+        updateNodeCacheDaoLinks(Collections.singleton(node.getNodeId()));
+
+        return result;
+    }
+
+    /**
+     * Atomically moves an existing FS dao-link to another node for the same
+     * (repository, path). Both delete of the source link and create of the
+     * target link share one ArrChange so audit reads the pair as a move.
+     * Idempotent when the source is already on the target node.
+     */
+    @Transactional(value = TxType.MANDATORY)
+    @AuthMethod(permission = { UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR })
+    public ArrFsLink moveFsDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion,
+                                   Integer oldDaoLinkId,
+                                   ArrNode newNode) {
+        ArrFsLink oldLink = fsLinkRepository.findById(oldDaoLinkId)
+                .orElseThrow(() -> new BusinessException(
+                        "FS dao-link not found: " + oldDaoLinkId, ArrangementCode.INVALID_DAO));
+        if (oldLink.getDeleteChange() != null) {
+            throw new BusinessException(
+                    "FS dao-link already deleted: " + oldDaoLinkId, ArrangementCode.INVALID_DAO);
+        }
+        if (oldLink.getNodeId().equals(newNode.getNodeId())) {
+            return oldLink;
+        }
+
+        ArrDigitalRepository repo = oldLink.getDigitalRepository();
+        String path = oldLink.getPath();
+
+        // if the target node already has a live link to (repo, path),
+        // don't duplicate — just remove the source and return existing
+        List<ArrFsLink> existing = path == null
+                ? fsLinkRepository.findByDigitalRepositoryAndPathIsNullAndDeleteChangeIsNull(repo)
+                : fsLinkRepository.findByDigitalRepositoryAndPathAndDeleteChangeIsNull(repo, path);
+        for (ArrFsLink link : existing) {
+            if (link.getNodeId().equals(newNode.getNodeId())) {
+                ArrChange delChange = arrangementInternalService.createChange(
+                        ArrChange.Type.DELETE_DAO_LINK, oldLink.getNode());
+                deleteDaoLink(fundVersion, delChange, oldLink);
+                updateNodeCacheDaoLinks(Collections.singletonList(oldLink.getNodeId()));
+                return link;
+            }
+        }
+
+        ArrChange change = arrangementInternalService.createChange(
+                ArrChange.Type.CREATE_DAO_LINK, newNode);
+
+        ArrFsLink newLink = new ArrFsLink();
+        newLink.setCreateChange(change);
+        newLink.setDigitalRepository(repo);
+        newLink.setPath(path);
+        newLink.setNode(newNode);
+        ArrFsLink saved = daoLinkRepository.save(newLink);
+
+        deleteDaoLink(fundVersion, change, oldLink);
+
+        publishEvent(EventType.DAO_LINK_CREATE, fundVersion, saved.getDaoLinkId(), newNode);
+        updateNodeCacheDaoLinks(Arrays.asList(oldLink.getNodeId(), newNode.getNodeId()));
+
+        return saved;
+    }    
 
     @Transactional(value = TxType.MANDATORY)
     @AuthMethod(permission = { UsrPermission.Permission.FUND_ARR_ALL,
             UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_NODE })
-    public ArrDaoLink createDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion,
+    public ArrLegacyDaoLink createDaoLink(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion,
                                     ArrDao dao,
                                     @AuthParam(type = AuthParam.Type.NODE) ArrNode node) {
         String scenario = null;
@@ -731,6 +890,81 @@ public class DaoService {
         return daoFileRepository.findByDaoIn(daos);
     }
 
+    /**
+     * Files of one DAO plus the total count and a truncation flag for
+     * filesystem DAOs whose live listing hit
+     * {@link FileSystemRepoBrowser#DAO_FILE_LIMIT}.
+     */
+    public record DaoFileListing(List<ArrDaoFile> files, long total, boolean truncated) {
+    }
+
+    /**
+     * Files of one DAO with truncation info. Filesystem DAOs are listed live
+     * from the repository (recursive under the DAO's path, capped at
+     * {@link FileSystemRepoBrowser#DAO_FILE_LIMIT}) as transient entities
+     * without a persistent id; other repository types read persisted
+     * arr_dao_file rows and are never truncated.
+     */
+    public DaoFileListing getDaoFileListing(ArrDao dao) {
+        if (isFileSystemDao(dao)) {
+            FileSystemRepoBrowser.FsDaoListing listing = listFsDaoFiles(dao);
+            List<ArrDaoFile> result = new ArrayList<>(listing.files().size());
+            for (FileSystemRepoBrowser.FsDaoFile entry : listing.files()) {
+                ArrDaoFile daoFile = new ArrDaoFile();
+                daoFile.setDao(dao);
+                daoFile.setCode(entry.relatPath());
+                daoFile.setFileName(entry.fileName());
+                daoFile.setSize(entry.size());
+                daoFile.setMimetype(entry.mimetype());
+                result.add(daoFile);
+            }
+            return new DaoFileListing(result, result.size(), listing.truncated());
+        }
+        List<ArrDaoFile> persisted = daoFileRepository.findByDao(dao);
+        return new DaoFileListing(persisted, persisted.size(), false);
+    }
+
+    private boolean isFileSystemDao(ArrDao dao) {
+        return fileSystemRepoService.isFileSystemRepository(dao.getDaoPackage().getDigitalRepository());
+    }
+
+    /**
+     * Live listing of the files under a filesystem link's path. An unavailable
+     * repository or a vanished path yields an empty listing so one broken link
+     * does not fail the caller's whole response.
+     */
+    public FileSystemRepoBrowser.FsDaoListing listFsLinkFiles(ArrFsLink link) {
+        try {
+            return fileSystemRepoBrowser.listDaoFiles(link.getDigitalRepository(),
+                                                      link.getNode().getFund(),
+                                                      link.getPath(),
+                                                      FileSystemRepoBrowser.DAO_FILE_LIMIT);
+        } catch (IOException | BusinessException e) {
+            logger.warn("Failed to list files of filesystem link {} ({}): {}",
+                        link.getDaoLinkId(), link.getPath(), e.toString());
+            return new FileSystemRepoBrowser.FsDaoListing(Collections.emptyList(), false);
+        }
+    }
+
+    /**
+     * Live listing of a filesystem DAO's files. An unavailable repository or a
+     * vanished path yields an empty listing so one broken DAO does not fail
+     * the caller's whole response.
+     */
+    private FileSystemRepoBrowser.FsDaoListing listFsDaoFiles(ArrDao dao) {
+        ArrDaoPackage daoPackage = dao.getDaoPackage();
+        try {
+            return fileSystemRepoBrowser.listDaoFiles(daoPackage.getDigitalRepository(),
+                                                      daoPackage.getFund(),
+                                                      dao.getCode(),
+                                                      FileSystemRepoBrowser.DAO_FILE_LIMIT);
+        } catch (IOException | BusinessException e) {
+            logger.warn("Failed to list files of filesystem DAO {} ({}): {}",
+                        dao.getDaoId(), dao.getCode(), e.toString());
+            return new FileSystemRepoBrowser.FsDaoListing(Collections.emptyList(), false);
+        }
+    }
+
     @Transactional
     public ExplorerTreeNode findByAipIdAndTypeAndDeleteChangeIsNull(Integer aipId) {
         DaAip aip = aipService.getAip(aipId);
@@ -747,11 +981,12 @@ public class DaoService {
         if (state.getFund() != null) {
             daDaoList = daDaoRepository.findByAipAndDeleteChangeIsNull(aip);
 
-            List<ArrDaoLink> daoLinkList = daoLinkRepository.findByDaDaoInAndDeleteChangeIsNull(daDaoList);
-            aipLinkList = daoLinkRepository.findByAip_AipIdAndDaDaoIsNullAndDeleteChangeIsNull(aipId);
+            List<ArrDaLink> daoLinkList = daLinkRepository.findByDaDaoInAndDeleteChangeIsNull(daDaoList);
+            aipLinkList = new ArrayList<>(daLinkRepository.findByAip_AipIdAndDaDaoIsNullAndDeleteChangeIsNull(aipId));
 
             daoLinkMap = daoLinkList.stream()
-                    .collect(Collectors.groupingBy(l -> l.getDaDao().getDaoId()));
+                    .collect(Collectors.groupingBy(l -> l.getDaDao().getDaoId(),
+                                                   Collectors.mapping(l -> (ArrDaoLink) l, Collectors.toList())));
             Set<Integer> nodeIds = daoLinkList.stream().map(ArrDaoLink::getNodeId).collect(Collectors.toSet());
             ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(state.getFund().getFundId());
             treeNodeMap = levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()).stream()

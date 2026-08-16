@@ -233,6 +233,34 @@ export const aiAssistantMessages = defineMessages({
         id: "aiAssistant.activity.linkOpen",
         defaultMessage: "Zobrazit záznam",
     },
+    proposalApply: {
+        id: "aiAssistant.proposal.apply",
+        defaultMessage: "Použít",
+    },
+    proposalReject: {
+        id: "aiAssistant.proposal.reject",
+        defaultMessage: "Odmítnout",
+    },
+    proposalClarify: {
+        id: "aiAssistant.proposal.clarify",
+        defaultMessage: "Upřesnit…",
+    },
+    proposalApplied: {
+        id: "aiAssistant.proposal.applied",
+        defaultMessage: "Použito",
+    },
+    proposalRejected: {
+        id: "aiAssistant.proposal.rejected",
+        defaultMessage: "Odmítnuto",
+    },
+    proposalSuperseded: {
+        id: "aiAssistant.proposal.superseded",
+        defaultMessage: "Nahrazeno novějším návrhem",
+    },
+    proposalActionFailed: {
+        id: "aiAssistant.proposal.actionFailed",
+        defaultMessage: "Akci se nepodařilo provést: {error}",
+    },
 });
 
 export const aiContextSegmentLabels = {

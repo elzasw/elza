@@ -112,11 +112,6 @@ class ArrPage extends ArrParentPage {
         super.componentDidMount()
         const {dispatch, match} = this.props;
 
-        // get currently selected fund and node from store
-        const activeFund = this.getActiveFund(this.props);
-        const activeVersionId = getFundVersion(activeFund);
-        const activeNode = activeFund?.nodes?.activeIndex != null ? activeFund.nodes.nodes[activeFund.nodes.activeIndex] : null;
-
         // case when fund id is missing
         let selectedNodeInfo;
         let urlFundId;
@@ -133,6 +128,16 @@ class ArrPage extends ArrParentPage {
             urlFundId = parseInt(match.params.id);
         }
 
+        // Resolve the fund tab first - the tab restored from localStorage may
+        // reference a version that has been approved (closed) since, so the URL
+        // must not be served from it before the server confirms the version.
+        await this.resolveUrlsRaw(urlFundId, urlVersionId)
+
+        // get currently selected fund and node from store (after resolution)
+        const activeFund = this.getActiveFund(this.props);
+        const activeVersionId = getFundVersion(activeFund);
+        const activeNode = activeFund?.nodes?.activeIndex != null ? activeFund.nodes.nodes[activeFund.nodes.activeIndex] : null;
+
         // select already opened node
         if(activeFund
             && urlFundId === activeFund.id
@@ -146,12 +151,9 @@ class ArrPage extends ArrParentPage {
             return;
         }
 
-        // wait for fund from ArrParentPage
-        await this.resolveUrlsRaw(urlFundId, urlVersionId)
-
         if(selectedNodeInfo){
             // directly select node with info
-            dispatch(processNodeNavigation(selectedNodeInfo));
+            dispatch(processNodeNavigation(selectedNodeInfo, urlVersionId ?? null));
         } else {
             this.selectNodeFromUrl(activeNode, urlNodeId, urlVersionId);
         }
@@ -196,7 +198,7 @@ class ArrPage extends ArrParentPage {
             // select node from url only when it is not already selected (url inserted into address bar)
             if(activeNode?.selectedSubNodeId.toString() !== nodeId){
                 const info = await fetchNodeInfo(nodeId);
-                dispatch(processNodeNavigation(info));
+                dispatch(processNodeNavigation(info, versionId ?? null));
             }
         }
     }

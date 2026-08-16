@@ -2,18 +2,23 @@ package cz.tacr.elza.service.ai;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.SimpleTransactionStatus;
@@ -28,6 +33,7 @@ import cz.tacr.elza.repository.AiConversationRepository;
 import cz.tacr.elza.repository.AiExternalSystemRepository;
 import cz.tacr.elza.repository.AiRequestEventRepository;
 import cz.tacr.elza.repository.AiRequestRepository;
+import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.websocket.UserEventPushService;
 
 /**
@@ -47,19 +53,32 @@ class AiRequestPollerTest {
     private final UserEventPushService pushService = mock(UserEventPushService.class);
     private final AiAnswerBuffer answerBuffer = mock(AiAnswerBuffer.class);
     private final PlatformTransactionManager txManager = mock(PlatformTransactionManager.class);
+    private final UserService userService = mock(UserService.class);
 
     private final AiRequestPoller poller = new AiRequestPoller();
+
+    /** Real push component (it holds the render-as-owner logic under test), mock edges. */
+    private final AiRequestPushService requestPushService = new AiRequestPushService();
 
     @BeforeEach
     void setUp() {
         when(txManager.getTransaction(any())).thenReturn(new SimpleTransactionStatus());
         when(viewMapper.buildUpdateMessage(any())).thenReturn(new AiRequestUpdateMessage(1, null));
+        // The snapshot push impersonates the conversation owner; a plain empty
+        // context is enough for the mocked mapper.
+        when(userService.createSecurityContext(any()))
+                .thenAnswer(invocation -> SecurityContextHolder.createEmptyContext());
+        ReflectionTestUtils.setField(requestPushService, "aiRequestRepository", requestRepository);
+        ReflectionTestUtils.setField(requestPushService, "requestViewMapper", viewMapper);
+        ReflectionTestUtils.setField(requestPushService, "pushService", pushService);
+        ReflectionTestUtils.setField(requestPushService, "transactionTemplate",
+                new TransactionTemplate(txManager));
+        ReflectionTestUtils.setField(requestPushService, "userService", userService);
         ReflectionTestUtils.setField(poller, "aiRequestRepository", requestRepository);
         ReflectionTestUtils.setField(poller, "aiConversationRepository", conversationRepository);
         ReflectionTestUtils.setField(poller, "aiExternalSystemRepository", externalSystemRepository);
         ReflectionTestUtils.setField(poller, "aiRequestEventRepository", eventRepository);
-        ReflectionTestUtils.setField(poller, "requestViewMapper", viewMapper);
-        ReflectionTestUtils.setField(poller, "pushService", pushService);
+        ReflectionTestUtils.setField(poller, "requestPushService", requestPushService);
         ReflectionTestUtils.setField(poller, "answerBuffer", answerBuffer);
         ReflectionTestUtils.setField(poller, "transactionTemplate", new TransactionTemplate(txManager));
         ReflectionTestUtils.setField(poller, "objectMapper", new ObjectMapper());
@@ -173,5 +192,103 @@ class AiRequestPollerTest {
         assertThat(request.getErrorCode()).isEqualTo("TIMEOUT");
         assertThat(request.getErrorMessage()).contains("maximum lifetime");
         verify(answerBuffer).clear(8);
+    }
+
+    /**
+     * An unexpected failure inside the loop must settle the exchange, not
+     * abandon it. The loop runs on an executor whose Future nobody inspects, so
+     * before this an unchecked exception ended the poller thread in silence: the
+     * request stayed open and the user saw a misleading TIMEOUT half an hour
+     * later, once the lifetime backstop fired (2026-08-07).
+     */
+    @Test
+    void anUnexpectedFailureSettlesTheRequestInsteadOfAbandoningIt() {
+        AiRequest request = request(9, "t9", "running", 90);
+        request.setCreateDate(new Date());
+        AiConversation conversation = conversation(900, 9000);
+        when(requestRepository.findById(9)).thenReturn(Optional.of(request));
+        when(conversationRepository.findById(90))
+                .thenThrow(new IllegalStateException("conversation lookup exploded"))
+                // the failRequest path re-reads it while settling
+                .thenReturn(Optional.of(conversation));
+
+        // Must not propagate out of the loop — it is the thread's entry point.
+        ReflectionTestUtils.invokeMethod(poller, "pollLoop", 9);
+
+        assertThat(request.getState()).isEqualTo("error");
+        assertThat(request.getErrorCode()).isEqualTo("INTERNAL");
+        assertThat(request.getErrorMessage()).contains("conversation lookup exploded");
+        assertThat(request.getFinishDate()).isNotNull();
+    }
+
+    /**
+     * The pushed snapshot renders block mappers that run real permission checks
+     * (the proposal block re-reads its level through {@code canRead}), and the
+     * poller thread has no security context of its own — unauthenticated, the
+     * check blew up, every completion push was skipped and the panel hung on
+     * its progress state until a manual reload re-rendered on an authenticated
+     * request thread (2026-08-10). The render must therefore run under the
+     * conversation owner's context, and the pooled thread's previous context
+     * must be back afterwards — the owner must not leak into later work.
+     */
+    @Test
+    void theSnapshotIsRenderedAsTheOwnerAndTheThreadIsLeftClean() {
+        AiRequest request = request(11, "t11", "running", 110);
+        AiConversation conversation = conversation(1100, 11000);
+        when(requestRepository.findById(11)).thenReturn(Optional.of(request));
+        when(conversationRepository.findById(110)).thenReturn(Optional.of(conversation));
+
+        SecurityContext ownerContext = SecurityContextHolder.createEmptyContext();
+        ownerContext.setAuthentication(new UsernamePasswordAuthenticationToken("owner", null, null));
+        when(userService.createSecurityContext(1100)).thenReturn(ownerContext);
+        List<SecurityContext> observedAtRender = new ArrayList<>();
+        when(viewMapper.buildUpdateMessage(any())).thenAnswer(invocation -> {
+            observedAtRender.add(SecurityContextHolder.getContext());
+            return new AiRequestUpdateMessage(11, null);
+        });
+
+        // Plant a known context: the suite shares the JUnit thread and other
+        // tests may have left an authentication behind — the contract under
+        // test is "whatever was there before is back afterwards".
+        SecurityContext preexisting = SecurityContextHolder.createEmptyContext();
+        preexisting.setAuthentication(new UsernamePasswordAuthenticationToken("previous", null, null));
+        SecurityContextHolder.setContext(preexisting);
+        try {
+            ReflectionTestUtils.invokeMethod(poller, "failRequest", 11, "TIMEOUT",
+                    "The AI provider stopped responding.");
+
+            assertThat(observedAtRender).containsExactly(ownerContext);
+            verify(pushService).push(eq(1100), any());
+            // No trace of the owner left on the pooled thread.
+            assertThat(SecurityContextHolder.getContext()).isSameAs(preexisting);
+        } finally {
+            SecurityContextHolder.clearContext();
+        }
+    }
+
+    /**
+     * Rendering is derived, the provider's answer is authoritative: a broken
+     * block mapper must not roll back a result that was received and stored.
+     * When the view was built inside the persisting transaction, a mapper
+     * failure discarded the finished result entirely.
+     */
+    @Test
+    void aBrokenViewMapperDoesNotLoseTheSettledResult() {
+        AiRequest request = request(10, "t10", "running", 100);
+        AiConversation conversation = conversation(1000, 10000);
+        when(requestRepository.findById(10)).thenReturn(Optional.of(request));
+        when(conversationRepository.findById(100)).thenReturn(Optional.of(conversation));
+        when(viewMapper.buildUpdateMessage(any()))
+                .thenThrow(new IllegalStateException("proposal block mapper exploded"));
+
+        Boolean marked = ReflectionTestUtils.invokeMethod(poller, "failRequest", 10, "TIMEOUT",
+                "The AI provider stopped responding.");
+
+        // Settled and persisted, even though drawing its card failed…
+        assertThat(marked).isTrue();
+        assertThat(request.getState()).isEqualTo("error");
+        assertThat(request.getErrorCode()).isEqualTo("TIMEOUT");
+        // …and nothing half-rendered was pushed to the client.
+        verify(pushService, never()).push(any(), any());
     }
 }

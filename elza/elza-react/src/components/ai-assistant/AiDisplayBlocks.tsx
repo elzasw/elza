@@ -1,10 +1,12 @@
-import { makeStyles, tokens, Table, TableBody, TableCell, TableHeader, TableHeaderCell, TableRow } from "@fluentui/react-components";
+import { Fragment } from "react";
+import { Button, makeStyles, tokens, Table, TableBody, TableCell, TableHeader, TableHeaderCell, TableRow } from "@fluentui/react-components";
 import { FormattedMessage } from "react-intl";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
 import rehypeSanitize from "rehype-sanitize";
-import { AiDisplayBlock, AiDisplayBlockType, AiMarkdownBlock, AiTextBlock, AiTableBlock as AiTableBlockVO, AiDocCitationsBlock } from "elza-api";
+import { AiDisplayBlock, AiDisplayBlockType, AiFollowUpAction, AiMarkdownBlock, AiTextBlock, AiTableBlock as AiTableBlockVO, AiDocCitationsBlock, AiNodeUpdateProposalsBlock as AiNodeUpdateProposalsBlockVO, AiRequest } from "elza-api";
+import { AiNodeUpdateProposalsBlock } from "./AiNodeUpdateProposalsBlock";
 import { aiAssistantMessages } from "./messages";
 
 const useStyles = makeStyles({
@@ -62,40 +64,94 @@ const useStyles = makeStyles({
     citationSource: {
         color: tokens.colorNeutralForeground3,
     },
+    followUps: {
+        display: "flex",
+        justifyContent: "flex-end",
+        gap: tokens.spacingHorizontalS,
+        marginTop: tokens.spacingVerticalXS,
+        marginBottom: tokens.spacingVerticalS,
+    },
 });
 
 interface Props {
     blocks: AiDisplayBlock[];
+    /** Id of the exchange the blocks belong to; enables interactive blocks (proposals). */
+    requestId?: number;
+    /** Receives the refreshed exchange after an interactive block's server action. */
+    onRequestUpdate?: (request: AiRequest) => void;
+    /** Prefills the composer with a clarification quote. */
+    onClarify?: (text: string) => void;
+    /**
+     * Submits a server-suggested follow-up (the block's `followUps` buttons) —
+     * e.g. a check finding's "prepare the fix" action, which continues the
+     * conversation with an `elza.enhanceDescription` exchange. Buttons render
+     * only when provided.
+     */
+    onFollowUp?: (action: AiFollowUpAction) => void;
+    /** Disables the follow-up buttons (an exchange is already running). */
+    followUpDisabled?: boolean;
 }
 
-export function AiDisplayBlocks({ blocks }: Props) {
+export function AiDisplayBlocks({ blocks, requestId, onRequestUpdate, onClarify, onFollowUp, followUpDisabled }: Props) {
     const styles = useStyles();
+
+    const renderBlock = (block: AiDisplayBlock) => {
+        switch (block.type) {
+            case AiDisplayBlockType.Text:
+                return <p className={styles.text}>{(block as AiTextBlock).content}</p>;
+            case AiDisplayBlockType.Markdown:
+                return (
+                    <div className={styles.markdown}>
+                        <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]} rehypePlugins={[rehypeSanitize]}>
+                            {(block as AiMarkdownBlock).content}
+                        </ReactMarkdown>
+                    </div>
+                );
+            case AiDisplayBlockType.Table:
+                return <AiTableBlock block={block as AiTableBlockVO} captionClassName={styles.caption} />;
+            case AiDisplayBlockType.DocCitations:
+                return <AiCitationsBlock block={block as AiDocCitationsBlock} styles={styles} />;
+            case AiDisplayBlockType.NodeUpdateProposals:
+                return (
+                    <AiNodeUpdateProposalsBlock
+                        block={block as AiNodeUpdateProposalsBlockVO}
+                        requestId={requestId}
+                        onRequestUpdate={onRequestUpdate}
+                        onClarify={onClarify}
+                    />
+                );
+            default:
+                return (
+                    <p className={styles.unsupported}>
+                        <FormattedMessage {...aiAssistantMessages.unsupportedBlock} />
+                    </p>
+                );
+        }
+    };
 
     return (
         <>
             {blocks.map((block, index) => {
-                switch (block.type) {
-                    case AiDisplayBlockType.Text:
-                        return <p key={index} className={styles.text}>{(block as AiTextBlock).content}</p>;
-                    case AiDisplayBlockType.Markdown:
-                        return (
-                            <div key={index} className={styles.markdown}>
-                                <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]} rehypePlugins={[rehypeSanitize]}>
-                                    {(block as AiMarkdownBlock).content}
-                                </ReactMarkdown>
+                const followUps = onFollowUp && block.followUps?.length ? block.followUps : null;
+                return (
+                    <Fragment key={index}>
+                        {renderBlock(block)}
+                        {followUps && (
+                            <div className={styles.followUps}>
+                                {followUps.map((action, actionIndex) => (
+                                    <Button
+                                        key={actionIndex}
+                                        size="small"
+                                        disabled={!!followUpDisabled}
+                                        onClick={() => onFollowUp!(action)}
+                                    >
+                                        {action.label}
+                                    </Button>
+                                ))}
                             </div>
-                        );
-                    case AiDisplayBlockType.Table:
-                        return <AiTableBlock key={index} block={block as AiTableBlockVO} captionClassName={styles.caption} />;
-                    case AiDisplayBlockType.DocCitations:
-                        return <AiCitationsBlock key={index} block={block as AiDocCitationsBlock} styles={styles} />;
-                    default:
-                        return (
-                            <p key={index} className={styles.unsupported}>
-                                <FormattedMessage {...aiAssistantMessages.unsupportedBlock} />
-                            </p>
-                        );
-                }
+                        )}
+                    </Fragment>
+                );
             })}
         </>
     );

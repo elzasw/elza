@@ -7,7 +7,7 @@ import { EventType } from "typings/websocket";
 import { AnyMessage } from "typings/websocket/Message";
 import { useAppSelector } from "utils/hooks/useAppSelector";
 import { useWebsocket } from "components/shared/web-socket/WebsocketProvider";
-import { EditItem } from "components/arr/node-edit/types";
+import { EditItem } from "components/arr/item-form/types";
 
 function useWSStructureChanges(structureObjectId: number, callback: () => void) {
     const { addListener, removeListener } = useWebsocket();

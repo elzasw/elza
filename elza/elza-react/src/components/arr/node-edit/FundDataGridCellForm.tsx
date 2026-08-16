@@ -4,12 +4,12 @@ import { WebApi } from "actions";
 import { DataType, FormItemType, MandatoryType } from "elza-api";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { defineMessages, FormattedMessage } from "react-intl";
-import { useAppThunkDispatch } from "utils/hooks";
+import { useActiveFund, useActiveParent, useAppThunkDispatch, useStrictMode } from "utils/hooks";
 import { useAppSelector } from "utils/hooks/useAppSelector";
-import { useActiveFund, useActiveParent, useNodeFormData, useStrictMode } from "./hooks";
+import { useNodeFormData } from "./hooks";
 import { NodeFormContext } from "./NodeFormContext";
-import { DescItemTypeFields } from "./DescItemTypeFields";
-import { useStyles } from "./styles";
+import { DescItemTypeFields } from "../item-form/DescItemTypeFields";
+import { useStyles } from "../item-form/styles";
 
 const popoverWidthByTypeWidth: Record<number, number> = {
     0: 600,

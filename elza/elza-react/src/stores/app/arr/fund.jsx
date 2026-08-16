@@ -389,7 +389,10 @@ export function fund(state, action) {
             };
             return consolidateState(state, result);
         }
-        case types.FUND_FUND_APPROVE_VERSION:
+        case types.CHANGE_APPROVE_VERSION:
+            // Okamžité uzamčení záložky po schválení verze; zůstává trvalé,
+            // pokud se nepodaří načíst novou otevřenou verzi (viz
+            // fundVersionApproved).
             if (state.closed === false) {
                 return {
                     ...state,
@@ -398,6 +401,20 @@ export function fund(state, action) {
             }
 
             return state;
+
+        case types.FUND_FUND_APPROVE_VERSION:
+            // The approved version was replaced by a new open version with
+            // identical content - the tab transitions to it, keeping its
+            // working state (tree expansion, selected node). Change events
+            // published after the approval carry the new versionId, so a tab
+            // left on the closed version would stop receiving updates.
+            return {
+                ...state,
+                versionId: action.version.id,
+                lockDate: action.version.lockDate,
+                activeVersion: action.version,
+                closed: false,
+            };
 
         case types.FUND_FUND_NODES_POLICY_RECEIVE:
         case types.FUND_FUND_NODES_POLICY_REQUEST:

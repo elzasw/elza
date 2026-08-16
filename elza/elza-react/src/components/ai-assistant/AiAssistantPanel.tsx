@@ -319,7 +319,7 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
     const context = useCurrentAiContext();
     const contextRef = useRef(context);
     contextRef.current = context;
-    const { requests, pending, error, send, activeConversationId, openConversation, newConversation } = useAiConversation({
+    const { requests, pending, error, send, activeConversationId, openConversation, newConversation, replaceRequest } = useAiConversation({
         externalSystemCode,
         getContext: () => contextRef.current,
     });
@@ -328,7 +328,9 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
     const defaultTaskType = taskTypes[0]?.code;
     const quickTasks = taskTypes.slice(1);
 
-    const currentTaskType = requests[0]?.taskType;
+    // The conversation's CURRENT mode — a follow-up may switch the task type
+    // (the "fix this finding" handoff), so the badge tracks the last exchange.
+    const currentTaskType = requests[requests.length - 1]?.taskType;
     const currentTask = currentTaskType ? taskTypes.find(task => task.code === currentTaskType) : undefined;
     const currentTaskLabel = currentTask?.name || currentTaskType;
     const { conversations } = useAiConversationList(activeConversationId);
@@ -578,7 +580,14 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
                                 request.blocks && (
                                     <div ref={isLastRequest ? aiMessageRef : undefined} className={mergeClasses(styles.aiMessage, aiFullWidth && styles.aiMessageFull)}>
                                         {finishedSteps}
-                                        <AiDisplayBlocks blocks={request.blocks} />
+                                        <AiDisplayBlocks
+                                            blocks={request.blocks}
+                                            requestId={request.id}
+                                            onRequestUpdate={replaceRequest}
+                                            onClarify={(text) => setDraft(text)}
+                                            onFollowUp={(action) => send(action.userInstructions, action.taskType ?? undefined, activeProfileCode)}
+                                            followUpDisabled={pending}
+                                        />
                                         {request.usage && (
                                             <details className={styles.usage}>
                                                 <summary className={styles.usageSummary}>

@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -36,7 +37,12 @@ import cz.tacr.elza.service.da.DaService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.NotImplementedException;
+import java.nio.charset.StandardCharsets;
+
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.web.util.UriUtils;
+
+import cz.tacr.elza.service.dao.FileSystemRepoBrowser;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -88,7 +94,6 @@ import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoFile;
-import cz.tacr.elza.domain.ArrDaoFileGroup;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDaoLinkRequest;
 import cz.tacr.elza.domain.ArrDaoPackage;
@@ -233,19 +238,16 @@ public class ClientFactoryVO {
     private RequestQueueItemRepository requestQueueItemRepository;
 
     @Autowired
-    private DaoFileRepository daoFileRepository;
+    private ArrLegacyDaoLinkRepository legacyDaoLinkRepository;
 
     @Autowired
-    private DaoLinkRepository daoLinkRepository;
+    private ArrDaLinkRepository daLinkRepository;
 
     @Autowired
     private DaoRepository daoRepository;
 
     @Autowired
     private DaoRequestDaoRepository daoRequestDaoRepository;
-
-    @Autowired
-    private DaoFileGroupRepository daoFileGroupRepository;
 
     @Autowired
     private ConfigView configView;
@@ -2246,14 +2248,14 @@ public class ClientFactoryVO {
         if (CollectionUtils.isEmpty(arrDaoList)) {
             return Collections.emptyList();
         }
-        final List<ArrDaoLink> daoLinkList = daoLinkRepository.findByDaoInAndDeleteChangeIsNull(arrDaoList);
+        final List<ArrLegacyDaoLink> daoLinkList = legacyDaoLinkRepository.findByDaoInAndDeleteChangeIsNull(arrDaoList);
         // There might me more links to one DAO
         // We will send only first DaoLink
         //
         // This functionality has to be changed in future
         // Client should request existing daolinks
-        Map<Integer, ArrDaoLink> daoLinkMap = new HashMap<>();
-        for (ArrDaoLink daoLink : daoLinkList) {
+        Map<Integer, ArrLegacyDaoLink> daoLinkMap = new HashMap<>();
+        for (ArrLegacyDaoLink daoLink : daoLinkList) {
             daoLinkMap.put(daoLink.getDaoId(), daoLink);
         }
 
@@ -2261,16 +2263,95 @@ public class ClientFactoryVO {
     }
 
     public List<ArrDaoVO> createDaoList(String contextPath,
-                                        final List<ArrDao> arrDaoList, final boolean detail,
-                                        final ArrFundVersion version, final Map<Integer, ArrDaoLink> daoLinkMap) {
+                                        final Collection<ArrDao> arrDaoList, final boolean detail,
+                                        final ArrFundVersion version, final Map<Integer, ArrLegacyDaoLink> daoLinkMap) {
         if (CollectionUtils.isEmpty(arrDaoList)) {
             return Collections.emptyList();
         }
         List<ArrDaoVO> voList = new ArrayList<>(arrDaoList.size());
+        // synthetic ids for live-listed filesystem files, unique within this response
+        AtomicInteger fsFileIdSeq = new AtomicInteger();
         for (ArrDao arrDao : arrDaoList) {
-            voList.add(createDao(contextPath, arrDao, detail, version, daoLinkMap));
+            voList.add(createDao(contextPath, arrDao, detail, version, daoLinkMap, fsFileIdSeq));
         }
         return voList;
+    }
+
+    /**
+     * Builds panel VOs for the filesystem links of one node. A filesystem link
+     * carries no {@link ArrDao} — the VO is synthesized from the link itself:
+     * negative wire id derived from the link id, the repository-relative path
+     * as code and label, files listed live from the repository.
+     */
+    public List<ArrDaoVO> createFsDaoList(String contextPath,
+                                          final List<ArrFsLink> fsLinks, final boolean detail,
+                                          final ArrFundVersion version) {
+        if (CollectionUtils.isEmpty(fsLinks)) {
+            return Collections.emptyList();
+        }
+        List<ArrDaoVO> voList = new ArrayList<>(fsLinks.size());
+        // synthetic ids for live-listed filesystem files, unique within this response
+        AtomicInteger fsFileIdSeq = new AtomicInteger();
+        for (ArrFsLink fsLink : fsLinks) {
+            voList.add(createFsDao(contextPath, fsLink, detail, version, fsFileIdSeq));
+        }
+        return voList;
+    }
+
+    private ArrDaoVO createFsDao(String contextPath,
+                                 final ArrFsLink fsLink, final boolean detail,
+                                 final ArrFundVersion version,
+                                 final AtomicInteger fsFileIdSeq) {
+        ArrDaoVO vo = new ArrDaoVO();
+        // no persistent ArrDao exists; negative wire id so the row cannot
+        // collide with real dao ids
+        vo.setId(-fsLink.getDaoLinkId());
+        vo.setValid(true);
+        vo.setCode(fsLink.getPath());
+        vo.setLabel(fsLink.getPath());
+        vo.setDaoType(ArrDao.DaoType.ATTACHMENT);
+        vo.setExistInArrDaoRequest(false);
+        vo.setDaoLink(createDaoLink(fsLink.getDaoLinkId(), fsLink.getNodeId(), null,
+                                    version.getFundVersionId()));
+
+        ArrDigitalRepository repo = fsLink.getDigitalRepository();
+        Integer fundId = fsLink.getNode().getFundId();
+        FileSystemRepoBrowser.FsDaoListing listing = daoService.listFsLinkFiles(fsLink);
+        if (detail) {
+            for (FileSystemRepoBrowser.FsDaoFile file : listing.files()) {
+                ArrDaoFileVO fileVo = new ArrDaoFileVO();
+                fileVo.setId(-fsFileIdSeq.incrementAndGet());
+                fileVo.setCode(file.relatPath());
+                fileVo.setFileName(file.fileName());
+                fileVo.setSize(file.size());
+                fileVo.setMimetype(file.mimetype());
+                String url = createFsItemDataUrl(contextPath, fundId, repo, file.relatPath());
+                fileVo.setUrl(url);
+                fileVo.setThumbnailUrl(url);
+                vo.addFile(fileVo);
+            }
+        } else {
+            vo.setFileCount(listing.files().size());
+        }
+        if (listing.truncated()) {
+            vo.setTruncated(Boolean.TRUE);
+        }
+        return vo;
+    }
+
+    private String createFsItemDataUrl(String contextPath, Integer fundId,
+                                       ArrDigitalRepository repo, String relatPath) {
+        if (contextPath == null || contextPath.equals("/")) {
+            contextPath = "";
+        } else if (contextPath.endsWith("/")) {
+            contextPath = contextPath.substring(0, contextPath.length() - 1);
+        }
+        String encodedPath = StringUtils.isNotBlank(relatPath)
+                ? UriUtils.encodeQueryParam(relatPath, StandardCharsets.UTF_8)
+                : "";
+        return contextPath + "/api/v1/fund/" + fundId
+                + "/fsrepo/" + repo.getExternalSystemId()
+                + "/item-data?path=" + encodedPath;
     }
 
     /**
@@ -2305,7 +2386,8 @@ public class ClientFactoryVO {
     private ArrDaoVO createDao(String contextPath,
                                final ArrDao dao, final boolean detail,
                                final ArrFundVersion version,
-                               final Map<Integer, ArrDaoLink> daoLinkMap) {
+                               final Map<Integer, ArrLegacyDaoLink> daoLinkMap,
+                               final AtomicInteger fsFileIdSeq) {
         // read scenarios
         Items items = daoSyncService.unmarshalItemsFromAttributes(dao);
         List<String> scenarios = null;
@@ -2315,7 +2397,7 @@ public class ClientFactoryVO {
 
         ArrDaoVO vo = ArrDaoVO.newInstance(dao, scenarios);
 
-        ArrDaoLink daoLink = daoLinkMap.get(dao.getDaoId());
+        ArrLegacyDaoLink daoLink = daoLinkMap.get(dao.getDaoId());
         if (daoLink != null) {
             ArrDaoLinkVO daoLinkVo = createDaoLink(daoLink, version);
             vo.setDaoLink(daoLinkVo);
@@ -2328,33 +2410,26 @@ public class ClientFactoryVO {
         String url = daoService.getDaoUrl(contextPath, dao, daoLink, digitalRepository);
         vo.setUrl(url);
 
+        DaoService.DaoFileListing listing = daoService.getDaoFileListing(dao);
         if (detail) {
-            final List<ArrDaoFile> daoFileList = daoFileRepository.findByDaoAndDaoFileGroupIsNull(dao);
-            final List<ArrDaoFileVO> daoFileVOList = daoFileList.stream().map(f -> createDaoFile(contextPath, f))
-                    .collect(Collectors.toList());
-            vo.addAllFile(daoFileVOList);
-
-            final List<ArrDaoFileGroup> daoFileGroups = daoFileGroupRepository.findByDaoOrderByCodeAsc(dao);
-            final List<ArrDaoFileGroupVO> daoFileGroupVOList = new ArrayList<>();
-            for (ArrDaoFileGroup daoFileGroup : daoFileGroups) {
-                final ArrDaoFileGroupVO daoFileGroupVO = ArrDaoFileGroupVO.newInstance(daoFileGroup);
-                final List<ArrDaoFile> arrDaoFileList = daoFileRepository.findByDaoAndDaoFileGroup(dao, daoFileGroup);
-                final List<ArrDaoFileVO> groupDaoFileVOList = arrDaoFileList.stream()
-                        .map(f -> createDaoFile(contextPath, f))
-                        .collect(Collectors.toList());
-                daoFileGroupVO.setFiles(groupDaoFileVOList);
-                daoFileGroupVOList.add(daoFileGroupVO);
+            for (ArrDaoFile daoFile : listing.files()) {
+                ArrDaoFileVO fileVo = createDaoFile(contextPath, daoFile);
+                if (fileVo.getId() == null) {
+                    // live-listed filesystem files have no persistent id; assign a
+                    // negative wire id, unique within this response, so the client
+                    // can address the row without colliding with persisted ids
+                    fileVo.setId(-fsFileIdSeq.incrementAndGet());
+                }
+                vo.addFile(fileVo);
             }
-
-            vo.addAllFileGroup(daoFileGroupVOList);
         } else {
-            vo.setFileCount(daoFileRepository.countByDaoAndDaoFileGroupIsNull(dao));
-            vo.setFileGroupCount(daoFileGroupRepository.countByDao(dao));
+            vo.setFileCount(listing.total());
         }
+        vo.setTruncated(listing.truncated());
         return vo;
     }
 
-    public ArrDaoLinkVO createDaoLink(ArrDaoLink daoLink, ArrFundVersion version) {
+    public ArrDaoLinkVO createDaoLink(ArrLegacyDaoLink daoLink, ArrFundVersion version) {
         return createDaoLink(daoLink.getDaoLinkId(),
                              daoLink.getNodeId(),
                              daoLink.getScenario(),
@@ -2505,7 +2580,7 @@ public class ClientFactoryVO {
         List<ArrDaoLink> daoLinks = null;
         Map<Integer, TreeNodeVO> treeNodeMap = null;
         if (state.getFund() != null) {
-            daoLinks = daoLinkRepository.findByAipIdAndDeleteChangeIsNull(daAip.getAipId());
+            daoLinks = new ArrayList<>(daLinkRepository.findByAipIdAndDeleteChangeIsNull(daAip.getAipId()));
             Set<Integer> nodeIds = daoLinks.stream()
                     .map(ArrDaoLink::getNodeId)
                     .collect(Collectors.toSet());

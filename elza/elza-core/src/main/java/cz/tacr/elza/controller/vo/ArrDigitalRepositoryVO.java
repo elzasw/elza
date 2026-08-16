@@ -1,5 +1,7 @@
 package cz.tacr.elza.controller.vo;
 
+import static cz.tacr.elza.service.dao.FileSystemRepoService.FILE_URI_PREFIX;
+
 import cz.tacr.elza.api.DigitalRepositoryType;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrDigitalRepository;
@@ -20,6 +22,8 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
     private Boolean sendNotification;
 
     private DigitalRepositoryType digitalRepositoryType;
+
+    private Boolean multipleLinks;
 
     public String getViewDaoUrl() {
         return viewDaoUrl;
@@ -61,16 +65,44 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
         this.digitalRepositoryType = digitalRepositoryType;
     }
 
+    public Boolean getMultipleLinks() {
+		return multipleLinks;
+	}
+
+	public void setMultipleLinks(Boolean multipleLinks) {
+		this.multipleLinks = multipleLinks;
+	}
+
     @Override
     public SysExternalSystem createEntity(ApScope scope) {
         ArrDigitalRepository entity = new ArrDigitalRepository();
         this.fillEntity(entity);
 
-        entity.setViewDaoUrl(viewDaoUrl);
-        entity.setViewFileUrl(viewFileUrl);
-        entity.setViewThumbnailUrl(viewThumbnailUrl);
-        entity.setSendNotification(sendNotification);
+        // Defensive strip of a leftover file:// prefix if the admin pasted a full URI.
+        if (entity.getUrl() != null && entity.getUrl().startsWith(FILE_URI_PREFIX)) {
+            entity.setUrl(entity.getUrl().substring(FILE_URI_PREFIX.length()));
+        }
+
         entity.setDigitalRepositoryType(digitalRepositoryType);
+        if (digitalRepositoryType == DigitalRepositoryType.FILESYSTEM) {
+            // Settings addressing an external repository system have no meaning for a
+            // filesystem repository. They are hidden in the UI and cleared here, so a value
+            // left over from an earlier configuration cannot keep influencing anything.
+            entity.setViewDaoUrl(null);
+            entity.setViewFileUrl(null);
+            entity.setViewThumbnailUrl(null);
+            entity.setUsername(null);
+            entity.setPassword(null);
+            entity.setSendNotification(false);
+        } else {
+            entity.setViewDaoUrl(viewDaoUrl);
+            entity.setViewFileUrl(viewFileUrl);
+            entity.setViewThumbnailUrl(viewThumbnailUrl);
+            entity.setSendNotification(sendNotification);
+        }
+        if (multipleLinks != null) {
+            entity.setMultipleLinks(multipleLinks);
+        }
 
         return entity;
     }
@@ -94,6 +126,7 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
         vo.setViewThumbnailUrl(src.getViewThumbnailUrl());
         vo.setSendNotification(src.getSendNotification());
         vo.setDigitalRepositoryType(src.getDigitalRepositoryType());
+        vo.setMultipleLinks(src.getMultipleLinks());
         return vo;
     }
 }

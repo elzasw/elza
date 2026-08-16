@@ -37,7 +37,6 @@ import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.UserService;
 
-
 /**
  * Controller pro hromadné akce
  *
@@ -49,6 +48,7 @@ import cz.tacr.elza.service.UserService;
 public class BulkActionController {
 
     public static final String YAML_FILE_EXTENSION = ".yaml";
+
     @Autowired
     private ArrangementService arrangementService;
 
@@ -172,61 +172,37 @@ public class BulkActionController {
      * @return list
      */
     @RequestMapping(value = "/output/{outputId}", method = RequestMethod.GET)
-	@Transactional
+    @Transactional
     public List<BulkActionRunVO> getOutputBulkActions(@PathVariable final Integer outputId,
-                                                 @RequestParam(required = false, defaultValue = "false") @Nullable final Boolean recommended) {
+                                                     @RequestParam(required = false, defaultValue = "false") @Nullable final Boolean recommended) {
         Assert.notNull(outputId, "Identifikátor výstupu musí být vyplněn");
         final ArrOutput output = outputService.getOutput(outputId);
+        if (Boolean.TRUE.equals(recommended)) {
+            return bulkActionService.getRecommendedBulkActionsForOutput(output);
+        }
+
         final Set<Integer> nodeIds = output.getOutputNodes().stream()
                 .filter(nodeOutput -> nodeOutput.getDeleteChange() == null)
                 .map(ArrNodeOutput::getNodeId)
                 .collect(Collectors.toSet());
-        final List<ArrBulkActionRun> bulkActionsByNodes = nodeIds.isEmpty() ? Collections.EMPTY_LIST :
+        final List<ArrBulkActionRun> bulkActionsByNodes = nodeIds.isEmpty() ? Collections.emptyList() :
                 bulkActionService.findBulkActionsByNodeIds(
                         arrangementService.getOpenVersionByFundId(output.getFund().getFundId()),
-                        nodeIds
-                );
-        final List<RulAction> recommendedActions = bulkActionService.getRecommendedActions(output.getOutputType());
-
+                        nodeIds);
         bulkActionsByNodes.sort((o1, o2) -> o2.getChange().getChangeId() - o1.getChange().getChangeId());
-        ArrayList<BulkActionRunVO> result = new ArrayList<>();
-        if (recommended != null && recommended) {
-            for(final RulAction action : recommendedActions) {
-                ArrBulkActionRun bulkActionRun = null;
-                for (final ArrBulkActionRun run : bulkActionsByNodes) {
-                    if (action.getFilename().equals(run.getBulkActionCode() + YAML_FILE_EXTENSION)) {
-                        bulkActionRun = run;
-                        break;
-                    }
-                }
 
-                if (bulkActionRun != null) {
-                    result.add(factoryVo.createBulkActionRun(bulkActionRun));
-                } else {
-                    BulkActionRunVO bulkActionRunVO = new BulkActionRunVO();
-                    bulkActionRunVO.setCode(action.getFilename().replace(YAML_FILE_EXTENSION, ""));
-                    result.add(bulkActionRunVO);
-                }
-            }
-        } else {
-            result.addAll(factoryVo.createBulkActionsList(bulkActionsByNodes));
-            for(final RulAction action : recommendedActions) {
-                ArrBulkActionRun bulkActionRun = null;
-                for (final ArrBulkActionRun run : bulkActionsByNodes) {
-                    if (action.getFilename().equals(run.getBulkActionCode() + YAML_FILE_EXTENSION)) {
-                        bulkActionRun = run;
-                        break;
-                    }
-                }
-
-                if (bulkActionRun == null) {
-                    BulkActionRunVO bulkActionRunVO = new BulkActionRunVO();
-                    bulkActionRunVO.setCode(action.getFilename().replace(YAML_FILE_EXTENSION, ""));
-                    result.add(bulkActionRunVO);
-                }
+        List<BulkActionRunVO> result = new ArrayList<>(factoryVo.createBulkActionsList(bulkActionsByNodes));
+        Set<String> presentCodes = bulkActionsByNodes.stream()
+                .map(ArrBulkActionRun::getBulkActionCode)
+                .collect(Collectors.toSet());
+        for (RulAction action : bulkActionService.getRecommendedActions(output.getOutputType())) {
+            String code = action.getCode();
+            if (!presentCodes.contains(code)) {
+                BulkActionRunVO stub = new BulkActionRunVO();
+                stub.setCode(code);
+                result.add(stub);
             }
         }
-
         return result;
     }
 }
