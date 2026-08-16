@@ -276,6 +276,7 @@
 	.addValueWithTitle("ZP2015_EDITION")
 	.addValueWithTitle("ZP2015_NOTE")
 	.addValueWithTitle("ZP2015_ARRANGER")
+	.addValueWithTitle("ZP2015_ARRANGER_INFO")
 	.addValueWithTitle("ZP2015_DESCRIPTION_DATE")
 	.addValueWithOtherTitle("Omezení přístupnosti", "ZP2015_APPLIED_RESTRICTION_TEXT")]]></defaultValueExpression>
 	</parameter>
