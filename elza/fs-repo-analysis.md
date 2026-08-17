@@ -2,8 +2,8 @@
 
 **Status: the #9944 filesystem-repository work is CLOSED (2026-08-12); a follow-up delivery pass
 on 2026-08-14 landed N6, N7 and the `DaoService` FS link tests, and 2026-08-17 closed every
-open frontend D-item (D1–D7) plus a VirtualList scroll-listener fix uncovered on the way. The
-remaining open items were re-verified against the code on 2026-08-17.** The feature is fully on
+open frontend D-item (D1–D7) plus dropped the legacy `VirtualList` from both filesystem panels.
+The remaining open items were re-verified against the code on 2026-08-17.** The feature is fully on
 its target architecture: browsing, panel files and downloads are live disk reads; links are
 `ArrFsLink` rows targeting `(repository, path)`; `multiple_links` is enforced; filesystem
 repositories persist **zero** entities. What remains open (§5) are enhancements outside #9944's
@@ -253,7 +253,7 @@ Two consequences that still bind new work:
 Every D-item that stood open on 2026-08-14 was delivered on 2026-08-17. Kept for reference so
 commit messages naming D1–D7 keep resolving:
 
-- **D1 (tree half)** — `Tree.tsx` rewritten around a keyed `childrenCache: Record<fullPath, 'loading' | {error} | RenderItem[]>`. Collapse preserves data; refresh wipes the cache; the flat list consumed by `VirtualList` is derived through `useMemo`, not stored.
+- **D1 (tree half)** — `Tree.tsx` rewritten around a keyed `childrenCache: Record<fullPath, 'loading' | {error} | RenderItem[]>`. Collapse preserves data; refresh wipes the cache; the flat rendered list is derived through `useMemo`, not stored.
 - **D2** — every `setState` in `Tree.tsx` and `FileSystemBrowser.tsx` that reads-then-writes takes a functional updater. Concurrent expands no longer clobber each other.
 - **D3** — `extractRepoIdFromFullPath` returns `[number, string | undefined]` and the callers dropped `parseInt(repoId, 10)`. The `fullPath` string stays as the opaque state key; only its parse layer is typed.
 - **D4** — breadcrumb `<>…</>` fragments became keyed `<Fragment key={…}>`, silencing the React key warning.
@@ -261,24 +261,18 @@ commit messages naming D1–D7 keep resolving:
 - **D6** — `expandedItems` lives only in `FileSystemBrowser`; `Tree` reads it from props. One owner, no drift.
 - **D7** — `fundFsRepos` re-fetches on `refreshCounter`, on the in-panel "Obnovit" button, and on tab-switch onto the filesystem tab. `Tree` keys its reset effect on the content signature (`fsRepoId:available:name`) instead of `repos.length`, so availability flips and renames reach the tree. Refresh also collapses previously expanded nodes so the `[-]` icon and the visible content stay in sync while the cache wipes.
 
-**VirtualList scroll-listener fix (out-of-plan, 2026-08-17).** `FileSystemBrowser` and `Tree`
-passed `container={ref.current || undefined}` on first render — `ref.current` was `null`, so
-`VirtualList.componentDidMount` subscribed to `window.scroll` instead of the panel's own scroll
-container. `scroll` does not bubble, so pure scrolling never fired `onScroll` and the next
-window of items never rendered — pages appeared to end in a stack of empty rows until any click
-inside the panel forced a re-render. Fix: replace the `useRef` with `useState` used as a callback
-ref. The re-render triggered when the DOM node attaches hands `VirtualList` the correct container
-before it wires the listener.
-
-The following older frontend concerns still hold and remain open — they are not #9944
-regressions and are tracked here for continuity:
-
-- The legacy `VirtualList` sizes each item as 16px by default; the CSS row is nearer 28px, and the
-  `updateItemHeightIfChanged` fallback measures the first rendered child only when the parent
-  omits `itemHeight`. Attempts to hand-set `itemHeight={30}` made things worse (real height is
-  smaller in some rows because of the popover icon column), so the panels currently trust
-  auto-detect and inherit the underlying imprecision. A proper fix is either measuring the row
-  once per mount or replacing `VirtualList` with `react-window` / `react-virtuoso`.
+**Legacy `VirtualList` removed from both panels (out-of-plan, 2026-08-17).** Both panels used
+the in-tree `components/shared/virtual-list/VirtualList` — a legacy class component still using
+`UNSAFE_componentWillReceiveProps` / `UNSAFE_componentWillMount` and `ReactDOM.findDOMNode`
+(all deprecated in React 18 and slated for removal). It also has a broken auto-measured
+`itemHeight` (defaults to 16px against a ~28px row and only re-measures when the parent omits
+`itemHeight`; a hand-set `itemHeight={30}` did not help because rows with the link-popover icon
+are taller than rows without it) and a subscribe-to-window scroll bug when the container prop
+starts as `null` on first render. Rather than patch around it we switched both panels to a
+plain `.map()` inside the existing `overflow: auto` container — pagination (`DEFAULT_PAGE_SIZE =
+1000`) already caps the DOM size, and native browser scrolling matches the actual row heights
+by construction. `VirtualList.tsx` itself is untouched because it is still used elsewhere in
+the app.
 
 ---
 
@@ -290,7 +284,7 @@ are done. What is left of it:
 | Phase | Content | Status |
 |---|---|---|
 | 3 — backend SPI | `DigitalRepositoryBackend` + backend-neutral browse contract | **Open** (§3.3 points 2 and 3) |
-| 4 — frontend | Refresh, functional updates, structured paths, loading/error states | **Done** — D1–D7 delivered 2026-08-17 (§4); legacy `VirtualList` imprecision noted there stays open |
+| 4 — frontend | Refresh, functional updates, structured paths, loading/error states | **Done** — D1–D7 delivered 2026-08-17 (§4); legacy `VirtualList` also dropped from both panels the same day |
 | 5 — scale and robustness | Keyset cursor (C2), single-pass attributes (C5), async link creation, range requests | **Partial** — range requests and async linking are moot; C5 done 2026-08-12 (`hasChildren` probe deferred past paging on 2026-08-14 to preserve the single-pass win); C2 remains |
 | 6 — optional | "Ingest folder as AIP" (§3.3 point 4) | **Open, only if wanted** |
 
@@ -304,16 +298,13 @@ stated.
    the cursor.
 2. **N5 — batch the per-DAO disk walks.** Still deferred; revisit only if nodes with many
    filesystem links appear in practice.
-3. **Legacy `VirtualList`.** Auto-measured row height and a coarse windowing model — noted at the
-   end of §4. Replace with `react-window` / `react-virtuoso`, or replace with a plain
-   overflow-scroll list, when this panel becomes a pain point again.
-4. **Phase 3 — the SPI** (`DigitalRepositoryBackend` + `RepoItem`/`RepoItems`, §3.3 points 2 and
+3. **Phase 3 — the SPI** (`DigitalRepositoryBackend` + `RepoItem`/`RepoItems`, §3.3 points 2 and
    3). Unblocked, but it is an investment that pays off only when a second backend is actually
    written against it. Deliberately last among the code items: doing it now means designing an
    abstraction from one implementation.
-5. **Phase 6 — optional ingest-as-AIP** (§3.3 point 4), the only sanctioned way a filesystem
+4. **Phase 6 — optional ingest-as-AIP** (§3.3 point 4), the only sanctioned way a filesystem
    folder gets real `DaAip` semantics. Only if wanted.
-6. **`da-migration.md` Phases 4–5** — the WSDL decision and the removal of the `arr_dao` family,
+5. **`da-migration.md` Phases 4–5** — the WSDL decision and the removal of the `arr_dao` family,
    tracked there; independent of everything above.
 
 ---
