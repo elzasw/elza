@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useMemo, forwardRef, useImperativeHandle } from 'react';
+import { useState, useEffect, useMemo, forwardRef, useImperativeHandle } from 'react';
 import { VirtualList } from 'components/shared';
 import { Api } from 'api';
 import classNames from 'classnames';
@@ -63,7 +63,8 @@ export const Tree = forwardRef<TreeExposedFunctions, TreeProps>(({
     refreshKey = 0,
 }: TreeProps, ref) => {
     const intl = useIntl();
-    const treeContainerRef = useRef<HTMLDivElement>(null);
+    // Callback ref via state — see the matching comment in FileSystemBrowser.tsx.
+    const [treeContainer, setTreeContainer] = useState<HTMLDivElement | null>(null);
 
     // Keyed cache: fullPath → 'loading' | error | RenderItem[]. The single source
     // of truth for tree children — nothing else stores loaded items.
@@ -350,9 +351,9 @@ export const Tree = forwardRef<TreeExposedFunctions, TreeProps>(({
         }
     };
 
-    return <div className="tree" ref={treeContainerRef}>
+    return <div className="tree" ref={setTreeContainer}>
         <VirtualList
-            container={treeContainerRef.current || undefined}
+            container={treeContainer || undefined}
             items={renderedTree}
             renderItem={(item: RenderItem) => {
                 return renderItem(item);
