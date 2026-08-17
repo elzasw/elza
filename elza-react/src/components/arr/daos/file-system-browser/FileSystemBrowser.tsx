@@ -492,7 +492,7 @@ export const FileSystemBrowser = ({
                     <div title={i18n("arr.daos.fileSystem.selectParent")}
                         className="btn"
                         onClick={handleSelectParent}>
-                        <Icon glyph="fa-angle-up" />
+                        <Icon glyph="fa-arrow-up" />
                     </div>
                     <div title={intl.formatMessage(messages.refresh)}
                         className="btn"
