@@ -82,6 +82,26 @@ const messages = defineMessages({
         id: 'arr.daos.fileSystem.repo.unavailableDetail',
         defaultMessage: 'Cesta {path} na serveru neexistuje nebo ji nelze číst. Obsah repozitáře proto nelze zobrazit — zkontrolujte nastavení externího systému.',
     },
+    refresh: {
+        id: 'arr.daos.fileSystem.refresh',
+        defaultMessage: 'Obnovit',
+    },
+    reposLoadErrorTitle: {
+        id: 'arr.daos.fileSystem.repos.loadErrorTitle',
+        defaultMessage: 'Nelze načíst seznam repozitářů',
+    },
+    reposLoadErrorDetail: {
+        id: 'arr.daos.fileSystem.repos.loadErrorDetail',
+        defaultMessage: 'Zkuste to znovu tlačítkem Obnovit.',
+    },
+    itemsLoadErrorTitle: {
+        id: 'arr.daos.fileSystem.items.loadErrorTitle',
+        defaultMessage: 'Nelze načíst obsah složky',
+    },
+    itemsLoadErrorDetail: {
+        id: 'arr.daos.fileSystem.items.loadErrorDetail',
+        defaultMessage: 'Zkuste to znovu tlačítkem Obnovit nebo přejděte na jinou složku.',
+    },
 });
 
 interface Props {
@@ -114,6 +134,9 @@ export const FileSystemBrowser = ({
     const [filterInput, setFilterInput] = useState('');
     const [treeSize, setTreeSize] = useState<number>(100);
     const [debouncedFilter, setDebouncedFilter] = useState('');
+    const [localRefreshTick, setLocalRefreshTick] = useState(0);
+    const [reposError, setReposError] = useState<boolean>(false);
+    const [itemsError, setItemsError] = useState<boolean>(false);
 
     // Number of middle path segments currently collapsed into the "…" separator.
     // The first segment and the last segment (when depth > 1) always stay visible;
@@ -321,17 +344,27 @@ export const FileSystemBrowser = ({
         (async () => {
             if (isSelectedRepoUnavailable) {
                 setLevelList([]);
+                setItemsError(false);
                 return;
             }
             if (selectedTreeItemPath) {
-                const itemsEx = await loadLevel(selectedTreeItemPath, undefined, 0);
-                if (!cancelled) {
-                    setLevelList(itemsEx);
+                try {
+                    const itemsEx = await loadLevel(selectedTreeItemPath, undefined, 0);
+                    if (!cancelled) {
+                        setLevelList(itemsEx);
+                        setItemsError(false);
+                    }
+                } catch (e) {
+                    console.error('Failed to load fs items', e);
+                    if (!cancelled) {
+                        setLevelList([]);
+                        setItemsError(true);
+                    }
                 }
             }
         })();
         return () => { cancelled = true; };
-    }, [selectedTreeItemPath, isSelectedRepoUnavailable, sortType, filterByLink, debouncedFilter, refreshCounter])
+    }, [selectedTreeItemPath, isSelectedRepoUnavailable, sortType, filterByLink, debouncedFilter, refreshCounter, localRefreshTick])
 
     useEffect(() => {
         return () => {
@@ -340,11 +373,21 @@ export const FileSystemBrowser = ({
     }, [])
 
     useEffect(() => {
+        let cancelled = false;
         (async () => {
-            const { data } = await Api.funds.fundFsRepos(fundId);
-            setRepos(data);
-        })()
-    }, [])
+            try {
+                const { data } = await Api.funds.fundFsRepos(fundId);
+                if (!cancelled) {
+                    setRepos(data);
+                    setReposError(false);
+                }
+            } catch (e) {
+                console.error('Failed to load fs repositories', e);
+                if (!cancelled) setReposError(true);
+            }
+        })();
+        return () => { cancelled = true; };
+    }, [fundId, refreshCounter, localRefreshTick])
 
     useEffect(() => {
         if (repos.length > 0 && !selectedTreeItemPath) {
@@ -437,6 +480,11 @@ export const FileSystemBrowser = ({
                         onClick={handleSelectParent}>
                         <Icon glyph="fa-angle-up" />
                     </div>
+                    <div title={intl.formatMessage(messages.refresh)}
+                        className="btn"
+                        onClick={() => setLocalRefreshTick((tick) => tick + 1)}>
+                        <Icon glyph="fa-refresh" />
+                    </div>
                 </div>
                 {generateBreadcrumbs()}
                 <div className="filters">
@@ -497,16 +545,28 @@ export const FileSystemBrowser = ({
                     leftSize={treeSize}
                     onChange={({ leftSize }: { leftSize: number; rightSize: number }) => setTreeSize(leftSize)}
                     left={
-                        <Tree
-                            ref={treeRef}
-                            fundId={fundId}
-                            selectedItemPath={selectedTreeItemPath}
-                            onSelect={(item) => { setSelectedTreeItem(item.fullPath) }}
-                            expandedItems={expandedItems}
-                            onExpandChange={(itemFullPath, expanded) => { setExpandedItems({ ...expandedItems, [itemFullPath]: expanded }) }}
-                            childrenMap={childrenMap}
-                            repos={repos}
-                        />
+                        reposError ? (
+                            <div className="repo-unavailable">
+                                <Icon glyph="fa-exclamation-triangle" className="fa-lg" />
+                                <div className="repo-unavailable__title">
+                                    {intl.formatMessage(messages.reposLoadErrorTitle)}
+                                </div>
+                                <div className="repo-unavailable__detail">
+                                    {intl.formatMessage(messages.reposLoadErrorDetail)}
+                                </div>
+                            </div>
+                        ) : (
+                            <Tree
+                                ref={treeRef}
+                                fundId={fundId}
+                                selectedItemPath={selectedTreeItemPath}
+                                onSelect={(item) => { setSelectedTreeItem(item.fullPath) }}
+                                expandedItems={expandedItems}
+                                onExpandChange={(itemFullPath, expanded) => { setExpandedItems({ ...expandedItems, [itemFullPath]: expanded }) }}
+                                childrenMap={childrenMap}
+                                repos={repos}
+                            />
+                        )
                     }
                     center={
                         isSelectedRepoUnavailable ? (
@@ -517,6 +577,16 @@ export const FileSystemBrowser = ({
                                 </div>
                                 <div className="repo-unavailable__detail">
                                     {intl.formatMessage(messages.repoUnavailableDetail, { path: selectedRepo?.path })}
+                                </div>
+                            </div>
+                        ) : itemsError ? (
+                            <div className="repo-unavailable">
+                                <Icon glyph="fa-exclamation-triangle" className="fa-lg" />
+                                <div className="repo-unavailable__title">
+                                    {intl.formatMessage(messages.itemsLoadErrorTitle)}
+                                </div>
+                                <div className="repo-unavailable__detail">
+                                    {intl.formatMessage(messages.itemsLoadErrorDetail)}
                                 </div>
                             </div>
                         ) : (

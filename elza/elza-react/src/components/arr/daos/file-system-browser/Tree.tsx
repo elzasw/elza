@@ -6,13 +6,17 @@ import { FsRepo, FsItem, FsItemType } from 'elza-api';
 import { defineMessages, useIntl } from 'react-intl';
 import { i18n, Icon } from 'components/shared';
 import "./FileSystemBrowser.scss"
-import { RenderItem, isLastKeyItem, isRepoItem, isListItem, RenderItemType } from './types';
+import { RenderItem, isLastKeyItem, isRepoItem, isListItem, isErrorItem, RenderItemType } from './types';
 import { extractRepoIdFromFullPath } from './extractRepoIdFromFullPath';
 
 const messages = defineMessages({
     repoUnavailable: {
         id: 'arr.daos.fileSystem.repo.unavailable',
         defaultMessage: 'Repozitář není dostupný — cesta {path} na serveru neexistuje nebo ji nelze číst. Zkontrolujte nastavení externího systému.',
+    },
+    loadError: {
+        id: 'arr.daos.fileSystem.tree.loadError',
+        defaultMessage: 'Nelze načíst — klikněte pro opakování',
     },
 });
 
@@ -94,12 +98,26 @@ export const Tree = forwardRef<TreeExposedFunctions, TreeProps>(({
     }
 
     const loadMoreItems = async (path: string, lastKey: string, index: number, depth: number) => {
-        const itemsEx: RenderItem[] = await loadLevel(path, lastKey, depth, FsItemType.Folder);
+        try {
+            const itemsEx: RenderItem[] = await loadLevel(path, lastKey, depth, FsItemType.Folder);
 
-        const newRepoItems = [...workingTree];
-        newRepoItems.splice(index, 1, ...itemsEx);
+            const newRepoItems = [...workingTree];
+            newRepoItems.splice(index, 1, ...itemsEx);
 
-        setWorkingTree(newRepoItems);
+            setWorkingTree(newRepoItems);
+        } catch (e) {
+            console.error('Failed to load more tree items', e);
+            const errorNode: RenderItem = {
+                type: RenderItemType.Error,
+                data: { retryPath: path },
+                parentFullPath: path,
+                fullPath: `${path}/?loadError`,
+                depth,
+            };
+            const newRepoItems = [...workingTree];
+            newRepoItems.splice(index, 1, errorNode);
+            setWorkingTree(newRepoItems);
+        }
     }
 
     const toggleItem = (item: RenderItem, forcedExpandState?: boolean) => {
@@ -123,12 +141,27 @@ export const Tree = forwardRef<TreeExposedFunctions, TreeProps>(({
         const selectedItemIndex = workingTree.findIndex((_item) => { return item.fullPath === _item.fullPath })
 
         if (isListItem(item) || isRepoItem(item)) {
-            const itemsEx = await loadLevel(item.fullPath, undefined, item.depth + 1, FsItemType.Folder);
-            const newWorkingTree = [...workingTree];
-            newWorkingTree.splice(selectedItemIndex + 1, 0, ...itemsEx)
+            try {
+                const itemsEx = await loadLevel(item.fullPath, undefined, item.depth + 1, FsItemType.Folder);
+                const newWorkingTree = [...workingTree];
+                newWorkingTree.splice(selectedItemIndex + 1, 0, ...itemsEx)
 
-            setWorkingTree(newWorkingTree);
-            setExpandedItems({ ...expandedItems, [item.fullPath]: true })
+                setWorkingTree(newWorkingTree);
+                setExpandedItems({ ...expandedItems, [item.fullPath]: true })
+            } catch (e) {
+                console.error('Failed to expand tree node', e);
+                const errorNode: RenderItem = {
+                    type: RenderItemType.Error,
+                    data: { retryPath: item.fullPath },
+                    parentFullPath: item.fullPath,
+                    fullPath: `${item.fullPath}/?loadError`,
+                    depth: item.depth + 1,
+                };
+                const newWorkingTree = [...workingTree];
+                newWorkingTree.splice(selectedItemIndex + 1, 0, errorNode);
+                setWorkingTree(newWorkingTree);
+                setExpandedItems({ ...expandedItems, [item.fullPath]: true })
+            }
         }
     }
 
@@ -137,7 +170,43 @@ export const Tree = forwardRef<TreeExposedFunctions, TreeProps>(({
         setExpandedItems({ ...expandedItems, [item.fullPath]: false })
     }
 
+    const retryExpand = async (retryPath: string, retryDepth: number) => {
+        const errorFullPath = `${retryPath}/?loadError`;
+        const errorIndex = workingTree.findIndex((n) => n.fullPath === errorFullPath);
+        if (errorIndex < 0) return;
+        try {
+            const itemsEx = await loadLevel(retryPath, undefined, retryDepth, FsItemType.Folder);
+            const newTree = [...workingTree];
+            newTree.splice(errorIndex, 1, ...itemsEx);
+            setWorkingTree(newTree);
+        } catch (e) {
+            console.error('Retry failed', e);
+        }
+    }
+
     const renderItem = (item: RenderItem) => {
+        if (isErrorItem(item)) {
+            return <div
+                className="list-item error"
+                title={intl.formatMessage(messages.loadError)}
+                onClick={() => retryExpand(item.data.retryPath, item.depth)}
+            >
+                <span className="item-part no-shrink">
+                    <span
+                        style={{
+                            width: `${(item.depth + 1) * TREE_INDENT_PX}px`,
+                            display: "inline-flex",
+                            justifyContent: "flex-end",
+                        }}
+                    >
+                        <Icon glyph="fa-exclamation-triangle" />
+                    </span>
+                </span>
+                <span className="item-part">
+                    {intl.formatMessage(messages.loadError)}
+                </span>
+            </div>
+        }
         if (isLastKeyItem(item)) {
             return <div
                 className="list-item"
@@ -215,6 +284,10 @@ export const Tree = forwardRef<TreeExposedFunctions, TreeProps>(({
         }
     }
 
+    // Stable content-based signature so the tree resets when a repository's
+    // fields change (availability flip, rename), not only when the count changes.
+    const reposSignature = repos.map((r) => `${r.fsRepoId}:${r.available ? 1 : 0}:${r.name}`).join('|');
+
     useEffect(() => {
         setWorkingTree(repos.map((dataItem) => ({
             type: RenderItemType.Repo,
@@ -224,7 +297,7 @@ export const Tree = forwardRef<TreeExposedFunctions, TreeProps>(({
             fullPath: dataItem.fsRepoId.toString(),
         })));
         setExpandedItems({});
-    }, [repos.length])
+    }, [reposSignature])
 
     // Working tree/expanded change effect
     useEffect(() => {
