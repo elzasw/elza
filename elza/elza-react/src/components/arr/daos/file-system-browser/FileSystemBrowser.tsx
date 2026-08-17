@@ -119,7 +119,11 @@ export const FileSystemBrowser = ({
     onSelect = () => { return; },
     refreshCounter,
 }: Props) => {
-    const levelContainerRef = useRef<HTMLDivElement>(null);
+    // Callback ref via state — VirtualList's scroll listener needs the real DOM
+    // node in its container prop on mount, and useRef.current is null on first
+    // render. useState forces a re-render once the node is attached so
+    // VirtualList subscribes to the correct scroll target instead of window.
+    const [levelContainer, setLevelContainer] = useState<HTMLDivElement | null>(null);
     const treeRef = useRef<TreeExposedFunctions>(null);
     const breadcrumbsRef = useRef<HTMLDivElement>(null);
 
@@ -618,10 +622,10 @@ export const FileSystemBrowser = ({
                         ) : (
                             <div
                                 className="file-list"
-                                ref={levelContainerRef}
+                                ref={setLevelContainer}
                             >
                                 <VirtualList
-                                    container={levelContainerRef.current || undefined}
+                                    container={levelContainer || undefined}
                                     items={levelList}
                                     renderItem={(item: RenderItem) => {
                                         return renderListItem(item);
