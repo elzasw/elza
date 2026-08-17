@@ -1,5 +1,4 @@
-import { useState, useEffect, useMemo, forwardRef, useImperativeHandle } from 'react';
-import { VirtualList } from 'components/shared';
+import { Fragment, useState, useEffect, useMemo, forwardRef, useImperativeHandle } from 'react';
 import { Api } from 'api';
 import classNames from 'classnames';
 import { FsRepo, FsItem, FsItemType } from 'elza-api';
@@ -63,8 +62,6 @@ export const Tree = forwardRef<TreeExposedFunctions, TreeProps>(({
     refreshKey = 0,
 }: TreeProps, ref) => {
     const intl = useIntl();
-    // Callback ref via state — see the matching comment in FileSystemBrowser.tsx.
-    const [treeContainer, setTreeContainer] = useState<HTMLDivElement | null>(null);
 
     // Keyed cache: fullPath → 'loading' | error | RenderItem[]. The single source
     // of truth for tree children — nothing else stores loaded items.
@@ -171,9 +168,9 @@ export const Tree = forwardRef<TreeExposedFunctions, TreeProps>(({
         }
     };
 
-    // Flatten the (repos → cache → expandedItems) into the ordered visible list
-    // consumed by VirtualList. Recomputed on every relevant change; nothing
-    // stored — no state to drift from the cache.
+    // Flatten the (repos → cache → expandedItems) into the ordered visible list.
+    // Recomputed on every relevant change; nothing stored — no state to drift
+    // from the cache.
     const renderedTree = useMemo<RenderItem[]>(() => {
         const out: RenderItem[] = [];
 
@@ -351,14 +348,11 @@ export const Tree = forwardRef<TreeExposedFunctions, TreeProps>(({
         }
     };
 
-    return <div className="tree" ref={setTreeContainer}>
-        <VirtualList
-            container={treeContainer || undefined}
-            items={renderedTree}
-            renderItem={(item: RenderItem) => {
-                return renderItem(item);
-            }}
-            scrollToIndex={0}
-        />
+    return <div className="tree">
+        {renderedTree.map((item) => (
+            <Fragment key={item.fullPath}>
+                {renderItem(item)}
+            </Fragment>
+        ))}
     </div>;
 });

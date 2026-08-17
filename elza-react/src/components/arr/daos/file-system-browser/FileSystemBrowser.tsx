@@ -1,5 +1,4 @@
 import { Fragment, useRef, useState, useEffect, useLayoutEffect } from 'react';
-import { VirtualList } from 'components/shared';
 import { Api } from 'api';
 import classNames from 'classnames';
 import { Button, Popover, PopoverSurface, PopoverTrigger } from '@fluentui/react-components';
@@ -119,11 +118,6 @@ export const FileSystemBrowser = ({
     onSelect = () => { return; },
     refreshCounter,
 }: Props) => {
-    // Callback ref via state — VirtualList's scroll listener needs the real DOM
-    // node in its container prop on mount, and useRef.current is null on first
-    // render. useState forces a re-render once the node is attached so
-    // VirtualList subscribes to the correct scroll target instead of window.
-    const [levelContainer, setLevelContainer] = useState<HTMLDivElement | null>(null);
     const treeRef = useRef<TreeExposedFunctions>(null);
     const breadcrumbsRef = useRef<HTMLDivElement>(null);
 
@@ -620,18 +614,12 @@ export const FileSystemBrowser = ({
                                 </div>
                             </div>
                         ) : (
-                            <div
-                                className="file-list"
-                                ref={setLevelContainer}
-                            >
-                                <VirtualList
-                                    container={levelContainer || undefined}
-                                    items={levelList}
-                                    renderItem={(item: RenderItem) => {
-                                        return renderListItem(item);
-                                    }}
-                                    scrollToIndex={0}
-                                />
+                            <div className="file-list">
+                                {levelList.map((item) => (
+                                    <Fragment key={item.fullPath}>
+                                        {renderListItem(item)}
+                                    </Fragment>
+                                ))}
                             </div>
                         )
                     }
