@@ -82,7 +82,7 @@ export const Tree = forwardRef<TreeExposedFunctions, TreeProps>(({
 
     const loadLevel = async (fullPath: string, lastKey: string | undefined, depth: number, filter?: FsItemType): Promise<RenderItem[]> => {
         const [repoId, path] = extractRepoIdFromFullPath(fullPath);
-        const { data: items } = await Api.funds.fundFsRepoItems(fundId, parseInt(repoId, 10), filter, path, lastKey);
+        const { data: items } = await Api.funds.fundFsRepoItems(fundId, repoId, filter, path, lastKey);
 
         const itemLevel: RenderItem[] = items.items.map((item) => {
             const extendedItemBase: FsItem = { ...item };
