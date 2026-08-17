@@ -1,13 +1,14 @@
 # FileSystemRepoService — architectural analysis and current state
 
-**Status: the #9944 filesystem-repository work is CLOSED (2026-08-12); the follow-up items
-delivered on 2026-08-14 (N6, N7, and the `DaoService` FS link tests) have been folded into this
-document, and the remaining open items were re-verified against the code on 2026-08-17.** The
-feature is fully on its target architecture: browsing, panel files and downloads are live disk
-reads; links are `ArrFsLink` rows targeting `(repository, path)`; `multiple_links` is enforced;
-filesystem repositories persist **zero** entities. What remains open (§5) are enhancements outside
-#9944's scope — the `DigitalRepositoryBackend` SPI, the frontend D-items, and the C2/N5 scale
-items — plus the DA-side Phases 4–5 tracked in `da-migration.md`.
+**Status: the #9944 filesystem-repository work is CLOSED (2026-08-12); a follow-up delivery pass
+on 2026-08-14 landed N6, N7 and the `DaoService` FS link tests, and 2026-08-17 closed every
+open frontend D-item (D1–D7) plus a VirtualList scroll-listener fix uncovered on the way. The
+remaining open items were re-verified against the code on 2026-08-17.** The feature is fully on
+its target architecture: browsing, panel files and downloads are live disk reads; links are
+`ArrFsLink` rows targeting `(repository, path)`; `multiple_links` is enforced; filesystem
+repositories persist **zero** entities. What remains open (§5) are enhancements outside #9944's
+scope — the `DigitalRepositoryBackend` SPI, the C2/N5 scale items, and the optional
+ingest-as-AIP — plus the DA-side Phases 4–5 tracked in `da-migration.md`.
 
 **Scope:** `FileSystemRepoService` and the filesystem-repository browser feature.
 **Related:** `elza/da-migration.md` — its Phase 3 was revised to match §3.3 of this document and is
@@ -247,54 +248,37 @@ Two consequences that still bind new work:
 
 ---
 
-## 4. Open findings — frontend
+## 4. Frontend — delivered
 
-The *list* pane reloads on sort/filter changes, after link/unlink, and via the `refreshCounter`
-prop. Everything below is still open.
+Every D-item that stood open on 2026-08-14 was delivered on 2026-08-17. Kept for reference so
+commit messages naming D1–D7 keep resolving:
 
-### D1 (tree half) — tree children are fetched once per component lifetime
+- **D1 (tree half)** — `Tree.tsx` rewritten around a keyed `childrenCache: Record<fullPath, 'loading' | {error} | RenderItem[]>`. Collapse preserves data; refresh wipes the cache; the flat list consumed by `VirtualList` is derived through `useMemo`, not stored.
+- **D2** — every `setState` in `Tree.tsx` and `FileSystemBrowser.tsx` that reads-then-writes takes a functional updater. Concurrent expands no longer clobber each other.
+- **D3** — `extractRepoIdFromFullPath` returns `[number, string | undefined]` and the callers dropped `parseInt(repoId, 10)`. The `fullPath` string stays as the opaque state key; only its parse layer is typed.
+- **D4** — breadcrumb `<>…</>` fragments became keyed `<Fragment key={…}>`, silencing the React key warning.
+- **D5** — every `await Api.funds…` is wrapped; the tree renders a synthetic error node with a click-to-retry; the list panel and the tree panel each render an error placeholder (repo list, current folder). A loading placeholder covers the fetch window in both panes.
+- **D6** — `expandedItems` lives only in `FileSystemBrowser`; `Tree` reads it from props. One owner, no drift.
+- **D7** — `fundFsRepos` re-fetches on `refreshCounter`, on the in-panel "Obnovit" button, and on tab-switch onto the filesystem tab. `Tree` keys its reset effect on the content signature (`fsRepoId:available:name`) instead of `repos.length`, so availability flips and renames reach the tree. Refresh also collapses previously expanded nodes so the `[-]` icon and the visible content stay in sync while the cache wipes.
 
-`Tree.tsx` holds `workingTree` in component state and only ever splices into it; `expandItem`
-early-returns when `expandedItems[fullPath] != undefined`, so collapse-then-expand never re-fetches
-and there is no tree refresh path. Fix: a keyed cache with explicit `invalidate(path)` /
-`invalidateSubtree(path)` and re-fetch on expand when stale.
+**VirtualList scroll-listener fix (out-of-plan, 2026-08-17).** `FileSystemBrowser` and `Tree`
+passed `container={ref.current || undefined}` on first render — `ref.current` was `null`, so
+`VirtualList.componentDidMount` subscribed to `window.scroll` instead of the panel's own scroll
+container. `scroll` does not bubble, so pure scrolling never fired `onScroll` and the next
+window of items never rendered — pages appeared to end in a stack of empty rows until any click
+inside the panel forced a re-render. Fix: replace the `useRef` with `useState` used as a callback
+ref. The re-render triggered when the DOM node attaches hands `VirtualList` the correct container
+before it wires the listener.
 
-### D2 — Stale-closure races
+The following older frontend concerns still hold and remain open — they are not #9944
+regressions and are tracked here for continuity:
 
-Both components read state from the closure and write spreads back. Two concurrent expands lose one
-another's results. Use functional `setState` updaters.
-
-### D3 — Paths are `/`-joined strings with the repository id prefixed
-
-`extractRepoIdFromFullPath` + `parseInt(repoId, 10)`; repository id and path stay conflated. Model
-as `{repoId: number, segments: string[]}`.
-
-### D4 — Missing `key` props on breadcrumb fragments
-
-The breadcrumb `map` in `FileSystemBrowser.tsx` returns keyless `<>…</>` fragments.
-
-### D5 — No loading or error state
-
-Every `await Api.funds…` in both components is unguarded — there is not a single `catch` in either
-file (re-verified 2026-08-14) — so a failed listing leaves the tree/list silently empty. Only one
-failure mode is now explained rather than swallowed: an unavailable repository, which the server
-reports as data (`FsRepo.available`) instead of an error, so the file pane can state the reason
-(§1.1). Everything else — a listing that 500s, a download that 404s — is still silent.
-
-### D6 — Two sources of truth for expansion
-
-`Tree.tsx` keeps its own `expandedItems` state *and* receives `expandedItems` / `onExpandChange`
-props, using the props only for notification.
-
-### D7 — The repository list is fetched once and never refreshed *(new 2026-08-14)*
-
-`FileSystemBrowser` calls `fundFsRepos` in a `useEffect` with an empty dependency array, and
-`Tree.tsx` rebuilds its `workingTree` on `[repos.length]` — the *count*, not the content. So after
-an administrator fixes a broken path, the repository stays greyed until the dialog is reopened;
-and any future change that alters a repository's fields without changing how many there are (an
-availability flip, a rename) would not reach the tree at all. The `refreshCounter` prop already
-exists for the item list — extending it to the repository fetch, and keying the tree effect on the
-repository identities rather than their count, is the same fix.
+- The legacy `VirtualList` sizes each item as 16px by default; the CSS row is nearer 28px, and the
+  `updateItemHeightIfChanged` fallback measures the first rendered child only when the parent
+  omits `itemHeight`. Attempts to hand-set `itemHeight={30}` made things worse (real height is
+  smaller in some rows because of the popover icon column), so the panels currently trust
+  auto-detect and inherit the underlying imprecision. A proper fix is either measuring the row
+  once per mount or replacing `VirtualList` with `react-window` / `react-virtuoso`.
 
 ---
 
@@ -306,7 +290,7 @@ are done. What is left of it:
 | Phase | Content | Status |
 |---|---|---|
 | 3 — backend SPI | `DigitalRepositoryBackend` + backend-neutral browse contract | **Open** (§3.3 points 2 and 3) |
-| 4 — frontend | Refresh, functional updates, structured paths, loading/error states | **Partial** — list refresh done; D1(tree)/D2/D3/D4/D5/D6/D7 open (§4) |
+| 4 — frontend | Refresh, functional updates, structured paths, loading/error states | **Done** — D1–D7 delivered 2026-08-17 (§4); legacy `VirtualList` imprecision noted there stays open |
 | 5 — scale and robustness | Keyset cursor (C2), single-pass attributes (C5), async link creation, range requests | **Partial** — range requests and async linking are moot; C5 done 2026-08-12 (`hasChildren` probe deferred past paging on 2026-08-14 to preserve the single-pass win); C2 remains |
 | 6 — optional | "Ingest folder as AIP" (§3.3 point 4) | **Open, only if wanted** |
 
@@ -315,26 +299,21 @@ are done. What is left of it:
 Ordered by value per effort, not by phase number. Nothing here blocks anything else except where
 stated.
 
-1. **D7 + D5 — refresh and error state.** D7 makes the §1.1 diagnostics actually reach the user
-   without reopening the dialog; D5 stops every other failure from looking like an empty folder.
-   Together they are what makes the feature feel finished rather than merely correct.
-2. **D1(tree)/D2/D6 — the tree's state model.** One coherent rewrite: a keyed cache with explicit
-   invalidation, functional `setState` updaters, and a single owner of the expansion state. Doing
-   them separately is more work than doing them at once.
-3. **C2 — keyset cursor.** Only matters for directories large enough to page *and* mutating while
+1. **C2 — keyset cursor.** Only matters for directories large enough to page *and* mutating while
    browsed. Real, but the rarest of the scale items; needs the sort key and direction encoded in
    the cursor.
-4. **N5 — batch the per-DAO disk walks.** Still deferred; revisit only if nodes with many
+2. **N5 — batch the per-DAO disk walks.** Still deferred; revisit only if nodes with many
    filesystem links appear in practice.
-5. **D3/D4 — structured paths, breadcrumb keys.** Cleanups; fold into whichever frontend task
-   touches those files next.
-6. **Phase 3 — the SPI** (`DigitalRepositoryBackend` + `RepoItem`/`RepoItems`, §3.3 points 2 and
+3. **Legacy `VirtualList`.** Auto-measured row height and a coarse windowing model — noted at the
+   end of §4. Replace with `react-window` / `react-virtuoso`, or replace with a plain
+   overflow-scroll list, when this panel becomes a pain point again.
+4. **Phase 3 — the SPI** (`DigitalRepositoryBackend` + `RepoItem`/`RepoItems`, §3.3 points 2 and
    3). Unblocked, but it is an investment that pays off only when a second backend is actually
    written against it. Deliberately last among the code items: doing it now means designing an
    abstraction from one implementation.
-7. **Phase 6 — optional ingest-as-AIP** (§3.3 point 4), the only sanctioned way a filesystem
+5. **Phase 6 — optional ingest-as-AIP** (§3.3 point 4), the only sanctioned way a filesystem
    folder gets real `DaAip` semantics. Only if wanted.
-8. **`da-migration.md` Phases 4–5** — the WSDL decision and the removal of the `arr_dao` family,
+6. **`da-migration.md` Phases 4–5** — the WSDL decision and the removal of the `arr_dao` family,
    tracked there; independent of everything above.
 
 ---
@@ -393,11 +372,13 @@ the fs changes).
 
 **For the remaining work:**
 
-- **Frontend.** Manual: add a file on disk, refresh, confirm it appears without reopening the
-  dialog; collapse and re-expand a tree folder and confirm children re-fetch (the D1 tree half —
-  currently broken); point a repository at a missing path and confirm it appears greyed with an
-  explanation, then fix the path and confirm the dialog must be reopened before it goes live again
-  (D7 — currently the expected, wrong behaviour).
+- **Frontend.** Manual: hit "Obnovit" (or switch tabs onto the filesystem tab) and confirm the
+  repo list and the tree collapse then reload (D7 / cache wipe); point a repository at a missing
+  path, verify it appears greyed with an explanation, fix the path from admin, hit "Obnovit"
+  and confirm the tree updates without reopening the dialog (D7 end-to-end); disconnect the
+  server or block the API and confirm both panels render error placeholders instead of empty
+  space (D5); scroll a large folder by dragging the scrollbar *without* clicking any row and
+  confirm rows keep loading as the viewport advances (VirtualList scroll-listener fix).
 - **Scale.** Benchmark a 50 000-entry directory on a network share — the single-pass rewrite and
   the paged `hasChildren` probe both landed unmeasured; the worst case is a folder containing many
   files and no subfolder, with a page size that surfaces every folder. Confirm paging is stable
