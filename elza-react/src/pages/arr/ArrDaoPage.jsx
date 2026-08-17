@@ -126,10 +126,13 @@ class ArrDaoPage extends ArrParentPage {
 
     handleTabSelect = (item, ...other) => {
         console.log(item, other);
-        this.setState({
+        this.setState(({ fsRefreshCounter }) => ({
             selectedTab: item.id,
             selectedDaoLeft: null,
-        });
+            fsRefreshCounter: item.id === 'fileSystemTree'
+                ? fsRefreshCounter + 1
+                : fsRefreshCounter,
+        }));
     };
 
     /**
