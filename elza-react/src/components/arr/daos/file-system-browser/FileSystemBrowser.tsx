@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useLayoutEffect } from 'react';
+import { Fragment, useRef, useState, useEffect, useLayoutEffect } from 'react';
 import { VirtualList } from 'components/shared';
 import { Api } from 'api';
 import classNames from 'classnames';
@@ -195,13 +195,13 @@ export const FileSystemBrowser = ({
     // Repository of the selected tree item; unavailable ones cannot be browsed and
     // the file list is replaced by an explanation instead.
     const selectedRepo = selectedTreeItemPath
-        ? repos.find((repo) => repo.fsRepoId.toString() === extractRepoIdFromFullPath(selectedTreeItemPath)[0])
+        ? repos.find((repo) => repo.fsRepoId === extractRepoIdFromFullPath(selectedTreeItemPath)[0])
         : undefined;
     const isSelectedRepoUnavailable = selectedRepo != undefined && !selectedRepo.available;
 
     const loadLevel = async (fullPath: string, lastKey: string | undefined, depth: number = 0, filter?: FsItemType) => {
         const [repoId, path] = extractRepoIdFromFullPath(fullPath)
-        const { data: items } = await Api.funds.fundFsRepoItems(fundId, parseInt(repoId, 10), filter, path, lastKey, filterByLink, sortType, debouncedFilter || undefined);
+        const { data: items } = await Api.funds.fundFsRepoItems(fundId, repoId, filter, path, lastKey, filterByLink, sortType, debouncedFilter || undefined);
         const itemLevel: RenderItem[] = items.items.map((item) => {
             const extendedItemBase: FsItem = {
                 ...item,
@@ -454,18 +454,18 @@ export const FileSystemBrowser = ({
                     const hiddenNames = breadcrumbParts
                         .slice(hiddenStart, hiddenEnd! + 1)
                         .map((bp) => bp.split("/").pop());
-                    return <>
+                    return <Fragment key={`ellipsis-${hiddenStart}`}>
                         <span className="ellipsis" title={hiddenNames.join(" / ")}>
                             &hellip;
                         </span>
                         <div className="divider">
                             <Icon glyph="fa-angle-right" />
                         </div>
-                    </>
+                    </Fragment>
                 }
 
                 const parts = breadcrumb.split("/")
-                return <>
+                return <Fragment key={breadcrumb}>
                     <div className="btn" title={breadcrumb} onClick={() => { setSelectedTreeItem(breadcrumb) }}>
                         {index === 0 ? repoName : parts[parts.length - 1]}
                     </div>
@@ -473,7 +473,7 @@ export const FileSystemBrowser = ({
                         && <div className="divider">
                             <Icon glyph="fa-angle-right" />
                         </div>}
-                </>
+                </Fragment>
             })}
         </div>
 
