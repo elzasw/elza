@@ -102,6 +102,10 @@ const messages = defineMessages({
         id: 'arr.daos.fileSystem.items.loadErrorDetail',
         defaultMessage: 'Zkuste to znovu tlačítkem Obnovit nebo přejděte na jinou složku.',
     },
+    itemsLoading: {
+        id: 'arr.daos.fileSystem.items.loading',
+        defaultMessage: 'Načítání obsahu složky…',
+    },
 });
 
 interface Props {
@@ -137,6 +141,7 @@ export const FileSystemBrowser = ({
     const [localRefreshTick, setLocalRefreshTick] = useState(0);
     const [reposError, setReposError] = useState<boolean>(false);
     const [itemsError, setItemsError] = useState<boolean>(false);
+    const [itemsLoading, setItemsLoading] = useState<boolean>(false);
 
     // On refresh, collapse every previously expanded node so the "[-]" icon
     // and the visible content stay in sync while the Tree wipes its cache.
@@ -352,9 +357,11 @@ export const FileSystemBrowser = ({
             if (isSelectedRepoUnavailable) {
                 setLevelList([]);
                 setItemsError(false);
+                setItemsLoading(false);
                 return;
             }
             if (selectedTreeItemPath) {
+                setItemsLoading(true);
                 try {
                     const itemsEx = await loadLevel(selectedTreeItemPath, undefined, 0);
                     if (!cancelled) {
@@ -367,6 +374,8 @@ export const FileSystemBrowser = ({
                         setLevelList([]);
                         setItemsError(true);
                     }
+                } finally {
+                    if (!cancelled) setItemsLoading(false);
                 }
             }
         })();
@@ -597,6 +606,13 @@ export const FileSystemBrowser = ({
                                 </div>
                                 <div className="repo-unavailable__detail">
                                     {intl.formatMessage(messages.itemsLoadErrorDetail)}
+                                </div>
+                            </div>
+                        ) : itemsLoading ? (
+                            <div className="repo-unavailable repo-unavailable--loading">
+                                <Icon glyph="fa-spinner fa-spin" className="fa-lg" />
+                                <div className="repo-unavailable__title">
+                                    {intl.formatMessage(messages.itemsLoading)}
                                 </div>
                             </div>
                         ) : (
