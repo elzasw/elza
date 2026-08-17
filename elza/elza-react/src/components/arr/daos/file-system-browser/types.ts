@@ -5,6 +5,7 @@ export enum RenderItemType {
     LastKey,
     Repo,
     Error,
+    Loading,
 }
 
 export interface RenderItemBase<T> {
@@ -26,12 +27,24 @@ export interface ErrorItem {
     retryPath: string;
 }
 
+/** Synthetic placeholder rendered while a tree node's children are being fetched. */
+export interface LoadingItem {
+    /** fullPath of the node whose children are loading. */
+    forPath: string;
+}
+
 export type RenderListItem = RenderItemBase<FsItem>;
 export type RenderLastKeyItem = RenderItemBase<LastKeyItem>;
 export type RenderRepoItem = RenderItemBase<FsRepo>;
 export type RenderErrorItem = RenderItemBase<ErrorItem>;
+export type RenderLoadingItem = RenderItemBase<LoadingItem>;
 
-export type RenderItem = RenderListItem | RenderLastKeyItem | RenderRepoItem | RenderErrorItem;
+export type RenderItem =
+    | RenderListItem
+    | RenderLastKeyItem
+    | RenderRepoItem
+    | RenderErrorItem
+    | RenderLoadingItem;
 
 export const isLastKeyItem = (item: RenderItem): item is RenderLastKeyItem => {
     return item.type === RenderItemType.LastKey;
@@ -47,4 +60,8 @@ export const isRepoItem = (item: RenderItem): item is RenderRepoItem => {
 
 export const isErrorItem = (item: RenderItem): item is RenderErrorItem => {
     return item.type === RenderItemType.Error;
+}
+
+export const isLoadingItem = (item: RenderItem): item is RenderLoadingItem => {
+    return item.type === RenderItemType.Loading;
 }

@@ -138,6 +138,12 @@ export const FileSystemBrowser = ({
     const [reposError, setReposError] = useState<boolean>(false);
     const [itemsError, setItemsError] = useState<boolean>(false);
 
+    // On refresh, collapse every previously expanded node so the "[-]" icon
+    // and the visible content stay in sync while the Tree wipes its cache.
+    useEffect(() => {
+        setExpandedItems({});
+    }, [refreshCounter, localRefreshTick]);
+
     // Number of middle path segments currently collapsed into the "…" separator.
     // The first segment and the last segment (when depth > 1) always stay visible;
     // this only ever grows/shrinks to make the breadcrumb row fit its available width.
@@ -216,7 +222,7 @@ export const FileSystemBrowser = ({
             })
         }
         if (!childrenMap[fullPath] && itemLevel.find((item) => { return isListItem(item) && item.data.itemType === FsItemType.Folder })) {
-            setChildrenMap({ ...childrenMap, [fullPath]: true });
+            setChildrenMap((prev) => ({ ...prev, [fullPath]: true }));
         }
         return itemLevel;
     }
@@ -332,10 +338,11 @@ export const FileSystemBrowser = ({
         if (selectedTreeItemPath) {
             const itemsEx: RenderItem[] = await loadLevel(selectedTreeItemPath, lastKey, depth);
 
-            const newRepoItems = [...levelList];
-            newRepoItems.splice(index, 1, ...itemsEx);
-
-            setLevelList(newRepoItems);
+            setLevelList((prev) => {
+                const next = [...prev];
+                next.splice(index, 1, ...itemsEx);
+                return next;
+            });
         }
     }
 
@@ -562,9 +569,12 @@ export const FileSystemBrowser = ({
                                 selectedItemPath={selectedTreeItemPath}
                                 onSelect={(item) => { setSelectedTreeItem(item.fullPath) }}
                                 expandedItems={expandedItems}
-                                onExpandChange={(itemFullPath, expanded) => { setExpandedItems({ ...expandedItems, [itemFullPath]: expanded }) }}
+                                onExpandChange={(itemFullPath, expanded) =>
+                                    setExpandedItems((prev) => ({ ...prev, [itemFullPath]: expanded }))
+                                }
                                 childrenMap={childrenMap}
                                 repos={repos}
+                                refreshKey={(refreshCounter ?? 0) + localRefreshTick}
                             />
                         )
                     }
