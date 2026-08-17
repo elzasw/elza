@@ -1,12 +1,13 @@
 # FileSystemRepoService — architectural analysis and current state
 
-**Status: the #9944 filesystem-repository work is CLOSED (2026-08-12); every open item below was
-re-verified against the code on 2026-08-14.** The feature is fully on its target architecture:
-browsing, panel files and downloads are live disk reads; links are `ArrFsLink` rows targeting
-`(repository, path)`; `multiple_links` is enforced; filesystem repositories persist **zero**
-entities. What remains open (§5) are enhancements outside #9944's scope — the
-`DigitalRepositoryBackend` SPI, the frontend D-items, and the C2/N5 scale items — plus the DA-side
-Phases 4–5 tracked in `da-migration.md`.
+**Status: the #9944 filesystem-repository work is CLOSED (2026-08-12); the follow-up items
+delivered on 2026-08-14 (N6, N7, and the `DaoService` FS link tests) have been folded into this
+document, and the remaining open items were re-verified against the code on 2026-08-17.** The
+feature is fully on its target architecture: browsing, panel files and downloads are live disk
+reads; links are `ArrFsLink` rows targeting `(repository, path)`; `multiple_links` is enforced;
+filesystem repositories persist **zero** entities. What remains open (§5) are enhancements outside
+#9944's scope — the `DigitalRepositoryBackend` SPI, the frontend D-items, and the C2/N5 scale
+items — plus the DA-side Phases 4–5 tracked in `da-migration.md`.
 
 **Scope:** `FileSystemRepoService` and the filesystem-repository browser feature.
 **Related:** `elza/da-migration.md` — its Phase 3 was revised to match §3.3 of this document and is
@@ -103,29 +104,7 @@ across requests** — client code must not persist them.
 ### N5 — One disk walk per fs DAO per `findDaos(detail)` request
 
 Acceptable for typical per-node link counts; revisit (batching or caching) only if nodes with many
-filesystem links become common. *Still deferred (re-verified 2026-08-14).*
-
-### N6 — `hasChildren` reintroduces a per-directory probe *(new 2026-08-14)*
-
-`directoryHasSubfolders` opens a `DirectoryStream` filtered by `Files::isDirectory` for **every
-folder in the listing** and stops at the first subfolder found. For a folder whose subfolders sort
-early this is cheap; for a folder containing many files and *no* subfolder it stats every child
-before answering `false`. Listing a directory of N such folders is therefore O(total entries
-beneath them) — exactly the per-entry network-share cost the single-pass `walkFileTree` rewrite
-removed (C5, resolved 2026-08-12), reinstated for the folder half. Options, cheapest first: probe
-only when the entry survives all filters and lands on the requested page; cache the answer per
-(repository, path, mtime); or drop the eager probe and let the client show the expand marker
-optimistically, correcting on the empty result.
-
-### N7 — Availability checks have no timeout *(new 2026-08-14)*
-
-`listRepos` runs `Files.isDirectory` per repository on every open of the browser, and
-`testRepository` walks the root. On an unreachable network mount these block for the OS mount
-timeout, so one dead mount can stall `GET /fund/{fundId}/fsrepos` for every user of every
-repository — the check added to *surface* breakage becomes the thing that hangs on it. A bounded
-check (short-lived task with a timeout, the result treated as `available = false` on expiry) would
-keep the listing responsive; the admin-initiated test may block longer, but should report a
-timeout rather than the request dying.
+filesystem links become common. *Still deferred (re-verified 2026-08-17).*
 
 ---
 
@@ -328,45 +307,35 @@ are done. What is left of it:
 |---|---|---|
 | 3 — backend SPI | `DigitalRepositoryBackend` + backend-neutral browse contract | **Open** (§3.3 points 2 and 3) |
 | 4 — frontend | Refresh, functional updates, structured paths, loading/error states | **Partial** — list refresh done; D1(tree)/D2/D3/D4/D5/D6/D7 open (§4) |
-| 5 — scale and robustness | Keyset cursor (C2), single-pass attributes (C5), async link creation, range requests | **Partial** — range requests and async linking are moot; C5 done 2026-08-12, though N6 partly undoes it; C2 remains |
+| 5 — scale and robustness | Keyset cursor (C2), single-pass attributes (C5), async link creation, range requests | **Partial** — range requests and async linking are moot; C5 done 2026-08-12 (`hasChildren` probe deferred past paging on 2026-08-14 to preserve the single-pass win); C2 remains |
 | 6 — optional | "Ingest folder as AIP" (§3.3 point 4) | **Open, only if wanted** |
 
-### Recommended next steps *(reviewed 2026-08-14)*
+### Recommended next steps *(reviewed 2026-08-17)*
 
 Ordered by value per effort, not by phase number. Nothing here blocks anything else except where
 stated.
 
-1. **N6 — bound the `hasChildren` probe.** Highest value: it is a live regression of a fix that
-   was just made, it hits exactly the deployment the feature targets (network shares), and it is a
-   contained change inside `browseItems`. Probing only entries that reach the returned page is the
-   smallest honest fix.
-2. **N7 — bound the availability check.** Small, and it protects the endpoint every user hits from
-   a single dead mount. Do it together with 1 — both are about not letting the filesystem dictate
-   request latency.
-3. **Close the link coverage gap — test `createFsDaoLink` / `moveFsDaoLink`** (§7). These carry the
-   `multiple_links` enforcement and the newest feature, link move, and neither has a single
-   automated test. Cheapest insurance on this list.
-4. **D7 + D5 — refresh and error state.** D7 makes the §1.1 diagnostics actually reach the user
+1. **D7 + D5 — refresh and error state.** D7 makes the §1.1 diagnostics actually reach the user
    without reopening the dialog; D5 stops every other failure from looking like an empty folder.
    Together they are what makes the feature feel finished rather than merely correct.
-5. **D1(tree)/D2/D6 — the tree's state model.** One coherent rewrite: a keyed cache with explicit
+2. **D1(tree)/D2/D6 — the tree's state model.** One coherent rewrite: a keyed cache with explicit
    invalidation, functional `setState` updaters, and a single owner of the expansion state. Doing
    them separately is more work than doing them at once.
-6. **C2 — keyset cursor.** Only matters for directories large enough to page *and* mutating while
+3. **C2 — keyset cursor.** Only matters for directories large enough to page *and* mutating while
    browsed. Real, but the rarest of the scale items; needs the sort key and direction encoded in
    the cursor.
-7. **N5 — batch the per-DAO disk walks.** Still deferred; revisit only if nodes with many
+4. **N5 — batch the per-DAO disk walks.** Still deferred; revisit only if nodes with many
    filesystem links appear in practice.
-8. **D3/D4 — structured paths, breadcrumb keys.** Cleanups; fold into whichever frontend task
+5. **D3/D4 — structured paths, breadcrumb keys.** Cleanups; fold into whichever frontend task
    touches those files next.
-9. **Phase 3 — the SPI** (`DigitalRepositoryBackend` + `RepoItem`/`RepoItems`, §3.3 points 2 and
+6. **Phase 3 — the SPI** (`DigitalRepositoryBackend` + `RepoItem`/`RepoItems`, §3.3 points 2 and
    3). Unblocked, but it is an investment that pays off only when a second backend is actually
    written against it. Deliberately last among the code items: doing it now means designing an
    abstraction from one implementation.
-10. **Phase 6 — optional ingest-as-AIP** (§3.3 point 4), the only sanctioned way a filesystem
-    folder gets real `DaAip` semantics. Only if wanted.
-11. **`da-migration.md` Phases 4–5** — the WSDL decision and the removal of the `arr_dao` family,
-    tracked there; independent of everything above.
+7. **Phase 6 — optional ingest-as-AIP** (§3.3 point 4), the only sanctioned way a filesystem
+   folder gets real `DaAip` semantics. Only if wanted.
+8. **`da-migration.md` Phases 4–5** — the WSDL decision and the removal of the `arr_dao` family,
+   tracked there; independent of everything above.
 
 ---
 
@@ -410,20 +379,17 @@ All architectural questions raised by this analysis are settled.
 
 ## 7. Verification
 
-Automated coverage today (counted 2026-08-14): `FileSystemRepoServiceTest` (10 tests — path
+Automated coverage today (counted 2026-08-17): `FileSystemRepoServiceTest` (10 tests — path
 containment incl. traversal inputs, MIME detection, inline-renderable classification),
 `FileSystemRepoBrowserTest` (37 tests — browse sort/filter/paging incl. Czech collation, link
 resolution incl. multi-fund rows, `listDaoFiles` recursive/cap/missing-path, repository
 availability incl. the templated-root asymmetry, `testRepository` per failure mode, name ordering,
-`normalizeRelatPath` and the templated-URL helpers), `ArrDigitalRepositoryVOTest` (3 tests —
-clearing of settings that do not apply, pass-through for other repository types, `file://` strip),
-and `DaoCoreServiceTest` (SOAP DAO flow, unaffected by the fs changes).
-
-**Coverage gap (2026-08-14):** `DaoService.createFsDaoLink` and `moveFsDaoLink` have **no
-automated test at all** — no test source references either. That leaves the `multiple_links`
-enforcement, the idempotent re-link on the same node, the containment check on the link target,
-and the entire link-move feature resting on manual testing. Worth closing before any refactor
-touches `DaoService`.
+`normalizeRelatPath` and the templated-URL helpers), `DaoServiceFsLinkTest` (11 tests — covers
+`createFsDaoLink` and `moveFsDaoLink`: `multiple_links` enforcement, idempotent re-link on the
+same node, containment check on the link target, and the link-move flow),
+`ArrDigitalRepositoryVOTest` (3 tests — clearing of settings that do not apply, pass-through for
+other repository types, `file://` strip), and `DaoCoreServiceTest` (SOAP DAO flow, unaffected by
+the fs changes).
 
 **For the remaining work:**
 
@@ -432,10 +398,10 @@ touches `DaoService`.
   currently broken); point a repository at a missing path and confirm it appears greyed with an
   explanation, then fix the path and confirm the dialog must be reopened before it goes live again
   (D7 — currently the expected, wrong behaviour).
-- **Scale.** Benchmark a 50 000-entry directory on a network share — the single-pass rewrite landed
-  unmeasured, and N6's per-folder probe should be measured on the same fixture, with a folder
-  containing many files and no subfolder as the worst case. Confirm paging is stable under
-  concurrent modification once C2's keyset cursor lands.
+- **Scale.** Benchmark a 50 000-entry directory on a network share — the single-pass rewrite and
+  the paged `hasChildren` probe both landed unmeasured; the worst case is a folder containing many
+  files and no subfolder, with a page size that surfaces every folder. Confirm paging is stable
+  under concurrent modification once C2's keyset cursor lands.
 - **Repository configuration.** Manual: a templated root (`{fundId}`) that resolves for one fund
   and not another stays hidden for the second; the administration test reports each failure mode
   distinctly; saving a filesystem repository clears the settings of §6 item 5.
