@@ -646,9 +646,7 @@
   ],
   "src/components/CrossTabHelper.tsx": [
     "error TS7006: Parameter 'tab' implicitly has an 'any' type.",
-    "error TS7016: Could not find a declaration file for module 'across-tabs'. 'C:/Pyta/elza/elza-main.git/elza/elza-react/node_modules/across-tabs/dist/across-tabs.js' implicitly has an 'any' type.",
     "error TS7019: Rest parameter 'data' implicitly has an 'any[]' type.",
-    "error TS7019: Rest parameter 'e' implicitly has an 'any[]' type.",
     "error TS7019: Rest parameter 'e' implicitly has an 'any[]' type."
   ],
   "src/components/admin/ScopesField.tsx": [
@@ -892,11 +890,7 @@
   "src/components/fund/filters/FundFilters.tsx": [
     "error TS7053: Element implicitly has an 'any' type because expression of type 'FondsFieldName' can't be used to index type '{ institutionCode: { id: string; defaultMessage: string; }; institutionId: { id: string; defaultMessage: string; }; fondsNumber: { id: string; defaultMessage: string; }; mark: { id: string; defaultMessage: string; }; ... 4 more ...; CONTAINS: { ...; }; }'."
   ],
-  "src/components/home/EntityItem.tsx": [
-    "error TS7016: Could not find a declaration file for module 'react-router-bootstrap'. 'C:/Pyta/elza/elza-main.git/elza/elza-react/node_modules/react-router-bootstrap/lib/index.js' implicitly has an 'any' type."
-  ],
   "src/components/home/FundItem.tsx": [
-    "error TS7016: Could not find a declaration file for module 'react-router-bootstrap'. 'C:/Pyta/elza/elza-main.git/elza/elza-react/node_modules/react-router-bootstrap/lib/index.js' implicitly has an 'any' type.",
     "error TS7031: Binding element 'fundDetail' implicitly has an 'any' type.",
     "error TS7031: Binding element 'version' implicitly has an 'any' type."
   ],
@@ -920,19 +914,7 @@
     "error TS7006: Parameter 'state' implicitly has an 'any' type."
   ],
   "src/components/registry/Detail/item/DetailItemContent.tsx": [
-    "error TS7006: Parameter 'i' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'i' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'state' implicitly has an 'any' type.",
-    "error TS7016: Could not find a declaration file for module 'diff'. 'C:/Pyta/elza/elza-main.git/elza/elza-react/node_modules/diff/lib/index.mjs' implicitly has an 'any' type.",
-    "error TS7031: Binding element 'added' implicitly has an 'any' type.",
-    "error TS7031: Binding element 'added' implicitly has an 'any' type.",
-    "error TS7031: Binding element 'removed' implicitly has an 'any' type.",
-    "error TS7031: Binding element 'removed' implicitly has an 'any' type.",
-    "error TS7031: Binding element 'value' implicitly has an 'any' type.",
-    "error TS7031: Binding element 'value' implicitly has an 'any' type."
-  ],
-  "src/components/registry/Detail/item/DetailMultipleItem.tsx": [
-    "error TS7016: Could not find a declaration file for module 'diff'. 'C:/Pyta/elza/elza-main.git/elza/elza-react/node_modules/diff/lib/index.mjs' implicitly has an 'any' type."
+    "error TS7006: Parameter 'state' implicitly has an 'any' type."
   ],
   "src/components/registry/deleted-entity/DeletedEntityWindow.tsx": [
     "error TS7053: Element implicitly has an 'any' type because expression of type 'TableColumnId' can't be used to index type '{ id: { id: string; defaultMessage: string; }; name: { id: string; defaultMessage: string; }; description: { id: string; defaultMessage: string; }; extSystem: { id: string; defaultMessage: string; }; deleteDate: { ...; }; replacedBy: { ...; }; }'."
@@ -1102,7 +1084,6 @@
     "error TS7006: Parameter 'action' implicitly has an 'any' type.",
     "error TS7006: Parameter 'action' implicitly has an 'any' type.",
     "error TS7006: Parameter 'action' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'action' implicitly has an 'any' type.",
     "error TS7006: Parameter 'commonAttrs' implicitly has an 'any' type.",
     "error TS7006: Parameter 'data' implicitly has an 'any' type.",
     "error TS7006: Parameter 'dispatch' implicitly has an 'any' type.",
@@ -1113,7 +1094,6 @@
     "error TS7006: Parameter 'fieldIndex' implicitly has an 'any' type.",
     "error TS7006: Parameter 'fields' implicitly has an 'any' type.",
     "error TS7006: Parameter 'formState' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'getState' implicitly has an 'any' type.",
     "error TS7006: Parameter 'localFormState' implicitly has an 'any' type.",
     "error TS7006: Parameter 'next' implicitly has an 'any' type.",
     "error TS7006: Parameter 'serverFormState' implicitly has an 'any' type.",
@@ -1126,8 +1106,6 @@
     "error TS7006: Parameter 'state' implicitly has an 'any' type.",
     "error TS7006: Parameter 'state' implicitly has an 'any' type.",
     "error TS7006: Parameter 'store' implicitly has an 'any' type.",
-    "error TS7016: Could not find a declaration file for module 'redux-immutable-state-invariant'. 'C:/Pyta/elza/elza-main.git/elza/elza-react/node_modules/redux-immutable-state-invariant/dist/index.js' implicitly has an 'any' type.",
-    "error TS7016: Could not find a declaration file for module 'redux-logger'. 'C:/Pyta/elza/elza-main.git/elza/elza-react/node_modules/redux-logger/dist/redux-logger.js' implicitly has an 'any' type.",
     "error TS7034: Variable 'curr' implicitly has type 'any' in some locations where its type cannot be determined.",
     "error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{} & ErrorOther<string>'."
   ],
