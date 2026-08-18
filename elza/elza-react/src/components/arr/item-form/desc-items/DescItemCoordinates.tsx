@@ -40,10 +40,6 @@ interface NodeItemCoordinates extends NodeItem {
 }
 
 const messages = defineMessages({
-  showInMap: {
-    id: "desc_item_coordinates_action_showInMap",
-    defaultMessage: "Zobrazit v mapě",
-  },
   export: {
     id: "desc_item_coordinates_export",
     defaultMessage: "Exportovat",
@@ -234,16 +230,30 @@ export function DescItemCoordinates({
               showInEditor={true}
               onEditorSave={handleSave}
             >
-              {({ handleShowInMap }) => (
-                <Button
-                  size={compact ? "small" : "medium"}
-                  disabled={isDisabled}
-                  appearance="subtle"
-                  icon={<MapRegular />}
-                  onClick={handleShowInMap}
-                  tabIndex={-1}
-                />
-              )}
+              {({ handleShowInMap }) => {
+                const mapButton = (
+                  <Button
+                    size={compact ? "small" : "medium"}
+                    disabled={isDisabled}
+                    appearance="subtle"
+                    icon={<MapRegular />}
+                    onClick={handleShowInMap}
+                    tabIndex={-1}
+                  />
+                );
+                if (data?.value) {
+                  return mapButton;
+                }
+                return (
+                  <Tooltip
+                    relationship="label"
+                    appearance="inverted"
+                    content={<FormattedMessage {...globalMessages.editInMap} />}
+                  >
+                    {mapButton}
+                  </Tooltip>
+                );
+              }}
             </PolygonShowInMap>
             {data?.value && (
               <>

@@ -1261,10 +1261,6 @@
     "defaultMessage": "Set the value to 'exception' due to it not being ascertained, not existing, or not being stated based on a rules exception",
     "srcHash": "I1TvJx22iC0Y"
   },
-  "desc_item_coordinates_action_showInMap": {
-    "defaultMessage": "Show on map",
-    "srcHash": "3dFzZlmKhOwe"
-  },
   "desc_item_coordinates_export": {
     "defaultMessage": "Export",
     "srcHash": "4x5Fw-eTIoUs"
@@ -1456,6 +1452,14 @@
   "global.action.close": {
     "defaultMessage": "Close",
     "srcHash": "0r4EKpo4ZhJv"
+  },
+  "global.action.editInMap": {
+    "defaultMessage": "Edit in map",
+    "srcHash": "Sp_7Y4R5xQsk"
+  },
+  "global.action.showInMap": {
+    "defaultMessage": "Show in map",
+    "srcHash": "3dFzZlmKhOwe"
   },
   "global.action.update": {
     "defaultMessage": "Save",
