@@ -145,7 +145,7 @@ const ExplorerTable: FC = () => {
         [toggleAllRows]
     );
 
-    const handleSelect = (item) => {
+    const handleSelect = (item: Item) => {
         setSelectedItem(item)
     }
 

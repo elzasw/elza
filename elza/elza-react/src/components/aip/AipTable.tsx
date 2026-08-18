@@ -85,11 +85,13 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
             columnId: def.key,
             renderHeaderCell: () => <>{formatMessage(def.message)}</>,
             renderCell: (item: AipDetailVO) => <>{getContent(item, def.key)}</>,
-            compare: (a, b) => {
+            compare: (a: AipDetailVO, b: AipDetailVO) => {
+                const left = (a as Record<string, any>)[def.key];
+                const right = (b as Record<string, any>)[def.key];
                 switch(def.valueType) {
-                    case "number": return a[def.key] - b[def.key];
-                    case "bool": return Number(a[def.key]) - Number(b[def.key]);
-                    default: return a[def.key]?.localeCompare(b[def.key]);
+                    case "number": return left - right;
+                    case "bool": return Number(left) - Number(right);
+                    default: return left?.localeCompare(right);
                 }
             },
         })
@@ -101,6 +103,9 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
         return formatDateCz(new Date(unitdateFrom)) + " - " + (unitdateTo ? formatDateCz(new Date(unitdateTo)) : "?");
     }
 
+    /** Sloupce maji i skladane klice ("fund.name"), ktere na AipDetailVO primo nejsou. */
+    const rawValue = (item: AipDetailVO, key: string): any => (item as Record<string, any>)[key];
+
     const getContent =(item: AipDetailVO, key: string) => {
         switch(key) {
             case "code": return <span className='link-like'>{item.code}</span>
@@ -109,7 +114,9 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
             case "fund.name": return item.fund ? item.fund.name : "-";
             case "institution.name": return item.institution.name;
             default:
-                return findColDefByKey(key)?.valueType == "bool" ? getBoolIcon(item[key]) : item[key] ? item[key] : "-" ; // Sorry xD
+                return findColDefByKey(key)?.valueType == "bool"
+                    ? getBoolIcon(rawValue(item, key))
+                    : rawValue(item, key) ? rawValue(item, key) : "-";
         }
     }
 
@@ -131,19 +138,19 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
     const toggleColumns = (e: MenuCheckedValueChangeEvent, data: MenuCheckedValueChangeData) => {
         setColumns(
             columnsDef.filter((col) =>
-                data.checkedItems.some((checked) => checked == def[col.columnId].label
+                data.checkedItems.some((checked) => checked == def[String(col.columnId)]?.label
             ))
         );
     };
 
-    const handleSelect = (id) =>  {
+    const handleSelect = (id: number) =>  {
         setDetailOpen(true);
         history.push(urlAip(id))
     };
 
     const handleChangePage = (nextFrom: number) => nextFrom !== from && dispatch(aipsFilter(aips.filter.filters, nextFrom, aips.filter.pageSize))
 
-    const def = colDef.reduce((acc, item) => {
+    const def = colDef.reduce<Record<string, {label: string; minWidth: number; idealWidth: number}>>((acc, item) => {
         const key = item.key;
         acc[key] = {
             label: formatMessage(item.message),
@@ -240,7 +247,7 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
             {aips.fetched && (
                 <>
                     <AipFilterSection
-                        columns={columns.map(item => def[item.columnId]?.name)}
+                        columns={columns.map(item => def[String(item.columnId)]?.label)}
                         onColsChange={toggleColumns}
                         filterDisabled={filterDisabled}
                         initialFilters={initialFilters}

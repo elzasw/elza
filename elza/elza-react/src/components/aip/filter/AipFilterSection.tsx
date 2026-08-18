@@ -29,7 +29,7 @@ const AipFilterSection = ({columns, onColsChange, filterDisabled, initialFilters
     const [filters, setFilters] = useState<AipFilterEntry[]>(initialFilters || []);
     const {formatMessage} = useIntl();
 
-    const handleSearch = debounce((e, data) => {
+    const handleSearch = debounce((e: unknown, data: {value: string}) => {
         if(data.value != "") {
             handleReplace({
                 id: FULLTEXT_ID,
@@ -53,7 +53,7 @@ const AipFilterSection = ({columns, onColsChange, filterDisabled, initialFilters
         setFilters([...filters, filter]);
     }
     
-    const handleRemove = (id) => {
+    const handleRemove = (id: string) => {
         setFilters(filters.filter((item) => item.id != id));
     }
 

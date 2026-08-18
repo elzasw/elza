@@ -77,7 +77,7 @@ const ExplorerDetail: FC<{selected?: string;}> = ({selected}) => {
         </div>
     );
 
-    const selectFolder = (id) => {
+    const selectFolder = (id: number) => {
         const result = findNodeByUUID(structure.data, id);
         if(result) {
             setSelectedItem(result.node);

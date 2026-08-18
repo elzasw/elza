@@ -44,14 +44,14 @@ const AipListColSelector = ({columns, onChange, hiddenValues, ...props} : AipLis
 			</MenuTrigger>
 			<MenuPopover className={mergeClasses(classes.bg, classes.menuPopover)}>
 				<MenuList>
-					{Object.keys(columnsDef).map((key) => 
+					{columnsDef.map((column) =>
 						<MenuItemCheckbox 
 							name="col" 
-							key={`selector${key}`}
-							value={formatMessage(columnsDef[key].message)} 
+							key={`selector-${column.field}`}
+							value={formatMessage(column.message)} 
 							className={mergeClasses(classes.bg, classes.menuItem)}
 						>
-							{formatMessage(columnsDef[key].message)}
+							{formatMessage(column.message)}
 						</MenuItemCheckbox>
 					)}
 				</MenuList>
