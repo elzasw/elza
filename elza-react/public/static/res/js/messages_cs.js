@@ -49,7 +49,6 @@ var messages = {
     "global.action.show.more": "Zobrazit více",
     "global.action.import": "Importovat",
     "global.action.export": "Exportovat",
-    "global.action.showInMap": "Zobrazit v mapě",
     "global.action.layerSelection": "Výběr vrstvy",
     "global.action.systemLayerOSM": "Systémová OSM",
     "global.action.download": "Stáhnout",
