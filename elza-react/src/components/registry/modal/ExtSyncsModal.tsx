@@ -186,7 +186,7 @@ const ExtSyncsModal: FC<Props> = ({
             <Col>
                 <Row>
                     <Col xs={12}>
-                        <Link to={urlEntity(item.accessPointId)} className="ap" variant="link" onClick={() => onNavigateAp(item.accessPointId)}>
+                        <Link to={urlEntity(item.accessPointId)} className="ap" onClick={() => onNavigateAp(item.accessPointId)}>
                             {item.accessPointName}
                         </Link>
                     </Col>

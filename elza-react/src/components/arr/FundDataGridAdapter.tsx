@@ -8,7 +8,13 @@ import {
     fundDataGridResolveNodePage,
 } from 'actions/arr/fundDataGrid';
 import { DataGridViewProvider, useDataGridView } from 'contexts/dataGridView';
-import { FundDataGridConnected } from './FundDataGrid';
+import { FundDataGridConnected as FundDataGridConnectedUntyped } from './FundDataGrid';
+
+/**
+ * FundDataGrid je zatim netypovany .jsx, takze withRouter neumi odvodit jeho props a
+ * vysledna komponenta se tvari, ze zadne neprijima. Deklarujeme to, co ji predavame.
+ */
+const FundDataGridConnected = FundDataGridConnectedUntyped as unknown as React.ComponentType<Record<string, unknown>>;
 
 interface Props {
     versionId: number;

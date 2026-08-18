@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react';
-import UsageForm from './UsageForm';
+import UsageFormUntyped from './UsageForm';
+
+/**
+ * UsageForm je zatim netypovany .jsx; withRouter proto neumi odvodit jeho props.
+ */
+const UsageForm = UsageFormUntyped as unknown as React.ComponentType<Record<string, unknown>>;
 import * as types from 'actions/constants/ActionTypes';
 import { WebApi } from '../../actions/WebApi';
 import HorizontalLoader from '../shared/loading/HorizontalLoader';

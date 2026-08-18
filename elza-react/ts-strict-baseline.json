@@ -651,9 +651,6 @@
     "error TS7019: Rest parameter 'e' implicitly has an 'any[]' type.",
     "error TS7019: Rest parameter 'e' implicitly has an 'any[]' type."
   ],
-  "src/components/admin/AdminNav.tsx": [
-    "error TS7016: Could not find a declaration file for module 'react-router-dom'. 'C:/Pyta/elza/elza-main.git/elza/elza-react/node_modules/react-router-dom/index.js' implicitly has an 'any' type."
-  ],
   "src/components/admin/ScopesField.tsx": [
     "error TS7006: Parameter 'item' implicitly has an 'any' type.",
     "error TS7006: Parameter 'item' implicitly has an 'any' type."
@@ -661,18 +658,6 @@
   "src/components/admin/UserAndGroupField.tsx": [
     "error TS7006: Parameter 'text' implicitly has an 'any' type.",
     "error TS7018: Object literal's property 'dataList' implicitly has an 'any[]' type."
-  ],
-  "src/components/admin/funds/FundList.tsx": [
-    "error TS7016: Could not find a declaration file for module 'react-router'. 'C:/Pyta/elza/elza-main.git/elza/elza-react/node_modules/react-router/index.js' implicitly has an 'any' type."
-  ],
-  "src/components/ai-assistant/useCurrentAiContext.ts": [
-    "error TS7016: Could not find a declaration file for module 'react-router-dom'. 'C:/Pyta/elza/elza-main.git/elza/elza-react/node_modules/react-router-dom/index.js' implicitly has an 'any' type."
-  ],
-  "src/components/aip/AipDetail.tsx": [
-    "error TS7016: Could not find a declaration file for module 'react-router'. 'C:/Pyta/elza/elza-main.git/elza/elza-react/node_modules/react-router/index.js' implicitly has an 'any' type."
-  ],
-  "src/components/aip/AipTable.tsx": [
-    "error TS7016: Could not find a declaration file for module 'react-router'. 'C:/Pyta/elza/elza-main.git/elza/elza-react/node_modules/react-router/index.js' implicitly has an 'any' type."
   ],
   "src/components/arr/ArrOutputDetail.tsx": [
     "error TS7006: Parameter 's' implicitly has an 'any' type."
@@ -806,12 +791,6 @@
   "src/components/arr/node-view/NodeView.tsx": [
     "error TS7053: Element implicitly has an 'any' type because expression of type 'DataType' can't be used to index type '{ TEXT: ({ item, nodeId }: DescItemProps) => Element; INT: ({ item, nodeId, typeRef }: DescItemProps) => Element; DECIMAL: ({ item, nodeId }: DescItemProps) => Element; ... 11 more ...; JSON_TABLE: ({ item, nodeId, typeRef, onExportCsv }: DescItemProps) => Element; }'."
   ],
-  "src/components/arr/node-view/desc-items/DescItemRecordRef.tsx": [
-    "error TS7016: Could not find a declaration file for module 'react-router-dom'. 'C:/Pyta/elza/elza-main.git/elza/elza-react/node_modules/react-router-dom/index.js' implicitly has an 'any' type."
-  ],
-  "src/components/arr/node-view/desc-items/DescItemUriRef.tsx": [
-    "error TS7016: Could not find a declaration file for module 'react-router-dom'. 'C:/Pyta/elza/elza-main.git/elza/elza-react/node_modules/react-router-dom/index.js' implicitly has an 'any' type."
-  ],
   "src/components/arr/nodeForm/DescItemBit.tsx": [
     "error TS7006: Parameter 'e' implicitly has an 'any' type.",
     "error TS7006: Parameter 'props' implicitly has an 'any' type."
@@ -922,7 +901,6 @@
     "error TS7031: Binding element 'version' implicitly has an 'any' type."
   ],
   "src/components/registry/ApDetailPageWrapper.tsx": [
-    "error TS7016: Could not find a declaration file for module 'react-router'. 'C:/Pyta/elza/elza-main.git/elza/elza-react/node_modules/react-router/index.js' implicitly has an 'any' type.",
     "error TS7031: Binding element 'accessPointId' implicitly has an 'any' type.",
     "error TS7031: Binding element 'accessPointId' implicitly has an 'any' type.",
     "error TS7031: Binding element 'accessPointId' implicitly has an 'any' type.",
@@ -937,12 +915,6 @@
     "error TS7006: Parameter 'modalProps' implicitly has an 'any' type.",
     "error TS7011: Function expression, which lacks return-type annotation, implicitly has an 'any' return type."
   ],
-  "src/components/registry/Detail/header/DescriptionEntityRef.tsx": [
-    "error TS7016: Could not find a declaration file for module 'react-router-dom'. 'C:/Pyta/elza/elza-main.git/elza/elza-react/node_modules/react-router-dom/index.js' implicitly has an 'any' type."
-  ],
-  "src/components/registry/Detail/header/ReplacedEntities.tsx": [
-    "error TS7016: Could not find a declaration file for module 'react-router-dom'. 'C:/Pyta/elza/elza-main.git/elza/elza-react/node_modules/react-router-dom/index.js' implicitly has an 'any' type."
-  ],
   "src/components/registry/Detail/history/DetailHistory.tsx": [
     "error TS7006: Parameter 'id' implicitly has an 'any' type.",
     "error TS7006: Parameter 'state' implicitly has an 'any' type."
@@ -952,8 +924,6 @@
     "error TS7006: Parameter 'i' implicitly has an 'any' type.",
     "error TS7006: Parameter 'state' implicitly has an 'any' type.",
     "error TS7016: Could not find a declaration file for module 'diff'. 'C:/Pyta/elza/elza-main.git/elza/elza-react/node_modules/diff/lib/index.mjs' implicitly has an 'any' type.",
-    "error TS7016: Could not find a declaration file for module 'react-router'. 'C:/Pyta/elza/elza-main.git/elza/elza-react/node_modules/react-router/index.js' implicitly has an 'any' type.",
-    "error TS7016: Could not find a declaration file for module 'react-router-dom'. 'C:/Pyta/elza/elza-main.git/elza/elza-react/node_modules/react-router-dom/index.js' implicitly has an 'any' type.",
     "error TS7031: Binding element 'added' implicitly has an 'any' type.",
     "error TS7031: Binding element 'added' implicitly has an 'any' type.",
     "error TS7031: Binding element 'removed' implicitly has an 'any' type.",
@@ -965,7 +935,6 @@
     "error TS7016: Could not find a declaration file for module 'diff'. 'C:/Pyta/elza/elza-main.git/elza/elza-react/node_modules/diff/lib/index.mjs' implicitly has an 'any' type."
   ],
   "src/components/registry/deleted-entity/DeletedEntityWindow.tsx": [
-    "error TS7016: Could not find a declaration file for module 'react-router-dom'. 'C:/Pyta/elza/elza-main.git/elza/elza-react/node_modules/react-router-dom/index.js' implicitly has an 'any' type.",
     "error TS7053: Element implicitly has an 'any' type because expression of type 'TableColumnId' can't be used to index type '{ id: { id: string; defaultMessage: string; }; name: { id: string; defaultMessage: string; }; description: { id: string; defaultMessage: string; }; extSystem: { id: string; defaultMessage: string; }; deleteDate: { ...; }; replacedBy: { ...; }; }'."
   ],
   "src/components/registry/field/ArchiveEntityRel.tsx": [
@@ -1010,7 +979,6 @@
     "error TS7006: Parameter 'values' implicitly has an 'any' type."
   ],
   "src/components/registry/modal/ApPushToExt.tsx": [
-    "error TS7016: Could not find a declaration file for module 'react-router-dom'. 'C:/Pyta/elza/elza-main.git/elza/elza-react/node_modules/react-router-dom/index.js' implicitly has an 'any' type.",
     "error TS7031: Binding element 'extSystem' implicitly has an 'any' type."
   ],
   "src/components/registry/modal/ExtSyncsModal.tsx": [
@@ -1019,7 +987,6 @@
     "error TS7006: Parameter 'values' implicitly has an 'any' type.",
     "error TS7006: Parameter 'values' implicitly has an 'any' type.",
     "error TS7006: Parameter 'values' implicitly has an 'any' type.",
-    "error TS7016: Could not find a declaration file for module 'react-router-dom'. 'C:/Pyta/elza/elza-main.git/elza/elza-react/node_modules/react-router-dom/index.js' implicitly has an 'any' type.",
     "error TS7053: Element implicitly has an 'any' type because expression of type 'number' can't be used to index type '{}'."
   ],
   "src/components/registry/modal/ExtendsFilterModal.tsx": [
@@ -1044,11 +1011,9 @@
     "error TS7031: Binding element 'visible' implicitly has an 'any' type."
   ],
   "src/components/registry/part-edit/modal/showPartCreateModal.tsx": [
-    "error TS7016: Could not find a declaration file for module 'history'. 'C:/Pyta/elza/elza-main.git/elza/elza-react/node_modules/history/index.js' implicitly has an 'any' type.",
     "error TS7031: Binding element 'onClose' implicitly has an 'any' type."
   ],
   "src/components/registry/part-edit/modal/showPartEditModal.tsx": [
-    "error TS7016: Could not find a declaration file for module 'history'. 'C:/Pyta/elza/elza-main.git/elza/elza-react/node_modules/history/index.js' implicitly has an 'any' type.",
     "error TS7031: Binding element 'onClose' implicitly has an 'any' type."
   ],
   "src/components/reports/ReportsTable.tsx": [
@@ -1073,9 +1038,6 @@
   "src/components/shared/exception/Exception.tsx": [
     "error TS7031: Binding element 'onClose' implicitly has an 'any' type."
   ],
-  "src/components/shared/stats/Statistics.tsx": [
-    "error TS7016: Could not find a declaration file for module 'react-router-dom'. 'C:/Pyta/elza/elza-main.git/elza/elza-react/node_modules/react-router-dom/index.js' implicitly has an 'any' type."
-  ],
   "src/components/shared/virtual-list/VirtualList.tsx": [
     "error TS7006: Parameter 'element' implicitly has an 'any' type.",
     "error TS7006: Parameter 'itemBuffer' implicitly has an 'any' type.",
@@ -1097,15 +1059,8 @@
   "src/pages/admin/AdminFundPage.tsx": [
     "error TS7005: Variable 'altActions' implicitly has an 'any[]' type.",
     "error TS7005: Variable 'itemActions' implicitly has an 'any[]' type.",
-    "error TS7016: Could not find a declaration file for module 'react-router'. 'C:/Pyta/elza/elza-main.git/elza/elza-react/node_modules/react-router/index.js' implicitly has an 'any' type.",
     "error TS7034: Variable 'altActions' implicitly has type 'any[]' in some locations where its type cannot be determined.",
     "error TS7034: Variable 'itemActions' implicitly has type 'any[]' in some locations where its type cannot be determined."
-  ],
-  "src/pages/admin/AdminInstitutionPage.tsx": [
-    "error TS7016: Could not find a declaration file for module 'react-router'. 'C:/Pyta/elza/elza-main.git/elza/elza-react/node_modules/react-router/index.js' implicitly has an 'any' type."
-  ],
-  "src/pages/aip/AipPage.tsx": [
-    "error TS7016: Could not find a declaration file for module 'react-router'. 'C:/Pyta/elza/elza-main.git/elza/elza-react/node_modules/react-router/index.js' implicitly has an 'any' type."
   ],
   "src/pages/arr/ArrAipPage.tsx": [
     "error TS7005: Variable 'altActions' implicitly has an 'any[]' type.",
@@ -1127,15 +1082,8 @@
     "error TS7034: Variable 'altActions' implicitly has type 'any[]' in some locations where its type cannot be determined.",
     "error TS7034: Variable 'itemActions' implicitly has type 'any[]' in some locations where its type cannot be determined."
   ],
-  "src/pages/arr/ArrPublicationPage.tsx": [
-    "error TS7016: Could not find a declaration file for module 'react-router-dom'. 'C:/Pyta/elza/elza-main.git/elza/elza-react/node_modules/react-router-dom/index.js' implicitly has an 'any' type."
-  ],
-  "src/pages/entity/EntityCreatePage.tsx": [
-    "error TS7016: Could not find a declaration file for module 'react-router-dom'. 'C:/Pyta/elza/elza-main.git/elza/elza-react/node_modules/react-router-dom/index.js' implicitly has an 'any' type."
-  ],
   "src/pages/home/HomePage.tsx": [
     "error TS7006: Parameter 'data' implicitly has an 'any' type.",
-    "error TS7016: Could not find a declaration file for module 'react-router-dom'. 'C:/Pyta/elza/elza-main.git/elza/elza-react/node_modules/react-router-dom/index.js' implicitly has an 'any' type.",
     "error TS7053: Element implicitly has an 'any' type because expression of type '\"fundAdmins\"' can't be used to index type '{}'."
   ],
   "src/shared/utils/requireFields.ts": [
@@ -1325,9 +1273,6 @@
     "error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{}'.",
     "error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{}'.",
     "error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{}'."
-  ],
-  "src/test/test-utils.tsx": [
-    "error TS7016: Could not find a declaration file for module 'react-router-dom'. 'C:/Pyta/elza/elza-main.git/elza/elza-react/node_modules/react-router-dom/index.js' implicitly has an 'any' type."
   ],
   "src/typings/StoreState.ts": [
     "error TS7008: Member 'refTypesMap' implicitly has an 'any' type."
