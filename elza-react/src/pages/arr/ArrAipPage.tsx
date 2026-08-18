@@ -10,6 +10,7 @@ import AipTable from '../../components/aip/AipTable';
 import AipExplorer from '../../components/aip/explorer/AipExplorer';
 import { ExplorerMode } from 'components/aip/explorer/ExplorerContext';
 import {selectAip} from '../../actions/aip/aip';
+import type { AppState, Fund, UserDetail } from 'typings/store';
 
 import { AipFieldName } from 'elza-api';
 import { buildFilter } from 'components/aip/filter/aipFilterModel';
@@ -46,10 +47,20 @@ const initialFilters = (fundId: number): AipFilterEntry[] => [
     },
 ];
 
+/**
+ * Props teto stranky. Zakladni trida ArrParentPage je zatim netypovane .jsx,
+ * takze je nelze zdedit; popsany je jen rozsah, ktery stranka pouziva.
+ */
+type ArrAipPageProps = {
+    dispatch: (action: unknown) => unknown;
+    userDetail: UserDetail;
+    arrRegion: { activeIndex: number | null; funds: Fund[] };
+};
+
 class ArrAipPage extends ArrParentPage {
     area = AREA
 
-    constructor(props) {
+    constructor(props: ArrAipPageProps) {
         super(props, 'fa-page');
     }
 
@@ -58,15 +69,15 @@ class ArrAipPage extends ArrParentPage {
         this.resolveUrls()
     }
 
-    UNSAFE_componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps: ArrAipPageProps) {
         super.UNSAFE_componentWillReceiveProps(nextProps);
     }
 
-    getPageUrl(fund) {
+    getPageUrl(fund: Fund) {
         return urlFundAb(fund.id, getFundVersion(fund));
     }
 
-    handleShortcuts(action, e) {
+    handleShortcuts(action: string, e: KeyboardEvent) {
         console.log('#handleShortcuts ArrAipPage', '[' + action + ']', this);
         super.handleShortcuts(action, e);
     }
@@ -74,12 +85,12 @@ class ArrAipPage extends ArrParentPage {
      * Sestavení Ribbonu.
      * @return {Object} view
      */
-    buildRibbon(readMode, closed) {
+    buildRibbon(readMode: boolean, closed: boolean) {
         const activeFund = this.getActiveFund(this.props);
 
-        const altActions = [];
+        const altActions: JSX.Element[] = [];
 
-        const itemActions = [];
+        const itemActions: JSX.Element[] = [];
 
         let altSection;
         if (altActions.length > 0) {
@@ -111,11 +122,11 @@ class ArrAipPage extends ArrParentPage {
         );
     }
 
-    hasPageShowRights(userDetail, activeFund) {
+    hasPageShowRights(userDetail: UserDetail, activeFund: Fund | null) {
         return userDetail.hasArrPage(activeFund ? activeFund.id : null);
     }
 
-    renderLeftPanel(readMode, closed) {
+    renderLeftPanel(readMode: boolean, closed: boolean) {
         const activeFund = this.getActiveFund(this.props);
 
         return (
@@ -127,7 +138,7 @@ class ArrAipPage extends ArrParentPage {
         );
     }
 
-    renderCenterPanel(readMode, closed) {
+    renderCenterPanel(readMode: boolean, closed: boolean) {
         const activeFund = this.getActiveFund(this.props);
         return (
             <div className='aip-center-panel'>
@@ -138,7 +149,7 @@ class ArrAipPage extends ArrParentPage {
     }
 };
 
-function mapStateToProps(state) {
+function mapStateToProps(state: AppState) {
     const {splitter, arrRegion, refTables, form, focus, developer, userDetail, tab} = state;
     return {
         splitter: splitter.splitters[AREA],

@@ -1,4 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { AnyAction } from 'redux';
+
+/** Verze AS ve fixturach - lockDate je null, dokud neni verze uzavrena. */
+type VersionFixture = { id: number; lockDate: string | null };
+
+/** Zalozka AS ve fixturach, v rozsahu, ktery testovane funkce ctou. */
+type FundTabFixture = {
+    id: number;
+    versionId?: number;
+    activeVersion?: VersionFixture;
+    fundTree?: { fetched?: boolean };
+};
 
 /**
  * Mock the Api object so the test doesn't pull in the full Redux/component
@@ -55,8 +67,8 @@ vi.mock('../actions/arr/node', () => ({
 }));
 
 vi.mock('../components/arr/ArrUtils', () => ({
-    createFundRoot: (fund) => ({ id: 'ROOT', fundId: fund.id }),
-    getFundFromFundAndVersion: (fund, version) => ({
+    createFundRoot: (fund: FundTabFixture) => ({ id: 'ROOT', fundId: fund.id }),
+    getFundFromFundAndVersion: (fund: FundTabFixture, version: VersionFixture) => ({
         ...fund,
         versionId: version.id,
         lockDate: version.lockDate,
@@ -122,7 +134,7 @@ describe('resolveFundTab', () => {
 
     it('replaces a restored tab whose version has been approved (closed) since it was saved', async () => {
         // the persisted tab still claims version 42 is open (lockDate null)
-        const staleTab = { id: 42, versionId: 42, activeVersion: { id: 42, lockDate: null } };
+        const staleTab: FundTabFixture = { id: 42, versionId: 42, activeVersion: { id: 42, lockDate: null } };
         const dispatch = vi.fn();
 
         const result = await resolveFundTab(dispatch, staleTab, 42);
@@ -135,7 +147,7 @@ describe('resolveFundTab', () => {
     });
 
     it('keeps the tab when the server confirms its version is still the open one', async () => {
-        const tab = { id: 42, versionId: 462, activeVersion: { id: 462, lockDate: null } };
+        const tab: FundTabFixture = { id: 42, versionId: 462, activeVersion: { id: 462, lockDate: null } };
         const dispatch = vi.fn();
 
         const result = await resolveFundTab(dispatch, tab, 42);
@@ -158,7 +170,7 @@ describe('resolveFundTab', () => {
     });
 
     it('selects the pinned version when it is not the displayed one', async () => {
-        const tab = { id: 42, versionId: 462, activeVersion: { id: 462, lockDate: null } };
+        const tab: FundTabFixture = { id: 42, versionId: 462, activeVersion: { id: 462, lockDate: null } };
         const dispatch = vi.fn();
 
         await resolveFundTab(dispatch, tab, 42, 42);
@@ -178,7 +190,7 @@ describe('resolveFundTab', () => {
 describe('processNodeNavigation', () => {
     const TARGET_NODE_INFO = { ...NODE_INFO_FIXTURE, id: 6430, fundId: 42, fundVersionId: 462 };
 
-    const OTHER_FUND_TAB = {
+    const OTHER_FUND_TAB: FundTabFixture = {
         id: 1,
         versionId: 1,
         activeVersion: { id: 1, lockDate: null },
@@ -200,15 +212,15 @@ describe('processNodeNavigation', () => {
      * tab with a tree already marked as fetched, so waitForLoadAS proceeds
      * on its first synchronous pass and the test needs no timers.
      */
-    const createStore = (initialTab) => {
+    const createStore = (initialTab: FundTabFixture | null) => {
         const state = {
             arrRegion: {
                 activeIndex: initialTab ? 0 : null,
                 funds: initialTab ? [initialTab] : [],
             },
         };
-        const dispatched = [];
-        const dispatch = (action) => {
+        const dispatched: AnyAction[] = [];
+        const dispatch = (action: AnyAction | ((d: unknown, g: unknown) => unknown)): unknown => {
             if (typeof action === 'function') {
                 return action(dispatch, () => state);
             }
