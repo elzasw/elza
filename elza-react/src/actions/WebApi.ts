@@ -107,7 +107,7 @@ export class WebApiCls {
     static validateUrl = WebApiCls.baseUrl + '/validate';
     static structureUrl = WebApiCls.baseUrl + '/structure';
 
-    findInFundTree(versionId, nodeId, searchText, type, searchParams = null, luceneQuery = false) {
+    findInFundTree(versionId: number, nodeId: number, searchText, type, searchParams = null, luceneQuery = false) {
         const data = {
             versionId: versionId,
             nodeId: nodeId,
@@ -119,19 +119,19 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/fulltext', null, data);
     }
 
-    getDaDaoListByAipId(id) {
+    getDaDaoListByAipId(id: number) {
         return AjaxUtils.ajaxGet(WebApiCls.v1 + "/daos/aip/" + id);
     }
 
-    getDaoViewRequestInfo(id) {
+    getDaoViewRequestInfo(id: number) {
         return AjaxUtils.ajaxGet(WebApiCls.v1 + "/daos/component/" + id);
     }
 
-    syncDaoLink(fundVersionId, nodeId) {
+    syncDaoLink(fundVersionId: number, nodeId: number) {
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/daos/' + fundVersionId + '/nodes/' + nodeId + '/sync');
     }
 
-    syncDaosByFund(fundVersionId) {
+    syncDaosByFund(fundVersionId: number) {
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/daos/' + fundVersionId + '/all/sync');
     }
 
@@ -152,27 +152,27 @@ export class WebApiCls {
      * @param fundId identifikátor AS
      * @return seznam uzlu daneho AS serazeny podle relevance pri vyhledani
      */
-    fundFulltextNodes(fundId) {
+    fundFulltextNodes(fundId: number) {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + `/fundFulltext/${fundId}`, { fundId });
     }
 
-    getFundsByVersionIds(versionIds) {
+    getFundsByVersionIds(versionIds: number[]) {
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/getVersions', null, { ids: versionIds });
     }
 
-    getNode(fundVersionId, nodeId) {
+    getNode(fundVersionId: number, nodeId: number) {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/nodeInfo/' + fundVersionId + '/' + nodeId);
     }
 
-    getNodes(versionId, nodeIds) {
+    getNodes(versionId: number, nodeIds: number[]) {
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/nodes', null, { versionId: versionId, ids: nodeIds });
     }
 
-    findNodeByIds(fundId, nodeIds) {
+    findNodeByIds(fundId: number, nodeIds: number[]) {
         return AjaxUtils.ajaxPost(WebApiCls.adminUrl + '/' + fundId + '/nodes/byIds', null, nodeIds);
     }
 
-    copyOlderSiblingAttribute(versionId, nodeId, nodeVersionId, descItemTypeId) {
+    copyOlderSiblingAttribute(versionId: number, nodeId: number, nodeVersionId: number, descItemTypeId: number) {
         return AjaxUtils.ajaxPut(
             WebApiCls.arrangementUrl + '/copyOlderSiblingAttribute',
             { versionId, descItemTypeId },
@@ -180,11 +180,11 @@ export class WebApiCls {
         );
     }
 
-    findChanges(versionId, nodeId, offset, maxSize, changeId) {
+    findChanges(versionId: number, nodeId: number, offset, maxSize, changeId: number) {
         return AjaxUtils.ajaxGet(WebApiCls.changesUrl + '/' + versionId, { nodeId, offset, maxSize, changeId });
     }
 
-    findChangesByDate(versionId, nodeId, changeId, fromDate) {
+    findChangesByDate(versionId: number, nodeId: number, changeId: number, fromDate) {
         return AjaxUtils.ajaxGet(WebApiCls.changesUrl + '/' + versionId + '/date', {
             nodeId,
             maxSize: 1,
@@ -193,7 +193,7 @@ export class WebApiCls {
         });
     }
 
-    revertChanges(versionId, nodeId, fromChangeId, toChangeId) {
+    revertChanges(versionId: number, nodeId: number, fromChangeId: number, toChangeId: number) {
         return AjaxUtils.ajaxGet(WebApiCls.changesUrl + '/' + versionId + '/revert', {
             nodeId,
             fromChangeId,
@@ -205,7 +205,7 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.validateUrl + '/unitDate', { value: value || '' });
     }
 
-    moveNodesUnder(versionId, nodes, nodesParent, dest, destParent) {
+    moveNodesUnder(versionId: number, nodes, nodesParent, dest, destParent) {
         const data = {
             versionId: versionId,
             transportNodes: nodes,
@@ -216,7 +216,7 @@ export class WebApiCls {
         return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/moveLevelUnder', null, data);
     }
 
-    moveNodesBefore(versionId, nodes, nodesParent, dest, destParent) {
+    moveNodesBefore(versionId: number, nodes, nodesParent, dest, destParent) {
         const data = {
             versionId: versionId,
             transportNodes: nodes,
@@ -227,7 +227,7 @@ export class WebApiCls {
         return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/moveLevelBefore', null, data);
     }
 
-    moveNodesAfter(versionId, nodes, nodesParent, dest, destParent) {
+    moveNodesAfter(versionId: number, nodes, nodesParent, dest, destParent) {
         const data = {
             versionId,
             transportNodes: nodes,
@@ -238,7 +238,7 @@ export class WebApiCls {
         return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/moveLevelAfter', null, data);
     }
 
-    createDescItem(versionId, nodeId, nodeVersionId, descItemTypeId, descItem) {
+    createDescItem(versionId: number, nodeId: number, nodeVersionId: number, descItemTypeId: number, descItem) {
         return AjaxUtils.ajaxPut(
             WebApiCls.arrangementUrl +
             '/descItems/' +
@@ -255,7 +255,7 @@ export class WebApiCls {
         );
     }
 
-    createOutputItem(versionId, getOutputId, outputVersion, descItemTypeId, descItem) {
+    createOutputItem(versionId: number, getOutputId: number, outputVersion, descItemTypeId: number, descItem) {
         return AjaxUtils.ajaxPut(
             WebApiCls.arrangementUrl +
             '/outputItems/' +
@@ -272,7 +272,7 @@ export class WebApiCls {
         );
     }
 
-    updateDescItem(versionId, nodeId, nodeVersionId, descItem) {
+    updateDescItem(versionId: number, nodeId: number, nodeVersionId: number, descItem) {
         return callWS(
             '/arrangement/descItems/' + versionId + '/' + nodeId + '/' + nodeVersionId + '/update/true',
             descItem,
@@ -328,7 +328,7 @@ export class WebApiCls {
         return callWS('/arrangement/descItems/allow', {nodeId, descItemObjectId});
     }
 
-    setNotIdentifiedDescItem(versionId, nodeId, parentNodeVersion, descItemTypeId, descItemSpecId, descItemObjectId) {
+    setNotIdentifiedDescItem(versionId: number, nodeId: number, parentNodeVersion, descItemTypeId: number, descItemSpecId: number, descItemObjectId: number) {
         // return callWS('/arrangement/descItems/' + versionId + '/' + nodeId + '/' + parentNodeVersion + '/notUndefined/set?descItemTypeId=' + descItemTypeId + '&descItemSpecId=' + descItemSpecId + '&descItemObjectId=' + descItemObjectId, null);
 
         // Původní volání kontroleru - zatím necháno pro testovací účely
@@ -345,7 +345,7 @@ export class WebApiCls {
         );
     }
 
-    unsetNotIdentifiedDescItem(versionId, nodeId, parentNodeVersion, descItemTypeId, descItemSpecId, descItemObjectId) {
+    unsetNotIdentifiedDescItem(versionId: number, nodeId: number, parentNodeVersion, descItemTypeId: number, descItemSpecId: number, descItemObjectId: number) {
         // return callWS('/arrangement/descItems/' + versionId + '/' + nodeId + '/' + parentNodeVersion + '/notUndefined/unset?descItemTypeId=' + descItemTypeId + '&descItemSpecId=' + descItemSpecId + '&descItemObjectId=' + descItemObjectId, null);
 
         // Původní volání kontroleru - zatím necháno pro testovací účely
@@ -362,7 +362,7 @@ export class WebApiCls {
         );
     }
 
-    updateOutputItem(versionId, outputVersion, descItem) {
+    updateOutputItem(versionId: number, outputVersion, descItem) {
         return AjaxUtils.ajaxPut(
             WebApiCls.arrangementUrl + '/outputItems/' + versionId + '/' + outputVersion + '/update/true',
             null,
@@ -370,7 +370,7 @@ export class WebApiCls {
         );
     }
 
-    deleteDescItem(versionId, nodeId, nodeVersionId, descItem) {
+    deleteDescItem(versionId: number, nodeId: number, nodeVersionId: number, descItem) {
         return AjaxUtils.ajaxPost(
             WebApiCls.arrangementUrl + '/descItems/' + versionId + '/' + nodeId + '/' + nodeVersionId + '/delete',
             null,
@@ -378,7 +378,7 @@ export class WebApiCls {
         );
     }
 
-    deleteOutputItem(versionId, outputVersion, parentVersionId, descItemObjectId) {
+    deleteOutputItem(versionId: number, outputVersion, parentVersionId: number, descItemObjectId: number) {
         return AjaxUtils.ajaxPost(
             WebApiCls.arrangementUrl + '/outputItems/' + versionId + '/' + outputVersion + '/delete',
             null,
@@ -386,7 +386,7 @@ export class WebApiCls {
         );
     }
 
-    deleteDescItemType(versionId, nodeId, nodeVersionId, descItemTypeId) {
+    deleteDescItemType(versionId: number, nodeId: number, nodeVersionId: number, descItemTypeId: number) {
         return AjaxUtils.ajaxDelete(
             WebApiCls.arrangementUrl +
             '/descItems/' +
@@ -402,7 +402,7 @@ export class WebApiCls {
         );
     }
 
-    deleteOutputItemType(versionId, getOutputId, outputVersion, descItemTypeId) {
+    deleteOutputItemType(versionId: number, getOutputId: number, outputVersion, descItemTypeId: number) {
         return AjaxUtils.ajaxDelete(
             WebApiCls.arrangementUrl +
             '/outputItems/' +
@@ -466,7 +466,7 @@ export class WebApiCls {
         );
     }
 
-    switchOutputCalculating(fundVersionId, getOutputId, itemTypeId, strict) {
+    switchOutputCalculating(fundVersionId: number, getOutputId: number, itemTypeId: number, strict) {
         return AjaxUtils.ajaxPost(
             WebApiCls.arrangementUrl + '/output/' + getOutputId + '/' + fundVersionId + '/' + itemTypeId + '/switch',
             { strict },
@@ -474,7 +474,7 @@ export class WebApiCls {
         );
     }
 
-    updateOutputSettings(outputId, outputSettings) {
+    updateOutputSettings(outputId: number, outputSettings) {
         return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/output/' + outputId + '/settings', null, {
             ...outputSettings,
         });
@@ -510,7 +510,7 @@ export class WebApiCls {
      * @param outputId identifikátor výstupu
      * @param scopeId identifikátor rejstříku
      */
-    addRestrictedScope(outputId, scopeId) {
+    addRestrictedScope(outputId: number, scopeId: number) {
         return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/output/' + outputId + '/restrict/' + scopeId, null, null);
     }
 
@@ -520,7 +520,7 @@ export class WebApiCls {
      * @param outputId identifikátor výstupu
      * @param scopeId identifikátor rejstříku
      */
-    deleteRestrictedScope(outputId, scopeId) {
+    deleteRestrictedScope(outputId: number, scopeId: number) {
         return AjaxUtils.ajaxDelete(
             WebApiCls.arrangementUrl + '/output/' + outputId + '/restrict/' + scopeId,
             null,
@@ -528,7 +528,7 @@ export class WebApiCls {
         );
     }
 
-    addNode(node, parentNode, versionId, direction, descItemCopyTypes, scenarioName, createItems, count = 1) {
+    addNode(node, parentNode, versionId: number, direction, descItemCopyTypes, scenarioName, createItems, count = 1) {
         const data = {
             versionId,
             direction,
@@ -603,7 +603,7 @@ export class WebApiCls {
         // return AjaxUtils.ajaxDelete(WebApi.arrangementUrl + '/levels', null, data);
     }
 
-    getNodeAddScenarios(node, versionId, direction, withGroups = false) {
+    getNodeAddScenarios(node, versionId: number, direction, withGroups = false) {
         return AjaxUtils.ajaxPost(
             WebApiCls.arrangementUrl + '/scenarios',
             { withGroups: withGroups },
@@ -615,54 +615,54 @@ export class WebApiCls {
         );
     }
 
-    getBulkActions(versionId) {
+    getBulkActions(versionId: number) {
         return AjaxUtils.ajaxGet(WebApiCls.actionUrl + '/' + versionId, null);
     }
 
-    getBulkActionsState(versionId) {
+    getBulkActionsState(versionId: number) {
         return AjaxUtils.ajaxGet(WebApiCls.actionUrl + '/states/' + versionId, null);
     }
 
-    getBulkActionsList(versionId) {
+    getBulkActionsList(versionId: number) {
         return AjaxUtils.ajaxGet(WebApiCls.actionUrl + '/list/' + versionId, null);
     }
 
-    bulkActionValidate(versionId) {
+    bulkActionValidate(versionId: number) {
         return AjaxUtils.ajaxGet(WebApiCls.actionUrl + '/validate/' + versionId, null);
     }
 
-    getBulkAction(bulkActionRunId) {
+    getBulkAction(bulkActionRunId: number) {
         return AjaxUtils.ajaxGet(WebApiCls.actionUrl + '/action/' + bulkActionRunId, null);
     }
 
-    interruptBulkAction(bulkActionRunId) {
+    interruptBulkAction(bulkActionRunId: number) {
         return AjaxUtils.ajaxGet(WebApiCls.actionUrl + '/action/' + bulkActionRunId + '/interrupt', null);
     }
 
-    queueBulkAction(versionId, code) {
+    queueBulkAction(versionId: number, code) {
         return AjaxUtils.ajaxGet(WebApiCls.actionUrl + '/queue/' + versionId + '/' + code, null);
     }
 
-    queueBulkActionWithIds(versionId, code, nodeIds) {
+    queueBulkActionWithIds(versionId: number, code, nodeIds: number[]) {
         return AjaxUtils.ajaxPost(WebApiCls.actionUrl + '/queue/' + versionId + '/' + code, null, nodeIds);
     }
 
-    queuePersistentSortByIds(versionId, code, nodeIds, config) {
+    queuePersistentSortByIds(versionId: number, code, nodeIds: number[], config) {
         return AjaxUtils.ajaxPost(WebApiCls.actionUrl + '/queue/persistentSort/' + versionId + '/' + code, null, {
             nodeIds,
             ...config,
         });
     }
 
-    versionValidate(versionId, showAll = false) {
+    versionValidate(versionId: number, showAll = false) {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/validateVersion/' + versionId + '/' + showAll, null);
     }
 
-    versionValidateCount(versionId) {
+    versionValidateCount(versionId: number) {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/validateVersionCount/' + versionId, null);
     }
 
-    getFundPolicy(fundVersionId) {
+    getFundPolicy(fundVersionId: number) {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/fund/policy/' + fundVersionId, {});
     }
 
@@ -682,11 +682,11 @@ export class WebApiCls {
         );
     }
 
-    getStateApproval(accessPointId) {
+    getStateApproval(accessPointId: number) {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/' + accessPointId + '/nextStates');
     }
 
-    getStateApprovalRevision(accessPointId) {
+    getStateApprovalRevision(accessPointId: number) {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/' + accessPointId + '/nextStatesRevision');
     }
 
@@ -893,7 +893,7 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/ap-types/view-settings');
     }
 
-    findRegistryUsage(recordId) {
+    findRegistryUsage(recordId: number) {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/' + recordId + '/usage');
     }
 
@@ -905,15 +905,15 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/' + accessPointId + '/history');
     }
 
-    updateAccessPoint(accessPointId, data) {
+    updateAccessPoint(accessPointId: number, data) {
         return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/' + accessPointId, null, data);
     }
 
-    changeDescription(accessPointId, data) {
+    changeDescription(accessPointId: number, data) {
         return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/' + accessPointId + '/description', null, data);
     }
 
-    replaceRegistry(recordReplaceId, recordReplacementId) {
+    replaceRegistry(recordReplaceId: number, recordReplacementId: number) {
         return AjaxUtils.ajaxPost(
             WebApiCls.registryUrl + '/' + recordReplaceId + '/replace',
             null,
@@ -937,19 +937,19 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/scopes', null);
     }
 
-    updateScope(scopeId, data) {
+    updateScope(scopeId: number, data) {
         return AjaxUtils.ajaxPut(WebApiCls.registryUrl + '/scopes/' + scopeId, null, data);
     }
 
-    deleteScope(scopeId) {
+    deleteScope(scopeId: number) {
         return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/scopes/' + scopeId, null);
     }
 
-    connectScope(scopeId, connectedScopeId) {
+    connectScope(scopeId: number, connectedScopeId: number) {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/scopes/' + scopeId + '/connect', null, connectedScopeId);
     }
 
-    disconnectScope(scopeId, connectedScopeId) {
+    disconnectScope(scopeId: number, connectedScopeId: number) {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/scopes/' + scopeId + '/disconnect', null, connectedScopeId);
     }
 
@@ -1031,29 +1031,29 @@ export class WebApiCls {
 
     // End registry
 
-    getFundNodeForm(versionId, nodeId) {
+    getFundNodeForm(versionId: number, nodeId: number) {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/nodes/' + nodeId + '/' + versionId + '/form');
     }
 
-    getOutputNodeForm(versionId, getOutputId) {
+    getOutputNodeForm(versionId: number, getOutputId: number) {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/output/' + getOutputId + '/' + versionId + '/form');
     }
 
-    getFundNodeForms(versionId, nodeIds) {
+    getFundNodeForms(versionId: number, nodeIds: number[]) {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/nodes/' + versionId + '/forms', { nodeIds: nodeIds });
     }
 
-    getFundNodeFormsWithAround(versionId, nodeId, around) {
+    getFundNodeFormsWithAround(versionId: number, nodeId: number, around) {
         return AjaxUtils.ajaxGet(
             WebApiCls.arrangementUrl + '/nodes/' + versionId + '/' + nodeId + '/' + around + '/forms',
         );
     }
 
-    getFundNodeRegister(versionId, nodeId) {
+    getFundNodeRegister(versionId: number, nodeId: number) {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/registerLinks/' + nodeId + '/' + versionId + '/form');
     }
 
-    getFundNodeDaos(versionId, nodeId = null, detail = false, from = 0, max = 10000) {
+    getFundNodeDaos(versionId: number, nodeId = null, detail = false, from = 0, max = 10000) {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/daos/' + versionId, {
             nodeId,
             detail,
@@ -1062,11 +1062,11 @@ export class WebApiCls {
         });
     }
 
-    findDaoPackages(versionId, search, unassigned) {
+    findDaoPackages(versionId: number, search, unassigned) {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/daopackages/' + versionId, { search, unassigned });
     }
 
-    getPackageDaos(versionId, daoPackageId, unassigned, detail = false, from = 0, max = 10000) {
+    getPackageDaos(versionId: number, daoPackageId: number, unassigned, detail = false, from = 0, max = 10000) {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/daos/' + versionId + '/' + daoPackageId, {
             detail,
             index: from,
@@ -1083,7 +1083,7 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/descItemTypes');
     }
 
-    getGroups(fundVersionId) {
+    getGroups(fundVersionId: number) {
         return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/groups/' + fundVersionId);
     }
 
@@ -1095,7 +1095,7 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/requests/queued');
     }
 
-    findRequests(versionId, type, state, description, fromDate, toDate, subType) {
+    findRequests(versionId: number, type, state, description, fromDate, toDate, subType) {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/requests/' + versionId, {
             state,
             type,
@@ -1106,7 +1106,7 @@ export class WebApiCls {
         });
     }
 
-    arrDigitizationRequestAddNodes(versionId, reqId, send, description, nodeIds, digitizationFrontdeskId) {
+    arrDigitizationRequestAddNodes(versionId: number, reqId: number, send, description, nodeIds: number[], digitizationFrontdeskId: number) {
         const data = {
             id: reqId,
             nodeIds,
@@ -1120,7 +1120,7 @@ export class WebApiCls {
         );
     }
 
-    arrDaoRequestAddDaos(versionId, reqId, send, description, daoIds, type) {
+    arrDaoRequestAddDaos(versionId: number, reqId: number, send, description, daoIds: number[], type) {
         const data = {
             id: reqId,
             daoIds,
@@ -1130,7 +1130,7 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/requests/' + versionId + '/dao/add', { send }, data);
     }
 
-    arrRequestRemoveNodes(versionId, reqId, nodeIds) {
+    arrRequestRemoveNodes(versionId: number, reqId: number, nodeIds: number[]) {
         const data = {
             id: reqId,
             nodeIds,
@@ -1142,27 +1142,27 @@ export class WebApiCls {
         );
     }
 
-    updateArrRequest(versionId, id, data) {
+    updateArrRequest(versionId: number, id: number, data) {
         return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/requests/' + versionId + '/' + id, null, data);
     }
 
-    removeArrRequestQueueItem(id) {
+    removeArrRequestQueueItem(id: number) {
         return AjaxUtils.ajaxDelete(WebApiCls.arrangementUrl + '/requests/' + id);
     }
 
-    getArrRequest(versionId, id) {
+    getArrRequest(versionId: number, id: number) {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/requests/' + versionId + '/' + id, { detail: true });
     }
 
-    sendArrRequest(versionId, id) {
+    sendArrRequest(versionId: number, id: number) {
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/requests/' + versionId + '/' + id + '/send');
     }
 
-    deleteArrRequest(versionId, id) {
+    deleteArrRequest(versionId: number, id: number) {
         return AjaxUtils.ajaxDelete(WebApiCls.arrangementUrl + '/requests/' + id);
     }
 
-    getFundTree(versionId, nodeId, expandedIds = {}, includeIds = []) {
+    getFundTree(versionId: number, nodeId: number, expandedIds = {}, includeIds = []) {
         const data = {
             versionId,
             nodeId,
@@ -1173,7 +1173,7 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/fundTree', null, data);
     }
 
-    getAipsLogicalTree(aipIds) {
+    getAipsLogicalTree(aipIds: number[]) {
         return AjaxUtils.ajaxPost(WebApiCls.aipV1 + '/levelViewTree', null, aipIds);
     }
 
@@ -1250,7 +1250,7 @@ export class WebApiCls {
         }, null);
     }
 
-    getFundTreeNodes(versionId, nodeIds) {
+    getFundTreeNodes(versionId: number, nodeIds: number[]) {
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/fundTree/nodes', null, {
             versionId,
             nodeIds,
@@ -1285,15 +1285,15 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/outputFilters');
     }
 
-    approveVersion(versionId) {
+    approveVersion(versionId: number) {
         return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/approveVersion', { versionId });
     }
 
-    filterNodes(versionId, filter) {
+    filterNodes(versionId: number, filter) {
         return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/filterNodes/' + versionId, {}, filter);
     }
 
-    getFilteredNodes(versionId, pageIndex, pageSize, descItemTypeIds) {
+    getFilteredNodes(versionId: number, pageIndex, pageSize, descItemTypeIds: number[]) {
         return AjaxUtils.ajaxPut(
             WebApiCls.arrangementUrl + '/getFilterNodes/' + versionId,
             { page: pageIndex, pageSize: pageSize },
@@ -1301,7 +1301,7 @@ export class WebApiCls {
         );
     }
 
-    getFilteredNodes2(versionId, pageIndex, pageSize, descItemTypeIds) {
+    getFilteredNodes2(versionId: number, pageIndex, pageSize, descItemTypeIds: number[]) {
         return AjaxUtils.ajaxPut(
             WebApiCls.arrangementUrl + '/getFilterNodes2/' + versionId,
             { page: pageIndex, pageSize: pageSize },
@@ -1309,7 +1309,7 @@ export class WebApiCls {
         );
     }
 
-    getFilteredNodesByNodeId(versionId, nodeId, pageSize, descItemTypeIds) {
+    getFilteredNodesByNodeId(versionId: number, nodeId: number, pageSize, descItemTypeIds: number[]) {
         return AjaxUtils.ajaxPut(
             WebApiCls.arrangementUrl + '/getFilterNodes2/' + versionId,
             { nodeId, pageSize },
@@ -1317,7 +1317,7 @@ export class WebApiCls {
         );
     }
 
-    replaceDataValues(versionId, descItemTypeId, specsIds, searchText, replaceText, nodes, selectionType) {
+    replaceDataValues(versionId: number, descItemTypeId: number, specsIds: number[], searchText, replaceText, nodes, selectionType) {
         return AjaxUtils.ajaxPut(
             WebApiCls.arrangementUrl + '/replaceDataValues/' + versionId,
             { descItemTypeId, searchText, replaceText },
@@ -1325,7 +1325,7 @@ export class WebApiCls {
         );
     }
 
-    placeDataValues(versionId, descItemTypeId, specsIds, replaceText, description, replaceSpecId, nodes, selectionType, append = false) {
+    placeDataValues(versionId: number, descItemTypeId: number, specsIds: number[], replaceText, description, replaceSpecId: number, nodes, selectionType, append = false) {
         return AjaxUtils.ajaxPut(
             WebApiCls.arrangementUrl + '/placeDataValues/' + versionId + (append ? '?append=true' : ""),
             { descItemTypeId, newDescItemSpecId: replaceSpecId, text: replaceText, description },
@@ -1333,7 +1333,7 @@ export class WebApiCls {
         );
     }
 
-    setSpecification(fundVersionId, itemTypeId, specIds, replaceSpecId, nodes, selectionType) {
+    setSpecification(fundVersionId: number, itemTypeId: number, specIds: number[], replaceSpecId: number, nodes, selectionType) {
         return AjaxUtils.ajaxPut(
             WebApiCls.arrangementUrl + '/setSpecification/' + fundVersionId,
             { itemTypeId, replaceSpecId },
@@ -1341,7 +1341,7 @@ export class WebApiCls {
         );
     }
 
-    setDataValues(fundVersionId, itemTypeId, specIds, replaceValueId, nodes, selectionType, valueIds) {
+    setDataValues(fundVersionId: number, itemTypeId: number, specIds: number[], replaceValueId: number, nodes, selectionType, valueIds: number[]) {
         return AjaxUtils.ajaxPut(
             WebApiCls.arrangementUrl + '/setDataValues/' + fundVersionId,
             { itemTypeId, replaceValueId },
@@ -1349,7 +1349,7 @@ export class WebApiCls {
         );
     }
 
-    deleteDataValues(versionId, descItemTypeId, specsIds, nodes, selectionType, valueIds) {
+    deleteDataValues(versionId: number, descItemTypeId: number, specsIds: number[], nodes, selectionType, valueIds: number[]) {
         return AjaxUtils.ajaxPut(
             WebApiCls.arrangementUrl + '/deleteDataValues/' + versionId,
             { descItemTypeId },
@@ -1357,7 +1357,7 @@ export class WebApiCls {
         );
     }
 
-    getFilteredFulltextNodes(versionId, fulltext, luceneQuery = false, searchParams = null) {
+    getFilteredFulltextNodes(versionId: number, fulltext, luceneQuery = false, searchParams = null) {
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/getFilteredFulltext/' + versionId, null, {
             fulltext,
             luceneQuery,
@@ -1373,7 +1373,7 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/deletePackage/' + code);
     }
 
-    createDaoLink(versionId, daoId, nodeId) {
+    createDaoLink(versionId: number, daoId: number, nodeId: number) {
         return AjaxUtils.ajaxPut(
             WebApiCls.arrangementUrl + '/daos/' + versionId + '/' + daoId + '/' + nodeId + '/create',
             null,
@@ -1381,7 +1381,7 @@ export class WebApiCls {
         );
     }
 
-    deleteDaoLink(versionId, daoLinkId) {
+    deleteDaoLink(versionId: number, daoLinkId: number) {
         return AjaxUtils.ajaxDelete(WebApiCls.arrangementUrl + '/daolinks/' + versionId + '/' + daoLinkId, null, null);
     }
 
@@ -1392,7 +1392,7 @@ export class WebApiCls {
      * @param nodeId        JP pro kterou zjišťujeme odkazované JP
      * @return seznam JP
      */
-    findLinkedNodes(fundVersionId, nodeId) {
+    findLinkedNodes(fundVersionId: number, nodeId: number) {
         const url = UrlBuilder.bindParams(WebApiCls.arrangementUrl + '/nodes/{nodeId}/{fundVersionId}/links', {
             fundVersionId, nodeId
         });
@@ -1474,23 +1474,23 @@ export class WebApiCls {
         return AjaxUtils.ajaxCallRaw(WebApiCls.importUrl + '/import', {}, 'POST', data);
     }
 
-    arrCoordinatesImport(versionId, nodeId, nodeVersionId, descItemTypeId, file) {
+    arrCoordinatesImport(versionId: number, nodeId: number, nodeVersionId: number, descItemTypeId: number, file) {
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('fundVersionId', versionId);
-        formData.append('descItemTypeId', descItemTypeId);
-        formData.append('nodeId', nodeId);
-        formData.append('nodeVersion', nodeVersionId);
+        formData.append('fundVersionId', String(versionId));
+        formData.append('descItemTypeId', String(descItemTypeId));
+        formData.append('nodeId', String(nodeId));
+        formData.append('nodeVersion', String(nodeVersionId));
 
         return AjaxUtils.ajaxCallRaw(WebApiCls.kmlUrl + '/import/descCoordinates', {}, 'POST', formData);
     }
 
-    arrOutputCoordinatesImport(versionId, getOutputId, outputVersion, descItemTypeId, file) {
+    arrOutputCoordinatesImport(versionId: number, getOutputId: number, outputVersion, descItemTypeId: number, file) {
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('fundVersionId', versionId);
-        formData.append('descItemTypeId', descItemTypeId);
-        formData.append('getOutputId', getOutputId);
+        formData.append('fundVersionId', String(versionId));
+        formData.append('descItemTypeId', String(descItemTypeId));
+        formData.append('getOutputId', String(getOutputId));
         formData.append('outputVersion', outputVersion);
 
         return AjaxUtils.ajaxCallRaw(WebApiCls.kmlUrl + '/import/outputCoordinates', {}, 'POST', formData);
@@ -1500,12 +1500,12 @@ export class WebApiCls {
         return AjaxUtils.ajaxCallRaw(WebApiCls.kmlUrl + '/import/regCoordinates', {}, 'POST', data);
     }
 
-    descItemCsvImport(versionId, nodeId, nodeVersionId, descItemTypeId, file) {
+    descItemCsvImport(versionId: number, nodeId: number, nodeVersionId: number, descItemTypeId: number, file) {
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('nodeId', nodeId);
-        formData.append('nodeVersion', nodeVersionId);
-        formData.append('descItemTypeId', descItemTypeId);
+        formData.append('nodeId', String(nodeId));
+        formData.append('nodeVersion', String(nodeVersionId));
+        formData.append('descItemTypeId', String(descItemTypeId));
 
         return AjaxUtils.ajaxCallRaw(
             WebApiCls.arrangementUrl + '/descItems/' + versionId + '/csv/import',
@@ -1515,12 +1515,12 @@ export class WebApiCls {
         );
     }
 
-    descOutputItemCsvImport(versionId, getOutputId, outputVersion, descItemTypeId, file) {
+    descOutputItemCsvImport(versionId: number, getOutputId: number, outputVersion, descItemTypeId: number, file) {
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('getOutputId', getOutputId);
+        formData.append('getOutputId', String(getOutputId));
         formData.append('outputVersion', outputVersion);
-        formData.append('descItemTypeId', descItemTypeId);
+        formData.append('descItemTypeId', String(descItemTypeId));
 
         return AjaxUtils.ajaxCallRaw(
             WebApiCls.arrangementUrl + '/outputItems/' + versionId + '/csv/import',
@@ -1537,7 +1537,7 @@ export class WebApiCls {
     /**
      * Hledá všechny unikátní hodnoty atributu pro daný AS
      */
-    getDescItemTypeValues(versionId, descItemTypeId, fulltext, descItemSpecIds, max) {
+    getDescItemTypeValues(versionId: number, descItemTypeId: number, fulltext, descItemSpecIds: number[], max) {
         return AjaxUtils.ajaxPut(
             WebApiCls.arrangementUrl + '/filterUniqueValues/' + versionId,
             { descItemTypeId, fulltext, max },
@@ -1545,7 +1545,7 @@ export class WebApiCls {
         );
     }
 
-    findUniqueSpecIds(fundVersionId, itemTypeId, filters) {
+    findUniqueSpecIds(fundVersionId: number, itemTypeId: number, filters) {
         return AjaxUtils.ajaxPost(
             WebApiCls.arrangementUrl + '/findUniqueSpecIds/' + fundVersionId,
             { itemTypeId },
@@ -1553,7 +1553,7 @@ export class WebApiCls {
         );
     }
 
-    getVisiblePolicy(nodeId, fundVersionId) {
+    getVisiblePolicy(nodeId: number, fundVersionId: number) {
         return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/policy/' + nodeId + '/' + fundVersionId);
     }
 
@@ -1561,7 +1561,7 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/policy/types');
     }
 
-    setVisiblePolicy(nodeId, fundVersionId, policyTypeIdsMap, includeSubtree = false, nodeExtensions) {
+    setVisiblePolicy(nodeId: number, fundVersionId: number, policyTypeIdsMap, includeSubtree = false, nodeExtensions) {
         return AjaxUtils.ajaxPut(WebApiCls.ruleUrl + '/policy/' + nodeId + '/' + fundVersionId, null, {
             policyTypeIdsMap,
             includeSubtree,
@@ -1654,7 +1654,7 @@ export class WebApiCls {
         }).then(json => ({ data: json.rows, count: json.count }));
     }
 
-    findUsersPermissionsByFund(fundId) {
+    findUsersPermissionsByFund(fundId: number) {
         return AjaxUtils.ajaxGet(WebApiCls.userUrl + `/fund/${fundId}/users`).then(data => ({
             rows: data,
             count: data.length,
@@ -1668,65 +1668,65 @@ export class WebApiCls {
         }));
     }
 
-    findGroupsPermissionsByFund(fundId) {
+    findGroupsPermissionsByFund(fundId: number) {
         return AjaxUtils.ajaxGet(WebApiCls.groupUrl + `/fund/${fundId}/groups`).then(data => ({
             rows: data,
             count: data.length,
         }));
     }
 
-    findGroupsPermissionsByFundAll(fundId) {
+    findGroupsPermissionsByFundAll(fundId: number) {
         return AjaxUtils.ajaxGet(WebApiCls.groupUrl + `/fund/all/groups`).then(data => ({
             rows: data,
             count: data.length,
         }));
     }
 
-    changeUserPermission(userId, permissions) {
+    changeUserPermission(userId: number, permissions) {
         return AjaxUtils.ajaxPost(WebApiCls.userUrl + '/' + userId + '/permission', null, permissions);
     }
 
-    addUserPermission(userId, permissions) {
+    addUserPermission(userId: number, permissions) {
         return AjaxUtils.ajaxPost(WebApiCls.userUrl + '/' + userId + '/permission/add', null, permissions);
     }
 
-    addGroupPermission(groupId, permissions) {
+    addGroupPermission(groupId: number, permissions) {
         return AjaxUtils.ajaxPost(WebApiCls.groupUrl + '/' + groupId + '/permission/add', null, permissions);
     }
 
-    deleteUserPermission(userId, permissions) {
+    deleteUserPermission(userId: number, permissions) {
         return AjaxUtils.ajaxPost(WebApiCls.userUrl + '/' + userId + '/permission/delete', null, permissions);
     }
 
-    deleteGroupPermission(groupId, permissions) {
+    deleteGroupPermission(groupId: number, permissions) {
         return AjaxUtils.ajaxPost(WebApiCls.groupUrl + '/' + groupId + '/permission/delete', null, permissions);
     }
 
-    deleteUserFundPermission(userId, fundId) {
+    deleteUserFundPermission(userId: number, fundId: number) {
         return AjaxUtils.ajaxPost(WebApiCls.userUrl + '/' + userId + '/permission/delete/fund/' + fundId);
     }
 
-    deleteUserFundAllPermission(userId) {
+    deleteUserFundAllPermission(userId: number) {
         return AjaxUtils.ajaxPost(WebApiCls.userUrl + '/' + userId + '/permission/delete/fund/all');
     }
 
-    deleteGroupFundPermission(groupId, fundId) {
+    deleteGroupFundPermission(groupId: number, fundId: number) {
         return AjaxUtils.ajaxPost(WebApiCls.groupUrl + '/' + groupId + '/permission/delete/fund/' + fundId);
     }
 
-    deleteGroupFundAllPermission(groupId) {
+    deleteGroupFundAllPermission(groupId: number) {
         return AjaxUtils.ajaxPost(WebApiCls.groupUrl + '/' + groupId + '/permission/delete/fund/all');
     }
 
-    deleteUserScopePermission(userId, scopeId) {
+    deleteUserScopePermission(userId: number, scopeId: number) {
         return AjaxUtils.ajaxPost(WebApiCls.userUrl + '/' + userId + '/permission/delete/scope/' + scopeId);
     }
 
-    deleteGroupScopePermission(groupId, scopeId) {
+    deleteGroupScopePermission(groupId: number, scopeId: number) {
         return AjaxUtils.ajaxPost(WebApiCls.groupUrl + '/' + groupId + '/permission/delete/scope/' + scopeId);
     }
 
-    changeGroupPermission(groupId, permissions) {
+    changeGroupPermission(groupId: number, permissions) {
         return AjaxUtils.ajaxPost(WebApiCls.userUrl + '/group/' + groupId + '/permission', null, permissions);
     }
 
@@ -1745,11 +1745,11 @@ export class WebApiCls {
         }).then(json => ({ groups: json.rows, groupsCount: json.count }));
     }
 
-    getUser(userId) {
+    getUser(userId: number) {
         return AjaxUtils.ajaxGet(WebApiCls.userUrl + '/' + userId);
     }
 
-    getUserOld(userId) {
+    getUserOld(userId: number) {
         return AjaxUtils.ajaxGet(WebApiCls.userUrl + '/' + userId + '/old');
     }
 
@@ -1762,15 +1762,15 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.groupUrl, null, params);
     }
 
-    updateGroup(groupId, name, description) {
+    updateGroup(groupId: number, name, description) {
         return AjaxUtils.ajaxPut(WebApiCls.groupUrl + '/' + groupId, null, { name, description });
     }
 
-    deleteGroup(groupId) {
+    deleteGroup(groupId: number) {
         return AjaxUtils.ajaxDelete(WebApiCls.groupUrl + '/' + groupId);
     }
 
-    joinGroup(groupIds, userIds) {
+    joinGroup(groupIds: number[], userIds: number[]) {
         const data = {
             groupIds: groupIds,
             userIds: userIds,
@@ -1778,11 +1778,11 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.userUrl + '/group/join', null, data);
     }
 
-    leaveGroup(groupId, userId) {
+    leaveGroup(groupId: number, userId: number) {
         return AjaxUtils.ajaxPost(WebApiCls.userUrl + '/group/' + groupId + '/leave/' + userId, null, null);
     }
 
-    createUser(username, valuesMap, accessPointId) {
+    createUser(username, valuesMap, accessPointId: number) {
         const params = {
             username: username,
             valuesMap: valuesMap,
@@ -1791,7 +1791,7 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.userUrl, null, params);
     }
 
-    updateUser(id, accessPointId, username, valuesMap) {
+    updateUser(id: number, accessPointId: number, username, valuesMap) {
         return AjaxUtils.ajaxPut(WebApiCls.userUrl + '/' + id, null, { accessPointId, username, valuesMap });
     }
 
@@ -1799,19 +1799,19 @@ export class WebApiCls {
         return AjaxUtils.ajaxPut(WebApiCls.userUrl + '/password', null, { oldPassword, newPassword });
     }
 
-    changePassword(userId, newPassword) {
+    changePassword(userId: number, newPassword) {
         return AjaxUtils.ajaxPut(WebApiCls.userUrl + '/' + userId + '/password', null, { newPassword });
     }
 
-    changeActive(userId, active) {
+    changeActive(userId: number, active) {
         return AjaxUtils.ajaxPut(WebApiCls.userUrl + '/' + userId + '/active/' + active);
     }
 
-    getGroup(groupId) {
+    getGroup(groupId: number) {
         return AjaxUtils.ajaxGet(WebApiCls.groupUrl + '/' + groupId);
     }
 
-    getFundDetail(fundId) {
+    getFundDetail(fundId: number) {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/getFund/' + fundId).then(json => {
             return {
                 ...json,
@@ -1826,45 +1826,45 @@ export class WebApiCls {
     }
 
 
-    getValidationItems(fundVersionId, fromIndex, toIndex) {
+    getValidationItems(fundVersionId: number, fromIndex, toIndex) {
         return AjaxUtils.ajaxGet(
             WebApiCls.arrangementUrl + '/validation/' + fundVersionId + '/' + fromIndex + '/' + toIndex,
         );
     }
 
-    findValidationError(fundVersionId, nodeId, direction) {
+    findValidationError(fundVersionId: number, nodeId: number, direction) {
         return AjaxUtils.ajaxGet(
             WebApiCls.arrangementUrl + '/validation/' + fundVersionId + '/find/' + nodeId + '/' + direction,
         );
     }
 
-    deleteFund(fundId) {
+    deleteFund(fundId: number) {
         return AjaxUtils.ajaxDelete(WebApiCls.arrangementUrl + '/deleteFund/' + fundId);
     }
 
-    deleteFundHistory(fundId) {
+    deleteFundHistory(fundId: number) {
         return AjaxUtils.ajaxDelete(WebApiCls.arrangementUrl + '/deleteFundHistory/' + fundId);
     }
 
-    getOutputTypes(versionId) {
+    getOutputTypes(versionId: number) {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/output/types/' + versionId);
     }
 
-    getOutputs(versionId, state) {
+    getOutputs(versionId: number, state) {
         return AjaxUtils.ajaxGet(
             WebApiCls.arrangementUrl + '/output/' + versionId + (state != null ? '?state=' + state : ''),
         );
     }
 
-    getFundOutputDetail(versionId, outputId) {
+    getFundOutputDetail(versionId: number, outputId: number) {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/output/' + versionId + '/' + outputId);
     }
 
-    createOutput(versionId, data) {
+    createOutput(versionId: number, data) {
         return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/output/' + versionId, null, data);
     }
 
-    updateOutput(versionId, outputId, data) {
+    updateOutput(versionId: number, outputId: number, data) {
         return AjaxUtils.ajaxPost(
             WebApiCls.arrangementUrl + '/output/' + versionId + '/' + outputId + '/update',
             null,
@@ -1872,11 +1872,11 @@ export class WebApiCls {
         );
     }
 
-    outputUsageEnd(versionId, outputId) {
+    outputUsageEnd(versionId: number, outputId: number) {
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/output/' + versionId + '/' + outputId + '/lock');
     }
 
-    fundOutputAddNodes(versionId, outputId, nodeIds) {
+    fundOutputAddNodes(versionId: number, outputId: number, nodeIds: number[]) {
         return AjaxUtils.ajaxPost(
             WebApiCls.arrangementUrl + '/output/' + versionId + '/' + outputId + '/add',
             null,
@@ -1884,7 +1884,7 @@ export class WebApiCls {
         );
     }
 
-    fundOutputRemoveNodes(versionId, outputId, nodeIds) {
+    fundOutputRemoveNodes(versionId: number, outputId: number, nodeIds: number[]) {
         return AjaxUtils.ajaxPost(
             WebApiCls.arrangementUrl + '/output/' + versionId + '/' + outputId + '/remove',
             null,
@@ -1892,7 +1892,7 @@ export class WebApiCls {
         );
     }
 
-    outputDelete(versionId, outputId) {
+    outputDelete(versionId: number, outputId: number) {
         return AjaxUtils.ajaxDelete(WebApiCls.arrangementUrl + '/output/' + versionId + '/' + outputId);
     }
 
@@ -1908,35 +1908,35 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.attachmentUrl + '/mimeTypes', null);
     }
 
-    findFundFiles(fundId, searchText, count = 20, from = 0) {
+    findFundFiles(fundId: number, searchText, count = 20, from = 0) {
         return AjaxUtils.ajaxGet(WebApiCls.dmsUrl + '/fund/' + fundId, { count: count, search: searchText, from });
     }
 
-    getEditableFundFile(fundId, fileId) {
+    getEditableFundFile(fundId: number, fileId: number) {
         return AjaxUtils.ajaxGet(WebApiCls.dmsUrl + '/fund/' + fundId + '/' + fileId);
     }
 
-    updateFundFileRaw(fileId, formData) {
+    updateFundFileRaw(fileId: number, formData) {
         return AjaxUtils.ajaxCallRaw(WebApiCls.dmsUrl + '/fund/' + fileId, {}, 'POST', formData);
     }
 
-    updateFundFile(fileId, formData) {
+    updateFundFile(fileId: number, formData) {
         return AjaxUtils.ajaxPost(WebApiCls.dmsUrl + '/fund/' + fileId, null, formData);
     }
 
-    deleteArrFile(fileId) {
+    deleteArrFile(fileId: number) {
         return AjaxUtils.ajaxDelete(WebApiCls.dmsUrl + '/fund/' + fileId, null, null);
     }
 
-    findFundOutputFiles(outputId) {
+    findFundOutputFiles(outputId: number) {
         return AjaxUtils.ajaxGet(WebApiCls.dmsUrl + '/output/' + outputId);
     }
 
-    getFundOutputFunctions(outputId, getRecommended) {
+    getFundOutputFunctions(outputId: number, getRecommended) {
         return AjaxUtils.ajaxGet(WebApiCls.actionUrl + '/output/' + outputId, { recommended: getRecommended });
     }
 
-    outputGenerate(outputId, forced = false) {
+    outputGenerate(outputId: number, forced = false) {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/output/generate/' + outputId, { forced });
     }
 
@@ -1944,11 +1944,11 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/output/send/' + outputId.toString());
     }
 
-    outputRevert(versionId, outputId) {
+    outputRevert(versionId: number, outputId: number) {
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/output/' + versionId + '/' + outputId + '/revert');
     }
 
-    outputClone(versionId, outputId) {
+    outputClone(versionId: number, outputId: number) {
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/output/' + versionId + '/' + outputId + '/clone');
     }
 
@@ -1972,7 +1972,7 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/digitalRepositories', null);
     }
 
-    getExtSystem(id) {
+    getExtSystem(id: number) {
         return AjaxUtils.ajaxGet(WebApiCls.adminUrl + '/externalSystems/' + id, null);
     }
 
@@ -1980,23 +1980,23 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.adminUrl + '/externalSystems', null, extSystem);
     }
 
-    updateExtSystem(id, extSystem) {
+    updateExtSystem(id: number, extSystem) {
         return AjaxUtils.ajaxPut(WebApiCls.adminUrl + '/externalSystems/' + id, null, extSystem);
     }
 
-    deleteExtSystem(id) {
+    deleteExtSystem(id: number) {
         return AjaxUtils.ajaxDelete(WebApiCls.adminUrl + '/externalSystems/' + id, null);
     }
 
-    deleteExtSyncsQueueItem(itemId) {
+    deleteExtSyncsQueueItem(itemId: number) {
         return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/external/syncs/' + itemId, null);
     }
 
-    findFundStructureExtension(fundVersionId, structureTypeCode) {
+    findFundStructureExtension(fundVersionId: number, structureTypeCode) {
         return AjaxUtils.ajaxGet(WebApiCls.structureUrl + '/extension/' + fundVersionId + '/' + structureTypeCode);
     }
 
-    updateFundStructureExtension(fundVersionId, structureTypeCode, structureExtensionCodes) {
+    updateFundStructureExtension(fundVersionId: number, structureTypeCode, structureExtensionCodes) {
         return AjaxUtils.ajaxPut(
             WebApiCls.structureUrl + '/extension/' + fundVersionId + '/' + structureTypeCode,
             null,
@@ -2004,11 +2004,11 @@ export class WebApiCls {
         );
     }
 
-    findRulStructureTypes(fundVersionId) {
+    findRulStructureTypes(fundVersionId: number) {
         return AjaxUtils.ajaxGet(WebApiCls.structureUrl + '/type', { fundVersionId });
     }
 
-    getStructureData(fundVersionId, structureDataId) {
+    getStructureData(fundVersionId: number, structureDataId: number) {
         return AjaxUtils.ajaxGet(WebApiCls.structureUrl + '/data/' + fundVersionId + '/' + structureDataId);
     }
 
@@ -2031,7 +2031,7 @@ export class WebApiCls {
         );
     }
 
-    createStructureData(fundVersionId, structureTypeCode, value = null) {
+    createStructureData(fundVersionId: number, structureTypeCode, value = null) {
         // Kvůli JSON stringify musíme poslat pomocí RAW aby se nevytvořili '"' v body
         return AjaxUtils.ajaxCallRaw(
             WebApiCls.structureUrl + '/data/' + fundVersionId,
@@ -2042,7 +2042,7 @@ export class WebApiCls {
         );
     }
 
-    duplicateStructureDataBatch(fundVersionId, structureDataId, data) {
+    duplicateStructureDataBatch(fundVersionId: number, structureDataId: number, data) {
         return AjaxUtils.ajaxPost(
             WebApiCls.structureUrl + '/data/' + fundVersionId + '/' + structureDataId + '/batch',
             null,
@@ -2050,21 +2050,21 @@ export class WebApiCls {
         );
     }
 
-    confirmStructureData(fundVersionId, structureDataId) {
+    confirmStructureData(fundVersionId: number, structureDataId: number) {
         return AjaxUtils.ajaxPost(
             WebApiCls.structureUrl + '/data/' + fundVersionId + '/' + structureDataId + '/confirm',
         );
     }
 
-    deleteStructureData(fundVersionId, structureDataId) {
+    deleteStructureData(fundVersionId: number, structureDataId: number) {
         return AjaxUtils.ajaxDelete(WebApiCls.structureUrl + '/data/' + fundVersionId + '/' + structureDataId);
     }
 
-    getFormStructureItems(fundVersionId, structureDataId) {
+    getFormStructureItems(fundVersionId: number, structureDataId: number) {
         return AjaxUtils.ajaxGet(WebApiCls.structureUrl + '/item/form/' + fundVersionId + '/' + structureDataId);
     }
 
-    createStructureItem(fundVersionId, structureDataId, itemTypeId, data) {
+    createStructureItem(fundVersionId: number, structureDataId: number, itemTypeId: number, data) {
         return AjaxUtils.ajaxPost(
             WebApiCls.structureUrl + '/item/' + fundVersionId + '/' + structureDataId + '/' + itemTypeId + '/create',
             null,
@@ -2072,7 +2072,7 @@ export class WebApiCls {
         );
     }
 
-    updateStructureItem(fundVersionId, data, createNewVersion = true) {
+    updateStructureItem(fundVersionId: number, data, createNewVersion = true) {
         return AjaxUtils.ajaxPut(
             WebApiCls.structureUrl + '/item/' + fundVersionId + '/update/' + createNewVersion,
             null,
@@ -2080,17 +2080,17 @@ export class WebApiCls {
         );
     }
 
-    deleteStructureItem(fundVersionId, data) {
+    deleteStructureItem(fundVersionId: number, data) {
         return AjaxUtils.ajaxPost(WebApiCls.structureUrl + '/item/' + fundVersionId + '/delete', null, data);
     }
 
-    deleteStructureItemsByType(fundVersionId, structureDataId, itemTypeId) {
+    deleteStructureItemsByType(fundVersionId: number, structureDataId: number, itemTypeId: number) {
         return AjaxUtils.ajaxDelete(
             WebApiCls.structureUrl + '/item/' + fundVersionId + '/' + structureDataId + '/' + itemTypeId,
         );
     }
 
-    updateStructureDataBatch(fundVersionId, structureTypeCode, structureDataBatchUpdate) {
+    updateStructureDataBatch(fundVersionId: number, structureTypeCode, structureDataBatchUpdate) {
         return AjaxUtils.ajaxPost(
             WebApiCls.structureUrl + '/data/' + fundVersionId + '/' + structureTypeCode + '/batchUpdate',
             null,
@@ -2098,7 +2098,7 @@ export class WebApiCls {
         );
     }
 
-    setAssignableStructureDataList(fundVersionId, assignable, structureDataIds) {
+    setAssignableStructureDataList(fundVersionId: number, assignable, structureDataIds: number[]) {
         return AjaxUtils.ajaxPost(
             WebApiCls.structureUrl + '/data/' + fundVersionId + '/assignable/' + assignable,
             null,
