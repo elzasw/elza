@@ -1,5 +1,5 @@
 import { Tag, makeStyles } from "@fluentui/react-components";
-import { findColDefByField } from "../utils";
+import { findColDefByField } from "../columns";
 import { AipFilterEntry } from "typings/store";
 import { DateValueFilter, NumberValueFilter } from "elza-api";
 import i18n from "components/i18n";

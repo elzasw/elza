@@ -3,7 +3,7 @@ import { modalDialogHide, modalDialogShow } from "actions/global/modalDialog";
 import { useThunkDispatch } from "utils/hooks";
 import {Icon} from 'components/shared';
 import "./AipFilter.scss";
-import { AipColumn, colDef } from "../utils";
+import { AipColumn, colDef } from "../columns";
 import { useEffect, useState } from "react";
 import AipFilterTag from "./AipFilterTag";
 import { AREA_AIPS, aipsFilter } from "actions/aip/aip";
