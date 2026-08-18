@@ -2,7 +2,7 @@ import { Fragment, useRef, useState, useEffect, useLayoutEffect } from 'react';
 import { Api } from 'api';
 import classNames from 'classnames';
 import { Button, Popover, PopoverSurface, PopoverTrigger } from '@fluentui/react-components';
-import { DeleteRegular } from '@fluentui/react-icons';
+import { ArrowClockwiseFilled, ArrowUpRegular, DeleteRegular, FilterRegular, TextSortAscendingRegular } from '@fluentui/react-icons';
 import { FsRepo, FsItem, FsItemType, FsItemSortType, FsItemFilterByLinked, FsLink } from 'elza-api';
 import { useDebouncedEffect } from 'utils/hooks/hooks';
 import { useAppThunkDispatch } from 'utils/hooks';
@@ -489,16 +489,19 @@ export const FileSystemBrowser = ({
         <div className="file-system-browser">
             <div className="toolbar">
                 <div className="actions">
-                    <div title={i18n("arr.daos.fileSystem.selectParent")}
-                        className="btn"
-                        onClick={handleSelectParent}>
-                        <Icon glyph="fa-arrow-up" />
-                    </div>
+                    <Button
+                        appearance="subtle"
+                        size="small"
+                        icon={<ArrowUpRegular />}
+                        onClick={handleSelectParent}
+                        title={i18n("arr.daos.fileSystem.selectParent")}
+                        aria-label={i18n("arr.daos.fileSystem.selectParent")}
+                    />
                 </div>
                 {generateBreadcrumbs()}
                 <div className="filters">
                     <span className="sort-label" title={intl.formatMessage(messages.filterByLinkLabel)}>
-                        <Icon glyph="fa-filter" className="fa-lg" />
+                        <FilterRegular fontSize={18} />
                     </span>
                     <select
                         id="filter-by-link-select"
@@ -533,7 +536,7 @@ export const FileSystemBrowser = ({
                         />
                     )}
                     <span className="sort-label" title={intl.formatMessage(messages.sortLabel)}>
-                        <Icon glyph="fa-sort-alpha-asc" className="fa-lg" />
+                        <TextSortAscendingRegular fontSize={18} />
                     </span>
                     <select
                         id="sort-select"
@@ -549,11 +552,14 @@ export const FileSystemBrowser = ({
                     </select>
                 </div>
                 <div className="actions actions--end">
-                    <div title={intl.formatMessage(messages.refresh)}
-                        className="btn"
-                        onClick={() => setLocalRefreshTick((tick) => tick + 1)}>
-                        <Icon glyph="fa-repeat" />
-                    </div>
+                    <Button
+                        appearance="subtle"
+                        size="small"
+                        icon={<ArrowClockwiseFilled />}
+                        onClick={() => setLocalRefreshTick((tick) => tick + 1)}
+                        title={intl.formatMessage(messages.refresh)}
+                        aria-label={intl.formatMessage(messages.refresh)}
+                    />
                 </div>
             </div>
             <div className="main-container">
