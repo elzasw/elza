@@ -12,6 +12,7 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.Collator;
 import java.time.Duration;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -306,6 +307,9 @@ public class FileSystemRepoBrowser {
             probe.setName(cursor.lastName);
             probe.setSize(cursor.lastSize);
             probe.setItemType(cursor.lastWasFolder ? FsItemType.FOLDER : FsItemType.FILE);
+            if (cursor.lastChange != null) {
+                probe.setLastChange(OffsetDateTime.parse(cursor.lastChange));
+            }
             int found = Collections.binarySearch(
                     fsItemList, new FsItemEntry(probe, null), entryComparator);
             // found >= 0: cursor row still present — resume after it.
@@ -333,6 +337,7 @@ public class FileSystemRepoBrowser {
             nextCursor.lastName = last.getName();
             nextCursor.lastSize = last.getSize();
             nextCursor.lastWasFolder = last.getItemType() == FsItemType.FOLDER;
+            nextCursor.lastChange = last.getLastChange() != null ? last.getLastChange().toString() : null;
             result.setLastKey(encodeCursor(nextCursor));
         }
         if (truncated[0]) {
@@ -372,6 +377,14 @@ public class FileSystemRepoBrowser {
                 return foldersFirstCmp.thenComparing((a, b) -> Long.compare(
                         b.getSize() == null ? 0L : b.getSize(),
                         a.getSize() == null ? 0L : a.getSize()));
+            case LAST_CHANGE_ASC:
+                return foldersFirstCmp
+                        .thenComparing(FsItem::getLastChange)
+                        .thenComparing(FsItem::getName, collator); // tie-break to keep sort deterministic
+            case LAST_CHANGE_DESC:
+                return foldersFirstCmp
+                        .thenComparing((a, b) -> b.getLastChange().compareTo(a.getLastChange()))
+                        .thenComparing(FsItem::getName, collator);
             default:
                 return foldersFirstCmp.thenComparing(FsItem::getName, collator);
         }
@@ -719,6 +732,7 @@ public class FileSystemRepoBrowser {
         public String lastName;
         public Long lastSize;
         public boolean lastWasFolder;
+        public String lastChange; // ISO-8601, nullable
     }
 
     private static String encodeCursor(Cursor c) {
