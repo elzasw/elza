@@ -6,13 +6,14 @@ import { useThunkDispatch } from "utils/hooks";
 import { AREA_AIPS, aipsFilter } from "actions/aip/aip";
 import "./AipFilter.scss";
 import { useSelector } from "react-redux";
-import i18n from "components/i18n";
 import { AipFilterEntry } from "typings/store";
 import { generateUUID } from "utils/uuid";
 import { aipColumns } from "../columns";
 import { buildFilter } from "./aipFilterModel";
 import { AipFieldName } from "elza-api";
 import { useState } from "react";
+import { useIntl } from "react-intl";
+import { filterMessages } from "../messages";
 
 type AipFilterSectionProps = {
     columns: string[];
@@ -26,6 +27,7 @@ const FULLTEXT_ID = "fulltext";
 
 const AipFilterSection = ({columns, onColsChange, filterDisabled, initialFilters, hiddenValues}: AipFilterSectionProps) => {
     const [filters, setFilters] = useState<AipFilterEntry[]>(initialFilters || []);
+    const {formatMessage} = useIntl();
 
     const handleSearch = debounce((e, data) => {
         if(data.value != "") {
@@ -58,7 +60,7 @@ const AipFilterSection = ({columns, onColsChange, filterDisabled, initialFilters
     return (
         <div className="aip-filter-section">
             <SearchBox 
-                placeholder={i18n("aip.table.search")}
+                placeholder={formatMessage(filterMessages.search)}
                 className='search'
                 size="small"
                 onChange={handleSearch}

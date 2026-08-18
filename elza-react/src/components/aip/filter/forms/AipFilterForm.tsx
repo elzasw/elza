@@ -1,4 +1,4 @@
-import { FormInputField, i18n } from "components/shared";
+import { FormInputField } from "components/shared";
 import { Field, Form as FinalForm } from "react-final-form";
 import { Modal, Button, Form } from "react-bootstrap";
 import { AdminFunds, AipFilterEntry, ApAccessPoints } from "typings/store";
@@ -11,7 +11,8 @@ import { useAppThunkDispatch } from "utils/hooks";
 import { AipFieldName, QueueItemState } from "elza-api";
 import { generateUUID } from "utils/uuid";
 import { AipColumn } from "../../columns";
-import { boolMessages, queueStateMessages } from "../../messages";
+import { boolMessages, filterErrorMessages, filterMessages, queueStateMessages } from "../../messages";
+import { globalMessages } from "components/shared/lang/messages";
 import { IntlShape, defineMessages, useIntl } from "react-intl";
 import {
     AipOperation,
@@ -56,14 +57,14 @@ const EXPORT_STATES = [
 
 
 
-function operationLabel(operation: AipOperation): string {
+function operationMessage(operation: AipOperation) {
     switch (operation) {
-        case "EQ": return i18n("aip.form.equals");
-        case "CONTAINS": return i18n("aip.form.contain");
-        case "NOT_CONTAINS": return i18n("aip.form.notContain");
-        case "BETWEEN": return i18n("aip.form.between");
-        case "IS_NULL": return i18n("aip.form.null");
-        case "NOT_NULL": return i18n("aip.form.notNull");
+        case "EQ": return filterMessages.equals;
+        case "CONTAINS": return filterMessages.contain;
+        case "NOT_CONTAINS": return filterMessages.notContain;
+        case "BETWEEN": return filterMessages.between;
+        case "IS_NULL": return filterMessages.isNull;
+        case "NOT_NULL": return filterMessages.notNull;
     }
 }
 
@@ -126,19 +127,19 @@ export function AipFilterForm({item, onSubmit, onClose}: Props) {
         }
         if (isRangeOperation(values.operation)) {
             if (isDate) {
-                if (!values.from) errors.from = i18n("aip.form.error.emptyDate");
-                if (!values.to) errors.to = i18n("aip.form.error.emptyDate");
+                if (!values.from) errors.from = intl.formatMessage(filterErrorMessages.emptyDate);
+                if (!values.to) errors.to = intl.formatMessage(filterErrorMessages.emptyDate);
             } else {
-                if (!Number(values.from)) errors.from = i18n("aip.form.error.nan");
-                if (Number(values.from) < 0) errors.from = i18n("aip.form.error.positiveNum");
-                if (!Number(values.to)) errors.to = i18n("aip.form.error.nan");
-                if (Number(values.to) < 0) errors.to = i18n("aip.form.error.positiveNum");
-                if (Number(values.from) > Number(values.to)) errors.to = i18n("aip.form.error.between");
+                if (!Number(values.from)) errors.from = intl.formatMessage(filterErrorMessages.nan);
+                if (Number(values.from) < 0) errors.from = intl.formatMessage(filterErrorMessages.positiveNum);
+                if (!Number(values.to)) errors.to = intl.formatMessage(filterErrorMessages.nan);
+                if (Number(values.to) < 0) errors.to = intl.formatMessage(filterErrorMessages.positiveNum);
+                if (Number(values.from) > Number(values.to)) errors.to = intl.formatMessage(filterErrorMessages.between);
             }
             return errors;
         }
         if (!values.value) {
-            errors.value = i18n("aip.form.error.value");
+            errors.value = intl.formatMessage(filterErrorMessages.value);
         }
         return errors;
     };
@@ -161,7 +162,7 @@ export function AipFilterForm({item, onSubmit, onClose}: Props) {
             {({submitting, handleSubmit, form, values}) => (
                 <Form>
                     <Modal.Body>
-                        <Form.Label>{i18n("aip.form.content")}</Form.Label>
+                        <Form.Label>{intl.formatMessage(filterMessages.content)}</Form.Label>
                         {operations.map(operation => (
                             <Field name="operation" key={operation}>
                                 {({input}) => (
@@ -170,7 +171,7 @@ export function AipFilterForm({item, onSubmit, onClose}: Props) {
                                         // FormInputField does not declare the radio variant
                                         // @ts-ignore
                                         type="radio"
-                                        label={operationLabel(operation)}
+                                        label={intl.formatMessage(operationMessage(operation))}
                                         checked={values.operation === operation}
                                         value={operation}
                                         onChange={() => form.change("operation", operation)}
@@ -184,13 +185,13 @@ export function AipFilterForm({item, onSubmit, onClose}: Props) {
                                 <Field
                                     component={FormInputField}
                                     type={isDate ? "date" : "number"}
-                                    label={i18n("aip.form.from")}
+                                    label={intl.formatMessage(filterMessages.from)}
                                     name="from"
                                 />
                                 <Field
                                     component={FormInputField}
                                     type={isDate ? "date" : "number"}
-                                    label={i18n("aip.form.to")}
+                                    label={intl.formatMessage(filterMessages.to)}
                                     name="to"
                                 />
                             </>
@@ -201,7 +202,7 @@ export function AipFilterForm({item, onSubmit, onClose}: Props) {
                                 <Field
                                     component={FormInputField}
                                     type="select"
-                                    label={i18n("aip.form.value")}
+                                    label={intl.formatMessage(filterMessages.value)}
                                     name="value"
                                 >
                                     {options.map(({value, label}) => (
@@ -212,7 +213,7 @@ export function AipFilterForm({item, onSubmit, onClose}: Props) {
                                 <Field
                                     component={FormInputField}
                                     type={item.valueType === "number" ? "number" : "text"}
-                                    label={i18n("aip.form.value")}
+                                    label={intl.formatMessage(filterMessages.value)}
                                     name="value"
                                 />
                             )
@@ -223,7 +224,7 @@ export function AipFilterForm({item, onSubmit, onClose}: Props) {
                             OK
                         </Button>
                         <Button onClick={onClose} variant="link">
-                            {i18n("global.action.cancel")}
+                            {intl.formatMessage(globalMessages.cancel)}
                         </Button>
                     </Modal.Footer>
                 </Form>
