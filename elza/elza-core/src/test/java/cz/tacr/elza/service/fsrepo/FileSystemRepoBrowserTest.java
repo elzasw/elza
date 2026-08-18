@@ -147,15 +147,83 @@ public class FileSystemRepoBrowserTest {
 
         FsItems page1 = browser.browseItems(repo, fund, null, null, null, null, null, null, 2, null);
         assertEquals(2, page1.getItems().size());
-        assertEquals("2", page1.getLastKey());
+        assertEquals("f00.txt", page1.getItems().get(0).getName());
+        assertEquals("f01.txt", page1.getItems().get(1).getName());
+        assertNotNull(page1.getLastKey());
 
-        FsItems page2 = browser.browseItems(repo, fund, null, null, "2", null, null, null, 2, null);
+        FsItems page2 = browser.browseItems(repo, fund, null, null, page1.getLastKey(), null, null, null, 2, null);
         assertEquals(2, page2.getItems().size());
-        assertEquals("4", page2.getLastKey());
+        assertEquals("f02.txt", page2.getItems().get(0).getName());
+        assertEquals("f03.txt", page2.getItems().get(1).getName());
+        assertNotNull(page2.getLastKey());
 
-        FsItems page3 = browser.browseItems(repo, fund, null, null, "4", null, null, null, 2, null);
+        FsItems page3 = browser.browseItems(repo, fund, null, null, page2.getLastKey(), null, null, null, 2, null);
         assertEquals(1, page3.getItems().size());
+        assertEquals("f04.txt", page3.getItems().get(0).getName());
         assertNull(page3.getLastKey());
+    }
+
+    @Test
+    void browse_pagination_stableUnderInsertion(@TempDir Path root) throws IOException {
+        for (int i = 0; i < 10; i++) {
+            Files.createFile(root.resolve(String.format("f%02d.txt", i)));
+        }
+        Mockito.when(serviceMock.resolvePath(eq(repo), eq(fund), any())).thenReturn(root);
+
+        FsItems page1 = browser.browseItems(repo, fund, null, null, null, null, null, null, 5, null);
+        assertEquals(5, page1.getItems().size());
+        assertEquals("f04.txt", page1.getItems().get(4).getName());
+
+        // Insertion between pages: a new file that sorts before the cursor position.
+        Files.createFile(root.resolve("f02a.txt"));
+
+        FsItems page2 = browser.browseItems(repo, fund, null, null, page1.getLastKey(), null, null, null, 5, null);
+        // Cursor is name="f04.txt"; page2 must resume after it, unchanged by the
+        // insertion of "f02a.txt" earlier in the sort order.
+        assertEquals(5, page2.getItems().size());
+        assertEquals("f05.txt", page2.getItems().get(0).getName());
+        assertEquals("f09.txt", page2.getItems().get(4).getName());
+    }
+
+    @Test
+    void browse_pagination_stableUnderDeletion(@TempDir Path root) throws IOException {
+        for (int i = 0; i < 10; i++) {
+            Files.createFile(root.resolve(String.format("f%02d.txt", i)));
+        }
+        Mockito.when(serviceMock.resolvePath(eq(repo), eq(fund), any())).thenReturn(root);
+
+        FsItems page1 = browser.browseItems(repo, fund, null, null, null, null, null, null, 5, null);
+        assertEquals(5, page1.getItems().size());
+        assertEquals("f04.txt", page1.getItems().get(4).getName());
+
+        // The cursor row itself vanishes between pages.
+        Files.delete(root.resolve("f04.txt"));
+
+        FsItems page2 = browser.browseItems(repo, fund, null, null, page1.getLastKey(), null, null, null, 5, null);
+        // binarySearch returns the insertion point, which is already the first
+        // entry greater than the deleted cursor — no dupe, no gap.
+        assertEquals(5, page2.getItems().size());
+        assertEquals("f05.txt", page2.getItems().get(0).getName());
+        assertEquals("f09.txt", page2.getItems().get(4).getName());
+    }
+
+    @Test
+    void browse_pagination_resetsOnSortChange(@TempDir Path root) throws IOException {
+        for (int i = 0; i < 6; i++) {
+            Files.createFile(root.resolve(String.format("f%02d.txt", i)));
+        }
+        Mockito.when(serviceMock.resolvePath(eq(repo), eq(fund), any())).thenReturn(root);
+
+        FsItems page1 = browser.browseItems(repo, fund, null, null, null, null,
+                FsItemSortType.NAME_ASC, null, 3, null);
+        assertNotNull(page1.getLastKey());
+
+        // Same lastKey passed with a different sort — cursor is silently ignored.
+        FsItems page2 = browser.browseItems(repo, fund, null, null, page1.getLastKey(), null,
+                FsItemSortType.NAME_DESC, null, 3, null);
+        assertEquals(3, page2.getItems().size());
+        // NAME_DESC starts from the highest name, not resumed from the ASC cursor.
+        assertEquals("f05.txt", page2.getItems().get(0).getName());
     }
 
     @Test
