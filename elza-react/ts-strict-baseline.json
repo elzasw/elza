@@ -671,78 +671,8 @@
   "src/components/aip/AipDetail.tsx": [
     "error TS7016: Could not find a declaration file for module 'react-router'. 'C:/Pyta/elza/elza-main.git/elza/elza-react/node_modules/react-router/index.js' implicitly has an 'any' type."
   ],
-  "src/components/aip/AipPageRibbon.tsx": [
-    "error TS7005: Variable 'itemActions' implicitly has an 'any[]' type.",
-    "error TS7006: Parameter 'aip' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'aip' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'aip' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'aip' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'aip' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'aip' implicitly has an 'any' type.",
-    "error TS7034: Variable 'itemActions' implicitly has type 'any[]' in some locations where its type cannot be determined."
-  ],
   "src/components/aip/AipTable.tsx": [
-    "error TS7006: Parameter 'id' implicitly has an 'any' type.",
-    "error TS7016: Could not find a declaration file for module 'react-router'. 'C:/Pyta/elza/elza-main.git/elza/elza-react/node_modules/react-router/index.js' implicitly has an 'any' type.",
-    "error TS7053: Element implicitly has an 'any' type because expression of type 'TableColumnId' can't be used to index type '{}'.",
-    "error TS7053: Element implicitly has an 'any' type because expression of type 'TableColumnId' can't be used to index type '{}'.",
-    "error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'AipDetailVO'.",
-    "error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'AipDetailVO'.",
-    "error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'AipDetailVO'.",
-    "error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'AipDetailVO'.",
-    "error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'AipDetailVO'.",
-    "error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'AipDetailVO'.",
-    "error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'AipDetailVO'.",
-    "error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'AipDetailVO'.",
-    "error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'AipDetailVO'.",
-    "error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'."
-  ],
-  "src/components/aip/explorer/AipExplorer.tsx": [
-    "error TS7006: Parameter 'node' implicitly has an 'any' type."
-  ],
-  "src/components/aip/explorer/ExplorerNavigationTab.tsx": [
-    "error TS7005: Variable 'items' implicitly has an 'any[]' type.",
-    "error TS7006: Parameter 'item' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'item' implicitly has an 'any' type.",
-    "error TS7034: Variable 'items' implicitly has type 'any[]' in some locations where its type cannot be determined."
-  ],
-  "src/components/aip/explorer/detail/ExplorerDetail.tsx": [
-    "error TS7006: Parameter 'id' implicitly has an 'any' type."
-  ],
-  "src/components/aip/explorer/table/ExplorerTable.tsx": [
-    "error TS7006: Parameter 'item' implicitly has an 'any' type."
-  ],
-  "src/components/aip/explorer/tree/ExplorerTree.tsx": [
-    "error TS7006: Parameter 'item' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'node' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'node' implicitly has an 'any' type."
-  ],
-  "src/components/aip/explorer/utils.ts": [
-    "error TS7006: Parameter 'id' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'path' implicitly has an 'any[]' type.",
-    "error TS7006: Parameter 'path' implicitly has an 'any[]' type.",
-    "error TS7006: Parameter 'tree' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'tree' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'uuid' implicitly has an 'any' type.",
-    "error TS7022: 'result' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.",
-    "error TS7022: 'result' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.",
-    "error TS7023: 'findNodeById' implicitly has return type 'any' because it does not have a return type annotation and is referenced directly or indirectly in one of its return expressions.",
-    "error TS7023: 'findNodeByUUID' implicitly has return type 'any' because it does not have a return type annotation and is referenced directly or indirectly in one of its return expressions."
-  ],
-  "src/components/aip/filter/AipFilterSection.tsx": [
-    "error TS7006: Parameter 'data' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'e' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'id' implicitly has an 'any' type."
-  ],
-  "src/components/aip/filter/AipFilters.tsx": [
-    "error TS7006: Parameter '_e' implicitly has an 'any' type.",
-    "error TS7015: Element implicitly has an 'any' type because index expression is not of type 'number'.",
-    "error TS7015: Element implicitly has an 'any' type because index expression is not of type 'number'.",
-    "error TS7031: Binding element 'value' implicitly has an 'any' type."
-  ],
-  "src/components/aip/filter/AipListColSelector.tsx": [
-    "error TS7015: Element implicitly has an 'any' type because index expression is not of type 'number'.",
-    "error TS7015: Element implicitly has an 'any' type because index expression is not of type 'number'."
+    "error TS7016: Could not find a declaration file for module 'react-router'. 'C:/Pyta/elza/elza-main.git/elza/elza-react/node_modules/react-router/index.js' implicitly has an 'any' type."
   ],
   "src/components/arr/ArrOutputDetail.tsx": [
     "error TS7006: Parameter 's' implicitly has an 'any' type."

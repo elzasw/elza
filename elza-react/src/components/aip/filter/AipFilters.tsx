@@ -48,7 +48,7 @@ const AipFilters = ({filterDisabled, hiddenValues, filters, createFilter, remove
 		createFilter(filter);
 	}
 
-	const handleRemove = (_e, { value }) => {
+	const handleRemove = (_e: unknown, {value}: {value: string}) => {
 		removeFilter(value);
 	}
 
@@ -82,13 +82,13 @@ const AipFilters = ({filterDisabled, hiddenValues, filters, createFilter, remove
 
 				<MenuPopover className={classes.menuPopover}>
 				<MenuList>
-					{Object.keys(columnsDef).map((key, index) => (
+					{columnsDef.map((column) => (
 						<MenuItem
-							key={`filter-${index}`}
+							key={`filter-${column.field}`}
 							className={classes.menuItem}
-							onClick={() => handleFilterCreate(columnsDef[key])}
+							onClick={() => handleFilterCreate(column)}
 						>
-							{formatMessage(columnsDef[key].message)}
+							{formatMessage(column.message)}
 						</MenuItem>
 					))}
 				</MenuList>

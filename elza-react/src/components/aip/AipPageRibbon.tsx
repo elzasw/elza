@@ -1,4 +1,5 @@
 import {aipsFetchIfNeeded, AREA_AIP, AREA_SELECTED_AIPS} from "actions/aip/aip";
+import { AipDetailVO } from "elza-api";
 import { Ribbon } from "components";
 import { Icon, RibbonGroup, i18n } from "components/shared";
 import React, { FC } from "react";
@@ -17,25 +18,25 @@ const AipPageRibbon: FC = () => {
     const dispatch = useThunkDispatch();
 
     const handleLoadMetadata = () => {
-        let aipIds = selectedAips.rows.map(aip => aip.aipId)
+        let aipIds = selectedAips.rows.map((aip: AipDetailVO) => aip.aipId)
         Api.aips.aipCreateDaoStructure(aipIds).then(() => {
             dispatch(aipsFetchIfNeeded(true))
         });
     }
     const handleDeleteMetadata = () => {
-        let aipIds = selectedAips.rows.map(aip => aip.aipId)
+        let aipIds = selectedAips.rows.map((aip: AipDetailVO) => aip.aipId)
         Api.aips.aipDeleteDaoStructure(aipIds).then(() => {
             dispatch(aipsFetchIfNeeded(true))
         });
     }
     const handleLoadAips = () => {
-        let aipIds = selectedAips.rows.map(aip => aip.aipId)
+        let aipIds = selectedAips.rows.map((aip: AipDetailVO) => aip.aipId)
         Api.aips.aipDownloadCompleteAip(aipIds).then(() => {
             dispatch(aipsFetchIfNeeded(true))
         });
     }
     const handleDeleteAips = () => {
-        let aipIds = selectedAips.rows.map(aip => aip.aipId)
+        let aipIds = selectedAips.rows.map((aip: AipDetailVO) => aip.aipId)
         Api.aips.aipDeleteCompleteAip(aipIds).then(() => {
             dispatch(aipsFetchIfNeeded(true))
         });
@@ -47,7 +48,7 @@ const AipPageRibbon: FC = () => {
                 i18n('aip.form.update.title'),
                 <AipUpdateTypeForm
                     onSubmit={({type}) => {
-                        let aipIds = selectedAips.rows.map(aip => aip.aipId)
+                        let aipIds = selectedAips.rows.map((aip: AipDetailVO) => aip.aipId)
                         Api.aips.aipUpdateAip(type, aipIds).then(() => {
                             dispatch(aipsFetchIfNeeded(true))
                         });
@@ -57,14 +58,14 @@ const AipPageRibbon: FC = () => {
         );
     }
     const handleExportAips = () => {
-        let aipIds = selectedAips.rows.map(aip => aip.aipId)
+        let aipIds = selectedAips.rows.map((aip: AipDetailVO) => aip.aipId)
         Api.aips.aipExportAip(aipIds).then(() => {
             dispatch(aipsFetchIfNeeded(true))
         });
     }
 
     const altActions = [];
-    const itemActions = [];
+    const itemActions: JSX.Element[] = [];
 
 
     if (selectedAips?.rows?.length > 0) {

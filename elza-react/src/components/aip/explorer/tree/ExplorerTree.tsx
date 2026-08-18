@@ -1,4 +1,5 @@
 import { Tree, TreeItem, TreeItemLayout, TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent } from "@fluentui/react-components";
+import type { ExplorerNode } from "../utils";
 import { FC,  useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { storeFromArea } from "shared/utils";
@@ -17,7 +18,7 @@ import { DaoFileFolderVO } from "api/DaoFileFolderVO";
 import { findNodeByUUID } from "../utils";
 
 
-const AipTree: FC<{onSelect?: (node) => void}> = ({onSelect}) => {
+const AipTree: FC<{onSelect?: (node: ExplorerNode) => void}> = ({onSelect}) => {
     const aip = useSelector((state: AppState) => storeFromArea(state, AREA_AIP));
     const {data: structure} = useSelector((state: AppState) => storeFromArea(state, AREA_AIP_STRUCTURE));
     const {selectedItem, setSelectedItem, mode} = useExplorerContext();
