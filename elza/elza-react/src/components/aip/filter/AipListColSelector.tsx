@@ -11,7 +11,8 @@ import {
 import type { MenuCheckedValueChangeData, MenuCheckedValueChangeEvent } from "@fluentui/react-components";
 import { colDef } from "../columns";
 import { useIntl } from "react-intl";
-import { Icon, i18n } from "components/shared";
+import { tableMessages } from "components/shared/lang/tableMessages";
+import { Icon } from "components/shared";
 import "../AipDetail.scss";
 
 
@@ -38,7 +39,7 @@ const AipListColSelector = ({columns, onChange, hiddenValues, ...props} : AipLis
 					shape="square"
 					{...props}
 				>
-					<span>{i18n("aip.filter.columns")}  <Icon glyph="fa-caret-down"/></span>
+					<span>{formatMessage(tableMessages.columns)}  <Icon glyph="fa-caret-down"/></span>
 				</MenuButton>
 			</MenuTrigger>
 			<MenuPopover className={mergeClasses(classes.bg, classes.menuPopover)}>

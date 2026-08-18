@@ -9,6 +9,7 @@ import {
 import type { MenuCheckedValueChangeData, MenuCheckedValueChangeEvent } from "@fluentui/react-components";
 import { ChevronDownRegular } from "@fluentui/react-icons";
 import { colDef } from "../columns";
+import { tableMessages } from "components/shared/lang/tableMessages";
 import { useIntl } from "react-intl";
 
 type PublicationListColSelectorProps = {
@@ -28,7 +29,7 @@ const PublicationListColSelector = ({ columns, onChange }: PublicationListColSel
                 <MenuButton
                     menuIcon={<ChevronDownRegular />}
                 >
-                    {formatMessage({ id: "aip.filter.columns", defaultMessage: "Sloupce" })}
+                    {formatMessage(tableMessages.columns)}
                 </MenuButton>
             </MenuTrigger>
             <MenuPopover>

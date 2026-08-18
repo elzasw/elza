@@ -713,10 +713,6 @@
     "defaultMessage": "Date range",
     "srcHash": "85gp67Bn_Cu_"
   },
-  "aip.filter.columns": {
-    "defaultMessage": "Columns",
-    "srcHash": "nkGHuHwAI1Yf"
-  },
   "aip.filter.createFilter": {
     "defaultMessage": "Create filter {name}",
     "srcHash": "Es1YqY4zWi8-"
@@ -1920,6 +1916,18 @@
   "subNodeForm.descItemType.title.add": {
     "defaultMessage": "Add description element",
     "srcHash": "ckU6Xf-Ze6l2"
+  },
+  "table.filter.columns": {
+    "defaultMessage": "Columns",
+    "srcHash": "nkGHuHwAI1Yf"
+  },
+  "table.select": {
+    "defaultMessage": "Select",
+    "srcHash": "j7UiBDv3vOpU"
+  },
+  "table.selectAll": {
+    "defaultMessage": "Select all",
+    "srcHash": "tzdoYdlGzv8D"
   },
   "userSettings.apiKeys.delete.confirm.message": {
     "defaultMessage": "Do you want to delete the configured API key for external system {name}?",
