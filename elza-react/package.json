@@ -22,7 +22,8 @@
     "locale:check": "node scripts/locale-check.ts",
     "locale:sync": "npm run locale:extract && npm run locale:merge -- --source cs cs en",
     "ts:strict-check": "node scripts/ts-strict-check.ts",
-    "ts:strict-baseline": "node scripts/ts-strict-check.ts --update"
+    "ts:strict-baseline": "node scripts/ts-strict-check.ts --update",
+    "ts:check-scripts": "tsc --noEmit -p tsconfig.scripts.json"
   },
   "dependencies": {
     "@fluentui/react-components": "^9.51.1",
