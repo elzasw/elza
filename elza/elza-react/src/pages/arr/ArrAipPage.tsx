@@ -10,7 +10,7 @@ import AipTable from '../../components/aip/AipTable';
 import AipExplorer from '../../components/aip/explorer/AipExplorer';
 import { ExplorerMode } from 'components/aip/explorer/ExplorerContext';
 import {selectAip} from '../../actions/aip/aip';
-import { generateUUID } from 'components/aip/utils';
+
 import { AipFieldName } from 'elza-api';
 import { buildFilter } from 'components/aip/filter/aipFilterModel';
 import { AipFilterEntry } from 'typings/store';

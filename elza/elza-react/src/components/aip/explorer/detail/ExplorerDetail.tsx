@@ -9,7 +9,7 @@ import { storeFromArea } from "shared/utils";
 import { AppState } from "typings/store";
 import {AREA_AIP, aipFetchIfNeeded, aipsFetchIfNeeded} from "actions/aip/aip";
 import { useThunkDispatch } from "utils/hooks";
-import {getConnectedToJP} from "../../utils.tsx";
+import {getConnectedToJP} from "../../AipCells";
 import {Api, getFullPath} from "../../../../api";
 import {fetchAipStructureIfNeeded} from "../../../../actions/aip/exp.ts";
 import {downloadFile} from "../../../../actions/global/download";
