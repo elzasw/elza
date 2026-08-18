@@ -678,26 +678,6 @@
     "error TS7034: Variable 'altActions' implicitly has type 'any[]' in some locations where its type cannot be determined.",
     "error TS7034: Variable 'itemActions' implicitly has type 'any[]' in some locations where its type cannot be determined."
   ],
-  "src/pages/arr/ArrAipPage.tsx": [
-    "error TS7005: Variable 'altActions' implicitly has an 'any[]' type.",
-    "error TS7005: Variable 'itemActions' implicitly has an 'any[]' type.",
-    "error TS7006: Parameter 'action' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'activeFund' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'closed' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'closed' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'closed' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'e' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'fund' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'nextProps' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'props' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'readMode' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'readMode' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'readMode' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'state' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'userDetail' implicitly has an 'any' type.",
-    "error TS7034: Variable 'altActions' implicitly has type 'any[]' in some locations where its type cannot be determined.",
-    "error TS7034: Variable 'itemActions' implicitly has type 'any[]' in some locations where its type cannot be determined."
-  ],
   "src/pages/home/HomePage.tsx": [
     "error TS7006: Parameter 'data' implicitly has an 'any' type.",
     "error TS7053: Element implicitly has an 'any' type because expression of type '\"fundAdmins\"' can't be used to index type '{}'."
@@ -888,18 +868,5 @@
   ],
   "src/typings/StoreState.ts": [
     "error TS7008: Member 'refTypesMap' implicitly has an 'any' type."
-  ],
-  "src/utils/ArrShared.test.ts": [
-    "error TS7005: Variable 'dispatched' implicitly has an 'any[]' type.",
-    "error TS7006: Parameter 'action' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'fund' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'fund' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'initialTab' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'version' implicitly has an 'any' type.",
-    "error TS7018: Object literal's property 'lockDate' implicitly has an 'any' type.",
-    "error TS7018: Object literal's property 'lockDate' implicitly has an 'any' type.",
-    "error TS7018: Object literal's property 'lockDate' implicitly has an 'any' type.",
-    "error TS7018: Object literal's property 'lockDate' implicitly has an 'any' type.",
-    "error TS7034: Variable 'dispatched' implicitly has type 'any[]' in some locations where its type cannot be determined."
   ]
 }

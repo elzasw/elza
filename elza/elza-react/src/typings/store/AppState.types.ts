@@ -12,9 +12,14 @@ import { ApAccessPointVO } from "api/ApAccessPointVO.ts";
 import { AbstractFilter, AipDetailVO, AipFieldName, Sorting } from "elza-api";
 import { MultiFilterObject } from "components/arr/search-funds-form/filters/types";
 
-export interface SplitterState {
+export interface SplitterSizes {
     leftWidth: number;
     rightWidth: number;
+}
+
+export interface SplitterState {
+    /** Rozmery panelu podle oblasti (global, AIP, DAO, ARR, ...). */
+    splitters: Record<string, SplitterSizes>;
 }
 
 export interface ContextMenuState {
