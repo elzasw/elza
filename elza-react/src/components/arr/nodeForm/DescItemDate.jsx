@@ -13,7 +13,7 @@ import './DescItemDate.scss';
 import Moment from 'moment';
 import {DateTimePicker, Localization} from 'react-widgets';
 import MomentLocalizer from 'react-widgets-moment';
-import {formatDate} from '../../validate';
+import {formatDateIso} from '../../validate';
 
 const momentLocalizer = new MomentLocalizer(Moment);
 import {CLS_CALCULABLE} from "../../../constants";
@@ -27,7 +27,7 @@ class DescItemDate extends AbstractReactComponent {
     }
 
     handleChange = e => {
-        const newValue = e == null ? null : formatDate(e);
+        const newValue = e == null ? null : formatDateIso(e);
         if (newValue !== null && newValue !== this.props.descItem.value) {
             this.props.onChange(newValue);
         }

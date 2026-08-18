@@ -8,7 +8,7 @@ import {
 } from "@fluentui/react-components";
 import type { MenuCheckedValueChangeData, MenuCheckedValueChangeEvent } from "@fluentui/react-components";
 import { ChevronDownRegular } from "@fluentui/react-icons";
-import { colDef } from "../utils";
+import { colDef } from "../columns";
 import { useIntl } from "react-intl";
 
 type PublicationListColSelectorProps = {

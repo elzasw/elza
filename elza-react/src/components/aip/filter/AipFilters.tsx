@@ -7,10 +7,10 @@ import { AipColumn, colDef } from "../columns";
 import { useEffect, useState } from "react";
 import AipFilterTag from "./AipFilterTag";
 import { AREA_AIPS, aipsFilter } from "actions/aip/aip";
-import { AipFilterEntry } from "typings/store";
+import { AipFilterEntry, Aips } from "typings/store";
 import { AipFilterForm } from "./forms/AipFilterForm";
 import { defineMessages, useIntl } from "react-intl";
-import { useSelector } from "react-redux";
+import { useAppSelector } from "utils/hooks";
 import { storeFromArea } from "shared/utils";
 import {QueueItemState} from "elza-api";
 
@@ -28,7 +28,7 @@ const localMessages = defineMessages({
 });
 
 const AipFilters = ({filterDisabled, hiddenValues, filters, createFilter, removeFilter}: AipFiltersProps) => {
-	const {filter} = useSelector((state: any) => storeFromArea(state, AREA_AIPS));
+	const {filter} = useAppSelector(state => storeFromArea(state, AREA_AIPS) as Aips);
 	const columnsDef = colDef.filter(col => !hiddenValues?.includes(col.key));
     const dispatch = useThunkDispatch();
 	const classes = useStyles();

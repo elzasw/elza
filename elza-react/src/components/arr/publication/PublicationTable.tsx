@@ -30,7 +30,8 @@ import {
 import { MoreHorizontalRegular, ArrowDownloadRegular, CopyRegular, DeleteRegular } from '@fluentui/react-icons';
 import { defineMessages, FormattedMessage, useIntl } from 'react-intl';
 import { PublicationDetail, PublicationType, PublicationStateInternal } from 'elza-api';
-import { colDef, stateMessages } from './utils';
+import { colDef } from './columns';
+import { stateMessages } from './messages';
 import { useCanUsePublicationType } from './hooks';
 import PublicationToolbar from './filter/PublicationToolbar';
 import Pagination from 'components/shared/pagination/Pagination';
