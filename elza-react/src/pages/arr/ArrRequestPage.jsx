@@ -32,7 +32,6 @@ class ArrRequestPage extends ArrParentPage {
     }
 
     static propTypes = {
-        splitter: PropTypes.object.isRequired,
         arrRegion: PropTypes.object.isRequired,
         focus: PropTypes.object.isRequired,
         userDetail: PropTypes.object.isRequired,
@@ -316,9 +315,8 @@ class ArrRequestPage extends ArrParentPage {
 }
 
 function mapStateToProps(state) {
-    const {splitter, arrRegion, refTables, focus, userDetail} = state;
+    const {arrRegion, refTables, focus, userDetail} = state;
     return {
-        splitter: splitter.splitters[AREA],
         arrRegion,
         focus,
         userDetail,

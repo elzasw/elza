@@ -207,7 +207,7 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
     }
 
     render() {
-        const {splitter, group} = this.props;
+        const {group} = this.props;
 
         let activeIndex;
         if (group.groupDetail.id !== null) {
@@ -243,7 +243,6 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
 
         return (
             <AdminLayout
-                splitter={splitter}
                 className="admin-group-page"
                 ribbon={this.buildRibbon()}
                 leftPanel={leftPanel}
@@ -257,10 +256,9 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
  * Namapování state do properties.
  */
 function mapStateToProps(state) {
-    const {splitter, adminRegion} = state;
+    const {adminRegion} = state;
 
     return {
-        splitter,
         group: adminRegion.group,
     };
 }

@@ -20,7 +20,6 @@ class AdminPackagesPage extends React.Component {
     };
 
     render() {
-        const { splitter } = this.props;
 
         const centerPanel = (
             <div>
@@ -31,7 +30,6 @@ class AdminPackagesPage extends React.Component {
 
         return (
             <AdminLayout
-                splitter={splitter}
                 className="admin-packages-page"
                 ribbon={this.buildRibbon()}
                 centerPanel={centerPanel}
@@ -48,11 +46,9 @@ class AdminPackagesPage extends React.Component {
  */
 function mapStateToProps(state) {
     const {
-        splitter,
         adminRegion: { packages },
     } = state;
     return {
-        splitter,
         packages,
     };
 }

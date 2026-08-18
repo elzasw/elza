@@ -71,7 +71,6 @@ class RegistryPage extends AbstractReactComponent {
     }
 
     static propTypes = {
-        splitter: PropTypes.object.isRequired,
         refTables: PropTypes.object.isRequired,
         focus: PropTypes.object.isRequired,
         userDetail: PropTypes.object.isRequired,
@@ -872,7 +871,7 @@ class RegistryPage extends AbstractReactComponent {
     }
 
     render() {
-        const { splitter, status, registryDetail, select = false } = this.props;
+        const { status, registryDetail, select = false } = this.props;
 
         const matchId = this.props.match?.params?.id;
         // Don't render detail wrapper until loaded entity matches the URL.
@@ -907,7 +906,6 @@ class RegistryPage extends AbstractReactComponent {
                 className="main-shortcuts2"
             >
                 <PageLayout
-                    splitter={splitter}
                     key="registryPage"
                     ribbon={this.buildRibbon()}
                     leftPanel={<RegistryList select={select} fund={this.props.fund} />}
@@ -923,7 +921,6 @@ class RegistryPage extends AbstractReactComponent {
 export default withRouter(connect(state => {
     const {
         app: { apExtSystemList, registryDetail, registryList },
-        splitter,
         refTables,
         focus,
         userDetail,
@@ -931,7 +928,6 @@ export default withRouter(connect(state => {
     return {
         detail: storeFromArea(state, AREA_REGISTRY_DETAIL),
         extSystems: apExtSystemList.fetched ? apExtSystemList.rows : null,
-        splitter,
         registryDetail,
         registryList,
         refTables,

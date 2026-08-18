@@ -14,8 +14,6 @@ import {
 } from "elza-api";
 import { useState } from "react";
 import { FormattedMessage, defineMessages } from "react-intl";
-import { useSelector } from "react-redux";
-import { AppState } from "typings/store";
 import { useThunkDispatch } from "utils/hooks";
 import { SubmitDefinition } from "components/reports/ReportsForm";
 
@@ -35,7 +33,6 @@ const messages = defineMessages({
 })
 
 export function ReportsPage() {
-    const splitter = useSelector(({ splitter }: AppState) => splitter);
     const [reportData, setReportData] = useState<ReportReportData>();
     const [isFetchingReport, setIsFetchingReport] = useState(false);
     const [_isReportFetched, setIsReportFetched] = useState(false);
@@ -146,7 +143,7 @@ export function ReportsPage() {
         </div>
     );
 
-    return <AdminLayout splitter={splitter} ribbon={buildRibbon()} centerPanel={centerPanel} />;
+    return <AdminLayout ribbon={buildRibbon()} centerPanel={centerPanel} />;
 }
 
 export default ReportsPage;

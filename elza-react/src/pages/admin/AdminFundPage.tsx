@@ -21,7 +21,6 @@ interface AdminFundPageUrlParams {
 
 export const AdminFundPage: FC = () => {
     const dispatch = useThunkDispatch();
-    const splitter = useSelector((state: AppState) => state.splitter);
     const fund = useSelector((state: AppState) => storeFromArea(state, AREA_ADMIN_FUND));
     const history = useHistory();
     const match = useRouteMatch<AdminFundPageUrlParams>();
@@ -63,7 +62,6 @@ export const AdminFundPage: FC = () => {
 
     return (
         <AdminLayout
-            splitter={splitter}
             className="admin-fund-page"
             ribbon={buildRibbon()}
             leftPanel={<FundList activeFund={fund} />}

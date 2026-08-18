@@ -16,7 +16,6 @@ class AdminBulkActionPage extends React.Component {
     };
 
     render() {
-        const {splitter} = this.props;
 
         const centerPanel = <div>
             <AdminBulkList />
@@ -24,7 +23,6 @@ class AdminBulkActionPage extends React.Component {
 
         return (
             <AdminLayout
-                splitter={splitter}
                 className='admin-bulkAction-page'
                 ribbon={this.buildRibbon()}
                 centerPanel={centerPanel}
@@ -40,9 +38,8 @@ class AdminBulkActionPage extends React.Component {
  * @returns {{packages: *}}
  */
 function mapStateToProps(state) {
-    const {splitter, adminRegion: {packages}} = state;
+    const {adminRegion: {packages}} = state;
     return {
-        splitter,
         packages
     }
 }
