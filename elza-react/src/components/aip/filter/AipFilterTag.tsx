@@ -1,66 +1,71 @@
 import { Tag, makeStyles } from "@fluentui/react-components";
-import { colDef, findColDefByKey } from "../utils";
-import { AipFilter } from "typings/store";
-import { AipFilterCriteria } from "./forms/EnumAipFilterCriteria";
+import { findColDefByField } from "../utils";
+import { AipFilterEntry } from "typings/store";
+import { DateValueFilter, NumberValueFilter } from "elza-api";
 import i18n from "components/i18n";
+import { useIntl } from "react-intl";
 
-type AipFilterTagProps = {
-    filter: AipFilter
+interface Props {
+    filter: AipFilterEntry;
 }
 
-const AipFilterTag = ({filter}: AipFilterTagProps) => {
-    const classes = useStyles();
+export type AipFilterTagProps = Props;
 
-    const getOperator = () => {
-        switch(filter.criteria) {
-            case AipFilterCriteria.DOES_NOT_CONTAIN: return "-";
-            case AipFilterCriteria.EQUALS: return "=";
-            default: return "";
+const useStyles = makeStyles({
+    tag: {
+        marginRight: "5px",
+        padding: 0,
+        backgroundColor: "white",
+        borderRadius: 0,
+        border: "1px solid",
+    },
+});
+
+function operator(entry: AipFilterEntry): string {
+    const operation = (entry.filter as {operation?: string}).operation;
+    switch (operation) {
+        case "NOT_CONTAINS": return "-";
+        case "EQ": return "=";
+        default: return "";
+    }
+}
+
+function value(entry: AipFilterEntry): string {
+    const filter = entry.filter as {operation?: string; value?: unknown};
+    switch (filter.operation) {
+        case "IS_NULL": return i18n("aip.filter.value.null");
+        case "NOT_NULL": return i18n("aip.filter.value.notNull");
+        case "BETWEEN": {
+            const range = entry.filter as NumberValueFilter | DateValueFilter;
+            return `${range.from} - ${range.to}`;
         }
+        default:
+            if (entry.label) {
+                return entry.label.length > 15 ? entry.label.slice(0, 15) + "..." : entry.label;
+            }
+            return String(filter.value);
     }
+}
 
-    const getValue = () => {
-        if(filter.label) return filter.label.slice(0,15) + "...";
-        switch(filter.criteria) {
-            case AipFilterCriteria.IS_NULL: return i18n("aip.filter.value.null");
-            case AipFilterCriteria.IS_NOT_NULL: return i18n("aip.filter.value.notNull");
-            case AipFilterCriteria.BETWEEN: return filter.from + " - " + filter.to;
-            default: {
-                if(typeof filter.value == "boolean") {
-                    return filter.value ? "ANO" : "NE";
-                }
-                return filter.value;
-            };
-        } 
-    }
+export function AipFilterTag({filter}: Props) {
+    const classes = useStyles();
+    const {formatMessage} = useIntl();
 
     if (filter.invisible) {
         return null;
     }
 
     return (
-        <Tag 
+        <Tag
             dismissible
-            dismissIcon={{ "aria-label": "remove" }}
-            key={`filter-${filter.value}`}
+            dismissIcon={{"aria-label": "remove"}}
             className={classes.tag}
             size="small"
             value={filter.id}
         >
-            {getOperator()} {findColDefByKey(filter.attr).name} : {getValue()}
+            {operator(filter)} {formatMessage(findColDefByField(filter.field).message)} : {value(filter)}
         </Tag>
     );
 }
-
-const useStyles = makeStyles({
-	tag: {
-		marginRight: "5px", 
-        padding: 0,
-        backgroundColor: "white", 
-        borderRadius: 0, 
-        border: "1px solid",
-	},
-
-});
 
 export default AipFilterTag;

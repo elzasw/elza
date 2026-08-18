@@ -11,7 +11,9 @@ import AipExplorer from '../../components/aip/explorer/AipExplorer';
 import { ExplorerMode } from 'components/aip/explorer/ExplorerContext';
 import {selectAip} from '../../actions/aip/aip';
 import { generateUUID } from 'components/aip/utils';
-import { AipFilterCriteria } from 'components/aip/filter/forms/EnumAipFilterCriteria';
+import { AipFieldName } from 'elza-api';
+import { buildFilter } from 'components/aip/filter/aipFilterModel';
+import { AipFilterEntry } from 'typings/store';
 import ActionsContainer from 'components/arr/aip/ActionsContainer';
 
 /**
@@ -19,6 +21,30 @@ import ActionsContainer from 'components/arr/aip/ActionsContainer';
  */
 
 const AREA = "AIP"
+
+/**
+ * Conditions the screen applies itself: this fund, with metadata loaded and no load error.
+ */
+const initialFilters = (fundId: number): AipFilterEntry[] => [
+    {
+        id: "fund",
+        field: AipFieldName.Fund,
+        filter: buildFilter(AipFieldName.Fund, "ref", {operation: "EQ", value: fundId}),
+        invisible: true,
+    },
+    {
+        id: "metadataLoad",
+        field: AipFieldName.MetadataLoad,
+        filter: buildFilter(AipFieldName.MetadataLoad, "bool", {operation: "EQ", value: true}),
+        invisible: true,
+    },
+    {
+        id: "metadataError",
+        field: AipFieldName.MetadataError,
+        filter: buildFilter(AipFieldName.MetadataError, "bool", {operation: "EQ", value: false}),
+        invisible: true,
+    },
+];
 
 class ArrAipPage extends ArrParentPage {
     area = AREA
@@ -95,28 +121,7 @@ class ArrAipPage extends ArrParentPage {
         return (
             <AipTable
                 onAipSelect={(id) => this.props.dispatch(selectAip(id))}
-                initialFilters={[{
-                    id: generateUUID(),
-                    attr: "fund.name",
-                    criteria: AipFilterCriteria.EQUALS,
-                    value: activeFund.id,
-                    path: "arr_fund",
-                    invisible: true,
-                },{
-                    id: generateUUID(),
-                    attr: "metadataLoad",
-                    criteria: AipFilterCriteria.EQUALS,
-                    value: true,
-                    path: "da_aip_state",
-                    invisible: true,
-                },{
-                    id: generateUUID(),
-                    attr: "metadataError",
-                    criteria: AipFilterCriteria.EQUALS,
-                    value: false,
-                    path: "da_aip_state",
-                    invisible: true,
-                }]}
+                initialFilters={initialFilters(activeFund.id)}
                 hiddenValues={["fund.name", "institution.name", "institutionCode"]}
             />
         );

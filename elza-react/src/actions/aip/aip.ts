@@ -1,9 +1,9 @@
 import {WebApi} from 'actions/index.jsx';
 import * as SimpleListActions from '../../shared/list/simple/SimpleListActions';
 import * as DetailActions from '../../shared/detail/DetailActions';
-import { Aip, AipFilter, AipsFilter } from 'typings/store';
+import { Aip, AipFilterEntry, AipsFilter } from 'typings/store';
 import {Api} from "../../api";
-import {AipDetailVO} from "elza-api";
+import {AipDetailVO, SearchParams, Sorting} from "elza-api";
 
 export const AREA_AIPS = 'aipList';
 export const AREA_AIP = 'aip';
@@ -13,20 +13,27 @@ export const AREA_SELECTED_AIP_DAOS = "selectedAipDaos";
 export const AREA_DAO_LINKS = "daoLinkList"
 export const DEFAULT_PAGE_SIZE = 25;
 
-export const aipsFilter = (filters: AipFilter[], from: number, pageSize: number = DEFAULT_PAGE_SIZE) => {
-    return SimpleListActions.filter(AREA_AIPS, {from, pageSize, filters});
+export const aipsFilter = (
+    filters: AipFilterEntry[],
+    from: number,
+    pageSize: number = DEFAULT_PAGE_SIZE,
+    sort?: Sorting[],
+) => {
+    return SimpleListActions.filter(AREA_AIPS, {from, pageSize, filters, sort});
 }
 
 export const aipsFetchIfNeeded = (forceFetch = false) => {
     return SimpleListActions.fetchIfNeeded(AREA_AIPS, null, (parent?: unknown, filter: AipsFilter = {}) =>
         {
-            const {filters, from, pageSize} = filter;
+            const {filters, from, pageSize, sort} = filter;
+            const params: SearchParams = {
+                filters: (filters || []).map(entry => entry.filter),
+                offset: from && from > 0 ? from : 0,
+                size: pageSize,
+                sort: sort || [],
+            };
 
-            return WebApi.findAipsByFilter(
-                filters || [],
-                pageSize,
-                from && from > 0 ? from : 0
-            )
+            return Api.aips.aipFindByFilter(params).then(response => response.data);
         },
         forceFetch
     );

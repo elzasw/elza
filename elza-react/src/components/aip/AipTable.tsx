@@ -1,3 +1,5 @@
+import { useIntl } from "react-intl";
+import { SortingOrder } from "elza-api";
 import {FC, useCallback, useEffect, useState, MouseEvent, KeyboardEvent} from 'react';
 import {useSelector} from 'react-redux';
 import {StoreHorizontalLoader} from 'components/shared';
@@ -32,14 +34,14 @@ import { colDef, getBoolIcon } from './utils.tsx';
 import { Row } from 'react-bootstrap';
 import AipFilterSection from './filter/AipFilterSection.tsx';
 import Pagination from 'components/shared/pagination/Pagination.tsx';
-import { AipFilter } from 'typings/store/index.ts';
+import { AipFilterEntry } from 'typings/store/index.ts';
 import AipDetail from './AipDetail.tsx';
 import {AipDetailVO} from "elza-api";
 
 type AipTableProps = {
     onAipSelect?: (id: number) => void;
     filterDisabled?: boolean;
-    initialFilters?: AipFilter[];
+    initialFilters?: AipFilterEntry[];
     hiddenValues?: string[];
     detailOpen?: boolean;
     setDetailOpen?: (open: boolean) => void;
@@ -52,14 +54,15 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
     const dispatch = useThunkDispatch();
     const items = getAipRows(aips);
     const history = useHistory();
+    const {formatMessage} = useIntl();
 
     const columnsDef: TableColumnDefinition<AipDetailVO>[] = colDef.map((def) =>
         createTableColumn<AipDetailVO>({
             columnId: def.key,
-            renderHeaderCell: () => <>{def.name}</>,
+            renderHeaderCell: () => <>{formatMessage(def.message)}</>,
             renderCell: (item: AipDetailVO) => <>{getContent(item, def.key)}</>,
             compare: (a, b) => {
-                switch(def.type) {
+                switch(def.valueType) {
                     case "number": return a[def.key] - b[def.key];
                     case "bool": return Number(a[def.key]) - Number(b[def.key]);
                     default: return a[def.key]?.localeCompare(b[def.key]);
@@ -82,7 +85,7 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
             case "fund.name": return item.fund ? item.fund.name : "-";
             case "institution.name": return item.institution.name;
             default:
-                return findColDefByKey(key).type == "bool" ? getBoolIcon(item[key]) : item[key] ? item[key] : "-" ; // Sorry xD
+                return findColDefByKey(key)?.valueType == "bool" ? getBoolIcon(item[key]) : item[key] ? item[key] : "-" ; // Sorry xD
         }
     }
 
@@ -104,7 +107,7 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
     const toggleColumns = (e: MenuCheckedValueChangeEvent, data: MenuCheckedValueChangeData) => {
         setColumns(
             columnsDef.filter((col) =>
-                data.checkedItems.some((checked) => checked == def[col.columnId].name
+                data.checkedItems.some((checked) => checked == def[col.columnId].label
             ))
         );
     };
@@ -119,9 +122,7 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
     const def = colDef.reduce((acc, item) => {
         const key = item.key;
         acc[key] = {
-            name: item.name,
-            path: item.path,
-            type: item.type,
+            label: formatMessage(item.message),
             minWidth: item.minWidth,
             idealWidth: item.idealWidth
         };
@@ -159,7 +160,7 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
         ]
       );
 
-    const rows = sort(getRows((row) => {
+    const rows = getRows((row) => {
         const selected = isRowSelected(row.rowId);
         return {
             ...row,
@@ -175,11 +176,17 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
             selected,
             appearance: selected ? "brand": "none",
         };
-    }));
+    });
 
     const headerSortProps = (columnId: TableColumnId) => ({
         onClick: (e: MouseEvent) => {
             toggleColumnSort(e, columnId);
+            const field = colDef.find(def => def.key === columnId)?.field;
+            if (field) {
+                const descending = getSortDirection(columnId) === "ascending";
+                dispatch(aipsFilter(aips.filter.filters, 0, aips.filter.pageSize,
+                    [{field, order: descending ? SortingOrder.Desc : SortingOrder.Asc}]));
+            }
         },
         sortDirection: getSortDirection(columnId),
     });
