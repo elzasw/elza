@@ -2,7 +2,9 @@ import * as React from 'react';
 import { useEffect, useRef } from 'react';
 import CrossTabHelper, { CrossTabEventType, getThisLayout } from './CrossTabHelper';
 import { Button } from './ui';
-import { i18n, Icon, TooltipTrigger } from 'components/shared';
+import { Icon, TooltipTrigger } from 'components/shared';
+import { useIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang';
 import { getMapUrlWithContext } from '../pages/map/MapPage';
 import classNames from 'classnames';
 import { useThunkDispatch } from 'utils/hooks';
@@ -16,10 +18,12 @@ const IFRAME_SIZE = 400;
 
 type PolygonTooltipProps = {
     polygon: string;
+    title: string;
 };
 
 export const PolygonTooltip = ({
-    polygon
+    polygon,
+    title
 }: PolygonTooltipProps) => {
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const dispatch = useThunkDispatch();
@@ -89,7 +93,7 @@ export const PolygonTooltip = ({
         mapViewUrl = `${baseUrl}?${query}`;
     }
 
-    return (<><strong className={'d-block py-1'}>{i18n('global.action.showInMap')}</strong>
+    return (<><strong className={'d-block py-1'}>{title}</strong>
         <iframe title="elza-map-iframe" className={'border-0 float-left'} ref={iframeRef} style={{
             height: IFRAME_SIZE,
             width: IFRAME_SIZE,
@@ -124,6 +128,7 @@ export const PolygonShowInMap = ({
     ...otherProps
 }: Props) => {
     const dispatch = useThunkDispatch();
+    const { formatMessage } = useIntl();
     const geoEditExternalSystems = useSelector((state: AppState) => {
         return state.app.kmlExtSystemList.rows.filter((extSystem: any) => {
             if (extSystem.type === GisSystemType.FrameApiEdit) {
@@ -168,7 +173,7 @@ export const PolygonShowInMap = ({
     return (
         <TooltipTrigger
             {...otherProps}
-            content={polygon ? <PolygonTooltip polygon={polygon} /> : undefined}
+            content={polygon ? <PolygonTooltip polygon={polygon} title={formatMessage(showInEditor ? globalMessages.editInMap : globalMessages.showInMap)} /> : undefined}
             holdOnHover
             placement={'vertical'}
             showDelay={300}

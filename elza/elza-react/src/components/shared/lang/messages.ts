@@ -38,4 +38,12 @@ export const globalMessages = defineMessages({
     id: "global.action.close",
     defaultMessage: "Zavřít",
   },
+  showInMap: {
+    id: "global.action.showInMap",
+    defaultMessage: "Zobrazit v mapě",
+  },
+  editInMap: {
+    id: "global.action.editInMap",
+    defaultMessage: "Upravit v mapě",
+  },
 });
