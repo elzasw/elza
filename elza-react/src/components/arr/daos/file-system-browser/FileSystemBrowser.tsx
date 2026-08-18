@@ -83,7 +83,7 @@ const messages = defineMessages({
     },
     refresh: {
         id: 'arr.daos.fileSystem.refresh',
-        defaultMessage: 'Obnovit',
+        defaultMessage: 'Obnovit seznam souborů a složek',
     },
     reposLoadErrorTitle: {
         id: 'arr.daos.fileSystem.repos.loadErrorTitle',
@@ -492,7 +492,7 @@ export const FileSystemBrowser = ({
                     <div title={i18n("arr.daos.fileSystem.selectParent")}
                         className="btn"
                         onClick={handleSelectParent}>
-                        <Icon glyph="fa-level-up" className="fa-flip-horizontal" />
+                        <Icon glyph="fa-arrow-up" />
                     </div>
                 </div>
                 {generateBreadcrumbs()}
@@ -552,7 +552,7 @@ export const FileSystemBrowser = ({
                     <div title={intl.formatMessage(messages.refresh)}
                         className="btn"
                         onClick={() => setLocalRefreshTick((tick) => tick + 1)}>
-                        <Icon glyph="fa-refresh" />
+                        <Icon glyph="fa-repeat" />
                     </div>
                 </div>
             </div>
