@@ -12,14 +12,17 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.Collator;
 import java.time.Duration;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,6 +36,9 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -74,6 +80,9 @@ public class FileSystemRepoBrowser {
 	private static final int DEFAULT_PAGE_SIZE = 1_000;
 	private static final int MAX_PAGE_SIZE = 10_000;
 	private static final int SCAN_CAP = 10_000;
+
+	/** Reused for {@link Cursor} (de)serialization. */
+	private static final ObjectMapper CURSOR_MAPPER = new ObjectMapper();
 
 	/** Maximum number of files returned by {@link #listDaoFiles} for one DAO. */
 	public static final int DAO_FILE_LIMIT = 1_000;
@@ -195,7 +204,15 @@ public class FileSystemRepoBrowser {
 
         int effectivePageSize = clampPageSize(pageSize);
         boolean foldersFirstFlag = foldersFirst == null ? true : foldersFirst;
-        int offset = (lastKey != null) ? Integer.parseInt(lastKey) : 0;
+        FsItemSortType effectiveSort = (sortingType != null) ? sortingType : FsItemSortType.NAME_ASC;
+        Cursor cursor = decodeCursor(lastKey);
+        // If cursor was minted under a different sort/foldersFirst it is meaningless;
+        // silently start over (client already resets on sort change — this is a guard).
+        if (cursor != null
+                && (!Objects.equals(cursor.sort, effectiveSort.name())
+                    || cursor.foldersFirst != foldersFirstFlag)) {
+            cursor = null;
+        }
 
         // Path is kept alongside FsItem so the hasChildren probe can be deferred
         // to entries that survive filtering, sorting and paging (N6).
@@ -278,18 +295,32 @@ public class FileSystemRepoBrowser {
             }
         });
 
-        Comparator<FsItem> itemComparator = comparatorFor(sortingType, foldersFirstFlag);
+        Comparator<FsItem> itemComparator = comparatorFor(effectiveSort, foldersFirstFlag);
         fsItemList.sort((a, b) -> itemComparator.compare(a.item(), b.item()));
 
-        FsItems result = new FsItems();
-        Integer nextOffset = null;
-        List<FsItemEntry> appendEntries;
-        if ((fsItemList.size() - offset) <= effectivePageSize) {
-            appendEntries = (offset == 0) ? fsItemList : fsItemList.subList(offset, fsItemList.size());
-        } else {
-            nextOffset = offset + effectivePageSize;
-            appendEntries = fsItemList.subList(offset, nextOffset);
+        // Keyset slice: resume strictly after the cursor position. Robust to
+        // entries added or removed between page requests — no dupes, no gaps.
+        Comparator<FsItemEntry> entryComparator = (a, b) -> itemComparator.compare(a.item(), b.item());
+        int startIdx = 0;
+        if (cursor != null) {
+            FsItem probe = new FsItem();
+            probe.setName(cursor.lastName);
+            probe.setSize(cursor.lastSize);
+            probe.setItemType(cursor.lastWasFolder ? FsItemType.FOLDER : FsItemType.FILE);
+            if (cursor.lastChange != null) {
+                probe.setLastChange(OffsetDateTime.parse(cursor.lastChange));
+            }
+            int found = Collections.binarySearch(
+                    fsItemList, new FsItemEntry(probe, null), entryComparator);
+            // found >= 0: cursor row still present — resume after it.
+            // found <  0: cursor row deleted since last page — insertion point
+            //             already points at the first entry greater than the cursor.
+            startIdx = found >= 0 ? found + 1 : -found - 1;
         }
+        int endIdx = Math.min(startIdx + effectivePageSize, fsItemList.size());
+        List<FsItemEntry> appendEntries = fsItemList.subList(startIdx, endIdx);
+
+        FsItems result = new FsItems();
         // Only probe folders that reach the returned page — on network shares the
         // per-folder DirectoryStream is the dominant listing cost (N6).
         for (FsItemEntry entry : appendEntries) {
@@ -298,8 +329,16 @@ public class FileSystemRepoBrowser {
             }
             result.getItems().add(entry.item());
         }
-        if (nextOffset != null) {
-            result.setLastKey(nextOffset.toString());
+        if (endIdx < fsItemList.size() && !appendEntries.isEmpty()) {
+            FsItem last = appendEntries.get(appendEntries.size() - 1).item();
+            Cursor nextCursor = new Cursor();
+            nextCursor.sort = effectiveSort.name();
+            nextCursor.foldersFirst = foldersFirstFlag;
+            nextCursor.lastName = last.getName();
+            nextCursor.lastSize = last.getSize();
+            nextCursor.lastWasFolder = last.getItemType() == FsItemType.FOLDER;
+            nextCursor.lastChange = last.getLastChange() != null ? last.getLastChange().toString() : null;
+            result.setLastKey(encodeCursor(nextCursor));
         }
         if (truncated[0]) {
             result.setTruncated(true);
@@ -338,6 +377,14 @@ public class FileSystemRepoBrowser {
                 return foldersFirstCmp.thenComparing((a, b) -> Long.compare(
                         b.getSize() == null ? 0L : b.getSize(),
                         a.getSize() == null ? 0L : a.getSize()));
+            case LAST_CHANGE_ASC:
+                return foldersFirstCmp
+                        .thenComparing(FsItem::getLastChange)
+                        .thenComparing(FsItem::getName, collator); // tie-break to keep sort deterministic
+            case LAST_CHANGE_DESC:
+                return foldersFirstCmp
+                        .thenComparing((a, b) -> b.getLastChange().compareTo(a.getLastChange()))
+                        .thenComparing(FsItem::getName, collator);
             default:
                 return foldersFirstCmp.thenComparing(FsItem::getName, collator);
         }
@@ -669,5 +716,45 @@ public class FileSystemRepoBrowser {
 
     /** An {@link FsItem} together with its filesystem {@link Path}, kept only during {@link #browseItems}. */
     private record FsItemEntry(FsItem item, Path path) {
+    }
+
+    /**
+     * Opaque paging cursor. The client treats the base64-encoded form as an
+     * unstructured string; only this class parses it. Carries enough state to
+     * resume listing after the last emitted entry ({@code lastName}, {@code lastSize},
+     * {@code lastWasFolder}) plus the sort parameters used when the cursor was
+     * minted — so a call with a mismatched sort silently starts over rather than
+     * mixing pages of different orders.
+     */
+    static class Cursor {
+        public String sort;
+        public boolean foldersFirst;
+        public String lastName;
+        public Long lastSize;
+        public boolean lastWasFolder;
+        public String lastChange; // ISO-8601, nullable
+    }
+
+    private static String encodeCursor(Cursor c) {
+        try {
+            byte[] json = CURSOR_MAPPER.writeValueAsBytes(c);
+            return Base64.getUrlEncoder().withoutPadding().encodeToString(json);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Failed to encode fs paging cursor", e);
+        }
+    }
+
+    private static Cursor decodeCursor(String lastKey) {
+        if (lastKey == null || lastKey.isEmpty()) return null;
+        try {
+            byte[] json = Base64.getUrlDecoder().decode(lastKey);
+            return CURSOR_MAPPER.readValue(json, Cursor.class);
+        } catch (IllegalArgumentException | IOException e) {
+            // Malformed or stale — silently start over. Client already resets on
+            // sort/filter change, so this branch is only hit by a hand-crafted key
+            // or a leftover after redeploy.
+            log.warn("Invalid fs paging cursor, restarting listing: {}", e.toString());
+            return null;
+        }
     }
 }

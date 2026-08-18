@@ -826,7 +826,7 @@ var messages = {
     "arr.daos.files.title.unitOfMeasure.MM": "mm",
     "arr.daos.files.title.description": "Popis",
     "arr.daos.fileSystem.loadMore": "Načíst další...",
-    "arr.daos.fileSystem.selectParent": "Přejít nahoru",
+    "arr.daos.fileSystem.selectParent": "Přejít o úroveň výš",
 
     "arr.syncNodes.title": "Synchronizace JP ze zdrojových AS",
     "arr.syncNodes.templateId": "Šablona",

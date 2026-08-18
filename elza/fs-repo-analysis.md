@@ -1,27 +1,27 @@
-# FileSystemRepoService — architectural analysis and current state
+# Filesystem repository — architecture and decisions
 
-**Status: the #9944 filesystem-repository work is CLOSED (2026-08-12); the follow-up items
-delivered on 2026-08-14 (N6, N7, and the `DaoService` FS link tests) have been folded into this
-document, and the remaining open items were re-verified against the code on 2026-08-17.** The
-feature is fully on its target architecture: browsing, panel files and downloads are live disk
-reads; links are `ArrFsLink` rows targeting `(repository, path)`; `multiple_links` is enforced;
-filesystem repositories persist **zero** entities. What remains open (§5) are enhancements outside
-#9944's scope — the `DigitalRepositoryBackend` SPI, the frontend D-items, and the C2/N5 scale
-items — plus the DA-side Phases 4–5 tracked in `da-migration.md`.
+**The filesystem-repository feature is finished (2026-08-18, #9944 + #9971).** It is fully on its
+target architecture: browsing, panel files and downloads are live disk reads; links are `ArrFsLink`
+rows targeting `(repository, path)`; `multiple_links` is enforced; filesystem repositories persist
+**zero** entities. No in-scope item is open.
 
-**Scope:** `FileSystemRepoService` and the filesystem-repository browser feature.
+**What this document is.** Not a plan and not a status report — those did their job and are gone.
+What remains is the part the code cannot state for itself: the invariants new code must respect
+(§1), the behaviours that look like bugs until you know why they were chosen (§1.1, §1.2), the
+notes that outlive the delivery (§2), the reasoning behind the central architectural decision
+(§3), and the decisions themselves (§5). §4 records what the feature deliberately leaves for
+later and §6 how it is verified.
+
+**Scope:** `FileSystemRepoService`, `FileSystemRepoBrowser` and the filesystem-repository browser.
 **Related:** `elza/da-migration.md` — its Phase 3 was revised to match §3.3 of this document and is
 fully implemented (steps 3a + 3b); remaining DA-side work (Phases 4–5) is tracked there.
 
-*This document describes the current state and what is still open. The delivery history — the
-resolved correctness defects (A1–A9), the deleted image cache, the resolved structural items (C1,
-C3–C7, C9) and findings (N1, N3, N4), and the design iterations behind the link model — lives in
-this file's git history, in the changesets, and in `da-migration.md`. Finding ids are never reused
-or renumbered, so a reference from a commit message or the other document keeps resolving.*
-
-**A note on phase numbering.** Both documents use "Phase N" for different things. Throughout this
-document, *unqualified* phase numbers refer to the delivery sequencing in §5; migration phases are
-always written as "`da-migration.md` Phase N".
+*The delivery history is not repeated here. The resolved correctness defects (A1–A9), the deleted
+image cache, the resolved structural items (C1–C7, C9), the findings (N1, N3, N4, N6, N7), the
+frontend items (D1–D7) with the `VirtualList` replacement, and the design iterations behind the
+link model all live in this file's git history, in the changesets, and in `da-migration.md`.
+Finding ids are never reused or renumbered, so a reference from a commit message or from the other
+document keeps resolving — `git log -p -- elza/fs-repo-analysis.md` is the way to read one back.*
 
 ---
 
@@ -29,8 +29,8 @@ always written as "`da-migration.md` Phase N".
 
 | Layer | Location | Role |
 |---|---|---|
-| Contract | `elza-development/typespec/main.tsp` (`FsRepo`, `FsItem`, `FsItems`, `FsLink`, `DigitalRepositoryTestResult`) | Paged, sorted, filtered browse contract; `FsItem.links` carries node references incl. a `readable` flag for funds the resolver could not read; `FsItem.hasChildren` drives the tree's expand marker; `FsRepo.available` marks a repository whose root is not reachable |
-| Browsing | `FileSystemRepoBrowser` (`browseItems`, `listRepos`, `listDaoFiles`, `testRepository`) | All listing logic; live disk reads, nothing persisted. `browseItems` is a single-pass `walkFileTree` at depth 1, attributes taken from the visitor callback |
+| Contract | `elza-development/typespec/main.tsp` (`FsRepo`, `FsItem`, `FsItems`, `FsLink`, `DigitalRepositoryTestResult`) | Paged, sorted, filtered browse contract; `FsItemSortType` covers name/size/last-change × asc/desc (last-change added by #9971, 2026-08-18); `FsItems.lastKey` is an opaque keyset cursor (§1.2); `FsItem.links` carries node references incl. a `readable` flag for funds the resolver could not read; `FsItem.hasChildren` drives the tree's expand marker; `FsRepo.available` marks a repository whose root is not reachable |
+| Browsing | `FileSystemRepoBrowser` (`browseItems`, `listRepos`, `listDaoFiles`, `testRepository`) | All listing logic; live disk reads, nothing persisted. `browseItems` is a single-pass `walkFileTree` at depth 1, attributes taken from the visitor callback, then a keyset slice (§1.2) |
 | Primitives | `FileSystemRepoService` | Containment-checked path resolution, MIME detection, input streams, templated-URL helpers (`isTemplatedUrl`, `getFixedUrlPrefix`); no persistence at all |
 | Linking | `FundController.fundFsCreateDAOLink` → `DaoService.createFsDaoLink`; move via `fundFsMoveDAOLink` / `NodeController.nodeFsRelink` → `DaoService.moveFsDaoLink` | Mints the `ArrFsLink` (`digital_repository_id` + `path`, no `ArrDao`), enforces `multiple_links`, returns `daoLinkId`; move re-points a live link at another node atomically |
 | Administration | `ExternalSystemController.externalSystemTestDigitalRepository`; `ArrDigitalRepositoryVO.createEntity` | ADMIN-only configuration test (root reachable + sample of the root); settings that do not apply to a filesystem repository are cleared on save (§1.1) |
@@ -44,7 +44,7 @@ Two invariants new code must respect:
   `DigitalRepositoryType.FILESYSTEM`; the `url` column holds a plain path, so classification by a
   `file://` prefix is neither possible nor needed.
 - **Link state is global.** `ArrFsLinkRepository.findLinksByDigitalRepository` is one query per
-  repository with **no fund predicate** (§6 item 3), reading `(digital_repository_id, path)` from
+  repository with **no fund predicate** (§5 item 3), reading `(digital_repository_id, path)` from
   `arr_fs_link` directly.
 
 ### 1.1 Repository configuration and availability
@@ -68,25 +68,41 @@ no entry in the tree, no log line, nothing to diagnose from. Current behaviour:
 - **Settings that do not apply are hidden and cleared.** For `FILESYSTEM`, `viewDaoUrl`,
   `viewFileUrl`, `viewThumbnailUrl`, `username` and `password` are cleared and `sendNotification`
   is forced to `false` on save (`ArrDigitalRepositoryVO.createEntity`); existing rows were cleaned
-  by changeset `20260812120000`. Rationale and the per-field evidence: §6 item 5.
+  by changeset `20260812120000`. Rationale and the per-field evidence: §5 item 5.
+
+### 1.2 Paging semantics *(C2, closed 2026-08-18)*
+
+`lastKey` used to be an offset, so a file created between two "load more" calls shifted every
+following entry and the client silently skipped or duplicated rows. It is now a real **keyset
+cursor**: a base64url-encoded JSON blob carrying the last emitted entry's sort key
+(`lastName`, `lastSize`, `lastChange`, `lastWasFolder`) plus the sort parameters it was minted
+under. Three properties follow, and new work must not regress them:
+
+- **Stable under concurrent modification.** The next page resumes strictly *after* the cursor
+  position via `Collections.binarySearch` over the sorted listing. If the cursor row is still
+  there, listing resumes after it; if it was deleted meanwhile, the negative insertion point
+  already denotes the first entry greater than the cursor — no duplicates, no gaps either way.
+- **Self-invalidating.** A cursor minted under a different `sortingType` or `foldersFirst` is
+  dropped and the listing restarts, so pages of different orders can never be mixed. A malformed
+  or stale key does the same with a WARN instead of an error — the client resets on sort/filter
+  change anyway, so that branch only catches hand-crafted keys and leftovers across a redeploy.
+- **Still one full scan per page, by design.** The directory is re-listed and re-sorted on every
+  request; a filesystem offers no index to seek into, and holding a sorted snapshot server-side
+  would mean session state with no invalidation signal. `SCAN_CAP` (10 000) bounds one scan and
+  `truncated` reports when it bites. This is the accepted cost — see the §6 scale benchmark.
 
 ---
 
-## 2. Open findings — backend
+## 2. Standing backend notes
 
-### C2 — Pagination is offset-as-`lastKey`, recomputed from scratch
-
-`FileSystemRepoBrowser.browseItems` re-lists and re-sorts the whole directory on every "load
-more", then slices at the offset carried in `lastKey`. The `truncated` flag reports the `SCAN_CAP`
-(10 000), so the silent-truncation half of the original finding is fixed, but paging is still
-**not stable**: a file added between pages shifts entries so the client silently skips or
-duplicates rows. Since the sort key is a request parameter, an honest keyset cursor must encode
-the sort key and direction.
+No backend defect is open. What follows is the residue that outlives the delivery: one decision
+taken and recorded so it is not re-raised, one documented behaviour new client code must respect,
+and one optimization deliberately deferred.
 
 ### C8 — No authorization on repository visibility *(accepted, not a defect)*
 
 `fundFsRepos` returns every `FILESYSTEM`-typed external system to anyone who can read the fund.
-**Decision (2026-07-28): accepted, will not be changed** — see §6 item 4. Recorded so it is not
+**Decision (2026-07-28): accepted, will not be changed** — see §5 item 4. Recorded so it is not
 re-raised as a finding later. It does not relax the containment check on path resolution or the
 single authorized download endpoint.
 
@@ -104,7 +120,7 @@ across requests** — client code must not persist them.
 ### N5 — One disk walk per fs DAO per `findDaos(detail)` request
 
 Acceptable for typical per-node link counts; revisit (batching or caching) only if nodes with many
-filesystem links become common. *Still deferred (re-verified 2026-08-17).*
+filesystem links become common. *Still deferred (re-verified 2026-08-18).*
 
 ---
 
@@ -175,12 +191,12 @@ But everything *around* those factories is METS/PREMIS-bound:
 
 There is also a general observation worth recording: **there is still no abstraction over
 repository backends.** `DigitalRepositoryType` is a bare 3-value enum, and behavioural dispatch on
-it occurs at three sites (`DaConnector.java:106`, `DaScheduler.java:51`, and
-`FileSystemRepoService.isFileSystemRepository`; re-verified 2026-08-14). DA, FILESYSTEM and WSDL
-are three disjoint parallel code paths sharing one entity table — not polymorphic siblings. The
-third site is the one that grew: the filesystem branch is now consulted from browsing, linking, the
-DAO panel, URL construction and the administration save path, which is the concrete shape the
-Phase 3 SPI would absorb.
+it occurs at four sites (`DaConnector.java:106`, `DaScheduler.java:51`,
+`FileSystemRepoService.isFileSystemRepository`, and `ArrDigitalRepositoryVO.java:87` for the
+administration save path; re-verified 2026-08-18). DA, FILESYSTEM and WSDL are three disjoint
+parallel code paths sharing one entity table — not polymorphic siblings. The filesystem branch is
+the one that grew: it is now consulted from browsing, linking, the DAO panel, URL construction and
+the settings-clearing save path, which is the concrete shape the SPI of §3.3 point 2 would absorb.
 
 ### 3.3 Decision: a specialized backend behind a shared browsing contract
 
@@ -202,16 +218,17 @@ Phase 3 SPI would absorb.
 3. **Generalize the paged contract rather than adopting `ExplorerTreeNode`.** `FsItems` paging is
    the correct shape; extending `FsItem`/`FsItems` into a backend-neutral `RepoItem`/`RepoItems`
    is the convergence point. *Status: open; the #9944 contract additions (sort, filters, paging,
-   `truncated`) were designed to be backend-neutral.*
+   `truncated`) were designed to be backend-neutral, and the opaque `lastKey` cursor of §1.2 keeps
+   that property — its contents are the backend's business, never the client's.*
 
 4. **Where a filesystem folder genuinely *is* an ingest candidate**, provide an explicit,
    user-initiated "ingest this folder as an AIP" action that mints a real `DaAip` with a
    deliberate code and version: a `FilesystemAipProcessor` sibling to `DaoProcessor`, reusing the
    generic `DaService` factories plus a non-PREMIS variant of `PackageInfoService`.
-   *Status: open, optional (§5 Phase 6).*
+   *Status: open, optional (§4 item 3).*
 
 5. **Link-status queries.** One batch query per repository, **globally scoped** (no fund predicate,
-   §6 item 3). The original preference to omit node references was decided the other way in
+   §5 item 3). The original preference to omit node references was decided the other way in
    implementation: `FsItem.links` exposes `nodeId`/`fundId`/`fundName`/`nodeLabel`/`nodePath`
    cross-fund, rendered as clickable references in the popover, with `FsLink.readable = false`
    marking links whose fund/nodes the resolver could not read.
@@ -247,99 +264,26 @@ Two consequences that still bind new work:
 
 ---
 
-## 4. Open findings — frontend
+## 4. What this leaves for later
 
-The *list* pane reloads on sort/filter changes, after link/unlink, and via the `refreshCounter`
-prop. Everything below is still open.
+None of this is owed by the filesystem feature — it is finished. These are the follow-ons it
+leaves behind, in the order they become worth doing, and nothing here blocks anything else.
 
-### D1 (tree half) — tree children are fetched once per component lifetime
-
-`Tree.tsx` holds `workingTree` in component state and only ever splices into it; `expandItem`
-early-returns when `expandedItems[fullPath] != undefined`, so collapse-then-expand never re-fetches
-and there is no tree refresh path. Fix: a keyed cache with explicit `invalidate(path)` /
-`invalidateSubtree(path)` and re-fetch on expand when stale.
-
-### D2 — Stale-closure races
-
-Both components read state from the closure and write spreads back. Two concurrent expands lose one
-another's results. Use functional `setState` updaters.
-
-### D3 — Paths are `/`-joined strings with the repository id prefixed
-
-`extractRepoIdFromFullPath` + `parseInt(repoId, 10)`; repository id and path stay conflated. Model
-as `{repoId: number, segments: string[]}`.
-
-### D4 — Missing `key` props on breadcrumb fragments
-
-The breadcrumb `map` in `FileSystemBrowser.tsx` returns keyless `<>…</>` fragments.
-
-### D5 — No loading or error state
-
-Every `await Api.funds…` in both components is unguarded — there is not a single `catch` in either
-file (re-verified 2026-08-14) — so a failed listing leaves the tree/list silently empty. Only one
-failure mode is now explained rather than swallowed: an unavailable repository, which the server
-reports as data (`FsRepo.available`) instead of an error, so the file pane can state the reason
-(§1.1). Everything else — a listing that 500s, a download that 404s — is still silent.
-
-### D6 — Two sources of truth for expansion
-
-`Tree.tsx` keeps its own `expandedItems` state *and* receives `expandedItems` / `onExpandChange`
-props, using the props only for notification.
-
-### D7 — The repository list is fetched once and never refreshed *(new 2026-08-14)*
-
-`FileSystemBrowser` calls `fundFsRepos` in a `useEffect` with an empty dependency array, and
-`Tree.tsx` rebuilds its `workingTree` on `[repos.length]` — the *count*, not the content. So after
-an administrator fixes a broken path, the repository stays greyed until the dialog is reopened;
-and any future change that alters a repository's fields without changing how many there are (an
-availability flip, a rename) would not reach the tree at all. The `refreshCounter` prop already
-exists for the item list — extending it to the repository fetch, and keying the tree effect on the
-repository identities rather than their count, is the same fix.
-
----
-
-## 5. Sequencing and next steps
-
-Phases 0–2 of the original delivery plan (defect repair, the browser service, the browse contract)
-are done. What is left of it:
-
-| Phase | Content | Status |
-|---|---|---|
-| 3 — backend SPI | `DigitalRepositoryBackend` + backend-neutral browse contract | **Open** (§3.3 points 2 and 3) |
-| 4 — frontend | Refresh, functional updates, structured paths, loading/error states | **Partial** — list refresh done; D1(tree)/D2/D3/D4/D5/D6/D7 open (§4) |
-| 5 — scale and robustness | Keyset cursor (C2), single-pass attributes (C5), async link creation, range requests | **Partial** — range requests and async linking are moot; C5 done 2026-08-12 (`hasChildren` probe deferred past paging on 2026-08-14 to preserve the single-pass win); C2 remains |
-| 6 — optional | "Ingest folder as AIP" (§3.3 point 4) | **Open, only if wanted** |
-
-### Recommended next steps *(reviewed 2026-08-17)*
-
-Ordered by value per effort, not by phase number. Nothing here blocks anything else except where
-stated.
-
-1. **D7 + D5 — refresh and error state.** D7 makes the §1.1 diagnostics actually reach the user
-   without reopening the dialog; D5 stops every other failure from looking like an empty folder.
-   Together they are what makes the feature feel finished rather than merely correct.
-2. **D1(tree)/D2/D6 — the tree's state model.** One coherent rewrite: a keyed cache with explicit
-   invalidation, functional `setState` updaters, and a single owner of the expansion state. Doing
-   them separately is more work than doing them at once.
-3. **C2 — keyset cursor.** Only matters for directories large enough to page *and* mutating while
-   browsed. Real, but the rarest of the scale items; needs the sort key and direction encoded in
-   the cursor.
-4. **N5 — batch the per-DAO disk walks.** Still deferred; revisit only if nodes with many
-   filesystem links appear in practice.
-5. **D3/D4 — structured paths, breadcrumb keys.** Cleanups; fold into whichever frontend task
-   touches those files next.
-6. **Phase 3 — the SPI** (`DigitalRepositoryBackend` + `RepoItem`/`RepoItems`, §3.3 points 2 and
-   3). Unblocked, but it is an investment that pays off only when a second backend is actually
-   written against it. Deliberately last among the code items: doing it now means designing an
-   abstraction from one implementation.
-7. **Phase 6 — optional ingest-as-AIP** (§3.3 point 4), the only sanctioned way a filesystem
-   folder gets real `DaAip` semantics. Only if wanted.
-8. **`da-migration.md` Phases 4–5** — the WSDL decision and the removal of the `arr_dao` family,
+1. **N5 — batch the per-DAO disk walks** (§2). Deferred by choice; revisit only if nodes carrying
+   many filesystem links appear in practice.
+2. **The `DigitalRepositoryBackend` SPI** (§3.3 points 2 and 3) — the backend interface plus the
+   backend-neutral `RepoItem`/`RepoItems` the `FsItem`/`FsItems` contract was shaped to become.
+   Unblocked, but it pays off only when a second backend is actually written against it: doing it
+   now means designing an abstraction from a single implementation. `FileSystemRepoBrowser` is
+   already the shape a `FileSystemBackend` would take, so the cost of waiting is low.
+3. **Ingest-as-AIP** (§3.3 point 4) — the only sanctioned way a filesystem folder acquires real
+   `DaAip` semantics. Optional; only if the need is asked for.
+4. **`da-migration.md` Phases 4–5** — the WSDL decision and the removal of the `arr_dao` family,
    tracked there; independent of everything above.
 
 ---
 
-## 6. Decisions
+## 5. Decisions
 
 All architectural questions raised by this analysis are settled.
 
@@ -377,34 +321,35 @@ All architectural questions raised by this analysis are settled.
 
 ---
 
-## 7. Verification
+## 6. Verification
 
-Automated coverage today (counted 2026-08-17): `FileSystemRepoServiceTest` (10 tests — path
-containment incl. traversal inputs, MIME detection, inline-renderable classification),
-`FileSystemRepoBrowserTest` (37 tests — browse sort/filter/paging incl. Czech collation, link
-resolution incl. multi-fund rows, `listDaoFiles` recursive/cap/missing-path, repository
-availability incl. the templated-root asymmetry, `testRepository` per failure mode, name ordering,
-`normalizeRelatPath` and the templated-URL helpers), `DaoServiceFsLinkTest` (11 tests — covers
-`createFsDaoLink` and `moveFsDaoLink`: `multiple_links` enforcement, idempotent re-link on the
-same node, containment check on the link target, and the link-move flow),
-`ArrDigitalRepositoryVOTest` (3 tests — clearing of settings that do not apply, pass-through for
-other repository types, `file://` strip), and `DaoCoreServiceTest` (SOAP DAO flow, unaffected by
-the fs changes).
+Where the automated coverage lives, and what each class is responsible for — extend the matching
+one rather than starting somewhere new:
 
-**For the remaining work:**
+| Test class | Covers |
+|---|---|
+| `FileSystemRepoServiceTest` | Path containment incl. traversal inputs, MIME detection, inline-renderable classification |
+| `FileSystemRepoBrowserTest` | Browse sort/filter/paging incl. Czech collation, last-change ordering, keyset paging across an insert or delete between pages (§1.2); link resolution incl. multi-fund rows; `listDaoFiles` recursive/cap/missing-path; repository availability incl. the templated-root asymmetry; `testRepository` per failure mode; `normalizeRelatPath` and the templated-URL helpers |
+| `DaoServiceFsLinkTest` | `createFsDaoLink` and `moveFsDaoLink` — `multiple_links` enforcement, idempotent re-link on the same node, containment check on the link target, the link-move flow |
+| `ArrDigitalRepositoryVOTest` | Clearing of the settings of §5 item 5, pass-through for other repository types, `file://` strip |
+| `DaoCoreServiceTest` | SOAP DAO flow — unaffected by the filesystem work, kept as the regression guard that it stayed that way |
 
-- **Frontend.** Manual: add a file on disk, refresh, confirm it appears without reopening the
-  dialog; collapse and re-expand a tree folder and confirm children re-fetch (the D1 tree half —
-  currently broken); point a repository at a missing path and confirm it appears greyed with an
-  explanation, then fix the path and confirm the dialog must be reopened before it goes live again
-  (D7 — currently the expected, wrong behaviour).
-- **Scale.** Benchmark a 50 000-entry directory on a network share — the single-pass rewrite and
-  the paged `hasChildren` probe both landed unmeasured; the worst case is a folder containing many
-  files and no subfolder, with a page size that surfaces every folder. Confirm paging is stable
-  under concurrent modification once C2's keyset cursor lands.
+**Manual acceptance — the checks worth repeating before a release:**
+
+- **Frontend.** Hit "Obnovit" (or switch tabs onto the filesystem tab) and confirm the repository
+  list and the tree collapse, then reload — the tree's children cache is wiped and the expansion
+  markers stay in sync with it. Point a repository at a missing path, verify it appears greyed
+  with an explanation (§1.1), fix the path from administration, hit "Obnovit" and confirm the tree
+  updates *without* reopening the dialog. Disconnect the server or block the API and confirm both
+  panels render error placeholders instead of empty space. Switch the sort selector across all six
+  orders and confirm the listing restarts from the first page each time (§1.2).
+- **Scale.** Benchmark a 50 000-entry directory on a network share — the single-pass rewrite, the
+  paged `hasChildren` probe and the keyset slice all landed unmeasured; the worst case is a folder
+  containing many files and no subfolder, with a page size that surfaces every folder. Since every
+  page re-scans the directory (§1.2), the cost of "load more" is the number to watch.
 - **Repository configuration.** Manual: a templated root (`{fundId}`) that resolves for one fund
   and not another stays hidden for the second; the administration test reports each failure mode
-  distinctly; saving a filesystem repository clears the settings of §6 item 5.
+  distinctly; saving a filesystem repository clears the settings of §5 item 5.
 
 **Running the application:** standard Maven/Spring Boot launch for `elza-core` plus the
 `elza-react` dev server; the browser is reached from a fund's DAO panel and needs at least one
