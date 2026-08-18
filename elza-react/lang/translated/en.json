@@ -717,6 +717,10 @@
     "defaultMessage": "Columns",
     "srcHash": "nkGHuHwAI1Yf"
   },
+  "aip.filter.createFilter": {
+    "defaultMessage": "Create filter {name}",
+    "srcHash": "Es1YqY4zWi8-"
+  },
   "aip.filter.loading": {
     "defaultMessage": "Loading…",
     "srcHash": "kgjJ9rUTLs7l"

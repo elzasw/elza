@@ -9,7 +9,7 @@ import AipFilterTag from "./AipFilterTag";
 import { AREA_AIPS, aipsFilter } from "actions/aip/aip";
 import { AipFilterEntry } from "typings/store";
 import { AipFilterForm } from "./forms/AipFilterForm";
-import { useIntl } from "react-intl";
+import { defineMessages, useIntl } from "react-intl";
 import { useSelector } from "react-redux";
 import { storeFromArea } from "shared/utils";
 import {QueueItemState} from "elza-api";
@@ -22,6 +22,10 @@ type AipFiltersProps = {
 	createFilter: (filter: AipFilterEntry) => void;
 	removeFilter: (id: string) => void;
 }
+
+const localMessages = defineMessages({
+    createFilter: { id: "aip.filter.createFilter", defaultMessage: "Vytvořit filtr {name}" },
+});
 
 const AipFilters = ({filterDisabled, hiddenValues, filters, createFilter, removeFilter}: AipFiltersProps) => {
 	const {filter} = useSelector((state: any) => storeFromArea(state, AREA_AIPS));
@@ -52,11 +56,11 @@ const AipFilters = ({filterDisabled, hiddenValues, filters, createFilter, remove
 		<AipFilterForm item={item} onClose={handleClose} onSubmit={handleCreate}/>
 	);
 
-    const handleFilterCreate = (item) => {
+    const handleFilterCreate = (item: AipColumn) => {
         dispatch(
             modalDialogShow(
-                this,
-                `Vytvořit filtr ${item.name}`,
+                null,
+                formatMessage(localMessages.createFilter, {name: formatMessage(item.message)}),
 				getForm(item),
                 null,
             ),
