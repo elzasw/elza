@@ -220,6 +220,10 @@ export interface NodesState {
 
 export interface FundTree {
     expandedIds: unknown[]
+    fetched?: boolean
+    isFetching?: boolean
+    dirty?: boolean
+    nodes?: unknown[]
 }
 
 export interface Fund {

@@ -258,7 +258,7 @@ function PublicationTable({ fundId, publicationTypes }: Props) {
                                         </TableCellLayout>
                                     </TableCell>
                                 ))}
-                                <TableCell className={classes.actionCol} onClick={(e) => e.stopPropagation()}>
+                                <TableCell className={classes.actionCol} onClick={(e: MouseEvent<HTMLTableCellElement>) => e.stopPropagation()}>
                                     <Menu>
                                         <MenuTrigger disableButtonEnhancement>
                                             <MenuButton
