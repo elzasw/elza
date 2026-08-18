@@ -25,27 +25,8 @@
         align-items: center;
 
         .actions {
-            font-size: 1.3em;
-            margin-right: 0;
-
             &--end {
-                margin-right: 0;
                 margin-left: 5px;
-            }
-
-            .btn {
-                color: var(--text-secondary, #666);
-                cursor: pointer;
-                // Optical alignment — FA4 glyphs sit slightly low next to text.
-                transform: translateY(-3px);
-                // grayscale AA reads visibly lighter than the browser default
-                // (subpixel AA), so single-weight FA4 glyphs feel less bulky.
-                -webkit-font-smoothing: antialiased;
-                -moz-osx-font-smoothing: grayscale;
-
-                &:hover {
-                    color: inherit;
-                }
             }
         }
 
