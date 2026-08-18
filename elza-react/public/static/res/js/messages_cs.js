@@ -1908,7 +1908,6 @@ var messages = {
     "aip.form.update.type.DbUpdate": "Aktualizace pouze DB",
     "aip.form.update.type.DownloadUpdate": "Opakované stažení AIP",
     "aip.form.update.type.ForceUpdate": "Vynucená aktualizace",
-    "aip.filter.columns": "Vybrat sloupce",
     "aip.actions.metadata": "Načtení metadat",
     "aip.actions.deleteMetadata": "Smazání metadat",
     "aip.actions.loadAips": "Načtení úplných AIP",

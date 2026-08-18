@@ -1,4 +1,5 @@
 import { useIntl } from "react-intl";
+import { tableMessages } from "components/shared/lang/tableMessages";
 import { SortingOrder } from "elza-api";
 import {FC, useCallback, useEffect, useState, MouseEvent, KeyboardEvent} from 'react';
 import { useAppSelector } from 'utils/hooks';
@@ -258,7 +259,7 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
                                     checked={allRowsSelected ? true : someRowsSelected ? "mixed" : false}
                                     onClick={toggleAllRows}
                                     onKeyDown={toggleAllKeydown}
-                                    checkboxIndicator={{"aria-label": "Vybrat vše"}}
+                                    checkboxIndicator={{"aria-label": formatMessage(tableMessages.selectAll)}}
                                     className="header"
 
                                 />
@@ -285,7 +286,7 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
                                 >
                                     <TableSelectionCell
                                         checked={selected}
-                                        checkboxIndicator={{ "aria-label": "Vybrat" }}
+                                        checkboxIndicator={{ "aria-label": formatMessage(tableMessages.select) }}
                                         onClick={onClick}
                                     />
 

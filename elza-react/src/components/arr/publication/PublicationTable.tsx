@@ -29,6 +29,7 @@ import {
 } from '@fluentui/react-components';
 import { MoreHorizontalRegular, ArrowDownloadRegular, CopyRegular, DeleteRegular } from '@fluentui/react-icons';
 import { defineMessages, FormattedMessage, useIntl } from 'react-intl';
+import { tableMessages } from "components/shared/lang/tableMessages";
 import { PublicationDetail, PublicationType, PublicationStateInternal } from 'elza-api';
 import { colDef } from './columns';
 import { stateMessages } from './messages';
@@ -216,7 +217,7 @@ function PublicationTable({ fundId, publicationTypes }: Props) {
                                 checked={allRowsSelected ? true : someRowsSelected ? 'mixed' : false}
                                 onClick={toggleAllRows}
                                 onKeyDown={toggleAllKeydown}
-                                checkboxIndicator={{ 'aria-label': 'Vybrat vše' }}
+                                checkboxIndicator={{ 'aria-label': formatMessage(tableMessages.selectAll) }}
                                 className={classes.header}
                                 hidden
                             />
@@ -244,7 +245,7 @@ function PublicationTable({ fundId, publicationTypes }: Props) {
                             >
                                 <TableSelectionCell
                                     checked={selected}
-                                    checkboxIndicator={{ 'aria-label': 'Vybrat' }}
+                                    checkboxIndicator={{ 'aria-label': formatMessage(tableMessages.select) }}
                                     hidden
                                 />
                                 {columns.map((col) => (
