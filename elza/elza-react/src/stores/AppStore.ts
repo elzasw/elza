@@ -507,7 +507,9 @@ if (appWindow.__DEV__) {
     const middleWares: Middleware<any, any, any>[] = [
         // immutableMiddleware,
         thunkMiddleware,
-        loggerMiddleware,
+        // @types/redux-logger je sestaveny proti novejsimu redux (Dispatch<UnknownAction>),
+        // nez pouziva projekt (Dispatch<AnyAction>); jde o rozdil verzi typu, ne o chybu.
+        loggerMiddleware as Middleware<any, any, any>,
         inlineFormMiddleware,
     ];
 
