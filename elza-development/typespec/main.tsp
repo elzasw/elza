@@ -269,6 +269,10 @@ enum FsItemSortType {
     SIZE_ASC,
     /** By size in descending */
     SIZE_DESC,
+    /** By last change time, oldest first */
+    LAST_CHANGE_ASC,
+    /** By last change time, newest first */
+    LAST_CHANGE_DESC,    
 }
 
 /**

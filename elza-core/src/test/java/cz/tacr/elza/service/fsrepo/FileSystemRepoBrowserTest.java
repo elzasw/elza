@@ -3,7 +3,9 @@ package cz.tacr.elza.service.fsrepo;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.text.Collator;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -147,15 +149,83 @@ public class FileSystemRepoBrowserTest {
 
         FsItems page1 = browser.browseItems(repo, fund, null, null, null, null, null, null, 2, null);
         assertEquals(2, page1.getItems().size());
-        assertEquals("2", page1.getLastKey());
+        assertEquals("f00.txt", page1.getItems().get(0).getName());
+        assertEquals("f01.txt", page1.getItems().get(1).getName());
+        assertNotNull(page1.getLastKey());
 
-        FsItems page2 = browser.browseItems(repo, fund, null, null, "2", null, null, null, 2, null);
+        FsItems page2 = browser.browseItems(repo, fund, null, null, page1.getLastKey(), null, null, null, 2, null);
         assertEquals(2, page2.getItems().size());
-        assertEquals("4", page2.getLastKey());
+        assertEquals("f02.txt", page2.getItems().get(0).getName());
+        assertEquals("f03.txt", page2.getItems().get(1).getName());
+        assertNotNull(page2.getLastKey());
 
-        FsItems page3 = browser.browseItems(repo, fund, null, null, "4", null, null, null, 2, null);
+        FsItems page3 = browser.browseItems(repo, fund, null, null, page2.getLastKey(), null, null, null, 2, null);
         assertEquals(1, page3.getItems().size());
+        assertEquals("f04.txt", page3.getItems().get(0).getName());
         assertNull(page3.getLastKey());
+    }
+
+    @Test
+    void browse_pagination_stableUnderInsertion(@TempDir Path root) throws IOException {
+        for (int i = 0; i < 10; i++) {
+            Files.createFile(root.resolve(String.format("f%02d.txt", i)));
+        }
+        Mockito.when(serviceMock.resolvePath(eq(repo), eq(fund), any())).thenReturn(root);
+
+        FsItems page1 = browser.browseItems(repo, fund, null, null, null, null, null, null, 5, null);
+        assertEquals(5, page1.getItems().size());
+        assertEquals("f04.txt", page1.getItems().get(4).getName());
+
+        // Insertion between pages: a new file that sorts before the cursor position.
+        Files.createFile(root.resolve("f02a.txt"));
+
+        FsItems page2 = browser.browseItems(repo, fund, null, null, page1.getLastKey(), null, null, null, 5, null);
+        // Cursor is name="f04.txt"; page2 must resume after it, unchanged by the
+        // insertion of "f02a.txt" earlier in the sort order.
+        assertEquals(5, page2.getItems().size());
+        assertEquals("f05.txt", page2.getItems().get(0).getName());
+        assertEquals("f09.txt", page2.getItems().get(4).getName());
+    }
+
+    @Test
+    void browse_pagination_stableUnderDeletion(@TempDir Path root) throws IOException {
+        for (int i = 0; i < 10; i++) {
+            Files.createFile(root.resolve(String.format("f%02d.txt", i)));
+        }
+        Mockito.when(serviceMock.resolvePath(eq(repo), eq(fund), any())).thenReturn(root);
+
+        FsItems page1 = browser.browseItems(repo, fund, null, null, null, null, null, null, 5, null);
+        assertEquals(5, page1.getItems().size());
+        assertEquals("f04.txt", page1.getItems().get(4).getName());
+
+        // The cursor row itself vanishes between pages.
+        Files.delete(root.resolve("f04.txt"));
+
+        FsItems page2 = browser.browseItems(repo, fund, null, null, page1.getLastKey(), null, null, null, 5, null);
+        // binarySearch returns the insertion point, which is already the first
+        // entry greater than the deleted cursor — no dupe, no gap.
+        assertEquals(5, page2.getItems().size());
+        assertEquals("f05.txt", page2.getItems().get(0).getName());
+        assertEquals("f09.txt", page2.getItems().get(4).getName());
+    }
+
+    @Test
+    void browse_pagination_resetsOnSortChange(@TempDir Path root) throws IOException {
+        for (int i = 0; i < 6; i++) {
+            Files.createFile(root.resolve(String.format("f%02d.txt", i)));
+        }
+        Mockito.when(serviceMock.resolvePath(eq(repo), eq(fund), any())).thenReturn(root);
+
+        FsItems page1 = browser.browseItems(repo, fund, null, null, null, null,
+                FsItemSortType.NAME_ASC, null, 3, null);
+        assertNotNull(page1.getLastKey());
+
+        // Same lastKey passed with a different sort — cursor is silently ignored.
+        FsItems page2 = browser.browseItems(repo, fund, null, null, page1.getLastKey(), null,
+                FsItemSortType.NAME_DESC, null, 3, null);
+        assertEquals(3, page2.getItems().size());
+        // NAME_DESC starts from the highest name, not resumed from the ASC cursor.
+        assertEquals("f05.txt", page2.getItems().get(0).getName());
     }
 
     @Test
@@ -301,6 +371,91 @@ public class FileSystemRepoBrowserTest {
         assertEquals("large.txt", result.getItems().get(0).getName());
         assertEquals("medium.txt", result.getItems().get(1).getName());
         assertEquals("small.txt", result.getItems().get(2).getName());
+    }
+
+    @Test
+    void browse_sortLastChangeAsc_ordersOldestFirst(@TempDir Path root) throws IOException {
+        Path oldest = Files.createFile(root.resolve("c.txt"));
+        Path middle = Files.createFile(root.resolve("a.txt"));
+        Path newest = Files.createFile(root.resolve("b.txt"));
+        // Stamp mtimes explicitly so the test does not depend on filesystem timing.
+        Files.setLastModifiedTime(oldest, FileTime.from(Instant.parse("2024-01-01T10:00:00Z")));
+        Files.setLastModifiedTime(middle, FileTime.from(Instant.parse("2024-06-01T10:00:00Z")));
+        Files.setLastModifiedTime(newest, FileTime.from(Instant.parse("2024-12-01T10:00:00Z")));
+        Mockito.when(serviceMock.resolvePath(repo, fund, null)).thenReturn(root);
+
+        FsItems result = browser.browseItems(repo, fund, null, null, null, null,
+                FsItemSortType.LAST_CHANGE_ASC, null, null, null);
+        assertEquals("c.txt", result.getItems().get(0).getName());
+        assertEquals("a.txt", result.getItems().get(1).getName());
+        assertEquals("b.txt", result.getItems().get(2).getName());
+    }
+
+    @Test
+    void browse_sortLastChangeDesc_ordersNewestFirst(@TempDir Path root) throws IOException {
+        Path oldest = Files.createFile(root.resolve("c.txt"));
+        Path middle = Files.createFile(root.resolve("a.txt"));
+        Path newest = Files.createFile(root.resolve("b.txt"));
+        Files.setLastModifiedTime(oldest, FileTime.from(Instant.parse("2024-01-01T10:00:00Z")));
+        Files.setLastModifiedTime(middle, FileTime.from(Instant.parse("2024-06-01T10:00:00Z")));
+        Files.setLastModifiedTime(newest, FileTime.from(Instant.parse("2024-12-01T10:00:00Z")));
+        Mockito.when(serviceMock.resolvePath(repo, fund, null)).thenReturn(root);
+
+        FsItems result = browser.browseItems(repo, fund, null, null, null, null,
+                FsItemSortType.LAST_CHANGE_DESC, null, null, null);
+        assertEquals("b.txt", result.getItems().get(0).getName());
+        assertEquals("a.txt", result.getItems().get(1).getName());
+        assertEquals("c.txt", result.getItems().get(2).getName());
+    }
+
+    @Test
+    void browse_sortLastChange_tieBreaksByName(@TempDir Path root) throws IOException {
+        // Same mtime on every file — comparator must fall through to the name
+        // tie-breaker to stay deterministic (and to keep the C2 keyset cursor honest).
+        FileTime sameTime = FileTime.from(Instant.parse("2024-06-01T10:00:00Z"));
+        for (String name : new String[] { "c.txt", "a.txt", "b.txt" }) {
+            Path p = Files.createFile(root.resolve(name));
+            Files.setLastModifiedTime(p, sameTime);
+        }
+        Mockito.when(serviceMock.resolvePath(repo, fund, null)).thenReturn(root);
+
+        FsItems result = browser.browseItems(repo, fund, null, null, null, null,
+                FsItemSortType.LAST_CHANGE_ASC, null, null, null);
+        assertEquals("a.txt", result.getItems().get(0).getName());
+        assertEquals("b.txt", result.getItems().get(1).getName());
+        assertEquals("c.txt", result.getItems().get(2).getName());
+    }
+
+    @Test
+    void browse_sortLastChange_pagingStableUnderInsertion(@TempDir Path root) throws IOException {
+        // Create 6 files at fixed times; page by 3 sorted by LAST_CHANGE_ASC,
+        // insert a file between pages, and check the second page still resumes
+        // strictly after the first page's last entry (keyset cursor works when
+        // sorting by mtime, not just by name).
+        Instant base = Instant.parse("2024-01-01T10:00:00Z");
+        for (int i = 0; i < 6; i++) {
+            Path p = Files.createFile(root.resolve(String.format("f%02d.txt", i)));
+            Files.setLastModifiedTime(p, FileTime.from(base.plusSeconds(i * 60L)));
+        }
+        Mockito.when(serviceMock.resolvePath(repo, fund, null)).thenReturn(root);
+
+        FsItems page1 = browser.browseItems(repo, fund, null, null, null, null,
+                FsItemSortType.LAST_CHANGE_ASC, null, 3, null);
+        assertEquals(3, page1.getItems().size());
+        assertEquals("f02.txt", page1.getItems().get(2).getName());
+        assertNotNull(page1.getLastKey());
+
+        // Insert a fresh file whose mtime falls inside the already-emitted range.
+        Path inserted = Files.createFile(root.resolve("inserted.txt"));
+        Files.setLastModifiedTime(inserted, FileTime.from(base.plusSeconds(30L)));
+
+        FsItems page2 = browser.browseItems(repo, fund, null, null, page1.getLastKey(), null,
+                FsItemSortType.LAST_CHANGE_ASC, null, 3, null);
+        // Cursor points at f02.txt (10:02); page2 resumes after it, unaffected
+        // by the inserted file whose mtime (10:00:30) sorts earlier.
+        assertEquals(3, page2.getItems().size());
+        assertEquals("f03.txt", page2.getItems().get(0).getName());
+        assertEquals("f05.txt", page2.getItems().get(2).getName());
     }
 
     @Test

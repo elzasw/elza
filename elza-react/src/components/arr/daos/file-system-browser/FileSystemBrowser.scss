@@ -23,10 +23,12 @@
         display: flex;
         line-height: 1em;
         align-items: center;
+        padding-bottom: 4px;
 
         .actions {
-            font-size: 1.5em;
-            margin-right: 10px;
+            &--end {
+                margin-left: 5px;
+            }
         }
 
         .breadcrumbs {
@@ -173,6 +175,10 @@
             padding: 16px;
             text-align: center;
             color: #f0ad4e;
+
+            &--loading {
+                color: inherit;
+            }
 
             &__title {
                 font-weight: 600;
