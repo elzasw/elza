@@ -9,7 +9,9 @@ import { useEffect } from "react";
 import { useAppSelector } from "utils/hooks/useAppSelector";
 import { useAppThunkDispatch } from "utils/hooks";
 import { AipFieldName, QueueItemState } from "elza-api";
-import { AipColumn, boolMessages, generateUUID, queueStateMessages } from "../../utils";
+import { generateUUID } from "../../utils";
+import { AipColumn } from "../../columns";
+import { boolMessages, queueStateMessages } from "../../messages";
 import { IntlShape, defineMessages, useIntl } from "react-intl";
 import {
     AipOperation,

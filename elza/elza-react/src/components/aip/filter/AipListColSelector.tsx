@@ -9,7 +9,7 @@ import {
 	mergeClasses
 } from "@fluentui/react-components";
 import type { MenuCheckedValueChangeData, MenuCheckedValueChangeEvent } from "@fluentui/react-components";
-import { colDef } from "../utils";
+import { colDef } from "../columns";
 import { useIntl } from "react-intl";
 import { Icon, i18n } from "components/shared";
 import "../AipDetail.scss";

@@ -4,7 +4,8 @@ import {FC, useCallback, useEffect, useState, MouseEvent, KeyboardEvent} from 'r
 import {useSelector} from 'react-redux';
 import {StoreHorizontalLoader} from 'components/shared';
 import storeFromArea from '../../shared/utils/storeFromArea.jsx';
-import { findColDefByKey, formatAipSize, formatDate, getAipRows } from './utils.tsx';
+import { formatAipSize, formatDate, getAipRows } from './utils.tsx';
+import { findColDefByKey } from './columns';
 import './AipTable.scss';
 import { useHistory} from 'react-router';
 import {urlAip} from '../../constants.tsx';
@@ -30,7 +31,8 @@ import {
     useTableSort,
     createTableColumn,
 } from '@fluentui/react-components';
-import { colDef, getBoolIcon } from './utils.tsx';
+import { getBoolIcon } from './utils.tsx';
+import { colDef } from './columns';
 import { Row } from 'react-bootstrap';
 import AipFilterSection from './filter/AipFilterSection.tsx';
 import Pagination from 'components/shared/pagination/Pagination.tsx';
