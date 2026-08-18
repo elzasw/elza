@@ -27,6 +27,11 @@
         .actions {
             font-size: 1.5em;
             margin-right: 10px;
+
+            &--end {
+                margin-right: 0;
+                margin-left: 5px;
+            }
         }
 
         .breadcrumbs {

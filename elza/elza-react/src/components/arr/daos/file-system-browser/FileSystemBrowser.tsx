@@ -492,12 +492,7 @@ export const FileSystemBrowser = ({
                     <div title={i18n("arr.daos.fileSystem.selectParent")}
                         className="btn"
                         onClick={handleSelectParent}>
-                        <Icon glyph="fa-arrow-up" />
-                    </div>
-                    <div title={intl.formatMessage(messages.refresh)}
-                        className="btn"
-                        onClick={() => setLocalRefreshTick((tick) => tick + 1)}>
-                        <Icon glyph="fa-refresh" />
+                        <Icon glyph="fa-level-up" className="fa-flip-horizontal" />
                     </div>
                 </div>
                 {generateBreadcrumbs()}
@@ -552,6 +547,13 @@ export const FileSystemBrowser = ({
                         <option value={FsItemSortType.SizeAsc}>{intl.formatMessage(messages.sortSizeAsc)}</option>
                         <option value={FsItemSortType.SizeDesc}>{intl.formatMessage(messages.sortSizeDesc)}</option>
                     </select>
+                </div>
+                <div className="actions actions--end">
+                    <div title={intl.formatMessage(messages.refresh)}
+                        className="btn"
+                        onClick={() => setLocalRefreshTick((tick) => tick + 1)}>
+                        <Icon glyph="fa-refresh" />
+                    </div>
                 </div>
             </div>
             <div className="main-container">
