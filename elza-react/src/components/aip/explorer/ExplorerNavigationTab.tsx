@@ -25,7 +25,7 @@ import {
     bundleIcon,
   } from "@fluentui/react-icons";
 import React from "react";
-import { generateUUID } from "../utils";
+import { generateUUID } from "utils/uuid";
 import { DaoFileFolderVO } from "api/DaoFileFolderVO";
 
 type Item = {

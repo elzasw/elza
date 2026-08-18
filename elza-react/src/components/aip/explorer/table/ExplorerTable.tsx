@@ -18,7 +18,7 @@ import {
 } from "@fluentui/react-components";
 import { FC, useCallback, useState, KeyboardEvent, useEffect } from "react";
 import "./ExplorerTable.scss"
-import { formatAipSize } from "components/aip/utils";
+import { formatAipSize } from "components/aip/format";
 import { getFileName } from "../utils";
 import { ExplorerMode, useExplorerContext } from "../ExplorerContext";
 import { useThunkDispatch } from "utils/hooks";

@@ -4,7 +4,8 @@ import {FC, useCallback, useEffect, useState, MouseEvent, KeyboardEvent} from 'r
 import {useSelector} from 'react-redux';
 import {StoreHorizontalLoader} from 'components/shared';
 import storeFromArea from '../../shared/utils/storeFromArea.jsx';
-import { formatAipSize, formatDate, getAipRows } from './utils.tsx';
+import { formatAipSize } from './format';
+import { formatDateCz } from 'utils/date';
 import { findColDefByKey } from './columns';
 import './AipTable.scss';
 import { useHistory} from 'react-router';
@@ -31,12 +32,12 @@ import {
     useTableSort,
     createTableColumn,
 } from '@fluentui/react-components';
-import { getBoolIcon } from './utils.tsx';
+import { getBoolIcon } from './AipCells';
 import { colDef } from './columns';
 import { Row } from 'react-bootstrap';
 import AipFilterSection from './filter/AipFilterSection.tsx';
 import Pagination from 'components/shared/pagination/Pagination.tsx';
-import { AipFilterEntry } from 'typings/store/index.ts';
+import { AipFilterEntry, Aips } from 'typings/store/index.ts';
 import AipDetail from './AipDetail.tsx';
 import {AipDetailVO} from "elza-api";
 
@@ -48,6 +49,26 @@ type AipTableProps = {
     detailOpen?: boolean;
     setDetailOpen?: (open: boolean) => void;
 }
+
+/**
+ * Řádky seznamu AIP ze store; dokud není načteno, je seznam prázdný.
+ */
+const getAipRows = (aips: Aips) => {
+    if(aips.fetched && aips.rows){
+        if(
+            aips.filter?.from &&
+            aips.filter?.pageSize &&
+            aips.filter.from > aips.filter.pageSize - 1
+        ){
+            return aips.rows;
+        }
+        return [
+            ...aips.rows,
+        ];
+    }
+
+    return [];
+};
 
 const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilters, hiddenValues, detailOpen, setDetailOpen}) => {
     const aips = useSelector((state: any) => storeFromArea(state, AREA_AIPS));
@@ -76,7 +97,7 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
     const [columns, setColumns] = useState<TableColumnDefinition<AipDetailVO>[]>(columnsDef);
 
     const formatUnitDate = (unitdateFrom: string, unitdateTo: string) => {
-        return formatDate(new Date(unitdateFrom)) + " - " + (unitdateTo ? formatDate(new Date(unitdateTo)) : "?");
+        return formatDateCz(new Date(unitdateFrom)) + " - " + (unitdateTo ? formatDateCz(new Date(unitdateTo)) : "?");
     }
 
     const getContent =(item: AipDetailVO, key: string) => {

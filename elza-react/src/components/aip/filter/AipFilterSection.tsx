@@ -8,7 +8,7 @@ import "./AipFilter.scss";
 import { useSelector } from "react-redux";
 import i18n from "components/i18n";
 import { AipFilterEntry } from "typings/store";
-import { generateUUID } from "../utils";
+import { generateUUID } from "utils/uuid";
 import { aipColumns } from "../columns";
 import { buildFilter } from "./aipFilterModel";
 import { AipFieldName } from "elza-api";
