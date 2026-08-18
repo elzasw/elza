@@ -725,6 +725,74 @@
     "defaultMessage": "Loading…",
     "srcHash": "kgjJ9rUTLs7l"
   },
+  "aip.filter.value.notNull": {
+    "defaultMessage": "Value set",
+    "srcHash": "9A39gNXtk7-i"
+  },
+  "aip.filter.value.null": {
+    "defaultMessage": "Value not set",
+    "srcHash": "rGgbeWqtyuxn"
+  },
+  "aip.form.between": {
+    "defaultMessage": "Is in range",
+    "srcHash": "xOHUsUhvIXOP"
+  },
+  "aip.form.contain": {
+    "defaultMessage": "Contains",
+    "srcHash": "wGVYx0iW1rvw"
+  },
+  "aip.form.content": {
+    "defaultMessage": "Content",
+    "srcHash": "zsjC7tEzhIlP"
+  },
+  "aip.form.equals": {
+    "defaultMessage": "Is exactly",
+    "srcHash": "lOeyoBy1jUTy"
+  },
+  "aip.form.error.between": {
+    "defaultMessage": "The lower bound must be less than the upper bound",
+    "srcHash": "l4rWlzQQzlLo"
+  },
+  "aip.form.error.emptyDate": {
+    "defaultMessage": "Date must be entered",
+    "srcHash": "GNpJJoT2fZLU"
+  },
+  "aip.form.error.nan": {
+    "defaultMessage": "Must be a number",
+    "srcHash": "sduW6a9cPVoG"
+  },
+  "aip.form.error.positiveNum": {
+    "defaultMessage": "Must be a positive number",
+    "srcHash": "wj_usbIaXyHG"
+  },
+  "aip.form.error.value": {
+    "defaultMessage": "Value must be filled in",
+    "srcHash": "ZE0vRqvLYbRp"
+  },
+  "aip.form.from": {
+    "defaultMessage": "From",
+    "srcHash": "hwAuMpogKIkY"
+  },
+  "aip.form.notContain": {
+    "defaultMessage": "Does not contain",
+    "srcHash": "bsWPcoUNHu8T"
+  },
+  "aip.form.notNull": {
+    "defaultMessage": "Value set",
+    "srcHash": "l0LiTrzfFMuW"
+  },
+  "aip.form.null": {
+    "defaultMessage": "Value not set",
+    "srcHash": "ESmcdHO24Ayn"
+  },
+  "aip.form.to": {
+    "defaultMessage": "To",
+    "srcHash": "MAlOC-wARtqP"
+  },
+  "aip.form.value": {
+    "defaultMessage": "Value",
+    "srcHash": "2al7WSQS6DjX"
+  },
   "aip.queueState.EXPORT_ERROR": {
     "defaultMessage": "Export error",
     "srcHash": "I18TohzzMs46"
@@ -752,6 +820,10 @@
   "aip.queueState.UPDATE": {
     "defaultMessage": "To update",
     "srcHash": "JD9Fawd6Mvoz"
+  },
+  "aip.table.search": {
+    "defaultMessage": "Search",
+    "srcHash": "VlGwesPAI6ap"
   },
   "aip.value.no": {
     "defaultMessage": "NO",

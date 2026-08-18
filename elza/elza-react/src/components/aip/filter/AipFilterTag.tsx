@@ -1,9 +1,9 @@
 import { Tag, makeStyles } from "@fluentui/react-components";
 import { findColDefByField } from "../columns";
+import { filterMessages } from "../messages";
 import { AipFilterEntry } from "typings/store";
 import { DateValueFilter, NumberValueFilter } from "elza-api";
-import i18n from "components/i18n";
-import { useIntl } from "react-intl";
+import { IntlShape, useIntl } from "react-intl";
 
 interface Props {
     filter: AipFilterEntry;
@@ -30,11 +30,11 @@ function operator(entry: AipFilterEntry): string {
     }
 }
 
-function value(entry: AipFilterEntry): string {
+function value(entry: AipFilterEntry, intl: IntlShape): string {
     const filter = entry.filter as {operation?: string; value?: unknown};
     switch (filter.operation) {
-        case "IS_NULL": return i18n("aip.filter.value.null");
-        case "NOT_NULL": return i18n("aip.filter.value.notNull");
+        case "IS_NULL": return intl.formatMessage(filterMessages.valueNull);
+        case "NOT_NULL": return intl.formatMessage(filterMessages.valueNotNull);
         case "BETWEEN": {
             const range = entry.filter as NumberValueFilter | DateValueFilter;
             return `${range.from} - ${range.to}`;
@@ -49,7 +49,8 @@ function value(entry: AipFilterEntry): string {
 
 export function AipFilterTag({filter}: Props) {
     const classes = useStyles();
-    const {formatMessage} = useIntl();
+    const intl = useIntl();
+    const {formatMessage} = intl;
 
     if (filter.invisible) {
         return null;
@@ -63,7 +64,7 @@ export function AipFilterTag({filter}: Props) {
             size="small"
             value={filter.id}
         >
-            {operator(filter)} {formatMessage(findColDefByField(filter.field).message)} : {value(filter)}
+            {operator(filter)} {formatMessage(findColDefByField(filter.field).message)} : {value(filter, intl)}
         </Tag>
     );
 }

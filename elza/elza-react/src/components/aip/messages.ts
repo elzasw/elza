@@ -36,3 +36,33 @@ export const boolMessages = defineMessages({
     yes: { id: "aip.value.yes", defaultMessage: "ANO" },
     no:  { id: "aip.value.no",  defaultMessage: "NE" },
 });
+
+/**
+ * Popisky filtru seznamu AIP - porovnání, meze rozsahu a chyby formuláře.
+ */
+export const filterMessages = defineMessages({
+    content:      { id: "aip.form.content",      defaultMessage: "Obsah" },
+    value:        { id: "aip.form.value",        defaultMessage: "Hodnota" },
+    from:         { id: "aip.form.from",         defaultMessage: "Od" },
+    to:           { id: "aip.form.to",           defaultMessage: "Do" },
+    equals:       { id: "aip.form.equals",       defaultMessage: "Je přesné" },
+    contain:      { id: "aip.form.contain",      defaultMessage: "Obsahuje" },
+    notContain:   { id: "aip.form.notContain",   defaultMessage: "Neobsahuje" },
+    between:      { id: "aip.form.between",      defaultMessage: "Je v rozmezí" },
+    isNull:       { id: "aip.form.null",         defaultMessage: "Nenastavena hodnota" },
+    notNull:      { id: "aip.form.notNull",      defaultMessage: "Nastavena hodnota" },
+    valueNull:    { id: "aip.filter.value.null",    defaultMessage: "Hodnota nenastavena" },
+    valueNotNull: { id: "aip.filter.value.notNull", defaultMessage: "Hodnota nastavena" },
+    search:       { id: "aip.table.search",      defaultMessage: "Vyhledávání" },
+});
+
+/**
+ * Chyby validace formuláře filtru.
+ */
+export const filterErrorMessages = defineMessages({
+    value:       { id: "aip.form.error.value",       defaultMessage: "Hodnota musí být vyplněna" },
+    nan:         { id: "aip.form.error.nan",         defaultMessage: "Musí být číslo" },
+    positiveNum: { id: "aip.form.error.positiveNum", defaultMessage: "Musí být kladné číslo" },
+    between:     { id: "aip.form.error.between",     defaultMessage: "Číslo od musí být menší než číslo do" },
+    emptyDate:   { id: "aip.form.error.emptyDate",   defaultMessage: "Datum musí být zadán" },
+});
