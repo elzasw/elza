@@ -1,5 +1,5 @@
 import { Button, Popover, PopoverSurface, PopoverTrigger, PositioningShorthand, makeStyles, tokens } from "@fluentui/react-components";
-import { useState } from "react";
+import { MouseEvent, useState } from "react";
 import { defineMessages, useIntl } from "react-intl";
 
 const useConfirmPopoverStyles = makeStyles({
@@ -51,10 +51,10 @@ export function ConfirmPopover({ text, confirmLabel, positioning = "after", onCo
             <PopoverSurface className={classes.popover}>
                 <div>{text}</div>
                 <div className={classes.actions}>
-                    <Button appearance="primary" size="small" className={classes.confirmBtn} onClick={(e) => { e.stopPropagation(); setOpen(false); onConfirm(); }}>
+                    <Button appearance="primary" size="small" className={classes.confirmBtn} onClick={(e: MouseEvent<HTMLButtonElement>) => { e.stopPropagation(); setOpen(false); onConfirm(); }}>
                         {confirmLabel ?? formatMessage(messages.confirmYes)}
                     </Button>
-                    <Button size="small" onClick={(e) => { e.stopPropagation(); setOpen(false); }}>
+                    <Button size="small" onClick={(e: MouseEvent<HTMLButtonElement>) => { e.stopPropagation(); setOpen(false); }}>
                         {formatMessage(messages.confirmNo)}
                     </Button>
                 </div>

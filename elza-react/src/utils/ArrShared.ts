@@ -1,4 +1,7 @@
 import type {NodeInfo} from "elza-api";
+import type {AnyAction} from "redux";
+import type {ThunkDispatch} from "redux-thunk";
+import type {AppState} from "typings/store";
 import {fundsSelectFund} from "../actions/fund/fund";
 import {selectFundTab} from "../actions/arr/fund";
 import {createFundRoot, getFundFromFundAndVersion} from "../components/arr/ArrUtils";
@@ -7,6 +10,28 @@ import {WebApi} from "../actions/WebApi";
 import {Api} from "../api";
 
 export {fetchNodeInfo} from "./fetchNodeInfo";
+
+/** Dispatch schopny prijmout thunk i prostou akci. */
+type AppDispatch = ThunkDispatch<AppState, void, AnyAction>;
+
+/** Verze AS tak, jak ji vraci netypovane WebApi.getFundDetail. */
+type FundVersion = {id: number; lockDate?: string | null};
+
+/**
+ * Zalozka AS v rozsahu, ktery resolveFundTab opravdu cte. Zamerne uzsi nez cely Fund,
+ * aby slo funkci volat i s castecnym objektem (napr. v testech).
+ */
+type ActiveFundTab = {
+    id?: number;
+    versionId?: number;
+    activeVersion?: {id?: number} | null;
+    fundTree?: {fetched?: boolean} | null;
+};
+
+/** Cast stavu, kterou processNodeNavigation cte. */
+type NodeNavigationState = {
+    arrRegion: {activeIndex: number; funds: ActiveFundTab[]};
+};
 
 /**
  * Make the active arr tab show the given fund and version, taking the server
@@ -27,15 +52,20 @@ export {fetchNodeInfo} from "./fetchNodeInfo";
  * @returns the kept tab or the freshly fetched fund detail
  * @throws when the fund detail cannot be loaded or the version does not exist
  */
-export const resolveFundTab = async (dispatch, activeFund, fundId: number, versionId: number | null = null) => {
+export const resolveFundTab = async (
+    dispatch: AppDispatch,
+    activeFund: ActiveFundTab | null | undefined,
+    fundId: number,
+    versionId: number | null = null,
+) => {
     if (activeFund?.id === fundId && versionId != null && activeFund?.activeVersion?.id === versionId) {
         return activeFund;
     }
 
     const fund = await WebApi.getFundDetail(fundId);
     const version = versionId != null
-        ? fund.versions.find((v) => v.id === versionId)
-        : fund.versions.find((v) => !v.lockDate) ?? fund.versions[0];
+        ? fund.versions.find((v: FundVersion) => v.id === versionId)
+        : fund.versions.find((v: FundVersion) => !v.lockDate) ?? fund.versions[0];
     if (!version) {
         throw new Error(`Fund version not found, fundId=${fundId}, versionId=${versionId}`);
     }
@@ -65,7 +95,7 @@ export const resolveFundTab = async (dispatch, activeFund, fundId: number, versi
  * @param versionId fund version requested by the URL; null selects the open version
  */
 export const processNodeNavigation = (nodeInfo: NodeInfo, versionId: number | null = null) =>
-    async (dispatch, getState) => {
+    async (dispatch: AppDispatch, getState: () => NodeNavigationState) => {
         dispatch(fundsSelectFund(nodeInfo.fundId));
 
         const {arrRegion} = getState();
@@ -121,7 +151,7 @@ export const processNodeNavigation = (nodeInfo: NodeInfo, versionId: number | nu
         });
     };
 
-export const waitForLoadAS = fce => {
+export const waitForLoadAS = (fce: () => unknown) => {
     const next = fce();
     if (next) {
         setTimeout(() => {

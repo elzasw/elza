@@ -6,7 +6,7 @@ export type Extend = {
     emptyValue: any;
 }
 
-export function buildEnumItems(values: any[], getName, extend?: Extend) {
+export function buildEnumItems(values: any[], getName: (value: any) => string, extend?: Extend) {
     const result: any[] = [];
     values && values.forEach(value => result.push({
         id: value,
@@ -22,7 +22,13 @@ export function buildEnumItems(values: any[], getName, extend?: Extend) {
     return result;
 }
 
-export function createItems(getItems, getName, addEmpty = false, emptyName = i18n('global.all'), emptyValue = -1) {
+export function createItems(
+    getItems: () => any[],
+    getName: (value: any) => string,
+    addEmpty = false,
+    emptyName = i18n('global.all'),
+    emptyValue = -1,
+) {
     return buildEnumItems(getItems(), getName, {
         addEmpty,
         emptyName,

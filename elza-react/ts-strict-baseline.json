@@ -900,13 +900,6 @@
   "src/components/arr/output/OutputView.tsx": [
     "error TS7053: Element implicitly has an 'any' type because expression of type 'DataType' can't be used to index type '{ TEXT: ({ item, nodeId }: DescItemProps) => Element; INT: ({ item, nodeId, typeRef }: DescItemProps) => Element; DECIMAL: ({ item, nodeId }: DescItemProps) => Element; ... 11 more ...; JSON_TABLE: ({ item, nodeId, typeRef, onExportCsv }: DescItemProps) => Element; }'."
   ],
-  "src/components/arr/publication/ConfirmPopover.tsx": [
-    "error TS7006: Parameter 'e' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'e' implicitly has an 'any' type."
-  ],
-  "src/components/arr/publication/PublicationTable.tsx": [
-    "error TS7006: Parameter 'e' implicitly has an 'any' type."
-  ],
   "src/components/arr/search-funds-form/filters/FilterDescItemModal.tsx": [
     "error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ EQ: { id: string; defaultMessage: string; }; NEQ: { id: string; defaultMessage: string; }; CONTAINS: { id: string; defaultMessage: string; }; GT: { id: string; defaultMessage: string; }; LT: { id: string; defaultMessage: string; }; ... 14 more ...; filter_or: { ...; }; }'."
   ],
@@ -1421,19 +1414,5 @@
     "error TS7018: Object literal's property 'lockDate' implicitly has an 'any' type.",
     "error TS7018: Object literal's property 'lockDate' implicitly has an 'any' type.",
     "error TS7034: Variable 'dispatched' implicitly has type 'any[]' in some locations where its type cannot be determined."
-  ],
-  "src/utils/ArrShared.ts": [
-    "error TS7006: Parameter 'activeFund' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'dispatch' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'dispatch' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'fce' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'getState' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'v' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'v' implicitly has an 'any' type."
-  ],
-  "src/utils/FieldUtils.tsx": [
-    "error TS7006: Parameter 'getItems' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'getName' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'getName' implicitly has an 'any' type."
   ]
 }
