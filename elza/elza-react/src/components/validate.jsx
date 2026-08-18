@@ -285,7 +285,7 @@ export function pad2(number) {
  * @param date
  * @returns {string}
  */
-export function formatDate(date) {
+export function formatDateIso(date) {
     let month = date.getMonth() + 1,
         day = date.getDate(),
         year = date.getFullYear();

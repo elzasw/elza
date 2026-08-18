@@ -21,7 +21,7 @@ import FundNodesSelect from './FundNodesSelect';
 import SimpleCheckListBox from './SimpleCheckListBox';
 import FundFilterCondition from './FundFilterCondition';
 import {DateTimePicker} from 'react-widgets';
-import {formatDate} from '../validate';
+import {formatDateIso} from '../validate';
 import {validateUnitDate} from '../registry/field/UnitdateField';
 
 /**
@@ -164,7 +164,7 @@ const renderDateFields = fields => {
                     {...decorate}
                     time={false}
                     value={field.value == null ? null : new Date(field.value)}
-                    onChange={value => field.onChange(formatDate(value))}
+                    onChange={value => field.onChange(formatDateIso(value))}
                 />
             </div>
         );

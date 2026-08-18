@@ -1,7 +1,7 @@
 import { useIntl } from "react-intl";
 import { SortingOrder } from "elza-api";
 import {FC, useCallback, useEffect, useState, MouseEvent, KeyboardEvent} from 'react';
-import {useSelector} from 'react-redux';
+import { useAppSelector } from 'utils/hooks';
 import {StoreHorizontalLoader} from 'components/shared';
 import storeFromArea from '../../shared/utils/storeFromArea.jsx';
 import { formatAipSize } from './format';
@@ -37,7 +37,7 @@ import { colDef } from './columns';
 import { Row } from 'react-bootstrap';
 import AipFilterSection from './filter/AipFilterSection.tsx';
 import Pagination from 'components/shared/pagination/Pagination.tsx';
-import { AipFilterEntry, Aips } from 'typings/store/index.ts';
+import { Aip, AipFilterEntry, Aips } from 'typings/store/index.ts';
 import AipDetail from './AipDetail.tsx';
 import {AipDetailVO} from "elza-api";
 
@@ -71,8 +71,8 @@ const getAipRows = (aips: Aips) => {
 };
 
 const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilters, hiddenValues, detailOpen, setDetailOpen}) => {
-    const aips = useSelector((state: any) => storeFromArea(state, AREA_AIPS));
-    const aip = useSelector((state: any) => storeFromArea(state, AREA_AIP));
+    const aips = useAppSelector(state => storeFromArea(state, AREA_AIPS) as Aips);
+    const aip = useAppSelector(state => storeFromArea(state, AREA_AIP) as Aip);
     const {from, pageSize} = aips.filter;
     const dispatch = useThunkDispatch();
     const items = getAipRows(aips);
