@@ -240,11 +240,14 @@ export function setSettings(items, id, newItem) {
 /**
  * Vrací konkrétní položku nastavení.
  *
+ * Pokud položka neexistuje, vrací se zástupný objekt s nevyplněnou hodnotou - proto je
+ * `value` nullable a `id` volitelné.
+ *
  * @param items      seznam itemů
  * @param type       typ nastavení
  * @param entityType typ entity
  * @param entityId   identifikátor entity
- * @returns {Object} objekt itemu
+ * @returns {{id?: number, settingsType: ?string, entityType: ?string, entityId: ?number, value: ?string}} objekt itemu
  */
 export function getOneSettings(items, type = null, entityType = null, entityId = null) {
     if (items != null) {

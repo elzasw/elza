@@ -20,7 +20,9 @@
     "locale:merge": "node scripts/locale-merge.ts",
     "locale:compile": "formatjs compile-folder lang/translated public/static/res/locale",
     "locale:check": "node scripts/locale-check.ts",
-    "locale:sync": "npm run locale:extract && npm run locale:merge -- --source cs cs en"
+    "locale:sync": "npm run locale:extract && npm run locale:merge -- --source cs cs en",
+    "ts:strict-check": "node scripts/ts-strict-check.ts",
+    "ts:strict-baseline": "node scripts/ts-strict-check.ts --update"
   },
   "dependencies": {
     "@fluentui/react-components": "^9.51.1",
