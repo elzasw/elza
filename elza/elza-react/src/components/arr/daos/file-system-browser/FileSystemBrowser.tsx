@@ -37,6 +37,14 @@ const messages = defineMessages({
         id: 'arr.daos.fileSystem.sort.sizeDesc',
         defaultMessage: 'Velikost sestupně',
     },
+    sortLastChangeAsc: {
+        id: 'arr.daos.fileSystem.sort.lastChangeAsc',
+        defaultMessage: 'Datum změny vzestupně',
+    },
+    sortLastChangeDesc: {
+        id: 'arr.daos.fileSystem.sort.lastChangeDesc',
+        defaultMessage: 'Datum změny sestupně',
+    },
     filterPlaceholder: {
         id: 'arr.daos.fileSystem.filter.placeholder',
         defaultMessage: 'Filtrovat…',
@@ -55,11 +63,11 @@ const messages = defineMessages({
     },
     filterByLinkLinked: {
         id: 'arr.daos.fileSystem.filterByLink.linked',
-        defaultMessage: 'Propojené',
+        defaultMessage: 'Připojené',
     },
     filterByLinkUnlinked: {
         id: 'arr.daos.fileSystem.filterByLink.unlinked',
-        defaultMessage: 'Nepropojené',
+        defaultMessage: 'Nepřipojené',
     },
     linksTrigger: {
         id: 'arr.daos.fileSystem.links.trigger',
@@ -549,6 +557,8 @@ export const FileSystemBrowser = ({
                         <option value={FsItemSortType.NameDesc}>{intl.formatMessage(messages.sortNameDesc)}</option>
                         <option value={FsItemSortType.SizeAsc}>{intl.formatMessage(messages.sortSizeAsc)}</option>
                         <option value={FsItemSortType.SizeDesc}>{intl.formatMessage(messages.sortSizeDesc)}</option>
+                        <option value={FsItemSortType.LastChangeAsc}>{intl.formatMessage(messages.sortLastChangeAsc)}</option>
+                        <option value={FsItemSortType.LastChangeDesc}>{intl.formatMessage(messages.sortLastChangeDesc)}</option>
                     </select>
                 </div>
                 <div className="actions actions--end">

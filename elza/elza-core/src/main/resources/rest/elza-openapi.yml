@@ -8022,6 +8022,8 @@ components:
         - NAME_DESC
         - SIZE_ASC
         - SIZE_DESC
+        - LAST_CHANGE_ASC
+        - LAST_CHANGE_DESC
       description: File sorting type
     FsItemType:
       type: string

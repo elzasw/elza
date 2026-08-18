@@ -290,6 +290,10 @@ export function lenToBytesStr(len) {
     return lenStr;
 }
 
+// Zkratky KB/MB/GB při základu 1024 nejsou podle IEC 60027-2 (správně by měly být
+// KiB/MiB/GiB), ale odpovídají tomu, co uživatel vidí ve Windows Exploreru a
+// dalších běžných aplikacích. IEC-korektní zápis působí v UI cize, proto ho
+// vědomě nepoužíváme.
 export function humanFileSize(bytes, si = false) {
     var thresh = si ? 1000 : 1024;
     if (Math.abs(bytes) < thresh) {
@@ -297,7 +301,7 @@ export function humanFileSize(bytes, si = false) {
     }
     var units = si
         ? ['kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
-        : ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
+        : ['KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
     var u = -1;
     do {
         bytes /= thresh;
