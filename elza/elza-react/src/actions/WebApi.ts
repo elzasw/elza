@@ -107,7 +107,7 @@ export class WebApiCls {
     static validateUrl = WebApiCls.baseUrl + '/validate';
     static structureUrl = WebApiCls.baseUrl + '/structure';
 
-    findInFundTree(versionId: number, nodeId: number, searchText, type, searchParams = null, luceneQuery = false) {
+    findInFundTree(versionId: number, nodeId: number, searchText: string, type, searchParams = null, luceneQuery = false) {
         const data = {
             versionId: versionId,
             nodeId: nodeId,
@@ -283,9 +283,9 @@ export class WebApiCls {
     }
 
     updateDescItems(
-        fundVersionId,
-        nodeId,
-        nodeVersionId,
+        fundVersionId: number,
+        nodeId: number,
+        nodeVersionId: number,
         createDescItem = [],
         updateDescItem = [],
         deleteDescItem = [],
@@ -419,12 +419,12 @@ export class WebApiCls {
     }
 
     setNotIdentifiedOutputItem(
-        versionId,
-        getOutputId,
+        versionId: number,
+        getOutputId: number,
         outputVersion,
-        outputItemTypeId,
-        outputItemSpecId,
-        outputItemObjectId,
+        outputItemTypeId: number,
+        outputItemSpecId: number,
+        outputItemObjectId: number,
     ) {
         //return callWS('/arrangement/outputItems/' + versionId + '/' + getOutputId + '/' + outputVersion + '/notUndefined/set?outputItemTypeId=' + outputItemTypeId + '&outputItemSpecId=' + outputItemSpecId + '&outputItemObjectId=' + outputItemObjectId, null);
 
@@ -443,12 +443,12 @@ export class WebApiCls {
     }
 
     unsetNotIdentifiedOutputItem(
-        versionId,
-        getOutputId,
+        versionId: number,
+        getOutputId: number,
         outputVersion,
-        outputItemTypeId,
-        outputItemSpecId,
-        outputItemObjectId,
+        outputItemTypeId: number,
+        outputItemSpecId: number,
+        outputItemObjectId: number,
     ) {
         //return callWS('/arrangement/outputItems/' + versionId + '/' + getOutputId + '/' + outputVersion + '/notUndefined/unset?outputItemTypeId=' + outputItemTypeId + '&outputItemSpecId=' + outputItemSpecId + '&outputItemObjectId=' + outputItemObjectId, null);
 
@@ -528,7 +528,7 @@ export class WebApiCls {
         );
     }
 
-    addNode(node, parentNode, versionId: number, direction, descItemCopyTypes, scenarioName, createItems, count = 1) {
+    addNode(node, parentNode, versionId: number, direction: number, descItemCopyTypes, scenarioName, createItems, count = 1) {
         const data = {
             versionId,
             direction,
@@ -547,8 +547,8 @@ export class WebApiCls {
     }
 
     copyNodesValidate(
-        targetFundVersionId,
-        sourceFundVersionId,
+        targetFundVersionId: number,
+        sourceFundVersionId: number,
         sourceNodes,
         ignoreRootNodes = false,
         selectedDirection,
@@ -564,16 +564,16 @@ export class WebApiCls {
     }
 
     copyNodes(
-        targetFundVersionId,
+        targetFundVersionId: number,
         targetStaticNode,
         targetStaticNodeParent,
-        sourceFundVersionId,
+        sourceFundVersionId: number,
         sourceNodes,
         ignoreRootNodes = false,
         selectedDirection,
         filesConflictResolve = null,
         structuresConflictResolve = null,
-        templateId = null,
+        templateId: number | null = null,
     ) {
         const data = {
             targetFundVersionId,
@@ -603,7 +603,7 @@ export class WebApiCls {
         // return AjaxUtils.ajaxDelete(WebApi.arrangementUrl + '/levels', null, data);
     }
 
-    getNodeAddScenarios(node, versionId: number, direction, withGroups = false) {
+    getNodeAddScenarios(node, versionId: number, direction: number, withGroups = false) {
         return AjaxUtils.ajaxPost(
             WebApiCls.arrangementUrl + '/scenarios',
             { withGroups: withGroups },
@@ -639,15 +639,15 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.actionUrl + '/action/' + bulkActionRunId + '/interrupt', null);
     }
 
-    queueBulkAction(versionId: number, code) {
+    queueBulkAction(versionId: number, code: string) {
         return AjaxUtils.ajaxGet(WebApiCls.actionUrl + '/queue/' + versionId + '/' + code, null);
     }
 
-    queueBulkActionWithIds(versionId: number, code, nodeIds: number[]) {
+    queueBulkActionWithIds(versionId: number, code: string, nodeIds: number[]) {
         return AjaxUtils.ajaxPost(WebApiCls.actionUrl + '/queue/' + versionId + '/' + code, null, nodeIds);
     }
 
-    queuePersistentSortByIds(versionId: number, code, nodeIds: number[], config) {
+    queuePersistentSortByIds(versionId: number, code: string, nodeIds: number[], config) {
         return AjaxUtils.ajaxPost(WebApiCls.actionUrl + '/queue/persistentSort/' + versionId + '/' + code, null, {
             nodeIds,
             ...config,
@@ -921,7 +921,7 @@ export class WebApiCls {
         );
     }
 
-    getScopes(versionId = null) {
+    getScopes(versionId: number | null = null) {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/fundScopes', { versionId });
     }
 
@@ -929,7 +929,7 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/scopes', null);
     }
 
-    getScopeWithConnected(scopeId = null) {
+    getScopeWithConnected(scopeId: number | null = null) {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/scopes/' + scopeId + '/withConnected', null);
     }
 
@@ -1053,7 +1053,7 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/registerLinks/' + nodeId + '/' + versionId + '/form');
     }
 
-    getFundNodeDaos(versionId: number, nodeId = null, detail = false, from = 0, max = 10000) {
+    getFundNodeDaos(versionId: number, nodeId: number | null = null, detail = false, from = 0, max = 10000) {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/daos/' + versionId, {
             nodeId,
             detail,
@@ -1062,7 +1062,7 @@ export class WebApiCls {
         });
     }
 
-    findDaoPackages(versionId: number, search, unassigned) {
+    findDaoPackages(versionId: number, search: string, unassigned) {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/daopackages/' + versionId, { search, unassigned });
     }
 
@@ -1087,7 +1087,7 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/groups/' + fundVersionId);
     }
 
-    getTemplates(code = null) {
+    getTemplates(code: string | null = null) {
         return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/templates', code ? { code } : null);
     }
 
@@ -1095,7 +1095,7 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/requests/queued');
     }
 
-    findRequests(versionId: number, type, state, description, fromDate, toDate, subType) {
+    findRequests(versionId: number, type, state, description: string, fromDate, toDate, subType) {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/requests/' + versionId, {
             state,
             type,
@@ -1106,7 +1106,7 @@ export class WebApiCls {
         });
     }
 
-    arrDigitizationRequestAddNodes(versionId: number, reqId: number, send, description, nodeIds: number[], digitizationFrontdeskId: number) {
+    arrDigitizationRequestAddNodes(versionId: number, reqId: number, send, description: string, nodeIds: number[], digitizationFrontdeskId: number) {
         const data = {
             id: reqId,
             nodeIds,
@@ -1120,7 +1120,7 @@ export class WebApiCls {
         );
     }
 
-    arrDaoRequestAddDaos(versionId: number, reqId: number, send, description, daoIds: number[], type) {
+    arrDaoRequestAddDaos(versionId: number, reqId: number, send, description: string, daoIds: number[], type) {
         const data = {
             id: reqId,
             daoIds,
@@ -1162,7 +1162,7 @@ export class WebApiCls {
         return AjaxUtils.ajaxDelete(WebApiCls.arrangementUrl + '/requests/' + id);
     }
 
-    getFundTree(versionId: number, nodeId: number, expandedIds = {}, includeIds = []) {
+    getFundTree(versionId: number, nodeId: number, expandedIds: Record<string, boolean> = {}, includeIds: number[] = []) {
         const data = {
             versionId,
             nodeId,
@@ -1293,7 +1293,7 @@ export class WebApiCls {
         return AjaxUtils.ajaxPut(WebApiCls.arrangementUrl + '/filterNodes/' + versionId, {}, filter);
     }
 
-    getFilteredNodes(versionId: number, pageIndex, pageSize, descItemTypeIds: number[]) {
+    getFilteredNodes(versionId: number, pageIndex: number, pageSize: number, descItemTypeIds: number[]) {
         return AjaxUtils.ajaxPut(
             WebApiCls.arrangementUrl + '/getFilterNodes/' + versionId,
             { page: pageIndex, pageSize: pageSize },
@@ -1301,7 +1301,7 @@ export class WebApiCls {
         );
     }
 
-    getFilteredNodes2(versionId: number, pageIndex, pageSize, descItemTypeIds: number[]) {
+    getFilteredNodes2(versionId: number, pageIndex: number, pageSize: number, descItemTypeIds: number[]) {
         return AjaxUtils.ajaxPut(
             WebApiCls.arrangementUrl + '/getFilterNodes2/' + versionId,
             { page: pageIndex, pageSize: pageSize },
@@ -1309,7 +1309,7 @@ export class WebApiCls {
         );
     }
 
-    getFilteredNodesByNodeId(versionId: number, nodeId: number, pageSize, descItemTypeIds: number[]) {
+    getFilteredNodesByNodeId(versionId: number, nodeId: number, pageSize: number, descItemTypeIds: number[]) {
         return AjaxUtils.ajaxPut(
             WebApiCls.arrangementUrl + '/getFilterNodes2/' + versionId,
             { nodeId, pageSize },
@@ -1317,7 +1317,7 @@ export class WebApiCls {
         );
     }
 
-    replaceDataValues(versionId: number, descItemTypeId: number, specsIds: number[], searchText, replaceText, nodes, selectionType) {
+    replaceDataValues(versionId: number, descItemTypeId: number, specsIds: number[], searchText: string, replaceText: string, nodes, selectionType) {
         return AjaxUtils.ajaxPut(
             WebApiCls.arrangementUrl + '/replaceDataValues/' + versionId,
             { descItemTypeId, searchText, replaceText },
@@ -1325,7 +1325,7 @@ export class WebApiCls {
         );
     }
 
-    placeDataValues(versionId: number, descItemTypeId: number, specsIds: number[], replaceText, description, replaceSpecId: number, nodes, selectionType, append = false) {
+    placeDataValues(versionId: number, descItemTypeId: number, specsIds: number[], replaceText: string, description: string, replaceSpecId: number, nodes, selectionType, append = false) {
         return AjaxUtils.ajaxPut(
             WebApiCls.arrangementUrl + '/placeDataValues/' + versionId + (append ? '?append=true' : ""),
             { descItemTypeId, newDescItemSpecId: replaceSpecId, text: replaceText, description },
@@ -1357,7 +1357,7 @@ export class WebApiCls {
         );
     }
 
-    getFilteredFulltextNodes(versionId: number, fulltext, luceneQuery = false, searchParams = null) {
+    getFilteredFulltextNodes(versionId: number, fulltext: string, luceneQuery = false, searchParams = null) {
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/getFilteredFulltext/' + versionId, null, {
             fulltext,
             luceneQuery,
@@ -1369,7 +1369,7 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/getPackages');
     }
 
-    deletePackage(code) {
+    deletePackage(code: string) {
         return AjaxUtils.ajaxGet(WebApiCls.ruleUrl + '/deletePackage/' + code);
     }
 
@@ -1537,7 +1537,7 @@ export class WebApiCls {
     /**
      * Hledá všechny unikátní hodnoty atributu pro daný AS
      */
-    getDescItemTypeValues(versionId: number, descItemTypeId: number, fulltext, descItemSpecIds: number[], max) {
+    getDescItemTypeValues(versionId: number, descItemTypeId: number, fulltext: string, descItemSpecIds: number[], max) {
         return AjaxUtils.ajaxPut(
             WebApiCls.arrangementUrl + '/filterUniqueValues/' + versionId,
             { descItemTypeId, fulltext, max },
@@ -1577,7 +1577,7 @@ export class WebApiCls {
         return AjaxUtils.ajaxPut(WebApiCls.userUrl + '/detail/settings', null, settings);
     }
 
-    login(username, password) {
+    login(username: string, password) {
         return AjaxUtils.ajaxCallRaw(
             '/login',
             {},
@@ -1597,7 +1597,7 @@ export class WebApiCls {
      * @param max
      * @param from
      */
-    findFunds(fulltext, max = DEFAULT_LIST_SIZE, from = 0) {
+    findFunds(fulltext: string, max = DEFAULT_LIST_SIZE, from = 0) {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/getFunds', { fulltext, max, from }).then(json => ({
             funds: json.list,
             fundCount: json.count,
@@ -1730,14 +1730,14 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.userUrl + '/group/' + groupId + '/permission', null, permissions);
     }
 
-    findGroup(fulltext, max = DEFAULT_LIST_SIZE) {
+    findGroup(fulltext: string, max = DEFAULT_LIST_SIZE) {
         return AjaxUtils.ajaxGet(WebApiCls.groupUrl, { search: fulltext, from: 0, count: max }).then(json => ({
             groups: json.rows,
             groupsCount: json.count,
         }));
     }
 
-    findGroupWithFundCreate(fulltext, max = DEFAULT_LIST_SIZE) {
+    findGroupWithFundCreate(fulltext: string, max = DEFAULT_LIST_SIZE) {
         return AjaxUtils.ajaxGet(WebApiCls.groupUrl + '/withFundCreate', {
             search: fulltext,
             from: 0,
@@ -1753,7 +1753,7 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.userUrl + '/' + userId + '/old');
     }
 
-    createGroup(name, code, description) {
+    createGroup(name: string, code: string, description: string) {
         const params = {
             name: name,
             code: code,
@@ -1762,7 +1762,7 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.groupUrl, null, params);
     }
 
-    updateGroup(groupId: number, name, description) {
+    updateGroup(groupId: number, name: string, description: string) {
         return AjaxUtils.ajaxPut(WebApiCls.groupUrl + '/' + groupId, null, { name, description });
     }
 
@@ -1782,7 +1782,7 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.userUrl + '/group/' + groupId + '/leave/' + userId, null, null);
     }
 
-    createUser(username, valuesMap, accessPointId: number) {
+    createUser(username: string, valuesMap, accessPointId: number) {
         const params = {
             username: username,
             valuesMap: valuesMap,
@@ -1791,19 +1791,19 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.userUrl, null, params);
     }
 
-    updateUser(id: number, accessPointId: number, username, valuesMap) {
+    updateUser(id: number, accessPointId: number, username: string, valuesMap) {
         return AjaxUtils.ajaxPut(WebApiCls.userUrl + '/' + id, null, { accessPointId, username, valuesMap });
     }
 
-    changePasswordUser(oldPassword, newPassword) {
+    changePasswordUser(oldPassword, newPassword: string) {
         return AjaxUtils.ajaxPut(WebApiCls.userUrl + '/password', null, { oldPassword, newPassword });
     }
 
-    changePassword(userId: number, newPassword) {
+    changePassword(userId: number, newPassword: string) {
         return AjaxUtils.ajaxPut(WebApiCls.userUrl + '/' + userId + '/password', null, { newPassword });
     }
 
-    changeActive(userId: number, active) {
+    changeActive(userId: number, active: boolean) {
         return AjaxUtils.ajaxPut(WebApiCls.userUrl + '/' + userId + '/active/' + active);
     }
 
@@ -1832,7 +1832,7 @@ export class WebApiCls {
         );
     }
 
-    findValidationError(fundVersionId: number, nodeId: number, direction) {
+    findValidationError(fundVersionId: number, nodeId: number, direction: number) {
         return AjaxUtils.ajaxGet(
             WebApiCls.arrangementUrl + '/validation/' + fundVersionId + '/find/' + nodeId + '/' + direction,
         );
@@ -1908,7 +1908,7 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.attachmentUrl + '/mimeTypes', null);
     }
 
-    findFundFiles(fundId: number, searchText, count = 20, from = 0) {
+    findFundFiles(fundId: number, searchText: string, count = 20, from = 0) {
         return AjaxUtils.ajaxGet(WebApiCls.dmsUrl + '/fund/' + fundId, { count: count, search: searchText, from });
     }
 
@@ -1992,11 +1992,11 @@ export class WebApiCls {
         return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/external/syncs/' + itemId, null);
     }
 
-    findFundStructureExtension(fundVersionId: number, structureTypeCode) {
+    findFundStructureExtension(fundVersionId: number, structureTypeCode: string) {
         return AjaxUtils.ajaxGet(WebApiCls.structureUrl + '/extension/' + fundVersionId + '/' + structureTypeCode);
     }
 
-    updateFundStructureExtension(fundVersionId: number, structureTypeCode, structureExtensionCodes) {
+    updateFundStructureExtension(fundVersionId: number, structureTypeCode: string, structureExtensionCodes) {
         return AjaxUtils.ajaxPut(
             WebApiCls.structureUrl + '/extension/' + fundVersionId + '/' + structureTypeCode,
             null,
@@ -2031,7 +2031,7 @@ export class WebApiCls {
         );
     }
 
-    createStructureData(fundVersionId: number, structureTypeCode, value = null) {
+    createStructureData(fundVersionId: number, structureTypeCode: string, value = null) {
         // Kvůli JSON stringify musíme poslat pomocí RAW aby se nevytvořili '"' v body
         return AjaxUtils.ajaxCallRaw(
             WebApiCls.structureUrl + '/data/' + fundVersionId,
@@ -2090,7 +2090,7 @@ export class WebApiCls {
         );
     }
 
-    updateStructureDataBatch(fundVersionId: number, structureTypeCode, structureDataBatchUpdate) {
+    updateStructureDataBatch(fundVersionId: number, structureTypeCode: string, structureDataBatchUpdate) {
         return AjaxUtils.ajaxPost(
             WebApiCls.structureUrl + '/data/' + fundVersionId + '/' + structureTypeCode + '/batchUpdate',
             null,
