@@ -1558,19 +1558,7 @@ paths:
     post:
       operationId: Aip_findByFilter
       description: Find aips by filters
-      parameters:
-        - name: from
-          in: query
-          required: true
-          schema:
-            type: integer
-          explode: false
-        - name: count
-          in: query
-          required: true
-          schema:
-            type: integer
-          explode: false
+      parameters: []
       responses:
         '200':
           description: The request has succeeded.
@@ -1591,10 +1579,8 @@ paths:
         content:
           application/json:
             schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/AipFilterGen'
-        description: Array of filters
+              $ref: '#/components/schemas/SearchParams'
+        description: search parameters - filters, paging and sorting
   /aip/import-package:
     post:
       operationId: Aip_importPackage
@@ -5374,6 +5360,7 @@ components:
           FONDS_FIELD: '#/components/schemas/FondsField'
           NODE_FIELD: '#/components/schemas/NodeField'
           DESC_ITEM: '#/components/schemas/DescItemField'
+          AIP_FIELD: '#/components/schemas/AipField'
       description: Used as a parent for filter fields
     AbstractFilter:
       type: object
@@ -5388,6 +5375,12 @@ components:
           fieldValue: '#/components/schemas/FieldValueFilter'
           contains: '#/components/schemas/MultimatchContainsFilter'
           logical: '#/components/schemas/LogicalFilter'
+          textValue: '#/components/schemas/TextValueFilter'
+          numberValue: '#/components/schemas/NumberValueFilter'
+          boolValue: '#/components/schemas/BoolValueFilter'
+          dateValue: '#/components/schemas/DateValueFilter'
+          enumValue: '#/components/schemas/EnumValueFilter'
+          refValue: '#/components/schemas/RefValueFilter'
       description: Used as a parent for all other filters
     AccessPointBatchExportParams:
       type: object
@@ -5512,6 +5505,43 @@ components:
           format: int32
           description: Number of logged users
       description: Basic statistics about Elza instance
+    AipField:
+      type: object
+      required:
+        - fieldName
+      properties:
+        fieldName:
+          allOf:
+            - $ref: '#/components/schemas/AipFieldName'
+          description: Name of field (from enum AipFieldName)
+      allOf:
+        - $ref: '#/components/schemas/AbstractField'
+      description: AIP specific search field
+    AipFieldName:
+      type: string
+      enum:
+        - aipId
+        - code
+        - aipVersion
+        - fund
+        - fundCode
+        - institution
+        - institutionCode
+        - unitdate
+        - originator
+        - ingestionCode
+        - referenceNumber
+        - nadChangeCode
+        - aipSize
+        - metadataLoad
+        - completeAipLoad
+        - metadataError
+        - importState
+        - exportState
+      description: |-
+        AIP specific field names.
+
+        `unitdate` covers the whole dating of the AIP, that is both its start and its end.
     AiProviderInfo:
       type: object
       required:
@@ -6481,46 +6511,6 @@ components:
             $ref: '#/components/schemas/LinkedNodeVO'
           description: Seznam napojených nodes
       description: Vo pro detail AIPu
-    AipFilterCriteriaGen:
-      type: string
-      enum:
-        - IS_NULL
-        - IS_NOT_NULL
-        - CONTAINS
-        - DOES_NOT_CONTAIN
-        - EQUALS
-        - BETWEEN
-      description: Způsob porovnání hodnot filtru
-    AipFilterGen:
-      type: object
-      required:
-        - attr
-        - criteria
-        - path
-      properties:
-        id:
-          type: string
-          description: UUID filtru
-        attr:
-          type: string
-          description: Atribut, podle kterého chceme filtrovat
-        value:
-          type: string
-          description: filtrovaná hodnota
-        criteria:
-          allOf:
-            - $ref: '#/components/schemas/AipFilterCriteriaGen'
-          description: Způsob porovnání
-        from:
-          type: string
-          description: Hodnota od
-        to:
-          type: string
-          description: Hodnota do
-        path:
-          type: string
-          description: Cesta
-      description: Filter aipu
     AipType:
       type: string
       enum:
@@ -6884,6 +6874,26 @@ components:
           allOf:
             - $ref: '#/components/schemas/ItemData'
           description: item data
+    BoolValueFilter:
+      type: object
+      required:
+        - field
+        - operation
+      properties:
+        field:
+          allOf:
+            - $ref: '#/components/schemas/AbstractField'
+          description: searched field
+        operation:
+          allOf:
+            - $ref: '#/components/schemas/OperationEqualityType'
+          description: operation type
+        value:
+          type: boolean
+          description: searched value
+      allOf:
+        - $ref: '#/components/schemas/AbstractFilter'
+      description: Compares a boolean field with a boolean value.
     BulkAction:
       type: object
       required:
@@ -7266,6 +7276,38 @@ components:
           type: integer
       allOf:
         - $ref: '#/components/schemas/ItemData'
+    DateValueFilter:
+      type: object
+      required:
+        - field
+        - operation
+      properties:
+        field:
+          allOf:
+            - $ref: '#/components/schemas/AbstractField'
+          description: searched field
+        operation:
+          allOf:
+            - $ref: '#/components/schemas/OperationRangeType'
+          description: operation type
+        value:
+          type: string
+          format: date
+          description: searched value, used by all operations except BETWEEN
+        from:
+          type: string
+          format: date
+          description: lower bound, required for BETWEEN
+        to:
+          type: string
+          format: date
+          description: upper bound, required for BETWEEN
+      allOf:
+        - $ref: '#/components/schemas/AbstractFilter'
+      description: |-
+        Compares a date field with a date, or with a range for BETWEEN.
+
+        A range covers whole days, so an AIP dated on the boundary day is part of the result.
     DeleteAccessPointDetail:
       type: object
       properties:
@@ -7401,6 +7443,30 @@ components:
           type: string
           description: optional description of entity
       description: Return value when copying ApAccessPoint
+    EnumValueFilter:
+      type: object
+      required:
+        - field
+        - operation
+      properties:
+        field:
+          allOf:
+            - $ref: '#/components/schemas/AbstractField'
+          description: searched field
+        operation:
+          allOf:
+            - $ref: '#/components/schemas/OperationEqualityType'
+          description: operation type
+        value:
+          type: string
+          description: name of the enumeration constant
+      allOf:
+        - $ref: '#/components/schemas/AbstractFilter'
+      description: |-
+        Compares an enumerated field with one of its constants.
+
+        Which enumeration applies follows from `field`; the endpoint validates the value
+        against it and rejects a name that does not belong to that enumeration.
     ExplorerTreeNode:
       type: object
       required:
@@ -7842,6 +7908,7 @@ components:
         - FONDS_FIELD
         - NODE_FIELD
         - DESC_ITEM
+        - AIP_FIELD
       description: Type of field for FieldValueFilter
     FieldValueFilter:
       type: object
@@ -7869,7 +7936,18 @@ components:
         - fieldValue
         - contains
         - logical
-      description: Types of filters
+        - textValue
+        - numberValue
+        - boolValue
+        - dateValue
+        - enumValue
+        - refValue
+      description: |-
+        Types of filters
+
+        `fieldValue` is the original untyped filter and is retained unchanged for existing
+        clients. The `*Value` members below carry the value in the type of the field, so that
+        the comparison a filter asks for can be checked before it reaches the query builder.
     FindFundsResult:
       type: object
       required:
@@ -9150,6 +9228,35 @@ components:
             - $ref: '#/components/schemas/NodeItem'
           description: item to update
       description: Náhrada za třídu `ArrUpdateItemVO`
+    NumberValueFilter:
+      type: object
+      required:
+        - field
+        - operation
+      properties:
+        field:
+          allOf:
+            - $ref: '#/components/schemas/AbstractField'
+          description: searched field
+        operation:
+          allOf:
+            - $ref: '#/components/schemas/OperationNumberType'
+          description: operation type
+        value:
+          type: integer
+          format: int64
+          description: searched value, used by all operations except BETWEEN
+        from:
+          type: integer
+          format: int64
+          description: lower bound, required for BETWEEN
+        to:
+          type: integer
+          format: int64
+          description: upper bound, required for BETWEEN
+      allOf:
+        - $ref: '#/components/schemas/AbstractFilter'
+      description: Compares a numeric field with a number, or with a range for BETWEEN.
     OperationCompareType:
       type: string
       enum:
@@ -9167,6 +9274,16 @@ components:
         - IS_NULL
         - NOT_NULL
       description: Operation type for FieldValueFilter
+    OperationEqualityType:
+      type: string
+      enum:
+        - EQ
+        - NEQ
+        - IS_NULL
+        - NOT_NULL
+      description: |-
+        Operation type for filters whose value can only be compared for equality -
+        BoolValueFilter, EnumValueFilter and RefValueFilter.
     OperationLogicalType:
       type: string
       enum:
@@ -9400,6 +9517,42 @@ components:
         templateId:
           type: integer
       description: Náhrada za `ArrOutputTemplateVO`
+    OperationNumberType:
+      type: string
+      enum:
+        - EQ
+        - NEQ
+        - GT
+        - LT
+        - GTE
+        - LTE
+        - BETWEEN
+        - IS_NULL
+        - NOT_NULL
+      description: Operation type for NumberValueFilter
+    OperationRangeType:
+      type: string
+      enum:
+        - BETWEEN
+        - GT
+        - LT
+        - GTE
+        - LTE
+        - IS_NULL
+        - NOT_NULL
+      description: Operation type for DateValueFilter
+    OperationTextType:
+      type: string
+      enum:
+        - EQ
+        - NEQ
+        - CONTAINS
+        - NOT_CONTAINS
+        - STARTWITH
+        - ENDWITH
+        - IS_NULL
+        - NOT_NULL
+      description: Operation type for TextValueFilter
     OutputItem:
       type: object
       allOf:
@@ -9671,6 +9824,30 @@ components:
         - EXPORT_OK
         - EXPORT_ERROR
       description: Výčet stavů aktualizace AIPu
+    RefValueFilter:
+      type: object
+      required:
+        - field
+        - operation
+      properties:
+        field:
+          allOf:
+            - $ref: '#/components/schemas/AbstractField'
+          description: searched field
+        operation:
+          allOf:
+            - $ref: '#/components/schemas/OperationEqualityType'
+          description: operation type
+        value:
+          type: integer
+          format: int32
+          description: id of the referenced entity
+      allOf:
+        - $ref: '#/components/schemas/AbstractFilter'
+      description: |-
+        Compares a field referencing another entity with the id of that entity.
+
+        Kept apart from NumberValueFilter because a range over an entity id has no meaning.
     ReplaceType:
       type: string
       enum:
@@ -10278,6 +10455,29 @@ components:
         primaryEntityType:
           $ref: '#/components/schemas/Tasks.EntityType'
       description: Task detail
+    TextValueFilter:
+      type: object
+      required:
+        - field
+        - operation
+      properties:
+        field:
+          allOf:
+            - $ref: '#/components/schemas/AbstractField'
+          description: searched field
+        operation:
+          allOf:
+            - $ref: '#/components/schemas/OperationTextType'
+          description: operation type
+        value:
+          type: string
+          description: searched value
+      allOf:
+        - $ref: '#/components/schemas/AbstractFilter'
+      description: |-
+        Compares a text field with a text value.
+
+        `value` is required for every operation except IS_NULL and NOT_NULL.
     TreeDataCustomGen:
       type: object
       required:

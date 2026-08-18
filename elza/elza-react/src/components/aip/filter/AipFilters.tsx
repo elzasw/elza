@@ -3,25 +3,23 @@ import { modalDialogHide, modalDialogShow } from "actions/global/modalDialog";
 import { useThunkDispatch } from "utils/hooks";
 import {Icon} from 'components/shared';
 import "./AipFilter.scss";
-import { colDef, generateUUID } from "../utils";
+import { AipColumn, colDef } from "../utils";
 import { useEffect, useState } from "react";
 import AipFilterTag from "./AipFilterTag";
 import { AREA_AIPS, aipsFilter } from "actions/aip/aip";
-import { AipFilter } from "typings/store";
-import AipStringFilterForm from "./forms/AipStringFilterForm";
-import AipEnumFilterForm from "./forms/AipEnumFilterForm";
-import AipRefFilterForm from "./forms/AipRefFilterForm";
-import AipNumericFilterForm from "./forms/AipNumericFilterForm";
+import { AipFilterEntry } from "typings/store";
+import { AipFilterForm } from "./forms/AipFilterForm";
+import { useIntl } from "react-intl";
 import { useSelector } from "react-redux";
 import { storeFromArea } from "shared/utils";
 import {QueueItemState} from "elza-api";
 
 type AipFiltersProps = {
 	filterDisabled: boolean;
-	initialFilters?: AipFilter[];
+	initialFilters?: AipFilterEntry[];
 	hiddenValues?: string[];
-	filters: AipFilter[]
-	createFilter: (filter: AipFilter) => void;
+	filters: AipFilterEntry[]
+	createFilter: (filter: AipFilterEntry) => void;
 	removeFilter: (id: string) => void;
 }
 
@@ -30,6 +28,7 @@ const AipFilters = ({filterDisabled, hiddenValues, filters, createFilter, remove
 	const columnsDef = colDef.filter(col => !hiddenValues?.includes(col.key));
     const dispatch = useThunkDispatch();
 	const classes = useStyles();
+	const {formatMessage} = useIntl();
 
 
     const handleClose = () => {
@@ -40,7 +39,7 @@ const AipFilters = ({filterDisabled, hiddenValues, filters, createFilter, remove
 		dispatch(aipsFilter(filters, 0, filter.pageSize));
 	}, [filters]);
 
-	const handleCreate = (filter: AipFilter) => {
+	const handleCreate = (filter: AipFilterEntry) => {
 		handleClose();
 		createFilter(filter);
 	}
@@ -49,61 +48,9 @@ const AipFilters = ({filterDisabled, hiddenValues, filters, createFilter, remove
 		removeFilter(value);
 	}
 
-	const getForm = (item) => {
-		switch(item.type){
-			case "date":
-			case "number": return (
-				<AipNumericFilterForm
-					item={item}
-					onClose={handleClose}
-					onSubmit={handleCreate}
-				/>);
-			case "string": return (
-				<AipStringFilterForm
-					item={item}
-					onClose={handleClose}
-					onSubmit={handleCreate}
-				/>);
-			case "ref": {
-				return (
-				<AipRefFilterForm
-					item={item}
-					onClose={handleClose}
-					onSubmit={handleCreate}
-				/>)}
-			case "bool" : return (
-				<AipEnumFilterForm
-					item={item}
-					onClose={handleClose}
-					onSubmit={handleCreate}
-					selectValues={[{label: "ANO", value: true}, {label: "NE", value: false}]}
-				/>)
-			case "enumImportState": return (
-				<AipEnumFilterForm
-					item={item}
-					onClose={handleClose}
-					onSubmit={handleCreate}
-					selectValues={[
-						{label: "Chyba stažení", value: QueueItemState.ImportError},
-						{label: "Ke stažení", value: QueueItemState.ImportNew},
-						{label: "Aktualizováno/Staženo", value: QueueItemState.ImportOk},
-						{label: "K aktualizaci", value: QueueItemState.Update},
-					]}
-				/>)
-            case "enumExportState": return (
-                <AipEnumFilterForm
-                    item={item}
-                    onClose={handleClose}
-                    onSubmit={handleCreate}
-                    selectValues={[
-                        {label: "Chyba exportu", value: QueueItemState.ExportError},
-                        {label: "K exportu", value: QueueItemState.ExportNew},
-                        {label: "Exportováno", value: QueueItemState.ExportOk},
-                    ]}
-                />)
-			default: return <></>
-		}
-	}
+	const getForm = (item: AipColumn) => (
+		<AipFilterForm item={item} onClose={handleClose} onSubmit={handleCreate}/>
+	);
 
     const handleFilterCreate = (item) => {
         dispatch(
@@ -137,7 +84,7 @@ const AipFilters = ({filterDisabled, hiddenValues, filters, createFilter, remove
 							className={classes.menuItem}
 							onClick={() => handleFilterCreate(columnsDef[key])}
 						>
-							{columnsDef[key].name}
+							{formatMessage(columnsDef[key].message)}
 						</MenuItem>
 					))}
 				</MenuList>

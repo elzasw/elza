@@ -10,6 +10,7 @@ import {
 } from "@fluentui/react-components";
 import type { MenuCheckedValueChangeData, MenuCheckedValueChangeEvent } from "@fluentui/react-components";
 import { colDef } from "../utils";
+import { useIntl } from "react-intl";
 import { Icon, i18n } from "components/shared";
 import "../AipDetail.scss";
 
@@ -23,6 +24,7 @@ type AipListColSelectorProps = {
 
 const AipListColSelector = ({columns, onChange, hiddenValues, ...props} : AipListColSelectorProps) => {
 	const classes = useStyles();
+	const {formatMessage} = useIntl();
 	const columnsDef = colDef.filter(col => !hiddenValues?.includes(col.key));
 
 	return (
@@ -45,10 +47,10 @@ const AipListColSelector = ({columns, onChange, hiddenValues, ...props} : AipLis
 						<MenuItemCheckbox 
 							name="col" 
 							key={`selector${key}`}
-							value={columnsDef[key].name} 
+							value={formatMessage(columnsDef[key].message)} 
 							className={mergeClasses(classes.bg, classes.menuItem)}
 						>
-							{columnsDef[key].name}
+							{formatMessage(columnsDef[key].message)}
 						</MenuItemCheckbox>
 					)}
 				</MenuList>

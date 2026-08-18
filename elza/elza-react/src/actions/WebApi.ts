@@ -34,7 +34,6 @@ import { SyncsFilterVO } from '../api/SyncsFilterVO';
 import { ExtSyncsQueueResultListVO } from '../api/ExtSyncsQueueResultListVO';
 import { ApViewSettings } from '../api/ApViewSettings';
 import { UsrUserVO } from '../api/UsrUserVO';
-import { AipFilter } from 'typings/store';
 import {AipDetailVO} from "elza-api";
 
 // @ts-ignore
@@ -1826,13 +1825,6 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.aipV1 + '/' + aipId);
     }
 
-    findAipsByFilter(filters: AipFilter[], max: number = DEFAULT_LIST_SIZE, from: number = 0): Promise<AipDetailVO[]> {
-        return AjaxUtils.ajaxPost(
-            WebApiCls.aipV1 + '/find/filter',
-            {from: from, count: max},
-            filters
-        );
-    }
 
     getValidationItems(fundVersionId, fromIndex, toIndex) {
         return AjaxUtils.ajaxGet(

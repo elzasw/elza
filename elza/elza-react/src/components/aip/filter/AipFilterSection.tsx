@@ -4,50 +4,50 @@ import AipListColSelector from "./AipListColSelector";
 import { debounce, storeFromArea } from "shared/utils";
 import { useThunkDispatch } from "utils/hooks";
 import { AREA_AIPS, aipsFilter } from "actions/aip/aip";
-import { AipFilterCriteria } from "./forms/EnumAipFilterCriteria";
 import "./AipFilter.scss";
 import { useSelector } from "react-redux";
 import i18n from "components/i18n";
-import { AipFilter } from "typings/store";
-import { generateUUID } from "../utils";
+import { AipFilterEntry } from "typings/store";
+import { aipColumns, generateUUID } from "../utils";
+import { buildFilter } from "./aipFilterModel";
+import { AipFieldName } from "elza-api";
 import { useState } from "react";
 
 type AipFilterSectionProps = {
     columns: string[];
     onColsChange: (e: MenuCheckedValueChangeEvent, data: MenuCheckedValueChangeData) => void;
     filterDisabled: boolean;
-    initialFilters: AipFilter[];
+    initialFilters: AipFilterEntry[];
     hiddenValues: string[];
 }
 
 const FULLTEXT_ID = "fulltext";
 
 const AipFilterSection = ({columns, onColsChange, filterDisabled, initialFilters, hiddenValues}: AipFilterSectionProps) => {
-    const [filters, setFilters] = useState<AipFilter[]>(initialFilters || []);
+    const [filters, setFilters] = useState<AipFilterEntry[]>(initialFilters || []);
 
     const handleSearch = debounce((e, data) => {
         if(data.value != "") {
             handleReplace({
                 id: FULLTEXT_ID,
-                attr: "code",
-                criteria: AipFilterCriteria.CONTAINS,
-                value: data.value,
-                path: "da_aip",
+                field: AipFieldName.Code,
+                filter: buildFilter(AipFieldName.Code, aipColumns[AipFieldName.Code].valueType, {
+                    operation: "CONTAINS",
+                    value: data.value,
+                }),
             });
         } else {
             handleRemove(FULLTEXT_ID)
         }
     }, 1000);
 
-    const handleReplace = (filter: AipFilter) => {
+    const handleReplace = (filter: AipFilterEntry) => {
         const oldFilters = filters.filter((item) => item.id != filter.id);
         setFilters([...oldFilters, filter])
     }
 
-    const handleCreate = (filter: AipFilter) => {
-        const oldFilters = filters;
-        filter.id = generateUUID();
-        setFilters([...oldFilters, filter]);
+    const handleCreate = (filter: AipFilterEntry) => {
+        setFilters([...filters, filter]);
     }
     
     const handleRemove = (id) => {

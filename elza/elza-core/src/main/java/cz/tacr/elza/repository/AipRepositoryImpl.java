@@ -1,14 +1,22 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.controller.vo.AipFilterGen;
-import cz.tacr.elza.controller.vo.AipFilterVO;
+import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.domain.*;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.filter.AipFieldMapping;
+import cz.tacr.elza.repository.filter.AipFieldMapping.AipJoin;
+import cz.tacr.elza.repository.filter.AipFilterCapabilities;
+import cz.tacr.elza.repository.filter.AipFilterValueType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  */
@@ -17,7 +25,10 @@ public class AipRepositoryImpl implements AipRepositoryCustom {
     private EntityManager entityManager;
 
     @Override
-    public FilteredResult<DaAip> findAipsByFilter(final List<AipFilterGen> filters, final Integer firstResult , final Integer maxResults) {
+    public FilteredResult<DaAip> findAipsByFilter(final SearchParams params) {
+        int firstResult = params.getOffset() == null ? 0 : params.getOffset();
+        int maxResults = params.getSize() == null ? 0 : params.getSize();
+
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<DaAip> query = cb.createQuery(DaAip.class);
         CriteriaQuery<Long> queryCount = cb.createQuery(Long.class);
@@ -25,18 +36,17 @@ public class AipRepositoryImpl implements AipRepositoryCustom {
         Root<DaAip> root = query.from(DaAip.class);
         Root<DaAip> aipRootCount = queryCount.from(DaAip.class);
 
-        Predicate condition = prepareFindAipByFilterCount(filters, cb, root);
-        Predicate conditionCount = prepareFindAipByFilterCount(filters, cb, aipRootCount);
+        Joins joins = joins(cb, root);
+        Joins joinsCount = joins(cb, aipRootCount);
+
+        Predicate condition = prepareCondition(params.getFilters(), cb, joins);
+        Predicate conditionCount = prepareCondition(params.getFilters(), cb, joinsCount);
 
         query.select(root);
         queryCount.select(cb.countDistinct(aipRootCount));
 
-        if (condition != null) {
-            Order order = cb.asc(root.get(DaAip.FIELD_CODE));
-            query.where(condition).orderBy(order);
-
-            queryCount.where(conditionCount);
-        }
+        query.where(condition).orderBy(prepareOrder(params.getSort(), cb, joins));
+        queryCount.where(conditionCount);
 
         TypedQuery<DaAip> tq = entityManager.createQuery(query)
                 .setFirstResult(firstResult);
@@ -49,10 +59,18 @@ public class AipRepositoryImpl implements AipRepositoryCustom {
         return new FilteredResult<>(firstResult, maxResults, count, list);
     }
 
-    private <T> Predicate prepareFindAipByFilterCount(final List<AipFilterGen> filters,
-                                                    final CriteriaBuilder cb,
-                                                    final Root<DaAip> aipRoot) {
-        List<Predicate> predicates = new ArrayList<>();
+    /**
+     * Joins of the AIP query, built once per query root and addressed by {@link AipJoin}.
+     */
+    private static final class Joins {
+        private final Map<AipJoin, From<?, ?>> byJoin = new EnumMap<>(AipJoin.class);
+
+        From<?, ?> get(final AipJoin join) {
+            return byJoin.get(join);
+        }
+    }
+
+    private Joins joins(final CriteriaBuilder cb, final Root<DaAip> aipRoot) {
         Join<DaAip, DaAipState> stateJoin = aipRoot.join("states", JoinType.LEFT);
         stateJoin.on(cb.isNull(stateJoin.get("deleteChange")));
         Join<DaAip, DaSyncQueueItem> importSyncJoin = aipRoot.join("syncQueueItems", JoinType.LEFT);
@@ -69,55 +87,272 @@ public class AipRepositoryImpl implements AipRepositoryCustom {
         Join<ParInstitution, ApAccessPoint> instApJoin = instJoin.join("accessPoint", JoinType.LEFT);
         Join<DaAipState, ArrFund> fundJoin = stateJoin.join("fund", JoinType.LEFT);
 
-        for (AipFilterGen filter : filters) {
-            Path<?> path;
-            switch (filter.getPath()) {
-                case "da_aip" -> path = aipRoot.get(filter.getAttr());
-                case "da_aip_state" -> path = stateJoin.get(filter.getAttr());
-                case "import_sync_queue_item" -> path = importSyncJoin.get("state");
-                case "export_sync_queue_item" -> path = exportSyncJoin.get("state");
-                case "originator_access_point" -> path = oApJoin.get(ApAccessPoint.FIELD_ACCESS_POINT_ID);
-                case "institution_access_point" -> path = instApJoin.get(ApAccessPoint.FIELD_ACCESS_POINT_ID);
-                case "arr_fund" -> path = fundJoin.get(ArrFund.FIELD_FUND_ID);
+        Joins joins = new Joins();
+        joins.byJoin.put(AipJoin.AIP, aipRoot);
+        joins.byJoin.put(AipJoin.STATE, stateJoin);
+        joins.byJoin.put(AipJoin.IMPORT_SYNC, importSyncJoin);
+        joins.byJoin.put(AipJoin.EXPORT_SYNC, exportSyncJoin);
+        joins.byJoin.put(AipJoin.ORIGINATOR_AP, oApJoin);
+        joins.byJoin.put(AipJoin.INSTITUTION_AP, instApJoin);
+        joins.byJoin.put(AipJoin.FUND, fundJoin);
+        return joins;
+    }
 
-                default -> throw new IllegalArgumentException("Invalid table name: " + filter.getPath());
-            }
-
-            switch (filter.getCriteria()) {
-                case IS_NULL:
-                    predicates.add(cb.isNull(path));
-                    break;
-                case IS_NOT_NULL:
-                    predicates.add(cb.isNotNull(path));
-                    break;
-                case CONTAINS:
-                    predicates.add(cb.like(path.as(String.class), "%" + filter.getValue() + "%"));
-                    break;
-                case DOES_NOT_CONTAIN:
-                    predicates.add(cb.notLike(path.as(String.class), "%" + filter.getValue() + "%"));
-                    break;
-                case EQUALS:
-                    predicates.add(cb.equal(path.as(String.class), filter.getValue()));
-                    break;
-                case BETWEEN:
-                    if (filter.getAttr().equals("unitdateFrom")) {
-                        predicates.add(cb.and(
-                                cb.between(stateJoin.get("unitdateFrom").as(String.class), filter.getFrom(), filter.getTo()),
-                                cb.between(stateJoin.get("unitdateTo").as(String.class), filter.getFrom(), filter.getTo())
-                        ));
-                    } else {
-                        predicates.add(cb.between(path.as(Integer.class), Integer.parseInt(filter.getFrom()), Integer.parseInt(filter.getTo())));
-                    }
-                    break;
-                default:
-                    throw new IllegalArgumentException("Invalid filter criteria: " + filter.getCriteria());
-            }
-        }
-
-        if (predicates.isEmpty()) {
+    /**
+     * Conditions of a search are joined by AND; nesting is expressed by LogicalFilter.
+     */
+    private Predicate prepareCondition(final List<AbstractFilter> filters, final CriteriaBuilder cb,
+                                       final Joins joins) {
+        if (filters == null || filters.isEmpty()) {
             return cb.conjunction();
         }
-
+        List<Predicate> predicates = new ArrayList<>(filters.size());
+        for (AbstractFilter filter : filters) {
+            predicates.add(toPredicate(filter, cb, joins));
+        }
         return cb.and(predicates.toArray(new Predicate[0]));
+    }
+
+    private Predicate toPredicate(final AbstractFilter filter, final CriteriaBuilder cb, final Joins joins) {
+        AipFilterCapabilities.checkFilterSupported(filter.getFilterType());
+
+        if (filter instanceof LogicalFilter logical) {
+            List<Predicate> predicates = new ArrayList<>();
+            for (AbstractFilter sub : logical.getFilters()) {
+                predicates.add(toPredicate(sub, cb, joins));
+            }
+            if (predicates.isEmpty()) {
+                return cb.conjunction();
+            }
+            Predicate[] array = predicates.toArray(new Predicate[0]);
+            return logical.getOperation() == OperationLogicalType.OR ? cb.or(array) : cb.and(array);
+        }
+        if (filter instanceof TextValueFilter text) {
+            return textPredicate(text, cb, joins);
+        }
+        if (filter instanceof NumberValueFilter number) {
+            return numberPredicate(number, cb, joins);
+        }
+        if (filter instanceof BoolValueFilter bool) {
+            return boolPredicate(bool, cb, joins);
+        }
+        if (filter instanceof DateValueFilter date) {
+            return datePredicate(date, cb, joins);
+        }
+        if (filter instanceof EnumValueFilter enumFilter) {
+            return enumPredicate(enumFilter, cb, joins);
+        }
+        if (filter instanceof RefValueFilter ref) {
+            return refPredicate(ref, cb, joins);
+        }
+        throw new BusinessException("Filtr " + filter.getFilterType().getValue()
+                + " není při vyhledávání AIP podporován", BaseCode.PROPERTY_IS_INVALID)
+                        .set("filterType", filter.getFilterType().getValue());
+    }
+
+    // --- per value type -----------------------------------------------------------------
+
+    private Predicate textPredicate(final TextValueFilter filter, final CriteriaBuilder cb, final Joins joins) {
+        Resolved resolved = resolve(filter.getField(), filter.getFilterType());
+        AipFilterCapabilities.checkOperationSupported(filter.getOperation(), resolved.fieldName);
+        Path<?> path = resolved.path(joins);
+        return switch (filter.getOperation()) {
+            case IS_NULL -> cb.isNull(path);
+            case NOT_NULL -> cb.isNotNull(path);
+            case EQ -> cb.equal(path, AipFilterValueType.requireValue(filter.getValue(), resolved.fieldName));
+            case CONTAINS -> cb.like(stringPath(path), contains(filter.getValue(), resolved.fieldName));
+            case NOT_CONTAINS -> cb.notLike(stringPath(path), contains(filter.getValue(), resolved.fieldName));
+            default -> throw unsupported(filter.getOperation().getValue(), resolved.fieldName);
+        };
+    }
+
+    private Predicate numberPredicate(final NumberValueFilter filter, final CriteriaBuilder cb, final Joins joins) {
+        Resolved resolved = resolve(filter.getField(), filter.getFilterType());
+        AipFilterCapabilities.checkOperationSupported(filter.getOperation(), resolved.fieldName);
+        Path<?> path = resolved.path(joins);
+        return switch (filter.getOperation()) {
+            case IS_NULL -> cb.isNull(path);
+            case NOT_NULL -> cb.isNotNull(path);
+            case EQ -> cb.equal(path, number(path, AipFilterValueType.requireValue(filter.getValue(), resolved.fieldName)));
+            case BETWEEN -> between(cb, path,
+                    number(path, AipFilterValueType.requireValue(filter.getFrom(), resolved.fieldName)),
+                    number(path, AipFilterValueType.requireValue(filter.getTo(), resolved.fieldName)));
+            default -> throw unsupported(filter.getOperation().getValue(), resolved.fieldName);
+        };
+    }
+
+    private Predicate boolPredicate(final BoolValueFilter filter, final CriteriaBuilder cb, final Joins joins) {
+        Resolved resolved = resolve(filter.getField(), filter.getFilterType());
+        AipFilterCapabilities.checkOperationSupported(filter.getOperation(), resolved.fieldName);
+        Path<?> path = resolved.path(joins);
+        return switch (filter.getOperation()) {
+            case IS_NULL -> cb.isNull(path);
+            case NOT_NULL -> cb.isNotNull(path);
+            case EQ -> cb.equal(path, AipFilterValueType.requireValue(filter.getValue(), resolved.fieldName));
+            default -> throw unsupported(filter.getOperation().getValue(), resolved.fieldName);
+        };
+    }
+
+    /**
+     * A date range covers whole days, so an AIP dated on the boundary day is part of the result.
+     * A field mapped onto a pair of columns must fit into the range with both of them.
+     */
+    private Predicate datePredicate(final DateValueFilter filter, final CriteriaBuilder cb, final Joins joins) {
+        Resolved resolved = resolve(filter.getField(), filter.getFilterType());
+        AipFilterCapabilities.checkOperationSupported(filter.getOperation(), resolved.fieldName);
+        Path<?> path = resolved.path(joins);
+        return switch (filter.getOperation()) {
+            case IS_NULL -> resolved.mapping.isPair()
+                    ? cb.and(cb.isNull(path), cb.isNull(resolved.secondPath(joins)))
+                    : cb.isNull(path);
+            case NOT_NULL -> resolved.mapping.isPair()
+                    ? cb.and(cb.isNotNull(path), cb.isNotNull(resolved.secondPath(joins)))
+                    : cb.isNotNull(path);
+            case BETWEEN -> {
+                LocalDateTime from = AipFilterValueType.rangeStart(
+                        AipFilterValueType.requireValue(filter.getFrom(), resolved.fieldName), resolved.fieldName);
+                LocalDateTime to = AipFilterValueType.rangeEnd(
+                        AipFilterValueType.requireValue(filter.getTo(), resolved.fieldName), resolved.fieldName);
+                Predicate first = between(cb, path,
+                        AipFilterValueType.toDateBound(path.getJavaType(), from),
+                        AipFilterValueType.toDateBound(path.getJavaType(), to));
+                if (!resolved.mapping.isPair()) {
+                    yield first;
+                }
+                Path<?> second = resolved.secondPath(joins);
+                yield cb.and(first, between(cb, second,
+                        AipFilterValueType.toDateBound(second.getJavaType(), from),
+                        AipFilterValueType.toDateBound(second.getJavaType(), to)));
+            }
+            default -> throw unsupported(filter.getOperation().getValue(), resolved.fieldName);
+        };
+    }
+
+    private Predicate enumPredicate(final EnumValueFilter filter, final CriteriaBuilder cb, final Joins joins) {
+        Resolved resolved = resolve(filter.getField(), filter.getFilterType());
+        AipFilterCapabilities.checkOperationSupported(filter.getOperation(), resolved.fieldName);
+        Path<?> path = resolved.path(joins);
+        return switch (filter.getOperation()) {
+            case IS_NULL -> cb.isNull(path);
+            case NOT_NULL -> cb.isNotNull(path);
+            case EQ -> cb.equal(path,
+                    AipFilterValueType.parseEnum(path.getJavaType(), filter.getValue(), resolved.fieldName));
+            default -> throw unsupported(filter.getOperation().getValue(), resolved.fieldName);
+        };
+    }
+
+    private Predicate refPredicate(final RefValueFilter filter, final CriteriaBuilder cb, final Joins joins) {
+        Resolved resolved = resolve(filter.getField(), filter.getFilterType());
+        AipFilterCapabilities.checkOperationSupported(filter.getOperation(), resolved.fieldName);
+        Path<?> path = resolved.path(joins);
+        return switch (filter.getOperation()) {
+            case IS_NULL -> cb.isNull(path);
+            case NOT_NULL -> cb.isNotNull(path);
+            case EQ -> cb.equal(path, number(path, AipFilterValueType.requireValue(filter.getValue(), resolved.fieldName)));
+            default -> throw unsupported(filter.getOperation().getValue(), resolved.fieldName);
+        };
+    }
+
+    // --- field resolution ---------------------------------------------------------------
+
+    /**
+     * A field of the contract resolved onto its mapping, with the filter model checked
+     * against the value type of the field.
+     */
+    private record Resolved(AipFieldMapping mapping, String fieldName) {
+
+        Path<?> path(final Joins joins) {
+            return joins.get(mapping.getJoin()).get(mapping.getAttribute());
+        }
+
+        Path<?> secondPath(final Joins joins) {
+            return joins.get(mapping.getJoin()).get(mapping.getSecondAttribute());
+        }
+    }
+
+    private Resolved resolve(final AbstractField field, final FilterType filterType) {
+        if (!(field instanceof AipField aipField)) {
+            throw new BusinessException("Při vyhledávání AIP lze filtrovat pouze podle polí typu "
+                    + FieldType.AIP_FIELD.getValue(), BaseCode.PROPERTY_IS_INVALID)
+                            .set("fieldType", field == null ? null : field.getFieldType().getValue());
+        }
+        AipFieldName fieldName = aipField.getFieldName();
+        AipFieldMapping mapping = AipFieldMapping.of(fieldName);
+        mapping.getValueType().checkFilterType(filterType, fieldName.getValue());
+        return new Resolved(mapping, fieldName.getValue());
+    }
+
+    // --- sorting ------------------------------------------------------------------------
+
+    private List<Order> prepareOrder(final List<Sorting> sort, final CriteriaBuilder cb, final Joins joins) {
+        if (sort == null || sort.isEmpty()) {
+            return List.of(cb.asc(joins.get(AipJoin.AIP).get(DaAip.FIELD_CODE)));
+        }
+        List<Order> orders = new ArrayList<>(sort.size());
+        for (Sorting sorting : sort) {
+            AipFieldMapping mapping = AipFieldMapping.of(sortedField(sorting.getField()));
+            Path<?> path = joins.get(mapping.getJoin()).get(mapping.getAttribute());
+            orders.add(sorting.getOrder() == SortingOrder.DESC ? cb.desc(path) : cb.asc(path));
+        }
+        return orders;
+    }
+
+    private AipFieldName sortedField(final String field) {
+        if (field == null || field.isEmpty()) {
+            throw new BusinessException("Pole pro řazení není vyplněno", BaseCode.PROPERTY_NOT_EXIST);
+        }
+        try {
+            return AipFieldName.fromValue(field);
+        } catch (IllegalArgumentException e) {
+            throw new BusinessException("Podle pole '" + field + "' nelze AIP řadit", e,
+                    BaseCode.PROPERTY_IS_INVALID).set(BaseCode.PARAM_PROPERTY, field);
+        }
+    }
+
+    // --- helpers ------------------------------------------------------------------------
+
+    private static String contains(final String value, final String fieldName) {
+        return "%" + AipFilterValueType.requireValue(value, fieldName) + "%";
+    }
+
+    /**
+     * Path to a text column. Called only after the filter model has been checked against the
+     * value type of the field, which guarantees the column really is of type String.
+     */
+    @SuppressWarnings("unchecked")
+    private static Expression<String> stringPath(final Path<?> path) {
+        return (Expression<String>) path;
+    }
+
+    /**
+     * The contract carries whole numbers as int64; narrows to the type of the column so the
+     * parameter is bound in it.
+     */
+    private static Object number(final Path<?> path, final Number value) {
+        Class<?> javaType = path.getJavaType();
+        if (Integer.class.equals(javaType) || int.class.equals(javaType)) {
+            return value.intValue();
+        }
+        if (Short.class.equals(javaType) || short.class.equals(javaType)) {
+            return value.shortValue();
+        }
+        return value.longValue();
+    }
+
+    /**
+     * Range comparison over a column whose type is only known at runtime.
+     */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private static Predicate between(final CriteriaBuilder cb, final Path<?> path, final Object from,
+                                     final Object to) {
+        return cb.between((Expression<Comparable>) path, (Comparable) from, (Comparable) to);
+    }
+
+    private static BusinessException unsupported(final String operation, final String fieldName) {
+        return (BusinessException) new BusinessException("Operace " + operation
+                + " není při vyhledávání AIP podporována pro pole '" + fieldName + "'",
+                BaseCode.PROPERTY_IS_INVALID)
+                        .set(BaseCode.PARAM_PROPERTY, fieldName)
+                        .set("operation", operation);
     }
 }

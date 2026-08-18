@@ -641,9 +641,121 @@
     "defaultMessage": "AI assistant",
     "srcHash": "63nbyiXmnORE"
   },
+  "aip.col.aipId": {
+    "defaultMessage": "AIP ID",
+    "srcHash": "nylyci_kv7Mm"
+  },
+  "aip.col.aipSize": {
+    "defaultMessage": "Size",
+    "srcHash": "HkMRVxaPFOh5"
+  },
+  "aip.col.aipVersion": {
+    "defaultMessage": "AIP version",
+    "srcHash": "LFW3qt24AmIp"
+  },
+  "aip.col.code": {
+    "defaultMessage": "AIP code",
+    "srcHash": "UxTrypWFOcAG"
+  },
+  "aip.col.completeAipLoad": {
+    "defaultMessage": "Complete AIP loaded",
+    "srcHash": "fagm5bQf_w7v"
+  },
+  "aip.col.exportState": {
+    "defaultMessage": "Export state",
+    "srcHash": "Z6AadsdMdPep"
+  },
+  "aip.col.fund": {
+    "defaultMessage": "Fund",
+    "srcHash": "cgFgSW7aSs8l"
+  },
+  "aip.col.fundCode": {
+    "defaultMessage": "Fund code",
+    "srcHash": "TiaXeZ4HFkIH"
+  },
+  "aip.col.importState": {
+    "defaultMessage": "Current version",
+    "srcHash": "0u9juJv4hc8n"
+  },
+  "aip.col.ingestionCode": {
+    "defaultMessage": "Ingestion number",
+    "srcHash": "a9BLL1vglzAN"
+  },
+  "aip.col.institution": {
+    "defaultMessage": "Institution",
+    "srcHash": "AMtLLUW_r1z7"
+  },
+  "aip.col.institutionCode": {
+    "defaultMessage": "Institution code",
+    "srcHash": "Z6gP6vi_OaRY"
+  },
+  "aip.col.metadataError": {
+    "defaultMessage": "Metadata load error",
+    "srcHash": "lQZ1uRaxOXvg"
+  },
+  "aip.col.metadataLoad": {
+    "defaultMessage": "Metadata loaded",
+    "srcHash": "SYsB1sLvVD-5"
+  },
+  "aip.col.nadChangeCode": {
+    "defaultMessage": "External change",
+    "srcHash": "yqeBEKPi8N5z"
+  },
+  "aip.col.originator": {
+    "defaultMessage": "Originator",
+    "srcHash": "8ferHLpDg6Ds"
+  },
+  "aip.col.referenceNumber": {
+    "defaultMessage": "Reference number",
+    "srcHash": "FfhBXJgX6Kv3"
+  },
+  "aip.col.unitdate": {
+    "defaultMessage": "Date range",
+    "srcHash": "85gp67Bn_Cu_"
+  },
   "aip.filter.columns": {
     "defaultMessage": "Columns",
     "srcHash": "nkGHuHwAI1Yf"
+  },
+  "aip.filter.loading": {
+    "defaultMessage": "Loading…",
+    "srcHash": "kgjJ9rUTLs7l"
+  },
+  "aip.queueState.EXPORT_ERROR": {
+    "defaultMessage": "Export error",
+    "srcHash": "I18TohzzMs46"
+  },
+  "aip.queueState.EXPORT_NEW": {
+    "defaultMessage": "To export",
+    "srcHash": "Yvu9LpoChrla"
+  },
+  "aip.queueState.EXPORT_OK": {
+    "defaultMessage": "Exported",
+    "srcHash": "s3DYqvujKbtp"
+  },
+  "aip.queueState.IMPORT_ERROR": {
+    "defaultMessage": "Download error",
+    "srcHash": "CzB9HOdWCz1-"
+  },
+  "aip.queueState.IMPORT_NEW": {
+    "defaultMessage": "To download",
+    "srcHash": "rRtpslPu6mxH"
+  },
+  "aip.queueState.IMPORT_OK": {
+    "defaultMessage": "Updated/Downloaded",
+    "srcHash": "rxtQ5-k2pgZd"
+  },
+  "aip.queueState.UPDATE": {
+    "defaultMessage": "To update",
+    "srcHash": "JD9Fawd6Mvoz"
+  },
+  "aip.value.no": {
+    "defaultMessage": "NO",
+    "srcHash": "1TnNl8oaEI-f"
+  },
+  "aip.value.yes": {
+    "defaultMessage": "YES",
+    "srcHash": "0gfv7pWasAQC"
   },
   "ap.binding.action.history": {
     "defaultMessage": "Revision history",
