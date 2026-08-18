@@ -23,7 +23,6 @@ const AdminFulltextPage = class AdminFulltextPage extends React.Component {
     }
 
     render() {
-        const {splitter} = this.props;
 
         const centerPanel = (
             <div>
@@ -33,7 +32,6 @@ const AdminFulltextPage = class AdminFulltextPage extends React.Component {
 
         return (
             <AdminLayout
-                splitter={splitter}
                 className="admin-fulltext-page"
                 ribbon={this.buildRibbon()}
                 centerPanel={centerPanel}
@@ -49,10 +47,9 @@ const AdminFulltextPage = class AdminFulltextPage extends React.Component {
  * @returns {{fulltext: *}}
  */
 function mapStateToProps(state) {
-    const {splitter, adminRegion} = state;
+    const {adminRegion} = state;
 
     return {
-        splitter,
         fulltext: adminRegion.fulltext,
     };
 }

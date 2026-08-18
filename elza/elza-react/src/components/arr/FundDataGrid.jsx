@@ -150,10 +150,18 @@ class FundDataGridClass extends AbstractReactComponent {
         this.setState({}, this.resizeGrid);
         this.consumeDeepLink();
 
+        // Šířka gridu se počítá v pixelech z rozměru kontejneru, takže je nutné ji přepočítat
+        // i při změně velikosti okna (změnu velikosti splitteru pokrývá změna stavu splitteru ve store).
+        window.addEventListener('resize', this.resizeGrid);
+
         // Pokud je potřeba aktualizovat, aktualizujeme při přepnutí na grid, ale zachováme stránkování
         if (fundDataGrid.rowsDirty || fundDataGrid.filterDirty) {
             this.props.dispatch(fundDataGridRefreshRows(versionId));
         }
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener('resize', this.resizeGrid);
     }
 
     /**

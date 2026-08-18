@@ -178,9 +178,8 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
 };
 
 function mapStateToProps(state) {
-    const {splitter, arrRegion, refTables, focus, developer, userDetail, tab} = state;
+    const {arrRegion, refTables, focus, developer, userDetail, tab} = state;
     return {
-        splitter: splitter.splitters[AREA],
         arrRegion,
         focus,
         developer,
@@ -193,7 +192,6 @@ function mapStateToProps(state) {
 }
 
 ArrDataGridPage.propTypes = {
-    splitter: PropTypes.object.isRequired,
     arrRegion: PropTypes.object.isRequired,
     developer: PropTypes.object.isRequired,
     rulDataTypes: PropTypes.object.isRequired,

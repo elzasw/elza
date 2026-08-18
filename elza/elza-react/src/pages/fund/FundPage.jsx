@@ -681,7 +681,7 @@ class FundPage extends AbstractReactComponent {
     }
 
     render() {
-        const { splitter, fundRegion, maxSize, ruleSet, userDetail, intl } = this.props;
+        const { fundRegion, maxSize, ruleSet, userDetail, intl } = this.props;
         const { sidebarOpen, selectionMode, selectedFundIds, selectAllMatching } = this.state;
 
         let activeIndex;
@@ -847,7 +847,6 @@ class FundPage extends AbstractReactComponent {
 
         return (
             <PageLayout
-                splitter={splitter}
                 className="fund-page"
                 ribbon={this.buildRibbon()}
                 // leftPanel={leftPanel}
@@ -859,11 +858,10 @@ class FundPage extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const { focus, splitter, fundRegion, userDetail, refTables } = state;
+    const { focus, fundRegion, userDetail, refTables } = state;
 
     return {
         focus,
-        splitter,
         fundRegion,
         userDetail,
         ruleSet: refTables.ruleSet,

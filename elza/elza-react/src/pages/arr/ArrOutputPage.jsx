@@ -675,9 +675,8 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
 };
 
 function mapStateToProps(state) {
-    const {splitter, arrRegion, refTables, focus, userDetail} = state;
+    const {arrRegion, refTables, focus, userDetail} = state;
     return {
-        splitter: splitter.splitters[AREA],
         arrRegion,
         focus,
         userDetail,
@@ -691,7 +690,6 @@ function mapStateToProps(state) {
 }
 
 ArrOutputPage.propTypes = {
-    splitter: PropTypes.object.isRequired,
     arrRegion: PropTypes.object.isRequired,
     focus: PropTypes.object.isRequired,
     userDetail: PropTypes.object.isRequired,

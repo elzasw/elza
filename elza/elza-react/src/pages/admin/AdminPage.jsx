@@ -153,11 +153,9 @@ class AdminPage extends AbstractReactComponent {
     }
 
     render() {
-        const {splitter} = this.props;
 
         return (
             <AdminLayout
-                splitter={splitter}
                 className="admin-packages-page"
                 ribbon={this.buildRibbon()}
                 centerPanel={<StatsAdmin />}
@@ -168,14 +166,12 @@ class AdminPage extends AbstractReactComponent {
 
 function mapStateToProps(state) {
     const {
-        splitter,
         developer,
         userDetail,
         adminRegion: {fulltext},
     } = state;
 
     return {
-        splitter,
         developer,
         userDetail,
         fulltext,

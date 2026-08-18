@@ -236,9 +236,8 @@ const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
 };
 
 function mapStateToProps(state) {
-    const {splitter, arrRegion, refTables, form, focus, developer, userDetail, tab} = state;
+    const {arrRegion, refTables, form, focus, developer, userDetail, tab} = state;
     return {
-        splitter: splitter.splitters[AREA],
         arrRegion,
         focus,
         developer,
@@ -251,7 +250,6 @@ function mapStateToProps(state) {
 }
 
 ArrMovementsPage.propTypes = {
-    splitter: PropTypes.object.isRequired,
     arrRegion: PropTypes.object.isRequired,
     developer: PropTypes.object.isRequired,
     rulDataTypes: PropTypes.object.isRequired,

@@ -260,7 +260,7 @@ class AdminUserPage extends AbstractReactComponent {
     }
 
     render() {
-        const {splitter, user} = this.props;
+        const {user} = this.props;
         let activeIndex;
         if (user.userDetail.id !== null) {
             activeIndex = indexById(user.users, user.userDetail.id);
@@ -300,7 +300,6 @@ class AdminUserPage extends AbstractReactComponent {
 
         return (
             <AdminLayout
-                splitter={splitter}
                 className="admin-user-page"
                 ribbon={this.buildRibbon()}
                 leftPanel={leftPanel}
@@ -314,10 +313,9 @@ class AdminUserPage extends AbstractReactComponent {
  * Namapování state do properties.
  */
 function mapStateToProps(state) {
-    const {splitter, adminRegion} = state;
+    const {adminRegion} = state;
 
     return {
-        splitter,
         user: adminRegion.user,
     };
 }
