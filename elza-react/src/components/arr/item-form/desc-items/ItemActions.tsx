@@ -17,6 +17,7 @@ interface Props {
   item: EditItem;
   nodeId?: number;
   specId?: number;
+  isEnum: boolean;
   onDelete: () => void;
   onSetUndefined: () => void;
   typeForm?: FormItemType;
@@ -47,6 +48,7 @@ export function ItemActions({
   item,
   nodeId,
   specId,
+  isEnum,
   onDelete,
   onSetUndefined,
   typeForm,
@@ -55,15 +57,19 @@ export function ItemActions({
   const { settings } = useUserSettings();
   const compact = settings.compact;
   const isInherited = item.nodeId != nodeId;
-  const hasValue = item.data?.dataId != undefined || item.undefined;
+  const hasEnumValue = isEnum && item.itemSpecId != undefined;
+  const hasValue = item.data?.dataId != undefined || item.undefined || hasEnumValue;
   const canSetUndefined = typeForm?.undefinable;
   const isOptional =
     typeForm?.type === MandatoryType.Possible ||
     typeForm?.type === MandatoryType.Impossible;
 
+  // Enum reuses the specification field to hold its value, so useSpecification
+  // is true from the backend; treat it as non-spec here.
+  const useSpecification = typeRef.useSpecification && !isEnum;
   const spec = typeForm?.specs?.find(({ itemSpecId }) => itemSpecId === specId);
   const isSpecOptional =
-    (typeRef.useSpecification && !spec) ||
+    (useSpecification && !spec) ||
     spec?.type === MandatoryType.Possible ||
     spec?.type === MandatoryType.Impossible;
 
@@ -116,10 +122,11 @@ export function ItemActions({
         </Tooltip>
       )}
       {canSetUndefined &&
-        !(typeRef.useSpecification && !spec) &&
+        !(useSpecification && !spec) &&
         !item.inhibited &&
         !item.undefined &&
-        !item.data?.dataId && (
+        !item.data?.dataId &&
+        !hasEnumValue && (
           <Tooltip
             relationship="label"
             appearance="inverted"

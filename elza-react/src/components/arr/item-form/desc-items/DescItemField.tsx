@@ -284,6 +284,7 @@ export function DescItemField({
           item={item}
           nodeId={nodeId}
           specId={specId}
+          isEnum={isEnum}
           typeForm={typeForm}
           typeRef={typeRef}
           onDelete={() => deleteDescItem(item)}
