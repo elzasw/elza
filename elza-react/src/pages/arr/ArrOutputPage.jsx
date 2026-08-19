@@ -19,7 +19,7 @@ import {
 } from '../../components/index';
 import {i18n, Icon, ListBox, RibbonGroup, StoreHorizontalLoader, Tabs, Utils} from 'components/shared';
 import {Button} from '../../components/ui';
-import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog';
+import {modalDialogShow} from 'actions/global/modalDialog';
 import {canSetFocus, focusWasSet, isFocusFor, setFocus} from 'actions/global/focus';
 import {
     fundOutputClone,
@@ -38,10 +38,7 @@ import * as perms from 'actions/user/Permission';
 import {fundActionFormChange, fundActionFormShow} from 'actions/arr/fundAction';
 import {routerNavigate} from 'actions/router';
 import {templatesFetchIfNeeded} from 'actions/refTables/templates';
-import AddDescItemTypeForm from 'components/arr/nodeForm/AddDescItemTypeForm';
-import {outputFormActions} from 'actions/arr/subNodeForm';
 import {outputTypesFetchIfNeeded} from 'actions/refTables/outputTypes';
-import {getDescItemsAddTree, getOneSettings} from 'components/arr/ArrUtils';
 import ArrParentPage from './ArrParentPage';
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './ArrOutputPageKeymap';
@@ -105,7 +102,6 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
             'renderTemplatesPanel',
             'handleTabSelect',
             'handleGenerateOutput',
-            'handleAddDescItemType',
             'handleRevertToOpen',
             'handleClone',
             'handleOutputStateSearch',
@@ -261,60 +257,6 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
                 />,
             ),
         );
-    }
-
-    /**
-     * Zobrazení dialogu pro přidání atributu.
-     */
-    handleAddDescItemType() {
-        const fund = this.getActiveFund(this.props);
-        const fundOutputDetail = fund.fundOutput.fundOutputDetail;
-        const subNodeForm = fundOutputDetail.subNodeForm;
-
-        let strictMode = fund.activeVersion.strictMode;
-
-        let userStrictMode = getOneSettings(this.props.userDetail.settings, 'FUND_STRICT_MODE', 'FUND', fund.id);
-        if (userStrictMode && userStrictMode.value !== null) {
-            strictMode = userStrictMode.value === 'true';
-        }
-
-        const formData = subNodeForm.formData;
-        const descItemTypes = getDescItemsAddTree(
-            formData.descItemGroups,
-            subNodeForm.infoTypesMap,
-            subNodeForm.refTypesMap,
-            subNodeForm.infoGroups,
-            strictMode,
-        );
-
-        // Zatím zakomentováno, možná se bude ještě nějak řadit - zatím není jasné podle čeho řadit - podle uvedení v yaml nebo jinak?
-        // function typeId(type) {
-        //     switch (type) {
-        //         case "REQUIRED":
-        //             return 0;
-        //         case "RECOMMENDED":
-        //             return 1;
-        //         case "POSSIBLE":
-        //             return 2;
-        //         case "IMPOSSIBLE":
-        //             return 99;
-        //         default:
-        //             return 3;
-        //     }
-        // }
-        // Seřazení podle position
-        // descItemTypes.sort((a, b) => typeId(a.type) - typeId(b.type));
-
-        var submit = data => {
-            this.props.dispatch(modalDialogHide());
-            this.props.dispatch(
-                outputFormActions.fundSubNodeFormDescItemTypeAdd(fund.versionId, null, data.descItemTypeId.id),
-            );
-        };
-
-        // Modální dialog
-        var form = <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit} />;
-        this.props.dispatch(modalDialogShow(this, i18n('subNodeForm.descItemType.title.add'), form));
     }
 
     /**
