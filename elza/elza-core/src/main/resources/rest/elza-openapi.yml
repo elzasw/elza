@@ -8379,6 +8379,9 @@ components:
         importType:
           type: string
           description: Import type. Only 'CSV' is supported
+        separator:
+          type: string
+          description: CSV field separator (single character). Defaults is ';'
         dataFile:
           type: string
           format: binary
@@ -9292,6 +9295,42 @@ components:
         - AND
         - OR
       description: Operation type for LogicalFilter
+    OperationNumberType:
+      type: string
+      enum:
+        - EQ
+        - NEQ
+        - GT
+        - LT
+        - GTE
+        - LTE
+        - BETWEEN
+        - IS_NULL
+        - NOT_NULL
+      description: Operation type for NumberValueFilter
+    OperationRangeType:
+      type: string
+      enum:
+        - BETWEEN
+        - GT
+        - LT
+        - GTE
+        - LTE
+        - IS_NULL
+        - NOT_NULL
+      description: Operation type for DateValueFilter
+    OperationTextType:
+      type: string
+      enum:
+        - EQ
+        - NEQ
+        - CONTAINS
+        - NOT_CONTAINS
+        - STARTWITH
+        - ENDWITH
+        - IS_NULL
+        - NOT_NULL
+      description: Operation type for TextValueFilter
     Output.BulkActionState:
       type: string
       enum:
@@ -9519,42 +9558,6 @@ components:
         templateId:
           type: integer
       description: Náhrada za `ArrOutputTemplateVO`
-    OperationNumberType:
-      type: string
-      enum:
-        - EQ
-        - NEQ
-        - GT
-        - LT
-        - GTE
-        - LTE
-        - BETWEEN
-        - IS_NULL
-        - NOT_NULL
-      description: Operation type for NumberValueFilter
-    OperationRangeType:
-      type: string
-      enum:
-        - BETWEEN
-        - GT
-        - LT
-        - GTE
-        - LTE
-        - IS_NULL
-        - NOT_NULL
-      description: Operation type for DateValueFilter
-    OperationTextType:
-      type: string
-      enum:
-        - EQ
-        - NEQ
-        - CONTAINS
-        - NOT_CONTAINS
-        - STARTWITH
-        - ENDWITH
-        - IS_NULL
-        - NOT_NULL
-      description: Operation type for TextValueFilter
     OutputItem:
       type: object
       allOf:

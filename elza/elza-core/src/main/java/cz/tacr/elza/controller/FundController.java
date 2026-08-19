@@ -76,7 +76,6 @@ import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.RuleSetRepository;
@@ -265,20 +264,16 @@ public class FundController implements FundsApi {
     @Transactional
     public ResponseEntity<Void> fundImportFundData(@PathVariable("id") String id,
                                                	   @RequestPart(value = "importType", required = true) String importType,
-                                               	   @RequestPart(value = "dataFile", required = true) MultipartFile dataFile) {
+                                               	   @RequestPart(value = "dataFile", required = true) MultipartFile dataFile,
+                                                   @RequestParam(value = "separator", required = false) String separator) {
         Validate.notNull(id, "Musí být zadáno id AS");
 
         ArrFund fund = arrangementService.getFund(Integer.valueOf(id));
         try (InputStream is = dataFile.getInputStream()) {
-            arrangementService.importFundData(fund, importType, is);
+            arrangementService.importFundData(fund, importType, separator, is);
             return ResponseEntity.ok(null);
-        } catch (AbstractException ae) {
-        	logger.error("Failed to import data", ae);
-        	throw ae;
-        } catch (Exception e) {
-        	// TODO: This should be probably removed - check general exception handler 
-            logger.error("Failed to import data", e);
-            return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+        } catch (IOException e) {
+            throw new BusinessException("Failed to read uploaded file", e, BaseCode.IMPORT_FAILED);
         }
     }
 
