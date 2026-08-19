@@ -1,8 +1,8 @@
 import { Fragment, useRef, useState, useEffect, useLayoutEffect } from 'react';
 import { Api } from 'api';
 import classNames from 'classnames';
-import { Button, Popover, PopoverSurface, PopoverTrigger } from '@fluentui/react-components';
-import { ArrowClockwiseFilled, ArrowUpRegular, DeleteRegular, DocumentRegular, FilterRegular, FolderRegular, LinkRegular, TextSortAscendingRegular } from '@fluentui/react-icons';
+import { Button, Menu, MenuItem, MenuList, MenuPopover, MenuTrigger, Popover, PopoverSurface, PopoverTrigger } from '@fluentui/react-components';
+import { ArrowClockwiseFilled, ArrowDownloadRegular, ArrowUpRegular, DeleteRegular, DocumentRegular, FilterRegular, FolderRegular, LinkRegular, TextSortAscendingRegular } from '@fluentui/react-icons';
 import { FsRepo, FsItem, FsItemType, FsItemSortType, FsItemFilterByLinked, FsLink } from 'elza-api';
 import { useDebouncedEffect } from 'utils/hooks/hooks';
 import { useAppThunkDispatch } from 'utils/hooks';
@@ -112,6 +112,10 @@ const messages = defineMessages({
     itemsLoading: {
         id: 'arr.daos.fileSystem.items.loading',
         defaultMessage: 'Načítání obsahu složky…',
+    },
+    contextDownload: {
+        id: 'arr.daos.fileSystem.context.download',
+        defaultMessage: 'Stáhnout',
     },
 });
 
@@ -238,6 +242,22 @@ export const FileSystemBrowser = ({
         return itemLevel;
     }
 
+    const handleDownloadFile = (item: FsItem, fullPath: string) => {
+        const [repoId, path] = extractRepoIdFromFullPath(fullPath);
+        const params = new URLSearchParams();
+        if (path) params.set('path', path);
+        const url = `/api/v1/fund/${fundId}/fsrepo/${repoId}/item-data?${params}`;
+        // Explicit anchor with `download` streams via the browser and forces save
+        // even for inline-renderable types (image, txt) that the server serves
+        // with Content-Disposition: inline.
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = item.name;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+    };
+
     const renderListItem = (item: RenderItem) => {
         if (isLastKeyItem(item)) {
             return <div
@@ -264,7 +284,8 @@ export const FileSystemBrowser = ({
         if (isListItem(item)) {
             const isSelected = item.fullPath === selectedListItem;
             const lastChangeDate = new Date(item.data.lastChange);
-            return <div
+            const isFile = item.data.itemType === FsItemType.File;
+            const row = <div
                 className={classNames("list-item", { "selected": isSelected })}
                 onDoubleClick={(e) => {
                     e.preventDefault();
@@ -341,7 +362,27 @@ export const FileSystemBrowser = ({
                 <span className="item-part right no-shrink" style={{ width: "18ch" }} title={buildDateString(lastChangeDate)}>
                     {buildDateString(lastChangeDate)}
                 </span>
-            </div>
+            </div>;
+            if (!isFile) {
+                return row;
+            }
+            return (
+                <Menu openOnContext>
+                    <MenuTrigger disableButtonEnhancement>
+                        {row}
+                    </MenuTrigger>
+                    <MenuPopover>
+                        <MenuList>
+                            <MenuItem
+                                icon={<ArrowDownloadRegular />}
+                                onClick={() => handleDownloadFile(item.data, item.fullPath)}
+                            >
+                                {intl.formatMessage(messages.contextDownload)}
+                            </MenuItem>
+                        </MenuList>
+                    </MenuPopover>
+                </Menu>
+            );
         }
     }
 
