@@ -2,7 +2,7 @@ import { Fragment, useRef, useState, useEffect, useLayoutEffect } from 'react';
 import { Api } from 'api';
 import classNames from 'classnames';
 import { Button, Popover, PopoverSurface, PopoverTrigger } from '@fluentui/react-components';
-import { ArrowClockwiseFilled, ArrowUpRegular, DeleteRegular, FilterRegular, TextSortAscendingRegular } from '@fluentui/react-icons';
+import { ArrowClockwiseFilled, ArrowUpRegular, DeleteRegular, DocumentRegular, FilterRegular, FolderRegular, LinkRegular, TextSortAscendingRegular } from '@fluentui/react-icons';
 import { FsRepo, FsItem, FsItemType, FsItemSortType, FsItemFilterByLinked, FsLink } from 'elza-api';
 import { useDebouncedEffect } from 'utils/hooks/hooks';
 import { useAppThunkDispatch } from 'utils/hooks';
@@ -279,7 +279,7 @@ export const FileSystemBrowser = ({
                 }}
             >
                 <span className="item-part left no-shrink" title={item.data.name}>
-                    {item.data.itemType === FsItemType.Folder ? <Icon glyph="fa-folder" /> : <Icon glyph="fa-file" />}
+                    {item.data.itemType === FsItemType.Folder ? <FolderRegular fontSize={18} /> : <DocumentRegular fontSize={18} />}
                 </span>
                 {item.data.links && item.data.links.length > 0 && (
                     <Popover>
@@ -291,7 +291,7 @@ export const FileSystemBrowser = ({
                                 title={intl.formatMessage(messages.linksTrigger)}
                                 onClick={(e) => e.stopPropagation()}
                             >
-                                <Icon glyph="fa-link" />
+                                <LinkRegular fontSize={16} />
                             </button>
                         </PopoverTrigger>
                         <PopoverSurface>
