@@ -34,7 +34,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import cz.tacr.elza.common.db.HibernateUtils;
-import cz.tacr.elza.controller.vo.*;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
@@ -217,6 +216,11 @@ public class ArrangementService {
      * Oddělovač mezi citacemi více odkazovaných uzlů.
      */
     private static final String LINKED_CITATION_DELIMITER = ", ";
+
+    /**
+     * Výchozí oddělovač polí v souboru CSV
+     */
+    private static final char DEFAULT_CSV_SEPARATOR = ';';
 
     final private static Logger logger = LoggerFactory.getLogger(ArrangementService.class);
 
@@ -2555,28 +2559,30 @@ public class ArrangementService {
     }
 
     @AuthMethod(permission = { UsrPermission.Permission.FUND_ADMIN,
-            UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR })
+                               UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR })
     public void importFundData(final @AuthParam(type = AuthParam.Type.FUND) ArrFund fund,
-                               @Valid String importType, InputStream is) {
+                               @Valid String importType,
+                               @Valid String separator,
+                               InputStream is) {
         if ("CSV".equals(importType)) {
-            importFundDataCsv(fund, is);
+            importFundDataCsv(fund, separator, is);
             return;
         }
 
         logger.error("Required importType is not supported: {}", importType);
     }
 
-    private void importFundDataCsv(ArrFund fund, InputStream is) {
+    private void importFundDataCsv(ArrFund fund, String separator, InputStream is) {
         // create change
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.IMPORT, null);
         ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFund(fund);
+        char delimiter = StringUtils.isEmpty(separator) ? DEFAULT_CSV_SEPARATOR : separator.charAt(0);
 
-        CSVFormat csvf = CSVFormat.EXCEL;
+        CSVFormat csvf = CSVFormat.EXCEL.builder().setDelimiter(delimiter).build();
         try (InputStreamReader isr = new InputStreamReader(BOMInputStream.builder().setInputStream(is).get(), "UTF-8");
-                CSVParser parser = csvf.parse(isr)) {
+             CSVParser parser = csvf.parse(isr)) {
 
-            MultipleItemChangeContext changeContext = descriptionItemService.createChangeContext(fundVersion
-                    .getFundVersionId());
+            MultipleItemChangeContext changeContext = descriptionItemService.createChangeContext(fundVersion.getFundVersionId());
 
             ObjectListIterator.forEachPage((Iterable<CSVRecord>) parser, recs -> {
                 importFundBatch(fundVersion, change, recs, changeContext);
@@ -2588,7 +2594,6 @@ public class ArrangementService {
             logger.error("Failed to read input file", e);
             throw new BusinessException("Failed to process", e, BaseCode.IMPORT_FAILED);
         }
-
     }
 
     // Future improvement: use batch updates
@@ -2603,8 +2608,16 @@ public class ArrangementService {
             ArrNode node;
             if (UuidUtils.isUUID(nodeId)) {
                 node = arrangementInternalService.findNodeByUuid(nodeId);
-            } else {
+            } else if (StringUtils.isNumeric(nodeId)) {
                 node = nodeRepository.getOne(Integer.valueOf(nodeId));
+            } else {
+                throw new BusinessException(
+                        "Invalid node identifier on CSV row " + rec.getRecordNumber()
+                                + ": '" + nodeId + "'. Expected UUID or numeric ID."
+                                + " Check the CSV field separator.",
+                        BaseCode.IMPORT_FAILED)
+                        .set("row", rec.getRecordNumber())
+                        .set("value", nodeId);
             }
             // save node
             node = descriptionItemService.saveNode(node, change);

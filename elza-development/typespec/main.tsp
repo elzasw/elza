@@ -144,6 +144,8 @@ model CreateFund {
 model ImportFundData {
     /** Import type. Only 'CSV' is supported */
     importType: HttpPart<string>;
+    /** CSV field separator (single character). Defaults is ';' */
+    separator?: HttpPart<string>;
     /** File to upload */
     dataFile: HttpPart<bytes>;
 }
