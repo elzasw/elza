@@ -181,6 +181,12 @@
                 .item-row {
                     display: flex;
 
+                    // keep the height of a rendered bubble so funds without
+                    // any sub-info line up with the rest of the list
+                    &.desc {
+                        min-height: calc(0.9rem + 8px);
+                    }
+
                     // div:first-child{
                     //     flex-grow:1;
                     // }
