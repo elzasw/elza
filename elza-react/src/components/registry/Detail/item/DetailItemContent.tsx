@@ -20,7 +20,7 @@ import { Bindings } from '../../../../types';
 import i18n from '../../../i18n';
 import Icon from '../../../shared/icon/Icon';
 import { Button } from '../../../ui';
-import { formatDate } from '../../../validate';
+import { formatDateIso } from '../../../validate';
 import { DetailCoordinateItem } from '../coordinate/DetailCoordinateItem';
 import './DetailItem.scss';
 import { SyncIcon } from '../sync-icon';
@@ -170,7 +170,7 @@ const DetailItemContent: FC<Props> = ({
 
         case RulDataTypeCodeEnum.DATE:
             let dateItem = item as ApItemDateVO;
-            valueField = formatDate(dateItem.value);
+            valueField = formatDateIso(dateItem.value);
             break;
 
         case RulDataTypeCodeEnum.URI_REF:

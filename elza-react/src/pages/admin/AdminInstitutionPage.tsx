@@ -156,7 +156,6 @@ export function AdminInstitutionPage() {
     const styles = useStyles();
     const { formatMessage } = useIntl();
     const dispatch = useThunkDispatch();
-    const splitter = useSelector(({ splitter }: AppState) => splitter);
     const userDetail = useSelector(({ userDetail }: AppState) => userDetail);
     const isAdmin = userDetail.hasOne(perms.ADMIN);
 
@@ -385,7 +384,7 @@ export function AdminInstitutionPage() {
         listPanel
     );
 
-    return <AdminLayout splitter={splitter} ribbon={<Ribbon />} centerPanel={centerPanel} />;
+    return <AdminLayout ribbon={<Ribbon />} centerPanel={centerPanel} />;
 }
 
 export default AdminInstitutionPage;

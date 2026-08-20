@@ -1,8 +1,13 @@
+import { useIntl } from "react-intl";
+import { tableMessages } from "components/shared/lang/tableMessages";
+import { SortingOrder } from "elza-api";
 import {FC, useCallback, useEffect, useState, MouseEvent, KeyboardEvent} from 'react';
-import {useSelector} from 'react-redux';
+import { useAppSelector } from 'utils/hooks';
 import {StoreHorizontalLoader} from 'components/shared';
 import storeFromArea from '../../shared/utils/storeFromArea.jsx';
-import { findColDefByKey, formatAipSize, formatDate, getAipRows } from './utils.tsx';
+import { formatAipSize } from './format';
+import { formatDateCz } from 'utils/date';
+import { findColDefByKey } from './columns';
 import './AipTable.scss';
 import { useHistory} from 'react-router';
 import {urlAip} from '../../constants.tsx';
@@ -28,41 +33,65 @@ import {
     useTableSort,
     createTableColumn,
 } from '@fluentui/react-components';
-import { colDef, getBoolIcon } from './utils.tsx';
+import { getBoolIcon } from './AipCells';
+import { colDef } from './columns';
 import { Row } from 'react-bootstrap';
 import AipFilterSection from './filter/AipFilterSection.tsx';
 import Pagination from 'components/shared/pagination/Pagination.tsx';
-import { AipFilter } from 'typings/store/index.ts';
+import { Aip, AipFilterEntry, Aips } from 'typings/store/index.ts';
 import AipDetail from './AipDetail.tsx';
 import {AipDetailVO} from "elza-api";
 
 type AipTableProps = {
     onAipSelect?: (id: number) => void;
     filterDisabled?: boolean;
-    initialFilters?: AipFilter[];
+    initialFilters?: AipFilterEntry[];
     hiddenValues?: string[];
     detailOpen?: boolean;
     setDetailOpen?: (open: boolean) => void;
 }
 
+/**
+ * Řádky seznamu AIP ze store; dokud není načteno, je seznam prázdný.
+ */
+const getAipRows = (aips: Aips) => {
+    if(aips.fetched && aips.rows){
+        if(
+            aips.filter?.from &&
+            aips.filter?.pageSize &&
+            aips.filter.from > aips.filter.pageSize - 1
+        ){
+            return aips.rows;
+        }
+        return [
+            ...aips.rows,
+        ];
+    }
+
+    return [];
+};
+
 const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilters, hiddenValues, detailOpen, setDetailOpen}) => {
-    const aips = useSelector((state: any) => storeFromArea(state, AREA_AIPS));
-    const aip = useSelector((state: any) => storeFromArea(state, AREA_AIP));
+    const aips = useAppSelector(state => storeFromArea(state, AREA_AIPS) as Aips);
+    const aip = useAppSelector(state => storeFromArea(state, AREA_AIP) as Aip);
     const {from, pageSize} = aips.filter;
     const dispatch = useThunkDispatch();
     const items = getAipRows(aips);
     const history = useHistory();
+    const {formatMessage} = useIntl();
 
     const columnsDef: TableColumnDefinition<AipDetailVO>[] = colDef.map((def) =>
         createTableColumn<AipDetailVO>({
             columnId: def.key,
-            renderHeaderCell: () => <>{def.name}</>,
+            renderHeaderCell: () => <>{formatMessage(def.message)}</>,
             renderCell: (item: AipDetailVO) => <>{getContent(item, def.key)}</>,
-            compare: (a, b) => {
-                switch(def.type) {
-                    case "number": return a[def.key] - b[def.key];
-                    case "bool": return Number(a[def.key]) - Number(b[def.key]);
-                    default: return a[def.key]?.localeCompare(b[def.key]);
+            compare: (a: AipDetailVO, b: AipDetailVO) => {
+                const left = (a as Record<string, any>)[def.key];
+                const right = (b as Record<string, any>)[def.key];
+                switch(def.valueType) {
+                    case "number": return left - right;
+                    case "bool": return Number(left) - Number(right);
+                    default: return left?.localeCompare(right);
                 }
             },
         })
@@ -71,8 +100,11 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
     const [columns, setColumns] = useState<TableColumnDefinition<AipDetailVO>[]>(columnsDef);
 
     const formatUnitDate = (unitdateFrom: string, unitdateTo: string) => {
-        return formatDate(new Date(unitdateFrom)) + " - " + (unitdateTo ? formatDate(new Date(unitdateTo)) : "?");
+        return formatDateCz(new Date(unitdateFrom)) + " - " + (unitdateTo ? formatDateCz(new Date(unitdateTo)) : "?");
     }
+
+    /** Sloupce maji i skladane klice ("fund.name"), ktere na AipDetailVO primo nejsou. */
+    const rawValue = (item: AipDetailVO, key: string): any => (item as Record<string, any>)[key];
 
     const getContent =(item: AipDetailVO, key: string) => {
         switch(key) {
@@ -82,7 +114,9 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
             case "fund.name": return item.fund ? item.fund.name : "-";
             case "institution.name": return item.institution.name;
             default:
-                return findColDefByKey(key).type == "bool" ? getBoolIcon(item[key]) : item[key] ? item[key] : "-" ; // Sorry xD
+                return findColDefByKey(key)?.valueType == "bool"
+                    ? getBoolIcon(rawValue(item, key))
+                    : rawValue(item, key) ? rawValue(item, key) : "-";
         }
     }
 
@@ -104,24 +138,22 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
     const toggleColumns = (e: MenuCheckedValueChangeEvent, data: MenuCheckedValueChangeData) => {
         setColumns(
             columnsDef.filter((col) =>
-                data.checkedItems.some((checked) => checked == def[col.columnId].name
+                data.checkedItems.some((checked) => checked == def[String(col.columnId)]?.label
             ))
         );
     };
 
-    const handleSelect = (id) =>  {
+    const handleSelect = (id: number) =>  {
         setDetailOpen(true);
         history.push(urlAip(id))
     };
 
     const handleChangePage = (nextFrom: number) => nextFrom !== from && dispatch(aipsFilter(aips.filter.filters, nextFrom, aips.filter.pageSize))
 
-    const def = colDef.reduce((acc, item) => {
+    const def = colDef.reduce<Record<string, {label: string; minWidth: number; idealWidth: number}>>((acc, item) => {
         const key = item.key;
         acc[key] = {
-            name: item.name,
-            path: item.path,
-            type: item.type,
+            label: formatMessage(item.message),
             minWidth: item.minWidth,
             idealWidth: item.idealWidth
         };
@@ -159,7 +191,7 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
         ]
       );
 
-    const rows = sort(getRows((row) => {
+    const rows = getRows((row) => {
         const selected = isRowSelected(row.rowId);
         return {
             ...row,
@@ -175,11 +207,17 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
             selected,
             appearance: selected ? "brand": "none",
         };
-    }));
+    });
 
     const headerSortProps = (columnId: TableColumnId) => ({
         onClick: (e: MouseEvent) => {
             toggleColumnSort(e, columnId);
+            const field = colDef.find(def => def.key === columnId)?.field;
+            if (field) {
+                const descending = getSortDirection(columnId) === "ascending";
+                dispatch(aipsFilter(aips.filter.filters, 0, aips.filter.pageSize,
+                    [{field, order: descending ? SortingOrder.Desc : SortingOrder.Asc}]));
+            }
         },
         sortDirection: getSortDirection(columnId),
     });
@@ -209,7 +247,7 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
             {aips.fetched && (
                 <>
                     <AipFilterSection
-                        columns={columns.map(item => def[item.columnId]?.name)}
+                        columns={columns.map(item => def[String(item.columnId)]?.label)}
                         onColsChange={toggleColumns}
                         filterDisabled={filterDisabled}
                         initialFilters={initialFilters}
@@ -228,7 +266,7 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
                                     checked={allRowsSelected ? true : someRowsSelected ? "mixed" : false}
                                     onClick={toggleAllRows}
                                     onKeyDown={toggleAllKeydown}
-                                    checkboxIndicator={{"aria-label": "Vybrat vše"}}
+                                    checkboxIndicator={{"aria-label": formatMessage(tableMessages.selectAll)}}
                                     className="header"
 
                                 />
@@ -255,7 +293,7 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
                                 >
                                     <TableSelectionCell
                                         checked={selected}
-                                        checkboxIndicator={{ "aria-label": "Vybrat" }}
+                                        checkboxIndicator={{ "aria-label": formatMessage(tableMessages.select) }}
                                         onClick={onClick}
                                     />
 

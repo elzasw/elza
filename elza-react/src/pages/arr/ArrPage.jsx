@@ -62,7 +62,6 @@ class ArrPage extends ArrParentPage {
     }
 
     static propTypes = {
-        splitter: PropTypes.object.isRequired,
         arrRegion: PropTypes.object.isRequired,
         developer: PropTypes.object.isRequired,
         rulDataTypes: PropTypes.object.isRequired,
@@ -1227,7 +1226,7 @@ class ArrPage extends ArrParentPage {
 }
 
 function mapStateToProps(state) {
-    const {splitter, arrRegion, refTables, focus, developer, userDetail, tab} = state;
+    const {arrRegion, refTables, focus, developer, userDetail, tab} = state;
     let structureTypes = null;
     if (arrRegion.activeIndex !== null) {
         const fund = arrRegion.funds[arrRegion.activeIndex];
@@ -1236,7 +1235,6 @@ function mapStateToProps(state) {
 
     return {
         structureTypes,
-        splitter: splitter.splitters[AREA],
         arrRegion,
         focus,
         developer,

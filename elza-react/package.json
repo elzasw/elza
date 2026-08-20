@@ -20,7 +20,10 @@
     "locale:merge": "node scripts/locale-merge.ts",
     "locale:compile": "formatjs compile-folder lang/translated public/static/res/locale",
     "locale:check": "node scripts/locale-check.ts",
-    "locale:sync": "npm run locale:extract && npm run locale:merge -- --source cs cs en"
+    "locale:sync": "npm run locale:extract && npm run locale:merge -- --source cs cs en",
+    "ts:strict-check": "node scripts/ts-strict-check.ts",
+    "ts:strict-baseline": "node scripts/ts-strict-check.ts --update",
+    "ts:check-scripts": "tsc --noEmit -p tsconfig.scripts.json"
   },
   "dependencies": {
     "@fluentui/react-components": "^9.51.1",
@@ -75,9 +78,14 @@
     "@testing-library/jest-dom": "^6.4.0",
     "@testing-library/react": "^14.2.0",
     "@testing-library/user-event": "^14.5.2",
+    "@types/diff": "^5.2.3",
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",
     "@types/react-redux": "^7.1.26",
+    "@types/react-router-bootstrap": "^0.26.8",
+    "@types/react-router-dom": "^5.3.3",
+    "@types/redux-immutable-state-invariant": "^2.1.4",
+    "@types/redux-logger": "^3.0.13",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "@vitejs/plugin-react": "^4.0.3",

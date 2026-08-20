@@ -9,8 +9,10 @@ import {
 	mergeClasses
 } from "@fluentui/react-components";
 import type { MenuCheckedValueChangeData, MenuCheckedValueChangeEvent } from "@fluentui/react-components";
-import { colDef } from "../utils";
-import { Icon, i18n } from "components/shared";
+import { colDef } from "../columns";
+import { useIntl } from "react-intl";
+import { tableMessages } from "components/shared/lang/tableMessages";
+import { Icon } from "components/shared";
 import "../AipDetail.scss";
 
 
@@ -23,6 +25,7 @@ type AipListColSelectorProps = {
 
 const AipListColSelector = ({columns, onChange, hiddenValues, ...props} : AipListColSelectorProps) => {
 	const classes = useStyles();
+	const {formatMessage} = useIntl();
 	const columnsDef = colDef.filter(col => !hiddenValues?.includes(col.key));
 
 	return (
@@ -36,19 +39,19 @@ const AipListColSelector = ({columns, onChange, hiddenValues, ...props} : AipLis
 					shape="square"
 					{...props}
 				>
-					<span>{i18n("aip.filter.columns")}  <Icon glyph="fa-caret-down"/></span>
+					<span>{formatMessage(tableMessages.columns)}  <Icon glyph="fa-caret-down"/></span>
 				</MenuButton>
 			</MenuTrigger>
 			<MenuPopover className={mergeClasses(classes.bg, classes.menuPopover)}>
 				<MenuList>
-					{Object.keys(columnsDef).map((key) => 
+					{columnsDef.map((column) =>
 						<MenuItemCheckbox 
 							name="col" 
-							key={`selector${key}`}
-							value={columnsDef[key].name} 
+							key={`selector-${column.field}`}
+							value={formatMessage(column.message)} 
 							className={mergeClasses(classes.bg, classes.menuItem)}
 						>
-							{columnsDef[key].name}
+							{formatMessage(column.message)}
 						</MenuItemCheckbox>
 					)}
 				</MenuList>

@@ -144,6 +144,8 @@ model CreateFund {
 model ImportFundData {
     /** Import type. Only 'CSV' is supported */
     importType: HttpPart<string>;
+    /** CSV field separator (single character). Defaults is ';' */
+    separator?: HttpPart<string>;
     /** File to upload */
     dataFile: HttpPart<bytes>;
 }
@@ -269,6 +271,10 @@ enum FsItemSortType {
     SIZE_ASC,
     /** By size in descending */
     SIZE_DESC,
+    /** By last change time, oldest first */
+    LAST_CHANGE_ASC,
+    /** By last change time, newest first */
+    LAST_CHANGE_DESC,    
 }
 
 /**
@@ -1245,40 +1251,6 @@ enum DaDaoType {
 }
 
 /**
- * Filter aipu
- */
-model AipFilterGen {
-    /**
-     * UUID filtru
-     */
-    id?: string;
-    /**
-     * Atribut, podle kterého chceme filtrovat
-     */
-    attr: string;
-    /**
-     * filtrovaná hodnota
-     */
-    value?: string;
-    /**
-     * Způsob porovnání
-     */
-    criteria: AipFilterCriteriaGen;
-    /**
-     * Hodnota od
-     */
-    from?: string;
-    /**
-     * Hodnota do
-     */
-    to?: string;
-    /**
-     * Cesta
-     */
-    path: string;
-}
-
-/**
  * List of dao links
  */
 model DaoLinksResult {
@@ -1329,36 +1301,6 @@ model DaoLink {
      * Link on children components
      */
     children?: DaoLink[];
-}
-
-/**
- * Způsob porovnání hodnot filtru
- */
-enum AipFilterCriteriaGen {
-    /**
-     * Hodnota je null
-     */
-    IS_NULL,
-    /**
-     * Hodnota není null
-     */
-    IS_NOT_NULL,
-    /**
-     * Hodnota obsahuje
-     */
-    CONTAINS,
-    /**
-     * Hodnota neobsahuje
-     */
-    DOES_NOT_CONTAIN,
-    /**
-     * Hodnota se rovná
-     */
-    EQUALS,
-    /**
-     * Hodnota je v rozmezí
-     */
-    BETWEEN
 }
 
 /**
@@ -1883,7 +1825,36 @@ enum OperationCompareType {
  * Operation type for LogicalFilter
  */
 enum OperationLogicalType {
-    AND, OR 
+    AND, OR
+}
+
+/**
+ * Operation type for TextValueFilter
+ */
+enum OperationTextType {
+    EQ, NEQ, CONTAINS, NOT_CONTAINS, STARTWITH, ENDWITH, IS_NULL, NOT_NULL
+}
+
+/**
+ * Operation type for NumberValueFilter
+ */
+enum OperationNumberType {
+    EQ, NEQ, GT, LT, GTE, LTE, BETWEEN, IS_NULL, NOT_NULL
+}
+
+/**
+ * Operation type for filters whose value can only be compared for equality -
+ * BoolValueFilter, EnumValueFilter and RefValueFilter.
+ */
+enum OperationEqualityType {
+    EQ, NEQ, IS_NULL, NOT_NULL
+}
+
+/**
+ * Operation type for DateValueFilter
+ */
+enum OperationRangeType {
+    BETWEEN, GT, LT, GTE, LTE, IS_NULL, NOT_NULL
 }
 
 /**
@@ -1897,7 +1868,10 @@ enum FieldType {
     NODE_FIELD,
 
     /** Description item field */
-    DESC_ITEM
+    DESC_ITEM,
+
+    /** Field of an AIP in the digital archive */
+    AIP_FIELD
 }
 
 /**
@@ -1964,12 +1938,58 @@ model DescItemField extends AbstractField {
 }
 
 /**
+ * AIP specific field names.
+ *
+ * `unitdate` covers the whole dating of the AIP, that is both its start and its end.
+ */
+enum AipFieldName {
+    aipId,
+    code,
+    aipVersion,
+    fund,
+    fundCode,
+    institution,
+    institutionCode,
+    unitdate,
+    originator,
+    ingestionCode,
+    referenceNumber,
+    nadChangeCode,
+    aipSize,
+    metadataLoad,
+    completeAipLoad,
+    metadataError,
+    importState,
+    exportState
+}
+
+/**
+ * AIP specific search field
+ */
+model AipField extends AbstractField {
+    @invisible(Lifecycle)
+    fieldType: FieldType.AIP_FIELD;
+    /** Name of field (from enum AipFieldName) */
+    fieldName: AipFieldName;
+}
+
+/**
  * Types of filters
+ *
+ * `fieldValue` is the original untyped filter and is retained unchanged for existing
+ * clients. The `*Value` members below carry the value in the type of the field, so that
+ * the comparison a filter asks for can be checked before it reaches the query builder.
  */
 enum FilterType {
     fieldValue,
     contains,
-    logical
+    logical,
+    textValue,
+    numberValue,
+    boolValue,
+    dateValue,
+    enumValue,
+    refValue
 }
 
 /**
@@ -2014,6 +2034,107 @@ model LogicalFilter extends AbstractFilter {
     filters: AbstractFilter[];
     /** operation type */
     operation: OperationLogicalType;
+}
+
+/**
+ * Compares a text field with a text value.
+ *
+ * `value` is required for every operation except IS_NULL and NOT_NULL.
+ */
+model TextValueFilter extends AbstractFilter {
+    @invisible(Lifecycle)
+    filterType: FilterType.textValue;
+    /** searched field */
+    field: AbstractField;
+    /** operation type */
+    operation: OperationTextType;
+    /** searched value */
+    value?: string;
+}
+
+/**
+ * Compares a numeric field with a number, or with a range for BETWEEN.
+ */
+model NumberValueFilter extends AbstractFilter {
+    @invisible(Lifecycle)
+    filterType: FilterType.numberValue;
+    /** searched field */
+    field: AbstractField;
+    /** operation type */
+    operation: OperationNumberType;
+    /** searched value, used by all operations except BETWEEN */
+    value?: int64;
+    /** lower bound, required for BETWEEN */
+    from?: int64;
+    /** upper bound, required for BETWEEN */
+    to?: int64;
+}
+
+/**
+ * Compares a boolean field with a boolean value.
+ */
+model BoolValueFilter extends AbstractFilter {
+    @invisible(Lifecycle)
+    filterType: FilterType.boolValue;
+    /** searched field */
+    field: AbstractField;
+    /** operation type */
+    operation: OperationEqualityType;
+    /** searched value */
+    value?: boolean;
+}
+
+/**
+ * Compares a date field with a date, or with a range for BETWEEN.
+ *
+ * A range covers whole days, so an AIP dated on the boundary day is part of the result.
+ */
+model DateValueFilter extends AbstractFilter {
+    @invisible(Lifecycle)
+    filterType: FilterType.dateValue;
+    /** searched field */
+    field: AbstractField;
+    /** operation type */
+    operation: OperationRangeType;
+    /** searched value, used by all operations except BETWEEN */
+    value?: plainDate;
+    /** lower bound, required for BETWEEN */
+    from?: plainDate;
+    /** upper bound, required for BETWEEN */
+    to?: plainDate;
+}
+
+/**
+ * Compares an enumerated field with one of its constants.
+ *
+ * Which enumeration applies follows from `field`; the endpoint validates the value
+ * against it and rejects a name that does not belong to that enumeration.
+ */
+model EnumValueFilter extends AbstractFilter {
+    @invisible(Lifecycle)
+    filterType: FilterType.enumValue;
+    /** searched field */
+    field: AbstractField;
+    /** operation type */
+    operation: OperationEqualityType;
+    /** name of the enumeration constant */
+    value?: string;
+}
+
+/**
+ * Compares a field referencing another entity with the id of that entity.
+ *
+ * Kept apart from NumberValueFilter because a range over an entity id has no meaning.
+ */
+model RefValueFilter extends AbstractFilter {
+    @invisible(Lifecycle)
+    filterType: FilterType.refValue;
+    /** searched field */
+    field: AbstractField;
+    /** operation type */
+    operation: OperationEqualityType;
+    /** id of the referenced entity */
+    value?: int32;
 }
 
 /**
@@ -5475,10 +5596,8 @@ namespace ElzaAPI.Aip {
       */
      @route("/find/filter")
      @post op findByFilter(
-        /** Array of filters */
-        @body filters: AipFilterGen[];
-        @query from: integer;
-        @query count: integer;
+        /** search parameters - filters, paging and sorting */
+        @body params: SearchParams;
      ) : {
          /** Dao link successfully deleted */
          @Http.statusCode statusCode: 200;

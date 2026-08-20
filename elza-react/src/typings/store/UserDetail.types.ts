@@ -85,7 +85,7 @@ export interface UserDetail {
     groups: unknown | null;
     hasAll: () => unknown;
     hasArrOutputPage: () => unknown;
-    hasArrPage: () => unknown;
+    hasArrPage: (fundId?: number | null) => boolean;
     hasFundActionPage: () => unknown;
     hasOne: (...permission: (PermissionType | { type: PermissionType; scopeId?: number; fundId?: number; })[]) => boolean;
     hasRdPage: () => unknown;

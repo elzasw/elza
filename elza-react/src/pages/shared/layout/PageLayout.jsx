@@ -4,11 +4,15 @@ import {connect} from 'react-redux';
 import classNames from 'classnames';
 import {Splitter, ToggleContent} from 'components/shared';
 import {splitterResize} from 'actions/global/splitter.jsx';
+import {DEFAULT_SPLITTER_SIZES, SPLITTER_AREA_GLOBAL} from 'stores/app/global/splitter.jsx';
 
 import './PageLayout.scss';
 
 /**
  * Standardní layout stránky, který ribbon, obsahuje levý panel, prostřední panel a pravý panel, které jsou odděleny splitterem.
+ *
+ * Rozměry panelů si layout bere ze store podle oblasti (`area`) - stránky bez vlastní oblasti
+ * používají oblast globální.
  */
 class PageLayout extends React.Component {
     state = {
@@ -24,7 +28,7 @@ class PageLayout extends React.Component {
 
     render() {
         const {ribbonOpened} = this.state;
-        const { className, status, ribbon, splitter, sidebar, leftPanel, centerPanel, rightPanel, area } = this.props;
+        const { className, status, ribbon, splitterSizes, sidebar, leftPanel, centerPanel, rightPanel, area } = this.props;
         const cls = classNames(className, {
             'app-container': true,
             'app-exists-status': status != null,
@@ -47,15 +51,15 @@ class PageLayout extends React.Component {
                     {sidebar && <div className="app-sidebar">{sidebar}</div>}
                     <div className="app-content-main">
                         <Splitter
-                            leftSize={splitter.leftWidth}
-                            rightSize={splitter.rightWidth}
+                            leftSize={splitterSizes.leftWidth}
+                            rightSize={splitterSizes.rightWidth}
                             onChange={({leftSize, rightSize}) => {
                                 this._pendingLeftSize = leftSize;
                                 this._pendingRightSize = rightSize;
                             }}
                             onDragFinished={() => {
                                 if (this._pendingLeftSize !== null || this._pendingRightSize !== null) {
-                                    this.props.dispatch(splitterResize(this._pendingLeftSize ?? splitter.leftWidth, this._pendingRightSize ?? splitter.rightWidth, area));
+                                    this.props.dispatch(splitterResize(this._pendingLeftSize ?? splitterSizes.leftWidth, this._pendingRightSize ?? splitterSizes.rightWidth, area));
                                     this._pendingLeftSize = null;
                                     this._pendingRightSize = null;
                                 }
@@ -71,4 +75,12 @@ class PageLayout extends React.Component {
     }
 }
 
-export default connect()(PageLayout);
+const mapStateToProps = (state, ownProps) => {
+    const splitters = state.splitter.splitters;
+    const area = ownProps.area || SPLITTER_AREA_GLOBAL;
+    return {
+        splitterSizes: splitters[area] || splitters[SPLITTER_AREA_GLOBAL] || DEFAULT_SPLITTER_SIZES,
+    };
+};
+
+export default connect(mapStateToProps)(PageLayout);

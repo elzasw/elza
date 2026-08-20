@@ -1,9 +1,9 @@
-import { useRef, useState, useEffect, useLayoutEffect } from 'react';
-import { VirtualList } from 'components/shared';
+import { Fragment, useRef, useState, useEffect, useLayoutEffect } from 'react';
 import { Api } from 'api';
+import { getFullPath } from 'api/api';
 import classNames from 'classnames';
-import { Button, Popover, PopoverSurface, PopoverTrigger } from '@fluentui/react-components';
-import { DeleteRegular } from '@fluentui/react-icons';
+import { Button, Menu, MenuItem, MenuList, MenuPopover, MenuTrigger, Popover, PopoverSurface, PopoverTrigger } from '@fluentui/react-components';
+import { ArrowClockwiseFilled, ArrowDownloadRegular, ArrowUpRegular, DeleteRegular, DocumentRegular, FilterRegular, FolderRegular, LinkRegular, TextSortAscendingRegular } from '@fluentui/react-icons';
 import { FsRepo, FsItem, FsItemType, FsItemSortType, FsItemFilterByLinked, FsLink } from 'elza-api';
 import { useDebouncedEffect } from 'utils/hooks/hooks';
 import { useAppThunkDispatch } from 'utils/hooks';
@@ -38,6 +38,14 @@ const messages = defineMessages({
         id: 'arr.daos.fileSystem.sort.sizeDesc',
         defaultMessage: 'Velikost sestupně',
     },
+    sortLastChangeAsc: {
+        id: 'arr.daos.fileSystem.sort.lastChangeAsc',
+        defaultMessage: 'Datum změny vzestupně',
+    },
+    sortLastChangeDesc: {
+        id: 'arr.daos.fileSystem.sort.lastChangeDesc',
+        defaultMessage: 'Datum změny sestupně',
+    },
     filterPlaceholder: {
         id: 'arr.daos.fileSystem.filter.placeholder',
         defaultMessage: 'Filtrovat…',
@@ -56,11 +64,11 @@ const messages = defineMessages({
     },
     filterByLinkLinked: {
         id: 'arr.daos.fileSystem.filterByLink.linked',
-        defaultMessage: 'Propojené',
+        defaultMessage: 'Připojené',
     },
     filterByLinkUnlinked: {
         id: 'arr.daos.fileSystem.filterByLink.unlinked',
-        defaultMessage: 'Nepropojené',
+        defaultMessage: 'Nepřipojené',
     },
     linksTrigger: {
         id: 'arr.daos.fileSystem.links.trigger',
@@ -82,6 +90,34 @@ const messages = defineMessages({
         id: 'arr.daos.fileSystem.repo.unavailableDetail',
         defaultMessage: 'Cesta {path} na serveru neexistuje nebo ji nelze číst. Obsah repozitáře proto nelze zobrazit — zkontrolujte nastavení externího systému.',
     },
+    refresh: {
+        id: 'arr.daos.fileSystem.refresh',
+        defaultMessage: 'Obnovit seznam souborů a složek',
+    },
+    reposLoadErrorTitle: {
+        id: 'arr.daos.fileSystem.repos.loadErrorTitle',
+        defaultMessage: 'Nelze načíst seznam repozitářů',
+    },
+    reposLoadErrorDetail: {
+        id: 'arr.daos.fileSystem.repos.loadErrorDetail',
+        defaultMessage: 'Zkuste to znovu tlačítkem Obnovit.',
+    },
+    itemsLoadErrorTitle: {
+        id: 'arr.daos.fileSystem.items.loadErrorTitle',
+        defaultMessage: 'Nelze načíst obsah složky',
+    },
+    itemsLoadErrorDetail: {
+        id: 'arr.daos.fileSystem.items.loadErrorDetail',
+        defaultMessage: 'Zkuste to znovu tlačítkem Obnovit nebo přejděte na jinou složku.',
+    },
+    itemsLoading: {
+        id: 'arr.daos.fileSystem.items.loading',
+        defaultMessage: 'Načítání obsahu složky…',
+    },
+    contextDownload: {
+        id: 'arr.daos.fileSystem.context.download',
+        defaultMessage: 'Stáhnout',
+    },
 });
 
 interface Props {
@@ -95,7 +131,6 @@ export const FileSystemBrowser = ({
     onSelect = () => { return; },
     refreshCounter,
 }: Props) => {
-    const levelContainerRef = useRef<HTMLDivElement>(null);
     const treeRef = useRef<TreeExposedFunctions>(null);
     const breadcrumbsRef = useRef<HTMLDivElement>(null);
 
@@ -114,6 +149,16 @@ export const FileSystemBrowser = ({
     const [filterInput, setFilterInput] = useState('');
     const [treeSize, setTreeSize] = useState<number>(100);
     const [debouncedFilter, setDebouncedFilter] = useState('');
+    const [localRefreshTick, setLocalRefreshTick] = useState(0);
+    const [reposError, setReposError] = useState<boolean>(false);
+    const [itemsError, setItemsError] = useState<boolean>(false);
+    const [itemsLoading, setItemsLoading] = useState<boolean>(false);
+
+    // On refresh, collapse every previously expanded node so the "[-]" icon
+    // and the visible content stay in sync while the Tree wipes its cache.
+    useEffect(() => {
+        setExpandedItems({});
+    }, [refreshCounter, localRefreshTick]);
 
     // Number of middle path segments currently collapsed into the "…" separator.
     // The first segment and the last segment (when depth > 1) always stay visible;
@@ -161,13 +206,13 @@ export const FileSystemBrowser = ({
     // Repository of the selected tree item; unavailable ones cannot be browsed and
     // the file list is replaced by an explanation instead.
     const selectedRepo = selectedTreeItemPath
-        ? repos.find((repo) => repo.fsRepoId.toString() === extractRepoIdFromFullPath(selectedTreeItemPath)[0])
+        ? repos.find((repo) => repo.fsRepoId === extractRepoIdFromFullPath(selectedTreeItemPath)[0])
         : undefined;
     const isSelectedRepoUnavailable = selectedRepo != undefined && !selectedRepo.available;
 
     const loadLevel = async (fullPath: string, lastKey: string | undefined, depth: number = 0, filter?: FsItemType) => {
         const [repoId, path] = extractRepoIdFromFullPath(fullPath)
-        const { data: items } = await Api.funds.fundFsRepoItems(fundId, parseInt(repoId, 10), filter, path, lastKey, filterByLink, sortType, debouncedFilter || undefined);
+        const { data: items } = await Api.funds.fundFsRepoItems(fundId, repoId, filter, path, lastKey, filterByLink, sortType, debouncedFilter || undefined);
         const itemLevel: RenderItem[] = items.items.map((item) => {
             const extendedItemBase: FsItem = {
                 ...item,
@@ -193,10 +238,26 @@ export const FileSystemBrowser = ({
             })
         }
         if (!childrenMap[fullPath] && itemLevel.find((item) => { return isListItem(item) && item.data.itemType === FsItemType.Folder })) {
-            setChildrenMap({ ...childrenMap, [fullPath]: true });
+            setChildrenMap((prev) => ({ ...prev, [fullPath]: true }));
         }
         return itemLevel;
     }
+
+    const handleDownloadFile = (item: FsItem, fullPath: string) => {
+        const [repoId, path] = extractRepoIdFromFullPath(fullPath);
+        const params = new URLSearchParams();
+        if (path) params.set('path', path);
+        const url = getFullPath(`fund/${fundId}/fsrepo/${repoId}/item-data?${params}`);
+        // Explicit anchor with `download` streams via the browser and forces save
+        // even for inline-renderable types (image, txt) that the server serves
+        // with Content-Disposition: inline.
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = item.name;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+    };
 
     const renderListItem = (item: RenderItem) => {
         if (isLastKeyItem(item)) {
@@ -224,7 +285,8 @@ export const FileSystemBrowser = ({
         if (isListItem(item)) {
             const isSelected = item.fullPath === selectedListItem;
             const lastChangeDate = new Date(item.data.lastChange);
-            return <div
+            const isFile = item.data.itemType === FsItemType.File;
+            const row = <div
                 className={classNames("list-item", { "selected": isSelected })}
                 onDoubleClick={(e) => {
                     e.preventDefault();
@@ -239,7 +301,7 @@ export const FileSystemBrowser = ({
                 }}
             >
                 <span className="item-part left no-shrink" title={item.data.name}>
-                    {item.data.itemType === FsItemType.Folder ? <Icon glyph="fa-folder" /> : <Icon glyph="fa-file" />}
+                    {item.data.itemType === FsItemType.Folder ? <FolderRegular fontSize={18} /> : <DocumentRegular fontSize={18} />}
                 </span>
                 {item.data.links && item.data.links.length > 0 && (
                     <Popover>
@@ -251,7 +313,7 @@ export const FileSystemBrowser = ({
                                 title={intl.formatMessage(messages.linksTrigger)}
                                 onClick={(e) => e.stopPropagation()}
                             >
-                                <Icon glyph="fa-link" />
+                                <LinkRegular fontSize={16} />
                             </button>
                         </PopoverTrigger>
                         <PopoverSurface>
@@ -301,7 +363,27 @@ export const FileSystemBrowser = ({
                 <span className="item-part right no-shrink" style={{ width: "18ch" }} title={buildDateString(lastChangeDate)}>
                     {buildDateString(lastChangeDate)}
                 </span>
-            </div>
+            </div>;
+            if (!isFile) {
+                return row;
+            }
+            return (
+                <Menu openOnContext>
+                    <MenuTrigger disableButtonEnhancement>
+                        {row}
+                    </MenuTrigger>
+                    <MenuPopover>
+                        <MenuList>
+                            <MenuItem
+                                icon={<ArrowDownloadRegular />}
+                                onClick={() => handleDownloadFile(item.data, item.fullPath)}
+                            >
+                                {intl.formatMessage(messages.contextDownload)}
+                            </MenuItem>
+                        </MenuList>
+                    </MenuPopover>
+                </Menu>
+            );
         }
     }
 
@@ -309,10 +391,11 @@ export const FileSystemBrowser = ({
         if (selectedTreeItemPath) {
             const itemsEx: RenderItem[] = await loadLevel(selectedTreeItemPath, lastKey, depth);
 
-            const newRepoItems = [...levelList];
-            newRepoItems.splice(index, 1, ...itemsEx);
-
-            setLevelList(newRepoItems);
+            setLevelList((prev) => {
+                const next = [...prev];
+                next.splice(index, 1, ...itemsEx);
+                return next;
+            });
         }
     }
 
@@ -321,17 +404,31 @@ export const FileSystemBrowser = ({
         (async () => {
             if (isSelectedRepoUnavailable) {
                 setLevelList([]);
+                setItemsError(false);
+                setItemsLoading(false);
                 return;
             }
             if (selectedTreeItemPath) {
-                const itemsEx = await loadLevel(selectedTreeItemPath, undefined, 0);
-                if (!cancelled) {
-                    setLevelList(itemsEx);
+                setItemsLoading(true);
+                try {
+                    const itemsEx = await loadLevel(selectedTreeItemPath, undefined, 0);
+                    if (!cancelled) {
+                        setLevelList(itemsEx);
+                        setItemsError(false);
+                    }
+                } catch (e) {
+                    console.error('Failed to load fs items', e);
+                    if (!cancelled) {
+                        setLevelList([]);
+                        setItemsError(true);
+                    }
+                } finally {
+                    if (!cancelled) setItemsLoading(false);
                 }
             }
         })();
         return () => { cancelled = true; };
-    }, [selectedTreeItemPath, isSelectedRepoUnavailable, sortType, filterByLink, debouncedFilter, refreshCounter])
+    }, [selectedTreeItemPath, isSelectedRepoUnavailable, sortType, filterByLink, debouncedFilter, refreshCounter, localRefreshTick])
 
     useEffect(() => {
         return () => {
@@ -340,11 +437,21 @@ export const FileSystemBrowser = ({
     }, [])
 
     useEffect(() => {
+        let cancelled = false;
         (async () => {
-            const { data } = await Api.funds.fundFsRepos(fundId);
-            setRepos(data);
-        })()
-    }, [])
+            try {
+                const { data } = await Api.funds.fundFsRepos(fundId);
+                if (!cancelled) {
+                    setRepos(data);
+                    setReposError(false);
+                }
+            } catch (e) {
+                console.error('Failed to load fs repositories', e);
+                if (!cancelled) setReposError(true);
+            }
+        })();
+        return () => { cancelled = true; };
+    }, [fundId, refreshCounter, localRefreshTick])
 
     useEffect(() => {
         if (repos.length > 0 && !selectedTreeItemPath) {
@@ -395,18 +502,18 @@ export const FileSystemBrowser = ({
                     const hiddenNames = breadcrumbParts
                         .slice(hiddenStart, hiddenEnd! + 1)
                         .map((bp) => bp.split("/").pop());
-                    return <>
+                    return <Fragment key={`ellipsis-${hiddenStart}`}>
                         <span className="ellipsis" title={hiddenNames.join(" / ")}>
                             &hellip;
                         </span>
                         <div className="divider">
                             <Icon glyph="fa-angle-right" />
                         </div>
-                    </>
+                    </Fragment>
                 }
 
                 const parts = breadcrumb.split("/")
-                return <>
+                return <Fragment key={breadcrumb}>
                     <div className="btn" title={breadcrumb} onClick={() => { setSelectedTreeItem(breadcrumb) }}>
                         {index === 0 ? repoName : parts[parts.length - 1]}
                     </div>
@@ -414,7 +521,7 @@ export const FileSystemBrowser = ({
                         && <div className="divider">
                             <Icon glyph="fa-angle-right" />
                         </div>}
-                </>
+                </Fragment>
             })}
         </div>
 
@@ -432,16 +539,19 @@ export const FileSystemBrowser = ({
         <div className="file-system-browser">
             <div className="toolbar">
                 <div className="actions">
-                    <div title={i18n("arr.daos.fileSystem.selectParent")}
-                        className="btn"
-                        onClick={handleSelectParent}>
-                        <Icon glyph="fa-angle-up" />
-                    </div>
+                    <Button
+                        appearance="subtle"
+                        size="small"
+                        icon={<ArrowUpRegular />}
+                        onClick={handleSelectParent}
+                        title={i18n("arr.daos.fileSystem.selectParent")}
+                        aria-label={i18n("arr.daos.fileSystem.selectParent")}
+                    />
                 </div>
                 {generateBreadcrumbs()}
                 <div className="filters">
                     <span className="sort-label" title={intl.formatMessage(messages.filterByLinkLabel)}>
-                        <Icon glyph="fa-filter" className="fa-lg" />
+                        <FilterRegular fontSize={18} />
                     </span>
                     <select
                         id="filter-by-link-select"
@@ -476,7 +586,7 @@ export const FileSystemBrowser = ({
                         />
                     )}
                     <span className="sort-label" title={intl.formatMessage(messages.sortLabel)}>
-                        <Icon glyph="fa-sort-alpha-asc" className="fa-lg" />
+                        <TextSortAscendingRegular fontSize={18} />
                     </span>
                     <select
                         id="sort-select"
@@ -489,7 +599,19 @@ export const FileSystemBrowser = ({
                         <option value={FsItemSortType.NameDesc}>{intl.formatMessage(messages.sortNameDesc)}</option>
                         <option value={FsItemSortType.SizeAsc}>{intl.formatMessage(messages.sortSizeAsc)}</option>
                         <option value={FsItemSortType.SizeDesc}>{intl.formatMessage(messages.sortSizeDesc)}</option>
+                        <option value={FsItemSortType.LastChangeAsc}>{intl.formatMessage(messages.sortLastChangeAsc)}</option>
+                        <option value={FsItemSortType.LastChangeDesc}>{intl.formatMessage(messages.sortLastChangeDesc)}</option>
                     </select>
+                </div>
+                <div className="actions actions--end">
+                    <Button
+                        appearance="subtle"
+                        size="small"
+                        icon={<ArrowClockwiseFilled />}
+                        onClick={() => setLocalRefreshTick((tick) => tick + 1)}
+                        title={intl.formatMessage(messages.refresh)}
+                        aria-label={intl.formatMessage(messages.refresh)}
+                    />
                 </div>
             </div>
             <div className="main-container">
@@ -497,16 +619,31 @@ export const FileSystemBrowser = ({
                     leftSize={treeSize}
                     onChange={({ leftSize }: { leftSize: number; rightSize: number }) => setTreeSize(leftSize)}
                     left={
-                        <Tree
-                            ref={treeRef}
-                            fundId={fundId}
-                            selectedItemPath={selectedTreeItemPath}
-                            onSelect={(item) => { setSelectedTreeItem(item.fullPath) }}
-                            expandedItems={expandedItems}
-                            onExpandChange={(itemFullPath, expanded) => { setExpandedItems({ ...expandedItems, [itemFullPath]: expanded }) }}
-                            childrenMap={childrenMap}
-                            repos={repos}
-                        />
+                        reposError ? (
+                            <div className="repo-unavailable">
+                                <Icon glyph="fa-exclamation-triangle" className="fa-lg" />
+                                <div className="repo-unavailable__title">
+                                    {intl.formatMessage(messages.reposLoadErrorTitle)}
+                                </div>
+                                <div className="repo-unavailable__detail">
+                                    {intl.formatMessage(messages.reposLoadErrorDetail)}
+                                </div>
+                            </div>
+                        ) : (
+                            <Tree
+                                ref={treeRef}
+                                fundId={fundId}
+                                selectedItemPath={selectedTreeItemPath}
+                                onSelect={(item) => { setSelectedTreeItem(item.fullPath) }}
+                                expandedItems={expandedItems}
+                                onExpandChange={(itemFullPath, expanded) =>
+                                    setExpandedItems((prev) => ({ ...prev, [itemFullPath]: expanded }))
+                                }
+                                childrenMap={childrenMap}
+                                repos={repos}
+                                refreshKey={(refreshCounter ?? 0) + localRefreshTick}
+                            />
+                        )
                     }
                     center={
                         isSelectedRepoUnavailable ? (
@@ -519,19 +656,30 @@ export const FileSystemBrowser = ({
                                     {intl.formatMessage(messages.repoUnavailableDetail, { path: selectedRepo?.path })}
                                 </div>
                             </div>
+                        ) : itemsError ? (
+                            <div className="repo-unavailable">
+                                <Icon glyph="fa-exclamation-triangle" className="fa-lg" />
+                                <div className="repo-unavailable__title">
+                                    {intl.formatMessage(messages.itemsLoadErrorTitle)}
+                                </div>
+                                <div className="repo-unavailable__detail">
+                                    {intl.formatMessage(messages.itemsLoadErrorDetail)}
+                                </div>
+                            </div>
+                        ) : itemsLoading ? (
+                            <div className="repo-unavailable repo-unavailable--loading">
+                                <Icon glyph="fa-spinner fa-spin" className="fa-lg" />
+                                <div className="repo-unavailable__title">
+                                    {intl.formatMessage(messages.itemsLoading)}
+                                </div>
+                            </div>
                         ) : (
-                            <div
-                                className="file-list"
-                                ref={levelContainerRef}
-                            >
-                                <VirtualList
-                                    container={levelContainerRef.current || undefined}
-                                    items={levelList}
-                                    renderItem={(item: RenderItem) => {
-                                        return renderListItem(item);
-                                    }}
-                                    scrollToIndex={0}
-                                />
+                            <div className="file-list">
+                                {levelList.map((item) => (
+                                    <Fragment key={item.fullPath}>
+                                        {renderListItem(item)}
+                                    </Fragment>
+                                ))}
                             </div>
                         )
                     }

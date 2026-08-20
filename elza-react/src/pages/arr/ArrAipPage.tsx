@@ -10,8 +10,11 @@ import AipTable from '../../components/aip/AipTable';
 import AipExplorer from '../../components/aip/explorer/AipExplorer';
 import { ExplorerMode } from 'components/aip/explorer/ExplorerContext';
 import {selectAip} from '../../actions/aip/aip';
-import { generateUUID } from 'components/aip/utils';
-import { AipFilterCriteria } from 'components/aip/filter/forms/EnumAipFilterCriteria';
+import type { AppState, Fund, UserDetail } from 'typings/store';
+
+import { AipFieldName } from 'elza-api';
+import { buildFilter } from 'components/aip/filter/aipFilterModel';
+import { AipFilterEntry } from 'typings/store';
 import ActionsContainer from 'components/arr/aip/ActionsContainer';
 
 /**
@@ -20,10 +23,44 @@ import ActionsContainer from 'components/arr/aip/ActionsContainer';
 
 const AREA = "AIP"
 
+/**
+ * Conditions the screen applies itself: this fund, with metadata loaded and no load error.
+ */
+const initialFilters = (fundId: number): AipFilterEntry[] => [
+    {
+        id: "fund",
+        field: AipFieldName.Fund,
+        filter: buildFilter(AipFieldName.Fund, "ref", {operation: "EQ", value: fundId}),
+        invisible: true,
+    },
+    {
+        id: "metadataLoad",
+        field: AipFieldName.MetadataLoad,
+        filter: buildFilter(AipFieldName.MetadataLoad, "bool", {operation: "EQ", value: true}),
+        invisible: true,
+    },
+    {
+        id: "metadataError",
+        field: AipFieldName.MetadataError,
+        filter: buildFilter(AipFieldName.MetadataError, "bool", {operation: "EQ", value: false}),
+        invisible: true,
+    },
+];
+
+/**
+ * Props teto stranky. Zakladni trida ArrParentPage je zatim netypovane .jsx,
+ * takze je nelze zdedit; popsany je jen rozsah, ktery stranka pouziva.
+ */
+type ArrAipPageProps = {
+    dispatch: (action: unknown) => unknown;
+    userDetail: UserDetail;
+    arrRegion: { activeIndex: number | null; funds: Fund[] };
+};
+
 class ArrAipPage extends ArrParentPage {
     area = AREA
 
-    constructor(props) {
+    constructor(props: ArrAipPageProps) {
         super(props, 'fa-page');
     }
 
@@ -32,15 +69,15 @@ class ArrAipPage extends ArrParentPage {
         this.resolveUrls()
     }
 
-    UNSAFE_componentWillReceiveProps(nextProps) {
+    UNSAFE_componentWillReceiveProps(nextProps: ArrAipPageProps) {
         super.UNSAFE_componentWillReceiveProps(nextProps);
     }
 
-    getPageUrl(fund) {
+    getPageUrl(fund: Fund) {
         return urlFundAb(fund.id, getFundVersion(fund));
     }
 
-    handleShortcuts(action, e) {
+    handleShortcuts(action: string, e: KeyboardEvent) {
         console.log('#handleShortcuts ArrAipPage', '[' + action + ']', this);
         super.handleShortcuts(action, e);
     }
@@ -48,12 +85,12 @@ class ArrAipPage extends ArrParentPage {
      * Sestavení Ribbonu.
      * @return {Object} view
      */
-    buildRibbon(readMode, closed) {
+    buildRibbon(readMode: boolean, closed: boolean) {
         const activeFund = this.getActiveFund(this.props);
 
-        const altActions = [];
+        const altActions: JSX.Element[] = [];
 
-        const itemActions = [];
+        const itemActions: JSX.Element[] = [];
 
         let altSection;
         if (altActions.length > 0) {
@@ -85,44 +122,23 @@ class ArrAipPage extends ArrParentPage {
         );
     }
 
-    hasPageShowRights(userDetail, activeFund) {
+    hasPageShowRights(userDetail: UserDetail, activeFund: Fund | null) {
         return userDetail.hasArrPage(activeFund ? activeFund.id : null);
     }
 
-    renderLeftPanel(readMode, closed) {
+    renderLeftPanel(readMode: boolean, closed: boolean) {
         const activeFund = this.getActiveFund(this.props);
 
         return (
             <AipTable
                 onAipSelect={(id) => this.props.dispatch(selectAip(id))}
-                initialFilters={[{
-                    id: generateUUID(),
-                    attr: "fund.name",
-                    criteria: AipFilterCriteria.EQUALS,
-                    value: activeFund.id,
-                    path: "arr_fund",
-                    invisible: true,
-                },{
-                    id: generateUUID(),
-                    attr: "metadataLoad",
-                    criteria: AipFilterCriteria.EQUALS,
-                    value: true,
-                    path: "da_aip_state",
-                    invisible: true,
-                },{
-                    id: generateUUID(),
-                    attr: "metadataError",
-                    criteria: AipFilterCriteria.EQUALS,
-                    value: false,
-                    path: "da_aip_state",
-                    invisible: true,
-                }]}
+                initialFilters={initialFilters(activeFund.id)}
                 hiddenValues={["fund.name", "institution.name", "institutionCode"]}
             />
         );
     }
 
-    renderCenterPanel(readMode, closed) {
+    renderCenterPanel(readMode: boolean, closed: boolean) {
         const activeFund = this.getActiveFund(this.props);
         return (
             <div className='aip-center-panel'>
@@ -133,10 +149,9 @@ class ArrAipPage extends ArrParentPage {
     }
 };
 
-function mapStateToProps(state) {
-    const {splitter, arrRegion, refTables, form, focus, developer, userDetail, tab} = state;
+function mapStateToProps(state: AppState) {
+    const {arrRegion, refTables, form, focus, developer, userDetail, tab} = state;
     return {
-        splitter: splitter.splitters[AREA],
         arrRegion,
         focus,
         developer,
@@ -149,7 +164,6 @@ function mapStateToProps(state) {
 }
 
 ArrAipPage.propTypes = {
-    splitter: PropTypes.object.isRequired,
     arrRegion: PropTypes.object.isRequired,
     developer: PropTypes.object.isRequired,
     rulDataTypes: PropTypes.object.isRequired,

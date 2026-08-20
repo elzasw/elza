@@ -17,7 +17,6 @@ import { Api } from 'api/api';
 export function ArrPublicationPage() {
     const { id } = useParams<{ id: string }>();
     const fundId = Number(id);
-    const splitter = useSelector(({ splitter }: AppState) => splitter);
     const activeFund = useSelector(({ arrRegion }: AppState) =>
         arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null
     );
@@ -79,7 +78,7 @@ export function ArrPublicationPage() {
         </div>
     );
 
-    return <PageLayout splitter={splitter} ribbon={ribbon} centerPanel={centerPanel} />;
+    return <PageLayout ribbon={ribbon} centerPanel={centerPanel} />;
 }
 
 export default ArrPublicationPage;

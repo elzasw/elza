@@ -38,7 +38,6 @@ export default class ArrParentPage extends AbstractReactComponent {
     static defaultKeymap = defaultKeymap;
 
     static propTypes = {
-        splitter: PropTypes.object.isRequired,
         arrRegion: PropTypes.object.isRequired,
         developer: PropTypes.object.isRequired,
         rulDataTypes: PropTypes.object.isRequired,
@@ -255,7 +254,7 @@ export default class ArrParentPage extends AbstractReactComponent {
     }
 
     render() {
-        const {splitter, arrRegion, userDetail, ruleSet, rulDataTypes, descItemTypes} = this.props;
+        const {arrRegion, userDetail, ruleSet, rulDataTypes, descItemTypes} = this.props;
 
         var activeFund = arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : null;
 
@@ -304,7 +303,6 @@ export default class ArrParentPage extends AbstractReactComponent {
                 alwaysFireHandler
             >
                 <PageLayout
-                    splitter={splitter}
                     area={this.area}
                     _className="fa-page"
                     className={this.layoutClassName ? 'arr-abstract-page ' + this.layoutClassName : 'arr-abstract-page'}

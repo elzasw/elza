@@ -39,6 +39,7 @@ export function DescItemEnum({
     <DescItemSpec
       isDisabled={isDisabled}
       isInhibited={item.inhibited}
+      isUndefined={item.undefined}
       typeRef={typeRef}
       typeForm={typeForm}
       value={item.itemSpecId}

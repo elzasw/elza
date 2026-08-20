@@ -66,7 +66,6 @@ class AdminLogsPage extends AbstractReactComponent {
         return (
             <Shortcuts name="AdminLogsPage" handler={this.handleShortcuts} className="admin-page-shortcuts">
                 <AdminLayout
-                    splitter={{}}
                     className="admin-logs-page"
                     ribbon={this.buildRibbon()}
                     leftPanel={leftPanel}

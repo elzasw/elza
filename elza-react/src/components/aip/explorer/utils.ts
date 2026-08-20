@@ -9,7 +9,29 @@ export const turncate = (str: string ): string => {
     return str.slice(0, 17) + '...';
 }
 
-export const findNodeByUUID = (tree, uuid, path = []) => {
+/** Uzel stromu AIP tak, jak ho vraci server; deti jsou v obou seznamech volitelne. */
+export type ExplorerNode = {
+    uuid?: string;
+    daoFileFolderId?: number;
+    parent?: ExplorerNode;
+    childFiles?: ExplorerNode[];
+    childFolders?: ExplorerNode[];
+    daoId?: number;
+    daoFileId?: number;
+    filename?: string;
+    label?: string;
+    size?: number;
+    mimeType?: string;
+    [key: string]: unknown;
+};
+
+export type ExplorerNodeHit = {node: ExplorerNode; path: ExplorerNode[]};
+
+export const findNodeByUUID = (
+    tree: ExplorerNode | null | undefined,
+    uuid: string | number,
+    path: ExplorerNode[] = [],
+): ExplorerNodeHit | null => {
     if (!tree) return null;
 
     path.push(tree);
@@ -40,7 +62,11 @@ export const findNodeByUUID = (tree, uuid, path = []) => {
     return null;
 }
 
-export const findNodeById = (tree, id, path = []) => {
+export const findNodeById = (
+    tree: ExplorerNode | null | undefined,
+    id: string | number,
+    path: ExplorerNode[] = [],
+): ExplorerNodeHit | null => {
     if (!tree) return null;
 
     path.push(tree);

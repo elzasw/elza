@@ -1,4 +1,25 @@
-@import "../SubNodeForm.scss";
+@import "../../../variables.scss";
+
+.node-form-standard-actions {
+    .btn {
+        padding: 2px;
+        border: none;
+        margin: 0;
+        background: transparent;
+        height: 2em;
+        font-size: 0.9em;
+        .icon {
+            color: $node-form-actions-color;
+            height: 1.35em;
+            line-height: 1.35em;
+            width: 1.35em;
+            vertical-align: middle;
+        }
+    }
+    .btn:hover {
+        background-color: $node-form-actions-hover;
+    }
+}
 
 .desc-item-value-coordinates {
   width:100%;
