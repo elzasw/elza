@@ -346,12 +346,61 @@ class ListBox extends AbstractReactComponent {
         return index;
     }
 
-    ensureItemVisible = index => {
+    /**
+     * @param {number} index
+     * @param {{center?: boolean, smooth?: boolean, onlyIfNeeded?: boolean}} options centered
+     *        and/or animated scrolling instead of the default "scroll only as far as needed"
+     *        behaviour. With onlyIfNeeded an already fully visible item is left alone, which
+     *        matters for centering because it would otherwise always re-scroll.
+     */
+    ensureItemVisible = (index, options = {}) => {
         var itemNode = ReactDOM.findDOMNode(this.refs['item-' + index]);
-        if (itemNode !== null) {
-            var containerNode = ReactDOM.findDOMNode(this.refs.container);
-            scrollIntoView(itemNode, containerNode, {onlyScrollIfNeeded: true, alignWithTop: false});
+        if (itemNode === null) {
+            return;
         }
+
+        const {center = false, smooth = false, onlyIfNeeded = false} = options;
+        if (center || smooth) {
+            if (onlyIfNeeded && this.isItemFullyVisible(itemNode)) {
+                return;
+            }
+            itemNode.scrollIntoView({
+                block: center ? 'center' : 'nearest',
+                behavior: smooth ? 'smooth' : 'auto',
+            });
+            return;
+        }
+
+        var containerNode = ReactDOM.findDOMNode(this.refs.container);
+        scrollIntoView(itemNode, containerNode, {onlyScrollIfNeeded: true, alignWithTop: false});
+    };
+
+    /**
+     * The scrolling element differs per consumer - the base stylesheet scrolls
+     * .listbox-container, while some override the wrapper instead - so look for
+     * the nearest vertically scrollable ancestor rather than a fixed class.
+     */
+    findScrollParent = node => {
+        let parent = node.parentElement;
+        while (parent) {
+            const {overflowY} = window.getComputedStyle(parent);
+            const scrollable = overflowY === 'auto' || overflowY === 'scroll';
+            if (scrollable && parent.scrollHeight > parent.clientHeight) {
+                return parent;
+            }
+            parent = parent.parentElement;
+        }
+        return null;
+    };
+
+    isItemFullyVisible = itemNode => {
+        const scrollParent = this.findScrollParent(itemNode);
+        if (scrollParent === null) {
+            return false;
+        }
+        const itemRect = itemNode.getBoundingClientRect();
+        const parentRect = scrollParent.getBoundingClientRect();
+        return itemRect.top >= parentRect.top && itemRect.bottom <= parentRect.bottom;
     };
 
     handleDoubleClick = e => {
