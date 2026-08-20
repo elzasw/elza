@@ -2541,23 +2541,30 @@ private void processEvent(AbstractEventSimple event) {
         Node node = new Node(id, arrNode.getVersion(), arrNode.getUuid());
         node.setHasChildren(!treeNode.getChildren().isEmpty());
         node.setDepth(treeNode.getDepth());
+        
+        ArrDao displayDao = displayDaoId? dao : null;
 
         String defaultTitle;
         if (parent == null) {
             defaultTitle = createRootTitle(requestCtx.getFundVersion().getFund(), viewTitles, id);
+            if (param.isName()) {
+            	node.setName(defaultTitle);
+            }
+            if (param.isAccordion()) {
+                node.setAccordionLeft(defaultTitle);
+                node.setAccordionRight("");
+            }
         } else {
             defaultTitle = createDefaultTitle(viewTitles, id);
-        }
+            if (param.isName()) {
+                node.setName(viewTitles.getTreeItem().build(descItemCodeToValueMap, displayDao, defaultTitle));
+            }
+            if (param.isAccordion()) {
+                node.setAccordionLeft(viewTitles.getAccordionLeft().build(descItemCodeToValueMap, displayDao, defaultTitle));
+                node.setAccordionRight(viewTitles.getAccordionRight().build(descItemCodeToValueMap, displayDao, defaultTitle));
+            }
+        }        
 
-        ArrDao displayDao = displayDaoId? dao : null;
-
-        if (param.isName()) {
-            node.setName(viewTitles.getTreeItem().build(descItemCodeToValueMap, displayDao, defaultTitle));
-        }
-        if (param.isAccordion()) {
-            node.setAccordionLeft(viewTitles.getAccordionLeft().build(descItemCodeToValueMap, displayDao, defaultTitle));
-            node.setAccordionRight(viewTitles.getAccordionRight().build(descItemCodeToValueMap, displayDao, defaultTitle));
-        }
         if (param.isIcon()) {
             if (descItemCodeToValueMap != null) {
                 String iconName = getIcon(descItemCodeToValueMap, viewTitles);
