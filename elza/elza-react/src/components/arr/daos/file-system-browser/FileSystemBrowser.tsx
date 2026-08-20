@@ -1,5 +1,6 @@
 import { Fragment, useRef, useState, useEffect, useLayoutEffect } from 'react';
 import { Api } from 'api';
+import { getFullPath } from 'api/api';
 import classNames from 'classnames';
 import { Button, Menu, MenuItem, MenuList, MenuPopover, MenuTrigger, Popover, PopoverSurface, PopoverTrigger } from '@fluentui/react-components';
 import { ArrowClockwiseFilled, ArrowDownloadRegular, ArrowUpRegular, DeleteRegular, DocumentRegular, FilterRegular, FolderRegular, LinkRegular, TextSortAscendingRegular } from '@fluentui/react-icons';
@@ -246,7 +247,7 @@ export const FileSystemBrowser = ({
         const [repoId, path] = extractRepoIdFromFullPath(fullPath);
         const params = new URLSearchParams();
         if (path) params.set('path', path);
-        const url = `/api/v1/fund/${fundId}/fsrepo/${repoId}/item-data?${params}`;
+        const url = getFullPath(`fund/${fundId}/fsrepo/${repoId}/item-data?${params}`);
         // Explicit anchor with `download` streams via the browser and forces save
         // even for inline-renderable types (image, txt) that the server serves
         // with Content-Disposition: inline.
