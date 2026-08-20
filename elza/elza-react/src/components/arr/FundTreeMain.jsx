@@ -172,7 +172,7 @@ class FundTreeMain extends React.Component {
             parentNode = createFundRoot(this.props.fund);
         }
         this.props.dispatch(
-            fundSelectSubNode(this.props.versionId, node.id, parentNode, openNewTab, null, false, undefined, undefined, true),
+            fundSelectSubNode(this.props.versionId, node.id, parentNode, openNewTab, null, ensureItemVisible, undefined, undefined, true),
         );
     };
 

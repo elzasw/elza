@@ -27,6 +27,8 @@ type Props = {
     itemBuffer?: number;
     scrollTopPadding: number;
     fetching: boolean;
+    /** animates the scrolling instead of jumping straight to the target */
+    scrollSmooth?: boolean;
 };
 
 type State = {
@@ -63,6 +65,7 @@ class VirtualList extends React.Component<Props, State> {
         scrollDelay: PropTypes.number,
         itemBuffer: PropTypes.number,
         scrollTopPadding: PropTypes.number,
+        scrollSmooth: PropTypes.bool,
     };
 
     static defaultProps = {
@@ -72,6 +75,7 @@ class VirtualList extends React.Component<Props, State> {
         itemBuffer: 0,
         scrollTopPadding: 0,
         fetching: false,
+        scrollSmooth: false,
     };
 
     static getItems = function(viewTop, viewHeight, listTop, itemHeight, itemCount, itemBuffer) {
@@ -141,6 +145,21 @@ class VirtualList extends React.Component<Props, State> {
             top: Math.max(0, Math.min(view.top - list.top)),
             bottom: Math.max(0, Math.min(list.height, view.bottom - list.top)),
         };
+    };
+
+    /**
+     * Scrolls the container to the given offset, clamped to the scrollable range.
+     * Uses an animated scroll when scrollSmooth is set.
+     */
+    scrollParentTo = (boxParent: Element, top: number) => {
+        const maxScrollTop = boxParent.scrollHeight - boxParent.clientHeight;
+        const clampedTop = Math.max(0, Math.min(top, maxScrollTop));
+
+        if (this.props.scrollSmooth) {
+            boxParent.scrollTo({top: clampedTop, behavior: 'smooth'});
+        } else {
+            boxParent.scrollTop = clampedTop;
+        }
     };
 
     getVirtualState = (props: Props, currState: State): State => {
@@ -245,30 +264,38 @@ class VirtualList extends React.Component<Props, State> {
                         : null;
 
             if (scrollToIndexNum !== null) {
-                this.setState(state, () => {
-                    const box = this.container;
-                    const itemTop = scrollToIndexNum * itemHeight + this.props.scrollTopPadding;
-                    const from = this.state.bufferStart! + this.props.scrollTopPadding;
-                    const boxParent = box.parentNode! as Element;
-                    const to = from + boxParent.clientHeight - 2 * this.props.scrollTopPadding;
-
-                    //console.log('itemTop', itemTop, 'from', from, 'to', to, 'itemHeight', this.props.itemHeight)
-                    if (itemTop <= from) {
-                        if (itemTop - itemHeight < this.props.scrollTopPadding) {
-                            boxParent.scrollTop = 0;
-                        } else {
-                            boxParent.scrollTop = itemTop - itemHeight; // chceme alespon o jednu vice, aby nebyla vybrana moc nahore
-                        }
-                    } else if (itemTop + itemHeight > to) {
-                        // box.parentNode.scrollTop = itemTop + this.props.itemHeight  // chceme alespon o jednu vice, aby nebyla vybrana moc dole
-                        boxParent.scrollTop = itemTop - itemHeight;
-                    }
-                });
+                this.setState(state, () => this.scrollToItem(scrollToIndexNum, itemHeight));
             }
         } else {
             this.setState(state);
         }
     }
+
+    /**
+     * Scrolls the given item into view, keeping one item of context above or below it.
+     * Expects to run after the list has been laid out, so the container measurements
+     * and the rendered buffer match the requested index.
+     */
+    scrollToItem = (scrollToIndexNum: number, itemHeight: number) => {
+        const box = this.container;
+        if (!box || !box.parentNode) {
+            return;
+        }
+        // the list can sit below the top of the scrolling container - e.g. because of
+        // its padding - and item offsets are relative to the container, not to the list
+        const listOffsetTop = (box as HTMLElement).offsetTop;
+        const itemTop = scrollToIndexNum * itemHeight + listOffsetTop + this.props.scrollTopPadding;
+        const boxParent = box.parentNode as Element;
+        const from = boxParent.scrollTop;
+        const to = from + boxParent.clientHeight;
+
+        if (itemTop <= from) {
+            this.scrollParentTo(boxParent, itemTop - itemHeight); // chceme alespon o jednu vice, aby nebyla vybrana moc nahore
+        } else if (itemTop + itemHeight > to) {
+            // chceme alespon o jednu vice, aby nebyla vybrana moc dole
+            this.scrollParentTo(boxParent, itemTop + 2 * itemHeight - boxParent.clientHeight);
+        }
+    };
 
     componentDidUpdate(prevProps) {
         if (!this.props.itemHeight) {
@@ -300,13 +327,30 @@ class VirtualList extends React.Component<Props, State> {
     }
     componentDidMount() {
         var state = this.getVirtualState(this.props, this.state);
-        this.setState({
-            ...state,
-            isMounted: true,
-        });
+        this.setState(
+            {
+                ...state,
+                isMounted: true,
+            },
+            // the list can mount with a selection already made - e.g. when the tree is
+            // opened from another page - and no props change follows to trigger the scroll
+            this.scrollToInitialItem,
+        );
 
         this.props.container.addEventListener('scroll', this.onScrollDebounced);
     }
+
+    scrollToInitialItem = () => {
+        const {scrollToIndex} = this.props;
+        if (typeof scrollToIndex === 'undefined' || scrollToIndex === null) {
+            return;
+        }
+        const scrollToIndexNum = typeof scrollToIndex === 'number' ? scrollToIndex : scrollToIndex.index;
+        if (scrollToIndexNum === null || typeof scrollToIndexNum === 'undefined') {
+            return;
+        }
+        this.scrollToItem(scrollToIndexNum, this.state.itemHeight!);
+    };
     getItemHeight = element => {
         return this.props.itemHeight || element.clientHeight;
     };

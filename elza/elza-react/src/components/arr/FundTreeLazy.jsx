@@ -41,6 +41,7 @@ class FundTreeLazy extends AbstractReactComponent {
         colorCoded: true,
         scrollDelay: 0,
         itemHeight: 24,
+        scrollSmooth: false,
     };
 
     UNSAFE_componentWillMount() {
@@ -366,6 +367,7 @@ class FundTreeLazy extends AbstractReactComponent {
             onExpand,
 
             scrollDelay,
+            scrollSmooth,
         } = this.props;
 
         let index;
@@ -378,6 +380,12 @@ class FundTreeLazy extends AbstractReactComponent {
                 index = indexById(this.props.nodes, this.props.selectedId);
             }
         }
+
+        // VirtualList compares scrollToIndex by identity. ensureItemVisible is set by the
+        // reducer only for renders that should reveal the selection, so a fresh object
+        // there always triggers the scroll, while renders without it pass undefined and
+        // leave the current scroll position alone.
+        const scrollToIndex = index === null || index === undefined ? undefined : {index};
 
         let cls = 'fa-tree-lazy-main-container';
         if (className) {
@@ -435,12 +443,14 @@ class FundTreeLazy extends AbstractReactComponent {
                             <VirtualList
                                 tagName="div"
                                 scrollTopPadding={TREE_TOP_PADDING}
-                                scrollToIndex={index}
+                                scrollToIndex={scrollToIndex}
                                 container={this.state.treeContainer}
                                 items={this.props.nodes}
                                 renderItem={this.renderNode}
+                                itemHeight={this.props.itemHeight}
                                 itemBuffer={10}
                                 scrollDelay={scrollDelay}
+                                scrollSmooth={scrollSmooth}
                                 />
                         )}
                     </div>
