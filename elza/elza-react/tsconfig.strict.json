@@ -1,0 +1,9 @@
+{
+  // Stricter than the build, used only by scripts/ts-strict-check.ts.
+  // Known offenders are recorded in ts-strict-baseline.json; new code is checked
+  // automatically because it has no baseline entries.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noImplicitAny": true
+  }
+}

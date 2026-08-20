@@ -245,9 +245,9 @@ export function fundDataGridPrepareEdit(versionId, nodeId, parentNodeId, descIte
     };
 }
 
-export function fundDataGridImport(versionId, fundId, file){
+export function fundDataGridImport(versionId, fundId, file, separator){
     return async (dispatch) => {
-        await Api.funds.fundImportFundData(fundId, "CSV", file);
+        await Api.funds.fundImportFundData(fundId, "CSV", file, separator);
         return dispatch(fundDataGridRefreshRows(versionId));
     }
 }

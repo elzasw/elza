@@ -22,7 +22,6 @@ export default function HomePage() {
 
     const { arrRegionFront, registryRegionFront } = useSelector(({ stateRegion }: AppState) => stateRegion);
     const userDetail = useSelector(({ userDetail }: AppState) => userDetail);
-    const splitter = useSelector(({ splitter }: AppState) => splitter);
     const dispatch = useThunkDispatch();
 
     useEffect(() => {
@@ -172,7 +171,6 @@ export default function HomePage() {
     )
 
     return <PageLayout
-        splitter={splitter}
         ribbon={buildRibbon()}
         centerPanel={centerPanel}
     />;

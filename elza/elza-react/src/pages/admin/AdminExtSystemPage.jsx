@@ -168,7 +168,6 @@ class AdminExtSystemPage extends AbstractReactComponent {
      * Vykreslení stránky pro osoby
      */
     render() {
-        const {splitter} = this.props;
 
         const leftPanel = <AdminExtSystemList />;
 
@@ -176,7 +175,6 @@ class AdminExtSystemPage extends AbstractReactComponent {
 
         return (
             <AdminLayout
-                splitter={splitter}
                 className="admin-ext-system-page"
                 ribbon={this.buildRibbon()}
                 leftPanel={leftPanel}
@@ -193,11 +191,9 @@ class AdminExtSystemPage extends AbstractReactComponent {
  * @returns {{fulltext: *}}
  */
 function mapStateToProps(state) {
-    const {splitter} = state;
     const extSystemDetail = storeFromArea(state, AREA_EXT_SYSTEM_DETAIL);
 
     return {
-        splitter,
         extSystemDetail,
     };
 }

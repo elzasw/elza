@@ -1,3 +1,4 @@
+import type { ExplorerNode } from "./utils";
 import ExplorerTree from "./tree/ExplorerTree";
 import "./AipExplorer.scss";
 import { Splitter } from "components/shared";``
@@ -14,7 +15,7 @@ import {i18n} from 'components/shared'
 
 type AipExplorerProps = {
     mode: ExplorerMode;
-    onSelect?: (node) => void;
+    onSelect?: (node: ExplorerNode) => void;
     selected?: string;
 }
 

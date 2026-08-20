@@ -61,7 +61,7 @@ class AdminRequestsQueuePage extends AbstractReactComponent {
     };
 
     render() {
-        const {requestInQueueList, splitter} = this.props;
+        const {requestInQueueList} = this.props;
 
         let centerPanel = (
             <div>
@@ -107,7 +107,6 @@ class AdminRequestsQueuePage extends AbstractReactComponent {
 
         return (
             <AdminLayout
-                splitter={splitter}
                 className="admin-requestsQueue-page"
                 ribbon={this.buildRibbon()}
                 centerPanel={centerPanel}
@@ -125,11 +124,9 @@ class AdminRequestsQueuePage extends AbstractReactComponent {
 function mapStateToProps(state) {
     const {
         app: {requestInQueueList},
-        splitter,
         userDetail,
     } = state;
     return {
-        splitter,
         requestInQueueList,
         userDetail,
     };

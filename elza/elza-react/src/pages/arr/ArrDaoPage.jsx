@@ -48,7 +48,6 @@ class ArrDaoPage extends ArrParentPage {
     };
 
     static propTypes = {
-        splitter: PropTypes.object.isRequired,
         arrRegion: PropTypes.object.isRequired,
         developer: PropTypes.object.isRequired,
         rulDataTypes: PropTypes.object.isRequired,
@@ -126,10 +125,13 @@ class ArrDaoPage extends ArrParentPage {
 
     handleTabSelect = (item, ...other) => {
         console.log(item, other);
-        this.setState({
+        this.setState(({ fsRefreshCounter }) => ({
             selectedTab: item.id,
             selectedDaoLeft: null,
-        });
+            fsRefreshCounter: item.id === 'fileSystemTree'
+                ? fsRefreshCounter + 1
+                : fsRefreshCounter,
+        }));
     };
 
     /**
@@ -444,9 +446,8 @@ class ArrDaoPage extends ArrParentPage {
 }
 
 function mapStateToProps(state) {
-    const { splitter, arrRegion, refTables, form, focus, developer, userDetail, tab } = state;
+    const { arrRegion, refTables, form, focus, developer, userDetail, tab } = state;
     return {
-        splitter: splitter.splitters[AREA],
         arrRegion,
         focus,
         developer,

@@ -1,5 +1,7 @@
 import DetailRow from "./DetailRow";
-import {formatAipSize, formatDate, getBoolIcon, getConnectedToJP} from "./utils";
+import {formatAipSize} from "./format";
+import {formatDateCz} from "utils/date";
+import {getBoolIcon, getConnectedToJP} from "./AipCells";
 import {Api, serverContextPath} from "../../api";
 import {useThunkDispatch} from "../../utils/hooks";
 import {aipFetchIfNeeded} from "../../actions/aip/aip.ts";
@@ -45,7 +47,7 @@ const AipDetailBody = ({detail}: AipDetailBodyProps) => {
                 <DetailRow label={i18n("aip.detail.institution.code")}value={detail.institutionCode}/>}
             {detail.unitdateFrom &&
                 <DetailRow label={i18n("aip.detail.unitdateFromTo")} value={
-                    formatDate(new Date(detail.unitdateFrom)) + " - " + formatDate(new Date(detail.unitdateTo))
+                    formatDateCz(new Date(detail.unitdateFrom)) + " - " + formatDateCz(new Date(detail.unitdateTo))
                 }/>}
             {detail.originatorInstitution &&
                 <DetailRow label={i18n("aip.detail.originator")}value={

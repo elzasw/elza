@@ -33,8 +33,8 @@ public class AipService {
     private DaoService daoService;
 
     @Transactional
-    public FilteredResult<DaAip> findAipDetailsByFilter( List<AipFilterGen> filters, Integer from, Integer count) {
-        return aipRepository.findAipsByFilter(filters, from, count);
+    public FilteredResult<DaAip> findAipDetailsByFilter(SearchParams params) {
+        return aipRepository.findAipsByFilter(params);
     }
 
     @Transactional

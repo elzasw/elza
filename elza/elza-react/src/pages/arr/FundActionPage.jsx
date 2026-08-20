@@ -586,10 +586,9 @@ class FundActionPage extends ArrParentPage {
 }
 
 function mapStateToProps(state) {
-    const {arrRegion, splitter, userDetail} = state;
+    const {arrRegion, userDetail} = state;
     return {
         arrRegion,
-        splitter: splitter.splitters[AREA],
         userDetail,
     };
 }

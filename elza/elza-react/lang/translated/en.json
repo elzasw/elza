@@ -641,9 +641,193 @@
     "defaultMessage": "AI assistant",
     "srcHash": "63nbyiXmnORE"
   },
-  "aip.filter.columns": {
-    "defaultMessage": "Columns",
-    "srcHash": "nkGHuHwAI1Yf"
+  "aip.col.aipId": {
+    "defaultMessage": "AIP ID",
+    "srcHash": "nylyci_kv7Mm"
+  },
+  "aip.col.aipSize": {
+    "defaultMessage": "Size",
+    "srcHash": "HkMRVxaPFOh5"
+  },
+  "aip.col.aipVersion": {
+    "defaultMessage": "AIP version",
+    "srcHash": "LFW3qt24AmIp"
+  },
+  "aip.col.code": {
+    "defaultMessage": "AIP code",
+    "srcHash": "UxTrypWFOcAG"
+  },
+  "aip.col.completeAipLoad": {
+    "defaultMessage": "Complete AIP loaded",
+    "srcHash": "fagm5bQf_w7v"
+  },
+  "aip.col.exportState": {
+    "defaultMessage": "Export state",
+    "srcHash": "Z6AadsdMdPep"
+  },
+  "aip.col.fund": {
+    "defaultMessage": "Fund",
+    "srcHash": "cgFgSW7aSs8l"
+  },
+  "aip.col.fundCode": {
+    "defaultMessage": "Fund code",
+    "srcHash": "TiaXeZ4HFkIH"
+  },
+  "aip.col.importState": {
+    "defaultMessage": "Current version",
+    "srcHash": "0u9juJv4hc8n"
+  },
+  "aip.col.ingestionCode": {
+    "defaultMessage": "Ingestion number",
+    "srcHash": "a9BLL1vglzAN"
+  },
+  "aip.col.institution": {
+    "defaultMessage": "Institution",
+    "srcHash": "AMtLLUW_r1z7"
+  },
+  "aip.col.institutionCode": {
+    "defaultMessage": "Institution code",
+    "srcHash": "Z6gP6vi_OaRY"
+  },
+  "aip.col.metadataError": {
+    "defaultMessage": "Metadata load error",
+    "srcHash": "lQZ1uRaxOXvg"
+  },
+  "aip.col.metadataLoad": {
+    "defaultMessage": "Metadata loaded",
+    "srcHash": "SYsB1sLvVD-5"
+  },
+  "aip.col.nadChangeCode": {
+    "defaultMessage": "External change",
+    "srcHash": "yqeBEKPi8N5z"
+  },
+  "aip.col.originator": {
+    "defaultMessage": "Originator",
+    "srcHash": "8ferHLpDg6Ds"
+  },
+  "aip.col.referenceNumber": {
+    "defaultMessage": "Reference number",
+    "srcHash": "FfhBXJgX6Kv3"
+  },
+  "aip.col.unitdate": {
+    "defaultMessage": "Date range",
+    "srcHash": "85gp67Bn_Cu_"
+  },
+  "aip.filter.createFilter": {
+    "defaultMessage": "Create filter {name}",
+    "srcHash": "Es1YqY4zWi8-"
+  },
+  "aip.filter.loading": {
+    "defaultMessage": "Loading…",
+    "srcHash": "kgjJ9rUTLs7l"
+  },
+  "aip.filter.value.notNull": {
+    "defaultMessage": "Value set",
+    "srcHash": "9A39gNXtk7-i"
+  },
+  "aip.filter.value.null": {
+    "defaultMessage": "Value not set",
+    "srcHash": "rGgbeWqtyuxn"
+  },
+  "aip.form.between": {
+    "defaultMessage": "Is in range",
+    "srcHash": "xOHUsUhvIXOP"
+  },
+  "aip.form.contain": {
+    "defaultMessage": "Contains",
+    "srcHash": "wGVYx0iW1rvw"
+  },
+  "aip.form.content": {
+    "defaultMessage": "Content",
+    "srcHash": "zsjC7tEzhIlP"
+  },
+  "aip.form.equals": {
+    "defaultMessage": "Is exactly",
+    "srcHash": "lOeyoBy1jUTy"
+  },
+  "aip.form.error.between": {
+    "defaultMessage": "The lower bound must be less than the upper bound",
+    "srcHash": "l4rWlzQQzlLo"
+  },
+  "aip.form.error.emptyDate": {
+    "defaultMessage": "Date must be entered",
+    "srcHash": "GNpJJoT2fZLU"
+  },
+  "aip.form.error.nan": {
+    "defaultMessage": "Must be a number",
+    "srcHash": "sduW6a9cPVoG"
+  },
+  "aip.form.error.positiveNum": {
+    "defaultMessage": "Must be a positive number",
+    "srcHash": "wj_usbIaXyHG"
+  },
+  "aip.form.error.value": {
+    "defaultMessage": "Value must be filled in",
+    "srcHash": "ZE0vRqvLYbRp"
+  },
+  "aip.form.from": {
+    "defaultMessage": "From",
+    "srcHash": "hwAuMpogKIkY"
+  },
+  "aip.form.notContain": {
+    "defaultMessage": "Does not contain",
+    "srcHash": "bsWPcoUNHu8T"
+  },
+  "aip.form.notNull": {
+    "defaultMessage": "Value set",
+    "srcHash": "l0LiTrzfFMuW"
+  },
+  "aip.form.null": {
+    "defaultMessage": "Value not set",
+    "srcHash": "ESmcdHO24Ayn"
+  },
+  "aip.form.to": {
+    "defaultMessage": "To",
+    "srcHash": "MAlOC-wARtqP"
+  },
+  "aip.form.value": {
+    "defaultMessage": "Value",
+    "srcHash": "2al7WSQS6DjX"
+  },
+  "aip.queueState.EXPORT_ERROR": {
+    "defaultMessage": "Export error",
+    "srcHash": "I18TohzzMs46"
+  },
+  "aip.queueState.EXPORT_NEW": {
+    "defaultMessage": "To export",
+    "srcHash": "Yvu9LpoChrla"
+  },
+  "aip.queueState.EXPORT_OK": {
+    "defaultMessage": "Exported",
+    "srcHash": "s3DYqvujKbtp"
+  },
+  "aip.queueState.IMPORT_ERROR": {
+    "defaultMessage": "Download error",
+    "srcHash": "CzB9HOdWCz1-"
+  },
+  "aip.queueState.IMPORT_NEW": {
+    "defaultMessage": "To download",
+    "srcHash": "rRtpslPu6mxH"
+  },
+  "aip.queueState.IMPORT_OK": {
+    "defaultMessage": "Updated/Downloaded",
+    "srcHash": "rxtQ5-k2pgZd"
+  },
+  "aip.queueState.UPDATE": {
+    "defaultMessage": "To update",
+    "srcHash": "JD9Fawd6Mvoz"
+  },
+  "aip.table.search": {
+    "defaultMessage": "Search",
+    "srcHash": "VlGwesPAI6ap"
+  },
+  "aip.value.no": {
+    "defaultMessage": "NO",
+    "srcHash": "1TnNl8oaEI-f"
+  },
+  "aip.value.yes": {
+    "defaultMessage": "YES",
+    "srcHash": "0gfv7pWasAQC"
   },
   "ap.binding.action.history": {
     "defaultMessage": "Revision history",
@@ -689,6 +873,10 @@
     "defaultMessage": "External system",
     "srcHash": "oGs4SFZv0yF2"
   },
+  "arr.daos.fileSystem.context.download": {
+    "defaultMessage": "Download",
+    "srcHash": "xxAzjqAuIzkG"
+  },
   "arr.daos.fileSystem.filter.clear": {
     "defaultMessage": "Clear filter",
     "srcHash": "LRQK97GHHNDb"
@@ -707,11 +895,23 @@
   },
   "arr.daos.fileSystem.filterByLink.linked": {
     "defaultMessage": "Linked",
-    "srcHash": "5rbAbpjD8TlR"
+    "srcHash": "C-axlGon7SKN"
   },
   "arr.daos.fileSystem.filterByLink.unlinked": {
     "defaultMessage": "Unlinked",
-    "srcHash": "1esyfo4aKzQd"
+    "srcHash": "Fxt7XPa_uX3_"
+  },
+  "arr.daos.fileSystem.items.loadErrorDetail": {
+    "defaultMessage": "Try again using the Refresh button or go to another folder.",
+    "srcHash": "9wwoWfoqMfMR"
+  },
+  "arr.daos.fileSystem.items.loadErrorTitle": {
+    "defaultMessage": "Cannot load folder contents",
+    "srcHash": "l-PazHQ41K69"
+  },
+  "arr.daos.fileSystem.items.loading": {
+    "defaultMessage": "Loading folder contents…",
+    "srcHash": "OTNQ2mC81GFq"
   },
   "arr.daos.fileSystem.links.forbidden": {
     "defaultMessage": "You do not have permission to access this archival file",
@@ -725,6 +925,10 @@
     "defaultMessage": "List of links",
     "srcHash": "gmYy4uXyxEID"
   },
+  "arr.daos.fileSystem.refresh": {
+    "defaultMessage": "Refresh the list of files and folders",
+    "srcHash": "jb7MnKAw5Rxa"
+  },
   "arr.daos.fileSystem.repo.unavailable": {
     "defaultMessage": "Repository is unavailable — the path {path} does not exist on the server or cannot be read. Check the external system settings.",
     "srcHash": "E-w-ttgEnHON"
@@ -737,9 +941,25 @@
     "defaultMessage": "Repository is unavailable",
     "srcHash": "WSrg3PozscWF"
   },
+  "arr.daos.fileSystem.repos.loadErrorDetail": {
+    "defaultMessage": "Try again using the Refresh button.",
+    "srcHash": "OIOKfrUR9kR7"
+  },
+  "arr.daos.fileSystem.repos.loadErrorTitle": {
+    "defaultMessage": "Cannot load the list of repositories",
+    "srcHash": "K7f-Qu7B7w3g"
+  },
   "arr.daos.fileSystem.sort.label": {
     "defaultMessage": "Sorting",
     "srcHash": "JD-Vo3HpL1AE"
+  },
+  "arr.daos.fileSystem.sort.lastChangeAsc": {
+    "defaultMessage": "Date modified ascending",
+    "srcHash": "8GdpnPgQb1q2"
+  },
+  "arr.daos.fileSystem.sort.lastChangeDesc": {
+    "defaultMessage": "Date modified descending",
+    "srcHash": "Sd1YuFExEpbP"
   },
   "arr.daos.fileSystem.sort.nameAsc": {
     "defaultMessage": "Name A→Z",
@@ -756,6 +976,14 @@
   "arr.daos.fileSystem.sort.sizeDesc": {
     "defaultMessage": "Size descending",
     "srcHash": "aAVC9zRaXJAr"
+  },
+  "arr.daos.fileSystem.tree.loadError": {
+    "defaultMessage": "Cannot load — click to retry",
+    "srcHash": "ElGPBxYwtv9v"
+  },
+  "arr.daos.fileSystem.tree.loading": {
+    "defaultMessage": "Loading…",
+    "srcHash": "kgjJ9rUTLs7l"
   },
   "arr.fundDataGrid.cellForm.notAllowed": {
     "defaultMessage": "This description element cannot be added to the description unit.",
@@ -973,6 +1201,42 @@
     "defaultMessage": "Confirm",
     "srcHash": "k0lmE6n_VVk_"
   },
+  "dataGrid.import.encoding.label": {
+    "defaultMessage": "File encoding",
+    "srcHash": "te63aENJOlWD"
+  },
+  "dataGrid.import.preview.empty": {
+    "defaultMessage": "Select a file to show a preview.",
+    "srcHash": "x81X8K-dzPh6"
+  },
+  "dataGrid.import.preview.reading": {
+    "defaultMessage": "Loading preview…",
+    "srcHash": "HPXV7PZxEXqD"
+  },
+  "dataGrid.import.preview.title": {
+    "defaultMessage": "Preview (first {count, plural, one {# row} other {# rows}})",
+    "srcHash": "vNVcOcRy2rlC"
+  },
+  "dataGrid.import.separator.comma": {
+    "defaultMessage": ", (comma)",
+    "srcHash": "3gH8YslGfmWf"
+  },
+  "dataGrid.import.separator.label": {
+    "defaultMessage": "CSV field separator",
+    "srcHash": "SwbgQtilaiGW"
+  },
+  "dataGrid.import.separator.pipe": {
+    "defaultMessage": "| (pipe)",
+    "srcHash": "1rmofPv1vROC"
+  },
+  "dataGrid.import.separator.semicolon": {
+    "defaultMessage": "; (semicolon)",
+    "srcHash": "3veBdC10nv_i"
+  },
+  "dataGrid.import.separator.tab": {
+    "defaultMessage": "\\t (tab)",
+    "srcHash": "I1mk9dLkxE9t"
+  },
   "dataGridColumns_add": {
     "defaultMessage": "Add",
     "srcHash": "TBGrI8bgrjgj"
@@ -1076,10 +1340,6 @@
   "desc_item_action_set_undefined": {
     "defaultMessage": "Set the value to 'exception' due to it not being ascertained, not existing, or not being stated based on a rules exception",
     "srcHash": "I1TvJx22iC0Y"
-  },
-  "desc_item_coordinates_action_showInMap": {
-    "defaultMessage": "Show on map",
-    "srcHash": "3dFzZlmKhOwe"
   },
   "desc_item_coordinates_export": {
     "defaultMessage": "Export",
@@ -1272,6 +1532,14 @@
   "global.action.close": {
     "defaultMessage": "Close",
     "srcHash": "0r4EKpo4ZhJv"
+  },
+  "global.action.editInMap": {
+    "defaultMessage": "Edit in map",
+    "srcHash": "Sp_7Y4R5xQsk"
+  },
+  "global.action.showInMap": {
+    "defaultMessage": "Show in map",
+    "srcHash": "3dFzZlmKhOwe"
   },
   "global.action.update": {
     "defaultMessage": "Save",
@@ -1732,6 +2000,18 @@
   "subNodeForm.descItemType.title.add": {
     "defaultMessage": "Add description element",
     "srcHash": "ckU6Xf-Ze6l2"
+  },
+  "table.filter.columns": {
+    "defaultMessage": "Columns",
+    "srcHash": "nkGHuHwAI1Yf"
+  },
+  "table.select": {
+    "defaultMessage": "Select",
+    "srcHash": "j7UiBDv3vOpU"
+  },
+  "table.selectAll": {
+    "defaultMessage": "Select all",
+    "srcHash": "tzdoYdlGzv8D"
   },
   "userSettings.apiKeys.delete.confirm.message": {
     "defaultMessage": "Do you want to delete the configured API key for external system {name}?",

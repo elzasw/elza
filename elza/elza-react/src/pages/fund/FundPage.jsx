@@ -158,6 +158,36 @@ class FundPage extends AbstractReactComponent {
         this.props.dispatch(refRuleSetFetchIfNeeded());
     }
 
+    getActiveFundIndex() {
+        const { fundRegion } = this.props;
+        if (fundRegion.fundDetail.id === null) {
+            return undefined;
+        }
+        const index = indexById(fundRegion.funds, fundRegion.fundDetail.id);
+        return index === null ? undefined : index;
+    }
+
+    scrollActiveFundIntoView() {
+        const activeIndex = this.getActiveFundIndex();
+        if (activeIndex === undefined) {
+            return;
+        }
+        this.refs.fundList?.ensureItemVisible(activeIndex, { center: true, onlyIfNeeded: true });
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        const activeFundChanged = prevProps.fundRegion.fundDetail.id !== this.props.fundRegion.fundDetail.id;
+        const fundsChanged = prevProps.fundRegion.funds !== this.props.fundRegion.funds;
+        // the institution bubble is rendered only once both institution sources
+        // are loaded, which changes row heights and invalidates a previous scroll
+        const institutionsChanged = prevState.institutions !== this.state.institutions;
+        const institutionsAllChanged = prevProps.institutionsAll.items !== this.props.institutionsAll.items;
+
+        if (activeFundChanged || fundsChanged || institutionsChanged || institutionsAllChanged) {
+            this.scrollActiveFundIntoView();
+        }
+    }
+
     componentDidMount() {
         const { dispatch, fundRegion, history, select = false } = this.props;
         dispatch(fundsFetchIfNeeded());
@@ -172,11 +202,13 @@ class FundPage extends AbstractReactComponent {
             }
 
             if (matchId) {
-                dispatch(fundsSelectFund(matchId));
+                dispatch(fundsSelectFund(Number(matchId)));
 
                 this.handleToggleDrawer(true)
             }
         }
+
+        this.scrollActiveFundIntoView();
     }
 
     handleAddFund() {
@@ -681,13 +713,10 @@ class FundPage extends AbstractReactComponent {
     }
 
     render() {
-        const { splitter, fundRegion, maxSize, ruleSet, userDetail, intl } = this.props;
+        const { fundRegion, maxSize, ruleSet, userDetail, intl } = this.props;
         const { sidebarOpen, selectionMode, selectedFundIds, selectAllMatching } = this.state;
 
-        let activeIndex;
-        if (fundRegion.fundDetail.id !== null) {
-            activeIndex = indexById(fundRegion.funds, fundRegion.fundDetail.id);
-        }
+        const activeIndex = this.getActiveFundIndex();
 
         const activeVersion = fundRegion.fundDetail.versions?.find(({ id }) => fundRegion.fundDetail.activeVersion.id === id);
         const activeRuleSet = activeVersion?.ruleSetId != undefined ? ruleSet.itemsMap[activeVersion.ruleSetId] : undefined;
@@ -847,7 +876,6 @@ class FundPage extends AbstractReactComponent {
 
         return (
             <PageLayout
-                splitter={splitter}
                 className="fund-page"
                 ribbon={this.buildRibbon()}
                 // leftPanel={leftPanel}
@@ -859,11 +887,10 @@ class FundPage extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const { focus, splitter, fundRegion, userDetail, refTables } = state;
+    const { focus, fundRegion, userDetail, refTables } = state;
 
     return {
         focus,
-        splitter,
         fundRegion,
         userDetail,
         ruleSet: refTables.ruleSet,

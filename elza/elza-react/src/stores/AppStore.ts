@@ -3,7 +3,6 @@ import {applyMiddleware, compose, createStore, Middleware} from 'redux';
 import thunkMiddleware from 'redux-thunk';
 import {createLogger} from 'redux-logger';
 import {lenToBytesStr, roughSizeOfObject} from 'components/Utils.jsx';
-import {splitterResize} from 'actions/global/splitter.jsx';
 import {composeWithDevTools} from 'redux-devtools-extension';
 import rootReducer from './reducers.jsx';
 import reduxFormUtils from './app/form/reduxFormUtils.jsx';
@@ -507,7 +506,9 @@ if (appWindow.__DEV__) {
     const middleWares: Middleware<any, any, any>[] = [
         // immutableMiddleware,
         thunkMiddleware,
-        loggerMiddleware,
+        // @types/redux-logger je sestaveny proti novejsimu redux (Dispatch<UnknownAction>),
+        // nez pouziva projekt (Dispatch<AnyAction>); jde o rozdil verzi typu, ne o chybu.
+        loggerMiddleware as Middleware<any, any, any>,
         inlineFormMiddleware,
     ];
 
@@ -543,12 +544,6 @@ import {selectFundTab} from 'actions/arr/fund.jsx'
 let fund = Object.assign({id: 1, versionId: 1});
 store.dispatch(selectFundTab(fund));
 */
-
-// Resize
-window.addEventListener('resize', () => {
-    const state = store.getState();
-    store.dispatch(splitterResize(state.splitter.leftSize, state.splitter.rightSize));
-});
 
 if (_logStoreSize) {
     let curr;

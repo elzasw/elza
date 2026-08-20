@@ -9,7 +9,6 @@ import { refRulDataTypesFetchIfNeeded } from "actions/refTables/rulDataTypes";
 import { requestScopesIfNeeded } from "actions/refTables/scopesData";
 import { ApAccessPointCreateVO } from 'api/ApAccessPointCreateVO';
 import React, { FC, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { useLocation } from "react-router-dom";
 import { WebApi } from '../../actions';
 import { modalDialogShow } from '../../actions/global/modalDialog.jsx';
@@ -45,7 +44,6 @@ const replaceStrings = (
 
 export const EntityCreatePage:FC = () => {
     const dispatch = useThunkDispatch();
-    const splitter:any = useSelector<any>((store)=>(store.splitter));
     const query = useQuery();
     const responseUrl = query.get("response");
     const entityClass = query.get("entity-class");
@@ -123,7 +121,6 @@ export const EntityCreatePage:FC = () => {
 
     return (
         <PageLayout
-            splitter={splitter}
             className='entity-create-page'
             centerPanel={<div/>}
         />

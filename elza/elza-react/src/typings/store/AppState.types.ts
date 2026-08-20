@@ -7,14 +7,19 @@ import { ApValidationErrorsVO } from "api/ApValidationErrorsVO";
 import { SubNodeForm } from "./SubNodeForm.types";
 import { FundOutput } from "./Outputs.types";
 import { FundDataGrid } from "./DataGrid.types";
-import { AipFilterCriteria } from "components/aip/filter/forms/EnumAipFilterCriteria.ts";
+
 import { ApAccessPointVO } from "api/ApAccessPointVO.ts";
-import { AipDetailVO } from "elza-api";
+import { AbstractFilter, AipDetailVO, AipFieldName, Sorting } from "elza-api";
 import { MultiFilterObject } from "components/arr/search-funds-form/filters/types";
 
-export interface SplitterState {
+export interface SplitterSizes {
     leftWidth: number;
     rightWidth: number;
+}
+
+export interface SplitterState {
+    /** Rozmery panelu podle oblasti (global, AIP, DAO, ARR, ...). */
+    splitters: Record<string, SplitterSizes>;
 }
 
 export interface ContextMenuState {
@@ -122,19 +127,24 @@ export interface AdminFund {
     reducer?: unknown;
     name?: string;
 }
-export type AipFilter = {
-    id?: string;
-    attr: string;
-    criteria: AipFilterCriteria;
-    value?: any;
-    from?: string;
-    to?: string;
-    path: string;
+/**
+ * One condition of the AIP list as the screen holds it.
+ *
+ * `filter` is sent to the server as it stands; the rest is what the screen needs to show and
+ * remove the condition, and deliberately stays out of the shared contract.
+ */
+export type AipFilterEntry = {
+    id: string;
+    field: AipFieldName;
+    filter: AbstractFilter;
+    /** Text shown on the tag when the value itself is not readable, e.g. an entity id. */
     label?: string;
+    /** Applied by the screen rather than the user, so it is not shown or removable. */
     invisible?: boolean;
 }
 export interface AipsFilter extends SimpleListFilter {
-    filters?: AipFilter[];
+    filters?: AipFilterEntry[];
+    sort?: Sorting[];
 }
 
 export interface Aips {
@@ -215,6 +225,10 @@ export interface NodesState {
 
 export interface FundTree {
     expandedIds: unknown[]
+    fetched?: boolean
+    isFetching?: boolean
+    dirty?: boolean
+    nodes?: unknown[]
 }
 
 export interface Fund {

@@ -25,7 +25,7 @@ import {
     bundleIcon,
   } from "@fluentui/react-icons";
 import React from "react";
-import { generateUUID } from "../utils";
+import { generateUUID } from "utils/uuid";
 import { DaoFileFolderVO } from "api/DaoFileFolderVO";
 
 type Item = {
@@ -36,7 +36,7 @@ type Item = {
 const ExplorerNavigationTab = () => {
     const {selectedItem, setSelectedItem} = useExplorerContext();
 
-    let items = [];
+    let items: Item[] = [];
     let curr = selectedItem;
     let index = 0;
 
@@ -65,7 +65,7 @@ const ExplorerNavigationTab = () => {
         maxDisplayedItems: 5,
       });
 
-      const renderBreadcrumbItem = (item, isLastItem: boolean = false) => {
+      const renderBreadcrumbItem = (item: Item, isLastItem: boolean = false) => {
         return (
             <React.Fragment key={generateUUID()}>
                 {isTruncatableBreadcrumbContent(item.item.label, 20) ? (
@@ -126,7 +126,7 @@ const useTooltipStyles = makeStyles({
 });
 
 type OverflowMenuProps = {
-    setSelectedItem: (item) => void;
+    setSelectedItem: (item: Item["item"]) => void;
 } & PartitionBreadcrumbItems<Item>
 
 const OverflowMenu = (props: OverflowMenuProps) => {
