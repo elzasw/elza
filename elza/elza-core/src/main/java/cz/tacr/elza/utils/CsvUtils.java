@@ -2,23 +2,18 @@ package cz.tacr.elza.utils;
 
 import java.nio.charset.Charset;
 import java.time.format.DateTimeFormatter;
-import java.util.Locale;
 
 import org.apache.commons.csv.CSVFormat;
 
 public class CsvUtils {
 
     /**
-     * Konstanta pro české locale
-     */
-    public static final Locale LOCALE_CZECH = new Locale("cs", "CZ");
-
-    /**
      * CSV konfigurace pro CZ Excel
      */
-    public static final CSVFormat CSV_EXCEL_FORMAT = CSVFormat.EXCEL
-            .withDelimiter(';')
-            .withQuote('"');
+    public static final CSVFormat CSV_EXCEL_FORMAT = CSVFormat.EXCEL.builder()
+    		.setDelimiter(';')
+            .setQuote('"')
+            .build();
 
     /**
      * Kódování pro CSV soubory - CP1250
