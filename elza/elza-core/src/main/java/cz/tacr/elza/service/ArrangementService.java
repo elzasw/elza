@@ -2573,9 +2573,10 @@ public class ArrangementService {
     }
 
     private void importFundDataCsv(ArrFund fund, String separator, InputStream is) {
+        ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFund(fund);
+        isValidAndOpenVersion(fundVersion);
         // create change
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.IMPORT, null);
-        ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFund(fund);
         char delimiter = StringUtils.isEmpty(separator) ? DEFAULT_CSV_SEPARATOR : separator.charAt(0);
 
         CSVFormat csvf = CSVFormat.EXCEL.builder().setDelimiter(delimiter).build();

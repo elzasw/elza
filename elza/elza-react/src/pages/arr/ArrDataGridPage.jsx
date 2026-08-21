@@ -66,19 +66,21 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
                 </div>
             </Button>,
         );
-        itemActions.push(
-            <Button
-                key="import-dataGrid"
-                onClick={() => {
-                    this.handleDataGridImport(activeFund.versionId);
-                }}
-            >
-                <Icon glyph="fa-upload" />
-                <div>
-                    <span className="btnText">{i18n('ribbon.action.arr.dataGrid.import')}</span>
-                </div>
-            </Button>,
-        );
+        if (!readMode && !closed) {
+            itemActions.push(
+                <Button
+                    key="import-dataGrid"
+                    onClick={() => {
+                        this.handleDataGridImport(activeFund.versionId);
+                    }}
+                >
+                    <Icon glyph="fa-upload" />
+                    <div>
+                        <span className="btnText">{i18n('ribbon.action.arr.dataGrid.import')}</span>
+                    </div>
+                </Button>,
+            );
+        }
 
         var altSection;
         if (altActions.length > 0) {
