@@ -26,7 +26,8 @@ class ArrDaos extends AbstractReactComponent {
         type: PropTypes.oneOf(['PACKAGE', 'NODE', 'NODE_ASSIGN']).isRequired,
         unassigned: PropTypes.bool, // jen v případě packages
         fund: PropTypes.object.isRequired,
-        selectedDaoId: PropTypes.object,
+        selectedDaoId: PropTypes.number,
+        selectedDaoFileId: PropTypes.number,
         nodeId: PropTypes.number,
         daoPackageId: PropTypes.number,
         onSelect: PropTypes.func,
