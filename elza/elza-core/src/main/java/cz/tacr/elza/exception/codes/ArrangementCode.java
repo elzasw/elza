@@ -124,6 +124,11 @@ public enum ArrangementCode implements ErrorCode {
     INVALID_DAO,
 
     /**
+     * Nelze připojit digitální entitu k další JP, protože repozitář nepovoluje více vazeb.
+     */
+    DAO_ALREADY_LINKED,
+
+    /**
      * Nelze připojit digitální entitu k JP, protože je požadavek pro jiné digitální uložiště.
      */
     INVALID_REQUEST_DIGITAL_REPOSITORY_DAO,

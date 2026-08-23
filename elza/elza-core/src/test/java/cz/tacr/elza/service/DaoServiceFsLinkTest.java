@@ -157,7 +157,7 @@ public class DaoServiceFsLinkTest {
 
         BusinessException ex = assertThrows(BusinessException.class,
                 () -> service.createFsDaoLink(fundVersion, repo, nodeA, "folder/a"));
-        assertEquals(ArrangementCode.INVALID_DAO, ex.getErrorCode());
+        assertEquals(ArrangementCode.DAO_ALREADY_LINKED, ex.getErrorCode());
 
         Mockito.verify(daoLinkRepository, Mockito.never()).save(Mockito.<ArrFsLink>any());
         Mockito.verifyNoInteractions(eventNotificationService);
@@ -224,7 +224,7 @@ public class DaoServiceFsLinkTest {
 
         BusinessException ex = assertThrows(BusinessException.class,
                 () -> service.moveFsDaoLink(fundVersion, 555, nodeB));
-        assertEquals(ArrangementCode.INVALID_DAO, ex.getErrorCode());
+        assertEquals(ArrangementCode.DAO_LINK_NOT_FOUND, ex.getErrorCode());
 
         Mockito.verify(daoLinkRepository, Mockito.never()).save(Mockito.<ArrFsLink>any());
     }
@@ -239,7 +239,7 @@ public class DaoServiceFsLinkTest {
 
         BusinessException ex = assertThrows(BusinessException.class,
                 () -> service.moveFsDaoLink(fundVersion, 1, nodeB));
-        assertEquals(ArrangementCode.INVALID_DAO, ex.getErrorCode());
+        assertEquals(ArrangementCode.DAO_LINK_NOT_FOUND, ex.getErrorCode());
     }
 
     @Test

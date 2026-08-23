@@ -273,7 +273,7 @@ public class DaoService {
             if (!Boolean.TRUE.equals(repos.getMultipleLinks())) {
                 throw new BusinessException(
                         "DAO je již připojeno k jiné jednotce popisu; opakované napojení není povoleno.",
-                        ArrangementCode.INVALID_DAO).level(Level.WARNING);
+                        ArrangementCode.DAO_ALREADY_LINKED).level(Level.WARNING);
             }
         }
 
@@ -750,7 +750,7 @@ public class DaoService {
             throw new BusinessException(
                     "Položka souborového repozitáře je již připojena k jiné jednotce popisu;"
                             + " opakované napojení není povoleno.",
-                    ArrangementCode.INVALID_DAO).level(Level.WARNING);
+                    ArrangementCode.DAO_ALREADY_LINKED).level(Level.WARNING);
         }
 
         ArrChange createChange = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, node);
@@ -784,10 +784,10 @@ public class DaoService {
                                    ArrNode newNode) {
         ArrFsLink oldLink = fsLinkRepository.findById(oldDaoLinkId)
                 .orElseThrow(() -> new BusinessException(
-                        "FS dao-link not found: " + oldDaoLinkId, ArrangementCode.INVALID_DAO));
+                        "FS dao-link not found: " + oldDaoLinkId, ArrangementCode.DAO_LINK_NOT_FOUND));
         if (oldLink.getDeleteChange() != null) {
             throw new BusinessException(
-                    "FS dao-link already deleted: " + oldDaoLinkId, ArrangementCode.INVALID_DAO);
+                    "FS dao-link already deleted: " + oldDaoLinkId, ArrangementCode.DAO_LINK_NOT_FOUND);
         }
         if (oldLink.getNodeId().equals(newNode.getNodeId())) {
             return oldLink;

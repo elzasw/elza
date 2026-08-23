@@ -124,6 +124,9 @@ var messages = {
     "exception.arr.ITEM_SPEC_FOUND": "Specifikace atributu nesmí být vyplněna pro tento typ atributu.",
     "exception.arr.PARTY_NAME_FORM_TYPE_NOT_FOUND": "Typ formy jména neexistuje",
     "exception.arr.INVALID_DAO": "Nelze připojit digitální entitu k JP, protože je nevalidní",
+    "exception.arr.DAO_ALREADY_LINKED":
+        "Digitální entita je již připojena k jednotce popisu a repozitář neumožňuje více vazeb",
+    "exception.arr.DAO_LINK_NOT_FOUND": "Propojení digitální entity s jednotkou popisu neexistuje",
     "exception.arr.NOT_REPEATABLE": "Neopakovatelná položka",
     "exception.arr.INVALID_REQUEST_DIGITAL_REPOSITORY_DAO":
         "Nelze připojit digitální entitu k JP, protože je požadavek pro jiné digitální uložiště",
