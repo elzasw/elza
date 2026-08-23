@@ -267,7 +267,7 @@ export interface Fund {
     nodeDaoList: SimpleList<ArrDaoVO>;
     nodeDaoListAssign: SimpleList<ArrDaoVO>;
     nodes: NodesState;
-    packageDaoList: unknown;
+    packageDaoList: SimpleList<ArrDaoVO>;
     reducer: unknown;
     requestDetail: unknown;
     requestList: unknown;

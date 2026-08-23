@@ -9,7 +9,7 @@ import { connect } from 'react-redux';
 import ArrDaoPackages from '../../components/arr/ArrDaoPackages';
 import Ribbon from '../../components/page/Ribbon';
 import FundTreeDaos from '../../components/arr/FundTreeDaos';
-import ArrDaos from '../../components/arr/ArrDaos';
+import { ArrDaos } from '../../components/arr/ArrDaos';
 
 import { i18n, Icon, RibbonGroup, Tabs } from 'components/shared';
 import * as types from 'actions/constants/ActionTypes';

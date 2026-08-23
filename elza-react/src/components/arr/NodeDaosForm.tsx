@@ -7,7 +7,7 @@ import { globalMessages } from 'components/shared/lang/messages';
 import { useAppSelector, useAppThunkDispatch } from 'utils/hooks';
 import { ArrDaoVO } from 'typings/dao';
 import { Button } from '../ui';
-import ArrDaos from './ArrDaos.jsx';
+import { ArrDaos } from './ArrDaos';
 
 interface Props {
     nodeId: number;

@@ -50,7 +50,7 @@ export {NodeSettingsForm} from 'components/arr/node-settings-form';
 export {default as AddNodeForm} from 'components/arr/nodeForm/AddNodeForm';
 export {default as FundBulkModificationsForm} from 'components/arr/FundBulkModificationsForm';
 export {default as ArrPanel} from 'components/arr/ArrPanel';
-export {default as ArrDaos} from 'components/arr/ArrDaos';
+export {ArrDaos} from 'components/arr/ArrDaos';
 export {default as ArrDao} from 'components/arr/ArrDao';
 export {default as ArrFundPanel} from 'components/arr/ArrFundPanel';
 export {default as FundTreeMain} from 'components/arr/FundTreeMain';
