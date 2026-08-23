@@ -59,6 +59,7 @@ export function NodeDaosForm({ nodeId, readMode, daoId, onClose }: Props) {
                     readMode={readMode}
                     selectedDaoId={selectedDaoId}
                     selectedDaoFileId={selectedDaoFileId}
+                    autoSelectFirst
                     onSelect={(dao: ArrDaoVO, fileId: number | null) => {
                         setSelectedDaoId(dao.id);
                         setSelectedDaoFileId(fileId);
