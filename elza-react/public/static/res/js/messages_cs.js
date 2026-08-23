@@ -798,8 +798,12 @@ var messages = {
     "arr.daos.tab.leftTree": "Archivní strom",
     "arr.daos.tab.fileSystemTree": "Souborový systém",
     "arr.daos.link": "Připojit k JP",
+    "arr.daos.link.multipleLinksNotAllowed":
+        "Položka je již připojena k jednotce popisu a repozitář neumožňuje více vazeb",
     "arr.daos.createUnderAndLink": "Vytvořit podřízenou JP",
     "arr.daos.unlink.confirm": "Opravdu chcete odpojit digitální entitu od jednotky popisu?",
+    "arr.daos.unlink.confirm.action": "Odpojit",
+    "arr.daos.unlink.success": "Digitální entita byla odpojena od jednotky popisu",
     "arr.daos.title.id": "ID",
     "arr.daos.title.node": "JP",
     "arr.daos.title.url": "Odkaz",

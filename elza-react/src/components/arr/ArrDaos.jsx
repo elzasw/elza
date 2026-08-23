@@ -6,13 +6,14 @@ import PropTypes from 'prop-types';
 
 import React from 'react';
 import {connect} from 'react-redux';
-import {AbstractReactComponent, HorizontalLoader, Icon, Splitter} from 'components/shared';
+import {AbstractReactComponent, HorizontalLoader, i18n, Icon, Splitter} from 'components/shared';
 import {indexById} from 'stores/app/utils';
 import * as daoActions from 'actions/arr/daoActions';
 import {WebApi} from 'actions/index';
 import ArrDao from './ArrDao';
 
 import flattenItems from 'components/shared/utils/itemFilter';
+import { addToastrSuccess } from 'components/shared/toastr/ToastrActions';
 import List from 'components/shared/tree-list/TreeList';
 import ListItem from '../shared/tree-list/list-item/ListItem';
 
@@ -109,6 +110,7 @@ class ArrDaos extends AbstractReactComponent {
     handleUnlink = async dao => {
         const {fund, onLinkChange} = this.props;
         await WebApi.deleteDaoLink(fund.versionId, dao.daoLink.id);
+        this.props.dispatch(addToastrSuccess(i18n('arr.daos.unlink.success')));
         if (onLinkChange) {
             onLinkChange();
         }

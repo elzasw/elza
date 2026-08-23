@@ -122,7 +122,7 @@ const messages = defineMessages({
 
 interface Props {
     fundId: number;
-    onSelect?: (item?: FsItem, fullPath?: string) => void;
+    onSelect?: (item?: FsItem, fullPath?: string, repo?: FsRepo) => void;
     refreshCounter?: number;
 }
 
@@ -297,7 +297,7 @@ export const FileSystemBrowser = ({
                 }}
                 onClick={() => {
                     setSelectedListItem(item.fullPath);
-                    onSelect(item.data, item.fullPath);
+                    onSelect(item.data, item.fullPath, selectedRepo);
                 }}
             >
                 <span className="item-part left no-shrink" title={item.data.name}>
@@ -399,6 +399,22 @@ export const FileSystemBrowser = ({
         }
     }
 
+    // A reload replaces every FsItem instance, so the copy handed to the parent — its
+    // list of links above all — would go stale. Re-emit the selected item from the fresh
+    // list, or drop the selection when the item is no longer listed.
+    const resyncSelection = (items: RenderItem[]) => {
+        if (!selectedListItem) {
+            return;
+        }
+        const refreshed = items.find((item) => isListItem(item) && item.fullPath === selectedListItem);
+        if (refreshed && isListItem(refreshed)) {
+            onSelect(refreshed.data, refreshed.fullPath, selectedRepo);
+        } else {
+            setSelectedListItem(undefined);
+            onSelect(undefined, undefined, undefined);
+        }
+    };
+
     useEffect(() => {
         let cancelled = false;
         (async () => {
@@ -406,6 +422,7 @@ export const FileSystemBrowser = ({
                 setLevelList([]);
                 setItemsError(false);
                 setItemsLoading(false);
+                resyncSelection([]);
                 return;
             }
             if (selectedTreeItemPath) {
@@ -415,12 +432,14 @@ export const FileSystemBrowser = ({
                     if (!cancelled) {
                         setLevelList(itemsEx);
                         setItemsError(false);
+                        resyncSelection(itemsEx);
                     }
                 } catch (e) {
                     console.error('Failed to load fs items', e);
                     if (!cancelled) {
                         setLevelList([]);
                         setItemsError(true);
+                        resyncSelection([]);
                     }
                 } finally {
                     if (!cancelled) setItemsLoading(false);
@@ -432,7 +451,7 @@ export const FileSystemBrowser = ({
 
     useEffect(() => {
         return () => {
-            onSelect(undefined, undefined);
+            onSelect(undefined, undefined, undefined);
         }
     }, [])
 
