@@ -44,6 +44,9 @@ class ArrDaoPage extends ArrParentPage {
         selectedDaoLeftFileId: null, // vybrané dao v levé části
         selectedDaoRight: null, // vybrané dao v pravé části
         selectedDaoRightFileId: null, // vybrané dao v pravé části
+        selectedFilePath: null, // vybraná položka souborového repozitáře
+        selectedFileItem: null, // data vybrané položky souborového repozitáře
+        selectedFileRepo: null, // souborový repozitář vybrané položky
         fsRefreshCounter: 0,
     };
 
@@ -261,8 +264,8 @@ class ArrDaoPage extends ArrParentPage {
     };
 
     renderFileSystemTree = (readMode) => {
-        const selectFileSystePath = (_item, fullPath) => {
-            this.setState({ selectedFilePath: fullPath });
+        const selectFileSystePath = (item, fullPath, repo) => {
+            this.setState({ selectedFilePath: fullPath, selectedFileItem: item, selectedFileRepo: repo });
         }
         const fund = this.getActiveFund(this.props);
 
@@ -292,26 +295,36 @@ class ArrDaoPage extends ArrParentPage {
     }
 
     renderCenterButtons = (readMode) => {
-        const { selectedDaoLeft, selectedFilePath, selectedTab } = this.state;
+        const { selectedDaoLeft, selectedFilePath, selectedFileItem, selectedFileRepo, selectedTab } = this.state;
         const fund = this.getActiveFund(this.props);
 
         if (selectedTab === "fileSystemTree") {
+            // Repozitář bez povolených více vazeb odmítne druhé napojení téže položky,
+            // proto se akce nabízí jen pro položku, která ještě není nikam připojena.
+            const alreadyLinked = selectedFileItem != null
+                && selectedFileItem.links != null
+                && selectedFileItem.links.length > 0;
+            const multipleLinksBlocked = alreadyLinked
+                && !(selectedFileRepo && selectedFileRepo.multipleLinks);
             const canLinkFile = selectedFilePath
                 && fund.fundTreeDaosRight.selectedId !== null
-                && !readMode;
+                && !readMode
+                && !multipleLinksBlocked;
             return (
-                <Button
-                    key="0"
-                    onClick={this.handleFileLink}
-                    disabled={!canLinkFile}
-                >
-                    <Icon
-                        glyph="fa-thumb-tack"
-                    />
-                    <div>
-                        {i18n('arr.daos.link')}
-                    </div>
-                </Button>
+                <span title={multipleLinksBlocked ? i18n('arr.daos.link.multipleLinksNotAllowed') : undefined}>
+                    <Button
+                        key="0"
+                        onClick={this.handleFileLink}
+                        disabled={!canLinkFile}
+                    >
+                        <Icon
+                            glyph="fa-thumb-tack"
+                        />
+                        <div>
+                            {i18n('arr.daos.link')}
+                        </div>
+                    </Button>
+                </span>
             )
         }
 

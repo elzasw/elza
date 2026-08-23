@@ -8158,6 +8158,7 @@ components:
         - name
         - path
         - available
+        - multipleLinks
       properties:
         fsRepoId:
           type: integer
@@ -8177,6 +8178,12 @@ components:
           description: |-
             False when the configured root is not accessible on the server. Such a repository
             is listed so the misconfiguration is visible, but it cannot be browsed.
+        multipleLinks:
+          type: boolean
+          description: |-
+            True when one item of this repository may be linked to more than one description
+            unit. False means a second link is rejected, so the client can keep the link
+            action disabled for an item that is already linked.
     Fund:
       type: object
       required:

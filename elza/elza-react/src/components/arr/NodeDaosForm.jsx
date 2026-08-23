@@ -15,14 +15,45 @@ class NodeDaosForm extends AbstractReactComponent {
         this.state = {
             daoId: props.daoId,
             daoFileId: null,
+            hadDaos: false,
         };
     }
+
+    componentDidMount() {
+        this.closeWhenEmptied();
+    }
+
+    componentDidUpdate() {
+        this.closeWhenEmptied();
+    }
+
+    /**
+     * Odpojení poslední digitální entity vyprázdní celý obsah dialogu. Prázdné okno
+     * uživateli nic neříká, proto ho v takovém případě zavřeme.
+     */
+    closeWhenEmptied = () => {
+        const {fund, onClose, dispatch} = this.props;
+        const daoList = fund ? fund.nodeDaoList : null;
+        if (!daoList || !daoList.fetched || daoList.isFetching) {
+            return;
+        }
+        if (daoList.rows && daoList.rows.length > 0) {
+            if (!this.state.hadDaos) {
+                this.setState({hadDaos: true});
+            }
+            return;
+        }
+        if (this.state.hadDaos) {
+            onClose ? onClose() : dispatch(modalDialogHide());
+        }
+    };
 
     static propTypes = {
         fund: PropTypes.object.isRequired,
         nodeId: PropTypes.number.isRequired,
         daoId: PropTypes.number, // pokud má být vybrán konkrétní DAO na detail
         readMode: PropTypes.bool.isRequired,
+        onClose: PropTypes.func, // doplňuje ModalDialog, zavírá právě tento dialog
     };
 
     handleSelectDao = (dao, fileId) => {
