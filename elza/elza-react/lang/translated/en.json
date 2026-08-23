@@ -1781,6 +1781,10 @@
     "defaultMessage": "Running action…",
     "srcHash": "62_V1ae3mzQ9"
   },
+  "nodeDaos.title": {
+    "defaultMessage": "Digital entities of the description unit",
+    "srcHash": "0aemD1Q5UgjQ"
+  },
   "nodeSubNodeForm_quote_title": {
     "defaultMessage": "Citation",
     "srcHash": "bh8ur2NU3QpS"
