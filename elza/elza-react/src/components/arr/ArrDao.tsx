@@ -41,6 +41,10 @@ const messages = defineMessages({
         id: 'arrDao.linkedTo',
         defaultMessage: 'Připojeno k JP:',
     },
+    labelScenario: {
+        id: 'arrDao.label.scenario',
+        defaultMessage: 'Scénář',
+    },
     labelId: {
         id: 'arrDao.label.id',
         defaultMessage: 'ID',
@@ -113,10 +117,10 @@ interface Props {
     dao: ArrDaoVO;
     fund: Fund;
     readMode: boolean;
-    /** Vybraný soubor DAO; bez něj se zobrazí detail celé digitální entity. */
+    /** Vybraný soubor DAO; bez něj se ukáže první soubor entity. */
     daoFile?: ArrDaoFileVO;
-    prevDaoFile?: () => void;
-    nextDaoFile?: () => void;
+    /** Přepnutí náhledu na jiný soubor entity. */
+    onSelectFile?: (daoFileId: number) => void;
     onUnlink: () => void;
 }
 
@@ -134,18 +138,20 @@ const renderLabel = (label: string, value: React.ReactNode, block = false) => {
     );
 };
 
-export function ArrDao({ dao, fund, readMode, daoFile, prevDaoFile, nextDaoFile, onUnlink }: Props) {
+export function ArrDao({ dao, fund, readMode, daoFile, onSelectFile, onUnlink }: Props) {
     const intl = useIntl();
     const dispatch = useAppThunkDispatch();
     const [imageError, setImageError] = useState(false);
 
     const fileList = dao.fileList || [];
+    // Bez vybraného souboru ukazujeme první — detail entity tak nikdy není bez náhledu.
+    const file = daoFile ?? fileList[0];
 
     // Náhled smazaného souboru se nedá stáhnout — 404 na HEAD přepne zobrazení na
     // vysvětlení místo rozbitého obrázku. Síťová chyba soubor za chybějící neoznačí.
     useEffect(() => {
         setImageError(false);
-        const url = daoFile?.url;
+        const url = file?.url;
         if (!url) {
             return;
         }
@@ -163,7 +169,7 @@ export function ArrDao({ dao, fund, readMode, daoFile, prevDaoFile, nextDaoFile,
         return () => {
             cancelled = true;
         };
-    }, [daoFile]);
+    }, [file?.url]);
 
     const handleUnlink = async () => {
         const confirmed = await dispatch(
@@ -246,6 +252,8 @@ export function ArrDao({ dao, fund, readMode, daoFile, prevDaoFile, nextDaoFile,
                     intl.formatMessage(messages.labelFileCount),
                     fileList.length + (dao.truncated ? '+' : ''),
                 )}
+                {dao.daoLink?.scenario &&
+                    renderLabel(intl.formatMessage(messages.labelScenario), dao.daoLink.scenario)}
             </div>
         </div>
     );
@@ -294,9 +302,14 @@ export function ArrDao({ dao, fund, readMode, daoFile, prevDaoFile, nextDaoFile,
 
     const renderDaoFileDetail = (file: ArrDaoFileVO) => {
         const count = fileList.length;
-        const curr = fileList.indexOf(file) + 1;
-        const leftDisable = curr <= 1;
-        const rightDisable = curr >= count;
+        const index = fileList.indexOf(file);
+        const curr = index + 1;
+        const stepFile = (step: number) => {
+            const next = fileList[index + step];
+            if (next) {
+                onSelectFile?.(next.id);
+            }
+        };
 
         return (
             <div className="dao-file-detail">
@@ -307,10 +320,10 @@ export function ArrDao({ dao, fund, readMode, daoFile, prevDaoFile, nextDaoFile,
                                 {intl.formatMessage(messages.thumbnailPosition, { current: curr, total: count })}
                             </div>
                             <div className="arrows">
-                                <NoFocusButton disabled={leftDisable} onClick={prevDaoFile}>
+                                <NoFocusButton disabled={curr <= 1} onClick={() => stepFile(-1)}>
                                     <Icon glyph="fa-chevron-left" />
                                 </NoFocusButton>
-                                <NoFocusButton disabled={rightDisable} onClick={nextDaoFile}>
+                                <NoFocusButton disabled={curr >= count} onClick={() => stepFile(1)}>
                                     <Icon glyph="fa-chevron-right" />
                                 </NoFocusButton>
                             </div>
@@ -377,7 +390,10 @@ export function ArrDao({ dao, fund, readMode, daoFile, prevDaoFile, nextDaoFile,
                     {intl.formatMessage(messages.linkedTo)} <NodeLabel inline node={dao.daoLink.treeNodeClient} />
                 </div>
             )}
-            <div className="dao-info-container">{daoFile ? renderDaoFileDetail(daoFile) : renderDaoDetail()}</div>
+            <div className="dao-info-container">
+                {renderDaoDetail()}
+                {file && renderDaoFileDetail(file)}
+            </div>
         </div>
     );
 }

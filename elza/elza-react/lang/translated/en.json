@@ -1241,6 +1241,10 @@
     "defaultMessage": "ID",
     "srcHash": "OEOXHc_e5Qg-"
   },
+  "arrDao.label.scenario": {
+    "defaultMessage": "Scenario",
+    "srcHash": "HeuFOCziWMPw"
+  },
   "arrDao.linkedTo": {
     "defaultMessage": "Linked to description unit:",
     "srcHash": "jjLFEQxRTSgI"

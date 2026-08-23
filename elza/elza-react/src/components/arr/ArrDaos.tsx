@@ -8,7 +8,7 @@ import List from 'components/shared/tree-list/TreeList';
 import { indexById } from 'stores/app/utils';
 import * as daoActions from 'actions/arr/daoActions';
 import { WebApi } from 'actions/index';
-import { useAppThunkDispatch } from 'utils/hooks';
+import { useAppThunkDispatch, useLocalStorageState } from 'utils/hooks';
 import { ArrDaoFileVO, ArrDaoVO } from 'typings/dao';
 import { Fund, SimpleList } from 'typings/store';
 import ListItem from '../shared/tree-list/list-item/ListItem';
@@ -41,6 +41,12 @@ interface Props {
     selectedDaoFileId?: number | null;
     onSelect?: (dao: ArrDaoVO, daoFileId: number | null) => void;
     onLinkChange?: () => void;
+    /**
+     * Vybrat první digitální entitu, jakmile je seznam k dispozici. Pro dialog,
+     * kde by prázdný detail uživateli nic neřekl; na stránce digitálních entit
+     * zůstává výběr na uživateli, protože řídí tlačítka pro připojení.
+     */
+    autoSelectFirst?: boolean;
 }
 
 export type ArrDaosProps = Props;
@@ -73,10 +79,11 @@ export function ArrDaos({
     selectedDaoFileId,
     onSelect,
     onLinkChange,
+    autoSelectFirst = false,
 }: Props) {
     const intl = useIntl();
     const dispatch = useAppThunkDispatch();
-    const [leftSize, setLeftSize] = useState(240);
+    const [leftSize, setLeftSize] = useLocalStorageState('arrDaos.leftSize', 240);
 
     const daoList = daoListOf(fund, type);
 
@@ -98,6 +105,16 @@ export function ArrDaos({
         }
     }, [dispatch, type, unassigned, fund.versionId, nodeId, daoPackageId, daoList]);
 
+    useEffect(() => {
+        if (!autoSelectFirst || !daoList?.fetched || daoList.isFetching) {
+            return;
+        }
+        const rows = daoList.rows;
+        if (rows.length > 0 && !rows.some((dao) => dao.id === selectedDaoId)) {
+            onSelect?.(rows[0], null);
+        }
+    }, [autoSelectFirst, daoList, selectedDaoId, onSelect]);
+
     const handleSelect = (item: TreeItem) => {
         const index = indexById(daoList?.rows, item.daoId);
         if (index == null) {
@@ -106,14 +123,6 @@ export function ArrDaos({
         const dao = (daoList as SimpleList<ArrDaoVO>).rows[index];
         const daoFileId = item.id.startsWith('f_') ? parseInt(item.id.replace('f_', ''), 10) : null;
         onSelect?.(dao, daoFileId);
-    };
-
-    const handleStepDaoFile = (dao: ArrDaoVO, step: number) => {
-        const files = dao.fileList || [];
-        const index = indexById(files, selectedDaoFileId);
-        if (index != null) {
-            onSelect?.(dao, files[index + step].id);
-        }
     };
 
     const handleUnlink = async (dao: ArrDaoVO) => {
@@ -174,6 +183,33 @@ export function ArrDaos({
         items = flattenItems(preItems, { getItemId: (i: TreeItem) => i.id });
     }
 
+    // Jediná entita s jedním souborem nemá co nabídnout k výběru — strom by byl jen
+    // prázdná režie a detail dostane celou šířku. Skrýt ho lze pouze tam, kde se
+    // vybírá automaticky; jinde je seznam jediná cesta, jak entitu vybrat, a bez
+    // výběru by nešla ani připojit k JP.
+    const rows = daoList?.rows || [];
+    const nothingToNavigate =
+        autoSelectFirst && rows.length === 1 && (rows[0].fileList || []).length <= 1;
+
+    const detail = (
+        <div className="daos-detail">
+            {selectedDao && (
+                <ArrDao
+                    fund={fund}
+                    readMode={readMode}
+                    dao={selectedDao}
+                    daoFile={selectedDaoFile ?? undefined}
+                    onSelectFile={(fileId) => onSelect?.(selectedDao as ArrDaoVO, fileId)}
+                    onUnlink={() => handleUnlink(selectedDao as ArrDaoVO)}
+                />
+            )}
+        </div>
+    );
+
+    if (nothingToNavigate) {
+        return <div className="daos-container daos-container--single">{detail}</div>;
+    }
+
     return (
         <div className="daos-container">
             <Splitter
@@ -196,21 +232,7 @@ export function ArrDaos({
                         </div>
                     </div>
                 }
-                center={
-                    <div className="daos-detail">
-                        {selectedDao && (
-                            <ArrDao
-                                fund={fund}
-                                readMode={readMode}
-                                dao={selectedDao}
-                                prevDaoFile={() => handleStepDaoFile(selectedDao as ArrDaoVO, -1)}
-                                nextDaoFile={() => handleStepDaoFile(selectedDao as ArrDaoVO, 1)}
-                                daoFile={selectedDaoFile ?? undefined}
-                                onUnlink={() => handleUnlink(selectedDao as ArrDaoVO)}
-                            />
-                        )}
-                    </div>
-                }
+                center={detail}
             />
         </div>
     );

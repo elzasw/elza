@@ -36,6 +36,14 @@ const daoFile: ArrDaoFileVO = {
     thumbnailUrl: '/api/dao/file/10/thumb',
 };
 
+const secondFile: ArrDaoFileVO = {
+    id: 11,
+    code: 'file-11',
+    mimetype: 'image/jpeg',
+    url: '/api/dao/file/11',
+    thumbnailUrl: '/api/dao/file/11/thumb',
+};
+
 const dao: ArrDaoVO = {
     id: 5,
     code: 'dao-5',
@@ -111,6 +119,47 @@ describe('ArrDao', () => {
             expect(document.querySelector('.thumbnail img')).toHaveAttribute('src', daoFile.thumbnailUrl as string),
         );
         expect(screen.queryByText(THUMBNAIL_NOT_FOUND)).not.toBeInTheDocument();
+    });
+
+    it('bez vybraného souboru ukáže identitu entity i náhled prvního souboru', async () => {
+        renderWithProviders(<ArrDao dao={dao} fund={fund} readMode={false} onUnlink={vi.fn()} />);
+
+        // identita a akce entity
+        expect(screen.getByText('dao-5')).toBeInTheDocument();
+        expect(document.querySelector('.dao-actions .right button')).not.toBeNull();
+        // a zároveň náhled — bez dalšího kliknutí
+        expect(document.querySelector('.dao-file-detail')).not.toBeNull();
+        await screen.findByText('Náhled 1/1');
+    });
+
+    it('navigace přepne náhled na další soubor', async () => {
+        const onSelectFile = vi.fn();
+        const multi: ArrDaoVO = { ...dao, fileCount: 2, fileList: [daoFile, secondFile] };
+
+        renderWithProviders(
+            <ArrDao dao={multi} fund={fund} readMode daoFile={daoFile} onSelectFile={onSelectFile} onUnlink={vi.fn()} />,
+        );
+
+        await screen.findByText('Náhled 1/2');
+        // NoFocusButton je div s třídou "disabled", ne skutečné <button>
+        const arrows = document.querySelectorAll('.navigation .arrows .btn');
+        expect(arrows).toHaveLength(2);
+        expect(arrows[0].className).toContain('disabled');
+        expect(arrows[1].className).not.toContain('disabled');
+
+        fireEvent.click(arrows[1]);
+        expect(onSelectFile).toHaveBeenCalledWith(secondFile.id);
+    });
+
+    it('scénář vazby zobrazí, pokud ho server pošle', () => {
+        const withScenario: ArrDaoVO = {
+            ...dao,
+            daoLink: { ...dao.daoLink, scenario: 'Připojit jako přílohu' },
+        };
+
+        renderWithProviders(<ArrDao dao={withScenario} fund={fund} readMode onUnlink={vi.fn()} />);
+
+        expect(screen.getByText('Připojit jako přílohu')).toBeInTheDocument();
     });
 
     it('zdrojové rozměry popíše jednotkou ze serveru', () => {
