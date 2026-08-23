@@ -1193,6 +1193,98 @@
     "defaultMessage": "Keep original value",
     "srcHash": "La8cCc4r_IK2"
   },
+  "arrDao.action.copyLink": {
+    "defaultMessage": "Copy link",
+    "srcHash": "4x3eHwbYl3AQ"
+  },
+  "arrDao.action.openInRepository": {
+    "defaultMessage": "Open in repository",
+    "srcHash": "fsLhfPeaWFBR"
+  },
+  "arrDao.file.description": {
+    "defaultMessage": "Description",
+    "srcHash": "rx7qx-MBKenQ"
+  },
+  "arrDao.file.duration": {
+    "defaultMessage": "Duration",
+    "srcHash": "P5dcU3UA_BD7"
+  },
+  "arrDao.file.mimeType": {
+    "defaultMessage": "MIME",
+    "srcHash": "RNL9_5yOBM2h"
+  },
+  "arrDao.file.resolution": {
+    "defaultMessage": "Resolution",
+    "srcHash": "zJWwdBMUEn3L"
+  },
+  "arrDao.file.selected": {
+    "defaultMessage": "Selected file",
+    "srcHash": "eR7YzQEypRZ8"
+  },
+  "arrDao.file.size": {
+    "defaultMessage": "Size",
+    "srcHash": "HkMRVxaPFOh5"
+  },
+  "arrDao.file.sourceResolution": {
+    "defaultMessage": "Source resolution",
+    "srcHash": "WwPlgPPTXfY8"
+  },
+  "arrDao.label.code": {
+    "defaultMessage": "Code",
+    "srcHash": "lHt70Q2si8jP"
+  },
+  "arrDao.label.fileCount": {
+    "defaultMessage": "Number of files",
+    "srcHash": "6Ep27pGi80oO"
+  },
+  "arrDao.label.id": {
+    "defaultMessage": "ID",
+    "srcHash": "OEOXHc_e5Qg-"
+  },
+  "arrDao.linkedTo": {
+    "defaultMessage": "Linked to description unit:",
+    "srcHash": "jjLFEQxRTSgI"
+  },
+  "arrDao.request.title": {
+    "defaultMessage": "Delimitation/disposal request",
+    "srcHash": "0S7LY3Tcqjqf"
+  },
+  "arrDao.thumbnail.empty": {
+    "defaultMessage": "Preview is not available",
+    "srcHash": "9gtOt95UtKZw"
+  },
+  "arrDao.thumbnail.notFound": {
+    "defaultMessage": "The item was not found in the repository",
+    "srcHash": "aFM7AnRjvymr"
+  },
+  "arrDao.thumbnail.position": {
+    "defaultMessage": "Preview {current}/{total}",
+    "srcHash": "xTXLk1hu74zX"
+  },
+  "arrDao.unit.in": {
+    "defaultMessage": "in",
+    "srcHash": "WClnU00PkJ0Z"
+  },
+  "arrDao.unit.mm": {
+    "defaultMessage": "mm",
+    "srcHash": "j6Hd3VNgbOuT"
+  },
+  "arrDao.unlink.action": {
+    "defaultMessage": "Unlink",
+    "srcHash": "CSSspIxpRrMi"
+  },
+  "arrDao.unlink.confirm": {
+    "defaultMessage": "Do you really want to unlink the digital entity from the description unit?",
+    "srcHash": "HOHGXAZdoNFP"
+  },
+  "arrDaoPage.link.multipleLinksNotAllowed": {
+    "defaultMessage": "The item is already linked to a description unit and the repository does not allow multiple links",
+    "srcHash": "DJ4rdbC45HPJ"
+  },
+  "arrDaos.unlink.success": {
+    "defaultMessage": "The digital entity was unlinked from the description unit",
+    "srcHash": "y4Kc7qIdN6LF"
+  },
   "confirmPopover.no": {
     "defaultMessage": "Cancel",
     "srcHash": "bHfYpLCt8F6P"

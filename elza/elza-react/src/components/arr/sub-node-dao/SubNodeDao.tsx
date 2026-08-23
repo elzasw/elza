@@ -4,7 +4,7 @@ import React, { FC } from 'react';
 import { connect } from 'react-redux';
 import { ArrSubNodeDaosVO } from "typings/dao";
 import { Button } from '../../ui';
-import NodeDaosForm from '../NodeDaosForm';
+import { NodeDaosForm } from '../NodeDaosForm';
 import './SubNodeDao.scss';
 import { SubNodeDaoItem } from "./SubNodeDaoItem";
 import {useDispatch} from "react-redux";
