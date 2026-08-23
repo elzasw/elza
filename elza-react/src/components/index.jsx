@@ -24,7 +24,7 @@ export {default as FundDetailTree} from 'components/fund/FundDetailTree';
 
 export {default as NodeLabel} from 'components/arr/NodeLabel';
 export {default as ArrDaoPackages} from 'components/arr/ArrDaoPackages';
-export {default as NodeDaosForm} from 'components/arr/NodeDaosForm';
+export {NodeDaosForm} from 'components/arr/NodeDaosForm';
 export {default as FundNodesList} from 'components/arr/FundNodesList';
 export {default as FundNodesSelectForm} from 'components/arr/FundNodesSelectForm';
 export {default as ArrSearchForm} from 'components/arr/ArrSearchForm';
@@ -51,7 +51,7 @@ export {default as AddNodeForm} from 'components/arr/nodeForm/AddNodeForm';
 export {default as FundBulkModificationsForm} from 'components/arr/FundBulkModificationsForm';
 export {default as ArrPanel} from 'components/arr/ArrPanel';
 export {ArrDaos} from 'components/arr/ArrDaos';
-export {default as ArrDao} from 'components/arr/ArrDao';
+export {ArrDao} from 'components/arr/ArrDao';
 export {default as ArrFundPanel} from 'components/arr/ArrFundPanel';
 export {default as FundTreeMain} from 'components/arr/FundTreeMain';
 export {default as FundTreeMovementsLeft} from 'components/arr/FundTreeMovementsLeft';

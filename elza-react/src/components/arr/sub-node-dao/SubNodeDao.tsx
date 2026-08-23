@@ -1,13 +1,11 @@
-import { modalDialogShow } from 'actions/global/modalDialog.jsx';
 import { HorizontalLoader, i18n, Icon } from 'components/shared';
-import React, { FC } from 'react';
+import { FC } from 'react';
 import { connect } from 'react-redux';
 import { ArrSubNodeDaosVO } from "typings/dao";
 import { Button } from '../../ui';
-import { NodeDaosForm } from '../NodeDaosForm';
+import { useNodeDaosModal } from '../useNodeDaosModal';
 import './SubNodeDao.scss';
 import { SubNodeDaoItem } from "./SubNodeDaoItem";
-import {useDispatch} from "react-redux";
 
 const SubNodeDao:FC<{
     daos: ArrSubNodeDaosVO;
@@ -22,19 +20,10 @@ const SubNodeDao:FC<{
     versionId,
     nodeId,
 }) => {
-    const dispatch = useDispatch();
+    const showNodeDaos = useNodeDaosModal();
 
-    const handleShowDetail = (
-        daoId?: number,
-    ) => {
-        dispatch(
-            modalDialogShow(
-                this,
-                i18n('subNodeDao.dao.title.node'),
-                <NodeDaosForm readMode={readMode} nodeId={selectedSubNodeId} daoId={daoId} />,
-                'dialog-lg node-dao-dialog',
-            ),
-        );
+    const handleShowDetail = (daoId?: number) => {
+        showNodeDaos({ nodeId: selectedSubNodeId, readMode, daoId });
     };
 
     const handleShowDetailAll = () => handleShowDetail();

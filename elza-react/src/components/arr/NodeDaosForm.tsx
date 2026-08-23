@@ -1,28 +1,51 @@
-/** Dialog zobrazení digitálních entit připojených k jednotce popisu. */
+/** Okno s digitálními entitami připojenými k jednotce popisu. */
 import { useEffect, useRef, useState } from 'react';
-import { Form, Modal } from 'react-bootstrap';
-import { useIntl } from 'react-intl';
-import { modalDialogHide } from 'actions/global/modalDialog';
+import { Button, makeStyles, tokens } from '@fluentui/react-components';
+import { defineMessages, useIntl } from 'react-intl';
+import { CollapsibleDragWindow } from 'components/shared/dialog/FluentModalDialog';
 import { globalMessages } from 'components/shared/lang/messages';
-import { useAppSelector, useAppThunkDispatch } from 'utils/hooks';
+import { useAppSelector } from 'utils/hooks';
 import { ArrDaoVO } from 'typings/dao';
-import { Button } from '../ui';
+import { Fund } from 'typings/store';
 import { ArrDaos } from './ArrDaos';
+
+const messages = defineMessages({
+    title: {
+        id: 'nodeDaos.title',
+        defaultMessage: 'Digitální entity pro jednotku popisu',
+    },
+});
+
+const useStyles = makeStyles({
+    content: {
+        display: 'flex',
+        flexGrow: 1,
+        // Bez minHeight by obsah okno roztahoval, místo aby se do něj vešel.
+        minHeight: 0,
+        paddingTop: tokens.spacingVerticalS,
+    },
+    footer: {
+        display: 'flex',
+        flexShrink: 0,
+        justifyContent: 'flex-end',
+        paddingTop: tokens.spacingVerticalS,
+    },
+});
 
 interface Props {
     nodeId: number;
     readMode: boolean;
-    /** DAO, které se má rovnou otevřít na detailu; jinak se detail zobrazí až po výběru. */
+    /** Zavření okna — doplňuje useNodeDaosModal. */
+    onClose: () => void;
+    /** DAO, které se má rovnou otevřít na detailu; jinak se vybere první. */
     daoId?: number;
-    /** Doplňuje ModalDialog — zavírá právě tento dialog. */
-    onClose?: () => void;
 }
 
 export type NodeDaosFormProps = Props;
 
-export function NodeDaosForm({ nodeId, readMode, daoId, onClose }: Props) {
+export function NodeDaosForm({ nodeId, readMode, onClose, daoId }: Props) {
     const intl = useIntl();
-    const dispatch = useAppThunkDispatch();
+    const styles = useStyles();
 
     const fund = useAppSelector(({ arrRegion }) =>
         arrRegion.activeIndex != null ? arrRegion.funds[arrRegion.activeIndex] : undefined,
@@ -32,11 +55,9 @@ export function NodeDaosForm({ nodeId, readMode, daoId, onClose }: Props) {
     const [selectedDaoId, setSelectedDaoId] = useState(daoId);
     const [selectedDaoFileId, setSelectedDaoFileId] = useState<number | null>(null);
 
-    const close = () => (onClose ? onClose() : dispatch(modalDialogHide()));
-
-    // Odpojení poslední digitální entity vyprázdní celý obsah dialogu. Prázdné okno
+    // Odpojení poslední digitální entity vyprázdní celý obsah okna. Prázdné okno
     // uživateli nic neříká, proto ho v takovém případě zavřeme. Rozhoduje se až podle
-    // dočteného seznamu, aby dialog nezavřelo probíhající načítání.
+    // dočteného seznamu, aby okno nezavřelo probíhající načítání.
     const hadDaos = useRef(false);
     useEffect(() => {
         if (!daoList?.fetched || daoList.isFetching) {
@@ -45,16 +66,21 @@ export function NodeDaosForm({ nodeId, readMode, daoId, onClose }: Props) {
         if (daoList.rows.length > 0) {
             hadDaos.current = true;
         } else if (hadDaos.current) {
-            close();
+            onClose();
         }
-    }, [daoList]);
+    }, [daoList, onClose]);
 
     return (
-        <Form>
-            <Modal.Body>
+        <CollapsibleDragWindow
+            title={intl.formatMessage(messages.title)}
+            onClose={onClose}
+            initialWidth={1100}
+            initialHeight={700}
+        >
+            <div className={styles.content}>
                 <ArrDaos
                     type="NODE"
-                    fund={fund}
+                    fund={fund as Fund}
                     nodeId={nodeId}
                     readMode={readMode}
                     selectedDaoId={selectedDaoId}
@@ -65,12 +91,12 @@ export function NodeDaosForm({ nodeId, readMode, daoId, onClose }: Props) {
                         setSelectedDaoFileId(fileId);
                     }}
                 />
-            </Modal.Body>
-            <Modal.Footer>
-                <Button variant="link" onClick={close}>
+            </div>
+            <div className={styles.footer}>
+                <Button appearance="subtle" onClick={onClose}>
                     {intl.formatMessage(globalMessages.close)}
                 </Button>
-            </Modal.Footer>
-        </Form>
+            </div>
+        </CollapsibleDragWindow>
     );
 }
