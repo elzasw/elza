@@ -6,16 +6,24 @@ import PropTypes from 'prop-types';
 
 import React from 'react';
 import {connect} from 'react-redux';
-import {AbstractReactComponent, HorizontalLoader, i18n, Icon, Splitter} from 'components/shared';
+import {AbstractReactComponent, HorizontalLoader, Icon, Splitter} from 'components/shared';
 import {indexById} from 'stores/app/utils';
 import * as daoActions from 'actions/arr/daoActions';
 import {WebApi} from 'actions/index';
-import ArrDao from './ArrDao';
+import {ArrDao} from './ArrDao';
 
 import flattenItems from 'components/shared/utils/itemFilter';
 import { addToastrSuccess } from 'components/shared/toastr/ToastrActions';
+import { defineMessages, injectIntl } from 'react-intl';
 import List from 'components/shared/tree-list/TreeList';
 import ListItem from '../shared/tree-list/list-item/ListItem';
+
+const messages = defineMessages({
+    unlinkSuccess: {
+        id: 'arrDaos.unlink.success',
+        defaultMessage: 'Digitální entita byla odpojena od jednotky popisu',
+    },
+});
 
 class ArrDaos extends AbstractReactComponent {
     state = {
@@ -111,7 +119,7 @@ class ArrDaos extends AbstractReactComponent {
     handleUnlink = async dao => {
         const {fund, onLinkChange} = this.props;
         await WebApi.deleteDaoLink(fund.versionId, dao.daoLink.id);
-        this.props.dispatch(addToastrSuccess(i18n('arr.daos.unlink.success')));
+        this.props.dispatch(addToastrSuccess(this.props.intl.formatMessage(messages.unlinkSuccess)));
         if (onLinkChange) {
             onLinkChange();
         }
@@ -241,4 +249,4 @@ class ArrDaos extends AbstractReactComponent {
     }
 }
 
-export default connect()(ArrDaos);
+export default connect()(injectIntl(ArrDaos));

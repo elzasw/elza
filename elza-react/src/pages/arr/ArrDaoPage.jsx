@@ -22,6 +22,14 @@ import { WebApi } from 'actions/index';
 import { urlFundDaos, getFundVersion } from "../../constants";
 import { FileSystemBrowser, extractRepoIdFromFullPath } from 'components/arr/daos';
 import { Api } from "api";
+import { defineMessages, injectIntl } from 'react-intl';
+
+const messages = defineMessages({
+    multipleLinksNotAllowed: {
+        id: 'arrDaoPage.link.multipleLinksNotAllowed',
+        defaultMessage: 'Položka je již připojena k jednotce popisu a repozitář neumožňuje více vazeb',
+    },
+});
 
 /**
  * Stránka archivních pomůcek.
@@ -311,7 +319,13 @@ class ArrDaoPage extends ArrParentPage {
                 && !readMode
                 && !multipleLinksBlocked;
             return (
-                <span title={multipleLinksBlocked ? i18n('arr.daos.link.multipleLinksNotAllowed') : undefined}>
+                <span
+                    title={
+                        multipleLinksBlocked
+                            ? this.props.intl.formatMessage(messages.multipleLinksNotAllowed)
+                            : undefined
+                    }
+                >
                     <Button
                         key="0"
                         onClick={this.handleFileLink}
@@ -472,4 +486,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps)(ArrDaoPage);
+export default connect(mapStateToProps)(injectIntl(ArrDaoPage));

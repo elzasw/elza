@@ -1,19 +1,13 @@
 /** Dialog zobrazení digitálních entit připojených k jednotce popisu. */
 import { useEffect, useRef, useState } from 'react';
 import { Form, Modal } from 'react-bootstrap';
-import { defineMessages, useIntl } from 'react-intl';
+import { useIntl } from 'react-intl';
 import { modalDialogHide } from 'actions/global/modalDialog';
+import { globalMessages } from 'components/shared/lang/messages';
 import { useAppSelector, useAppThunkDispatch } from 'utils/hooks';
 import { ArrDaoVO } from 'typings/dao';
 import { Button } from '../ui';
 import ArrDaos from './ArrDaos.jsx';
-
-const messages = defineMessages({
-    close: {
-        id: 'nodeDaos.action.close',
-        defaultMessage: 'Zavřít',
-    },
-});
 
 interface Props {
     nodeId: number;
@@ -24,7 +18,9 @@ interface Props {
     onClose?: () => void;
 }
 
-export const NodeDaosForm = ({ nodeId, readMode, daoId, onClose }: Props) => {
+export type NodeDaosFormProps = Props;
+
+export function NodeDaosForm({ nodeId, readMode, daoId, onClose }: Props) {
     const intl = useIntl();
     const dispatch = useAppThunkDispatch();
 
@@ -71,11 +67,9 @@ export const NodeDaosForm = ({ nodeId, readMode, daoId, onClose }: Props) => {
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="link" onClick={close}>
-                    {intl.formatMessage(messages.close)}
+                    {intl.formatMessage(globalMessages.close)}
                 </Button>
             </Modal.Footer>
         </Form>
     );
-};
-
-export default NodeDaosForm;
+}
