@@ -1281,6 +1281,10 @@
     "defaultMessage": "The item is already linked to a description unit and the repository does not allow multiple links",
     "srcHash": "DJ4rdbC45HPJ"
   },
+  "arrDaos.list.title": {
+    "defaultMessage": "Digital entities",
+    "srcHash": "PQYhCBjzlUJO"
+  },
   "arrDaos.unlink.success": {
     "defaultMessage": "The digital entity was unlinked from the description unit",
     "srcHash": "y4Kc7qIdN6LF"
