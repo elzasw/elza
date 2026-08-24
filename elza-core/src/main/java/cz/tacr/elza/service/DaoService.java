@@ -49,6 +49,7 @@ import cz.tacr.elza.exception.DeleteException;
 import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.DigitizationCode;
 import cz.tacr.elza.repository.ArrDaLinkRepository;
 import cz.tacr.elza.repository.ArrFsLinkRepository;
@@ -1209,16 +1210,16 @@ public class DaoService {
     public DaoViewRequestVO getDaoViewRequestInfo(Integer id) {
         DaDao dao = daDaoRepository.findById(id).orElse(null);
         if(dao == null) {
-            throw new BusinessException("Nepodařilo se najít DaDao s id: " + id, ArrangementCode.INVALID_DAO);
+            throw new BusinessException("Nepodařilo se najít DaDao s id: " + id, ArrangementCode.DATA_NOT_FOUND);
         }
         DaoViewRequestVO request = new DaoViewRequestVO();
         if(dao.getAip() == null) {
-            throw new BusinessException("Pro DaDao s id " + id + " neexistuje AIP", ArrangementCode.INVALID_DAO);
+            throw new BusinessException("Pro DaDao s id " + id + " neexistuje AIP", BaseCode.INVALID_STATE);
         }
         request.setDaoId(dao.getAip().getCode());
         request.setEntityRef(dao.getCode());
         if(dao.getAip().getDigitalRepository() == null) {
-            throw new BusinessException("Pro AIP s id " + dao.getAip().getAipId() + " neexistuje digital repository", ArrangementCode.INVALID_DAO);
+            throw new BusinessException("Pro AIP s id " + dao.getAip().getAipId() + " neexistuje digital repository", BaseCode.INVALID_STATE);
         }
         request.setViewUrl(dao.getAip().getDigitalRepository().getViewFileUrl());
         return request;
