@@ -10,7 +10,6 @@ import {
 } from '../../actions/arr/fundOutput.jsx';
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx';
 import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes.jsx';
-import {outputFormActions} from 'actions/arr/subNodeForm';
 import {modalDialogShow} from 'actions/global/modalDialog.jsx';
 import './ArrOutputDetail.scss';
 import {OutputEdit} from './output/OutputEdit';
@@ -56,7 +55,7 @@ interface Props {
     rulDataTypes: any;
     closed: boolean;
     readMode: boolean;
-    fundOutputDetail: ArrOutputVO & AppFetchingStore & {subNodeForm: any; lockDate: any};
+    fundOutputDetail: ArrOutputVO & AppFetchingStore & {lockDate: any};
 }
 
 const isOutputEditable = (item: Props['fundOutputDetail']) => {
@@ -83,9 +82,6 @@ export function ArrOutputDetail({
 
     useEffect(() => {
         dispatch(descItemTypesFetchIfNeeded());
-        if (fundOutputDetail.fetched) {
-            dispatch(outputFormActions.fundSubNodeFormFetchIfNeeded(versionId, null, undefined, undefined, undefined));
-        }
         dispatch(refRulDataTypesFetchIfNeeded());
     }, [dispatch, versionId, fundOutputDetail.fetched, fundOutputDetail.currentDataKey]);
 
@@ -174,7 +170,6 @@ export function ArrOutputDetail({
 
     const fetched =
         fundOutputDetail.fetched &&
-        fundOutputDetail.subNodeForm.fetched &&
         outputFilters.fetched &&
         descItemTypes.fetched;
     if (!fetched) {
