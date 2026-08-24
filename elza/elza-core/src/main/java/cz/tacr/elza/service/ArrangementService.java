@@ -190,11 +190,11 @@ import cz.tacr.elza.service.arrangement.MultipleItemChangeContext;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
-import cz.tacr.elza.service.eventnotification.events.AbstractEventSimple;
 import cz.tacr.elza.service.eventnotification.events.EventFund;
 import cz.tacr.elza.service.eventnotification.events.EventFundImport;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+import cz.tacr.elza.websocket.UserEventPushService;
 
 /**
  * Main arrangement service.
@@ -240,6 +240,9 @@ public class ArrangementService {
     private InstitutionRepository institutionRepository;
     @Autowired
     private EventNotificationService eventNotificationService;
+
+    @Autowired
+    private UserEventPushService userEventPushService;
     @Autowired
     private DescriptionItemService descriptionItemService;
     @Autowired
@@ -2581,11 +2584,6 @@ public class ArrangementService {
         return new ByteArrayResource(coordinates.getBytes(StandardCharsets.UTF_8));
     }
 
-    @Transactional
-    public void publishAsyncEvent(AbstractEventSimple event) {
-        eventNotificationService.publishEvent(event);
-    }
-
     /**
      * Asynchronní import souborů CSV
      * 
@@ -2593,22 +2591,35 @@ public class ArrangementService {
      * @param importType
      * @param separator
      * @param csvPath
+     * @param initiatorId
      */
     @Async
-    public void importFundDataAsync(Integer fundId, String importType, String separator, Path csvPath) {
+    public void importFundDataAsync(Integer fundId, String importType, String separator, Path csvPath, Integer initiatorId) {
         Integer versionId = null;
         try (InputStream is = Files.newInputStream(csvPath)) {
-        	// aby se otevřela @Transactional
+        	// self-invocation přes proxy, aby se otevřela @Transactional
             versionId = self.importFundDataInternal(fundId, importType, separator, is);
-            self.publishAsyncEvent(new EventFundImport(EventType.IMPORT_FUND_COMPLETED, fundId, versionId, null));
+            notifyImportResult(initiatorId, new EventFundImport(EventType.IMPORT_FUND_COMPLETED, fundId, versionId, null));
         } catch (Exception e) {
             logger.error("Failed to import data (fundId={})", fundId, e);
-            self.publishAsyncEvent(new EventFundImport(EventType.IMPORT_FUND_FAILED, fundId, versionId, e.getMessage()));
+            notifyImportResult(initiatorId, new EventFundImport(EventType.IMPORT_FUND_FAILED, fundId, versionId, e.getMessage()));
         } finally {
-            try { 
-            	Files.deleteIfExists(csvPath); 
+            try {
+                Files.deleteIfExists(csvPath);
             } catch (IOException ignored) {
             }
+        }
+    }
+
+    /**
+     * Doručení výsledku importu: uživateli přes privátní topic, systémovému
+     * uživateli (bez id, např. admin) přes sdílený admin topic.
+     */
+    private void notifyImportResult(Integer initiatorId, EventFundImport event) {
+        if (initiatorId != null) {
+            userEventPushService.push(initiatorId, event);
+        } else {
+            userEventPushService.push(UserEventPushService.ADMIN_TOPIC_ID, event);
         }
     }
 
@@ -2633,7 +2644,7 @@ public class ArrangementService {
 
         CSVFormat csvf = CSVFormat.EXCEL.builder().setDelimiter(delimiter).build();
         try (InputStreamReader isr = new InputStreamReader(BOMInputStream.builder().setInputStream(is).get(), "UTF-8");
-             CSVParser parser = csvf.parse(isr)) {
+            CSVParser parser = csvf.parse(isr)) {
 
             MultipleItemChangeContext changeContext = descriptionItemService.createChangeContext(fundVersion.getFundVersionId());
 

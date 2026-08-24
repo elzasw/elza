@@ -38,19 +38,28 @@ public class UserTopicSubscriptionInterceptor implements ChannelInterceptor {
         // "/sub-topic" is allowed but does not change ownership).
         String tail = destination.substring(UserEventPushService.USER_TOPIC_PREFIX.length());
         String requested = tail.split("/", 2)[0];
-        Integer userId = authenticatedUserId(accessor);
-        if (userId != null && userId.toString().equals(requested)) {
-            return message;
+        UserDetail userDetail = authenticatedUserDetail(accessor);
+        if (userDetail != null) {
+            Integer userId = userDetail.getId();
+            if (userId != null && userId.toString().equals(requested)) {
+                return message;
+            }
+            // Bootstrap system users (admin) have no persisted id and share the
+            // named admin topic — see UserEventPushService.ADMIN_TOPIC_ID.
+            if (userId == null && UserEventPushService.ADMIN_TOPIC_ID.equals(requested)) {
+                return message;
+            }
         }
-        logger.warn("Rejected per-user topic subscription: user {} may not subscribe to {}", userId, destination);
+        logger.warn("Rejected per-user topic subscription: user {} may not subscribe to {}",
+                userDetail != null ? userDetail.getId() : null, destination);
         return null; // drop the SUBSCRIBE — the client is not subscribed to this topic
     }
 
-    /** Id of the authenticated user of the STOMP session, or null when unresolved. */
-    private static Integer authenticatedUserId(final StompHeaderAccessor accessor) {
+    /** UserDetail attached to the authenticated STOMP session, or null when unresolved. */
+    private static UserDetail authenticatedUserDetail(final StompHeaderAccessor accessor) {
         if (accessor.getUser() instanceof Authentication authentication
                 && authentication.getDetails() instanceof UserDetail userDetail) {
-            return userDetail.getId();
+            return userDetail;
         }
         return null;
     }
