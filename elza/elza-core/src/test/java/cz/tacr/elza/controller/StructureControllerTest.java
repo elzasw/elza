@@ -14,6 +14,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import static org.awaitility.Awaitility.await;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.MINUTES;
+
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.repository.SobjVrequestRepository;
@@ -51,6 +55,19 @@ public class StructureControllerTest extends AbstractControllerTest {
     @Autowired
     protected SobjVrequestRepository sobjVrequestRepository;
 
+    /**
+     * Počká, než generátor v StructObjValueService zpracuje frontu revalidací.
+     *
+     * Čekání je ohraničené: pokud frontu nikdo nezpracovává (generátor neběží
+     * nebo uvízl), test spadne s informací o zbývající délce fronty.
+     */
+    private void waitForValidationQueue() {
+        await().atMost(2, MINUTES)
+                .pollInterval(50, MILLISECONDS)
+                .untilAsserted(() -> assertEquals(0, sobjVrequestRepository.count(),
+                        "Fronta revalidací strukturovaných objektů nebyla zpracována"));
+    }
+
     @Test
     public void structureTest() {
         Fund fund = createFund(NAME_AS, CODE_AS);
@@ -60,13 +77,7 @@ public class StructureControllerTest extends AbstractControllerTest {
         structureDataTest(fundVersion, fund);
         structureItemTest(fund);
 
-        // wait to process whole queue
-        while (sobjVrequestRepository.count() > 0) {
-            try {
-                Thread.sleep(50);
-            } catch (InterruptedException e) {
-            }
-        }
+        waitForValidationQueue();
     }
 
     @Test
@@ -110,13 +121,7 @@ public class StructureControllerTest extends AbstractControllerTest {
         data.setAutoincrementItemTypeIds(Collections.singletonList(typeNumber.getId()));
         structureApi.sdoUpdateObjects(fund.getId(), STRUCTURE_TYPE_CODE, data);
 
-        // wait to process whole queue
-        while (sobjVrequestRepository.count() > 0) {
-            try {
-                Thread.sleep(50);
-            } catch (InterruptedException e) {
-            }
-        }
+        waitForValidationQueue();
     }
 
     private void structureItemTest(final Fund fund) {
@@ -255,13 +260,7 @@ public class StructureControllerTest extends AbstractControllerTest {
         assertEquals(confirmedStructureObject.getState(), StateEnum.OK);
         assertTrue(StringUtils.isEmpty(confirmedStructureObject.getErrorDescription()));
 
-        // wait to process whole queue
-        while (sobjVrequestRepository.count() > 0) {
-            try {
-                Thread.sleep(50);
-            } catch (InterruptedException e) {
-            }
-        }
+        waitForValidationQueue();
         structureObject = structureApi.sdoGetObject(fund.getId(), structureObject.getId(), null);
         assertSame(structureObject.getState(), StateEnum.OK);
         assertTrue(StringUtils.isNotEmpty(structureObject.getValue()));
