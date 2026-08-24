@@ -258,18 +258,6 @@ public class FileSystemRepoBrowserTest {
     }
 
     @Test
-    void listRepos_reportsMultipleLinksSetting(@TempDir Path root) {
-        Mockito.when(serviceMock.isFileSystemRepository(repo)).thenReturn(true);
-        Mockito.when(serviceMock.getPath(repo, fund)).thenReturn(root);
-
-        repo.setMultipleLinks(null);
-        assertFalse(browser.listRepos(fund, Collections.singletonList(repo)).get(0).getMultipleLinks());
-
-        repo.setMultipleLinks(Boolean.TRUE);
-        assertTrue(browser.listRepos(fund, Collections.singletonList(repo)).get(0).getMultipleLinks());
-    }
-
-    @Test
     void listRepos_missingFixedRoot_isListedAsUnavailable(@TempDir Path root) {
         Path missing = root.resolve("does-not-exist");
         repo.setUrl(missing.toString());

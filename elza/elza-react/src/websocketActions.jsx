@@ -54,6 +54,7 @@ import URLParse from 'url-parse';
 
 import { reloadUserDetail } from 'actions/user/userDetail';
 import { fundVersionApproved } from 'actions/arr/fund.jsx';
+import { fundDataGridRefreshRows } from 'actions/arr/fundDataGrid';
 import { fundTreeFetch } from 'actions/arr/fundTree';
 import { fundTreeInvalidate } from 'actions/arr/fundTree';
 import * as types from 'actions/constants/ActionTypes';
@@ -345,7 +346,20 @@ let eventMap = {
     ISSUE_CREATE: issueCreate,
     // Handled by useAiConversation through websocket listeners
     AI_REQUEST_UPDATE: () => { },
+    IMPORT_FUND_COMPLETED: importFundCompleted,
+    IMPORT_FUND_FAILED: importFundFailed,
 };
+
+function importFundCompleted(value) {
+    store.dispatch(addToastrSuccess(i18n('ribbon.action.arr.dataGrid.import.success')));
+    if (value?.versionId) {
+        store.dispatch(fundDataGridRefreshRows(value.versionId));
+    }
+}
+
+function importFundFailed(value) {
+    store.dispatch(addToastrDanger(i18n('ribbon.action.arr.dataGrid.import.failed'), value?.message || ''));
+}
 
 if (!window.ws) {
     window.ws = new websocket(wsUrl, eventMap);

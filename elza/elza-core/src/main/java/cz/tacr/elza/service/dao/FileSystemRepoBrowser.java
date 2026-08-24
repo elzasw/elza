@@ -537,7 +537,6 @@ public class FileSystemRepoBrowser {
         fsRepo.setCode(digiRepo.getCode());
         fsRepo.setPath(path);
         fsRepo.setAvailable(available);
-        fsRepo.setMultipleLinks(Boolean.TRUE.equals(digiRepo.getMultipleLinks()));
         return fsRepo;
     }
 

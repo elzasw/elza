@@ -261,20 +261,22 @@ public class FundController implements FundsApi {
 
     // PUT /fund/{id}/import
     @Override
-    @Transactional
     public ResponseEntity<Void> fundImportFundData(@PathVariable("id") String id,
                                                	   @RequestPart(value = "importType", required = true) String importType,
                                                	   @RequestPart(value = "dataFile", required = true) MultipartFile dataFile,
                                                    @RequestParam(value = "separator", required = false) String separator) {
         Validate.notNull(id, "Musí být zadáno id AS");
 
-        ArrFund fund = arrangementService.getFund(Integer.valueOf(id));
-        try (InputStream is = dataFile.getInputStream()) {
-            arrangementService.importFundData(fund, importType, separator, is);
-            return ResponseEntity.ok(null);
+        ArrFund fund = arrangementService.getFundForImport(Integer.valueOf(id)); // kontrola oprávnění k zápisu
+        Path tmp;
+        try {
+            tmp = Files.createTempFile("elza-import-", ".csv");
+            dataFile.transferTo(tmp.toFile());
         } catch (IOException e) {
-            throw new BusinessException("Failed to read uploaded file", e, BaseCode.IMPORT_FAILED);
+            throw new BusinessException("Failed to store uploaded file", e, BaseCode.IMPORT_FAILED);
         }
+        arrangementService.importFundDataAsync(fund.getFundId(), importType, separator, tmp);
+        return ResponseEntity.accepted().build();
     }
 
     // PUT /fund/{id}

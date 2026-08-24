@@ -3302,7 +3302,9 @@ namespace ElzaAPI.fund {
         /** Doplnění způsobu importu */
         @multipartBody body: ImportFundData;
         @header contentType: "multipart/form-data";
-    ): void | {
+    ): {
+        @Http.statusCode statusCode: 202;
+    } | {
         @Http.statusCode statusCode: 400;
     } | {
         @Http.statusCode statusCode: 406;
