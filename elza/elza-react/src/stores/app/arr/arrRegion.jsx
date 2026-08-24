@@ -9,7 +9,7 @@ import {consolidateState} from 'components/Utils';
 import {isBulkAction} from 'actions/arr/bulkActions';
 import {isFundTreeAction} from 'actions/arr/fundTree';
 import {isFundSearchAction} from '../../../actions/arr/fundSearch';
-import {nodeFormActions, outputFormActions, structureFormActions} from 'actions/arr/subNodeForm';
+import {nodeFormActions} from 'actions/arr/subNodeForm';
 import {isSubNodeDaosAction} from 'actions/arr/subNodeDaos';
 import {isSubNodeInfoAction} from 'actions/arr/subNodeInfo';
 import {isNodeInfoAction} from 'actions/arr/nodeInfo';
@@ -118,7 +118,6 @@ export default function arrRegion(state = initialState, action) {
             action.area !== types.FUND_TREE_AREA_USAGE &&
             action.area !== types.CUSTOM_FUND_TREE_AREA_NODES) ||
         nodeFormActions.isSubNodeFormAction(action) ||
-        outputFormActions.isSubNodeFormAction(action) ||
         isSubNodeDaosAction(action) ||
         isSubNodeInfoAction(action) ||
         isNodeInfoAction(action) ||
