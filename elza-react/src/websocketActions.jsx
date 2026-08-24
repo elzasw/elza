@@ -193,11 +193,10 @@ export class websocket {
         // like the broadcast above. The server rejects a subscription to anyone
         // else's topic (see UserTopicSubscriptionInterceptor).
         const userId = store.getState().userDetail?.id;
-        if (userId != null) {
-            this.stompClient.subscribe('/topic/user/' + userId, this.onMessage);
-        } else {
-            console.warn('#ws per-user channel not subscribed - no logged user id yet');
-        }
+        // Bootstrap admin has no persisted id and subscribes to the shared "admin"
+        // segment — the server-side interceptor allows it only for id-less users.
+        const userTopic = userId != null ? String(userId) : 'admin';
+        this.stompClient.subscribe('/topic/user/' + userTopic, this.onMessage);
     };
 
     // Handles websocket disconnects

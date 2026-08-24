@@ -268,6 +268,7 @@ public class FundController implements FundsApi {
         Validate.notNull(id, "Musí být zadáno id AS");
 
         ArrFund fund = arrangementService.getFundForImport(Integer.valueOf(id)); // kontrola oprávnění k zápisu
+        Integer initiatorId = userService.getLoggedUserDetail().getId();
         Path tmp;
         try {
             tmp = Files.createTempFile("elza-import-", ".csv");
@@ -275,7 +276,7 @@ public class FundController implements FundsApi {
         } catch (IOException e) {
             throw new BusinessException("Failed to store uploaded file", e, BaseCode.IMPORT_FAILED);
         }
-        arrangementService.importFundDataAsync(fund.getFundId(), importType, separator, tmp);
+        arrangementService.importFundDataAsync(fund.getFundId(), importType, separator, tmp, initiatorId);
         return ResponseEntity.accepted().build();
     }
 

@@ -289,6 +289,6 @@ class AiRequestPollerTest {
         assertThat(request.getState()).isEqualTo("error");
         assertThat(request.getErrorCode()).isEqualTo("TIMEOUT");
         // …and nothing half-rendered was pushed to the client.
-        verify(pushService, never()).push(any(), any());
+        verify(pushService, never()).push((Integer) any(), any());
     }
 }
