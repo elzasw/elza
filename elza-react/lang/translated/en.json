@@ -1293,6 +1293,10 @@
     "defaultMessage": "The digital entity was unlinked from the description unit",
     "srcHash": "y4Kc7qIdN6LF"
   },
+  "confirmDialog.title": {
+    "defaultMessage": "Confirmation",
+    "srcHash": "ieBBZA1HMgIH"
+  },
   "confirmPopover.no": {
     "defaultMessage": "Cancel",
     "srcHash": "bHfYpLCt8F6P"
