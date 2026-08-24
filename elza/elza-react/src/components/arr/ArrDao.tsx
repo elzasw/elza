@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
+import { Dialog, DialogBody, DialogSurface, DialogTitle } from '@fluentui/react-components';
 import { defineMessages, MessageDescriptor, useIntl } from 'react-intl';
 import { Icon, NoFocusButton } from 'components/shared';
 import { globalMessages } from 'components/shared/lang/messages';
 import { humanFileSize } from 'components/Utils.jsx';
-import { showConfirmDialog } from 'components/shared/dialog';
+import { FluentDialogContext } from 'components/shared/dialog/FluentModalDialog';
+import { useConfirmModal } from 'components/shared/dialog/useConfirmModal';
 import { addToastrInfo } from 'components/shared/toastr/ToastrActions';
-import { modalDialogHide, modalDialogShow } from 'actions/global/modalDialog';
 import { WebApi } from 'actions/index.jsx';
 import { useAppThunkDispatch } from 'utils/hooks';
 import { ArrDaoFileVO, ArrDaoVO } from 'typings/dao';
@@ -141,6 +142,8 @@ const renderLabel = (label: string, value: React.ReactNode, block = false) => {
 export function ArrDao({ dao, fund, readMode, daoFile, onSelectFile, onUnlink }: Props) {
     const intl = useIntl();
     const dispatch = useAppThunkDispatch();
+    const confirm = useConfirmModal();
+    const { showModal } = useContext(FluentDialogContext);
     const [imageError, setImageError] = useState(false);
 
     const fileList = dao.fileList || [];
@@ -172,37 +175,53 @@ export function ArrDao({ dao, fund, readMode, daoFile, onSelectFile, onUnlink }:
     }, [file?.url]);
 
     const handleUnlink = async () => {
-        const confirmed = await dispatch(
-            showConfirmDialog(
-                intl.formatMessage(messages.unlinkConfirm),
-                undefined,
-                intl.formatMessage(messages.unlinkAction),
-            ),
-        );
+        const confirmed = await confirm({
+            message: intl.formatMessage(messages.unlinkConfirm),
+            confirmLabel: intl.formatMessage(messages.unlinkAction),
+        });
         if (confirmed) {
             onUnlink();
         }
     };
 
     const handleTrash = () => {
-        const form = (
-            <ArrRequestForm
-                fundVersionId={fund.versionId}
-                type="DAO"
-                onSubmitForm={(send: boolean, data: any) =>
-                    WebApi.arrDaoRequestAddDaos(
-                        fund.versionId,
-                        data.requestId,
-                        send,
-                        data.description,
-                        [dao.id],
-                        data.daoType,
-                    )
-                }
-                onSubmitSuccess={() => dispatch(modalDialogHide())}
-            />
-        );
-        dispatch(modalDialogShow(null, intl.formatMessage(messages.requestTitle), form));
+        showModal<undefined, undefined>({
+            createDialog: ({ handleResult }) => {
+                const close = () => handleResult(undefined, undefined);
+                return (
+                    <Dialog
+                        open
+                        modalType="modal"
+                        onOpenChange={(_event, data) => {
+                            if (!data.open) {
+                                close();
+                            }
+                        }}
+                    >
+                        <DialogSurface>
+                            <DialogBody>
+                                <DialogTitle>{intl.formatMessage(messages.requestTitle)}</DialogTitle>
+                                <ArrRequestForm
+                                    fundVersionId={fund.versionId}
+                                    type="DAO"
+                                    onSubmitForm={(send: boolean, data: any) =>
+                                        WebApi.arrDaoRequestAddDaos(
+                                            fund.versionId,
+                                            data.requestId,
+                                            send,
+                                            data.description,
+                                            [dao.id],
+                                            data.daoType,
+                                        )
+                                    }
+                                    onSubmitSuccess={close}
+                                />
+                            </DialogBody>
+                        </DialogSurface>
+                    </Dialog>
+                );
+            },
+        });
     };
 
     const copyToClipboard = async (url: string) => {

@@ -96,16 +96,7 @@
         }
     }
 }
-// Modální dialog i jeho podklad patří nad plovoucí okna. FluentDialogProvider
-// má z-index 5000 a je pozicovaný, takže tvoří vlastní vykreslovací kontext —
-// dialog otevřený z takového okna (potvrzení odpojení, formulář požadavku) by se
-// s bootstrapovou výchozí hodnotou 1055 vykreslil pod oknem. Vzájemné pořadí
-// dialogů zůstává: skrytý < podklad < zobrazený.
 .modal {
-    &.dialog-visible {
-        z-index: 10001;
-    }
-
     &.dialog-hidden {
         z-index: 1040;
     }
@@ -113,9 +104,4 @@
     &.top {
         z-index: 9999;
     }
-}
-
-.modal-backdrop {
-    // Bootstrap si výšku podkladu řídí vlastní proměnnou.
-    --bs-backdrop-zindex: 10000;
 }

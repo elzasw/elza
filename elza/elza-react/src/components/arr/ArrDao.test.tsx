@@ -1,9 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeAll } from 'vitest';
+import { ReactElement } from 'react';
 import { http, HttpResponse } from 'msw';
 
 import { renderWithProviders, screen, fireEvent } from 'test/test-utils';
 import { server } from 'test/mocks/server';
-import ModalDialog from 'components/shared/dialog/ModalDialog';
+import { FluentDialogProvider } from 'components/shared/dialog/FluentModalDialog';
 import { ArrDaoFileVO, ArrDaoVO } from 'typings/dao';
 import { Fund } from 'typings/store';
 import { ArrDao } from './ArrDao';
@@ -12,19 +13,15 @@ import { ArrDao } from './ArrDao';
  * Detail digitální entity: odpojení je za potvrzením a náhled nedostupného
  * souboru se místo rozbitého obrázku vysvětlí.
  *
- * Vlastní texty komponenty přicházejí z jejích `defaultMessage`. Potvrzovací
- * dialog (MultiButtonDialog) je zatím na starém `i18n()` nad `window.messages`,
- * proto se jeho popisky musí naplnit ručně.
+ * Texty přicházejí z `defaultMessage`. Potvrzení se zobrazuje jako Fluent
+ * dialog, takže test potřebuje FluentDialogProvider.
  */
 
 const UNLINK_CONFIRM = 'Opravdu chcete odpojit digitální entitu od jednotky popisu?';
 const THUMBNAIL_NOT_FOUND = 'Prvek nebyl nalezen v úložišti';
 
-const legacyDialogMessages: Record<string, string> = {
-    'confirmDialog.default.title': 'Potvrzení',
-    'global.action.store': 'Ok',
-    'global.action.cancel': 'Storno',
-};
+const renderInProvider = (ui: ReactElement) =>
+    renderWithProviders(<FluentDialogProvider hidden={false}>{ui}</FluentDialogProvider>);
 
 const fund = { versionId: 1 } as Fund;
 
@@ -52,20 +49,23 @@ const dao: ArrDaoVO = {
     daoLink: { id: 7, treeNodeClient: { id: 30, version: 1, name: 'JP 30', referenceMark: ['1'] } },
 };
 
-beforeEach(() => {
-    (window as unknown as { messages: Record<string, string> }).messages = legacyDialogMessages;
+beforeAll(() => {
+    // Fluent dialog se měří přes ResizeObserver, jsdom ho nemá.
+    vi.stubGlobal(
+        'ResizeObserver',
+        class {
+            observe() { return; }
+            unobserve() { return; }
+            disconnect() { return; }
+        },
+    );
 });
 
 describe('ArrDao', () => {
     it('odpojí digitální entitu až po potvrzení', async () => {
         const onUnlink = vi.fn();
 
-        renderWithProviders(
-            <>
-                <ArrDao dao={dao} fund={fund} readMode={false} onUnlink={onUnlink} />
-                <ModalDialog />
-            </>,
-        );
+        renderInProvider(<ArrDao dao={dao} fund={fund} readMode={false} onUnlink={onUnlink} />);
 
         fireEvent.click(document.querySelector('.dao-actions .right button') as HTMLElement);
 
@@ -81,12 +81,7 @@ describe('ArrDao', () => {
     it('storno v potvrzení nechá vazbu být', async () => {
         const onUnlink = vi.fn();
 
-        renderWithProviders(
-            <>
-                <ArrDao dao={dao} fund={fund} readMode={false} onUnlink={onUnlink} />
-                <ModalDialog />
-            </>,
-        );
+        renderInProvider(<ArrDao dao={dao} fund={fund} readMode={false} onUnlink={onUnlink} />);
 
         fireEvent.click(document.querySelector('.dao-actions .right button') as HTMLElement);
         fireEvent.click(await screen.findByRole('button', { name: 'Storno' }));
@@ -96,7 +91,7 @@ describe('ArrDao', () => {
     });
 
     it('v režimu čtení odpojení nenabízí', () => {
-        renderWithProviders(<ArrDao dao={dao} fund={fund} readMode onUnlink={vi.fn()} />);
+        renderInProvider(<ArrDao dao={dao} fund={fund} readMode onUnlink={vi.fn()} />);
 
         expect(document.querySelector('.dao-actions .right')).toBeNull();
     });
@@ -104,7 +99,7 @@ describe('ArrDao', () => {
     it('u smazaného souboru zobrazí místo náhledu vysvětlení', async () => {
         server.use(http.head('/api/dao/file/10', () => new HttpResponse(null, { status: 404 })));
 
-        renderWithProviders(<ArrDao dao={dao} fund={fund} readMode daoFile={daoFile} onUnlink={vi.fn()} />);
+        renderInProvider(<ArrDao dao={dao} fund={fund} readMode daoFile={daoFile} onUnlink={vi.fn()} />);
 
         await screen.findByText(THUMBNAIL_NOT_FOUND);
         expect(document.querySelector('.thumbnail img')).toBeNull();
@@ -113,7 +108,7 @@ describe('ArrDao', () => {
     it('dostupný soubor náhled zobrazí', async () => {
         server.use(http.head('/api/dao/file/10', () => new HttpResponse(null, { status: 200 })));
 
-        renderWithProviders(<ArrDao dao={dao} fund={fund} readMode daoFile={daoFile} onUnlink={vi.fn()} />);
+        renderInProvider(<ArrDao dao={dao} fund={fund} readMode daoFile={daoFile} onUnlink={vi.fn()} />);
 
         await vi.waitFor(() =>
             expect(document.querySelector('.thumbnail img')).toHaveAttribute('src', daoFile.thumbnailUrl as string),
@@ -122,7 +117,7 @@ describe('ArrDao', () => {
     });
 
     it('bez vybraného souboru ukáže identitu entity i náhled prvního souboru', async () => {
-        renderWithProviders(<ArrDao dao={dao} fund={fund} readMode={false} onUnlink={vi.fn()} />);
+        renderInProvider(<ArrDao dao={dao} fund={fund} readMode={false} onUnlink={vi.fn()} />);
 
         // identita a akce entity
         expect(screen.getByText('dao-5')).toBeInTheDocument();
@@ -136,7 +131,7 @@ describe('ArrDao', () => {
         const onSelectFile = vi.fn();
         const multi: ArrDaoVO = { ...dao, fileCount: 2, fileList: [daoFile, secondFile] };
 
-        renderWithProviders(
+        renderInProvider(
             <ArrDao dao={multi} fund={fund} readMode daoFile={daoFile} onSelectFile={onSelectFile} onUnlink={vi.fn()} />,
         );
 
@@ -157,7 +152,7 @@ describe('ArrDao', () => {
             daoLink: { ...dao.daoLink, scenario: 'Připojit jako přílohu' },
         };
 
-        renderWithProviders(<ArrDao dao={withScenario} fund={fund} readMode onUnlink={vi.fn()} />);
+        renderInProvider(<ArrDao dao={withScenario} fund={fund} readMode onUnlink={vi.fn()} />);
 
         expect(screen.getByText('Připojit jako přílohu')).toBeInTheDocument();
     });
@@ -172,7 +167,7 @@ describe('ArrDao', () => {
             sourceYDimesionUnit: 'MM',
         };
 
-        renderWithProviders(
+        renderInProvider(
             <ArrDao
                 dao={{ ...dao, fileList: [file] }}
                 fund={fund}
