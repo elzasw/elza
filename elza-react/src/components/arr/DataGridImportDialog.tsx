@@ -216,7 +216,7 @@ export const DataGridImportDialog = ({ onClose, versionId, fundId }: IImportForm
             const utf8File = await toUtf8File(csvFile, encoding || DEFAULT_ENCODING);
             await dispatch(fundDataGridImport(versionId, fundId, utf8File, separator || DEFAULT_SEPARATOR));
             dispatch(modalDialogHide());
-            dispatch(addToastrSuccess(i18n("ribbon.action.arr.dataGrid.import.success")));
+            dispatch(addToastrSuccess(i18n("ribbon.action.arr.dataGrid.import.started")));
         }
         catch (error) {
             // error is shown in toaster
