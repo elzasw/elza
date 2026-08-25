@@ -2528,6 +2528,30 @@ paths:
             schema:
               $ref: '#/components/schemas/SearchParams'
         description: search parameters
+  /fund/import/status/{jobId}:
+    get:
+      operationId: fund_importStatus
+      description: Get import job status
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          description: ID úlohy importu
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportJobStatus'
+        '403':
+          description: Access is forbidden.
+        '404':
+          description: The server cannot find the requested resource.
+      tags:
+        - funds
   /fund/search:
     post:
       operationId: fund_searchFunds
@@ -3008,6 +3032,10 @@ paths:
       responses:
         '202':
           description: The request has been accepted for processing, but processing has not yet completed.
+          content:
+            text/plain:
+              schema:
+                type: string
         '400':
           description: The server could not understand the request due to invalid syntax.
         '406':
@@ -8389,6 +8417,44 @@ components:
       required:
         - importType
         - dataFile
+    ImportJobState:
+      type: string
+      enum:
+        - RUNNING
+        - COMPLETED
+        - FAILED
+      description: Status of the async import CSV file
+    ImportJobStatus:
+      type: object
+      required:
+        - jobId
+        - fundId
+        - state
+        - startedAt
+      properties:
+        jobId:
+          type: string
+          description: Job ID
+        fundId:
+          type: integer
+          format: int32
+          description: Fund ID
+        state:
+          allOf:
+            - $ref: '#/components/schemas/ImportJobState'
+          description: Сurrent status
+        error:
+          type: string
+          description: Error message
+        startedAt:
+          type: string
+          format: date-time
+          description: Started At
+        finishedAt:
+          type: string
+          format: date-time
+          description: Finished At
+      description: Complete status of async import
     Institution:
       type: object
       required:

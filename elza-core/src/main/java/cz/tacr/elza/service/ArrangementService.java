@@ -194,6 +194,7 @@ import cz.tacr.elza.service.eventnotification.events.EventFund;
 import cz.tacr.elza.service.eventnotification.events.EventFundImport;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+import cz.tacr.elza.service.importcsv.ImportJobService;
 import cz.tacr.elza.websocket.UserEventPushService;
 
 /**
@@ -310,6 +311,9 @@ public class ArrangementService {
 
     @Autowired
     private ItemTypeRepository itemTypeRepository;
+
+    @Autowired
+    private ImportJobService importJobService;    
 
     @Lazy
     @Autowired
@@ -2592,16 +2596,19 @@ public class ArrangementService {
      * @param separator
      * @param csvPath
      * @param initiatorId
+     * @param jobId
      */
     @Async
-    public void importFundDataAsync(Integer fundId, String importType, String separator, Path csvPath, Integer initiatorId) {
+    public void importFundDataAsync(Integer fundId, String importType, String separator, Path csvPath, Integer initiatorId, UUID jobId) {
         Integer versionId = null;
         try (InputStream is = Files.newInputStream(csvPath)) {
         	// self-invocation přes proxy, aby se otevřela @Transactional
             versionId = self.importFundDataInternal(fundId, importType, separator, is);
+            importJobService.markCompleted(jobId);
             notifyImportResult(initiatorId, new EventFundImport(EventType.IMPORT_FUND_COMPLETED, fundId, versionId, null));
         } catch (Exception e) {
             logger.error("Failed to import data (fundId={})", fundId, e);
+            importJobService.markFailed(jobId, e.getMessage());
             notifyImportResult(initiatorId, new EventFundImport(EventType.IMPORT_FUND_FAILED, fundId, versionId, e.getMessage()));
         } finally {
             try {
