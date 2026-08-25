@@ -167,10 +167,6 @@ export function fund(state, action) {
                 };
                 return consolidateState(state, result);
             }
-            case 'DATA_GRID': {
-                const result = {...state, fundDataGrid: fundDataGrid(state.fundDataGrid, action)};
-                return consolidateState(state, result);
-            }
             default:
                 break;
         }

@@ -3,7 +3,7 @@
  */
 
 import { WebApi } from 'actions/index';
-import { findByRoutingKeyInGlobalState, getRoutingKeyType, indexById } from 'stores/app/utils';
+import { findByRoutingKeyInGlobalState, getRoutingKeyType } from 'stores/app/utils';
 import NodeRequestController from '../../../websocketController';
 import { increaseNodeVersion } from '../node';
 import { fundNodeInfoReceive } from '../nodeInfo';
@@ -131,13 +131,6 @@ export class NodeFormActions extends ItemFormActions {
                 } else {
                     return null;
                 }
-            case 'DATA_GRID':
-                const fundIndex = indexById(state.arrRegion.funds, versionId, 'versionId');
-                if (fundIndex !== null) {
-                    return state.arrRegion.funds[fundIndex].fundDataGrid.subNodeForm;
-                } else {
-                    return null;
-                }
             default:
                 break;
         }
@@ -153,12 +146,6 @@ export class NodeFormActions extends ItemFormActions {
                 const r = findByRoutingKeyInGlobalState(state, versionId, routingKey);
                 if (r !== null) {
                     return r.node;
-                }
-                break;
-            case 'DATA_GRID':
-                const fundIndex = indexById(state.arrRegion.funds, versionId, 'versionId');
-                if (fundIndex !== null) {
-                    return state.arrRegion.funds[fundIndex].fundDataGrid;
                 }
                 break;
             default:
@@ -261,8 +248,6 @@ export class NodeFormActions extends ItemFormActions {
                     parentId: parentObjStore.selectedSubNodeId,
                     parentVersion: parentObjStore.subNodeForm.versionId,
                 };
-            case 'DATA_GRID':
-                return { parentId: parentObjStore.nodeId, parentVersion: parentObjStore.subNodeForm.versionId };
             default:
                 break;
         }
