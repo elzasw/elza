@@ -67,7 +67,8 @@ public class GroovyItem {
         		DataType.ENUM,
         		DataType.STRUCTURED,
         		DataType.UNITID,
-        		DataType.DECIMAL).contains(itemType.getDataType())) {
+        		DataType.DECIMAL,
+        		DataType.FILE_REF).contains(itemType.getDataType())) {
             throw new BusinessException("String value not supported", BaseCode.PROPERTY_HAS_INVALID_TYPE);
         }
         this.value = value;
