@@ -26,7 +26,6 @@ export function isFundDataGridAction(action) {
         case types.FUND_FUND_DATA_GRID_COLUMN_SIZE:
         case types.FUND_FUND_DATA_GRID_COLUMNS_SETTINGS:
         case types.FUND_FUND_DATA_GRID_FILTER_CLEAR_ALL:
-        case types.FUND_FUND_DATA_GRID_PREPARE_EDIT:
         case types.FUND_FUND_DATA_GRID_FULLTEXT_RESULT:
         case types.FUND_FUND_DATA_GRID_FULLTEXT_CLEAR:
         case types.FUND_FUND_DATA_GRID_FULLTEXT_EXTENDED:
@@ -232,16 +231,6 @@ export function fundDataGridFilterClearAll(versionId) {
     return {
         type: types.FUND_FUND_DATA_GRID_FILTER_CLEAR_ALL,
         versionId,
-    };
-}
-
-export function fundDataGridPrepareEdit(versionId, nodeId, parentNodeId, descItemTypeId) {
-    return {
-        type: types.FUND_FUND_DATA_GRID_PREPARE_EDIT,
-        versionId,
-        nodeId,
-        parentNodeId,
-        descItemTypeId,
     };
 }
 
