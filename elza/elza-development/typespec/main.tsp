@@ -151,6 +151,33 @@ model ImportFundData {
 }
 
 /**
+ * Status of the async import CSV file
+ */
+enum ImportJobState {
+    RUNNING,
+    COMPLETED,
+    FAILED,
+}
+
+/**
+ * Complete status of async import
+ */
+model ImportJobStatus {
+    /** Job ID */
+    jobId: string;
+    /** Fund ID */
+    fundId: int32;
+    /** Сurrent status */
+    state: ImportJobState;
+    /** Error message */
+    error?: string;
+    /** Started At */
+    startedAt: utcDateTime;
+    /** Finished At */
+    finishedAt?: utcDateTime;
+}
+
+/**
  * Změny archivního souboru
  */
 model UpdateFund {
@@ -3304,10 +3331,24 @@ namespace ElzaAPI.fund {
         @header contentType: "multipart/form-data";
     ): {
         @Http.statusCode statusCode: 202;
+        @body jobId: string;
     } | {
         @Http.statusCode statusCode: 400;
     } | {
         @Http.statusCode statusCode: 406;
+    };
+
+    /**
+     * Get import job status
+     */
+    @route("/import/status/{jobId}")
+    @get op importStatus(
+        /** ID úlohy importu */
+        @path jobId: string;
+    ): ImportJobStatus | {
+        @Http.statusCode statusCode: 403;
+    } | {
+        @Http.statusCode statusCode: 404;
     };
 
     /**
