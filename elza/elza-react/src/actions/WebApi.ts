@@ -255,23 +255,6 @@ export class WebApiCls {
         );
     }
 
-    createOutputItem(versionId: number, getOutputId: number, outputVersion, descItemTypeId: number, descItem) {
-        return AjaxUtils.ajaxPut(
-            WebApiCls.arrangementUrl +
-            '/outputItems/' +
-            versionId +
-            '/' +
-            getOutputId +
-            '/' +
-            outputVersion +
-            '/' +
-            descItemTypeId +
-            '/create',
-            null,
-            descItem,
-        );
-    }
-
     updateDescItem(versionId: number, nodeId: number, nodeVersionId: number, descItem) {
         return callWS(
             '/arrangement/descItems/' + versionId + '/' + nodeId + '/' + nodeVersionId + '/update/true',
@@ -362,27 +345,11 @@ export class WebApiCls {
         );
     }
 
-    updateOutputItem(versionId: number, outputVersion, descItem) {
-        return AjaxUtils.ajaxPut(
-            WebApiCls.arrangementUrl + '/outputItems/' + versionId + '/' + outputVersion + '/update/true',
-            null,
-            descItem,
-        );
-    }
-
     deleteDescItem(versionId: number, nodeId: number, nodeVersionId: number, descItem) {
         return AjaxUtils.ajaxPost(
             WebApiCls.arrangementUrl + '/descItems/' + versionId + '/' + nodeId + '/' + nodeVersionId + '/delete',
             null,
             descItem,
-        );
-    }
-
-    deleteOutputItem(versionId: number, outputVersion, parentVersionId: number, descItemObjectId: number) {
-        return AjaxUtils.ajaxPost(
-            WebApiCls.arrangementUrl + '/outputItems/' + versionId + '/' + outputVersion + '/delete',
-            null,
-            descItemObjectId,
         );
     }
 
@@ -399,70 +366,6 @@ export class WebApiCls {
             descItemTypeId,
             null,
             null,
-        );
-    }
-
-    deleteOutputItemType(versionId: number, getOutputId: number, outputVersion, descItemTypeId: number) {
-        return AjaxUtils.ajaxDelete(
-            WebApiCls.arrangementUrl +
-            '/outputItems/' +
-            versionId +
-            '/' +
-            getOutputId +
-            '/' +
-            outputVersion +
-            '/' +
-            descItemTypeId,
-            null,
-            null,
-        );
-    }
-
-    setNotIdentifiedOutputItem(
-        versionId: number,
-        getOutputId: number,
-        outputVersion,
-        outputItemTypeId: number,
-        outputItemSpecId: number,
-        outputItemObjectId: number,
-    ) {
-        //return callWS('/arrangement/outputItems/' + versionId + '/' + getOutputId + '/' + outputVersion + '/notUndefined/set?outputItemTypeId=' + outputItemTypeId + '&outputItemSpecId=' + outputItemSpecId + '&outputItemObjectId=' + outputItemObjectId, null);
-
-        // Původní volání kontroleru - zatím necháno pro testovací účely
-        return AjaxUtils.ajaxPut(
-            WebApiCls.arrangementUrl +
-            '/outputItems/' +
-            versionId +
-            '/' +
-            getOutputId +
-            '/' +
-            outputVersion +
-            '/notUndefined/set',
-            { outputItemTypeId, outputItemSpecId, outputItemObjectId },
-        );
-    }
-
-    unsetNotIdentifiedOutputItem(
-        versionId: number,
-        getOutputId: number,
-        outputVersion,
-        outputItemTypeId: number,
-        outputItemSpecId: number,
-        outputItemObjectId: number,
-    ) {
-        //return callWS('/arrangement/outputItems/' + versionId + '/' + getOutputId + '/' + outputVersion + '/notUndefined/unset?outputItemTypeId=' + outputItemTypeId + '&outputItemSpecId=' + outputItemSpecId + '&outputItemObjectId=' + outputItemObjectId, null);
-
-        // Původní volání kontroleru - zatím necháno pro testovací účely
-        return AjaxUtils.ajaxPut(
-            WebApiCls.arrangementUrl +
-            '/outputItems/' +
-            versionId +
-            '/' +
-            getOutputId +
-            '/' +
-            outputVersion +
-            '/notUndefined/unset',
-            { outputItemTypeId, outputItemSpecId, outputItemObjectId },
         );
     }
 
@@ -1035,10 +938,6 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/nodes/' + nodeId + '/' + versionId + '/form');
     }
 
-    getOutputNodeForm(versionId: number, getOutputId: number) {
-        return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/output/' + getOutputId + '/' + versionId + '/form');
-    }
-
     getFundNodeForms(versionId: number, nodeIds: number[]) {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/nodes/' + versionId + '/forms', { nodeIds: nodeIds });
     }
@@ -1485,17 +1384,6 @@ export class WebApiCls {
         return AjaxUtils.ajaxCallRaw(WebApiCls.kmlUrl + '/import/descCoordinates', {}, 'POST', formData);
     }
 
-    arrOutputCoordinatesImport(versionId: number, getOutputId: number, outputVersion, descItemTypeId: number, file) {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('fundVersionId', String(versionId));
-        formData.append('descItemTypeId', String(descItemTypeId));
-        formData.append('getOutputId', String(getOutputId));
-        formData.append('outputVersion', outputVersion);
-
-        return AjaxUtils.ajaxCallRaw(WebApiCls.kmlUrl + '/import/outputCoordinates', {}, 'POST', formData);
-    }
-
     regCoordinatesImport(data) {
         return AjaxUtils.ajaxCallRaw(WebApiCls.kmlUrl + '/import/regCoordinates', {}, 'POST', data);
     }
@@ -1509,21 +1397,6 @@ export class WebApiCls {
 
         return AjaxUtils.ajaxCallRaw(
             WebApiCls.arrangementUrl + '/descItems/' + versionId + '/csv/import',
-            {},
-            'POST',
-            formData,
-        );
-    }
-
-    descOutputItemCsvImport(versionId: number, getOutputId: number, outputVersion, descItemTypeId: number, file) {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('getOutputId', String(getOutputId));
-        formData.append('outputVersion', outputVersion);
-        formData.append('descItemTypeId', String(descItemTypeId));
-
-        return AjaxUtils.ajaxCallRaw(
-            WebApiCls.arrangementUrl + '/outputItems/' + versionId + '/csv/import',
             {},
             'POST',
             formData,
