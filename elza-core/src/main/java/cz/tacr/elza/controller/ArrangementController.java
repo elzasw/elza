@@ -297,17 +297,7 @@ public class ArrangementController {
     private FileSystemRepoService fileSystemRepoService;
 
     @Autowired
-    private AipService aipService;
-
-    @Autowired
     private AccessPointService accessPointService;
-    @Autowired
-    private DaDaoRepository daDaoRepository;
-    @Autowired
-    private AipRepository aipRepository;
-    @Autowired
-    private ClientFactoryVO clientFactoryVO;
-
 
     /**
      * Poskytuje seznam balíčků digitalizátů pouze pod archivní souborem (AS).
@@ -823,69 +813,6 @@ public class ArrangementController {
         return descItemResult;
     }
 
-    /**
-     * Nastavení atributu na "Nezjištěno".
-     *
-     * @param fundVersionId      id archivního souboru
-     * @param outputId           identifikátor výstupu
-     * @param outputVersion      verze výstupu
-     * @param outputItemTypeId   dentfikátor typu hodnoty atributu
-     * @param outputItemSpecId   identfikátor specifikace hodnoty atributu
-     * @param outputItemObjectId identifikátor existující hodnoty atributu
-     * @return upravená hodnota atributu nastavená na nezjištěno
-     */
-    @Deprecated
-    @Transactional
-    @RequestMapping(value = "/outputItems/{fundVersionId}/{outputId}/{outputVersion}/notUndefined/set",
-            method = RequestMethod.PUT,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public OutputItemResult setNotIdentifiedOutputItem(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                                       @PathVariable(value = "outputId") final Integer outputId,
-                                                       @PathVariable(value = "outputVersion") final Integer outputVersion,
-                                                       @RequestParam(value = "outputItemTypeId") final Integer outputItemTypeId,
-                                                       @RequestParam(value = "outputItemSpecId", required = false) final Integer outputItemSpecId,
-                                                       @RequestParam(value = "outputItemObjectId", required = false) final Integer outputItemObjectId) {
-        ArrOutputItem outputItemUpdated = outputService
-                .setNotIdentifiedDescItem(outputItemTypeId, outputId, outputVersion, fundVersionId, outputItemSpecId, outputItemObjectId);
-        OutputItemResult outputItemResult = new OutputItemResult();
-        outputItemResult.setItem(factoryVo.createItem(outputItemUpdated));
-        outputItemResult.setParent(factoryVo.createOutput(outputItemUpdated.getOutput()));
-        return outputItemResult;
-    }
-
-
-    /**
-     * Zrušení nastavení atributu na "Nezjištěno".
-     *
-     * @param fundVersionId      id archivního souboru
-     * @param outputId           identifikátor výstupu
-     * @param outputVersion      verze výstupu
-     * @param outputItemTypeId   dentfikátor typu hodnoty atributu
-     * @param outputItemSpecId   identfikátor specifikace hodnoty atributu
-     * @param outputItemObjectId identifikátor existující hodnoty atributu
-     * @return odstraněný atribut
-     */
-    @Deprecated
-    @Transactional
-    @RequestMapping(value = "/outputItems/{fundVersionId}/{outputId}/{outputVersion}/notUndefined/unset",
-            method = RequestMethod.PUT,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public OutputItemResult unsetNotIdentifiedOutputItem(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                                         @PathVariable(value = "outputId") final Integer outputId,
-                                                         @PathVariable(value = "outputVersion") final Integer outputVersion,
-                                                         @RequestParam(value = "outputItemTypeId") final Integer outputItemTypeId,
-                                                         @RequestParam(value = "outputItemSpecId", required = false) final Integer outputItemSpecId,
-                                                         @RequestParam(value = "outputItemObjectId", required = false) final Integer outputItemObjectId) {
-        ArrOutputItem descItemDeleted = outputService
-                .deleteOutputItem(outputItemObjectId, outputVersion, fundVersionId);
-        OutputItemResult outputItemResult = new OutputItemResult();
-        outputItemResult.setItem(null);
-        outputItemResult.setParent(factoryVo.createOutput(descItemDeleted.getOutput()));
-        return outputItemResult;
-    }
-
     @Transactional
     @RequestMapping(value = "/levels/copy/validate", method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_VALUE,
@@ -958,84 +885,6 @@ public class ArrangementController {
                 }
             }
         }, targetFundVersion, targetStaticNode, targetStaticParentNode, copyNodesParams.getSelectedDirection());
-    }
-
-    @Deprecated
-    @Transactional
-    @RequestMapping(value = "/outputItems/{fundVersionId}/{outputVersion}/delete",
-            method = RequestMethod.POST,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public OutputItemResult deleteOutputItem(@RequestBody final Integer outputItemId,
-                                             @PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                             @PathVariable(value = "outputVersion") final Integer outputVersion) {
-        Validate.notNull(outputItemId, "ID není definováno");
-        Validate.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
-        Validate.notNull(outputVersion, "Verze definice výstupu musí být vyplněna");
-
-        ArrOutputItem outputItemDeleted = outputService
-                .deleteOutputItem(outputItemId, outputVersion, fundVersionId);
-
-        OutputItemResult outputItemResult = new OutputItemResult();
-        outputItemResult.setItem(null);
-        outputItemResult.setParent(factoryVo.createOutput(outputItemDeleted.getOutput()));
-
-        return outputItemResult;
-    }
-
-    @Deprecated
-    @Transactional
-    @RequestMapping(value = "/outputItems/{fundVersionId}/{outputId}/{outputVersion}/{itemTypeId}/create",
-            method = RequestMethod.PUT,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public OutputItemResult createOutputItem(@RequestBody final ArrItemVO outputItemVO,
-                                             @PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                             @PathVariable(value = "itemTypeId") final Integer itemTypeId,
-                                             @PathVariable(value = "outputId") final Integer outputId,
-                                             @PathVariable(value = "outputVersion") final Integer outputVersion) {
-        Assert.notNull(outputItemVO, "Výstup musí být vyplněn");
-        Assert.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
-        Assert.notNull(itemTypeId, "Nebyl vyplněn identifikátor typu atributu");
-        Assert.notNull(outputId, "Identifikátor výstupu musí být vyplněn");
-        Assert.notNull(outputVersion, "Verze výstupu musí být vyplněna");
-
-        ArrOutputItem outputItem = factoryDO.createOutputItem(outputItemVO, itemTypeId);
-
-        ArrOutputItem outputItemCreated = outputService.createOutputItem(outputItem, outputId,
-                outputVersion, fundVersionId);
-
-        OutputItemResult outputItemResult = new OutputItemResult();
-        outputItemResult.setItem(factoryVo.createItem(outputItemCreated));
-        outputItemResult.setParent(factoryVo.createOutput(outputItemCreated.getOutput()));
-
-        return outputItemResult;
-    }
-
-    @Deprecated
-    @Transactional
-    @RequestMapping(value = "/outputItems/{fundVersionId}/{outputVersion}/update/{createNewVersion}",
-            method = RequestMethod.PUT,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public OutputItemResult updateOutputItem(@RequestBody final ArrItemVO outputItemVO,
-                                             @PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                             @PathVariable(value = "outputVersion") final Integer outputVersion,
-                                             @PathVariable(value = "createNewVersion") final Boolean createNewVersion) {
-        Assert.notNull(outputItemVO, "Výstup musí být vyplněn");
-        Assert.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
-        Assert.notNull(outputVersion, "Verze výstupu musí být vyplněna");
-        Validate.isTrue(createNewVersion); // TODO: remove from API (update client)
-
-        ArrOutputItem outputItem = factoryDO.createOutputItem(outputItemVO);
-
-        ArrOutputItem outputItemUpdated = outputService.updateOutputItem(outputItem, outputVersion, fundVersionId);
-
-        OutputItemResult outputItemResult = new OutputItemResult();
-        outputItemResult.setItem(factoryVo.createItem(outputItemUpdated));
-        outputItemResult.setParent(factoryVo.createOutput(outputItemUpdated.getOutput()));
-
-        return outputItemResult;
     }
 
     /**
