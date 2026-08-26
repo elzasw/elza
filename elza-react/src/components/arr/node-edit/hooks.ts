@@ -334,7 +334,7 @@ export function useNodeFormData(
   async function deleteDescItem(item: NodeItem, localId: string) {
     // Item has data, delete from server
     if (item.data?.dataId != undefined || item.undefined) {
-      await Api.descItems.descItemDeleteDescItem(fondsVersionId, item);
+      await Api.descItems.descItemDeleteDescItem(fondsVersionId, {...item, data: undefined});
       return;
     }
 
