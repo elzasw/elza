@@ -428,7 +428,6 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         const fundOutputDetail = fund.fundOutput.fundOutputDetail;
         const fetched =
             fundOutputDetail.fetched &&
-            fundOutputDetail.subNodeForm.fetched &&
             descItemTypes.fetched;
         if (!fetched) {
             return null;

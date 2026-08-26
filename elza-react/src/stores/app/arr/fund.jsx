@@ -12,7 +12,7 @@ import fundAction from './fundAction';
 import {consolidateState} from 'components/Utils';
 import {isBulkAction} from 'actions/arr/bulkActions';
 import {isFundTreeAction} from 'actions/arr/fundTree';
-import {nodeFormActions, outputFormActions} from 'actions/arr/subNodeForm';
+import {nodeFormActions} from 'actions/arr/subNodeForm';
 import {isSubNodeInfoAction} from 'actions/arr/subNodeInfo';
 import {isNodeInfoAction} from 'actions/arr/nodeInfo';
 import {isVersionValidation} from 'actions/arr/versionValidation';
@@ -167,16 +167,9 @@ export function fund(state, action) {
                 };
                 return consolidateState(state, result);
             }
-            case 'DATA_GRID': {
-                const result = {...state, fundDataGrid: fundDataGrid(state.fundDataGrid, action)};
-                return consolidateState(state, result);
-            }
             default:
                 break;
         }
-    } else if (outputFormActions.isSubNodeFormAction(action)) {
-        const result = {...state, fundOutput: fundOutput(state.fundOutput, action)};
-        return consolidateState(state, result);
     }
 
     if (

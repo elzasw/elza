@@ -4,6 +4,9 @@
 
 import React from 'react';
 import {connect} from 'react-redux';
+import {Dropdown} from 'react-bootstrap';
+import {Link} from 'react-router-dom';
+import {defineMessages, FormattedMessage} from 'react-intl';
 import {AbstractReactComponent} from 'components/shared';
 import {
     fundTreeCollapse,
@@ -18,9 +21,17 @@ import {
     fundTreeSelectNode,
 } from 'actions/arr/fundTree.jsx';
 
-import {contextMenuShow} from 'actions/global/contextMenu.jsx';
+import {contextMenuHide, contextMenuShow} from 'actions/global/contextMenu.jsx';
+import {urlFundNode} from '../../constants';
 import FundTreeLazy from './FundTreeLazy';
 import './FundTreeDaos.scss';
+
+const messages = defineMessages({
+    openInArr: {
+        id: 'fundTreeDaos.action.openInArr',
+        defaultMessage: 'Otevřít v pořádání',
+    },
+});
 
 class FundTreeDaos extends AbstractReactComponent {
     constructor(props) {
@@ -73,12 +84,22 @@ class FundTreeDaos extends AbstractReactComponent {
      * @param e {Object} event
      */
     handleContextMenu(node, e) {
+        const {fund, versionId, area} = this.props;
         e.preventDefault();
         e.stopPropagation();
 
-        var menu = <ul className="dropdown-menu"></ul>;
+        // Odkaz míří přímo na URL uzlu, takže jde otevřít i v novém okně nebo záložce prohlížeče.
+        const nodeUrl = urlFundNode(fund.id, versionId, node.id);
 
-        this.props.dispatch(fundTreeFocusNode(this.props.area, this.props.versionId, node));
+        const menu = (
+            <ul className="dropdown-menu">
+                <Dropdown.Item as={Link} to={nodeUrl} onClick={() => this.props.dispatch(contextMenuHide())}>
+                    <FormattedMessage {...messages.openInArr} />
+                </Dropdown.Item>
+            </ul>
+        );
+
+        this.props.dispatch(fundTreeFocusNode(area, versionId, node));
         this.props.dispatch(contextMenuShow(this, menu, {x: e.clientX, y: e.clientY}));
     }
 

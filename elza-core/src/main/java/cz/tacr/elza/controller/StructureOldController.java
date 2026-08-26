@@ -26,12 +26,10 @@ import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.RulPartTypeVO;
 import cz.tacr.elza.controller.vo.RulStructureTypeVO;
 import cz.tacr.elza.controller.vo.StructureExtensionFundVO;
-import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
-import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.domain.RulStructuredTypeExtension;
@@ -39,9 +37,7 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.service.ArrangementService;
-import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.StructObjService;
-
 
 /**
  * Controller pro správu strukturovaných datových typů a jejich hodnot.
@@ -56,19 +52,16 @@ public class StructureOldController {
 
     private final StructObjService structureService;
     private final ArrangementService arrangementService;
-    private final RuleService ruleService;
     private final ClientFactoryDO factoryDO;
     private final ClientFactoryVO factoryVO;
 
     @Autowired
     public StructureOldController(final StructObjService structureService,
                                final ArrangementService arrangementService,
-                               final RuleService ruleService,
                                final ClientFactoryDO factoryDO,
                                final ClientFactoryVO factoryVO) {
         this.structureService = structureService;
         this.arrangementService = arrangementService;
-        this.ruleService = ruleService;
         this.factoryDO = factoryDO;
         this.factoryVO = factoryVO;
     }
@@ -256,91 +249,6 @@ public class StructureOldController {
     }
 
     /**
-     * Vytvoření položky k hodnotě strukt. datového typu.
-     *
-     * @param itemVO          položka
-     * @param fundVersionId   identifikátor verze AS
-     * @param itemTypeId      identifikátor typu atributu
-     * @param structureDataId identifikátor hodnoty strukturovaného datového typu
-     * @return vytvořená entita
-     */
-    @Deprecated
-    @Transactional
-    @RequestMapping(value = "/item/{fundVersionId}/{structureDataId}/{itemTypeId}/create", method = RequestMethod.POST)
-    public StructureItemResult createStructureItem(@RequestBody final ArrItemVO itemVO,
-                                                   @PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                                   @PathVariable(value = "itemTypeId") final Integer itemTypeId,
-                                                   @PathVariable(value = "structureDataId") final Integer structureDataId) {
-        ArrStructuredItem structureItem = factoryDO.createStructureItem(itemVO, itemTypeId);
-        ArrStructuredItem createStructureItem = structureService.createStructureItem(structureItem, structureDataId, fundVersionId);
-        StructureItemResult result = new StructureItemResult();
-        result.setItem(factoryVO.createItem(createStructureItem));
-        result.setParent(ArrStructureDataVO.newInstance(createStructureItem.getStructuredObject()));
-        return result;
-    }
-
-    /**
-     * Upravení položky k hodnotě strukt. datového typu.
-     *
-     * @param itemVO           položka
-     * @param fundVersionId    identifikátor verze AS
-     * @param createNewVersion provést verzovanou změnu
-     * @return upravená entita
-     */
-    @Deprecated
-    @Transactional
-    @RequestMapping(value = "/item/{fundVersionId}/update/{createNewVersion}", method = RequestMethod.PUT)
-    public StructureItemResult updateStructureItem(@RequestBody final ArrItemVO itemVO,
-                                                   @PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                                   @PathVariable(value = "createNewVersion") final Boolean createNewVersion) {
-        ArrStructuredItem structureItem = factoryDO.createStructureItem(itemVO);
-        ArrStructuredItem updateStructureItem = structureService.updateStructureItem(structureItem, fundVersionId, createNewVersion);
-        StructureItemResult result = new StructureItemResult();
-        result.setItem(factoryVO.createItem(updateStructureItem));
-        result.setParent(ArrStructureDataVO.newInstance(updateStructureItem.getStructuredObject()));
-        return result;
-    }
-
-    /**
-     * Odstranení položky k hodnotě strukt. datového typu.
-     *
-     * @param itemVO        položka
-     * @param fundVersionId identifikátor verze AS
-     * @return smazaná entita
-     */
-    @Deprecated
-    @Transactional
-    @RequestMapping(value = "/item/{fundVersionId}/delete", method = RequestMethod.POST)
-    public StructureItemResult deleteStructureItem(@RequestBody final ArrItemVO itemVO,
-                                                   @PathVariable(value = "fundVersionId") final Integer fundVersionId) {
-        ArrStructuredItem deleteStructureItem = structureService.deleteStructureItem(itemVO.getDescItemObjectId(), null, fundVersionId);
-        StructureItemResult result = new StructureItemResult();
-        result.setItem(factoryVO.createItem(deleteStructureItem));
-        result.setParent(ArrStructureDataVO.newInstance(deleteStructureItem.getStructuredObject()));
-        return result;
-    }
-
-    /**
-     * Odstranení položek k hodnotě strukt. datového typu podle typu atributu.
-     * @param fundVersionId   identifikátor verze AS
-     * @param structureDataId identifikátor hodnoty strukturovaného datového typu
-     * @param itemTypeId      identifikátor typu atributu
-     * @return smazaná entita
-     */
-    @Deprecated
-    @Transactional
-    @RequestMapping(value = "/item/{fundVersionId}/{structureDataId}/{itemTypeId}", method = RequestMethod.DELETE)
-    public StructureItemResult deleteStructureItemsByType(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                                          @PathVariable(value = "structureDataId") final Integer structureDataId,
-                                                          @PathVariable(value = "itemTypeId") final Integer itemTypeId) {
-        ArrStructuredObject structureData = structureService.deleteStructureItemsByType(fundVersionId, structureDataId, itemTypeId);
-        StructureItemResult result = new StructureItemResult();
-        result.setItem(null);
-        result.setParent(ArrStructureDataVO.newInstance(structureData));
-        return result;
-    }
-
-    /**
      * Vyhledá možné typy strukt. datových typů, které lze v AS používat.
      *
      * @return nalezené entity
@@ -365,34 +273,6 @@ public class StructureOldController {
     public List<RulPartTypeVO> findPartTypes() {
         List<RulPartType> partTypes = structureService.findPartTypes();
         return partTypes.stream().map(i -> RulPartTypeVO.newInstance(i)).collect(Collectors.toList());
-    }
-
-    /**
-     * Získání dat pro formulář strukt. datového typu.
-     *
-     * @param fundVersionId   identifikátor verze AS
-     * @param structureDataId identifikátor hodnoty strukturovaného datového typu
-     * @return data formuláře
-     */
-    @Deprecated
-    @Transactional
-    @RequestMapping(value = "/item/form/{fundVersionId}/{structureDataId}", method = RequestMethod.GET)
-    public StructureDataFormDataVO getFormStructureItems(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                                         @PathVariable(value = "structureDataId") final Integer structureDataId) {
-        ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
-        ArrStructuredObject structureData = structureService.getStructObjById(structureDataId);
-
-        List<ArrStructuredItem> structureItems = structureService.findStructureItems(structureData);
-        List<RulItemTypeExt> structureItemTypes = ruleService.getStructureItemTypes(structureData.getStructuredTypeId(),
-                                                                                    fundVersion, structureItems);
-
-        Integer fundId = fundVersion.getFund().getFundId();
-        String ruleCode = fundVersion.getRuleSet().getCode();
-
-        ArrStructureDataVO structureDataVO = ArrStructureDataVO.newInstance(structureData);
-        List<ArrItemVO> descItems = factoryVO.createItems(structureItems);
-        List<ItemTypeLiteVO> itemTypeLites = factoryVO.createItemTypes(ruleCode, fundId, structureItemTypes);
-        return new StructureDataFormDataVO(structureDataVO, descItems, itemTypeLites);
     }
 
     /**
@@ -429,43 +309,6 @@ public class StructureOldController {
         RulStructuredType structureType = structureService.getStructureTypeByCode(structureTypeCode);
         List<RulStructuredTypeExtension> structureExtensions = structureService.findStructureExtensionByCodes(structureExtensionCodes);
         structureService.setFundStructureExtensions(fundVersion, structureType, structureExtensions);
-    }
-
-    @Deprecated
-    public static class StructureDataFormDataVO extends ArrangementController.FormDataNewVO<ArrStructureDataVO> {
-        private ArrStructureDataVO parent;
-
-        public StructureDataFormDataVO() {
-        }
-
-        public StructureDataFormDataVO(final ArrStructureDataVO parent, final List<ArrItemVO> descItems, final List<ItemTypeLiteVO> itemTypeLites) {
-            super(parent, descItems, itemTypeLites);
-            this.parent = parent;
-        }
-
-        @Override
-        public ArrStructureDataVO getParent() {
-            return parent;
-        }
-
-        @Override
-        public void setParent(final ArrStructureDataVO parent) {
-            this.parent = parent;
-        }
-    }
-
-    public static class StructureItemResult extends ArrangementController.ItemResult<ArrStructureDataVO> {
-        private ArrStructureDataVO parent;
-
-        @Override
-        public ArrStructureDataVO getParent() {
-            return parent;
-        }
-
-        @Override
-        public void setParent(final ArrStructureDataVO parent) {
-            this.parent = parent;
-        }
     }
 
     public static class StructureDataBatchUpdate {
