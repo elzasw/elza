@@ -65,6 +65,7 @@
   "ZP2015_OTHERID_ISBN": "KOD_ISBN",
   "ZP2015_OTHERID_ISSN": "KOD_ISSN",
   "ZP2015_OTHERID_ISMN": "KOD_ISMN",
+  "ZP2015_OTHERID_SOURCEID": "ZDROJ_ID",
   "ZP2015_OTHERID_MATRIXID": "MATRICNI_CISLO"
   }
 >
@@ -88,6 +89,7 @@
   "KOD_ISSN": "kód ISSN",
   "KOD_ISMN": "kód ISMN",
   "MATRICNI_CISLO": "matriční číslo (propůjčeného vyznamenání)",
+  "ZDROJ_ID": "identifikátor ve zdrojovém systému",
   "JINE": "jiné"
   }
 >
