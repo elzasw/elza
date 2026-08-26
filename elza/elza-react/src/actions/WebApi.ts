@@ -1933,36 +1933,6 @@ export class WebApiCls {
         return AjaxUtils.ajaxDelete(WebApiCls.structureUrl + '/data/' + fundVersionId + '/' + structureDataId);
     }
 
-    getFormStructureItems(fundVersionId: number, structureDataId: number) {
-        return AjaxUtils.ajaxGet(WebApiCls.structureUrl + '/item/form/' + fundVersionId + '/' + structureDataId);
-    }
-
-    createStructureItem(fundVersionId: number, structureDataId: number, itemTypeId: number, data) {
-        return AjaxUtils.ajaxPost(
-            WebApiCls.structureUrl + '/item/' + fundVersionId + '/' + structureDataId + '/' + itemTypeId + '/create',
-            null,
-            data,
-        );
-    }
-
-    updateStructureItem(fundVersionId: number, data, createNewVersion = true) {
-        return AjaxUtils.ajaxPut(
-            WebApiCls.structureUrl + '/item/' + fundVersionId + '/update/' + createNewVersion,
-            null,
-            data,
-        );
-    }
-
-    deleteStructureItem(fundVersionId: number, data) {
-        return AjaxUtils.ajaxPost(WebApiCls.structureUrl + '/item/' + fundVersionId + '/delete', null, data);
-    }
-
-    deleteStructureItemsByType(fundVersionId: number, structureDataId: number, itemTypeId: number) {
-        return AjaxUtils.ajaxDelete(
-            WebApiCls.structureUrl + '/item/' + fundVersionId + '/' + structureDataId + '/' + itemTypeId,
-        );
-    }
-
     updateStructureDataBatch(fundVersionId: number, structureTypeCode: string, structureDataBatchUpdate) {
         return AjaxUtils.ajaxPost(
             WebApiCls.structureUrl + '/data/' + fundVersionId + '/' + structureTypeCode + '/batchUpdate',
