@@ -131,7 +131,6 @@ export function DescItemCoordinates({
       setValue(normalizedValue);
     }
     if (
-      normalizedValue &&
       initialValue !== normalizedValue &&
       (!conflictValue || force)
     ) {
