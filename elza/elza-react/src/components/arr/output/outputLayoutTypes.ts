@@ -3,7 +3,7 @@ import {ApScopeVO, ArrOutputVO} from '../../../typings/Outputs';
 import {AppFetchingStore} from '../../../typings/globals';
 
 export interface OutputLayoutProps {
-    fundOutputDetail: ArrOutputVO & AppFetchingStore & {subNodeForm: any; lockDate: any};
+    fundOutputDetail: ArrOutputVO & AppFetchingStore & {lockDate: any};
     versionId: number;
     readonly: boolean;
     nodesReadOnly: boolean;

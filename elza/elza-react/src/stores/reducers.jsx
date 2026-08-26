@@ -28,7 +28,6 @@ import app from './app/app.jsx';
 import editRegistryForm from './app/registry/form/editRegistryForm.jsx';
 
 import addUserForm from './app/admin/addUserForm.jsx';
-import structures from './app/structures/structures';
 
 const rootReducer = combineReducers({
     app,
@@ -47,7 +46,6 @@ const rootReducer = combineReducers({
     stateRegion,
     router,
     userDetail,
-    structures,
     tab,
     status,
     form: formReducer.plugin({
