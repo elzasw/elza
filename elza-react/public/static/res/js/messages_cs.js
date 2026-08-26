@@ -159,6 +159,7 @@ var messages = {
 
     "exception.ba.INCORRECT_CONFIG": "Chybná konfigurace hromadné akce.",
     "exception.ba.UNITID_NOT_SEALED": "Identifikátor jednotky popisu není pevně zmražen.",
+    "exception.ba.PREFIX_VALUE_NOT_FOUND": "Nelze určit prefix ukládací jednotky, prvek popisu {itemType} není u jednotky popisu správně vyplněn.",
 
     "exception.dig.REPOSITORY_NOT_FOUND": "Digitalizační repository neexistuje ({code})",
     "exception.dig.DAO_NOT_FOUND": "DAO neexistuje ({code})",
