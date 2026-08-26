@@ -119,11 +119,18 @@ export function DescItemUriRef({
   }, [query, templates]);
 
   async function handleChange(force?: boolean, refTemplateId?: number) {
+    // The URI is required - a reference without it cannot be stored, so a blank one means the
+    // item is empty whatever the description or template hold. An item already on the server
+    // still has to go through, so the empty value can delete it.
+    const isEmpty = !value?.trim();
+    const hasNothingToSave = isEmpty && data?.dataId == undefined;
+
     if (
-      ((value && initialValue !== value) ||
-        (description && descInitialValue !== description) ||
+      (initialValue !== value ||
+        descInitialValue !== description ||
         refTemplateId != undefined) &&
-      (!conflictValue || force)
+      (!conflictValue || force) &&
+      !hasNothingToSave
     ) {
       await onChange({
         ...item,

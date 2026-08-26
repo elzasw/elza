@@ -51,7 +51,7 @@ export function DescItemDate({
   } = useValueManager<string>(data?.value, item);
 
   async function handleChange(force?: boolean) {
-    if (value && initialValue !== value && (!conflictValue || force)) {
+    if (initialValue !== value && (!conflictValue || force)) {
       await onChange({
         ...item,
         data: {

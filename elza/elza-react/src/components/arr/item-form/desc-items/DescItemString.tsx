@@ -59,7 +59,7 @@ export function DescItemString({
 
 
   async function handleChange(force?: boolean) {
-    if (value && initialValue !== value && (!conflictValue || force)) {
+    if (initialValue !== value && (!conflictValue || force)) {
         const stringValue = mask ? unmaskString(value, mask) : value;
       await onChange({
         ...item,

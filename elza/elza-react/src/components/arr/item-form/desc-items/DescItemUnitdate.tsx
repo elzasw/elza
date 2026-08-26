@@ -66,14 +66,17 @@ export function DescItemUnitdate({
   }, [value]);
 
   async function handleChange(force?: boolean) {
+    const isEmpty = !value;
+    // An empty value is never a valid unitdate, so it skips the validity gate and the
+    // estimate conversion; DescItemField turns it into a delete.
     if (
-      value &&
       initialValue !== value &&
       (!conflictValue || force) &&
-      isValid
+      (isEmpty || isValid)
     ) {
-      const estimate = await convertToEstimateWithConfirmation(value, dispatch);
-      console.log("#diu - estimate", estimate, value);
+      const estimate = isEmpty
+        ? undefined
+        : await convertToEstimateWithConfirmation(value, dispatch);
       await onChange({
         ...item,
         data: {
