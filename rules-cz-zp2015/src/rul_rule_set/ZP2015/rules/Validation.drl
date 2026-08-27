@@ -103,13 +103,15 @@ end
 */
 
 
-rule "UJ_016 Na neevidované jednotlivosti nebo výše musí být uvedena hromadinová ukládací jednotka."
+rule "UJ_016_01 Na neevidované jednotlivosti nebo výše musí být uvedena hromadinová ukládací jednotka - MS, INV, KAT, starší pomůcka."
 when
 	$activeLevel: ActiveLevel( )
 	DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM") ) from $activeLevel.ownDescItems
 	DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_OTHER") ) from $activeLevel.ownDescItems
 	DescItem(type=="ZP2015_STORAGE_ID" && structured != null && $struct: structured ) from $activeLevel.ownDescItems
 	StructObjItem(type=="ZP2015_PACKET_TYPE" && specCode not in ("ZP2015_PACKET_TYPE_KAR", "ZP2015_PACKET_TYPE_FAS")) from $struct.items
+	// je způsob pořádání MS, INV, KAT nebo starší pomůcka
+	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT", "ZP2015_ARRANGEMENT_OTHER") ) from $activeLevel.descItems
 	// není zneplatněný záznam
     not DescItem(type=="ZP2015_INVALID_RECORD") from $activeLevel.descItems
     // neni pevne spojeni
@@ -118,6 +120,41 @@ when
     not DescItem(type=="ZP2015_AIP_ID") from $activeLevel.descItems
 then
 	dvResults.createMissing("ZP2015_STORAGE_ID", "Neevidovaná jednotlivost není uložena v hromadinové ukládací jednotce (UJ_016).", "ZP2015_POL_STORAGE_ID");
+end
+
+rule "UJ_016_02 Na neevidované jednotlivosti nebo výše musí být uvedena hromadinová ukládací jednotka - základní popis."
+when
+	$activeLevel: ActiveLevel( )
+	DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM") ) from $activeLevel.ownDescItems
+	DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_OTHER") ) from $activeLevel.ownDescItems
+	DescItem(type=="ZP2015_STORAGE_ID" && structured != null && $struct: structured ) from $activeLevel.ownDescItems
+	StructObjItem(type=="ZP2015_PACKET_TYPE" && specCode not in ("ZP2015_PACKET_TYPE_KAR", "ZP2015_PACKET_TYPE_FAS", "ZP2015_PACKET_TYPE_BAL", "ZP2015_PACKET_TYPE_POR")) from $struct.items
+	// je způsob pořádání základní popis
+	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_BAS") ) from $activeLevel.descItems
+	// není zneplatněný záznam
+    not DescItem(type=="ZP2015_INVALID_RECORD") from $activeLevel.descItems
+    // neni pevne spojeni
+    not DescItem(type=="ZP2015_ITEM_LINK") from $activeLevel.descItems
+    // neni ulozeno v DA
+    not DescItem(type=="ZP2015_AIP_ID") from $activeLevel.descItems
+then
+	dvResults.createMissing("ZP2015_STORAGE_ID", "Neevidovaná jednotlivost není uložena v hromadinové ukládací jednotce (UJ_016).", "ZP2015_POL_STORAGE_ID");
+end
+
+// Balík a pořadač jsou typy obalů vyhrazené základnímu popisu.
+// Typ obalu se kontroluje na JP, kde je ukládací jednotka přímo uvedena,
+// Způsob pořádání se hledá i na vyšších úrovních (soubor, série, složka, jednotlivost).
+rule "UJ_017 Ukládací jednotka typu balík nebo pořadač jen v základním popisu (nezpracované archiválie)"
+when
+	$activeLevel: ActiveLevel( )
+	$descItem : DescItem(type=="ZP2015_STORAGE_ID" && structured != null && $struct: structured ) from $activeLevel.ownDescItems
+	StructObjItem(type=="ZP2015_PACKET_TYPE" && specCode in ("ZP2015_PACKET_TYPE_BAL", "ZP2015_PACKET_TYPE_POR")) from $struct.items
+	// není způsob pořádání základní popis
+	not DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_BAS") ) from $activeLevel.descItems
+	// není zneplatněný záznam
+    not DescItem(type=="ZP2015_INVALID_RECORD") from $activeLevel.descItems
+then
+	dvResults.createError($descItem.getDescItemId(), "Ukládací jednotku typu balík nebo pořadač lze použít pouze pro nezpracované archiválie.", "ZP2015_POL_STORAGE_ID");
 end
 
 // uplatni se jen pro pomucky dle ZP a základní popis, neuplatní se pro kartotéku a složku manipulačního seznamu
