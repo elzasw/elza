@@ -120,11 +120,11 @@ then
 	dvResults.createMissing("ZP2015_STORAGE_ID", "Neevidovaná jednotlivost není uložena v hromadinové ukládací jednotce (UJ_016).", "ZP2015_POL_STORAGE_ID");
 end
 
-// uplatni se jen pro pomucky dle ZP, neuplatní se pro kartotéku a složku manipulačního seznamu
+// uplatni se jen pro pomucky dle ZP a základní popis, neuplatní se pro kartotéku a složku manipulačního seznamu
 rule "Počet archiválií musí být větší nebo roven 2"
 when
 	$activeLevel: ActiveLevel( $items: descItems && $ownItems: ownDescItems )
-	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $items
+	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_BAS", "ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $items
 	not DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_KTT") ) from $ownItems
 	not DescItem(type=="ZP2015_EXTRA_UNITS" ) from $ownItems
     $descItem: DescItem(type=="ZP2015_UNIT_COUNT"  && integer.intValue()<2 ) from $ownItems
@@ -132,11 +132,11 @@ then
 	dvResults.createError($descItem.getDescItemId(), "Počet archiválií musí být větší nebo roven 2.", "ZP2015_POL_BASIC");
 end
 
-// uplatni se pro složku manipulační seznamu dle ZP
+// uplatni se pro složku manipulační seznamu dle ZP a v základním popisu
 rule "Počet archiválií musí být větší nebo roven 1"
 when
 	$activeLevel: ActiveLevel( $items: descItems )
-	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $items
+	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_BAS", "ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $items
 	not DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_KTT") ) from $items
 	DescItem(type=="ZP2015_EXTRA_UNITS" ) from $items
     $descItem: DescItem(type=="ZP2015_UNIT_COUNT"  && integer.intValue()<1 ) from $items
@@ -144,11 +144,11 @@ then
 	dvResults.createError($descItem.getDescItemId(), "Počet archiválií musí být větší nebo roven 1.", "ZP2015_POL_BASIC");
 end
 
-// uplatni se pro KTT dle ZP
+// uplatni se pro KTT dle ZP a v základním popisu
 rule "Počet archiválií u KTT musí být větší nebo roven 1"
 when
 	$activeLevel: ActiveLevel( $items: descItems )
-	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $items
+	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_BAS", "ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $items
 	DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_KTT") ) from $items
     $descItem: DescItem(type=="ZP2015_UNIT_COUNT"  && integer.intValue()<1 ) from $items
 then
@@ -233,7 +233,7 @@ end
 rule "PP_012 List musí mít směrem ke kořeni alespoň jednoho původce"
 when
 	$activeLevel: ActiveLevel( !hasChildren )
-	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $activeLevel.descItems
+	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_BAS", "ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $activeLevel.descItems
 	not ( $level: Level( $items: descItems ) and 
 		DescItem(type in 
 		  ( "ZP2015_ORIGINATOR" ) )

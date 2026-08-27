@@ -430,8 +430,8 @@ rule "HP_012_03 Jedna složka v hierarchii může určit EJ - s typem EJ"
 no-loop
 when
     $activeLevel : ActiveLevel( )
-    // tyka se manip. seznamu, inventare a starsich pomucek
-    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_OTHER", "ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV") ) from $activeLevel.descItems
+    // tyka se manip. seznamu, inventare, starsich pomucek a zakladniho popisu
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_BAS", "ZP2015_ARRANGEMENT_OTHER", "ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV") ) from $activeLevel.descItems
     DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $activeLevel.descItems
     // neexistuje nadrizeny level typu slozka
     not ( $level : Level( this!=$activeLevel ) and
@@ -1110,7 +1110,7 @@ no-loop
 when
     // nesmi jiz mit deti
     $activeLevel : ActiveLevel( !hasChildren )
-    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_OTHER") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_OTHER", "ZP2015_ARRANGEMENT_BAS") ) from $activeLevel.descItems
     DescItem(type=="ZP2015_FOLDER_TYPE" && specCode in ("ZP2015_FOLDER_UNITS", 
     													"ZP2015_FOLDER_LOGICAL", 
     													"ZP2015_FOLDER_SINGLE_TYPE",
@@ -1128,7 +1128,7 @@ rule "Složka manipulačního seznamu - všechny typy archiválií"
 no-loop
 when
     $activeLevel : ActiveLevel( !hasChildren )
-    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_OTHER") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_OTHER", "ZP2015_ARRANGEMENT_BAS") ) from $activeLevel.descItems
     DescItem(type=="ZP2015_FOLDER_TYPE" && specCode in ("ZP2015_FOLDER_UNITS", 
     												    "ZP2015_FOLDER_LOGICAL",
     												    "ZP2015_FOLDER_SINGLE_TYPE",
@@ -1227,12 +1227,12 @@ end
 
 // U složky man. seznamu lze vybrat skoro libovolny typ jendotlivosti
 // Nelze vybrat cast jednotlivosti
-rule "TA_004 Možné druhy archiválie na složce ve starší pomůcce a manipulačním seznamu"
+rule "TA_004 Možné druhy archiválie na složce ve starší pomůcce, manipulačním seznamu a v základním popisu"
 no-loop
 when
     $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER") ) from $activeLevel.descItems
-    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_OTHER") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_OTHER", "ZP2015_ARRANGEMENT_BAS") ) from $activeLevel.descItems
     $itemType : RulItemTypeExt(code == "ZP2015_UNIT_TYPE")
     $itemSpec : RulItemSpecExt(code in ( "ZP2015_UNIT_TYPE_LIO", "ZP2015_UNIT_TYPE_LIP",
         "ZP2015_UNIT_TYPE_UKN", 
@@ -1710,7 +1710,7 @@ then
     $itemType.setType(RulItemType.Type.POSSIBLE);
 end
 
-rule "Datace - textová - starší"
+rule "Datace - textová - starší pomůcka a základní popis"
 no-loop
 when
     $activeLevel: ActiveLevel( )
@@ -6917,19 +6917,19 @@ end
 //
 // PP_010 Role entit textově u jednotky popisu
 //
-rule "PP_010_01 Role entit textově u jednotky popisu - typ (starší pomůcka)"
+rule "PP_010_01 Role entit textově u jednotky popisu - typ (starší pomůcka, základní popis)"
 no-loop
 when ActiveLevel($items: descItems)
-    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_OTHER")) from $items
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_OTHER", "ZP2015_ARRANGEMENT_BAS")) from $items
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE_TEXT" ) )
 then
     $itemType.setMinType(RulItemType.Type.POSSIBLE);
 end
 
-rule "PP_010_02 Role entit textově u jednotky popisu - specifikace (starší pomůcka)"
+rule "PP_010_02 Role entit textově u jednotky popisu - specifikace (starší pomůcka, základní popis)"
 no-loop
 when ActiveLevel($items: descItems)
-    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_OTHER")) from $items
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_OTHER", "ZP2015_ARRANGEMENT_BAS")) from $items
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE_TEXT" ) )
     $itemSpec: RulItemSpecExt( code in (
         // entita související s jednotkou popisu
