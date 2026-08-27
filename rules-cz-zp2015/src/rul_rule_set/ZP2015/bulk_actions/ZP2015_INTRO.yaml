@@ -209,6 +209,8 @@ actions:
               - pkt
               - cpa
               - sto
+              - bal
+              - por
               - daj
               - pnp
               - pfp
@@ -296,6 +298,8 @@ actions:
              objectItemMapping:
                ZP2015_PACKET_TYPE_KAR: kar
                ZP2015_PACKET_TYPE_FAS: fas
+               ZP2015_PACKET_TYPE_BAL: bal
+               ZP2015_PACKET_TYPE_POR: por
            - excludeWhen:
                someOf:
                  # Nesmí být nastaven jako připojený záznam
@@ -384,6 +388,8 @@ actions:
              objectItemMapping:
                ZP2015_PACKET_TYPE_KAR: kar
                ZP2015_PACKET_TYPE_FAS: fas
+               ZP2015_PACKET_TYPE_BAL: bal
+               ZP2015_PACKET_TYPE_POR: por
            # Digitální složka
            - excludeWhen:
                someOf:
