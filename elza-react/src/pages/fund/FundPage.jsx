@@ -39,7 +39,7 @@ import { indexById } from '../../stores/app/utils';
 import PageLayout from '../shared/layout/PageLayout';
 import './FundPage.scss';
 import { Button, Checkbox, DrawerBody, DrawerHeader, DrawerHeaderTitle, InlineDrawer, Menu, MenuButton, MenuItem, MenuList, MenuPopover, MenuTrigger } from '@fluentui/react-components';
-import { Dismiss24Regular, ArrowDownloadRegular } from "@fluentui/react-icons"
+import { Dismiss24Regular, ArrowDownloadRegular, MoreHorizontal20Regular } from "@fluentui/react-icons"
 import { FundFilters } from 'components/fund/filters/FundFilters';
 import { FundPageRibbon } from 'components/fund/FundPageRibbon';
 import { FundPager } from 'components/fund/FundPager';
@@ -433,12 +433,11 @@ class FundPage extends AbstractReactComponent {
         dispatch(routerNavigate(urlFundTree(id, versions[0].id)));
     }
 
-    renderListItem(props) {
-        const { institutionsAll, userDetail } = this.props;
-        const { institutions, selectionMode, selectedFundIds, selectAllMatching } = this.state;
-        const { item } = props;
-        // hide institution name, when only one is used for funds
-        const institution = institutions?.length > 1 ? institutionsAll.items.find(({ code }) => code == item.institutionIdentifier) : undefined;
+    /**
+     * Akce dostupné pro daný AS podle oprávnění uživatele. Sdílené položkou seznamu a detailem AS.
+     */
+    buildFundActions(item) {
+        const { userDetail } = this.props;
 
         const itemActions = [];
         if (item.id !== null) {
@@ -519,6 +518,18 @@ class FundPage extends AbstractReactComponent {
                 );
             }
         }
+        return itemActions;
+    }
+
+    renderListItem(props) {
+        const { institutionsAll } = this.props;
+        const { institutions, selectionMode, selectedFundIds, selectAllMatching } = this.state;
+        const { item } = props;
+        // hide institution name, when only one is used for funds
+        const institution = institutions?.length > 1 ? institutionsAll.items.find(({ code }) => code == item.institutionIdentifier) : undefined;
+
+        const itemActions = this.buildFundActions(item);
+
         return <>
             {selectionMode && item.id !== null &&
                 <div
@@ -576,7 +587,7 @@ class FundPage extends AbstractReactComponent {
                 {itemActions.length > 0 &&
                     <Menu>
                         <MenuTrigger disableButtonEnhancement={true}>
-                            <MenuButton appearance='subtle' icon={<Icon glyph="fa-ellipsis-v" />} />
+                            <MenuButton appearance='subtle' icon={<MoreHorizontal20Regular />} />
                         </MenuTrigger>
                         <MenuPopover>
                             <MenuList>
@@ -721,6 +732,8 @@ class FundPage extends AbstractReactComponent {
         const activeVersion = fundRegion.fundDetail.versions?.find(({ id }) => fundRegion.fundDetail.activeVersion.id === id);
         const activeRuleSet = activeVersion?.ruleSetId != undefined ? ruleSet.itemsMap[activeVersion.ruleSetId] : undefined;
 
+        const detailActions = fundRegion.fundDetail.id != null ? this.buildFundActions(fundRegion.fundDetail) : [];
+
         const leftPanel = (
             <div className="fund-list-container">
                 <div className="filter-container" style={{ display: "flex" }}>
@@ -789,12 +802,26 @@ class FundPage extends AbstractReactComponent {
                         <DrawerHeader>
                             <DrawerHeaderTitle
                                 action={
-                                    <Button
-                                        appearance="subtle"
-                                        aria-label={intl.formatMessage(messages.fundPageDrawerClose)}
-                                        icon={<Dismiss24Regular />}
-                                        onClick={() => this.handleToggleDrawer(false)}
-                                    />
+                                    <>
+                                        {detailActions.length > 0 &&
+                                            <Menu>
+                                                <MenuTrigger disableButtonEnhancement={true}>
+                                                    <MenuButton appearance='subtle' icon={<MoreHorizontal20Regular />} />
+                                                </MenuTrigger>
+                                                <MenuPopover>
+                                                    <MenuList>
+                                                        {detailActions}
+                                                    </MenuList>
+                                                </MenuPopover>
+                                            </Menu>
+                                        }
+                                        <Button
+                                            appearance="subtle"
+                                            aria-label={intl.formatMessage(messages.fundPageDrawerClose)}
+                                            icon={<Dismiss24Regular />}
+                                            onClick={() => this.handleToggleDrawer(false)}
+                                        />
+                                    </>
                                 }
                             >
                                 <Link
