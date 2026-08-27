@@ -1553,6 +1553,10 @@
     "defaultMessage": "Download CSV",
     "srcHash": "1LaqY8gF6JE1"
   },
+  "fundTreeDaos.action.openInArr": {
+    "defaultMessage": "Open in arrangement",
+    "srcHash": "B68JHJBBIwJj"
+  },
   "fund_filter_add_value": {
     "defaultMessage": "Or",
     "srcHash": "ETTHdeuMONkn"
