@@ -1124,11 +1124,105 @@ then
     $itemType.setType(RulItemType.Type.POSSIBLE);
 end
 
-rule "Složka manipulačního seznamu - všechny typy archiválií"
+// V manipulačním seznamu a starší pomůcce nelze u složky vybrat druhy archiválií
+// pro nezpracované archiválie - ty jsou určeny pouze pro základní popis
+rule "Složka manipulačního seznamu - typy archiválií (MS, starší pomůcka)"
 no-loop
 when
     $activeLevel : ActiveLevel( !hasChildren )
-    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_OTHER", "ZP2015_ARRANGEMENT_BAS") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_OTHER") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_FOLDER_TYPE" && specCode in ("ZP2015_FOLDER_UNITS", 
+    												    "ZP2015_FOLDER_LOGICAL",
+    												    "ZP2015_FOLDER_SINGLE_TYPE",
+    												    "ZP2015_FOLDER_DAO") ) from $activeLevel.descItems
+    $itemType : RulItemTypeExt(code == "ZP2015_EXTRA_UNITS")
+    $itemSpec : RulItemSpecExt(code in (
+        // Listiny do roku 1850
+        "ZP2015_EXTRA_UNITS_LIO",
+        // Listiny po roce 1850
+        "ZP2015_EXTRA_UNITS_LIP",
+        // Úřední knihy
+        "ZP2015_EXTRA_UNITS_UKN",
+        // Rukopisy
+        "ZP2015_EXTRA_UNITS_RKP",
+        // Podací protokoly
+        "ZP2015_EXTRA_UNITS_PPR",
+        // Indexy
+        "ZP2015_EXTRA_UNITS_IND",
+        // Elenchy
+        "ZP2015_EXTRA_UNITS_ELE",
+        // Repertáře
+        "ZP2015_EXTRA_UNITS_REP",
+        // Kartotéky
+        "ZP2015_EXTRA_UNITS_KTT",
+        // Pečetidla
+        "ZP2015_EXTRA_UNITS_PEC",
+        // Razítka
+        "ZP2015_EXTRA_UNITS_RAZ",
+        // Samostatné pečetě, odlitky pečetí a otisky typářů
+        "ZP2015_EXTRA_UNITS_OTD",
+        // Mapy
+        "ZP2015_EXTRA_UNITS_MAP",
+        // Atlasy
+        "ZP2015_EXTRA_UNITS_ATL",
+        // Technické výkresy
+        "ZP2015_EXTRA_UNITS_TVY",
+        // Grafické listy
+        "ZP2015_EXTRA_UNITS_GLI",
+        // Kresby
+        "ZP2015_EXTRA_UNITS_KRE",
+        // Fotografie na papírové podložce
+        "ZP2015_EXTRA_UNITS_FSN",
+        // Fotografické desky
+        "ZP2015_EXTRA_UNITS_FSD",
+        // Listové filmy
+        "ZP2015_EXTRA_UNITS_LFI",
+        // Svitkové filmy
+        "ZP2015_EXTRA_UNITS_SFI",
+        // Kinofilmy
+        "ZP2015_EXTRA_UNITS_KIN",
+        // Mikrofilmy
+        "ZP2015_EXTRA_UNITS_MF",
+        // Mikrofiše
+        "ZP2015_EXTRA_UNITS_MFS",
+        // Fotoalba
+        "ZP2015_EXTRA_UNITS_FAL",
+        // Digitální fotografie
+        "ZP2015_EXTRA_UNITS_DFO",
+        // Kinematografické záznamy (díla) v analogové i digitální podobě
+        "ZP2015_EXTRA_UNITS_KZA",
+        // Zvukové záznamy (díla) v analogové i digitální podobě
+        "ZP2015_EXTRA_UNITS_ZZA",
+        // Tisky do roku 1800
+        "ZP2015_EXTRA_UNITS_TIO",
+        // Tisky po roce 1800
+        "ZP2015_EXTRA_UNITS_TIP",
+        // Pohlednice
+        "ZP2015_EXTRA_UNITS_POH",
+        // Plakáty
+        "ZP2015_EXTRA_UNITS_PKT",
+        // Cenné papíry
+        "ZP2015_EXTRA_UNITS_CPA",
+        // Štočky
+        "ZP2015_EXTRA_UNITS_STO",
+        // Předměty numizmatické povahy
+        "ZP2015_EXTRA_UNITS_PNP",
+        // Předměty faleristické povahy
+        "ZP2015_EXTRA_UNITS_PFP",
+        // Jiné
+        "ZP2015_EXTRA_UNITS_JIN"
+         ) ) from $itemType.rulItemSpecList
+then
+  $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+// V základním popisu lze u složky vybrat všechny druhy archiválií
+// včetně druhů pro nezpracované archiválie
+rule "Složka manipulačního seznamu - typy archiválií (základní popis)"
+no-loop
+when
+    $activeLevel : ActiveLevel( !hasChildren )
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_BAS") ) from $activeLevel.descItems
     DescItem(type=="ZP2015_FOLDER_TYPE" && specCode in ("ZP2015_FOLDER_UNITS", 
     												    "ZP2015_FOLDER_LOGICAL",
     												    "ZP2015_FOLDER_SINGLE_TYPE",
@@ -1328,7 +1422,7 @@ when
         // Nosiče digitálních záznamů
         "ZP2015_UNIT_TYPE_MHZ", 
         // Fonografické válečky
-        "ZP2015_UNIT_TYP_FVA",
+        "ZP2015_UNIT_TYPE_FVA",
         // Fonografické dráty
         "ZP2015_UNIT_TYPE_FDR",
         // Gramofonové desky
@@ -1539,7 +1633,7 @@ when
         // Nosiče digitálních záznamů
         "ZP2015_UNIT_TYPE_MHZ", 
         // Fonografické válečky
-        "ZP2015_UNIT_TYP_FVA",
+        "ZP2015_UNIT_TYPE_FVA",
         // Fonografické dráty
         "ZP2015_UNIT_TYPE_FDR",
         // Gramofonové desky
