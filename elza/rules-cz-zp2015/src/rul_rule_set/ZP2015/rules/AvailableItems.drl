@@ -403,7 +403,7 @@ when
          		"ZP2015_FOLDER_DAO") ) from $level.descItems )
     // nemá výše uvedenu ukládací jednotku - nehromadinového typu    
     not ($storageItem : DescItem(type=="ZP2015_STORAGE_ID" && structured!=null ) from $activeLevel.descItems and
-         StructObjItem(type=="ZP2015_PACKET_TYPE" && specCode not in ("ZP2015_PACKET_TYPE_KAR", "ZP2015_PACKET_TYPE_FAS")) from $storageItem.structured.items )
+         StructObjItem(type=="ZP2015_PACKET_TYPE" && specCode not in ("ZP2015_PACKET_TYPE_KAR", "ZP2015_PACKET_TYPE_FAS", "ZP2015_PACKET_TYPE_BAL", "ZP2015_PACKET_TYPE_POR")) from $storageItem.structured.items )
     
     $itemType : RulItemTypeExt(code == "ZP2015_FOLDER_TYPE")
     $itemSpec : RulItemSpecExt(code in ("ZP2015_FOLDER_UNITS") ) from $itemType.rulItemSpecList
@@ -655,16 +655,42 @@ end
 
 // UJ_011 Na množstevní složce nebo výše musí být uvedena jedna hromadinová ukl. jednotka
 // - druhá polovina kontroly je v rámci HP012
-rule "UJ_011 Na množstevní složce (pokud je přímo na ní) musí být uvedena jedna hromadinová ukl. jednotka"
+rule "UJ_011_01 Na množstevní složce (pokud je přímo na ní) musí být uvedena jedna hromadinová ukl. jednotka - MS, INV, KAT, starší pomůcka"
 salience -200
 no-loop
 when
     $activeLevel: ActiveLevel( )
     // typ složky množstevní
     DescItem(type=="ZP2015_FOLDER_TYPE" && (specCode in ("ZP2015_FOLDER_UNITS") ) ) from $activeLevel.ownDescItems
-    
+    // způsob pořádání MS, INV, KAT, starší pomůcka
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && (specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT", "ZP2015_ARRANGEMENT_OTHER") ) ) from $activeLevel.DescItems
+
     $descItem : DescItem(type=="ZP2015_STORAGE_ID" && structured!=null ) from $activeLevel.ownDescItems
     not (StructObjItem(type=="ZP2015_PACKET_TYPE" && specCode in ("ZP2015_PACKET_TYPE_KAR", "ZP2015_PACKET_TYPE_FAS")) from $descItem.structured.items )
+
+    // není zneplatněný záznam
+    not DescItem(type=="ZP2015_INVALID_RECORD") from $activeLevel.descItems
+    // neni ciste digitalni
+    not DescItem(type=="ZP2015_AIP_ID") from $activeLevel.descItems
+    
+    $itemType : RulItemTypeExt(code == "ZP2015_STORAGE_ID")
+then
+    // System.out.println("UJ_011_01");
+    $itemType.setType(RulItemType.Type.IMPOSSIBLE);
+end
+
+rule "UJ_011_02 Na množstevní složce (pokud je přímo na ní) musí být uvedena jedna hromadinová ukl. jednotka - základní popis"
+salience -200
+no-loop
+when
+    $activeLevel: ActiveLevel( )
+    // typ složky množstevní
+    DescItem(type=="ZP2015_FOLDER_TYPE" && (specCode in ("ZP2015_FOLDER_UNITS") ) ) from $activeLevel.ownDescItems
+    // způsob pořádání je základní popis
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && (specCode in ("ZP2015_ARRANGEMENT_BAS") ) ) from $activeLevel.DescItems
+    
+    $descItem : DescItem(type=="ZP2015_STORAGE_ID" && structured!=null ) from $activeLevel.ownDescItems
+    not (StructObjItem(type=="ZP2015_PACKET_TYPE" && specCode in ("ZP2015_PACKET_TYPE_KAR", "ZP2015_PACKET_TYPE_FAS", "ZP2015_PACKET_TYPE_BAL", "ZP2015_PACKET_TYPE_POR")) from $descItem.structured.items )
 
     // není zneplatněný záznam
     not DescItem(type=="ZP2015_INVALID_RECORD") from $activeLevel.descItems
