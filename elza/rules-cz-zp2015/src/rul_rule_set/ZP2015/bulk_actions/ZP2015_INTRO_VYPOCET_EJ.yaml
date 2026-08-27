@@ -82,6 +82,8 @@ actions:
              objectItemMapping:
                ZP2015_PACKET_TYPE_KAR: ZP2015_UNIT_COUNT_KAR
                ZP2015_PACKET_TYPE_FAS: ZP2015_UNIT_COUNT_FAS
+               ZP2015_PACKET_TYPE_BAL: ZP2015_UNIT_COUNT_BAL
+               ZP2015_PACKET_TYPE_POR: ZP2015_UNIT_COUNT_POR
            - excludeWhen:
                someOf:
                  # Nesmí být nastaven jako připojený záznam
@@ -170,6 +172,8 @@ actions:
              objectItemMapping:
                ZP2015_PACKET_TYPE_KAR: ZP2015_UNIT_COUNT_KAR
                ZP2015_PACKET_TYPE_FAS: ZP2015_UNIT_COUNT_FAS
+               ZP2015_PACKET_TYPE_BAL: ZP2015_UNIT_COUNT_BAL
+               ZP2015_PACKET_TYPE_POR: ZP2015_UNIT_COUNT_POR
            # Digitální složka
            - excludeWhen:
                someOf:
