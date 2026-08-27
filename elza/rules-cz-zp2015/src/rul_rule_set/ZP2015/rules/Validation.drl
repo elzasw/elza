@@ -103,7 +103,7 @@ end
 */
 
 
-rule "UJ_016_01 Na neevidované jednotlivosti nebo výše musí být uvedena hromadinová ukládací jednotka."
+rule "UJ_016 Na neevidované jednotlivosti nebo výše musí být uvedena hromadinová ukládací jednotka."
 when
 	$activeLevel: ActiveLevel( )
 	DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM") ) from $activeLevel.ownDescItems

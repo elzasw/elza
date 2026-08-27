@@ -352,7 +352,77 @@
         <view-order>57</view-order>
         <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    
+    <item-spec code="ZP2015_UNIT_TYPE_FPA">
+        <name>filmový pás</name>
+        <description>filmový pás</description>
+        <shortcut>fpa</shortcut>
+        <view-order>58</view-order>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_TYPE_ANZ">
+        <name>jiný nosič analogového záznamu</name>
+        <description>jiný nosič analogového záznamu</description>
+        <shortcut>anz</shortcut>
+        <view-order>59</view-order>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_TYPE_MHZ">
+        <name>nosič digitálního záznamu</name>
+        <description>nosič digitálního záznamu</description>
+        <shortcut>mhz</shortcut>
+        <view-order>60</view-order>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_TYPE_FVA">
+        <name>fonografický váleček</name>
+        <description>fonografický váleček</description>
+        <shortcut>fva</shortcut>
+        <view-order>61</view-order>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_TYPE_FDR">
+        <name>fonografický drát</name>
+        <description>fonografický drát</description>
+        <shortcut>fdr</shortcut>
+        <view-order>62</view-order>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_TYPE_GD">
+        <name>gramofonová deska</name>
+        <description>gramofonová deska</description>
+        <shortcut>gd</shortcut>
+        <view-order>63</view-order>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_TYPE_MAT">
+        <name>matrice</name>
+        <description>matrice</description>
+        <shortcut>mat</shortcut>
+        <view-order>64</view-order>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_TYPE_MG">
+        <name>magnetofonový pásek</name>
+        <description>magnetofonový pásek</description>
+        <shortcut>mg</shortcut>
+        <view-order>65</view-order>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_TYPE_AKA">
+        <name>audiokazeta</name>
+        <description>audiokazeta</description>
+        <shortcut>aka</shortcut>
+        <view-order>66</view-order>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_TYPE_KDI">
+        <name>kompaktní disk</name>
+        <description>kompaktní disk</description>
+        <shortcut>kdi</shortcut>
+        <view-order>67</view-order>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
+    </item-spec>
+
     <!-- Podtyp/Subtype -->
     <item-spec code="ZP2015_UNIT_SUBTYPE_MTR">
         <name>matrika</name>
