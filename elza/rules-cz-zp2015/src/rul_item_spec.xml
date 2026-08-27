@@ -2273,6 +2273,18 @@
         <shortcut>jin</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
+    <item-spec code="ZP2015_UNIT_COUNT_BAL">
+        <name>balíky</name>
+        <description>balík</description>
+        <shortcut>bal</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_COUNT_POR">
+        <name>pořadače</name>
+        <description>pořadač</description>
+        <shortcut>por</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
+    </item-spec>
     <!-- Prvky popisu pro matriku -->
     <item-spec code="ZP2015_RECORD_TYPE_BORN">
         <name>záznamy narozených</name>
