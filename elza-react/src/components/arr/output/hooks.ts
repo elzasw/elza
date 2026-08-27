@@ -10,24 +10,73 @@ import { useWebsocket } from "components/shared/web-socket/WebsocketProvider";
 import { EditItem } from "components/arr/item-form/types";
 import { FormItem } from "components/arr/item-form/formItems";
 
-function useWSOutputChanges(outputId: number, callback: () => void) {
+/**
+ * States in which the output's items are being rewritten in bulk. Entered before a bulk action
+ * starts and left once its results are stored, so per-item events arriving in between belong to
+ * that rewrite rather than to someone's edit.
+ */
+const BULK_REWRITE_OUTPUT_STATES = ["COMPUTING", "GENERATING"];
+
+/**
+ * States that can carry finished items, and therefore warrant a refetch when entered.
+ */
+const ITEM_BEARING_OUTPUT_STATES = ["OPEN", "FINISHED", "OUTDATED"];
+
+// Two kinds of event can bring new values to an open form.
+//
+// OUTPUT_ITEM_CHANGE covers edits made elsewhere (another user, another part of the app) and is
+// refetched per event -- except while a bulk action is rewriting the output. Storing action results
+// replaces every value of each affected item type, and the server publishes one event per deleted
+// and per created item, so a single run would otherwise arrive as a burst of refetches that grows
+// with the number of existing values.
+//
+// OUTPUT_STATE_CHANGE closes that gap: the output enters COMPUTING before the action runs and
+// returns to OPEN once the results are committed, so the burst is skipped and the final transition
+// triggers exactly one refetch. The state events are ordered before the item events they bracket,
+// because the server queues events per transaction and flushes them, in order, after each commit.
+//
+// `isBulkRewriting` must be read through a getter rather than tracked here: the form can remount
+// mid-run, and a flag owned by this hook would reset to "not rewriting" and reopen the gate for
+// the rest of the burst. The caller derives it from the last fetched output state instead, which
+// a remount re-reads from the server.
+function useWSOutputChanges(
+    outputId: number,
+    callback: () => void,
+    getOutputState: () => string | undefined,
+    onStateChange: (state: string) => void,
+) {
     const { addListener, removeListener } = useWebsocket();
 
-    const handleMessage = (message: AnyMessage) => {
-        if (
-            message.eventType === EventType.OUTPUT_ITEM_CHANGE &&
-            message.outputId === outputId
-        ) {
-            callback();
-        }
-    };
+    const callbackRef = useRef(callback);
+    callbackRef.current = callback;
+    const getOutputStateRef = useRef(getOutputState);
+    getOutputStateRef.current = getOutputState;
+    const onStateChangeRef = useRef(onStateChange);
+    onStateChangeRef.current = onStateChange;
 
     useEffect(() => {
-        const listener = addListener(handleMessage);
+        const listener = addListener((message: AnyMessage) => {
+            if (message.eventType === EventType.OUTPUT_STATE_CHANGE && message.entityId === outputId) {
+                // One run can announce the same target state more than once; only a real
+                // transition can have brought new items.
+                const isTransition = getOutputStateRef.current() !== message.entityString;
+                onStateChangeRef.current(message.entityString);
+                if (isTransition && ITEM_BEARING_OUTPUT_STATES.includes(message.entityString)) {
+                    callbackRef.current();
+                }
+                return;
+            }
+            const isItemChange =
+                message.eventType === EventType.OUTPUT_ITEM_CHANGE && message.outputId === outputId;
+            const isBulkRewriting = BULK_REWRITE_OUTPUT_STATES.includes(getOutputStateRef.current());
+            if (isItemChange && !isBulkRewriting) {
+                callbackRef.current();
+            }
+        });
         return () => {
             removeListener(listener);
         };
-    }, []);
+    }, [outputId, addListener, removeListener]);
 }
 
 let counter = 0;
@@ -197,9 +246,21 @@ export function useOutputFormData(
         [itemTypeRefs, dataTypeRefs, addedFormItems, options?.skipForcedItems],
     );
 
+    // A websocket refetch can overlap with one triggered by a mutation. Responses may resolve out
+    // of order, so only the newest request is allowed to publish its result; an older one would
+    // otherwise overwrite the form with a stale snapshot.
+    const requestIdRef = useRef(0);
+
+    // Last known output state, seeded by every fetch so it survives a remount, and advanced by
+    // OUTPUT_STATE_CHANGE. Gates the per-item refetch while a bulk action rewrites the output.
+    const outputStateRef = useRef<string>();
+
     const fetchAndStoreData = useCallback(async () => {
+        const requestId = ++requestIdRef.current;
         const { data } = await Api.output.outputGetOutputFormData(outputId);
+        if (requestId !== requestIdRef.current) { return; }
         outputVersionRef.current = data.parent.version;
+        outputStateRef.current = data.parent.state;
         setStoredData(data);
     }, [outputId]);
 
@@ -218,9 +279,16 @@ export function useOutputFormData(
         })();
     }, [outputId]);
 
-    useWSOutputChanges(outputId, () => {
-        fetchAndStoreData();
-    });
+    useWSOutputChanges(
+        outputId,
+        () => {
+            fetchAndStoreData();
+        },
+        () => outputStateRef.current,
+        (state) => {
+            outputStateRef.current = state;
+        },
+    );
 
     function addEmptyItem(typeId: number, specId?: number) {
         const itemTypeRef = itemTypeRefs[typeId];

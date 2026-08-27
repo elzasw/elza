@@ -43,9 +43,19 @@ export interface OutputItemChangeMessage extends Message {
   version: number;
 }
 
+export interface OutputStateChangeMessage extends Message {
+  eventType: EventType.OUTPUT_STATE_CHANGE;
+  versionId: number;
+  /** Output id. */
+  entityId: number;
+  /** Output state name, or "ERROR" when generating failed. */
+  entityString: string;
+}
+
 export type AnyMessage =
   | ChangeMessage
   | TestMessage
   | PolicyChangeMessage
   | StructureDataChangeMessage
-  | OutputItemChangeMessage;
+  | OutputItemChangeMessage
+  | OutputStateChangeMessage;
