@@ -655,7 +655,7 @@ end
 
 // UJ_011 Na množstevní složce nebo výše musí být uvedena jedna hromadinová ukl. jednotka
 // - druhá polovina kontroly je v rámci HP012
-rule "UJ_011_01 Na množstevní složce (pokud je přímo na ní) musí být uvedena jedna hromadinová ukl. jednotka"
+rule "UJ_011 Na množstevní složce (pokud je přímo na ní) musí být uvedena jedna hromadinová ukl. jednotka"
 salience -200
 no-loop
 when
@@ -1227,7 +1227,7 @@ end
 
 // U složky man. seznamu lze vybrat skoro libovolny typ jendotlivosti
 // Nelze vybrat cast jednotlivosti
-rule "TA_004 Možné druhy archiválie na složce ve starší pomůcce, manipulačním seznamu a v základním popisu"
+rule "TA_004_01 Možné druhy archiválie na složce ve starší pomůcce, manipulačním seznamu a v základním popisu"
 no-loop
 when
     $activeLevel: ActiveLevel( )
@@ -1306,6 +1306,41 @@ when
         "ZP2015_UNIT_TYPE_PFP",
         // Jiné
         "ZP2015_UNIT_TYPE_JIN"
+         ) ) from $itemType.rulItemSpecList
+then
+    $itemSpec.setMinType(RulItemSpec.Type.POSSIBLE);
+end
+
+// Pouze v základním popisu lze u složky vybrat další jednotlivosti pro nezpracované archiválie
+// Nelze vybrat cast jednotlivosti
+rule "TA_004_02 Další možné druhy nezpracovaných archiválií na složce v základním popisu"
+no-loop
+when
+    $activeLevel: ActiveLevel( )
+    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_BAS") ) from $activeLevel.descItems
+    $itemType : RulItemTypeExt(code == "ZP2015_UNIT_TYPE")
+    $itemSpec : RulItemSpecExt(code in (
+        // Filmové pásy 
+        "ZP2015_UNIT_TYPE_FPA",
+        // Jiné nosiče analogových záznamů
+        "ZP2015_UNIT_TYPE_ANZ",
+        // Nosiče digitálních záznamů
+        "ZP2015_UNIT_TYPE_MHZ", 
+        // Fonografické válečky
+        "ZP2015_UNIT_TYP_FVA",
+        // Fonografické dráty
+        "ZP2015_UNIT_TYPE_FDR",
+        // Gramofonové desky
+        "ZP2015_UNIT_TYPE_GD",
+        // Matrice
+        "ZP2015_UNIT_TYPE_MAT",
+        // Magnetofonové pásky
+        "ZP2015_UNIT_TYPE_MG",
+        // Audiokazety
+        "ZP2015_UNIT_TYPE_AKA",
+        // Kompaktní disky 
+        "ZP2015_UNIT_TYPE_KDI"
          ) ) from $itemType.rulItemSpecList
 then
     $itemSpec.setMinType(RulItemSpec.Type.POSSIBLE);
@@ -1484,6 +1519,39 @@ when
         "ZP2015_UNIT_TYPE_STO",
         // Neevidovaná jednotlivost
         "ZP2015_UNIT_TYPE_OTHER"    
+         ) ) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+rule "Druh archiválie - další možné jen u jednotlivosti a nezpracovaných archiválií (základní popis)"
+no-loop
+when
+    $activeLevel: ActiveLevel( )
+    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM") ) from $activeLevel.descItems
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_BAS") ) from $activeLevel.descItems    
+    $itemType : RulItemTypeExt(code == "ZP2015_UNIT_TYPE")
+    $itemSpec : RulItemSpecExt(code in (
+        // Filmové pásy 
+        "ZP2015_UNIT_TYPE_FPA",
+        // Jiné nosiče analogových záznamů
+        "ZP2015_UNIT_TYPE_ANZ",
+        // Nosiče digitálních záznamů
+        "ZP2015_UNIT_TYPE_MHZ", 
+        // Fonografické válečky
+        "ZP2015_UNIT_TYP_FVA",
+        // Fonografické dráty
+        "ZP2015_UNIT_TYPE_FDR",
+        // Gramofonové desky
+        "ZP2015_UNIT_TYPE_GD",
+        // Matrice
+        "ZP2015_UNIT_TYPE_MAT",
+        // Magnetofonové pásky
+        "ZP2015_UNIT_TYPE_MG",
+        // Audiokazety
+        "ZP2015_UNIT_TYPE_AKA",
+        // Kompaktní disky 
+        "ZP2015_UNIT_TYPE_KDI"
          ) ) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
