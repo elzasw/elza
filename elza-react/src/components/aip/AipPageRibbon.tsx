@@ -1,4 +1,4 @@
-import {aipsFetchIfNeeded, AREA_AIP, AREA_SELECTED_AIPS} from "actions/aip/aip";
+import {aipFetchIfNeeded, aipsFetchIfNeeded, AREA_AIP, AREA_SELECTED_AIPS} from "actions/aip/aip";
 import { AipDetailVO, AipUpdateType } from "elza-api";
 import { Ribbon } from "components";
 import { Icon, RibbonGroup, i18n } from "components/shared";
@@ -20,7 +20,13 @@ const AipPageRibbon: FC = () => {
     const dispatch = useThunkDispatch();
     const intl = useIntl();
 
-    const reload = () => dispatch(aipsFetchIfNeeded(true));
+    /** Akce mění i AIP otevřený v detailu, panel se proto načte znovu spolu se seznamem. */
+    const reload = () => {
+        dispatch(aipsFetchIfNeeded(true));
+        if (aip?.id != null) {
+            dispatch(aipFetchIfNeeded(aip.id, true));
+        }
+    };
 
     /**
      * Akce se nabízejí nad označenými AIPy a zároveň nad AIPem otevřeným v detailu,
