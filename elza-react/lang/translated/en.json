@@ -901,6 +901,10 @@
     "defaultMessage": "Select a file of the package.",
     "srcHash": "L27vljAwkQNW"
   },
+  "aip.package.treeLabel": {
+    "defaultMessage": "Package content",
+    "srcHash": "TMjUM37-a7HO"
+  },
   "aip.problem.METADATA_ERROR": {
     "defaultMessage": "Metadata processing failed",
     "srcHash": "Q-Y6CQYBRvq4"

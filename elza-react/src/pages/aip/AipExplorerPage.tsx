@@ -1,9 +1,9 @@
 /**
  * Samostatná stránka průzkumníka AIPu.
  *
- * Záložka Balíček ukazuje stažený balíček tak, jak přišel z digitálního archivu, a je
- * dostupná i tehdy, když se zpracování metadat nezdařilo. Záložka Struktura ukazuje
- * digitální entity, které ze zpracování vznikly, takže má smysl až po něm.
+ * Výchozí je Struktura, tedy digitální entity, které vznikly zpracováním - to je běžný
+ * pohled na balíček. Záložka Balíček ukazuje stažený balíček tak, jak přišel z digitálního
+ * archivu; slouží k diagnostice, hlavně když se zpracování metadat nezdařilo.
  */
 import { FC, useEffect, useState } from 'react';
 import { Tab, Tabs } from 'react-bootstrap';
@@ -11,6 +11,7 @@ import { FormattedMessage } from 'react-intl';
 import { useHistory, useRouteMatch } from 'react-router';
 
 import AipExplorer from 'components/aip/explorer/AipExplorer';
+import AipPageRibbon from 'components/aip/AipPageRibbon';
 import { ExplorerMode } from 'components/aip/explorer/ExplorerContext';
 import PackageBrowser from 'components/aip/explorer/PackageBrowser';
 import { explorerPageMessages } from 'components/aip/messages';
@@ -33,7 +34,7 @@ const AipExplorerPage: FC = () => {
     const match = useRouteMatch<AipExplorerPageUrlParams>();
     const aipId = Number(match.params.id);
     const aip = useAppSelector((state: AppState) => storeFromArea(state, AREA_AIP));
-    const [tab, setTab] = useState<string>('package');
+    const [tab, setTab] = useState<string>('structure');
 
     useEffect(() => {
         dispatch(selectAip(aipId));
@@ -41,22 +42,25 @@ const AipExplorerPage: FC = () => {
     }, [aipId]);
 
     return (
-        <div className="aip-explorer-page">
+        <>
+            <AipPageRibbon />
+            <div className="aip-explorer-page">
             <div className="aip-explorer-page-header">
                 <Button variant="link" onClick={() => history.push(urlAip(aipId))}>
                     <FormattedMessage {...explorerPageMessages.back}/>
                 </Button>
                 <span className="aip-explorer-page-title">{aip?.data?.code}</span>
             </div>
-            <Tabs activeKey={tab} onSelect={key => setTab(key ?? 'package')} className="aip-explorer-page-tabs">
-                <Tab eventKey="package" title={<FormattedMessage {...explorerPageMessages.packageTab}/>}>
-                    <PackageBrowser aipId={aipId}/>
-                </Tab>
+            <Tabs activeKey={tab} onSelect={key => setTab(key ?? 'structure')} className="aip-explorer-page-tabs">
                 <Tab eventKey="structure" title={<FormattedMessage {...explorerPageMessages.structureTab}/>}>
                     <AipExplorer mode={ExplorerMode.VIEW}/>
                 </Tab>
+                <Tab eventKey="package" title={<FormattedMessage {...explorerPageMessages.packageTab}/>}>
+                    <PackageBrowser aipId={aipId}/>
+                </Tab>
             </Tabs>
-        </div>
+            </div>
+        </>
     );
 };
 

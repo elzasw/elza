@@ -33,8 +33,10 @@ describe('PackageBrowser', () => {
 
         renderWithProviders(<PackageBrowser aipId={11}/>);
 
-        expect(await screen.findByText('aip/METS.xml')).toBeInTheDocument();
-        expect(screen.getByText('aip/data/scan.jpg')).toBeInTheDocument();
+        // strom: složky a jména souborů, ne celé cesty
+        expect(await screen.findByText('METS.xml')).toBeInTheDocument();
+        expect(screen.getByText('data')).toBeInTheDocument();
+        expect(screen.getByText('scan.jpg')).toBeInTheDocument();
     });
 
     it('u nestaženého balíčku vysvětlí, proč není co ukázat', async () => {
@@ -49,7 +51,7 @@ describe('PackageBrowser', () => {
         listPackageEntries.mockResolvedValue({data: [{path: 'aip/METS.xml', size: 10}]});
 
         renderWithProviders(<PackageBrowser aipId={11}/>);
-        fireEvent.click(await screen.findByText('aip/METS.xml'));
+        fireEvent.click(await screen.findByText('METS.xml'));
 
         await waitFor(() => expect(screen.getByText('<mets/>')).toBeInTheDocument());
         expect(fetch).toHaveBeenCalledWith('/api/v1/aip/11/package/content?path=aip%2FMETS.xml');
@@ -59,7 +61,7 @@ describe('PackageBrowser', () => {
         listPackageEntries.mockResolvedValue({data: [{path: 'aip/data/scan.jpg', size: 10}]});
 
         renderWithProviders(<PackageBrowser aipId={11}/>);
-        fireEvent.click(await screen.findByText('aip/data/scan.jpg'));
+        fireEvent.click(await screen.findByText('scan.jpg'));
 
         expect(await screen.findByText('Soubor nelze zobrazit jako text, lze jej stáhnout.')).toBeInTheDocument();
         expect(fetch).not.toHaveBeenCalled();

@@ -79,6 +79,7 @@ const AipDetail: FC<Props> = ({open, onClose, onOpen}) => {
                             as="a"
                             className="open-btn"
                             onClick={handleOpenExplorer}
+                            disabled={!aip.data.metadataLoad}
                         >
                             <FolderOpen20Filled/>
                             <span>{i18n("aip.detail.explorer.open")}</span>
