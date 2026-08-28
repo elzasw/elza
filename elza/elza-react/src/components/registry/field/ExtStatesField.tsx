@@ -31,7 +31,7 @@ export const ExtStatesField: React.FC<IExtStatesFieldProps> = memo(({fields, met
                     }
                 }}
             />
-            {meta.error && <Form.Control.Feedback type="invalid">
+            {meta.error && <Form.Control.Feedback type="invalid" className="d-block">
                 {meta.error}
             </Form.Control.Feedback>}
             {fields.length > 0 && <div className="selected-data-container">

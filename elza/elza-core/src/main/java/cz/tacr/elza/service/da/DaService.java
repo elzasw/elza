@@ -156,6 +156,7 @@ import org.apache.commons.io.file.PathUtils;
 import java.util.zip.ZipFile;
 import org.springframework.core.io.InputStreamResource;
 import java.nio.file.StandardCopyOption;
+import cz.tacr.elza.api.DaOnReceivedAction;
 
 @Service
 public class DaService {
@@ -504,15 +505,30 @@ public class DaService {
     public int remapReferences(List<Integer> aipIds) {
         List<DaAip> aipList = aipRepository.findAllById(aipIds);
         List<DaAipState> stateList = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList);
-        int resolved = 0;
+        List<DaAipState> resolvedStates = new ArrayList<>();
         for (DaAipState aipState : stateList) {
             if (referenceResolver.resolveReferences(aipState)) {
-                resolved++;
+                resolvedStates.add(aipState);
             }
         }
         aipStateRepository.saveAll(stateList);
-        logger.info("Reference resolution requested for {} AIP(s), newly resolved: {}", stateList.size(), resolved);
-        return resolved;
+        logger.info("Reference resolution requested for {} AIP(s), newly resolved: {}",
+                stateList.size(), resolvedStates.size());
+
+        // A repository that downloads metadata automatically could not do so while the fund
+        // was unknown; once it is resolved the download is requested, as it would have been
+        // at import time.
+        List<Integer> autoDownloadAipIds = resolvedStates.stream()
+                .filter(s -> s.getFund() != null)
+                .filter(s -> s.getDaAip().getDigitalRepository().getOnReceived() == DaOnReceivedAction.DOWNLOAD_METADATA)
+                .map(s -> s.getDaAip().getAipId())
+                .toList();
+        if (!autoDownloadAipIds.isEmpty()) {
+            logger.info("Requesting metadata of {} newly paired AIP(s): {}",
+                    autoDownloadAipIds.size(), autoDownloadAipIds);
+            createDaoStructure(autoDownloadAipIds);
+        }
+        return resolvedStates.size();
     }
 
     @Transactional
