@@ -68,6 +68,9 @@ public interface NodeRepository extends ElzaJpaRepository<ArrNode, Integer>, Nod
 
     List<ArrNode> findAllByUuidIn(Collection<String> uuids);
 
+    @Query("SELECT n FROM arr_node n WHERE n.fund = :fund AND n.uuid IN :uuids")
+    List<ArrNode> findByFundAndUuidIn(@Param("fund") ArrFund fund, @Param("uuids") Collection<String> uuids);
+
     List<ArrNode> findAllByNodeIdIn(Collection<Integer> nodeIds);
 
     @Modifying

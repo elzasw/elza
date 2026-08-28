@@ -297,12 +297,12 @@ public class DaService {
     /**
      * Builds the DAO structure of the given AIPs from their cached metadata packages.
      *
-     * @return identifiers of the archived units ({@link AipIdentifiers}) per successfully
+     * @return UUIDs offered for node matching ({@link AipNodeUuids}) per successfully
      *         processed AIP; AIPs without fund, without cached metadata or failing to process
      *         are absent
      */
-    public Map<Integer, Set<String>> doCreateDaoStructure(List<Integer> aipIds, boolean forceUpdate) {
-        Map<Integer, Set<String>> identifiersByAip = new LinkedHashMap<>();
+    public Map<Integer, List<String>> doCreateDaoStructure(List<Integer> aipIds, boolean forceUpdate) {
+        Map<Integer, List<String>> uuidsByAip = new LinkedHashMap<>();
         for (Integer aipId : aipIds) {
             DaAip aip = findAipById(aipId);
             DaAipState aipState = aipStateRepository.findByDaAipAndDeleteChangeIsNull(aip);
@@ -349,9 +349,9 @@ public class DaService {
                     premisComplexType = PremisReaderWriter.unmarshal(premis);
                 }
 
-                Set<String> aipIdentifiers = applicationContext.getBean(DaService.class)
+                List<String> nodeUuids = applicationContext.getBean(DaService.class)
                         .createDaoStructure(aip, metsType, premisComplexType, tempDir, forceUpdate);
-                identifiersByAip.put(aipId, aipIdentifiers);
+                uuidsByAip.put(aipId, nodeUuids);
 
                 if (localCache.getFilePathMetadata() != null && !localCache.getFilePath().equals(localCache.getFilePathMetadata())) {
                     Path oldFile = Paths.get(localCache.getFilePathMetadata());
@@ -377,7 +377,7 @@ public class DaService {
                 deleteTempDirectory(tempDir);
             }
         }
-        return identifiersByAip;
+        return uuidsByAip;
     }
 
     public Ead loadEadFile(Path tempDir, String filePath) throws IOException, JAXBException {
@@ -396,14 +396,13 @@ public class DaService {
     }
 
     /**
-     * @return identifiers of the archived units read from the EAD of the package, see
-     *         {@link DaoProcessor#getAipIdentifiers()}
+     * @return UUIDs the AIP offers for node matching, see {@link DaoProcessor#getNodeUuids()}
      */
     @Transactional
-    public Set<String> createDaoStructure(DaAip aip, MetsType metsType, PremisComplexType premisComplexType, Path tempDir, boolean forceUpdate) {
+    public List<String> createDaoStructure(DaAip aip, MetsType metsType, PremisComplexType premisComplexType, Path tempDir, boolean forceUpdate) {
         DaoProcessor daoProcessor = applicationContext.getBean(DaoProcessor.class, aip, metsType, premisComplexType, tempDir, forceUpdate);
         daoProcessor.process();
-        return daoProcessor.getAipIdentifiers();
+        return daoProcessor.getNodeUuids();
     }
 
     @Transactional
