@@ -3,11 +3,15 @@
 
 .aip-table {
     margin: 0;
-    overflow: auto;
 
+    /* The table keeps the configured column widths, so it may be wider than the page;
+       it scrolls inside this container and the filter and pagination stay put. */
+    .aip-table-scroll {
+        width: 100%;
+        overflow-x: auto;
+    }
 
     .aip-table-body {
-        overflow-x: auto;
 
         .header {
            background-color: #b3b3b3ff;
@@ -16,6 +20,13 @@
 
         .table-row:nth-child(even){
            background-color: $shade-1;
+        }
+
+        .aip-problem {
+            color: $color-warn;
+            display: inline-flex;
+            align-items: baseline;
+            gap: 4px;
         }
 
         .link-like {

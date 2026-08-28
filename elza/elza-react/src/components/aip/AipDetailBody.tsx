@@ -2,6 +2,7 @@ import DetailRow from "./DetailRow";
 import {formatAipSize} from "./format";
 import {formatDateCz} from "utils/date";
 import {getBoolIcon, getConnectedToJP} from "./AipCells";
+import { Icon } from "components/shared";
 import {Api, serverContextPath} from "../../api";
 import {useThunkDispatch} from "../../utils/hooks";
 import {aipFetchIfNeeded} from "../../actions/aip/aip.ts";
@@ -32,6 +33,16 @@ const AipDetailBody = ({detail}: AipDetailBodyProps) => {
                 <DetailRow label={i18n("aip.detail.code")} value={detail.code.toString()}/>}
             {detail.aipVersion &&
                 <DetailRow label={i18n("aip.detail.version")} value={detail.aipVersion}/>}
+            {detail.problemType &&
+                <DetailRow label={intl.formatMessage(detailMessages.problem)} value={
+                    <span className="aip-problem">
+                        <Icon glyph="fa-exclamation-triangle"/>
+                        <FormattedMessage {...problemMessages[detail.problemType]}/>
+                    </span>
+                }/>}
+            {detail.problemDescription &&
+                <DetailRow label={intl.formatMessage(detailMessages.problemDescription)}
+                           value={detail.problemDescription}/>}
             {detail.fund &&
                 <DetailRow label={i18n("aip.detail.fund")} value={
                     <a href={`${serverContextPath}/fund/${detail.fund.id}`}>{detail.fund.name}</a>
@@ -69,13 +80,6 @@ const AipDetailBody = ({detail}: AipDetailBodyProps) => {
             {detail != null &&
                 <DetailRow label={i18n("aip.detail.metadataLoad")} value={getBoolIcon(detail.metadataLoad)}/>}
             <DetailRow label={i18n("aip.detail.completeAipLoad")} value={getBoolIcon(detail.completeAipLoad)}/>
-            {detail.problemType &&
-                <DetailRow label={intl.formatMessage(detailMessages.problem)} value={
-                    <FormattedMessage {...problemMessages[detail.problemType]}/>
-                }/>}
-            {detail.problemDescription &&
-                <DetailRow label={intl.formatMessage(detailMessages.problemDescription)}
-                           value={detail.problemDescription}/>}
             {detail.aipVersionMetadata &&
                 <DetailRow label={i18n("aip.detail.aipVersionMetadata")} value={detail.aipVersionMetadata}/>}
             {detail.importState &&

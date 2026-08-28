@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeAll } from 'vitest';
-import { AipProblemType } from 'elza-api';
+import { AipProblemType, QueueItemState } from 'elza-api';
 
 import { renderWithProviders, screen, createTestStore } from 'test/test-utils';
 import AipTable from './AipTable';
@@ -101,6 +101,15 @@ describe('AipTable', () => {
         );
         // nedohledaný fond se vypíše pomlčkou, seznam se nesmí zhroutit
         expect(screen.getAllByText('-')).toHaveLength(1);
+    });
+
+    it('stav importu se vypíše přeloženě, ne jako hodnota enumu', () => {
+        renderWithProviders(
+            <AipTable filterDisabled hiddenValues={onlyColumns('code', 'importState')} />,
+            { preloadedState: storeWithRows([aip({ importState: QueueItemState.ImportOk })]) },
+        );
+
+        expect(screen.getByText('Aktualizováno/Staženo')).toBeInTheDocument();
     });
 
     it('nedohledaná instituce sama o sobě AIP neblokuje', () => {

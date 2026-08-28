@@ -33,8 +33,9 @@ import {
     useTableSort,
     createTableColumn,
 } from '@fluentui/react-components';
+import { Icon } from 'components/shared';
 import { getBoolIcon } from './AipCells';
-import { problemMessages } from './messages';
+import { problemMessages, queueStateMessages } from './messages';
 import { colDef } from './columns';
 import { Row } from 'react-bootstrap';
 import AipFilterSection from './filter/AipFilterSection.tsx';
@@ -114,9 +115,14 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
             case "unitdateFrom":  return item.unitdateFrom ? formatUnitDate(item.unitdateFrom, item.unitdateTo): "-";
             case "fund.name": return item.fund?.name ?? "-";
             case "institution.name": return item.institution?.name ?? "-";
+            case "importState": return item.importState
+                ? formatMessage(queueStateMessages[item.importState]) : "-";
+            case "exportState": return item.exportState
+                ? formatMessage(queueStateMessages[item.exportState]) : "-";
             case "problemType": return item.problemType
                 ? (
                     <span className="aip-problem" title={item.problemDescription ?? undefined}>
+                        <Icon glyph="fa-exclamation-triangle"/>
                         {formatMessage(problemMessages[item.problemType])}
                     </span>
                 )
@@ -185,7 +191,7 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
     } = useTableFeatures(
         { columns, items },
         [
-            useTableColumnSizing_unstable({ columnSizingOptions }),
+            useTableColumnSizing_unstable({ columnSizingOptions, autoFitColumns: false }),
             useTableSort({defaultSortState: { sortColumn: "id", sortDirection: "ascending"}}),
             useTableSelection({
                 selectionMode: "multiselect",
@@ -219,6 +225,10 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
 
     const headerSortProps = (columnId: TableColumnId) => ({
         onClick: (e: MouseEvent) => {
+            // a click that ends a column resize must not also sort the column
+            if ((e.target as HTMLElement).closest(".fui-TableResizeHandle")) {
+                return;
+            }
             toggleColumnSort(e, columnId);
             const field = colDef.find(def => def.key === columnId)?.field;
             if (field) {
@@ -261,6 +271,7 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
                         initialFilters={initialFilters}
                         hiddenValues={hiddenValues}
                     />
+                    <div className="aip-table-scroll">
                     <Table
                         ref={tableRef}
                         as="table"
@@ -321,6 +332,7 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
                             )}
                         </TableBody>
                     </Table>
+                    </div>
                     <Pagination
                         onPageChange={handleChangePage}
                         from={from}
