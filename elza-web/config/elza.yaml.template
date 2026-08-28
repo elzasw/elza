@@ -15,6 +15,13 @@ elza:
         type: WMS
         initial: false
         layer: GR_ORTFOTORGB
+  # Automatické připojení přijatých AIP z digitálního archivu (volba úložiště
+  # "Po přijetí AIP: Stáhnout metadata"): prvek popisu, ve kterém JP nese identifikátor
+  # jednotky ve zdrojovém systému. Výchozí hodnoty odpovídají pravidlům ZP2015.
+  #da:
+  #  auto-link:
+  #    item-type: ZP2015_OTHER_ID
+  #    item-spec: ZP2015_OTHERID_SOURCEID
   security:
   #  sso-header:
   #    user-header: X-SSO-User

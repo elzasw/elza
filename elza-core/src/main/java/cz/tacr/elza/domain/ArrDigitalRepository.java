@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain;
 
+import cz.tacr.elza.api.DaDownloadMethod;
+import cz.tacr.elza.api.DaOnReceivedAction;
 import cz.tacr.elza.api.DigitalRepositoryType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -38,6 +40,20 @@ public class ArrDigitalRepository extends SysExternalSystem {
     @Column(nullable = false)
     private Boolean multipleLinks = Boolean.FALSE;
 
+    /**
+     * How AIP packages are downloaded from a DA repository.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(length = StringLength.LENGTH_ENUM, nullable = false)
+    private DaDownloadMethod downloadMethod = DaDownloadMethod.STANDARD;
+
+    /**
+     * Automatic action when a DA repository reports a newly received AIP.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(length = StringLength.LENGTH_ENUM, nullable = false)
+    private DaOnReceivedAction onReceived = DaOnReceivedAction.NONE;
+
     public ArrDigitalRepository() {
     }
 
@@ -49,6 +65,8 @@ public class ArrDigitalRepository extends SysExternalSystem {
 		this.sendNotification = ardr.getSendNotification();
 		this.digitalRepositoryType = ardr.getDigitalRepositoryType();
 		this.multipleLinks = ardr.getMultipleLinks();
+		this.downloadMethod = ardr.getDownloadMethod();
+		this.onReceived = ardr.getOnReceived();
     }
 
 	/**
@@ -122,6 +140,22 @@ public class ArrDigitalRepository extends SysExternalSystem {
 	public void setMultipleLinks(Boolean multipleLinks) {
 		this.multipleLinks = multipleLinks;
 	}
+
+    public DaDownloadMethod getDownloadMethod() {
+        return downloadMethod;
+    }
+
+    public void setDownloadMethod(DaDownloadMethod downloadMethod) {
+        this.downloadMethod = downloadMethod;
+    }
+
+    public DaOnReceivedAction getOnReceived() {
+        return onReceived;
+    }
+
+    public void setOnReceived(DaOnReceivedAction onReceived) {
+        this.onReceived = onReceived;
+    }
 
     @Override
     public String toString() {

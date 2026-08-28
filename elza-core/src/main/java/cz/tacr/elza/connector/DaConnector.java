@@ -22,6 +22,9 @@ import org.springframework.stereotype.Service;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import cz.tacr.elza.api.DaDownloadMethod;
+import cz.tacr.elza.controller.vo.DigitalRepositoryTestResult;
+import org.apache.commons.lang3.StringUtils;
 
 @Service
 public class DaConnector {
@@ -85,6 +88,63 @@ public class DaConnector {
 
     public Transfer ingestFileTransfer(ArrDigitalRepository digitalRepository, DaUploadRequestImpl daUploadRequest) {
         return getFileTransferClient(digitalRepository).upload(daUploadRequest);
+    }
+
+    /**
+     * Tests the configuration of a DA repository by calling the {@code /updates} operation of
+     * the DA API with a fresh client built from the given (possibly not yet cached) settings.
+     * The File Transfer endpoint has no probe operation and is not covered.
+     */
+    public DigitalRepositoryTestResult testRepository(ArrDigitalRepository digitalRepository) {
+        DigitalRepositoryTestResult result = new DigitalRepositoryTestResult();
+        result.setTemplated(false);
+        result.setAvailable(false);
+
+        if (digitalRepository.getDigitalRepositoryType() != DigitalRepositoryType.DA) {
+            result.setMessage("Repository type " + digitalRepository.getDigitalRepositoryType()
+                    + " is not a digital archive");
+            return result;
+        }
+        if (StringUtils.isBlank(digitalRepository.getUrl())) {
+            result.setMessage("Repository URL is not configured");
+            return result;
+        }
+
+        DaInstance daInstance;
+        try {
+            daInstance = new DaInstance(digitalRepository.getUrl(),
+                    digitalRepository.getApiKeyId(),
+                    digitalRepository.getApiKeyValue(),
+                    digitalRepository.getUsername(),
+                    digitalRepository.getPassword());
+        } catch (RuntimeException e) {
+            result.setMessage("Invalid configuration: " + e.getMessage());
+            return result;
+        }
+        result.setPath(daInstance.getApiUrl());
+        try {
+            UpdatedAips updates = daInstance.getDefaultApi().updates(1, null);
+            result.setAvailable(true);
+            StringBuilder message = new StringBuilder("DA API responds");
+            if (updates != null && updates.getAipIds() != null && !updates.getAipIds().isEmpty()) {
+                message.append("; first available AIP: ").append(updates.getAipIds().get(0).getAipId());
+            } else {
+                message.append("; no AIP available");
+            }
+            if (digitalRepository.getDownloadMethod() == DaDownloadMethod.FILE_TRANSFER) {
+                message.append(". File Transfer endpoint ").append(daInstance.getFileTransferUrl())
+                        .append(" is not covered by this test");
+            }
+            result.setMessage(message.toString());
+        } catch (ApiException e) {
+            result.setMessage("DA API call failed: HTTP " + e.getCode()
+                    + (StringUtils.isBlank(e.getMessage()) ? "" : " - " + e.getMessage()));
+        } catch (RuntimeException e) {
+            result.setMessage("DA API call failed: " + e.getMessage());
+        } finally {
+            daInstance.stopFileTransferClient();
+        }
+        return result;
     }
 
     public void invalidate(ArrDigitalRepository digitalRepository) {

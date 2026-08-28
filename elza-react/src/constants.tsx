@@ -33,6 +33,18 @@ export enum DigitalRepositoryType {
     Da = "DA",
 }
 
+/** How AIP packages are downloaded from a DA repository. */
+export enum DaDownloadMethod {
+    Standard = "STANDARD",
+    FileTransfer = "FILE_TRANSFER",
+}
+
+/** Automatic action when a DA repository reports a newly received AIP. */
+export enum DaOnReceivedAction {
+    None = "NONE",
+    DownloadMetadata = "DOWNLOAD_METADATA",
+}
+
 export enum MODAL_DIALOG_VARIANT {
     LARGE = 'dialog-lg',
     FULLSCREEN = 'dialog-fullscreen',

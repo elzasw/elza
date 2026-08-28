@@ -78,6 +78,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import java.time.format.DateTimeFormatter;
+import java.util.LinkedHashSet;
 
 @Component
 @Scope("prototype")
@@ -143,6 +144,9 @@ public class DaoProcessor {
 
     private final Map<Integer, List<DaDaoFileFolder>> newDaDaoFileFolderMap = new HashMap<>();
 
+    /** Identifiers of the archived units read from the EAD, see {@link AipIdentifiers}. */
+    private final Set<String> aipIdentifiers = new LinkedHashSet<>();
+
     private boolean forceUpdate;
 
     public DaoProcessor(DaAip aip, MetsType metsType, PremisComplexType premisComplexType, Path tempDir, boolean forceUpdate) {
@@ -191,6 +195,7 @@ public class DaoProcessor {
         if (ead != null) {
             //ead
             createDaoItemsFromArchDesc(ead.getArchdesc(), change);
+            aipIdentifiers.addAll(AipIdentifiers.fromEad(ead));
         }
 
         deleteOldComponents(change);
@@ -686,6 +691,14 @@ public class DaoProcessor {
                 }
             }
         }
+    }
+
+    /**
+     * @return identifiers of the archived units read from the EAD of the package; empty when
+     *         the package carries no EAD or {@link #process()} has not run yet
+     */
+    public Set<String> getAipIdentifiers() {
+        return aipIdentifiers;
     }
 
     public String getGroovyFilePath() {

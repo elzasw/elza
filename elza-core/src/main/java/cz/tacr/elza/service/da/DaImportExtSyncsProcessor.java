@@ -2,6 +2,7 @@ package cz.tacr.elza.service.da;
 
 import cz.tacr.da.ApiException;
 import cz.tacr.elza.api.AipType;
+import cz.tacr.elza.api.DaDownloadMethod;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.DaSyncQueueItem;
 import cz.tacr.elza.service.ExternalSystemService;
@@ -11,12 +12,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
 import static cz.tacr.elza.connector.DaConnector.FILE_TRANSFER_ERROR_CODE;
+import cz.tacr.elza.api.DaOnReceivedAction;
+import java.util.Map;
+import java.util.Set;
 
 @Component
 public class DaImportExtSyncsProcessor implements Runnable {
@@ -27,6 +32,8 @@ public class DaImportExtSyncsProcessor implements Runnable {
     private DaService daService;
     @Autowired
     private ExternalSystemService externalSystemService;
+    @Autowired
+    private DaAipAutoLinkService aipAutoLinkService;
 
     private volatile Thread asyncThread = null;
 
@@ -56,6 +63,52 @@ public class DaImportExtSyncsProcessor implements Runnable {
         }
     }
 
+    /**
+     * Downloads the prepared batch using the method configured on the repository.
+     * The standard HTTP download is refused by the DA with 413 when the batch is too
+     * large; in that case the administrator has to switch the repository to File Transfer.
+     */
+    private Path downloadBatch(ArrDigitalRepository digitalRepository, String batchId) throws ApiException, IOException {
+        DaDownloadMethod method = digitalRepository.getDownloadMethod() == null
+                ? DaDownloadMethod.STANDARD : digitalRepository.getDownloadMethod();
+        if (method == DaDownloadMethod.FILE_TRANSFER) {
+            return daService.downloadFileTransfer(digitalRepository, batchId);
+        }
+        try {
+            return daService.downloadDownload(digitalRepository, batchId);
+        } catch (ApiException e) {
+            if (e.getCode() == FILE_TRANSFER_ERROR_CODE) {
+                throw new IllegalStateException("Repository " + digitalRepository.getCode()
+                        + " refused the standard download of batch " + batchId
+                        + " (HTTP 413); switch the repository download method to File Transfer.", e);
+            }
+            throw e;
+        }
+    }
+
+    /**
+     * Requests the metadata package of the AIPs that have just been received (queue items in
+     * state IMPORT_NEW) - the repository is configured to download metadata automatically. The
+     * metadata import later attaches the AIP to its node.
+     */
+    private void requestMetadataOfReceivedAips(List<Integer> receivedAipIds) {
+        if (!receivedAipIds.isEmpty()) {
+            logger.info("Requesting metadata of {} received AIP(s): {}", receivedAipIds.size(), receivedAipIds);
+            daService.createDaoStructure(receivedAipIds);
+        }
+    }
+
+    /**
+     * @return ids of the AIPs the batch has just received (queue items in state IMPORT_NEW
+     *         whose PACKAGE-INFO created the AIP)
+     */
+    private static List<Integer> receivedAipIds(List<DaSyncQueueItem> syncQueueItemList) {
+        return syncQueueItemList.stream()
+                .filter(q -> q.getState() == DaSyncQueueItem.QueueItemState.IMPORT_NEW && q.getAip() != null)
+                .map(q -> q.getAip().getAipId())
+                .toList();
+    }
+
     @Override
     public void run() {
         synchronized (lock) {
@@ -83,16 +136,7 @@ public class DaImportExtSyncsProcessor implements Runnable {
                                 }
                             }
 
-                            Path zipFile;
-                            try {
-                                zipFile = daService.downloadDownload(digitalRepository, batchId);
-                            } catch (ApiException e) {
-                                if (e.getCode() == FILE_TRANSFER_ERROR_CODE) {
-                                    zipFile = daService.downloadFileTransfer(digitalRepository, batchId);
-                                } else {
-                                    throw e;
-                                }
-                            }
+                            Path zipFile = downloadBatch(digitalRepository, batchId);
 
                             try (InputStream inputStream  = Files.newInputStream(zipFile)) {
                                 daService.processPackageInfo(digitalRepository, inputStream, aipType, syncQueueItemList);
@@ -101,12 +145,23 @@ public class DaImportExtSyncsProcessor implements Runnable {
 
                             daService.updateAipToQueueItems(syncQueueItemList);
 
+                            boolean autoProcess = digitalRepository.getOnReceived() == DaOnReceivedAction.DOWNLOAD_METADATA;
+                            List<Integer> receivedAipIds = autoProcess && aipType == AipType.PACKAGE_INFO
+                                    ? receivedAipIds(syncQueueItemList) : List.of();
                             if (aipType == AipType.METADATA_BASE || aipType == AipType.AIP_BASE) {
                                 List<Integer> aipids = syncQueueItemList.stream().map(q -> q.getAip().getAipId()).toList();
-                                daService.doCreateDaoStructure(aipids, false);
+                                Map<Integer, Set<String>> identifiersByAip = daService.doCreateDaoStructure(aipids, false);
+                                if (autoProcess) {
+                                    aipAutoLinkService.linkReceivedAips(identifiersByAip);
+                                }
                             }
 
                             daService.changeQueueItemsState(syncQueueItemList, DaSyncQueueItem.QueueItemState.IMPORT_OK);
+
+                            // Enqueued only after the batch is saved as IMPORT_OK: the new queue
+                            // item deactivates the AIP's previous items and a later save of the
+                            // batch entities must not restore their active flag.
+                            requestMetadataOfReceivedAips(receivedAipIds);
 
                             // pokud je vše v pořádku - maximální velikost dávky pro čtení
                             importListSize = DEFAULT_IMPORT_LIST_SIZE;
