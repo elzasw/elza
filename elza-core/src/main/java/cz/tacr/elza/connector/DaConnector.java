@@ -25,6 +25,11 @@ import java.util.Map;
 import cz.tacr.elza.api.DaDownloadMethod;
 import cz.tacr.elza.controller.vo.DigitalRepositoryTestResult;
 import org.apache.commons.lang3.StringUtils;
+import cz.tacr.elza.common.io.SpooledContent;
+import java.io.IOException;
+import java.io.InputStream;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 @Service
 public class DaConnector {
@@ -59,8 +64,31 @@ public class DaConnector {
         }
     }
 
-    public byte[] downloadDownload(ArrDigitalRepository digitalRepository, String batchId) throws ApiException {
-        return getDefaultApi(digitalRepository).downloadDownload(batchId);
+    /**
+     * Downloads the prepared batch over the DA API. The response body is streamed into
+     * {@link SpooledContent}, so a large package never has to fit into the heap; the caller
+     * closes the returned content.
+     *
+     * @throws ApiException with the HTTP status code when the DA refuses the download
+     *                      (413 = too large, use File Transfer)
+     */
+    public SpooledContent downloadDownload(ArrDigitalRepository digitalRepository, String batchId) throws ApiException {
+        okhttp3.Call call = getDefaultApi(digitalRepository).downloadDownloadCall(batchId, null);
+        try (Response response = call.execute()) {
+            ResponseBody body = response.body();
+            if (!response.isSuccessful()) {
+                String errorBody = body == null ? null : body.string();
+                throw new ApiException(response.message(), response.code(), response.headers().toMultimap(), errorBody);
+            }
+            if (body == null) {
+                throw new ApiException("Empty response body when downloading batch " + batchId);
+            }
+            try (InputStream in = body.byteStream()) {
+                return SpooledContent.readFrom(in);
+            }
+        } catch (IOException e) {
+            throw new ApiException(e);
+        }
     }
 
     public void downloadFileTransfer(ArrDigitalRepository digitalRepository, String batchId, Path downloadDir) {

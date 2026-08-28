@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.io.IOException;
 
 @Service
 public class PackageInfoService {
@@ -66,10 +67,12 @@ public class PackageInfoService {
     private FundRepository fundRepository;
 
     @Transactional
-    public DaAipState processPackageInfo(ArrDigitalRepository digitalRepository, File file) throws FileNotFoundException, JAXBException {
-        FileInputStream is = new FileInputStream(file);
+    public DaAipState processPackageInfo(ArrDigitalRepository digitalRepository, File file) throws IOException, JAXBException {
+        PremisComplexType premisComplexType;
+        try (FileInputStream is = new FileInputStream(file)) {
+            premisComplexType = PremisReaderWriter.unmarshal(is);
+        }
         DaAipState aipState = new DaAipState();
-        PremisComplexType premisComplexType = PremisReaderWriter.unmarshal(is);
 
         List<Agent> agentList = readAgents(premisComplexType.getAgent());
         Map<String, Agent> agentMap = agentList.stream().collect(Collectors.toMap(Agent::getLocalIdentifier, Function.identity()));
@@ -146,9 +149,11 @@ public class PackageInfoService {
         return aipStateRepository.save(aipState);
     }
 
-    public String getFundCodeFromPackageInfoFile(File file) throws FileNotFoundException, JAXBException {
-        FileInputStream is = new FileInputStream(file);
-        PremisComplexType premisComplexType = PremisReaderWriter.unmarshal(is);
+    public String getFundCodeFromPackageInfoFile(File file) throws IOException, JAXBException {
+        PremisComplexType premisComplexType;
+        try (FileInputStream is = new FileInputStream(file)) {
+            premisComplexType = PremisReaderWriter.unmarshal(is);
+        }
         List<PackageObject> objectList = readObjects(premisComplexType.getObject());
         for (PackageObject packageObject : objectList) {
             if (packageObject instanceof IntellectualObject intellectualObject && intellectualObject.getFondsId() != null) {
