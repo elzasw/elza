@@ -670,8 +670,8 @@
     "srcHash": "63nbyiXmnORE"
   },
   "aip.col.aipId": {
-    "defaultMessage": "AIP ID",
-    "srcHash": "nylyci_kv7Mm"
+    "defaultMessage": "ID",
+    "srcHash": "OEOXHc_e5Qg-"
   },
   "aip.col.aipSize": {
     "defaultMessage": "Size",
@@ -682,8 +682,8 @@
     "srcHash": "LFW3qt24AmIp"
   },
   "aip.col.code": {
-    "defaultMessage": "AIP code",
-    "srcHash": "UxTrypWFOcAG"
+    "defaultMessage": "AIP ID",
+    "srcHash": "GUUWy3qnM3wH"
   },
   "aip.col.completeAipLoad": {
     "defaultMessage": "Complete AIP loaded",

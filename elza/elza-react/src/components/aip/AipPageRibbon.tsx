@@ -105,9 +105,9 @@ const AipPageRibbon: FC = () => {
     const openedAip: AipDetailVO | undefined = aip?.data;
 
     const altActions = selectedRows.length > 0 ? actionsFor(selectedRows, "sel") : [];
-    // Akce nad otevřeným AIPem se nabízejí jen když není součástí výběru, jinak by
-    // v pásu karet byla stejná sada dvakrát.
-    const itemActions = openedAip != null && !selectedRows.some(row => row.aipId === openedAip.aipId)
+    // Zaškrtnutý výběr má přednost; akce nad otevřeným AIPem se nabízejí, jen když není
+    // zaškrtnuto nic, jinak by v pásu karet byla stejná sada dvakrát.
+    const itemActions = selectedRows.length === 0 && openedAip != null
         ? actionsFor([openedAip], "item")
         : [];
 
