@@ -93,9 +93,7 @@ export function DescItemDate({
         }}
       />
       <ConflictValue
-        value={value?.toString()}
         conflictValue={conflictValue?.toString()}
-        isDirty={isDirty}
         isValid={true}
         onResolve={resolveConflict}
       >

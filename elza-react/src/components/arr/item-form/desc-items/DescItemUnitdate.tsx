@@ -119,9 +119,7 @@ export function DescItemUnitdate({
       />
       <div className={styles.validationMessage}>{validationMessage}</div>
       <ConflictValue
-        value={value?.toString()}
         conflictValue={conflictValue?.toString()}
-        isDirty={isDirty}
         isValid={isValid}
         onResolve={resolveConflict}
       >
