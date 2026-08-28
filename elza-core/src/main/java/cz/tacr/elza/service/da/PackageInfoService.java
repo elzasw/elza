@@ -46,6 +46,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.io.IOException;
+import cz.tacr.elza.service.da.DaAipReferenceResolver;
 
 @Service
 public class PackageInfoService {
@@ -65,6 +66,8 @@ public class PackageInfoService {
     private AipStateRepository aipStateRepository;
     @Autowired
     private FundRepository fundRepository;
+    @Autowired
+    private DaAipReferenceResolver referenceResolver;
 
     @Transactional
     public DaAipState processPackageInfo(ArrDigitalRepository digitalRepository, File file) throws IOException, JAXBException {
@@ -114,14 +117,8 @@ public class PackageInfoService {
             oldAipState = aipStateRepository.findByDaAipAndDeleteChangeIsNull(daAip);
             daChange.setType(DaChangeType.AIP_UPDATE);
         }
-        ParInstitution parInstitution = institutionRepository.findByInternalCode(institutionCode);
         aipState.setInstitutionCode(institutionCode);
-        aipState.setInstitution(parInstitution);
-        if (fundCode != null) {
-            aipState.setFundCode(fundCode);
-            ArrFund arrFund = fundRepository.findByInternalCode(fundCode);
-            aipState.setFund(arrFund);
-        }
+        aipState.setFundCode(fundCode);
 
         aipState.setDaAip(daAip);
         daChange.setDaAip(daAip);
@@ -136,6 +133,10 @@ public class PackageInfoService {
             oldAipState.setDeleteChange(daChange);
             aipStateRepository.save(oldAipState);
         }
+
+        // The references are codes of the originating system; what cannot be resolved is
+        // recorded as a problem of the AIP so the user can find and fix it.
+        referenceResolver.resolveReferences(aipState);
 
         for (Event event : eventList) {
             if (event.getOriginator() != null) {

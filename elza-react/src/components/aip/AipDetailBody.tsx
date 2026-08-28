@@ -7,6 +7,8 @@ import {useThunkDispatch} from "../../utils/hooks";
 import {aipFetchIfNeeded} from "../../actions/aip/aip.ts";
 import i18n from 'components/i18n';
 import {AipDetailVO} from "elza-api";
+import { FormattedMessage, useIntl } from "react-intl";
+import { detailMessages, problemMessages } from "./messages";
 
 type AipDetailBodyProps = {
     detail: AipDetailVO;
@@ -14,14 +16,13 @@ type AipDetailBodyProps = {
 
 const AipDetailBody = ({detail}: AipDetailBodyProps) => {
     const dispatch = useThunkDispatch();
+    const intl = useIntl();
 
     const handleDeleteLink = (linkId: number) => {
         Api.aips.aipDeleteDaoLink(linkId).then(() => {
             dispatch(aipFetchIfNeeded(detail.aipId, true))
         });
     }
-
-    console.log('detail :>> ', detail);
 
     return (
         <>
@@ -68,10 +69,13 @@ const AipDetailBody = ({detail}: AipDetailBodyProps) => {
             {detail != null &&
                 <DetailRow label={i18n("aip.detail.metadataLoad")} value={getBoolIcon(detail.metadataLoad)}/>}
             <DetailRow label={i18n("aip.detail.completeAipLoad")} value={getBoolIcon(detail.completeAipLoad)}/>
-            {detail.metadataError &&
-                <DetailRow label={i18n("aip.detail.metadataError")} value={getBoolIcon(detail.metadataError)}/>}
-            {detail.metadataErrorException &&
-                <DetailRow label={i18n("aip.detail.metadataError")} value={detail.metadataErrorException}/>}
+            {detail.problemType &&
+                <DetailRow label={intl.formatMessage(detailMessages.problem)} value={
+                    <FormattedMessage {...problemMessages[detail.problemType]}/>
+                }/>}
+            {detail.problemDescription &&
+                <DetailRow label={intl.formatMessage(detailMessages.problemDescription)}
+                           value={detail.problemDescription}/>}
             {detail.aipVersionMetadata &&
                 <DetailRow label={i18n("aip.detail.aipVersionMetadata")} value={detail.aipVersionMetadata}/>}
             {detail.importState &&

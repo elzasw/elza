@@ -5563,7 +5563,7 @@ components:
         - aipSize
         - metadataLoad
         - completeAipLoad
-        - metadataError
+        - problemType
         - importState
         - exportState
       description: |-
@@ -6496,12 +6496,13 @@ components:
         completeAipLoad:
           type: boolean
           description: Příznak načteného kompletního AIPu
-        metadataError:
-          type: boolean
-          description: Příznak chyby při načítání metadat
-        metadataErrorException:
+        problemType:
+          allOf:
+            - $ref: '#/components/schemas/AipProblemType'
+          description: Zjištěný problém AIPu, pokud nějaký je
+        problemDescription:
           type: string
-          description: Chyby při načítání metadat
+          description: Popis všech zjištěných problémů AIPu
         aipVersionMetadata:
           type: string
           description: Verze AIPu s načtenými metadaty
@@ -6519,6 +6520,13 @@ components:
             $ref: '#/components/schemas/LinkedNodeVO'
           description: Seznam napojených nodes
       description: Vo pro detail AIPu
+    AipProblemType:
+      type: string
+      enum:
+        - METADATA_ERROR
+        - UNKNOWN_FUND
+        - UNKNOWN_INSTITUTION
+      description: Problém, který brání zpracování AIPu nebo jeho navázání na archivní popis
     AipType:
       type: string
       enum:
@@ -6534,6 +6542,7 @@ components:
         - DB_UPDATE
         - DOWNLOAD_UPDATE
         - FORCE_UPDATE
+        - REMAP_REFERENCES
       description: AIP update type
     ApAccessPointSearchResult:
       type: object

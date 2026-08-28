@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeAll } from 'vitest';
+import { AipProblemType } from 'elza-api';
 
 import { renderWithProviders, screen, createTestStore } from 'test/test-utils';
 import AipTable from './AipTable';
@@ -7,7 +8,7 @@ import { colDef } from './columns';
 /**
  * Seznam AIP: fond i instituce jsou v AIP jen odkazy, které se v ELZA nemusí podařit
  * dohledat — balíček z digitálního archivu nese kód, který v ELZA nemusí existovat.
- * Takový AIP se musí vypsat, ne shodit seznam.
+ * Takový AIP se musí vypsat i s popisem problému, ne shodit seznam.
  */
 
 vi.mock('./AipDetail.tsx', () => ({ default: () => <div data-testid="aip-detail" /> }));
@@ -57,6 +58,12 @@ const aip = (overrides: Record<string, unknown> = {}) => ({
     ...overrides,
 });
 
+const render = (rows: unknown[]) =>
+    renderWithProviders(
+        <AipTable filterDisabled hiddenValues={onlyColumns('code', 'fund.name', 'problemType')} />,
+        { preloadedState: storeWithRows(rows) },
+    );
+
 beforeAll(() => {
     // Fluent UI tabulka se měří přes ResizeObserver, jsdom ho nemá.
     vi.stubGlobal(
@@ -70,24 +77,40 @@ beforeAll(() => {
 });
 
 describe('AipTable', () => {
-    it('vypíše fond a instituci, když jsou dohledané', () => {
-        renderWithProviders(
-            <AipTable filterDisabled hiddenValues={onlyColumns('code', 'fund.name', 'institution.name')} />,
-            { preloadedState: storeWithRows([aip()]) },
-        );
+    it('vypíše dohledaný fond a AIP bez problému', () => {
+        render([aip()]);
 
         expect(screen.getByText('AIP-1')).toBeInTheDocument();
         expect(screen.getByText('Fond A')).toBeInTheDocument();
-        expect(screen.getByText('Instituce A')).toBeInTheDocument();
+        // sloupec s problémem zůstává prázdný
+        expect(screen.getAllByText('-')).toHaveLength(1);
     });
 
-    it('vypíše AIP i bez dohledané instituce a fondu', () => {
-        renderWithProviders(
-            <AipTable filterDisabled hiddenValues={onlyColumns('code', 'fund.name', 'institution.name')} />,
-            { preloadedState: storeWithRows([aip({ fund: null, institution: null })]) },
-        );
+    it('vypíše AIP bez dohledaného fondu i s popisem problému', () => {
+        render([aip({
+            fund: null,
+            institution: null,
+            problemType: AipProblemType.UnknownFund,
+            problemDescription: "Fond '42' nebyl nalezen podle čísla fondu ani podle interního kódu.",
+        })]);
 
         expect(screen.getByText('AIP-1')).toBeInTheDocument();
-        expect(screen.getAllByText('-')).toHaveLength(2);
+        expect(screen.getByText('Nenalezen fond')).toHaveAttribute(
+            'title',
+            "Fond '42' nebyl nalezen podle čísla fondu ani podle interního kódu.",
+        );
+        // nedohledaný fond se vypíše pomlčkou, seznam se nesmí zhroutit
+        expect(screen.getAllByText('-')).toHaveLength(1);
+    });
+
+    it('nedohledaná instituce sama o sobě AIP neblokuje', () => {
+        render([aip({
+            institution: null,
+            problemType: AipProblemType.UnknownInstitution,
+            problemDescription: "Instituce s kódem 'INST-X' nebyla nalezena.",
+        })]);
+
+        expect(screen.getByText('Fond A')).toBeInTheDocument();
+        expect(screen.getByText('Nenalezena instituce')).toBeInTheDocument();
     });
 });

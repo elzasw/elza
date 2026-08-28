@@ -1164,6 +1164,24 @@ model LinkedNodeVO {
 }
 
 /**
+ * Problém, který brání zpracování AIPu nebo jeho navázání na archivní popis
+ */
+enum AipProblemType {
+    /**
+     * Metadatový balíček se nepodařilo zpracovat
+     */
+    METADATA_ERROR,
+    /**
+     * Fond AIPu nebyl v ELZA nalezen, AIP nelze navázat na archivní popis
+     */
+    UNKNOWN_FUND,
+    /**
+     * Instituce AIPu nebyla v ELZA nalezena
+     */
+    UNKNOWN_INSTITUTION
+}
+
+/**
  * Vo pro detail AIPu
  */
 model AipDetailVO {
@@ -1240,13 +1258,13 @@ model AipDetailVO {
      */
     completeAipLoad?: boolean;
     /**
-     * Příznak chyby při načítání metadat
+     * Zjištěný problém AIPu, pokud nějaký je
      */
-    metadataError?: boolean;
+    problemType?: AipProblemType;
     /**
-     * Chyby při načítání metadat
+     * Popis všech zjištěných problémů AIPu
      */
-    metadataErrorException?: string;
+    problemDescription?: string;
     /**
      * Verze AIPu s načtenými metadaty
      */
@@ -1356,7 +1374,11 @@ enum LinkType {
 enum AipUpdateType {
     DB_UPDATE,
     DOWNLOAD_UPDATE,
-    FORCE_UPDATE;
+    FORCE_UPDATE,
+    /**
+     * Opakované dohledání instituce a fondu podle kódů z balíčku
+     */
+    REMAP_REFERENCES;
 }
 
 /**
@@ -1985,7 +2007,7 @@ enum AipFieldName {
     aipSize,
     metadataLoad,
     completeAipLoad,
-    metadataError,
+    problemType,
     importState,
     exportState
 }

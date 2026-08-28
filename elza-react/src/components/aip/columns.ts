@@ -37,7 +37,7 @@ export const aipColumns: Record<AipFieldName, AipColumnDef> = {
     [AipFieldName.ImportState]: {key: "importState", message: messages.importState, valueType: "importState", minWidth: 65, idealWidth: 105},
     [AipFieldName.ExportState]: {key: "exportState", message: messages.exportState, valueType: "exportState", minWidth: 65, idealWidth: 105},
     [AipFieldName.CompleteAipLoad]: {key: "completeAipLoad", message: messages.completeAipLoad, valueType: "bool", minWidth: 70, idealWidth: 130},
-    [AipFieldName.MetadataError]: {key: "metadataError", message: messages.metadataError, valueType: "bool", minWidth: 70, idealWidth: 130},
+    [AipFieldName.ProblemType]: {key: "problemType", message: messages.problemType, valueType: "problemType", minWidth: 70, idealWidth: 130},
 };
 
 /**
@@ -63,7 +63,7 @@ const COLUMN_ORDER: AipFieldName[] = [
     AipFieldName.ImportState,
     AipFieldName.ExportState,
     AipFieldName.CompleteAipLoad,
-    AipFieldName.MetadataError,
+    AipFieldName.ProblemType,
 ];
 
 export type AipColumn = AipColumnDef & {field: AipFieldName};

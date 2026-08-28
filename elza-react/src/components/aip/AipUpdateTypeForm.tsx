@@ -4,6 +4,8 @@ import { Form, Modal } from 'react-bootstrap';
 import { Button } from '../ui';
 import { Form as FinalForm, Field } from 'react-final-form';
 import {AipUpdateType} from "elza-api";
+import { useIntl } from 'react-intl';
+import { updateTypeMessages } from './messages';
 
 interface FormFields {
     type: AipUpdateType;
@@ -15,17 +17,12 @@ interface Props {
     onClose?: () => void;
 }
 
-export const AIP_UPDATE_TYPE_LABEL = {
-    [AipUpdateType.DbUpdate]: i18n('aip.form.update.type.DbUpdate'),
-    [AipUpdateType.DownloadUpdate]: i18n('aip.form.update.type.DownloadUpdate'),
-    [AipUpdateType.ForceUpdate]: i18n('aip.form.update.type.ForceUpdate'),
-};
-
 export function AipUpdateTypeForm({
     initialValues,
     onSubmit,
     onClose
 }: Props) {
+    const intl = useIntl();
 
     function validate(values: FormFields) {
         const errors: Partial<Record<keyof FormFields, string>> = {};
@@ -59,7 +56,7 @@ export function AipUpdateTypeForm({
                         <option key={null} />
                         {Object.values(AipUpdateType).map((i, index) => (
                             <option key={index} value={i}>
-                                {AIP_UPDATE_TYPE_LABEL[i]}
+                                {intl.formatMessage(updateTypeMessages[i])}
                             </option>
                         ))}
                     </Field>

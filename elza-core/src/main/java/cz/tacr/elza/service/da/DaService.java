@@ -228,6 +228,8 @@ public class DaService {
     private DataStringRepository dataStringRepository;
     @Autowired
     private DataUnitdateRepository dataUnitdateRepository;
+    @Autowired
+    private DaAipReferenceResolver referenceResolver;
 
     public void synchronizeDaRepository(String code) {
         logger.debug("Spuštěna synchronizace s DA pro externí systém CODE={}", code);
@@ -362,12 +364,14 @@ public class DaService {
                 aipState.setMetadataError(false);
                 aipState.setMetadataErrorException(null);
                 aipState.setAipVersionMetadata(aipState.getAipVersion());
+                referenceResolver.updateProblemState(aipState);
                 aipStateRepository.save(aipState);
 
             } catch (Exception e) {
                 logger.error("Došlo k chybě při zpracování metadat pro AIP={}", aipId, e);
                 aipState.setMetadataError(true);
                 aipState.setMetadataErrorException(e.getMessage());
+                referenceResolver.updateProblemState(aipState);
                 aipStateRepository.save(aipState);
             } finally {
                 deleteTempDirectory(tempDir);
@@ -413,8 +417,7 @@ public class DaService {
         for (DaAip aip : aipList) {
             DaAipState aipState = stateMap.get(aip);
             if (aipState.getFund() == null) {
-                ArrFund arrFund = fundRepository.findByInternalCode(aipState.getFundCode());
-                aipState.setFund(arrFund);
+                referenceResolver.resolveReferences(aipState);
             }
             if (BooleanUtils.isNotTrue(aipState.getMetadataLoad()) && BooleanUtils.isNotTrue(aipState.getCompleteAipLoad()) && aipState.getFund() != null) {
                 aipState.setMetadataLoad(true);
@@ -489,6 +492,28 @@ public class DaService {
         s.setMetadataLoad(false);
         s.setMetadataError(false);
         s.setMetadataErrorException(null);
+        referenceResolver.updateProblemState(s);
+    }
+
+    /**
+     * Resolves the references of the given AIPs again - used after the missing institution or
+     * fund has been created in ELZA, so the AIPs stop being reported as problematic.
+     *
+     * @return number of AIPs whose reference was newly resolved
+     */
+    @Transactional
+    public int remapReferences(List<Integer> aipIds) {
+        List<DaAip> aipList = aipRepository.findAllById(aipIds);
+        List<DaAipState> stateList = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList);
+        int resolved = 0;
+        for (DaAipState aipState : stateList) {
+            if (referenceResolver.resolveReferences(aipState)) {
+                resolved++;
+            }
+        }
+        aipStateRepository.saveAll(stateList);
+        logger.info("Reference resolution requested for {} AIP(s), newly resolved: {}", stateList.size(), resolved);
+        return resolved;
     }
 
     @Transactional
@@ -557,6 +582,8 @@ public class DaService {
             doCreateDaoStructure(aipIds, false);
         } else if (type == AipUpdateType.FORCE_UPDATE) {
             doCreateDaoStructure(aipIds, true);
+        } else if (type == AipUpdateType.REMAP_REFERENCES) {
+            remapReferences(aipIds);
         }
     }
 

@@ -1,5 +1,5 @@
 import { defineMessages } from "react-intl";
-import { QueueItemState } from "elza-api";
+import { AipProblemType, AipUpdateType, QueueItemState } from "elza-api";
 
 export const messages = defineMessages({
     aipId:            { id: "aip.col.aipId",            defaultMessage: "ID Aipu" },
@@ -19,7 +19,55 @@ export const messages = defineMessages({
     importState:      { id: "aip.col.importState",      defaultMessage: "Aktuální verze" },
     exportState:      { id: "aip.col.exportState",      defaultMessage: "Stav exportu" },
     completeAipLoad:  { id: "aip.col.completeAipLoad",  defaultMessage: "Načtený kompletní AIP" },
-    metadataError:    { id: "aip.col.metadataError",    defaultMessage: "Chyba při načtení metadat" },
+    problemType:      { id: "aip.col.problemType",      defaultMessage: "Problém" },
+});
+
+/**
+ * Typy aktualizace AIPu nabízené v dialogu aktualizace.
+ */
+export const updateTypeMessages = defineMessages({
+    [AipUpdateType.DbUpdate]: {
+        id: "aip.form.update.type.DbUpdate",
+        defaultMessage: "Aktualizace pouze DB",
+    },
+    [AipUpdateType.DownloadUpdate]: {
+        id: "aip.form.update.type.DownloadUpdate",
+        defaultMessage: "Opakované stažení AIP",
+    },
+    [AipUpdateType.ForceUpdate]: {
+        id: "aip.form.update.type.ForceUpdate",
+        defaultMessage: "Vynucená aktualizace",
+    },
+    [AipUpdateType.RemapReferences]: {
+        id: "aip.form.update.type.RemapReferences",
+        defaultMessage: "Znovu dohledat instituci a fond",
+    },
+});
+
+/**
+ * Popisky detailu AIPu k zjištěnému problému.
+ */
+export const detailMessages = defineMessages({
+    problem:            { id: "aip.detail.problem",            defaultMessage: "Problém" },
+    problemDescription: { id: "aip.detail.problemDescription", defaultMessage: "Popis problému" },
+});
+
+/**
+ * Popis problémů, které brání zpracování AIPu nebo jeho navázání na archivní popis.
+ */
+export const problemMessages = defineMessages({
+    [AipProblemType.MetadataError]: {
+        id: "aip.problem.METADATA_ERROR",
+        defaultMessage: "Chyba při zpracování metadat",
+    },
+    [AipProblemType.UnknownFund]: {
+        id: "aip.problem.UNKNOWN_FUND",
+        defaultMessage: "Nenalezen fond",
+    },
+    [AipProblemType.UnknownInstitution]: {
+        id: "aip.problem.UNKNOWN_INSTITUTION",
+        defaultMessage: "Nenalezena instituce",
+    },
 });
 
 export const queueStateMessages = defineMessages({
@@ -46,6 +94,7 @@ export const filterMessages = defineMessages({
     from:         { id: "aip.form.from",         defaultMessage: "Od" },
     to:           { id: "aip.form.to",           defaultMessage: "Do" },
     equals:       { id: "aip.form.equals",       defaultMessage: "Je přesné" },
+    notEquals:    { id: "aip.form.notEquals",    defaultMessage: "Není přesné" },
     contain:      { id: "aip.form.contain",      defaultMessage: "Obsahuje" },
     notContain:   { id: "aip.form.notContain",   defaultMessage: "Neobsahuje" },
     between:      { id: "aip.form.between",      defaultMessage: "Je v rozmezí" },

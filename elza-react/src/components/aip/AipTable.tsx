@@ -34,6 +34,7 @@ import {
     createTableColumn,
 } from '@fluentui/react-components';
 import { getBoolIcon } from './AipCells';
+import { problemMessages } from './messages';
 import { colDef } from './columns';
 import { Row } from 'react-bootstrap';
 import AipFilterSection from './filter/AipFilterSection.tsx';
@@ -113,6 +114,13 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
             case "unitdateFrom":  return item.unitdateFrom ? formatUnitDate(item.unitdateFrom, item.unitdateTo): "-";
             case "fund.name": return item.fund?.name ?? "-";
             case "institution.name": return item.institution?.name ?? "-";
+            case "problemType": return item.problemType
+                ? (
+                    <span className="aip-problem" title={item.problemDescription ?? undefined}>
+                        {formatMessage(problemMessages[item.problemType])}
+                    </span>
+                )
+                : "-";
             default:
                 return findColDefByKey(key)?.valueType == "bool"
                     ? getBoolIcon(rawValue(item, key))

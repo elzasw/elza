@@ -717,10 +717,6 @@
     "defaultMessage": "Institution code",
     "srcHash": "Z6gP6vi_OaRY"
   },
-  "aip.col.metadataError": {
-    "defaultMessage": "Metadata load error",
-    "srcHash": "lQZ1uRaxOXvg"
-  },
   "aip.col.metadataLoad": {
     "defaultMessage": "Metadata loaded",
     "srcHash": "SYsB1sLvVD-5"
@@ -733,6 +729,10 @@
     "defaultMessage": "Originator",
     "srcHash": "8ferHLpDg6Ds"
   },
+  "aip.col.problemType": {
+    "defaultMessage": "Problem",
+    "srcHash": "WdRzqC9KeHRa"
+  },
   "aip.col.referenceNumber": {
     "defaultMessage": "Reference number",
     "srcHash": "FfhBXJgX6Kv3"
@@ -740,6 +740,14 @@
   "aip.col.unitdate": {
     "defaultMessage": "Date range",
     "srcHash": "85gp67Bn_Cu_"
+  },
+  "aip.detail.problem": {
+    "defaultMessage": "Problem",
+    "srcHash": "WdRzqC9KeHRa"
+  },
+  "aip.detail.problemDescription": {
+    "defaultMessage": "Problem description",
+    "srcHash": "abMtvejWMUtH"
   },
   "aip.filter.createFilter": {
     "defaultMessage": "Create filter {name}",
@@ -801,6 +809,10 @@
     "defaultMessage": "Does not contain",
     "srcHash": "bsWPcoUNHu8T"
   },
+  "aip.form.notEquals": {
+    "defaultMessage": "Is not exactly",
+    "srcHash": "47nQo4wktHc8"
+  },
   "aip.form.notNull": {
     "defaultMessage": "Value set",
     "srcHash": "l0LiTrzfFMuW"
@@ -813,9 +825,37 @@
     "defaultMessage": "To",
     "srcHash": "MAlOC-wARtqP"
   },
+  "aip.form.update.type.DbUpdate": {
+    "defaultMessage": "Database update only",
+    "srcHash": "QJkW_O6qWoE2"
+  },
+  "aip.form.update.type.DownloadUpdate": {
+    "defaultMessage": "Download the AIP again",
+    "srcHash": "ZnGUYONZJeUS"
+  },
+  "aip.form.update.type.ForceUpdate": {
+    "defaultMessage": "Forced update",
+    "srcHash": "OucQ8lcHA7Og"
+  },
+  "aip.form.update.type.RemapReferences": {
+    "defaultMessage": "Look up the institution and fund again",
+    "srcHash": "qpZBK7EGRLzI"
+  },
   "aip.form.value": {
     "defaultMessage": "Value",
     "srcHash": "2al7WSQS6DjX"
+  },
+  "aip.problem.METADATA_ERROR": {
+    "defaultMessage": "Metadata processing failed",
+    "srcHash": "Q-Y6CQYBRvq4"
+  },
+  "aip.problem.UNKNOWN_FUND": {
+    "defaultMessage": "Fund not found",
+    "srcHash": "7fGWMez3rnPI"
+  },
+  "aip.problem.UNKNOWN_INSTITUTION": {
+    "defaultMessage": "Institution not found",
+    "srcHash": "Y5L6HoEz8FfT"
   },
   "aip.queueState.EXPORT_ERROR": {
     "defaultMessage": "Export error",
