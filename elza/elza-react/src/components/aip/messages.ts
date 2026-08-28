@@ -73,6 +73,28 @@ export const updateTypeDescriptions = defineMessages({
 });
 
 /**
+ * Samostatná stránka průzkumníka AIPu.
+ */
+export const explorerPageMessages = defineMessages({
+    back:          { id: "aip.explorer.back",          defaultMessage: "Zpět na seznam" },
+    packageTab:    { id: "aip.explorer.tab.package",   defaultMessage: "Balíček" },
+    structureTab:  { id: "aip.explorer.tab.structure", defaultMessage: "Struktura" },
+});
+
+/**
+ * Prohlížeč staženého balíčku.
+ */
+export const packageMessages = defineMessages({
+    loading:        { id: "aip.package.loading",        defaultMessage: "Načítání balíčku…" },
+    notDownloaded:  { id: "aip.package.notDownloaded",  defaultMessage: "Pro tento AIP není stažený žádný balíček." },
+    empty:          { id: "aip.package.empty",          defaultMessage: "Balíček neobsahuje žádné soubory." },
+    selectFile:     { id: "aip.package.selectFile",     defaultMessage: "Vyberte soubor balíčku." },
+    notPreviewable: { id: "aip.package.notPreviewable", defaultMessage: "Soubor nelze zobrazit jako text, lze jej stáhnout." },
+    readFailed:     { id: "aip.package.readFailed",     defaultMessage: "Soubor se nepodařilo načíst." },
+    download:       { id: "aip.package.download",       defaultMessage: "Stáhnout" },
+});
+
+/**
  * Popisky detailu AIPu k zjištěnému problému.
  */
 export const detailMessages = defineMessages({

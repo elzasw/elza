@@ -749,6 +749,18 @@
     "defaultMessage": "Problem description",
     "srcHash": "abMtvejWMUtH"
   },
+  "aip.explorer.back": {
+    "defaultMessage": "Back to the list",
+    "srcHash": "nAub8TbwZrMW"
+  },
+  "aip.explorer.tab.package": {
+    "defaultMessage": "Package",
+    "srcHash": "O-2iMJ9LuP-v"
+  },
+  "aip.explorer.tab.structure": {
+    "defaultMessage": "Structure",
+    "srcHash": "zYUhA8KwsL8v"
+  },
   "aip.filter.createFilter": {
     "defaultMessage": "Create filter {name}",
     "srcHash": "Es1YqY4zWi8-"
@@ -860,6 +872,34 @@
   "aip.form.value": {
     "defaultMessage": "Value",
     "srcHash": "2al7WSQS6DjX"
+  },
+  "aip.package.download": {
+    "defaultMessage": "Download",
+    "srcHash": "xxAzjqAuIzkG"
+  },
+  "aip.package.empty": {
+    "defaultMessage": "The package contains no files.",
+    "srcHash": "yVnaG1vs0ahj"
+  },
+  "aip.package.loading": {
+    "defaultMessage": "Loading the package…",
+    "srcHash": "lEGYnl77lmqQ"
+  },
+  "aip.package.notDownloaded": {
+    "defaultMessage": "No package has been downloaded for this AIP.",
+    "srcHash": "ciUgvmUowiE-"
+  },
+  "aip.package.notPreviewable": {
+    "defaultMessage": "The file cannot be shown as text, it can be downloaded.",
+    "srcHash": "1dLBGmxsHcmF"
+  },
+  "aip.package.readFailed": {
+    "defaultMessage": "The file could not be loaded.",
+    "srcHash": "-pTujeMZcVKk"
+  },
+  "aip.package.selectFile": {
+    "defaultMessage": "Select a file of the package.",
+    "srcHash": "L27vljAwkQNW"
   },
   "aip.problem.METADATA_ERROR": {
     "defaultMessage": "Metadata processing failed",

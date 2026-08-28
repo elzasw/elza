@@ -334,6 +334,10 @@ export const urlAip = (aipId?: number): string => {
     return aipId ? `${URL_AIP}/${aipId}` : URL_AIP;
 }
 
+export const urlAipExplorer = (aipId: number): string => {
+    return `${URL_AIP}/${aipId}/explorer`;
+}
+
 export const urlComponent = () => {
     return URL_COMPONENT;
 }
