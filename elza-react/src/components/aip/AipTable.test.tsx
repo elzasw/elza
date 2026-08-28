@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeAll } from 'vitest';
 import { AipProblemType, QueueItemState } from 'elza-api';
 
-import { renderWithProviders, screen, createTestStore } from 'test/test-utils';
+import { renderWithProviders, screen, fireEvent, createTestStore } from 'test/test-utils';
 import AipTable from './AipTable';
 import { colDef } from './columns';
 
@@ -101,6 +101,25 @@ describe('AipTable', () => {
         );
         // nedohledaný fond se vypíše pomlčkou, seznam se nesmí zhroutit
         expect(screen.getAllByText('-')).toHaveLength(1);
+    });
+
+    it('tlačítko průzkumníka se nabízí jen tam, kde je kam navigovat', async () => {
+        const onExplore = vi.fn();
+        const { container } = renderWithProviders(
+            <AipTable filterDisabled hiddenValues={onlyColumns('code')} onExplore={onExplore} />,
+            { preloadedState: storeWithRows([aip()]) },
+        );
+
+        fireEvent.click(screen.getByTitle('Otevřít průzkumník'));
+        expect(onExplore).toHaveBeenCalledWith(1);
+
+        // bez callbacku se sloupec s akcí nevykreslí
+        const plain = renderWithProviders(
+            <AipTable filterDisabled hiddenValues={onlyColumns('code')} />,
+            { preloadedState: storeWithRows([aip()]) },
+        );
+        expect(plain.container.querySelector('.aip-action-cell')).toBeNull();
+        expect(container.querySelector('.aip-action-cell')).not.toBeNull();
     });
 
     it('stav importu se vypíše přeloženě, ne jako hodnota enumu', () => {

@@ -77,6 +77,7 @@ export const updateTypeDescriptions = defineMessages({
  */
 export const explorerPageMessages = defineMessages({
     back:          { id: "aip.explorer.back",          defaultMessage: "Zpět na seznam" },
+    open:          { id: "aip.explorer.open",          defaultMessage: "Otevřít průzkumník" },
     packageTab:    { id: "aip.explorer.tab.package",   defaultMessage: "Balíček" },
     structureTab:  { id: "aip.explorer.tab.structure", defaultMessage: "Struktura" },
 });

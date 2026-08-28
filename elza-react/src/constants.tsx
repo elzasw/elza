@@ -278,6 +278,10 @@ export const urlFundAb = (fundId: number, versionId?: number) => {
     return fundSub(fundId, versionId, AIP);
 }
 
+export const urlFundAipExplorer = (fundId: number, aipId: number, versionId?: number) => {
+    return `${fundSub(fundId, versionId, AIP)}/${aipId}/explorer`;
+}
+
 export const urlFundPublication = (fundId: number, versionId?: number) => {
     return fundSub(fundId, versionId, PUBLICATION);
 }
