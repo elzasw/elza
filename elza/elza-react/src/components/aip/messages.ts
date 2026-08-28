@@ -92,6 +92,7 @@ export const packageMessages = defineMessages({
     notPreviewable: { id: "aip.package.notPreviewable", defaultMessage: "Soubor nelze zobrazit jako text, lze jej stáhnout." },
     readFailed:     { id: "aip.package.readFailed",     defaultMessage: "Soubor se nepodařilo načíst." },
     download:       { id: "aip.package.download",       defaultMessage: "Stáhnout" },
+    treeLabel:      { id: "aip.package.treeLabel",      defaultMessage: "Obsah balíčku" },
 });
 
 /**
