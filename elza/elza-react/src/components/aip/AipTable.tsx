@@ -10,7 +10,8 @@ import { formatDateCz } from 'utils/date';
 import { findColDefByKey } from './columns';
 import './AipTable.scss';
 import { useHistory} from 'react-router';
-import {urlAip} from '../../constants.tsx';
+import {urlAip, urlEntity} from '../../constants.tsx';
+import { Link } from 'react-router-dom';
 import { useThunkDispatch } from 'utils/hooks';
 import {aipsFetchIfNeeded, aipsFilter, AREA_AIP, AREA_AIPS, setSelectedAips, } from "../../actions/aip/aip.ts";
 import {
@@ -128,6 +129,23 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, onExplore, filterDisabled, in
             case "unitdateFrom":  return item.unitdateFrom ? formatUnitDate(item.unitdateFrom, item.unitdateTo): "-";
             case "fund.name": return item.fund?.name ?? "-";
             case "institution.name": return item.institution?.name ?? "-";
+            case "institutionCode": {
+                if (!item.institutionCode) {
+                    return "-";
+                }
+                // Dohledaná instituce má archivní entitu, na kterou se dá odkázat;
+                // nedohledaná zůstane jen kódem z balíčku.
+                const accessPointId = item.institution?.accessPointId;
+                return accessPointId
+                    ? (
+                        <Link to={urlEntity(accessPointId)}
+                              title={item.institution?.name}
+                              onClick={e => e.stopPropagation()}>
+                            {item.institutionCode}
+                        </Link>
+                    )
+                    : item.institutionCode;
+            }
             case "importState": return item.importState
                 ? formatMessage(queueStateMessages[item.importState]) : "-";
             case "exportState": return item.exportState
