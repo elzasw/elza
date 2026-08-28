@@ -115,7 +115,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -152,6 +151,11 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import static cz.tacr.elza.exception.codes.ArrangementCode.AIP_NOT_FOUND;
+import cz.tacr.elza.common.io.SpooledContent;
+import org.apache.commons.io.file.PathUtils;
+import java.util.zip.ZipFile;
+import org.springframework.core.io.InputStreamResource;
+import java.nio.file.StandardCopyOption;
 
 @Service
 public class DaService {
@@ -316,10 +320,11 @@ public class DaService {
 
             MetsType metsType;
             PremisComplexType premisComplexType;
+            Path tempDir = null;
             try {
                 Path zip = Paths.get(localCache.getFilePath());
 
-                Path tempDir = Files.createTempDirectory("unzipped");
+                tempDir = Files.createTempDirectory("unzipped");
 
                 try (ZipInputStream zipInputStream = new ZipInputStream((Files.newInputStream(zip)))) {
                     ZipEntry entry;
@@ -346,11 +351,6 @@ public class DaService {
                         .createDaoStructure(aip, metsType, premisComplexType, tempDir, forceUpdate);
                 identifiersByAip.put(aipId, aipIdentifiers);
 
-                // Odstranit dočasné soubory a adresáře
-                try (Stream<Path> str = Files.walk(tempDir)) {
-                    str.map(Path::toFile).forEach(File::delete);
-                }
-
                 if (localCache.getFilePathMetadata() != null && !localCache.getFilePath().equals(localCache.getFilePathMetadata())) {
                     Path oldFile = Paths.get(localCache.getFilePathMetadata());
                     oldFile.toFile().delete();
@@ -369,6 +369,8 @@ public class DaService {
                 aipState.setMetadataError(true);
                 aipState.setMetadataErrorException(e.getMessage());
                 aipStateRepository.save(aipState);
+            } finally {
+                deleteTempDirectory(tempDir);
             }
         }
         return identifiersByAip;
@@ -1020,7 +1022,15 @@ public class DaService {
 
     public void processPackageInfo(ArrDigitalRepository digitalRepository, InputStream tempZipInputStream, AipType aipType, List<DaSyncQueueItem> syncQueueItemList) throws IOException {
         Path tempDir = Files.createTempDirectory("unzipped");
+        try {
+            processPackageInfo(digitalRepository, tempZipInputStream, aipType, syncQueueItemList, tempDir);
+        } finally {
+            PathUtils.deleteDirectory(tempDir);
+        }
+    }
 
+    private void processPackageInfo(ArrDigitalRepository digitalRepository, InputStream tempZipInputStream, AipType aipType,
+                                    List<DaSyncQueueItem> syncQueueItemList, Path tempDir) throws IOException {
         try (ZipInputStream zipInputStream = new ZipInputStream((tempZipInputStream))) {
             ZipEntry entry;
             while ((entry = zipInputStream.getNextEntry()) != null) {
@@ -1063,11 +1073,16 @@ public class DaService {
                 }
             }
         }
+    }
 
-
-        // Odstranit dočasné soubory a adresáře
-        try (Stream<Path> str = Files.walk(tempDir)) {
-            str.map(Path::toFile).forEach(File::delete);
+    private static void deleteTempDirectory(Path tempDir) {
+        if (tempDir == null) {
+            return;
+        }
+        try {
+            PathUtils.deleteDirectory(tempDir);
+        } catch (IOException e) {
+            logger.warn("Nepodařilo se smazat dočasný adresář {}: {}", tempDir, e.getMessage());
         }
     }
 
@@ -1248,23 +1263,32 @@ public class DaService {
         return status.getState() == RequestState.FINISHED;
     }
 
-    public Path downloadDownload(ArrDigitalRepository digitalRepository, String batchId) throws ApiException, IOException {
-        byte[] file =  daConnector.downloadDownload(digitalRepository, batchId);
-
-        Path tempZip = Files.createTempFile("temp", ".zip");
-        try (FileOutputStream fos = new FileOutputStream(tempZip.toFile())) {
-            fos.write(file);
-        }
-
-        return tempZip;
+    /**
+     * Downloads the prepared batch over the DA API; the caller closes the returned content.
+     */
+    public SpooledContent downloadDownload(ArrDigitalRepository digitalRepository, String batchId) throws ApiException {
+        return daConnector.downloadDownload(digitalRepository, batchId);
     }
 
-    public Path downloadFileTransfer(ArrDigitalRepository digitalRepository, String batchId) throws IOException {
+    /**
+     * Downloads the prepared batch over File Transfer; the caller closes the returned content,
+     * which deletes the downloaded file.
+     */
+    public SpooledContent downloadFileTransfer(ArrDigitalRepository digitalRepository, String batchId) throws IOException {
         Path downloadDir = Files.createTempDirectory(batchId);
-        daConnector.downloadFileTransfer(digitalRepository, batchId, downloadDir);
-        try (Stream<Path> str = Files.walk(downloadDir)
-                .filter(p -> Files.isRegularFile(p) && p.getFileName().toString().endsWith(".zip"))) {
-            return str.findFirst().orElseThrow(() -> new IllegalStateException("Nenalezen stažený soubor přes Filetransfer"));
+        try {
+            daConnector.downloadFileTransfer(digitalRepository, batchId, downloadDir);
+            Path downloaded;
+            try (Stream<Path> str = Files.walk(downloadDir)
+                    .filter(p -> Files.isRegularFile(p) && p.getFileName().toString().endsWith(".zip"))) {
+                downloaded = str.findFirst().orElseThrow(() -> new IllegalStateException("Nenalezen stažený soubor přes Filetransfer"));
+            }
+            // keep only the package, the download directory is removed below
+            Path zip = Files.createTempFile("da-ft-", ".zip");
+            Files.move(downloaded, zip, StandardCopyOption.REPLACE_EXISTING);
+            return SpooledContent.ofTempFile(zip);
+        } finally {
+            PathUtils.deleteDirectory(downloadDir);
         }
     }
 
@@ -1613,30 +1637,23 @@ public class DaService {
         try {
             Path zip = Paths.get(localCache.getFilePath());
 
-            Path tempDir = Files.createTempDirectory("unzipped");
+            // zip entry names use '/', the stored file name may use either separator
+            String filePath = daoFile.getFileName().replace(File.separator, "/");
+            String fileName = filePath.substring(filePath.lastIndexOf('/') + 1);
 
-            try (ZipInputStream zipInputStream = new ZipInputStream((Files.newInputStream(zip)))) {
-                ZipEntry entry;
-                while ((entry = zipInputStream.getNextEntry()) != null) {
-                    Path filePath = tempDir.resolve(entry.getName());
-                    if (entry.isDirectory()) {
-                        Files.createDirectories(filePath);
-                    } else {
-                        Files.createDirectories(filePath.getParent());
-                        Files.copy(zipInputStream, filePath);
-                    }
+            // Only the requested entry leaves the package; the content is spooled to a temporary
+            // file when large and released once the response body is written.
+            SpooledContent content;
+            try (ZipFile zipFile = new ZipFile(zip.toFile())) {
+                ZipEntry entry = zipFile.stream()
+                        .filter(e -> !e.isDirectory() && e.getName().endsWith(filePath))
+                        .findFirst()
+                        .orElseThrow(() -> new RuntimeException("Balíček neobsahuje soubor " + filePath));
+                try (InputStream in = zipFile.getInputStream(entry)) {
+                    content = SpooledContent.readFrom(in);
                 }
             }
-
-            String filePath = daoFile.getFileName().replace("/", File.separator);
-            String fileName = filePath.substring(filePath.lastIndexOf(File.separator) + 1);
-
-            Path file;
-            try (Stream<Path> str = Files.walk(tempDir).filter(path -> path.toString().endsWith(filePath))) {
-                file = str.findFirst().orElseThrow(() -> new RuntimeException("Balíček neobsahuje soubor " + filePath));
-            }
-
-            FileSystemResource fsr = new FileSystemResource(file);
+            InputStreamResource fsr = new InputStreamResource(content.openStreamAndCloseOnEnd());
 
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_ENCODING, StandardCharsets.UTF_8.name());

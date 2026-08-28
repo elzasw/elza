@@ -14,14 +14,13 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 
 import static cz.tacr.elza.connector.DaConnector.FILE_TRANSFER_ERROR_CODE;
 import cz.tacr.elza.api.DaOnReceivedAction;
 import java.util.Map;
 import java.util.Set;
+import cz.tacr.elza.common.io.SpooledContent;
 
 @Component
 public class DaImportExtSyncsProcessor implements Runnable {
@@ -68,7 +67,7 @@ public class DaImportExtSyncsProcessor implements Runnable {
      * The standard HTTP download is refused by the DA with 413 when the batch is too
      * large; in that case the administrator has to switch the repository to File Transfer.
      */
-    private Path downloadBatch(ArrDigitalRepository digitalRepository, String batchId) throws ApiException, IOException {
+    private SpooledContent downloadBatch(ArrDigitalRepository digitalRepository, String batchId) throws ApiException, IOException {
         DaDownloadMethod method = digitalRepository.getDownloadMethod() == null
                 ? DaDownloadMethod.STANDARD : digitalRepository.getDownloadMethod();
         if (method == DaDownloadMethod.FILE_TRANSFER) {
@@ -136,12 +135,10 @@ public class DaImportExtSyncsProcessor implements Runnable {
                                 }
                             }
 
-                            Path zipFile = downloadBatch(digitalRepository, batchId);
-
-                            try (InputStream inputStream  = Files.newInputStream(zipFile)) {
+                            try (SpooledContent zip = downloadBatch(digitalRepository, batchId);
+                                    InputStream inputStream = zip.openStream()) {
                                 daService.processPackageInfo(digitalRepository, inputStream, aipType, syncQueueItemList);
                             }
-                            Files.delete(zipFile);
 
                             daService.updateAipToQueueItems(syncQueueItemList);
 
