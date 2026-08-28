@@ -256,11 +256,7 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
 
     return (
         <Row className='aip-table'>
-            <AipDetail
-                open={detailOpen}
-                onClose={() => setDetailOpen(false)}
-                onOpen={() => setDetailOpen(true)}
-            />
+            <div className="aip-table-main">
             <StoreHorizontalLoader store={aips} />
             {aips.fetched && (
                 <>
@@ -343,6 +339,12 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
                 </>
             )
         }
+            </div>
+            <AipDetail
+                open={detailOpen}
+                onClose={() => setDetailOpen(false)}
+                onOpen={() => setDetailOpen(true)}
+            />
     </Row>
     );
 }

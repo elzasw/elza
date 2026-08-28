@@ -3,6 +3,14 @@
 
 .aip-table {
     margin: 0;
+    /* Detail je součástí rozvržení, ne překryv - zmenší se tabulka, nic se nezakryje. */
+    flex-wrap: nowrap;
+    align-items: stretch;
+
+    .aip-table-main {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
 
     /* The table keeps the configured column widths, so it may be wider than the page;
        it scrolls inside this container and the filter and pagination stay put. */
