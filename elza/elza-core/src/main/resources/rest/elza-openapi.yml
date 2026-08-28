@@ -6437,27 +6437,6 @@ components:
         - aipId
         - code
         - digitalRepositoryId
-        - aipVersion
-        - fund
-        - fundCode
-        - institution
-        - originatorInstitution
-        - originator
-        - unitdateFrom
-        - unitdateTo
-        - institutionCode
-        - ingestionCode
-        - referenceNumber
-        - nadChangeCode
-        - aipSize
-        - metadataLoad
-        - completeAipLoad
-        - metadataError
-        - metadataErrorException
-        - aipVersionMetadata
-        - importState
-        - exportState
-        - linkedNodes
       properties:
         aipId:
           type: integer
@@ -6509,6 +6488,7 @@ components:
           description: Identifikátor vnější změny NAD v PEvA
         aipSize:
           type: integer
+          format: int64
           description: Velikost AIPu v bytech
         metadataLoad:
           type: boolean

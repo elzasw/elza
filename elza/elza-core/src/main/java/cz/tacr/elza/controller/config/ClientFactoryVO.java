@@ -2624,9 +2624,7 @@ public class ClientFactoryVO {
             vo.setIngestionCode(state.getIngestionCode());
             vo.setReferenceNumber(state.getReferenceNumber());
             vo.setNadChangeCode(state.getNadChangeCode());
-            if (state.getAipSize() != null) {
-                vo.setAipSize(state.getAipSize().intValue());
-            }
+            vo.setAipSize(state.getAipSize());
             vo.setMetadataLoad(state.getMetadataLoad());
             vo.setCompleteAipLoad(state.getCompleteAipLoad());
             vo.setMetadataError(state.getMetadataError());
