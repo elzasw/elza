@@ -10,6 +10,7 @@ import { Field, FieldArray, FormErrors, InjectedFormProps, reduxForm } from 'red
 import { renderUserOrGroupLabel } from '../admin/adminRenderUtils';
 import UserAndGroupField from '../admin/UserAndGroupField';
 import { submitForm } from '../form/FormUtils.jsx';
+import { validateFundForm } from './fundFormValidation';
 import { FormInputField, i18n } from '../shared';
 import TagsField from '../TagsField';
 import { Button } from '../ui';
@@ -36,34 +37,7 @@ const FundForm: React.FC<IFundForm & InjectedFormProps<object, IFundForm>> = mem
     const dispatch = useThunkDispatch();
     const {handleSubmit, onClose, create, update, approve, ruleSet, refTables, pristine, submitting} = props;
 
-    const validate = (values: IFundFormData): FormErrors<IFundFormData> => {
-        const {userDetail} = props;
-        const admin = userDetail.isAdmin();
-
-        const errors: FormErrors<IFundFormData> = {};
-
-        if ((props.create || props.update) && !values.name) {
-            errors.name = i18n('global.validation.required');
-        }
-        if ((props.ruleSet) && !values.ruleSetId) {
-            errors.ruleSetId = i18n('global.validation.required');
-        }
-        if ((props.create || props.ruleSet) && !values.ruleSetCode) {
-            errors.ruleSetCode = i18n('global.validation.required');
-        }
-        if ((props.create || props.update) && !values.institutionIdentifier) {
-            errors.institutionIdentifier = i18n('global.validation.required');
-        }
-        if (props.create && (!values.scopes || values.scopes.length === 0)) {
-            errors.scopes = i18n('global.validation.required');
-        }
-
-        if (props.create && !admin && (!values.fundAdmins || values.fundAdmins.length === 0)) {
-            errors.fundAdmins = i18n('global.validation.required');
-        }
-
-        return errors;
-    };
+    const validate = (values: IFundFormData): FormErrors<IFundFormData> => validateFundForm(values, props);
 
     useEffect(() => {
         dispatch(refRuleSetFetchIfNeeded());
