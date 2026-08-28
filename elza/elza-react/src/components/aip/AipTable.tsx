@@ -34,8 +34,9 @@ import {
     createTableColumn,
 } from '@fluentui/react-components';
 import { Icon } from 'components/shared';
+import { Button } from 'react-bootstrap';
 import { getBoolIcon } from './AipCells';
-import { problemMessages, queueStateMessages } from './messages';
+import { explorerPageMessages, problemMessages, queueStateMessages } from './messages';
 import { colDef } from './columns';
 import { Row } from 'react-bootstrap';
 import AipFilterSection from './filter/AipFilterSection.tsx';
@@ -49,6 +50,8 @@ type AipTableProps = {
     filterDisabled?: boolean;
     initialFilters?: AipFilterEntry[];
     hiddenValues?: string[];
+    /** Otevření průzkumníka pro jeden AIP; bez něj se sloupec s akcí nezobrazuje. */
+    onExplore?: (aipId: number) => void;
     detailOpen?: boolean;
     setDetailOpen?: (open: boolean) => void;
 }
@@ -73,7 +76,7 @@ const getAipRows = (aips: Aips) => {
     return [];
 };
 
-const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilters, hiddenValues, detailOpen, setDetailOpen}) => {
+const AipTable: FC<AipTableProps> = ({onAipSelect, onExplore, filterDisabled, initialFilters, hiddenValues, detailOpen, setDetailOpen}) => {
     const aips = useAppSelector(state => storeFromArea(state, AREA_AIPS) as Aips);
     const aip = useAppSelector(state => storeFromArea(state, AREA_AIP) as Aip);
     const {from, pageSize} = aips.filter;
@@ -285,6 +288,7 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
                                     className="header"
 
                                 />
+                                {onExplore && <TableHeaderCell className="header aip-action-header"/>}
                                 {columns.map((column) => (
                                     <TableHeaderCell
                                         key={column.columnId}
@@ -312,6 +316,14 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
                                         onClick={onClick}
                                     />
 
+                                    {onExplore && (
+                                        <TableCell className="aip-action-cell">
+                                            <Button variant="action" title={formatMessage(explorerPageMessages.open)}
+                                                    onClick={() => onExplore(item.aipId)}>
+                                                <Icon glyph="fa-folder-open"/>
+                                            </Button>
+                                        </TableCell>
+                                    )}
                                     {columns.map(col => (
                                         <TableCell
                                             key={`item[${item.code}].${col.columnId}`}

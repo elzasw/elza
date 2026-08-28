@@ -5,10 +5,8 @@ import {connect} from 'react-redux';
 import ArrParentPage from './ArrParentPage';
 import {RibbonGroup} from '../../components/shared';
 import { Ribbon} from '../../components/index';
-import { getFundVersion, urlFundAb} from "../../constants";
+import { getFundVersion, urlFundAb, urlFundAipExplorer} from "../../constants";
 import AipTable from '../../components/aip/AipTable';
-import AipExplorer from '../../components/aip/explorer/AipExplorer';
-import { ExplorerMode } from 'components/aip/explorer/ExplorerContext';
 import {selectAip} from '../../actions/aip/aip';
 import type { AppState, Fund, UserDetail } from 'typings/store';
 
@@ -121,23 +119,21 @@ class ArrAipPage extends ArrParentPage {
         return userDetail.hasArrPage(activeFund ? activeFund.id : null);
     }
 
-    renderLeftPanel(readMode: boolean, closed: boolean) {
-        const activeFund = this.getActiveFund(this.props);
-
-        return (
-            <AipTable
-                onAipSelect={(id) => this.props.dispatch(selectAip(id))}
-                initialFilters={initialFilters(activeFund.id)}
-                hiddenValues={["fund.name", "institution.name", "institutionCode"]}
-            />
-        );
-    }
-
+    /**
+     * Průzkumník je samostatná stránka, seznam proto zabírá celou šířku; obě akce
+     * připojení pracují s výběrem v seznamu, ne s tím, co je v průzkumníku vidět.
+     */
     renderCenterPanel(readMode: boolean, closed: boolean) {
         const activeFund = this.getActiveFund(this.props);
         return (
             <div className='aip-center-panel'>
-                <AipExplorer mode={ExplorerMode.VIEW}/>
+                <AipTable
+                    onAipSelect={(id) => this.props.dispatch(selectAip(id))}
+                    onExplore={(id) => this.props.history.push(
+                        urlFundAipExplorer(activeFund.id, id, getFundVersion(activeFund)))}
+                    initialFilters={initialFilters(activeFund.id)}
+                    hiddenValues={["fund.name", "institution.name", "institutionCode"]}
+                />
                 <ActionsContainer fund={activeFund} readMode={readMode}/>
             </div>
         );

@@ -18,6 +18,7 @@ import {
     AdminUserPage,
     AipPage,
     AipExplorerPage,
+    ArrAipExplorerPage,
     ArrDaoPage,
     ArrDataGridPage,
     ArrMovementsPage,
@@ -228,6 +229,7 @@ class Layout extends AbstractReactComponent {
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${NODE}/:nodeId`} component={ArrPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${GRID}/:nodeId/:descItemTypeId?`} component={ArrDataGridPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${GRID}`} component={ArrDataGridPage} />
+                                            <Route path={`${URL_FUND}/:id/v/:versionId/${AIP}/:aipId/explorer`} component={ArrAipExplorerPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${AIP}`} component={ArrAipPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${MOVEMENTS}`} component={ArrMovementsPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${OUTPUTS}/:outputId`} component={ArrOutputPage} />
@@ -245,6 +247,7 @@ class Layout extends AbstractReactComponent {
                                             <Route path={`${URL_FUND}/:id/${NODE}/:nodeId`} component={ArrPage} />
                                             <Route path={`${URL_FUND}/:id/${GRID}/:nodeId/:descItemTypeId?`} component={ArrDataGridPage} />
                                             <Route path={`${URL_FUND}/:id/${GRID}`} component={ArrDataGridPage} />
+                                            <Route path={`${URL_FUND}/:id/${AIP}/:aipId/explorer`} component={ArrAipExplorerPage} />
                                             <Route path={`${URL_FUND}/:id/${AIP}`} component={ArrAipPage} />
                                             <Route path={`${URL_FUND}/:id/${PUBLICATION}`} component={ArrPublicationPage} />
                                             <Route path={`${URL_FUND}/:id/${MOVEMENTS}`} component={ArrMovementsPage} />

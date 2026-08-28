@@ -753,6 +753,10 @@
     "defaultMessage": "Back to the list",
     "srcHash": "nAub8TbwZrMW"
   },
+  "aip.explorer.open": {
+    "defaultMessage": "Open the explorer",
+    "srcHash": "_QWqGVI3J8rQ"
+  },
   "aip.explorer.tab.package": {
     "defaultMessage": "Package",
     "srcHash": "O-2iMJ9LuP-v"
