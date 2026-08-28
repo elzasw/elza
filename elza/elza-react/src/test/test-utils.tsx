@@ -35,6 +35,17 @@ export type RenderWithProvidersOptions = Omit<RenderOptions, 'wrapper'> & {
     messages?: Record<string, string>;
 };
 
+/**
+ * Testy vykreslují s prázdným katalogem a spoléhají na defaultMessage; hlášení
+ * o chybějícím překladu proto není chyba. Ostatní chyby react-intl se hlásí dál.
+ */
+const ignoreMissingTranslation = (error: {code?: string}) => {
+    if (error?.code === 'MISSING_TRANSLATION') {
+        return;
+    }
+    console.error(error);
+};
+
 export function renderWithProviders(
     ui: ReactElement,
     {
@@ -49,7 +60,7 @@ export function renderWithProviders(
     const resolvedStore = store ?? createTestStore(preloadedState);
     const Wrapper: React.FC<PropsWithChildren> = ({ children }) => (
         <Provider store={resolvedStore}>
-            <IntlProvider locale={locale} messages={messages}>
+            <IntlProvider locale={locale} messages={messages} onError={ignoreMissingTranslation}>
                 <MemoryRouter initialEntries={[route]}>{children}</MemoryRouter>
             </IntlProvider>
         </Provider>

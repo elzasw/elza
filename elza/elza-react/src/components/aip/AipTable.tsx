@@ -190,7 +190,7 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, onExplore, filterDisabled, in
     };
 
     const handleSelect = (id: number) =>  {
-        setDetailOpen(true);
+        setDetailOpen?.(true);
         history.push(urlAip(id))
     };
 
