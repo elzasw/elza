@@ -15,6 +15,10 @@
     "defaultMessage": "ApiKey - value",
     "srcHash": "oRAn41A0cbCo"
   },
+  "admin.extSystem.daSyncDelay": {
+    "defaultMessage": "Synchronization interval (s), 0 = no synchronization",
+    "srcHash": "wXgprAUB_RPo"
+  },
   "admin.extSystem.downloadMethod": {
     "defaultMessage": "AIP download method",
     "srcHash": "KzmUpPylfYZM"

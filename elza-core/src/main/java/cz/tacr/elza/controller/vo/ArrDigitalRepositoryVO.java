@@ -31,6 +31,8 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
 
     private DaOnReceivedAction onReceived;
 
+    private Integer syncDelay;
+
     public String getViewDaoUrl() {
         return viewDaoUrl;
     }
@@ -95,6 +97,14 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
         this.onReceived = onReceived;
     }
 
+    public Integer getSyncDelay() {
+        return syncDelay;
+    }
+
+    public void setSyncDelay(Integer syncDelay) {
+        this.syncDelay = syncDelay;
+    }
+
     @Override
     public SysExternalSystem createEntity(ApScope scope) {
         ArrDigitalRepository entity = new ArrDigitalRepository();
@@ -126,13 +136,16 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
             entity.setMultipleLinks(multipleLinks);
         }
         if (digitalRepositoryType == DigitalRepositoryType.DA) {
-            // Download settings are meaningful only for a DA repository; the entity keeps
-            // its defaults when the client sends nothing.
+            // Download and synchronization settings are meaningful only for a DA repository;
+            // the entity keeps its defaults when the client sends nothing.
             if (downloadMethod != null) {
                 entity.setDownloadMethod(downloadMethod);
             }
             if (onReceived != null) {
                 entity.setOnReceived(onReceived);
+            }
+            if (syncDelay != null) {
+                entity.setSyncDelay(syncDelay);
             }
         }
 
@@ -161,6 +174,7 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
         vo.setMultipleLinks(src.getMultipleLinks());
         vo.setDownloadMethod(src.getDownloadMethod());
         vo.setOnReceived(src.getOnReceived());
+        vo.setSyncDelay(src.getSyncDelay());
         return vo;
     }
 }

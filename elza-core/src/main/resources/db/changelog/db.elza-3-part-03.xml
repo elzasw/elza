@@ -110,4 +110,17 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="20260828140000" author="ppy">
+        <!-- Interval of the synchronization with a DA repository, in seconds; 0 = the
+             repository is not synchronized. Replaces the elza.da.sync configuration, so the
+             value is administered per repository instead of per deployment. Existing
+             repositories start at the default of 5 minutes; a deployment that used a
+             different interval sets it again in the administration. -->
+        <addColumn tableName="arr_digital_repository">
+            <column name="sync_delay" type="int" defaultValueNumeric="300">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

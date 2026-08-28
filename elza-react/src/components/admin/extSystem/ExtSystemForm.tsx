@@ -79,6 +79,10 @@ export const daSettingsMessages = defineMessages({
         id: 'admin.extSystem.onReceivedDownloadMetadata',
         defaultMessage: 'Stáhnout metadata',
     },
+    syncDelay: {
+        id: 'admin.extSystem.daSyncDelay',
+        defaultMessage: 'Interval synchronizace (s), 0 = bez synchronizace',
+    },
 });
 
 export const DA_DOWNLOAD_METHOD_MESSAGE: Record<string, MessageDescriptor> = {
@@ -114,6 +118,7 @@ type ExtSystemFormValues = {
     multipleLinks?: boolean;
     downloadMethod?: string;
     onReceived?: string;
+    syncDelay?: number;
 };
 
 type Scope = {
@@ -376,6 +381,13 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
                                     </option>
                                 ))}
                             </Field>
+                            <Field
+                                name="syncDelay"
+                                type="number"
+                                component={FormInputField}
+                                label={intl.formatMessage(daSettingsMessages.syncDelay)}
+                                parse={(v) => (v === '' || v == null ? undefined : Number(v))}
+                            />
                         </>
                     )}
                 </div>
