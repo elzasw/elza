@@ -16,7 +16,7 @@ export const messages = defineMessages({
     nadChangeCode:    { id: "aip.col.nadChangeCode",    defaultMessage: "Vnější změna" },
     aipSize:          { id: "aip.col.aipSize",          defaultMessage: "Velikost" },
     metadataLoad:     { id: "aip.col.metadataLoad",     defaultMessage: "Načtená metadata" },
-    importState:      { id: "aip.col.importState",      defaultMessage: "Aktuální verze" },
+    importState:      { id: "aip.col.importState",      defaultMessage: "Stav importu" },
     exportState:      { id: "aip.col.exportState",      defaultMessage: "Stav exportu" },
     completeAipLoad:  { id: "aip.col.completeAipLoad",  defaultMessage: "Načtený kompletní AIP" },
     problemType:      { id: "aip.col.problemType",      defaultMessage: "Problém" },

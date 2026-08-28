@@ -702,8 +702,8 @@
     "srcHash": "TiaXeZ4HFkIH"
   },
   "aip.col.importState": {
-    "defaultMessage": "Current version",
-    "srcHash": "0u9juJv4hc8n"
+    "defaultMessage": "Import state",
+    "srcHash": "ve1rNhbanwoQ"
   },
   "aip.col.ingestionCode": {
     "defaultMessage": "Ingestion number",
