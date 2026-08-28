@@ -8,15 +8,15 @@ export const getBoolIcon = (value?: boolean) => {
 }
 
 export const getConnectedToJP = (
-    linkedNodes: Array<LinkedNodeVO> | null,
+    linkedNodes: Array<LinkedNodeVO> | null | undefined,
     fundId: number,
     handleDeleteLink: (linkId: number) => void,
 ) => {
-    let iconString = "fa fa-close";
+    let iconString = "fa-close";
     let nodes;
 
-    if (linkedNodes) {
-        iconString = "fa fa-check";
+    if (linkedNodes && linkedNodes.length > 0) {
+        iconString = "fa-check";
 
         nodes = linkedNodes.map(item =>
             <div key={item.id}>
