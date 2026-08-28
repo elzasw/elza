@@ -30,6 +30,7 @@ public class ArrDigitalRepositoryVOTest {
         vo.setMultipleLinks(true);
         vo.setDownloadMethod(DaDownloadMethod.FILE_TRANSFER);
         vo.setOnReceived(DaOnReceivedAction.DOWNLOAD_METADATA);
+        vo.setSyncDelay(3600);
         return vo;
     }
 
@@ -46,9 +47,10 @@ public class ArrDigitalRepositoryVOTest {
         assertFalse(entity.getSendNotification());
         // settings a filesystem repository does use
         assertEquals("/opt/repo", entity.getUrl());
-        // download settings apply to DA repositories only
+        // download and synchronization settings apply to DA repositories only
         assertEquals(DaDownloadMethod.STANDARD, entity.getDownloadMethod());
         assertEquals(DaOnReceivedAction.NONE, entity.getOnReceived());
+        assertEquals(Integer.valueOf(ArrDigitalRepository.DEFAULT_SYNC_DELAY), entity.getSyncDelay());
         assertEquals("ELZA-REPO", entity.getElzaCode());
         assertTrue(entity.getMultipleLinks());
         assertEquals("REPO", entity.getCode());
@@ -77,6 +79,7 @@ public class ArrDigitalRepositoryVOTest {
 
         assertEquals(DaDownloadMethod.FILE_TRANSFER, entity.getDownloadMethod());
         assertEquals(DaOnReceivedAction.DOWNLOAD_METADATA, entity.getOnReceived());
+        assertEquals(Integer.valueOf(3600), entity.getSyncDelay());
     }
 
     @Test
@@ -84,11 +87,23 @@ public class ArrDigitalRepositoryVOTest {
         ArrDigitalRepositoryVO vo = createVO(DigitalRepositoryType.DA);
         vo.setDownloadMethod(null);
         vo.setOnReceived(null);
+        vo.setSyncDelay(null);
 
         ArrDigitalRepository entity = (ArrDigitalRepository) vo.createEntity(null);
 
         assertEquals(DaDownloadMethod.STANDARD, entity.getDownloadMethod());
         assertEquals(DaOnReceivedAction.NONE, entity.getOnReceived());
+        assertEquals(Integer.valueOf(ArrDigitalRepository.DEFAULT_SYNC_DELAY), entity.getSyncDelay());
+    }
+
+    @Test
+    void createEntity_da_zeroSyncDelayDisablesSynchronization() {
+        ArrDigitalRepositoryVO vo = createVO(DigitalRepositoryType.DA);
+        vo.setSyncDelay(0);
+
+        ArrDigitalRepository entity = (ArrDigitalRepository) vo.createEntity(null);
+
+        assertEquals(Integer.valueOf(0), entity.getSyncDelay());
     }
 
     @Test
@@ -100,6 +115,7 @@ public class ArrDigitalRepositoryVOTest {
 
         assertEquals(DaDownloadMethod.FILE_TRANSFER, vo.getDownloadMethod());
         assertEquals(DaOnReceivedAction.DOWNLOAD_METADATA, vo.getOnReceived());
+        assertEquals(Integer.valueOf(3600), vo.getSyncDelay());
     }
 
     @Test

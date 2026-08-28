@@ -324,6 +324,9 @@ class AdminExtSystemDetail extends AbstractReactComponent {
                                             <FormattedMessage {...DA_ON_RECEIVED_MESSAGE[extSystem.onReceived]} />
                                         )}
                                     </span>
+
+                                    <h4><FormattedMessage {...daSettingsMessages.syncDelay} /></h4>
+                                    <span>{extSystem.syncDelay}</span>
                                 </>
                             )}
                         </div>

@@ -19,6 +19,9 @@ vi.mock('actions/index.jsx', () => ({
 const select = (container: HTMLElement, name: string) =>
     container.querySelector<HTMLSelectElement>(`select[name="${name}"]`);
 
+const input = (container: HTMLElement, name: string) =>
+    container.querySelector<HTMLInputElement>(`input[name="${name}"]`);
+
 const repository = (digitalRepositoryType: DigitalRepositoryType, extra: Record<string, unknown> = {}) => ({
     [JAVA_ATTR_CLASS]: EXT_SYSTEM_CLASS.ArrDigitalRepository,
     code: 'REPO',
@@ -28,7 +31,7 @@ const repository = (digitalRepositoryType: DigitalRepositoryType, extra: Record<
 });
 
 describe('ExtSystemForm - nastavení stahování AIP', () => {
-    it('nabízí způsob stahování a akci po přijetí pro digitální archiv', () => {
+    it('nabízí nastavení stahování a interval synchronizace pro digitální archiv', () => {
         const { container } = renderWithProviders(
             <ExtSystemForm initialValues={repository(DigitalRepositoryType.Da)} onSubmitForm={vi.fn()} />,
         );
@@ -41,6 +44,7 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
         expect(screen.getByRole('option', { name: 'File Transfer' })).toBeInTheDocument();
         expect(screen.getByRole('option', { name: 'Nic nedělat' })).toBeInTheDocument();
         expect(screen.getByRole('option', { name: 'Stáhnout metadata' })).toBeInTheDocument();
+        expect(input(container, 'syncDelay')).not.toBeNull();
     });
 
     it.each([DigitalRepositoryType.Filesystem, DigitalRepositoryType.Wsdl])(
@@ -52,6 +56,7 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
 
             expect(select(container, 'downloadMethod')).toBeNull();
             expect(select(container, 'onReceived')).toBeNull();
+            expect(input(container, 'syncDelay')).toBeNull();
         },
     );
 
@@ -84,6 +89,7 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
                     sendNotification: 'false',
                     downloadMethod: DaDownloadMethod.Standard,
                     onReceived: DaOnReceivedAction.None,
+                    syncDelay: 300,
                 })}
                 onSubmitForm={onSubmitForm}
             />,
@@ -91,12 +97,14 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
 
         fireEvent.change(select(container, 'downloadMethod')!, { target: { value: DaDownloadMethod.FileTransfer } });
         fireEvent.change(select(container, 'onReceived')!, { target: { value: DaOnReceivedAction.DownloadMetadata } });
+        fireEvent.change(input(container, 'syncDelay')!, { target: { value: '3600' } });
         fireEvent.click(screen.getByRole('button', { name: '[admin.extSystem.submit.edit]' }));
 
         await vi.waitFor(() => expect(onSubmitForm).toHaveBeenCalledTimes(1));
         expect(onSubmitForm.mock.calls[0][0]).toMatchObject({
             downloadMethod: DaDownloadMethod.FileTransfer,
             onReceived: DaOnReceivedAction.DownloadMetadata,
+            syncDelay: 3600,
         });
     });
 });

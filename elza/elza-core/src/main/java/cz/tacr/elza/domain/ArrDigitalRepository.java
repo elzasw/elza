@@ -21,6 +21,9 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @Table
 public class ArrDigitalRepository extends SysExternalSystem {
 
+    /** Default interval of the synchronization with a DA repository, in seconds (5 minutes). */
+    public static final int DEFAULT_SYNC_DELAY = 300;
+
     @Column(length = StringLength.LENGTH_1000)
     private String viewDaoUrl;
 
@@ -54,6 +57,12 @@ public class ArrDigitalRepository extends SysExternalSystem {
     @Column(length = StringLength.LENGTH_ENUM, nullable = false)
     private DaOnReceivedAction onReceived = DaOnReceivedAction.NONE;
 
+    /**
+     * Seconds between two synchronizations with a DA repository; 0 = no synchronization.
+     */
+    @Column(nullable = false)
+    private Integer syncDelay = DEFAULT_SYNC_DELAY;
+
     public ArrDigitalRepository() {
     }
 
@@ -67,6 +76,7 @@ public class ArrDigitalRepository extends SysExternalSystem {
 		this.multipleLinks = ardr.getMultipleLinks();
 		this.downloadMethod = ardr.getDownloadMethod();
 		this.onReceived = ardr.getOnReceived();
+		this.syncDelay = ardr.getSyncDelay();
     }
 
 	/**
@@ -155,6 +165,14 @@ public class ArrDigitalRepository extends SysExternalSystem {
 
     public void setOnReceived(DaOnReceivedAction onReceived) {
         this.onReceived = onReceived;
+    }
+
+    public Integer getSyncDelay() {
+        return syncDelay;
+    }
+
+    public void setSyncDelay(Integer syncDelay) {
+        this.syncDelay = syncDelay;
     }
 
     @Override
