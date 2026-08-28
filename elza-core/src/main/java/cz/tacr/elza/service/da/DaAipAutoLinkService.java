@@ -1,33 +1,26 @@
 package cz.tacr.elza.service.da;
 
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import cz.tacr.elza.config.da.DaAutoLinkConfig;
-import cz.tacr.elza.core.data.ItemType;
-import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrDaLink;
-import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.DaAip;
 import cz.tacr.elza.domain.DaAipState;
-import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.repository.AipStateRepository;
 import cz.tacr.elza.repository.ArrDaLinkRepository;
-import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventIdNodeIdInVersion;
@@ -37,12 +30,11 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
  * Attaches received AIPs to existing nodes without user interaction
  * ({@link cz.tacr.elza.api.DaOnReceivedAction#DOWNLOAD_METADATA}).
  *
- * The candidate nodes are the nodes of the AIP's fund (from PACKAGE-INFO) whose description
- * item configured in {@link DaAutoLinkConfig} carries one of the AIP identifiers - the
- * {@code unitid} values of the archived units in the EAD ({@link AipIdentifiers}) or the AIP
- * code itself. The AIP is attached only when exactly one node matches; no match and an
- * ambiguous match are logged and left for manual processing. An AIP that already has a live
- * link is never touched.
+ * The AIP is matched onto a node by UUID: the UUID of the package first, then the levels of
+ * its logical structural map top down, then its representations - see {@link AipNodeUuids}.
+ * The first UUID that belongs to a node of the AIP's fund wins, so the match is the outermost
+ * part of the AIP that ELZA already describes. An AIP that already has a live link is never
+ * touched.
  */
 @Service
 public class DaAipAutoLinkService {
@@ -56,26 +48,22 @@ public class DaAipAutoLinkService {
     @Autowired
     private ArrDaLinkRepository daLinkRepository;
     @Autowired
-    private DescItemRepository descItemRepository;
-    @Autowired
-    private StaticDataService staticDataService;
+    private NodeRepository nodeRepository;
     @Autowired
     private ArrangementInternalService arrangementInternalService;
     @Autowired
     private EventNotificationService eventNotificationService;
-    @Autowired
-    private DaAutoLinkConfig config;
 
     /**
-     * Attaches every AIP whose identifiers select exactly one node. A failure of one AIP is
-     * logged and does not stop the others - the metadata import itself already succeeded.
+     * Attaches every AIP whose UUIDs select a node. A failure of one AIP is logged and does not
+     * stop the others - the metadata import itself already succeeded.
      *
-     * @param identifiersByAip AIP id to the identifiers read from its metadata
+     * @param uuidsByAip AIP id to the UUIDs it offers, in matching order
      * @return number of created links
      */
-    public int linkReceivedAips(Map<Integer, Set<String>> identifiersByAip) {
+    public int linkReceivedAips(Map<Integer, List<String>> uuidsByAip) {
         int linked = 0;
-        for (Map.Entry<Integer, Set<String>> entry : identifiersByAip.entrySet()) {
+        for (Map.Entry<Integer, List<String>> entry : uuidsByAip.entrySet()) {
             try {
                 if (linkReceivedAip(entry.getKey(), entry.getValue()).isPresent()) {
                     linked++;
@@ -88,12 +76,12 @@ public class DaAipAutoLinkService {
     }
 
     /**
-     * @param aipId       AIP to attach
-     * @param identifiers identifiers of the archived units read from the AIP metadata
+     * @param aipId     AIP to attach
+     * @param nodeUuids UUIDs the AIP offers, in matching order
      * @return the created link, empty when the AIP was not attached
      */
     @Transactional
-    public Optional<ArrDaLink> linkReceivedAip(Integer aipId, Set<String> identifiers) {
+    public Optional<ArrDaLink> linkReceivedAip(Integer aipId, List<String> nodeUuids) {
         DaAip aip = daService.findAipById(aipId);
         if (!daLinkRepository.findByAipIdAndDeleteChangeIsNull(aipId).isEmpty()) {
             logger.debug("AIP={} is already attached to a node, automatic attachment skipped", aipId);
@@ -104,61 +92,37 @@ public class DaAipAutoLinkService {
             logger.info("AIP={} has no fund, automatic attachment skipped", aipId);
             return Optional.empty();
         }
-
-        Set<String> values = new LinkedHashSet<>();
-        if (identifiers != null) {
-            identifiers.stream().filter(StringUtils::isNotBlank).forEach(values::add);
-        }
-        if (StringUtils.isNotBlank(aip.getCode())) {
-            values.add(aip.getCode());
-        }
-
-        List<ArrDescItem> items = findIdentifierItems(aipState, values);
-        Set<Integer> nodeIds = items.stream().map(ArrDescItem::getNodeId).collect(Collectors.toSet());
-        if (nodeIds.isEmpty()) {
-            logger.info("AIP={} matches no node of fund={} by identifiers {}", aipId,
-                    aipState.getFund().getFundId(), values);
-            return Optional.empty();
-        }
-        if (nodeIds.size() > 1) {
-            logger.warn("AIP={} matches several nodes {} of fund={} by identifiers {}, automatic attachment skipped",
-                    aipId, nodeIds, aipState.getFund().getFundId(), values);
+        if (nodeUuids == null || nodeUuids.isEmpty()) {
+            logger.info("AIP={} offers no UUID to match a node by", aipId);
             return Optional.empty();
         }
 
-        Integer nodeId = nodeIds.iterator().next();
-        ArrDaLink link = daService.connectToJP(nodeId, aipId);
-        logger.info("AIP={} automatically attached to node={}", aipId, nodeId);
+        Map<String, ArrNode> nodesByUuid = nodeRepository
+                .findByFundAndUuidIn(aipState.getFund(), nodeUuids).stream()
+                .collect(Collectors.toMap(ArrNode::getUuid, Function.identity(), (a, b) -> a));
+        if (nodesByUuid.isEmpty()) {
+            logger.info("AIP={} matches no node of fund={} by any of its {} UUID(s)", aipId,
+                    aipState.getFund().getFundId(), nodeUuids.size());
+            return Optional.empty();
+        }
+
+        // the UUIDs come in matching order, so the first hit is the outermost matching part
+        String matchedUuid = nodeUuids.stream().filter(nodesByUuid::containsKey).findFirst().orElseThrow();
+        ArrNode node = nodesByUuid.get(matchedUuid);
+        if (nodesByUuid.size() > 1) {
+            logger.info("AIP={} matches {} nodes of fund={}, attaching to the first one in matching order: {}",
+                    aipId, nodesByUuid.size(), aipState.getFund().getFundId(), matchedUuid);
+        }
+
+        ArrDaLink link = daService.connectToJP(node.getNodeId(), aipId);
+        logger.info("AIP={} automatically attached to node={} by UUID {}", aipId, node.getNodeId(), matchedUuid);
 
         ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFund(aipState.getFund());
         if (fundVersion != null) {
             eventNotificationService.publishEvent(new EventIdNodeIdInVersion(EventType.DAO_LINK_CREATE,
-                    fundVersion.getFundVersionId(), link.getDaoLinkId(), Collections.singletonList(nodeId)));
+                    fundVersion.getFundVersionId(), link.getDaoLinkId(),
+                    Collections.singletonList(node.getNodeId())));
         }
         return Optional.of(link);
-    }
-
-    private List<ArrDescItem> findIdentifierItems(DaAipState aipState, Set<String> values) {
-        if (values.isEmpty()) {
-            return Collections.emptyList();
-        }
-        StaticDataProvider sdp = staticDataService.getData();
-        ItemType itemType = sdp.getItemTypeByCode(config.getItemType());
-        if (itemType == null) {
-            logger.warn("Item type {} (elza.da.auto-link.item-type) does not exist, automatic attachment skipped",
-                    config.getItemType());
-            return Collections.emptyList();
-        }
-        if (StringUtils.isBlank(config.getItemSpec())) {
-            return descItemRepository.findOpenByFundTypeAndStringValues(aipState.getFund(), itemType.getEntity(), values);
-        }
-        RulItemSpec itemSpec = itemType.getItemSpecByCode(config.getItemSpec());
-        if (itemSpec == null) {
-            logger.warn("Item specification {} (elza.da.auto-link.item-spec) does not exist for type {}, automatic attachment skipped",
-                    config.getItemSpec(), config.getItemType());
-            return Collections.emptyList();
-        }
-        return descItemRepository.findOpenByFundTypeSpecAndStringValues(aipState.getFund(), itemType.getEntity(),
-                itemSpec, values);
     }
 }

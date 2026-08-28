@@ -144,8 +144,11 @@ public class DaoProcessor {
 
     private final Map<Integer, List<DaDaoFileFolder>> newDaDaoFileFolderMap = new HashMap<>();
 
-    /** Identifiers of the archived units read from the EAD, see {@link AipIdentifiers}. */
-    private final Set<String> aipIdentifiers = new LinkedHashSet<>();
+    /** Codes of the levels of the logical structural map, in document order. */
+    private final Set<String> levelUuids = new LinkedHashSet<>();
+
+    /** Codes of the representations, in document order. */
+    private final Set<String> representationUuids = new LinkedHashSet<>();
 
     private boolean forceUpdate;
 
@@ -195,7 +198,6 @@ public class DaoProcessor {
         if (ead != null) {
             //ead
             createDaoItemsFromArchDesc(ead.getArchdesc(), change);
-            aipIdentifiers.addAll(AipIdentifiers.fromEad(ead));
         }
 
         deleteOldComponents(change);
@@ -259,6 +261,7 @@ public class DaoProcessor {
                 for (DivType.Fptr fptr : divType.getFptr()) {
                     MetsType.FileSec.FileGrp fileGrp = (MetsType.FileSec.FileGrp) fptr.getFILEID();
                     String code = fileGrp.getID();
+                    representationUuids.add(code);
                     DaDao.DaoType type = DaDao.DaoType.REPRESENTATION;
                     String label = getRepresentationLabel(fileSec, code);
                     DaDao daDao = daDaoMap.getOrDefault(code, null);
@@ -458,6 +461,7 @@ public class DaoProcessor {
     private void createDaoFromDiv(DivType divType, DaChange change, @Nullable DaDao parentDao) {
         String label = divType.getTYPE() != null ? divType.getTYPE() + ":" + divType.getLABEL() : divType.getLABEL();
         String code = divType.getID();
+        levelUuids.add(code);
         DaDao daDao = daDaoMap.getOrDefault(code, null);
         DaDao.DaoType type = DaDao.DaoType.LOGICAL;
         if (daDao == null || isDaoChanged(daDao, code, label, type)) {
@@ -694,11 +698,11 @@ public class DaoProcessor {
     }
 
     /**
-     * @return identifiers of the archived units read from the EAD of the package; empty when
-     *         the package carries no EAD or {@link #process()} has not run yet
+     * @return UUIDs the AIP offers for matching against the nodes, in matching order; empty
+     *         when {@link #process()} has not run yet
      */
-    public Set<String> getAipIdentifiers() {
-        return aipIdentifiers;
+    public List<String> getNodeUuids() {
+        return AipNodeUuids.inMatchingOrder(aip.getCode(), levelUuids, representationUuids);
     }
 
     public String getGroovyFilePath() {

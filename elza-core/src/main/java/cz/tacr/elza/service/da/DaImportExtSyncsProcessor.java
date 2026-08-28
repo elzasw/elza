@@ -147,9 +147,9 @@ public class DaImportExtSyncsProcessor implements Runnable {
                                     ? receivedAipIds(syncQueueItemList) : List.of();
                             if (aipType == AipType.METADATA_BASE || aipType == AipType.AIP_BASE) {
                                 List<Integer> aipids = syncQueueItemList.stream().map(q -> q.getAip().getAipId()).toList();
-                                Map<Integer, Set<String>> identifiersByAip = daService.doCreateDaoStructure(aipids, false);
+                                Map<Integer, List<String>> uuidsByAip = daService.doCreateDaoStructure(aipids, false);
                                 if (autoProcess) {
-                                    aipAutoLinkService.linkReceivedAips(identifiersByAip);
+                                    aipAutoLinkService.linkReceivedAips(uuidsByAip);
                                 }
                             }
 
