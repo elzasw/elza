@@ -2627,8 +2627,10 @@ public class ClientFactoryVO {
             vo.setAipSize(state.getAipSize());
             vo.setMetadataLoad(state.getMetadataLoad());
             vo.setCompleteAipLoad(state.getCompleteAipLoad());
-            vo.setMetadataError(state.getMetadataError());
-            vo.setMetadataErrorException(state.getMetadataErrorException());
+            if (state.getProblemType() != null) {
+                vo.setProblemType(AipProblemType.fromValue(state.getProblemType().name()));
+            }
+            vo.setProblemDescription(state.getProblemDescription());
             vo.setAipVersionMetadata(state.getAipVersionMetadata());
         }
 

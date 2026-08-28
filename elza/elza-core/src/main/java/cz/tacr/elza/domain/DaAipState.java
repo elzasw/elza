@@ -12,6 +12,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
 import java.time.LocalDateTime;
+import cz.tacr.elza.api.AipProblemType;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 
 @Entity(name = "da_aip_state")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "preferredPart", "lastUpdate"})
@@ -91,8 +94,38 @@ public class DaAipState {
     @Column
     private String metadataErrorException;
 
+    /**
+     * Most severe problem of the AIP, derived from the processing result and from the
+     * references that could not be resolved; null when the AIP has no problem.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(length = 50)
+    private AipProblemType problemType;
+
+    /**
+     * Description of all detected problems, shown to the user.
+     */
+    @Column
+    private String problemDescription;
+
     @Column(length = 250)
     private String aipVersionMetadata;
+
+    public AipProblemType getProblemType() {
+        return problemType;
+    }
+
+    public void setProblemType(AipProblemType problemType) {
+        this.problemType = problemType;
+    }
+
+    public String getProblemDescription() {
+        return problemDescription;
+    }
+
+    public void setProblemDescription(String problemDescription) {
+        this.problemDescription = problemDescription;
+    }
 
     public Integer getAipStateId() {
         return aipStateId;

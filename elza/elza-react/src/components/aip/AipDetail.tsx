@@ -12,6 +12,7 @@ import { useHistory } from 'react-router';
 import { urlAip } from '../../constants';
 
 import { FolderOpen20Filled } from '@fluentui/react-icons';
+import { AipProblemType } from 'elza-api';
 import i18n from 'components/i18n';
 import { modalDialogHide, modalDialogShow } from 'actions/global/modalDialog';
 import AipExplorerModalWrapper from './explorer/AipExplorerWrapper';
@@ -94,7 +95,7 @@ const AipDetail: FC<Props> = ({open, onClose, onOpen}) => {
                             as="a"
                             className="open-btn"
                             onClick={handleOpenExplorer}
-                            disabled={!aip.data.metadataLoad || aip.data.metadataError}
+                            disabled={!aip.data.metadataLoad || aip.data.problemType === AipProblemType.MetadataError}
                         >
                             <FolderOpen20Filled/>
                             <span>{i18n("aip.detail.explorer.open")}</span>

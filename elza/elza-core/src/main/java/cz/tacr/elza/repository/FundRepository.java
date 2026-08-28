@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ParInstitution;
 
 /**
  * Respozitory pro archivní soubory
@@ -25,6 +26,13 @@ public interface FundRepository extends ElzaJpaRepository<ArrFund, Integer> , Fu
 
     @Query("SELECT af FROM arr_fund af WHERE af.internalCode = ?1")
     ArrFund findByInternalCode(String code);
+
+    /**
+     * Funds of the institution carrying the given fund number. The pair is not unique in the
+     * database, so the caller decides what an ambiguous result means.
+     */
+    @Query("SELECT af FROM arr_fund af WHERE af.institution = ?1 AND af.fundNumber = ?2")
+    List<ArrFund> findByInstitutionAndFundNumber(ParInstitution institution, Integer fundNumber);
 
     @Query("SELECT f FROM arr_fund_version fv JOIN fv.fund f WHERE fv.lockChangeId IS NULL AND fv.fundVersionId = ?1")
     ArrFund findByFundVersionId(Integer fundVersionId);

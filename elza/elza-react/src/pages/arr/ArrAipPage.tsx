@@ -12,7 +12,7 @@ import { ExplorerMode } from 'components/aip/explorer/ExplorerContext';
 import {selectAip} from '../../actions/aip/aip';
 import type { AppState, Fund, UserDetail } from 'typings/store';
 
-import { AipFieldName } from 'elza-api';
+import { AipFieldName, AipProblemType } from 'elza-api';
 import { buildFilter } from 'components/aip/filter/aipFilterModel';
 import { AipFilterEntry } from 'typings/store';
 import ActionsContainer from 'components/arr/aip/ActionsContainer';
@@ -40,9 +40,10 @@ const initialFilters = (fundId: number): AipFilterEntry[] => [
         invisible: true,
     },
     {
-        id: "metadataError",
-        field: AipFieldName.MetadataError,
-        filter: buildFilter(AipFieldName.MetadataError, "bool", {operation: "EQ", value: false}),
+        id: "problemType",
+        field: AipFieldName.ProblemType,
+        filter: buildFilter(AipFieldName.ProblemType, "problemType",
+            {operation: "NEQ", value: AipProblemType.MetadataError}),
         invisible: true,
     },
 ];

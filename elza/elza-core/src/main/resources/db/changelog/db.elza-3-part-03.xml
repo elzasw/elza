@@ -123,4 +123,36 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="20260828160000" author="ppy">
+        <!-- Problem state of an AIP: what prevents it from being processed or from being
+             mapped onto the archival description (metadata processing failure, unresolved
+             fund, unresolved institution). Replaces the metadata_error flag as the value the
+             user filters and reads; the flag itself stays as the raw processing outcome the
+             state is derived from. Existing failures are carried over. -->
+        <addColumn tableName="da_aip_state">
+            <column name="problem_type" type="nvarchar(50)"/>
+            <column name="problem_description" type="${type.text}"/>
+        </addColumn>
+        <sql dbms="postgresql">
+            UPDATE da_aip_state
+               SET problem_type = 'METADATA_ERROR',
+                   problem_description = CASE
+                       WHEN metadata_error_exception IS NULL THEN NULL
+                       ELSE 'Chyba při zpracování metadat: ' || metadata_error_exception
+                   END
+             WHERE delete_change_id IS NULL AND metadata_error IS TRUE;
+
+            UPDATE da_aip_state
+               SET problem_type = 'UNKNOWN_FUND',
+                   problem_description = 'Fond nebyl nalezen podle čísla fondu ani podle interního kódu.'
+             WHERE delete_change_id IS NULL AND metadata_error IS NOT TRUE AND fund_id IS NULL;
+
+            UPDATE da_aip_state
+               SET problem_type = 'UNKNOWN_INSTITUTION',
+                   problem_description = 'Instituce nebyla nalezena.'
+             WHERE delete_change_id IS NULL AND metadata_error IS NOT TRUE
+               AND fund_id IS NOT NULL AND institution_id IS NULL;
+        </sql>
+    </changeSet>
+
 </databaseChangeLog>

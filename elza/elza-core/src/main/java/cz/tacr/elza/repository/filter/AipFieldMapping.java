@@ -42,7 +42,7 @@ public enum AipFieldMapping {
     AIP_SIZE         (AipJoin.STATE,           "aipSize",         NUMBER),
     METADATA_LOAD    (AipJoin.STATE,           "metadataLoad",    BOOLEAN),
     COMPLETE_AIP_LOAD(AipJoin.STATE,           "completeAipLoad", BOOLEAN),
-    METADATA_ERROR   (AipJoin.STATE,           "metadataError",   BOOLEAN),
+    PROBLEM_TYPE     (AipJoin.STATE,           "problemType",     ENUM),
     IMPORT_STATE     (AipJoin.IMPORT_SYNC,     "state",           ENUM),
     EXPORT_STATE     (AipJoin.EXPORT_SYNC,     "state",           ENUM);
 

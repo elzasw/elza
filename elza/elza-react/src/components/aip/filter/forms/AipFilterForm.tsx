@@ -8,10 +8,10 @@ import { storeFromArea } from "shared/utils";
 import { useEffect } from "react";
 import { useAppSelector } from "utils/hooks/useAppSelector";
 import { useAppThunkDispatch } from "utils/hooks";
-import { AipFieldName, QueueItemState } from "elza-api";
+import { AipFieldName, AipProblemType, QueueItemState } from "elza-api";
 import { generateUUID } from "utils/uuid";
 import { AipColumn } from "../../columns";
-import { boolMessages, filterErrorMessages, filterMessages, queueStateMessages } from "../../messages";
+import { boolMessages, filterErrorMessages, filterMessages, problemMessages, queueStateMessages } from "../../messages";
 import { globalMessages } from "components/shared/lang/messages";
 import { IntlShape, defineMessages, useIntl } from "react-intl";
 import {
@@ -47,6 +47,12 @@ const localMessages = defineMessages({
     loading: { id: "aip.filter.loading", defaultMessage: "Načítání…" },
 });
 
+const PROBLEM_TYPES = [
+    AipProblemType.MetadataError,
+    AipProblemType.UnknownFund,
+    AipProblemType.UnknownInstitution,
+];
+
 const IMPORT_STATES = [
     QueueItemState.ImportError, QueueItemState.ImportNew, QueueItemState.ImportOk, QueueItemState.Update,
 ];
@@ -60,6 +66,7 @@ const EXPORT_STATES = [
 function operationMessage(operation: AipOperation) {
     switch (operation) {
         case "EQ": return filterMessages.equals;
+        case "NEQ": return filterMessages.notEquals;
         case "CONTAINS": return filterMessages.contain;
         case "NOT_CONTAINS": return filterMessages.notContain;
         case "BETWEEN": return filterMessages.between;
@@ -79,6 +86,8 @@ function selectOptions(item: AipColumn, funds: AdminFunds, accessPoints: ApAcces
             return IMPORT_STATES.map(state => ({value: state, label: intl.formatMessage(queueStateMessages[state])}));
         case "exportState":
             return EXPORT_STATES.map(state => ({value: state, label: intl.formatMessage(queueStateMessages[state])}));
+        case "problemType":
+            return PROBLEM_TYPES.map(type => ({value: type, label: intl.formatMessage(problemMessages[type])}));
         case "ref": {
             const source = item.field === AipFieldName.Fund ? funds : accessPoints;
             if (!source.fetched || !source.rows) {
