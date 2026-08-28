@@ -17,6 +17,7 @@ import {
     AdminRequestsQueuePage,
     AdminUserPage,
     AipPage,
+    AipExplorerPage,
     ArrDaoPage,
     ArrDataGridPage,
     ArrMovementsPage,
@@ -263,6 +264,7 @@ class Layout extends AbstractReactComponent {
                                     <Route path={URL_ENTITY} component={RegistryPage} />
                                     <Route path={URL_ENTITY_CREATE} component={EntityCreatePage} />
 
+                                    <Route path={URL_AIP + "/:id/explorer"} component={AipExplorerPage} />
                                     <Route path={URL_AIP + "/:id"} component={AipPage} />
                                     <Route path={URL_AIP} component={AipPage} />
 

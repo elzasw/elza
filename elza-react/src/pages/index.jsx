@@ -31,4 +31,5 @@ export {default as MapPage} from 'pages/map/MapPage.jsx';
 export {default as PageLayout} from 'pages/shared/layout/PageLayout.jsx';
 
 export {default as AipPage} from 'pages/aip/AipPage';
+export {default as AipExplorerPage} from 'pages/aip/AipExplorerPage';
 export {default as ArrPublicationPage} from 'pages/arr/ArrPublicationPage';

@@ -157,6 +157,8 @@ import java.util.zip.ZipFile;
 import org.springframework.core.io.InputStreamResource;
 import java.nio.file.StandardCopyOption;
 import cz.tacr.elza.api.DaOnReceivedAction;
+import cz.tacr.elza.controller.vo.AipPackageEntry;
+import cz.tacr.elza.exception.SystemException;
 
 @Service
 public class DaService {
@@ -1707,6 +1709,67 @@ public class DaService {
         } catch (IOException e) {
             throw new IllegalStateException("Došlo k chybě při čtení souboru z cache", e);
         }
+    }
+
+    /**
+     * Lists the files of the package downloaded for the AIP, as it arrived from the digital
+     * archive. Serves the inspection of a package whose processing failed, so it must not
+     * depend on anything the processing produces.
+     *
+     * @throws ObjectNotFoundException when no package is stored for the AIP
+     */
+    @Transactional
+    public List<AipPackageEntry> getPackageEntries(Integer aipId) {
+        Path zip = getPackagePath(aipId);
+        List<AipPackageEntry> entries = new ArrayList<>();
+        try (ZipFile zipFile = new ZipFile(zip.toFile())) {
+            zipFile.stream()
+                    .filter(entry -> !entry.isDirectory())
+                    .sorted(Comparator.comparing(ZipEntry::getName))
+                    .forEach(entry -> {
+                        AipPackageEntry vo = new AipPackageEntry();
+                        vo.setPath(entry.getName());
+                        vo.setSize(entry.getSize() < 0 ? 0L : entry.getSize());
+                        entries.add(vo);
+                    });
+        } catch (IOException e) {
+            throw new SystemException("Nepodařilo se přečíst balíček AIP=" + aipId, e, BaseCode.INVALID_STATE);
+        }
+        return entries;
+    }
+
+    /**
+     * Reads one file out of the downloaded package; the caller closes the returned content.
+     */
+    @Transactional
+    public SpooledContent getPackageEntry(Integer aipId, String path) {
+        Path zip = getPackagePath(aipId);
+        try (ZipFile zipFile = new ZipFile(zip.toFile())) {
+            ZipEntry entry = zipFile.getEntry(path);
+            if (entry == null || entry.isDirectory()) {
+                throw new ObjectNotFoundException("Balíček AIP=" + aipId + " neobsahuje soubor " + path,
+                        AIP_NOT_FOUND);
+            }
+            try (InputStream in = zipFile.getInputStream(entry)) {
+                return SpooledContent.readFrom(in);
+            }
+        } catch (IOException e) {
+            throw new SystemException("Nepodařilo se přečíst soubor " + path + " balíčku AIP=" + aipId, e,
+                    BaseCode.INVALID_STATE);
+        }
+    }
+
+    private Path getPackagePath(Integer aipId) {
+        DaAip aip = findAipById(aipId);
+        DaLocalCache localCache = daLocalCacheRepository.findByAipAndQueueItemStatesIn(aip, getQueueImportStates());
+        if (localCache == null || localCache.getFilePath() == null) {
+            throw new ObjectNotFoundException("Pro AIP=" + aipId + " není stažený žádný balíček", AIP_NOT_FOUND);
+        }
+        Path zip = Paths.get(localCache.getFilePath());
+        if (!Files.isRegularFile(zip)) {
+            throw new ObjectNotFoundException("Balíček AIP=" + aipId + " není v lokální cache", AIP_NOT_FOUND);
+        }
+        return zip;
     }
 
     public DaoLinksResult getDaoLinks(Integer nodeId) {

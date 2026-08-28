@@ -1182,6 +1182,20 @@ enum AipProblemType {
 }
 
 /**
+ * Položka staženého balíčku AIPu
+ */
+model AipPackageEntry {
+    /**
+     * Cesta položky uvnitř balíčku
+     */
+    path: string;
+    /**
+     * Velikost položky v bytech
+     */
+    size: int64;
+}
+
+/**
  * Vo pro detail AIPu
  */
 model AipDetailVO {
@@ -5638,6 +5652,43 @@ namespace ElzaAPI.Aip {
          @Http.statusCode statusCode: 500;
          @body data: BaseException;
         };
+
+     /**
+      * Seznam souborů staženého balíčku AIPu. Slouží k prohlédnutí balíčku tak, jak přišel
+      * z digitálního archivu, i když se jeho zpracování nezdařilo.
+      */
+     @route("/{aipId}/package")
+     @get op listPackageEntries (
+        /** Aip ID */
+        ...AipIdParameter
+     ) : {
+         /** Seznam souborů balíčku */
+         @Http.statusCode statusCode: 200;
+         @body data: AipPackageEntry[];
+        } | {
+         /** Balíček není stažený */
+         @Http.statusCode statusCode: 404;
+         @body data: BaseException;
+        };
+
+     /**
+      * Obsah jednoho souboru staženého balíčku AIPu.
+      */
+     @route("/{aipId}/package/content")
+     @get op downloadPackageEntry (
+        /** Aip ID */
+        ...AipIdParameter,
+        /** Cesta souboru uvnitř balíčku */
+        @query path: string
+     ) : {
+        @header contentType: "*/*";
+        @Http.statusCode statusCode: 200;
+        @body data: bytes;
+       } | {
+        /** Soubor v balíčku není */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+       };
 
      /**
       * Get dao links for node by id

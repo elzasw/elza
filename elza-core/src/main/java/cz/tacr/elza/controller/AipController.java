@@ -15,6 +15,12 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import cz.tacr.elza.common.io.SpooledContent;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import org.springframework.http.HttpStatus;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -49,6 +55,27 @@ public class AipController implements AipsApi {
     @Override
     public ResponseEntity<Resource> aipDownloadComponent(Integer fileId) {
         return daService.getComponent(fileId);
+    }
+
+    @Override
+    public ResponseEntity<List<AipPackageEntry>> aipListPackageEntries(Integer aipId) {
+        return ResponseEntity.ok(daService.getPackageEntries(aipId));
+    }
+
+    @Override
+    public ResponseEntity<Resource> aipDownloadPackageEntry(Integer aipId, String path) {
+        SpooledContent content = daService.getPackageEntry(aipId, path);
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CONTENT_LENGTH, Long.toString(content.size()));
+            headers.add(HttpHeaders.CONTENT_DISPOSITION,
+                    "inline; filename=\"" + path.substring(path.lastIndexOf('/') + 1) + "\"");
+            return new ResponseEntity<>(new InputStreamResource(content.openStreamAndCloseOnEnd()), headers,
+                                        HttpStatus.OK);
+        } catch (IOException e) {
+            content.close();
+            throw new SystemException("Nepodařilo se odeslat soubor balíčku", e, BaseCode.INVALID_STATE);
+        }
     }
 
     @Override

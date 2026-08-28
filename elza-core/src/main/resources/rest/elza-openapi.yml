@@ -1727,6 +1727,60 @@ paths:
                 $ref: '#/components/schemas/BaseException'
       tags:
         - aips
+  /aip/{aipId}/package:
+    get:
+      operationId: Aip_listPackageEntries
+      description: |-
+        Seznam souborů staženého balíčku AIPu. Slouží k prohlédnutí balíčku tak, jak přišel
+        z digitálního archivu, i když se jeho zpracování nezdařilo.
+      parameters:
+        - $ref: '#/components/parameters/AipIdParameter'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AipPackageEntry'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aips
+  /aip/{aipId}/package/content:
+    get:
+      operationId: Aip_downloadPackageEntry
+      description: Obsah jednoho souboru staženého balíčku AIPu.
+      parameters:
+        - $ref: '#/components/parameters/AipIdParameter'
+        - name: path
+          in: query
+          required: true
+          description: Cesta souboru uvnitř balíčku
+          schema:
+            type: string
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aips
   /aiprovider/conversation:
     post:
       operationId: AiProvider_createConversation
@@ -6520,6 +6574,20 @@ components:
             $ref: '#/components/schemas/LinkedNodeVO'
           description: Seznam napojených nodes
       description: Vo pro detail AIPu
+    AipPackageEntry:
+      type: object
+      required:
+        - path
+        - size
+      properties:
+        path:
+          type: string
+          description: Cesta položky uvnitř balíčku
+        size:
+          type: integer
+          format: int64
+          description: Velikost položky v bytech
+      description: Položka staženého balíčku AIPu
     AipProblemType:
       type: string
       enum:
