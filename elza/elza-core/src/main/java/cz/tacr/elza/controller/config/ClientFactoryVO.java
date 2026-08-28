@@ -3,7 +3,6 @@ package cz.tacr.elza.controller.config;
 import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
 import static org.aspectj.runtime.internal.Conversions.intValue;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -2625,7 +2624,9 @@ public class ClientFactoryVO {
             vo.setIngestionCode(state.getIngestionCode());
             vo.setReferenceNumber(state.getReferenceNumber());
             vo.setNadChangeCode(state.getNadChangeCode());
-            vo.setAipSize(new BigDecimal(state.getAipSize()).intValue());
+            if (state.getAipSize() != null) {
+                vo.setAipSize(state.getAipSize().intValue());
+            }
             vo.setMetadataLoad(state.getMetadataLoad());
             vo.setCompleteAipLoad(state.getCompleteAipLoad());
             vo.setMetadataError(state.getMetadataError());
