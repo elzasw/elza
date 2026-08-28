@@ -1,11 +1,13 @@
 import React from 'react';
-import { FormInputField, i18n } from 'components/shared';
+import { i18n } from 'components/shared';
 import { Form, Modal } from 'react-bootstrap';
 import { Button } from '../ui';
 import { Form as FinalForm, Field } from 'react-final-form';
-import {AipUpdateType} from "elza-api";
 import { useIntl } from 'react-intl';
-import { updateTypeMessages } from './messages';
+import { AipUpdateType } from "elza-api";
+
+import { updateTypeDescriptions, updateTypeMessages } from './messages';
+import './AipUpdateTypeForm.scss';
 
 interface FormFields {
     type: AipUpdateType;
@@ -16,6 +18,16 @@ interface Props {
     onSubmit: (values: FormFields) => void;
     onClose?: () => void;
 }
+
+/**
+ * Pořadí od nejčastější a nejbezpečnější volby po tu, která ruší napojení na popis.
+ */
+const UPDATE_TYPES: AipUpdateType[] = [
+    AipUpdateType.RemapReferences,
+    AipUpdateType.DownloadUpdate,
+    AipUpdateType.DbUpdate,
+    AipUpdateType.ForceUpdate,
+];
 
 export function AipUpdateTypeForm({
     initialValues,
@@ -45,20 +57,38 @@ export function AipUpdateTypeForm({
             validate={validate}
             onSubmit={handleSubmit}
         >{({ submitting, handleSubmit }) => {
-            return <Form>
+            return <Form className="aip-update-type">
                 <Modal.Body>
-                    <Field
-                        name="type"
-                        type="select"
-                        component={FormInputField}
-                        label={i18n('aip.form.update.type')}
-                    >
-                        <option key={null} />
-                        {Object.values(AipUpdateType).map((i, index) => (
-                            <option key={index} value={i}>
-                                {intl.formatMessage(updateTypeMessages[i])}
-                            </option>
-                        ))}
+                    <Field name="type">
+                        {({input, meta}) => (
+                            <fieldset>
+                                <legend className="form-label">{i18n('aip.form.update.type')}</legend>
+                                {UPDATE_TYPES.map(type => (
+                                    <Form.Check
+                                        key={type}
+                                        type="radio"
+                                        id={`aipUpdateType-${type}`}
+                                        name={input.name}
+                                        value={type}
+                                        checked={input.value === type}
+                                        onChange={() => input.onChange(type)}
+                                        disabled={submitting}
+                                        label={
+                                            <>
+                                                <span className="update-type-name">
+                                                    {intl.formatMessage(updateTypeMessages[type])}
+                                                </span>
+                                                <span className="update-type-hint">
+                                                    {intl.formatMessage(updateTypeDescriptions[type])}
+                                                </span>
+                                            </>
+                                        }
+                                    />
+                                ))}
+                                {meta.touched && meta.error &&
+                                    <div className="invalid-feedback d-block">{meta.error}</div>}
+                            </fieldset>
+                        )}
                     </Field>
                 </Modal.Body>
                 <Modal.Footer>

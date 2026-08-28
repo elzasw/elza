@@ -829,17 +829,33 @@
     "defaultMessage": "Database update only",
     "srcHash": "QJkW_O6qWoE2"
   },
+  "aip.form.update.type.DbUpdate.hint": {
+    "defaultMessage": "Rebuilds the digital entities in ELZA from the already downloaded package; nothing is downloaded. It fails when it would have to remove an entity linked to a description unit.",
+    "srcHash": "GLHF_Zs8wSFE"
+  },
   "aip.form.update.type.DownloadUpdate": {
     "defaultMessage": "Download the AIP again",
     "srcHash": "ZnGUYONZJeUS"
+  },
+  "aip.form.update.type.DownloadUpdate.hint": {
+    "defaultMessage": "Requests a fresh download of the package from the digital archive. What is downloaded matches what the AIP already has - package data, metadata, or the complete AIP.",
+    "srcHash": "JlUQrht-V7NU"
   },
   "aip.form.update.type.ForceUpdate": {
     "defaultMessage": "Forced update",
     "srcHash": "OucQ8lcHA7Og"
   },
+  "aip.form.update.type.ForceUpdate.hint": {
+    "defaultMessage": "The same as the update from the stored package, but it also removes digital entities linked to description units. Those links are lost.",
+    "srcHash": "iq3eYw2CKYv1"
+  },
   "aip.form.update.type.RemapReferences": {
     "defaultMessage": "Look up the institution and fund again",
     "srcHash": "qpZBK7EGRLzI"
+  },
+  "aip.form.update.type.RemapReferences.hint": {
+    "defaultMessage": "Looks the institution and fund up again by the codes from the package. Use it after creating the missing institution or fund. When the repository downloads metadata automatically, the download is requested as well.",
+    "srcHash": "iIIqHTpG-z8r"
   },
   "aip.form.value": {
     "defaultMessage": "Value",

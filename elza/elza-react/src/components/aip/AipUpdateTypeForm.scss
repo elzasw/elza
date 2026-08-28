@@ -1,0 +1,27 @@
+@import "../../variables.scss";
+
+.aip-update-type {
+    fieldset {
+        border: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    legend {
+        font-size: inherit;
+    }
+
+    .form-check {
+        margin-bottom: 0.75rem;
+    }
+
+    .update-type-name {
+        display: block;
+        font-weight: bold;
+    }
+
+    .update-type-hint {
+        display: block;
+        color: $shade-6;
+    }
+}
