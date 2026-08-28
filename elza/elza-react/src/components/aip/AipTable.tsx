@@ -113,7 +113,17 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, onExplore, filterDisabled, in
 
     const getContent =(item: AipDetailVO, key: string) => {
         switch(key) {
-            case "code": return <span className='link-like'>{item.code}</span>
+            case "code": return (
+                <span
+                    className='link-like'
+                    role="link"
+                    tabIndex={0}
+                    onClick={() => openAip(item.aipId)}
+                    onKeyDown={e => { if (e.key === 'Enter') { openAip(item.aipId); } }}
+                >
+                    {item.code}
+                </span>
+            );
             case "aipSize": return formatAipSize(item[key]);
             case "unitdateFrom":  return item.unitdateFrom ? formatUnitDate(item.unitdateFrom, item.unitdateTo): "-";
             case "fund.name": return item.fund?.name ?? "-";
@@ -164,6 +174,12 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, onExplore, filterDisabled, in
         setDetailOpen(true);
         history.push(urlAip(id))
     };
+
+    /**
+     * Otevření jednoho AIPu. Seznam u fondu detail nemá, tam vede identifikátor rovnou
+     * do průzkumníka; samostatný seznam otevře panel detailu.
+     */
+    const openAip = (id: number) => onExplore ? onExplore(id) : handleSelect(id);
 
     const handleChangePage = (nextFrom: number) => nextFrom !== from && dispatch(aipsFilter(aips.filter.filters, nextFrom, aips.filter.pageSize))
 
@@ -303,7 +319,7 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, onExplore, filterDisabled, in
                         </TableHeader>
                         <TableBody>
                             {rows.map(({ item, selected, onClick }) =>  {
-                                const isDetailShown = aip?.data?.aipId == item.aipId;
+                                const isDetailShown = aip?.id == item.aipId;
                                 return (
                                 <TableRow
                                     key={item.code}

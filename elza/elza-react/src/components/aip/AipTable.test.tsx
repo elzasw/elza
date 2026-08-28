@@ -122,6 +122,18 @@ describe('AipTable', () => {
         expect(container.querySelector('.aip-action-cell')).not.toBeNull();
     });
 
+    it('identifikátor otevře průzkumník tam, kde stránka jiný detail nenabízí', () => {
+        const onExplore = vi.fn();
+        renderWithProviders(
+            <AipTable filterDisabled hiddenValues={onlyColumns('code')} onExplore={onExplore} />,
+            { preloadedState: storeWithRows([aip()]) },
+        );
+
+        fireEvent.click(screen.getByText('AIP-1'));
+
+        expect(onExplore).toHaveBeenCalledWith(1);
+    });
+
     it('stav importu se vypíše přeloženě, ne jako hodnota enumu', () => {
         renderWithProviders(
             <AipTable filterDisabled hiddenValues={onlyColumns('code', 'importState')} />,

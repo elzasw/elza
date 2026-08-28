@@ -132,7 +132,7 @@ class ArrAipPage extends ArrParentPage {
                     onExplore={(id) => this.props.history.push(
                         urlFundAipExplorer(activeFund.id, id, getFundVersion(activeFund)))}
                     initialFilters={initialFilters(activeFund.id)}
-                    hiddenValues={["fund.name", "institution.name", "institutionCode"]}
+                    hiddenValues={["fund.name", "fundCode", "institution.name", "institutionCode"]}
                 />
                 <ActionsContainer fund={activeFund} readMode={readMode}/>
             </div>
