@@ -1182,87 +1182,87 @@ model AipDetailVO {
     /**
      * Verze AIPu
      */
-    aipVersion: string;
+    aipVersion?: string;
     /**
      * Archivní soubor
      */
-    fund: ArrFundGen;
+    fund?: ArrFundGen;
     /**
      * Kód archivního souboru
      */
-    fundCode: string;
+    fundCode?: string;
     /**
      * Instituce
      */
-    institution: ParInstitutionGen;
+    institution?: ParInstitutionGen;
     /**
      * Instituce původce
      */
-    originatorInstitution: ParInstitutionGen;
+    originatorInstitution?: ParInstitutionGen;
     /**
      * Původce
      */
-    originator: string;
+    originator?: string;
     /**
      * Datace od
      */
-    unitdateFrom: string;
+    unitdateFrom?: string;
     /**
      * Datace do
      */
-    unitdateTo: string;
+    unitdateTo?: string;
     /**
      * Kód instituce
      */
-    institutionCode: string;
+    institutionCode?: string;
     /**
      * Číslo příjemky
      */
-    ingestionCode: string;
+    ingestionCode?: string;
     /**
      * Číslo jednací příjemky ve spisovce
      */
-    referenceNumber: string;
+    referenceNumber?: string;
     /**
      * Identifikátor vnější změny NAD v PEvA
      */
-    nadChangeCode: string;
+    nadChangeCode?: string;
     /**
      * Velikost AIPu v bytech
      */
-    aipSize: integer;
+    aipSize?: int64;
     /**
      * Příznak načtených metadat
      */
-    metadataLoad: boolean;
+    metadataLoad?: boolean;
     /**
      * Příznak načteného kompletního AIPu
      */
-    completeAipLoad: boolean;
+    completeAipLoad?: boolean;
     /**
      * Příznak chyby při načítání metadat
      */
-    metadataError: boolean;
+    metadataError?: boolean;
     /**
      * Chyby při načítání metadat
      */
-    metadataErrorException: string;
+    metadataErrorException?: string;
     /**
      * Verze AIPu s načtenými metadaty
      */
-    aipVersionMetadata: string;
+    aipVersionMetadata?: string;
     /**
      * Stav importu
      */
-    importState: QueueItemState;
+    importState?: QueueItemState;
     /**
      * Stav exportu
      */
-    exportState: QueueItemState;
+    exportState?: QueueItemState;
     /**
      * Seznam napojených nodes
      */
-    linkedNodes: LinkedNodeVO[];
+    linkedNodes?: LinkedNodeVO[];
 }
 
 /**
