@@ -94,4 +94,20 @@
         </sql>
     </changeSet>
 
+    <changeSet id="20260828100000" author="ppy">
+        <!-- Download settings of a DA repository. download_method selects how AIP
+             batches are fetched (STANDARD = HTTP GET per the DA OpenAPI, FILE_TRANSFER
+             = File Transfer protocol); on_received selects the automatic action when
+             the DA reports a newly received AIP (NONE, DOWNLOAD_METADATA). Both apply
+             to DA repositories only, other types keep the defaults. -->
+        <addColumn tableName="arr_digital_repository">
+            <column name="download_method" type="varchar(50)" defaultValue="STANDARD">
+                <constraints nullable="false"/>
+            </column>
+            <column name="on_received" type="varchar(50)" defaultValue="NONE">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

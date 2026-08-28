@@ -288,7 +288,15 @@ public class DaService {
         return daRemoteRepositorySync;
     }
 
-    public void doCreateDaoStructure(List<Integer> aipIds, boolean forceUpdate) {
+    /**
+     * Builds the DAO structure of the given AIPs from their cached metadata packages.
+     *
+     * @return identifiers of the archived units ({@link AipIdentifiers}) per successfully
+     *         processed AIP; AIPs without fund, without cached metadata or failing to process
+     *         are absent
+     */
+    public Map<Integer, Set<String>> doCreateDaoStructure(List<Integer> aipIds, boolean forceUpdate) {
+        Map<Integer, Set<String>> identifiersByAip = new LinkedHashMap<>();
         for (Integer aipId : aipIds) {
             DaAip aip = findAipById(aipId);
             DaAipState aipState = aipStateRepository.findByDaAipAndDeleteChangeIsNull(aip);
@@ -334,7 +342,9 @@ public class DaService {
                     premisComplexType = PremisReaderWriter.unmarshal(premis);
                 }
 
-                applicationContext.getBean(DaService.class).createDaoStructure(aip, metsType, premisComplexType, tempDir, forceUpdate);
+                Set<String> aipIdentifiers = applicationContext.getBean(DaService.class)
+                        .createDaoStructure(aip, metsType, premisComplexType, tempDir, forceUpdate);
+                identifiersByAip.put(aipId, aipIdentifiers);
 
                 // Odstranit dočasné soubory a adresáře
                 try (Stream<Path> str = Files.walk(tempDir)) {
@@ -361,6 +371,7 @@ public class DaService {
                 aipStateRepository.save(aipState);
             }
         }
+        return identifiersByAip;
     }
 
     public Ead loadEadFile(Path tempDir, String filePath) throws IOException, JAXBException {
@@ -378,10 +389,15 @@ public class DaService {
         return daoRepository.findById(daoId).orElseThrow(() -> new ObjectNotFoundException("Nebylo nalezeno DAO=" + daoId, AIP_NOT_FOUND));
     }
 
+    /**
+     * @return identifiers of the archived units read from the EAD of the package, see
+     *         {@link DaoProcessor#getAipIdentifiers()}
+     */
     @Transactional
-    public void createDaoStructure(DaAip aip, MetsType metsType, PremisComplexType premisComplexType, Path tempDir, boolean forceUpdate) {
+    public Set<String> createDaoStructure(DaAip aip, MetsType metsType, PremisComplexType premisComplexType, Path tempDir, boolean forceUpdate) {
         DaoProcessor daoProcessor = applicationContext.getBean(DaoProcessor.class, aip, metsType, premisComplexType, tempDir, forceUpdate);
         daoProcessor.process();
+        return daoProcessor.getAipIdentifiers();
     }
 
     @Transactional
@@ -1246,7 +1262,8 @@ public class DaService {
     public Path downloadFileTransfer(ArrDigitalRepository digitalRepository, String batchId) throws IOException {
         Path downloadDir = Files.createTempDirectory(batchId);
         daConnector.downloadFileTransfer(digitalRepository, batchId, downloadDir);
-        try (Stream<Path> str = Files.walk(downloadDir).filter(p -> p.getFileName().endsWith(".zip"))) {
+        try (Stream<Path> str = Files.walk(downloadDir)
+                .filter(p -> Files.isRegularFile(p) && p.getFileName().toString().endsWith(".zip"))) {
             return str.findFirst().orElseThrow(() -> new IllegalStateException("Nenalezen stažený soubor přes Filetransfer"));
         }
     }
@@ -1300,7 +1317,7 @@ public class DaService {
     }
 
     @Transactional
-    public void connectToJP(Integer nodeId, Integer daAipId) {
+    public ArrDaLink connectToJP(Integer nodeId, Integer daAipId) {
         ArrNode arrNode = nodeRepository.getOneCheckExist(nodeId);
         DaAip daAip = findAipById(daAipId);
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
@@ -1310,6 +1327,7 @@ public class DaService {
         arrDaoLink.setLinkType(ArrDaoLink.LinkType.AIP);
         arrDaoLink.setCreateChange(change);
         daoLinkRepository.save(arrDaoLink);
+        return arrDaoLink;
     }
 
     @Transactional

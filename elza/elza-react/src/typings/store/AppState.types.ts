@@ -388,6 +388,8 @@ export interface ExternalSystem {
     viewThumbnailUrl?: string;
     sendNotification?: boolean;
     multipleLinks?: boolean;
+    downloadMethod?: string;
+    onReceived?: string;
 }
 
 type KMLExternalSystem = Omit<ExternalSystem, "username" | "password" | "elzaCode" | "publishOnlyApproved" | "userInfo" | "viewFileUrl" | "viewThumbnailUrl" | "sendNotification">;

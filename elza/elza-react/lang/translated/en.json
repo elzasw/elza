@@ -15,6 +15,30 @@
     "defaultMessage": "ApiKey - value",
     "srcHash": "oRAn41A0cbCo"
   },
+  "admin.extSystem.downloadMethod": {
+    "defaultMessage": "AIP download method",
+    "srcHash": "KzmUpPylfYZM"
+  },
+  "admin.extSystem.downloadMethodFileTransfer": {
+    "defaultMessage": "File Transfer",
+    "srcHash": "yLwaLpFdZsWA"
+  },
+  "admin.extSystem.downloadMethodStandard": {
+    "defaultMessage": "Standard (HTTP)",
+    "srcHash": "VRo4FuFYuHsJ"
+  },
+  "admin.extSystem.onReceived": {
+    "defaultMessage": "On AIP received",
+    "srcHash": "bwX_RNjOd-dQ"
+  },
+  "admin.extSystem.onReceivedDownloadMetadata": {
+    "defaultMessage": "Download metadata",
+    "srcHash": "MZK1CQxdNdr1"
+  },
+  "admin.extSystem.onReceivedNone": {
+    "defaultMessage": "Do nothing",
+    "srcHash": "6_xTndQHNNGM"
+  },
   "admin.extSystemDetail.aiTestConnection": {
     "defaultMessage": "Test connection",
     "srcHash": "w5X1eztA8_ox"

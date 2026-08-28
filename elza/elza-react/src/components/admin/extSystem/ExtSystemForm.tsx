@@ -1,10 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { Form, Modal, Col, Row } from 'react-bootstrap';
 import { Form as FinalForm, Field, useFormState } from 'react-final-form';
+import { defineMessages, useIntl, MessageDescriptor } from 'react-intl';
 import { Button } from 'components/ui';
 import { i18n } from 'components';
 import { FormInputField } from 'components/shared';
-import { JAVA_ATTR_CLASS, GisSystemType, AP_EXT_SYSTEM_TYPE, DigitalRepositoryType } from '../../../constants';
+import {
+    JAVA_ATTR_CLASS,
+    GisSystemType,
+    AP_EXT_SYSTEM_TYPE,
+    DigitalRepositoryType,
+    DaDownloadMethod,
+    DaOnReceivedAction,
+} from '../../../constants';
 import { useAppThunkDispatch } from 'utils/hooks';
 import { WebApi } from 'actions/index.jsx';
 import { modalDialogHide } from 'actions/global/modalDialog';
@@ -46,6 +54,43 @@ export const DIGITAL_REPOSITORY_TYPE_LABEL: Record<string, string> = {
     [DigitalRepositoryType.Da]: i18n('admin.extSystem.da'),
 };
 
+export const daSettingsMessages = defineMessages({
+    downloadMethod: {
+        id: 'admin.extSystem.downloadMethod',
+        defaultMessage: 'Způsob stahování AIP',
+    },
+    downloadMethodStandard: {
+        id: 'admin.extSystem.downloadMethodStandard',
+        defaultMessage: 'Standardní (HTTP)',
+    },
+    downloadMethodFileTransfer: {
+        id: 'admin.extSystem.downloadMethodFileTransfer',
+        defaultMessage: 'File Transfer',
+    },
+    onReceived: {
+        id: 'admin.extSystem.onReceived',
+        defaultMessage: 'Po přijetí AIP',
+    },
+    onReceivedNone: {
+        id: 'admin.extSystem.onReceivedNone',
+        defaultMessage: 'Nic nedělat',
+    },
+    onReceivedDownloadMetadata: {
+        id: 'admin.extSystem.onReceivedDownloadMetadata',
+        defaultMessage: 'Stáhnout metadata',
+    },
+});
+
+export const DA_DOWNLOAD_METHOD_MESSAGE: Record<string, MessageDescriptor> = {
+    [DaDownloadMethod.Standard]: daSettingsMessages.downloadMethodStandard,
+    [DaDownloadMethod.FileTransfer]: daSettingsMessages.downloadMethodFileTransfer,
+};
+
+export const DA_ON_RECEIVED_MESSAGE: Record<string, MessageDescriptor> = {
+    [DaOnReceivedAction.None]: daSettingsMessages.onReceivedNone,
+    [DaOnReceivedAction.DownloadMetadata]: daSettingsMessages.onReceivedDownloadMetadata,
+};
+
 type ExtSystemFormValues = {
     id?: number;
     [JAVA_ATTR_CLASS]?: ExtSystemClassValue;
@@ -67,6 +112,8 @@ type ExtSystemFormValues = {
     sendNotification?: boolean;
     digitalRepositoryType?: string;
     multipleLinks?: boolean;
+    downloadMethod?: string;
+    onReceived?: string;
 };
 
 type Scope = {
@@ -83,6 +130,7 @@ const REQUIRED_FIELDS = {
     abstractExtSystem: [JAVA_ATTR_CLASS, 'code', 'name'] as string[],
     [EXT_SYSTEM_CLASS.ApExternalSystem]: ['type', 'apiKeyId', 'apiKeyValue', 'url'] as string[],
     [EXT_SYSTEM_CLASS.ArrDigitalRepository]: ['digitalRepositoryType', 'sendNotification'] as string[],
+    daRepository: ['downloadMethod', 'onReceived'] as string[],
     [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: [] as string[],
     [EXT_SYSTEM_CLASS.GisExternalSystem]: ['type', 'url'] as string[],
     [EXT_SYSTEM_CLASS.AiExternalSystem]: ['url'] as string[],
@@ -97,6 +145,15 @@ function isFilesystemRepository(values: ExtSystemFormValues) {
         && values.digitalRepositoryType === DigitalRepositoryType.Filesystem;
 }
 
+/**
+ * Download settings (method, action on a received AIP) exist only for a digital archive (DA)
+ * repository, the only type ELZA downloads AIP packages from.
+ */
+function isDaRepository(values: ExtSystemFormValues) {
+    return values[JAVA_ATTR_CLASS] === EXT_SYSTEM_CLASS.ArrDigitalRepository
+        && values.digitalRepositoryType === DigitalRepositoryType.Da;
+}
+
 function validate(values: ExtSystemFormValues) {
     const classJ = values[JAVA_ATTR_CLASS];
     let requiredFields = [...REQUIRED_FIELDS.abstractExtSystem];
@@ -108,6 +165,9 @@ function validate(values: ExtSystemFormValues) {
             REQUIRED_FIELDS[EXT_SYSTEM_CLASS.ArrDigitalRepository]
                 .filter((name) => !(name === 'sendNotification' && isFilesystemRepository(values))),
         );
+        if (isDaRepository(values)) {
+            requiredFields = requiredFields.concat(REQUIRED_FIELDS.daRepository);
+        }
     } else if (classJ === EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk) {
         requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]);
     } else if (classJ === EXT_SYSTEM_CLASS.GisExternalSystem) {
@@ -117,7 +177,9 @@ function validate(values: ExtSystemFormValues) {
     }
 
     return requiredFields.reduce((errors: Record<string, string>, name) => {
-        if (!(values as Record<string, unknown>)[name]) {
+        // A stored boolean false (e.g. sendNotification) is a filled value, not a missing one.
+        const value = (values as Record<string, unknown>)[name];
+        if (value == null || value === '') {
             errors[name] = i18n('global.validation.required');
         }
         return errors;
@@ -131,8 +193,10 @@ const INTERCHANGEABLE_TYPES: AP_EXT_SYSTEM_TYPE[][] = [
 
 const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; defaultScopes: Scope[] }) => {
     const { values, submitting } = useFormState<ExtSystemFormValues>();
+    const intl = useIntl();
     const classJ = values[JAVA_ATTR_CLASS];
     const isFsRepo = isFilesystemRepository(values);
+    const isDaRepo = isDaRepository(values);
     const allowedApTypes = isUpdate
         ? INTERCHANGEABLE_TYPES.find((group) => group.includes(values.type as AP_EXT_SYSTEM_TYPE)) ?? [values.type]
         : Object.values(AP_EXT_SYSTEM_TYPE);
@@ -284,6 +348,36 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
                             {i18n('admin.extSystem.multipleLinks.false')}
                         </option>
                     </Field>
+                    {isDaRepo && (
+                        <>
+                            <Field
+                                name="downloadMethod"
+                                type="select"
+                                component={FormInputField}
+                                label={intl.formatMessage(daSettingsMessages.downloadMethod)}
+                            >
+                                <option key={null} />
+                                {Object.values(DaDownloadMethod).map((i) => (
+                                    <option key={i} value={i}>
+                                        {intl.formatMessage(DA_DOWNLOAD_METHOD_MESSAGE[i])}
+                                    </option>
+                                ))}
+                            </Field>
+                            <Field
+                                name="onReceived"
+                                type="select"
+                                component={FormInputField}
+                                label={intl.formatMessage(daSettingsMessages.onReceived)}
+                            >
+                                <option key={null} />
+                                {Object.values(DaOnReceivedAction).map((i) => (
+                                    <option key={i} value={i}>
+                                        {intl.formatMessage(DA_ON_RECEIVED_MESSAGE[i])}
+                                    </option>
+                                ))}
+                            </Field>
+                        </>
+                    )}
                 </div>
             )}
             {classJ === EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk && <div />}
