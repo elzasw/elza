@@ -134,6 +134,29 @@ describe('AipTable', () => {
         expect(onExplore).toHaveBeenCalledWith(1);
     });
 
+    it('kód dohledané instituce odkazuje na její archivní entitu', () => {
+        const { container } = renderWithProviders(
+            <AipTable filterDisabled hiddenValues={onlyColumns('institutionCode')} />,
+            { preloadedState: storeWithRows([aip({
+                institutionCode: '620000010',
+                institution: {id: 9, accessPointId: 77, name: 'Archiv UK'},
+            })]) },
+        );
+
+        const link = container.querySelector('a[href="/entity/77"]');
+        expect(link?.textContent).toBe('620000010');
+    });
+
+    it('kód nedohledané instituce zůstane jen textem', () => {
+        const { container } = renderWithProviders(
+            <AipTable filterDisabled hiddenValues={onlyColumns('institutionCode')} />,
+            { preloadedState: storeWithRows([aip({institutionCode: '620000010', institution: null})]) },
+        );
+
+        expect(screen.getByText('620000010')).toBeInTheDocument();
+        expect(container.querySelector('a[href^="/entity/"]')).toBeNull();
+    });
+
     it('stav importu se vypíše přeloženě, ne jako hodnota enumu', () => {
         renderWithProviders(
             <AipTable filterDisabled hiddenValues={onlyColumns('code', 'importState')} />,

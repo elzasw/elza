@@ -8,6 +8,8 @@ import {useThunkDispatch} from "../../utils/hooks";
 import {aipFetchIfNeeded} from "../../actions/aip/aip.ts";
 import i18n from 'components/i18n';
 import {AipDetailVO} from "elza-api";
+import { Link } from "react-router-dom";
+import { urlEntity } from "../../constants";
 import { FormattedMessage, useIntl } from "react-intl";
 import { detailMessages, problemMessages } from "./messages";
 
@@ -52,7 +54,7 @@ const AipDetailBody = ({detail}: AipDetailBodyProps) => {
                 <DetailRow label={i18n("aip.detail.fundCode")} value={detail.fundCode}/>}
             {detail.institution &&
                 <DetailRow label={i18n("aip.detail.institution.name")} value={
-                    <a href={`${serverContextPath}/entity/${detail.institution.id}`}>{detail.institution.name}</a>
+                    <Link to={urlEntity(detail.institution.accessPointId)}>{detail.institution.name}</Link>
                 }/>
             }
             {detail.institutionCode &&
@@ -63,7 +65,7 @@ const AipDetailBody = ({detail}: AipDetailBodyProps) => {
                 }/>}
             {detail.originatorInstitution &&
                 <DetailRow label={i18n("aip.detail.originator")}value={
-                    <a href={`${serverContextPath}/entity/${detail.originatorInstitution.id}`}>{detail.originatorInstitution.name}</a>
+                    <Link to={urlEntity(detail.originatorInstitution.accessPointId)}>{detail.originatorInstitution.name}</Link>
                 }/>
             }
             {detail.originator && !detail.originatorInstitution &&
