@@ -22,7 +22,10 @@ import org.springframework.stereotype.Service;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import org.springframework.context.event.EventListener;
+
 import cz.tacr.elza.api.DaDownloadMethod;
+import cz.tacr.elza.service.event.ArrDigitalRepositoryEvent;
 import cz.tacr.elza.controller.vo.DigitalRepositoryTestResult;
 import org.apache.commons.lang3.StringUtils;
 import cz.tacr.elza.common.io.SpooledContent;
@@ -173,6 +176,15 @@ public class DaConnector {
             daInstance.stopFileTransferClient();
         }
         return result;
+    }
+
+    /**
+     * A changed or deleted repository may address another DA or use other credentials, so its
+     * cached client must not be reused.
+     */
+    @EventListener
+    public void onDigitalRepositoryChanged(ArrDigitalRepositoryEvent event) {
+        invalidate(event.getDigitalRepository());
     }
 
     public void invalidate(ArrDigitalRepository digitalRepository) {
