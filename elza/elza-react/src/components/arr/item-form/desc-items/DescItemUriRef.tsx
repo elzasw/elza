@@ -100,7 +100,7 @@ export function DescItemUriRef({
     initialValue: descInitialValue,
     resetConflict: descResetConflict,
     finishChange: descFinishChange,
-  } = useValueManager<string>(data.description, item);
+  } = useValueManager<string>(data.description, item, "description");
 
   const [query, setQuery] = useState<string>("");
   const [templates, setTemplates] = useState<ArrRefTemplateVO[]>([]);
@@ -264,9 +264,7 @@ export function DescItemUriRef({
           />
           {isDirty && <EditStateDisplay />}
           <ConflictValue
-            value={value?.toString()}
             conflictValue={conflictValue?.toString()}
-            isDirty={isDirty}
             onResolve={resolveConflict}
           >
             {(conflictValue) => (
@@ -298,9 +296,7 @@ export function DescItemUriRef({
             />
             {isDescriptionDirty && <EditStateDisplay />}
             <ConflictValue
-              value={description?.toString()}
               conflictValue={descConflictValue?.toString()}
-              isDirty={isDescriptionDirty}
               onResolve={descResolveConflict}
             >
               {(conflictValue) => (

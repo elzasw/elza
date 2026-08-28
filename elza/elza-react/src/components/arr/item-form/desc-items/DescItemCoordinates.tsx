@@ -308,9 +308,7 @@ export function DescItemCoordinates({
         }
       />
       <ConflictValue
-        value={value?.toString()}
         conflictValue={conflictValue?.toString()}
-        isDirty={isDirty}
         onResolve={resolveConflict}
       >
         {(conflictValue) => (

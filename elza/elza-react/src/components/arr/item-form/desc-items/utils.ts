@@ -15,13 +15,18 @@ import {
 import { useEffect, useState } from "react";
 import { useLocalStorage } from "utils/hooks/useLocalStorage";
 
-export function createLocalStorageItemKey(item: NodeItem) {
-  return `descItem-${item.nodeId}-${item.itemTypeId}-${item.itemObjectId || "new"}`;
+/**
+ * Storage key for an item's pending value. `field` separates components that edit several
+ * fields of one item; without it the key stays the same as for single-field components.
+ */
+export function createLocalStorageItemKey(item: NodeItem, field?: string) {
+  const key = `descItem-${item.nodeId}-${item.itemTypeId}-${item.itemObjectId || "new"}`;
+  return field ? `${key}-${field}` : key;
 }
 
-export function useValueManager<T extends string | number>(initialValue: T, item: NodeItem) {
+export function useValueManager<T extends string | number>(initialValue: T, item: NodeItem, field?: string) {
   const [save, load, reset] = useLocalStorage<T>(
-    createLocalStorageItemKey(item),
+    createLocalStorageItemKey(item, field),
   );
 
   const storedValue = load();
