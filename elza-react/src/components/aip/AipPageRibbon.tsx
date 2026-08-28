@@ -1,10 +1,9 @@
 import {aipFetchIfNeeded, aipsFetchIfNeeded, AREA_AIP, AREA_SELECTED_AIPS} from "actions/aip/aip";
-import { AipDetailVO, AipProblemType, AipUpdateType } from "elza-api";
+import { AipDetailVO } from "elza-api";
 import { Ribbon } from "components";
 import { Icon, RibbonGroup, i18n } from "components/shared";
 import React, { FC } from "react";
 import { Button } from "react-bootstrap";
-import { useIntl } from "react-intl";
 import { useSelector } from "react-redux";
 import { storeFromArea } from "shared/utils";
 import { AppState } from "typings/store";
@@ -12,13 +11,11 @@ import {Api} from "../../api";
 import {useThunkDispatch} from "../../utils/hooks";
 import {modalDialogShow} from "../../actions/global/modalDialog";
 import AipUpdateTypeForm from "./AipUpdateTypeForm.tsx";
-import { updateTypeMessages } from "./messages";
 
 const AipPageRibbon: FC = () => {
     const selectedAips = useSelector((state: AppState) => storeFromArea(state, AREA_SELECTED_AIPS));
     const aip =  useSelector((state: AppState) => storeFromArea(state, AREA_AIP));
     const dispatch = useThunkDispatch();
-    const intl = useIntl();
 
     /** Akce mění i AIP otevřený v detailu, panel se proto načte znovu spolu se seznamem. */
     const reload = () => {
@@ -43,8 +40,6 @@ const AipPageRibbon: FC = () => {
     const canDeleteMetadata = some(a => a.metadataLoad === true);
     const canLoadCompleteAip = some(a => a.metadataLoad === true && a.completeAipLoad !== true);
     const canDeleteCompleteAip = some(a => a.completeAipLoad === true);
-    const canRemapReferences = some(a => a.problemType === AipProblemType.UnknownFund
-            || a.problemType === AipProblemType.UnknownInstitution);
     const canExport = some(a => (a.linkedNodes?.length ?? 0) > 0);
 
     return [
@@ -74,17 +69,6 @@ const AipPageRibbon: FC = () => {
             <Icon glyph="fa-trash" />
             <div>
                 <span className="btnText">{i18n("aip.actions.deleteAips")}</span>
-            </div>
-        </Button>,
-        // Samostatné tlačítko, protože je to jediná akce, kterou se řeší nedohledaná
-        // instituce nebo fond - schovaná ve výběru typu aktualizace by se nenašla.
-        <Button key={`${keyPrefix}-remapReferences`} disabled={!canRemapReferences}
-                onClick={() => Api.aips.aipUpdateAip(AipUpdateType.RemapReferences, aipIds).then(reload)}>
-            <Icon glyph="fa-link" />
-            <div>
-                <span className="btnText">
-                    {intl.formatMessage(updateTypeMessages[AipUpdateType.RemapReferences])}
-                </span>
             </div>
         </Button>,
         <Button key={`${keyPrefix}-updateAips`} onClick={() => handleUpdateAips(aipIds)}>

@@ -45,6 +45,34 @@ export const updateTypeMessages = defineMessages({
 });
 
 /**
+ * Co která volba udělá, včetně dopadů - bez toho nelze volbu odpovědně vybrat.
+ */
+export const updateTypeDescriptions = defineMessages({
+    [AipUpdateType.RemapReferences]: {
+        id: "aip.form.update.type.RemapReferences.hint",
+        defaultMessage: "Znovu dohledá instituci a fond podle kódů z balíčku. Použijte po založení "
+            + "chybějící instituce nebo fondu. Je-li úložiště nastavené na automatické stahování "
+            + "metadat, vyžádá se rovnou i jejich stažení.",
+    },
+    [AipUpdateType.DownloadUpdate]: {
+        id: "aip.form.update.type.DownloadUpdate.hint",
+        defaultMessage: "Vyžádá nové stažení balíčku z digitálního archivu. Stáhne se to, co je "
+            + "u AIPu načtené - údaje balíčku, metadata, nebo úplný AIP.",
+    },
+    [AipUpdateType.DbUpdate]: {
+        id: "aip.form.update.type.DbUpdate.hint",
+        defaultMessage: "Znovu sestaví digitální entity v ELZA z už staženého balíčku, "
+            + "z digitálního archivu se nestahuje nic. Skončí chybou, pokud by musela odstranit "
+            + "entitu napojenou na jednotku popisu.",
+    },
+    [AipUpdateType.ForceUpdate]: {
+        id: "aip.form.update.type.ForceUpdate.hint",
+        defaultMessage: "Totéž jako aktualizace z uloženého balíčku, ale odstraní i digitální "
+            + "entity napojené na jednotky popisu. Tato napojení se ztratí.",
+    },
+});
+
+/**
  * Popisky detailu AIPu k zjištěnému problému.
  */
 export const detailMessages = defineMessages({
