@@ -97,6 +97,20 @@ export const packageMessages = defineMessages({
 });
 
 /**
+ * Proč danou volbu nelze u vybraných AIPů použít.
+ */
+export const updateTypeUnavailable = defineMessages({
+    needsMetadata: {
+        id: "aip.form.update.unavailable.needsMetadata",
+        defaultMessage: "Nelze použít: žádný z vybraných AIPů nemá stažená metadata.",
+    },
+    needsUnresolved: {
+        id: "aip.form.update.unavailable.needsUnresolved",
+        defaultMessage: "Nelze použít: žádný z vybraných AIPů nemá nedohledanou instituci ani fond.",
+    },
+});
+
+/**
  * Popisky detailu AIPu k zjištěnému problému.
  */
 export const detailMessages = defineMessages({

@@ -873,6 +873,14 @@
     "defaultMessage": "Looks the institution and fund up again by the codes from the package. Use it after creating the missing institution or fund. When the repository downloads metadata automatically, the download is requested as well.",
     "srcHash": "iIIqHTpG-z8r"
   },
+  "aip.form.update.unavailable.needsMetadata": {
+    "defaultMessage": "Not applicable: none of the selected AIPs has its metadata downloaded.",
+    "srcHash": "IYuPAio5Fhwm"
+  },
+  "aip.form.update.unavailable.needsUnresolved": {
+    "defaultMessage": "Not applicable: none of the selected AIPs has an unresolved institution or fund.",
+    "srcHash": "I0TEhNzaWYk6"
+  },
   "aip.form.value": {
     "defaultMessage": "Value",
     "srcHash": "2al7WSQS6DjX"

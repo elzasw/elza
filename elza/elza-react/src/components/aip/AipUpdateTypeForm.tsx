@@ -4,9 +4,9 @@ import { Form, Modal } from 'react-bootstrap';
 import { Button } from '../ui';
 import { Form as FinalForm, Field } from 'react-final-form';
 import { useIntl } from 'react-intl';
-import { AipUpdateType } from "elza-api";
+import { AipDetailVO, AipProblemType, AipUpdateType } from "elza-api";
 
-import { updateTypeDescriptions, updateTypeMessages } from './messages';
+import { updateTypeDescriptions, updateTypeMessages, updateTypeUnavailable } from './messages';
 import './AipUpdateTypeForm.scss';
 
 interface FormFields {
@@ -15,9 +15,36 @@ interface FormFields {
 
 interface Props {
     initialValues?: FormFields;
+    /** AIPy, kterých se akce týká; podle jejich stavu se nabízejí jen použitelné volby. */
+    aips?: AipDetailVO[];
     onSubmit: (values: FormFields) => void;
     onClose?: () => void;
 }
+
+/**
+ * Proč volbu nelze použít, nebo null, když použít lze.
+ *
+ * Volba, která by u žádného z vybraných AIPů nic neudělala, se nenabízí - jinak
+ * uživatel stiskne tlačítko a nic se nestane, aniž by se dozvěděl proč.
+ */
+const unavailableReason = (type: AipUpdateType, aips: AipDetailVO[]) => {
+    if (aips.length === 0) {
+        return null;
+    }
+    const some = (predicate: (aip: AipDetailVO) => boolean) => aips.some(predicate);
+    switch (type) {
+        case AipUpdateType.DbUpdate:
+        case AipUpdateType.ForceUpdate:
+            // sestavení z uloženého balíčku potřebuje stažená metadata
+            return some(aip => aip.metadataLoad === true) ? null : updateTypeUnavailable.needsMetadata;
+        case AipUpdateType.RemapReferences:
+            return some(aip => aip.problemType === AipProblemType.UnknownFund
+                    || aip.problemType === AipProblemType.UnknownInstitution)
+                ? null : updateTypeUnavailable.needsUnresolved;
+        default:
+            return null;
+    }
+};
 
 /**
  * Pořadí od nejčastější a nejbezpečnější volby po tu, která ruší napojení na popis.
@@ -31,6 +58,7 @@ const UPDATE_TYPES: AipUpdateType[] = [
 
 export function AipUpdateTypeForm({
     initialValues,
+    aips = [],
     onSubmit,
     onClose
 }: Props) {
@@ -63,28 +91,36 @@ export function AipUpdateTypeForm({
                         {({input, meta}) => (
                             <fieldset>
                                 <legend className="form-label">{i18n('aip.form.update.type')}</legend>
-                                {UPDATE_TYPES.map(type => (
-                                    <Form.Check
-                                        key={type}
-                                        type="radio"
-                                        id={`aipUpdateType-${type}`}
-                                        name={input.name}
-                                        value={type}
-                                        checked={input.value === type}
-                                        onChange={() => input.onChange(type)}
-                                        disabled={submitting}
-                                        label={
-                                            <>
-                                                <span className="update-type-name">
-                                                    {intl.formatMessage(updateTypeMessages[type])}
-                                                </span>
-                                                <span className="update-type-hint">
-                                                    {intl.formatMessage(updateTypeDescriptions[type])}
-                                                </span>
-                                            </>
-                                        }
-                                    />
-                                ))}
+                                {UPDATE_TYPES.map(type => {
+                                    const unavailable = unavailableReason(type, aips);
+                                    return (
+                                        <Form.Check
+                                            key={type}
+                                            type="radio"
+                                            id={`aipUpdateType-${type}`}
+                                            name={input.name}
+                                            value={type}
+                                            checked={input.value === type}
+                                            onChange={() => input.onChange(type)}
+                                            disabled={submitting || unavailable != null}
+                                            label={
+                                                <>
+                                                    <span className="update-type-name">
+                                                        {intl.formatMessage(updateTypeMessages[type])}
+                                                    </span>
+                                                    <span className="update-type-hint">
+                                                        {intl.formatMessage(updateTypeDescriptions[type])}
+                                                    </span>
+                                                    {unavailable && (
+                                                        <span className="update-type-unavailable">
+                                                            {intl.formatMessage(unavailable)}
+                                                        </span>
+                                                    )}
+                                                </>
+                                            }
+                                        />
+                                    );
+                                })}
                                 {meta.touched && meta.error &&
                                     <div className="invalid-feedback d-block">{meta.error}</div>}
                             </fieldset>

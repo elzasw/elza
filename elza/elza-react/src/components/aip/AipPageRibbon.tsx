@@ -71,7 +71,7 @@ const AipPageRibbon: FC = () => {
                 <span className="btnText">{i18n("aip.actions.deleteAips")}</span>
             </div>
         </Button>,
-        <Button key={`${keyPrefix}-updateAips`} onClick={() => handleUpdateAips(aipIds)}>
+        <Button key={`${keyPrefix}-updateAips`} onClick={() => handleUpdateAips(aips)}>
             <Icon glyph="fa-refresh" />
             <div>
                 <span className="btnText">{i18n("aip.actions.updateAips")}</span>
@@ -87,14 +87,15 @@ const AipPageRibbon: FC = () => {
     ];
     };
 
-    const handleUpdateAips = (aipIds: number[]) => {
+    const handleUpdateAips = (aips: AipDetailVO[]) => {
         dispatch(
             modalDialogShow(
                 this,
                 i18n('aip.form.update.title'),
                 <AipUpdateTypeForm
+                    aips={aips}
                     onSubmit={({type}) => {
-                        Api.aips.aipUpdateAip(type, aipIds).then(reload);
+                        Api.aips.aipUpdateAip(type, aips.map(a => a.aipId)).then(reload);
                     }}
                 />,
             ),

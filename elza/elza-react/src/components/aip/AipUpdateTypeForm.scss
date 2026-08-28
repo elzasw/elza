@@ -20,6 +20,11 @@
         font-weight: bold;
     }
 
+    .update-type-unavailable {
+        display: block;
+        color: $color-warn;
+    }
+
     .update-type-hint {
         display: block;
         color: $shade-6;
