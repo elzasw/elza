@@ -49,7 +49,6 @@ const COLUMN_ORDER: AipFieldName[] = [
     AipFieldName.AipVersion,
     AipFieldName.Fund,
     AipFieldName.FundCode,
-    AipFieldName.Institution,
     AipFieldName.InstitutionCode,
     AipFieldName.Unitdate,
     AipFieldName.Originator,
