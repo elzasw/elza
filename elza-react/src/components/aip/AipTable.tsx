@@ -159,6 +159,7 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, onExplore, filterDisabled, in
         aips.filter.from,
         aips.filter.pageSize,
         aips.filter.filters,
+        aips.filter.sort,
         dispatch,
     ]);
 
@@ -211,7 +212,7 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, onExplore, filterDisabled, in
         { columns, items },
         [
             useTableColumnSizing_unstable({ columnSizingOptions, autoFitColumns: false }),
-            useTableSort({defaultSortState: { sortColumn: "id", sortDirection: "ascending"}}),
+            useTableSort({defaultSortState: { sortColumn: "code", sortDirection: "ascending"}}),
             useTableSelection({
                 selectionMode: "multiselect",
                 onSelectionChange: (e, data) => {

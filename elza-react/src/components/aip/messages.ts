@@ -2,8 +2,8 @@ import { defineMessages } from "react-intl";
 import { AipProblemType, AipUpdateType, QueueItemState } from "elza-api";
 
 export const messages = defineMessages({
-    aipId:            { id: "aip.col.aipId",            defaultMessage: "ID Aipu" },
-    code:             { id: "aip.col.code",             defaultMessage: "Kód aipu" },
+    aipId:            { id: "aip.col.aipId",            defaultMessage: "ID" },
+    code:             { id: "aip.col.code",             defaultMessage: "AIP ID" },
     aipVersion:       { id: "aip.col.aipVersion",       defaultMessage: "Verze Aipu" },
     fund:             { id: "aip.col.fund",             defaultMessage: "Archivní soubor" },
     fundCode:         { id: "aip.col.fundCode",         defaultMessage: "Kód archivního souboru" },
