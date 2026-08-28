@@ -111,8 +111,8 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
             case "code": return <span className='link-like'>{item.code}</span>
             case "aipSize": return formatAipSize(item[key]);
             case "unitdateFrom":  return item.unitdateFrom ? formatUnitDate(item.unitdateFrom, item.unitdateTo): "-";
-            case "fund.name": return item.fund ? item.fund.name : "-";
-            case "institution.name": return item.institution.name;
+            case "fund.name": return item.fund?.name ?? "-";
+            case "institution.name": return item.institution?.name ?? "-";
             default:
                 return findColDefByKey(key)?.valueType == "bool"
                     ? getBoolIcon(rawValue(item, key))
