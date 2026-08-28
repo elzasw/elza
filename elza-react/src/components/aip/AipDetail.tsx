@@ -1,7 +1,7 @@
 
 import './AipDetail.scss';
 import { Dismiss24Regular } from "@fluentui/react-icons";
-import { DrawerBody, DrawerHeader, DrawerHeaderTitle, Button, OverlayDrawer } from '@fluentui/react-components';
+import { DrawerBody, DrawerHeader, DrawerHeaderTitle, Button, InlineDrawer } from '@fluentui/react-components';
 import { FC, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { storeFromArea } from 'shared/utils';
@@ -66,8 +66,9 @@ const AipDetail: FC<Props> = ({open, onClose, onOpen}) => {
         );
     }
     return (
-        <OverlayDrawer
+        <InlineDrawer
             position="end"
+            separator
             style={{ width: "400px" }}
             className='aip-detail'
             open={open}
@@ -104,7 +105,7 @@ const AipDetail: FC<Props> = ({open, onClose, onOpen}) => {
                     </div>
                 </>}
             </DrawerBody>
-        </OverlayDrawer>
+        </InlineDrawer>
     );
 }
 

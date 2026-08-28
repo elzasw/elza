@@ -7,12 +7,6 @@
     gap: 4px;
 }
 
-/* Fluent kotví panel na celou výšku okna; horní lišta aplikace musí zůstat vidět.
-   Selektor je záměrně dvojitý, aby přebil atomickou třídu s top: 0. */
-.fui-OverlayDrawer.aip-detail {
-    top: $app-header-height;
-}
-
 .aip-detail {
     display: flex;
     flex-direction: column;
