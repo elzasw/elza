@@ -141,17 +141,63 @@ public class DaAipReferenceResolverTest {
     }
 
     @Test
-    void metadataErrorOutranksUnresolvedReferences() {
-        DaAipState aipState = state("INST-X", "999");
-        aipState.setMetadataError(true);
-        aipState.setMetadataErrorException("Balíček neobsahuje soubor METS.xml");
+    void aRecordedProblemIsDescribedWithTheFileItIsAbout() {
+        DaAipState aipState = state("INST-1", "42");
+        aipState.setInstitution(institution);
+        aipState.setFund(fund);
 
-        resolver.resolveReferences(aipState);
+        resolver.recordProblem(aipState, AipProblem.of(AipProblemException.metadata(
+                "Inherentní archivní popis se nepodařilo načíst", "metadata/descriptive/pruvodka.xml", null)));
 
         assertEquals(AipProblemType.METADATA_ERROR, aipState.getProblemType());
-        assertTrue(aipState.getProblemDescription().contains("METS.xml"));
-        // the reference problems stay in the description
+        assertEquals("Inherentní archivní popis se nepodařilo načíst", aipState.getProblemDescription());
+        assertEquals("metadata/descriptive/pruvodka.xml", aipState.getProblemFile());
+        // the description stays free of the technical detail
+        assertFalse(aipState.getProblemDescription().contains(AipProblemException.class.getName()));
+        assertTrue(aipState.getProblemDetail().contains(AipProblemException.class.getName()));
+    }
+
+    @Test
+    void aRecordedProblemOutranksUnresolvedReferences() {
+        DaAipState aipState = state("INST-X", "999");
+        resolver.recordProblem(aipState, AipProblem.of(
+                AipProblemException.metadata("Balíček neobsahuje soubor METS.xml")));
+
+        // resolving the references must not describe them over the failure that has to be fixed first
+        assertFalse(resolver.resolveReferences(aipState));
+
+        assertEquals(AipProblemType.METADATA_ERROR, aipState.getProblemType());
+        assertEquals("Balíček neobsahuje soubor METS.xml", aipState.getProblemDescription());
+    }
+
+    @Test
+    void clearingTheProblemDescribesTheReferencesAgain() {
+        DaAipState aipState = state("INST-X", "999");
+        resolver.recordProblem(aipState, AipProblem.of(AipProblemException.metadata(
+                "Balíček neobsahuje soubor METS.xml", "METS.xml", null)));
+
+        resolver.clearProblem(aipState);
+
+        assertEquals(AipProblemType.UNKNOWN_FUND, aipState.getProblemType());
         assertTrue(aipState.getProblemDescription().contains("999"));
+        assertNull(aipState.getProblemDetail());
+        assertNull(aipState.getProblemFile());
+    }
+
+    @Test
+    void clearingTheProblemOfASoundAipLeavesNothing() {
+        DaAipState aipState = state("INST-1", "42");
+        aipState.setInstitution(institution);
+        aipState.setFund(fund);
+        resolver.recordProblem(aipState, AipProblem.of(
+                AipProblemException.metadata("Balíček neobsahuje soubor METS.xml")));
+
+        resolver.clearProblem(aipState);
+
+        assertNull(aipState.getProblemType());
+        assertNull(aipState.getProblemDescription());
+        assertNull(aipState.getProblemDetail());
+        assertNull(aipState.getProblemFile());
     }
 
     @Test
@@ -182,10 +228,10 @@ public class DaAipReferenceResolverTest {
     }
 
     @Test
-    void updateProblemStateDoesNotResolveAnything() {
+    void clearingTheProblemDoesNotResolveAnything() {
         DaAipState aipState = state("INST-1", "42");
 
-        resolver.updateProblemState(aipState);
+        resolver.clearProblem(aipState);
 
         assertEquals(AipProblemType.UNKNOWN_FUND, aipState.getProblemType());
         verify(institutionRepository, never()).findByInternalCode(any());

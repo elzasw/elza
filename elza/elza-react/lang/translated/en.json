@@ -741,13 +741,9 @@
     "defaultMessage": "Date range",
     "srcHash": "85gp67Bn_Cu_"
   },
-  "aip.detail.problem": {
-    "defaultMessage": "Problem",
-    "srcHash": "WdRzqC9KeHRa"
-  },
-  "aip.detail.problemDescription": {
-    "defaultMessage": "Problem description",
-    "srcHash": "abMtvejWMUtH"
+  "aip.detail.downloadPackage": {
+    "defaultMessage": "Download package",
+    "srcHash": "yf8e5gZ_YbcN"
   },
   "aip.explorer.back": {
     "defaultMessage": "Back to the list",
@@ -889,6 +885,10 @@
     "defaultMessage": "Download",
     "srcHash": "xxAzjqAuIzkG"
   },
+  "aip.package.downloadAll": {
+    "defaultMessage": "Download the whole package",
+    "srcHash": "yAWLrl7Ft1M7"
+  },
   "aip.package.empty": {
     "defaultMessage": "The package contains no files.",
     "srcHash": "yVnaG1vs0ahj"
@@ -904,6 +904,10 @@
   "aip.package.notPreviewable": {
     "defaultMessage": "The file cannot be shown as text, it can be downloaded.",
     "srcHash": "1dLBGmxsHcmF"
+  },
+  "aip.package.problemHint": {
+    "defaultMessage": "File the problem is about:",
+    "srcHash": "mM8UvcAanVmj"
   },
   "aip.package.readFailed": {
     "defaultMessage": "The file could not be loaded.",

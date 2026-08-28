@@ -10,8 +10,8 @@ import i18n from 'components/i18n';
 import {AipDetailVO} from "elza-api";
 import { Link } from "react-router-dom";
 import { urlEntity } from "../../constants";
-import { FormattedMessage, useIntl } from "react-intl";
-import { detailMessages, problemMessages } from "./messages";
+import { FormattedMessage } from "react-intl";
+import { problemMessages } from "./messages";
 
 type AipDetailBodyProps = {
     detail: AipDetailVO;
@@ -19,7 +19,6 @@ type AipDetailBodyProps = {
 
 const AipDetailBody = ({detail}: AipDetailBodyProps) => {
     const dispatch = useThunkDispatch();
-    const intl = useIntl();
 
     const handleDeleteLink = (linkId: number) => {
         Api.aips.aipDeleteDaoLink(linkId).then(() => {
@@ -35,16 +34,17 @@ const AipDetailBody = ({detail}: AipDetailBodyProps) => {
                 <DetailRow label={i18n("aip.detail.code")} value={detail.code.toString()}/>}
             {detail.aipVersion &&
                 <DetailRow label={i18n("aip.detail.version")} value={detail.aipVersion}/>}
+            {/* Popis problému je celá věta a nese cesty a jmenné prostory, takže dostává
+                celou šířku panelu, ne polovinu jako ostatní hodnoty. */}
             {detail.problemType &&
-                <DetailRow label={intl.formatMessage(detailMessages.problem)} value={
-                    <span className="aip-problem">
+                <div className="aip-problem-block">
+                    <div className="aip-problem">
                         <Icon glyph="fa-exclamation-triangle"/>
                         <FormattedMessage {...problemMessages[detail.problemType]}/>
-                    </span>
-                }/>}
-            {detail.problemDescription &&
-                <DetailRow label={intl.formatMessage(detailMessages.problemDescription)}
-                           value={detail.problemDescription}/>}
+                    </div>
+                    {detail.problemDescription &&
+                        <div className="aip-problem-description">{detail.problemDescription}</div>}
+                </div>}
             {detail.fund &&
                 <DetailRow label={i18n("aip.detail.fund")} value={
                     <a href={`${serverContextPath}/fund/${detail.fund.id}`}>{detail.fund.name}</a>

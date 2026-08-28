@@ -115,6 +115,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -344,11 +345,11 @@ public class DaService {
                     }
                 }
                 try (Stream<Path> str = Files.walk(tempDir).filter(path -> path.toString().endsWith("METS.xml"))) {
-                    Path mets = str.findFirst().orElseThrow(() -> new RuntimeException("Balíček neobsahuje soubor METS.xml"));
+                    Path mets = str.findFirst().orElseThrow(() -> AipProblemException.metadata("Balíček neobsahuje soubor METS.xml"));
                     metsType = MetsReaderWriter.unmarshal(mets);
                 }
                 try (Stream<Path> str = Files.walk(tempDir).filter(path -> path.toString().endsWith("PREMIS.xml"))) {
-                    Path premis = str.findFirst().orElseThrow(() -> new RuntimeException("Balíček neobsahuje soubor PREMIS.xml"));
+                    Path premis = str.findFirst().orElseThrow(() -> AipProblemException.metadata("Balíček neobsahuje soubor PREMIS.xml"));
                     premisComplexType = PremisReaderWriter.unmarshal(premis);
                 }
 
@@ -364,17 +365,13 @@ public class DaService {
                 localCache.setFilePathMetadata(localCache.getFilePath());
                 daLocalCacheRepository.save(localCache);
 
-                aipState.setMetadataError(false);
-                aipState.setMetadataErrorException(null);
                 aipState.setAipVersionMetadata(aipState.getAipVersion());
-                referenceResolver.updateProblemState(aipState);
+                referenceResolver.clearProblem(aipState);
                 aipStateRepository.save(aipState);
 
             } catch (Exception e) {
                 logger.error("Došlo k chybě při zpracování metadat pro AIP={}", aipId, e);
-                aipState.setMetadataError(true);
-                aipState.setMetadataErrorException(e.getMessage());
-                referenceResolver.updateProblemState(aipState);
+                referenceResolver.recordProblem(aipState, AipProblem.of(e));
                 aipStateRepository.save(aipState);
             } finally {
                 deleteTempDirectory(tempDir);
@@ -385,7 +382,7 @@ public class DaService {
 
     public Ead loadEadFile(Path tempDir, String filePath) throws IOException, JAXBException {
         try (Stream<Path> str = Files.walk(tempDir).filter(path -> path.toString().endsWith(filePath))) {
-            Path ead = str.findFirst().orElseThrow(() -> new RuntimeException("Balíček neobsahuje soubor " + filePath));
+            Path ead = str.findFirst().orElseThrow(() -> AipProblemException.metadata("Balíček neobsahuje soubor " + filePath));
             return EadReaderWriter.unmarshal(ead);
         }
     }
@@ -492,9 +489,7 @@ public class DaService {
 
     private void deleteStateMetadata(DaAipState s) {
         s.setMetadataLoad(false);
-        s.setMetadataError(false);
-        s.setMetadataErrorException(null);
-        referenceResolver.updateProblemState(s);
+        referenceResolver.clearProblem(s);
     }
 
     /**
@@ -1098,16 +1093,24 @@ public class DaService {
             Map<String, DaSyncQueueItem> syncQueueItemMap = syncQueueItemList.stream()
                     .collect(Collectors.toMap(DaSyncQueueItem::getCode, Function.identity()));
 
+            // The directory of the package is named by the code of the AIP, which is the code
+            // of its queue item - a package that fails is reported on its own item, so one bad
+            // package neither hides itself nor takes the rest of the batch down with it.
+            List<DaSyncQueueItem> failedItems = new ArrayList<>();
+
             for (File aipDir : aipDirSet) {
-                DaAipState aipState = null;
+                DaAipState aipState;
                 try (Stream<Path> str = Files.walk(aipDir.toPath()).filter(path -> path.toString().endsWith("PACKAGE-INFO.xml"))) {
-                    Path packageInfo = str.findFirst().orElseThrow(() -> new RuntimeException("Balíček neobsahuje soubor PACKAGE-INFO.xml"));
-                    File file = packageInfo.toFile();
-                    try {
-                        aipState = packageInfoService.processPackageInfo(digitalRepository, file);
-                    } catch (Exception e) {
-                        logger.error("Nastala chyba při zpracování souboru package-info.xml", e);
+                    Path packageInfo = str.findFirst().orElseThrow(() -> AipProblemException.metadata("Balíček neobsahuje soubor PACKAGE-INFO.xml"));
+                    aipState = packageInfoService.processPackageInfo(digitalRepository, packageInfo.toFile());
+                } catch (Exception e) {
+                    logger.error("Balíček {} se nepodařilo načíst: {}", aipDir.getName(),
+                            AipProblem.of(e).description(), e);
+                    DaSyncQueueItem failedItem = syncQueueItemMap.getOrDefault(aipDir.getName(), null);
+                    if (failedItem != null) {
+                        failedItems.add(failedItem);
                     }
+                    continue;
                 }
 
                 if (aipState != null && aipType != AipType.PACKAGE_INFO) {
@@ -1115,6 +1118,14 @@ public class DaService {
                     DaSyncQueueItem syncQueueItem = syncQueueItemMap.getOrDefault(aipState.getDaAip().getCode(), null);
                     applicationContext.getBean(DaService.class).createImportLocalCache(aipState, digitalRepository, aipType, zipDir, syncQueueItem);
                 }
+            }
+
+            // Taken out of the batch before the caller records its result, so the failure is
+            // not overwritten by the state of the packages that were loaded.
+            if (!failedItems.isEmpty()) {
+                syncQueueItemList.removeAll(failedItems);
+                applicationContext.getBean(DaService.class)
+                        .changeQueueItemsState(failedItems, DaSyncQueueItem.QueueItemState.IMPORT_ERROR);
             }
         }
     }
@@ -1692,7 +1703,7 @@ public class DaService {
                 ZipEntry entry = zipFile.stream()
                         .filter(e -> !e.isDirectory() && e.getName().endsWith(filePath))
                         .findFirst()
-                        .orElseThrow(() -> new RuntimeException("Balíček neobsahuje soubor " + filePath));
+                        .orElseThrow(() -> AipProblemException.metadata("Balíček neobsahuje soubor " + filePath));
                 try (InputStream in = zipFile.getInputStream(entry)) {
                     content = SpooledContent.readFrom(in);
                 }
@@ -1736,6 +1747,24 @@ public class DaService {
             throw new SystemException("Nepodařilo se přečíst balíček AIP=" + aipId, e, BaseCode.INVALID_STATE);
         }
         return entries;
+    }
+
+    /**
+     * Sends the downloaded package of the AIP as it arrived from the digital archive, so it
+     * can be examined outside ELZA - with the tools of the archive that produced it, which is
+     * what a package ELZA cannot process usually calls for.
+     *
+     * @throws ObjectNotFoundException when no package is stored for the AIP
+     */
+    @Transactional
+    public ResponseEntity<Resource> getPackage(Integer aipId) {
+        Path zip = getPackagePath(aipId);
+        DaAip aip = findAipById(aipId);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_TYPE, "application/zip");
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + aip.getCode() + ".zip\"");
+        return new ResponseEntity<>(new FileSystemResource(zip), headers, HttpStatus.OK);
     }
 
     /**

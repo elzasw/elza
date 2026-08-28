@@ -18,14 +18,15 @@ import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 
 /**
- * Resolves the references an AIP carries as codes of its originating system - the institution
- * and the fund - and describes what could not be resolved.
+ * Owns the problem state of an AIP: the problem the processing of the package failed with, as
+ * it is reported, and the problems derived from the references that could not be resolved.
  *
- * The fund is looked up by the institution together with the fund number first, because a fund
- * number is only unique within an institution; the fund internal code is the fallback for
- * packages whose FONDS_ID is not a fund number. Every fund has an institution, so a resolved
- * fund also says which institution the AIP belongs to - an unresolved institution therefore
- * does not prevent the AIP from being used, while an unresolved fund does.
+ * The references an AIP carries are codes of its originating system - the institution and the
+ * fund. The fund is looked up by the institution together with the fund number first, because
+ * a fund number is only unique within an institution; the fund internal code is the fallback
+ * for packages whose FONDS_ID is not a fund number. Every fund has an institution, so a
+ * resolved fund also says which institution the AIP belongs to - an unresolved institution
+ * therefore does not prevent the AIP from being used, while an unresolved fund does.
  */
 @Service
 public class DaAipReferenceResolver {
@@ -64,19 +65,39 @@ public class DaAipReferenceResolver {
     }
 
     /**
-     * Recomputes the problem state from the current state of the AIP, without resolving
-     * anything - used when only the result of the metadata processing changed.
+     * Records the problem the processing of the package failed with. It outranks the problems
+     * derived from the references, which are described again once it is cleared.
      */
-    public void updateProblemState(DaAipState aipState) {
+    public void recordProblem(DaAipState aipState, AipProblem problem) {
+        aipState.setProblemType(problem.type());
+        aipState.setProblemDescription(problem.description());
+        aipState.setProblemDetail(problem.detail());
+        aipState.setProblemFile(problem.file());
+    }
+
+    /**
+     * Clears the recorded failure of the processing - the package was processed, or what was
+     * read out of it was thrown away. The references are described again.
+     */
+    public void clearProblem(DaAipState aipState) {
+        aipState.setProblemDetail(null);
+        aipState.setProblemFile(null);
+        aipState.setProblemType(null);
+        aipState.setProblemDescription(null);
         updateProblemState(aipState, null);
     }
 
+    /**
+     * A recorded failure of the processing outranks the unresolved references: it has to be
+     * resolved first, and the references are resolved again with the next processing, so it
+     * stays as the described problem until it is cleared.
+     */
     private void updateProblemState(DaAipState aipState, @Nullable String note) {
-        List<String> problems = new ArrayList<>();
-        if (Boolean.TRUE.equals(aipState.getMetadataError())
-                && StringUtils.isNotBlank(aipState.getMetadataErrorException())) {
-            problems.add("Chyba při zpracování metadat: " + aipState.getMetadataErrorException());
+        if (aipState.getProblemType() != null && aipState.getProblemType().isProcessingFailure()) {
+            return;
         }
+
+        List<String> problems = new ArrayList<>();
         if (aipState.getFund() == null) {
             problems.add(note != null ? note : fundNotFoundMessage(aipState.getFundCode()));
         }
@@ -86,18 +107,15 @@ public class DaAipReferenceResolver {
                     : "Instituce s kódem '" + aipState.getInstitutionCode() + "' nebyla nalezena.");
         }
 
-        aipState.setProblemType(problemType(aipState));
+        aipState.setProblemType(derivedProblemType(aipState));
         aipState.setProblemDescription(problems.isEmpty() ? null : String.join(" ", problems));
     }
 
     /**
-     * A failure of the metadata processing outranks the unresolved references: it has to be
-     * resolved first and the references are resolved again with the next processing.
+     * An unresolved fund outranks an unresolved institution: without the fund the AIP cannot be
+     * mapped onto the archival description at all.
      */
-    private static AipProblemType problemType(DaAipState aipState) {
-        if (Boolean.TRUE.equals(aipState.getMetadataError())) {
-            return AipProblemType.METADATA_ERROR;
-        }
+    private static AipProblemType derivedProblemType(DaAipState aipState) {
         if (aipState.getFund() == null) {
             return AipProblemType.UNKNOWN_FUND;
         }

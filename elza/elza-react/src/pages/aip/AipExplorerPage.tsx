@@ -56,7 +56,10 @@ const AipExplorerPage: FC = () => {
                     <AipExplorer mode={ExplorerMode.VIEW}/>
                 </Tab>
                 <Tab eventKey="package" title={<FormattedMessage {...explorerPageMessages.packageTab}/>}>
-                    <PackageBrowser aipId={aipId}/>
+                    <PackageBrowser aipId={aipId}
+                                    problemType={aip?.data?.problemType}
+                                    problemDescription={aip?.data?.problemDescription}
+                                    problemFile={aip?.data?.problemFile}/>
                 </Tab>
             </Tabs>
             </div>

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+import { AipProblemType } from 'elza-api';
 import { renderWithProviders, screen, fireEvent, waitFor } from 'test/test-utils';
 import PackageBrowser from './PackageBrowser';
 
@@ -65,5 +66,55 @@ describe('PackageBrowser', () => {
 
         expect(await screen.findByText('Soubor nelze zobrazit jako text, lze jej stáhnout.')).toBeInTheDocument();
         expect(fetch).not.toHaveBeenCalled();
+    });
+
+    it('nabídne stažení celého balíčku', async () => {
+        listPackageEntries.mockResolvedValue({data: [{path: 'aip/METS.xml', size: 10}]});
+
+        renderWithProviders(<PackageBrowser aipId={11}/>);
+
+        const link = await screen.findByText('Stáhnout celý balíček');
+        expect(link.closest('a')).toHaveAttribute('href', '/api/v1/aip/11/package/download');
+    });
+
+    it('ukáže problém AIPu nad obsahem balíčku', async () => {
+        listPackageEntries.mockResolvedValue({data: [{path: 'aip/METS.xml', size: 10}]});
+
+        renderWithProviders(<PackageBrowser aipId={11}
+                                            problemType={AipProblemType.MetadataError}
+                                            problemDescription="Balíček neobsahuje soubor 'PREMIS.xml'"/>);
+
+        expect(await screen.findByText('Chyba při zpracování metadat')).toBeInTheDocument();
+        expect(screen.getByText("Balíček neobsahuje soubor 'PREMIS.xml'")).toBeInTheDocument();
+    });
+
+    it('soubor, kterého se problém týká, otevře kliknutím', async () => {
+        listPackageEntries.mockResolvedValue({data: [
+            {path: 'aip/METS.xml', size: 10},
+            {path: 'aip/metadata/descriptive/pruvodka.xml', size: 20},
+        ]});
+
+        // balíček uvádí cestu vůči svému kořeni, v ZIPu je pod složkou pojmenovanou kódem AIPu
+        renderWithProviders(<PackageBrowser aipId={11}
+                                            problemType={AipProblemType.MetadataError}
+                                            problemDescription="Popis se nepodařilo načíst."
+                                            problemFile="metadata/descriptive/pruvodka.xml"/>);
+
+        fireEvent.click(await screen.findByText('aip/metadata/descriptive/pruvodka.xml'));
+
+        await waitFor(() => expect(fetch).toHaveBeenCalledWith(
+            '/api/v1/aip/11/package/content?path=aip%2Fmetadata%2Fdescriptive%2Fpruvodka.xml'));
+    });
+
+    it('neodkazuje na soubor, který balíček neobsahuje', async () => {
+        listPackageEntries.mockResolvedValue({data: [{path: 'aip/METS.xml', size: 10}]});
+
+        renderWithProviders(<PackageBrowser aipId={11}
+                                            problemType={AipProblemType.MetadataError}
+                                            problemDescription="Balíček neobsahuje soubor EAD-INHERENT.xml"
+                                            problemFile="metadata/descriptive/EAD-INHERENT.xml"/>);
+
+        expect(await screen.findByText('Balíček neobsahuje soubor EAD-INHERENT.xml')).toBeInTheDocument();
+        expect(screen.queryByText('Soubor, kterého se problém týká:')).not.toBeInTheDocument();
     });
 });

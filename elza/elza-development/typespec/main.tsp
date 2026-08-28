@@ -1276,9 +1276,13 @@ model AipDetailVO {
      */
     problemType?: AipProblemType;
     /**
-     * Popis všech zjištěných problémů AIPu
+     * Popis zjištěného problému AIPu
      */
     problemDescription?: string;
+    /**
+     * Cesta souboru balíčku, kterého se problém týká
+     */
+    problemFile?: string;
     /**
      * Verze AIPu s načtenými metadaty
      */
@@ -5670,6 +5674,24 @@ namespace ElzaAPI.Aip {
          @Http.statusCode statusCode: 404;
          @body data: BaseException;
         };
+
+     /**
+      * Stažený balíček AIPu jako celek, v podobě, v jaké přišel z digitálního archivu.
+      * Slouží k prozkoumání balíčku mimo ELZU, když jeho zpracování selhalo.
+      */
+     @route("/{aipId}/package/download")
+     @get op downloadPackage (
+        /** Aip ID */
+        ...AipIdParameter
+     ) : {
+        @header contentType: "application/zip";
+        @Http.statusCode statusCode: 200;
+        @body data: bytes;
+       } | {
+        /** Balíček není stažený */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+       };
 
      /**
       * Obsah jednoho souboru staženého balíčku AIPu.

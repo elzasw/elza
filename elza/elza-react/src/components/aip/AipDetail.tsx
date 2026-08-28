@@ -3,6 +3,7 @@ import './AipDetail.scss';
 import { Dismiss24Regular } from "@fluentui/react-icons";
 import { DrawerBody, DrawerHeader, DrawerHeaderTitle, Button, InlineDrawer } from '@fluentui/react-components';
 import { FC, useEffect, useState } from 'react';
+import { useIntl } from 'react-intl';
 import { useSelector } from 'react-redux';
 import { storeFromArea } from 'shared/utils';
 import { AppState } from 'typings/store';
@@ -11,9 +12,11 @@ import * as aipActions from '../../actions/aip/aip';
 import { useHistory } from 'react-router';
 import { urlAip, urlAipExplorer } from '../../constants';
 
-import { FolderOpen20Filled } from '@fluentui/react-icons';
+import { ArrowDownload20Filled, FolderOpen20Filled } from '@fluentui/react-icons';
 import i18n from 'components/i18n';
 import AipDetailBody from './AipDetailBody';
+import { detailMessages } from './messages';
+import { packageDownloadUrl } from './explorer/packageUrls';
 
 interface Props {
     open: boolean;
@@ -25,6 +28,7 @@ const AipDetail: FC<Props> = ({open, onClose, onOpen}) => {
     const aip = useSelector((state: AppState) => storeFromArea(state, aipActions.AREA_AIP));
     const dispatch = useThunkDispatch();
     const history = useHistory();
+    const intl = useIntl();
 
     const fetchData = () => {
         dispatch(aipActions.aipFetchIfNeeded(aip.id));
@@ -84,6 +88,17 @@ const AipDetail: FC<Props> = ({open, onClose, onOpen}) => {
                             <FolderOpen20Filled/>
                             <span>{i18n("aip.detail.explorer.open")}</span>
                         </Button>
+                        {/* Stažení balíčku nezávisí na zpracování - u balíčku, který ELZA
+                            zpracovat nedokáže, je to cesta, jak si ho prohlédnout jinde. */}
+                        {aip.data.metadataLoad && <Button
+                            as="a"
+                            className="open-btn"
+                            href={packageDownloadUrl(aip.data.aipId)}
+                            download
+                        >
+                            <ArrowDownload20Filled/>
+                            <span>{intl.formatMessage(detailMessages.downloadPackage)}</span>
+                        </Button>}
                         <AipDetailBody detail={aip.data} />
                     </div>
                 </>}

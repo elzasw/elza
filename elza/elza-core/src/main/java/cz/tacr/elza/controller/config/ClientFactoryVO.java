@@ -2631,6 +2631,7 @@ public class ClientFactoryVO {
                 vo.setProblemType(AipProblemType.fromValue(state.getProblemType().name()));
             }
             vo.setProblemDescription(state.getProblemDescription());
+            vo.setProblemFile(state.getProblemFile());
             vo.setAipVersionMetadata(state.getAipVersionMetadata());
         }
 
