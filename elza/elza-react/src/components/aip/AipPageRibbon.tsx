@@ -1,5 +1,5 @@
 import {aipFetchIfNeeded, aipsFetchIfNeeded, AREA_AIP, AREA_SELECTED_AIPS} from "actions/aip/aip";
-import { AipDetailVO, AipUpdateType } from "elza-api";
+import { AipDetailVO, AipProblemType, AipUpdateType } from "elza-api";
 import { Ribbon } from "components";
 import { Icon, RibbonGroup, i18n } from "components/shared";
 import React, { FC } from "react";
@@ -31,30 +31,45 @@ const AipPageRibbon: FC = () => {
     /**
      * Akce se nabízejí nad označenými AIPy a zároveň nad AIPem otevřeným v detailu,
      * aby nebylo nutné ho kvůli akci ještě označovat.
+     *
+     * Akce je dostupná, pokud dává smysl aspoň pro jeden z předaných AIPů; u ostatních
+     * ji server přeskočí. Tím se z pásu karet pozná, co lze v daném stavu udělat.
      */
-    const actionsFor = (aipIds: number[], keyPrefix: string): JSX.Element[] => [
-        <Button key={`${keyPrefix}-metadata`}
+    const actionsFor = (aips: AipDetailVO[], keyPrefix: string): JSX.Element[] => {
+    const aipIds = aips.map(a => a.aipId);
+    const some = (predicate: (aip: AipDetailVO) => boolean) => aips.some(predicate);
+
+    const canLoadMetadata = some(a => a.metadataLoad !== true);
+    const canDeleteMetadata = some(a => a.metadataLoad === true);
+    const canLoadCompleteAip = some(a => a.metadataLoad === true && a.completeAipLoad !== true);
+    const canDeleteCompleteAip = some(a => a.completeAipLoad === true);
+    const canRemapReferences = some(a => a.problemType === AipProblemType.UnknownFund
+            || a.problemType === AipProblemType.UnknownInstitution);
+    const canExport = some(a => (a.linkedNodes?.length ?? 0) > 0);
+
+    return [
+        <Button key={`${keyPrefix}-metadata`} disabled={!canLoadMetadata}
                 onClick={() => Api.aips.aipCreateDaoStructure(aipIds).then(reload)}>
             <Icon glyph="fa-download" />
             <div>
                 <span className="btnText">{i18n("aip.actions.metadata")}</span>
             </div>
         </Button>,
-        <Button key={`${keyPrefix}-deleteMetadata`}
+        <Button key={`${keyPrefix}-deleteMetadata`} disabled={!canDeleteMetadata}
                 onClick={() => Api.aips.aipDeleteDaoStructure(aipIds).then(reload)}>
             <Icon glyph="fa-trash" />
             <div>
                 <span className="btnText">{i18n("aip.actions.deleteMetadata")}</span>
             </div>
         </Button>,
-        <Button key={`${keyPrefix}-loadAips`}
+        <Button key={`${keyPrefix}-loadAips`} disabled={!canLoadCompleteAip}
                 onClick={() => Api.aips.aipDownloadCompleteAip(aipIds).then(reload)}>
             <Icon glyph="fa-cloud-download " />
             <div>
                 <span className="btnText">{i18n("aip.actions.loadAips")}</span>
             </div>
         </Button>,
-        <Button key={`${keyPrefix}-deleteAips`}
+        <Button key={`${keyPrefix}-deleteAips`} disabled={!canDeleteCompleteAip}
                 onClick={() => Api.aips.aipDeleteCompleteAip(aipIds).then(reload)}>
             <Icon glyph="fa-trash" />
             <div>
@@ -63,7 +78,7 @@ const AipPageRibbon: FC = () => {
         </Button>,
         // Samostatné tlačítko, protože je to jediná akce, kterou se řeší nedohledaná
         // instituce nebo fond - schovaná ve výběru typu aktualizace by se nenašla.
-        <Button key={`${keyPrefix}-remapReferences`}
+        <Button key={`${keyPrefix}-remapReferences`} disabled={!canRemapReferences}
                 onClick={() => Api.aips.aipUpdateAip(AipUpdateType.RemapReferences, aipIds).then(reload)}>
             <Icon glyph="fa-link" />
             <div>
@@ -78,7 +93,7 @@ const AipPageRibbon: FC = () => {
                 <span className="btnText">{i18n("aip.actions.updateAips")}</span>
             </div>
         </Button>,
-        <Button key={`${keyPrefix}-exportAips`}
+        <Button key={`${keyPrefix}-exportAips`} disabled={!canExport}
                 onClick={() => Api.aips.aipExportAip(aipIds).then(reload)}>
             <Icon glyph="fa-cloud-upload" />
             <div>
@@ -86,6 +101,7 @@ const AipPageRibbon: FC = () => {
             </div>
         </Button>,
     ];
+    };
 
     const handleUpdateAips = (aipIds: number[]) => {
         dispatch(
@@ -101,14 +117,14 @@ const AipPageRibbon: FC = () => {
         );
     }
 
-    const selectedIds: number[] = selectedAips?.rows?.map((row: AipDetailVO) => row.aipId) ?? [];
-    const openedAipId: number | undefined = aip?.data?.aipId;
+    const selectedRows: AipDetailVO[] = selectedAips?.rows ?? [];
+    const openedAip: AipDetailVO | undefined = aip?.data;
 
-    const altActions = selectedIds.length > 0 ? actionsFor(selectedIds, "sel") : [];
+    const altActions = selectedRows.length > 0 ? actionsFor(selectedRows, "sel") : [];
     // Akce nad otevřeným AIPem se nabízejí jen když není součástí výběru, jinak by
     // v pásu karet byla stejná sada dvakrát.
-    const itemActions = openedAipId != null && !selectedIds.includes(openedAipId)
-        ? actionsFor([openedAipId], "item")
+    const itemActions = openedAip != null && !selectedRows.some(row => row.aipId === openedAip.aipId)
+        ? actionsFor([openedAip], "item")
         : [];
 
     let itemSection: React.ReactNode;

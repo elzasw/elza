@@ -34,12 +34,6 @@ const initialFilters = (fundId: number): AipFilterEntry[] => [
         invisible: true,
     },
     {
-        id: "metadataLoad",
-        field: AipFieldName.MetadataLoad,
-        filter: buildFilter(AipFieldName.MetadataLoad, "bool", {operation: "EQ", value: true}),
-        invisible: true,
-    },
-    {
         id: "problemType",
         field: AipFieldName.ProblemType,
         filter: buildFilter(AipFieldName.ProblemType, "problemType",
