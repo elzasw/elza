@@ -155,4 +155,26 @@
         </sql>
     </changeSet>
 
+    <changeSet id="20260829090000" author="ppy">
+        <!-- One description of the problem of an AIP, whatever kind of problem it is. The type
+             in problem_type is what tells the kinds apart, so the columns describing a problem
+             are the same for all of them: problem_description is what the user reads,
+             problem_detail the chain of causes for the diagnostics and problem_file the file
+             of the package the problem is about. This replaces the columns that could only
+             describe a failure of the metadata processing - the flag is the type, and the
+             exception message was both the description and the detail. Existing failures keep
+             their detail and are described again by the next processing of the AIP. -->
+        <addColumn tableName="da_aip_state">
+            <column name="problem_detail" type="${type.text}"/>
+            <column name="problem_file" type="${type.text}"/>
+        </addColumn>
+        <sql>
+            UPDATE da_aip_state
+               SET problem_detail = metadata_error_exception
+             WHERE metadata_error IS TRUE AND metadata_error_exception IS NOT NULL;
+        </sql>
+        <dropColumn tableName="da_aip_state" columnName="metadata_error"/>
+        <dropColumn tableName="da_aip_state" columnName="metadata_error_exception"/>
+    </changeSet>
+
 </databaseChangeLog>

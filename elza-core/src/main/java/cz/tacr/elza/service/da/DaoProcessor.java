@@ -126,6 +126,9 @@ public class DaoProcessor {
 
     private Ead ead;
 
+    /** Path of the inherent archival description inside the package, for the error messages. */
+    private String eadHref;
+
     private Map<String, DaDao> daDaoMap;
 
     private Map<Integer, List<DaDaoRelation>> daDaoRelationMap;
@@ -195,10 +198,8 @@ public class DaoProcessor {
         //logical
         createDaoFromStruct(metsType.getStructMap(), change);
 
-        if (ead != null) {
-            //ead
-            createDaoItemsFromArchDesc(ead.getArchdesc(), change);
-        }
+        //ead
+        createDaoItemsFromEad(change);
 
         deleteOldComponents(change);
         levelViewService.processLevelViewForAip(aip, change);
@@ -394,8 +395,10 @@ public class DaoProcessor {
                 try {
                     String newHref = href.replace("/", java.io.File.separator);
                     ead = daService.loadEadFile(tempDir, newHref);
+                    eadHref = href;
                 } catch (Exception e) {
-                    logger.error("Došlo k chybě při načtení EAD souboru {}", href, e);
+                    throw AipProblemException.metadata("Inherentní archivní popis '" + href
+                            + "' se nepodařilo načíst: " + AipProblem.reason(e), href, e);
                 }
             }
 
@@ -620,6 +623,28 @@ public class DaoProcessor {
             }
         }
         return null;
+    }
+
+    /**
+     * Fills the components of the logical structure with the items of the inherent archival
+     * description.
+     *
+     * A package without an inherent archival description is not an error - its components
+     * simply carry no items. A package that declares one it cannot be read from is, and the
+     * processing is stopped, because an item silently left out cannot be told apart from an
+     * item the package does not contain.
+     */
+    private void createDaoItemsFromEad(DaChange change) {
+        if (ead == null) {
+            logger.info("AIP={} neobsahuje inherentní archivní popis, komponenty zůstanou bez prvků popisu",
+                    aip.getCode());
+            return;
+        }
+        if (ead.getArchdesc() == null) {
+            throw AipProblemException.metadata("Inherentní archivní popis v souboru '" + eadHref
+                    + "' neobsahuje element <archdesc>, ze kterého se přebírají prvky popisu.", eadHref, null);
+        }
+        createDaoItemsFromArchDesc(ead.getArchdesc(), change);
     }
 
     private void createDaoItemsFromArchDesc(Archdesc archdesc, DaChange change) {

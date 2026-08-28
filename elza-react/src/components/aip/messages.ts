@@ -93,7 +93,9 @@ export const packageMessages = defineMessages({
     notPreviewable: { id: "aip.package.notPreviewable", defaultMessage: "Soubor nelze zobrazit jako text, lze jej stáhnout." },
     readFailed:     { id: "aip.package.readFailed",     defaultMessage: "Soubor se nepodařilo načíst." },
     download:       { id: "aip.package.download",       defaultMessage: "Stáhnout" },
+    downloadAll:    { id: "aip.package.downloadAll",    defaultMessage: "Stáhnout celý balíček" },
     treeLabel:      { id: "aip.package.treeLabel",      defaultMessage: "Obsah balíčku" },
+    problemHint:    { id: "aip.package.problemHint",    defaultMessage: "Soubor, kterého se problém týká:" },
 });
 
 /**
@@ -111,11 +113,10 @@ export const updateTypeUnavailable = defineMessages({
 });
 
 /**
- * Popisky detailu AIPu k zjištěnému problému.
+ * Popisky akcí v detailu AIPu.
  */
 export const detailMessages = defineMessages({
-    problem:            { id: "aip.detail.problem",            defaultMessage: "Problém" },
-    problemDescription: { id: "aip.detail.problemDescription", defaultMessage: "Popis problému" },
+    downloadPackage: { id: "aip.detail.downloadPackage", defaultMessage: "Stáhnout balíček" },
 });
 
 /**

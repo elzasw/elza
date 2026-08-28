@@ -1781,6 +1781,30 @@ paths:
                 $ref: '#/components/schemas/BaseException'
       tags:
         - aips
+  /aip/{aipId}/package/download:
+    get:
+      operationId: Aip_downloadPackage
+      description: |-
+        Stažený balíček AIPu jako celek, v podobě, v jaké přišel z digitálního archivu.
+        Slouží k prozkoumání balíčku mimo ELZU, když jeho zpracování selhalo.
+      parameters:
+        - $ref: '#/components/parameters/AipIdParameter'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aips
   /aiprovider/conversation:
     post:
       operationId: AiProvider_createConversation
@@ -6556,7 +6580,10 @@ components:
           description: Zjištěný problém AIPu, pokud nějaký je
         problemDescription:
           type: string
-          description: Popis všech zjištěných problémů AIPu
+          description: Popis zjištěného problému AIPu
+        problemFile:
+          type: string
+          description: Cesta souboru balíčku, kterého se problém týká
         aipVersionMetadata:
           type: string
           description: Verze AIPu s načtenými metadaty

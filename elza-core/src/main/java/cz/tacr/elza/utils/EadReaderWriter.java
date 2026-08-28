@@ -4,9 +4,10 @@ import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.Unmarshaller;
+import com.lightcomp.kads.common.XmlRootReader;
 import org.archivists.ead3.schema.Ead;
 
-import javax.xml.transform.stream.StreamSource;
+import javax.xml.namespace.QName;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -14,7 +15,10 @@ import java.nio.file.Path;
 
 public class EadReaderWriter {
 
-	public static final JAXBContext JAXB_CONTEXT;
+    /** Root element of an EAD3 document; see the schema of {@link Ead}. */
+    public static final QName ROOT_ELEMENT = new QName("http://ead3.archivists.org/schema/", "ead");
+
+    public static final JAXBContext JAXB_CONTEXT;
     static {
         try {
             JAXB_CONTEXT = JAXBContext.newInstance(Ead.class);
@@ -25,7 +29,7 @@ public class EadReaderWriter {
 
     public static Ead unmarshal(InputStream is) throws JAXBException {
         Unmarshaller unm = JAXB_CONTEXT.createUnmarshaller();
-        return unm.unmarshal(new StreamSource(is), Ead.class).getValue();
+        return XmlRootReader.unmarshal(is, unm, Ead.class, ROOT_ELEMENT);
     }
 
     public static Ead unmarshal(Path path) throws JAXBException, IOException {

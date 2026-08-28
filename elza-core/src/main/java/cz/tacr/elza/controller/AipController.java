@@ -63,6 +63,11 @@ public class AipController implements AipsApi {
     }
 
     @Override
+    public ResponseEntity<Resource> aipDownloadPackage(Integer aipId) {
+        return daService.getPackage(aipId);
+    }
+
+    @Override
     public ResponseEntity<Resource> aipDownloadPackageEntry(Integer aipId, String path) {
         SpooledContent content = daService.getPackageEntry(aipId, path);
         try {

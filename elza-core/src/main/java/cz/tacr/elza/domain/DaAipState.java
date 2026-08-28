@@ -88,25 +88,35 @@ public class DaAipState {
     @Column
     private Boolean completeAipLoad;
 
-    @Column
-    private Boolean metadataError;
-
-    @Column
-    private String metadataErrorException;
-
     /**
-     * Most severe problem of the AIP, derived from the processing result and from the
-     * references that could not be resolved; null when the AIP has no problem.
+     * What is wrong with the AIP - the most severe problem detected, null when there is none.
+     * The three columns below describe the problem this one names; they are empty together
+     * with it.
      */
     @Enumerated(EnumType.STRING)
     @Column(length = 50)
     private AipProblemType problemType;
 
     /**
-     * Description of all detected problems, shown to the user.
+     * The problem in the words the user reads.
      */
     @Column
     private String problemDescription;
+
+    /**
+     * Technical detail of the problem - the chain of causes from the failure towards its root.
+     * Not shown to the user, it serves the diagnostics; empty for a problem derived from the
+     * state of the AIP, which has no failure behind it.
+     */
+    @Column
+    private String problemDetail;
+
+    /**
+     * Path of the file inside the package the problem is about, so the user can go straight to
+     * it in the package browser; empty when the problem is not about a single file.
+     */
+    @Column
+    private String problemFile;
 
     @Column(length = 250)
     private String aipVersionMetadata;
@@ -287,20 +297,20 @@ public class DaAipState {
         this.completeAipLoad = completeAipLoad;
     }
 
-    public Boolean getMetadataError() {
-        return metadataError;
+    public String getProblemDetail() {
+        return problemDetail;
     }
 
-    public void setMetadataError(Boolean metadataError) {
-        this.metadataError = metadataError;
+    public void setProblemDetail(String problemDetail) {
+        this.problemDetail = problemDetail;
     }
 
-    public String getMetadataErrorException() {
-        return metadataErrorException;
+    public String getProblemFile() {
+        return problemFile;
     }
 
-    public void setMetadataErrorException(String metadataErrorException) {
-        this.metadataErrorException = metadataErrorException;
+    public void setProblemFile(String problemFile) {
+        this.problemFile = problemFile;
     }
 
     public String getAipVersionMetadata() {
