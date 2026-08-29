@@ -43,6 +43,8 @@ import cz.tacr.elza.asynchactions.IAsyncRequest;
 import cz.tacr.elza.asynchactions.IAsyncWorker;
 import cz.tacr.elza.asynchactions.RequestQueue;
 import cz.tacr.elza.asynchactions.ap.AsyncAccessPointExecutor;
+import cz.tacr.elza.service.da.AsyncAipExecutor;
+import cz.tacr.elza.service.da.DaAipActionService;
 import cz.tacr.elza.asynchactions.nodevalid.AsyncNodeExecutor;
 import cz.tacr.elza.bulkaction.AsyncBulkActionWorker;
 import cz.tacr.elza.bulkaction.BulkActionHelperService;
@@ -50,6 +52,7 @@ import cz.tacr.elza.controller.vo.ArrAsyncRequestVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.FundStatisticsVO;
 import cz.tacr.elza.domain.ArrAsyncRequest;
+import cz.tacr.elza.domain.DaAipActionItem;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
 import cz.tacr.elza.domain.ArrExport;
@@ -152,6 +155,13 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     private ThreadPoolTaskExecutor accessPointTaskExecutor;
 
     @Autowired
+    @Qualifier("threadPoolTaskExecutorAIP")
+    private ThreadPoolTaskExecutor aipTaskExecutor;
+
+    @Autowired
+    private DaAipActionService daAipActionService;
+
+    @Autowired
     @Qualifier("transactionManager")
     private PlatformTransactionManager txManager;
 
@@ -165,6 +175,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
         register(new AsyncOutputExecutor(outputTaskExecutor, txManager, asyncRequestRepository, appCtx, outputMaxPerFund, outputRepository));
         register(new AsyncExportExecutor(exportTaskExecutor, txManager, asyncRequestRepository, appCtx, exportMaxPerFund, exportRepository));
         register(new AsyncAccessPointExecutor(accessPointTaskExecutor, txManager, asyncRequestRepository, appCtx));
+        register(new AsyncAipExecutor(aipTaskExecutor, txManager, asyncRequestRepository, appCtx, daAipActionService));
     }
 
     private void register(final AsyncExecutor asyncExecutor) {
@@ -200,6 +211,14 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     public void enqueue(ArrFundVersion fundVersion, ArrOutput output, Integer userId) {
         ArrAsyncRequest request = ArrAsyncRequest.create(fundVersion, output, 1, userId);
         dispatchRequest(request);
+    }
+
+    /**
+     * Přidání kroku akce nad AIPem do fronty na zpracování. Jeden krok = jeden AIP.
+     */
+    @Transactional
+    public void enqueue(final DaAipActionItem aipActionItem, final Integer userId) {
+        dispatchRequest(ArrAsyncRequest.create(aipActionItem, 1, userId));
     }
 
     /**

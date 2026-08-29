@@ -35,6 +35,7 @@ import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.DaAip;
 import cz.tacr.elza.domain.DaAipAction;
+import cz.tacr.elza.domain.DaAipActionItem;
 import cz.tacr.elza.domain.DaAipState;
 import cz.tacr.elza.domain.DaChange;
 import cz.tacr.elza.domain.DaChangeType;
@@ -76,6 +77,7 @@ import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DaoLevelViewService;
 import cz.tacr.elza.service.ExternalSystemService;
+import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.da.vo.DaUploadRequestImpl;
@@ -251,6 +253,8 @@ public class DaService {
     private DaAipReferenceResolver referenceResolver;
     @Autowired
     private DaAipActionService actionService;
+    @Autowired
+    private AsyncRequestService asyncRequestService;
     @Autowired
     @Qualifier("transactionManager")
     private PlatformTransactionManager txManager;
@@ -763,14 +767,23 @@ public class DaService {
                 }
                 return null;
             });
-        } else if (type == AipUpdateType.DB_UPDATE) {
-            doCreateDaoStructure(aipIds, false, sink);
-        } else if (type == AipUpdateType.FORCE_UPDATE) {
-            doCreateDaoStructure(aipIds, true, sink);
-        } else if (type == AipUpdateType.REMAP_REFERENCES) {
-            remapReferences(aipIds, sink);
+        } else {
+            // The work ELZA does on its own is queued, one step per AIP: the request is answered
+            // without waiting for it, and each AIP is carried out in a transaction of its own.
+            enqueueSteps(action);
         }
         return action;
+    }
+
+    /**
+     * Queues one step per AIP of the action. The steps are carried out one at a time, in the order
+     * they were requested.
+     */
+    private void enqueueSteps(DaAipAction action) {
+        Integer userId = action.getUser() != null ? action.getUser().getUserId() : null;
+        for (DaAipActionItem item : action.getItems()) {
+            asyncRequestService.enqueue(item, userId);
+        }
     }
 
     private static DaAipActionType actionTypeOf(AipUpdateType type) {

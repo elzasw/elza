@@ -16,6 +16,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
@@ -72,6 +73,10 @@ public class ArrAsyncRequest {
     @JoinColumn(name = "export_id", nullable = true)
     private ArrExport export;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "aip_action_item_id")
+    private DaAipActionItem aipActionItem;
+
     @Column(name="user_id")
     private Integer userId;
 
@@ -115,6 +120,14 @@ public class ArrAsyncRequest {
 		Objects.requireNonNull(priority);
 		return new ArrAsyncRequest(fundVersion, export, priority, userId);
 	}
+
+    public static ArrAsyncRequest create(final DaAipActionItem aipActionItem,
+                                         final Integer priority,
+                                         final Integer userId) {
+        Objects.requireNonNull(aipActionItem);
+        Objects.requireNonNull(priority);
+        return new ArrAsyncRequest(aipActionItem, priority, userId);
+    }
 
     public static ArrAsyncRequest create(final ApAccessPoint accessPoint,
                                          final Integer priority) {
@@ -173,6 +186,19 @@ public class ArrAsyncRequest {
         this.type = AsyncTypeEnum.AP;
         this.priority = priority;
         this.accessPoint = accessPoint;
+    }
+
+    /**
+     * A step of an action over AIPs. It carries no fund version - an AIP whose fund has not been
+     * resolved belongs to none, and it is exactly such an AIP an action is often run over.
+     */
+    protected ArrAsyncRequest(final DaAipActionItem aipActionItem,
+                              final Integer priority,
+                              final Integer userId) {
+        this.type = AsyncTypeEnum.AIP;
+        this.priority = priority;
+        this.aipActionItem = aipActionItem;
+        this.userId = userId;
     }
 
     public Long getAsyncRequestId() {
@@ -260,6 +286,14 @@ public class ArrAsyncRequest {
 	public void setUserId(Integer userId) {
 		this.userId = userId;
 	}
+
+    public DaAipActionItem getAipActionItem() {
+        return aipActionItem;
+    }
+
+    public void setAipActionItem(DaAipActionItem aipActionItem) {
+        this.aipActionItem = aipActionItem;
+    }
 
     public ApAccessPoint getAccessPoint() {
         return accessPoint;
