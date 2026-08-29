@@ -1,5 +1,5 @@
 import { defineMessages } from "react-intl";
-import { AipProblemType, AipUpdateType, QueueItemState } from "elza-api";
+import { AipProblemType, AipUpdateType, DaAipActionItemState, QueueItemState } from "elza-api";
 
 export const messages = defineMessages({
     aipId:            { id: "aip.col.aipId",            defaultMessage: "ID" },
@@ -181,4 +181,39 @@ export const filterErrorMessages = defineMessages({
     positiveNum: { id: "aip.form.error.positiveNum", defaultMessage: "Musí být kladné číslo" },
     between:     { id: "aip.form.error.between",     defaultMessage: "Číslo od musí být menší než číslo do" },
     emptyDate:   { id: "aip.form.error.emptyDate",   defaultMessage: "Datum musí být zadán" },
+});
+
+/**
+ * Průběh a výsledek akce nad AIPy.
+ */
+export const actionMessages = defineMessages({
+    running:     { id: "aip.action.running",     defaultMessage: "Probíhá…" },
+    finished:    { id: "aip.action.finished",    defaultMessage: "Dokončeno" },
+    withErrors:  { id: "aip.action.withErrors",  defaultMessage: "Dokončeno s chybami" },
+    close:       { id: "aip.action.close",       defaultMessage: "Zavřít" },
+    aipColumn:   { id: "aip.action.col.aip",     defaultMessage: "AIP" },
+    stateColumn: { id: "aip.action.col.state",   defaultMessage: "Výsledek" },
+    summary: {
+        id: "aip.action.summary",
+        defaultMessage: "Hotovo {done} z {total}{errors, plural, =0 {} one { · # chyba} few { · # chyby} other { · # chyb}}",
+    },
+    toastFinished: {
+        id: "aip.action.toast.finished",
+        defaultMessage: "{count, plural, one {Akce dokončena u # AIPu} few {Akce dokončena u # AIPů} other {Akce dokončena u # AIPů}}",
+    },
+    toastErrors: {
+        id: "aip.action.toast.errors",
+        defaultMessage: "{count, plural, one {Akce skončila chybou u # AIPu} few {Akce skončila chybou u # AIPů} other {Akce skončila chybou u # AIPů}}",
+    },
+});
+
+/**
+ * Výsledek akce u jednoho AIPu.
+ */
+export const actionItemStateMessages = defineMessages({
+    [DaAipActionItemState.Waiting]:  { id: "aip.action.item.WAITING",  defaultMessage: "Čeká" },
+    [DaAipActionItemState.Running]:  { id: "aip.action.item.RUNNING",  defaultMessage: "Probíhá" },
+    [DaAipActionItemState.Finished]: { id: "aip.action.item.FINISHED", defaultMessage: "Hotovo" },
+    [DaAipActionItemState.Error]:    { id: "aip.action.item.ERROR",    defaultMessage: "Chyba" },
+    [DaAipActionItemState.Skipped]:  { id: "aip.action.item.SKIPPED",  defaultMessage: "Přeskočeno" },
 });

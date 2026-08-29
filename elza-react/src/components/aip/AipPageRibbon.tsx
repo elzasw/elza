@@ -11,13 +11,20 @@ import {Api} from "../../api";
 import {useThunkDispatch} from "../../utils/hooks";
 import {modalDialogShow} from "../../actions/global/modalDialog";
 import AipUpdateTypeForm from "./AipUpdateTypeForm.tsx";
+import { runAipAction } from "./AipActionRunner";
+import { useIntl } from "react-intl";
 
 const AipPageRibbon: FC = () => {
     const selectedAips = useSelector((state: AppState) => storeFromArea(state, AREA_SELECTED_AIPS));
     const aip =  useSelector((state: AppState) => storeFromArea(state, AREA_AIP));
     const dispatch = useThunkDispatch();
+    const intl = useIntl();
 
     /** Akce mění i AIP otevřený v detailu, panel se proto načte znovu spolu se seznamem. */
+    /** Akce běží na pozadí; dialog ukáže její průběh a po dokončení se seznam načte znovu. */
+    const run = (title: string, request: () => Promise<{ data: import("elza-api").DaAipActionVO }>) =>
+        runAipAction(dispatch, intl, title, request as never, reload);
+
     const reload = () => {
         dispatch(aipsFetchIfNeeded(true));
         if (aip?.id != null) {
@@ -44,28 +51,28 @@ const AipPageRibbon: FC = () => {
 
     return [
         <Button key={`${keyPrefix}-metadata`} disabled={!canLoadMetadata}
-                onClick={() => Api.aips.aipCreateDaoStructure(aipIds).then(reload)}>
+                onClick={() => run(i18n("aip.actions.metadata"), () => Api.aips.aipCreateDaoStructure(aipIds))}>
             <Icon glyph="fa-download" />
             <div>
                 <span className="btnText">{i18n("aip.actions.metadata")}</span>
             </div>
         </Button>,
         <Button key={`${keyPrefix}-deleteMetadata`} disabled={!canDeleteMetadata}
-                onClick={() => Api.aips.aipDeleteDaoStructure(aipIds).then(reload)}>
+                onClick={() => run(i18n("aip.actions.deleteMetadata"), () => Api.aips.aipDeleteDaoStructure(aipIds))}>
             <Icon glyph="fa-trash" />
             <div>
                 <span className="btnText">{i18n("aip.actions.deleteMetadata")}</span>
             </div>
         </Button>,
         <Button key={`${keyPrefix}-loadAips`} disabled={!canLoadCompleteAip}
-                onClick={() => Api.aips.aipDownloadCompleteAip(aipIds).then(reload)}>
+                onClick={() => run(i18n("aip.actions.loadAips"), () => Api.aips.aipDownloadCompleteAip(aipIds))}>
             <Icon glyph="fa-cloud-download " />
             <div>
                 <span className="btnText">{i18n("aip.actions.loadAips")}</span>
             </div>
         </Button>,
         <Button key={`${keyPrefix}-deleteAips`} disabled={!canDeleteCompleteAip}
-                onClick={() => Api.aips.aipDeleteCompleteAip(aipIds).then(reload)}>
+                onClick={() => run(i18n("aip.actions.deleteAips"), () => Api.aips.aipDeleteCompleteAip(aipIds))}>
             <Icon glyph="fa-trash" />
             <div>
                 <span className="btnText">{i18n("aip.actions.deleteAips")}</span>
@@ -78,7 +85,7 @@ const AipPageRibbon: FC = () => {
             </div>
         </Button>,
         <Button key={`${keyPrefix}-exportAips`} disabled={!canExport}
-                onClick={() => Api.aips.aipExportAip(aipIds).then(reload)}>
+                onClick={() => run(i18n("aip.actions.exportAips"), () => Api.aips.aipExportAip(aipIds))}>
             <Icon glyph="fa-cloud-upload" />
             <div>
                 <span className="btnText">{i18n("aip.actions.exportAips")}</span>
@@ -95,7 +102,7 @@ const AipPageRibbon: FC = () => {
                 <AipUpdateTypeForm
                     aips={aips}
                     onSubmit={({type}) => {
-                        Api.aips.aipUpdateAip(type, aips.map(a => a.aipId)).then(reload);
+                        run(i18n("aip.form.update.title"), () => Api.aips.aipUpdateAip(type, aips.map(a => a.aipId)));
                     }}
                 />,
             ),

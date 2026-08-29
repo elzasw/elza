@@ -19,6 +19,8 @@ import cz.tacr.elza.api.DaAipActionItemState;
 import cz.tacr.elza.api.DaAipActionState;
 import cz.tacr.elza.api.DaAipActionType;
 import cz.tacr.elza.domain.DaAip;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.domain.DaAipAction;
 import cz.tacr.elza.domain.DaAipActionItem;
 import cz.tacr.elza.domain.DaSyncQueueItem;
@@ -56,6 +58,8 @@ public class DaAipActionService {
     private DaSyncQueueItemRepository syncQueueItemRepository;
     @Autowired
     private UserService userService;
+    @Autowired
+    private DaAipActionPushService pushService;
 
     /**
      * Opens an action over the given AIPs, with every AIP outstanding.
@@ -106,6 +110,13 @@ public class DaAipActionService {
                 .map(DaSyncQueueItem::getAipActionItem)
                 .filter(java.util.Objects::nonNull)
                 .toList()));
+    }
+
+    @Transactional(readOnly = true)
+    public DaAipAction getAction(Integer actionId) {
+        return actionRepository.findById(actionId)
+                .orElseThrow(() -> new ObjectNotFoundException("Akce nad AIPy nenalezena, ID=" + actionId,
+                                                              BaseCode.ID_NOT_EXIST).setId(actionId));
     }
 
     /**
@@ -230,6 +241,7 @@ public class DaAipActionService {
         item.setFinishDate(OffsetDateTime.now());
         actionItemRepository.save(item);
         closeIfDone(item.getAipAction());
+        announce(item.getAipAction());
     }
 
     /**
@@ -238,6 +250,12 @@ public class DaAipActionService {
      * copy held in memory would not see the others. The collection of the action is deliberately
      * left alone - replacing it on a managed entity would detach the one Hibernate tracks.
      */
+    /** Tells the user who asked for the action how it stands, once this transaction has committed. */
+    private void announce(DaAipAction action) {
+        pushService.pushAfterCommit(action.getAipActionId(),
+                                    action.getUser() != null ? action.getUser().getUserId() : null);
+    }
+
     private void closeIfDone(DaAipAction action) {
         List<DaAipActionItem> items = actionItemRepository.findByAipActionOrderByAipActionItemId(action);
         boolean done = items.stream().allMatch(i -> i.getState().isTerminal());
@@ -282,6 +300,7 @@ public class DaAipActionService {
             actionItemRepository.save(item);
             queueItem.setAipActionItem(item);
             syncQueueItemRepository.save(queueItem);
+            announce(item.getAipAction());
         }
     }
 }

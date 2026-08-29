@@ -669,6 +669,62 @@
     "defaultMessage": "AI assistant",
     "srcHash": "63nbyiXmnORE"
   },
+  "aip.action.close": {
+    "defaultMessage": "Close",
+    "srcHash": "0r4EKpo4ZhJv"
+  },
+  "aip.action.col.aip": {
+    "defaultMessage": "AIP",
+    "srcHash": "skqGhZPbqOfI"
+  },
+  "aip.action.col.state": {
+    "defaultMessage": "Result",
+    "srcHash": "C14p6HYptoxW"
+  },
+  "aip.action.finished": {
+    "defaultMessage": "Finished",
+    "srcHash": "xWQzBVFQyQ1H"
+  },
+  "aip.action.item.ERROR": {
+    "defaultMessage": "Error",
+    "srcHash": "tiLo1toEkOGZ"
+  },
+  "aip.action.item.FINISHED": {
+    "defaultMessage": "Done",
+    "srcHash": "GJci5Tr0orF5"
+  },
+  "aip.action.item.RUNNING": {
+    "defaultMessage": "In progress",
+    "srcHash": "kxATik111ihr"
+  },
+  "aip.action.item.SKIPPED": {
+    "defaultMessage": "Skipped",
+    "srcHash": "K4zhvSVWVoal"
+  },
+  "aip.action.item.WAITING": {
+    "defaultMessage": "Waiting",
+    "srcHash": "2Rrd-9CScv7V"
+  },
+  "aip.action.running": {
+    "defaultMessage": "In progress…",
+    "srcHash": "qchuMS_kPrI7"
+  },
+  "aip.action.summary": {
+    "defaultMessage": "{done} of {total} done{errors, plural, =0 {} one { · # error} other { · # errors}}",
+    "srcHash": "zTVliqexu1h4"
+  },
+  "aip.action.toast.errors": {
+    "defaultMessage": "{count, plural, one {Action failed for # AIP} other {Action failed for # AIPs}}",
+    "srcHash": "vFKit_HMxbGk"
+  },
+  "aip.action.toast.finished": {
+    "defaultMessage": "{count, plural, one {Action finished for # AIP} other {Action finished for # AIPs}}",
+    "srcHash": "OuQdiSeoE4Gi"
+  },
+  "aip.action.withErrors": {
+    "defaultMessage": "Finished with errors",
+    "srcHash": "kF6JUmfiJUhL"
+  },
   "aip.col.aipId": {
     "defaultMessage": "ID",
     "srcHash": "OEOXHc_e5Qg-"
