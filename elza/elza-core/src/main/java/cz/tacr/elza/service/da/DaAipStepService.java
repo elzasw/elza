@@ -6,11 +6,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import cz.tacr.elza.api.DaAipActionItemState;
 import cz.tacr.elza.api.DaAipActionType;
-import cz.tacr.elza.domain.DaAipActionItem;
 import cz.tacr.elza.repository.DaAipActionItemRepository;
 
 /**
@@ -41,13 +39,17 @@ public class DaAipStepService {
     private record StepInput(DaAipActionType actionType, Integer aipId) {
     }
 
-    @Transactional(readOnly = true)
-    protected StepInput readInput(Integer actionItemId) {
-        DaAipActionItem item = actionItemRepository.findById(actionItemId).orElse(null);
-        if (item == null) {
+    /**
+     * A projection, not the item: the worker runs on a pooled thread with no transaction of its
+     * own, where the associations of an item read earlier cannot be navigated.
+     */
+    private StepInput readInput(Integer actionItemId) {
+        List<Object[]> rows = actionItemRepository.findActionTypeAndAip(actionItemId);
+        if (rows.isEmpty()) {
             return null;
         }
-        return new StepInput(item.getAipAction().getActionType(), item.getAip().getAipId());
+        Object[] row = rows.get(0);
+        return new StepInput((DaAipActionType) row[0], (Integer) row[1]);
     }
 
     /**

@@ -8,12 +8,14 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import cz.tacr.elza.api.DaAipActionItemState;
 import cz.tacr.elza.api.DaAipActionState;
@@ -27,6 +29,7 @@ import cz.tacr.elza.domain.DaSyncQueueItem;
 import cz.tacr.elza.repository.DaAipActionItemRepository;
 import cz.tacr.elza.repository.DaAipActionRepository;
 import cz.tacr.elza.repository.DaSyncQueueItemRepository;
+import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.UserService;
 
 /**
@@ -60,6 +63,10 @@ public class DaAipActionService {
     private UserService userService;
     @Autowired
     private DaAipActionPushService pushService;
+    @Autowired
+    private AsyncRequestService asyncRequestService;
+    @Autowired
+    private TransactionTemplate transactionTemplate;
 
     /**
      * Opens an action over the given AIPs, with every AIP outstanding.
@@ -91,25 +98,46 @@ public class DaAipActionService {
      * Sink recording into the given action, or {@link AipOutcomeSink#NONE} when there is no
      * action to record into.
      */
+    @Transactional(readOnly = true)
     public AipOutcomeSink sinkFor(@Nullable DaAipAction action) {
         if (action == null) {
             return AipOutcomeSink.NONE;
         }
-        return sinkOver(itemIdsByAip(action.getItems()));
+        return sinkOver(asItemIdsByAip(actionItemRepository.findAipAndItemIds(action.getAipActionId())));
     }
 
     /**
      * Sink recording into the action items the given queue items are carrying out. Lets the
      * processing that follows a download report per AIP, before the batch as a whole is closed.
      */
+    @Transactional(readOnly = true)
     public AipOutcomeSink sinkForQueueItems(Collection<DaSyncQueueItem> queueItems) {
-        if (queueItems == null) {
+        if (CollectionUtils.isEmpty(queueItems)) {
             return AipOutcomeSink.NONE;
         }
-        return sinkOver(itemIdsByAip(queueItems.stream()
-                .map(DaSyncQueueItem::getAipActionItem)
+        List<Integer> queueItemIds = queueItems.stream()
+                .map(DaSyncQueueItem::getSyncQueueItemId)
                 .filter(java.util.Objects::nonNull)
-                .toList()));
+                .toList();
+        if (queueItemIds.isEmpty()) {
+            return AipOutcomeSink.NONE;
+        }
+        return sinkOver(asItemIdsByAip(syncQueueItemRepository.findAipAndActionItemIds(queueItemIds)));
+    }
+
+    /**
+     * Queues one step per AIP of the action.
+     *
+     * The items are read here rather than taken from the action: the caller is not in a
+     * transaction, so a collection loaded when the action was opened is no longer usable.
+     */
+    @Transactional
+    public void enqueueSteps(Integer actionId) {
+        DaAipAction action = getAction(actionId);
+        Integer userId = action.getUser() != null ? action.getUser().getUserId() : null;
+        for (DaAipActionItem item : actionItemRepository.findByAipActionOrderByAipActionItemId(action)) {
+            asyncRequestService.enqueue(item, userId);
+        }
     }
 
     @Transactional(readOnly = true)
@@ -210,10 +238,11 @@ public class DaAipActionService {
         return anyFailed ? DaAipActionState.ERROR : DaAipActionState.FINISHED;
     }
 
-    private static Map<Integer, Integer> itemIdsByAip(Collection<DaAipActionItem> items) {
+    /** Rows of (aipId, itemId) as returned by the projection queries. */
+    private static Map<Integer, Integer> asItemIdsByAip(List<Object[]> rows) {
         Map<Integer, Integer> itemIdsByAip = new LinkedHashMap<>();
-        for (DaAipActionItem item : items) {
-            itemIdsByAip.put(item.getAip().getAipId(), item.getAipActionItemId());
+        for (Object[] row : rows) {
+            itemIdsByAip.put((Integer) row[0], (Integer) row[1]);
         }
         return itemIdsByAip;
     }
@@ -274,6 +303,12 @@ public class DaAipActionService {
             this.itemIdsByAip = itemIdsByAip;
         }
 
+        /**
+         * The sink is handed to code that may or may not be in a transaction - the rebuild runs in
+         * one, the processor calls it between two of its own. The template joins the transaction
+         * when there is one and opens one when there is not, so the entities it touches are always
+         * attached to a session.
+         */
         @Override
         public void record(Integer aipId, DaAipActionItemState state, @Nullable String message) {
             Integer itemId = itemIdsByAip.get(aipId);
@@ -283,7 +318,7 @@ public class DaAipActionService {
                 logger.debug("AIP={} není součástí akce", aipId);
                 return;
             }
-            finishById(itemId, state, message);
+            transactionTemplate.executeWithoutResult(status -> finishById(itemId, state, message));
         }
 
         @Override
@@ -292,15 +327,17 @@ public class DaAipActionService {
             if (itemId == null) {
                 return;
             }
-            DaAipActionItem item = actionItemRepository.findById(itemId).orElse(null);
-            if (item == null) {
-                return;
-            }
-            item.setState(DaAipActionItemState.RUNNING);
-            actionItemRepository.save(item);
-            queueItem.setAipActionItem(item);
-            syncQueueItemRepository.save(queueItem);
-            announce(item.getAipAction());
+            transactionTemplate.executeWithoutResult(status -> {
+                DaAipActionItem item = actionItemRepository.findById(itemId).orElse(null);
+                if (item == null) {
+                    return;
+                }
+                item.setState(DaAipActionItemState.RUNNING);
+                actionItemRepository.save(item);
+                queueItem.setAipActionItem(item);
+                syncQueueItemRepository.save(queueItem);
+                announce(item.getAipAction());
+            });
         }
     }
 }
