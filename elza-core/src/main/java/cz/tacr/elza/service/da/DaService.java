@@ -788,10 +788,7 @@ public class DaService {
      * they were requested.
      */
     private void enqueueSteps(DaAipAction action) {
-        Integer userId = action.getUser() != null ? action.getUser().getUserId() : null;
-        for (DaAipActionItem item : action.getItems()) {
-            asyncRequestService.enqueue(item, userId);
-        }
+        actionService.enqueueSteps(action.getAipActionId());
     }
 
     private static DaAipActionType actionTypeOf(AipUpdateType type) {

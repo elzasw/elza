@@ -32,4 +32,14 @@ public interface DaSyncQueueItemRepository extends JpaRepository<DaSyncQueueItem
                                                                          @Param("states") Collection<DaSyncQueueItem.QueueItemState> states);
 
     DaSyncQueueItem findByAipAndStateInAndActiveIsTrue(DaAip aip, Collection<DaSyncQueueItem.QueueItemState> states);
+
+    /**
+     * Pairs (aipId, actionItemId) of the action items the given queue items are carrying out.
+     *
+     * A projection rather than the entities: the processor works with queue items read in an
+     * earlier transaction, where navigating their associations is no longer possible.
+     */
+    @Query("SELECT q.aipActionItem.aip.aipId, q.aipActionItem.aipActionItemId FROM da_sync_queue_item q"
+            + " WHERE q.syncQueueItemId IN :queueItemIds AND q.aipActionItem IS NOT NULL")
+    List<Object[]> findAipAndActionItemIds(@Param("queueItemIds") Collection<Integer> queueItemIds);
 }

@@ -230,4 +230,66 @@ public class DaAipActionPersistenceTest extends AbstractTest {
             assertEquals(DaAipActionState.ERROR, actionService.stateOf(action));
         });
     }
+
+    /**
+     * The processor reads its queue items in one transaction and works with them in later ones, so
+     * by the time it asks for a sink the items are detached and their associations cannot be
+     * navigated. The sink has to be usable from there, which means reading what it needs itself.
+     *
+     * Called from outside a transaction on purpose - that is where the processor calls it from,
+     * and a test that wraps this in one does not exercise the case at all.
+     */
+    @Test
+    public void aSinkCanBeBuiltFromDetachedQueueItems() {
+        Integer[] ids = new Integer[3];
+
+        tx().executeWithoutResult(t -> {
+            ArrDigitalRepository repository = createRepository();
+            DaAip aip = createAip(repository, "aip-detached");
+            DaAipAction action = actionService.start(DaAipActionType.DOWNLOAD_UPDATE, List.of(aip));
+            ids[0] = action.getAipActionId();
+            ids[1] = aip.getAipId();
+            DaSyncQueueItem queue = queueItem(repository, aip);
+            actionService.sinkFor(action).enqueued(aip.getAipId(), queue);
+            ids[2] = queue.getSyncQueueItemId();
+        });
+
+        // detached: read in one transaction, used after it closed
+        List<DaSyncQueueItem> detached = tx().execute(t -> List.of(
+                syncQueueItemRepository.findById(ids[2]).orElseThrow()));
+
+        AipOutcomeSink sink = actionService.sinkForQueueItems(detached);
+        sink.failed(ids[1], "Balicek neobsahuje soubor METS.xml");
+
+        tx().executeWithoutResult(t -> {
+            DaAipAction action = actionRepository.findById(ids[0]).orElseThrow();
+            List<DaAipActionItem> items = actionItemRepository.findByAipActionOrderByAipActionItemId(action);
+            assertEquals(DaAipActionItemState.ERROR, items.get(0).getState());
+            assertEquals("Balicek neobsahuje soubor METS.xml", items.get(0).getMessage());
+        });
+    }
+
+    /** The same for an action held over from the request that opened it. */
+    @Test
+    public void aSinkCanBeBuiltFromADetachedAction() {
+        Integer[] ids = new Integer[2];
+
+        DaAipAction detachedAction = tx().execute(t -> {
+            DaAip aip = createAip(createRepository(), "aip-detached-action");
+            ids[1] = aip.getAipId();
+            DaAipAction action = actionService.start(DaAipActionType.DB_UPDATE, List.of(aip));
+            ids[0] = action.getAipActionId();
+            return action;
+        });
+
+        AipOutcomeSink sink = actionService.sinkFor(detachedAction);
+        sink.skipped(ids[1], "V ELZA neni ulozeny balicek s metadaty.");
+
+        tx().executeWithoutResult(t -> {
+            DaAipAction action = actionRepository.findById(ids[0]).orElseThrow();
+            List<DaAipActionItem> items = actionItemRepository.findByAipActionOrderByAipActionItemId(action);
+            assertEquals(DaAipActionItemState.SKIPPED, items.get(0).getState());
+            assertEquals(DaAipActionState.FINISHED, actionService.stateOf(action));
+        });
+    }
 }
