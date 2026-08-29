@@ -109,6 +109,44 @@ public class DaAipActionService {
     }
 
     /**
+     * Gives up on a step that was interrupted by a restart of the server.
+     *
+     * The step ran in a transaction of its own, so the restart rolled it back and nothing is half
+     * written; the AIP can be run again. Doing so by itself is deliberately not offered - a step
+     * that brings the server down would bring it down on every start - so the item is reported as
+     * failed and the user decides whether to ask for it again. An item that had already finished
+     * keeps its outcome.
+     *
+     * @return true when the step must not be started again, which is always: it is only called for
+     *         requests left behind by a restart
+     */
+    @Transactional
+    public boolean abandonInterruptedStep(@Nullable DaAipActionItem item) {
+        if (item == null) {
+            return true;
+        }
+        finishById(item.getAipActionItemId(), DaAipActionItemState.ERROR, "Byl proveden restart serveru");
+        return true;
+    }
+
+    /**
+     * Sink recording into one known item. Used by the worker, which is given the item to carry
+     * out and has no action loaded.
+     */
+    public AipOutcomeSink sinkForItem(Integer actionItemId, Integer aipId) {
+        return new ActionSink(Map.of(aipId, actionItemId));
+    }
+
+    /**
+     * Records the outcome of one item in a transaction of its own. Used where the transaction the
+     * work ran in is already rolled back and the outcome would be rolled back with it.
+     */
+    @Transactional
+    public void recordOutcome(Integer actionItemId, DaAipActionItemState state, @Nullable String message) {
+        finishById(actionItemId, state, message);
+    }
+
+    /**
      * Finishes the action items the queue items were carrying out, if they were carrying any.
      * Called from the processors, which know the outcome of the exchange with the digital archive.
      *

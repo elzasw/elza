@@ -268,4 +268,17 @@
         </insert>
     </changeSet>
 
+    <changeSet id="20260829140000" author="ppy">
+        <!-- A step of an action over AIPs waiting in the asynchronous queue. It carries no fund
+             version, unlike the other kinds of request: an AIP whose fund has not been resolved
+             belongs to none, and an action is often run over exactly such an AIP. -->
+        <addColumn tableName="arr_async_request">
+            <column name="aip_action_item_id" type="int">
+                <constraints foreignKeyName="fk_arr_async_request_aip_action_item"
+                             referencedTableName="da_aip_action_item"
+                             referencedColumnNames="aip_action_item_id"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>
