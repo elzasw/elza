@@ -1,0 +1,192 @@
+package cz.tacr.elza.service.da;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+import java.util.List;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.support.TransactionTemplate;
+
+import cz.tacr.elza.AbstractTest;
+import cz.tacr.elza.api.DaAipActionItemState;
+import cz.tacr.elza.api.DaAipActionState;
+import cz.tacr.elza.api.DaAipActionType;
+import cz.tacr.elza.api.DigitalRepositoryType;
+import cz.tacr.elza.domain.ArrDigitalRepository;
+import cz.tacr.elza.domain.DaAip;
+import cz.tacr.elza.domain.DaAipAction;
+import cz.tacr.elza.domain.DaAipActionItem;
+import cz.tacr.elza.domain.DaSyncQueueItem;
+import cz.tacr.elza.repository.AipRepository;
+import cz.tacr.elza.repository.DaAipActionItemRepository;
+import cz.tacr.elza.repository.DaAipActionRepository;
+import cz.tacr.elza.repository.DaSyncQueueItemRepository;
+import cz.tacr.elza.repository.DigitalRepositoryRepository;
+
+/**
+ * The record of an action against a real database and across separate transactions.
+ *
+ * An action carried out through the synchronization queue is finished item by item, each in its
+ * own transaction on the processor thread, and only the database carries the outcome from one to
+ * the next. That is what this exercises: a test holding detached objects in a single heap cannot
+ * see a mapping that only fails when Hibernate flushes it.
+ */
+public class DaAipActionPersistenceTest extends AbstractTest {
+
+    @Autowired
+    private DaAipActionService actionService;
+    @Autowired
+    private DaAipActionRepository actionRepository;
+    @Autowired
+    private DaAipActionItemRepository actionItemRepository;
+    @Autowired
+    private DaSyncQueueItemRepository syncQueueItemRepository;
+    @Autowired
+    private AipRepository aipRepository;
+    @Autowired
+    private DigitalRepositoryRepository digitalRepositoryRepository;
+
+    private TransactionTemplate tx() {
+        return new TransactionTemplate(txManager);
+    }
+
+    private ArrDigitalRepository createRepository() {
+        ArrDigitalRepository repository = new ArrDigitalRepository();
+        repository.setCode("DA-TEST");
+        repository.setName("Testovaci digitalni archiv");
+        repository.setDigitalRepositoryType(DigitalRepositoryType.DA);
+        repository.setSendNotification(false);
+        return digitalRepositoryRepository.save(repository);
+    }
+
+    private DaAip createAip(ArrDigitalRepository repository, String code) {
+        DaAip aip = new DaAip();
+        aip.setCode(code);
+        aip.setDigitalRepository(repository);
+        return aipRepository.save(aip);
+    }
+
+    private DaSyncQueueItem queueItem(ArrDigitalRepository repository, DaAip aip) {
+        DaSyncQueueItem item = new DaSyncQueueItem();
+        item.setCode(aip.getCode());
+        item.setAip(aip);
+        item.setDigitalRepository(repository);
+        item.setState(DaSyncQueueItem.QueueItemState.UPDATE);
+        item.setActive(true);
+        return syncQueueItemRepository.save(item);
+    }
+
+    /**
+     * The shared cleanup of the base class does not know the DA tables, and the rows created here
+     * would keep the next test from deleting the external systems they point at.
+     */
+    @AfterEach
+    public void deleteCreatedRows() {
+        new TransactionTemplate(txManager).executeWithoutResult(t -> {
+            actionItemRepository.deleteAll();
+            actionRepository.deleteAll();
+            syncQueueItemRepository.deleteAll();
+            aipRepository.deleteAll();
+            digitalRepositoryRepository.deleteAll();
+        });
+    }
+
+    /**
+     * The whole life of an action requested through the queue, each step in its own transaction,
+     * as it happens when the processor thread finishes the items one by one.
+     */
+    @Test
+    public void actionIsCarriedAcrossSeparateTransactions() {
+        Integer[] ids = new Integer[3];
+
+        // 1. the action is opened, as it is by the request of the user
+        tx().executeWithoutResult(t -> {
+            ArrDigitalRepository repository = createRepository();
+            DaAip first = createAip(repository, "aip-1");
+            DaAip second = createAip(repository, "aip-2");
+
+            DaAipAction action = actionService.start(DaAipActionType.DOWNLOAD_UPDATE, List.of(first, second));
+            ids[0] = action.getAipActionId();
+
+            DaSyncQueueItem firstQueue = queueItem(repository, first);
+            DaSyncQueueItem secondQueue = queueItem(repository, second);
+            AipOutcomeSink sink = actionService.sinkFor(action);
+            sink.enqueued(first.getAipId(), firstQueue);
+            sink.enqueued(second.getAipId(), secondQueue);
+            ids[1] = firstQueue.getSyncQueueItemId();
+            ids[2] = secondQueue.getSyncQueueItemId();
+        });
+
+        // nothing is done yet, so the action is outstanding and unstamped
+        tx().executeWithoutResult(t -> {
+            DaAipAction action = actionRepository.findById(ids[0]).orElseThrow();
+            assertEquals(DaAipActionState.WAITING, actionService.stateOf(action));
+            assertNull(action.getFinishDate());
+        });
+
+        // 2. the first item comes back from the archive, in its own transaction
+        tx().executeWithoutResult(t -> {
+            DaSyncQueueItem item = syncQueueItemRepository.findById(ids[1]).orElseThrow();
+            assertNotNull(item.getAipActionItem(), "the queue item has to carry the action item");
+            actionService.completeFromQueue(List.of(item), DaAipActionItemState.FINISHED, null);
+        });
+
+        // the action sees the item finished by the previous transaction and is still running
+        tx().executeWithoutResult(t -> {
+            DaAipAction action = actionRepository.findById(ids[0]).orElseThrow();
+            assertEquals(DaAipActionState.RUNNING, actionService.stateOf(action));
+            assertNull(action.getFinishDate());
+        });
+
+        // 3. the second item fails, again in its own transaction
+        tx().executeWithoutResult(t -> {
+            DaSyncQueueItem item = syncQueueItemRepository.findById(ids[2]).orElseThrow();
+            actionService.completeFromQueue(List.of(item), DaAipActionItemState.ERROR,
+                                            "Balicek neobsahuje soubor METS.xml");
+        });
+
+        // 4. the action is closed and reports what happened to each AIP
+        tx().executeWithoutResult(t -> {
+            DaAipAction action = actionRepository.findById(ids[0]).orElseThrow();
+            assertEquals(DaAipActionState.ERROR, actionService.stateOf(action));
+            assertNotNull(action.getFinishDate(), "the action has to be stamped once nothing is outstanding");
+
+            List<DaAipActionItem> items = actionItemRepository.findByAipActionOrderByAipActionItemId(action);
+            assertEquals(2, items.size());
+            assertEquals(DaAipActionItemState.FINISHED, items.get(0).getState());
+            assertEquals(DaAipActionItemState.ERROR, items.get(1).getState());
+            assertEquals("Balicek neobsahuje soubor METS.xml", items.get(1).getMessage());
+            assertNotNull(items.get(1).getFinishDate());
+        });
+    }
+
+    /**
+     * A skipped item is the outcome the record exists for: the action applied to nothing and has
+     * to survive the round trip through the database saying so.
+     */
+    @Test
+    public void aSkippedItemKeepsItsReason() {
+        Integer[] actionId = new Integer[1];
+
+        tx().executeWithoutResult(t -> {
+            DaAip aip = createAip(createRepository(), "aip-unresolved");
+            DaAipAction action = actionService.start(DaAipActionType.DB_UPDATE, List.of(aip));
+            actionId[0] = action.getAipActionId();
+            actionService.sinkFor(action)
+                    .skipped(aip.getAipId(), "V ELZA neni ulozeny balicek s metadaty.");
+        });
+
+        tx().executeWithoutResult(t -> {
+            DaAipAction action = actionRepository.findById(actionId[0]).orElseThrow();
+            List<DaAipActionItem> items = actionItemRepository.findByAipActionOrderByAipActionItemId(action);
+            assertEquals(DaAipActionItemState.SKIPPED, items.get(0).getState());
+            assertEquals("V ELZA neni ulozeny balicek s metadaty.", items.get(0).getMessage());
+            // a skip is not a failure - the action did everything that could be done
+            assertEquals(DaAipActionState.FINISHED, actionService.stateOf(action));
+        });
+    }
+}

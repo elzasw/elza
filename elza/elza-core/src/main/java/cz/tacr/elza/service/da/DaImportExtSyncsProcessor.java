@@ -2,6 +2,7 @@ package cz.tacr.elza.service.da;
 
 import cz.tacr.da.ApiException;
 import cz.tacr.elza.api.AipType;
+import cz.tacr.elza.api.DaAipActionItemState;
 import cz.tacr.elza.api.DaDownloadMethod;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.DaSyncQueueItem;
@@ -33,6 +34,8 @@ public class DaImportExtSyncsProcessor implements Runnable {
     private ExternalSystemService externalSystemService;
     @Autowired
     private DaAipAutoLinkService aipAutoLinkService;
+    @Autowired
+    private DaAipActionService actionService;
 
     private volatile Thread asyncThread = null;
 
@@ -147,13 +150,15 @@ public class DaImportExtSyncsProcessor implements Runnable {
                                     ? receivedAipIds(syncQueueItemList) : List.of();
                             if (aipType == AipType.METADATA_BASE || aipType == AipType.AIP_BASE) {
                                 List<Integer> aipids = syncQueueItemList.stream().map(q -> q.getAip().getAipId()).toList();
-                                Map<Integer, List<String>> uuidsByAip = daService.doCreateDaoStructure(aipids, false);
+                                Map<Integer, List<String>> uuidsByAip = daService.doCreateDaoStructure(aipids, false,
+                                        actionService.sinkForQueueItems(syncQueueItemList));
                                 if (autoProcess) {
                                     aipAutoLinkService.linkReceivedAips(uuidsByAip);
                                 }
                             }
 
                             daService.changeQueueItemsState(syncQueueItemList, DaSyncQueueItem.QueueItemState.IMPORT_OK);
+                            actionService.completeFromQueue(syncQueueItemList, DaAipActionItemState.FINISHED, null);
 
                             // Enqueued only after the batch is saved as IMPORT_OK: the new queue
                             // item deactivates the AIP's previous items and a later save of the
@@ -166,7 +171,9 @@ public class DaImportExtSyncsProcessor implements Runnable {
                             wait = false;
                         }
                     } catch (Exception ex) {
-                        daService.changeQueueItemsState(syncQueueItemList, DaSyncQueueItem.QueueItemState.IMPORT_ERROR);
+                        String failure = AipProblem.of(ex).description();
+                        daService.changeQueueItemsState(syncQueueItemList, DaSyncQueueItem.QueueItemState.IMPORT_ERROR, failure);
+                        actionService.completeFromQueue(syncQueueItemList, DaAipActionItemState.ERROR, failure);
 
                         logger.error("Failed to process item. ", ex);
                         // v případě chyby číst po 1 záznamu

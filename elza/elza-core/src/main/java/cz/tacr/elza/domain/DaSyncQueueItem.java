@@ -2,6 +2,7 @@ package cz.tacr.elza.domain;
 
 import cz.tacr.elza.api.AipType;
 import cz.tacr.elza.domain.enumeration.StringLength;
+import java.time.OffsetDateTime;
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.Column;
@@ -46,6 +47,28 @@ public class DaSyncQueueItem {
 
     @Column
     private Boolean active;
+
+    /**
+     * The item of the action this queue item is carrying out, or null when nothing asked for
+     * it - the synchronization enqueues on its own. Reporting into it is what lets an action
+     * finished by the digital archive be told to the user like any other.
+     */
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = DaAipActionItem.class)
+    @JoinColumn(name = "aip_action_item_id")
+    private DaAipActionItem aipActionItem;
+
+    /**
+     * When the state of the item was last set.
+     */
+    @Column
+    private OffsetDateTime date;
+
+    /**
+     * Why the item ended in its current state; filled for the error states, where it is the
+     * only description of the failure the user can reach.
+     */
+    @Column
+    private String stateMessage;
 
 
     public Integer getSyncQueueItemId() {
@@ -110,6 +133,30 @@ public class DaSyncQueueItem {
 
     public void setActive(Boolean active) {
         this.active = active;
+    }
+
+    public DaAipActionItem getAipActionItem() {
+        return aipActionItem;
+    }
+
+    public void setAipActionItem(DaAipActionItem aipActionItem) {
+        this.aipActionItem = aipActionItem;
+    }
+
+    public OffsetDateTime getDate() {
+        return date;
+    }
+
+    public void setDate(OffsetDateTime date) {
+        this.date = date;
+    }
+
+    public String getStateMessage() {
+        return stateMessage;
+    }
+
+    public void setStateMessage(String stateMessage) {
+        this.stateMessage = stateMessage;
     }
 
     public enum QueueItemState {

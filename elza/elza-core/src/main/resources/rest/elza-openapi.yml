@@ -1353,6 +1353,10 @@ paths:
       responses:
         '200':
           description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaAipActionVO'
         '500':
           description: Server error
           content:
@@ -1404,6 +1408,10 @@ paths:
       responses:
         '200':
           description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaAipActionVO'
         '500':
           description: Server error
           content:
@@ -1452,6 +1460,10 @@ paths:
       responses:
         '200':
           description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaAipActionVO'
         '500':
           description: Server error
           content:
@@ -1477,6 +1489,10 @@ paths:
       responses:
         '200':
           description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaAipActionVO'
         '500':
           description: Server error
           content:
@@ -1537,6 +1553,10 @@ paths:
       responses:
         '200':
           description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaAipActionVO'
         '500':
           description: Server error
           content:
@@ -1689,6 +1709,10 @@ paths:
       responses:
         '200':
           description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaAipActionVO'
         '500':
           description: Server error
           content:
@@ -6591,10 +6615,24 @@ components:
           allOf:
             - $ref: '#/components/schemas/QueueItemState'
           description: Stav importu
+        importStateMessage:
+          type: string
+          description: Popis stavu importu; u chybových stavů důvod selhání
+        importStateDate:
+          type: string
+          format: date-time
+          description: Kdy byl stav importu naposledy nastaven
         exportState:
           allOf:
             - $ref: '#/components/schemas/QueueItemState'
           description: Stav exportu
+        exportStateMessage:
+          type: string
+          description: Popis stavu exportu; u chybových stavů důvod selhání
+        exportStateDate:
+          type: string
+          format: date-time
+          description: Kdy byl stav exportu naposledy nastaven
         linkedNodes:
           type: array
           items:
@@ -7144,6 +7182,98 @@ components:
         apVersion:
           type: integer
       description: Result of creating a part
+    DaAipActionItemState:
+      type: string
+      enum:
+        - WAITING
+        - RUNNING
+        - FINISHED
+        - ERROR
+        - SKIPPED
+      description: Jak akce dopadla u jednoho AIPu
+    DaAipActionItemVO:
+      type: object
+      required:
+        - aipId
+        - state
+      properties:
+        aipId:
+          type: integer
+          description: ID AIPu
+        aipCode:
+          type: string
+          description: Kód AIPu
+        state:
+          allOf:
+            - $ref: '#/components/schemas/DaAipActionItemState'
+          description: Stav položky
+        message:
+          type: string
+          description: Co se s AIPem stalo; vyplněno u výsledků, které nic nezměnily
+        finishDate:
+          type: string
+          format: date-time
+          description: Kdy byla položka dokončena
+      description: Jak akce dopadla u jednoho AIPu
+    DaAipActionState:
+      type: string
+      enum:
+        - WAITING
+        - RUNNING
+        - FINISHED
+        - ERROR
+      description: Stav akce nad AIPy; odvozený ze stavů jednotlivých položek
+    DaAipActionType:
+      type: string
+      enum:
+        - LOAD_METADATA
+        - DELETE_METADATA
+        - LOAD_COMPLETE_AIP
+        - DELETE_COMPLETE_AIP
+        - DOWNLOAD_UPDATE
+        - DB_UPDATE
+        - FORCE_UPDATE
+        - REMAP_REFERENCES
+        - EXPORT
+      description: Typ akce vyžádané nad AIPy
+    DaAipActionVO:
+      type: object
+      required:
+        - id
+        - actionType
+        - state
+        - createDate
+        - items
+      properties:
+        id:
+          type: integer
+          description: ID akce
+        actionType:
+          allOf:
+            - $ref: '#/components/schemas/DaAipActionType'
+          description: Typ akce
+        state:
+          allOf:
+            - $ref: '#/components/schemas/DaAipActionState'
+          description: Stav akce odvozený z jejích položek
+        createDate:
+          type: string
+          format: date-time
+          description: Kdy byla akce vyžádána
+        finishDate:
+          type: string
+          format: date-time
+          description: Kdy byla dokončena poslední položka akce
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/DaAipActionItemVO'
+          description: Výsledek akce po jednotlivých AIPech
+      description: |-
+        Akce vyžádaná nad sadou AIPů a její výsledek po jednotlivých AIPech.
+
+        Akce je zaznamenaná bez ohledu na to, jak se provádí - jestli ji ELZA vyřídí sama,
+        nebo se na ni čeká z digitálního archivu.
     DaDaoType:
       type: string
       enum:

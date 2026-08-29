@@ -15,6 +15,7 @@ import cz.tacr.da.controller.vo.RequestState;
 import cz.tacr.da.controller.vo.UpdatedAips;
 import cz.tacr.da.controller.vo.UpdatedInfo;
 import cz.tacr.elza.api.AipType;
+import cz.tacr.elza.api.DaAipActionType;
 import cz.tacr.elza.common.XmlUtils;
 import cz.tacr.elza.connector.DaConnector;
 import cz.tacr.elza.controller.vo.AipUpdateType;
@@ -33,6 +34,7 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.DaAip;
+import cz.tacr.elza.domain.DaAipAction;
 import cz.tacr.elza.domain.DaAipState;
 import cz.tacr.elza.domain.DaChange;
 import cz.tacr.elza.domain.DaChangeType;
@@ -106,7 +108,9 @@ import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.archivists.ead3.schema.Ead;
 import org.glassfish.jaxb.runtime.marshaller.NamespacePrefixMapper;
 import org.jetbrains.annotations.NotNull;
@@ -143,6 +147,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -167,6 +172,12 @@ public class DaService {
     private static final Logger logger = LoggerFactory.getLogger(DaService.class);
 
     private static final Integer DA_UPDATE_PAGE_SIZE = 1000;
+
+    /**
+     * The column holding the description is unbounded; the cap only keeps a pathological
+     * exception message from bloating the row.
+     */
+    private static final int STATE_MESSAGE_MAX_LENGTH = 4000;
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -234,6 +245,8 @@ public class DaService {
     private DataUnitdateRepository dataUnitdateRepository;
     @Autowired
     private DaAipReferenceResolver referenceResolver;
+    @Autowired
+    private DaAipActionService actionService;
 
     public void synchronizeDaRepository(String code) {
         logger.debug("Spuštěna synchronizace s DA pro externí systém CODE={}", code);
@@ -301,11 +314,14 @@ public class DaService {
     /**
      * Builds the DAO structure of the given AIPs from their cached metadata packages.
      *
+     * @param sink records what the rebuild did to each AIP; {@link AipOutcomeSink#NONE} when
+     *             nothing asked for it
      * @return UUIDs offered for node matching ({@link AipNodeUuids}) per successfully
      *         processed AIP; AIPs without fund, without cached metadata or failing to process
      *         are absent
      */
-    public Map<Integer, List<String>> doCreateDaoStructure(List<Integer> aipIds, boolean forceUpdate) {
+    public Map<Integer, List<String>> doCreateDaoStructure(List<Integer> aipIds, boolean forceUpdate,
+                                                          AipOutcomeSink sink) {
         Map<Integer, List<String>> uuidsByAip = new LinkedHashMap<>();
         for (Integer aipId : aipIds) {
             DaAip aip = findAipById(aipId);
@@ -316,11 +332,13 @@ public class DaService {
 
             if (aipState.getFund() == null) {
                 logger.info("AIP={} není navázaný na fund", aipId);
+                sink.skipped(aipId, "AIP není navázaný na archivní soubor, není kam digitální entity vytvořit.");
                 continue;
             }
 
             if (localCache == null) {
                 logger.info("Nebyla nalezena lokální cache s metadaty pro AIP={}", aipId);
+                sink.skipped(aipId, "V ELZA není uložený balíček s metadaty, ze kterého by šlo entity sestavit.");
                 continue;
             }
 
@@ -368,11 +386,14 @@ public class DaService {
                 aipState.setAipVersionMetadata(aipState.getAipVersion());
                 referenceResolver.clearProblem(aipState);
                 aipStateRepository.save(aipState);
+                sink.finished(aipId);
 
             } catch (Exception e) {
                 logger.error("Došlo k chybě při zpracování metadat pro AIP={}", aipId, e);
-                referenceResolver.recordProblem(aipState, AipProblem.of(e));
+                AipProblem problem = AipProblem.of(e);
+                referenceResolver.recordProblem(aipState, problem);
                 aipStateRepository.save(aipState);
+                sink.failed(aipId, problem.description());
             } finally {
                 deleteTempDirectory(tempDir);
             }
@@ -405,8 +426,23 @@ public class DaService {
         return daoProcessor.getNodeUuids();
     }
 
+    /**
+     * Requests the metadata of the given AIPs, as an action of the current user.
+     */
+    @Transactional
+    public DaAipAction requestMetadata(List<Integer> aipIds) {
+        DaAipAction action = actionService.start(DaAipActionType.LOAD_METADATA, aipRepository.findAllById(aipIds));
+        createDaoStructure(aipIds, actionService.sinkFor(action));
+        return action;
+    }
+
     @Transactional
     public void createDaoStructure(List<Integer> aipIds) {
+        createDaoStructure(aipIds, AipOutcomeSink.NONE);
+    }
+
+    @Transactional
+    public void createDaoStructure(List<Integer> aipIds, AipOutcomeSink sink) {
         List<DaAip> aipList = aipRepository.findAllById(aipIds);
         Map<DaAip, DaAipState> stateMap = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList).stream()
                 .collect(Collectors.toMap(DaAipState::getDaAip, Function.identity()));
@@ -422,17 +458,42 @@ public class DaService {
                 aipState.setMetadataLoad(true);
                 stateList.add(aipState);
 
-                createSyncQueueItem(aip.getCode(), aip, aip.getDigitalRepository(), DaSyncQueueItem.QueueItemState.UPDATE,
-                        aipState.getAipVersion(), AipType.METADATA_BASE, true);
+                DaSyncQueueItem queueItem = createSyncQueueItem(aip.getCode(), aip, aip.getDigitalRepository(),
+                        DaSyncQueueItem.QueueItemState.UPDATE, aipState.getAipVersion(), AipType.METADATA_BASE, true);
+                sink.enqueued(aip.getAipId(), queueItem);
+            } else if (aipState.getFund() == null) {
+                sink.skipped(aip.getAipId(), "AIP není navázaný na archivní soubor, není ke kterému fondu metadata stahovat.");
+            } else {
+                sink.skipped(aip.getAipId(), "Metadata AIPu už jsou stažená.");
             }
         }
 
         aipStateRepository.saveAll(stateList);
     }
 
+    /**
+     * Drops the digital entities built from the metadata, as an action of the current user.
+     */
+    @Transactional
+    public DaAipAction deleteMetadata(List<Integer> aipIds) {
+        DaAipAction action = actionService.start(DaAipActionType.DELETE_METADATA, aipRepository.findAllById(aipIds));
+        deleteDaoStructure(aipIds, actionService.sinkFor(action));
+        return action;
+    }
+
     @Transactional
     public void deleteDaoStructure(List<Integer> aipIds) {
+        deleteDaoStructure(aipIds, AipOutcomeSink.NONE);
+    }
+
+    @Transactional
+    public void deleteDaoStructure(List<Integer> aipIds, AipOutcomeSink sink) {
         List<DaAip> aipList = aipRepository.findByIdAndLinkNotExists(aipIds);
+        // An AIP attached to a unit of description is filtered out by the query above; without
+        // saying so the action would report success and leave it untouched.
+        Set<Integer> selectable = aipList.stream().map(DaAip::getAipId).collect(Collectors.toSet());
+        aipIds.stream().filter(id -> !selectable.contains(id)).forEach(id ->
+                sink.skipped(id, "AIP je napojený na jednotku popisu, jeho digitální entity nelze smazat."));
 
         Map<DaAip, DaAipState> stateMap = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList).stream()
                 .collect(Collectors.toMap(DaAipState::getDaAip, Function.identity()));
@@ -445,6 +506,11 @@ public class DaService {
                 createSyncQueueItem(aip.getCode(), aip, aip.getDigitalRepository(), DaSyncQueueItem.QueueItemState.IMPORT_OK,
                         aipState.getAipVersion(), AipType.PACKAGE_INFO, true);
                 deletedAipList.add(aip);
+                sink.finished(aip.getAipId());
+            } else {
+                sink.skipped(aip.getAipId(), BooleanUtils.isTrue(aipState.getCompleteAipLoad())
+                        ? "AIP má stažený kompletní balíček; nejprve je nutné smazat ten."
+                        : "AIP nemá stažená metadata, není co mazat.");
             }
         }
 
@@ -500,12 +566,25 @@ public class DaService {
      */
     @Transactional
     public int remapReferences(List<Integer> aipIds) {
+        return remapReferences(aipIds, AipOutcomeSink.NONE);
+    }
+
+    @Transactional
+    public int remapReferences(List<Integer> aipIds, AipOutcomeSink sink) {
         List<DaAip> aipList = aipRepository.findAllById(aipIds);
         List<DaAipState> stateList = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList);
         List<DaAipState> resolvedStates = new ArrayList<>();
         for (DaAipState aipState : stateList) {
+            Integer aipId = aipState.getDaAip().getAipId();
             if (referenceResolver.resolveReferences(aipState)) {
                 resolvedStates.add(aipState);
+                sink.finished(aipId);
+            } else if (aipState.getFund() != null) {
+                sink.skipped(aipId, "Instituce i archivní soubor jsou dohledané, není co měnit.");
+            } else {
+                sink.skipped(aipId, aipState.getProblemDescription() != null
+                        ? aipState.getProblemDescription()
+                        : "Archivní soubor se podle údajů balíčku nepodařilo dohledat.");
             }
         }
         aipStateRepository.saveAll(stateList);
@@ -529,7 +608,9 @@ public class DaService {
     }
 
     @Transactional
-    public void aipDownloadCompleteAip(List<Integer> aipIds) {
+    public DaAipAction aipDownloadCompleteAip(List<Integer> aipIds) {
+        DaAipAction action = actionService.start(DaAipActionType.LOAD_COMPLETE_AIP, aipRepository.findAllById(aipIds));
+        AipOutcomeSink sink = actionService.sinkFor(action);
         List<DaAip> aipList = aipRepository.findAllById(aipIds);
         Map<DaAip, DaAipState> stateMap = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList).stream()
                 .collect(Collectors.toMap(DaAipState::getDaAip, Function.identity()));
@@ -542,16 +623,24 @@ public class DaService {
                 aipState.setCompleteAipLoad(true);
                 stateList.add(aipState);
 
-                createSyncQueueItem(aip.getCode(), aip, aip.getDigitalRepository(), DaSyncQueueItem.QueueItemState.UPDATE,
-                        aipState.getAipVersion(), AipType.AIP_BASE, true);
+                DaSyncQueueItem queueItem = createSyncQueueItem(aip.getCode(), aip, aip.getDigitalRepository(),
+                        DaSyncQueueItem.QueueItemState.UPDATE, aipState.getAipVersion(), AipType.AIP_BASE, true);
+                sink.enqueued(aip.getAipId(), queueItem);
+            } else {
+                sink.skipped(aip.getAipId(), BooleanUtils.isTrue(aipState.getCompleteAipLoad())
+                        ? "Kompletní AIP je už stažený."
+                        : "AIP nemá stažená metadata; nejprve je nutné stáhnout ta.");
             }
         }
 
         aipStateRepository.saveAll(stateList);
+        return action;
     }
 
     @Transactional
-    public void aipDeleteCompleteAip(List<Integer> aipIds) {
+    public DaAipAction aipDeleteCompleteAip(List<Integer> aipIds) {
+        DaAipAction action = actionService.start(DaAipActionType.DELETE_COMPLETE_AIP, aipRepository.findAllById(aipIds));
+        AipOutcomeSink sink = actionService.sinkFor(action);
         List<DaAip> aipList = aipRepository.findAllById(aipIds);
         Map<DaAip, DaAipState> stateMap = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList).stream()
                 .collect(Collectors.toMap(DaAipState::getDaAip, Function.identity()));
@@ -564,16 +653,22 @@ public class DaService {
                 aipState.setCompleteAipLoad(false);
                 stateList.add(aipState);
 
-                createSyncQueueItem(aip.getCode(), aip, aip.getDigitalRepository(), DaSyncQueueItem.QueueItemState.UPDATE,
-                        aipState.getAipVersion(), AipType.METADATA_BASE, true);
+                DaSyncQueueItem queueItem = createSyncQueueItem(aip.getCode(), aip, aip.getDigitalRepository(),
+                        DaSyncQueueItem.QueueItemState.UPDATE, aipState.getAipVersion(), AipType.METADATA_BASE, true);
+                sink.enqueued(aip.getAipId(), queueItem);
+            } else {
+                sink.skipped(aip.getAipId(), "AIP nemá stažený kompletní balíček, není co mazat.");
             }
         }
 
         aipStateRepository.saveAll(stateList);
+        return action;
     }
 
     @Transactional
-    public void aipUpdateAip(AipUpdateType type, List<Integer> aipIds) {
+    public DaAipAction aipUpdateAip(AipUpdateType type, List<Integer> aipIds) {
+        DaAipAction action = actionService.start(actionTypeOf(type), aipRepository.findAllById(aipIds));
+        AipOutcomeSink sink = actionService.sinkFor(action);
         if (type == AipUpdateType.DOWNLOAD_UPDATE) {
             List<DaAip> aipList = aipRepository.findAllById(aipIds);
             Map<DaAip, DaAipState> stateMap = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList).stream()
@@ -587,21 +682,39 @@ public class DaService {
                 } else if (BooleanUtils.isTrue(aipState.getMetadataLoad())) {
                     aipType = AipType.METADATA_BASE;
                 }
-                createSyncQueueItem(aip.getCode(), aip, aip.getDigitalRepository(), DaSyncQueueItem.QueueItemState.UPDATE,
-                        aipState.getAipVersion(), aipType, true);
+                DaSyncQueueItem queueItem = createSyncQueueItem(aip.getCode(), aip, aip.getDigitalRepository(),
+                        DaSyncQueueItem.QueueItemState.UPDATE, aipState.getAipVersion(), aipType, true);
+                sink.enqueued(aip.getAipId(), queueItem);
             }
         } else if (type == AipUpdateType.DB_UPDATE) {
-            doCreateDaoStructure(aipIds, false);
+            doCreateDaoStructure(aipIds, false, sink);
         } else if (type == AipUpdateType.FORCE_UPDATE) {
-            doCreateDaoStructure(aipIds, true);
+            doCreateDaoStructure(aipIds, true, sink);
         } else if (type == AipUpdateType.REMAP_REFERENCES) {
-            remapReferences(aipIds);
+            remapReferences(aipIds, sink);
         }
+        return action;
+    }
+
+    private static DaAipActionType actionTypeOf(AipUpdateType type) {
+        return switch (type) {
+            case DOWNLOAD_UPDATE -> DaAipActionType.DOWNLOAD_UPDATE;
+            case DB_UPDATE -> DaAipActionType.DB_UPDATE;
+            case FORCE_UPDATE -> DaAipActionType.FORCE_UPDATE;
+            case REMAP_REFERENCES -> DaAipActionType.REMAP_REFERENCES;
+        };
     }
 
     @Transactional
-    public void aipExportAip(List<Integer> aipIds) {
+    public DaAipAction aipExportAip(List<Integer> aipIds) {
+        DaAipAction action = actionService.start(DaAipActionType.EXPORT, aipRepository.findAllById(aipIds));
+        AipOutcomeSink sink = actionService.sinkFor(action);
         List<DaAip> aipList = aipRepository.findByIdAndLinkExists(aipIds);
+        // Only an AIP attached to a unit of description can be exported; the query filters the
+        // rest out, and without saying so the action would report success and send nothing.
+        Set<Integer> exportable = aipList.stream().map(DaAip::getAipId).collect(Collectors.toSet());
+        aipIds.stream().filter(id -> !exportable.contains(id)).forEach(id ->
+                sink.skipped(id, "AIP není napojený na jednotku popisu, není co exportovat."));
         Map<DaAip, DaAipState> stateMap = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList).stream()
                 .collect(Collectors.toMap(DaAipState::getDaAip, Function.identity()));
 
@@ -638,10 +751,13 @@ public class DaService {
                 DaSyncQueueItem syncQueueItem = createSyncQueueItem(aip.getCode(), aip, aip.getDigitalRepository(), DaSyncQueueItem.QueueItemState.EXPORT_NEW,
                         aipState.getAipVersion(), aipType, true);
                 createExportLocalCache(aipState, aipType, outputZip, syncQueueItem);
+                sink.enqueued(aip.getAipId(), syncQueueItem);
             } catch (IOException | JAXBException | DatatypeConfigurationException e) {
                 logger.error("Došlo k chybě při vytváření změnového balíčku AIP={}", aip.getCode(), e);
+                sink.failed(aip.getAipId(), "Změnový balíček se nepodařilo vytvořit: " + AipProblem.reason(e));
             }
         }
+        return action;
     }
 
     private Path createEad(DaAip aip, Path aipDir) throws IOException {
@@ -1051,11 +1167,43 @@ public class DaService {
 
     @Transactional
     public void changeQueueItemsState(Collection<DaSyncQueueItem> syncQueueItemList, DaSyncQueueItem.QueueItemState state) {
+        changeQueueItemsState(syncQueueItemList, state, null);
+    }
+
+    /**
+     * Sets the state of the given queue items and describes why they ended in it.
+     *
+     * @param stateMessage description of the outcome, expected for the error states - it is the
+     *                     only account of the failure the user can reach
+     */
+    @Transactional
+    public void changeQueueItemsState(Collection<DaSyncQueueItem> syncQueueItemList, DaSyncQueueItem.QueueItemState state,
+                                      @Nullable String stateMessage) {
         if (CollectionUtils.isNotEmpty(syncQueueItemList)) {
+            OffsetDateTime now = OffsetDateTime.now();
             for (DaSyncQueueItem syncQueueItem : syncQueueItemList) {
                 syncQueueItem.setState(state);
+                syncQueueItem.setStateMessage(StringUtils.abbreviate(stateMessage, STATE_MESSAGE_MAX_LENGTH));
+                syncQueueItem.setDate(now);
             }
             syncQueueItemRepository.saveAll(syncQueueItemList);
+        }
+    }
+
+    /**
+     * Sets the state of the given queue items, each described by its own message. Used where the
+     * items of one batch fail for different reasons and a shared description would lose them.
+     */
+    @Transactional
+    public void failQueueItems(Map<DaSyncQueueItem, String> messageByItem, DaSyncQueueItem.QueueItemState state) {
+        if (MapUtils.isNotEmpty(messageByItem)) {
+            OffsetDateTime now = OffsetDateTime.now();
+            messageByItem.forEach((syncQueueItem, message) -> {
+                syncQueueItem.setState(state);
+                syncQueueItem.setStateMessage(StringUtils.abbreviate(message, STATE_MESSAGE_MAX_LENGTH));
+                syncQueueItem.setDate(now);
+            });
+            syncQueueItemRepository.saveAll(messageByItem.keySet());
         }
     }
 
@@ -1096,7 +1244,7 @@ public class DaService {
             // The directory of the package is named by the code of the AIP, which is the code
             // of its queue item - a package that fails is reported on its own item, so one bad
             // package neither hides itself nor takes the rest of the batch down with it.
-            List<DaSyncQueueItem> failedItems = new ArrayList<>();
+            Map<DaSyncQueueItem, String> failedItems = new LinkedHashMap<>();
 
             for (File aipDir : aipDirSet) {
                 DaAipState aipState;
@@ -1104,11 +1252,11 @@ public class DaService {
                     Path packageInfo = str.findFirst().orElseThrow(() -> AipProblemException.metadata("Balíček neobsahuje soubor PACKAGE-INFO.xml"));
                     aipState = packageInfoService.processPackageInfo(digitalRepository, packageInfo.toFile());
                 } catch (Exception e) {
-                    logger.error("Balíček {} se nepodařilo načíst: {}", aipDir.getName(),
-                            AipProblem.of(e).description(), e);
+                    String description = AipProblem.of(e).description();
+                    logger.error("Balíček {} se nepodařilo načíst: {}", aipDir.getName(), description, e);
                     DaSyncQueueItem failedItem = syncQueueItemMap.getOrDefault(aipDir.getName(), null);
                     if (failedItem != null) {
-                        failedItems.add(failedItem);
+                        failedItems.put(failedItem, description);
                     }
                     continue;
                 }
@@ -1123,9 +1271,9 @@ public class DaService {
             // Taken out of the batch before the caller records its result, so the failure is
             // not overwritten by the state of the packages that were loaded.
             if (!failedItems.isEmpty()) {
-                syncQueueItemList.removeAll(failedItems);
+                syncQueueItemList.removeAll(failedItems.keySet());
                 applicationContext.getBean(DaService.class)
-                        .changeQueueItemsState(failedItems, DaSyncQueueItem.QueueItemState.IMPORT_ERROR);
+                        .failQueueItems(failedItems, DaSyncQueueItem.QueueItemState.IMPORT_ERROR);
             }
         }
     }
@@ -1262,6 +1410,7 @@ public class DaService {
         syncQueueItem.setState(queueItemState);
         syncQueueItem.setAipType(aipType);
         syncQueueItem.setActive(active);
+        syncQueueItem.setDate(OffsetDateTime.now());
         return syncQueueItemRepository.save(syncQueueItem);
     }
 

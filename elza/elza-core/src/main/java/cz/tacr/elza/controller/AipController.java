@@ -35,21 +35,18 @@ public class AipController implements AipsApi {
     private ClientFactoryVO clientFactoryVO;
 
     @Override
-    public ResponseEntity<Void> aipCreateDaoStructure(List<Integer> aipIds) {
-        daService.createDaoStructure(aipIds);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<DaAipActionVO> aipCreateDaoStructure(List<Integer> aipIds) {
+        return ResponseEntity.ok(clientFactoryVO.createAipAction(daService.requestMetadata(aipIds)));
     }
 
     @Override
-    public ResponseEntity<Void> aipDeleteDaoStructure(List<Integer> aipIds) {
-        daService.deleteDaoStructure(aipIds);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<DaAipActionVO> aipDeleteDaoStructure(List<Integer> aipIds) {
+        return ResponseEntity.ok(clientFactoryVO.createAipAction(daService.deleteMetadata(aipIds)));
     }
 
     @Override
-    public ResponseEntity<Void> aipDownloadCompleteAip(List<Integer> aipIds) {
-        daService.aipDownloadCompleteAip(aipIds);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<DaAipActionVO> aipDownloadCompleteAip(List<Integer> aipIds) {
+        return ResponseEntity.ok(clientFactoryVO.createAipAction(daService.aipDownloadCompleteAip(aipIds)));
     }
 
     @Override
@@ -84,21 +81,18 @@ public class AipController implements AipsApi {
     }
 
     @Override
-    public ResponseEntity<Void> aipDeleteCompleteAip(List<Integer> aipIds) {
-        daService.aipDeleteCompleteAip(aipIds);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<DaAipActionVO> aipDeleteCompleteAip(List<Integer> aipIds) {
+        return ResponseEntity.ok(clientFactoryVO.createAipAction(daService.aipDeleteCompleteAip(aipIds)));
     }
 
     @Override
-    public ResponseEntity<Void> aipUpdateAip(AipUpdateType type, List<Integer> aipIds) {
-        daService.aipUpdateAip(type, aipIds);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<DaAipActionVO> aipUpdateAip(AipUpdateType type, List<Integer> aipIds) {
+        return ResponseEntity.ok(clientFactoryVO.createAipAction(daService.aipUpdateAip(type, aipIds)));
     }
 
     @Override
-    public ResponseEntity<Void> aipExportAip(List<Integer> aipIds) {
-        daService.aipExportAip(aipIds);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<DaAipActionVO> aipExportAip(List<Integer> aipIds) {
+        return ResponseEntity.ok(clientFactoryVO.createAipAction(daService.aipExportAip(aipIds)));
     }
 
     @Override
