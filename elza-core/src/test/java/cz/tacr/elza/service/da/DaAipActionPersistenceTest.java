@@ -189,4 +189,45 @@ public class DaAipActionPersistenceTest extends AbstractTest {
             assertEquals(DaAipActionState.FINISHED, actionService.stateOf(action));
         });
     }
+
+    /**
+     * The processing that runs over a downloaded package knows what happened to the individual
+     * AIP; the batch that follows only knows the exchange with the archive succeeded. The
+     * specific outcome has to survive the batch closing behind it.
+     */
+    @Test
+    public void theBatchDoesNotOverwriteAnOutcomeAlreadyRecorded() {
+        Integer[] ids = new Integer[2];
+
+        tx().executeWithoutResult(t -> {
+            ArrDigitalRepository repository = createRepository();
+            DaAip aip = createAip(repository, "aip-partly-broken");
+            DaAipAction action = actionService.start(DaAipActionType.DOWNLOAD_UPDATE, List.of(aip));
+            ids[0] = action.getAipActionId();
+            DaSyncQueueItem queue = queueItem(repository, aip);
+            actionService.sinkFor(action).enqueued(aip.getAipId(), queue);
+            ids[1] = queue.getSyncQueueItemId();
+        });
+
+        // the rebuild of that one AIP failed, and is recorded before the batch is closed
+        tx().executeWithoutResult(t -> {
+            DaSyncQueueItem queue = syncQueueItemRepository.findById(ids[1]).orElseThrow();
+            actionService.sinkForQueueItems(List.of(queue))
+                    .failed(queue.getAip().getAipId(), "Balicek neobsahuje soubor PREMIS.xml");
+        });
+
+        // the batch reports success afterwards, as it does when the exchange itself went fine
+        tx().executeWithoutResult(t -> {
+            DaSyncQueueItem queue = syncQueueItemRepository.findById(ids[1]).orElseThrow();
+            actionService.completeFromQueue(List.of(queue), DaAipActionItemState.FINISHED, null);
+        });
+
+        tx().executeWithoutResult(t -> {
+            DaAipAction action = actionRepository.findById(ids[0]).orElseThrow();
+            List<DaAipActionItem> items = actionItemRepository.findByAipActionOrderByAipActionItemId(action);
+            assertEquals(DaAipActionItemState.ERROR, items.get(0).getState());
+            assertEquals("Balicek neobsahuje soubor PREMIS.xml", items.get(0).getMessage());
+            assertEquals(DaAipActionState.ERROR, actionService.stateOf(action));
+        });
+    }
 }
