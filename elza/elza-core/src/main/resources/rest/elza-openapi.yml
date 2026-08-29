@@ -973,6 +973,34 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Admin.CopyPermissionParams'
+  /aip/action/{actionId}:
+    get:
+      operationId: Aip_getAipAction
+      description: |-
+        Akce nad AIPy i s jejím výsledkem po jednotlivých AIPech. Slouží k načtení stavu akce
+        poté, co se obnoví spojení - zprávy o průběhu se neukládají a při výpadku se ztratí.
+      parameters:
+        - name: actionId
+          in: path
+          required: true
+          description: ID akce
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaAipActionVO'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aips
   /aip/bulk-connect-logic-to-jp:
     post:
       operationId: Aip_bulkConnectLogicToJp

@@ -5738,6 +5738,24 @@ namespace ElzaAPI.Aip {
         };
 
      /**
+      * Akce nad AIPy i s jejím výsledkem po jednotlivých AIPech. Slouží k načtení stavu akce
+      * poté, co se obnoví spojení - zprávy o průběhu se neukládají a při výpadku se ztratí.
+      */
+     @route("/action/{actionId}")
+     @get op getAipAction (
+        /** ID akce */
+        @path actionId: integer
+     ) : {
+         /** Akce nalezena */
+         @Http.statusCode statusCode: 200;
+         @body data: DaAipActionVO;
+        } | {
+         /** Akce nenalezena */
+         @Http.statusCode statusCode: 404;
+         @body data: BaseException;
+        };
+
+     /**
       * Get aip detail by id
       */
      @route("/{aipId}")

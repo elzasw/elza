@@ -135,6 +135,11 @@ public class AipController implements AipsApi {
     }
 
     @Override
+    public ResponseEntity<DaAipActionVO> aipGetAipAction(Integer actionId) {
+        return ResponseEntity.ok(clientFactoryVO.createAipAction(daService.getAipAction(actionId)));
+    }
+
+    @Override
     public ResponseEntity<AipDetailVO> aipGetAip(Integer aipId) {
         return ResponseEntity.ok(aipService.getAipDetail(aipId));
     }

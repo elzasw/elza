@@ -1,0 +1,44 @@
+@import "../../variables.scss";
+
+.aip-action-result {
+    .aip-action-summary {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 0.75rem;
+        font-weight: bold;
+    }
+
+    .aip-action-items {
+        width: 100%;
+        border-collapse: collapse;
+
+        th, td {
+            text-align: left;
+            padding: 4px 8px;
+            border-bottom: 1px solid $shade-3;
+            vertical-align: top;
+        }
+
+        th {
+            font-weight: normal;
+            color: $shade-6;
+        }
+
+        .item-state {
+            display: inline-flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+
+        /* Důvod je u přeskočeného a chybného AIPu to podstatné - proto pod stavem, ne v tooltipu. */
+        .item-message {
+            color: $shade-6;
+            margin-top: 2px;
+        }
+
+        .item-error .item-state {
+            color: $color-warn;
+        }
+    }
+}

@@ -323,6 +323,14 @@ public class DaService {
     }
 
     /**
+     * Akce nad AIPy podle jejího ID.
+     */
+    @Transactional
+    public DaAipAction getAipAction(Integer actionId) {
+        return actionService.getAction(actionId);
+    }
+
+    /**
      * Runs one step of an action in a transaction of its own, so that a step which fails costs
      * only its own work and the steps before it stay committed.
      */
