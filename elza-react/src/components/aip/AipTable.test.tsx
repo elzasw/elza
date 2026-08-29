@@ -176,4 +176,29 @@ describe('AipTable', () => {
         expect(screen.getByText('Fond A')).toBeInTheDocument();
         expect(screen.getByText('Nenalezena instituce')).toBeInTheDocument();
     });
+
+    it('chyba stažení nese v tooltipu důvod selhání', () => {
+        renderWithProviders(
+            <AipTable filterDisabled hiddenValues={onlyColumns('code', 'importState')} />,
+            {
+                preloadedState: storeWithRows([aip({
+                    importState: QueueItemState.ImportError,
+                    importStateMessage: 'Balíček neobsahuje soubor PACKAGE-INFO.xml',
+                })]),
+            },
+        );
+
+        expect(screen.getByText('Chyba stažení').closest('span'))
+            .toHaveAttribute('title', expect.stringContaining('PACKAGE-INFO.xml'));
+    });
+
+    it('stav bez popisu se vypíše bez tooltipu', () => {
+        renderWithProviders(
+            <AipTable filterDisabled hiddenValues={onlyColumns('code', 'importState')} />,
+            { preloadedState: storeWithRows([aip({ importState: QueueItemState.ImportNew })]) },
+        );
+
+        expect(screen.getByText('Ke stažení')).toBeInTheDocument();
+        expect(screen.queryByTitle(/./)).toBeNull();
+    });
 });

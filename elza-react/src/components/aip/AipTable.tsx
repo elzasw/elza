@@ -1,12 +1,13 @@
 import { useIntl } from "react-intl";
 import { tableMessages } from "components/shared/lang/tableMessages";
-import { SortingOrder } from "elza-api";
+import { QueueItemState, SortingOrder } from "elza-api";
 import {FC, useCallback, useEffect, useState, MouseEvent, KeyboardEvent} from 'react';
 import { useAppSelector } from 'utils/hooks';
 import {StoreHorizontalLoader} from 'components/shared';
 import storeFromArea from '../../shared/utils/storeFromArea.jsx';
 import { formatAipSize } from './format';
 import { formatDateCz } from 'utils/date';
+import { dateToDateTimeString } from '../../shared/utils/commons';
 import { findColDefByKey } from './columns';
 import './AipTable.scss';
 import { useHistory} from 'react-router';
@@ -112,6 +113,29 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, onExplore, filterDisabled, in
     /** Sloupce maji i skladane klice ("fund.name"), ktere na AipDetailVO primo nejsou. */
     const rawValue = (item: AipDetailVO, key: string): any => (item as Record<string, any>)[key];
 
+    /**
+     * Stav fronty; u chybových stavů s ikonou a důvodem selhání v tooltipu, protože jinak se
+     * uživatel důvod nedozví - zůstal by jen v protokolu serveru.
+     */
+    const queueStateContent = (state?: QueueItemState, message?: string, date?: string) => {
+        if (!state) {
+            return "-";
+        }
+        const label = formatMessage(queueStateMessages[state]);
+        const failed = state === QueueItemState.ImportError || state === QueueItemState.ExportError;
+        const tooltip = [message, date ? dateToDateTimeString(new Date(date)) : null]
+            .filter(Boolean).join("\n") || undefined;
+        if (!failed) {
+            return tooltip ? <span title={tooltip}>{label}</span> : label;
+        }
+        return (
+            <span className="aip-problem" title={tooltip}>
+                <Icon glyph="fa-exclamation-triangle"/>
+                {label}
+            </span>
+        );
+    };
+
     const getContent =(item: AipDetailVO, key: string) => {
         switch(key) {
             case "code": return (
@@ -146,10 +170,10 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, onExplore, filterDisabled, in
                     )
                     : item.institutionCode;
             }
-            case "importState": return item.importState
-                ? formatMessage(queueStateMessages[item.importState]) : "-";
-            case "exportState": return item.exportState
-                ? formatMessage(queueStateMessages[item.exportState]) : "-";
+            case "importState":
+                return queueStateContent(item.importState, item.importStateMessage, item.importStateDate);
+            case "exportState":
+                return queueStateContent(item.exportState, item.exportStateMessage, item.exportStateDate);
             case "problemType": return item.problemType
                 ? (
                     <span className="aip-problem" title={item.problemDescription ?? undefined}>

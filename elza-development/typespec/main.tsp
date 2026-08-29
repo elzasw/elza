@@ -1115,6 +1115,81 @@ model Scope extends BaseCode {
 }
 
 /**
+ * Typ akce vyžádané nad AIPy
+ */
+enum DaAipActionType {
+    LOAD_METADATA,
+    DELETE_METADATA,
+    LOAD_COMPLETE_AIP,
+    DELETE_COMPLETE_AIP,
+    DOWNLOAD_UPDATE,
+    DB_UPDATE,
+    FORCE_UPDATE,
+    REMAP_REFERENCES,
+    EXPORT
+}
+
+/**
+ * Stav akce nad AIPy; odvozený ze stavů jednotlivých položek
+ */
+enum DaAipActionState {
+    WAITING,
+    RUNNING,
+    FINISHED,
+    ERROR
+}
+
+/**
+ * Jak akce dopadla u jednoho AIPu
+ */
+enum DaAipActionItemState {
+    WAITING,
+    RUNNING,
+    FINISHED,
+    ERROR,
+
+    /** Akci nebylo možné na AIP použít; důvod je v popisu položky */
+    SKIPPED
+}
+
+/**
+ * Jak akce dopadla u jednoho AIPu
+ */
+model DaAipActionItemVO {
+    /** ID AIPu */
+    aipId: integer;
+    /** Kód AIPu */
+    aipCode?: string;
+    /** Stav položky */
+    state: DaAipActionItemState;
+    /** Co se s AIPem stalo; vyplněno u výsledků, které nic nezměnily */
+    message?: string;
+    /** Kdy byla položka dokončena */
+    finishDate?: utcDateTime;
+}
+
+/**
+ * Akce vyžádaná nad sadou AIPů a její výsledek po jednotlivých AIPech.
+ *
+ * Akce je zaznamenaná bez ohledu na to, jak se provádí - jestli ji ELZA vyřídí sama,
+ * nebo se na ni čeká z digitálního archivu.
+ */
+model DaAipActionVO {
+    /** ID akce */
+    id: integer;
+    /** Typ akce */
+    actionType: DaAipActionType;
+    /** Stav akce odvozený z jejích položek */
+    state: DaAipActionState;
+    /** Kdy byla akce vyžádána */
+    createDate: utcDateTime;
+    /** Kdy byla dokončena poslední položka akce */
+    finishDate?: utcDateTime;
+    /** Výsledek akce po jednotlivých AIPech */
+    items: DaAipActionItemVO[];
+}
+
+/**
  * Výčet stavů aktualizace AIPu
  */
 enum QueueItemState {
@@ -1292,9 +1367,25 @@ model AipDetailVO {
      */
     importState?: QueueItemState;
     /**
+     * Popis stavu importu; u chybových stavů důvod selhání
+     */
+    importStateMessage?: string;
+    /**
+     * Kdy byl stav importu naposledy nastaven
+     */
+    importStateDate?: utcDateTime;
+    /**
      * Stav exportu
      */
     exportState?: QueueItemState;
+    /**
+     * Popis stavu exportu; u chybových stavů důvod selhání
+     */
+    exportStateMessage?: string;
+    /**
+     * Kdy byl stav exportu naposledy nastaven
+     */
+    exportStateDate?: utcDateTime;
     /**
      * Seznam napojených nodes
      */
@@ -5298,6 +5389,7 @@ namespace ElzaAPI.Aip {
     ): {
         /** Dao structure successfully created */
         @Http.statusCode statusCode: 200;
+        @body data: DaAipActionVO;
        } | {
         /** Failed to create dao structure */
         @Http.statusCode statusCode: 500;
@@ -5314,6 +5406,7 @@ namespace ElzaAPI.Aip {
     ): {
         /** Dao structure successfully deleted */
         @Http.statusCode statusCode: 200;
+        @body data: DaAipActionVO;
        } | {
         /** Failed to delete dao structure */
         @Http.statusCode statusCode: 500;
@@ -5330,6 +5423,7 @@ namespace ElzaAPI.Aip {
     ): {
         /** Complete AIPs successfully downloaded */
         @Http.statusCode statusCode: 200;
+        @body data: DaAipActionVO;
        } | {
         /** Failed to download complete AIPs */
         @Http.statusCode statusCode: 500;
@@ -5346,6 +5440,7 @@ namespace ElzaAPI.Aip {
     ): {
         /** Complete AIPs successfully deleted */
         @Http.statusCode statusCode: 200;
+        @body data: DaAipActionVO;
        } | {
         /** Failed to delete complete AIPs */
         @Http.statusCode statusCode: 500;
@@ -5365,6 +5460,7 @@ namespace ElzaAPI.Aip {
     ): {
         /** AIPs successfully updated */
         @Http.statusCode statusCode: 200;
+        @body data: DaAipActionVO;
        } | {
         /** Failed to update AIPs */
         @Http.statusCode statusCode: 500;
@@ -5381,6 +5477,7 @@ namespace ElzaAPI.Aip {
     ): {
         /** AIPs successfully exported */
         @Http.statusCode statusCode: 200;
+        @body data: DaAipActionVO;
        } | {
         /** Failed to export AIPs */
         @Http.statusCode statusCode: 500;

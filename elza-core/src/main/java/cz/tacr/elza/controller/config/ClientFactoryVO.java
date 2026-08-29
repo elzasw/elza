@@ -32,6 +32,7 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.DaDaoFile;
 import cz.tacr.elza.domain.DaDaoFileFolder;
 import cz.tacr.elza.repository.*;
+import cz.tacr.elza.service.da.DaAipActionService;
 import cz.tacr.elza.service.da.DaService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
@@ -280,6 +281,9 @@ public class ClientFactoryVO {
     
     @Autowired
     private DaSyncQueueItemRepository daSyncQueueItemRepository;
+
+    @Autowired
+    private DaAipActionService daAipActionService;
 
     @Autowired
     private InstitutionRepository institutionRepository;
@@ -2638,17 +2642,46 @@ public class ClientFactoryVO {
         DaSyncQueueItem importSyncQueueItem = daSyncQueueItemRepository.findByAipAndStateInAndActiveIsTrue(src, DaService.getQueueImportStates());
         if (importSyncQueueItem != null) {
             vo.setImportState(mapQueueItemState(importSyncQueueItem.getState()));
+            vo.setImportStateMessage(importSyncQueueItem.getStateMessage());
+            vo.setImportStateDate(importSyncQueueItem.getDate());
         }
 
         DaSyncQueueItem exportSyncQueueItem = daSyncQueueItemRepository.findByAipAndStateInAndActiveIsTrue(src, DaService.getQueueExportStates());
         if (exportSyncQueueItem != null) {
             vo.setExportState(mapQueueItemState(exportSyncQueueItem.getState()));
+            vo.setExportStateMessage(exportSyncQueueItem.getStateMessage());
+            vo.setExportStateDate(exportSyncQueueItem.getDate());
         }
 
         if (CollectionUtils.isNotEmpty(daoLinks)) {
             vo.setLinkedNodes(createLinkedNodeVOs(daoLinks, treeNodeMap));
         }
 
+        return vo;
+    }
+
+    /**
+     * Akce nad AIPy i s výsledkem po jednotlivých AIPech. Stav akce se odvozuje z položek,
+     * neukládá se - položky se dokončují nezávisle na sobě.
+     */
+    public DaAipActionVO createAipAction(DaAipAction action) {
+        DaAipActionVO vo = new DaAipActionVO();
+        vo.setId(action.getAipActionId());
+        vo.setActionType(DaAipActionType.fromValue(action.getActionType().name()));
+        vo.setState(DaAipActionState.fromValue(daAipActionService.stateOf(action).name()));
+        vo.setCreateDate(action.getCreateDate());
+        vo.setFinishDate(action.getFinishDate());
+        vo.setItems(action.getItems().stream().map(this::createAipActionItem).toList());
+        return vo;
+    }
+
+    private DaAipActionItemVO createAipActionItem(DaAipActionItem item) {
+        DaAipActionItemVO vo = new DaAipActionItemVO();
+        vo.setAipId(item.getAip().getAipId());
+        vo.setAipCode(item.getAip().getCode());
+        vo.setState(DaAipActionItemState.fromValue(item.getState().name()));
+        vo.setMessage(item.getMessage());
+        vo.setFinishDate(item.getFinishDate());
         return vo;
     }
 
