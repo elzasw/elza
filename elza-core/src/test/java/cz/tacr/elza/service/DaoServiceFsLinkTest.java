@@ -96,6 +96,8 @@ public class DaoServiceFsLinkTest {
         setField(service, "arrangementInternalService", arrangementInternalService);
         setField(service, "eventNotificationService", eventNotificationService);
         setField(service, "arrangementCacheService", arrangementCacheService);
+        // the real rule, not a mock - it is pure decision-making and is what these cases are about
+        setField(service, "daoLinkPolicy", new DaoLinkPolicy());
         // browser only used by other methods — not needed here, but injected so no NPE on scanning
         setField(service, "fileSystemRepoBrowser", Mockito.mock(FileSystemRepoBrowser.class));
 

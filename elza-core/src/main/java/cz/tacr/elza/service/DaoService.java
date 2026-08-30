@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -111,6 +112,8 @@ public class DaoService {
 
     @Autowired
     private ArrFsLinkRepository fsLinkRepository;
+    @Autowired
+    private DaoLinkPolicy daoLinkPolicy;
 
     @Autowired
     private EventNotificationService eventNotificationService;
@@ -739,19 +742,9 @@ public class DaoService {
                 ? fsLinkRepository.findByDigitalRepositoryAndPathIsNullAndDeleteChangeIsNull(digiRepo)
                 : fsLinkRepository.findByDigitalRepositoryAndPathAndDeleteChangeIsNull(digiRepo, path);
 
-        // existující vazba na stejný node → idempotentně vrátit
-        for (ArrFsLink link : existing) {
-            if (link.getNodeId().equals(node.getNodeId())) {
-                return link;
-            }
-        }
-
-        // zákaz více vazeb podle nastavení repository
-        if (!existing.isEmpty() && !Boolean.TRUE.equals(digiRepo.getMultipleLinks())) {
-            throw new BusinessException(
-                    "Položka souborového repozitáře je již připojena k jiné jednotce popisu;"
-                            + " opakované napojení není povoleno.",
-                    ArrangementCode.DAO_ALREADY_LINKED).level(Level.WARNING);
+        Optional<ArrDaoLink> alreadyLinked = daoLinkPolicy.checkCanLink(existing, node.getNodeId(), digiRepo);
+        if (alreadyLinked.isPresent()) {
+            return (ArrFsLink) alreadyLinked.get();
         }
 
         ArrChange createChange = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, node);
