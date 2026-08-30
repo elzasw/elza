@@ -150,6 +150,23 @@ public class AipController implements AipsApi {
     }
 
     @Override
+    public ResponseEntity<AipConnectCheckVO> aipConnectCheck(Integer arrNodeId, List<Integer> daAipIdList,
+                                                             Boolean newNode) {
+        List<DaService.BlockedAip> blocked = daService.checkConnect(arrNodeId, daAipIdList,
+                                                                    Boolean.TRUE.equals(newNode));
+        AipConnectCheckVO vo = new AipConnectCheckVO();
+        vo.setTotal(daAipIdList.size());
+        vo.setBlocked(blocked.stream().map(b -> {
+            AipConnectBlockedVO item = new AipConnectBlockedVO();
+            item.setAipId(b.aipId());
+            item.setAipCode(b.aipCode());
+            item.setReason(b.reason());
+            return item;
+        }).toList());
+        return ResponseEntity.ok(vo);
+    }
+
+    @Override
     public ResponseEntity<DaAipActionVO> aipBulkConnectLogicToJp(Integer arrNodeId, List<Integer> daAipId, Integer daDaoId) {
         return ResponseEntity.ok(clientFactoryVO.createAipAction(
                 daService.submitBulkConnectLogicalStructure(arrNodeId, daAipId, daDaoId)));

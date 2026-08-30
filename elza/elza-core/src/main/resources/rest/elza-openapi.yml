@@ -1345,6 +1345,51 @@ paths:
                 $ref: '#/components/schemas/BaseException'
       tags:
         - aips
+  /aip/connect/check:
+    post:
+      operationId: Aip_connectCheck
+      description: |-
+        Co brání napojení vybraných AIPů na danou jednotku popisu. Ptá se stejného pravidla jako
+        samotné napojení, takže se odpověď a skutečné chování nemohou rozejít.
+      parameters:
+        - name: arrNodeId
+          in: query
+          required: true
+          description: ArrNode ID
+          schema:
+            type: integer
+          explode: false
+        - name: daAipIdList
+          in: query
+          required: true
+          description: DaAip ID list
+          schema:
+            type: array
+            items:
+              type: integer
+          explode: false
+        - name: newNode
+          in: query
+          required: false
+          description: Napojuje se na nově zakládanou jednotku popisu
+          schema:
+            type: boolean
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AipConnectCheckVO'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aips
   /aip/create-dao-link:
     post:
       operationId: Aip_createDaoLink
@@ -6563,6 +6608,41 @@ components:
         submit-time budget check uses, so the displayed balance never disagrees
         with a quota refusal. Both members are optional: a provider without credit
         accounting returns an empty object.
+    AipConnectBlockedVO:
+      type: object
+      required:
+        - aipId
+        - reason
+      properties:
+        aipId:
+          type: integer
+          description: ID AIPu
+        aipCode:
+          type: string
+          description: Kód AIPu
+        reason:
+          type: string
+          description: Proč napojení není možné
+      description: AIP, který nelze napojit, i s důvodem
+    AipConnectCheckVO:
+      type: object
+      required:
+        - total
+        - blocked
+      properties:
+        total:
+          type: integer
+          description: Počet AIPů, kterých se dotaz týkal
+        blocked:
+          type: array
+          items:
+            $ref: '#/components/schemas/AipConnectBlockedVO'
+          description: AIPy, které napojit nelze
+      description: |-
+        Co brání napojení vybraných AIPů.
+
+        Zjišťuje se předem, aby uživatel věděl, do čeho jde; samotné napojení pak takový AIP
+        odmítne, takže se odpověď a skutečné chování nemohou rozejít.
     AipDetailFilteredResult:
       type: object
       required:

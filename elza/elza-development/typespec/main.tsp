@@ -1173,6 +1173,31 @@ model DaAipActionItemVO {
 }
 
 /**
+ * AIP, který nelze napojit, i s důvodem
+ */
+model AipConnectBlockedVO {
+    /** ID AIPu */
+    aipId: integer;
+    /** Kód AIPu */
+    aipCode?: string;
+    /** Proč napojení není možné */
+    reason: string;
+}
+
+/**
+ * Co brání napojení vybraných AIPů.
+ *
+ * Zjišťuje se předem, aby uživatel věděl, do čeho jde; samotné napojení pak takový AIP
+ * odmítne, takže se odpověď a skutečné chování nemohou rozejít.
+ */
+model AipConnectCheckVO {
+    /** Počet AIPů, kterých se dotaz týkal */
+    total: integer;
+    /** AIPy, které napojit nelze */
+    blocked: AipConnectBlockedVO[];
+}
+
+/**
  * Akce vyžádaná nad sadou AIPů a její výsledek po jednotlivých AIPech.
  *
  * Akce je zaznamenaná bez ohledu na to, jak se provádí - jestli ji ELZA vyřídí sama,
@@ -5644,6 +5669,28 @@ namespace ElzaAPI.Aip {
           @Http.statusCode statusCode: 200;
         } | {
           /** Failed to create dao link */
+          @Http.statusCode statusCode: 500;
+          @body data: BaseException;
+        };
+
+     /**
+      * Co brání napojení vybraných AIPů na danou jednotku popisu. Ptá se stejného pravidla jako
+      * samotné napojení, takže se odpověď a skutečné chování nemohou rozejít.
+      */
+      @route("/connect/check")
+      @post op connectCheck(
+         /** ArrNode ID */
+         @query arrNodeId: integer;
+         /** DaAip ID list */
+         @query daAipIdList: integer[];
+         /** Napojuje se na nově zakládanou jednotku popisu */
+         @query newNode?: boolean;
+      ) : {
+          /** Zjištěno */
+          @Http.statusCode statusCode: 200;
+          @body data: AipConnectCheckVO;
+        } | {
+          /** Failed to check */
           @Http.statusCode statusCode: 500;
           @body data: BaseException;
         };

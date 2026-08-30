@@ -1,0 +1,37 @@
+@import "../../variables.scss";
+
+.aip-connect-blocked {
+    margin-bottom: 0.5rem;
+
+    .blocked-summary {
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
+        color: $color-warn;
+    }
+
+    .link-like {
+        background: none;
+        border: none;
+        padding: 0;
+        color: $color-link;
+        text-decoration: underline;
+        cursor: pointer;
+    }
+
+    .blocked-list {
+        margin: 4px 0 0;
+        padding-left: 22px;
+        max-height: 140px;
+        overflow-y: auto;
+
+        .blocked-aip {
+            font-weight: bold;
+            margin-right: 6px;
+        }
+
+        .blocked-reason {
+            color: $shade-6;
+        }
+    }
+}

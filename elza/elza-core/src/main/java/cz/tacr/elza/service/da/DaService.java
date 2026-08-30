@@ -1806,6 +1806,37 @@ public class DaService {
     public record ConnectParams(Integer nodeId, @Nullable Integer changeId, @Nullable Integer levelViewId) {
     }
 
+
+    /** One AIP that cannot be attached, and why. */
+    public record BlockedAip(Integer aipId, String aipCode, String reason) {
+    }
+
+    /**
+     * What stands in the way of attaching the given AIPs, without attaching anything.
+     *
+     * Asks {@link DaoLinkPolicy} the same question the attaching itself asks, so what the user is
+     * told beforehand and what happens afterwards cannot disagree. Like the check the submission
+     * makes, it looks at the links of the whole package only.
+     *
+     * @param newNode true when the AIPs are to hang on a unit of description that does not exist
+     *                yet, where nothing can already be attached
+     */
+    @Transactional
+    public List<BlockedAip> checkConnect(Integer nodeId, List<Integer> aipIds, boolean newNode) {
+        List<BlockedAip> blocked = new ArrayList<>();
+        for (DaAip aip : aipRepository.findAllById(aipIds)) {
+            List<ArrDaLink> liveLinks =
+                    daLinkRepository.findByAip_AipIdAndDaDaoIsNullAndDeleteChangeIsNull(aip.getAipId());
+            boolean refused = newNode
+                    ? daoLinkPolicy.wouldRefuseANewNode(liveLinks, aip.getDigitalRepository())
+                    : daoLinkPolicy.wouldBeRefused(liveLinks, nodeId, aip.getDigitalRepository());
+            if (refused) {
+                blocked.add(new BlockedAip(aip.getAipId(), aip.getCode(),
+                        "AIP je již připojen k jiné jednotce popisu a úložiště neumožňuje více vazeb."));
+            }
+        }
+        return blocked;
+    }
     /**
      * Refuses the whole request when any of the AIPs cannot be attached where it is asked to go.
      *

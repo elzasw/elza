@@ -224,4 +224,48 @@ public class DaServiceLinkTest extends AbstractServiceTest {
             assertEquals(DaAipActionState.FINISHED, actionService.stateOf(reloaded));
         });
     }
+
+    /**
+     * The check answers with the AIPs that cannot be attached, and answers the same way the
+     * attaching itself would - it is the same rule, asked without doing anything.
+     */
+    @Test
+    public void theCheckNamesTheAipsThatCannotBeAttached() {
+        FundInfo fund = tx().execute(t -> createFund("F-da-connect-check"));
+        Integer[] aipIds = tx().execute(t -> {
+            ArrDigitalRepository repository = createRepository(false);
+            return new Integer[] {
+                    createAip(repository, "aip-free").getAipId(),
+                    createAip(repository, "aip-taken").getAipId() };
+        });
+        Integer otherNodeId = secondNodeId(fund);
+
+        tx().executeWithoutResult(t -> daService.connectToJP(otherNodeId, aipIds[1]));
+
+        List<DaService.BlockedAip> blocked = tx().execute(t ->
+                daService.checkConnect(fund.getRootNodeId(), List.of(aipIds[0], aipIds[1]), false));
+
+        assertEquals(1, blocked.size(), "only the AIP that already hangs elsewhere is blocked");
+        assertEquals(aipIds[1], blocked.get(0).aipId());
+        assertEquals("aip-taken", blocked.get(0).aipCode());
+
+        // and the submission refuses for the same reason, so the two cannot disagree
+        assertThrows(BusinessException.class, () -> daService.submitBulkConnectToJP(
+                fund.getRootNodeId(), List.of(aipIds[0], aipIds[1])));
+    }
+
+    /** Attaching where it already hangs is not blocked - that is a no-op, not a refusal. */
+    @Test
+    public void theCheckDoesNotBlockTheNodeTheAipAlreadyHangsOn() {
+        FundInfo fund = tx().execute(t -> createFund("F-da-check-same-node"));
+        Integer aipId = tx().execute(t -> createAip(createRepository(false), "aip-same").getAipId());
+
+        tx().executeWithoutResult(t -> daService.connectToJP(fund.getRootNodeId(), aipId));
+
+        assertEquals(0, tx().execute(t ->
+                daService.checkConnect(fund.getRootNodeId(), List.of(aipId), false)).size());
+        // but a unit of description that does not exist yet is a different one, so that is blocked
+        assertEquals(1, tx().execute(t ->
+                daService.checkConnect(fund.getRootNodeId(), List.of(aipId), true)).size());
+    }
 }
