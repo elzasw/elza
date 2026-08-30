@@ -53,6 +53,16 @@ public class DaoLinkPolicy {
     }
 
     /**
+     * Whether attaching to a unit of description that does not exist yet would be refused. Nothing
+     * can already hang on a unit of description that is about to be created, so only the setting
+     * and whether the object hangs anywhere at all decide it.
+     */
+    public boolean wouldRefuseANewNode(final List<? extends ArrDaoLink> liveLinks,
+                                       final ArrDigitalRepository repository) {
+        return !liveLinks.isEmpty() && !Boolean.TRUE.equals(repository.getMultipleLinks());
+    }
+
+    /**
      * Whether attaching would be refused, without refusing it. Used to tell the user what stands in
      * the way before they ask for the work to be done.
      */

@@ -1032,6 +1032,10 @@ paths:
       responses:
         '200':
           description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaAipActionVO'
         '500':
           description: Server error
           content:
@@ -1064,6 +1068,10 @@ paths:
       responses:
         '200':
           description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaAipActionVO'
         '500':
           description: Server error
           content:
@@ -1096,6 +1104,10 @@ paths:
       responses:
         '200':
           description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaAipActionVO'
         '500':
           description: Server error
           content:
@@ -1135,6 +1147,10 @@ paths:
       responses:
         '200':
           description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaAipActionVO'
         '500':
           description: Server error
           content:
@@ -7263,6 +7279,10 @@ components:
         - FORCE_UPDATE
         - REMAP_REFERENCES
         - EXPORT
+        - CONNECT_TO_NODE
+        - CONNECT_LOGICAL_STRUCTURE
+        - CREATE_NODES
+        - CREATE_NODES_AND_CONNECT
       description: Typ akce vyžádané nad AIPy
     DaAipActionVO:
       type: object

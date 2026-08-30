@@ -77,6 +77,11 @@ import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DaoLevelViewService;
 import cz.tacr.elza.service.ExternalSystemService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.Level;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.DaoLinkPolicy;
 import cz.tacr.elza.service.UserService;
@@ -256,6 +261,9 @@ public class DaService {
     private DaAipActionService actionService;
     @Autowired
     private DaoLinkPolicy daoLinkPolicy;
+
+    /** Reads and writes what an action was asked to do; see {@link ConnectParams}. */
+    private final ObjectMapper objectMapper = new ObjectMapper();
     @Autowired
     private AsyncRequestService asyncRequestService;
     @Autowired
@@ -1745,92 +1753,6 @@ public class DaService {
         linkToNode(daAip, daDao, newNode, ArrDaoLink.LinkType.PART_AIP, change);
     }
 
-    @Transactional
-    public void bulkConnectToJP(Integer nodeId, List<Integer> daAipIdList) {
-        ArrNode arrNode = nodeRepository.getOneCheckExist(nodeId);
-        for (Integer daAipId : daAipIdList) {
-            DaAip daAip = findAipById(daAipId);
-            ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
-            linkToNode(daAip, null, arrNode, ArrDaoLink.LinkType.AIP, change);
-        }
-    }
-
-    @Transactional
-    public void bulkCreateFromSelectedToJP(Integer nodeId, List<Integer> daAipIdList, Integer dalevelViewId) {
-        ArrNode arrNode = nodeRepository.getOneCheckExist(nodeId);
-        DaLevelView levelView = daLevelViewRepository.findById(dalevelViewId).orElse(null);
-        if (levelView == null) {
-            logger.error("Nebylo nalezeno level view s předaným ID. ID={}", dalevelViewId);
-            throw new ObjectNotFoundException("Nebylo nalezeno level view s předaným ID. ID=" + dalevelViewId, BaseCode.ID_NOT_EXIST);
-        }
-        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
-        ArrNode newNode = createChildNode(arrNode, change);
-        ArrNode nodeToConnect = arrNode;
-        for (DaLevelView child : levelView.getChildren()) {
-            nodeToConnect = createNextLevel(newNode, change, 1, child);
-        }
-
-        DaLevelView levelViewToConnect = levelView;
-        while (levelViewToConnect.getChildren() != null && !levelViewToConnect.getChildren().isEmpty()) {
-            levelViewToConnect = levelViewToConnect.getChildren().get(0);
-        }
-        for (Integer daAipId : daAipIdList) {
-            DaAip daAip = findAipById(daAipId);
-
-            List<DaDao> daoList = daoRepository.findAllByLevelViewInAndDeleteChangeIsNull(Collections.singletonList(levelViewToConnect));
-            for (DaDao daDao : daoList) {
-                List<DaDaoRelation> daDaoRelationList = daoRelationRepository.findByParentDaoAndDeleteChangeIsNull(daDao);
-                for (DaDaoRelation daDaoRelation : daDaoRelationList) {
-                    DaDao dao = daDaoRelation.getDao();
-                    if (dao.getType().equals(DaDao.DaoType.LOGICAL) && dao.getAip().equals(daAip)) {
-                        linkToNode(daAip, dao, nodeToConnect, ArrDaoLink.LinkType.PART_AIP, change);
-                    }
-                }
-            }
-        }
-    }
-
-    @Transactional
-    public void bulkConnectLogicalStructureToJP(Integer nodeId, List<Integer> daAipIdList, Integer daLevelViewId) {
-        ArrNode arrNode = nodeRepository.getOneCheckExist(nodeId);
-        Integer maxPosition = levelRepository.findMaxPositionUnderParent(arrNode);
-        DaLevelView levelView = daLevelViewRepository.findById(daLevelViewId).orElse(null);
-        if (levelView == null) {
-            logger.error("Nebylo nalezeno level view s předaným ID. ID={}", daLevelViewId);
-            throw new ObjectNotFoundException("Nebylo nalezeno level view s předaným ID. ID=" + daLevelViewId, BaseCode.ID_NOT_EXIST);
-        }
-        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
-        if (maxPosition == null) {
-            maxPosition = 0;
-        }
-        int position = maxPosition + 1;
-        ArrNode nodeToConnect = arrNode;
-
-        for (DaLevelView child : levelView.getChildren()) {
-            nodeToConnect = createNextLevel(arrNode, change, position, child);
-        }
-        DaLevelView levelViewToConnect = levelView;
-        while (levelViewToConnect.getChildren() != null && !levelViewToConnect.getChildren().isEmpty()) {
-            levelViewToConnect = levelViewToConnect.getChildren().get(0);
-        }
-
-        for (Integer daAipId : daAipIdList) {
-            DaAip daAip = findAipById(daAipId);
-
-            List<DaDao> daoList = daoRepository.findAllByLevelViewInAndDeleteChangeIsNull(Collections.singletonList(levelViewToConnect));
-            for (DaDao daDao : daoList) {
-                List<DaDaoRelation> daDaoRelationList = daoRelationRepository.findByParentDaoAndDeleteChangeIsNull(daDao);
-                for (DaDaoRelation daDaoRelation : daDaoRelationList) {
-                    DaDao dao = daDaoRelation.getDao();
-                    if (dao.getType().equals(DaDao.DaoType.LOGICAL) && dao.getAip().equals(daAip)) {
-                        linkToNode(daAip, dao, nodeToConnect, ArrDaoLink.LinkType.PART_AIP, change);
-                    }
-                }
-
-            }
-        }
-    }
-
     /**
      * Creates a new child node and its level under {@code parentNode} at the given
      * position, registers the node in the cache (only once the level exists), locks
@@ -1871,23 +1793,191 @@ public class DaService {
         return createChildNode(parentNode, change, maxPosition + 1);
     }
 
+
+    /**
+     * What the steps of a connect action need beyond the AIP they act on.
+     *
+     * @param nodeId      the unit of description to attach to, or the one to create under
+     * @param changeId    the change shared by everything the action creates, when the prologue
+     *                    made one
+     * @param levelViewId the level view whose digital entities are attached, for the actions that
+     *                    build a logical structure
+     */
+    public record ConnectParams(Integer nodeId, @Nullable Integer changeId, @Nullable Integer levelViewId) {
+    }
+
+    /**
+     * Refuses the whole request when any of the AIPs cannot be attached where it is asked to go.
+     *
+     * Only the links of the whole package are looked at. Finding the links of its parts means
+     * walking the digital entities of every AIP, which is the per-AIP work these actions exist to
+     * take off the request; a conflict on a part is reported on that AIP when its step reaches it.
+     */
+    private void checkAllCanBeAttached(List<DaAip> aipList, @Nullable Integer targetNodeId) {
+        for (DaAip aip : aipList) {
+            List<ArrDaLink> liveLinks =
+                    daLinkRepository.findByAip_AipIdAndDaDaoIsNullAndDeleteChangeIsNull(aip.getAipId());
+            boolean refused = targetNodeId == null
+                    ? daoLinkPolicy.wouldRefuseANewNode(liveLinks, aip.getDigitalRepository())
+                    : daoLinkPolicy.wouldBeRefused(liveLinks, targetNodeId, aip.getDigitalRepository());
+            if (refused) {
+                throw new BusinessException("AIP " + aip.getCode()
+                        + " je již připojen k jiné jednotce popisu; opakované napojení není povoleno.",
+                        ArrangementCode.DAO_ALREADY_LINKED).level(Level.WARNING);
+            }
+        }
+    }
+
+    /**
+     * Opens a connect action and queues one step per AIP.
+     *
+     * What is bounded stays in the request - checking the AIPs and building the unit of description
+     * to attach to - and what grows with the number of AIPs is carried out one AIP at a time,
+     * afterwards, so the request is answered without waiting for it.
+     */
+    private DaAipAction submitConnect(DaAipActionType actionType, List<Integer> aipIds, ConnectParams params) {
+        List<DaAip> aipList = aipRepository.findAllById(aipIds);
+        DaAipAction action = actionService.start(actionType, aipList, writeParams(params));
+        actionService.enqueueSteps(action.getAipActionId());
+        return action;
+    }
+
+    private String writeParams(ConnectParams params) {
+        try {
+            return objectMapper.writeValueAsString(params);
+        } catch (JsonProcessingException e) {
+            throw new SystemException("Zadání akce nad AIPy se nepodařilo uložit", e, BaseCode.INVALID_STATE);
+        }
+    }
+
+    public ConnectParams readConnectParams(String params) {
+        try {
+            return objectMapper.readValue(params, ConnectParams.class);
+        } catch (JsonProcessingException e) {
+            throw new SystemException("Zadání akce nad AIPy se nepodařilo přečíst", e, BaseCode.INVALID_STATE);
+        }
+    }
+
+    /** Attaches whole packages to an existing unit of description. */
+    public DaAipAction submitBulkConnectToJP(Integer nodeId, List<Integer> aipIds) {
+        inTransaction(() -> {
+            nodeRepository.getOneCheckExist(nodeId);
+            checkAllCanBeAttached(aipRepository.findAllById(aipIds), nodeId);
+            return null;
+        });
+        return inTransaction(() -> submitConnect(DaAipActionType.CONNECT_TO_NODE, aipIds,
+                                                 new ConnectParams(nodeId, null, null)));
+    }
+
+    /** Creates a unit of description per package and attaches the package there. */
+    public DaAipAction submitBulkCreateFromSelected(Integer nodeId, List<Integer> aipIds) {
+        inTransaction(() -> {
+            nodeRepository.getOneCheckExist(nodeId);
+            checkAllCanBeAttached(aipRepository.findAllById(aipIds), null);
+            return null;
+        });
+        return inTransaction(() -> submitConnect(DaAipActionType.CREATE_NODES, aipIds,
+                                                 new ConnectParams(nodeId, null, null)));
+    }
+
+    /** Builds the logical structure under an existing unit of description and attaches the packages. */
+    public DaAipAction submitBulkConnectLogicalStructure(Integer nodeId, List<Integer> aipIds, Integer levelViewId) {
+        return submitLogicalStructure(DaAipActionType.CONNECT_LOGICAL_STRUCTURE, nodeId, aipIds, levelViewId, false);
+    }
+
+    /** Creates a unit of description, builds the logical structure under it and attaches the packages. */
+    public DaAipAction submitBulkCreateFromSelectedToJP(Integer nodeId, List<Integer> aipIds, Integer levelViewId) {
+        return submitLogicalStructure(DaAipActionType.CREATE_NODES_AND_CONNECT, nodeId, aipIds, levelViewId, true);
+    }
+
+    /**
+     * The two actions that build a logical structure differ only in whether a unit of description is
+     * created for it first; what they then do to each AIP is the same.
+     */
+    private DaAipAction submitLogicalStructure(DaAipActionType actionType, Integer nodeId, List<Integer> aipIds,
+                                               Integer levelViewId, boolean createOwnNode) {
+        ConnectParams params = inTransaction(() -> {
+            ArrNode arrNode = nodeRepository.getOneCheckExist(nodeId);
+            checkAllCanBeAttached(aipRepository.findAllById(aipIds), null);
+
+            DaLevelView levelView = daLevelViewRepository.findById(levelViewId).orElseThrow(
+                    () -> new ObjectNotFoundException("Nebylo nalezeno level view s předaným ID. ID=" + levelViewId,
+                                                      BaseCode.ID_NOT_EXIST));
+            ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
+
+            ArrNode parent = createOwnNode ? createChildNode(arrNode, change) : arrNode;
+            int position = createOwnNode ? 1 : positionUnder(arrNode) + 1;
+            ArrNode nodeToConnect = arrNode;
+            for (DaLevelView child : levelView.getChildren()) {
+                nodeToConnect = createNextLevel(parent, change, position, child);
+            }
+            return new ConnectParams(nodeToConnect.getNodeId(), change.getChangeId(),
+                                     deepestLevelView(levelView).getLevelViewId());
+        });
+        return inTransaction(() -> submitConnect(actionType, aipIds, params));
+    }
+
+    private int positionUnder(ArrNode arrNode) {
+        Integer maxPosition = levelRepository.findMaxPositionUnderParent(arrNode);
+        return maxPosition == null ? 0 : maxPosition;
+    }
+
+    private static DaLevelView deepestLevelView(DaLevelView levelView) {
+        DaLevelView deepest = levelView;
+        while (deepest.getChildren() != null && !deepest.getChildren().isEmpty()) {
+            deepest = deepest.getChildren().get(0);
+        }
+        return deepest;
+    }
+
+    /**
+     * Carries out a connect action for one AIP. Called from the worker, one AIP per transaction.
+     */
+    @Transactional
+    public void connectOneAip(DaAipActionType actionType, Integer aipId, ConnectParams params) {
+        DaAip daAip = findAipById(aipId);
+        ArrNode arrNode = nodeRepository.getOneCheckExist(params.nodeId());
+        switch (actionType) {
+            case CONNECT_TO_NODE -> {
+                ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
+                linkToNode(daAip, null, arrNode, ArrDaoLink.LinkType.AIP, change);
+            }
+            case CREATE_NODES -> {
+                ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
+                ArrNode newNode = createChildNode(arrNode, change);
+                linkToNode(daAip, null, newNode, ArrDaoLink.LinkType.AIP, change);
+            }
+            case CONNECT_LOGICAL_STRUCTURE, CREATE_NODES_AND_CONNECT ->
+                    connectLogicalDaos(daAip, arrNode, params);
+            default -> throw new SystemException("Typ akce " + actionType + " není napojení",
+                                                 BaseCode.INVALID_STATE);
+        }
+    }
+
+    /** Attaches the logical entities of one AIP that belong to the level view of the action. */
+    private void connectLogicalDaos(DaAip daAip, ArrNode nodeToConnect, ConnectParams params) {
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, nodeToConnect);
+        DaLevelView levelViewToConnect = daLevelViewRepository.findById(params.levelViewId()).orElseThrow(
+                () -> new ObjectNotFoundException("Nebylo nalezeno level view s předaným ID. ID="
+                        + params.levelViewId(), BaseCode.ID_NOT_EXIST));
+
+        List<DaDao> daoList = daoRepository.findAllByLevelViewInAndDeleteChangeIsNull(
+                Collections.singletonList(levelViewToConnect));
+        for (DaDao daDao : daoList) {
+            for (DaDaoRelation relation : daoRelationRepository.findByParentDaoAndDeleteChangeIsNull(daDao)) {
+                DaDao dao = relation.getDao();
+                if (dao.getType().equals(DaDao.DaoType.LOGICAL) && dao.getAip().equals(daAip)) {
+                    linkToNode(daAip, dao, nodeToConnect, ArrDaoLink.LinkType.PART_AIP, change);
+                }
+            }
+        }
+    }
     private ArrNode createNextLevel(ArrNode arrNode, ArrChange change, int position, DaLevelView levelView) {
         ArrNode newNode = createChildNode(arrNode, change, position);
         for (DaLevelView child : levelView.getChildren()) {
             newNode = createNextLevel(newNode, change, 1, child);
         }
         return newNode;
-    }
-
-    @Transactional
-    public void bulkCreateFromSelected(Integer nodeId, List<Integer> daAipIdList) {
-        ArrNode arrNode = nodeRepository.getOneCheckExist(nodeId);
-        for (Integer daAipId : daAipIdList) {
-            DaAip daAip = findAipById(daAipId);
-            ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
-            ArrNode newNode = createChildNode(arrNode, change);
-            connectToJP(newNode.getNodeId(), daAip.getAipId());
-        }
     }
 
     /**

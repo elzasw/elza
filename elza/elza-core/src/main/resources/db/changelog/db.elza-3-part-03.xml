@@ -281,4 +281,13 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="20260830110000" author="ppy">
+        <!-- What an action was asked to do, beyond which AIPs it covers: the unit of description to
+             attach to and what to build under it. The steps of an action run long after the request
+             was answered, so what they need has to be recorded rather than held in memory. -->
+        <addColumn tableName="da_aip_action">
+            <column name="params" type="${type.text}"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>
