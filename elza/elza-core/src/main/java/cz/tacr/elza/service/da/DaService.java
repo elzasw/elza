@@ -78,6 +78,7 @@ import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DaoLevelViewService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.AsyncRequestService;
+import cz.tacr.elza.service.DaoLinkPolicy;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.da.vo.DaUploadRequestImpl;
@@ -253,6 +254,8 @@ public class DaService {
     private DaAipReferenceResolver referenceResolver;
     @Autowired
     private DaAipActionService actionService;
+    @Autowired
+    private DaoLinkPolicy daoLinkPolicy;
     @Autowired
     private AsyncRequestService asyncRequestService;
     @Autowired
@@ -1619,6 +1622,36 @@ public class DaService {
         return daConnector.ingestFileTransfer(digitalRepository, daUploadRequest);
     }
 
+    /**
+     * Attaches an AIP, or one part of it, to a unit of description.
+     *
+     * Every link the digital archive creates goes through here, so that "Vícenásobné napojení" is
+     * asked about once. What counts as "already attached" is the object being attached: a whole
+     * package is measured against the links of the package, one part against the links of that
+     * part, so attaching several parts of one AIP to the same unit of description stays possible.
+     *
+     * @return the link, existing when the object already hangs on this unit of description
+     */
+    private ArrDaLink linkToNode(DaAip daAip, @Nullable DaDao daDao, ArrNode arrNode,
+                                 ArrDaoLink.LinkType linkType, ArrChange change) {
+        List<ArrDaLink> liveLinks = daDao == null
+                ? daLinkRepository.findByAip_AipIdAndDaDaoIsNullAndDeleteChangeIsNull(daAip.getAipId())
+                : daLinkRepository.findByDaDaoInAndDeleteChangeIsNull(List.of(daDao));
+        Optional<ArrDaoLink> existing = daoLinkPolicy.checkCanLink(liveLinks, arrNode.getNodeId(),
+                                                                   daAip.getDigitalRepository());
+        if (existing.isPresent()) {
+            return (ArrDaLink) existing.get();
+        }
+
+        ArrDaLink arrDaoLink = new ArrDaLink();
+        arrDaoLink.setAip(daAip);
+        arrDaoLink.setNode(arrNode);
+        arrDaoLink.setDaDao(daDao);
+        arrDaoLink.setLinkType(linkType);
+        arrDaoLink.setCreateChange(change);
+        return daoLinkRepository.save(arrDaoLink);
+    }
+
     @Transactional
     public void createDaoLink(Integer aipId, Integer daoId, Integer nodeId, ArrDaoLink.LinkType linkType) {
         ArrNode node = nodeRepository.getOneCheckExist(nodeId);
@@ -1630,13 +1663,7 @@ public class DaService {
             daDao = findDaoById(daoId);
         }
 
-        ArrDaLink arrDaoLink = new ArrDaLink();
-        arrDaoLink.setNode(node);
-        arrDaoLink.setCreateChange(change);
-        arrDaoLink.setAip(aip);
-        arrDaoLink.setDaDao(daDao);
-        arrDaoLink.setLinkType(linkType);
-        daoLinkRepository.save(arrDaoLink);
+        linkToNode(aip, daDao, node, linkType, change);
     }
 
     @Transactional
@@ -1644,13 +1671,7 @@ public class DaService {
         ArrNode arrNode = nodeRepository.getOneCheckExist(nodeId);
         DaAip daAip = findAipById(daAipId);
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
-        ArrDaLink arrDaoLink = new ArrDaLink();
-        arrDaoLink.setAip(daAip);
-        arrDaoLink.setNode(arrNode);
-        arrDaoLink.setLinkType(ArrDaoLink.LinkType.AIP);
-        arrDaoLink.setCreateChange(change);
-        daoLinkRepository.save(arrDaoLink);
-        return arrDaoLink;
+        return linkToNode(daAip, null, arrNode, ArrDaoLink.LinkType.AIP, change);
     }
 
     @Transactional
@@ -1666,13 +1687,7 @@ public class DaService {
     @Transactional
     public void connectPartToJP(ArrNode arrNode,  DaAip daAip, DaDao daDao) {
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
-        ArrDaLink arrDaoLink = new ArrDaLink();
-        arrDaoLink.setAip(daAip);
-        arrDaoLink.setNode(arrNode);
-        arrDaoLink.setLinkType(ArrDaoLink.LinkType.PART_AIP);
-        arrDaoLink.setDaDao(daDao);
-        arrDaoLink.setCreateChange(change);
-        daoLinkRepository.save(arrDaoLink);
+        linkToNode(daAip, daDao, arrNode, ArrDaoLink.LinkType.PART_AIP, change);
     }
 
     @Transactional
@@ -1710,13 +1725,7 @@ public class DaService {
     @Transactional
     public void connectSelectedToJP(ArrNode arrNode, DaAip daAip, DaDao daDao) {
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
-        ArrDaLink arrDaoLink = new ArrDaLink();
-        arrDaoLink.setAip(daAip);
-        arrDaoLink.setNode(arrNode);
-        arrDaoLink.setLinkType(ArrDaoLink.LinkType.COMPONENT_AIP);
-        arrDaoLink.setDaDao(daDao);
-        arrDaoLink.setCreateChange(change);
-        daoLinkRepository.save(arrDaoLink);
+        linkToNode(daAip, daDao, arrNode, ArrDaoLink.LinkType.COMPONENT_AIP, change);
     }
 
     @Transactional
@@ -1733,15 +1742,7 @@ public class DaService {
     public void createAndLinkFromSelected(ArrNode arrNode, DaAip daAip, DaDao daDao) {
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
         ArrNode newNode = createChildNode(arrNode, change);
-        ArrDaLink arrDaoLink = new ArrDaLink();
-        arrDaoLink.setAip(daAip);
-        arrDaoLink.setNode(newNode);
-        arrDaoLink.setLinkType(ArrDaoLink.LinkType.PART_AIP);
-        arrDaoLink.setCreateChange(change);
-        if (daDao != null) {
-           arrDaoLink.setDaDao(daDao);
-        }
-        daoLinkRepository.save(arrDaoLink);
+        linkToNode(daAip, daDao, newNode, ArrDaoLink.LinkType.PART_AIP, change);
     }
 
     @Transactional
@@ -1750,12 +1751,7 @@ public class DaService {
         for (Integer daAipId : daAipIdList) {
             DaAip daAip = findAipById(daAipId);
             ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
-            ArrDaLink arrDaoLink = new ArrDaLink();
-            arrDaoLink.setAip(daAip);
-            arrDaoLink.setNode(arrNode);
-            arrDaoLink.setLinkType(ArrDaoLink.LinkType.AIP);
-            arrDaoLink.setCreateChange(change);
-            daoLinkRepository.save(arrDaoLink);
+            linkToNode(daAip, null, arrNode, ArrDaoLink.LinkType.AIP, change);
         }
     }
 
@@ -1787,14 +1783,7 @@ public class DaService {
                 for (DaDaoRelation daDaoRelation : daDaoRelationList) {
                     DaDao dao = daDaoRelation.getDao();
                     if (dao.getType().equals(DaDao.DaoType.LOGICAL) && dao.getAip().equals(daAip)) {
-                        ArrDaLink arrDaoLink = new ArrDaLink();
-                        arrDaoLink.setAip(daAip);
-                        arrDaoLink.setNode(nodeToConnect);
-                        arrDaoLink.setDaDao(dao);
-                        arrDaoLink.setLinkType(ArrDaoLink.LinkType.PART_AIP);
-                        arrDaoLink.setCreateChange(change);
-
-                        daoLinkRepository.save(arrDaoLink);
+                        linkToNode(daAip, dao, nodeToConnect, ArrDaoLink.LinkType.PART_AIP, change);
                     }
                 }
             }
@@ -1834,14 +1823,7 @@ public class DaService {
                 for (DaDaoRelation daDaoRelation : daDaoRelationList) {
                     DaDao dao = daDaoRelation.getDao();
                     if (dao.getType().equals(DaDao.DaoType.LOGICAL) && dao.getAip().equals(daAip)) {
-                        ArrDaLink arrDaoLink = new ArrDaLink();
-                        arrDaoLink.setAip(daAip);
-                        arrDaoLink.setNode(nodeToConnect);
-                        arrDaoLink.setDaDao(dao);
-                        arrDaoLink.setLinkType(ArrDaoLink.LinkType.PART_AIP);
-                        arrDaoLink.setCreateChange(change);
-
-                        daoLinkRepository.save(arrDaoLink);
+                        linkToNode(daAip, dao, nodeToConnect, ArrDaoLink.LinkType.PART_AIP, change);
                     }
                 }
 
