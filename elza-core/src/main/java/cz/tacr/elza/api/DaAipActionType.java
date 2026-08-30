@@ -35,7 +35,19 @@ public enum DaAipActionType {
     REMAP_REFERENCES(false),
 
     /** Send the AIP to the digital archive. */
-    EXPORT(true);
+    EXPORT(true),
+
+    /** Attach the whole package to an existing unit of description. */
+    CONNECT_TO_NODE(false),
+
+    /** Attach the logical structure of the package under an existing unit of description. */
+    CONNECT_LOGICAL_STRUCTURE(false),
+
+    /** Create a unit of description for the package and attach it there. */
+    CREATE_NODES(false),
+
+    /** Create a unit of description, build the logical structure under it and attach the package. */
+    CREATE_NODES_AND_CONNECT(false);
 
     private final boolean usesDigitalArchive;
 

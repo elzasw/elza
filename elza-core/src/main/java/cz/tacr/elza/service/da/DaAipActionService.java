@@ -77,8 +77,18 @@ public class DaAipActionService {
      */
     @Transactional
     public DaAipAction start(DaAipActionType actionType, Collection<DaAip> aips) {
+        return start(actionType, aips, null);
+    }
+
+    /**
+     * @param params what the steps need beyond the AIP itself, as JSON; null when the action type
+     *               needs nothing
+     */
+    @Transactional
+    public DaAipAction start(DaAipActionType actionType, Collection<DaAip> aips, @Nullable String params) {
         DaAipAction action = new DaAipAction();
         action.setActionType(actionType);
+        action.setParams(params);
         action.setUser(userService.getLoggedUser());
         action.setCreateDate(OffsetDateTime.now());
         actionRepository.save(action);

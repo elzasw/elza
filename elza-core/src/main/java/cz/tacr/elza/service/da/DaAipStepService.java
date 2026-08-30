@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.api.DaAipActionItemState;
 import cz.tacr.elza.api.DaAipActionType;
+import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.repository.DaAipActionItemRepository;
 
 /**
@@ -36,7 +37,8 @@ public class DaAipStepService {
      * What the step needs, read in a transaction of its own so nothing is held over from the
      * request that asked for it.
      */
-    private record StepInput(DaAipActionType actionType, Integer aipId) {
+    private record StepInput(DaAipActionType actionType, Integer aipId, String params,
+                             DaAipActionItemState state) {
     }
 
     /**
@@ -49,7 +51,8 @@ public class DaAipStepService {
             return null;
         }
         Object[] row = rows.get(0);
-        return new StepInput((DaAipActionType) row[0], (Integer) row[1]);
+        return new StepInput((DaAipActionType) row[0], (Integer) row[1], (String) row[2],
+                             (DaAipActionItemState) row[3]);
     }
 
     /**
@@ -62,12 +65,20 @@ public class DaAipStepService {
             logger.debug("Položka akce ID={} už neexistuje, krok se přeskakuje", actionItemId);
             return;
         }
+        if (input.state().isTerminal()) {
+            // The step has an outcome already - it was delivered twice, or picked up again after a
+            // restart. Doing the work again would attach the AIP a second time.
+            logger.debug("Položka akce ID={} je už dokončená, krok se přeskakuje", actionItemId);
+            return;
+        }
         AipOutcomeSink sink = actionService.sinkForItem(actionItemId, input.aipId());
         List<Integer> oneAip = List.of(input.aipId());
         switch (input.actionType()) {
             case DB_UPDATE -> daService.doCreateDaoStructure(oneAip, false, sink);
             case FORCE_UPDATE -> daService.doCreateDaoStructure(oneAip, true, sink);
             case REMAP_REFERENCES -> daService.remapReferences(oneAip, sink);
+            case CONNECT_TO_NODE, CREATE_NODES, CONNECT_LOGICAL_STRUCTURE, CREATE_NODES_AND_CONNECT ->
+                    connectOneAip(actionItemId, input);
             default -> {
                 // Only the work ELZA does on its own is carried out here; the rest is waiting for
                 // the digital archive and is finished by the synchronization queue.
@@ -76,6 +87,24 @@ public class DaAipStepService {
                                             "Typ akce nelze provést na pozadí.");
             }
         }
+    }
+
+    /**
+     * Attaches one AIP and records how it went.
+     *
+     * A refusal is an answer, not a defect - it is written with the words the rule used, rather
+     * than left to the worker, which describes anything reaching it as an unexpected failure. The
+     * transaction the attaching ran in is gone by then, so the outcome is written in its own.
+     */
+    private void connectOneAip(Integer actionItemId, StepInput input) {
+        try {
+            daService.connectOneAip(input.actionType(), input.aipId(),
+                                    daService.readConnectParams(input.params()));
+        } catch (BusinessException e) {
+            actionService.recordOutcome(actionItemId, DaAipActionItemState.ERROR, e.getMessage());
+            return;
+        }
+        actionService.recordOutcome(actionItemId, DaAipActionItemState.FINISHED, null);
     }
 
     /**

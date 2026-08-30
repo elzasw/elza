@@ -150,27 +150,27 @@ public class AipController implements AipsApi {
     }
 
     @Override
-    public ResponseEntity<Void> aipBulkConnectLogicToJp(Integer arrNodeId, List<Integer> daAipId, Integer daDaoId) {
-        daService.bulkConnectLogicalStructureToJP(arrNodeId, daAipId, daDaoId);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<DaAipActionVO> aipBulkConnectLogicToJp(Integer arrNodeId, List<Integer> daAipId, Integer daDaoId) {
+        return ResponseEntity.ok(clientFactoryVO.createAipAction(
+                daService.submitBulkConnectLogicalStructure(arrNodeId, daAipId, daDaoId)));
     }
 
     @Override
-    public ResponseEntity<Void> aipBulkConnectToJp(Integer arrNodeId, List<Integer> daAipIdList) {
-        daService.bulkConnectToJP(arrNodeId, daAipIdList);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<DaAipActionVO> aipBulkConnectToJp(Integer arrNodeId, List<Integer> daAipIdList) {
+        return ResponseEntity.ok(clientFactoryVO.createAipAction(
+                daService.submitBulkConnectToJP(arrNodeId, daAipIdList)));
     }
 
     @Override
-    public ResponseEntity<Void> aipBulkCreateFromSelected(Integer arrNodeId, List<Integer> daAipIdList) {
-        daService.bulkCreateFromSelected(arrNodeId, daAipIdList);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<DaAipActionVO> aipBulkCreateFromSelected(Integer arrNodeId, List<Integer> daAipIdList) {
+        return ResponseEntity.ok(clientFactoryVO.createAipAction(
+                daService.submitBulkCreateFromSelected(arrNodeId, daAipIdList)));
     }
 
     @Override
-    public ResponseEntity<Void> aipBulkCreateSelectedToJp(Integer arrNodeId, List<Integer> daAipIdList, Integer daLevelViewId) {
-        daService.bulkCreateFromSelectedToJP(arrNodeId, daAipIdList, daLevelViewId);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<DaAipActionVO> aipBulkCreateSelectedToJp(Integer arrNodeId, List<Integer> daAipIdList, Integer daLevelViewId) {
+        return ResponseEntity.ok(clientFactoryVO.createAipAction(
+                daService.submitBulkCreateFromSelectedToJP(arrNodeId, daAipIdList, daLevelViewId)));
     }
 
     /**

@@ -63,6 +63,14 @@ public class DaAipAction {
 
     // No orphanRemoval: items are never taken off an action, and it would make replacing the
     // collection on a managed action a flush-time failure.
+    /**
+     * What the action was asked to do, as JSON, for the parts of it that are not the AIP itself -
+     * the unit of description to attach to and what to build under it. The steps run long after the
+     * request was answered, so what they need has to be recorded rather than held.
+     */
+    @Column
+    private String params;
+
     @OneToMany(mappedBy = "aipAction", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<DaAipActionItem> items = new ArrayList<>();
 
@@ -104,6 +112,14 @@ public class DaAipAction {
 
     public void setFinishDate(OffsetDateTime finishDate) {
         this.finishDate = finishDate;
+    }
+
+    public String getParams() {
+        return params;
+    }
+
+    public void setParams(String params) {
+        this.params = params;
     }
 
     public List<DaAipActionItem> getItems() {

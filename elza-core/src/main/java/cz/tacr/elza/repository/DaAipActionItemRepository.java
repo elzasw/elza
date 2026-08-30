@@ -25,8 +25,8 @@ public interface DaAipActionItemRepository extends JpaRepository<DaAipActionItem
             + " WHERE i.aipAction.aipActionId = :actionId ORDER BY i.aipActionItemId")
     List<Object[]> findAipAndItemIds(@Param("actionId") Integer actionId);
 
-    /** Type of the action and the AIP of one item, without loading either of them. */
-    @Query("SELECT i.aipAction.actionType, i.aip.aipId FROM da_aip_action_item i"
-            + " WHERE i.aipActionItemId = :itemId")
+    /** What a step needs about its action and its AIP, without loading either of them. */
+    @Query("SELECT i.aipAction.actionType, i.aip.aipId, i.aipAction.params, i.state"
+            + " FROM da_aip_action_item i WHERE i.aipActionItemId = :itemId")
     List<Object[]> findActionTypeAndAip(@Param("itemId") Integer itemId);
 }

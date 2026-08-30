@@ -1126,7 +1126,11 @@ enum DaAipActionType {
     DB_UPDATE,
     FORCE_UPDATE,
     REMAP_REFERENCES,
-    EXPORT
+    EXPORT,
+    CONNECT_TO_NODE,
+    CONNECT_LOGICAL_STRUCTURE,
+    CREATE_NODES,
+    CREATE_NODES_AND_CONNECT
 }
 
 /**
@@ -5656,6 +5660,7 @@ namespace ElzaAPI.Aip {
       ) : {
           /** Dao link successfully created */
           @Http.statusCode statusCode: 200;
+          @body data: DaAipActionVO;
         } | {
           /** Failed to create dao link */
           @Http.statusCode statusCode: 500;
@@ -5674,6 +5679,7 @@ namespace ElzaAPI.Aip {
       ) : {
           /** Dao link successfully created */
           @Http.statusCode statusCode: 200;
+          @body data: DaAipActionVO;
         } | {
           /** Failed to create dao link */
           @Http.statusCode statusCode: 500;
@@ -5694,6 +5700,7 @@ namespace ElzaAPI.Aip {
       ) : {
           /** Dao link successfully created */
           @Http.statusCode statusCode: 200;
+          @body data: DaAipActionVO;
         } | {
           /** Failed to create dao link */
           @Http.statusCode statusCode: 500;
@@ -5714,6 +5721,7 @@ namespace ElzaAPI.Aip {
       ) : {
           /** Dao link successfully created */
           @Http.statusCode statusCode: 200;
+          @body data: DaAipActionVO;
         } | {
           /** Failed to create dao link */
           @Http.statusCode statusCode: 500;
