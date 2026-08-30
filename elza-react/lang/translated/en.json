@@ -797,6 +797,18 @@
     "defaultMessage": "Date range",
     "srcHash": "85gp67Bn_Cu_"
   },
+  "aip.connect.blocked": {
+    "defaultMessage": "{count, plural, one {# AIP is already linked} other {# AIPs are already linked}} and the repository does not allow multiple links. Linking cannot proceed.",
+    "srcHash": "Fs8R-o7g38Sv"
+  },
+  "aip.connect.hideDetail": {
+    "defaultMessage": "Hide list",
+    "srcHash": "kdw51VJ4fKgs"
+  },
+  "aip.connect.showDetail": {
+    "defaultMessage": "Show list",
+    "srcHash": "MYJ1K8DLdJht"
+  },
   "aip.detail.downloadPackage": {
     "defaultMessage": "Download package",
     "srcHash": "yf8e5gZ_YbcN"

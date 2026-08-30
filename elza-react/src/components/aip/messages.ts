@@ -217,3 +217,15 @@ export const actionItemStateMessages = defineMessages({
     [DaAipActionItemState.Error]:    { id: "aip.action.item.ERROR",    defaultMessage: "Chyba" },
     [DaAipActionItemState.Skipped]:  { id: "aip.action.item.SKIPPED",  defaultMessage: "Přeskočeno" },
 });
+
+/**
+ * Co brání napojení vybraných AIPů; zjišťuje se před potvrzením.
+ */
+export const connectCheckMessages = defineMessages({
+    blocked: {
+        id: "aip.connect.blocked",
+        defaultMessage: "{count, plural, one {# AIP je již napojen} few {# AIPy jsou již napojené} other {# AIPů je již napojených}} a úložiště neumožňuje více vazeb. Napojení nelze provést.",
+    },
+    showDetail: { id: "aip.connect.showDetail", defaultMessage: "Zobrazit seznam" },
+    hideDetail: { id: "aip.connect.hideDetail", defaultMessage: "Skrýt seznam" },
+});
