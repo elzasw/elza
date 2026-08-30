@@ -45,6 +45,27 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
                                                    @Param("type") RulItemType type,
                                                    @Param("specs") Collection<RulItemSpec> specs); // exclude: LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType
 
+    /**
+     * Open string items of the fund whose value is one of the given values (exact match).
+     */
+    @Query("SELECT i FROM arr_desc_item i JOIN FETCH i.node n, arr_data_string d"
+            + " WHERE d.dataId = i.data.dataId AND n.fund = :fund AND i.deleteChange IS NULL"
+            + " AND i.itemType = :type AND i.itemSpec = :spec AND d.stringValue IN :values")
+    List<ArrDescItem> findOpenByFundTypeSpecAndStringValues(@Param("fund") ArrFund fund,
+                                                            @Param("type") RulItemType type,
+                                                            @Param("spec") RulItemSpec spec,
+                                                            @Param("values") Collection<String> values);
+
+    /**
+     * Open string items without specification of the fund whose value is one of the given values (exact match).
+     */
+    @Query("SELECT i FROM arr_desc_item i JOIN FETCH i.node n, arr_data_string d"
+            + " WHERE d.dataId = i.data.dataId AND n.fund = :fund AND i.deleteChange IS NULL"
+            + " AND i.itemType = :type AND i.itemSpec IS NULL AND d.stringValue IN :values")
+    List<ArrDescItem> findOpenByFundTypeAndStringValues(@Param("fund") ArrFund fund,
+                                                        @Param("type") RulItemType type,
+                                                        @Param("values") Collection<String> values);
+
 	@Query("SELECT i FROM arr_desc_item i WHERE i.node in (?1) AND i.createChange < ?2 AND (i.deleteChange > ?2 OR i.deleteChange IS NULL)")
     List<ArrDescItem> findByNodesAndDeleteChange(Collection<ArrNode> nodes, ArrChange deleteChange);
 

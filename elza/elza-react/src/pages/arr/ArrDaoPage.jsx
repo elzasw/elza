@@ -9,7 +9,7 @@ import { connect } from 'react-redux';
 import ArrDaoPackages from '../../components/arr/ArrDaoPackages';
 import Ribbon from '../../components/page/Ribbon';
 import FundTreeDaos from '../../components/arr/FundTreeDaos';
-import ArrDaos from '../../components/arr/ArrDaos';
+import { ArrDaos } from '../../components/arr/ArrDaos';
 
 import { i18n, Icon, RibbonGroup, Tabs } from 'components/shared';
 import * as types from 'actions/constants/ActionTypes';
@@ -22,6 +22,14 @@ import { WebApi } from 'actions/index';
 import { urlFundDaos, getFundVersion } from "../../constants";
 import { FileSystemBrowser, extractRepoIdFromFullPath } from 'components/arr/daos';
 import { Api } from "api";
+import { defineMessages, injectIntl } from 'react-intl';
+
+const messages = defineMessages({
+    multipleLinksNotAllowed: {
+        id: 'arrDaoPage.link.multipleLinksNotAllowed',
+        defaultMessage: 'Položka je již připojena k jednotce popisu a repozitář neumožňuje více vazeb',
+    },
+});
 
 /**
  * Stránka archivních pomůcek.
@@ -44,6 +52,9 @@ class ArrDaoPage extends ArrParentPage {
         selectedDaoLeftFileId: null, // vybrané dao v levé části
         selectedDaoRight: null, // vybrané dao v pravé části
         selectedDaoRightFileId: null, // vybrané dao v pravé části
+        selectedFilePath: null, // vybraná položka souborového repozitáře
+        selectedFileItem: null, // data vybrané položky souborového repozitáře
+        selectedFileRepo: null, // souborový repozitář vybrané položky
         fsRefreshCounter: 0,
     };
 
@@ -261,8 +272,8 @@ class ArrDaoPage extends ArrParentPage {
     };
 
     renderFileSystemTree = (readMode) => {
-        const selectFileSystePath = (_item, fullPath) => {
-            this.setState({ selectedFilePath: fullPath });
+        const selectFileSystePath = (item, fullPath, repo) => {
+            this.setState({ selectedFilePath: fullPath, selectedFileItem: item, selectedFileRepo: repo });
         }
         const fund = this.getActiveFund(this.props);
 
@@ -292,26 +303,42 @@ class ArrDaoPage extends ArrParentPage {
     }
 
     renderCenterButtons = (readMode) => {
-        const { selectedDaoLeft, selectedFilePath, selectedTab } = this.state;
+        const { selectedDaoLeft, selectedFilePath, selectedFileItem, selectedFileRepo, selectedTab } = this.state;
         const fund = this.getActiveFund(this.props);
 
         if (selectedTab === "fileSystemTree") {
+            // Repozitář bez povolených více vazeb odmítne druhé napojení téže položky,
+            // proto se akce nabízí jen pro položku, která ještě není nikam připojena.
+            const alreadyLinked = selectedFileItem != null
+                && selectedFileItem.links != null
+                && selectedFileItem.links.length > 0;
+            const multipleLinksBlocked = alreadyLinked
+                && !(selectedFileRepo && selectedFileRepo.multipleLinks);
             const canLinkFile = selectedFilePath
                 && fund.fundTreeDaosRight.selectedId !== null
-                && !readMode;
+                && !readMode
+                && !multipleLinksBlocked;
             return (
-                <Button
-                    key="0"
-                    onClick={this.handleFileLink}
-                    disabled={!canLinkFile}
+                <span
+                    title={
+                        multipleLinksBlocked
+                            ? this.props.intl.formatMessage(messages.multipleLinksNotAllowed)
+                            : undefined
+                    }
                 >
-                    <Icon
-                        glyph="fa-thumb-tack"
-                    />
-                    <div>
-                        {i18n('arr.daos.link')}
-                    </div>
-                </Button>
+                    <Button
+                        key="0"
+                        onClick={this.handleFileLink}
+                        disabled={!canLinkFile}
+                    >
+                        <Icon
+                            glyph="fa-thumb-tack"
+                        />
+                        <div>
+                            {i18n('arr.daos.link')}
+                        </div>
+                    </Button>
+                </span>
             )
         }
 
@@ -459,4 +486,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps)(ArrDaoPage);
+export default connect(mapStateToProps)(injectIntl(ArrDaoPage));

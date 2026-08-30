@@ -22,7 +22,9 @@ import {
  * The two enumerated columns are kept apart because they offer different constants,
  * not because the server treats them differently.
  */
-export type AipValueType = "text" | "number" | "bool" | "date" | "ref" | "importState" | "exportState";
+export type AipValueType =
+    | "text" | "number" | "bool" | "date" | "ref" | "importState" | "exportState" | "problemType"
+    | "linkState";
 
 /**
  * Comparison offered for a column. A subset of the shared contract - the AIP list
@@ -30,6 +32,7 @@ export type AipValueType = "text" | "number" | "bool" | "date" | "ref" | "import
  */
 export type AipOperation =
     | typeof OperationTextType.Eq
+    | typeof OperationEqualityType.Neq
     | typeof OperationTextType.Contains
     | typeof OperationTextType.NotContains
     | typeof OperationNumberType.Between
@@ -45,11 +48,13 @@ export type AipOperation =
 export const OPERATIONS: Record<AipValueType, AipOperation[]> = {
     text: ["CONTAINS", "NOT_CONTAINS", "EQ", "IS_NULL", "NOT_NULL"],
     number: ["BETWEEN", "EQ", "IS_NULL", "NOT_NULL"],
-    bool: ["EQ", "IS_NULL", "NOT_NULL"],
+    bool: ["EQ", "NEQ", "IS_NULL", "NOT_NULL"],
     date: ["BETWEEN", "IS_NULL", "NOT_NULL"],
-    ref: ["EQ", "IS_NULL", "NOT_NULL"],
-    importState: ["EQ", "IS_NULL", "NOT_NULL"],
-    exportState: ["EQ", "IS_NULL", "NOT_NULL"],
+    ref: ["EQ", "NEQ", "IS_NULL", "NOT_NULL"],
+    importState: ["EQ", "NEQ", "IS_NULL", "NOT_NULL"],
+    exportState: ["EQ", "NEQ", "IS_NULL", "NOT_NULL"],
+    problemType: ["EQ", "NEQ", "IS_NULL", "NOT_NULL"],
+    linkState: ["EQ", "NEQ"],
 };
 
 /** Comparisons that need no value at all. */
@@ -146,7 +151,9 @@ export const buildFilter = (
             return filter;
         }
         case "importState":
-        case "exportState": {
+        case "exportState":
+        case "problemType":
+        case "linkState": {
             const filter: EnumValueFilter = {
                 filterType: FilterType.EnumValue,
                 field,

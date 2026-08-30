@@ -94,4 +94,228 @@
         </sql>
     </changeSet>
 
+    <changeSet id="20260828100000" author="ppy">
+        <!-- Download settings of a DA repository. download_method selects how AIP
+             batches are fetched (STANDARD = HTTP GET per the DA OpenAPI, FILE_TRANSFER
+             = File Transfer protocol); on_received selects the automatic action when
+             the DA reports a newly received AIP (NONE, DOWNLOAD_METADATA). Both apply
+             to DA repositories only, other types keep the defaults. -->
+        <addColumn tableName="arr_digital_repository">
+            <column name="download_method" type="varchar(50)" defaultValue="STANDARD">
+                <constraints nullable="false"/>
+            </column>
+            <column name="on_received" type="varchar(50)" defaultValue="NONE">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260828140000" author="ppy">
+        <!-- Interval of the synchronization with a DA repository, in seconds; 0 = the
+             repository is not synchronized. Replaces the elza.da.sync configuration, so the
+             value is administered per repository instead of per deployment. Existing
+             repositories start at the default of 5 minutes; a deployment that used a
+             different interval sets it again in the administration. -->
+        <addColumn tableName="arr_digital_repository">
+            <column name="sync_delay" type="int" defaultValueNumeric="300">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260828160000" author="ppy">
+        <!-- Problem state of an AIP: what prevents it from being processed or from being
+             mapped onto the archival description (metadata processing failure, unresolved
+             fund, unresolved institution). Replaces the metadata_error flag as the value the
+             user filters and reads; the flag itself stays as the raw processing outcome the
+             state is derived from. Existing failures are carried over. -->
+        <addColumn tableName="da_aip_state">
+            <column name="problem_type" type="nvarchar(50)"/>
+            <column name="problem_description" type="${type.text}"/>
+        </addColumn>
+        <sql dbms="postgresql">
+            UPDATE da_aip_state
+               SET problem_type = 'METADATA_ERROR',
+                   problem_description = CASE
+                       WHEN metadata_error_exception IS NULL THEN NULL
+                       ELSE 'Chyba při zpracování metadat: ' || metadata_error_exception
+                   END
+             WHERE delete_change_id IS NULL AND metadata_error IS TRUE;
+
+            UPDATE da_aip_state
+               SET problem_type = 'UNKNOWN_FUND',
+                   problem_description = 'Fond nebyl nalezen podle čísla fondu ani podle interního kódu.'
+             WHERE delete_change_id IS NULL AND metadata_error IS NOT TRUE AND fund_id IS NULL;
+
+            UPDATE da_aip_state
+               SET problem_type = 'UNKNOWN_INSTITUTION',
+                   problem_description = 'Instituce nebyla nalezena.'
+             WHERE delete_change_id IS NULL AND metadata_error IS NOT TRUE
+               AND fund_id IS NOT NULL AND institution_id IS NULL;
+        </sql>
+    </changeSet>
+
+    <changeSet id="20260829090000" author="ppy">
+        <!-- One description of the problem of an AIP, whatever kind of problem it is. The type
+             in problem_type is what tells the kinds apart, so the columns describing a problem
+             are the same for all of them: problem_description is what the user reads,
+             problem_detail the chain of causes for the diagnostics and problem_file the file
+             of the package the problem is about. This replaces the columns that could only
+             describe a failure of the metadata processing - the flag is the type, and the
+             exception message was both the description and the detail. Existing failures keep
+             their detail and are described again by the next processing of the AIP. -->
+        <addColumn tableName="da_aip_state">
+            <column name="problem_detail" type="${type.text}"/>
+            <column name="problem_file" type="${type.text}"/>
+        </addColumn>
+        <sql>
+            UPDATE da_aip_state
+               SET problem_detail = metadata_error_exception
+             WHERE metadata_error IS TRUE AND metadata_error_exception IS NOT NULL;
+        </sql>
+        <dropColumn tableName="da_aip_state" columnName="metadata_error"/>
+        <dropColumn tableName="da_aip_state" columnName="metadata_error_exception"/>
+    </changeSet>
+
+    <changeSet id="20260830090000" author="ppy">
+        <!-- Columns holding a value of an enumeration are declared as nvarchar in the rest of
+             the schema; download_method and on_received were declared as varchar. -->
+        <modifyDataType tableName="arr_digital_repository" columnName="download_method" newDataType="nvarchar(50)"/>
+        <modifyDataType tableName="arr_digital_repository" columnName="on_received" newDataType="nvarchar(50)"/>
+    </changeSet>
+
+    <changeSet id="20260830100000" author="ppy">
+        <!-- Outcome of a queue item: when its state last changed and, for the error states,
+             why. Without them a failed item is a dead end - the reason only ever reached the
+             log, so the user saw "Chyba stažení" with no way to learn what went wrong. Mirrors
+             ext_syncs_queue_item, which describes its states the same way. -->
+        <addColumn tableName="da_sync_queue_item">
+            <column name="date" type="timestamp with time zone"/>
+            <column name="state_message" type="${type.text}"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260829100000" author="ppy">
+        <!-- Actions requested over AIPs, so that an action has an outcome the user can be shown.
+             Recorded per AIP, because that is the granularity at which an action succeeds or
+             fails - one AIP of a selection can be rebuilt while the next one has nothing to
+             rebuild from. The progress of an action is derived from its items and is deliberately
+             not stored: items are finished independently and, once the actions run in parallel,
+             on different threads, where counters would have to be updated concurrently. -->
+        <createTable tableName="da_aip_action">
+            <column name="aip_action_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_da_aip_action" nullable="false"/>
+            </column>
+            <column name="action_type" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <!-- null for an action nobody asked for, started by the synchronization -->
+            <column name="user_id" type="int">
+                <constraints foreignKeyName="fk_da_aip_action_usr_user"
+                             referencedTableName="usr_user"
+                             referencedColumnNames="user_id"/>
+            </column>
+            <column name="create_date" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="finish_date" type="timestamp with time zone"/>
+        </createTable>
+
+        <createTable tableName="da_aip_action_item">
+            <column name="aip_action_item_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_da_aip_action_item" nullable="false"/>
+            </column>
+            <column name="aip_action_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_da_aip_action_item_action"
+                             referencedTableName="da_aip_action"
+                             referencedColumnNames="aip_action_id"/>
+            </column>
+            <column name="aip_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_da_aip_action_item_da_aip"
+                             referencedTableName="da_aip"
+                             referencedColumnNames="aip_id"/>
+            </column>
+            <column name="state" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <!-- what happened to this AIP, in the words the user reads -->
+            <column name="message" type="${type.text}"/>
+            <column name="finish_date" type="timestamp with time zone"/>
+        </createTable>
+        <createIndex tableName="da_aip_action_item" indexName="ix_da_aip_action_item_action">
+            <column name="aip_action_id"/>
+        </createIndex>
+
+        <!-- The queue item carries the action item it is carrying out, so an action finished by
+             the digital archive is reported the same way as one ELZA finishes on its own. -->
+        <addColumn tableName="da_sync_queue_item">
+            <column name="aip_action_item_id" type="int">
+                <constraints foreignKeyName="fk_da_sync_queue_item_action_item"
+                             referencedTableName="da_aip_action_item"
+                             referencedColumnNames="aip_action_item_id"/>
+            </column>
+        </addColumn>
+
+        <insert tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="da_aip_action|aip_action_id"/>
+            <column name="next_val" value="0"/>
+        </insert>
+        <insert tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="da_aip_action_item|aip_action_item_id"/>
+            <column name="next_val" value="0"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="20260829140000" author="ppy">
+        <!-- A step of an action over AIPs waiting in the asynchronous queue. It carries no fund
+             version, unlike the other kinds of request: an AIP whose fund has not been resolved
+             belongs to none, and an action is often run over exactly such an AIP. -->
+        <addColumn tableName="arr_async_request">
+            <column name="aip_action_item_id" type="int">
+                <constraints foreignKeyName="fk_arr_async_request_aip_action_item"
+                             referencedTableName="da_aip_action_item"
+                             referencedColumnNames="aip_action_item_id"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260830110000" author="ppy">
+        <!-- What an action was asked to do, beyond which AIPs it covers: the unit of description to
+             attach to and what to build under it. The steps of an action run long after the request
+             was answered, so what they need has to be recorded rather than held in memory. -->
+        <addColumn tableName="da_aip_action">
+            <column name="params" type="${type.text}"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260831100000" author="ppy">
+        <!-- How much of an AIP hangs on the archival description. Kept here rather than worked out
+             when the list is read: a link to the package as a whole, or to a level of its logical
+             structure, attaches the files under it too, so the answer depends on what the links
+             reach and not on which link rows exist. -->
+        <addColumn tableName="da_aip_state">
+            <column name="link_state" type="nvarchar(50)"/>
+        </addColumn>
+
+        <!-- The links of the digital archive are dropped and every AIP starts as unattached. They
+             were made before the repository setting was honoured, so some of them break the rule it
+             now enforces, and no deployment holds any that are worth keeping.
+
+             arr_da_link is the subtype table and arr_dao_link the base one, so the subtype rows go
+             first; the base rows are then those no subtype claims any more. -->
+        <sql>
+            DELETE FROM arr_da_link;
+        </sql>
+        <sql>
+            DELETE FROM arr_dao_link
+             WHERE dao_link_id NOT IN (SELECT dao_link_id FROM arr_legacy_dao_link)
+               AND dao_link_id NOT IN (SELECT dao_link_id FROM arr_fs_link);
+        </sql>
+        <sql>
+            UPDATE da_aip_state SET link_state = 'NOT_LINKED';
+        </sql>
+    </changeSet>
+
 </databaseChangeLog>

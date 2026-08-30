@@ -12,6 +12,10 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
 import java.time.LocalDateTime;
+import cz.tacr.elza.api.AipLinkState;
+import cz.tacr.elza.api.AipProblemType;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 
 @Entity(name = "da_aip_state")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "preferredPart", "lastUpdate"})
@@ -85,14 +89,74 @@ public class DaAipState {
     @Column
     private Boolean completeAipLoad;
 
-    @Column
-    private Boolean metadataError;
+    /**
+     * What is wrong with the AIP - the most severe problem detected, null when there is none.
+     * The three columns below describe the problem this one names; they are empty together
+     * with it.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(length = 50)
+    private AipProblemType problemType;
 
+    /**
+     * The problem in the words the user reads.
+     */
     @Column
-    private String metadataErrorException;
+    private String problemDescription;
+
+    /**
+     * Technical detail of the problem - the chain of causes from the failure towards its root.
+     * Not shown to the user, it serves the diagnostics; empty for a problem derived from the
+     * state of the AIP, which has no failure behind it.
+     */
+    @Column
+    private String problemDetail;
+
+    /**
+     * Path of the file inside the package the problem is about, so the user can go straight to
+     * it in the package browser; empty when the problem is not about a single file.
+     */
+    @Column
+    private String problemFile;
 
     @Column(length = 250)
     private String aipVersionMetadata;
+
+    /**
+     * How much of the AIP hangs on the archival description.
+     *
+     * Worked out when the links or the content of the package change and kept here, because it
+     * depends on what the links reach and cannot be read off the link rows alone. It describes the
+     * AIP for the user; nothing decides anything by it - whether a link may be created is answered
+     * against the live links every time.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(length = 50)
+    private AipLinkState linkState = AipLinkState.NOT_LINKED;
+
+    public AipLinkState getLinkState() {
+        return linkState;
+    }
+
+    public void setLinkState(AipLinkState linkState) {
+        this.linkState = linkState;
+    }
+
+    public AipProblemType getProblemType() {
+        return problemType;
+    }
+
+    public void setProblemType(AipProblemType problemType) {
+        this.problemType = problemType;
+    }
+
+    public String getProblemDescription() {
+        return problemDescription;
+    }
+
+    public void setProblemDescription(String problemDescription) {
+        this.problemDescription = problemDescription;
+    }
 
     public Integer getAipStateId() {
         return aipStateId;
@@ -254,20 +318,20 @@ public class DaAipState {
         this.completeAipLoad = completeAipLoad;
     }
 
-    public Boolean getMetadataError() {
-        return metadataError;
+    public String getProblemDetail() {
+        return problemDetail;
     }
 
-    public void setMetadataError(Boolean metadataError) {
-        this.metadataError = metadataError;
+    public void setProblemDetail(String problemDetail) {
+        this.problemDetail = problemDetail;
     }
 
-    public String getMetadataErrorException() {
-        return metadataErrorException;
+    public String getProblemFile() {
+        return problemFile;
     }
 
-    public void setMetadataErrorException(String metadataErrorException) {
-        this.metadataErrorException = metadataErrorException;
+    public void setProblemFile(String problemFile) {
+        this.problemFile = problemFile;
     }
 
     public String getAipVersionMetadata() {

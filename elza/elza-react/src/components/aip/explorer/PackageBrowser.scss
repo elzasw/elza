@@ -1,0 +1,140 @@
+@import "../../../variables.scss";
+
+.package-browser {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    height: 100%;
+
+    .package-browser-body {
+        display: flex;
+        gap: 1rem;
+        align-items: stretch;
+        flex: 1 1 auto;
+        min-height: 0;
+    }
+
+    .package-tree-pane {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        height: 100%;
+    }
+
+    .package-tree-header {
+        padding-bottom: 0.5rem;
+    }
+
+    .package-tree {
+        flex: 1 1 auto;
+        overflow: auto;
+    }
+
+    .package-entries {
+        flex: 0 0 22rem;
+        overflow: auto;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        border-right: 1px solid $shade-3;
+
+        .entry {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            width: 100%;
+            border: none;
+            background: none;
+            text-align: left;
+            padding: 2px 8px;
+
+            &:hover {
+                background-color: $shade-1;
+            }
+
+            &.selected {
+                background-color: $shade-2;
+            }
+        }
+
+        .entry-size {
+            color: $shade-6;
+            white-space: nowrap;
+        }
+    }
+
+    .package-preview {
+        flex: 1 1 auto;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .package-preview-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        padding-bottom: 0.5rem;
+        font-weight: bold;
+    }
+
+    .package-preview-content {
+        flex: 1 1 auto;
+        overflow: auto;
+        margin: 0;
+        padding: 0.5rem;
+        background-color: $shade-1;
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+}
+
+.package-browser-message {
+    padding: 1rem;
+    color: $shade-6;
+}
+
+/**
+ * Popis problému nad obsahem balíčku. Zprávy jsou celé věty a nesou názvy elementů,
+ * jmenné prostory a cesty, takže se text zalamuje i uvnitř dlouhých slov.
+ */
+.package-problem {
+    flex: 0 0 auto;
+    margin-bottom: 0.75rem;
+    padding: 0.75rem;
+    border: 1px solid $color-warn;
+    border-radius: 3px;
+    background-color: $shade-1;
+
+    .package-problem-title {
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
+        font-weight: bold;
+        color: $color-warn;
+    }
+
+    .package-problem-description {
+        margin: 0.25rem 0 0;
+        overflow-wrap: anywhere;
+    }
+
+    .package-problem-files {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 0.5rem;
+        margin: 0.5rem 0 0;
+        color: $shade-6;
+    }
+
+    .package-problem-file {
+        border: none;
+        background: none;
+        padding: 0;
+        color: $color-blue;
+        text-decoration: underline;
+        overflow-wrap: anywhere;
+    }
+}

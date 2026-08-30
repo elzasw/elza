@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -49,6 +50,7 @@ import cz.tacr.elza.exception.DeleteException;
 import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.DigitizationCode;
 import cz.tacr.elza.repository.ArrDaLinkRepository;
 import cz.tacr.elza.repository.ArrFsLinkRepository;
@@ -63,6 +65,7 @@ import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.service.DaoSyncService.DaoDesctItemProvider;
 import cz.tacr.elza.service.FundLevelService.AddLevelDirection;
 import cz.tacr.elza.service.dao.DaoServiceInternal;
+import cz.tacr.elza.service.da.DaAipLinkStateResolver;
 import cz.tacr.elza.service.dao.FileSystemRepoBrowser;
 import cz.tacr.elza.service.dao.FileSystemRepoService;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
@@ -110,6 +113,10 @@ public class DaoService {
 
     @Autowired
     private ArrFsLinkRepository fsLinkRepository;
+    @Autowired
+    private DaoLinkPolicy daoLinkPolicy;
+    @Autowired
+    private DaAipLinkStateResolver linkStateResolver;
 
     @Autowired
     private EventNotificationService eventNotificationService;
@@ -273,7 +280,7 @@ public class DaoService {
             if (!Boolean.TRUE.equals(repos.getMultipleLinks())) {
                 throw new BusinessException(
                         "DAO je již připojeno k jiné jednotce popisu; opakované napojení není povoleno.",
-                        ArrangementCode.INVALID_DAO).level(Level.WARNING);
+                        ArrangementCode.DAO_ALREADY_LINKED).level(Level.WARNING);
             }
         }
 
@@ -403,6 +410,9 @@ public class DaoService {
         } else {
             // fs a da vazby: událost nese id vazby, externí notifikace se neposílají
             publishEvent(EventType.DAO_LINK_DELETE, fundVersion, daoLink.getDaoLinkId(), daoLink.getNode());
+        }
+        if (daoLink instanceof ArrDaLink daLink) {
+            linkStateResolver.refreshFor(daLink.getAip());
         }
 
         return resultDaoLink;
@@ -738,19 +748,9 @@ public class DaoService {
                 ? fsLinkRepository.findByDigitalRepositoryAndPathIsNullAndDeleteChangeIsNull(digiRepo)
                 : fsLinkRepository.findByDigitalRepositoryAndPathAndDeleteChangeIsNull(digiRepo, path);
 
-        // existující vazba na stejný node → idempotentně vrátit
-        for (ArrFsLink link : existing) {
-            if (link.getNodeId().equals(node.getNodeId())) {
-                return link;
-            }
-        }
-
-        // zákaz více vazeb podle nastavení repository
-        if (!existing.isEmpty() && !Boolean.TRUE.equals(digiRepo.getMultipleLinks())) {
-            throw new BusinessException(
-                    "Položka souborového repozitáře je již připojena k jiné jednotce popisu;"
-                            + " opakované napojení není povoleno.",
-                    ArrangementCode.INVALID_DAO).level(Level.WARNING);
+        Optional<ArrDaoLink> alreadyLinked = daoLinkPolicy.checkCanLink(existing, node.getNodeId(), digiRepo);
+        if (alreadyLinked.isPresent()) {
+            return (ArrFsLink) alreadyLinked.get();
         }
 
         ArrChange createChange = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, node);
@@ -784,10 +784,10 @@ public class DaoService {
                                    ArrNode newNode) {
         ArrFsLink oldLink = fsLinkRepository.findById(oldDaoLinkId)
                 .orElseThrow(() -> new BusinessException(
-                        "FS dao-link not found: " + oldDaoLinkId, ArrangementCode.INVALID_DAO));
+                        "FS dao-link not found: " + oldDaoLinkId, ArrangementCode.DAO_LINK_NOT_FOUND));
         if (oldLink.getDeleteChange() != null) {
             throw new BusinessException(
-                    "FS dao-link already deleted: " + oldDaoLinkId, ArrangementCode.INVALID_DAO);
+                    "FS dao-link already deleted: " + oldDaoLinkId, ArrangementCode.DAO_LINK_NOT_FOUND);
         }
         if (oldLink.getNodeId().equals(newNode.getNodeId())) {
             return oldLink;
@@ -1209,16 +1209,16 @@ public class DaoService {
     public DaoViewRequestVO getDaoViewRequestInfo(Integer id) {
         DaDao dao = daDaoRepository.findById(id).orElse(null);
         if(dao == null) {
-            throw new BusinessException("Nepodařilo se najít DaDao s id: " + id, ArrangementCode.INVALID_DAO);
+            throw new BusinessException("Nepodařilo se najít DaDao s id: " + id, ArrangementCode.DATA_NOT_FOUND);
         }
         DaoViewRequestVO request = new DaoViewRequestVO();
         if(dao.getAip() == null) {
-            throw new BusinessException("Pro DaDao s id " + id + " neexistuje AIP", ArrangementCode.INVALID_DAO);
+            throw new BusinessException("Pro DaDao s id " + id + " neexistuje AIP", BaseCode.INVALID_STATE);
         }
         request.setDaoId(dao.getAip().getCode());
         request.setEntityRef(dao.getCode());
         if(dao.getAip().getDigitalRepository() == null) {
-            throw new BusinessException("Pro AIP s id " + dao.getAip().getAipId() + " neexistuje digital repository", ArrangementCode.INVALID_DAO);
+            throw new BusinessException("Pro AIP s id " + dao.getAip().getAipId() + " neexistuje digital repository", BaseCode.INVALID_STATE);
         }
         request.setViewUrl(dao.getAip().getDigitalRepository().getViewFileUrl());
         return request;

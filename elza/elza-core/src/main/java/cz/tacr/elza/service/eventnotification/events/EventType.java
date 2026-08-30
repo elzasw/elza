@@ -78,6 +78,9 @@ public enum EventType {
 
     INSTITUTION_CHANGE(ActionEvent.class),
 
+    IMPORT_FUND_COMPLETED(EventFundImport.class),
+    IMPORT_FUND_FAILED(EventFundImport.class),    
+
     VISIBLE_POLICY_CHANGE(EventVisiblePolicy.class),
 
     CONFORMITY_INFO(EventIdsInVersion.class),

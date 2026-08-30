@@ -151,6 +151,33 @@ model ImportFundData {
 }
 
 /**
+ * Status of the async import CSV file
+ */
+enum ImportJobState {
+    RUNNING,
+    COMPLETED,
+    FAILED,
+}
+
+/**
+ * Complete status of async import
+ */
+model ImportJobStatus {
+    /** Job ID */
+    jobId: string;
+    /** Fund ID */
+    fundId: int32;
+    /** Сurrent status */
+    state: ImportJobState;
+    /** Error message */
+    error?: string;
+    /** Started At */
+    startedAt: utcDateTime;
+    /** Finished At */
+    finishedAt?: utcDateTime;
+}
+
+/**
  * Změny archivního souboru
  */
 model UpdateFund {
@@ -1088,6 +1115,110 @@ model Scope extends BaseCode {
 }
 
 /**
+ * Typ akce vyžádané nad AIPy
+ */
+enum DaAipActionType {
+    LOAD_METADATA,
+    DELETE_METADATA,
+    LOAD_COMPLETE_AIP,
+    DELETE_COMPLETE_AIP,
+    DOWNLOAD_UPDATE,
+    DB_UPDATE,
+    FORCE_UPDATE,
+    REMAP_REFERENCES,
+    EXPORT,
+    CONNECT_TO_NODE,
+    CONNECT_LOGICAL_STRUCTURE,
+    CREATE_NODES,
+    CREATE_NODES_AND_CONNECT
+}
+
+/**
+ * Stav akce nad AIPy; odvozený ze stavů jednotlivých položek
+ */
+enum DaAipActionState {
+    WAITING,
+    RUNNING,
+    FINISHED,
+    ERROR
+}
+
+/**
+ * Jak akce dopadla u jednoho AIPu
+ */
+enum DaAipActionItemState {
+    WAITING,
+    RUNNING,
+    FINISHED,
+    ERROR,
+
+    /** Akci nebylo možné na AIP použít; důvod je v popisu položky */
+    SKIPPED
+}
+
+/**
+ * Jak akce dopadla u jednoho AIPu
+ */
+model DaAipActionItemVO {
+    /** ID AIPu */
+    aipId: integer;
+    /** Kód AIPu */
+    aipCode?: string;
+    /** Stav položky */
+    state: DaAipActionItemState;
+    /** Co se s AIPem stalo; vyplněno u výsledků, které nic nezměnily */
+    message?: string;
+    /** Kdy byla položka dokončena */
+    finishDate?: utcDateTime;
+}
+
+/**
+ * AIP, který nelze napojit, i s důvodem
+ */
+model AipConnectBlockedVO {
+    /** ID AIPu */
+    aipId: integer;
+    /** Kód AIPu */
+    aipCode?: string;
+    /** Proč napojení není možné */
+    reason: string;
+}
+
+/**
+ * Co brání napojení vybraných AIPů.
+ *
+ * Zjišťuje se předem, aby uživatel věděl, do čeho jde; samotné napojení pak takový AIP
+ * odmítne, takže se odpověď a skutečné chování nemohou rozejít.
+ */
+model AipConnectCheckVO {
+    /** Počet AIPů, kterých se dotaz týkal */
+    total: integer;
+    /** AIPy, které napojit nelze */
+    blocked: AipConnectBlockedVO[];
+}
+
+/**
+ * Akce vyžádaná nad sadou AIPů a její výsledek po jednotlivých AIPech.
+ *
+ * Akce je zaznamenaná bez ohledu na to, jak se provádí - jestli ji ELZA vyřídí sama,
+ * nebo se na ni čeká z digitálního archivu.
+ */
+model DaAipActionVO {
+    /** ID akce */
+    id: integer;
+    /** Typ akce */
+    actionType: DaAipActionType;
+    /** Stav akce odvozený z jejích položek */
+    state: DaAipActionState;
+    /** Kdy byla akce vyžádána */
+    createDate: utcDateTime;
+    /** Kdy byla dokončena poslední položka akce */
+    finishDate?: utcDateTime;
+    /** Výsledek akce po jednotlivých AIPech */
+    items: DaAipActionItemVO[];
+}
+
+/**
  * Výčet stavů aktualizace AIPu
  */
 enum QueueItemState {
@@ -1137,6 +1268,60 @@ model LinkedNodeVO {
 }
 
 /**
+ * Problém, který brání zpracování AIPu nebo jeho navázání na archivní popis
+ */
+enum AipProblemType {
+    /**
+     * Metadatový balíček se nepodařilo zpracovat
+     */
+    METADATA_ERROR,
+    /**
+     * Fond AIPu nebyl v ELZA nalezen, AIP nelze navázat na archivní popis
+     */
+    UNKNOWN_FUND,
+    /**
+     * Instituce AIPu nebyla v ELZA nalezena
+     */
+    UNKNOWN_INSTITUTION
+}
+
+/**
+ * Jak velká část AIPu je napojená na archivní popis.
+ *
+ * Napojit lze celý balíček, úroveň jeho logické struktury i jednotlivý soubor, a napojení
+ * něčeho, co soubory obsahuje, napojuje i je. Kolik z balíčku je napojeno tedy závisí na tom,
+ * kam napojení dosáhnou, a zjišťuje se při jejich změně - ne až při čtení seznamu.
+ */
+enum AipLinkState {
+    /**
+     * Z AIPu není napojeno nic
+     */
+    NOT_LINKED,
+    /**
+     * Část souborů AIPu je napojená, zbytek ne
+     */
+    PARTIALLY_LINKED,
+    /**
+     * Napojený je celý balíček, ať přímo nebo tím, že je napojeno vše, co obsahuje
+     */
+    FULLY_LINKED
+}
+
+/**
+ * Položka staženého balíčku AIPu
+ */
+model AipPackageEntry {
+    /**
+     * Cesta položky uvnitř balíčku
+     */
+    path: string;
+    /**
+     * Velikost položky v bytech
+     */
+    size: int64;
+}
+
+/**
  * Vo pro detail AIPu
  */
 model AipDetailVO {
@@ -1155,87 +1340,111 @@ model AipDetailVO {
     /**
      * Verze AIPu
      */
-    aipVersion: string;
+    aipVersion?: string;
     /**
      * Archivní soubor
      */
-    fund: ArrFundGen;
+    fund?: ArrFundGen;
     /**
      * Kód archivního souboru
      */
-    fundCode: string;
+    fundCode?: string;
     /**
      * Instituce
      */
-    institution: ParInstitutionGen;
+    institution?: ParInstitutionGen;
     /**
      * Instituce původce
      */
-    originatorInstitution: ParInstitutionGen;
+    originatorInstitution?: ParInstitutionGen;
     /**
      * Původce
      */
-    originator: string;
+    originator?: string;
     /**
      * Datace od
      */
-    unitdateFrom: string;
+    unitdateFrom?: string;
     /**
      * Datace do
      */
-    unitdateTo: string;
+    unitdateTo?: string;
     /**
      * Kód instituce
      */
-    institutionCode: string;
+    institutionCode?: string;
     /**
      * Číslo příjemky
      */
-    ingestionCode: string;
+    ingestionCode?: string;
     /**
      * Číslo jednací příjemky ve spisovce
      */
-    referenceNumber: string;
+    referenceNumber?: string;
     /**
      * Identifikátor vnější změny NAD v PEvA
      */
-    nadChangeCode: string;
+    nadChangeCode?: string;
     /**
      * Velikost AIPu v bytech
      */
-    aipSize: integer;
+    aipSize?: int64;
     /**
      * Příznak načtených metadat
      */
-    metadataLoad: boolean;
+    metadataLoad?: boolean;
     /**
      * Příznak načteného kompletního AIPu
      */
-    completeAipLoad: boolean;
+    completeAipLoad?: boolean;
     /**
-     * Příznak chyby při načítání metadat
+     * Zjištěný problém AIPu, pokud nějaký je
      */
-    metadataError: boolean;
+    problemType?: AipProblemType;
     /**
-     * Chyby při načítání metadat
+     * Popis zjištěného problému AIPu
      */
-    metadataErrorException: string;
+    problemDescription?: string;
+    /**
+     * Cesta souboru balíčku, kterého se problém týká
+     */
+    problemFile?: string;
     /**
      * Verze AIPu s načtenými metadaty
      */
-    aipVersionMetadata: string;
+    aipVersionMetadata?: string;
+    /**
+     * Jak velká část AIPu je napojená na archivní popis
+     */
+    linkState?: AipLinkState;
     /**
      * Stav importu
      */
-    importState: QueueItemState;
+    importState?: QueueItemState;
+    /**
+     * Popis stavu importu; u chybových stavů důvod selhání
+     */
+    importStateMessage?: string;
+    /**
+     * Kdy byl stav importu naposledy nastaven
+     */
+    importStateDate?: utcDateTime;
     /**
      * Stav exportu
      */
-    exportState: QueueItemState;
+    exportState?: QueueItemState;
+    /**
+     * Popis stavu exportu; u chybových stavů důvod selhání
+     */
+    exportStateMessage?: string;
+    /**
+     * Kdy byl stav exportu naposledy nastaven
+     */
+    exportStateDate?: utcDateTime;
     /**
      * Seznam napojených nodes
      */
-    linkedNodes: LinkedNodeVO[];
+    linkedNodes?: LinkedNodeVO[];
 }
 
 /**
@@ -1329,7 +1538,11 @@ enum LinkType {
 enum AipUpdateType {
     DB_UPDATE,
     DOWNLOAD_UPDATE,
-    FORCE_UPDATE;
+    FORCE_UPDATE,
+    /**
+     * Opakované dohledání instituce a fondu podle kódů z balíčku
+     */
+    REMAP_REFERENCES;
 }
 
 /**
@@ -1958,9 +2171,10 @@ enum AipFieldName {
     aipSize,
     metadataLoad,
     completeAipLoad,
-    metadataError,
+    problemType,
     importState,
-    exportState
+    exportState,
+    linkState
 }
 
 /**
@@ -3302,10 +3516,26 @@ namespace ElzaAPI.fund {
         /** Doplnění způsobu importu */
         @multipartBody body: ImportFundData;
         @header contentType: "multipart/form-data";
-    ): void | {
+    ): {
+        @Http.statusCode statusCode: 202;
+        @body jobId: string;
+    } | {
         @Http.statusCode statusCode: 400;
     } | {
         @Http.statusCode statusCode: 406;
+    };
+
+    /**
+     * Get import job status
+     */
+    @route("/import/status/{jobId}")
+    @get op importStatus(
+        /** ID úlohy importu */
+        @path jobId: string;
+    ): ImportJobStatus | {
+        @Http.statusCode statusCode: 403;
+    } | {
+        @Http.statusCode statusCode: 404;
     };
 
     /**
@@ -5215,6 +5445,7 @@ namespace ElzaAPI.Aip {
     ): {
         /** Dao structure successfully created */
         @Http.statusCode statusCode: 200;
+        @body data: DaAipActionVO;
        } | {
         /** Failed to create dao structure */
         @Http.statusCode statusCode: 500;
@@ -5231,6 +5462,7 @@ namespace ElzaAPI.Aip {
     ): {
         /** Dao structure successfully deleted */
         @Http.statusCode statusCode: 200;
+        @body data: DaAipActionVO;
        } | {
         /** Failed to delete dao structure */
         @Http.statusCode statusCode: 500;
@@ -5247,6 +5479,7 @@ namespace ElzaAPI.Aip {
     ): {
         /** Complete AIPs successfully downloaded */
         @Http.statusCode statusCode: 200;
+        @body data: DaAipActionVO;
        } | {
         /** Failed to download complete AIPs */
         @Http.statusCode statusCode: 500;
@@ -5263,6 +5496,7 @@ namespace ElzaAPI.Aip {
     ): {
         /** Complete AIPs successfully deleted */
         @Http.statusCode statusCode: 200;
+        @body data: DaAipActionVO;
        } | {
         /** Failed to delete complete AIPs */
         @Http.statusCode statusCode: 500;
@@ -5282,6 +5516,7 @@ namespace ElzaAPI.Aip {
     ): {
         /** AIPs successfully updated */
         @Http.statusCode statusCode: 200;
+        @body data: DaAipActionVO;
        } | {
         /** Failed to update AIPs */
         @Http.statusCode statusCode: 500;
@@ -5298,6 +5533,7 @@ namespace ElzaAPI.Aip {
     ): {
         /** AIPs successfully exported */
         @Http.statusCode statusCode: 200;
+        @body data: DaAipActionVO;
        } | {
         /** Failed to export AIPs */
         @Http.statusCode statusCode: 500;
@@ -5465,6 +5701,28 @@ namespace ElzaAPI.Aip {
         };
 
      /**
+      * Co brání napojení vybraných AIPů na danou jednotku popisu. Ptá se stejného pravidla jako
+      * samotné napojení, takže se odpověď a skutečné chování nemohou rozejít.
+      */
+      @route("/connect/check")
+      @post op connectCheck(
+         /** ArrNode ID */
+         @query arrNodeId: integer;
+         /** DaAip ID list */
+         @query daAipIdList: integer[];
+         /** Napojuje se na nově zakládanou jednotku popisu */
+         @query newNode?: boolean;
+      ) : {
+          /** Zjištěno */
+          @Http.statusCode statusCode: 200;
+          @body data: AipConnectCheckVO;
+        } | {
+          /** Failed to check */
+          @Http.statusCode statusCode: 500;
+          @body data: BaseException;
+        };
+
+     /**
       * Bulk connect to JP
       */
       @route("/bulk-connect-to-jp")
@@ -5476,6 +5734,7 @@ namespace ElzaAPI.Aip {
       ) : {
           /** Dao link successfully created */
           @Http.statusCode statusCode: 200;
+          @body data: DaAipActionVO;
         } | {
           /** Failed to create dao link */
           @Http.statusCode statusCode: 500;
@@ -5494,6 +5753,7 @@ namespace ElzaAPI.Aip {
       ) : {
           /** Dao link successfully created */
           @Http.statusCode statusCode: 200;
+          @body data: DaAipActionVO;
         } | {
           /** Failed to create dao link */
           @Http.statusCode statusCode: 500;
@@ -5514,6 +5774,7 @@ namespace ElzaAPI.Aip {
       ) : {
           /** Dao link successfully created */
           @Http.statusCode statusCode: 200;
+          @body data: DaAipActionVO;
         } | {
           /** Failed to create dao link */
           @Http.statusCode statusCode: 500;
@@ -5534,6 +5795,7 @@ namespace ElzaAPI.Aip {
       ) : {
           /** Dao link successfully created */
           @Http.statusCode statusCode: 200;
+          @body data: DaAipActionVO;
         } | {
           /** Failed to create dao link */
           @Http.statusCode statusCode: 500;
@@ -5558,6 +5820,24 @@ namespace ElzaAPI.Aip {
         };
 
      /**
+      * Akce nad AIPy i s jejím výsledkem po jednotlivých AIPech. Slouží k načtení stavu akce
+      * poté, co se obnoví spojení - zprávy o průběhu se neukládají a při výpadku se ztratí.
+      */
+     @route("/action/{actionId}")
+     @get op getAipAction (
+        /** ID akce */
+        @path actionId: integer
+     ) : {
+         /** Akce nalezena */
+         @Http.statusCode statusCode: 200;
+         @body data: DaAipActionVO;
+        } | {
+         /** Akce nenalezena */
+         @Http.statusCode statusCode: 404;
+         @body data: BaseException;
+        };
+
+     /**
       * Get aip detail by id
       */
      @route("/{aipId}")
@@ -5573,6 +5853,61 @@ namespace ElzaAPI.Aip {
          @Http.statusCode statusCode: 500;
          @body data: BaseException;
         };
+
+     /**
+      * Seznam souborů staženého balíčku AIPu. Slouží k prohlédnutí balíčku tak, jak přišel
+      * z digitálního archivu, i když se jeho zpracování nezdařilo.
+      */
+     @route("/{aipId}/package")
+     @get op listPackageEntries (
+        /** Aip ID */
+        ...AipIdParameter
+     ) : {
+         /** Seznam souborů balíčku */
+         @Http.statusCode statusCode: 200;
+         @body data: AipPackageEntry[];
+        } | {
+         /** Balíček není stažený */
+         @Http.statusCode statusCode: 404;
+         @body data: BaseException;
+        };
+
+     /**
+      * Stažený balíček AIPu jako celek, v podobě, v jaké přišel z digitálního archivu.
+      * Slouží k prozkoumání balíčku mimo ELZU, když jeho zpracování selhalo.
+      */
+     @route("/{aipId}/package/download")
+     @get op downloadPackage (
+        /** Aip ID */
+        ...AipIdParameter
+     ) : {
+        @header contentType: "application/zip";
+        @Http.statusCode statusCode: 200;
+        @body data: bytes;
+       } | {
+        /** Balíček není stažený */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+       };
+
+     /**
+      * Obsah jednoho souboru staženého balíčku AIPu.
+      */
+     @route("/{aipId}/package/content")
+     @get op downloadPackageEntry (
+        /** Aip ID */
+        ...AipIdParameter,
+        /** Cesta souboru uvnitř balíčku */
+        @query path: string
+     ) : {
+        @header contentType: "*/*";
+        @Http.statusCode statusCode: 200;
+        @body data: bytes;
+       } | {
+        /** Soubor v balíčku není */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+       };
 
      /**
       * Get dao links for node by id

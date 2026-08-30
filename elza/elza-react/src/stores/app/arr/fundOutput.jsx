@@ -7,7 +7,6 @@ import {isFundOutputDetail} from 'actions/arr/fundOutput';
 import {isFundOutputFilesAction} from 'actions/arr/fundOutputFiles';
 import {isFundOutputFunctionsAction} from 'actions/arr/fundOutputFunctions';
 import {consolidateState} from 'components/Utils';
-import {outputFormActions} from 'actions/arr/subNodeForm';
 
 const initialState = {
     fetched: false,
@@ -21,7 +20,7 @@ const initialState = {
 };
 
 export default function fundOutput(state = initialState, action = {}) {
-    if (isFundOutputDetail(action) || outputFormActions.isSubNodeFormAction(action)) {
+    if (isFundOutputDetail(action)) {
         return {
             ...state,
             fundOutputDetail: fundOutputDetail(state.fundOutputDetail, action),

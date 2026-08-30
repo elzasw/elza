@@ -131,7 +131,6 @@ export function DescItemCoordinates({
       setValue(normalizedValue);
     }
     if (
-      normalizedValue &&
       initialValue !== normalizedValue &&
       (!conflictValue || force)
     ) {
@@ -309,9 +308,7 @@ export function DescItemCoordinates({
         }
       />
       <ConflictValue
-        value={value?.toString()}
         conflictValue={conflictValue?.toString()}
-        isDirty={isDirty}
         onResolve={resolveConflict}
       >
         {(conflictValue) => (

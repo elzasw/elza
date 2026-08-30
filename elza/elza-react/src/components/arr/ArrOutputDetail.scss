@@ -1,8 +1,10 @@
-@import "../../variables.scss";
+@import '../../variables.scss';
 
 .arr-output-detail-container {
     height: 100%;
     overflow-y: auto;
+    position: relative;
+    z-index: 10;
 
     .fund-nodes-container {
         padding: 5px;

@@ -2,6 +2,8 @@ package cz.tacr.elza.controller.vo;
 
 import static cz.tacr.elza.service.dao.FileSystemRepoService.FILE_URI_PREFIX;
 
+import cz.tacr.elza.api.DaDownloadMethod;
+import cz.tacr.elza.api.DaOnReceivedAction;
 import cz.tacr.elza.api.DigitalRepositoryType;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrDigitalRepository;
@@ -24,6 +26,12 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
     private DigitalRepositoryType digitalRepositoryType;
 
     private Boolean multipleLinks;
+
+    private DaDownloadMethod downloadMethod;
+
+    private DaOnReceivedAction onReceived;
+
+    private Integer syncDelay;
 
     public String getViewDaoUrl() {
         return viewDaoUrl;
@@ -73,6 +81,30 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
 		this.multipleLinks = multipleLinks;
 	}
 
+    public DaDownloadMethod getDownloadMethod() {
+        return downloadMethod;
+    }
+
+    public void setDownloadMethod(DaDownloadMethod downloadMethod) {
+        this.downloadMethod = downloadMethod;
+    }
+
+    public DaOnReceivedAction getOnReceived() {
+        return onReceived;
+    }
+
+    public void setOnReceived(DaOnReceivedAction onReceived) {
+        this.onReceived = onReceived;
+    }
+
+    public Integer getSyncDelay() {
+        return syncDelay;
+    }
+
+    public void setSyncDelay(Integer syncDelay) {
+        this.syncDelay = syncDelay;
+    }
+
     @Override
     public SysExternalSystem createEntity(ApScope scope) {
         ArrDigitalRepository entity = new ArrDigitalRepository();
@@ -103,6 +135,19 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
         if (multipleLinks != null) {
             entity.setMultipleLinks(multipleLinks);
         }
+        if (digitalRepositoryType == DigitalRepositoryType.DA) {
+            // Download and synchronization settings are meaningful only for a DA repository;
+            // the entity keeps its defaults when the client sends nothing.
+            if (downloadMethod != null) {
+                entity.setDownloadMethod(downloadMethod);
+            }
+            if (onReceived != null) {
+                entity.setOnReceived(onReceived);
+            }
+            if (syncDelay != null) {
+                entity.setSyncDelay(syncDelay);
+            }
+        }
 
         return entity;
     }
@@ -127,6 +172,9 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
         vo.setSendNotification(src.getSendNotification());
         vo.setDigitalRepositoryType(src.getDigitalRepositoryType());
         vo.setMultipleLinks(src.getMultipleLinks());
+        vo.setDownloadMethod(src.getDownloadMethod());
+        vo.setOnReceived(src.getOnReceived());
+        vo.setSyncDelay(src.getSyncDelay());
         return vo;
     }
 }

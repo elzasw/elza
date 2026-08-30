@@ -13,14 +13,16 @@ import jakarta.xml.bind.Unmarshaller;
 import jakarta.xml.bind.Marshaller;
 
 import javax.xml.namespace.QName;
-import javax.xml.transform.stream.StreamSource;
-
 import com.lightcomp.kads.common.AnyUriAdapter;
+import com.lightcomp.kads.common.XmlRootReader;
 
 import gov.loc.mets.v1_11.schema.Mets;
 import org.glassfish.jaxb.runtime.marshaller.NamespacePrefixMapper;
 
 public class MetsReaderWriter {
+
+    /** Root element of a METS 1.11 document. */
+    public static final QName ROOT_ELEMENT = new QName("http://www.loc.gov/METS/", "mets");
 
     public static final JAXBContext JAXB_CONTEXT;
     static {
@@ -34,7 +36,7 @@ public class MetsReaderWriter {
     public static Mets unmarshal(InputStream is) throws JAXBException {
         Unmarshaller unm = JAXB_CONTEXT.createUnmarshaller();
         AnyUriAdapter.register(unm, AnyUriAdapter.isLegacyDefault());
-        return unm.unmarshal(new StreamSource(is), Mets.class).getValue();
+        return XmlRootReader.unmarshal(is, unm, Mets.class, ROOT_ELEMENT);
     }
 
     public static Mets unmarshal(Path path) throws JAXBException, IOException {

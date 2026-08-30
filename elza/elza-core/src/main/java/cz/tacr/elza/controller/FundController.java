@@ -1,7 +1,6 @@
 package cz.tacr.elza.controller;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
@@ -11,6 +10,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -44,6 +44,7 @@ import cz.tacr.elza.controller.vo.CreateFund;
 import cz.tacr.elza.controller.vo.FundsActionGroupRequest;
 import cz.tacr.elza.controller.vo.FundsActionGroupResult;
 import cz.tacr.elza.controller.vo.FundsChangeRun;
+import cz.tacr.elza.controller.vo.ImportJobStatus;
 import cz.tacr.elza.controller.vo.MultiFundActionRequest;
 import cz.tacr.elza.controller.vo.MultiFundActionResult;
 import cz.tacr.elza.controller.vo.FindFundsResult;
@@ -74,12 +75,16 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.AdminPermissionUpdateMode;
 import cz.tacr.elza.service.ArrangementService;
@@ -90,6 +95,8 @@ import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.dao.FileSystemRepoBrowser;
 import cz.tacr.elza.service.dao.FileSystemRepoService;
+import cz.tacr.elza.service.importcsv.ImportJob;
+import cz.tacr.elza.service.importcsv.ImportJobService;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -141,6 +148,9 @@ public class FundController implements FundsApi {
 
     @Autowired
     private BulkActionService bulkActionService;
+
+    @Autowired
+    private ImportJobService importJobService;    
 
     // POST /fund
     @Override
@@ -261,20 +271,46 @@ public class FundController implements FundsApi {
 
     // PUT /fund/{id}/import
     @Override
-    @Transactional
-    public ResponseEntity<Void> fundImportFundData(@PathVariable("id") String id,
-                                               	   @RequestPart(value = "importType", required = true) String importType,
-                                               	   @RequestPart(value = "dataFile", required = true) MultipartFile dataFile,
-                                                   @RequestParam(value = "separator", required = false) String separator) {
+    public ResponseEntity<String> fundImportFundData(@PathVariable("id") String id,
+                                               	     @RequestPart(value = "importType", required = true) String importType,
+                                               	     @RequestPart(value = "dataFile", required = true) MultipartFile dataFile,
+                                                     @RequestParam(value = "separator", required = false) String separator) {
         Validate.notNull(id, "Musí být zadáno id AS");
 
-        ArrFund fund = arrangementService.getFund(Integer.valueOf(id));
-        try (InputStream is = dataFile.getInputStream()) {
-            arrangementService.importFundData(fund, importType, separator, is);
-            return ResponseEntity.ok(null);
+        ArrFund fund = arrangementService.getFundForImport(Integer.valueOf(id)); // kontrola oprávnění k zápisu
+        Integer initiatorId = userService.getLoggedUserDetail().getId();
+        UUID jobId = importJobService.create(fund.getFundId(), initiatorId);
+        Path tmp;
+        try {
+            tmp = Files.createTempFile("elza-import-", ".csv");
+            dataFile.transferTo(tmp.toFile());
         } catch (IOException e) {
-            throw new BusinessException("Failed to read uploaded file", e, BaseCode.IMPORT_FAILED);
+            throw new BusinessException("Failed to store uploaded file", e, BaseCode.IMPORT_FAILED);
         }
+        arrangementService.importFundDataAsync(fund.getFundId(), importType, separator, tmp, initiatorId, jobId);
+
+        return ResponseEntity.accepted().body(jobId.toString());
+    }
+
+    // GET /fund/import/status/{jobId}
+    @Override
+    public ResponseEntity<ImportJobStatus> fundImportStatus(@PathVariable String jobId) {
+        UUID uuid;
+        try {
+            uuid = UUID.fromString(jobId);
+        } catch (IllegalArgumentException e) {
+            throw new ObjectNotFoundException("Job not found or expired", BaseCode.ID_NOT_EXIST);
+        }
+        ImportJob job = importJobService.get(uuid)
+                .orElseThrow(() -> new ObjectNotFoundException("Job not found or expired", BaseCode.ID_NOT_EXIST));
+
+        UserDetail me = userService.getLoggedUserDetail();
+        boolean isInitiator = Objects.equals(me.getId(), job.getInitiatorId());
+        boolean isAdmin = me.hasPermission(UsrPermission.Permission.FUND_ADMIN);
+        if (!isInitiator && !isAdmin) {
+            throw new SystemException("Not allowed", BaseCode.INSUFFICIENT_PERMISSIONS);
+        }
+        return ResponseEntity.ok(importJobService.toVo(job));
     }
 
     // PUT /fund/{id}

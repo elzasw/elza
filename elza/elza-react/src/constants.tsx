@@ -33,6 +33,18 @@ export enum DigitalRepositoryType {
     Da = "DA",
 }
 
+/** How AIP packages are downloaded from a DA repository. */
+export enum DaDownloadMethod {
+    Standard = "STANDARD",
+    FileTransfer = "FILE_TRANSFER",
+}
+
+/** Automatic action when a DA repository reports a newly received AIP. */
+export enum DaOnReceivedAction {
+    None = "NONE",
+    DownloadMetadata = "DOWNLOAD_METADATA",
+}
+
 export enum MODAL_DIALOG_VARIANT {
     LARGE = 'dialog-lg',
     FULLSCREEN = 'dialog-fullscreen',
@@ -266,6 +278,10 @@ export const urlFundAb = (fundId: number, versionId?: number) => {
     return fundSub(fundId, versionId, AIP);
 }
 
+export const urlFundAipExplorer = (fundId: number, aipId: number, versionId?: number) => {
+    return `${fundSub(fundId, versionId, AIP)}/${aipId}/explorer`;
+}
+
 export const urlFundPublication = (fundId: number, versionId?: number) => {
     return fundSub(fundId, versionId, PUBLICATION);
 }
@@ -320,6 +336,10 @@ export const urlEntityRevision = (entityId?: number | string) => {
 
 export const urlAip = (aipId?: number): string => {
     return aipId ? `${URL_AIP}/${aipId}` : URL_AIP;
+}
+
+export const urlAipExplorer = (aipId: number): string => {
+    return `${URL_AIP}/${aipId}/explorer`;
 }
 
 export const urlComponent = () => {

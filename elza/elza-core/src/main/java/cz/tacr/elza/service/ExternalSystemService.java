@@ -94,6 +94,7 @@ import cz.tacr.elza.repository.SysExternalSystemPropertyRepository;
 import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.event.ApExternalSystemEvent;
+import cz.tacr.elza.service.event.ArrDigitalRepositoryEvent;
 import cz.tacr.elza.service.eventnotification.events.EventId;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 
@@ -366,9 +367,13 @@ public class ExternalSystemService {
         externalSystemRepository.save(externalSystem);
         sendCreateExternalSystemNotification(externalSystem.getExternalSystemId());
 
-        // Notify listeners (CamScheduler, cache invalidators) that a new AP external system exists.
+        // Notify listeners (CamScheduler, DaScheduler, cache invalidators) that a new external
+        // system exists.
         if (externalSystem instanceof ApExternalSystem extSys) {
             eventPublisher.publishEvent(new ApExternalSystemEvent(this, extSys));
+        }
+        if (externalSystem instanceof ArrDigitalRepository digiRepo) {
+            eventPublisher.publishEvent(new ArrDigitalRepositoryEvent(this, digiRepo));
         }
 
         staticDataService.reloadOnCommit();
@@ -388,6 +393,9 @@ public class ExternalSystemService {
 
         if (externalSystem instanceof ApExternalSystem extSys) {
             eventPublisher.publishEvent(new ApExternalSystemEvent(this, extSys));
+        }
+        if (externalSystem instanceof ArrDigitalRepository digiRepo) {
+            eventPublisher.publishEvent(new ArrDigitalRepositoryEvent(this, digiRepo));
         }
 
         staticDataService.reloadOnCommit();
@@ -482,6 +490,9 @@ public class ExternalSystemService {
         // when they re-read the entity from the persistence context.
         if (extSysSaved instanceof ApExternalSystem savedApExtSys) {
             eventPublisher.publishEvent(new ApExternalSystemEvent(this, savedApExtSys));
+        }
+        if (extSysSaved instanceof ArrDigitalRepository savedDigiRepo) {
+            eventPublisher.publishEvent(new ArrDigitalRepositoryEvent(this, savedDigiRepo));
         }
 
         return extSysSaved;

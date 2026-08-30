@@ -32,7 +32,7 @@ import { DescItemSpec } from "./DescItemSpec";
 import { ErrorDisplay } from "./ErrorDisplay";
 import { ItemActions } from "./ItemActions";
 import { SavingDisplay } from "./SavingDisplay";
-import { createEmptyDescItem } from "./utils";
+import { createEmptyDescItem, isEmptyItemValue } from "./utils";
 import { Input, makeStyles, mergeClasses } from "@fluentui/react-components";
 import { useUserSettings } from "contexts/user";
 import { useStyles as useDescItemStyles } from "./styles";
@@ -164,6 +164,15 @@ export function DescItemField({
     }
 
     try {
+      if (isEmptyItemValue(newItem)) {
+        // A cleared value deletes the item, but only once it exists on the server. A user-added
+        // item has no data yet, so leaving the empty field must keep it in the form.
+        if (newItem.data?.dataId != undefined) {
+          await onDelete(newItem);
+        }
+        return;
+      }
+
       if (newItem.itemObjectId === undefined) {
         await onCreate(newItem);
       } else {

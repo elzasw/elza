@@ -49,4 +49,10 @@
         height: 100%;
     }
 
+    // Bez levého panelu není splitter, detail dostává celou šířku sám.
+    &.daos-container--single .daos-detail {
+        flex-grow: 1;
+        min-width: 0;
+    }
+
 }

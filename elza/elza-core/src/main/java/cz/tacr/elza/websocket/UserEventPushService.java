@@ -34,6 +34,9 @@ public class UserEventPushService {
     /** Per-user topic prefix; the user's client subscribes to {@code PREFIX + userId}. */
     public static final String USER_TOPIC_PREFIX = "/topic/user/";
 
+    /** Shared segment used by system users without a persisted id (bootstrap admin). */
+    public static final String ADMIN_TOPIC_ID = "admin";
+
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
@@ -48,10 +51,21 @@ public class UserEventPushService {
         if (userId == null || message == null) {
             return;
         }
+        push(userId.toString(), message);
+    }
+
+    /**
+     * Sends a message to a named user topic segment. Use this for system users
+     * without a numeric id (see {@link #ADMIN_TOPIC_ID}).
+     */
+    public void push(final String userTopic, final Object message) {
+        if (userTopic == null || message == null) {
+            return;
+        }
         try {
-            messagingTemplate.convertAndSend(USER_TOPIC_PREFIX + userId, message);
+            messagingTemplate.convertAndSend(USER_TOPIC_PREFIX + userTopic, message);
         } catch (Exception e) {
-            logger.warn("Push to user {} topic failed: {}", userId, e.getMessage());
+            logger.warn("Push to user {} topic failed: {}", userTopic, e.getMessage());
             logger.debug("User topic push failure detail", e);
         }
     }

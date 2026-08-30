@@ -1,3 +1,4 @@
+import {ArrDaoFileVO} from "./ArrDaoFileVO";
 import {ArrDaoLinkVO} from "./ArrDaoLinkVO";
 
 export interface ArrDaoVO {
@@ -6,7 +7,7 @@ export interface ArrDaoVO {
     daoType?: string;
     existInArrDaoRequest?: boolean | null;
     fileCount: number;
-    fileList?: any[];
+    fileList?: ArrDaoFileVO[];
     truncated?: boolean;
     id: number;
     label?: string;

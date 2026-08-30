@@ -7,6 +7,7 @@ import {i18n, Loading} from 'components/shared';
 import {AbstractReactComponent, ArrFundPanel} from 'components/index.jsx';
 import * as types from 'actions/constants/ActionTypes';
 import {fundChangeReadMode, fundsFetchIfNeeded} from 'actions/arr/fund.jsx';
+import {fundsSelectFund} from 'actions/fund/fund.jsx';
 import {getOneSettings, setSettings} from 'components/arr/ArrUtils.jsx';
 import {setFocus} from 'actions/global/focus.jsx';
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx';
@@ -127,6 +128,10 @@ export default class ArrParentPage extends AbstractReactComponent {
     resolveUrlsRaw = async (fundId, versionId) => {
         const {dispatch} = this.props;
         const activeFund = this.getActiveFund(this.props);
+
+        // Otevřený AS je zároveň vybraný v seznamu AS, takže se na něj seznam odroluje i při
+        // návratu jinou cestou než přes seznam (odkaz, šipka zpět, průchod jiným modulem).
+        dispatch(fundsSelectFund(fundId));
 
         // The tab may be restored from localStorage with a version that has been
         // approved (closed) since - the server decides which version is current,

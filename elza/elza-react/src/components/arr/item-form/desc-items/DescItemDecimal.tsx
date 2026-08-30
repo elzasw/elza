@@ -65,17 +65,22 @@ export function DescItemDecimal({
   }
 
   async function handleChange(force?: boolean) {
-    if (value != null && value !== "" && initialValue !== value && (!conflictValue || force)) {
-      const decimalValue = toNumber(value);
-      if (isNaN(decimalValue)) {
-        return;
-      }
+    if (initialValue !== value && (!conflictValue || force)) {
+      const isEmpty = value == null || value === "";
+      let decimalValue: number | undefined = undefined;
 
-      // Normalize to the canonical formatted form (e.g. "0,20" -> "0,2") so it matches the
-      // value the server returns, avoiding a spurious dirty/conflict state.
-      const normalized = formatValue(decimalValue);
-      if (normalized !== value) {
-        setValue(normalized);
+      if (!isEmpty) {
+        decimalValue = toNumber(value);
+        if (isNaN(decimalValue)) {
+          return;
+        }
+
+        // Normalize to the canonical formatted form (e.g. "0,20" -> "0,2") so it matches the
+        // value the server returns, avoiding a spurious dirty/conflict state.
+        const normalized = formatValue(decimalValue);
+        if (normalized !== value) {
+          setValue(normalized);
+        }
       }
 
       await onChange({
@@ -124,9 +129,7 @@ export function DescItemDecimal({
         onBlur={() => handleChange()}
       />
       <ConflictValue
-        value={value?.toString()}
         conflictValue={conflictValue?.toString()}
-        isDirty={isDirty}
         onResolve={resolveConflict}
       >
         {(conflictValue) => <Input size={compact ? "small" : "medium"} value={conflictValue} readOnly={true} style={{ fontSize: "1em" }} />}

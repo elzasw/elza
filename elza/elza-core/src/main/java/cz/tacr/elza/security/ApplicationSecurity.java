@@ -112,7 +112,7 @@ public class ApplicationSecurity {
      * @see cz.tacr.elza.web.controller.ElzaWebController (elza-web)
      */
     public static final String[] PERMIT_ALL_PATTERNS = {"/", "/res/**", "/static/**", 
-    		"/fund/**", "/node/**", "/entity/**", "/admin/**", "/h2-console/**" };
+    		"/fund/**", "/node/**", "/entity/**", "/admin/**", "/aip/**", "/h2-console/**" };
 
     @Autowired
     private ApplicationContext applicationContext;

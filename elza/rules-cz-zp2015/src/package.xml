@@ -1,9 +1,9 @@
 <package>
   <code>ZP2015</code>
   <name>Základní pravidla pro zpracování archiválií</name>
-  <version>342</version>
+  <version>343</version>
   <description>Výchozí balíček obsahující prvku popisu a související pravidla pořádání dle Základních pravidel pro zpracování archiválií, druhé vydání 2015</description>
   <dependencies>
-    <dependency code="CZ_BASE" min-version="24" />
+    <dependency code="CZ_BASE" min-version="88" />
   </dependencies>
 </package>

@@ -178,6 +178,21 @@ public class ElzaCore {
         return threadPoolTaskExecutor;
     }
 
+    /**
+     * Steps of the actions over AIPs, one at a time. Running them in parallel would only add ways
+     * for two steps of one action to get in each other's way; the point of running them here is to
+     * answer the request without waiting for them.
+     */
+    @Bean(name = "threadPoolTaskExecutorAIP")
+    public ThreadPoolTaskExecutor threadPoolTaskExecutorAip() {
+        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+        threadPoolTaskExecutor.setCorePoolSize(1);
+        threadPoolTaskExecutor.setMaxPoolSize(1);
+        threadPoolTaskExecutor.setQueueCapacity(512);
+        threadPoolTaskExecutor.afterPropertiesSet();
+        return threadPoolTaskExecutor;
+    }
+
     @Bean(name = "threadPoolTaskExecutorAP")
     public ThreadPoolTaskExecutor threadPoolTaskExecutorAp() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();

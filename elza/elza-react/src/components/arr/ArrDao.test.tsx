@@ -1,0 +1,182 @@
+import { describe, it, expect, vi, beforeAll } from 'vitest';
+import { ReactElement } from 'react';
+import { http, HttpResponse } from 'msw';
+
+import { renderWithProviders, screen, fireEvent } from 'test/test-utils';
+import { server } from 'test/mocks/server';
+import { FluentDialogProvider } from 'components/shared/dialog/FluentModalDialog';
+import { ArrDaoFileVO, ArrDaoVO } from 'typings/dao';
+import { Fund } from 'typings/store';
+import { ArrDao } from './ArrDao';
+
+/**
+ * Detail digitální entity: odpojení je za potvrzením a náhled nedostupného
+ * souboru se místo rozbitého obrázku vysvětlí.
+ *
+ * Texty přicházejí z `defaultMessage`. Potvrzení se zobrazuje jako Fluent
+ * dialog, takže test potřebuje FluentDialogProvider.
+ */
+
+const UNLINK_CONFIRM = 'Opravdu chcete odpojit digitální entitu od jednotky popisu?';
+const THUMBNAIL_NOT_FOUND = 'Prvek nebyl nalezen v úložišti';
+
+const renderInProvider = (ui: ReactElement) =>
+    renderWithProviders(<FluentDialogProvider hidden={false}>{ui}</FluentDialogProvider>);
+
+const fund = { versionId: 1 } as Fund;
+
+const daoFile: ArrDaoFileVO = {
+    id: 10,
+    code: 'file-10',
+    mimetype: 'image/jpeg',
+    url: '/api/dao/file/10',
+    thumbnailUrl: '/api/dao/file/10/thumb',
+};
+
+const secondFile: ArrDaoFileVO = {
+    id: 11,
+    code: 'file-11',
+    mimetype: 'image/jpeg',
+    url: '/api/dao/file/11',
+    thumbnailUrl: '/api/dao/file/11/thumb',
+};
+
+const dao: ArrDaoVO = {
+    id: 5,
+    code: 'dao-5',
+    fileCount: 1,
+    fileList: [daoFile],
+    daoLink: { id: 7, treeNodeClient: { id: 30, version: 1, name: 'JP 30', referenceMark: ['1'] } },
+};
+
+beforeAll(() => {
+    // Fluent dialog se měří přes ResizeObserver, jsdom ho nemá.
+    vi.stubGlobal(
+        'ResizeObserver',
+        class {
+            observe() { return; }
+            unobserve() { return; }
+            disconnect() { return; }
+        },
+    );
+});
+
+describe('ArrDao', () => {
+    it('odpojí digitální entitu až po potvrzení', async () => {
+        const onUnlink = vi.fn();
+
+        renderInProvider(<ArrDao dao={dao} fund={fund} readMode={false} onUnlink={onUnlink} />);
+
+        fireEvent.click(document.querySelector('.dao-actions .right button') as HTMLElement);
+
+        // Dotaz se ptá dřív, než se cokoli odpojí.
+        await screen.findByText(UNLINK_CONFIRM);
+        expect(onUnlink).not.toHaveBeenCalled();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Odpojit' }));
+
+        await vi.waitFor(() => expect(onUnlink).toHaveBeenCalledTimes(1));
+    });
+
+    it('storno v potvrzení nechá vazbu být', async () => {
+        const onUnlink = vi.fn();
+
+        renderInProvider(<ArrDao dao={dao} fund={fund} readMode={false} onUnlink={onUnlink} />);
+
+        fireEvent.click(document.querySelector('.dao-actions .right button') as HTMLElement);
+        fireEvent.click(await screen.findByRole('button', { name: 'Storno' }));
+
+        await vi.waitFor(() => expect(screen.queryByText(UNLINK_CONFIRM)).not.toBeInTheDocument());
+        expect(onUnlink).not.toHaveBeenCalled();
+    });
+
+    it('v režimu čtení odpojení nenabízí', () => {
+        renderInProvider(<ArrDao dao={dao} fund={fund} readMode onUnlink={vi.fn()} />);
+
+        expect(document.querySelector('.dao-actions .right')).toBeNull();
+    });
+
+    it('u smazaného souboru zobrazí místo náhledu vysvětlení', async () => {
+        server.use(http.head('/api/dao/file/10', () => new HttpResponse(null, { status: 404 })));
+
+        renderInProvider(<ArrDao dao={dao} fund={fund} readMode daoFile={daoFile} onUnlink={vi.fn()} />);
+
+        await screen.findByText(THUMBNAIL_NOT_FOUND);
+        expect(document.querySelector('.thumbnail img')).toBeNull();
+    });
+
+    it('dostupný soubor náhled zobrazí', async () => {
+        server.use(http.head('/api/dao/file/10', () => new HttpResponse(null, { status: 200 })));
+
+        renderInProvider(<ArrDao dao={dao} fund={fund} readMode daoFile={daoFile} onUnlink={vi.fn()} />);
+
+        await vi.waitFor(() =>
+            expect(document.querySelector('.thumbnail img')).toHaveAttribute('src', daoFile.thumbnailUrl as string),
+        );
+        expect(screen.queryByText(THUMBNAIL_NOT_FOUND)).not.toBeInTheDocument();
+    });
+
+    it('bez vybraného souboru ukáže identitu entity i náhled prvního souboru', async () => {
+        renderInProvider(<ArrDao dao={dao} fund={fund} readMode={false} onUnlink={vi.fn()} />);
+
+        // identita a akce entity
+        expect(screen.getByText('dao-5')).toBeInTheDocument();
+        expect(document.querySelector('.dao-actions .right button')).not.toBeNull();
+        // a zároveň náhled — bez dalšího kliknutí
+        expect(document.querySelector('.dao-file-detail')).not.toBeNull();
+        await screen.findByText('Náhled 1/1');
+    });
+
+    it('navigace přepne náhled na další soubor', async () => {
+        const onSelectFile = vi.fn();
+        const multi: ArrDaoVO = { ...dao, fileCount: 2, fileList: [daoFile, secondFile] };
+
+        renderInProvider(
+            <ArrDao dao={multi} fund={fund} readMode daoFile={daoFile} onSelectFile={onSelectFile} onUnlink={vi.fn()} />,
+        );
+
+        await screen.findByText('Náhled 1/2');
+        // NoFocusButton je div s třídou "disabled", ne skutečné <button>
+        const arrows = document.querySelectorAll('.navigation .arrows .btn');
+        expect(arrows).toHaveLength(2);
+        expect(arrows[0].className).toContain('disabled');
+        expect(arrows[1].className).not.toContain('disabled');
+
+        fireEvent.click(arrows[1]);
+        expect(onSelectFile).toHaveBeenCalledWith(secondFile.id);
+    });
+
+    it('scénář vazby zobrazí, pokud ho server pošle', () => {
+        const withScenario: ArrDaoVO = {
+            ...dao,
+            daoLink: { ...dao.daoLink, scenario: 'Připojit jako přílohu' },
+        };
+
+        renderInProvider(<ArrDao dao={withScenario} fund={fund} readMode onUnlink={vi.fn()} />);
+
+        expect(screen.getByText('Připojit jako přílohu')).toBeInTheDocument();
+    });
+
+    it('zdrojové rozměry popíše jednotkou ze serveru', () => {
+        const file: ArrDaoFileVO = {
+            ...daoFile,
+            thumbnailUrl: undefined,
+            sourceXDimesionValue: 210,
+            sourceXDimesionUnit: 'MM',
+            sourceYDimesionValue: 297,
+            sourceYDimesionUnit: 'MM',
+        };
+
+        renderInProvider(
+            <ArrDao
+                dao={{ ...dao, fileList: [file] }}
+                fund={fund}
+                readMode
+                daoFile={file}
+                onUnlink={vi.fn()}
+            />,
+        );
+
+        expect(screen.getByText('210mm x 297mm')).toBeInTheDocument();
+    });
+});

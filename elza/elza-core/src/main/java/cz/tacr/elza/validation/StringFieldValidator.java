@@ -20,6 +20,8 @@ public class StringFieldValidator implements ConstraintValidator<ValidStringFiel
 
 	public static final String ERR_BLANK_STR = "Value contains only spaces or empty string.";
 
+	public static final String ERR_NULL_STR = "Value is null.";
+
 	@Value("${elza.validate.stringfield.enabled:true}")
     private boolean enabled = true;
 
@@ -37,6 +39,15 @@ public class StringFieldValidator implements ConstraintValidator<ValidStringFiel
 		}
 
 		context.disableDefaultConstraintViolation();
+
+		// null is not an acceptable value for this field, report it as a constraint
+		// violation instead of failing with NPE
+		if (value == null) {
+			context.buildConstraintViolationWithTemplate(ERR_NULL_STR).addConstraintViolation();
+			logger.error("Validation failed - value is null");
+			return false;
+		}
+
 		boolean valid = true;
 
 		// log only first 100 characters, because the number of characters can be very large

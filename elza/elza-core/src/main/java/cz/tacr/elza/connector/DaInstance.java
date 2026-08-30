@@ -57,6 +57,10 @@ public class DaInstance {
         return url;
     }
 
+    public String getFileTransferUrl() {
+        return url + FILETRANSFER_URL;
+    }
+
     public DefaultApi getDefaultApi() {
         return defaultApi;
     }

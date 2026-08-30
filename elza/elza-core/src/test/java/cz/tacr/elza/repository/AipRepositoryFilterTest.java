@@ -86,7 +86,12 @@ public class AipRepositoryFilterTest extends AbstractTest {
     }
 
     private static EnumValueFilter enumValue(final AipFieldName name, final String value) {
-        EnumValueFilter filter = new EnumValueFilter(field(name), OperationEqualityType.EQ, FilterType.ENUM_VALUE);
+        return enumValue(name, OperationEqualityType.EQ, value);
+    }
+
+    private static EnumValueFilter enumValue(final AipFieldName name, final OperationEqualityType operation,
+                                             final String value) {
+        EnumValueFilter filter = new EnumValueFilter(field(name), operation, FilterType.ENUM_VALUE);
         filter.setValue(value);
         return filter;
     }
@@ -95,14 +100,14 @@ public class AipRepositoryFilterTest extends AbstractTest {
 
     /**
      * Exactly the filters the AIP screen in a fund (ArrAipPage) sends: an integer fund
-     * reference and two boolean flags, all compared for equality.
+     * reference, a boolean flag and the AIPs whose metadata could be processed.
      */
     @Test
     public void testArrAipPageInitialFilters() {
         FilteredResult<DaAip> result = aipRepository.findAipsByFilter(params(
                 ref(AipFieldName.FUND, 1),
                 bool(AipFieldName.METADATA_LOAD, Boolean.TRUE),
-                bool(AipFieldName.METADATA_ERROR, Boolean.FALSE)));
+                enumValue(AipFieldName.PROBLEM_TYPE, OperationEqualityType.NEQ, "METADATA_ERROR")));
 
         assertNotNull(result);
         assertNotNull(result.getList());
@@ -146,7 +151,7 @@ public class AipRepositoryFilterTest extends AbstractTest {
     public void testLogicalNesting() {
         LogicalFilter either = new LogicalFilter(
                 List.of(bool(AipFieldName.METADATA_LOAD, Boolean.TRUE),
-                        bool(AipFieldName.METADATA_ERROR, Boolean.TRUE)),
+                        enumValue(AipFieldName.PROBLEM_TYPE, "METADATA_ERROR")),
                 OperationLogicalType.OR, FilterType.LOGICAL);
 
         assertNotNull(aipRepository.findAipsByFilter(params(ref(AipFieldName.FUND, 1), either)));

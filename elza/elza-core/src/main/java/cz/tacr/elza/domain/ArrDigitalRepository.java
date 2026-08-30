@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain;
 
+import cz.tacr.elza.api.DaDownloadMethod;
+import cz.tacr.elza.api.DaOnReceivedAction;
 import cz.tacr.elza.api.DigitalRepositoryType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,6 +20,9 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 @Entity(name = "arr_digital_repository")
 @Table
 public class ArrDigitalRepository extends SysExternalSystem {
+
+    /** Default interval of the synchronization with a DA repository, in seconds (5 minutes). */
+    public static final int DEFAULT_SYNC_DELAY = 300;
 
     @Column(length = StringLength.LENGTH_1000)
     private String viewDaoUrl;
@@ -38,6 +43,26 @@ public class ArrDigitalRepository extends SysExternalSystem {
     @Column(nullable = false)
     private Boolean multipleLinks = Boolean.FALSE;
 
+    /**
+     * How AIP packages are downloaded from a DA repository.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(length = StringLength.LENGTH_ENUM, nullable = false)
+    private DaDownloadMethod downloadMethod = DaDownloadMethod.STANDARD;
+
+    /**
+     * Automatic action when a DA repository reports a newly received AIP.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(length = StringLength.LENGTH_ENUM, nullable = false)
+    private DaOnReceivedAction onReceived = DaOnReceivedAction.NONE;
+
+    /**
+     * Seconds between two synchronizations with a DA repository; 0 = no synchronization.
+     */
+    @Column(nullable = false)
+    private Integer syncDelay = DEFAULT_SYNC_DELAY;
+
     public ArrDigitalRepository() {
     }
 
@@ -49,6 +74,9 @@ public class ArrDigitalRepository extends SysExternalSystem {
 		this.sendNotification = ardr.getSendNotification();
 		this.digitalRepositoryType = ardr.getDigitalRepositoryType();
 		this.multipleLinks = ardr.getMultipleLinks();
+		this.downloadMethod = ardr.getDownloadMethod();
+		this.onReceived = ardr.getOnReceived();
+		this.syncDelay = ardr.getSyncDelay();
     }
 
 	/**
@@ -122,6 +150,30 @@ public class ArrDigitalRepository extends SysExternalSystem {
 	public void setMultipleLinks(Boolean multipleLinks) {
 		this.multipleLinks = multipleLinks;
 	}
+
+    public DaDownloadMethod getDownloadMethod() {
+        return downloadMethod;
+    }
+
+    public void setDownloadMethod(DaDownloadMethod downloadMethod) {
+        this.downloadMethod = downloadMethod;
+    }
+
+    public DaOnReceivedAction getOnReceived() {
+        return onReceived;
+    }
+
+    public void setOnReceived(DaOnReceivedAction onReceived) {
+        this.onReceived = onReceived;
+    }
+
+    public Integer getSyncDelay() {
+        return syncDelay;
+    }
+
+    public void setSyncDelay(Integer syncDelay) {
+        this.syncDelay = syncDelay;
+    }
 
     @Override
     public String toString() {

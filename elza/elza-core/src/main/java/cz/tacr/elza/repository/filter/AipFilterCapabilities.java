@@ -51,6 +51,7 @@ public final class AipFilterCapabilities {
 
     private static final Set<OperationEqualityType> EQUALITY_OPERATIONS = EnumSet.of(
             OperationEqualityType.EQ,
+            OperationEqualityType.NEQ,
             OperationEqualityType.IS_NULL,
             OperationEqualityType.NOT_NULL);
 

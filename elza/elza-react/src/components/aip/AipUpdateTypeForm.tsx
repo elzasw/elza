@@ -1,9 +1,13 @@
 import React from 'react';
-import { FormInputField, i18n } from 'components/shared';
+import { i18n } from 'components/shared';
 import { Form, Modal } from 'react-bootstrap';
 import { Button } from '../ui';
 import { Form as FinalForm, Field } from 'react-final-form';
-import {AipUpdateType} from "elza-api";
+import { useIntl } from 'react-intl';
+import { AipDetailVO, AipProblemType, AipUpdateType } from "elza-api";
+
+import { updateTypeDescriptions, updateTypeMessages, updateTypeUnavailable } from './messages';
+import './AipUpdateTypeForm.scss';
 
 interface FormFields {
     type: AipUpdateType;
@@ -11,21 +15,54 @@ interface FormFields {
 
 interface Props {
     initialValues?: FormFields;
+    /** AIPy, kterých se akce týká; podle jejich stavu se nabízejí jen použitelné volby. */
+    aips?: AipDetailVO[];
     onSubmit: (values: FormFields) => void;
     onClose?: () => void;
 }
 
-export const AIP_UPDATE_TYPE_LABEL = {
-    [AipUpdateType.DbUpdate]: i18n('aip.form.update.type.DbUpdate'),
-    [AipUpdateType.DownloadUpdate]: i18n('aip.form.update.type.DownloadUpdate'),
-    [AipUpdateType.ForceUpdate]: i18n('aip.form.update.type.ForceUpdate'),
+/**
+ * Proč volbu nelze použít, nebo null, když použít lze.
+ *
+ * Volba, která by u žádného z vybraných AIPů nic neudělala, se nenabízí - jinak
+ * uživatel stiskne tlačítko a nic se nestane, aniž by se dozvěděl proč.
+ */
+const unavailableReason = (type: AipUpdateType, aips: AipDetailVO[]) => {
+    if (aips.length === 0) {
+        return null;
+    }
+    const some = (predicate: (aip: AipDetailVO) => boolean) => aips.some(predicate);
+    switch (type) {
+        case AipUpdateType.DbUpdate:
+        case AipUpdateType.ForceUpdate:
+            // sestavení z uloženého balíčku potřebuje stažená metadata
+            return some(aip => aip.metadataLoad === true) ? null : updateTypeUnavailable.needsMetadata;
+        case AipUpdateType.RemapReferences:
+            return some(aip => aip.problemType === AipProblemType.UnknownFund
+                    || aip.problemType === AipProblemType.UnknownInstitution)
+                ? null : updateTypeUnavailable.needsUnresolved;
+        default:
+            return null;
+    }
 };
+
+/**
+ * Pořadí od nejčastější a nejbezpečnější volby po tu, která ruší napojení na popis.
+ */
+const UPDATE_TYPES: AipUpdateType[] = [
+    AipUpdateType.RemapReferences,
+    AipUpdateType.DownloadUpdate,
+    AipUpdateType.DbUpdate,
+    AipUpdateType.ForceUpdate,
+];
 
 export function AipUpdateTypeForm({
     initialValues,
+    aips = [],
     onSubmit,
     onClose
 }: Props) {
+    const intl = useIntl();
 
     function validate(values: FormFields) {
         const errors: Partial<Record<keyof FormFields, string>> = {};
@@ -48,20 +85,46 @@ export function AipUpdateTypeForm({
             validate={validate}
             onSubmit={handleSubmit}
         >{({ submitting, handleSubmit }) => {
-            return <Form>
+            return <Form className="aip-update-type">
                 <Modal.Body>
-                    <Field
-                        name="type"
-                        type="select"
-                        component={FormInputField}
-                        label={i18n('aip.form.update.type')}
-                    >
-                        <option key={null} />
-                        {Object.values(AipUpdateType).map((i, index) => (
-                            <option key={index} value={i}>
-                                {AIP_UPDATE_TYPE_LABEL[i]}
-                            </option>
-                        ))}
+                    <Field name="type">
+                        {({input, meta}) => (
+                            <fieldset>
+                                <legend className="form-label">{i18n('aip.form.update.type')}</legend>
+                                {UPDATE_TYPES.map(type => {
+                                    const unavailable = unavailableReason(type, aips);
+                                    return (
+                                        <Form.Check
+                                            key={type}
+                                            type="radio"
+                                            id={`aipUpdateType-${type}`}
+                                            name={input.name}
+                                            value={type}
+                                            checked={input.value === type}
+                                            onChange={() => input.onChange(type)}
+                                            disabled={submitting || unavailable != null}
+                                            label={
+                                                <>
+                                                    <span className="update-type-name">
+                                                        {intl.formatMessage(updateTypeMessages[type])}
+                                                    </span>
+                                                    <span className="update-type-hint">
+                                                        {intl.formatMessage(updateTypeDescriptions[type])}
+                                                    </span>
+                                                    {unavailable && (
+                                                        <span className="update-type-unavailable">
+                                                            {intl.formatMessage(unavailable)}
+                                                        </span>
+                                                    )}
+                                                </>
+                                            }
+                                        />
+                                    );
+                                })}
+                                {meta.touched && meta.error &&
+                                    <div className="invalid-feedback d-block">{meta.error}</div>}
+                            </fieldset>
+                        )}
                     </Field>
                 </Modal.Body>
                 <Modal.Footer>

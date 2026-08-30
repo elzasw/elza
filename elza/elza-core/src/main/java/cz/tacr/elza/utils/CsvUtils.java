@@ -7,6 +7,8 @@ import org.apache.commons.csv.CSVFormat;
 
 public class CsvUtils {
 
+	public static final String CSV_TYPE_NAME = "CSV"; 
+	
     /**
      * CSV konfigurace pro CZ Excel
      */

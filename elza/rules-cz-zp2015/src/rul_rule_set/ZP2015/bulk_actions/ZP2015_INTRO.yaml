@@ -201,7 +201,17 @@ actions:
               - mfis
               - fal
               - dfo
+              - fpa
+              - anz
+              - mhz
               - kza
+              - fva
+              - fdr
+              - gd
+              - mat
+              - mg
+              - aka
+              - kdi
               - zza
               - tio
               - tip
@@ -209,6 +219,8 @@ actions:
               - pkt
               - cpa
               - sto
+              - bal
+              - por
               - daj
               - pnp
               - pfp
@@ -275,6 +287,16 @@ actions:
                ZP2015_EXTRA_UNITS_PNP: pnp
                ZP2015_EXTRA_UNITS_PFP: pfp
                ZP2015_EXTRA_UNITS_JIN: jin
+               ZP2015_EXTRA_UNITS_FPA: fpa
+               ZP2015_EXTRA_UNITS_ANZ: anz
+               ZP2015_EXTRA_UNITS_MHZ: mhz
+               ZP2015_EXTRA_UNITS_FVA: fva
+               ZP2015_EXTRA_UNITS_FDR: fdr
+               ZP2015_EXTRA_UNITS_GD: gd
+               ZP2015_EXTRA_UNITS_MAT: mat
+               ZP2015_EXTRA_UNITS_MG: mg
+               ZP2015_EXTRA_UNITS_AKA: aka
+               ZP2015_EXTRA_UNITS_KDI: kdi
            # Neevidovaná jednotlivost v kartonu - pocita se jako hromadina
            - excludeWhen:
                someOf:
@@ -296,6 +318,8 @@ actions:
              objectItemMapping:
                ZP2015_PACKET_TYPE_KAR: kar
                ZP2015_PACKET_TYPE_FAS: fas
+               ZP2015_PACKET_TYPE_BAL: bal
+               ZP2015_PACKET_TYPE_POR: por
            - excludeWhen:
                someOf:
                  # Nesmí být nastaven jako připojený záznam
@@ -366,6 +390,16 @@ actions:
                ZP2015_UNIT_TYPE_PNP: pnp
                ZP2015_UNIT_TYPE_PFP: pfp
                ZP2015_UNIT_TYPE_JIN: jin
+               ZP2015_UNIT_TYPE_FPA: fpa
+               ZP2015_UNIT_TYPE_ANZ: anz
+               ZP2015_UNIT_TYPE_MHZ: mhz
+               ZP2015_UNIT_TYPE_FVA: fva
+               ZP2015_UNIT_TYPE_FDR: fdr
+               ZP2015_UNIT_TYPE_GD: gd
+               ZP2015_UNIT_TYPE_MAT: mat
+               ZP2015_UNIT_TYPE_MG: mg
+               ZP2015_UNIT_TYPE_AKA: aka
+               ZP2015_UNIT_TYPE_KDI: kdi
            # Složka s hromadinou
            - excludeWhen:
                someOf:
@@ -384,6 +418,8 @@ actions:
              objectItemMapping:
                ZP2015_PACKET_TYPE_KAR: kar
                ZP2015_PACKET_TYPE_FAS: fas
+               ZP2015_PACKET_TYPE_BAL: bal
+               ZP2015_PACKET_TYPE_POR: por
            # Digitální složka
            - excludeWhen:
                someOf:

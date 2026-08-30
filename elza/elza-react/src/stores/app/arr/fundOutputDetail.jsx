@@ -1,26 +1,13 @@
 import * as types from '../../../actions/constants/ActionTypes';
-import subNodeForm from './subNodeForm.jsx';
-import {outputFormActions} from 'actions/arr/subNodeForm';
-import {consolidateState} from '../../../components/Utils.jsx';
-import {OutputState} from '../../../typings/Outputs';
 
 const initialState = {
     id: null,
     fetched: false,
     fetching: false,
     currentDataKey: '',
-    subNodeForm: subNodeForm(),
 };
 
 export default function fundOutputDetail(state = initialState, action = {}) {
-    if (outputFormActions.isSubNodeFormAction(action)) {
-        const result = {
-            ...state,
-            subNodeForm: subNodeForm(state.subNodeForm, action),
-        };
-        return consolidateState(state, result);
-    }
-
     switch (action.type) {
         case types.STORE_SAVE: {
             const {id} = state;
@@ -34,25 +21,15 @@ export default function fundOutputDetail(state = initialState, action = {}) {
                 fetched: false,
                 fetching: false,
                 currentDataKey: '',
-                subNodeForm: subNodeForm(),
             };
         }
         case types.OUTPUT_STATE_CHANGE: {
             if (state.fetched && action.outputId === state.id) {
-                if (state.state === OutputState.COMPUTING && action.state === OutputState.OPEN) {
-                    return {
-                        ...state,
-                        currentDataKey: '',
-                        subNodeForm: subNodeForm(state.subNodeForm, action),
-                        state: action.state,
-                    };
-                } else {
-                    return {
-                        ...state,
-                        currentDataKey: '',
-                        state: action.state,
-                    };
-                }
+                return {
+                    ...state,
+                    currentDataKey: '',
+                    state: action.state,
+                };
             }
             return state;
         }
@@ -61,17 +38,10 @@ export default function fundOutputDetail(state = initialState, action = {}) {
             if (action.outputIds.indexOf(state.id) !== -1) {
                 return {
                     ...state,
-                    subNodeForm: subNodeForm(state.subNodeForm, action),
                     currentDataKey: '',
                 };
             }
             return state;
-        }
-        case types.FUND_FUND_CHANGE_READ_MODE: {
-            return {
-                ...state,
-                subNodeForm: subNodeForm(state.subNodeForm, action),
-            };
         }
         case types.FUND_OUTPUT_SELECT_OUTPUT: {
             if (state.id !== action.id) {
@@ -80,7 +50,6 @@ export default function fundOutputDetail(state = initialState, action = {}) {
                     id: action.id,
                     currentDataKey: '',
                     fetched: false,
-                    subNodeForm: subNodeForm(),
                 };
             }
             return state;
@@ -100,20 +69,6 @@ export default function fundOutputDetail(state = initialState, action = {}) {
                 fetched: true,
             };
         }
-        case types.CHANGE_OUTPUTS:
-            if (action.outputIds && action.outputIds.indexOf(state.id) >= 0) {
-                return {
-                    ...state,
-                    subNodeForm: subNodeForm(state.subNodeForm, action),
-                };
-            } else {
-                return state;
-            }
-        case types.OUTPUT_INCREASE_VERSION:
-            return {
-                ...state,
-                subNodeForm: subNodeForm(state.subNodeForm, action),
-            };
         case types.FUND_OUTPUT_DETAIL_CLEAR:
             return initialState;
         default:

@@ -53,7 +53,7 @@ export function DescItemText({
   } = useValueManager<string>(data?.textValue, item);
 
   async function handleChange(force?: boolean) {
-    if (value && initialValue !== value && (!conflictValue || force)) {
+    if (initialValue !== value && (!conflictValue || force)) {
       await onChange({
         ...item,
         data: {
@@ -113,9 +113,7 @@ export function DescItemText({
         }}
       />
       <ConflictValue
-        value={value?.toString()}
         conflictValue={conflictValue?.toString()}
-        isDirty={isDirty}
         onResolve={resolveConflict}
       >
         {(conflictValue) => (

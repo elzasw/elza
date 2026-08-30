@@ -35,10 +35,4 @@
         <def-type>SERIALIZED_VALUE</def-type>
         <priority>100</priority>
     </structure-definition>
-    <structure-definition structure-type="IMPORT_DA"
-                          filename="IMPORT_DA.groovy"
-                          compatibility-rul-package="65">
-        <def-type>SERIALIZED_VALUE</def-type>
-        <priority>100</priority>
-    </structure-definition>
 </structure-definitions>

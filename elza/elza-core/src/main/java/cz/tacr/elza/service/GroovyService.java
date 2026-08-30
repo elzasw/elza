@@ -48,6 +48,7 @@ import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataBit;
 import cz.tacr.elza.domain.ArrDataCoordinates;
 import cz.tacr.elza.domain.ArrDataDecimal;
+import cz.tacr.elza.domain.ArrDataFileRef;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataString;
@@ -536,6 +537,11 @@ public class GroovyService {
             	ArrDataDecimal dataTmp = (ArrDataDecimal) data;
             	groovyItem = new GroovyItem(itemType, itemSpec, dataTmp.getFulltextValue());
             	break;
+            }
+            case FILE_REF: {
+                ArrDataFileRef dataTmp = (ArrDataFileRef) data;
+                groovyItem = new GroovyItem(itemType, itemSpec, dataTmp.getFulltextValue());
+                break;
             }
             default:
                 throw new NotImplementedException("Neimplementovaný typ: " + dataType);

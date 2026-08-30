@@ -1,7 +1,4 @@
 import * as types from 'actions/constants/ActionTypes';
-import {consolidateState} from 'components/Utils';
-import subNodeForm from './subNodeForm';
-import {nodeFormActions} from 'actions/arr/subNodeForm';
 import { serializeJson } from 'components/arr/FundDataGrid';
 
 const initialState = {
@@ -19,7 +16,6 @@ const initialState = {
     columnsOrder: [], // seznam id desc item type - pořadí zobrazování sloupečků
     columnInfos: {}, // mapa id desc item type na informace o sloupečku, např. jeho šířce atp.
     currentDataKey: '',
-    subNodeForm: subNodeForm(),
     nodeId: null, // id node právě editovaného řádku
     parentNodeId: null, // id parent node právě editovaného řádku
     descItemTypeId: null, // id atributu právě editovaného řádku
@@ -44,14 +40,6 @@ function changeSearchedIndex(state, newIndex) {
 }
 
 export default function fundDataGrid(state = initialState, action = {}) {
-    if (nodeFormActions.isSubNodeFormAction(action)) {
-        const result = {
-            ...state,
-            subNodeForm: subNodeForm(state.subNodeForm, action),
-        };
-        return consolidateState(state, result);
-    }
-
     switch (action.type) {
         case types.STORE_LOAD:
             return {
@@ -64,7 +52,6 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 items: [],
                 itemsCount: 0,
                 currentDataKey: '',
-                subNodeForm: subNodeForm(),
                 searchedItems: [],
                 searchedCurrentIndex: 0,
                 data: {type: 'FORM'},
@@ -156,19 +143,6 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 fetchedFilter: false,
                 isFetchingFilter: false,
             };
-        case types.FUND_FUND_DATA_GRID_PREPARE_EDIT:
-            const result = {
-                ...state,
-                nodeId: action.nodeId,
-                parentNodeId: action.parentNodeId,
-                descItemTypeId: action.descItemTypeId,
-            };
-
-            if (action.nodeId !== state.subNodeForm.fetchingId) {
-                result.subNodeForm = subNodeForm();
-            }
-
-            return result;
         case types.FUND_FUND_DATA_GRID_COLUMNS_SETTINGS:
             return {
                 ...state,
@@ -217,18 +191,12 @@ export default function fundDataGrid(state = initialState, action = {}) {
                 rowsDirty: true,
             };
         }
-        case types.FUND_NODE_INCREASE_VERSION:
-            return {
-                ...state,
-                subNodeForm: subNodeForm(state.subNodeForm, action),
-            };
         case types.FUND_SUBNODE_UPDATE:
         case types.CHANGE_NODES:
             return {
                 ...state,
                 filterDirty: true, // filtr po změně nějakého PP již nemusí odpovídat
                 currentDataKey: '',
-                subNodeForm: subNodeForm(state.subNodeForm, action),
             };
         case types.FUND_FUND_DATA_GRID_DATA_REQUEST:
             return {

@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import cz.tacr.elza.connector.DaConnector;
-import cz.tacr.elza.domain.ArrDigitalRepository;
 import jakarta.transaction.Transactional;
 import cz.tacr.elza.cam.v1.CamConnector;
 import cz.tacr.elza.common.FactoryUtils;
@@ -66,9 +64,6 @@ public class AdminOldController {
 
     @Autowired
     private AsyncRequestService asyncRequestService;
-
-    @Autowired
-    private DaConnector daConnector;
 
     @Value("${elza.logFile:}")
     private String logFilePath;
@@ -148,9 +143,6 @@ public class AdminOldController {
         SysExternalSystem externalSystem = externalSystemVO.createEntity(apScope);
         externalSystem = externalSystemService.update(externalSystem);
 
-        if (externalSystem instanceof ArrDigitalRepository) {
-            daConnector.invalidate((ArrDigitalRepository) externalSystem);
-        }
         return factoryVo.createExtSystem(externalSystem);
     }
 
@@ -164,9 +156,6 @@ public class AdminOldController {
     public void deleteExternalSystemById(@PathVariable("externalSystemId") final Integer externalSystemId) {
         SysExternalSystem externalSystem = externalSystemService.findOne(externalSystemId);
         externalSystemService.delete(externalSystem);
-        if (externalSystem instanceof ArrDigitalRepository) {
-            daConnector.invalidate((ArrDigitalRepository) externalSystem);
-        }
     }
 
     /**

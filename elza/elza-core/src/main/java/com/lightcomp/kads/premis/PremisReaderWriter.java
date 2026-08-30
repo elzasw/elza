@@ -10,13 +10,18 @@ import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Unmarshaller;
 import jakarta.xml.bind.Marshaller;
 
-import javax.xml.transform.stream.StreamSource;
+import javax.xml.namespace.QName;
+
+import com.lightcomp.kads.common.XmlRootReader;
 
 import gov.loc.premis.v3.PremisComplexType;
 
 public class PremisReaderWriter {
 
-	public static final JAXBContext JAXB_CONTEXT;
+    /** Root element of a PREMIS v3 document. */
+    public static final QName ROOT_ELEMENT = new QName("http://www.loc.gov/premis/v3", "premis");
+
+    public static final JAXBContext JAXB_CONTEXT;
     static {
         try {
             JAXB_CONTEXT = JAXBContext.newInstance(PremisComplexType.class);
@@ -27,7 +32,7 @@ public class PremisReaderWriter {
 
     public static PremisComplexType unmarshal(InputStream is) throws JAXBException {
         Unmarshaller unm = JAXB_CONTEXT.createUnmarshaller();
-        return unm.unmarshal(new StreamSource(is), PremisComplexType.class).getValue();
+        return XmlRootReader.unmarshal(is, unm, PremisComplexType.class, ROOT_ELEMENT);
     }
 
     public static PremisComplexType unmarshal(Path path) throws JAXBException, IOException {
