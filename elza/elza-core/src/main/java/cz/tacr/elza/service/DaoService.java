@@ -65,6 +65,7 @@ import cz.tacr.elza.repository.RequestQueueItemRepository;
 import cz.tacr.elza.service.DaoSyncService.DaoDesctItemProvider;
 import cz.tacr.elza.service.FundLevelService.AddLevelDirection;
 import cz.tacr.elza.service.dao.DaoServiceInternal;
+import cz.tacr.elza.service.da.DaAipLinkStateResolver;
 import cz.tacr.elza.service.dao.FileSystemRepoBrowser;
 import cz.tacr.elza.service.dao.FileSystemRepoService;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
@@ -114,6 +115,8 @@ public class DaoService {
     private ArrFsLinkRepository fsLinkRepository;
     @Autowired
     private DaoLinkPolicy daoLinkPolicy;
+    @Autowired
+    private DaAipLinkStateResolver linkStateResolver;
 
     @Autowired
     private EventNotificationService eventNotificationService;
@@ -407,6 +410,9 @@ public class DaoService {
         } else {
             // fs a da vazby: událost nese id vazby, externí notifikace se neposílají
             publishEvent(EventType.DAO_LINK_DELETE, fundVersion, daoLink.getDaoLinkId(), daoLink.getNode());
+        }
+        if (daoLink instanceof ArrDaLink daLink) {
+            linkStateResolver.refreshFor(daLink.getAip());
         }
 
         return resultDaoLink;

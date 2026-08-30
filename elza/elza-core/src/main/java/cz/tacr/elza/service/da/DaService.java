@@ -261,6 +261,8 @@ public class DaService {
     private DaAipActionService actionService;
     @Autowired
     private DaoLinkPolicy daoLinkPolicy;
+    @Autowired
+    private DaAipLinkStateResolver linkStateResolver;
 
     /** Reads and writes what an action was asked to do; see {@link ConnectParams}. */
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -456,6 +458,9 @@ public class DaService {
         DaAipState aipState = aipStateRepository.findById(input.aipStateId()).orElseThrow();
         aipState.setAipVersionMetadata(aipState.getAipVersion());
         referenceResolver.clearProblem(aipState);
+        // Rebuilding the package can add files to it, so how much of it is attached changes even
+        // though no link was touched.
+        linkStateResolver.updateLinkState(aipState);
         aipStateRepository.save(aipState);
         sink.finished(input.aip().getAipId());
         return nodeUuids;
@@ -1657,8 +1662,12 @@ public class DaService {
         arrDaoLink.setDaDao(daDao);
         arrDaoLink.setLinkType(linkType);
         arrDaoLink.setCreateChange(change);
-        return daoLinkRepository.save(arrDaoLink);
+        daoLinkRepository.save(arrDaoLink);
+        linkStateResolver.refreshFor(daAip);
+        return arrDaoLink;
     }
+
+
 
     @Transactional
     public void createDaoLink(Integer aipId, Integer daoId, Integer nodeId, ArrDaoLink.LinkType linkType) {
@@ -2027,6 +2036,9 @@ public class DaService {
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.DELETE_DAO_LINK, arrDaoLink.getNode());
         arrDaoLink.setDeleteChange(change);
         daoLinkRepository.save(arrDaoLink);
+        if (arrDaoLink instanceof ArrDaLink daLink) {
+            linkStateResolver.refreshFor(daLink.getAip());
+        }
     }
 
 

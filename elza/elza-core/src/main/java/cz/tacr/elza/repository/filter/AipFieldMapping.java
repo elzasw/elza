@@ -44,7 +44,8 @@ public enum AipFieldMapping {
     COMPLETE_AIP_LOAD(AipJoin.STATE,           "completeAipLoad", BOOLEAN),
     PROBLEM_TYPE     (AipJoin.STATE,           "problemType",     ENUM),
     IMPORT_STATE     (AipJoin.IMPORT_SYNC,     "state",           ENUM),
-    EXPORT_STATE     (AipJoin.EXPORT_SYNC,     "state",           ENUM);
+    EXPORT_STATE     (AipJoin.EXPORT_SYNC,     "state",           ENUM),
+    LINK_STATE       (AipJoin.STATE,           "linkState",       ENUM);
 
     /**
      * Join of the AIP query a field is reached through, with the entity it leads to.

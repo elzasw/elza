@@ -1286,6 +1286,28 @@ enum AipProblemType {
 }
 
 /**
+ * Jak velká část AIPu je napojená na archivní popis.
+ *
+ * Napojit lze celý balíček, úroveň jeho logické struktury i jednotlivý soubor, a napojení
+ * něčeho, co soubory obsahuje, napojuje i je. Kolik z balíčku je napojeno tedy závisí na tom,
+ * kam napojení dosáhnou, a zjišťuje se při jejich změně - ne až při čtení seznamu.
+ */
+enum AipLinkState {
+    /**
+     * Z AIPu není napojeno nic
+     */
+    NOT_LINKED,
+    /**
+     * Část souborů AIPu je napojená, zbytek ne
+     */
+    PARTIALLY_LINKED,
+    /**
+     * Napojený je celý balíček, ať přímo nebo tím, že je napojeno vše, co obsahuje
+     */
+    FULLY_LINKED
+}
+
+/**
  * Položka staženého balíčku AIPu
  */
 model AipPackageEntry {
@@ -1391,6 +1413,10 @@ model AipDetailVO {
      * Verze AIPu s načtenými metadaty
      */
     aipVersionMetadata?: string;
+    /**
+     * Jak velká část AIPu je napojená na archivní popis
+     */
+    linkState?: AipLinkState;
     /**
      * Stav importu
      */
@@ -2147,7 +2173,8 @@ enum AipFieldName {
     completeAipLoad,
     problemType,
     importState,
-    exportState
+    exportState,
+    linkState
 }
 
 /**

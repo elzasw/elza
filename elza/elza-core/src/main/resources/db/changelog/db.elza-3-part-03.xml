@@ -290,4 +290,32 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="20260831100000" author="ppy">
+        <!-- How much of an AIP hangs on the archival description. Kept here rather than worked out
+             when the list is read: a link to the package as a whole, or to a level of its logical
+             structure, attaches the files under it too, so the answer depends on what the links
+             reach and not on which link rows exist. -->
+        <addColumn tableName="da_aip_state">
+            <column name="link_state" type="nvarchar(50)"/>
+        </addColumn>
+
+        <!-- The links of the digital archive are dropped and every AIP starts as unattached. They
+             were made before the repository setting was honoured, so some of them break the rule it
+             now enforces, and no deployment holds any that are worth keeping.
+
+             arr_da_link is the subtype table and arr_dao_link the base one, so the subtype rows go
+             first; the base rows are then those no subtype claims any more. -->
+        <sql>
+            DELETE FROM arr_da_link;
+        </sql>
+        <sql>
+            DELETE FROM arr_dao_link
+             WHERE dao_link_id NOT IN (SELECT dao_link_id FROM arr_legacy_dao_link)
+               AND dao_link_id NOT IN (SELECT dao_link_id FROM arr_fs_link);
+        </sql>
+        <sql>
+            UPDATE da_aip_state SET link_state = 'NOT_LINKED';
+        </sql>
+    </changeSet>
+
 </databaseChangeLog>

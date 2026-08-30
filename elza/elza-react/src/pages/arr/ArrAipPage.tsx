@@ -10,7 +10,7 @@ import AipTable from '../../components/aip/AipTable';
 import {selectAip} from '../../actions/aip/aip';
 import type { AppState, Fund, UserDetail } from 'typings/store';
 
-import { AipFieldName, AipProblemType } from 'elza-api';
+import { AipFieldName, AipLinkState, AipProblemType } from 'elza-api';
 import { buildFilter } from 'components/aip/filter/aipFilterModel';
 import { AipFilterEntry } from 'typings/store';
 import ActionsContainer from 'components/arr/aip/ActionsContainer';

@@ -38,7 +38,7 @@ import {
 import { Icon } from 'components/shared';
 import { Button } from 'react-bootstrap';
 import { getBoolIcon } from './AipCells';
-import { explorerPageMessages, problemMessages, queueStateMessages } from './messages';
+import { explorerPageMessages, linkStateMessages, problemMessages, queueStateMessages } from './messages';
 import { colDef } from './columns';
 import { Row } from 'react-bootstrap';
 import AipFilterSection from './filter/AipFilterSection.tsx';
@@ -174,6 +174,8 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, onExplore, filterDisabled, in
                 return queueStateContent(item.importState, item.importStateMessage, item.importStateDate);
             case "exportState":
                 return queueStateContent(item.exportState, item.exportStateMessage, item.exportStateDate);
+            case "linkState": return item.linkState
+                ? formatMessage(linkStateMessages[item.linkState]) : "-";
             case "problemType": return item.problemType
                 ? (
                     <span className="aip-problem" title={item.problemDescription ?? undefined}>

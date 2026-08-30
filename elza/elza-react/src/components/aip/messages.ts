@@ -1,5 +1,5 @@
 import { defineMessages } from "react-intl";
-import { AipProblemType, AipUpdateType, DaAipActionItemState, QueueItemState } from "elza-api";
+import { AipLinkState, AipProblemType, AipUpdateType, DaAipActionItemState, QueueItemState } from "elza-api";
 
 export const messages = defineMessages({
     aipId:            { id: "aip.col.aipId",            defaultMessage: "ID" },
@@ -20,6 +20,7 @@ export const messages = defineMessages({
     exportState:      { id: "aip.col.exportState",      defaultMessage: "Stav exportu" },
     completeAipLoad:  { id: "aip.col.completeAipLoad",  defaultMessage: "Načtený kompletní AIP" },
     problemType:      { id: "aip.col.problemType",      defaultMessage: "Problém" },
+    linkState:        { id: "aip.col.linkState",        defaultMessage: "Napojení" },
 });
 
 /**
@@ -145,6 +146,15 @@ export const queueStateMessages = defineMessages({
     [QueueItemState.ExportError]: { id: "aip.queueState.EXPORT_ERROR", defaultMessage: "Chyba exportu" },
     [QueueItemState.ExportNew]:   { id: "aip.queueState.EXPORT_NEW",   defaultMessage: "K exportu" },
     [QueueItemState.ExportOk]:    { id: "aip.queueState.EXPORT_OK",    defaultMessage: "Exportováno" },
+});
+
+/**
+ * Jak velká část AIPu je napojená na archivní popis.
+ */
+export const linkStateMessages = defineMessages({
+    [AipLinkState.NotLinked]:       { id: "aip.linkState.NOT_LINKED",       defaultMessage: "Nenapojeno" },
+    [AipLinkState.PartiallyLinked]: { id: "aip.linkState.PARTIALLY_LINKED", defaultMessage: "Částečně napojeno" },
+    [AipLinkState.FullyLinked]:     { id: "aip.linkState.FULLY_LINKED",     defaultMessage: "Napojeno" },
 });
 
 export const boolMessages = defineMessages({
