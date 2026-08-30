@@ -96,6 +96,8 @@ public class DaoServiceFsLinkTest {
         setField(service, "arrangementInternalService", arrangementInternalService);
         setField(service, "eventNotificationService", eventNotificationService);
         setField(service, "arrangementCacheService", arrangementCacheService);
+        // the real rule, not a mock - it is pure decision-making and is what these cases are about
+        setField(service, "daoLinkPolicy", new DaoLinkPolicy());
         // browser only used by other methods — not needed here, but injected so no NPE on scanning
         setField(service, "fileSystemRepoBrowser", Mockito.mock(FileSystemRepoBrowser.class));
 
@@ -157,7 +159,7 @@ public class DaoServiceFsLinkTest {
 
         BusinessException ex = assertThrows(BusinessException.class,
                 () -> service.createFsDaoLink(fundVersion, repo, nodeA, "folder/a"));
-        assertEquals(ArrangementCode.INVALID_DAO, ex.getErrorCode());
+        assertEquals(ArrangementCode.DAO_ALREADY_LINKED, ex.getErrorCode());
 
         Mockito.verify(daoLinkRepository, Mockito.never()).save(Mockito.<ArrFsLink>any());
         Mockito.verifyNoInteractions(eventNotificationService);
@@ -224,7 +226,7 @@ public class DaoServiceFsLinkTest {
 
         BusinessException ex = assertThrows(BusinessException.class,
                 () -> service.moveFsDaoLink(fundVersion, 555, nodeB));
-        assertEquals(ArrangementCode.INVALID_DAO, ex.getErrorCode());
+        assertEquals(ArrangementCode.DAO_LINK_NOT_FOUND, ex.getErrorCode());
 
         Mockito.verify(daoLinkRepository, Mockito.never()).save(Mockito.<ArrFsLink>any());
     }
@@ -239,7 +241,7 @@ public class DaoServiceFsLinkTest {
 
         BusinessException ex = assertThrows(BusinessException.class,
                 () -> service.moveFsDaoLink(fundVersion, 1, nodeB));
-        assertEquals(ArrangementCode.INVALID_DAO, ex.getErrorCode());
+        assertEquals(ArrangementCode.DAO_LINK_NOT_FOUND, ex.getErrorCode());
     }
 
     @Test

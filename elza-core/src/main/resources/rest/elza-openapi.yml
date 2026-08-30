@@ -973,6 +973,34 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Admin.CopyPermissionParams'
+  /aip/action/{actionId}:
+    get:
+      operationId: Aip_getAipAction
+      description: |-
+        Akce nad AIPy i s jejím výsledkem po jednotlivých AIPech. Slouží k načtení stavu akce
+        poté, co se obnoví spojení - zprávy o průběhu se neukládají a při výpadku se ztratí.
+      parameters:
+        - name: actionId
+          in: path
+          required: true
+          description: ID akce
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaAipActionVO'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aips
   /aip/bulk-connect-logic-to-jp:
     post:
       operationId: Aip_bulkConnectLogicToJp
@@ -1004,6 +1032,10 @@ paths:
       responses:
         '200':
           description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaAipActionVO'
         '500':
           description: Server error
           content:
@@ -1036,6 +1068,10 @@ paths:
       responses:
         '200':
           description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaAipActionVO'
         '500':
           description: Server error
           content:
@@ -1068,6 +1104,10 @@ paths:
       responses:
         '200':
           description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaAipActionVO'
         '500':
           description: Server error
           content:
@@ -1107,6 +1147,10 @@ paths:
       responses:
         '200':
           description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaAipActionVO'
         '500':
           description: Server error
           content:
@@ -1301,6 +1345,51 @@ paths:
                 $ref: '#/components/schemas/BaseException'
       tags:
         - aips
+  /aip/connect/check:
+    post:
+      operationId: Aip_connectCheck
+      description: |-
+        Co brání napojení vybraných AIPů na danou jednotku popisu. Ptá se stejného pravidla jako
+        samotné napojení, takže se odpověď a skutečné chování nemohou rozejít.
+      parameters:
+        - name: arrNodeId
+          in: query
+          required: true
+          description: ArrNode ID
+          schema:
+            type: integer
+          explode: false
+        - name: daAipIdList
+          in: query
+          required: true
+          description: DaAip ID list
+          schema:
+            type: array
+            items:
+              type: integer
+          explode: false
+        - name: newNode
+          in: query
+          required: false
+          description: Napojuje se na nově zakládanou jednotku popisu
+          schema:
+            type: boolean
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AipConnectCheckVO'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aips
   /aip/create-dao-link:
     post:
       operationId: Aip_createDaoLink
@@ -1353,6 +1442,10 @@ paths:
       responses:
         '200':
           description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaAipActionVO'
         '500':
           description: Server error
           content:
@@ -1404,6 +1497,10 @@ paths:
       responses:
         '200':
           description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaAipActionVO'
         '500':
           description: Server error
           content:
@@ -1452,6 +1549,10 @@ paths:
       responses:
         '200':
           description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaAipActionVO'
         '500':
           description: Server error
           content:
@@ -1477,6 +1578,10 @@ paths:
       responses:
         '200':
           description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaAipActionVO'
         '500':
           description: Server error
           content:
@@ -1537,6 +1642,10 @@ paths:
       responses:
         '200':
           description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaAipActionVO'
         '500':
           description: Server error
           content:
@@ -1689,6 +1798,10 @@ paths:
       responses:
         '200':
           description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaAipActionVO'
         '500':
           description: Server error
           content:
@@ -1721,6 +1834,84 @@ paths:
                 $ref: '#/components/schemas/AipDetailVO'
         '500':
           description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aips
+  /aip/{aipId}/package:
+    get:
+      operationId: Aip_listPackageEntries
+      description: |-
+        Seznam souborů staženého balíčku AIPu. Slouží k prohlédnutí balíčku tak, jak přišel
+        z digitálního archivu, i když se jeho zpracování nezdařilo.
+      parameters:
+        - $ref: '#/components/parameters/AipIdParameter'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AipPackageEntry'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aips
+  /aip/{aipId}/package/content:
+    get:
+      operationId: Aip_downloadPackageEntry
+      description: Obsah jednoho souboru staženého balíčku AIPu.
+      parameters:
+        - $ref: '#/components/parameters/AipIdParameter'
+        - name: path
+          in: query
+          required: true
+          description: Cesta souboru uvnitř balíčku
+          schema:
+            type: string
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aips
+  /aip/{aipId}/package/download:
+    get:
+      operationId: Aip_downloadPackage
+      description: |-
+        Stažený balíček AIPu jako celek, v podobě, v jaké přišel z digitálního archivu.
+        Slouží k prozkoumání balíčku mimo ELZU, když jeho zpracování selhalo.
+      parameters:
+        - $ref: '#/components/parameters/AipIdParameter'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: The server cannot find the requested resource.
           content:
             application/json:
               schema:
@@ -2528,6 +2719,30 @@ paths:
             schema:
               $ref: '#/components/schemas/SearchParams'
         description: search parameters
+  /fund/import/status/{jobId}:
+    get:
+      operationId: fund_importStatus
+      description: Get import job status
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          description: ID úlohy importu
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportJobStatus'
+        '403':
+          description: Access is forbidden.
+        '404':
+          description: The server cannot find the requested resource.
+      tags:
+        - funds
   /fund/search:
     post:
       operationId: fund_searchFunds
@@ -3006,8 +3221,12 @@ paths:
           schema:
             type: string
       responses:
-        '204':
-          description: 'There is no content to send for this request, but the headers may be useful. '
+        '202':
+          description: The request has been accepted for processing, but processing has not yet completed.
+          content:
+            text/plain:
+              schema:
+                type: string
         '400':
           description: The server could not understand the request due to invalid syntax.
         '406':
@@ -5535,9 +5754,10 @@ components:
         - aipSize
         - metadataLoad
         - completeAipLoad
-        - metadataError
+        - problemType
         - importState
         - exportState
+        - linkState
       description: |-
         AIP specific field names.
 
@@ -6389,6 +6609,41 @@ components:
         submit-time budget check uses, so the displayed balance never disagrees
         with a quota refusal. Both members are optional: a provider without credit
         accounting returns an empty object.
+    AipConnectBlockedVO:
+      type: object
+      required:
+        - aipId
+        - reason
+      properties:
+        aipId:
+          type: integer
+          description: ID AIPu
+        aipCode:
+          type: string
+          description: Kód AIPu
+        reason:
+          type: string
+          description: Proč napojení není možné
+      description: AIP, který nelze napojit, i s důvodem
+    AipConnectCheckVO:
+      type: object
+      required:
+        - total
+        - blocked
+      properties:
+        total:
+          type: integer
+          description: Počet AIPů, kterých se dotaz týkal
+        blocked:
+          type: array
+          items:
+            $ref: '#/components/schemas/AipConnectBlockedVO'
+          description: AIPy, které napojit nelze
+      description: |-
+        Co brání napojení vybraných AIPů.
+
+        Zjišťuje se předem, aby uživatel věděl, do čeho jde; samotné napojení pak takový AIP
+        odmítne, takže se odpověď a skutečné chování nemohou rozejít.
     AipDetailFilteredResult:
       type: object
       required:
@@ -6409,27 +6664,6 @@ components:
         - aipId
         - code
         - digitalRepositoryId
-        - aipVersion
-        - fund
-        - fundCode
-        - institution
-        - originatorInstitution
-        - originator
-        - unitdateFrom
-        - unitdateTo
-        - institutionCode
-        - ingestionCode
-        - referenceNumber
-        - nadChangeCode
-        - aipSize
-        - metadataLoad
-        - completeAipLoad
-        - metadataError
-        - metadataErrorException
-        - aipVersionMetadata
-        - importState
-        - exportState
-        - linkedNodes
       properties:
         aipId:
           type: integer
@@ -6481,6 +6715,7 @@ components:
           description: Identifikátor vnější změny NAD v PEvA
         aipSize:
           type: integer
+          format: int64
           description: Velikost AIPu v bytech
         metadataLoad:
           type: boolean
@@ -6488,29 +6723,84 @@ components:
         completeAipLoad:
           type: boolean
           description: Příznak načteného kompletního AIPu
-        metadataError:
-          type: boolean
-          description: Příznak chyby při načítání metadat
-        metadataErrorException:
+        problemType:
+          allOf:
+            - $ref: '#/components/schemas/AipProblemType'
+          description: Zjištěný problém AIPu, pokud nějaký je
+        problemDescription:
           type: string
-          description: Chyby při načítání metadat
+          description: Popis zjištěného problému AIPu
+        problemFile:
+          type: string
+          description: Cesta souboru balíčku, kterého se problém týká
         aipVersionMetadata:
           type: string
           description: Verze AIPu s načtenými metadaty
+        linkState:
+          allOf:
+            - $ref: '#/components/schemas/AipLinkState'
+          description: Jak velká část AIPu je napojená na archivní popis
         importState:
           allOf:
             - $ref: '#/components/schemas/QueueItemState'
           description: Stav importu
+        importStateMessage:
+          type: string
+          description: Popis stavu importu; u chybových stavů důvod selhání
+        importStateDate:
+          type: string
+          format: date-time
+          description: Kdy byl stav importu naposledy nastaven
         exportState:
           allOf:
             - $ref: '#/components/schemas/QueueItemState'
           description: Stav exportu
+        exportStateMessage:
+          type: string
+          description: Popis stavu exportu; u chybových stavů důvod selhání
+        exportStateDate:
+          type: string
+          format: date-time
+          description: Kdy byl stav exportu naposledy nastaven
         linkedNodes:
           type: array
           items:
             $ref: '#/components/schemas/LinkedNodeVO'
           description: Seznam napojených nodes
       description: Vo pro detail AIPu
+    AipLinkState:
+      type: string
+      enum:
+        - NOT_LINKED
+        - PARTIALLY_LINKED
+        - FULLY_LINKED
+      description: |-
+        Jak velká část AIPu je napojená na archivní popis.
+
+        Napojit lze celý balíček, úroveň jeho logické struktury i jednotlivý soubor, a napojení
+        něčeho, co soubory obsahuje, napojuje i je. Kolik z balíčku je napojeno tedy závisí na tom,
+        kam napojení dosáhnou, a zjišťuje se při jejich změně - ne až při čtení seznamu.
+    AipPackageEntry:
+      type: object
+      required:
+        - path
+        - size
+      properties:
+        path:
+          type: string
+          description: Cesta položky uvnitř balíčku
+        size:
+          type: integer
+          format: int64
+          description: Velikost položky v bytech
+      description: Položka staženého balíčku AIPu
+    AipProblemType:
+      type: string
+      enum:
+        - METADATA_ERROR
+        - UNKNOWN_FUND
+        - UNKNOWN_INSTITUTION
+      description: Problém, který brání zpracování AIPu nebo jeho navázání na archivní popis
     AipType:
       type: string
       enum:
@@ -6526,6 +6816,7 @@ components:
         - DB_UPDATE
         - DOWNLOAD_UPDATE
         - FORCE_UPDATE
+        - REMAP_REFERENCES
       description: AIP update type
     ApAccessPointSearchResult:
       type: object
@@ -7032,6 +7323,102 @@ components:
         apVersion:
           type: integer
       description: Result of creating a part
+    DaAipActionItemState:
+      type: string
+      enum:
+        - WAITING
+        - RUNNING
+        - FINISHED
+        - ERROR
+        - SKIPPED
+      description: Jak akce dopadla u jednoho AIPu
+    DaAipActionItemVO:
+      type: object
+      required:
+        - aipId
+        - state
+      properties:
+        aipId:
+          type: integer
+          description: ID AIPu
+        aipCode:
+          type: string
+          description: Kód AIPu
+        state:
+          allOf:
+            - $ref: '#/components/schemas/DaAipActionItemState'
+          description: Stav položky
+        message:
+          type: string
+          description: Co se s AIPem stalo; vyplněno u výsledků, které nic nezměnily
+        finishDate:
+          type: string
+          format: date-time
+          description: Kdy byla položka dokončena
+      description: Jak akce dopadla u jednoho AIPu
+    DaAipActionState:
+      type: string
+      enum:
+        - WAITING
+        - RUNNING
+        - FINISHED
+        - ERROR
+      description: Stav akce nad AIPy; odvozený ze stavů jednotlivých položek
+    DaAipActionType:
+      type: string
+      enum:
+        - LOAD_METADATA
+        - DELETE_METADATA
+        - LOAD_COMPLETE_AIP
+        - DELETE_COMPLETE_AIP
+        - DOWNLOAD_UPDATE
+        - DB_UPDATE
+        - FORCE_UPDATE
+        - REMAP_REFERENCES
+        - EXPORT
+        - CONNECT_TO_NODE
+        - CONNECT_LOGICAL_STRUCTURE
+        - CREATE_NODES
+        - CREATE_NODES_AND_CONNECT
+      description: Typ akce vyžádané nad AIPy
+    DaAipActionVO:
+      type: object
+      required:
+        - id
+        - actionType
+        - state
+        - createDate
+        - items
+      properties:
+        id:
+          type: integer
+          description: ID akce
+        actionType:
+          allOf:
+            - $ref: '#/components/schemas/DaAipActionType'
+          description: Typ akce
+        state:
+          allOf:
+            - $ref: '#/components/schemas/DaAipActionState'
+          description: Stav akce odvozený z jejích položek
+        createDate:
+          type: string
+          format: date-time
+          description: Kdy byla akce vyžádána
+        finishDate:
+          type: string
+          format: date-time
+          description: Kdy byla dokončena poslední položka akce
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/DaAipActionItemVO'
+          description: Výsledek akce po jednotlivých AIPech
+      description: |-
+        Akce vyžádaná nad sadou AIPů a její výsledek po jednotlivých AIPech.
+
+        Akce je zaznamenaná bez ohledu na to, jak se provádí - jestli ji ELZA vyřídí sama,
+        nebo se na ni čeká z digitálního archivu.
     DaDaoType:
       type: string
       enum:
@@ -8389,6 +8776,44 @@ components:
       required:
         - importType
         - dataFile
+    ImportJobState:
+      type: string
+      enum:
+        - RUNNING
+        - COMPLETED
+        - FAILED
+      description: Status of the async import CSV file
+    ImportJobStatus:
+      type: object
+      required:
+        - jobId
+        - fundId
+        - state
+        - startedAt
+      properties:
+        jobId:
+          type: string
+          description: Job ID
+        fundId:
+          type: integer
+          format: int32
+          description: Fund ID
+        state:
+          allOf:
+            - $ref: '#/components/schemas/ImportJobState'
+          description: Сurrent status
+        error:
+          type: string
+          description: Error message
+        startedAt:
+          type: string
+          format: date-time
+          description: Started At
+        finishedAt:
+          type: string
+          format: date-time
+          description: Finished At
+      description: Complete status of async import
     Institution:
       type: object
       required:

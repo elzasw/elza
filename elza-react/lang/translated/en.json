@@ -15,6 +15,34 @@
     "defaultMessage": "ApiKey - value",
     "srcHash": "oRAn41A0cbCo"
   },
+  "admin.extSystem.daSyncDelay": {
+    "defaultMessage": "Synchronization interval (s), 0 = no synchronization",
+    "srcHash": "wXgprAUB_RPo"
+  },
+  "admin.extSystem.downloadMethod": {
+    "defaultMessage": "AIP download method",
+    "srcHash": "KzmUpPylfYZM"
+  },
+  "admin.extSystem.downloadMethodFileTransfer": {
+    "defaultMessage": "File Transfer",
+    "srcHash": "yLwaLpFdZsWA"
+  },
+  "admin.extSystem.downloadMethodStandard": {
+    "defaultMessage": "Standard (HTTP)",
+    "srcHash": "VRo4FuFYuHsJ"
+  },
+  "admin.extSystem.onReceived": {
+    "defaultMessage": "On AIP received",
+    "srcHash": "bwX_RNjOd-dQ"
+  },
+  "admin.extSystem.onReceivedDownloadMetadata": {
+    "defaultMessage": "Download metadata",
+    "srcHash": "MZK1CQxdNdr1"
+  },
+  "admin.extSystem.onReceivedNone": {
+    "defaultMessage": "Do nothing",
+    "srcHash": "6_xTndQHNNGM"
+  },
   "admin.extSystemDetail.aiTestConnection": {
     "defaultMessage": "Test connection",
     "srcHash": "w5X1eztA8_ox"
@@ -641,9 +669,65 @@
     "defaultMessage": "AI assistant",
     "srcHash": "63nbyiXmnORE"
   },
+  "aip.action.close": {
+    "defaultMessage": "Close",
+    "srcHash": "0r4EKpo4ZhJv"
+  },
+  "aip.action.col.aip": {
+    "defaultMessage": "AIP",
+    "srcHash": "skqGhZPbqOfI"
+  },
+  "aip.action.col.state": {
+    "defaultMessage": "Result",
+    "srcHash": "C14p6HYptoxW"
+  },
+  "aip.action.finished": {
+    "defaultMessage": "Finished",
+    "srcHash": "xWQzBVFQyQ1H"
+  },
+  "aip.action.item.ERROR": {
+    "defaultMessage": "Error",
+    "srcHash": "tiLo1toEkOGZ"
+  },
+  "aip.action.item.FINISHED": {
+    "defaultMessage": "Done",
+    "srcHash": "GJci5Tr0orF5"
+  },
+  "aip.action.item.RUNNING": {
+    "defaultMessage": "In progress",
+    "srcHash": "kxATik111ihr"
+  },
+  "aip.action.item.SKIPPED": {
+    "defaultMessage": "Skipped",
+    "srcHash": "K4zhvSVWVoal"
+  },
+  "aip.action.item.WAITING": {
+    "defaultMessage": "Waiting",
+    "srcHash": "2Rrd-9CScv7V"
+  },
+  "aip.action.running": {
+    "defaultMessage": "In progress…",
+    "srcHash": "qchuMS_kPrI7"
+  },
+  "aip.action.summary": {
+    "defaultMessage": "{done} of {total} done{errors, plural, =0 {} one { · # error} other { · # errors}}",
+    "srcHash": "zTVliqexu1h4"
+  },
+  "aip.action.toast.errors": {
+    "defaultMessage": "{count, plural, one {Action failed for # AIP} other {Action failed for # AIPs}}",
+    "srcHash": "vFKit_HMxbGk"
+  },
+  "aip.action.toast.finished": {
+    "defaultMessage": "{count, plural, one {Action finished for # AIP} other {Action finished for # AIPs}}",
+    "srcHash": "OuQdiSeoE4Gi"
+  },
+  "aip.action.withErrors": {
+    "defaultMessage": "Finished with errors",
+    "srcHash": "kF6JUmfiJUhL"
+  },
   "aip.col.aipId": {
-    "defaultMessage": "AIP ID",
-    "srcHash": "nylyci_kv7Mm"
+    "defaultMessage": "ID",
+    "srcHash": "OEOXHc_e5Qg-"
   },
   "aip.col.aipSize": {
     "defaultMessage": "Size",
@@ -654,8 +738,8 @@
     "srcHash": "LFW3qt24AmIp"
   },
   "aip.col.code": {
-    "defaultMessage": "AIP code",
-    "srcHash": "UxTrypWFOcAG"
+    "defaultMessage": "AIP ID",
+    "srcHash": "GUUWy3qnM3wH"
   },
   "aip.col.completeAipLoad": {
     "defaultMessage": "Complete AIP loaded",
@@ -674,8 +758,8 @@
     "srcHash": "TiaXeZ4HFkIH"
   },
   "aip.col.importState": {
-    "defaultMessage": "Current version",
-    "srcHash": "0u9juJv4hc8n"
+    "defaultMessage": "Import state",
+    "srcHash": "ve1rNhbanwoQ"
   },
   "aip.col.ingestionCode": {
     "defaultMessage": "Ingestion number",
@@ -689,9 +773,9 @@
     "defaultMessage": "Institution code",
     "srcHash": "Z6gP6vi_OaRY"
   },
-  "aip.col.metadataError": {
-    "defaultMessage": "Metadata load error",
-    "srcHash": "lQZ1uRaxOXvg"
+  "aip.col.linkState": {
+    "defaultMessage": "Linked",
+    "srcHash": "zLOXNvy1g0hm"
   },
   "aip.col.metadataLoad": {
     "defaultMessage": "Metadata loaded",
@@ -705,6 +789,10 @@
     "defaultMessage": "Originator",
     "srcHash": "8ferHLpDg6Ds"
   },
+  "aip.col.problemType": {
+    "defaultMessage": "Problem",
+    "srcHash": "WdRzqC9KeHRa"
+  },
   "aip.col.referenceNumber": {
     "defaultMessage": "Reference number",
     "srcHash": "FfhBXJgX6Kv3"
@@ -712,6 +800,38 @@
   "aip.col.unitdate": {
     "defaultMessage": "Date range",
     "srcHash": "85gp67Bn_Cu_"
+  },
+  "aip.connect.blocked": {
+    "defaultMessage": "{count, plural, one {# AIP is already linked} other {# AIPs are already linked}} and the repository does not allow multiple links. Linking cannot proceed.",
+    "srcHash": "Fs8R-o7g38Sv"
+  },
+  "aip.connect.hideDetail": {
+    "defaultMessage": "Hide list",
+    "srcHash": "kdw51VJ4fKgs"
+  },
+  "aip.connect.showDetail": {
+    "defaultMessage": "Show list",
+    "srcHash": "MYJ1K8DLdJht"
+  },
+  "aip.detail.downloadPackage": {
+    "defaultMessage": "Download package",
+    "srcHash": "yf8e5gZ_YbcN"
+  },
+  "aip.explorer.back": {
+    "defaultMessage": "Back to the list",
+    "srcHash": "nAub8TbwZrMW"
+  },
+  "aip.explorer.open": {
+    "defaultMessage": "Open the explorer",
+    "srcHash": "_QWqGVI3J8rQ"
+  },
+  "aip.explorer.tab.package": {
+    "defaultMessage": "Package",
+    "srcHash": "O-2iMJ9LuP-v"
+  },
+  "aip.explorer.tab.structure": {
+    "defaultMessage": "Structure",
+    "srcHash": "zYUhA8KwsL8v"
   },
   "aip.filter.createFilter": {
     "defaultMessage": "Create filter {name}",
@@ -773,6 +893,10 @@
     "defaultMessage": "Does not contain",
     "srcHash": "bsWPcoUNHu8T"
   },
+  "aip.form.notEquals": {
+    "defaultMessage": "Is not exactly",
+    "srcHash": "47nQo4wktHc8"
+  },
   "aip.form.notNull": {
     "defaultMessage": "Value set",
     "srcHash": "l0LiTrzfFMuW"
@@ -785,9 +909,113 @@
     "defaultMessage": "To",
     "srcHash": "MAlOC-wARtqP"
   },
+  "aip.form.update.type.DbUpdate": {
+    "defaultMessage": "Database update only",
+    "srcHash": "QJkW_O6qWoE2"
+  },
+  "aip.form.update.type.DbUpdate.hint": {
+    "defaultMessage": "Rebuilds the digital entities in ELZA from the already downloaded package; nothing is downloaded. It fails when it would have to remove an entity linked to a description unit.",
+    "srcHash": "GLHF_Zs8wSFE"
+  },
+  "aip.form.update.type.DownloadUpdate": {
+    "defaultMessage": "Download the AIP again",
+    "srcHash": "ZnGUYONZJeUS"
+  },
+  "aip.form.update.type.DownloadUpdate.hint": {
+    "defaultMessage": "Requests a fresh download of the package from the digital archive. What is downloaded matches what the AIP already has - package data, metadata, or the complete AIP.",
+    "srcHash": "JlUQrht-V7NU"
+  },
+  "aip.form.update.type.ForceUpdate": {
+    "defaultMessage": "Forced update",
+    "srcHash": "OucQ8lcHA7Og"
+  },
+  "aip.form.update.type.ForceUpdate.hint": {
+    "defaultMessage": "The same as the update from the stored package, but it also removes digital entities linked to description units. Those links are lost.",
+    "srcHash": "iq3eYw2CKYv1"
+  },
+  "aip.form.update.type.RemapReferences": {
+    "defaultMessage": "Look up the institution and fund again",
+    "srcHash": "qpZBK7EGRLzI"
+  },
+  "aip.form.update.type.RemapReferences.hint": {
+    "defaultMessage": "Looks the institution and fund up again by the codes from the package. Use it after creating the missing institution or fund. When the repository downloads metadata automatically, the download is requested as well.",
+    "srcHash": "iIIqHTpG-z8r"
+  },
+  "aip.form.update.unavailable.needsMetadata": {
+    "defaultMessage": "Not applicable: none of the selected AIPs has its metadata downloaded.",
+    "srcHash": "IYuPAio5Fhwm"
+  },
+  "aip.form.update.unavailable.needsUnresolved": {
+    "defaultMessage": "Not applicable: none of the selected AIPs has an unresolved institution or fund.",
+    "srcHash": "I0TEhNzaWYk6"
+  },
   "aip.form.value": {
     "defaultMessage": "Value",
     "srcHash": "2al7WSQS6DjX"
+  },
+  "aip.linkState.FULLY_LINKED": {
+    "defaultMessage": "Linked",
+    "srcHash": "OzLv642nuwzF"
+  },
+  "aip.linkState.NOT_LINKED": {
+    "defaultMessage": "Not linked",
+    "srcHash": "flFef7RT17x7"
+  },
+  "aip.linkState.PARTIALLY_LINKED": {
+    "defaultMessage": "Partially linked",
+    "srcHash": "XBYV1I9cWniN"
+  },
+  "aip.package.download": {
+    "defaultMessage": "Download",
+    "srcHash": "xxAzjqAuIzkG"
+  },
+  "aip.package.downloadAll": {
+    "defaultMessage": "Download the whole package",
+    "srcHash": "yAWLrl7Ft1M7"
+  },
+  "aip.package.empty": {
+    "defaultMessage": "The package contains no files.",
+    "srcHash": "yVnaG1vs0ahj"
+  },
+  "aip.package.loading": {
+    "defaultMessage": "Loading the package…",
+    "srcHash": "lEGYnl77lmqQ"
+  },
+  "aip.package.notDownloaded": {
+    "defaultMessage": "No package has been downloaded for this AIP.",
+    "srcHash": "ciUgvmUowiE-"
+  },
+  "aip.package.notPreviewable": {
+    "defaultMessage": "The file cannot be shown as text, it can be downloaded.",
+    "srcHash": "1dLBGmxsHcmF"
+  },
+  "aip.package.problemHint": {
+    "defaultMessage": "File the problem is about:",
+    "srcHash": "mM8UvcAanVmj"
+  },
+  "aip.package.readFailed": {
+    "defaultMessage": "The file could not be loaded.",
+    "srcHash": "-pTujeMZcVKk"
+  },
+  "aip.package.selectFile": {
+    "defaultMessage": "Select a file of the package.",
+    "srcHash": "L27vljAwkQNW"
+  },
+  "aip.package.treeLabel": {
+    "defaultMessage": "Package content",
+    "srcHash": "TMjUM37-a7HO"
+  },
+  "aip.problem.METADATA_ERROR": {
+    "defaultMessage": "Metadata processing failed",
+    "srcHash": "Q-Y6CQYBRvq4"
+  },
+  "aip.problem.UNKNOWN_FUND": {
+    "defaultMessage": "Fund not found",
+    "srcHash": "7fGWMez3rnPI"
+  },
+  "aip.problem.UNKNOWN_INSTITUTION": {
+    "defaultMessage": "Institution not found",
+    "srcHash": "Y5L6HoEz8FfT"
   },
   "aip.queueState.EXPORT_ERROR": {
     "defaultMessage": "Export error",
@@ -1193,6 +1421,110 @@
     "defaultMessage": "Keep original value",
     "srcHash": "La8cCc4r_IK2"
   },
+  "arrDao.action.copyLink": {
+    "defaultMessage": "Copy link",
+    "srcHash": "4x3eHwbYl3AQ"
+  },
+  "arrDao.action.openInRepository": {
+    "defaultMessage": "Open in repository",
+    "srcHash": "fsLhfPeaWFBR"
+  },
+  "arrDao.file.description": {
+    "defaultMessage": "Description",
+    "srcHash": "rx7qx-MBKenQ"
+  },
+  "arrDao.file.duration": {
+    "defaultMessage": "Duration",
+    "srcHash": "P5dcU3UA_BD7"
+  },
+  "arrDao.file.mimeType": {
+    "defaultMessage": "MIME",
+    "srcHash": "RNL9_5yOBM2h"
+  },
+  "arrDao.file.resolution": {
+    "defaultMessage": "Resolution",
+    "srcHash": "zJWwdBMUEn3L"
+  },
+  "arrDao.file.selected": {
+    "defaultMessage": "Selected file",
+    "srcHash": "eR7YzQEypRZ8"
+  },
+  "arrDao.file.size": {
+    "defaultMessage": "Size",
+    "srcHash": "HkMRVxaPFOh5"
+  },
+  "arrDao.file.sourceResolution": {
+    "defaultMessage": "Source resolution",
+    "srcHash": "WwPlgPPTXfY8"
+  },
+  "arrDao.label.code": {
+    "defaultMessage": "Code",
+    "srcHash": "lHt70Q2si8jP"
+  },
+  "arrDao.label.fileCount": {
+    "defaultMessage": "Number of files",
+    "srcHash": "6Ep27pGi80oO"
+  },
+  "arrDao.label.id": {
+    "defaultMessage": "ID",
+    "srcHash": "OEOXHc_e5Qg-"
+  },
+  "arrDao.label.scenario": {
+    "defaultMessage": "Scenario",
+    "srcHash": "HeuFOCziWMPw"
+  },
+  "arrDao.linkedTo": {
+    "defaultMessage": "Linked to description unit:",
+    "srcHash": "jjLFEQxRTSgI"
+  },
+  "arrDao.request.title": {
+    "defaultMessage": "Delimitation/disposal request",
+    "srcHash": "0S7LY3Tcqjqf"
+  },
+  "arrDao.thumbnail.empty": {
+    "defaultMessage": "Preview is not available",
+    "srcHash": "9gtOt95UtKZw"
+  },
+  "arrDao.thumbnail.notFound": {
+    "defaultMessage": "The item was not found in the repository",
+    "srcHash": "aFM7AnRjvymr"
+  },
+  "arrDao.thumbnail.position": {
+    "defaultMessage": "Preview {current}/{total}",
+    "srcHash": "xTXLk1hu74zX"
+  },
+  "arrDao.unit.in": {
+    "defaultMessage": "in",
+    "srcHash": "WClnU00PkJ0Z"
+  },
+  "arrDao.unit.mm": {
+    "defaultMessage": "mm",
+    "srcHash": "j6Hd3VNgbOuT"
+  },
+  "arrDao.unlink.action": {
+    "defaultMessage": "Unlink",
+    "srcHash": "CSSspIxpRrMi"
+  },
+  "arrDao.unlink.confirm": {
+    "defaultMessage": "Do you really want to unlink the digital entity from the description unit?",
+    "srcHash": "HOHGXAZdoNFP"
+  },
+  "arrDaoPage.link.multipleLinksNotAllowed": {
+    "defaultMessage": "The item is already linked to a description unit and the repository does not allow multiple links",
+    "srcHash": "DJ4rdbC45HPJ"
+  },
+  "arrDaos.list.title": {
+    "defaultMessage": "Digital entities",
+    "srcHash": "PQYhCBjzlUJO"
+  },
+  "arrDaos.unlink.success": {
+    "defaultMessage": "The digital entity was unlinked from the description unit",
+    "srcHash": "y4Kc7qIdN6LF"
+  },
+  "confirmDialog.title": {
+    "defaultMessage": "Confirmation",
+    "srcHash": "ieBBZA1HMgIH"
+  },
   "confirmPopover.no": {
     "defaultMessage": "Cancel",
     "srcHash": "bHfYpLCt8F6P"
@@ -1449,6 +1781,10 @@
     "defaultMessage": "Download CSV",
     "srcHash": "1LaqY8gF6JE1"
   },
+  "fundTreeDaos.action.openInArr": {
+    "defaultMessage": "Open in arrangement",
+    "srcHash": "B68JHJBBIwJj"
+  },
   "fund_filter_add_value": {
     "defaultMessage": "Or",
     "srcHash": "ETTHdeuMONkn"
@@ -1593,6 +1929,18 @@
     "defaultMessage": "Field is filled in automatically, switch to manual",
     "srcHash": "YU4iA0sg--z8"
   },
+  "itemForm.conflict.label": {
+    "defaultMessage": "Conflicting value",
+    "srcHash": "jI0e30K1GTlb"
+  },
+  "itemForm.conflict.save": {
+    "defaultMessage": "Save",
+    "srcHash": "eKX-T2uH2Zl7"
+  },
+  "itemForm.conflict.takeOver": {
+    "defaultMessage": "Take over",
+    "srcHash": "Zl25rJ2urUHA"
+  },
   "mandatoryType.impossible": {
     "defaultMessage": "Impossible",
     "srcHash": "tF8XT_kWW1X_"
@@ -1680,6 +2028,10 @@
   "multiFundAction.stage.submitting": {
     "defaultMessage": "Running action…",
     "srcHash": "62_V1ae3mzQ9"
+  },
+  "nodeDaos.title": {
+    "defaultMessage": "Digital entities of the description unit",
+    "srcHash": "0aemD1Q5UgjQ"
   },
   "nodeSubNodeForm_quote_title": {
     "defaultMessage": "Citation",

@@ -54,6 +54,7 @@ import URLParse from 'url-parse';
 
 import { reloadUserDetail } from 'actions/user/userDetail';
 import { fundVersionApproved } from 'actions/arr/fund.jsx';
+import { fundDataGridRefreshRows } from 'actions/arr/fundDataGrid';
 import { fundTreeFetch } from 'actions/arr/fundTree';
 import { fundTreeInvalidate } from 'actions/arr/fundTree';
 import * as types from 'actions/constants/ActionTypes';
@@ -192,11 +193,10 @@ export class websocket {
         // like the broadcast above. The server rejects a subscription to anyone
         // else's topic (see UserTopicSubscriptionInterceptor).
         const userId = store.getState().userDetail?.id;
-        if (userId != null) {
-            this.stompClient.subscribe('/topic/user/' + userId, this.onMessage);
-        } else {
-            console.warn('#ws per-user channel not subscribed - no logged user id yet');
-        }
+        // Bootstrap admin has no persisted id and subscribes to the shared "admin"
+        // segment — the server-side interceptor allows it only for id-less users.
+        const userTopic = userId != null ? String(userId) : 'admin';
+        this.stompClient.subscribe('/topic/user/' + userTopic, this.onMessage);
     };
 
     // Handles websocket disconnects
@@ -345,7 +345,20 @@ let eventMap = {
     ISSUE_CREATE: issueCreate,
     // Handled by useAiConversation through websocket listeners
     AI_REQUEST_UPDATE: () => { },
+    IMPORT_FUND_COMPLETED: importFundCompleted,
+    IMPORT_FUND_FAILED: importFundFailed,
 };
+
+function importFundCompleted(value) {
+    store.dispatch(addToastrSuccess(i18n('ribbon.action.arr.dataGrid.import.success')));
+    if (value?.versionId) {
+        store.dispatch(fundDataGridRefreshRows(value.versionId));
+    }
+}
+
+function importFundFailed(value) {
+    store.dispatch(addToastrDanger(i18n('ribbon.action.arr.dataGrid.import.failed'), value?.message || ''));
+}
 
 if (!window.ws) {
     window.ws = new websocket(wsUrl, eventMap);

@@ -12,7 +12,10 @@ import {
     EXT_SYSTEM_CLASS_LABEL,
     GIS_SYSTEM_TYPE_LABEL,
     AP_EXT_SYSTEM_LABEL,
-    DIGITAL_REPOSITORY_TYPE_LABEL
+    DIGITAL_REPOSITORY_TYPE_LABEL,
+    daSettingsMessages,
+    DA_DOWNLOAD_METHOD_MESSAGE,
+    DA_ON_RECEIVED_MESSAGE,
 } from './ExtSystemForm';
 import { Api } from 'api';
 import { Button } from '@fluentui/react-components';
@@ -306,6 +309,26 @@ class AdminExtSystemDetail extends AbstractReactComponent {
                                     ? i18n('admin.extSystem.multipleLinks.true')
                                     : i18n('admin.extSystem.multipleLinks.false')}
                             </span>
+                            {extSystem.digitalRepositoryType === DigitalRepositoryType.Da && (
+                                <>
+                                    <h4><FormattedMessage {...daSettingsMessages.downloadMethod} /></h4>
+                                    <span>
+                                        {DA_DOWNLOAD_METHOD_MESSAGE[extSystem.downloadMethod] && (
+                                            <FormattedMessage {...DA_DOWNLOAD_METHOD_MESSAGE[extSystem.downloadMethod]} />
+                                        )}
+                                    </span>
+
+                                    <h4><FormattedMessage {...daSettingsMessages.onReceived} /></h4>
+                                    <span>
+                                        {DA_ON_RECEIVED_MESSAGE[extSystem.onReceived] && (
+                                            <FormattedMessage {...DA_ON_RECEIVED_MESSAGE[extSystem.onReceived]} />
+                                        )}
+                                    </span>
+
+                                    <h4><FormattedMessage {...daSettingsMessages.syncDelay} /></h4>
+                                    <span>{extSystem.syncDelay}</span>
+                                </>
+                            )}
                         </div>
                     )}
                     {classJ === EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk && (
@@ -343,7 +366,8 @@ class AdminExtSystemDetail extends AbstractReactComponent {
                         <Button onClick={this.handleResyncExtSystem}>{i18n('admin.extSystem.synchronize')}</Button>
                     </div>}
                     {classJ === EXT_SYSTEM_CLASS.ArrDigitalRepository
-                        && extSystem.digitalRepositoryType === DigitalRepositoryType.Filesystem && (
+                        && (extSystem.digitalRepositoryType === DigitalRepositoryType.Filesystem
+                            || extSystem.digitalRepositoryType === DigitalRepositoryType.Da) && (
                         <div style={{margin: "8px 0"}}>
                             <Button
                                 onClick={this.handleTestRepository}

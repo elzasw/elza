@@ -24,6 +24,8 @@ import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.dao.FileSystemRepoBrowser;
+import cz.tacr.elza.api.DigitalRepositoryType;
+import cz.tacr.elza.connector.DaConnector;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -37,6 +39,9 @@ public class ExternalSystemController implements ExternalsystemsApi {
 
     @Autowired
     FileSystemRepoBrowser fileSystemRepoBrowser;
+
+    @Autowired
+    DaConnector daConnector;
 
     final UsrPermission.Permission reqPermissions[] = { UsrPermission.Permission.ADMIN,
             UsrPermission.Permission.AP_EXTERNAL_WR };
@@ -71,7 +76,11 @@ public class ExternalSystemController implements ExternalsystemsApi {
             return ResponseEntity.notFound().build();
         }
 
-        return ResponseEntity.ok(fileSystemRepoBrowser.testRepository((ArrDigitalRepository) extSystem));
+        ArrDigitalRepository repository = (ArrDigitalRepository) extSystem;
+        if (repository.getDigitalRepositoryType() == DigitalRepositoryType.DA) {
+            return ResponseEntity.ok(daConnector.testRepository(repository));
+        }
+        return ResponseEntity.ok(fileSystemRepoBrowser.testRepository(repository));
     }
 
     @Override

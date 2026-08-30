@@ -272,7 +272,7 @@ class Ribbon extends AbstractReactComponent {
             // submenu se šipkou zpět
             parts.push(
                 <RibbonGroup key="ribbon-group-main" className="large big-icon">
-                    <LinkContainer key="ribbon-btn-arr-back" to={urlFund("")}>
+                    <LinkContainer key="ribbon-btn-arr-back" to={fundId != null ? urlFund(fundId) : urlFund("")}>
                         <Button
                             variant={'default'}
                             className="large"

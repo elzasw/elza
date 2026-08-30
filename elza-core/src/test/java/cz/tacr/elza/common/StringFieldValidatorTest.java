@@ -76,6 +76,13 @@ public class StringFieldValidatorTest {
 		result = validator.validate(dataString);
 		assertEquals(1, result.size());
 		assertEquals(StringFieldValidator.ERR_BLANK_STR, result.iterator().next().getMessage());
+
+		// null is not an acceptable value, it has to be reported as a violation
+		// instead of failing with NPE
+		dataString.setStringValue(null);
+		result = validator.validate(dataString);
+		assertEquals(1, result.size());
+		assertEquals(StringFieldValidator.ERR_NULL_STR, result.iterator().next().getMessage());
 	}
 
 	@Test
@@ -110,5 +117,12 @@ public class StringFieldValidatorTest {
 		result = validator.validate(dataText);
 		assertEquals(1, result.size());
 		assertEquals(StringFieldValidator.ERR_BLANK_STR, result.iterator().next().getMessage());
+
+		// null is not an acceptable value, it has to be reported as a violation
+		// instead of failing with NPE
+		dataText.setTextValue(null);
+		result = validator.validate(dataText);
+		assertEquals(1, result.size());
+		assertEquals(StringFieldValidator.ERR_NULL_STR, result.iterator().next().getMessage());
 	}
 }

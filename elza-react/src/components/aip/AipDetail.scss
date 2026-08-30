@@ -1,5 +1,33 @@
 @import "../../variables.scss";
 
+.aip-problem {
+    color: $color-warn;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 4px;
+}
+
+/**
+ * Zjištěný problém dostává v detailu celou šířku panelu. Popis je celá věta a nese cesty,
+ * jmenné prostory a názvy elementů, které se do poloviční šířky ostatních hodnot nevejdou.
+ */
+.aip-problem-block {
+    width: 100%;
+    margin: 0.5rem 0;
+    padding: 0.5rem;
+    border: 1px solid $color-warn;
+    border-radius: 3px;
+
+    .aip-problem {
+        font-weight: bold;
+    }
+
+    .aip-problem-description {
+        margin-top: 0.25rem;
+        overflow-wrap: anywhere;
+    }
+}
+
 .aip-detail {
     display: flex;
     flex-direction: column;

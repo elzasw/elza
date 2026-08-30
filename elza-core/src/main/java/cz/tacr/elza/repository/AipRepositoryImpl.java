@@ -189,6 +189,7 @@ public class AipRepositoryImpl implements AipRepositoryCustom {
             case IS_NULL -> cb.isNull(path);
             case NOT_NULL -> cb.isNotNull(path);
             case EQ -> cb.equal(path, AipFilterValueType.requireValue(filter.getValue(), resolved.fieldName));
+            case NEQ -> notEqual(cb, path, AipFilterValueType.requireValue(filter.getValue(), resolved.fieldName));
             default -> throw unsupported(filter.getOperation().getValue(), resolved.fieldName);
         };
     }
@@ -237,6 +238,8 @@ public class AipRepositoryImpl implements AipRepositoryCustom {
             case NOT_NULL -> cb.isNotNull(path);
             case EQ -> cb.equal(path,
                     AipFilterValueType.parseEnum(path.getJavaType(), filter.getValue(), resolved.fieldName));
+            case NEQ -> notEqual(cb, path,
+                    AipFilterValueType.parseEnum(path.getJavaType(), filter.getValue(), resolved.fieldName));
             default -> throw unsupported(filter.getOperation().getValue(), resolved.fieldName);
         };
     }
@@ -249,8 +252,17 @@ public class AipRepositoryImpl implements AipRepositoryCustom {
             case IS_NULL -> cb.isNull(path);
             case NOT_NULL -> cb.isNotNull(path);
             case EQ -> cb.equal(path, number(path, AipFilterValueType.requireValue(filter.getValue(), resolved.fieldName)));
+            case NEQ -> notEqual(cb, path, number(path, AipFilterValueType.requireValue(filter.getValue(), resolved.fieldName)));
             default -> throw unsupported(filter.getOperation().getValue(), resolved.fieldName);
         };
+    }
+
+    /**
+     * Not-equal that also matches rows with no value: a row carrying nothing certainly does not
+     * carry the given value, while plain SQL inequality would drop it.
+     */
+    private static Predicate notEqual(final CriteriaBuilder cb, final Path<?> path, final Object value) {
+        return cb.or(cb.isNull(path), cb.notEqual(path, value));
     }
 
     // --- field resolution ---------------------------------------------------------------

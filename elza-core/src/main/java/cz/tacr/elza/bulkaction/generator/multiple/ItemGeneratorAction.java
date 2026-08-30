@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +43,7 @@ import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ArrStructuredObject.State;
 import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BulkActionCode;
 import cz.tacr.elza.repository.StructuredObjectRepository;
@@ -266,22 +268,51 @@ public class ItemGeneratorAction extends Action {
 
         @Override
         public void apply(LevelWithItems level, TypeLevel typeLevel) {
-            String prefix = null;
             // read values
+            // prefix is mandatory - level without exactly one source item or without
+            // usable specification cannot be numbered
             List<ArrDescItem> prefixItemList = level.getDescItems(prefixValueSource, null);
-            if (prefixItemList != null && prefixItemList.size() == 1) {
-                // read prefix if we have only one
-                ArrDescItem prefixItem = prefixItemList.get(0);
-                // 
-                Integer specId = prefixItem.getItemSpecId();
-                RulItemSpec spec = staticDataService.getData().getItemSpecById(specId);
-                // check if we have mapping
-                if (prefixValueMapping != null) {
-                    prefix = prefixValueMapping.get(spec.getCode());
-                } else {
-                    prefix = spec.getShortcut();
-                }
-
+            if (CollectionUtils.isEmpty(prefixItemList)) {
+                throw new BusinessException("Není vyplněn prvek popisu " + prefixValueSource.getCode()
+                        + ", ze kterého se určuje prefix ukládací jednotky",
+                        BulkActionCode.PREFIX_VALUE_NOT_FOUND)
+                                .set("nodeId", level.getNodeId())
+                                .set("itemType", prefixValueSource.getCode());
+            }
+            if (prefixItemList.size() > 1) {
+                throw new BusinessException("Prvek popisu " + prefixValueSource.getCode()
+                        + ", ze kterého se určuje prefix ukládací jednotky, je vyplněn více než jednou",
+                        BulkActionCode.PREFIX_VALUE_NOT_FOUND)
+                                .set("nodeId", level.getNodeId())
+                                .set("itemType", prefixValueSource.getCode())
+                                .set("count", prefixItemList.size());
+            }
+            // read prefix, we have exactly one
+            ArrDescItem prefixItem = prefixItemList.get(0);
+            //
+            Integer specId = prefixItem.getItemSpecId();
+            RulItemSpec spec = specId == null ? null : staticDataService.getData().getItemSpecById(specId);
+            if (spec == null) {
+                throw new BusinessException("Prvek popisu " + prefixValueSource.getCode()
+                        + ", ze kterého se určuje prefix ukládací jednotky, nemá vyplněnu specifikaci",
+                        BulkActionCode.PREFIX_VALUE_NOT_FOUND)
+                                .set("nodeId", level.getNodeId())
+                                .set("itemType", prefixValueSource.getCode());
+            }
+            // check if we have mapping
+            String prefix;
+            if (prefixValueMapping != null) {
+                prefix = prefixValueMapping.get(spec.getCode());
+            } else {
+                prefix = spec.getShortcut();
+            }
+            if (StringUtils.isBlank(prefix)) {
+                throw new BusinessException("Pro specifikaci " + spec.getCode() + " prvku popisu "
+                        + prefixValueSource.getCode() + " není definován prefix ukládací jednotky",
+                        BulkActionCode.PREFIX_VALUE_NOT_FOUND)
+                                .set("nodeId", level.getNodeId())
+                                .set("itemType", prefixValueSource.getCode())
+                                .set("itemSpec", spec.getCode());
             }
             // read count
             List<ArrDescItem> cntItemList = level.getDescItems(countSource, null);

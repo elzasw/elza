@@ -47,4 +47,11 @@
         <def-type>PARSE_VALUE</def-type>
         <priority>100</priority>
     </structure-definition>-->
+    <!-- Mapování prvků EAD z balíčku digitálního archivu na prvky popisu. Skript vrací
+         kódy prvků ZP2015, proto patří k těmto pravidlům; strukturovaný typ IMPORT_DA
+         zůstává v CZ_BASE jako obecný mechanismus. -->
+    <structure-definition structure-type="IMPORT_DA" filename="IMPORT_DA.groovy">
+        <def-type>SERIALIZED_VALUE</def-type>
+        <priority>100</priority>
+    </structure-definition>
 </structure-definitions>

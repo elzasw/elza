@@ -47,7 +47,6 @@ import cz.tacr.elza.controller.vo.DataUnitid;
 import cz.tacr.elza.controller.vo.DataUriRef;
 import cz.tacr.elza.controller.vo.ItemData;
 import cz.tacr.elza.controller.vo.NodeItem;
-import cz.tacr.elza.controller.vo.OutputItem;
 import cz.tacr.elza.controller.vo.PersistentSortConfigVO;
 import cz.tacr.elza.controller.vo.StructuredObjectItem;
 import cz.tacr.elza.controller.vo.UISettingsVO;
@@ -85,7 +84,6 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParInstitution;
@@ -95,7 +93,6 @@ import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.filter.DescItemTypeFilter;
 import cz.tacr.elza.filter.condition.BeginDescItemCondition;
@@ -1085,59 +1082,6 @@ public class ClientFactoryDO {
         specIds.removeAll(filter.getSpecs());
 
     	return specIds;
-    }
-
-    @Deprecated
-    public ArrOutputItem createOutputItem(final ArrItemVO outputItemVO, final Integer itemTypeId) {
-
-        ArrOutputItem outputItem = new ArrOutputItem();
-
-        var sdp = staticDataService.getData();
-        var itemType = sdp.getItemTypeById(itemTypeId);
-        if(itemType==null) {
-        	throw new BusinessException("Failed to get item type, itemTypeId: " + itemTypeId,
-        			 BaseCode.ID_NOT_EXIST);
-        }
-        outputItem.setItemType(itemType.getEntity());
-
-        if (outputItemVO.getDescItemSpecId() != null) {
-            RulItemSpec descItemSpec = itemType.getItemSpecById(outputItemVO.getDescItemSpecId());
-            outputItem.setItemSpec(descItemSpec);
-        }
-
-        ArrData data = outputItemVO.createDataEntity(em);
-        outputItem.setData(data);
-        return outputItem;
-    }
-
-    @Deprecated
-    public ArrOutputItem createOutputItem(final ArrItemVO itemVO) {
-        ArrOutputItem outputItem = new ArrOutputItem();
-        
-        outputItem.setItemId(itemVO.getId());
-        outputItem.setDescItemObjectId(itemVO.getDescItemObjectId());
-        outputItem.setPosition(itemVO.getPosition());
-        
-        var sdp = staticDataService.getData();
-        var itemType = sdp.getItemTypeById(itemVO.getItemTypeId());
-        if(itemType==null) {
-        	throw new BusinessException("Failed to get item type, itemTypeId: " + itemVO.getItemTypeId(),
-        			 BaseCode.ID_NOT_EXIST);
-        }
-        outputItem.setItemType(itemType.getEntity());
-        
-
-        if (itemVO.getDescItemSpecId() != null) {
-            RulItemSpec descItemSpec = itemType.getItemSpecById(itemVO.getDescItemSpecId());
-            if (descItemSpec == null) {
-                throw new SystemException("Specifikace s ID=" + itemVO.getDescItemSpecId() + " neexistuje", BaseCode.ID_NOT_EXIST);
-            }
-            outputItem.setItemSpec(descItemSpec);
-        }
-
-        ArrData data = itemVO.createDataEntity(em);
-        outputItem.setData(data);
-        return outputItem;
     }
 
     /**

@@ -1,0 +1,33 @@
+@import "../../variables.scss";
+
+.aip-explorer-page {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    padding: 0 1rem 1rem;
+
+    .aip-explorer-page-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .aip-explorer-page-title {
+        font-weight: bold;
+    }
+
+    .aip-explorer-page-tabs {
+        flex: none;
+    }
+
+    .tab-content {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    .tab-pane.active {
+        height: 100%;
+    }
+}

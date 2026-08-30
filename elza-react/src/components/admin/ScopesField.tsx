@@ -28,7 +28,7 @@ export const ScopesField: React.FC<IScopesFieldProps> = memo(({fields, disabled 
                 }
             }}
         />
-        {meta.error && <Form.Control.Feedback type="invalid">
+        {meta.error && <Form.Control.Feedback type="invalid" className="d-block">
             {meta.error}
         </Form.Control.Feedback>}
         <div className="selected-data-container">

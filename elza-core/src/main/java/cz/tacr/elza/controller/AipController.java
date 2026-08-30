@@ -15,6 +15,12 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import cz.tacr.elza.common.io.SpooledContent;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import org.springframework.http.HttpStatus;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -29,21 +35,18 @@ public class AipController implements AipsApi {
     private ClientFactoryVO clientFactoryVO;
 
     @Override
-    public ResponseEntity<Void> aipCreateDaoStructure(List<Integer> aipIds) {
-        daService.createDaoStructure(aipIds);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<DaAipActionVO> aipCreateDaoStructure(List<Integer> aipIds) {
+        return ResponseEntity.ok(clientFactoryVO.createAipAction(daService.requestMetadata(aipIds)));
     }
 
     @Override
-    public ResponseEntity<Void> aipDeleteDaoStructure(List<Integer> aipIds) {
-        daService.deleteDaoStructure(aipIds);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<DaAipActionVO> aipDeleteDaoStructure(List<Integer> aipIds) {
+        return ResponseEntity.ok(clientFactoryVO.createAipAction(daService.deleteMetadata(aipIds)));
     }
 
     @Override
-    public ResponseEntity<Void> aipDownloadCompleteAip(List<Integer> aipIds) {
-        daService.aipDownloadCompleteAip(aipIds);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<DaAipActionVO> aipDownloadCompleteAip(List<Integer> aipIds) {
+        return ResponseEntity.ok(clientFactoryVO.createAipAction(daService.aipDownloadCompleteAip(aipIds)));
     }
 
     @Override
@@ -52,21 +55,44 @@ public class AipController implements AipsApi {
     }
 
     @Override
-    public ResponseEntity<Void> aipDeleteCompleteAip(List<Integer> aipIds) {
-        daService.aipDeleteCompleteAip(aipIds);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<List<AipPackageEntry>> aipListPackageEntries(Integer aipId) {
+        return ResponseEntity.ok(daService.getPackageEntries(aipId));
     }
 
     @Override
-    public ResponseEntity<Void> aipUpdateAip(AipUpdateType type, List<Integer> aipIds) {
-        daService.aipUpdateAip(type, aipIds);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Resource> aipDownloadPackage(Integer aipId) {
+        return daService.getPackage(aipId);
     }
 
     @Override
-    public ResponseEntity<Void> aipExportAip(List<Integer> aipIds) {
-        daService.aipExportAip(aipIds);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Resource> aipDownloadPackageEntry(Integer aipId, String path) {
+        SpooledContent content = daService.getPackageEntry(aipId, path);
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CONTENT_LENGTH, Long.toString(content.size()));
+            headers.add(HttpHeaders.CONTENT_DISPOSITION,
+                    "inline; filename=\"" + path.substring(path.lastIndexOf('/') + 1) + "\"");
+            return new ResponseEntity<>(new InputStreamResource(content.openStreamAndCloseOnEnd()), headers,
+                                        HttpStatus.OK);
+        } catch (IOException e) {
+            content.close();
+            throw new SystemException("Nepodařilo se odeslat soubor balíčku", e, BaseCode.INVALID_STATE);
+        }
+    }
+
+    @Override
+    public ResponseEntity<DaAipActionVO> aipDeleteCompleteAip(List<Integer> aipIds) {
+        return ResponseEntity.ok(clientFactoryVO.createAipAction(daService.aipDeleteCompleteAip(aipIds)));
+    }
+
+    @Override
+    public ResponseEntity<DaAipActionVO> aipUpdateAip(AipUpdateType type, List<Integer> aipIds) {
+        return ResponseEntity.ok(clientFactoryVO.createAipAction(daService.aipUpdateAip(type, aipIds)));
+    }
+
+    @Override
+    public ResponseEntity<DaAipActionVO> aipExportAip(List<Integer> aipIds) {
+        return ResponseEntity.ok(clientFactoryVO.createAipAction(daService.aipExportAip(aipIds)));
     }
 
     @Override
@@ -109,6 +135,11 @@ public class AipController implements AipsApi {
     }
 
     @Override
+    public ResponseEntity<DaAipActionVO> aipGetAipAction(Integer actionId) {
+        return ResponseEntity.ok(clientFactoryVO.createAipAction(daService.getAipAction(actionId)));
+    }
+
+    @Override
     public ResponseEntity<AipDetailVO> aipGetAip(Integer aipId) {
         return ResponseEntity.ok(aipService.getAipDetail(aipId));
     }
@@ -119,27 +150,44 @@ public class AipController implements AipsApi {
     }
 
     @Override
-    public ResponseEntity<Void> aipBulkConnectLogicToJp(Integer arrNodeId, List<Integer> daAipId, Integer daDaoId) {
-        daService.bulkConnectLogicalStructureToJP(arrNodeId, daAipId, daDaoId);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<AipConnectCheckVO> aipConnectCheck(Integer arrNodeId, List<Integer> daAipIdList,
+                                                             Boolean newNode) {
+        List<DaService.BlockedAip> blocked = daService.checkConnect(arrNodeId, daAipIdList,
+                                                                    Boolean.TRUE.equals(newNode));
+        AipConnectCheckVO vo = new AipConnectCheckVO();
+        vo.setTotal(daAipIdList.size());
+        vo.setBlocked(blocked.stream().map(b -> {
+            AipConnectBlockedVO item = new AipConnectBlockedVO();
+            item.setAipId(b.aipId());
+            item.setAipCode(b.aipCode());
+            item.setReason(b.reason());
+            return item;
+        }).toList());
+        return ResponseEntity.ok(vo);
     }
 
     @Override
-    public ResponseEntity<Void> aipBulkConnectToJp(Integer arrNodeId, List<Integer> daAipIdList) {
-        daService.bulkConnectToJP(arrNodeId, daAipIdList);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<DaAipActionVO> aipBulkConnectLogicToJp(Integer arrNodeId, List<Integer> daAipId, Integer daDaoId) {
+        return ResponseEntity.ok(clientFactoryVO.createAipAction(
+                daService.submitBulkConnectLogicalStructure(arrNodeId, daAipId, daDaoId)));
     }
 
     @Override
-    public ResponseEntity<Void> aipBulkCreateFromSelected(Integer arrNodeId, List<Integer> daAipIdList) {
-        daService.bulkCreateFromSelected(arrNodeId, daAipIdList);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<DaAipActionVO> aipBulkConnectToJp(Integer arrNodeId, List<Integer> daAipIdList) {
+        return ResponseEntity.ok(clientFactoryVO.createAipAction(
+                daService.submitBulkConnectToJP(arrNodeId, daAipIdList)));
     }
 
     @Override
-    public ResponseEntity<Void> aipBulkCreateSelectedToJp(Integer arrNodeId, List<Integer> daAipIdList, Integer daLevelViewId) {
-        daService.bulkCreateFromSelectedToJP(arrNodeId, daAipIdList, daLevelViewId);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<DaAipActionVO> aipBulkCreateFromSelected(Integer arrNodeId, List<Integer> daAipIdList) {
+        return ResponseEntity.ok(clientFactoryVO.createAipAction(
+                daService.submitBulkCreateFromSelected(arrNodeId, daAipIdList)));
+    }
+
+    @Override
+    public ResponseEntity<DaAipActionVO> aipBulkCreateSelectedToJp(Integer arrNodeId, List<Integer> daAipIdList, Integer daLevelViewId) {
+        return ResponseEntity.ok(clientFactoryVO.createAipAction(
+                daService.submitBulkCreateFromSelectedToJP(arrNodeId, daAipIdList, daLevelViewId)));
     }
 
     /**

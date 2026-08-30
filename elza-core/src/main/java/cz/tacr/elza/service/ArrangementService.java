@@ -6,6 +6,7 @@ import static cz.tacr.elza.repository.ExceptionThrow.inhibitedItem;
 import static cz.tacr.elza.repository.ExceptionThrow.refTemplate;
 import static cz.tacr.elza.repository.ExceptionThrow.refTemplateMapType;
 import static cz.tacr.elza.repository.ExceptionThrow.version;
+import static cz.tacr.elza.utils.CsvUtils.CSV_TYPE_NAME;
 import static java.util.stream.Collectors.toSet;
 
 import java.io.IOException;
@@ -13,6 +14,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,7 +50,6 @@ import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
 import jakarta.transaction.Transactional;
 import jakarta.transaction.Transactional.TxType;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -63,9 +65,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
@@ -187,8 +191,11 @@ import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventFund;
+import cz.tacr.elza.service.eventnotification.events.EventFundImport;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
+import cz.tacr.elza.service.importcsv.ImportJobService;
+import cz.tacr.elza.websocket.UserEventPushService;
 
 /**
  * Main arrangement service.
@@ -234,6 +241,9 @@ public class ArrangementService {
     private InstitutionRepository institutionRepository;
     @Autowired
     private EventNotificationService eventNotificationService;
+
+    @Autowired
+    private UserEventPushService userEventPushService;
     @Autowired
     private DescriptionItemService descriptionItemService;
     @Autowired
@@ -302,6 +312,13 @@ public class ArrangementService {
     @Autowired
     private ItemTypeRepository itemTypeRepository;
 
+    @Autowired
+    private ImportJobService importJobService;    
+
+    @Lazy
+    @Autowired
+    private ArrangementService self;
+
     //TODO: add translation or refactor
     public static final String UNDEFINED = "výjimka";
 
@@ -323,7 +340,7 @@ public class ArrangementService {
     }
 
     /**
-     * Načtení souboru na základě id.
+     * Načtení souboru na základě id s kontrolou oprávnění pro čtení
      *
      * @param fundId id souboru
      * @return konkrétní AP
@@ -335,9 +352,22 @@ public class ArrangementService {
             UsrPermission.Permission.FUND_ISSUE_ADMIN
     })
     public ArrFund getFund(@AuthParam(type = AuthParam.Type.FUND) @NotNull Integer fundId) {
-        return fundRepository.findById(fundId)
-                .orElseThrow(fund(fundId));
+        return fundRepository.findById(fundId).orElseThrow(fund(fundId));
     }
+
+    /**
+     * Načtení souboru na základě id s kontrolou oprávnění k zápisu
+     *
+     * @param fundId id souboru
+     * @return konkrétní AP
+     * @throws ObjectNotFoundException objekt nenalezen
+     */
+    @AuthMethod(permission = { UsrPermission.Permission.FUND_ADMIN,
+            UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR
+    })
+    public ArrFund getFundForImport(@AuthParam(type = AuthParam.Type.FUND) @NotNull Integer fundId) {
+        return fundRepository.findById(fundId).orElseThrow(fund(fundId));
+    }    
 
     /**
      * Build a {@link NodeInfo} for the given node — id/version/uuid, fund placement,
@@ -2558,29 +2588,70 @@ public class ArrangementService {
         return new ByteArrayResource(coordinates.getBytes(StandardCharsets.UTF_8));
     }
 
-    @AuthMethod(permission = { UsrPermission.Permission.FUND_ADMIN,
-                               UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR })
-    public void importFundData(final @AuthParam(type = AuthParam.Type.FUND) ArrFund fund,
-                               @Valid String importType,
-                               @Valid String separator,
-                               InputStream is) {
-        if ("CSV".equals(importType)) {
-            importFundDataCsv(fund, separator, is);
-            return;
+    /**
+     * Asynchronní import souborů CSV
+     * 
+     * @param fundId
+     * @param importType
+     * @param separator
+     * @param csvPath
+     * @param initiatorId
+     * @param jobId
+     */
+    @Async
+    public void importFundDataAsync(Integer fundId, String importType, String separator, Path csvPath, Integer initiatorId, UUID jobId) {
+        Integer versionId = null;
+        try (InputStream is = Files.newInputStream(csvPath)) {
+        	// self-invocation přes proxy, aby se otevřela @Transactional
+            versionId = self.importFundDataInternal(fundId, importType, separator, is);
+            importJobService.markCompleted(jobId);
+            notifyImportResult(initiatorId, new EventFundImport(EventType.IMPORT_FUND_COMPLETED, fundId, versionId, null));
+        } catch (Exception e) {
+            logger.error("Failed to import data (fundId={})", fundId, e);
+            importJobService.markFailed(jobId, e.getMessage());
+            notifyImportResult(initiatorId, new EventFundImport(EventType.IMPORT_FUND_FAILED, fundId, versionId, e.getMessage()));
+        } finally {
+            try {
+                Files.deleteIfExists(csvPath);
+            } catch (IOException ignored) {
+            }
         }
+    }
 
-        logger.error("Required importType is not supported: {}", importType);
+    /**
+     * Doručení výsledku importu: uživateli přes privátní topic, systémovému
+     * uživateli (bez id, např. admin) přes sdílený admin topic.
+     */
+    private void notifyImportResult(Integer initiatorId, EventFundImport event) {
+        if (initiatorId != null) {
+            userEventPushService.push(initiatorId, event);
+        } else {
+            userEventPushService.push(UserEventPushService.ADMIN_TOPIC_ID, event);
+        }
+    }
+
+    @Transactional
+    public Integer importFundDataInternal(Integer fundId, String importType, String separator, InputStream is) {
+        ArrFund fund = fundRepository.getReferenceById(fundId);
+        ArrFundVersion version = arrangementInternalService.getOpenVersionByFund(fund);
+        if (importType.equals(CSV_TYPE_NAME)) {
+            importFundDataCsv(fund, separator, is);
+        } else {
+            logger.error("Required importType is not supported: {}", importType);
+        }
+        return version.getFundVersionId();
     }
 
     private void importFundDataCsv(ArrFund fund, String separator, InputStream is) {
+        ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFund(fund);
+        isValidAndOpenVersion(fundVersion);
         // create change
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.IMPORT, null);
-        ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFund(fund);
         char delimiter = StringUtils.isEmpty(separator) ? DEFAULT_CSV_SEPARATOR : separator.charAt(0);
 
         CSVFormat csvf = CSVFormat.EXCEL.builder().setDelimiter(delimiter).build();
         try (InputStreamReader isr = new InputStreamReader(BOMInputStream.builder().setInputStream(is).get(), "UTF-8");
-             CSVParser parser = csvf.parse(isr)) {
+            CSVParser parser = csvf.parse(isr)) {
 
             MultipleItemChangeContext changeContext = descriptionItemService.createChangeContext(fundVersion.getFundVersionId());
 

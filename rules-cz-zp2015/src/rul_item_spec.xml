@@ -24,6 +24,13 @@
         <shortcut>starší pomůcka</shortcut>
         <item-type-assign code="ZP2015_ARRANGEMENT_TYPE"/>
     </item-spec>
+    <!-- Typ pořádání pro nezpracované archiválie či dokumenty -->
+    <item-spec code="ZP2015_ARRANGEMENT_BAS">
+        <name>základní popis</name>
+        <description>základní popis</description>
+        <shortcut>základní popis</shortcut>
+        <item-type-assign code="ZP2015_ARRANGEMENT_TYPE"/>
+    </item-spec>
     <item-spec code="ZP2015_LEVEL_ROOT">
         <name>soubor</name>
         <description>soubor</description>
@@ -345,7 +352,77 @@
         <view-order>57</view-order>
         <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
-    
+    <item-spec code="ZP2015_UNIT_TYPE_FPA">
+        <name>filmový pás</name>
+        <description>filmový pás</description>
+        <shortcut>fpa</shortcut>
+        <view-order>58</view-order>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_TYPE_ANZ">
+        <name>jiný nosič analogového záznamu</name>
+        <description>jiný nosič analogového záznamu</description>
+        <shortcut>anz</shortcut>
+        <view-order>59</view-order>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_TYPE_MHZ">
+        <name>nosič digitálního záznamu</name>
+        <description>nosič digitálního záznamu</description>
+        <shortcut>mhz</shortcut>
+        <view-order>60</view-order>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_TYPE_FVA">
+        <name>fonografický váleček</name>
+        <description>fonografický váleček</description>
+        <shortcut>fva</shortcut>
+        <view-order>61</view-order>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_TYPE_FDR">
+        <name>fonografický drát</name>
+        <description>fonografický drát</description>
+        <shortcut>fdr</shortcut>
+        <view-order>62</view-order>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_TYPE_GD">
+        <name>gramofonová deska</name>
+        <description>gramofonová deska</description>
+        <shortcut>gd</shortcut>
+        <view-order>63</view-order>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_TYPE_MAT">
+        <name>matrice</name>
+        <description>matrice</description>
+        <shortcut>mat</shortcut>
+        <view-order>64</view-order>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_TYPE_MG">
+        <name>magnetofonový pásek</name>
+        <description>magnetofonový pásek</description>
+        <shortcut>mg</shortcut>
+        <view-order>65</view-order>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_TYPE_AKA">
+        <name>audiokazeta</name>
+        <description>audiokazeta</description>
+        <shortcut>aka</shortcut>
+        <view-order>66</view-order>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_TYPE_KDI">
+        <name>kompaktní disk</name>
+        <description>kompaktní disk</description>
+        <shortcut>kdi</shortcut>
+        <view-order>67</view-order>
+        <item-type-assign code="ZP2015_UNIT_TYPE"/>
+    </item-spec>
+
     <!-- Podtyp/Subtype -->
     <item-spec code="ZP2015_UNIT_SUBTYPE_MTR">
         <name>matrika</name>
@@ -632,6 +709,66 @@
         <shortcut>jin</shortcut>
         <item-type-assign code="ZP2015_EXTRA_UNITS"/>
     </item-spec>
+    <item-spec code="ZP2015_EXTRA_UNITS_FPA">
+        <name>filmové pásy</name>
+        <description>filmové pásy</description>
+        <shortcut>fpa</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
+    </item-spec>
+    <item-spec code="ZP2015_EXTRA_UNITS_ANZ">
+        <name>jiné nosiče analogových záznamů</name>
+        <description>jiné nosiče analogových záznamů</description>
+        <shortcut>anz</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
+    </item-spec>
+    <item-spec code="ZP2015_EXTRA_UNITS_MHZ">
+        <name>nosiče digitálních záznamů</name>
+        <description>nosiče digitálních záznamů</description>
+        <shortcut>mhz</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
+    </item-spec>
+    <item-spec code="ZP2015_EXTRA_UNITS_FVA">
+        <name>fonografické válečky</name>
+        <description>fonografické válečky</description>
+        <shortcut>fva</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
+    </item-spec>
+    <item-spec code="ZP2015_EXTRA_UNITS_FDR">
+        <name>fonografické dráty</name>
+        <description>fonografické dráty</description>
+        <shortcut>fdr</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
+    </item-spec>
+    <item-spec code="ZP2015_EXTRA_UNITS_GD">
+        <name>gramofonové desky</name>
+        <description>gramofonové desky</description>
+        <shortcut>gd</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
+    </item-spec>
+    <item-spec code="ZP2015_EXTRA_UNITS_MAT">
+        <name>matrice</name>
+        <description>matrice</description>
+        <shortcut>mat</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
+    </item-spec>
+    <item-spec code="ZP2015_EXTRA_UNITS_MG">
+        <name>magnetofonové pásky</name>
+        <description>magnetofonové pásky</description>
+        <shortcut>mg</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
+    </item-spec>
+    <item-spec code="ZP2015_EXTRA_UNITS_AKA">
+        <name>audiokazety</name>
+        <description>audiokazety</description>
+        <shortcut>aka</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
+    </item-spec>
+    <item-spec code="ZP2015_EXTRA_UNITS_KDI">
+        <name>kompaktní disky</name>
+        <description>kompaktní disky</description>
+        <shortcut>kdi</shortcut>
+        <item-type-assign code="ZP2015_EXTRA_UNITS"/>
+    </item-spec>
     <item-spec code="ZP2015_OTHERID_SIG_ORIG">
         <name>původní signatura</name>
         <description>signatura přidělená původcem</description>
@@ -750,6 +887,12 @@
         <name>matriční číslo</name>
         <description>matriční číslo</description>
         <shortcut>matr. č.</shortcut>
+        <item-type-assign code="ZP2015_OTHER_ID"/>
+    </item-spec>
+    <item-spec code="ZP2015_OTHERID_SOURCEID">
+        <name>ID ve zdrojovém systému</name>
+        <description>identifikátor ve zdrojovém systému</description>
+        <shortcut>ID ve zdroj. syst.</shortcut>
         <item-type-assign code="ZP2015_OTHER_ID"/>
     </item-spec>
     <!-- Role entit -->
@@ -1840,6 +1983,18 @@
         <shortcut>fas</shortcut>
         <item-type-assign code="ZP2015_PACKET_TYPE"/>
     </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_BAL">
+        <name>balík</name>
+        <description>balík</description>
+        <shortcut>bal</shortcut>
+        <item-type-assign code="ZP2015_PACKET_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_PACKET_TYPE_POR">
+        <name>pořadač</name>
+        <description>pořadač</description>
+        <shortcut>por</shortcut>
+        <item-type-assign code="ZP2015_PACKET_TYPE"/>
+    </item-spec>
     <item-spec code="ZP2015_PACKET_TYPE_SVZ">
         <name>svazek</name>
         <description>svazek</description>
@@ -2248,6 +2403,80 @@
         <shortcut>jin</shortcut>
         <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
     </item-spec>
+    <!-- Počet EJ pro nezpracované archiválie -->
+    <item-spec code="ZP2015_UNIT_COUNT_BAL">
+        <name>balíky</name>
+        <description>balík</description>
+        <shortcut>bal</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_COUNT_POR">
+        <name>pořadače</name>
+        <description>pořadač</description>
+        <shortcut>por</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_COUNT_FPA">
+        <name>filmové pásy</name>
+        <description>filmový pás</description>
+        <shortcut>fpa</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_COUNT_ANZ">
+        <name>jiné nosiče analogových záznamů</name>
+        <description>jiný nosič analogového záznamu</description>
+        <shortcut>anz</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_COUNT_MHZ">
+        <name>nosiče digitálních záznamů</name>
+        <description>nosič digitálního záznamu</description>
+        <shortcut>mhz</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_COUNT_FVA">
+        <name>fonografické válečky</name>
+        <description>fonografický váleček</description>
+        <shortcut>fva</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_COUNT_FDR">
+        <name>fonografické dráty</name>
+        <description>fonografický drát</description>
+        <shortcut>fdr</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_COUNT_GD">
+        <name>gramofonové desky</name>
+        <description>gramofonová deska</description>
+        <shortcut>gd</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_COUNT_MAT">
+        <name>matrice</name>
+        <description>matrice</description>
+        <shortcut>mat</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_COUNT_MG">
+        <name>magnetofonové pásky</name>
+        <description>magnetofonový pásek</description>
+        <shortcut>mg</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_COUNT_AKA">
+        <name>audiokazety</name>
+        <description>audiokazeta</description>
+        <shortcut>aka</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
+    </item-spec>
+    <item-spec code="ZP2015_UNIT_COUNT_KDI">
+        <name>kompaktní disky</name>
+        <description>kompaktní disk</description>
+        <shortcut>kdi</shortcut>
+        <item-type-assign code="ZP2015_UNIT_COUNT_ITEM"/>
+    </item-spec>
+
     <!-- Prvky popisu pro matriku -->
     <item-spec code="ZP2015_RECORD_TYPE_BORN">
         <name>záznamy narozených</name>

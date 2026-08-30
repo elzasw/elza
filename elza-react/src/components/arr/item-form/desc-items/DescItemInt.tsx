@@ -54,12 +54,16 @@ export function DescItemInt({
   } = useValueManager<number | string>(_initialValue, item);
 
   async function handleChange(force?: boolean) {
-    if (value && initialValue !== value && (!conflictValue || force)) {
-        let integerValue = value;
-        if(isDuration){
-            integerValue = parseInt(fromDuration(normalizeDurationLength(value)));
+    if (initialValue !== value && (!conflictValue || force)) {
+        const isEmpty = value == null || value === "";
+        let integerValue: number | undefined = undefined;
+        if (!isEmpty) {
+            // The non-duration input already stores a number; DURATION keeps the formatted text.
+            integerValue = isDuration
+                ? parseInt(fromDuration(normalizeDurationLength(value)))
+                : (value as number);
         }
-        if (typeof integerValue === 'number') {
+        if (isEmpty || typeof integerValue === 'number') {
             await onChange({
                 ...item,
                 data: { ...item.data, integerValue },
@@ -110,9 +114,7 @@ export function DescItemInt({
         onBlur={() => handleChange()}
       />
       <ConflictValue
-        value={value?.toString()}
         conflictValue={conflictValue?.toString()}
-        isDirty={isDirty}
         onResolve={resolveConflict}
       >
         {(conflictValue) => <Input size={compact ? "small" : "medium"} value={conflictValue} readOnly={true} style={{ fontSize: "1em" }} />}

@@ -11,6 +11,7 @@ import { FundDataGrid } from "./DataGrid.types";
 import { ApAccessPointVO } from "api/ApAccessPointVO.ts";
 import { AbstractFilter, AipDetailVO, AipFieldName, Sorting } from "elza-api";
 import { MultiFilterObject } from "components/arr/search-funds-form/filters/types";
+import { ArrDaoVO } from "typings/dao";
 
 export interface SplitterSizes {
     leftWidth: number;
@@ -263,10 +264,10 @@ export interface Fund {
     mark: unknown | null;
     moving: boolean | unknown;
     name: string | unknown;
-    nodeDaoList: unknown;
-    nodeDaoListAssign: unknown;
+    nodeDaoList: SimpleList<ArrDaoVO>;
+    nodeDaoListAssign: SimpleList<ArrDaoVO>;
     nodes: NodesState;
-    packageDaoList: unknown;
+    packageDaoList: SimpleList<ArrDaoVO>;
     reducer: unknown;
     requestDetail: unknown;
     requestList: unknown;
@@ -387,6 +388,9 @@ export interface ExternalSystem {
     viewThumbnailUrl?: string;
     sendNotification?: boolean;
     multipleLinks?: boolean;
+    downloadMethod?: string;
+    onReceived?: string;
+    syncDelay?: number;
 }
 
 type KMLExternalSystem = Omit<ExternalSystem, "username" | "password" | "elzaCode" | "publishOnlyApproved" | "userInfo" | "viewFileUrl" | "viewThumbnailUrl" | "sendNotification">;

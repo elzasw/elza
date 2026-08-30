@@ -3,11 +3,23 @@
 
 .aip-table {
     margin: 0;
-    overflow: auto;
+    /* Detail je součástí rozvržení, ne překryv - zmenší se tabulka, nic se nezakryje. */
+    flex-wrap: nowrap;
+    align-items: stretch;
 
+    .aip-table-main {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    /* The table keeps the configured column widths, so it may be wider than the page;
+       it scrolls inside this container and the filter and pagination stay put. */
+    .aip-table-scroll {
+        width: 100%;
+        overflow-x: auto;
+    }
 
     .aip-table-body {
-        overflow-x: auto;
 
         .header {
            background-color: #b3b3b3ff;
@@ -16,6 +28,22 @@
 
         .table-row:nth-child(even){
            background-color: $shade-1;
+        }
+
+        .aip-action-header {
+            width: 34px;
+        }
+
+        .aip-action-cell {
+            width: 34px;
+            padding: 0;
+        }
+
+        .aip-problem {
+            color: $color-warn;
+            display: inline-flex;
+            align-items: baseline;
+            gap: 4px;
         }
 
         .link-like {

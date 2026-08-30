@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -117,12 +118,17 @@ public class StructObjValueService {
     private boolean stopGenerator = false;
     private boolean wakeupRequested = false;
 
-    private Map<File, GroovyScriptService.GroovyScriptFile> groovyScriptMap = new HashMap<>();
+    /**
+     * Cache načtených groovy skriptů. Čte a plní ji vlákno generátoru i vlákna
+     * obsluhující požadavky, proto souběžná mapa; reference je volatile, aby
+     * výměna při invalidaci byla vidět i v ostatních vláknech.
+     */
+    private volatile Map<File, GroovyScriptService.GroovyScriptFile> groovyScriptMap = new ConcurrentHashMap<>();
 
     @Subscribe
-    public synchronized void invalidateCache(final CacheInvalidateEvent cacheInvalidateEvent) {
+    public void invalidateCache(final CacheInvalidateEvent cacheInvalidateEvent) {
         if (cacheInvalidateEvent.contains(CacheInvalidateEvent.Type.GROOVY)) {
-            groovyScriptMap = new HashMap<>();
+            groovyScriptMap = new ConcurrentHashMap<>();
         }
     }
 
@@ -249,8 +255,9 @@ public class StructObjValueService {
     public void startGenerator() {
         synchronized (lock) {
             // check that generator is not running
-            Validate.isTrue(generatorThread == null);
+            Validate.isTrue(generatorThread == null, "Generátor už běží");
 
+            stopGenerator = false;
             generatorThread = new Thread(() -> {
                 generatorMain();
             }, "StructObjGenerator");
@@ -259,26 +266,32 @@ public class StructObjValueService {
     }
 
     public void stopGenerator() {
-        while (true) {
-            synchronized (lock) {
-                if (generatorThread == null) {
-                    Validate.isTrue(stopGenerator == false);
-                    return;
-                }
-                if (stopGenerator == false) {
-                    stopGenerator = true;
-                    notifyGenerator();
-                }
-                // simply wait for stop
+        synchronized (lock) {
+            Thread stopped = generatorThread;
+            if (stopped == null) {
+                return;
+            }
+            // Čekání na sebe sama by nikdy neskončilo.
+            Validate.isTrue(Thread.currentThread() != stopped,
+                            "Generátor nelze zastavit z jeho vlastního vlákna");
+
+            stopGenerator = true;
+            notifyGenerator();
+
+            // Čeká se jen na vlákno, které se zastavuje. Generátor při ukončení
+            // nastaví stopGenerator zpět na false a generatorThread na null, takže
+            // příznak nemůže přejít na generátor spuštěný mezitím jiným volajícím
+            // a čekání takový generátor rovnou ukončí, místo aby ho zabilo.
+            while (generatorThread == stopped) {
                 try {
                     lock.wait(100);
                 } catch (InterruptedException e) {
-                    // nothing to do here
+                    // Volající se ukončuje; další čekání by se jen zacyklilo.
                     Thread.currentThread().interrupt();
+                    return;
                 }
             }
         }
-
     }
 
     public void generatorMain() {
@@ -695,12 +708,7 @@ public class StructObjValueService {
      * @return struktura pro práci s groovy souborem
      */
     private GroovyScriptService.GroovyScriptFile getGroovyScriptFile(final File groovyFile) {
-        GroovyScriptFile groovyScriptFile = groovyScriptMap.get(groovyFile);
-        if (groovyScriptFile == null) {
-            groovyScriptFile = new GroovyScriptFile(groovyFile);
-            groovyScriptMap.put(groovyFile, groovyScriptFile);
-        }
-        return groovyScriptFile;
+        return groovyScriptMap.computeIfAbsent(groovyFile, GroovyScriptFile::new);
     }
 
     /**

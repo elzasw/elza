@@ -1,14 +1,32 @@
-import { DataType, NodeItem } from "elza-api";
+import {
+  DataCoordinates,
+  DataDate,
+  DataDecimal,
+  DataFormattedText,
+  DataInteger,
+  DataString,
+  DataText,
+  DataType,
+  DataUnitdate,
+  DataUnitid,
+  DataUriRef,
+  NodeItem,
+} from "elza-api";
 import { useEffect, useState } from "react";
 import { useLocalStorage } from "utils/hooks/useLocalStorage";
 
-export function createLocalStorageItemKey(item: NodeItem) {
-  return `descItem-${item.nodeId}-${item.itemTypeId}-${item.itemObjectId || "new"}`;
+/**
+ * Storage key for an item's pending value. `field` separates components that edit several
+ * fields of one item; without it the key stays the same as for single-field components.
+ */
+export function createLocalStorageItemKey(item: NodeItem, field?: string) {
+  const key = `descItem-${item.nodeId}-${item.itemTypeId}-${item.itemObjectId || "new"}`;
+  return field ? `${key}-${field}` : key;
 }
 
-export function useValueManager<T extends string | number>(initialValue: T, item: NodeItem) {
+export function useValueManager<T extends string | number>(initialValue: T, item: NodeItem, field?: string) {
   const [save, load, reset] = useLocalStorage<T>(
-    createLocalStorageItemKey(item),
+    createLocalStorageItemKey(item, field),
   );
 
   const storedValue = load();
@@ -69,6 +87,53 @@ export function useValueManager<T extends string | number>(initialValue: T, item
     resetConflict,
     finishChange,
   };
+}
+
+/**
+ * Whether the item carries no value. Zero and "0" are values, not emptiness.
+ *
+ * Only the data types edited through `useValueManager` are covered; the remaining ones
+ * (reference/spec based) never reach the empty-value branch.
+ */
+export function isEmptyItemValue(item: NodeItem): boolean {
+  if (item.undefined) {
+    return false;
+  }
+
+  const data = item.data;
+  if (!data) {
+    return true;
+  }
+
+  const isBlank = (value: unknown) =>
+    value == null || (typeof value === "string" && value.trim() === "");
+
+  switch (data.dataType) {
+    case DataType.String:
+      return isBlank((data as DataString).stringValue);
+    case DataType.Text:
+      return isBlank((data as DataText).textValue);
+    case DataType.FormattedText:
+      return isBlank((data as DataFormattedText).value);
+    case DataType.Int:
+      return isBlank((data as DataInteger).integerValue);
+    case DataType.Decimal:
+      return isBlank((data as DataDecimal).value);
+    case DataType.Unitid:
+      return isBlank((data as DataUnitid).unitId);
+    case DataType.Date:
+      return isBlank((data as DataDate).value);
+    case DataType.Unitdate:
+      return isBlank((data as DataUnitdate).value);
+    case DataType.Coordinates:
+      return isBlank((data as DataCoordinates).value);
+    case DataType.UriRef:
+      // The URI is required; the description and template only qualify it, so they cannot keep
+      // the item alive on their own.
+      return isBlank((data as DataUriRef).value);
+    default:
+      return false;
+  }
 }
 
 export function createEmptyDescItem(

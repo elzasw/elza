@@ -1,16 +1,18 @@
 import { useIntl } from "react-intl";
 import { tableMessages } from "components/shared/lang/tableMessages";
-import { SortingOrder } from "elza-api";
+import { QueueItemState, SortingOrder } from "elza-api";
 import {FC, useCallback, useEffect, useState, MouseEvent, KeyboardEvent} from 'react';
 import { useAppSelector } from 'utils/hooks';
 import {StoreHorizontalLoader} from 'components/shared';
 import storeFromArea from '../../shared/utils/storeFromArea.jsx';
 import { formatAipSize } from './format';
 import { formatDateCz } from 'utils/date';
+import { dateToDateTimeString } from '../../shared/utils/commons';
 import { findColDefByKey } from './columns';
 import './AipTable.scss';
 import { useHistory} from 'react-router';
-import {urlAip} from '../../constants.tsx';
+import {urlAip, urlEntity} from '../../constants.tsx';
+import { Link } from 'react-router-dom';
 import { useThunkDispatch } from 'utils/hooks';
 import {aipsFetchIfNeeded, aipsFilter, AREA_AIP, AREA_AIPS, setSelectedAips, } from "../../actions/aip/aip.ts";
 import {
@@ -33,7 +35,10 @@ import {
     useTableSort,
     createTableColumn,
 } from '@fluentui/react-components';
+import { Icon } from 'components/shared';
+import { Button } from 'react-bootstrap';
 import { getBoolIcon } from './AipCells';
+import { explorerPageMessages, linkStateMessages, problemMessages, queueStateMessages } from './messages';
 import { colDef } from './columns';
 import { Row } from 'react-bootstrap';
 import AipFilterSection from './filter/AipFilterSection.tsx';
@@ -47,6 +52,8 @@ type AipTableProps = {
     filterDisabled?: boolean;
     initialFilters?: AipFilterEntry[];
     hiddenValues?: string[];
+    /** Otevření průzkumníka pro jeden AIP; bez něj se sloupec s akcí nezobrazuje. */
+    onExplore?: (aipId: number) => void;
     detailOpen?: boolean;
     setDetailOpen?: (open: boolean) => void;
 }
@@ -71,7 +78,7 @@ const getAipRows = (aips: Aips) => {
     return [];
 };
 
-const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilters, hiddenValues, detailOpen, setDetailOpen}) => {
+const AipTable: FC<AipTableProps> = ({onAipSelect, onExplore, filterDisabled, initialFilters, hiddenValues, detailOpen, setDetailOpen}) => {
     const aips = useAppSelector(state => storeFromArea(state, AREA_AIPS) as Aips);
     const aip = useAppSelector(state => storeFromArea(state, AREA_AIP) as Aip);
     const {from, pageSize} = aips.filter;
@@ -106,13 +113,77 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
     /** Sloupce maji i skladane klice ("fund.name"), ktere na AipDetailVO primo nejsou. */
     const rawValue = (item: AipDetailVO, key: string): any => (item as Record<string, any>)[key];
 
+    /**
+     * Stav fronty; u chybových stavů s ikonou a důvodem selhání v tooltipu, protože jinak se
+     * uživatel důvod nedozví - zůstal by jen v protokolu serveru.
+     */
+    const queueStateContent = (state?: QueueItemState, message?: string, date?: string) => {
+        if (!state) {
+            return "-";
+        }
+        const label = formatMessage(queueStateMessages[state]);
+        const failed = state === QueueItemState.ImportError || state === QueueItemState.ExportError;
+        const tooltip = [message, date ? dateToDateTimeString(new Date(date)) : null]
+            .filter(Boolean).join("\n") || undefined;
+        if (!failed) {
+            return tooltip ? <span title={tooltip}>{label}</span> : label;
+        }
+        return (
+            <span className="aip-problem" title={tooltip}>
+                <Icon glyph="fa-exclamation-triangle"/>
+                {label}
+            </span>
+        );
+    };
+
     const getContent =(item: AipDetailVO, key: string) => {
         switch(key) {
-            case "code": return <span className='link-like'>{item.code}</span>
+            case "code": return (
+                <span
+                    className='link-like'
+                    role="link"
+                    tabIndex={0}
+                    onClick={() => openAip(item.aipId)}
+                    onKeyDown={e => { if (e.key === 'Enter') { openAip(item.aipId); } }}
+                >
+                    {item.code}
+                </span>
+            );
             case "aipSize": return formatAipSize(item[key]);
             case "unitdateFrom":  return item.unitdateFrom ? formatUnitDate(item.unitdateFrom, item.unitdateTo): "-";
-            case "fund.name": return item.fund ? item.fund.name : "-";
-            case "institution.name": return item.institution.name;
+            case "fund.name": return item.fund?.name ?? "-";
+            case "institution.name": return item.institution?.name ?? "-";
+            case "institutionCode": {
+                if (!item.institutionCode) {
+                    return "-";
+                }
+                // Dohledaná instituce má archivní entitu, na kterou se dá odkázat;
+                // nedohledaná zůstane jen kódem z balíčku.
+                const accessPointId = item.institution?.accessPointId;
+                return accessPointId
+                    ? (
+                        <Link to={urlEntity(accessPointId)}
+                              title={item.institution?.name}
+                              onClick={e => e.stopPropagation()}>
+                            {item.institutionCode}
+                        </Link>
+                    )
+                    : item.institutionCode;
+            }
+            case "importState":
+                return queueStateContent(item.importState, item.importStateMessage, item.importStateDate);
+            case "exportState":
+                return queueStateContent(item.exportState, item.exportStateMessage, item.exportStateDate);
+            case "linkState": return item.linkState
+                ? formatMessage(linkStateMessages[item.linkState]) : "-";
+            case "problemType": return item.problemType
+                ? (
+                    <span className="aip-problem" title={item.problemDescription ?? undefined}>
+                        <Icon glyph="fa-exclamation-triangle"/>
+                        {formatMessage(problemMessages[item.problemType])}
+                    </span>
+                )
+                : "-";
             default:
                 return findColDefByKey(key)?.valueType == "bool"
                     ? getBoolIcon(rawValue(item, key))
@@ -132,6 +203,7 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
         aips.filter.from,
         aips.filter.pageSize,
         aips.filter.filters,
+        aips.filter.sort,
         dispatch,
     ]);
 
@@ -144,9 +216,15 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
     };
 
     const handleSelect = (id: number) =>  {
-        setDetailOpen(true);
+        setDetailOpen?.(true);
         history.push(urlAip(id))
     };
+
+    /**
+     * Otevření jednoho AIPu. Seznam u fondu detail nemá, tam vede identifikátor rovnou
+     * do průzkumníka; samostatný seznam otevře panel detailu.
+     */
+    const openAip = (id: number) => onExplore ? onExplore(id) : handleSelect(id);
 
     const handleChangePage = (nextFrom: number) => nextFrom !== from && dispatch(aipsFilter(aips.filter.filters, nextFrom, aips.filter.pageSize))
 
@@ -177,8 +255,8 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
     } = useTableFeatures(
         { columns, items },
         [
-            useTableColumnSizing_unstable({ columnSizingOptions }),
-            useTableSort({defaultSortState: { sortColumn: "id", sortDirection: "ascending"}}),
+            useTableColumnSizing_unstable({ columnSizingOptions, autoFitColumns: false }),
+            useTableSort({defaultSortState: { sortColumn: "code", sortDirection: "ascending"}}),
             useTableSelection({
                 selectionMode: "multiselect",
                 onSelectionChange: (e, data) => {
@@ -211,6 +289,10 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
 
     const headerSortProps = (columnId: TableColumnId) => ({
         onClick: (e: MouseEvent) => {
+            // a click that ends a column resize must not also sort the column
+            if ((e.target as HTMLElement).closest(".fui-TableResizeHandle")) {
+                return;
+            }
             toggleColumnSort(e, columnId);
             const field = colDef.find(def => def.key === columnId)?.field;
             if (field) {
@@ -238,11 +320,7 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
 
     return (
         <Row className='aip-table'>
-            <AipDetail
-                open={detailOpen}
-                onClose={() => setDetailOpen(false)}
-                onOpen={() => setDetailOpen(true)}
-            />
+            <div className="aip-table-main">
             <StoreHorizontalLoader store={aips} />
             {aips.fetched && (
                 <>
@@ -253,6 +331,7 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
                         initialFilters={initialFilters}
                         hiddenValues={hiddenValues}
                     />
+                    <div className="aip-table-scroll">
                     <Table
                         ref={tableRef}
                         as="table"
@@ -270,6 +349,7 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
                                     className="header"
 
                                 />
+                                {onExplore && <TableHeaderCell className="header aip-action-header"/>}
                                 {columns.map((column) => (
                                     <TableHeaderCell
                                         key={column.columnId}
@@ -284,7 +364,7 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
                         </TableHeader>
                         <TableBody>
                             {rows.map(({ item, selected, onClick }) =>  {
-                                const isDetailShown = aip?.data?.aipId == item.aipId;
+                                const isDetailShown = aip?.id == item.aipId;
                                 return (
                                 <TableRow
                                     key={item.code}
@@ -297,6 +377,14 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
                                         onClick={onClick}
                                     />
 
+                                    {onExplore && (
+                                        <TableCell className="aip-action-cell">
+                                            <Button variant="action" title={formatMessage(explorerPageMessages.open)}
+                                                    onClick={() => onExplore(item.aipId)}>
+                                                <Icon glyph="fa-folder-open"/>
+                                            </Button>
+                                        </TableCell>
+                                    )}
                                     {columns.map(col => (
                                         <TableCell
                                             key={`item[${item.code}].${col.columnId}`}
@@ -313,6 +401,7 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
                             )}
                         </TableBody>
                     </Table>
+                    </div>
                     <Pagination
                         onPageChange={handleChangePage}
                         from={from}
@@ -323,6 +412,12 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilter
                 </>
             )
         }
+            </div>
+            <AipDetail
+                open={detailOpen}
+                onClose={() => setDetailOpen(false)}
+                onOpen={() => setDetailOpen(true)}
+            />
     </Row>
     );
 }

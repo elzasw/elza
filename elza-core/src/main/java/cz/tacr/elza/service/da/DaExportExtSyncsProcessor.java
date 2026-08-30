@@ -2,6 +2,7 @@ package cz.tacr.elza.service.da;
 
 import com.lightcomp.ft.client.Transfer;
 import com.lightcomp.ft.client.TransferState;
+import cz.tacr.elza.api.DaAipActionItemState;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.DaSyncQueueItem;
 import cz.tacr.elza.service.ExternalSystemService;
@@ -29,6 +30,8 @@ public class DaExportExtSyncsProcessor implements Runnable {
     private DaService daService;
     @Autowired
     private ExternalSystemService externalSystemService;
+    @Autowired
+    private DaAipActionService actionService;
 
     private volatile Thread asyncThread = null;
 
@@ -117,7 +120,11 @@ public class DaExportExtSyncsProcessor implements Runnable {
                             Collection<DaSyncQueueItem> error = CollectionUtils.subtract(syncQueueItemList, successfull);
 
                             daService.changeQueueItemsState(successfull, DaSyncQueueItem.QueueItemState.EXPORT_OK);
-                            daService.changeQueueItemsState(error, DaSyncQueueItem.QueueItemState.EXPORT_ERROR);
+                            actionService.completeFromQueue(successfull, DaAipActionItemState.FINISHED, null);
+
+                            String notConfirmed = "Digitální archiv nepotvrdil přijetí balíčku.";
+                            daService.changeQueueItemsState(error, DaSyncQueueItem.QueueItemState.EXPORT_ERROR, notConfirmed);
+                            actionService.completeFromQueue(error, DaAipActionItemState.ERROR, notConfirmed);
 
                             // pokud je vše v pořádku - maximální velikost dávky pro čtení
                             exportListSize = DEFAULT_EXPORT_LIST_SIZE;
@@ -125,7 +132,9 @@ public class DaExportExtSyncsProcessor implements Runnable {
                             wait = false;
                         }
                     } catch (Exception ex) {
-                        daService.changeQueueItemsState(syncQueueItemList, DaSyncQueueItem.QueueItemState.EXPORT_ERROR);
+                        String failure = AipProblem.of(ex).description();
+                        daService.changeQueueItemsState(syncQueueItemList, DaSyncQueueItem.QueueItemState.EXPORT_ERROR, failure);
+                        actionService.completeFromQueue(syncQueueItemList, DaAipActionItemState.ERROR, failure);
 
                         logger.error("Failed to process item. ", ex);
                         // v případě chyby číst po 1 záznamu

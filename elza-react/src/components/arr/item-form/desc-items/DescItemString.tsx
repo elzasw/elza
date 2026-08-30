@@ -59,7 +59,7 @@ export function DescItemString({
 
 
   async function handleChange(force?: boolean) {
-    if (value && initialValue !== value && (!conflictValue || force)) {
+    if (initialValue !== value && (!conflictValue || force)) {
         const stringValue = mask ? unmaskString(value, mask) : value;
       await onChange({
         ...item,
@@ -148,9 +148,7 @@ export function DescItemString({
         />
       )}
       <ConflictValue
-        value={value?.toString()}
         conflictValue={conflictValue?.toString()}
-        isDirty={isDirty}
         onResolve={resolveConflict}
       >
         {(conflictValue) => <Input size={compact ? "small" : "medium"} value={conflictValue} readOnly={true} style={{ fontSize: "1em" }} />}
