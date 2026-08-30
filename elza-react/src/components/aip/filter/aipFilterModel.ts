@@ -23,7 +23,8 @@ import {
  * not because the server treats them differently.
  */
 export type AipValueType =
-    | "text" | "number" | "bool" | "date" | "ref" | "importState" | "exportState" | "problemType";
+    | "text" | "number" | "bool" | "date" | "ref" | "importState" | "exportState" | "problemType"
+    | "linkState";
 
 /**
  * Comparison offered for a column. A subset of the shared contract - the AIP list
@@ -53,6 +54,7 @@ export const OPERATIONS: Record<AipValueType, AipOperation[]> = {
     importState: ["EQ", "NEQ", "IS_NULL", "NOT_NULL"],
     exportState: ["EQ", "NEQ", "IS_NULL", "NOT_NULL"],
     problemType: ["EQ", "NEQ", "IS_NULL", "NOT_NULL"],
+    linkState: ["EQ", "NEQ"],
 };
 
 /** Comparisons that need no value at all. */
@@ -150,7 +152,8 @@ export const buildFilter = (
         }
         case "importState":
         case "exportState":
-        case "problemType": {
+        case "problemType":
+        case "linkState": {
             const filter: EnumValueFilter = {
                 filterType: FilterType.EnumValue,
                 field,

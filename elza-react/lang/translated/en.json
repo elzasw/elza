@@ -773,6 +773,10 @@
     "defaultMessage": "Institution code",
     "srcHash": "Z6gP6vi_OaRY"
   },
+  "aip.col.linkState": {
+    "defaultMessage": "Linked",
+    "srcHash": "zLOXNvy1g0hm"
+  },
   "aip.col.metadataLoad": {
     "defaultMessage": "Metadata loaded",
     "srcHash": "SYsB1sLvVD-5"
@@ -948,6 +952,18 @@
   "aip.form.value": {
     "defaultMessage": "Value",
     "srcHash": "2al7WSQS6DjX"
+  },
+  "aip.linkState.FULLY_LINKED": {
+    "defaultMessage": "Linked",
+    "srcHash": "OzLv642nuwzF"
+  },
+  "aip.linkState.NOT_LINKED": {
+    "defaultMessage": "Not linked",
+    "srcHash": "flFef7RT17x7"
+  },
+  "aip.linkState.PARTIALLY_LINKED": {
+    "defaultMessage": "Partially linked",
+    "srcHash": "XBYV1I9cWniN"
   },
   "aip.package.download": {
     "defaultMessage": "Download",

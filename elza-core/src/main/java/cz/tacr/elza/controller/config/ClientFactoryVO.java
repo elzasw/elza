@@ -2637,6 +2637,9 @@ public class ClientFactoryVO {
             vo.setProblemDescription(state.getProblemDescription());
             vo.setProblemFile(state.getProblemFile());
             vo.setAipVersionMetadata(state.getAipVersionMetadata());
+            if (state.getLinkState() != null) {
+                vo.setLinkState(AipLinkState.fromValue(state.getLinkState().name()));
+            }
         }
 
         DaSyncQueueItem importSyncQueueItem = daSyncQueueItemRepository.findByAipAndStateInAndActiveIsTrue(src, DaService.getQueueImportStates());

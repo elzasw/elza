@@ -12,6 +12,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
 import java.time.LocalDateTime;
+import cz.tacr.elza.api.AipLinkState;
 import cz.tacr.elza.api.AipProblemType;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -120,6 +121,26 @@ public class DaAipState {
 
     @Column(length = 250)
     private String aipVersionMetadata;
+
+    /**
+     * How much of the AIP hangs on the archival description.
+     *
+     * Worked out when the links or the content of the package change and kept here, because it
+     * depends on what the links reach and cannot be read off the link rows alone. It describes the
+     * AIP for the user; nothing decides anything by it - whether a link may be created is answered
+     * against the live links every time.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(length = 50)
+    private AipLinkState linkState = AipLinkState.NOT_LINKED;
+
+    public AipLinkState getLinkState() {
+        return linkState;
+    }
+
+    public void setLinkState(AipLinkState linkState) {
+        this.linkState = linkState;
+    }
 
     public AipProblemType getProblemType() {
         return problemType;

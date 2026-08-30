@@ -38,6 +38,7 @@ export const aipColumns: Record<AipFieldName, AipColumnDef> = {
     [AipFieldName.ExportState]: {key: "exportState", message: messages.exportState, valueType: "exportState", minWidth: 65, idealWidth: 105},
     [AipFieldName.CompleteAipLoad]: {key: "completeAipLoad", message: messages.completeAipLoad, valueType: "bool", minWidth: 70, idealWidth: 130},
     [AipFieldName.ProblemType]: {key: "problemType", message: messages.problemType, valueType: "problemType", minWidth: 70, idealWidth: 130},
+    [AipFieldName.LinkState]: {key: "linkState", message: messages.linkState, valueType: "linkState", minWidth: 70, idealWidth: 130},
 };
 
 /**
@@ -57,8 +58,9 @@ const COLUMN_ORDER: AipFieldName[] = [
     AipFieldName.NadChangeCode,
     AipFieldName.AipSize,
     AipFieldName.MetadataLoad,
+    AipFieldName.LinkState,
     // TODO: @kasparova Bude upřesněno v budoucnu
-    // Stažené komponenty, Napojen archivní popis
+    // Stažené komponenty
     AipFieldName.ImportState,
     AipFieldName.ExportState,
     AipFieldName.CompleteAipLoad,

@@ -5757,6 +5757,7 @@ components:
         - problemType
         - importState
         - exportState
+        - linkState
       description: |-
         AIP specific field names.
 
@@ -6735,6 +6736,10 @@ components:
         aipVersionMetadata:
           type: string
           description: Verze AIPu s načtenými metadaty
+        linkState:
+          allOf:
+            - $ref: '#/components/schemas/AipLinkState'
+          description: Jak velká část AIPu je napojená na archivní popis
         importState:
           allOf:
             - $ref: '#/components/schemas/QueueItemState'
@@ -6763,6 +6768,18 @@ components:
             $ref: '#/components/schemas/LinkedNodeVO'
           description: Seznam napojených nodes
       description: Vo pro detail AIPu
+    AipLinkState:
+      type: string
+      enum:
+        - NOT_LINKED
+        - PARTIALLY_LINKED
+        - FULLY_LINKED
+      description: |-
+        Jak velká část AIPu je napojená na archivní popis.
+
+        Napojit lze celý balíček, úroveň jeho logické struktury i jednotlivý soubor, a napojení
+        něčeho, co soubory obsahuje, napojuje i je. Kolik z balíčku je napojeno tedy závisí na tom,
+        kam napojení dosáhnou, a zjišťuje se při jejich změně - ne až při čtení seznamu.
     AipPackageEntry:
       type: object
       required:

@@ -8,10 +8,10 @@ import { storeFromArea } from "shared/utils";
 import { useEffect } from "react";
 import { useAppSelector } from "utils/hooks/useAppSelector";
 import { useAppThunkDispatch } from "utils/hooks";
-import { AipFieldName, AipProblemType, QueueItemState } from "elza-api";
+import { AipFieldName, AipLinkState, AipProblemType, QueueItemState } from "elza-api";
 import { generateUUID } from "utils/uuid";
 import { AipColumn } from "../../columns";
-import { boolMessages, filterErrorMessages, filterMessages, problemMessages, queueStateMessages } from "../../messages";
+import { boolMessages, filterErrorMessages, filterMessages, linkStateMessages, problemMessages, queueStateMessages } from "../../messages";
 import { globalMessages } from "components/shared/lang/messages";
 import { IntlShape, defineMessages, useIntl } from "react-intl";
 import {
@@ -61,6 +61,10 @@ const EXPORT_STATES = [
     QueueItemState.ExportError, QueueItemState.ExportNew, QueueItemState.ExportOk,
 ];
 
+const LINK_STATES = [
+    AipLinkState.NotLinked, AipLinkState.PartiallyLinked, AipLinkState.FullyLinked,
+];
+
 
 
 function operationMessage(operation: AipOperation) {
@@ -88,6 +92,8 @@ function selectOptions(item: AipColumn, funds: AdminFunds, accessPoints: ApAcces
             return EXPORT_STATES.map(state => ({value: state, label: intl.formatMessage(queueStateMessages[state])}));
         case "problemType":
             return PROBLEM_TYPES.map(type => ({value: type, label: intl.formatMessage(problemMessages[type])}));
+        case "linkState":
+            return LINK_STATES.map(state => ({value: state, label: intl.formatMessage(linkStateMessages[state])}));
         case "ref": {
             const source = item.field === AipFieldName.Fund ? funds : accessPoints;
             if (!source.fetched || !source.rows) {
