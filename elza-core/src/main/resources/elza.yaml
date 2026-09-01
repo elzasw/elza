@@ -29,6 +29,12 @@ elza:
     # O kolik bloků se odkládací soubor rozšiřuje
     #jasperSwapMinGrowCount: 100
 
+    # Počet archivních entit držených v paměti při generování jednoho výstupu.
+    # Prvky popisu se převádějí hned při načtení jednotky popisu, takže každý odkaz
+    # na archivní entitu ji do výstupu přinese, i když ji šablona nevytiskne.
+    # Hodnota 0 omezení vypne.
+    #outputRecordCacheSize: 1000
+
   # Integration settings
   #  URL for integration JavaScript
   # integrationScriptUrl: /elzainteg/integ.js

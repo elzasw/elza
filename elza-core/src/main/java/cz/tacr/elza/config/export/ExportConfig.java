@@ -35,6 +35,16 @@ public class ExportConfig {
      */
     private int jasperSwapMinGrowCount = 100;
 
+    /**
+     * Počet archivních entit držených v paměti při generování jednoho výstupu.
+     *
+     * Prvky popisu se převádějí hned při načtení jednotky popisu, takže každý odkaz na
+     * archivní entitu ji do výstupu přinese, i když ji šablona nevytiskne. Bez omezení
+     * by jejich počet rostl s počtem odkazovaných entit ve fondu. Hodnota 0 (nebo méně)
+     * omezení vypne.
+     */
+    private int outputRecordCacheSize = 1000;
+
     public MapViewer getMapviewer() {
         return mapviewer;
     }
@@ -73,5 +83,13 @@ public class ExportConfig {
 
     public void setJasperSwapMinGrowCount(int jasperSwapMinGrowCount) {
         this.jasperSwapMinGrowCount = jasperSwapMinGrowCount;
+    }
+
+    public int getOutputRecordCacheSize() {
+        return outputRecordCacheSize;
+    }
+
+    public void setOutputRecordCacheSize(int outputRecordCacheSize) {
+        this.outputRecordCacheSize = outputRecordCacheSize;
     }
 }

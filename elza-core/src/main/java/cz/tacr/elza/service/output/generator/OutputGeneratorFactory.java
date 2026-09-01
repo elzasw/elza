@@ -22,7 +22,6 @@ import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.service.DataService;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.StructObjService;
-import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import jakarta.persistence.EntityManager;
 
@@ -69,7 +68,6 @@ public class OutputGeneratorFactory {
 
     private StructObjService structObjService;
     
-    private final AccessPointCacheService apCacheService;
 
     @Autowired
     public OutputGeneratorFactory(final ApplicationContext applicationContext,
@@ -91,8 +89,7 @@ public class OutputGeneratorFactory {
                                   final ArrFsLinkRepository fsLinkRepository,
                                   final ExportConfig exportConfig,
                                   final StructObjService structObjService,
-                                  final DataService dataService,
-                                  final AccessPointCacheService apCacheService) {
+                                  final DataService dataService) {
         this.applicationContext = applicationContext;
         this.staticDataService = staticDataService;
         this.elzaLocale = elzaLocale;
@@ -113,7 +110,6 @@ public class OutputGeneratorFactory {
         this.exportConfig = exportConfig;
         this.structObjService = structObjService;
         this.dataService = dataService;
-        this.apCacheService = apCacheService;
     }
 
     public OutputGenerator createOutputGenerator(Engine engine) {
@@ -136,7 +132,7 @@ public class OutputGeneratorFactory {
                 institutionRepository, apStateRepository, bindingRepository, itemRepository,
                 bindingStateRepository, indexRepository, em, dmsService,
                 legacyDaoLinkRepository, fsLinkRepository, exportConfig, structObjService,
-                dataService, apCacheService);
+                dataService);
     }
 
     public JasperOutputGenerator createJasperOutputGenerator() {
@@ -146,7 +142,7 @@ public class OutputGeneratorFactory {
                 institutionRepository, apStateRepository,
                 bindingRepository, itemRepository, bindingStateRepository,
                 indexRepository, em, dmsService, legacyDaoLinkRepository, fsLinkRepository, exportConfig, structObjService,
-                dataService, apCacheService);
+                dataService);
     }
 
     public DEXmlOutputGenerator createDEXmlOutputGenerator() {

@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -95,7 +96,6 @@ import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.DataService;
 import cz.tacr.elza.service.StructObjService;
 import cz.tacr.elza.service.cache.AccessPointCacheProvider;
-import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
 import cz.tacr.elza.service.output.OutputParams;
@@ -137,7 +137,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     private final Map<Integer, ItemSpec> itemSpecIdMap = new HashMap<>();
 
-    private final Map<Integer, Record> apIdMap = new HashMap<>();
+    /** Bounded, see {@link #createRecordCache(int)} */
+    private final Map<Integer, Record> apIdMap;
 
     private final Map<Integer, RecordType> apTypeIdMap = new HashMap<>();
 
@@ -223,13 +224,14 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     private StructObjService structObjService;
 
-	private AccessPointCacheService apCacheService;
-
     /**
      * Shared access point provider for the whole output - keeps referenced entities cached
      * across nodes so they are not reloaded and deserialized for every reference.
+     *
+     * Owned by OutputContext, so the same bounded cache serves both the filter rules
+     * and Record.loadParts().
      */
-    private AccessPointCacheProvider apCacheProvider;
+    private final AccessPointCacheProvider apCacheProvider;
 
     public OutputModel(final OutputContext outputContext,
                        final StaticDataService staticDataService,
@@ -249,9 +251,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                                   final ArrFsLinkRepository fsLinkRepository,
                        final ExportConfig exportConfig,
                        final StructObjService structObjService,
-                       final EntityManager em, 
-                       final DataService dataService,
-                       final AccessPointCacheService apCacheService) {
+                       final EntityManager em,
+                       final DataService dataService) {
         this.outputContext = outputContext;
         this.staticDataService = staticDataService;
         this.elzaLocale = elzaLocale;
@@ -271,8 +272,35 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         this.exportConfig = exportConfig;
         this.structObjService = structObjService;
         this.soiLoader = new StructObjectInfoLoader(em, 1, staticDataService.getData(), dataService);
-        this.apCacheService = apCacheService;
-        this.apCacheProvider = new AccessPointCacheProvider(apCacheService);
+        this.apCacheProvider = outputContext.getApCacheProvider();
+        this.apIdMap = createRecordCache(exportConfig.getOutputRecordCacheSize());
+    }
+
+    /**
+     * Bounded LRU cache of records referenced by the output.
+     *
+     * Node.load() converts all description items as soon as a node is read, so every
+     * RECORD_REF creates a Record - even one the template never prints. Nodes themselves are
+     * released with the sliding window, so without a limit here the records they created
+     * would be the only part of the output growing with the number of referenced entities.
+     *
+     * Evicting a record is safe - it has no identity semantics and FilteredRecords keys by
+     * access point id - and re-creating one is cheap because the parts come from the shared
+     * (also bounded) AccessPointCacheProvider.
+     */
+    private static Map<Integer, Record> createRecordCache(final int maxSize) {
+        if (maxSize <= 0) {
+            return new HashMap<>();
+        }
+        // access-ordered map -> iteration/eviction order follows last access, giving LRU eviction
+        return new LinkedHashMap<>(16, 0.75f, true) {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected boolean removeEldestEntry(Map.Entry<Integer, Record> eldest) {
+                return size() > maxSize;
+            }
+        };
     }
 
     public boolean isInitialized() {
