@@ -19,6 +19,16 @@ elza:
     # slučování PDF příloh (místa pro přílohy zůstanou v dokumentu).
     #jasperFormat: PDF
 
+    # Počet stran výstupu držených v paměti při generování Jasper šablony.
+    # Ostatní strany se průběžně odkládají do souboru v dočasném adresáři, takže
+    # spotřeba paměti neroste s délkou výstupu (rozsáhlé výstupy o tisících stran).
+    # Hodnota 0 virtualizaci vypne - celý dokument zůstane v paměti.
+    #jasperPageCacheSize: 100
+    # Velikost bloku odkládacího souboru v kB
+    #jasperSwapBlockSizeKb: 1024
+    # O kolik bloků se odkládací soubor rozšiřuje
+    #jasperSwapMinGrowCount: 100
+
   # Integration settings
   #  URL for integration JavaScript
   # integrationScriptUrl: /elzainteg/integ.js
@@ -34,8 +44,10 @@ elza:
     bulk:
       threadCount: 4
       maxPerFund: 1
+    # Generování výstupu je paměťově náročné (viz elza.export.jasperPageCacheSize),
+    # proto je souběh omezen na 2 vlákna.
     output:
-      threadCount: 4
+      threadCount: 2
       maxPerFund: 1
 
   # Scope obsahující entity nelze standardně smazat
