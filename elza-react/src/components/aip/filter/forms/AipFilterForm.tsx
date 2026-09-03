@@ -48,6 +48,7 @@ const localMessages = defineMessages({
 });
 
 const PROBLEM_TYPES = [
+    AipProblemType.DownloadError,
     AipProblemType.MetadataError,
     AipProblemType.UnknownFund,
     AipProblemType.UnknownInstitution,

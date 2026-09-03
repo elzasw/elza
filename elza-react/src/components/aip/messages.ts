@@ -124,6 +124,10 @@ export const detailMessages = defineMessages({
  * Popis problémů, které brání zpracování AIPu nebo jeho navázání na archivní popis.
  */
 export const problemMessages = defineMessages({
+    [AipProblemType.DownloadError]: {
+        id: "aip.problem.DOWNLOAD_ERROR",
+        defaultMessage: "Chyba stažení balíčku",
+    },
     [AipProblemType.MetadataError]: {
         id: "aip.problem.METADATA_ERROR",
         defaultMessage: "Chyba při zpracování metadat",

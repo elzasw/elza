@@ -11,6 +11,13 @@ package cz.tacr.elza.api;
 public enum AipProblemType {
 
     /**
+     * The package could not be downloaded from the digital archive - nothing of it was
+     * received. The download is retried with a growing delay, and the next successful
+     * download replaces this problem with whatever the received package says.
+     */
+    DOWNLOAD_ERROR(true),
+
+    /**
      * The metadata package could not be processed - it is missing an expected file or its
      * content does not match the expected structure.
      */

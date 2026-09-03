@@ -318,4 +318,17 @@
         </sql>
     </changeSet>
 
+    <changeSet id="20260903130000" author="ppy">
+        <!-- Retry of a failed package download. A download failure means nothing of the package
+             arrived, so the item stays pending and is tried again on a later processor cycle;
+             attempt_count says how many times it failed so far. The queue is read in the order
+             of the count, so every failure sends the item behind its peers and a repeatedly
+             failing download can never starve the fresh items behind it. -->
+        <addColumn tableName="da_sync_queue_item">
+            <column name="attempt_count" type="int" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>
