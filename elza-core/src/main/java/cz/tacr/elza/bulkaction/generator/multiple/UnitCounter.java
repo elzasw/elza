@@ -196,6 +196,9 @@ public class UnitCounter {
         // StructObj mapping
         if (srcStructObjType != null) {
             Consumer<LevelWithItems> usedDetailCounter = countStructObjs(srcStructObjType, level, unitCountAction);
+            if (usedDetailCounter == null && config.isDatesToEnclosingUnit()) {
+                usedDetailCounter = countDatesToEnclosingObj(level, unitCountAction);
+            }
             if (usedDetailCounter != null) {
                 lastUsedDetailCounter = usedDetailCounter;
             }
@@ -227,14 +230,64 @@ public class UnitCounter {
         Consumer<LevelWithItems> lastUsedDetailCounter = null;
         for (ArrDescItem item : descItems) {
             // fetch valid items from packet
-            ArrDataStructureRef dataStructObjRef = HibernateUtils.unproxy(item.getData());
-            Integer packetId = dataStructObjRef.getStructuredObjectId();
-            Consumer<LevelWithItems> detailCounter = countStructObj(packetId, level, unitCountAction);
+            Consumer<LevelWithItems> detailCounter = countStructObj(getStructObjId(item), level,
+                    unitCountAction);
             if (detailCounter != null) {
                 lastUsedDetailCounter = detailCounter;
             }
         }
         return lastUsedDetailCounter;
+    }
+
+    /**
+     * Return id of the structured object referenced by the item
+     */
+    private static Integer getStructObjId(ArrDescItem item) {
+        ArrDataStructureRef dataStructObjRef = HibernateUtils.unproxy(item.getData());
+        return dataStructObjRef.getStructuredObjectId();
+    }
+
+    /**
+     * Find the detail counter of the first already counted structured object referenced by the
+     * level, either directly or inherited from its closest ancestor holding such an item.
+     *
+     * @return Detail counter of the counted object or null when there is none
+     */
+    private Consumer<LevelWithItems> findCountedAction(LevelWithItems level,
+                                                       UnitCountAction unitCountAction) {
+        List<ArrDescItem> descItems = level.getInheritedDescItems(srcStructObjType);
+        if (CollectionUtils.isEmpty(descItems)) {
+            return null;
+        }
+        for (ArrDescItem item : descItems) {
+            Consumer<LevelWithItems> detailCounter = unitCountAction
+                    .getCountedAction(getStructObjId(item));
+            if (detailCounter != null) {
+                return detailCounter;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Add the level into the date range of the closest enclosing counted structured object.
+     *
+     * Used for levels that form no evidence unit on their own - they are stored inside some
+     * already counted unit and their dates have to be reflected in the range of that unit.
+     * Only the date range is touched, the counts stay untouched.
+     *
+     * @return Detail counter that was applied or null when no counted object was found
+     */
+    private Consumer<LevelWithItems> countDatesToEnclosingObj(LevelWithItems level,
+                                                             UnitCountAction unitCountAction) {
+        for (LevelWithItems parent = level.getParent(); parent != null; parent = parent.getParent()) {
+            Consumer<LevelWithItems> detailCounter = findCountedAction(parent, unitCountAction);
+            if (detailCounter != null) {
+                detailCounter.accept(level);
+                return detailCounter;
+            }
+        }
+        return null;
     }
 
     /**
