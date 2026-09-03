@@ -1320,18 +1320,20 @@ public class DaService {
             syncQueueItem.setDate(now);
             syncQueueItem.setStateMessage(StringUtils.abbreviate(
                     problem.description() + " (pokusů: " + attempts + ")", STATE_MESSAGE_MAX_LENGTH));
-            recordDownloadProblem(syncQueueItem, problem);
+            recordAipProblem(syncQueueItem, problem);
         }
         syncQueueItemRepository.saveAll(syncQueueItemList);
     }
 
     /**
-     * Describes the failed download on the AIP of the queue item. An AIP unknown to ELZA is
-     * created first, with the code and version the change carries as all that is known about
-     * it; the next successfully downloaded package replaces this state, which clears the
-     * problem the same way it is cleared for an AIP that already existed.
+     * Describes the problem on the AIP of the queue item, whatever kind of problem it is - the
+     * download that never delivered the package as well as the processing of a package that
+     * arrived. An AIP unknown to ELZA is created first, with the code and version the change
+     * carries as all that is known about it, so that the user finds the failure in the AIP list
+     * and not only in the queue; the next successfully processed package replaces this state,
+     * which clears the problem the same way it is cleared for an AIP that already existed.
      */
-    private void recordDownloadProblem(DaSyncQueueItem syncQueueItem, AipProblem problem) {
+    private void recordAipProblem(DaSyncQueueItem syncQueueItem, AipProblem problem) {
         DaAip aip = syncQueueItem.getAip() != null
                 ? syncQueueItem.getAip()
                 : aipRepository.findByCode(syncQueueItem.getCode());
@@ -1364,19 +1366,24 @@ public class DaService {
     }
 
     /**
-     * Sets the state of the given queue items, each described by its own message. Used where the
+     * Closes the given queue items in the state their own problem ended them in. Used where the
      * items of one batch fail for different reasons and a shared description would lose them.
+     *
+     * The problem is written on the AIP as well, so a package that arrived and could not be
+     * processed is as visible as one that could not be downloaded - the failure is terminal,
+     * nothing retries it, and the queue alone is not where the user looks for it.
      */
     @Transactional
-    public void failQueueItems(Map<DaSyncQueueItem, String> messageByItem, DaSyncQueueItem.QueueItemState state) {
-        if (MapUtils.isNotEmpty(messageByItem)) {
+    public void failQueueItems(Map<DaSyncQueueItem, AipProblem> problemByItem, DaSyncQueueItem.QueueItemState state) {
+        if (MapUtils.isNotEmpty(problemByItem)) {
             OffsetDateTime now = OffsetDateTime.now();
-            messageByItem.forEach((syncQueueItem, message) -> {
+            problemByItem.forEach((syncQueueItem, problem) -> {
                 syncQueueItem.setState(state);
-                syncQueueItem.setStateMessage(StringUtils.abbreviate(message, STATE_MESSAGE_MAX_LENGTH));
+                syncQueueItem.setStateMessage(StringUtils.abbreviate(problem.description(), STATE_MESSAGE_MAX_LENGTH));
                 syncQueueItem.setDate(now);
+                recordAipProblem(syncQueueItem, problem);
             });
-            syncQueueItemRepository.saveAll(messageByItem.keySet());
+            syncQueueItemRepository.saveAll(problemByItem.keySet());
         }
     }
 
@@ -1394,6 +1401,10 @@ public class DaService {
         try (ZipInputStream zipInputStream = new ZipInputStream((tempZipInputStream))) {
             ZipEntry entry;
             while ((entry = zipInputStream.getNextEntry()) != null) {
+                // A package that does not have the expected layout is reported by the file that
+                // is missing from it, which says nothing about what the DA did send instead -
+                // the names of the received entries are the only account of that.
+                logger.debug("Balíček dávky obsahuje položku {}", entry.getName());
                 Path filePath = tempDir.resolve(entry.getName());
                 if (entry.isDirectory()) {
                     Files.createDirectories(filePath);
@@ -1417,7 +1428,7 @@ public class DaService {
             // The directory of the package is named by the code of the AIP, which is the code
             // of its queue item - a package that fails is reported on its own item, so one bad
             // package neither hides itself nor takes the rest of the batch down with it.
-            Map<DaSyncQueueItem, String> failedItems = new LinkedHashMap<>();
+            Map<DaSyncQueueItem, AipProblem> failedItems = new LinkedHashMap<>();
 
             for (File aipDir : aipDirSet) {
                 DaAipState aipState;
@@ -1425,11 +1436,11 @@ public class DaService {
                     Path packageInfo = str.findFirst().orElseThrow(() -> AipProblemException.metadata("Balíček neobsahuje soubor PACKAGE-INFO.xml"));
                     aipState = packageInfoService.processPackageInfo(digitalRepository, packageInfo.toFile());
                 } catch (Exception e) {
-                    String description = AipProblem.of(e).description();
-                    logger.error("Balíček {} se nepodařilo načíst: {}", aipDir.getName(), description, e);
+                    AipProblem problem = AipProblem.of(e);
+                    logger.error("Balíček {} se nepodařilo načíst: {}", aipDir.getName(), problem.description(), e);
                     DaSyncQueueItem failedItem = syncQueueItemMap.getOrDefault(aipDir.getName(), null);
                     if (failedItem != null) {
-                        failedItems.put(failedItem, description);
+                        failedItems.put(failedItem, problem);
                     }
                     continue;
                 }
