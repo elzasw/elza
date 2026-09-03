@@ -1878,7 +1878,6 @@ var messages = {
     "textFragments.title": "Speciální znaky",
 
     "userSettings.button.title": "Nastavení",
-    "userSettings.title": "Nastavení uživatele",
     "userSettings.category.ApiKeys": "API Klíče",
     "userSettings.apiKeys.noItems": "Žádné uložené osobní API klíče",
     "userSettings.apiKeys.delete.confirm.message": "Přejete si smazat nastavený API klíč pro externí systém {0}?",

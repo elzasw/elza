@@ -13,6 +13,11 @@ export function resetLocalStorage() {
     }
 }
 
+export function disableStoreSave() {
+    // Vypnutí ukládání stavu, aby odložený save nevrátil uložený stav zpět po jeho smazání.
+    _storeSaveEnabled = false;
+}
+
 export function storeSave() {
     return (dispatch, getState) => {
         if (_storeSaveEnabled) {

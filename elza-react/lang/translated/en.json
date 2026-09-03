@@ -2365,6 +2365,14 @@
     "defaultMessage": "Select all",
     "srcHash": "tzdoYdlGzv8D"
   },
+  "userSettings.apiKeys.add": {
+    "defaultMessage": "Add API key",
+    "srcHash": "sHrpP_uv2Alt"
+  },
+  "userSettings.apiKeys.delete": {
+    "defaultMessage": "Delete key",
+    "srcHash": "f0goWcECoTx0"
+  },
   "userSettings.apiKeys.delete.confirm.message": {
     "defaultMessage": "Do you want to delete the configured API key for external system {name}?",
     "srcHash": "LaFPksPT0mrC"
@@ -2385,13 +2393,57 @@
     "defaultMessage": "Save",
     "srcHash": "eKX-T2uH2Zl7"
   },
+  "userSettings.apiKeys.sectionHint": {
+    "defaultMessage": "A personal key is used instead of the key configured for the whole instance whenever ELZA calls that external system on your behalf.",
+    "srcHash": "2oXqGMNGdxB7"
+  },
   "userSettings.category.ApiKeys": {
     "defaultMessage": "API Keys",
     "srcHash": "lg2gnlERUjor"
   },
+  "userSettings.category.BrowserData": {
+    "defaultMessage": "Stored data",
+    "srcHash": "Ay2ZF59zPoZz"
+  },
   "userSettings.category.Display": {
     "defaultMessage": "Display",
     "srcHash": "d_FVmqRjYyP4"
+  },
+  "userSettings.display.browserData.appState": {
+    "defaultMessage": "Application state (open funds, panel split)",
+    "srcHash": "WWSw1AITyjY4"
+  },
+  "userSettings.display.browserData.dataGrid": {
+    "defaultMessage": "Table state (last selected unit of description)",
+    "srcHash": "8KLZlKFadxS6"
+  },
+  "userSettings.display.browserData.descItemDrafts": {
+    "defaultMessage": "Description item values that have not been saved yet",
+    "srcHash": "DpmmTCuXhwkZ"
+  },
+  "userSettings.display.browserData.display": {
+    "defaultMessage": "Display settings (dark mode, language, debug information)",
+    "srcHash": "MdayQYdwntZq"
+  },
+  "userSettings.display.browserData.layout": {
+    "defaultMessage": "Detail layout (panel widths and collapsed panels)",
+    "srcHash": "euvxps-iHm3m"
+  },
+  "userSettings.display.browserDataHint": {
+    "defaultMessage": "Select what to delete from this browser. Data on the server stays unchanged and the page reloads afterwards.",
+    "srcHash": "K6HS_j520P4t"
+  },
+  "userSettings.display.clearBrowserData": {
+    "defaultMessage": "Delete selected data",
+    "srcHash": "rudzjNAlvW4s"
+  },
+  "userSettings.display.clearBrowserDataConfirm": {
+    "defaultMessage": "Really delete the selected data from this browser? The following will be deleted: {categories}. Data on the server stays unchanged. The page will reload afterwards.",
+    "srcHash": "Wbp2v9hZ28kx"
+  },
+  "userSettings.display.clearBrowserDataSubmit": {
+    "defaultMessage": "Delete",
+    "srcHash": "oe4iuqXX4rqm"
   },
   "userSettings.display.darkMode": {
     "defaultMessage": "Dark mode",
@@ -2412,5 +2464,9 @@
   "userSettings.display.showExperimentalFeatures": {
     "defaultMessage": "Show experimental features",
     "srcHash": "3gowqNfmWIKX"
+  },
+  "userSettings.title": {
+    "defaultMessage": "User settings",
+    "srcHash": "bNMb206NTDO5"
   }
 }
