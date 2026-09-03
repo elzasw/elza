@@ -250,6 +250,8 @@ actions:
                  itemType: ZP2015_FOLDER_TYPE
                  itemSpec: ZP2015_FOLDER_UNITS
              stopLevelProcessing: true
+             # datace JP, ktere samy nejsou EJ, patri do rozsahu UJ, ve ktere jsou ulozeny
+             datesToEnclosingUnit: true
              objectType: ZP2015_STORAGE_ID
              objectItemType: ZP2015_PACKET_TYPE
              objectItemMapping:
