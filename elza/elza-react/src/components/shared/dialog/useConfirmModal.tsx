@@ -91,11 +91,22 @@ function ConfirmDialog({ message, title, confirmLabel, cancelLabel, destructive,
 export function useConfirmModal() {
     const { showModal } = useContext(FluentDialogContext);
 
-    return function confirm(options: ConfirmOptions): Promise<boolean> {
-        return showModal<boolean, undefined>({
+    return async function confirm(options: ConfirmOptions): Promise<boolean> {
+        // The dialog is opened from code, so nothing marks the element focus should return to.
+        // Left alone, focus lands outside the dialog that asked for the confirmation, and a
+        // surrounding focus trap then fights with whatever grabbed it.
+        const previouslyFocused = document.activeElement;
+
+        const { result } = await showModal<boolean, undefined>({
             createDialog: ({ handleResult }) => (
                 <ConfirmDialog {...options} onResult={(confirmed) => handleResult(confirmed, undefined)} />
             ),
-        }).then(({ result }) => result === true);
+        });
+
+        if (previouslyFocused instanceof HTMLElement && previouslyFocused.isConnected) {
+            requestAnimationFrame(() => previouslyFocused.focus());
+        }
+
+        return result === true;
     };
 }
