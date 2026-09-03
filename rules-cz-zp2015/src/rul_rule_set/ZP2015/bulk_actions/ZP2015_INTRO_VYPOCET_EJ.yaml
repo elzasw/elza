@@ -9,6 +9,28 @@ actions:
         outputType: ZP2015_UNIT_COUNT_ITEM
         local: true
         aggegators:
+           # Ukládací jednotka na JP pod množstevní složkou - zapocte se jako hromadina,
+           # samotna JP se nepocita jako jednotlivina
+           - excludeWhen:
+               someOf:
+                 # Nesmí být nastaven jako připojený záznam
+                 - itemType: ZP2015_CONNECTED_RECORD
+                 # Nesmí být nastaven jako pevné spojení s jinou
+                 - itemType: ZP2015_ITEM_LINK
+                 # Zneplatněný záznam
+                 - itemType: ZP2015_INVALID_RECORD
+             when:
+               ancestor:
+                 itemType: ZP2015_FOLDER_TYPE
+                 itemSpec: ZP2015_FOLDER_UNITS
+             stopLevelProcessing: true
+             objectType: ZP2015_STORAGE_ID
+             objectItemType: ZP2015_PACKET_TYPE
+             objectItemMapping:
+               ZP2015_PACKET_TYPE_KAR: ZP2015_UNIT_COUNT_KAR
+               ZP2015_PACKET_TYPE_FAS: ZP2015_UNIT_COUNT_FAS
+               ZP2015_PACKET_TYPE_BAL: ZP2015_UNIT_COUNT_BAL
+               ZP2015_PACKET_TYPE_POR: ZP2015_UNIT_COUNT_POR
            # Extra EJ - kdekoliv
            - excludeWhen:
                someOf:
@@ -186,7 +208,7 @@ actions:
              when:
                itemType: ZP2015_FOLDER_TYPE
                itemSpec: ZP2015_FOLDER_UNITS
-             stopProcessing: true
+             stopLevelProcessing: true
              objectType: ZP2015_STORAGE_ID
              objectItemType: ZP2015_PACKET_TYPE
              objectItemMapping:

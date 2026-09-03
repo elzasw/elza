@@ -204,6 +204,8 @@ public class UnitCounter {
         // stop further processing if set
         if (config.isStopProcessing()) {
             unitCountAction.setSkipSubtree(level, lastUsedDetailCounter);
+        } else if (config.isStopLevelProcessing()) {
+            unitCountAction.setStopLevel();
         }
     }
 

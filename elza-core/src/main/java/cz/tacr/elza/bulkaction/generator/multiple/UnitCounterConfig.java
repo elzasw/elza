@@ -12,6 +12,14 @@ public class UnitCounterConfig {
 
 	boolean stopProcessing;
 
+	/**
+	 * Stop the remaining aggregators on the current level only.
+	 *
+	 * Unlike stopProcessing the subtree of the level is still processed. Ignored when
+	 * stopProcessing is set.
+	 */
+	boolean stopLevelProcessing;
+
 	String itemType;
 
 	Map<String, String> itemSpecMapping;
@@ -89,6 +97,14 @@ public class UnitCounterConfig {
 
 	public void setStopProcessing(boolean stopProcessing) {
 		this.stopProcessing = stopProcessing;
+	}
+
+	public boolean isStopLevelProcessing() {
+		return stopLevelProcessing;
+	}
+
+	public void setStopLevelProcessing(boolean stopLevelProcessing) {
+		this.stopLevelProcessing = stopLevelProcessing;
 	}
 
 	public String getItemType() {
