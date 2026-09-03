@@ -11,11 +11,14 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static cz.tacr.elza.connector.DaConnector.FILE_TRANSFER_ERROR_CODE;
 import cz.tacr.elza.api.DaOnReceivedAction;
@@ -132,6 +135,17 @@ public class DaImportExtSyncsProcessor implements Runnable {
     }
 
     /**
+     * The one problem of the whole batch, described on each of its items - the batch failed as
+     * a whole and nothing tells its items apart.
+     */
+    private static Map<DaSyncQueueItem, AipProblem> problemPerItem(@Nullable List<DaSyncQueueItem> syncQueueItemList,
+                                                                   AipProblem problem) {
+        return CollectionUtils.isEmpty(syncQueueItemList)
+                ? Map.of()
+                : syncQueueItemList.stream().collect(Collectors.toMap(Function.identity(), item -> problem));
+    }
+
+    /**
      * @return ids of the AIPs the batch has just received (queue items in state IMPORT_NEW
      *         whose PACKAGE-INFO created the AIP)
      */
@@ -196,9 +210,14 @@ public class DaImportExtSyncsProcessor implements Runnable {
                             }
                         }
                     } catch (Exception ex) {
-                        String failure = AipProblem.of(ex).description();
-                        daService.changeQueueItemsState(syncQueueItemList, DaSyncQueueItem.QueueItemState.IMPORT_ERROR, failure);
-                        actionService.completeFromQueue(syncQueueItemList, DaAipActionItemState.ERROR, failure);
+                        // The package was in hand and its processing failed, so - unlike a failed
+                        // download - the items are closed; the problem is written on their AIPs
+                        // as well, because a terminal failure the user can only find in the queue
+                        // is a failure they do not find.
+                        AipProblem problem = AipProblem.of(ex);
+                        daService.failQueueItems(problemPerItem(syncQueueItemList, problem),
+                                                 DaSyncQueueItem.QueueItemState.IMPORT_ERROR);
+                        actionService.completeFromQueue(syncQueueItemList, DaAipActionItemState.ERROR, problem.description());
 
                         logger.error("Failed to process item. ", ex);
                         // v případě chyby číst po 1 záznamu
