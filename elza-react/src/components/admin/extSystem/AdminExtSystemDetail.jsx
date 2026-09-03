@@ -134,7 +134,11 @@ class AdminExtSystemDetail extends AbstractReactComponent {
             });
     }
 
-    renderRepoTestResult = () => {
+    /**
+     * @param isFsRepo true for a filesystem repository, the only kind whose test lists a
+     *                 root directory; a digital archive is probed over its API and has none.
+     */
+    renderRepoTestResult = (isFsRepo) => {
         const repoTestState = this.state?.repoTestState;
         if (repoTestState === 'error') {
             return (
@@ -176,7 +180,7 @@ class AdminExtSystemDetail extends AbstractReactComponent {
                     </div>
                 )}
                 {result.message && <div>{result.message}</div>}
-                {result.items?.length > 0 && (
+                {isFsRepo && result.items?.length > 0 && (
                     <>
                         <div>
                             <FormattedMessage
@@ -194,7 +198,7 @@ class AdminExtSystemDetail extends AbstractReactComponent {
                         </ul>
                     </>
                 )}
-                {result.available && Array.isArray(result.items) && result.items.length === 0 && (
+                {isFsRepo && result.available && !result.items?.length && (
                     <div>
                         <FormattedMessage
                             id="admin.extSystemDetail.repoTestEmpty"
@@ -378,7 +382,7 @@ class AdminExtSystemDetail extends AbstractReactComponent {
                                     defaultMessage="Vyzkoušet nastavení"
                                 />
                             </Button>
-                            {this.renderRepoTestResult()}
+                            {this.renderRepoTestResult(isFsRepo)}
                         </div>
                     )}
                     {classJ === EXT_SYSTEM_CLASS.AiExternalSystem && (
