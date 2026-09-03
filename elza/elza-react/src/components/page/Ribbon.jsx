@@ -33,7 +33,7 @@ import {
 } from "../../constants";
 import { extSystemListFetchIfNeeded } from 'actions/admin/extSystem.jsx';
 import { EXT_SYSTEM_CLASS } from 'components/admin/extSystem/ExtSystemForm';
-import UserSettingsModal from 'components/user/UserSettingsModal';
+import { UserSettingsModal } from 'components/user/UserSettingsModal';
 import { AiAssistantRibbonButton } from 'components/ai-assistant/AiAssistantRibbonButton';
 import { ExperimentalFeature } from 'components/shared/ExperimentalFeature';
 
@@ -127,11 +127,11 @@ class Ribbon extends AbstractReactComponent {
 
     handleUserSettings = () => {
         const { dispatch } = this.props;
+        // Fluent dialog nese vlastní titulek i obal, proto se vkládá jako obsah bez wrapperu.
         dispatch(modalDialogShow(
             this,
-            i18n('userSettings.title'),
-            <UserSettingsModal />,
-            null,
+            undefined,
+            ({ key, visible, onClose }) => <UserSettingsModal key={key} open={visible} onClose={onClose} />,
         ))
     }
 
