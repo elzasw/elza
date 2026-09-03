@@ -59,6 +59,11 @@ public class UnitCountAction extends Action {
 	LevelWithItems skipSubtree;
 
 	/**
+	 * Skip the remaining counters on the level being processed
+	 */
+	private boolean stopLevel;
+
+	/**
 	 * List of counters
 	 */
 	List<UnitCounter> counters = new ArrayList<>();
@@ -175,6 +180,8 @@ public class UnitCountAction extends Action {
 			return;
 		}
 
+		stopLevel = false;
+
 		for (UnitCounter counter : counters) {
 
 			// Check if node stopped
@@ -190,6 +197,11 @@ public class UnitCountAction extends Action {
 			}
 
 			counter.apply(level, this);
+
+			// the counter handled this level, its subtree is still processed
+			if (stopLevel) {
+				return;
+			}
 		}
     }
 
@@ -271,6 +283,13 @@ public class UnitCountAction extends Action {
     public void setSkipSubtree(LevelWithItems level, Consumer<LevelWithItems> useDetailCounter) {
 		this.skipSubtree = level;
         this.counterForSkippedLevels = useDetailCounter;
+	}
+
+	/**
+	 * Skip the remaining counters on the level being processed
+	 */
+	public void setStopLevel() {
+		this.stopLevel = true;
 	}
 
 	/**
