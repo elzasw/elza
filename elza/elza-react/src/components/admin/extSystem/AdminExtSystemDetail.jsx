@@ -194,7 +194,7 @@ class AdminExtSystemDetail extends AbstractReactComponent {
                         </ul>
                     </>
                 )}
-                {result.available && !result.items?.length && (
+                {result.available && Array.isArray(result.items) && result.items.length === 0 && (
                     <div>
                         <FormattedMessage
                             id="admin.extSystemDetail.repoTestEmpty"

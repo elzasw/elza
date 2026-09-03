@@ -64,11 +64,21 @@ public class DaSyncQueueItem {
     private OffsetDateTime date;
 
     /**
-     * Why the item ended in its current state; filled for the error states, where it is the
-     * only description of the failure the user can reach.
+     * Why the item ended in its current state; filled for the error states and for a pending
+     * item whose download keeps failing, where it is the only description of the failure the
+     * user can reach.
      */
     @Column
     private String stateMessage;
+
+    /**
+     * How many times the download of the package has failed. A failed download keeps the item
+     * pending and is retried; the queue is read in the order of this count, so every failure
+     * sends the item behind its peers and it cannot starve the fresh items behind it. A new
+     * change of the AIP arrives as a new item, so the count never resets.
+     */
+    @Column(nullable = false)
+    private Integer attemptCount = 0;
 
 
     public Integer getSyncQueueItemId() {
@@ -157,6 +167,14 @@ public class DaSyncQueueItem {
 
     public void setStateMessage(String stateMessage) {
         this.stateMessage = stateMessage;
+    }
+
+    public Integer getAttemptCount() {
+        return attemptCount;
+    }
+
+    public void setAttemptCount(Integer attemptCount) {
+        this.attemptCount = attemptCount;
     }
 
     public enum QueueItemState {

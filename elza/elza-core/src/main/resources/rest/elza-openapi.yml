@@ -6797,6 +6797,7 @@ components:
     AipProblemType:
       type: string
       enum:
+        - DOWNLOAD_ERROR
         - METADATA_ERROR
         - UNKNOWN_FUND
         - UNKNOWN_INSTITUTION

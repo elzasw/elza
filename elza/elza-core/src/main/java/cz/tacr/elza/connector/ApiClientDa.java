@@ -40,6 +40,44 @@ public class ApiClientDa extends ApiClient {
     public static final DateTimeFormatter X_NDA_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
     public static final int CONNECTION_TIMEOUT = 60000;
 
+    /** Maximum number of response bytes copied into the diagnostic log. */
+    private static final long LOG_BODY_LIMIT = 10_000;
+
+    /**
+     * Logs each DA response (status, content type and a JSON/text body up to
+     * {@link #LOG_BODY_LIMIT} bytes) when DEBUG is enabled for this class. The body is peeked,
+     * so the response stays intact for deserialization; binary bodies are logged by size only.
+     */
+    private static final Interceptor RESPONSE_LOGGING_INTERCEPTOR = chain -> {
+        Response response = chain.proceed(chain.request());
+        if (log.isDebugEnabled()) {
+            try {
+                String contentType = response.header("Content-Type");
+                if (isTextual(contentType)) {
+                    String body = response.peekBody(LOG_BODY_LIMIT).string();
+                    log.debug("DA response: {} {} -> HTTP {}, Content-Type: {}, body: {}",
+                              response.request().method(), response.request().url(),
+                              response.code(), contentType, body);
+                } else {
+                    log.debug("DA response: {} {} -> HTTP {}, Content-Type: {}, body length: {}",
+                              response.request().method(), response.request().url(),
+                              response.code(), contentType, response.body().contentLength());
+                }
+            } catch (IOException e) {
+                log.debug("DA response body could not be read for logging", e);
+            }
+        }
+        return response;
+    };
+
+    private static boolean isTextual(final String contentType) {
+        if (contentType == null) {
+            return true;
+        }
+        String lower = contentType.toLowerCase();
+        return lower.contains("json") || lower.contains("xml") || lower.startsWith("text/");
+    }
+
     public ApiClientDa(@NotNull final String url,
                        final String apiKey,
                        final String apiValue) {
@@ -57,7 +95,8 @@ public class ApiClientDa extends ApiClient {
 
     protected void daInit(final String url) {
         setBasePath(url);
-        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        OkHttpClient.Builder builder = new OkHttpClient.Builder()
+                .addInterceptor(RESPONSE_LOGGING_INTERCEPTOR);
         OkHttpClient httpClient = builder.build();
         setHttpClient(httpClient);
     }
@@ -100,7 +139,7 @@ public class ApiClientDa extends ApiClient {
                         .build();
                 return chain.proceed(newRequest);
             }
-        });
+        }).addInterceptor(RESPONSE_LOGGING_INTERCEPTOR);
         OkHttpClient httpClient = builder.build();
         setHttpClient(httpClient);
     }

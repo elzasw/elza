@@ -1272,6 +1272,10 @@ model LinkedNodeVO {
  */
 enum AipProblemType {
     /**
+     * Balíček se nepodařilo stáhnout z digitálního archivu, stažení se opakuje
+     */
+    DOWNLOAD_ERROR,
+    /**
      * Metadatový balíček se nepodařilo zpracovat
      */
     METADATA_ERROR,

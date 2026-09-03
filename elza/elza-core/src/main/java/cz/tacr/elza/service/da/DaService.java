@@ -1302,6 +1302,68 @@ public class DaService {
     }
 
     /**
+     * Records a failed download of the package of the given queue items. Nothing of the package
+     * arrived, so unlike a failure of the processing the items are not closed: they stay in
+     * their pending state, sent behind their peers by the raised attempt count, and are retried
+     * once the fresher items are served - nothing gives a download up, the DA holds the package
+     * and every retry may succeed. The failure is described on each item and as a problem of
+     * its AIP - an AIP the DA announced but ELZA could never download is created from what the
+     * change carries, so the user finds it in the AIP list instead of only in the queue.
+     */
+    @Transactional
+    public void recordDownloadFailure(List<DaSyncQueueItem> syncQueueItemList, Exception failure) {
+        AipProblem problem = AipProblem.downloadFailure(failure);
+        OffsetDateTime now = OffsetDateTime.now();
+        for (DaSyncQueueItem syncQueueItem : syncQueueItemList) {
+            int attempts = (syncQueueItem.getAttemptCount() == null ? 0 : syncQueueItem.getAttemptCount()) + 1;
+            syncQueueItem.setAttemptCount(attempts);
+            syncQueueItem.setDate(now);
+            syncQueueItem.setStateMessage(StringUtils.abbreviate(
+                    problem.description() + " (pokusů: " + attempts + ")", STATE_MESSAGE_MAX_LENGTH));
+            recordDownloadProblem(syncQueueItem, problem);
+        }
+        syncQueueItemRepository.saveAll(syncQueueItemList);
+    }
+
+    /**
+     * Describes the failed download on the AIP of the queue item. An AIP unknown to ELZA is
+     * created first, with the code and version the change carries as all that is known about
+     * it; the next successfully downloaded package replaces this state, which clears the
+     * problem the same way it is cleared for an AIP that already existed.
+     */
+    private void recordDownloadProblem(DaSyncQueueItem syncQueueItem, AipProblem problem) {
+        DaAip aip = syncQueueItem.getAip() != null
+                ? syncQueueItem.getAip()
+                : aipRepository.findByCode(syncQueueItem.getCode());
+        DaAipState aipState;
+        if (aip == null) {
+            aip = new DaAip();
+            aip.setCode(syncQueueItem.getCode());
+            aip.setDigitalRepository(syncQueueItem.getDigitalRepository());
+            aipRepository.save(aip);
+
+            DaChange change = new DaChange();
+            change.setType(DaChangeType.AIP_CREATE);
+            change.setChangeDate(LocalDateTime.now());
+            change.setDaAip(aip);
+            changeRepository.save(change);
+
+            aipState = new DaAipState();
+            aipState.setDaAip(aip);
+            aipState.setCreateChange(change);
+            aipState.setAipVersion(StringUtils.defaultString(syncQueueItem.getAipVersion()));
+        } else {
+            aipState = aipStateRepository.findByDaAipAndDeleteChangeIsNull(aip);
+            if (aipState == null) {
+                return;
+            }
+        }
+        syncQueueItem.setAip(aip);
+        referenceResolver.recordProblem(aipState, problem);
+        aipStateRepository.save(aipState);
+    }
+
+    /**
      * Sets the state of the given queue items, each described by its own message. Used where the
      * items of one batch fail for different reasons and a shared description would lose them.
      */

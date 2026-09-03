@@ -1005,6 +1005,10 @@
     "defaultMessage": "Package content",
     "srcHash": "TMjUM37-a7HO"
   },
+  "aip.problem.DOWNLOAD_ERROR": {
+    "defaultMessage": "Package download failed",
+    "srcHash": "uCAur7uPUJIR"
+  },
   "aip.problem.METADATA_ERROR": {
     "defaultMessage": "Metadata processing failed",
     "srcHash": "Q-Y6CQYBRvq4"
