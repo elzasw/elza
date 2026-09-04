@@ -4,14 +4,14 @@ import { AipLinkState, AipProblemType, AipUpdateType, DaAipActionItemState, Queu
 export const messages = defineMessages({
     aipId:            { id: "aip.col.aipId",            defaultMessage: "ID" },
     code:             { id: "aip.col.code",             defaultMessage: "AIP ID" },
-    aipVersion:       { id: "aip.col.aipVersion",       defaultMessage: "Verze Aipu" },
+    aipVersion:       { id: "aip.col.aipVersion",       defaultMessage: "Verze AIPu" },
     fund:             { id: "aip.col.fund",             defaultMessage: "Archivní soubor" },
     fundCode:         { id: "aip.col.fundCode",         defaultMessage: "Kód archivního souboru" },
     institution:      { id: "aip.col.institution",      defaultMessage: "Instituce" },
     institutionCode:  { id: "aip.col.institutionCode",  defaultMessage: "Kód instituce" },
     unitdate:         { id: "aip.col.unitdate",         defaultMessage: "Datace od-do" },
     originator:       { id: "aip.col.originator",       defaultMessage: "Původce" },
-    ingestionCode:    { id: "aip.col.ingestionCode",    defaultMessage: "Číslo příjemky" },
+    ingestionCode:    { id: "aip.col.ingestionCode",    defaultMessage: "Číslo přejímky" },
     referenceNumber:  { id: "aip.col.referenceNumber",  defaultMessage: "Číslo jednací" },
     nadChangeCode:    { id: "aip.col.nadChangeCode",    defaultMessage: "Vnější změna" },
     aipSize:          { id: "aip.col.aipSize",          defaultMessage: "Velikost" },
@@ -117,7 +117,12 @@ export const updateTypeUnavailable = defineMessages({
  * Popisky akcí v detailu AIPu.
  */
 export const detailMessages = defineMessages({
-    downloadPackage: { id: "aip.detail.downloadPackage", defaultMessage: "Stáhnout balíček" },
+    title:              { id: "aip.detail.title",              defaultMessage: "Detail AIP" },
+    loading:            { id: "aip.detail.loading",            defaultMessage: "Načítání…" },
+    explorerOpen:       { id: "aip.detail.explorer.open",      defaultMessage: "Otevřít průzkumník" },
+    downloadPackage:    { id: "aip.detail.downloadPackage",    defaultMessage: "Stáhnout balíček" },
+    aipVersionMetadata: { id: "aip.detail.aipVersionMetadata", defaultMessage: "Verze s načtenými metadaty" },
+    linkedNodes:        { id: "aip.detail.linkedNode",         defaultMessage: "Napojené jednotky popisu" },
 });
 
 /**

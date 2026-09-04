@@ -739,7 +739,7 @@
   },
   "aip.col.aipVersion": {
     "defaultMessage": "AIP version",
-    "srcHash": "LFW3qt24AmIp"
+    "srcHash": "J01fuXBJGA06"
   },
   "aip.col.code": {
     "defaultMessage": "AIP ID",
@@ -766,8 +766,8 @@
     "srcHash": "ve1rNhbanwoQ"
   },
   "aip.col.ingestionCode": {
-    "defaultMessage": "Ingestion number",
-    "srcHash": "a9BLL1vglzAN"
+    "defaultMessage": "Accession number",
+    "srcHash": "eBfAMTbu2EUv"
   },
   "aip.col.institution": {
     "defaultMessage": "Institution",
@@ -817,9 +817,29 @@
     "defaultMessage": "Show list",
     "srcHash": "MYJ1K8DLdJht"
   },
+  "aip.detail.aipVersionMetadata": {
+    "defaultMessage": "Version with loaded metadata",
+    "srcHash": "cb4Tq2NMj0fN"
+  },
   "aip.detail.downloadPackage": {
     "defaultMessage": "Download package",
     "srcHash": "yf8e5gZ_YbcN"
+  },
+  "aip.detail.explorer.open": {
+    "defaultMessage": "Open explorer",
+    "srcHash": "_QWqGVI3J8rQ"
+  },
+  "aip.detail.linkedNode": {
+    "defaultMessage": "Linked units of description",
+    "srcHash": "Bk3P5H2rkFGv"
+  },
+  "aip.detail.loading": {
+    "defaultMessage": "Loading…",
+    "srcHash": "kgjJ9rUTLs7l"
+  },
+  "aip.detail.title": {
+    "defaultMessage": "AIP detail",
+    "srcHash": "dNE8MdYQimxe"
   },
   "aip.explorer.back": {
     "defaultMessage": "Back to the list",

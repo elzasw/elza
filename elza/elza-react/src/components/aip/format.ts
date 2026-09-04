@@ -1,3 +1,5 @@
+import { formatDateCz } from 'utils/date';
+
 /**
  * Size of the package in the units it is best read in, or "-" when it is not known - an AIP
  * whose package never arrived, or arrived broken, has no size to show.
@@ -14,3 +16,7 @@ export const formatAipSize = (bytes: number | null | undefined): string => {
 
     return `${size} ${sizes[i]}`;
 }
+
+/** Date range of the AIP; an open end reads as a question mark, not as an invalid date. */
+export const formatUnitDate = (unitdateFrom: string, unitdateTo?: string): string =>
+    formatDateCz(new Date(unitdateFrom)) + ' - ' + (unitdateTo ? formatDateCz(new Date(unitdateTo)) : '?');
