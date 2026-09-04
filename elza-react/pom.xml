@@ -95,20 +95,9 @@
                             </arguments>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>install-api-dependencies</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>npm</executable>
-                            <workingDirectory>${project.basedir}/target/elza-api</workingDirectory>
-                            <arguments>
-                                <argument>install</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
+                    <!-- The generated client is built with the toolchain of elza-react itself: it lives
+                         under target/, so its `tsc` and the axios types resolve from elza-react/node_modules
+                         and it needs no `npm install` of its own (which cost minutes on every build). -->
                     <execution>
                         <id>build-api</id>
                         <phase>generate-sources</phase>
@@ -207,24 +196,12 @@
             <id>release</id>
             <build>
                 <plugins>
-                    <!-- npm install a prelozeni React-->
+                    <!-- prelozeni React; zavislosti instaluje `npm ci` ve fazi initialize (execution
+                         install-elza-react-dependencies), dalsi `npm install` by je jen znovu stahl -->
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
                         <executions>
-                            <execution>
-                                <id>npm-install</id>
-                                <phase>validate</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <executable>npm</executable>
-                                    <arguments>
-                                        <argument>install</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
                             <execution>
                                 <id>npm-run-build</id>
                                 <!-- Plugin maven-source-plugin is running phase 'generate-sources'
