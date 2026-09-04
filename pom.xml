@@ -474,6 +474,11 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <configuration>
                         <forkedProcessTimeoutInSeconds>${surefire.timeout}</forkedProcessTimeoutInSeconds>
+                        <!-- How long to wait for the forked JVM to exit after it has reported the results
+                             and called System.exit(). The elza-core fork regularly hangs in a shutdown hook
+                             for the whole default of 30 s before Surefire kills it; nothing of value happens
+                             in that time, so it is cut short. -->
+                        <forkedProcessExitTimeoutInSeconds>5</forkedProcessExitTimeoutInSeconds>
                     </configuration>
                 </plugin>
                 <plugin>
