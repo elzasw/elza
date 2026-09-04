@@ -57,6 +57,21 @@ describe('AipActionResult', () => {
         expect(screen.getByText('V ELZA není uložený balíček s metadaty.')).toBeInTheDocument();
     });
 
+    // An action that skipped every AIP did nothing; a check mark would claim otherwise
+    it('akci, která všechno přeskočila, neukáže jako úspěch', () => {
+        const { container } = renderWithProviders(<AipActionResult action={action({
+            state: DaAipActionState.Finished,
+            items: [
+                { aipId: 1, aipCode: 'A', state: DaAipActionItemState.Skipped, message: 'Není co dělat' },
+                { aipId: 2, aipCode: 'B', state: DaAipActionItemState.Skipped, message: 'Není co dělat' },
+            ],
+        })} />);
+
+        expect(container.querySelector('.aip-action-summary .fa-minus-circle')).not.toBeNull();
+        expect(container.querySelector('.aip-action-summary .fa-check')).toBeNull();
+        expect(screen.getByText(/2 z 2.*2 přeskočen/)).toBeInTheDocument();
+    });
+
     it('shrnutí počítá jen dokončené položky', () => {
         renderWithProviders(<AipActionResult action={action({
             items: [

@@ -2,7 +2,6 @@ package cz.tacr.elza.service.da;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.mock;
@@ -104,7 +103,8 @@ public class DaServiceRemapReferencesTest {
         assertEquals(AipType.METADATA_BASE, item.getValue().getAipType());
         assertEquals(DaSyncQueueItem.QueueItemState.UPDATE, item.getValue().getState());
         assertEquals("aip-code", item.getValue().getCode());
-        assertTrue(aipState.getMetadataLoad());
+        // The flag says what is on disk; it is set when the package arrives, not when it is asked for
+        assertNull(aipState.getMetadataLoad());
     }
 
     @Test

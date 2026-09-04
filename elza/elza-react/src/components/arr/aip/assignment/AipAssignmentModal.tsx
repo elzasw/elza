@@ -10,6 +10,7 @@ import { storeFromArea } from "shared/utils";
 import { AppState } from "typings/store";
 import { AIP_LOGICAL_TREE, fetchAipLogicalTreeIfNeeded } from "actions/aip/aip";
 import { useThunkDispatch } from "utils/hooks";
+import { useWebsocket } from "components/shared/web-socket/WebsocketProvider";
 import {AipConnectBlockedVO, AipDetailVO} from "elza-api";
 import { useIntl } from "react-intl";
 import { Api } from "../../../../api";
@@ -29,6 +30,7 @@ const AipAssignmentModal = ({aips, tree}: AipAssignmentModalProps) =>  {
     const [selectedArrNodeId, setSelectedArrNodeId] = useState<TreeItemValue>(tree.nodes[0].id);
     const structure = useSelector((state: AppState) => storeFromArea(state, AIP_LOGICAL_TREE))
     const dispatch = useThunkDispatch();
+    const websocket = useWebsocket();
     const intl = useIntl();
     const [blocked, setBlocked] = useState<AipConnectBlockedVO[]>([]);
 
@@ -62,7 +64,7 @@ const AipAssignmentModal = ({aips, tree}: AipAssignmentModalProps) =>  {
     const handleConnectToJP = () => {
         const title = i18n("arr.aip.assignment.link");
         // Napojení běží na pozadí, po jednom AIPu; dialog ukáže, jak dopadl každý z nich.
-        runAipAction(dispatch, intl, title, () => selectedAips.daLevelViewId
+        runAipAction(dispatch, intl, websocket, title, () => selectedAips.daLevelViewId
             ? Api.aips.aipBulkConnectLogicToJp(selectedArrNodeId as number, selectedAips.aipIds,
                                                selectedAips.daLevelViewId)
             : Api.aips.aipBulkConnectToJp(selectedArrNodeId as number, selectedAips.aipIds), reloadAips);
@@ -70,7 +72,7 @@ const AipAssignmentModal = ({aips, tree}: AipAssignmentModalProps) =>  {
 
     const handleCreateFromSelected = () => {
         const title = i18n("arr.aip.assignment.create");
-        runAipAction(dispatch, intl, title, () => selectedAips.daLevelViewId
+        runAipAction(dispatch, intl, websocket, title, () => selectedAips.daLevelViewId
             ? Api.aips.aipBulkCreateSelectedToJp(selectedArrNodeId as number, selectedAips.aipIds,
                                                  selectedAips.daLevelViewId)
             : Api.aips.aipBulkCreateFromSelected(selectedArrNodeId as number, selectedAips.aipIds), reloadAips);

@@ -534,6 +534,31 @@ public class DaService {
         return action;
     }
 
+    /**
+     * Whether a download that would deliver at least the requested form of the package is already
+     * waiting in the queue. The load flags say what is on disk and the queue says what was asked
+     * for; asking again would only replace the pending item with an identical one.
+     */
+    private boolean isDownloadPending(DaAip aip, AipType requested) {
+        DaSyncQueueItem pending = syncQueueItemRepository.findByAipAndStateInAndActiveIsTrue(aip,
+                List.of(DaSyncQueueItem.QueueItemState.IMPORT_NEW, DaSyncQueueItem.QueueItemState.UPDATE));
+        return pending != null && pending.getAipType() != null && rank(pending.getAipType()) >= rank(requested);
+    }
+
+    /**
+     * Order of the package forms by content: each form contains everything the forms below it do
+     * (see the DA API for dipType). The native form is the whole package, so it ranks with the
+     * complete one.
+     */
+    private static int rank(AipType type) {
+        return switch (type) {
+            case PACKAGE_INFO -> 0;
+            case ARCHDESC -> 1;
+            case METADATA_BASE -> 2;
+            case AIP_BASE, AIP_RAW -> 3;
+        };
+    }
+
     @Transactional
     public void createDaoStructure(List<Integer> aipIds) {
         createDaoStructure(aipIds, AipOutcomeSink.NONE);
@@ -545,28 +570,28 @@ public class DaService {
         Map<DaAip, DaAipState> stateMap = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList).stream()
                 .collect(Collectors.toMap(DaAipState::getDaAip, Function.identity()));
 
-        List<DaAipState> stateList = new ArrayList<>();
+        List<DaAipState> resolvedStates = new ArrayList<>();
 
         for (DaAip aip : aipList) {
             DaAipState aipState = stateMap.get(aip);
             if (aipState.getFund() == null) {
                 referenceResolver.resolveReferences(aipState);
+                resolvedStates.add(aipState);
             }
-            if (BooleanUtils.isNotTrue(aipState.getMetadataLoad()) && BooleanUtils.isNotTrue(aipState.getCompleteAipLoad()) && aipState.getFund() != null) {
-                aipState.setMetadataLoad(true);
-                stateList.add(aipState);
-
+            if (aipState.getFund() == null) {
+                sink.skipped(aip.getAipId(), "AIP není navázaný na archivní soubor, není ke kterému fondu metadata stahovat.");
+            } else if (BooleanUtils.isTrue(aipState.getMetadataLoad()) || BooleanUtils.isTrue(aipState.getCompleteAipLoad())) {
+                sink.skipped(aip.getAipId(), "Metadata AIPu už jsou stažená.");
+            } else if (isDownloadPending(aip, AipType.METADATA_BASE)) {
+                sink.skipped(aip.getAipId(), "Stažení metadat AIPu už je ve frontě.");
+            } else {
                 DaSyncQueueItem queueItem = createSyncQueueItem(aip.getCode(), aip, aip.getDigitalRepository(),
                         DaSyncQueueItem.QueueItemState.UPDATE, aipState.getAipVersion(), AipType.METADATA_BASE, true);
                 sink.enqueued(aip.getAipId(), queueItem);
-            } else if (aipState.getFund() == null) {
-                sink.skipped(aip.getAipId(), "AIP není navázaný na archivní soubor, není ke kterému fondu metadata stahovat.");
-            } else {
-                sink.skipped(aip.getAipId(), "Metadata AIPu už jsou stažená.");
             }
         }
 
-        aipStateRepository.saveAll(stateList);
+        aipStateRepository.saveAll(resolvedStates);
     }
 
     /**
@@ -713,25 +738,21 @@ public class DaService {
         Map<DaAip, DaAipState> stateMap = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList).stream()
                 .collect(Collectors.toMap(DaAipState::getDaAip, Function.identity()));
 
-        List<DaAipState> stateList = new ArrayList<>();
-
         for (DaAip aip : aipList) {
             DaAipState aipState = stateMap.get(aip);
-            if (BooleanUtils.isTrue(aipState.getMetadataLoad()) && BooleanUtils.isNotTrue(aipState.getCompleteAipLoad())) {
-                aipState.setCompleteAipLoad(true);
-                stateList.add(aipState);
-
+            if (BooleanUtils.isTrue(aipState.getCompleteAipLoad())) {
+                sink.skipped(aip.getAipId(), "Kompletní AIP je už stažený.");
+            } else if (BooleanUtils.isNotTrue(aipState.getMetadataLoad())) {
+                sink.skipped(aip.getAipId(), "AIP nemá stažená metadata; nejprve je nutné stáhnout ta.");
+            } else if (isDownloadPending(aip, AipType.AIP_BASE)) {
+                sink.skipped(aip.getAipId(), "Stažení kompletního AIPu už je ve frontě.");
+            } else {
                 DaSyncQueueItem queueItem = createSyncQueueItem(aip.getCode(), aip, aip.getDigitalRepository(),
                         DaSyncQueueItem.QueueItemState.UPDATE, aipState.getAipVersion(), AipType.AIP_BASE, true);
                 sink.enqueued(aip.getAipId(), queueItem);
-            } else {
-                sink.skipped(aip.getAipId(), BooleanUtils.isTrue(aipState.getCompleteAipLoad())
-                        ? "Kompletní AIP je už stažený."
-                        : "AIP nemá stažená metadata; nejprve je nutné stáhnout ta.");
             }
         }
 
-        aipStateRepository.saveAll(stateList);
         return action;
     }
 
@@ -743,23 +764,22 @@ public class DaService {
         Map<DaAip, DaAipState> stateMap = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList).stream()
                 .collect(Collectors.toMap(DaAipState::getDaAip, Function.identity()));
 
-        List<DaAipState> stateList = new ArrayList<>();
-
+        // The complete package is replaced by the metadata package when that one arrives, and the
+        // flags follow the package on disk - so nothing is cleared here, the pending downgrade
+        // shows as the queue item of the AIP.
         for (DaAip aip : aipList) {
             DaAipState aipState = stateMap.get(aip);
-            if (BooleanUtils.isTrue(aipState.getCompleteAipLoad())) {
-                aipState.setCompleteAipLoad(false);
-                stateList.add(aipState);
-
+            if (BooleanUtils.isNotTrue(aipState.getCompleteAipLoad())) {
+                sink.skipped(aip.getAipId(), "AIP nemá stažený kompletní balíček, není co mazat.");
+            } else if (isDownloadPending(aip, AipType.METADATA_BASE)) {
+                sink.skipped(aip.getAipId(), "Nahrazení kompletního balíčku metadaty už je ve frontě.");
+            } else {
                 DaSyncQueueItem queueItem = createSyncQueueItem(aip.getCode(), aip, aip.getDigitalRepository(),
                         DaSyncQueueItem.QueueItemState.UPDATE, aipState.getAipVersion(), AipType.METADATA_BASE, true);
                 sink.enqueued(aip.getAipId(), queueItem);
-            } else {
-                sink.skipped(aip.getAipId(), "AIP nemá stažený kompletní balíček, není co mazat.");
             }
         }
 
-        aipStateRepository.saveAll(stateList);
         return action;
     }
 
@@ -1575,6 +1595,14 @@ public class DaService {
         localCache.setSyncQueueItem(syncQueueItem);
         localCache.setAipState(aipState);
         daLocalCacheRepository.save(localCache);
+
+        // The load flags describe the package on disk, so they are written here, where it is
+        // stored, and nowhere else: a complete package carries the metadata too, and a metadata
+        // package arriving later replaces a complete one.
+        DaAipState storedState = aipStateRepository.findById(aipState.getAipStateId()).orElse(aipState);
+        storedState.setMetadataLoad(aipType == AipType.METADATA_BASE || aipType == AipType.AIP_BASE);
+        storedState.setCompleteAipLoad(aipType == AipType.AIP_BASE);
+        aipStateRepository.save(storedState);
     }
 
     @Transactional

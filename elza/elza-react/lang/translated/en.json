@@ -710,16 +710,20 @@
     "srcHash": "qchuMS_kPrI7"
   },
   "aip.action.summary": {
-    "defaultMessage": "{done} of {total} done{errors, plural, =0 {} one { · # error} other { · # errors}}",
-    "srcHash": "zTVliqexu1h4"
+    "defaultMessage": "{done} of {total} done{errors, plural, =0 {} one { · # error} other { · # errors}}{skipped, plural, =0 {} other { · # skipped}}",
+    "srcHash": "oNsj_S08X7uy"
   },
   "aip.action.toast.errors": {
     "defaultMessage": "{count, plural, one {Action failed for # AIP} other {Action failed for # AIPs}}",
     "srcHash": "vFKit_HMxbGk"
   },
   "aip.action.toast.finished": {
-    "defaultMessage": "{count, plural, one {Action finished for # AIP} other {Action finished for # AIPs}}",
-    "srcHash": "OuQdiSeoE4Gi"
+    "defaultMessage": "{count, plural, one {Action finished for # AIP} other {Action finished for # AIPs}}{skipped, plural, =0 {} other { · # skipped}}",
+    "srcHash": "dc9tgcjqXqJt"
+  },
+  "aip.action.toast.skipped": {
+    "defaultMessage": "The action was not carried out for any AIP{count, plural, =0 {} other { · # skipped}}",
+    "srcHash": "63bdjOKkoVV4"
   },
   "aip.action.withErrors": {
     "defaultMessage": "Finished with errors",

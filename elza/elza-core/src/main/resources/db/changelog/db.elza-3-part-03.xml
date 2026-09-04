@@ -331,4 +331,52 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="20260904100000" author="ppy">
+        <!-- metadata_load and complete_aip_load describe the package stored in the local cache and
+             are written when the package is stored. Rows written earlier say what was requested
+             rather than what arrived; they are recomputed from the cache of the AIP: a metadata
+             or complete package means the metadata are present, a complete package means the
+             complete AIP is present. -->
+        <update tableName="da_aip_state">
+            <column name="metadata_load" valueBoolean="true"/>
+            <where>delete_change_id IS NULL AND EXISTS (
+                SELECT 1 FROM da_local_cache c
+                  JOIN da_aip_state cs ON cs.aip_state_id = c.aip_state_id
+                  JOIN da_sync_queue_item q ON q.sync_queue_item_id = c.sync_queue_item_id
+                 WHERE cs.aip_id = da_aip_state.aip_id
+                   AND c.aip_type IN ('METADATA_BASE', 'AIP_BASE')
+                   AND q.state IN ('UPDATE', 'IMPORT_NEW', 'IMPORT_OK', 'IMPORT_ERROR'))</where>
+        </update>
+        <update tableName="da_aip_state">
+            <column name="metadata_load" valueBoolean="false"/>
+            <where>delete_change_id IS NULL AND NOT EXISTS (
+                SELECT 1 FROM da_local_cache c
+                  JOIN da_aip_state cs ON cs.aip_state_id = c.aip_state_id
+                  JOIN da_sync_queue_item q ON q.sync_queue_item_id = c.sync_queue_item_id
+                 WHERE cs.aip_id = da_aip_state.aip_id
+                   AND c.aip_type IN ('METADATA_BASE', 'AIP_BASE')
+                   AND q.state IN ('UPDATE', 'IMPORT_NEW', 'IMPORT_OK', 'IMPORT_ERROR'))</where>
+        </update>
+        <update tableName="da_aip_state">
+            <column name="complete_aip_load" valueBoolean="true"/>
+            <where>delete_change_id IS NULL AND EXISTS (
+                SELECT 1 FROM da_local_cache c
+                  JOIN da_aip_state cs ON cs.aip_state_id = c.aip_state_id
+                  JOIN da_sync_queue_item q ON q.sync_queue_item_id = c.sync_queue_item_id
+                 WHERE cs.aip_id = da_aip_state.aip_id
+                   AND c.aip_type = 'AIP_BASE'
+                   AND q.state IN ('UPDATE', 'IMPORT_NEW', 'IMPORT_OK', 'IMPORT_ERROR'))</where>
+        </update>
+        <update tableName="da_aip_state">
+            <column name="complete_aip_load" valueBoolean="false"/>
+            <where>delete_change_id IS NULL AND NOT EXISTS (
+                SELECT 1 FROM da_local_cache c
+                  JOIN da_aip_state cs ON cs.aip_state_id = c.aip_state_id
+                  JOIN da_sync_queue_item q ON q.sync_queue_item_id = c.sync_queue_item_id
+                 WHERE cs.aip_id = da_aip_state.aip_id
+                   AND c.aip_type = 'AIP_BASE'
+                   AND q.state IN ('UPDATE', 'IMPORT_NEW', 'IMPORT_OK', 'IMPORT_ERROR'))</where>
+        </update>
+    </changeSet>
+
 </databaseChangeLog>
