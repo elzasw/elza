@@ -549,7 +549,7 @@
     </item-type>
     <item-type code="ZP2015_ITEM_MAT" data-type="TEXT">
         <name>Technika, adjustace, nosič a látka záznamu</name>
-        <shortcut>Techn. záznamu</shortcut>
+        <shortcut>Technika</shortcut>
         <description>ZP5.2.8 Technika, adjustace, nosič a látka záznamu</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
