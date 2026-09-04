@@ -13,17 +13,19 @@ import {modalDialogShow} from "../../actions/global/modalDialog";
 import AipUpdateTypeForm from "./AipUpdateTypeForm.tsx";
 import { runAipAction } from "./AipActionRunner";
 import { useIntl } from "react-intl";
+import { useWebsocket } from "components/shared/web-socket/WebsocketProvider";
 
 const AipPageRibbon: FC = () => {
     const selectedAips = useSelector((state: AppState) => storeFromArea(state, AREA_SELECTED_AIPS));
     const aip =  useSelector((state: AppState) => storeFromArea(state, AREA_AIP));
     const dispatch = useThunkDispatch();
     const intl = useIntl();
+    const websocket = useWebsocket();
 
     /** Akce mění i AIP otevřený v detailu, panel se proto načte znovu spolu se seznamem. */
     /** Akce běží na pozadí; dialog ukáže její průběh a po dokončení se seznam načte znovu. */
     const run = (title: string, request: () => Promise<{ data: import("elza-api").DaAipActionVO }>) =>
-        runAipAction(dispatch, intl, title, request as never, reload);
+        runAipAction(dispatch, intl, websocket, title, request as never, reload);
 
     const reload = () => {
         dispatch(aipsFetchIfNeeded(true));

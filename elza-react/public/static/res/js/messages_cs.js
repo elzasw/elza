@@ -1928,7 +1928,7 @@ var messages = {
     "aip.detail.completeAipLoad": "Načten úplný AIP",
     "aip.detail.metadataError": "Chyba při načtení metadat",
     "aip.detail.aipVersionMetadata": "Verze s načtenými metadaty",
-    "aip.detail.importState": "Aktuální verze",
+    "aip.detail.importState": "Stav importu",
     "aip.detail.exportState": "Stav exportu",
     "aip.detail.linkedNode": "Napojen archivní popis",
     "aip.detail.fundCode": "Kód archivního souboru",

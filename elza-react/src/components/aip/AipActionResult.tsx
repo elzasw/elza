@@ -37,14 +37,19 @@ export function AipActionResult({ action }: Props) {
     const done = items.filter(item => item.state !== DaAipActionItemState.Waiting
                                    && item.state !== DaAipActionItemState.Running).length;
     const errors = items.filter(item => item.state === DaAipActionItemState.Error).length;
+    const finished = items.filter(item => item.state === DaAipActionItemState.Finished).length;
+    const skipped = items.filter(item => item.state === DaAipActionItemState.Skipped).length;
+
+    // An action that skipped every AIP did nothing; a check mark would claim otherwise.
+    const outcomeGlyph = errors > 0 ? 'fa-exclamation-triangle' : finished === 0 ? 'fa-minus-circle' : 'fa-check';
 
     return (
         <div className="aip-action-result">
             <div className="aip-action-summary">
                 {action.state === DaAipActionState.Waiting || action.state === DaAipActionState.Running
                     ? <Icon glyph="fa-spinner" className="fa-spin" />
-                    : <Icon glyph={errors > 0 ? 'fa-exclamation-triangle' : 'fa-check'} />}
-                <span>{intl.formatMessage(actionMessages.summary, { done, total: items.length, errors })}</span>
+                    : <Icon glyph={outcomeGlyph} />}
+                <span>{intl.formatMessage(actionMessages.summary, { done, total: items.length, errors, skipped })}</span>
             </div>
 
             <table className="aip-action-items">

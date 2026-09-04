@@ -209,11 +209,19 @@ export const actionMessages = defineMessages({
     stateColumn: { id: "aip.action.col.state",   defaultMessage: "Výsledek" },
     summary: {
         id: "aip.action.summary",
-        defaultMessage: "Hotovo {done} z {total}{errors, plural, =0 {} one { · # chyba} few { · # chyby} other { · # chyb}}",
+        defaultMessage: "Hotovo {done} z {total}"
+            + "{errors, plural, =0 {} one { · # chyba} few { · # chyby} other { · # chyb}}"
+            + "{skipped, plural, =0 {} one { · # přeskočen} few { · # přeskočeny} other { · # přeskočeno}}",
     },
     toastFinished: {
         id: "aip.action.toast.finished",
-        defaultMessage: "{count, plural, one {Akce dokončena u # AIPu} few {Akce dokončena u # AIPů} other {Akce dokončena u # AIPů}}",
+        defaultMessage: "{count, plural, one {Akce dokončena u # AIPu} few {Akce dokončena u # AIPů} other {Akce dokončena u # AIPů}}"
+            + "{skipped, plural, =0 {} one { · # přeskočen} few { · # přeskočeny} other { · # přeskočeno}}",
+    },
+    toastSkipped: {
+        id: "aip.action.toast.skipped",
+        defaultMessage: "Akce nebyla u žádného AIPu provedena"
+            + "{count, plural, =0 {} one { · # přeskočen} few { · # přeskočeny} other { · # přeskočeno}}",
     },
     toastErrors: {
         id: "aip.action.toast.errors",
