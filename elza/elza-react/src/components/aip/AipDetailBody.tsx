@@ -77,7 +77,7 @@ const AipDetailBody = ({detail}: AipDetailBodyProps) => {
                 <DetailRow label={i18n("aip.detail.referenceNumber")} value={detail.referenceNumber}/>}
             {detail.nadChangeCode &&
                 <DetailRow label={i18n("aip.detail.nadChangeCode")} value={detail.nadChangeCode}/>}
-            {detail.aipSize > -1 &&
+            {detail.aipSize != null && detail.aipSize > -1 &&
                 <DetailRow label={i18n("aip.detail.size")} value={formatAipSize(detail.aipSize)}/>}
             {detail != null &&
                 <DetailRow label={i18n("aip.detail.metadataLoad")} value={getBoolIcon(detail.metadataLoad)}/>}
