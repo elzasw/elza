@@ -17,7 +17,7 @@ public class ApExternalIdWrapper implements EntityWrapper {
 
     private final AccessPointInfo apInfo;
 
-    ApExternalIdWrapper(ApBindingState entity, AccessPointInfo apInfo) {
+    public ApExternalIdWrapper(ApBindingState entity, AccessPointInfo apInfo) {
         this.entity = Validate.notNull(entity);
         this.apInfo = Validate.notNull(apInfo);
     }
@@ -30,7 +30,7 @@ public class ApExternalIdWrapper implements EntityWrapper {
     }
 
     @Override
-    public Object getEntity() {
+    public ApBindingState getEntity() {
         return entity;
     }
 
@@ -39,6 +39,16 @@ public class ApExternalIdWrapper implements EntityWrapper {
         // prepare AP reference
         Validate.isTrue(entity.getAccessPoint() == null);
         entity.setAccessPoint(apInfo.getEntityRef(session));
+    }
+
+    @Override
+    public void evictFrom(Session session) {
+        // binding is stored together with state, evict it as well
+        ApBinding binding = entity.getBinding();
+        if (binding != null && session.contains(binding)) {
+            session.evict(binding);
+        }
+        session.evict(entity);
     }
 
     @Override

@@ -253,7 +253,7 @@ public class AccessPointsContext {
         if (storeReferenced) {
             storeAccessPoints();
         }
-        storageManager.storeGeneric(eidQueue);
+        storageManager.storeBindingStates(eidQueue);
         eidQueue.clear();
     }
 
