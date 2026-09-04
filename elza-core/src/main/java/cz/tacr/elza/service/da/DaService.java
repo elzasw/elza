@@ -15,6 +15,7 @@ import cz.tacr.da.controller.vo.RequestState;
 import cz.tacr.da.controller.vo.UpdatedAips;
 import cz.tacr.da.controller.vo.UpdatedInfo;
 import cz.tacr.elza.api.AipType;
+import cz.tacr.elza.api.DaAipActionItemState;
 import cz.tacr.elza.api.DaAipActionType;
 import cz.tacr.elza.common.XmlUtils;
 import cz.tacr.elza.connector.DaConnector;
@@ -1372,6 +1373,10 @@ public class DaService {
      * The problem is written on the AIP as well, so a package that arrived and could not be
      * processed is as visible as one that could not be downloaded - the failure is terminal,
      * nothing retries it, and the queue alone is not where the user looks for it.
+     *
+     * The action item the queue item was carrying out is finished here too: these items are
+     * taken out of the batch, so the caller closes the batch without them and an action item
+     * nobody finishes leaves the request the user is watching running forever.
      */
     @Transactional
     public void failQueueItems(Map<DaSyncQueueItem, AipProblem> problemByItem, DaSyncQueueItem.QueueItemState state) {
@@ -1382,6 +1387,8 @@ public class DaService {
                 syncQueueItem.setStateMessage(StringUtils.abbreviate(problem.description(), STATE_MESSAGE_MAX_LENGTH));
                 syncQueueItem.setDate(now);
                 recordAipProblem(syncQueueItem, problem);
+                actionService.completeFromQueue(List.of(syncQueueItem), DaAipActionItemState.ERROR,
+                                                problem.description());
             });
             syncQueueItemRepository.saveAll(problemByItem.keySet());
         }

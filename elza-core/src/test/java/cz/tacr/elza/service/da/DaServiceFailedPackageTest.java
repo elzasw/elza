@@ -28,6 +28,7 @@ import org.springframework.context.ApplicationContext;
 
 import cz.tacr.elza.api.AipProblemType;
 import cz.tacr.elza.api.AipType;
+import cz.tacr.elza.api.DaAipActionItemState;
 import cz.tacr.elza.api.DigitalRepositoryType;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.DaAip;
@@ -55,6 +56,7 @@ public class DaServiceFailedPackageTest {
     private AipStateRepository aipStateRepository;
     private DaSyncQueueItemRepository syncQueueItemRepository;
     private DaAipReferenceResolver referenceResolver;
+    private DaAipActionService actionService;
 
     private ArrDigitalRepository repository;
     private DaSyncQueueItem syncQueueItem;
@@ -65,6 +67,7 @@ public class DaServiceFailedPackageTest {
         aipStateRepository = mock(AipStateRepository.class);
         syncQueueItemRepository = mock(DaSyncQueueItemRepository.class);
         referenceResolver = mock(DaAipReferenceResolver.class);
+        actionService = mock(DaAipActionService.class);
         DaChangeRepository changeRepository = mock(DaChangeRepository.class);
         ApplicationContext applicationContext = mock(ApplicationContext.class);
 
@@ -90,6 +93,7 @@ public class DaServiceFailedPackageTest {
         setField(service, "syncQueueItemRepository", syncQueueItemRepository);
         setField(service, "changeRepository", changeRepository);
         setField(service, "referenceResolver", referenceResolver);
+        setField(service, "actionService", actionService);
         setField(service, "applicationContext", applicationContext);
         // The service reaches for itself through the context to open a transaction of its own;
         // the very same instance is what the transaction would run on.
@@ -129,6 +133,11 @@ public class DaServiceFailedPackageTest {
         assertEquals(AipProblemType.METADATA_ERROR, problem.getValue().type());
         assertEquals("Balíček neobsahuje soubor PACKAGE-INFO.xml", problem.getValue().description());
         verify(aipStateRepository).save(aipState.getValue());
+
+        // The item is out of the batch the caller closes, so its action item is finished here -
+        // the request the user is watching would stay running otherwise
+        verify(actionService).completeFromQueue(List.of(syncQueueItem), DaAipActionItemState.ERROR,
+                                                "Balíček neobsahuje soubor PACKAGE-INFO.xml");
     }
 
     /** An AIP ELZA already knows keeps its identity - the problem is written on its state. */

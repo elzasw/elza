@@ -212,12 +212,11 @@ public class DaImportExtSyncsProcessor implements Runnable {
                     } catch (Exception ex) {
                         // The package was in hand and its processing failed, so - unlike a failed
                         // download - the items are closed; the problem is written on their AIPs
-                        // as well, because a terminal failure the user can only find in the queue
-                        // is a failure they do not find.
+                        // and their action items as well, because a terminal failure the user can
+                        // only find in the queue is a failure they do not find.
                         AipProblem problem = AipProblem.of(ex);
                         daService.failQueueItems(problemPerItem(syncQueueItemList, problem),
                                                  DaSyncQueueItem.QueueItemState.IMPORT_ERROR);
-                        actionService.completeFromQueue(syncQueueItemList, DaAipActionItemState.ERROR, problem.description());
 
                         logger.error("Failed to process item. ", ex);
                         // v případě chyby číst po 1 záznamu
