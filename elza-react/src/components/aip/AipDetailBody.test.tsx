@@ -1,0 +1,64 @@
+import { describe, expect, it } from 'vitest';
+import { AipDetailVO, AipLinkState, AipProblemType, QueueItemState } from 'elza-api';
+
+import { renderWithProviders, screen } from 'test/test-utils';
+import { AipDetailBody } from './AipDetailBody';
+
+/**
+ * The detail panel is where the user reads what ELZA holds of an AIP: the queue state has to
+ * read as words, a value the AIP does not have is not shown at all, and a problem gets its
+ * own block with the description.
+ */
+
+const detail = (overrides: Partial<AipDetailVO> = {}) => ({
+    aipId: 3,
+    code: '9c26d4bb-cb5b-4007-84df-121be156f722',
+    digitalRepositoryId: 1,
+    aipVersion: '1',
+    ...overrides,
+} as AipDetailVO);
+
+describe('AipDetailBody', () => {
+
+    it('stav fronty vypíše slovy, ne jako kód stavu', () => {
+        renderWithProviders(<AipDetailBody detail={detail({
+            importState: QueueItemState.ImportError,
+            importStateMessage: 'Balíček neobsahuje soubor PACKAGE-INFO.xml',
+        })} />);
+
+        expect(screen.getByText('Chyba stažení')).toBeInTheDocument();
+        expect(screen.queryByText('IMPORT_ERROR')).toBeNull();
+        expect(screen.getByText('Chyba stažení').closest('span')).toHaveAttribute(
+            'title', expect.stringContaining('PACKAGE-INFO.xml'));
+    });
+
+    it('hodnotu, kterou AIP nemá, nevypíše vůbec', () => {
+        renderWithProviders(<AipDetailBody detail={detail()} />);
+
+        expect(screen.queryByText('Velikost')).toBeNull();
+        expect(screen.queryByText('Datace od-do')).toBeNull();
+        // the load flags are shown even when "no" - that is information too
+        expect(screen.getByText('Načtená metadata')).toBeInTheDocument();
+        expect(screen.getByText('Načtený kompletní AIP')).toBeInTheDocument();
+    });
+
+    it('problém dostane vlastní blok s popisem', () => {
+        renderWithProviders(<AipDetailBody detail={detail({
+            problemType: AipProblemType.MetadataError,
+            problemDescription: 'Balíček neobsahuje soubor PACKAGE-INFO.xml',
+        })} />);
+
+        expect(screen.getByText('Chyba při zpracování metadat')).toBeInTheDocument();
+        expect(screen.getByText('Balíček neobsahuje soubor PACKAGE-INFO.xml')).toBeInTheDocument();
+    });
+
+    it('napojení a velikost vypíše přeloženě', () => {
+        renderWithProviders(<AipDetailBody detail={detail({
+            aipSize: 2048,
+            linkState: AipLinkState.NotLinked,
+        })} />);
+
+        expect(screen.getByText('2.0 kB')).toBeInTheDocument();
+        expect(screen.getByText('Nenapojeno')).toBeInTheDocument();
+    });
+});

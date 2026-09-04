@@ -4,7 +4,7 @@ import { storeFromArea } from "shared/utils";
 import { AppState } from "typings/store";
 import { useThunkDispatch } from "utils/hooks";
 import * as aipActions from 'actions/aip/aip';
-import AipDetailBody from "components/aip/AipDetailBody";
+import { AipDetailBody } from "components/aip/AipDetailBody";
 import { Button } from "components/ui";
 import { Icon, i18n } from "components/shared";
 import { TreeItemValue } from "@fluentui/react-components";
