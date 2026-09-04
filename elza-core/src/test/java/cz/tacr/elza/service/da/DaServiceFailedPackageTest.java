@@ -2,6 +2,7 @@ package cz.tacr.elza.service.da;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -9,6 +10,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
@@ -38,6 +40,7 @@ import cz.tacr.elza.domain.DaSyncQueueItem;
 import cz.tacr.elza.repository.AipRepository;
 import cz.tacr.elza.repository.AipStateRepository;
 import cz.tacr.elza.repository.DaChangeRepository;
+import cz.tacr.elza.repository.DaLocalCacheRepository;
 import cz.tacr.elza.repository.DaSyncQueueItemRepository;
 
 /**
@@ -57,6 +60,8 @@ public class DaServiceFailedPackageTest {
     private DaSyncQueueItemRepository syncQueueItemRepository;
     private DaAipReferenceResolver referenceResolver;
     private DaAipActionService actionService;
+    private PackageInfoService packageInfoService;
+    private DaLocalCacheRepository localCacheRepository;
 
     private ArrDigitalRepository repository;
     private DaSyncQueueItem syncQueueItem;
@@ -69,6 +74,8 @@ public class DaServiceFailedPackageTest {
         referenceResolver = mock(DaAipReferenceResolver.class);
         actionService = mock(DaAipActionService.class);
         DaChangeRepository changeRepository = mock(DaChangeRepository.class);
+        packageInfoService = mock(PackageInfoService.class);
+        localCacheRepository = mock(DaLocalCacheRepository.class);
         ApplicationContext applicationContext = mock(ApplicationContext.class);
 
         when(aipRepository.save(any(DaAip.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -94,6 +101,8 @@ public class DaServiceFailedPackageTest {
         setField(service, "changeRepository", changeRepository);
         setField(service, "referenceResolver", referenceResolver);
         setField(service, "actionService", actionService);
+        setField(service, "packageInfoService", packageInfoService);
+        setField(service, "daLocalCacheRepository", localCacheRepository);
         setField(service, "applicationContext", applicationContext);
         // The service reaches for itself through the context to open a transaction of its own;
         // the very same instance is what the transaction would run on.
@@ -163,6 +172,37 @@ public class DaServiceFailedPackageTest {
         verify(referenceResolver).recordProblem(any(DaAipState.class), problem.capture());
         assertEquals(AipProblemType.METADATA_ERROR, problem.getValue().type());
         verify(aipStateRepository).save(knownState);
+    }
+
+    /**
+     * A metadata request answered with a package that has the PACKAGE-INFO.xml but no METS.xml:
+     * the AIP's state is read from it, but the package is not stored - storing it would flag
+     * the metadata as loaded, and a later request for them would be refused as redundant.
+     */
+    @Test
+    void metadataPackageWithoutMetsIsNotStored() throws Exception {
+        DaAip known = new DaAip();
+        known.setAipId(11);
+        known.setCode(CODE);
+        known.setDigitalRepository(repository);
+        DaAipState knownState = new DaAipState();
+        knownState.setDaAip(known);
+        syncQueueItem.setAip(known);
+        syncQueueItem.setAipType(AipType.METADATA_BASE);
+        syncQueueItem.setState(DaSyncQueueItem.QueueItemState.UPDATE);
+        when(aipStateRepository.findByDaAipAndDeleteChangeIsNull(known)).thenReturn(knownState);
+        when(packageInfoService.processPackageInfo(any(), any())).thenReturn(knownState);
+        List<DaSyncQueueItem> batch = new ArrayList<>(List.of(syncQueueItem));
+
+        service.processPackageInfo(repository, zipOf(CODE + "/PACKAGE-INFO.xml", "<premis/>"),
+                                   AipType.METADATA_BASE, batch);
+
+        assertTrue(batch.isEmpty());
+        assertEquals(DaSyncQueueItem.QueueItemState.IMPORT_ERROR, syncQueueItem.getState());
+        assertEquals("Balíček neobsahuje soubor METS.xml", syncQueueItem.getStateMessage());
+        verifyNoInteractions(localCacheRepository);
+        assertNull(knownState.getMetadataLoad());
+        assertNull(knownState.getCompleteAipLoad());
     }
 
     private static InputStream zipOf(String entryName, String content) throws IOException {

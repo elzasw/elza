@@ -491,6 +491,16 @@ public class DaService {
         }
     }
 
+    /**
+     * @return the first file of the given name anywhere in the unpacked package
+     * @throws AipProblemException when the package has no such file
+     */
+    private static Path findPackageFile(Path packageDir, String fileName) throws IOException {
+        try (Stream<Path> str = Files.walk(packageDir).filter(path -> path.toString().endsWith(fileName))) {
+            return str.findFirst().orElseThrow(() -> AipProblemException.metadata("Balíček neobsahuje soubor " + fileName));
+        }
+    }
+
     private PremisComplexType readPremis(Path tempDir) throws Exception {
         try (Stream<Path> str = Files.walk(tempDir).filter(path -> path.toString().endsWith("PREMIS.xml"))) {
             Path premis = str.findFirst().orElseThrow(() -> AipProblemException.metadata("Balíček neobsahuje soubor PREMIS.xml"));
@@ -1459,9 +1469,17 @@ public class DaService {
 
             for (File aipDir : aipDirSet) {
                 DaAipState aipState;
-                try (Stream<Path> str = Files.walk(aipDir.toPath()).filter(path -> path.toString().endsWith("PACKAGE-INFO.xml"))) {
-                    Path packageInfo = str.findFirst().orElseThrow(() -> AipProblemException.metadata("Balíček neobsahuje soubor PACKAGE-INFO.xml"));
+                try {
+                    Path packageInfo = findPackageFile(aipDir.toPath(), "PACKAGE-INFO.xml");
                     aipState = packageInfoService.processPackageInfo(digitalRepository, packageInfo.toFile());
+                    // The load flags of the AIP are set by storing the package, so a package is
+                    // stored only when it is what its type claims: a DA that answers a metadata
+                    // request with less would otherwise be recorded as having delivered the
+                    // metadata, and the AIP could never be asked for them again.
+                    if (aipType != AipType.PACKAGE_INFO) {
+                        findPackageFile(aipDir.toPath(), "METS.xml");
+                        findPackageFile(aipDir.toPath(), "PREMIS.xml");
+                    }
                 } catch (Exception e) {
                     AipProblem problem = AipProblem.of(e);
                     logger.error("Balíček {} se nepodařilo načíst: {}", aipDir.getName(), problem.description(), e);
