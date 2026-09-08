@@ -3631,17 +3631,36 @@ model AiRequestActivity {
     /** Stable id of the step within the exchange (the provider's tool-call id). */
     id: string;
 
-    /** TOOL_CALL (open set). */
+    /** TOOL_CALL | PREPARATION (open set). */
     kind: string;
 
-    /** Tool name for TOOL_CALL: `searchNodes`, `getItemTypes`, … */
+    /**
+     * Tool name for TOOL_CALL: a client tool Elza executed (`searchNodes`,
+     * `getItemTypes`, …) or a provider-internal one (`search_knowledge`, …);
+     * an unknown name renders as a generic step.
+     */
     tool?: string;
+
+    /**
+     * Localized, display-ready name of a provider-internal step (from the
+     * task-event stream); render in place of `tool`. Absent for a client tool
+     * Elza executed itself — the client renders those from `tool`.
+     */
+    label?: string;
 
     /** RUNNING | DONE | ERROR (open set). */
     state: string;
 
     /** Data-like input summary: the fulltext query / the rule-set code. */
     query?: string;
+
+    /**
+     * Localized, display-ready one-line detail of a provider-internal step: the
+     * call's key arguments, or a short result summary once DONE. Secondary text
+     * next to `label`; for a client tool the client shows `query`/`resultCount`
+     * instead.
+     */
+    summary?: string;
 
     /** Result size once DONE: search hits, dictionary entries. */
     resultCount?: int64;
@@ -3673,6 +3692,12 @@ model AiActivityLink {
  * set (`queued`, `running`, `awaiting_tools`, `done`, `error`, `cancelled`);
  * a client MUST treat an unknown state as "in progress". `blocks` is present
  * when `done` (see AiDisplayBlock for the rendering contract).
+ *
+ * Live updates: while an exchange runs, the server pushes this object to the
+ * conversation owner's per-user WebSocket topic `/topic/user/{userId}` as
+ * `{eventType: "AI_REQUEST_UPDATE", conversationId, request}`. Each message is
+ * a complete snapshot — the client replaces the request by `id` (delivery is
+ * best effort; the client refetches the conversation on reconnect).
  */
 model AiRequest {
     id: integer;
@@ -3690,7 +3715,15 @@ model AiRequest {
     @minValue(0)
     @maxValue(100)
     progressPercent?: float32;
-    /** User-visible steps of the exchange (tool executions), oldest first. */
+    /**
+     * Accumulated streamed answer text of a running request (provider protocol
+     * 0.8+, `answer_delta` events). Provisional: it may still be superseded by
+     * the provider — the authoritative answer arrives in `blocks` when state =
+     * done. Absent once terminal, when the provider streams nothing, or after a
+     * server restart mid-exchange.
+     */
+    partialAnswer?: string;
+    /** User-visible steps of the exchange (tool executions, preparation steps), oldest first. */
     activities?: AiRequestActivity[];
     promptVersion?: string;
     /** Profile/model used for this exchange (an `AiProfile.code`); absent = provider default. */
@@ -3733,7 +3766,12 @@ model AiContextFund extends AiContextObject {
 model AiContextNode extends AiContextObject {
     @invisible(Lifecycle)
     type: AiContextType.NODE;
-    fundId: int32;
+    /**
+     * `ArrFund.fundId`. Present for a UI-context node or a search hit; absent
+     * on a link built from a bare object reference (a tool event's `refs`),
+     * where only the node id is known and the fund is not needed to navigate.
+     */
+    fundId?: int32;
     fundVersionId?: int32;
     nodeId: int32;
 }
@@ -3804,9 +3842,17 @@ model AiRequestCreate {
 /** One step of an exchange's log — the transparency view ("what was sent/received"). */
 model AiRequestEvent {
     id: integer;
-    /** SUBMIT | TOOL_CALLS | TOOL_RESULTS | OUTPUT | ERROR | CANCEL (open set). */
+    /**
+     * SUBMIT | TOOL_CALLS | TOOL_RESULTS | OUTPUT | ERROR | CANCEL (open set).
+     * Lowercase codes (`phase`, `tool_call`, `tool_result`, `model_round`, …)
+     * are events observed from the provider's task-event stream (protocol
+     * 0.8+), stored as received.
+     */
     eventType: string;
-    /** Event payload (JSON string); shape depends on eventType. */
+    /**
+     * Event payload (JSON string); shape depends on eventType. For provider
+     * wire codes this is the received `TaskEvent` object.
+     */
     data?: string;
     createDate: utcDateTime;
 }

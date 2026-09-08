@@ -2673,6 +2673,36 @@ paths:
                 $ref: '#/components/schemas/BaseException'
       tags:
         - aiprovider
+  /aiprovider/request/{id}/event:
+    get:
+      operationId: AiProvider_listRequestEvents
+      description: |-
+        The exchange log of one request — each step with its payload (what
+        exactly was sent to the provider / what came back).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: request id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AiRequestEvent'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aiprovider
   /aiprovider/request/{id}/proposal/apply:
     post:
       operationId: AiProvider_applyProposalChange
@@ -2744,36 +2774,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/AiProposalDecisionRequest'
-  /aiprovider/request/{id}/event:
-    get:
-      operationId: AiProvider_listRequestEvents
-      description: |-
-        The exchange log of one request — each step with its payload (what
-        exactly was sent to the provider / what came back).
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: request id
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/AiRequestEvent'
-        '404':
-          description: The server cannot find the requested resource.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BaseException'
-      tags:
-        - aiprovider
   /aiprovider/{id}/info:
     get:
       operationId: AiProvider_getInfo
@@ -6337,158 +6337,115 @@ components:
           format: int32
           description: Number of logged users
       description: Basic statistics about Elza instance
-    AipField:
+    AiAccountUsage:
       type: object
       required:
-        - fieldName
+        - spentCredits
+        - periodStart
       properties:
-        fieldName:
+        accountType:
+          type: string
+          description: Kind of account, e.g. `personal` or `shared` (open set).
+        plan:
+          type: string
+          description: Plan label, e.g. `basic`; informational (a code, not for display).
+        planName:
+          type: string
+          description: |-
+            Human-readable plan name for display, e.g. `Osobní – standard` (localized).
+            Absent when the provider has no display name — the client then hides the
+            plan rather than showing the raw `plan` code.
+        allowanceCredits:
+          type: number
+          format: double
+          description: Credit allowance for the current period; absent = no per-account cap.
+        spentCredits:
+          type: number
+          format: double
+          description: Credits charged to this account in the current period.
+        periodStart:
+          type: string
+          format: date-time
+          description: Start of the current accounting period.
+        periodEnd:
+          type: string
+          format: date-time
+          description: End of the current accounting period — when the allowance resets.
+        weeklyAllowanceCredits:
+          type: number
+          format: double
+          description: |-
+            Weekly credit allowance — an optional smoothing cap layered under the
+            period allowance; absent = no weekly cap.
+        weeklySpentCredits:
+          type: number
+          format: double
+          description: Credits charged to this account in the current weekly window; absent = no weekly accounting.
+        weekStart:
+          type: string
+          format: date-time
+          description: |-
+            Start of the current weekly window (the UTC calendar week clamped to the
+            period start — it never spans a period boundary).
+        weekEnd:
+          type: string
+          format: date-time
+          description: End of the current weekly window — when the weekly allowance resets; never after `periodEnd`.
+      description: |-
+        Credit state of the account the user's signing key bills to (their personal
+        seat, or the shared organizational account). Provider-computed; the client
+        only displays it, typically as relative consumption
+        (`spentCredits / allowanceCredits`).
+    AiActivityLink:
+      type: object
+      required:
+        - target
+      properties:
+        label:
+          type: string
+          description: Display label — node title, reference designation or fund name.
+        target:
           allOf:
-            - $ref: '#/components/schemas/AipFieldName'
-          description: Name of field (from enum AipFieldName)
+            - $ref: '#/components/schemas/AiContextObject'
+          description: Navigation target — reuses the UI-context vocabulary (`AiContextType` codes).
+      description: One object an activity touched, renderable as a navigation link.
+    AiCitation:
+      type: object
+      required:
+        - fragment
+      properties:
+        fragment:
+          type: string
+          description: |-
+            Stable citation id of the cited section — the client's list key and the
+            fallback label shown when no `title` is known.
+        url:
+          type: string
+          description: Deep link to the cited section in the published source, when resolvable.
+        title:
+          type: string
+          description: Human-readable title of the cited section (the primary label).
+        source:
+          type: string
+          description: Human-readable name of the source document the section belongs to.
+        sourceId:
+          type: string
+          description: Id of the source document — lets the client group citations by source.
+      description: |-
+        One cited source in a `DOC_CITATIONS` display block. Carries only data — the
+        client owns all human-readable chrome (the "Sources" heading, the localized
+        label when a field is absent).
+    AiContextAccesspoint:
+      type: object
+      required:
+        - accessPointId
+      properties:
+        accessPointId:
+          type: integer
+          format: int32
       allOf:
-        - $ref: '#/components/schemas/AbstractField'
-      description: AIP specific search field
-    AipFieldName:
-      type: string
-      enum:
-        - aipId
-        - code
-        - aipVersion
-        - fund
-        - fundCode
-        - institution
-        - institutionCode
-        - unitdate
-        - originator
-        - ingestionCode
-        - referenceNumber
-        - nadChangeCode
-        - aipSize
-        - metadataLoad
-        - completeAipLoad
-        - problemType
-        - importState
-        - exportState
-        - linkState
-      description: |-
-        AIP specific field names.
-
-        `unitdate` covers the whole dating of the AIP, that is both its start and its end.
-    AiProviderInfo:
-      type: object
-      required:
-        - protocolVersion
-        - taskTypes
-        - profiles
-      properties:
-        protocolVersion:
-          type: string
-          description: Protocol version reported by the provider (`major.minor`).
-        providerName:
-          type: string
-          description: Human-readable provider/service name.
-        taskTypes:
-          type: array
-          items:
-            $ref: '#/components/schemas/AiTaskType'
-          description: Task types the provider currently offers.
-        profiles:
-          type: array
-          items:
-            $ref: '#/components/schemas/AiProfile'
-          description: Quality/cost tiers the provider offers.
-      description: |-
-        The AI provider's capabilities — the client's typed view of the provider's
-        `/info` catalog. Drives the panel: which tasks to offer and, per task, which
-        typed parameters to gather. Grows additively (new task types, new object
-        types); a client tolerates unknown parameter/result `type` codes.
-    AiTaskType:
-      type: object
-      required:
-        - code
-        - parameters
-        - resultTypes
-      properties:
-        code:
-          type: string
-          description: Task type code, e.g. `elza.chat`, `elza.echo`, `elza.revision`.
-        name:
-          type: string
-        description:
-          type: string
-        parameters:
-          type: array
-          items:
-            $ref: '#/components/schemas/AiTaskParameter'
-          description: Typed parameters the task declares; the client fills these from context.
-        resultTypes:
-          type: array
-          items:
-            type: string
-          description: Object type codes the task's result may contain (client rendering readiness).
-      description: One AI task the provider offers, with the typed parameters it declares.
-    AiTaskParameter:
-      type: object
-      required:
-        - name
-        - type
-      properties:
-        name:
-          type: string
-          description: Parameter name — the key under which the client supplies its value.
-        type:
-          type: string
-          description: Object type code of the value, e.g. `elza.text`, `elza.archivalDescription`.
-        description:
-          type: string
-        required:
-          type: boolean
-          description: Whether the caller must supply it.
-      description: One typed parameter a task declares.
-    AiProfile:
-      type: object
-      required:
-        - code
-      properties:
-        code:
-          type: string
-        name:
-          type: string
-        description:
-          type: string
-        default:
-          type: boolean
-          description: True for the tier used when a submission names none.
-      description: A quality/cost tier the provider offers.
-    AiContextType:
-      type: string
-      enum:
-        - FUND
-        - NODE
-        - ACCESSPOINT
-      description: |-
-        Type of a UI context object — the discriminator of `AiContextObject`. Names
-        what part of the application the user is working in when an AI request is sent.
-    AiContextObject:
-      type: object
-      required:
-        - type
-      properties:
-        type:
-          allOf:
-            - $ref: '#/components/schemas/AiContextType'
-          description: Selects the context shape; one of the defined `AiContextType` codes.
-      discriminator:
-        propertyName: type
-        mapping:
-          FUND: '#/components/schemas/AiContextFund'
-          NODE: '#/components/schemas/AiContextNode'
-          ACCESSPOINT: '#/components/schemas/AiContextAccesspoint'
-      description: |-
-        A typed piece of the UI's current context, sent with an AI request. Elza
-        resolves each into the provider's typed objects (e.g. a fund into an
-        `elza.fundInfo` object read from the DB) before submitting the task.
+        - $ref: '#/components/schemas/AiContextObject'
+      description: An access point / entity from the registry.
     AiContextFund:
       type: object
       required:
@@ -6522,17 +6479,34 @@ components:
       allOf:
         - $ref: '#/components/schemas/AiContextObject'
       description: A description unit (node) within a fund.
-    AiContextAccesspoint:
+    AiContextObject:
       type: object
       required:
-        - accessPointId
+        - type
       properties:
-        accessPointId:
-          type: integer
-          format: int32
-      allOf:
-        - $ref: '#/components/schemas/AiContextObject'
-      description: An access point / entity from the registry.
+        type:
+          allOf:
+            - $ref: '#/components/schemas/AiContextType'
+          description: Selects the context shape; one of the defined `AiContextType` codes.
+      discriminator:
+        propertyName: type
+        mapping:
+          FUND: '#/components/schemas/AiContextFund'
+          NODE: '#/components/schemas/AiContextNode'
+          ACCESSPOINT: '#/components/schemas/AiContextAccesspoint'
+      description: |-
+        A typed piece of the UI's current context, sent with an AI request. Elza
+        resolves each into the provider's typed objects (e.g. a fund into an
+        `elza.fundInfo` object read from the DB) before submitting the task.
+    AiContextType:
+      type: string
+      enum:
+        - FUND
+        - NODE
+        - ACCESSPOINT
+      description: |-
+        Type of a UI context object — the discriminator of `AiContextObject`. Names
+        what part of the application the user is working in when an AI request is sent.
     AiConversation:
       type: object
       required:
@@ -6609,45 +6583,25 @@ components:
           items:
             $ref: '#/components/schemas/AiRequest'
       description: 'Full conversation detail: the thread = requests in create order.'
-    AiCitation:
+    AiCustomerUsage:
       type: object
       required:
-        - fragment
+        - spentCredits
+        - periodStart
       properties:
-        fragment:
+        budgetCredits:
+          type: number
+          format: double
+          description: Subscriber budget for the current period; absent = no cap.
+        spentCredits:
+          type: number
+          format: double
+          description: Credits spent by the whole subscriber in the current period.
+        periodStart:
           type: string
-          description: |-
-            Stable citation id of the cited section — the client's list key and the
-            fallback label shown when no `title` is known.
-        url:
-          type: string
-          description: Deep link to the cited section in the published source, when resolvable.
-        title:
-          type: string
-          description: Human-readable title of the cited section (the primary label).
-        source:
-          type: string
-          description: Human-readable name of the source document the section belongs to.
-        sourceId:
-          type: string
-          description: Id of the source document — lets the client group citations by source.
-      description: |-
-        One cited source in a `DOC_CITATIONS` display block. Carries only data — the
-        client owns all human-readable chrome (the "Sources" heading, the localized
-        label when a field is absent).
-    AiDisplayBlockType:
-      type: string
-      enum:
-        - TEXT
-        - MARKDOWN
-        - TABLE
-        - DOC_CITATIONS
-        - NODE_UPDATE_PROPOSALS
-      description: |-
-        Display block type — the discriminator of `AiDisplayBlock`. The client renders
-        each block by this code, reading the fields of the matching subtype. Additive:
-        new types may appear; a client MUST tolerate an unknown type by rendering a
-        generic "unsupported content" placeholder (never dropping the block silently).
+          format: date-time
+          description: Start of the current accounting period.
+      description: Subscriber-level (whole organization) usage state — the outer budget cap.
     AiDisplayBlock:
       type: object
       required:
@@ -6687,6 +6641,35 @@ components:
         dropping the block silently). Server-side fallback rule: a task output whose
         object type has no block mapper is rendered as one `MARKDOWN` block containing
         the output JSON in a fenced code block.
+    AiDisplayBlockType:
+      type: string
+      enum:
+        - TEXT
+        - MARKDOWN
+        - TABLE
+        - DOC_CITATIONS
+        - NODE_UPDATE_PROPOSALS
+      description: |-
+        Display block type — the discriminator of `AiDisplayBlock`. The client renders
+        each block by this code, reading the fields of the matching subtype. Additive:
+        new types may appear; a client MUST tolerate an unknown type by rendering a
+        generic "unsupported content" placeholder (never dropping the block silently).
+    AiDocCitationsBlock:
+      type: object
+      required:
+        - citations
+      properties:
+        citations:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiCitation'
+          description: The cited sources, in first-referenced order.
+      allOf:
+        - $ref: '#/components/schemas/AiDisplayBlock'
+      description: |-
+        The knowledge/documentation sources the answer relied on. The server emits no
+        label text; the client renders a "Sources" list and supplies the heading
+        itself, in the user's language.
     AiFollowUpAction:
       type: object
       required:
@@ -6707,17 +6690,6 @@ components:
         submits. The same shape a future provider-emitted `elza.taskSuggestion`
         result block maps onto — today the server composes these itself (per check
         finding).
-    AiTextBlock:
-      type: object
-      required:
-        - content
-      properties:
-        content:
-          type: string
-          description: The text, rendered as-is.
-      allOf:
-        - $ref: '#/components/schemas/AiDisplayBlock'
-      description: Plain-text answer — `content` is rendered verbatim, never parsed as markdown.
     AiMarkdownBlock:
       type: object
       required:
@@ -6729,48 +6701,6 @@ components:
       allOf:
         - $ref: '#/components/schemas/AiDisplayBlock'
       description: Free-text answer as CommonMark + GFM tables; the server MUST NOT emit raw HTML.
-    AiTableBlock:
-      type: object
-      required:
-        - columns
-        - rows
-      properties:
-        caption:
-          type: string
-          description: Optional caption above the table.
-        columns:
-          type: array
-          items:
-            $ref: '#/components/schemas/AiTableColumn'
-          description: Ordered column definitions (order, key and label).
-        rows:
-          type: array
-          items:
-            type: object
-            additionalProperties:
-              type: string
-          description: Rows as objects keyed by column `key`; cell values are plain text (no markup).
-      allOf:
-        - $ref: '#/components/schemas/AiDisplayBlock'
-      description: |-
-        Structured tabular data — the client renders a native table widget. Use
-        whenever the data IS tabular, never serialized into markdown.
-    AiDocCitationsBlock:
-      type: object
-      required:
-        - citations
-      properties:
-        citations:
-          type: array
-          items:
-            $ref: '#/components/schemas/AiCitation'
-          description: The cited sources, in first-referenced order.
-      allOf:
-        - $ref: '#/components/schemas/AiDisplayBlock'
-      description: |-
-        The knowledge/documentation sources the answer relied on. The server emits no
-        label text; the client renders a "Sources" list and supplies the heading
-        itself, in the user's language.
     AiNodeUpdateProposalsBlock:
       type: object
       required:
@@ -6792,22 +6722,21 @@ components:
         together), or refines the request with a follow-up. All names and values
         are resolved server-side against the level's current state; nothing is ever
         applied without the explicit apply call.
-    AiProposalNode:
+    AiProfile:
       type: object
       required:
-        - node
-        - changes
+        - code
       properties:
-        node:
-          allOf:
-            - $ref: '#/components/schemas/AiActivityLink'
-          description: The level as a navigable link (label = tree title).
-        changes:
-          type: array
-          items:
-            $ref: '#/components/schemas/AiProposalChange'
-          description: The level's proposed changes, in display order.
-      description: The proposed changes of one arrangement level.
+        code:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        default:
+          type: boolean
+          description: True for the tier used when a submission names none.
+      description: A quality/cost tier the provider offers.
     AiProposalChange:
       type: object
       required:
@@ -6850,6 +6779,31 @@ components:
         validation against the level's current state — see `blockedReason`),
         `SUPERSEDED` (a newer exchange re-proposed for the same level); a client
         renders an unknown state as a read-only card.
+    AiProposalDecisionRequest:
+      type: object
+      required:
+        - changeKey
+      properties:
+        changeKey:
+          type: string
+          description: '`AiProposalChange.changeKey` of the change to decide.'
+      description: Addresses one proposed change of an exchange's proposals block.
+    AiProposalNode:
+      type: object
+      required:
+        - node
+        - changes
+      properties:
+        node:
+          allOf:
+            - $ref: '#/components/schemas/AiActivityLink'
+          description: The level as a navigable link (label = tree title).
+        changes:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiProposalChange'
+          description: The level's proposed changes, in display order.
+      description: The proposed changes of one arrangement level.
     AiProposalOperation:
       type: object
       required:
@@ -6879,28 +6833,34 @@ components:
         One rendered item operation of a proposed change — a diff row. `kind` = `ADD`
         (`newValue` only), `UPDATE` (`oldValue` → `newValue`) or `DELETE`
         (`oldValue` only); open set, a client renders an unknown kind as plain text.
-    AiProposalDecisionRequest:
+    AiProviderInfo:
       type: object
       required:
-        - changeKey
+        - protocolVersion
+        - taskTypes
+        - profiles
       properties:
-        changeKey:
+        protocolVersion:
           type: string
-          description: '`AiProposalChange.changeKey` of the change to decide.'
-      description: Addresses one proposed change of an exchange's proposals block.
-    AiActivityLink:
-      type: object
-      required:
-        - target
-      properties:
-        label:
+          description: Protocol version reported by the provider (`major.minor`).
+        providerName:
           type: string
-          description: Display label — node title, reference designation or fund name.
-        target:
-          allOf:
-            - $ref: '#/components/schemas/AiContextObject'
-          description: Navigation target — reuses the UI-context vocabulary (`AiContextType` codes).
-      description: One object an activity touched, renderable as a navigation link.
+          description: Human-readable provider/service name.
+        taskTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiTaskType'
+          description: Task types the provider currently offers.
+        profiles:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiProfile'
+          description: Quality/cost tiers the provider offers.
+      description: |-
+        The AI provider's capabilities — the client's typed view of the provider's
+        `/info` catalog. Drives the panel: which tasks to offer and, per task, which
+        typed parameters to gather. Grows additively (new task types, new object
+        types); a client tolerates unknown parameter/result `type` codes.
     AiRequest:
       type: object
       required:
@@ -7091,6 +7051,32 @@ components:
           type: string
           format: date-time
       description: One step of an exchange's log — the transparency view ("what was sent/received").
+    AiTableBlock:
+      type: object
+      required:
+        - columns
+        - rows
+      properties:
+        caption:
+          type: string
+          description: Optional caption above the table.
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiTableColumn'
+          description: Ordered column definitions (order, key and label).
+        rows:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              type: string
+          description: Rows as objects keyed by column `key`; cell values are plain text (no markup).
+      allOf:
+        - $ref: '#/components/schemas/AiDisplayBlock'
+      description: |-
+        Structured tabular data — the client renders a native table widget. Use
+        whenever the data IS tabular, never serialized into markdown.
     AiTableColumn:
       type: object
       required:
@@ -7103,6 +7089,60 @@ components:
         label:
           type: string
           description: Column header shown to the user.
+    AiTaskParameter:
+      type: object
+      required:
+        - name
+        - type
+      properties:
+        name:
+          type: string
+          description: Parameter name — the key under which the client supplies its value.
+        type:
+          type: string
+          description: Object type code of the value, e.g. `elza.text`, `elza.archivalDescription`.
+        description:
+          type: string
+        required:
+          type: boolean
+          description: Whether the caller must supply it.
+      description: One typed parameter a task declares.
+    AiTaskType:
+      type: object
+      required:
+        - code
+        - parameters
+        - resultTypes
+      properties:
+        code:
+          type: string
+          description: Task type code, e.g. `elza.chat`, `elza.echo`, `elza.revision`.
+        name:
+          type: string
+        description:
+          type: string
+        parameters:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiTaskParameter'
+          description: Typed parameters the task declares; the client fills these from context.
+        resultTypes:
+          type: array
+          items:
+            type: string
+          description: Object type codes the task's result may contain (client rendering readiness).
+      description: One AI task the provider offers, with the typed parameters it declares.
+    AiTextBlock:
+      type: object
+      required:
+        - content
+      properties:
+        content:
+          type: string
+          description: The text, rendered as-is.
+      allOf:
+        - $ref: '#/components/schemas/AiDisplayBlock'
+      description: Plain-text answer — `content` is rendered verbatim, never parsed as markdown.
     AiUsage:
       type: object
       required:
@@ -7127,84 +7167,6 @@ components:
             the account's multiplier — a shared organizational account may burn
             credits faster). What the user sees as the price of the exchange.
       description: Metered usage of one exchange (informative; costUnits is the billable quantity).
-    AiAccountUsage:
-      type: object
-      required:
-        - spentCredits
-        - periodStart
-      properties:
-        accountType:
-          type: string
-          description: Kind of account, e.g. `personal` or `shared` (open set).
-        plan:
-          type: string
-          description: Plan label, e.g. `basic`; informational (a code, not for display).
-        planName:
-          type: string
-          description: |-
-            Human-readable plan name for display, e.g. `Osobní – standard` (localized).
-            Absent when the provider has no display name — the client then hides the
-            plan rather than showing the raw `plan` code.
-        allowanceCredits:
-          type: number
-          format: double
-          description: Credit allowance for the current period; absent = no per-account cap.
-        spentCredits:
-          type: number
-          format: double
-          description: Credits charged to this account in the current period.
-        periodStart:
-          type: string
-          format: date-time
-          description: Start of the current accounting period.
-        periodEnd:
-          type: string
-          format: date-time
-          description: End of the current accounting period — when the allowance resets.
-        weeklyAllowanceCredits:
-          type: number
-          format: double
-          description: |-
-            Weekly credit allowance — an optional smoothing cap layered under the
-            period allowance; absent = no weekly cap.
-        weeklySpentCredits:
-          type: number
-          format: double
-          description: Credits charged to this account in the current weekly window; absent = no weekly accounting.
-        weekStart:
-          type: string
-          format: date-time
-          description: |-
-            Start of the current weekly window (the UTC calendar week clamped to the
-            period start — it never spans a period boundary).
-        weekEnd:
-          type: string
-          format: date-time
-          description: End of the current weekly window — when the weekly allowance resets; never after `periodEnd`.
-      description: |-
-        Credit state of the account the user's signing key bills to (their personal
-        seat, or the shared organizational account). Provider-computed; the client
-        only displays it, typically as relative consumption
-        (`spentCredits / allowanceCredits`).
-    AiCustomerUsage:
-      type: object
-      required:
-        - spentCredits
-        - periodStart
-      properties:
-        budgetCredits:
-          type: number
-          format: double
-          description: Subscriber budget for the current period; absent = no cap.
-        spentCredits:
-          type: number
-          format: double
-          description: Credits spent by the whole subscriber in the current period.
-        periodStart:
-          type: string
-          format: date-time
-          description: Start of the current accounting period.
-      description: Subscriber-level (whole organization) usage state — the outer budget cap.
     AiUsageBalance:
       type: object
       properties:
@@ -7381,6 +7343,44 @@ components:
             $ref: '#/components/schemas/LinkedNodeVO'
           description: Seznam napojených nodes
       description: Vo pro detail AIPu
+    AipField:
+      type: object
+      required:
+        - fieldName
+      properties:
+        fieldName:
+          allOf:
+            - $ref: '#/components/schemas/AipFieldName'
+          description: Name of field (from enum AipFieldName)
+      allOf:
+        - $ref: '#/components/schemas/AbstractField'
+      description: AIP specific search field
+    AipFieldName:
+      type: string
+      enum:
+        - aipId
+        - code
+        - aipVersion
+        - fund
+        - fundCode
+        - institution
+        - institutionCode
+        - unitdate
+        - originator
+        - ingestionCode
+        - referenceNumber
+        - nadChangeCode
+        - aipSize
+        - metadataLoad
+        - completeAipLoad
+        - problemType
+        - importState
+        - exportState
+        - linkState
+      description: |-
+        AIP specific field names.
+
+        `unitdate` covers the whole dating of the AIP, that is both its start and its end.
     AipLinkState:
       type: string
       enum:
