@@ -2591,6 +2591,270 @@ model ExtHistory {
 }
 
 /**
+ * State of an import batch.
+ */
+enum BatchState {
+    PREPARATION,
+    IN_PROGRESS,
+    TEST_IN_PROGRESS,
+    TEST_FINISHED,
+    PAUSED,
+    FAILED,
+    FINISHED,
+    CANCELLED,
+}
+
+/**
+ * State of an import batch item.
+ */
+enum ItemState {
+    READY,
+    TEST_RUN_FINISHED,
+    RUNNING,
+    FINISHED,
+    ERROR,
+}
+
+/**
+ * Kind of import; also acts as the ORM discriminator of the batch subtype.
+ */
+enum BatchImportType {
+    EDX2,
+    ADD_DESC_ITEMS_CSV,
+}
+
+/**
+ * How an EDX2 import handles fund records (create, pair, or both).
+ */
+enum FundImportStrategy {
+    ALWAYS_NEW,
+    ALWAYS_PAIR,
+    PAIR_AND_CREATE,
+}
+
+/**
+ * Key by which an existing fund is looked up during pairing.
+ */
+enum FundPairKey {
+    INSTITUTION_AND_FUND_NUMBER,
+}
+
+/**
+ * Kind of recorded outcome of an import item.
+ */
+enum ImpResultType {
+    ARR_CHANGE,
+    AP_CHANGE,
+}
+
+/**
+ * Import batch - common part; concrete parameters live in the subtypes.
+ */
+model ImportBatch {
+    /** Batch identifier */
+    batchId: integer;
+    /** Kind of import (subtype discriminator) */
+    importType: BatchImportType;
+    /** User-supplied batch name */
+    name: string;
+    /** Creation time */
+    createdAt: offsetDateTime;
+    /** User who created the batch */
+    createdByUserId: integer;
+    /** Time the batch was last started */
+    executedAt?: offsetDateTime;
+    /** User who last started the batch */
+    executedByUserId?: integer;
+    /** Current state */
+    state: BatchState;
+    /** Time of the last state change */
+    lastStateChangeAt: offsetDateTime;
+    /** Continue after an item-level error */
+    skipError: boolean;
+    /** Keep the input files (disables the automatic cleanup) */
+    keepFiles: boolean;
+    /** When the input files were removed, if they already were */
+    filesDeletedAt?: offsetDateTime;
+}
+
+/**
+ * EDX2 import batch.
+ */
+model ImportBatchEdx extends ImportBatch {
+    @invisible(Lifecycle)
+    importType: BatchImportType.EDX2;
+    /** How fund records are imported */
+    fundImportStrategy: FundImportStrategy;
+    /** Pairing key for existing funds */
+    fundPairKey?: FundPairKey;
+    /** Ignore the root levels of the payload */
+    ignoreRootNodes: boolean;
+    /** Scope into which archival entities are imported */
+    scopeId?: integer;
+}
+
+/**
+ * CSV import batch that adds description items into existing nodes. The target fund is
+ * resolved per row from each node UUID at import time - the batch itself carries no fund
+ * reference.
+ */
+model ImportBatchDescCsv extends ImportBatch {
+    @invisible(Lifecycle)
+    importType: BatchImportType.ADD_DESC_ITEMS_CSV;
+    /** Column separator */
+    separator?: string;
+    /** File encoding */
+    encoding?: string;
+}
+
+/**
+ * One item of an import batch - normally one input file.
+ */
+model ImportItem {
+    /** Item identifier */
+    itemId: integer;
+    /** Parent batch identifier */
+    batchId: integer;
+    /** Reference to the stored source file in DMS, if present */
+    dmsFileId?: integer;
+    /** Display name, normally the file name */
+    itemName?: string;
+    /** Current state */
+    state: ItemState;
+    /** Run order within the batch */
+    execOrder: integer;
+    /** Time added to the batch */
+    createdAt: offsetDateTime;
+    /** User who added the item */
+    createdByUserId: integer;
+    /** Time processing started */
+    executedAt?: offsetDateTime;
+    /** User who started processing */
+    executedByUserId?: integer;
+    /** Time processing finished or failed */
+    finishedAt?: offsetDateTime;
+    /** Short failure message, if any */
+    error?: string;
+    /** Fund the content was (or is being) imported into, once pairing settled */
+    fundId?: integer;
+    /**
+     * All archival files this item's results changed - a single CSV item can touch
+     * several funds when node UUIDs across the file belong to different funds.
+     */
+    resultFundIds?: integer[];
+    /** Number of created description units */
+    nodesCreated: int32;
+    /** Number of updated description units */
+    nodesUpdated: int32;
+    /** Number of created access points */
+    apsCreated: int32;
+    /** Number of paired access points */
+    apsPaired: int32;
+}
+
+/**
+ * Full failure detail of an item (loaded on demand, separate call).
+ */
+model ImportItemError {
+    /** Short failure message */
+    error: string;
+    /** Full description (stack trace and the like) */
+    errorDetail: string;
+}
+
+/**
+ * One recorded outcome of a successful item.
+ */
+model ImportItemResult {
+    /** Result identifier */
+    itemResultId: integer;
+    /** Kind of outcome */
+    resultType: ImpResultType;
+    /** Fund the result touches */
+    fundId?: integer;
+    /** Fund description change (arr_change), if any */
+    fundChangeId?: integer;
+    /** Access-point change (ap_change), if any */
+    apChangeId?: integer;
+}
+
+/**
+ * One page of the batches listing.
+ */
+model ImportBatchPage {
+    /** The batches on this page */
+    items: ImportBatch[];
+    /** Total number of batches matching the filter */
+    totalCount: integer;
+}
+
+/**
+ * Parameters for creating an EDX2 batch.
+ */
+model CreateBatchEdx {
+    @invisible(Lifecycle)
+    importType: BatchImportType.EDX2;
+    /** User-supplied name */
+    name: string;
+    fundImportStrategy: FundImportStrategy;
+    fundPairKey?: FundPairKey;
+    ignoreRootNodes: boolean;
+    scopeId?: integer;
+    skipError: boolean;
+    keepFiles: boolean;
+}
+
+/**
+ * Parameters for creating a CSV batch.
+ */
+model CreateBatchDescCsv {
+    @invisible(Lifecycle)
+    importType: BatchImportType.ADD_DESC_ITEMS_CSV;
+    name: string;
+    separator?: string;
+    encoding?: string;
+    skipError: boolean;
+    keepFiles: boolean;
+}
+
+/**
+ * Multipart body for uploading one source file into a batch.
+ */
+model UploadFileBody {
+    file: HttpPart<bytes>;
+}
+
+/**
+ * Multipart body for uploading a ZIP container of source files.
+ */
+model UploadZipBody {
+    file: HttpPart<bytes>;
+}
+
+/**
+ * Parameters for importing from a folder on the server.
+ */
+model ImportFromFolder {
+    /** Path relative to the configured base directory */
+    path: string;
+
+    /**
+     * Optional list of file names to import from the folder. If empty or omitted,
+     * every regular file directly in the folder is added to the batch.
+     */
+    files?: string[];
+}
+
+/**
+ * A single entry (file or subdirectory) inside the server-side import folder.
+ */
+model ImportServerFolderEntry {
+    name: string;
+    directory: boolean;
+    size?: int64;
+}
+
+/**
  * Administrativní funkce
  */
 @tag("admin")
@@ -2643,6 +2907,317 @@ namespace ElzaAPI.Admin {
     /** Return list of logged users */
     @route("info/logged-users")
     op loggedUsers(): LoggedUsers;
+}
+
+/**
+ * Import batches - administrator module for controlled data import.
+ */
+@tag("import-batches")
+@route("/admin/import")
+namespace ElzaAPI.ImportBatch {
+    /**
+     * Paged listing of import batches, newest first by creation time.
+     * @param from index of the first returned item (zero-based offset)
+     * @param count number of returned items
+     */
+    @get op list(
+        @query from?: integer = 0,
+        @query count?: integer = 10,
+    ): ImportBatchPage;
+
+    /**
+     * Creates a new EDX2 batch in the PREPARATION state.
+     */
+    @route("/edx")
+    @post op createEdx(
+        @body params: CreateBatchEdx,
+    ): {
+        @Http.statusCode statusCode: 201;
+        @body batch: ImportBatchEdx;
+    };
+
+    /**
+     * Creates a new CSV batch (ADD_DESC_ITEMS_CSV) in the PREPARATION state.
+     */
+    @route("/csv")
+    @post op createCsv(
+        @body params: CreateBatchDescCsv,
+    ): {
+        @Http.statusCode statusCode: 201;
+        @body batch: ImportBatchDescCsv;
+    };
+
+    /**
+     * Batch detail. The concrete subtype returned depends on importType.
+     */
+    @route("/{id}")
+    @get op get(
+        @path id: integer,
+    ): ImportBatch | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Updates the settings of an EDX2 batch. Allowed only in PREPARATION;
+     * in TEST_FINISHED the batch is walked back to PREPARATION automatically.
+     */
+    @route("/{id}/edx")
+    @put op updateEdx(
+        @path id: integer,
+        @body params: CreateBatchEdx,
+    ): ImportBatchEdx | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        /** Batch state does not permit editing its settings. */
+        @Http.statusCode statusCode: 409;
+        @body error: BaseException;
+    };
+
+    /**
+     * Updates the settings of a CSV batch. Allowed only in PREPARATION;
+     * in TEST_FINISHED the batch is walked back to PREPARATION automatically.
+     */
+    @route("/{id}/csv")
+    @put op updateCsv(
+        @path id: integer,
+        @body params: CreateBatchDescCsv,
+    ): ImportBatchDescCsv | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        @Http.statusCode statusCode: 409;
+        @body error: BaseException;
+    };
+
+    /**
+     * Starts the import: moves the batch to IN_PROGRESS and puts it on the
+     * asynchronous queue. Requires PREPARATION, TEST_FINISHED, PAUSED or FAILED.
+     */
+    @route("/{id}/start")
+    @post op start(
+        @path id: integer,
+    ): {
+        @Http.statusCode statusCode: 202;
+    } | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        @Http.statusCode statusCode: 409;
+        @body error: BaseException;
+    };
+
+    /**
+     * Starts a dry run. The batch moves to TEST_IN_PROGRESS, a successful
+     * verification lands in TEST_FINISHED.
+     */
+    @route("/{id}/dry-run")
+    @post op dryRun(
+        @path id: integer,
+    ): {
+        @Http.statusCode statusCode: 202;
+    } | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        @Http.statusCode statusCode: 409;
+        @body error: BaseException;
+    };
+
+    /**
+     * Pauses a running batch (IN_PROGRESS -> PAUSED). The stop takes effect
+     * between items; the item in flight is allowed to finish.
+     */
+    @route("/{id}/pause")
+    @post op pause(
+        @path id: integer,
+    ): {
+        @Http.statusCode statusCode: 200;
+    } | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        @Http.statusCode statusCode: 409;
+        @body error: BaseException;
+    };
+
+    /**
+     * Manual cancellation - the batch moves to the terminal CANCELLED state.
+     */
+    @route("/{id}/cancel")
+    @post op cancel(
+        @path id: integer,
+    ): {
+        @Http.statusCode statusCode: 200;
+    } | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        @Http.statusCode statusCode: 409;
+        @body error: BaseException;
+    };
+
+    /**
+     * Deletes a batch. Allowed only for batches in PREPARATION or in a
+     * terminal state (FINISHED / CANCELLED).
+     */
+    @route("/{id}")
+    @delete op remove(
+        @path id: integer,
+    ): {
+        @Http.statusCode statusCode: 204;
+    } | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        @Http.statusCode statusCode: 409;
+        @body error: BaseException;
+    };
+
+    /**
+     * Items of the batch, ordered by exec order.
+     */
+    @route("/{id}/items")
+    @get op listItems(
+        @path id: integer,
+    ): ImportItem[] | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Uploads one source file into the batch. Also the entry point for a
+     * multi-file selection in the UI - the client calls this once per file.
+     */
+    @route("/{id}/items/upload")
+    @post op uploadItem(
+        @path id: integer,
+        @multipartBody body: UploadFileBody,
+        @header contentType: "multipart/form-data",
+    ): {
+        @Http.statusCode statusCode: 201;
+        @body item: ImportItem;
+    } | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        @Http.statusCode statusCode: 409;
+        @body error: BaseException;
+    };
+
+    /**
+     * Unpacks a ZIP container - each contained file becomes its own item.
+     * Nested directories are not walked as a tree; their files are stored
+     * flat (name without path).
+     */
+    @route("/{id}/items/upload-zip")
+    @post op uploadZip(
+        @path id: integer,
+        @multipartBody body: UploadZipBody,
+        @header contentType: "multipart/form-data",
+    ): {
+        @Http.statusCode statusCode: 201;
+        @body items: ImportItem[];
+    } | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        @Http.statusCode statusCode: 409;
+        @body error: BaseException;
+    };
+
+    /**
+     * Adds regular files from the given server-side folder to the batch. The path
+     * is interpreted relative to the configured base directory
+     * (elza.import.batchInputDir); a path that would escape it is rejected. If
+     * params.files is empty or omitted, every file in the folder is added.
+     */
+    @route("/{id}/items/import-folder")
+    @post op importFolder(
+        @path id: integer,
+        @body params: ImportFromFolder,
+    ): {
+        @Http.statusCode statusCode: 201;
+        @body items: ImportItem[];
+    } | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        @Http.statusCode statusCode: 409;
+        @body error: BaseException;
+    };
+
+    /**
+     * Lists direct children (subfolders and files) of a folder inside the
+     * configured base directory. Used by the folder picker in the UI.
+     */
+    @route("/server-folder")
+    @get op listServerFolder(
+        @query path?: string,
+    ): {
+        @Http.statusCode statusCode: 200;
+        @body entries: ImportServerFolderEntry[];
+    } | {
+        @Http.statusCode statusCode: 409;
+        @body error: BaseException;
+    };
+
+    /**
+     * Removes an item from its batch. Allowed only while the batch is in
+     * PREPARATION and only for items that were not already imported.
+     */
+    @route("/items/{itemId}")
+    @delete op removeItem(
+        @path itemId: integer,
+    ): {
+        @Http.statusCode statusCode: 204;
+    } | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        @Http.statusCode statusCode: 409;
+        @body error: BaseException;
+    };
+
+    /**
+     * Downloads the original source file of the item. If the file is no
+     * longer in DMS (for example after the retention window closed), 404.
+     */
+    @route("/items/{itemId}/download")
+    @get op downloadItem(
+        @path itemId: integer,
+    ): {
+        @Http.statusCode statusCode: 200;
+        @header contentDisposition: string;
+        @body file: bytes;
+    } | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Full failure detail of an item (long stack trace and the like).
+     * Returned only for items in the ERROR state.
+     */
+    @route("/items/{itemId}/error")
+    @get op itemError(
+        @path itemId: integer,
+    ): ImportItemError | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Recorded outcomes of a successful item (the imp_item_result rows).
+     */
+    @route("/items/{itemId}/results")
+    @get op itemResults(
+        @path itemId: integer,
+    ): ImportItemResult[] | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
 }
 
 @tag("daos")
@@ -7175,6 +7750,7 @@ namespace ElzaAPI.Tasks {
 @tagMetadata("rules", #{description: "Pravidla popisu archiválií (typy atributů, datové typy, …)"})
 @tagMetadata("output", #{description: "Výstupy archivních souborů"})
 @tagMetadata("institution", #{description: "Správa institucí"})
+@tagMetadata("import-batches", #{description: "Import batches (administration)"})
 namespace ElzaAPI {
     // add models not used in operations
     union __Types {

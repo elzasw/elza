@@ -32,6 +32,7 @@ import * as perms from '../../actions/user/Permission';
 import { ExportForm, FundForm, i18n, Icon, ImportForm } from '../../components';
 import IssueLists from '../../components/arr/IssueLists';
 import SearchFundsForm from '../../components/arr/search-funds-form/SearchFundsForm';
+import { FundListImportListener } from '../../components/arr/FundListImportListener';
 import { AbstractReactComponent, ListBox } from '../../components/shared';
 import { urlEntity, urlFund, urlFundOutputs, urlFundTree } from "../../constants";
 import { objectById } from '../../shared/utils';
@@ -902,13 +903,16 @@ class FundPage extends AbstractReactComponent {
         // }
 
         return (
-            <PageLayout
-                className="fund-page"
-                ribbon={this.buildRibbon()}
-                // leftPanel={leftPanel}
-                centerPanel={leftPanel}
-            // rightPanel={rightPanel}
-            />
+            <>
+                <FundListImportListener />
+                <PageLayout
+                    className="fund-page"
+                    ribbon={this.buildRibbon()}
+                    // leftPanel={leftPanel}
+                    centerPanel={leftPanel}
+                    // rightPanel={rightPanel}
+                />
+            </>
         );
     }
 }

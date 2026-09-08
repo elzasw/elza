@@ -169,6 +169,7 @@ import cz.tacr.elza.test.controller.AdminApi;
 import cz.tacr.elza.test.controller.DaosApi;
 import cz.tacr.elza.test.controller.DescitemsApi;
 import cz.tacr.elza.test.controller.FundsApi;
+import cz.tacr.elza.test.controller.ImportBatchesApi;
 import cz.tacr.elza.test.controller.InstitutionApi;
 import cz.tacr.elza.test.controller.IoApi;
 import cz.tacr.elza.test.controller.NodeApi;
@@ -498,6 +499,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
 	protected InstitutionApi institutionApi;
 
+	protected ImportBatchesApi importBatchesApi;
+
 	protected static Map<String, String> cookies = null;
 
 	@Override
@@ -530,6 +533,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 		accesspointIntApi = new cz.tacr.elza.test.controller.AccesspointInternalApi(elzaApiClient);
 		outputApi = new cz.tacr.elza.test.controller.OutputApi(elzaApiClient);
 		institutionApi = new cz.tacr.elza.test.controller.InstitutionApi(elzaApiClient);
+		importBatchesApi = new cz.tacr.elza.test.controller.ImportBatchesApi(elzaApiClient);
 
 		loginAsAdmin();
 
@@ -2286,6 +2290,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
 		if (scopeId != null) {
 			params.put("scopeId", scopeId);
 		}
+		// Opt out of the batch wrapper so the import runs synchronously - tests assume the
+		// fund exists right after the call and are not written for async polling.
+		params.put("asBatch", false);
 		return multipart(spec -> spec.multiPart("xmlFile", xmlFile).params(params), DE_IMPORT);
 	}
 

@@ -64,6 +64,8 @@ import {
     URL_COMPONENT
 } from '../constants.tsx';
 import AdminBulkActionPage from './admin/AdminBulkActionPage';
+import { AdminImportPage } from './admin/AdminImportPage';
+import { AdminImportBatchDetailPage } from './admin/AdminImportBatchDetailPage';
 import AppRouter from './AppRouter';
 import './Layout.scss';
 import defaultKeymap from './LayoutKeymap.jsx';
@@ -289,6 +291,8 @@ class Layout extends AbstractReactComponent {
                                             <Route path="/admin/institution/:id" component={AdminInstitutionPage} />
                                             <Route path="/admin/institution" component={AdminInstitutionPage} />
                                             <Route path="/admin/logs" component={AdminLogsPage} />
+                                            <Route path="/admin/import/:id" component={AdminImportBatchDetailPage} />
+                                            <Route path="/admin/import" component={AdminImportPage} />
                                             <Route path={'/admin/reports'} component={ReportsPage}/>
                                             <Route component={AdminPage} />
                                         </Switch>
