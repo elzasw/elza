@@ -2,7 +2,7 @@ import * as types from 'actions/constants/ActionTypes';
 import {savingApiWrapper} from 'actions/global/status.jsx';
 import {modalDialogHide} from 'actions/global/modalDialog.jsx';
 import {WebApi} from 'actions/index.jsx';
-import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
+import {addToastrInfo, addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
 import {i18n, Utils} from 'components/shared';
 import {registryListInvalidate} from 'actions/registry/registry.jsx';
 
@@ -36,9 +36,15 @@ export function getObjectInfo(objectInfo) {
 export function importForm(data, messageType) {
     return (dispatch, getState) => {
         return savingApiWrapper(dispatch, WebApi.xmlImport(data))
-            .then(() => {
+            .then((result) => {
                 dispatch(modalDialogHide());
-                dispatch(addToastrSuccess(i18n('import.toast.success'), i18n('import.toast.success' + messageType)));
+                // 202 response with batchId means the import was wrapped into a batch and runs
+                // asynchronously; the final outcome is delivered via WebSocket to /admin/import.
+                if (result && result.batchId != null) {
+                    dispatch(addToastrInfo(i18n('import.toast.enqueued'), i18n('import.toast.enqueued.detail')));
+                } else {
+                    dispatch(addToastrSuccess(i18n('import.toast.success'), i18n('import.toast.success' + messageType)));
+                }
                 switch (messageType) {
                     case 'Fund':
                         break;

@@ -16,6 +16,7 @@ public class AsyncRequest extends AsyncRequestBase {
     private Integer userId;
     private Integer exportId;
     private Integer aipActionItemId;
+    private Integer batchId;
 
     public AsyncRequest(ArrAsyncRequest request) {
         super(request.getAsyncRequestId(),
@@ -41,6 +42,10 @@ public class AsyncRequest extends AsyncRequestBase {
                 aipActionItemId = request.getAipActionItem().getAipActionItemId();
                 userId = request.getUserId();
                 break;
+            case BATCH_IMPORT:
+                batchId = request.getBatch().getBatchId();
+                userId = request.getUserId();
+                break;
             default:
                 throw new NotImplementedException("Neimplmentovaný typ: " + type);
         }
@@ -58,6 +63,8 @@ public class AsyncRequest extends AsyncRequestBase {
             	return exportId;
             case AIP:
                 return aipActionItemId;
+            case BATCH_IMPORT:
+                return batchId;
             default:
                 throw new NotImplementedException("Neimplmentovaný typ: " + type);
         }
@@ -93,6 +100,10 @@ public class AsyncRequest extends AsyncRequestBase {
 
     public Integer getAipActionItemId() {
         return aipActionItemId;
+    }
+
+    public Integer getBatchId() {
+        return batchId;
     }
 
     @Override

@@ -381,7 +381,7 @@ var messages = {
     "ribbon.action.admin.extSystem.edit": "Editovat systém",
     "ribbon.action.admin.extSystem.delete": "Smazat systém",
     "ribbon.action.party.import": "Import ze souboru",
-    "ribbon.action.arr.fund.import": "Import",
+    "ribbon.action.arr.fund.import": "Import ze souboru",
     "ribbon.action.arr.fund.export": "Export",
     "ribbon.action.registry.import": "Import ze souboru",
     "ribbon.action.logout": "Odhlásit",
@@ -1673,6 +1673,9 @@ var messages = {
     "import.toast.successRecord": "Import rejstříkových hesel byl úspěšně dokončen.",
     "import.toast.successCoordinates": "Import souřadnic byl úspěšně dokončen.",
     "import.toast.successJsonTable": "Import CSV byl úspěšně dokončen.",
+
+    "import.toast.enqueued": "Import zahájen",
+    "import.toast.enqueued.detail": "Sledujte průběh v části Administrace → Import.",
 
     "import.toast.error": "Nastala chyba",
     "import.toast.errorCoordinates": "Při importu souřadnic nastala chyba",

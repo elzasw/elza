@@ -43,6 +43,7 @@ import cz.tacr.elza.asynchactions.IAsyncRequest;
 import cz.tacr.elza.asynchactions.IAsyncWorker;
 import cz.tacr.elza.asynchactions.RequestQueue;
 import cz.tacr.elza.asynchactions.ap.AsyncAccessPointExecutor;
+import cz.tacr.elza.asynchactions.imp.AsyncBatchImportExecutor;
 import cz.tacr.elza.service.da.AsyncAipExecutor;
 import cz.tacr.elza.service.da.DaAipActionService;
 import cz.tacr.elza.asynchactions.nodevalid.AsyncNodeExecutor;
@@ -53,6 +54,7 @@ import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.FundStatisticsVO;
 import cz.tacr.elza.domain.ArrAsyncRequest;
 import cz.tacr.elza.domain.DaAipActionItem;
+import cz.tacr.elza.domain.ImpBatch;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
 import cz.tacr.elza.domain.ArrExport;
@@ -159,6 +161,10 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     private ThreadPoolTaskExecutor aipTaskExecutor;
 
     @Autowired
+    @Qualifier("threadPoolTaskExecutorIMP")
+    private ThreadPoolTaskExecutor batchImportTaskExecutor;
+
+    @Autowired
     private DaAipActionService daAipActionService;
 
     @Autowired
@@ -176,6 +182,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
         register(new AsyncExportExecutor(exportTaskExecutor, txManager, asyncRequestRepository, appCtx, exportMaxPerFund, exportRepository));
         register(new AsyncAccessPointExecutor(accessPointTaskExecutor, txManager, asyncRequestRepository, appCtx));
         register(new AsyncAipExecutor(aipTaskExecutor, txManager, asyncRequestRepository, appCtx, daAipActionService));
+        register(new AsyncBatchImportExecutor(batchImportTaskExecutor, txManager, asyncRequestRepository, appCtx));
     }
 
     private void register(final AsyncExecutor asyncExecutor) {
@@ -219,6 +226,17 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     @Transactional
     public void enqueue(final DaAipActionItem aipActionItem, final Integer userId) {
         dispatchRequest(ArrAsyncRequest.create(aipActionItem, 1, userId));
+    }
+
+    /**
+     * Puts an import batch on the asynchronous queue. The batch is expected to be in a state
+     * that permits its execution (PREPARATION, TEST_FINISHED, PAUSED or FAILED); the executor
+     * moves it through IN_PROGRESS and a terminal state.
+     */
+    @Transactional
+    public void enqueue(final ImpBatch batch, final Integer userId) {
+        ArrAsyncRequest request = ArrAsyncRequest.create(batch, 1, userId);
+        dispatchRequest(request);
     }
 
     /**

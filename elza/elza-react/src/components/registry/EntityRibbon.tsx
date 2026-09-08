@@ -95,7 +95,7 @@ export function EntityRibbon({
     if (!select) {
       altActions.push(
         <Button key="registryImport" onClick={onImportRegistry}>
-          <Icon glyph="fa-file" />
+          <Icon glyph="fa-upload" />
           <div>
             <span className="btnText">{i18n('ribbon.action.registry.import')}</span>
           </div>
