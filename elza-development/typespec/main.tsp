@@ -737,16 +737,6 @@ enum UpdateOp {
     DELETE
 }
 
-/**
- * Náhrada za třídu `ArrUpdateItemVO`
- */
-model NodeUpdateItem {
-    /** operation */
-    updateOp: UpdateOp;
-    /** item to update */
-    item: NodeItem;
-}
-
 model BaseItem {
     /** id of item */
     id?: integer;
@@ -1592,19 +1582,9 @@ model InvalidatedEntities {
 /**
  * Data for create/update a part (external)
  */
+@extension("format", "partform")
 model ApPartFormVO {
     /** this is an external class */
-}
-
-/**
- * Skupina zapouzdrující typy hodnot atributů pro UI
- *
- * Náhrada `ItemTypeGroupVO`
- */
-model ItemTypeGroup {
-    code: string;
-    name: string;
-    types?: FormItemType[];
 }
 
 /**
@@ -2432,40 +2412,6 @@ model ExtItemBinding {
     partId?: integer;
     itemId?: integer;
     sync: boolean;
-}
-
-/**
- * One binding of an access point to an external system. Represents the
- * entity's identity in that system together with sync/state metadata and
- * (since CAMv2) per-revision metadata and issue summary.
- */
-model ExtEntityBinding {
-    id: integer;
-    externalSystemId: integer;
-    /**
-     * Code of the external system. Marked deprecated on the Java VO, but
-     * still load-bearing for several action calls — kept until the callers
-     * migrate to externalSystemId.
-     */
-    externalSystemCode: string;
-    /** Identifier of the entity in the external system. */
-    value: string;
-    extState?: string;
-    extRevision?: string;
-    extUser?: string;
-    extReplacedBy?: string;
-    detailUrlExtReplacedBy?: string;
-    syncState?: SyncState;
-    syncProgress?: SyncProgress;
-    bindingItemList?: ExtItemBinding[];
-
-    // CAMv2 additions
-    extMetadataRevision?: string;
-    extPrevRevision?: string;
-    /** Creation time of this revision in the external system. */
-    extCreatedAt?: utcDateTime;
-    /** Pre-computed badge for the warning icon. Absent = no issues. */
-    issueSummary?: ExtIssueSummary;
 }
 
 /** Severity of a CAM-side issue attached to an entity binding. */
@@ -7797,13 +7743,64 @@ namespace ElzaAPI.Tasks {
 @tagMetadata("output", #{description: "Výstupy archivních souborů"})
 @tagMetadata("institution", #{description: "Správa institucí"})
 @tagMetadata("import-batches", #{description: "Import batches (administration)"})
+@server("http://localhost:8080", "Devel server")
+@server("http://localhost", "Výchozí server")
+
+// Modely, které nejsou přímo referencované z žádného operation,
+// ale musí být v OpenAPI kvůli generovanému klientu.
 namespace ElzaAPI {
-    // add models not used in operations
-    union __Types {
-        a: NodeUpdateItem,
-        b: ItemTypeGroup,
-        c: ExtEntityBinding
+    /**
+     * Náhrada za třídu `ArrUpdateItemVO`
+     */
+    model NodeUpdateItem {
+        /** operation */
+        updateOp: UpdateOp;
+        /** item to update */
+        item: NodeItem;
     }
-    @route("/__types") @get
-    op __typeRegistry(): __Types;
+
+    /**
+     * Skupina zapouzdrující typy hodnot atributů pro UI
+     *
+     * Náhrada za třídu `ItemTypeGroupVO`
+     */
+    model ItemTypeGroup {
+        code: string;
+        name: string;
+        types?: FormItemType[];
+    }
+
+    /**
+     * One binding of an access point to an external system. Represents the
+     * entity's identity in that system together with sync/state metadata and
+     * (since CAMv2) per-revision metadata and issue summary.
+     */
+    model ExtEntityBinding {
+        id: integer;
+        externalSystemId: integer;
+        /**
+         * Code of the external system. Marked deprecated on the Java VO, but
+         * still load-bearing for several action calls — kept until the callers
+         * migrate to externalSystemId.
+         */
+        externalSystemCode: string;
+        /** Identifier of the entity in the external system. */
+        value: string;
+        extState?: string;
+        extRevision?: string;
+        extUser?: string;
+        extReplacedBy?: string;
+        detailUrlExtReplacedBy?: string;
+        syncState?: SyncState;
+        syncProgress?: SyncProgress;
+        bindingItemList?: ExtItemBinding[];
+
+        // CAMv2 additions
+        extMetadataRevision?: string;
+        extPrevRevision?: string;
+        /** Creation time of this revision in the external system. */
+        extCreatedAt?: utcDateTime;
+        /** Pre-computed badge for the warning icon. Absent = no issues. */
+        issueSummary?: ExtIssueSummary;
+    }
 }

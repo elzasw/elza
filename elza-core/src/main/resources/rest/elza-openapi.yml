@@ -45,11 +45,6 @@ tags:
     description: Digitální archivní objekty
   - name: admin
     description: Administrativní funkce
-servers:
-  - url: http://localhost
-    description: Výchozí server
-  - url: http://localhost:8080
-    description: Devel server
 paths:
   /accesspoint:
     delete:
@@ -7501,8 +7496,8 @@ components:
       description: Advanced filter for access-point search; used as the request body of /accesspoint/search.
     ApPartFormVO:
       type: object
-      format: partform
       description: Data for create/update a part (external)
+      format: partform
     ApSearchArea:
       type: string
       enum:
@@ -9975,7 +9970,7 @@ components:
       description: |-
         Skupina zapouzdrující typy hodnot atributů pro UI
 
-        Náhrada `ItemTypeGroupVO`
+        Náhrada za třídu `ItemTypeGroupVO`
     ItemTypeList:
       type: object
       required:
@@ -12022,3 +12017,10 @@ components:
           type: string
           description: text připomínky
       description: Náhrada `WfSimpleIssueVO`
+servers:
+  - url: http://localhost
+    description: Výchozí server
+    variables: {}
+  - url: http://localhost:8080
+    description: Devel server
+    variables: {}
