@@ -12,7 +12,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.Nullable;
-import jakarta.transaction.Transactional;
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.controller.vo.SdoType;
 
@@ -83,6 +82,7 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 public class StructObjService {
 
     private final static Logger logger = LoggerFactory.getLogger(StructObjService.class);
+
     private final StructuredItemRepository structureItemRepository;
     private final StructuredTypeExtensionRepository structureExtensionRepository;
     private final StructuredObjectRepository structObjRepository;
@@ -138,7 +138,8 @@ public class StructObjService {
      * @param structureData hodnota struktovaného datového typu
      * @return nalezené položky
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR,
+                              UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
     public List<ArrStructuredItem> findStructureItems(@AuthParam(type = AuthParam.Type.FUND) final ArrStructuredObject structureObject) {
         return structObjService.findByStructuredObjectAndDeleteChangeIsNullFetchData(structureObject);
     }
