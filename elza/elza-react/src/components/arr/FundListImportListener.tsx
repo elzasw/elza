@@ -8,7 +8,7 @@ import { EventType } from 'typings/websocket/EventType';
 import { fundsFilter } from 'actions/fund/fund';
 import { AppState } from 'typings/store';
 
-export function FundListImportListener() {
+export function FundListImportListener(): null {
     const websocket = useWebsocket();
     const dispatch = useThunkDispatch();
     const filter = useSelector((s: AppState) => (s.fundRegion as { filter: unknown }).filter);

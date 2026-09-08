@@ -26,7 +26,7 @@ import {
 } from '@fluentui/react-icons';
 import { Api } from 'api';
 import { ImportServerFolderEntry } from 'elza-api';
-import { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { FormattedMessage, defineMessages, useIntl } from 'react-intl';
 
 const messages = defineMessages({
@@ -212,7 +212,7 @@ export function ServerFolderDialog({ batchId, open, onClose, onImported }: Props
                                                 className={e.directory ? styles.dirRow : styles.row}
                                                 onClick={e.directory ? () => enterDir(e.name) : undefined}
                                             >
-                                                <TableCell onClick={ev => ev.stopPropagation()}>
+                                                <TableCell onClick={(ev: React.MouseEvent) => ev.stopPropagation()}>
                                                     {!e.directory && (
                                                         <Checkbox
                                                             checked={selected.has(e.name)}
