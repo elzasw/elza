@@ -146,7 +146,7 @@ public class CsvDescItemsImporter {
                 if (i >= record.size()) {
                     throw new BusinessException("Missing value for type " + typeCode, BaseCode.INVALID_STATE);
                 }
-                value = record.get(i++);
+                value = record.get(i++).trim();
             }
 
             RulItemSpec spec = null;
