@@ -3,6 +3,8 @@ info:
   title: ELZA API
   version: 1.0.0
 tags:
+  - name: import-batches
+    description: Import batches (administration)
   - name: institution
     description: Správa institucí
   - name: output
@@ -920,6 +922,617 @@ paths:
           description: The request has succeeded.
       tags:
         - admin
+  /admin/import:
+    get:
+      operationId: ImportBatch_list
+      description: Paged listing of import batches, newest first by creation time.
+      parameters:
+        - name: from
+          in: query
+          required: false
+          description: index of the first returned item (zero-based offset)
+          schema:
+            type: integer
+            default: 0
+          explode: false
+        - name: count
+          in: query
+          required: false
+          description: number of returned items
+          schema:
+            type: integer
+            default: 10
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportBatchPage'
+      tags:
+        - import-batches
+  /admin/import/csv:
+    post:
+      operationId: ImportBatch_createCsv
+      description: Creates a new CSV batch (ADD_DESC_ITEMS_CSV) in the PREPARATION state.
+      parameters: []
+      responses:
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportBatchDescCsv'
+      tags:
+        - import-batches
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBatchDescCsv'
+  /admin/import/edx:
+    post:
+      operationId: ImportBatch_createEdx
+      description: Creates a new EDX2 batch in the PREPARATION state.
+      parameters: []
+      responses:
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportBatchEdx'
+      tags:
+        - import-batches
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBatchEdx'
+  /admin/import/items/{itemId}:
+    delete:
+      operationId: ImportBatch_removeItem
+      description: |-
+        Removes an item from its batch. Allowed only while the batch is in
+        PREPARATION and only for items that were not already imported.
+      parameters:
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - import-batches
+  /admin/import/items/{itemId}/download:
+    get:
+      operationId: ImportBatch_downloadItem
+      description: |-
+        Downloads the original source file of the item. If the file is no
+        longer in DMS (for example after the retention window closed), 404.
+      parameters:
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            content-disposition:
+              required: true
+              schema:
+                type: string
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - import-batches
+  /admin/import/items/{itemId}/error:
+    get:
+      operationId: ImportBatch_itemError
+      description: |-
+        Full failure detail of an item (long stack trace and the like).
+        Returned only for items in the ERROR state.
+      parameters:
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportItemError'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - import-batches
+  /admin/import/items/{itemId}/results:
+    get:
+      operationId: ImportBatch_itemResults
+      description: Recorded outcomes of a successful item (the imp_item_result rows).
+      parameters:
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ImportItemResult'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - import-batches
+  /admin/import/server-folder:
+    get:
+      operationId: ImportBatch_listServerFolder
+      description: |-
+        Lists direct children (subfolders and files) of a folder inside the
+        configured base directory. Used by the folder picker in the UI.
+      parameters:
+        - name: path
+          in: query
+          required: false
+          schema:
+            type: string
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ImportServerFolderEntry'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - import-batches
+  /admin/import/{id}:
+    get:
+      operationId: ImportBatch_get
+      description: Batch detail. The concrete subtype returned depends on importType.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema: {}
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - import-batches
+    delete:
+      operationId: ImportBatch_remove
+      description: |-
+        Deletes a batch. Allowed only for batches in PREPARATION or in a
+        terminal state (FINISHED / CANCELLED).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - import-batches
+  /admin/import/{id}/cancel:
+    post:
+      operationId: ImportBatch_cancel
+      description: Manual cancellation - the batch moves to the terminal CANCELLED state.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - import-batches
+  /admin/import/{id}/csv:
+    put:
+      operationId: ImportBatch_updateCsv
+      description: |-
+        Updates the settings of a CSV batch. Allowed only in PREPARATION;
+        in TEST_FINISHED the batch is walked back to PREPARATION automatically.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportBatchDescCsv'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - import-batches
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBatchDescCsv'
+  /admin/import/{id}/dry-run:
+    post:
+      operationId: ImportBatch_dryRun
+      description: |-
+        Starts a dry run. The batch moves to TEST_IN_PROGRESS, a successful
+        verification lands in TEST_FINISHED.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '202':
+          description: The request has been accepted for processing, but processing has not yet completed.
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - import-batches
+  /admin/import/{id}/edx:
+    put:
+      operationId: ImportBatch_updateEdx
+      description: |-
+        Updates the settings of an EDX2 batch. Allowed only in PREPARATION;
+        in TEST_FINISHED the batch is walked back to PREPARATION automatically.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportBatchEdx'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - import-batches
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBatchEdx'
+  /admin/import/{id}/items:
+    get:
+      operationId: ImportBatch_listItems
+      description: Items of the batch, ordered by exec order.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ImportItem'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - import-batches
+  /admin/import/{id}/items/import-folder:
+    post:
+      operationId: ImportBatch_importFolder
+      description: |-
+        Adds regular files from the given server-side folder to the batch. The path
+        is interpreted relative to the configured base directory
+        (elza.import.batchInputDir); a path that would escape it is rejected. If
+        params.files is empty or omitted, every file in the folder is added.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ImportItem'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - import-batches
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImportFromFolder'
+  /admin/import/{id}/items/upload:
+    post:
+      operationId: ImportBatch_uploadItem
+      description: |-
+        Uploads one source file into the batch. Also the entry point for a
+        multi-file selection in the UI - the client calls this once per file.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportItem'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - import-batches
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UploadFileBody'
+  /admin/import/{id}/items/upload-zip:
+    post:
+      operationId: ImportBatch_uploadZip
+      description: |-
+        Unpacks a ZIP container - each contained file becomes its own item.
+        Nested directories are not walked as a tree; their files are stored
+        flat (name without path).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ImportItem'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - import-batches
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UploadZipBody'
+  /admin/import/{id}/pause:
+    post:
+      operationId: ImportBatch_pause
+      description: |-
+        Pauses a running batch (IN_PROGRESS -> PAUSED). The stop takes effect
+        between items; the item in flight is allowed to finish.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - import-batches
+  /admin/import/{id}/start:
+    post:
+      operationId: ImportBatch_start
+      description: |-
+        Starts the import: moves the batch to IN_PROGRESS and puts it on the
+        asynchronous queue. Requires PREPARATION, TEST_FINISHED, PAUSED or FAILED.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '202':
+          description: The request has been accepted for processing, but processing has not yet completed.
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - import-batches
   /admin/info:
     get:
       operationId: Admin_info
@@ -7166,6 +7779,24 @@ components:
           allOf:
             - $ref: '#/components/schemas/ItemData'
           description: item data
+    BatchImportType:
+      type: string
+      enum:
+        - EDX2
+        - ADD_DESC_ITEMS_CSV
+      description: Kind of import; also acts as the ORM discriminator of the batch subtype.
+    BatchState:
+      type: string
+      enum:
+        - PREPARATION
+        - IN_PROGRESS
+        - TEST_IN_PROGRESS
+        - TEST_FINISHED
+        - PAUSED
+        - FAILED
+        - FINISHED
+        - CANCELLED
+      description: State of an import batch.
     BoolValueFilter:
       type: object
       required:
@@ -7253,6 +7884,49 @@ components:
         Body of POST /fund/{fundId}/publication/{publicationId}/copy — copy an
         existing prepared export into another target system. The target type
         must have a compatible filter setting.
+    CreateBatchDescCsv:
+      type: object
+      required:
+        - name
+        - skipError
+        - keepFiles
+      properties:
+        name:
+          type: string
+        separator:
+          type: string
+        encoding:
+          type: string
+        skipError:
+          type: boolean
+        keepFiles:
+          type: boolean
+      description: Parameters for creating a CSV batch.
+    CreateBatchEdx:
+      type: object
+      required:
+        - name
+        - fundImportStrategy
+        - ignoreRootNodes
+        - skipError
+        - keepFiles
+      properties:
+        name:
+          type: string
+          description: User-supplied name
+        fundImportStrategy:
+          $ref: '#/components/schemas/FundImportStrategy'
+        fundPairKey:
+          $ref: '#/components/schemas/FundPairKey'
+        ignoreRootNodes:
+          type: boolean
+        scopeId:
+          type: integer
+        skipError:
+          type: boolean
+        keepFiles:
+          type: boolean
+      description: Parameters for creating an EDX2 batch.
     CreateFund:
       type: object
       required:
@@ -8619,6 +9293,18 @@ components:
       allOf:
         - $ref: '#/components/schemas/Fund'
       description: Details about archival funds
+    FundImportStrategy:
+      type: string
+      enum:
+        - ALWAYS_NEW
+        - ALWAYS_PAIR
+        - PAIR_AND_CREATE
+      description: How an EDX2 import handles fund records (create, pair, or both).
+    FundPairKey:
+      type: string
+      enum:
+        - INSTITUTION_AND_FUND_NUMBER
+      description: Key by which an existing fund is looked up during pairing.
     FundSearchResult:
       type: object
       required:
@@ -8761,6 +9447,137 @@ components:
           type: string
           description: Chybové hlášení
       description: Stav jednoho per-fond běhu v rámci vícefondového seskupení (pro sledování průběhu).
+    ImpResultType:
+      type: string
+      enum:
+        - ARR_CHANGE
+        - AP_CHANGE
+      description: Kind of recorded outcome of an import item.
+    ImportBatch:
+      type: object
+      required:
+        - batchId
+        - importType
+        - name
+        - createdAt
+        - createdByUserId
+        - state
+        - lastStateChangeAt
+        - skipError
+        - keepFiles
+      properties:
+        batchId:
+          type: integer
+          description: Batch identifier
+        importType:
+          allOf:
+            - $ref: '#/components/schemas/BatchImportType'
+          description: Kind of import (subtype discriminator)
+        name:
+          type: string
+          description: User-supplied batch name
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation time
+        createdByUserId:
+          type: integer
+          description: User who created the batch
+        executedAt:
+          type: string
+          format: date-time
+          description: Time the batch was last started
+        executedByUserId:
+          type: integer
+          description: User who last started the batch
+        state:
+          allOf:
+            - $ref: '#/components/schemas/BatchState'
+          description: Current state
+        lastStateChangeAt:
+          type: string
+          format: date-time
+          description: Time of the last state change
+        skipError:
+          type: boolean
+          description: Continue after an item-level error
+        keepFiles:
+          type: boolean
+          description: Keep the input files (disables the automatic cleanup)
+        filesDeletedAt:
+          type: string
+          format: date-time
+          description: When the input files were removed, if they already were
+      description: Import batch - common part; concrete parameters live in the subtypes.
+    ImportBatchDescCsv:
+      type: object
+      properties:
+        separator:
+          type: string
+          description: Column separator
+        encoding:
+          type: string
+          description: File encoding
+      allOf:
+        - $ref: '#/components/schemas/ImportBatch'
+      description: |-
+        CSV import batch that adds description items into existing nodes. The target fund is
+        resolved per row from each node UUID at import time - the batch itself carries no fund
+        reference.
+    ImportBatchEdx:
+      type: object
+      required:
+        - fundImportStrategy
+        - ignoreRootNodes
+      properties:
+        fundImportStrategy:
+          allOf:
+            - $ref: '#/components/schemas/FundImportStrategy'
+          description: How fund records are imported
+        fundPairKey:
+          allOf:
+            - $ref: '#/components/schemas/FundPairKey'
+          description: Pairing key for existing funds
+        ignoreRootNodes:
+          type: boolean
+          description: Ignore the root levels of the payload
+        scopeId:
+          type: integer
+          description: Scope into which archival entities are imported
+      allOf:
+        - $ref: '#/components/schemas/ImportBatch'
+      description: EDX2 import batch.
+    ImportBatchPage:
+      type: object
+      required:
+        - items
+        - totalCount
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ImportBatch'
+          description: The batches on this page
+        totalCount:
+          type: integer
+          description: Total number of batches matching the filter
+      description: One page of the batches listing.
+    ImportFromFolder:
+      type: object
+      required:
+        - path
+      properties:
+        path:
+          type: string
+          description: Path relative to the configured base directory
+        files:
+          type: array
+          items:
+            type: string
+          description: |-
+            Optional list of file names to import from the folder. If empty or omitted,
+            every regular file directly in the folder is added to the batch.
+      description: Parameters for importing from a folder on the server.
     ImportFundData:
       type: object
       properties:
@@ -8777,6 +9594,123 @@ components:
       required:
         - importType
         - dataFile
+    ImportItem:
+      type: object
+      required:
+        - itemId
+        - batchId
+        - state
+        - execOrder
+        - createdAt
+        - createdByUserId
+        - nodesCreated
+        - nodesUpdated
+        - apsCreated
+        - apsPaired
+      properties:
+        itemId:
+          type: integer
+          description: Item identifier
+        batchId:
+          type: integer
+          description: Parent batch identifier
+        dmsFileId:
+          type: integer
+          description: Reference to the stored source file in DMS, if present
+        itemName:
+          type: string
+          description: Display name, normally the file name
+        state:
+          allOf:
+            - $ref: '#/components/schemas/ItemState'
+          description: Current state
+        execOrder:
+          type: integer
+          description: Run order within the batch
+        createdAt:
+          type: string
+          format: date-time
+          description: Time added to the batch
+        createdByUserId:
+          type: integer
+          description: User who added the item
+        executedAt:
+          type: string
+          format: date-time
+          description: Time processing started
+        executedByUserId:
+          type: integer
+          description: User who started processing
+        finishedAt:
+          type: string
+          format: date-time
+          description: Time processing finished or failed
+        error:
+          type: string
+          description: Short failure message, if any
+        fundId:
+          type: integer
+          description: Fund the content was (or is being) imported into, once pairing settled
+        resultFundIds:
+          type: array
+          items:
+            type: integer
+          description: |-
+            All archival files this item's results changed - a single CSV item can touch
+            several funds when node UUIDs across the file belong to different funds.
+        nodesCreated:
+          type: integer
+          format: int32
+          description: Number of created description units
+        nodesUpdated:
+          type: integer
+          format: int32
+          description: Number of updated description units
+        apsCreated:
+          type: integer
+          format: int32
+          description: Number of created access points
+        apsPaired:
+          type: integer
+          format: int32
+          description: Number of paired access points
+      description: One item of an import batch - normally one input file.
+    ImportItemError:
+      type: object
+      required:
+        - error
+        - errorDetail
+      properties:
+        error:
+          type: string
+          description: Short failure message
+        errorDetail:
+          type: string
+          description: Full description (stack trace and the like)
+      description: Full failure detail of an item (loaded on demand, separate call).
+    ImportItemResult:
+      type: object
+      required:
+        - itemResultId
+        - resultType
+      properties:
+        itemResultId:
+          type: integer
+          description: Result identifier
+        resultType:
+          allOf:
+            - $ref: '#/components/schemas/ImpResultType'
+          description: Kind of outcome
+        fundId:
+          type: integer
+          description: Fund the result touches
+        fundChangeId:
+          type: integer
+          description: Fund description change (arr_change), if any
+        apChangeId:
+          type: integer
+          description: Access-point change (ap_change), if any
+      description: One recorded outcome of a successful item.
     ImportJobState:
       type: string
       enum:
@@ -8815,6 +9749,20 @@ components:
           format: date-time
           description: Finished At
       description: Complete status of async import
+    ImportServerFolderEntry:
+      type: object
+      required:
+        - name
+        - directory
+      properties:
+        name:
+          type: string
+        directory:
+          type: boolean
+        size:
+          type: integer
+          format: int64
+      description: A single entry (file or subdirectory) inside the server-side import folder.
     Institution:
       type: object
       required:
@@ -8924,6 +9872,15 @@ components:
         - NUMBER
         - DURATION
       description: Display hint for items of `dataType == INT`.
+    ItemState:
+      type: string
+      enum:
+        - READY
+        - TEST_RUN_FINISHED
+        - RUNNING
+        - FINISHED
+        - ERROR
+      description: State of an import batch item.
     ItemTableColumn:
       type: object
       required:
@@ -10999,6 +11956,22 @@ components:
         - UPDATE
         - DELETE
       description: Type of update Item
+    UploadFileBody:
+      type: object
+      properties:
+        file:
+          type: string
+          format: binary
+      required:
+        - file
+    UploadZipBody:
+      type: object
+      properties:
+        file:
+          type: string
+          format: binary
+      required:
+        - file
     UsedItemType:
       type: object
       required:

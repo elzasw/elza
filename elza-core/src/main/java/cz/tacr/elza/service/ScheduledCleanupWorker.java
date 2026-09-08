@@ -22,7 +22,6 @@ import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.vo.DataIdTypeId;
-import jakarta.transaction.Transactional;
 
 /**
  * Delete data that are not related to any table
@@ -41,6 +40,9 @@ public class ScheduledCleanupWorker {
 
     @Autowired
     protected PlatformTransactionManager tm;
+
+    @Autowired
+    private ImpBatchService impBatchService;
 
     /**
      * Delete all arr_data that are not related to tables:
@@ -77,6 +79,13 @@ public class ScheduledCleanupWorker {
     		} while (!dataIds.isEmpty());
     	} catch (Exception e) {
     		log.error("Error in cleanup process. ", e);
+    	}
+
+    	// deleting old import files
+    	try {
+    		impBatchService.cleanupOldFiles();
+    	} catch (Exception e) {
+    		log.error("Error cleaning up import batch files. ", e);
     	}
 	}
 }

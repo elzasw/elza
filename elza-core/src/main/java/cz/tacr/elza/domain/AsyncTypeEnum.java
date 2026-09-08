@@ -4,5 +4,5 @@ package cz.tacr.elza.domain;
  * Používané pro
  */
 public enum AsyncTypeEnum {
-    NODE, BULK, OUTPUT, AP, EXPORT, AIP
+    NODE, BULK, OUTPUT, AP, EXPORT, AIP, BATCH_IMPORT
 }

@@ -193,6 +193,20 @@ public class ElzaCore {
         return threadPoolTaskExecutor;
     }
 
+    /**
+     * Runs one import batch at a time. A batch is a heavy, long-running operation - parallelism
+     * between batches is not the point; keeping each batch's items in transactions of their own is.
+     */
+    @Bean(name = "threadPoolTaskExecutorIMP")
+    public ThreadPoolTaskExecutor threadPoolTaskExecutorImp() {
+        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+        threadPoolTaskExecutor.setCorePoolSize(1);
+        threadPoolTaskExecutor.setMaxPoolSize(1);
+        threadPoolTaskExecutor.setQueueCapacity(512);
+        threadPoolTaskExecutor.afterPropertiesSet();
+        return threadPoolTaskExecutor;
+    }
+
     @Bean(name = "threadPoolTaskExecutorAP")
     public ThreadPoolTaskExecutor threadPoolTaskExecutorAp() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();

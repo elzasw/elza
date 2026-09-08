@@ -10,6 +10,7 @@ import {
     URL_ADMIN_GROUP,
     URL_ADMIN_FUND,
     URL_ADMIN_INSTITUTION,
+    URL_ADMIN_IMPORT,
 } from '../../constants';
 
 const messages = defineMessages({
@@ -20,6 +21,10 @@ const messages = defineMessages({
     institution: {
         id: 'ribbon.action.admin.institution',
         defaultMessage: 'Instituce',
+    },
+    import: {
+        id: 'admin.nav.import',
+        defaultMessage: 'Import',
     },
 });
 
@@ -89,6 +94,7 @@ export function AdminNav() {
         { to: '/admin/extSystem', glyph: 'fa-external-link', label: i18n('ribbon.action.admin.externalSystems'), visible: isSuperuser },
         { to: '/admin/backgroundProcesses', glyph: 'fa-list-alt', label: i18n('ribbon.action.admin.backgroundProcesses'), visible: isSuperuser },
         { to: '/admin/requestsQueue', glyph: 'fa-shopping-basket', label: i18n('ribbon.action.admin.requestsQueue'), visible: isSuperuser },
+        { to: URL_ADMIN_IMPORT, glyph: 'fa-upload', label: <FormattedMessage {...messages.import} />, visible: isSuperuser },
         { to: '/admin/logs', glyph: 'fa-file-text-o', label: i18n('ribbon.action.admin.showLogs'), visible: isSuperuser },
     ];
 
