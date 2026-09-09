@@ -89,12 +89,12 @@ export function AdminNav() {
         { to: URL_ADMIN_GROUP, glyph: 'fa-group', label: i18n('ribbon.action.admin.group'), visible: administersGroup },
         { to: URL_ADMIN_FUND, glyph: 'fa-database', label: i18n('ribbon.action.admin.fund'), visible: administersGroup || administersUser },
         { to: URL_ADMIN_INSTITUTION, glyph: 'fa-university', label: <FormattedMessage {...messages.institution} />, visible: isSuperuser },
+        { to: URL_ADMIN_IMPORT, glyph: 'fa-upload', label: <FormattedMessage {...messages.import} />, visible: isSuperuser },
         { to: '/admin/reports', glyph: 'fa-line-chart', label: <FormattedMessage {...messages.reports} />, visible: canSeeReports },
         { to: '/admin/packages', glyph: 'fa-archive', label: i18n('ribbon.action.admin.packages'), visible: isSuperuser },
         { to: '/admin/extSystem', glyph: 'fa-external-link', label: i18n('ribbon.action.admin.externalSystems'), visible: isSuperuser },
         { to: '/admin/backgroundProcesses', glyph: 'fa-list-alt', label: i18n('ribbon.action.admin.backgroundProcesses'), visible: isSuperuser },
         { to: '/admin/requestsQueue', glyph: 'fa-shopping-basket', label: i18n('ribbon.action.admin.requestsQueue'), visible: isSuperuser },
-        { to: URL_ADMIN_IMPORT, glyph: 'fa-upload', label: <FormattedMessage {...messages.import} />, visible: isSuperuser },
         { to: '/admin/logs', glyph: 'fa-file-text-o', label: i18n('ribbon.action.admin.showLogs'), visible: isSuperuser },
     ];
 

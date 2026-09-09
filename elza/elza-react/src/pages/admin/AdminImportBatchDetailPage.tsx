@@ -43,7 +43,6 @@ import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedMessage, defineMessages, useIntl } from 'react-intl';
 import { useHistory, useParams } from 'react-router';
 import { showConfirmDialog } from 'components/shared/dialog';
-import { addToastrDanger, addToastrSuccess } from 'components/shared/toastr/ToastrActions';
 import { Ribbon } from 'components/index.jsx';
 import { useWebsocket } from 'components/shared/web-socket/WebsocketProvider';
 import { URL_ADMIN_IMPORT, urlFundTree } from '../../constants';
@@ -79,8 +78,6 @@ const messages = defineMessages({
     errorDialogTitle: { id: 'admin.import.detail.errorDialog.title', defaultMessage: 'Detail chyby' },
     errorDialogClose: { id: 'admin.import.detail.errorDialog.close', defaultMessage: 'Zavřít' },
     errorShow: { id: 'admin.import.detail.errorShow', defaultMessage: 'Zobrazit chybu' },
-    toastFinished: { id: 'admin.import.detail.toast.finished', defaultMessage: 'Dávka „{name}" byla dokončena' },
-    toastFailed: { id: 'admin.import.detail.toast.failed', defaultMessage: 'Dávka „{name}" skončila s chybou' },
     folderNotConfigured: {
         id: 'admin.import.detail.folderNotConfigured',
         defaultMessage: 'Složka pro import na serveru není nakonfigurovaná, neexistuje nebo je prázdná',
@@ -143,7 +140,6 @@ export function AdminImportBatchDetailPage() {
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const zipInputRef = useRef<HTMLInputElement>(null);
-    const prevStateRef = useRef<BatchState | null>(null);
 
     const reload = useCallback(async () => {
         setLoading(true);
@@ -185,20 +181,6 @@ export function AdminImportBatchDetailPage() {
         });
         return () => websocket.removeListener(listener);
     }, [websocket, batchId, reload]);
-
-    useEffect(() => {
-        if (!batch) return;
-        const prev = prevStateRef.current;
-        const now = batch.state;
-        if (prev != null && prev !== now) {
-            if (now === BatchState.Failed) {
-                dispatch(addToastrDanger(intl.formatMessage(messages.toastFailed, { name: batch.name })));
-            } else if (now === BatchState.Finished) {
-                dispatch(addToastrSuccess(intl.formatMessage(messages.toastFinished, { name: batch.name })));
-            }
-        }
-        prevStateRef.current = now;
-    }, [batch, dispatch, intl]);
 
     const runAction = async (action: () => Promise<unknown>) => {
         await action();
