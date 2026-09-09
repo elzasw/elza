@@ -1675,7 +1675,7 @@ var messages = {
     "import.toast.successJsonTable": "Import CSV byl úspěšně dokončen.",
 
     "import.toast.enqueued": "Import zahájen",
-    "import.toast.enqueued.detail": "Sledujte průběh v části Administrace → Import.",
+    "import.toast.enqueued.detail": "Podrobnosti najdete v části Administrace → Import.",
 
     "import.toast.error": "Nastala chyba",
     "import.toast.errorCoordinates": "Při importu souřadnic nastala chyba",

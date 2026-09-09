@@ -632,22 +632,22 @@ public class ImpBatchService {
     }
 
     private static String shortMessage(Throwable t) {
-        String msg = t.getMessage();
-        if (msg == null) {
-            msg = t.getClass().getSimpleName();
+        // The root-cause message is what usually explains the actual failure; the outer wrapper
+        // typically adds only "Reading of XML element failed, ..." which alone is not actionable.
+        Throwable root = t;
+        while (root.getCause() != null && root.getCause() != root) {
+            root = root.getCause();
         }
+        String msg = root.getMessage();
+        if (msg == null || msg.isBlank()) msg = t.getMessage();
+        if (msg == null || msg.isBlank()) msg = t.getClass().getSimpleName();
         return msg.length() > 4000 ? msg.substring(0, 4000) : msg;
     }
 
     private static String stackTrace(Throwable t) {
-        StringBuilder sb = new StringBuilder();
-        for (Throwable cur = t; cur != null; cur = cur.getCause()) {
-            sb.append(cur.getClass().getName()).append(": ").append(cur.getMessage()).append('\n');
-            for (StackTraceElement el : cur.getStackTrace()) {
-                sb.append("    at ").append(el).append('\n');
-            }
-        }
-        return sb.toString();
+        java.io.StringWriter sw = new java.io.StringWriter();
+        t.printStackTrace(new java.io.PrintWriter(sw));
+        return sw.toString();
     }
 
     /**

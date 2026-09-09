@@ -3,6 +3,7 @@ import {savingApiWrapper} from 'actions/global/status.jsx';
 import {modalDialogHide} from 'actions/global/modalDialog.jsx';
 import {WebApi} from 'actions/index.jsx';
 import {addToastrInfo, addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
+import {trackImportBatch} from 'utils/pendingImportBatches';
 import {i18n, Utils} from 'components/shared';
 import {registryListInvalidate} from 'actions/registry/registry.jsx';
 
@@ -39,8 +40,10 @@ export function importForm(data, messageType) {
             .then((result) => {
                 dispatch(modalDialogHide());
                 // 202 response with batchId means the import was wrapped into a batch and runs
-                // asynchronously; the final outcome is delivered via WebSocket to /admin/import.
+                // asynchronously; the final outcome is delivered by ImportBatchToaster once the
+                // batch reaches a terminal state.
                 if (result && result.batchId != null) {
+                    trackImportBatch(result.batchId);
                     dispatch(addToastrInfo(i18n('import.toast.enqueued'), i18n('import.toast.enqueued.detail')));
                 } else {
                     dispatch(addToastrSuccess(i18n('import.toast.success'), i18n('import.toast.success' + messageType)));

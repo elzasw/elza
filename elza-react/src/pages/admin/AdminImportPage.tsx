@@ -2,15 +2,13 @@ import { Button, Dropdown, Option, Spinner, Table, TableBody, TableCell, TableHe
 import { AddRegular, ChevronLeftRegular, ChevronRightRegular } from '@fluentui/react-icons';
 import { Api } from 'api';
 import { ImportBatch, BatchState } from 'elza-api';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { FormattedDate, FormattedMessage, FormattedTime, defineMessages, useIntl } from 'react-intl';
+import { useCallback, useEffect, useState } from 'react';
+import { FormattedDate, FormattedMessage, FormattedTime, defineMessages } from 'react-intl';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 import * as perms from 'actions/user/Permission.jsx';
 import { Ribbon } from 'components/index.jsx';
 import { useWebsocket } from 'components/shared/web-socket/WebsocketProvider';
-import { useThunkDispatch } from 'utils/hooks';
-import { addToastrDanger, addToastrSuccess } from 'components/shared/toastr/ToastrActions';
 import { AppState } from 'typings/store';
 import { EventType } from 'typings/websocket/EventType';
 import { urlAdminImport } from '../../constants';
@@ -76,14 +74,6 @@ const messages = defineMessages({
         id: 'admin.import.page.size',
         defaultMessage: 'Záznamů na stránku',
     },
-    toastFinished: {
-        id: 'admin.import.toast.finished',
-        defaultMessage: 'Dávka „{name}" byla dokončena',
-    },
-    toastFailed: {
-        id: 'admin.import.toast.failed',
-        defaultMessage: 'Dávka „{name}" skončila s chybou',
-    },
 });
 
 const useStyles = makeStyles({
@@ -136,9 +126,6 @@ export function AdminImportPage() {
     const [totalCount, setTotalCount] = useState(0);
     const history = useHistory();
     const websocket = useWebsocket();
-    const dispatch = useThunkDispatch();
-    const intl = useIntl();
-    const prevStatesRef = useRef<Record<number, BatchState>>({});
 
     const reload = useCallback(async () => {
         setIsLoading(true);
@@ -167,21 +154,6 @@ export function AdminImportPage() {
         return () => websocket.removeListener(listener);
     }, [websocket, reload]);
 
-    useEffect(() => {
-        const prev = prevStatesRef.current;
-        for (const b of batches) {
-            const before = prev[b.batchId];
-            const after = b.state;
-            if (before != null && before !== after) {
-                if (after === BatchState.Failed) {
-                    dispatch(addToastrDanger(intl.formatMessage(messages.toastFailed, { name: b.name })));
-                } else if (after === BatchState.Finished) {
-                    dispatch(addToastrSuccess(intl.formatMessage(messages.toastFinished, { name: b.name })));
-                }
-            }
-            prev[b.batchId] = after;
-        }
-    }, [batches, dispatch, intl]);
 
     const openCreated = (batchId: number) => {
         setCreating(null);

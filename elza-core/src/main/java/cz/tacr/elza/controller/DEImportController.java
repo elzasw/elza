@@ -1,6 +1,5 @@
 package cz.tacr.elza.controller;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -100,13 +99,14 @@ public class DEImportController {
         MultipartFile srcFile = xmlFile;
 
         // unzipped if zip file
-        File unzipFile = ZipUtils.unzipFirstFile(xmlFile);
-        if (unzipFile != null) {
+        ZipUtils.UnzippedFile unzipped = ZipUtils.unzipFirstFile(xmlFile);
+        if (unzipped != null) {
             // convert File -> MultipartFile (https://stackoverflow.com/questions/16648549/converting-file-to-multipartfile)
             try {
-                srcFile = new MockMultipartFile("file", unzipFile.getName(), "text/plain", Files.readAllBytes(unzipFile.toPath()));
+                srcFile = new MockMultipartFile("file", unzipped.originalName(), "text/plain",
+                        Files.readAllBytes(unzipped.file().toPath()));
             } catch (IOException e) {
-                throw new SystemException("Error reading from file=" + unzipFile.getAbsolutePath(), e);
+                throw new SystemException("Error reading from file=" + unzipped.file().getAbsolutePath(), e);
             }
         }
 
@@ -121,7 +121,7 @@ public class DEImportController {
         // callers that need the old synchronous behaviour (integration tests) opt out
         // with asBatch=false. Position-based imports are always synchronous.
         if (importPositionParams == null && !Boolean.FALSE.equals(asBatch)) {
-            return runAsBatch(scopeId, srcFile, ignoreRootNodes);
+            return runAsBatch(scopeId, srcFile, ignoreRootNodes, xmlFile.getOriginalFilename());
         }
 
         DEImportParams params = new DEImportParams(scopeId, 1000, 10000, importPositionParams, ignoreRootNodes);
@@ -138,10 +138,20 @@ public class DEImportController {
      * Wraps the incoming EDX2 payload in an import batch (ALWAYS_NEW), enqueues it and returns
      * the batch id so the caller can watch the outcome asynchronously.
      */
-    private ResponseEntity<?> runAsBatch(int scopeId, MultipartFile srcFile, Boolean ignoreRootNodes) {
+    private ResponseEntity<?> runAsBatch(int scopeId,
+                                         MultipartFile srcFile,
+                                         Boolean ignoreRootNodes,
+                                         String batchName) {
         ApScope scope = scopeRepository.findById(scopeId)
                 .orElseThrow(() -> new SystemException("Scope not found: " + scopeId, BaseCode.SYSTEM_ERROR));
-        String name = srcFile.getOriginalFilename() != null ? srcFile.getOriginalFilename() : "import-" + System.currentTimeMillis();
+        // Batch is named after what the operator actually picked in the file dialog (zip or xml);
+        // the item inside keeps the unpacked file name so the run can be traced.
+        String name = batchName != null && !batchName.isBlank()
+                ? batchName
+                : (srcFile.getOriginalFilename() != null
+                        ? srcFile.getOriginalFilename()
+                        : "import-" + System.currentTimeMillis());
+        String itemName = srcFile.getOriginalFilename() != null ? srcFile.getOriginalFilename() : name;
 
         ImpBatchEdx batch = batchService.createEdxBatch(
                 name,
@@ -154,7 +164,7 @@ public class DEImportController {
 
         ImpItem item;
         try (InputStream in = srcFile.getInputStream()) {
-            item = itemService.uploadItem(batch, name, srcFile.getContentType(),
+            item = itemService.uploadItem(batch, itemName, srcFile.getContentType(),
                     (int) Math.min(srcFile.getSize(), Integer.MAX_VALUE), in);
         } catch (IOException e) {
             throw new SystemException("Failed to read import source", e);

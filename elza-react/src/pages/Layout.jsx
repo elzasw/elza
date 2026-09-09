@@ -71,6 +71,7 @@ import './Layout.scss';
 import defaultKeymap from './LayoutKeymap.jsx';
 import { MAP_URL } from './map/MapPage';
 import { WebsocketProvider } from 'components/shared/web-socket/WebsocketProvider';
+import { ImportBatchToaster } from '../components/arr/ImportBatchToaster';
 import ComponentPage from './component/ComponentPage.tsx';
 import { FluentDialogProvider } from 'components/shared/dialog/FluentModalDialog';
 // import FundOpenPage from './fund_open/FundOpenPage';
@@ -211,6 +212,7 @@ class Layout extends AbstractReactComponent {
                 <IntegrationPanel id="integration-header" integrationFunction={window.renderIntegrationHeader}/>
                 <div className={window.versionNumber ? 'root-container with-version' : 'root-container'}>
                     <WebsocketProvider>
+                        {this.props.login.logged && <ImportBatchToaster />}
                         <div
                             onClick={() => {
                                 canStartGame && this.setState({showGame: true});

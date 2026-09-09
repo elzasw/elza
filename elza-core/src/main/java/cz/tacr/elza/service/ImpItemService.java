@@ -200,7 +200,9 @@ public class ImpItemService {
         }
         Path base = Paths.get(batchInputDir).toAbsolutePath().normalize();
         if (!Files.isDirectory(base)) {
-            // configured path is missing on disk – the feature is effectively off
+            // configured path is missing on disk – the feature is effectively off; log as
+            // ERROR so a mis-configured deployment is visible in the log
+            logger.error("Configured import folder does not exist: {} (elza.import.batchInputDir)", base);
             return List.of();
         }
         Path resolved = resolveFolder(relativePath);
