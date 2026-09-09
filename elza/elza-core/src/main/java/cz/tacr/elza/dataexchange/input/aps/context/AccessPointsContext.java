@@ -19,6 +19,7 @@ import cz.tacr.elza.dataexchange.input.context.ImportPhase;
 import cz.tacr.elza.dataexchange.input.context.ImportPhaseChangeListener;
 import cz.tacr.elza.dataexchange.input.context.ObservableImport;
 import cz.tacr.elza.dataexchange.input.parts.context.ParentPartWrapper;
+import cz.tacr.elza.dataexchange.input.parts.context.PartInfo;
 import cz.tacr.elza.dataexchange.input.parts.context.PartWrapper;
 import cz.tacr.elza.dataexchange.input.parts.context.PrefferedPartWrapper;
 import cz.tacr.elza.dataexchange.input.storage.StorageManager;
@@ -69,8 +70,6 @@ public class AccessPointsContext {
     private final List<PartWrapper> partQueue = new ArrayList<>();
 
     private final List<ParentPartWrapper> parentPartQueue = new ArrayList<>();
-
-    private Map<PartWrapper, String> parentPartIdMap = new HashMap<>();
 
     private final List<PrefferedPartWrapper> prefferedPartQueue = new ArrayList<>();
 
@@ -134,10 +133,6 @@ public class AccessPointsContext {
         return staticData.getSysLanguageByCode(code);
     }
 
-    public void addToParentPartIdMap(PartWrapper partWrapper, String parentFragmentId) {
-        parentPartIdMap.putIfAbsent(partWrapper, parentFragmentId);
-    }
-
     public ApAccessPoint findApByUuid(String apUuid) {
         ApAccessPoint ap = accessPointService.findAccessPointByUuid(apUuid);
         return ap;
@@ -186,10 +181,56 @@ public class AccessPointsContext {
         }
 
         if (partWrappers != null) {
+            // AP info has to be known for all parts before any of them is queued, because
+            // queuing a part can store parts of the same access point
+            partWrappers.forEach(partWrapper -> partWrapper.getPartInfo().setApInfo(info));
             partWrappers.forEach(partWrapper -> addPart(partWrapper, apWrapper));
+            addParentParts(partWrappers, entryId);
         }
 
         return info;
+    }
+
+    /**
+     * Create references from child parts to their parent parts.
+     *
+     * Parent part is searched among the parts of the same access point and the references
+     * are created when all these parts are already queued, therefore the order of parts
+     * in the source is not significant.
+     *
+     * @param partWrappers parts of one access point
+     * @param entryId      import id of the access point
+     */
+    private void addParentParts(Collection<PartWrapper> partWrappers, String entryId) {
+        Map<String, PartInfo> partInfoByImportId = new HashMap<>();
+        for (PartWrapper partWrapper : partWrappers) {
+            PartInfo partInfo = partWrapper.getPartInfo();
+            if (partInfo.getImportId() == null) {
+                continue;
+            }
+            if (partInfoByImportId.put(partInfo.getImportId(), partInfo) != null) {
+                throw new DEImportException("Part has duplicate id, partId:" + partInfo.getImportId()
+                        + ", apeId:" + entryId);
+            }
+        }
+
+        for (PartWrapper partWrapper : partWrappers) {
+            PartInfo partInfo = partWrapper.getPartInfo();
+            String parentImportId = partInfo.getParentImportId();
+            if (parentImportId == null) {
+                continue;
+            }
+            PartInfo parentInfo = partInfoByImportId.get(parentImportId);
+            if (parentInfo == null) {
+                throw new DEImportException("Parent part not found, partId:" + parentImportId
+                        + ", apeId:" + entryId);
+            }
+            parentPartQueue.add(new ParentPartWrapper(partInfo, parentInfo));
+            partInfo.onEntityQueued();
+            if (parentPartQueue.size() >= batchSize) {
+                storeParentParts(true);
+            }
+        }
     }
 
     private void addExternalId(ApBindingState entity, AccessPointInfo apInfo) {
@@ -202,7 +243,6 @@ public class AccessPointsContext {
 
     private void addPart(PartWrapper partWrapper, AccessPointWrapper apWrapper) {
         AccessPointInfo apInfo = apWrapper.getApInfo();
-        partWrapper.getPartInfo().setApInfo(apInfo);
 
         partQueue.add(partWrapper);
         apInfo.onEntityQueued();
@@ -216,21 +256,6 @@ public class AccessPointsContext {
             prefferedPartApInfos.add(apInfo);
             apInfo.onEntityQueued();
         }
-
-        if (parentPartIdMap.containsValue(partWrapper.getPartInfo().getImportId())) {
-            for (Map.Entry<PartWrapper, String> entry : parentPartIdMap.entrySet()) {
-                if (partWrapper.getPartInfo().getImportId().equals(entry.getValue())) {
-                    ParentPartWrapper parentPartWrapper = new ParentPartWrapper(entry.getKey().getPartInfo(), partWrapper.getPartInfo());
-                    parentPartQueue.add(parentPartWrapper);
-                    entry.getKey().getPartInfo().onEntityQueued();
-                    if (parentPartQueue.size() > batchSize) {
-                        storeParentParts(true);
-                    }
-                }
-            }
-        }
-
-
     }
 
     /**
