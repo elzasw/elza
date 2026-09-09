@@ -16,7 +16,12 @@ public class DescriptionItemAPRefImpl extends DescriptionItemAPRef {
         }
         AccessPointInfo apInfo = context.getAccessPoints().getApInfo(getApid());
         if (apInfo == null) {
-            throw new DEImportException("Referenced access point not found, apeId:" + getApid());
+            throw new DEImportException("Referenced access point not found, apeId:" + getApid()
+                    + ". Referenced access point has to be declared earlier in the file.");
+        }
+        if (!apInfo.hasEntityId()) {
+            // referenced access point is still queued, store the queue to get its id
+            context.getAccessPoints().storeAccessPoints();
         }
         ArrDataRecordRef data = new ArrDataRecordRef();
         data.setRecord(apInfo.getEntityRef(context.getSession()));
