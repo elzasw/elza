@@ -83,7 +83,7 @@ const messages = defineMessages({
     toastFailed: { id: 'admin.import.detail.toast.failed', defaultMessage: 'Dávka „{name}" skončila s chybou' },
     folderNotConfigured: {
         id: 'admin.import.detail.folderNotConfigured',
-        defaultMessage: 'Import ze složky na serveru není nakonfigurován (elza.import.batchInputDir)',
+        defaultMessage: 'Složka pro import na serveru není nakonfigurovaná, neexistuje nebo je prázdná',
     },
     openFund: {
         id: 'admin.import.detail.openFund',

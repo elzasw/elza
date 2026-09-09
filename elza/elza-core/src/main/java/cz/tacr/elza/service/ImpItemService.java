@@ -198,6 +198,11 @@ public class ImpItemService {
         if (batchInputDir == null || batchInputDir.isBlank()) {
             return List.of();
         }
+        Path base = Paths.get(batchInputDir).toAbsolutePath().normalize();
+        if (!Files.isDirectory(base)) {
+            // configured path is missing on disk – the feature is effectively off
+            return List.of();
+        }
         Path resolved = resolveFolder(relativePath);
         List<ServerFolderEntry> out = new ArrayList<>();
         try (Stream<Path> entries = Files.list(resolved)) {
