@@ -171,14 +171,9 @@ export function AdminImportBatchDetailPage() {
 
     useEffect(() => {
         let cancelled = false;
-        (async () => {
-            try {
-                await Api.importBatches.importBatchListServerFolder(undefined);
-                if (!cancelled) setFolderConfigured(true);
-            } catch {
-                if (!cancelled) setFolderConfigured(false);
-            }
-        })();
+        Api.importBatches.importBatchListServerFolder(undefined)
+            .then(({ data }) => { if (!cancelled) setFolderConfigured((data ?? []).length > 0); })
+            .catch(() => { if (!cancelled) setFolderConfigured(false); });
         return () => { cancelled = true; };
     }, []);
 
