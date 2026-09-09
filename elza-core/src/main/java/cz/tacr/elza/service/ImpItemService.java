@@ -189,10 +189,15 @@ public class ImpItemService {
     /**
      * Lists direct children of a folder inside {@code elza.import.batchInputDir}. Directories are
      * returned first, then files, both alphabetically. The path is validated the same way as in
-     * {@link #importFromServerFolder}.
+     * {@link #importFromServerFolder}. When {@code batchInputDir} is not configured returns an
+     * empty list - the folder-import feature is simply unavailable and callers fall back to the
+     * upload paths without a noisy error.
      */
     @Transactional(readOnly = true)
     public List<ServerFolderEntry> listServerFolder(String relativePath) throws IOException {
+        if (batchInputDir == null || batchInputDir.isBlank()) {
+            return List.of();
+        }
         Path resolved = resolveFolder(relativePath);
         List<ServerFolderEntry> out = new ArrayList<>();
         try (Stream<Path> entries = Files.list(resolved)) {
