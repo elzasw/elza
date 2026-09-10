@@ -68,7 +68,10 @@ public class CsvDescItemsImporter {
                             String encoding) throws IOException {
         Charset charset = Charset.forName(encoding == null || encoding.isBlank() ? "UTF-8" : encoding);
         char sep = (separator == null || separator.isEmpty()) ? ',' : separator.charAt(0);
-        CSVFormat format = CSVFormat.DEFAULT.builder().setDelimiter(sep).build();
+        CSVFormat format = CSVFormat.DEFAULT.builder()
+                .setDelimiter(sep)
+                .setIgnoreSurroundingSpaces(true)
+                .build();
 
         StaticDataProvider staticData = staticDataService.getData();
         int nodesUpdated = 0;
@@ -146,7 +149,7 @@ public class CsvDescItemsImporter {
                 if (i >= record.size()) {
                     throw new BusinessException("Missing value for type " + typeCode, BaseCode.INVALID_STATE);
                 }
-                value = record.get(i++).trim();
+                value = record.get(i++);
             }
 
             RulItemSpec spec = null;
