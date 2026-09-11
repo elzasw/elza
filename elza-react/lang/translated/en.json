@@ -2774,8 +2774,8 @@
     "srcHash": "auxXXzuM-4BZ"
   },
   "userSettings.accessKeys.filter.showAll": {
-    "defaultMessage": "Show inactive too",
-    "srcHash": "8SgR64EItAsX"
+    "defaultMessage": "Show inactive",
+    "srcHash": "Qunq4NTThVGb"
   },
   "userSettings.accessKeys.hint": {
     "defaultMessage": "The key lets integrations sign in to Elza through the X-API-Key header. The full key value is shown only once, when it is created.",

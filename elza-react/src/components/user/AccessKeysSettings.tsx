@@ -157,7 +157,7 @@ const messages = defineMessages({
     },
     filterShowAll: {
         id: 'userSettings.accessKeys.filter.showAll',
-        defaultMessage: 'Zobrazit i neaktivní',
+        defaultMessage: 'Zobrazit neaktivní',
     },
 });
 
@@ -172,8 +172,10 @@ const useStyles = makeStyles({
     hint: {
         color: tokens.colorNeutralForeground3,
     },
-    addButton: {
-        alignSelf: 'flex-start',
+    toolbar: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: tokens.spacingHorizontalL,
     },
     empty: {
         color: tokens.colorNeutralForeground3,
@@ -317,24 +319,25 @@ export function AccessKeysSettings() {
             <Text size={200} className={styles.hint}>
                 <FormattedMessage {...messages.sectionHint} />
             </Text>
-            {!isCreating && (
-                <Button
-                    className={styles.addButton}
-                    appearance="primary"
-                    icon={<AddRegular />}
-                    onClick={() => setIsCreating(true)}
-                >
-                    <FormattedMessage {...keyMessages.addKey} />
-                </Button>
-            )}
+            <div className={styles.toolbar}>
+                {!isCreating && (
+                    <Button
+                        appearance="primary"
+                        icon={<AddRegular />}
+                        onClick={() => setIsCreating(true)}
+                    >
+                        <FormattedMessage {...keyMessages.addKey} />
+                    </Button>
+                )}
+                <Checkbox
+                    checked={showAll}
+                    onChange={(_e, d) => setShowAll(!!d.checked)}
+                    label={formatMessage(messages.filterShowAll)}
+                />
+            </div>
             {isCreating && (
                 <CreateKeyForm onCancel={() => setIsCreating(false)} onCreated={handleCreated} />
             )}
-            <Checkbox
-                checked={showAll}
-                onChange={(_e, d) => setShowAll(!!d.checked)}
-                label={formatMessage(messages.filterShowAll)}
-            />
             {sortedKeys.length === 0 ? (
                 <Text size={200} className={styles.empty}>
                     <FormattedMessage {...messages.empty} />
