@@ -712,17 +712,17 @@ public class ImpBatchService {
     }
 
     /**
-     * Removes a batch. Allowed only for batches in PREPARATION or in a terminal state (FINISHED,
-     * CANCELLED). The items and their outcome rows cascade with the batch through FK definitions;
-     * the DMS files are shared entities and must be dropped explicitly here.
+     * Removes a batch. Allowed for any batch the runner is not walking right now - a batch at rest
+     * holds no entry in the asynchronous queue, so there is nothing left to remove it from under.
+     * The items and their outcome rows cascade with the batch through FK definitions; the DMS
+     * files are shared entities and must be dropped explicitly here.
      */
     @Transactional
     public void delete(ImpBatch batch) {
         ImpBatch managed = batchRepository.findById(batch.getBatchId())
                 .orElseThrow(() -> new ObjectNotFoundException("Import batch not found: " + batch.getBatchId(), BaseCode.ID_NOT_EXIST).setId(batch.getBatchId()));
         BatchState s = managed.getState();
-        boolean deletable = s == BatchState.PREPARATION || s == BatchState.FINISHED || s == BatchState.CANCELLED;
-        if (!deletable) {
+        if (s.isRunning()) {
             throw new BusinessException(
                     "A batch in " + s + " cannot be deleted",
                     BaseCode.INVALID_STATE);
