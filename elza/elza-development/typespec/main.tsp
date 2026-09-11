@@ -2856,8 +2856,11 @@ model ApiKeyCreated {
 @tag("user")
 @route("/user/my/api-keys")
 namespace ElzaAPI.User.ApiKeys {
-    /** Seznam vlastních klíčů, nejnovější první. */
-    @get op list(): ApiKeyInfo[];
+    /** Seznam vlastních klíčů, nejnovější první. Ve výchozím stavu jen aktivní. */
+    @get op list(
+        /** Zahrnout i expirované a zrušené klíče. */
+        @query includeInactive?: boolean,
+    ): ApiKeyInfo[];
 
     /**
      * Vytvoří nový klíč. Plná hodnota tokenu je v odpovědi vrácena pouze
@@ -2926,9 +2929,13 @@ namespace ElzaAPI.Admin {
     @route("info/logged-users")
     op loggedUsers(): LoggedUsers;
 
-    /** Seznam API klíčů daného uživatele (bez tajné hodnoty). */
+    /** Seznam API klíčů daného uživatele (bez tajné hodnoty). Ve výchozím stavu jen aktivní. */
     @route("user/{userId}/api-keys")
-    @get op listUserApiKeys(@path userId: integer): ApiKeyInfo[];
+    @get op listUserApiKeys(
+        @path userId: integer,
+        /** Zahrnout i expirované a zrušené klíče. */
+        @query includeInactive?: boolean,
+    ): ApiKeyInfo[];
 
     /** Zruší API klíč libovolného uživatele. */
     @route("user/{userId}/api-keys/{id}")

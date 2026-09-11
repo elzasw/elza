@@ -123,18 +123,35 @@ public class ApiKeyService {
         return new CreatedApiKey(entity, "elza_" + keyId + "_" + secret);
     }
 
-    /** Lists a user's own keys, newest first. */
+    /** Lists a user's own keys, newest first. When {@code includeInactive} is false, revoked
+     * and expired keys are dropped. */
     @Transactional(readOnly = true)
-    public List<UsrApiKey> listByUser(UsrUser user) {
+    public List<UsrApiKey> listByUser(UsrUser user, boolean includeInactive) {
         Objects.requireNonNull(user, "user");
-        return apiKeyRepository.findByUserOrderByCreateDateDesc(user);
+        return filterActive(apiKeyRepository.findByUserOrderByCreateDateDesc(user), includeInactive);
     }
 
-    /** Lists any user's keys by id — for the admin overview. */
+    /** Lists any user's keys by id — for the admin overview. When {@code includeInactive} is
+     * false, revoked and expired keys are dropped. */
     @Transactional(readOnly = true)
-    public List<UsrApiKey> listByUserId(Integer userId) {
+    public List<UsrApiKey> listByUserId(Integer userId, boolean includeInactive) {
         Objects.requireNonNull(userId, "userId");
-        return apiKeyRepository.findByUserUserIdOrderByCreateDateDesc(userId);
+        return filterActive(apiKeyRepository.findByUserUserIdOrderByCreateDateDesc(userId), includeInactive);
+    }
+
+    /**
+     * Drops revoked and expired keys unless the caller asked for the full list. One user rarely
+     * holds more than a handful of keys, so filtering in memory keeps the repository interface
+     * simple.
+     */
+    private List<UsrApiKey> filterActive(List<UsrApiKey> all, boolean includeInactive) {
+        if (includeInactive) {
+            return all;
+        }
+        OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
+        return all.stream()
+                .filter(k -> k.getRevokedDate() == null && k.getExpireDate().isAfter(now))
+                .toList();
     }
 
     /**

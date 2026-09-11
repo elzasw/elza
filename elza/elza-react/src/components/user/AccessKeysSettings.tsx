@@ -3,6 +3,7 @@ import {
     Button,
     Card,
     CardHeader,
+    Checkbox,
     Dialog,
     DialogActions,
     DialogBody,
@@ -161,6 +162,10 @@ const messages = defineMessages({
         id: 'userSettings.accessKeys.create.failedFallback',
         defaultMessage: 'Klíč se nepodařilo vytvořit.',
     },
+    filterShowAll: {
+        id: 'userSettings.accessKeys.filter.showAll',
+        defaultMessage: 'Zobrazit všechny klíče, včetně neaktivních',
+    },
 });
 
 const useStyles = makeStyles({
@@ -255,11 +260,12 @@ export function AccessKeysSettings() {
     const [keys, setKeys] = useState<ApiKeyInfo[]>([]);
     const [isCreating, setIsCreating] = useState(false);
     const [created, setCreated] = useState<ApiKeyCreated | null>(null);
+    const [showAll, setShowAll] = useState(false);
 
     const load = useCallback(async () => {
-        const { data } = await Api.user.apiKeysList();
+        const { data } = await Api.user.apiKeysList(showAll || undefined);
         setKeys(data);
-    }, []);
+    }, [showAll]);
 
     useEffect(() => {
         load();
@@ -326,6 +332,11 @@ export function AccessKeysSettings() {
             >
                 <FormattedMessage {...messages.addKey} />
             </Button>
+            <Checkbox
+                checked={showAll}
+                onChange={(_e, d) => setShowAll(!!d.checked)}
+                label={formatMessage(messages.filterShowAll)}
+            />
             {sortedKeys.length === 0 ? (
                 <Text size={200} className={styles.empty}>
                     <FormattedMessage {...messages.empty} />

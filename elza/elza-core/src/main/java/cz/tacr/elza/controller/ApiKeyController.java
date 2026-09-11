@@ -41,7 +41,7 @@ public class ApiKeyController implements UserApi {
     private SiemAuditLogger siemAuditLogger;
 
     @Override
-    public ResponseEntity<List<ApiKeyInfo>> apiKeysList() {
+    public ResponseEntity<List<ApiKeyInfo>> apiKeysList(Boolean includeInactive) {
         userService.requireInteractiveAuth();
         // The built-in admin (elza.security.allowDefaultUser) has no usr_user row and
         // therefore no keys — show an empty list rather than failing with 403.
@@ -49,7 +49,7 @@ public class ApiKeyController implements UserApi {
         if (user == null) {
             return ResponseEntity.ok(List.of());
         }
-        List<ApiKeyInfo> result = apiKeyService.listByUser(user).stream()
+        List<ApiKeyInfo> result = apiKeyService.listByUser(user, Boolean.TRUE.equals(includeInactive)).stream()
                 .map(ApiKeyMapper::toInfo)
                 .toList();
         return ResponseEntity.ok(result);
