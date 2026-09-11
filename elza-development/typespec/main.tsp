@@ -630,6 +630,8 @@ model DataStructureRef extends ItemData {
     @invisible(Lifecycle)
     dataType: DataType.STRUCTURED;
     structuredObjectId: integer;
+    value?: string;
+    complement?: string;
 }
 
 model DataText extends ItemData {

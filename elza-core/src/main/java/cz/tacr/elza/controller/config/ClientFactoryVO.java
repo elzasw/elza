@@ -406,8 +406,14 @@ public class ClientFactoryVO {
      * @return
      */
     private static ItemData convertStructureRef(ArrData arrData) {
-    	DataStructureRef data = new DataStructureRef(((ArrDataStructureRef) arrData).getStructuredObjectId(), DataType.STRUCTURED);
-        data.setDataId(arrData.getDataId());
+    	ArrDataStructureRef src = (ArrDataStructureRef) arrData;
+    	DataStructureRef data = new DataStructureRef(src.getStructuredObjectId(), DataType.STRUCTURED);
+        data.setDataId(src.getDataId());
+        ArrStructuredObject so = src.getStructuredObject();
+        if (so != null) {
+            data.setValue(so.getValue());
+            data.setComplement(so.getComplement());
+        }
         return data;
     }
 

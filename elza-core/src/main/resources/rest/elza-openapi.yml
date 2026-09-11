@@ -8436,6 +8436,10 @@ components:
       properties:
         structuredObjectId:
           type: integer
+        value:
+          type: string
+        complement:
+          type: string
       allOf:
         - $ref: '#/components/schemas/ItemData'
     DataText:
