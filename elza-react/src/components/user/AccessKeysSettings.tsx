@@ -26,6 +26,7 @@ import { Api } from 'api';
 import { ApiKeyCreated, ApiKeyInfo, ApiKeyState } from 'elza-api';
 import { globalMessages } from 'components/shared/lang';
 import { useConfirmModal } from 'components/shared/dialog/useConfirmModal';
+import { keyMessages } from './messages';
 import { Form as FinalForm, Field as FinalField } from 'react-final-form';
 import { defineMessages, FormattedDate, FormattedMessage, useIntl } from 'react-intl';
 
@@ -49,10 +50,6 @@ const messages = defineMessages({
         id: 'userSettings.accessKeys.hint',
         defaultMessage:
             'Klíč slouží pro přihlášení integrací do Elzy prostřednictvím hlavičky X-API-Key. Plnou hodnotu klíče uvidíte pouze jednou při vytvoření.',
-    },
-    addKey: {
-        id: 'userSettings.accessKeys.add',
-        defaultMessage: 'Nový klíč',
     },
     revokeKey: {
         id: 'userSettings.accessKeys.revoke',
@@ -105,10 +102,6 @@ const messages = defineMessages({
     stateRevoked: {
         id: 'userSettings.accessKeys.state.revoked',
         defaultMessage: 'Zrušený',
-    },
-    createTitle: {
-        id: 'userSettings.accessKeys.create.title',
-        defaultMessage: 'Nový klíč',
     },
     createFieldName: {
         id: 'userSettings.accessKeys.create.name',
@@ -164,7 +157,7 @@ const messages = defineMessages({
     },
     filterShowAll: {
         id: 'userSettings.accessKeys.filter.showAll',
-        defaultMessage: 'Zobrazit všechny klíče, včetně neaktivních',
+        defaultMessage: 'Zobrazit i neaktivní',
     },
 });
 
@@ -324,14 +317,19 @@ export function AccessKeysSettings() {
             <Text size={200} className={styles.hint}>
                 <FormattedMessage {...messages.sectionHint} />
             </Text>
-            <Button
-                className={styles.addButton}
-                appearance="primary"
-                icon={<AddRegular />}
-                onClick={() => setIsCreating(true)}
-            >
-                <FormattedMessage {...messages.addKey} />
-            </Button>
+            {!isCreating && (
+                <Button
+                    className={styles.addButton}
+                    appearance="primary"
+                    icon={<AddRegular />}
+                    onClick={() => setIsCreating(true)}
+                >
+                    <FormattedMessage {...keyMessages.addKey} />
+                </Button>
+            )}
+            {isCreating && (
+                <CreateKeyForm onCancel={() => setIsCreating(false)} onCreated={handleCreated} />
+            )}
             <Checkbox
                 checked={showAll}
                 onChange={(_e, d) => setShowAll(!!d.checked)}
@@ -414,13 +412,6 @@ export function AccessKeysSettings() {
                 </div>
             )}
 
-            {isCreating && (
-                <CreateKeyDialog
-                    onCancel={() => setIsCreating(false)}
-                    onCreated={handleCreated}
-                />
-            )}
-
             {created && (
                 <CreatedKeyDialog
                     created={created}
@@ -432,12 +423,12 @@ export function AccessKeysSettings() {
     );
 }
 
-interface CreateKeyDialogProps {
+interface CreateKeyFormProps {
     onCancel: () => void;
     onCreated: (created: ApiKeyCreated) => void;
 }
 
-function CreateKeyDialog({ onCancel, onCreated }: CreateKeyDialogProps) {
+function CreateKeyForm({ onCancel, onCreated }: CreateKeyFormProps) {
     const styles = useStyles();
     const { formatMessage } = useIntl();
     const [error, setError] = useState<string | null>(null);
@@ -452,7 +443,7 @@ function CreateKeyDialog({ onCancel, onCreated }: CreateKeyDialogProps) {
                 : new Date(addDaysIso(parseInt(validity, 10)) + 'T23:59:59Z').toISOString();
         try {
             // overrideErrorHandler bypasses the global 400 toaster in api.ts so we can render the
-            // real server message inside this dialog instead of behind its own backdrop.
+            // real server message inline in the form, next to the fields that caused it.
             const { data } = await Api.user.apiKeysCreate(
                 { name, expireDate: expireIso },
                 { overrideErrorHandler: true },
@@ -466,103 +457,78 @@ function CreateKeyDialog({ onCancel, onCreated }: CreateKeyDialogProps) {
     };
 
     return (
-        <Dialog open modalType="modal" onOpenChange={(_e, d) => !d.open && onCancel()}>
-            <DialogSurface>
-                <FinalForm<CreateKeyFields>
-                    onSubmit={onSubmit}
-                    initialValues={{ name: '', validity: '365' }}
-                >
-                    {({ handleSubmit, submitting, values }) => (
-                        <DialogBody>
-                            <DialogTitle>
-                                <FormattedMessage {...messages.createTitle} />
-                            </DialogTitle>
-                            <DialogContent>
-                                <div className={styles.formFields}>
-                                    {error && (
-                                        <MessageBar intent="error">
-                                            <MessageBarBody>{error}</MessageBarBody>
-                                        </MessageBar>
-                                    )}
-                                    <FinalField
-                                        name="name"
-                                        render={({ input }) => (
-                                            <Field label={formatMessage(messages.createFieldName)} required>
-                                                <Input
-                                                    disabled={submitting}
-                                                    value={input.value ?? ''}
-                                                    onChange={(_e, d) => input.onChange(d.value)}
-                                                    maxLength={250}
-                                                />
-                                            </Field>
-                                        )}
-                                    />
-                                    <FinalField
-                                        name="validity"
-                                        render={({ input }) => (
-                                            <Field label={formatMessage(messages.createFieldValidity)}>
-                                                <Select
-                                                    disabled={submitting}
-                                                    value={String(input.value)}
-                                                    onChange={(_e, d) => input.onChange(d.value)}
-                                                >
-                                                    <option value="30">
-                                                        {formatMessage(messages.validity30)}
-                                                    </option>
-                                                    <option value="90">
-                                                        {formatMessage(messages.validity90)}
-                                                    </option>
-                                                    <option value="365">
-                                                        {formatMessage(messages.validity365)}
-                                                    </option>
-                                                    <option value="custom">
-                                                        {formatMessage(messages.validityCustom)}
-                                                    </option>
-                                                </Select>
-                                            </Field>
-                                        )}
-                                    />
-                                    {values.validity === 'custom' && (
-                                        <FinalField
-                                            name="expireDate"
-                                            render={({ input }) => (
-                                                <Field
-                                                    label={formatMessage(messages.createFieldExpireDate)}
-                                                    required
-                                                >
-                                                    <Input
-                                                        type="date"
-                                                        disabled={submitting}
-                                                        value={input.value ?? ''}
-                                                        onChange={(_e, d) => input.onChange(d.value)}
-                                                    />
-                                                </Field>
-                                            )}
-                                        />
-                                    )}
-                                </div>
-                            </DialogContent>
-                            <DialogActions>
-                                <Button appearance="secondary" disabled={submitting} onClick={onCancel}>
-                                    <FormattedMessage {...globalMessages.cancel} />
-                                </Button>
-                                <Button
-                                    appearance="primary"
-                                    disabled={
-                                        submitting ||
-                                        !values.name?.trim() ||
-                                        (values.validity === 'custom' && !values.expireDate)
-                                    }
-                                    onClick={handleSubmit}
-                                >
-                                    <FormattedMessage {...messages.createSubmit} />
-                                </Button>
-                            </DialogActions>
-                        </DialogBody>
+        <FinalForm<CreateKeyFields> onSubmit={onSubmit} initialValues={{ name: '', validity: '365' }}>
+            {({ handleSubmit, submitting, values }) => (
+                <Card className={styles.formFields} appearance="outline">
+                    {error && (
+                        <MessageBar intent="error">
+                            <MessageBarBody>{error}</MessageBarBody>
+                        </MessageBar>
                     )}
-                </FinalForm>
-            </DialogSurface>
-        </Dialog>
+                    <FinalField
+                        name="name"
+                        render={({ input }) => (
+                            <Field label={formatMessage(messages.createFieldName)} required>
+                                <Input
+                                    disabled={submitting}
+                                    value={input.value ?? ''}
+                                    onChange={(_e, d) => input.onChange(d.value)}
+                                    maxLength={250}
+                                />
+                            </Field>
+                        )}
+                    />
+                    <FinalField
+                        name="validity"
+                        render={({ input }) => (
+                            <Field label={formatMessage(messages.createFieldValidity)}>
+                                <Select
+                                    disabled={submitting}
+                                    value={String(input.value)}
+                                    onChange={(_e, d) => input.onChange(d.value)}
+                                >
+                                    <option value="30">{formatMessage(messages.validity30)}</option>
+                                    <option value="90">{formatMessage(messages.validity90)}</option>
+                                    <option value="365">{formatMessage(messages.validity365)}</option>
+                                    <option value="custom">{formatMessage(messages.validityCustom)}</option>
+                                </Select>
+                            </Field>
+                        )}
+                    />
+                    {values.validity === 'custom' && (
+                        <FinalField
+                            name="expireDate"
+                            render={({ input }) => (
+                                <Field label={formatMessage(messages.createFieldExpireDate)} required>
+                                    <Input
+                                        type="date"
+                                        disabled={submitting}
+                                        value={input.value ?? ''}
+                                        onChange={(_e, d) => input.onChange(d.value)}
+                                    />
+                                </Field>
+                            )}
+                        />
+                    )}
+                    <div className={styles.formActions}>
+                        <Button appearance="secondary" disabled={submitting} onClick={onCancel}>
+                            <FormattedMessage {...globalMessages.cancel} />
+                        </Button>
+                        <Button
+                            appearance="primary"
+                            disabled={
+                                submitting ||
+                                !values.name?.trim() ||
+                                (values.validity === 'custom' && !values.expireDate)
+                            }
+                            onClick={handleSubmit}
+                        >
+                            <FormattedMessage {...messages.createSubmit} />
+                        </Button>
+                    </div>
+                </Card>
+            )}
+        </FinalForm>
     );
 }
 
