@@ -206,9 +206,10 @@ public class AdminController implements AdminApi {
     @Override
     @AuthMethod(permission = { UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITY })
     public ResponseEntity<List<ApiKeyInfo>> adminListUserApiKeys(
-            @AuthParam(type = AuthParam.Type.USER) Integer userId) {
+            @AuthParam(type = AuthParam.Type.USER) Integer userId,
+            Boolean includeInactive) {
         userService.requireInteractiveAuth();
-        List<ApiKeyInfo> result = apiKeyService.listByUserId(userId).stream()
+        List<ApiKeyInfo> result = apiKeyService.listByUserId(userId, Boolean.TRUE.equals(includeInactive)).stream()
                 .map(ApiKeyMapper::toInfo)
                 .toList();
         return ResponseEntity.ok(result);

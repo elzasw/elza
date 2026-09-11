@@ -1561,13 +1561,20 @@ paths:
   /admin/user/{userId}/api-keys:
     get:
       operationId: Admin_listUserApiKeys
-      description: Seznam API klíčů daného uživatele (bez tajné hodnoty).
+      description: Seznam API klíčů daného uživatele (bez tajné hodnoty). Ve výchozím stavu jen aktivní.
       parameters:
         - name: userId
           in: path
           required: true
           schema:
             type: integer
+        - name: includeInactive
+          in: query
+          required: false
+          description: Zahrnout i expirované a zrušené klíče.
+          schema:
+            type: boolean
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -6175,8 +6182,15 @@ paths:
   /user/my/api-keys:
     get:
       operationId: ApiKeys_list
-      description: Seznam vlastních klíčů, nejnovější první.
-      parameters: []
+      description: Seznam vlastních klíčů, nejnovější první. Ve výchozím stavu jen aktivní.
+      parameters:
+        - name: includeInactive
+          in: query
+          required: false
+          description: Zahrnout i expirované a zrušené klíče.
+          schema:
+            type: boolean
+          explode: false
       responses:
         '200':
           description: The request has succeeded.

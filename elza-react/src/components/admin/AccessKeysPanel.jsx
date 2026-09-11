@@ -29,11 +29,12 @@ const formatDate = (iso) => iso ? new Date(iso).toLocaleDateString() : '';
  */
 function AccessKeysPanel({userId}) {
     const [keys, setKeys] = useState([]);
+    const [showAll, setShowAll] = useState(false);
 
     const load = useCallback(async () => {
-        const {data} = await Api.admin.adminListUserApiKeys(userId);
+        const {data} = await Api.admin.adminListUserApiKeys(userId, showAll || undefined);
         setKeys(data);
-    }, [userId]);
+    }, [userId, showAll]);
 
     useEffect(() => { load(); }, [load]);
 
@@ -52,12 +53,29 @@ function AccessKeysPanel({userId}) {
         load();
     };
 
+    const filterCheckbox = (
+        <label style={{marginBottom: '0.5rem', display: 'inline-block'}}>
+            <input
+                type="checkbox"
+                checked={showAll}
+                onChange={(e) => setShowAll(e.target.checked)}
+            />
+            {' '}{i18n('admin.perms.tabs.accessKeys.filter.showAll')}
+        </label>
+    );
+
     if (sorted.length === 0) {
-        return <div className="access-keys-panel">{i18n('admin.perms.tabs.accessKeys.empty')}</div>;
+        return (
+            <div className="access-keys-panel">
+                {filterCheckbox}
+                <div>{i18n('admin.perms.tabs.accessKeys.empty')}</div>
+            </div>
+        );
     }
 
     return (
         <div className="access-keys-panel">
+            {filterCheckbox}
             <table className="table table-sm">
                 <thead>
                     <tr>
