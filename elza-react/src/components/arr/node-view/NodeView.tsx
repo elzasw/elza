@@ -21,6 +21,7 @@ import {
   DescItemUriRef,
 } from "./desc-items";
 import { Tooltip } from "@fluentui/react-components";
+import { useVisibleFormItems } from "./hooks";
 
 interface Props {
   fondsVersionId: number;
@@ -71,18 +72,20 @@ export function NodeView({ fondsVersionId, nodeId, nodeVersionId, seedFromParent
     },
   );
 
+  const visibleFormItems = useVisibleFormItems(formItems);
+
   // build display groups only after groups refs and form data are both loaded
   const viewDescItemGroups = useMemo(() => {
-    if (formItems && groupRefs) {
+    if (visibleFormItems && groupRefs) {
       return buildGroupsForm(
-        [...formItems],
+        [...visibleFormItems],
         itemTypes,
         groupRefs,
         itemTypeRefs,
       );
     }
     return [];
-  }, [formItems, itemTypes, groupRefs, itemTypeRefs]);
+  }, [visibleFormItems, itemTypes, groupRefs, itemTypeRefs]);
 
   return (
     <div style={{ padding: "8px" /* , display: "flex", flexWrap: "wrap" */ }}>

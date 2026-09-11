@@ -22,6 +22,7 @@ import {
   DescItemUnitid,
   DescItemUriRef,
 } from "../node-view/desc-items";
+import { useVisibleFormItems } from "../node-view/hooks";
 import { useOutputFormData } from "./hooks";
 
 interface Props {
@@ -65,17 +66,18 @@ export function OutputView({ outputId }: Props) {
 
   const { formItems, forcedFormItems, addedFormItems, itemTypes } = useOutputFormData(outputId);
 
+  const allFormItems = useMemo(
+    () => [...formItems, ...forcedFormItems, ...addedFormItems],
+    [formItems, forcedFormItems, addedFormItems],
+  );
+  const visibleFormItems = useVisibleFormItems(allFormItems);
+
   const viewDescItemGroups = useMemo(() => {
     if (groupRefs) {
-      return buildGroupsForm(
-        [...formItems, ...forcedFormItems, ...addedFormItems],
-        itemTypes,
-        groupRefs,
-        itemTypeRefs,
-      );
+      return buildGroupsForm(visibleFormItems, itemTypes, groupRefs, itemTypeRefs);
     }
     return [];
-  }, [formItems, forcedFormItems, addedFormItems, itemTypes, groupRefs, itemTypeRefs]);
+  }, [visibleFormItems, itemTypes, groupRefs, itemTypeRefs]);
 
   return (
     <div style={{ padding: "8px" }}>
