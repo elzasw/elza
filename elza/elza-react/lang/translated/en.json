@@ -83,6 +83,286 @@
     "defaultMessage": "Repository is not available",
     "srcHash": "WSrg3PozscWF"
   },
+  "admin.import.action.addCsv": {
+    "defaultMessage": "New CSV batch",
+    "srcHash": "QusQdJdjIhAx"
+  },
+  "admin.import.action.addEdx": {
+    "defaultMessage": "New EDX2 batch",
+    "srcHash": "vP8POkVUEZ7E"
+  },
+  "admin.import.col.createdAt": {
+    "defaultMessage": "Created",
+    "srcHash": "uFJVnHvkwRjU"
+  },
+  "admin.import.col.executedAt": {
+    "defaultMessage": "Started",
+    "srcHash": "UvkYbB6tnI-K"
+  },
+  "admin.import.col.finishedAt": {
+    "defaultMessage": "Finished",
+    "srcHash": "xWQzBVFQyQ1H"
+  },
+  "admin.import.col.name": {
+    "defaultMessage": "Name",
+    "srcHash": "EQAs0dy3Z5es"
+  },
+  "admin.import.col.state": {
+    "defaultMessage": "State",
+    "srcHash": "1sRUDB31F_YQ"
+  },
+  "admin.import.col.type": {
+    "defaultMessage": "Kind",
+    "srcHash": "tGZ-t-kmUbPl"
+  },
+  "admin.import.detail.back": {
+    "defaultMessage": "Back",
+    "srcHash": "PiIMeDDyN-8f"
+  },
+  "admin.import.detail.cancel": {
+    "defaultMessage": "Abort",
+    "srcHash": "9YT0BCq6FrWl"
+  },
+  "admin.import.detail.col.apsCreated": {
+    "defaultMessage": "Entities created",
+    "srcHash": "xpFuJ4Abmtk7"
+  },
+  "admin.import.detail.col.apsPaired": {
+    "defaultMessage": "Entities paired",
+    "srcHash": "AYmaBfRmgKv3"
+  },
+  "admin.import.detail.col.name": {
+    "defaultMessage": "Name",
+    "srcHash": "EQAs0dy3Z5es"
+  },
+  "admin.import.detail.col.nodes": {
+    "defaultMessage": "Description units created",
+    "srcHash": "VN-TWZBeAKVf"
+  },
+  "admin.import.detail.col.nodesUpdated": {
+    "defaultMessage": "Description units updated",
+    "srcHash": "4hpwasFvZeE8"
+  },
+  "admin.import.detail.col.order": {
+    "defaultMessage": "Order",
+    "srcHash": "TOJqNSzCxFRC"
+  },
+  "admin.import.detail.col.state": {
+    "defaultMessage": "State",
+    "srcHash": "1sRUDB31F_YQ"
+  },
+  "admin.import.detail.confirmCancel": {
+    "defaultMessage": "Do you really want to abort the batch?",
+    "srcHash": "Oqk6XOGfXpUr"
+  },
+  "admin.import.detail.confirmDelete": {
+    "defaultMessage": "Do you really want to delete the batch?",
+    "srcHash": "Ii9n1uSAwmD2"
+  },
+  "admin.import.detail.confirmDeleteItem": {
+    "defaultMessage": "Do you really want to remove the item?",
+    "srcHash": "-C118nN0vZmC"
+  },
+  "admin.import.detail.dryRun": {
+    "defaultMessage": "Test run",
+    "srcHash": "7Ojblc1j9KwR"
+  },
+  "admin.import.detail.empty": {
+    "defaultMessage": "The batch contains no items",
+    "srcHash": "P7aTHnugokPr"
+  },
+  "admin.import.detail.errorDialog.close": {
+    "defaultMessage": "Close",
+    "srcHash": "0r4EKpo4ZhJv"
+  },
+  "admin.import.detail.errorDialog.title": {
+    "defaultMessage": "Error detail",
+    "srcHash": "kt0B3PP08x3S"
+  },
+  "admin.import.detail.errorShow": {
+    "defaultMessage": "Show the error",
+    "srcHash": "NpDaypnO5HHo"
+  },
+  "admin.import.detail.folderNotConfigured": {
+    "defaultMessage": "The server import folder is not configured, does not exist or is empty",
+    "srcHash": "MWby0O70-kIm"
+  },
+  "admin.import.detail.fromFolder": {
+    "defaultMessage": "From a server folder",
+    "srcHash": "IJGAXXC7Yj3B"
+  },
+  "admin.import.detail.items": {
+    "defaultMessage": "Items",
+    "srcHash": "Yf_IqxKGgSV3"
+  },
+  "admin.import.detail.openFund": {
+    "defaultMessage": "Open the fund",
+    "srcHash": "rlLGSM_wYoAB"
+  },
+  "admin.import.detail.pause": {
+    "defaultMessage": "Pause",
+    "srcHash": "84XhoaA240bs"
+  },
+  "admin.import.detail.remove": {
+    "defaultMessage": "Delete",
+    "srcHash": "oe4iuqXX4rqm"
+  },
+  "admin.import.detail.removeItem": {
+    "defaultMessage": "Remove the item",
+    "srcHash": "YmcWix-yMRX2"
+  },
+  "admin.import.detail.settings": {
+    "defaultMessage": "Settings",
+    "srcHash": "4BNW7MyPieeu"
+  },
+  "admin.import.detail.start": {
+    "defaultMessage": "Start",
+    "srcHash": "vxF0us80z5om"
+  },
+  "admin.import.detail.upload": {
+    "defaultMessage": "Upload a file",
+    "srcHash": "Bk4rARXxQsxf"
+  },
+  "admin.import.detail.uploadZip": {
+    "defaultMessage": "Upload a ZIP",
+    "srcHash": "XfOMXlU6UHts"
+  },
+  "admin.import.dialog.cancel": {
+    "defaultMessage": "Cancel",
+    "srcHash": "bHfYpLCt8F6P"
+  },
+  "admin.import.dialog.encoding": {
+    "defaultMessage": "Encoding",
+    "srcHash": "YPpu9TILPAqk"
+  },
+  "admin.import.dialog.fundImportStrategy": {
+    "defaultMessage": "Fund import strategy",
+    "srcHash": "FqPBGpx9NC9U"
+  },
+  "admin.import.dialog.fundPairKey": {
+    "defaultMessage": "Pairing key",
+    "srcHash": "p4eFAbpnpPjl"
+  },
+  "admin.import.dialog.ignoreRootNodes": {
+    "defaultMessage": "Ignore root levels",
+    "srcHash": "8GVz16BzzvOw"
+  },
+  "admin.import.dialog.keepFiles": {
+    "defaultMessage": "Keep the input files",
+    "srcHash": "Bau1Lh6RPUm6"
+  },
+  "admin.import.dialog.name": {
+    "defaultMessage": "Name",
+    "srcHash": "EQAs0dy3Z5es"
+  },
+  "admin.import.dialog.none": {
+    "defaultMessage": "— not selected —",
+    "srcHash": "lCSmwbc0abMR"
+  },
+  "admin.import.dialog.save": {
+    "defaultMessage": "Create",
+    "srcHash": "9LnrxD8TMmvA"
+  },
+  "admin.import.dialog.scope": {
+    "defaultMessage": "Entity scope",
+    "srcHash": "SlY5BtKXdR6t"
+  },
+  "admin.import.dialog.separator": {
+    "defaultMessage": "Separator",
+    "srcHash": "blM_skRaOenr"
+  },
+  "admin.import.dialog.separator.comma": {
+    "defaultMessage": ", (comma)",
+    "srcHash": "3gH8YslGfmWf"
+  },
+  "admin.import.dialog.separator.pipe": {
+    "defaultMessage": "| (pipe)",
+    "srcHash": "1rmofPv1vROC"
+  },
+  "admin.import.dialog.separator.semicolon": {
+    "defaultMessage": "; (semicolon)",
+    "srcHash": "3veBdC10nv_i"
+  },
+  "admin.import.dialog.separator.tab": {
+    "defaultMessage": "\\t (tab)",
+    "srcHash": "I1mk9dLkxE9t"
+  },
+  "admin.import.dialog.skipError": {
+    "defaultMessage": "Continue after an item error",
+    "srcHash": "HEHprHDF8OT8"
+  },
+  "admin.import.dialog.titleCsv": {
+    "defaultMessage": "New CSV batch",
+    "srcHash": "QusQdJdjIhAx"
+  },
+  "admin.import.dialog.titleEdx": {
+    "defaultMessage": "New EDX2 batch",
+    "srcHash": "vP8POkVUEZ7E"
+  },
+  "admin.import.empty": {
+    "defaultMessage": "No import batches",
+    "srcHash": "HFO58GF8TdOH"
+  },
+  "admin.import.page.info": {
+    "defaultMessage": "Page {page} of {total}",
+    "srcHash": "fGxYZ4GqG0SY"
+  },
+  "admin.import.page.next": {
+    "defaultMessage": "Next",
+    "srcHash": "5A98XqhyHbQ8"
+  },
+  "admin.import.page.prev": {
+    "defaultMessage": "Previous",
+    "srcHash": "zOLN3BpLNrFE"
+  },
+  "admin.import.page.size": {
+    "defaultMessage": "Records per page",
+    "srcHash": "YvP8TiZhXxmu"
+  },
+  "admin.import.serverFolder.close": {
+    "defaultMessage": "Close",
+    "srcHash": "0r4EKpo4ZhJv"
+  },
+  "admin.import.serverFolder.col.name": {
+    "defaultMessage": "Name",
+    "srcHash": "EQAs0dy3Z5es"
+  },
+  "admin.import.serverFolder.col.size": {
+    "defaultMessage": "Size",
+    "srcHash": "HkMRVxaPFOh5"
+  },
+  "admin.import.serverFolder.empty": {
+    "defaultMessage": "The folder is empty",
+    "srcHash": "20IEmmdS5tTA"
+  },
+  "admin.import.serverFolder.importAll": {
+    "defaultMessage": "Import the whole folder",
+    "srcHash": "d8_qDO4QFD2A"
+  },
+  "admin.import.serverFolder.importSelected": {
+    "defaultMessage": "Import the selected",
+    "srcHash": "osVigMVMdGrS"
+  },
+  "admin.import.serverFolder.loadError": {
+    "defaultMessage": "The folder contents cannot be loaded: {msg}",
+    "srcHash": "fPF7TyudsOmK"
+  },
+  "admin.import.serverFolder.root": {
+    "defaultMessage": "Root",
+    "srcHash": "XRSUsfPyjWOQ"
+  },
+  "admin.import.serverFolder.title": {
+    "defaultMessage": "Import from a server folder",
+    "srcHash": "lgsdY6cKuvQj"
+  },
+  "admin.import.serverFolder.up": {
+    "defaultMessage": "One level up",
+    "srcHash": "hEeAM07LEF6T"
+  },
+  "admin.import.title": {
+    "defaultMessage": "Import batches",
+    "srcHash": "ZGl0iNJ4WRb-"
+  },
   "admin.institution.action.add": {
     "defaultMessage": "Add institution",
     "srcHash": "gycW8wpBf_7g"
@@ -170,6 +450,10 @@
   "admin.institution.view.list": {
     "defaultMessage": "List",
     "srcHash": "lR0bsF8Q5ccq"
+  },
+  "admin.nav.import": {
+    "defaultMessage": "Import",
+    "srcHash": "LP-bqr9WygAm"
   },
   "admin_packages_label_action": {
     "defaultMessage": "Action",
@@ -1940,6 +2224,26 @@
   "global_yes": {
     "defaultMessage": "Yes",
     "srcHash": "HFtwBBU9Smvu"
+  },
+  "import.toast.batch.failed": {
+    "defaultMessage": "Import “{name}” ended with an error",
+    "srcHash": "E3Zr-q1A6iUs"
+  },
+  "import.toast.batch.failed.detail": {
+    "defaultMessage": "You can find the details in Administration → Import.",
+    "srcHash": "Nr2AUYz0hYBs"
+  },
+  "import.toast.batch.finished": {
+    "defaultMessage": "Import “{name}” has finished",
+    "srcHash": "sNp67YX2P4YI"
+  },
+  "import.toast.enqueued": {
+    "defaultMessage": "Import started",
+    "srcHash": "KDSYoAzPM8NG"
+  },
+  "import.toast.enqueued.detail": {
+    "defaultMessage": "You can find the details in Administration → Import.",
+    "srcHash": "Nr2AUYz0hYBs"
   },
   "invalidated_entities": {
     "defaultMessage": "Invalidated entities",
