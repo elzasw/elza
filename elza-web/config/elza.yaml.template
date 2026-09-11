@@ -15,7 +15,7 @@ elza:
         type: WMS
         initial: false
         layer: GR_ORTFOTORGB
-  security:
+  #security:
   #  sso-header:
   #    user-header: X-SSO-User
   #    allowDefaultUser: false
@@ -24,6 +24,15 @@ elza:
   #    keytab-location: C:/Users/siryupin/krb5cc_siryupin
   #    kerberos-client-debug: false
   #    ticket-validator-debug: false
+  #
+  #  # Osobní API klíče uživatelů (hlavička X-API-Key).
+  #  # Funkce je zapnutá s výchozími hodnotami; enabled=false hlavičku ignoruje.
+  #  api-keys:
+  #    enabled: true
+  #    header-name: X-API-Key
+  #    default-validity-days: 365
+  #    max-validity-days: 730
+  #
   #workingDir: C:/Elza/work
 
   # Nastavení času spuštění pro reindexaci:

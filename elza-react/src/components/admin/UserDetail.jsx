@@ -12,6 +12,7 @@ import './UserDetail.scss';
 import FundsPermissionPanel from './FundsPermissionPanel';
 import ScopesPermissionPanel from './ScopesPermissionPanel';
 import AdvancedPermissionPanel from './AdvancedPermissionPanel';
+import AccessKeysPanel from './AccessKeysPanel';
 import SelectItemsForm from './SelectItemsForm';
 import GroupField from './GroupField';
 import AdminRightsContainer from './AdminRightsContainer';
@@ -30,11 +31,13 @@ class UserDetail extends AbstractReactComponent {
     static TAB_FUNDS = 0;
     static TAB_SCOPES = 1;
     static TAB_ADVANCED = 2;
+    static TAB_ACCESS_KEYS = 3;
 
     static tabItems = [
         {id: UserDetail.TAB_FUNDS, title: i18n('admin.perms.tabs.funds')},
         {id: UserDetail.TAB_SCOPES, title: i18n('admin.perms.tabs.scopes')},
         {id: UserDetail.TAB_ADVANCED, title: i18n('admin.perms.tabs.advanced')},
+        {id: UserDetail.TAB_ACCESS_KEYS, title: i18n('admin.perms.tabs.accessKeys')},
     ];
 
     /*
@@ -144,6 +147,8 @@ class UserDetail extends AbstractReactComponent {
                         onDeletePermission={perm => WebApi.deleteUserPermission(userDetail.id, perm)}
                     />
                 );
+            case UserDetail.TAB_ACCESS_KEYS:
+                return <AccessKeysPanel userId={userDetail.id} />;
             default:
                 return null;
         }

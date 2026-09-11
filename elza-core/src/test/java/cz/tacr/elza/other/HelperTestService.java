@@ -97,6 +97,7 @@ import cz.tacr.elza.repository.SobjVrequestRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.repository.SysViewUpdateRepository;
 import cz.tacr.elza.repository.UserRepository;
+import cz.tacr.elza.repository.UsrApiKeyRepository;
 import cz.tacr.elza.repository.WfCommentRepository;
 import cz.tacr.elza.repository.WfIssueListRepository;
 import cz.tacr.elza.repository.WfIssueRepository;
@@ -174,6 +175,8 @@ public class HelperTestService {
     private BulkActionRunRepository faBulkActionRepository;
     @Autowired
     protected UserRepository userRepository;
+    @Autowired
+    protected UsrApiKeyRepository apiKeyRepository;
     @Autowired
     protected PermissionRepository permissionRepository;
     @Autowired
@@ -395,6 +398,7 @@ public class HelperTestService {
         apRepository.deleteAll();
         apChangeRepository.deleteAll();
         externalSystemRepository.deleteAll();
+        apiKeyRepository.deleteAll();
         userRepository.deleteAll();
 
         // DB has to be flushed before start
