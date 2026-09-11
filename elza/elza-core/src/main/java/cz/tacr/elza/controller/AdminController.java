@@ -5,6 +5,7 @@ import java.security.Principal;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -22,16 +23,25 @@ import org.springframework.web.socket.WebSocketSession;
 
 import cz.tacr.elza.controller.vo.AdminCopyPermissionParams;
 import cz.tacr.elza.controller.vo.AdminInfo;
+import cz.tacr.elza.controller.vo.ApiKeyInfo;
 import cz.tacr.elza.controller.vo.LoggedUser;
 import cz.tacr.elza.controller.vo.LoggedUsers;
 import cz.tacr.elza.core.security.AuthMethod;
+import cz.tacr.elza.core.security.AuthParam;
+import cz.tacr.elza.domain.UsrApiKey;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.AccessDeniedException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.security.AuthorizationRequest;
+import cz.tacr.elza.security.SiemAuditLogger;
 import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.security.apikey.ApiKeyMapper;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.AccessPointService.AccessPointStats;
+import cz.tacr.elza.service.ApiKeyService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.ArrangementService.ArrangementStats;
 import cz.tacr.elza.service.UserService;
@@ -60,6 +70,12 @@ public class AdminController implements AdminApi {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private ApiKeyService apiKeyService;
+
+    @Autowired
+    private SiemAuditLogger siemAuditLogger;
+
     @Override
     @Transactional
     public ResponseEntity<Void> adminCopyPermissions(@ApiParam(value = "ID of target user", required = true) @PathVariable("userId") Integer userId,
@@ -76,9 +92,9 @@ public class AdminController implements AdminApi {
         if(userDetail==null) {
             throw new AccessDeniedException("User not authorized.", Collections.emptyList());
         }
-        
+
         AdminInfo ai = new AdminInfo();
-        
+
         AuthorizationRequest arFundRead = AuthorizationRequest.hasPermission(Permission.ADMIN)
                 .or(Permission.FUND_ADMIN)
                 .or(Permission.FUND_ARR_ALL)
@@ -89,7 +105,7 @@ public class AdminController implements AdminApi {
             ai.setFunds(arrStats.getFundCount());
             ai.setLevels(arrStats.getLevelCount());
         }
-        
+
         AuthorizationRequest arRead = AuthorizationRequest.hasPermission(Permission.ADMIN)
                 .or(Permission.AP_SCOPE_RD_ALL);
         if (arRead.matches(userDetail)) {
@@ -109,7 +125,7 @@ public class AdminController implements AdminApi {
     @Override
     @Transactional
     public ResponseEntity<LoggedUsers> adminLoggedUsers() {
-    	
+
     	// Check permissions - only Admins are allowed or users managing another user or group
     	boolean isAdmin = false;
     	boolean userControl = false, groupControl = false;
@@ -139,7 +155,7 @@ public class AdminController implements AdminApi {
             if(principal==null) {
             	continue;
             }
-            
+
             Authentication auth = (Authentication) principal;
 	        UserDetail userDetail = (UserDetail) auth.getDetails();
 
@@ -149,7 +165,7 @@ public class AdminController implements AdminApi {
             		continue;
             	}
             }
-            
+
             LoggedUser lu = new LoggedUser();
             if (remoteAddr != null) {
                 lu.setRemoteAddr(remoteAddr.toString());
@@ -185,6 +201,45 @@ public class AdminController implements AdminApi {
     public ResponseEntity<Integer> adminDeleteInvalidInhibitedItems() {
         int count = arrangementService.cleanupOrphanedInhibitedItems();
         return ResponseEntity.ok(count);
+    }
+
+    @Override
+    @AuthMethod(permission = { UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITY })
+    public ResponseEntity<List<ApiKeyInfo>> adminListUserApiKeys(
+            @AuthParam(type = AuthParam.Type.USER) Integer userId) {
+        userService.requireInteractiveAuth();
+        List<ApiKeyInfo> result = apiKeyService.listByUserId(userId).stream()
+                .map(ApiKeyMapper::toInfo)
+                .toList();
+        return ResponseEntity.ok(result);
+    }
+
+    @Override
+    @AuthMethod(permission = { UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITY })
+    public ResponseEntity<Void> adminRevokeUserApiKey(
+            @AuthParam(type = AuthParam.Type.USER) Integer userId,
+            Integer id) {
+        userService.requireInteractiveAuth();
+        UsrApiKey key = apiKeyService.getRequired(id);
+        // The key must belong to the addressed user, otherwise the URL is treated as pointing at
+        // a non-existent resource (a mismatch is a client bug, not a security event).
+        if (!key.getUser().getUserId().equals(userId)) {
+            throw new ObjectNotFoundException("API key not found", BaseCode.ID_NOT_EXIST)
+                    .set(BaseCode.PARAM_PROPERTY, "id");
+        }
+
+        // actor is null for the built-in admin (no usr_user row); the audit still records who
+        // acted using the login username from UserDetail.
+        UsrUser actor = userService.getLoggedUser();
+        UserDetail actorDetail = userService.getLoggedUserDetail();
+        String actorName = actorDetail != null ? actorDetail.getUsername() : "unknown";
+
+        boolean alreadyRevoked = key.getRevokedDate() != null;
+        apiKeyService.revoke(id, actor);
+        if (!alreadyRevoked) {
+            siemAuditLogger.apiKeyRevoked(actorName, key.getUser().getUsername(), key.getKeyId());
+        }
+        return ResponseEntity.ok().build();
     }
 
 }

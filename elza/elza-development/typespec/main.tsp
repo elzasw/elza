@@ -630,6 +630,8 @@ model DataStructureRef extends ItemData {
     @invisible(Lifecycle)
     dataType: DataType.STRUCTURED;
     structuredObjectId: integer;
+    value?: string;
+    complement?: string;
 }
 
 model DataText extends ItemData {
@@ -2800,6 +2802,76 @@ model ImportServerFolderEntry {
     size?: int64;
 }
 
+/** Stav API klíče. */
+enum ApiKeyState {
+    ACTIVE,
+    EXPIRED,
+    REVOKED,
+}
+
+/** Metadata jednoho API klíče, bez tajné části. */
+model ApiKeyInfo {
+    /** Interní ID záznamu. */
+    id: integer;
+    /** Uživatelské pojmenování. */
+    name: string;
+    /** Veřejný identifikátor ve tvaru zobrazovaném v UI (elza_<keyId>). */
+    keyId: string;
+    createDate: offsetDateTime;
+    expireDate: offsetDateTime;
+    /** Poslední úspěšné použití; nikdy = null. */
+    lastUsedDate?: offsetDateTime;
+    /** Vyplněno u zrušeného klíče. */
+    revokedDate?: offsetDateTime;
+    state: ApiKeyState;
+}
+
+/** Požadavek na vytvoření klíče. */
+model ApiKeyCreateRequest {
+    /** Uživatelské pojmenování, max 250 znaků. */
+    name: string;
+    /**
+     * Konec platnosti; není-li uvedeno, použije se konfigurační default.
+     * Nesmí překročit konfigurační maximum, jinak 400.
+     */
+    expireDate?: offsetDateTime;
+}
+
+/**
+ * Odpověď na vytvoření klíče. Pole `token` obsahuje plnou hodnotu ve tvaru
+ * elza_<keyId>_<secret> a je jediné místo, kde se objeví — po odpovědi je
+ * již není možné znovu získat.
+ */
+model ApiKeyCreated {
+    apiKey: ApiKeyInfo;
+    token: string;
+}
+
+/**
+ * Správa vlastních API klíčů přihlášeného uživatele.
+ *
+ * Volání těchto operací API klíčem samotným server odmítne (403); slouží
+ * pro přihlášení sezením / heslem přes UI nebo skript.
+ */
+@tag("user")
+@route("/user/my/api-keys")
+namespace ElzaAPI.User.ApiKeys {
+    /** Seznam vlastních klíčů, nejnovější první. */
+    @get op list(): ApiKeyInfo[];
+
+    /**
+     * Vytvoří nový klíč. Plná hodnota tokenu je v odpovědi vrácena pouze
+     * jednou; server ji dál nikde neukládá.
+     */
+    @post op create(@body body: ApiKeyCreateRequest): ApiKeyCreated;
+
+    /** Zruší klíč (nastaví revoked_date). Opakované zrušení je bez efektu. */
+    @route("/{id}")
+    @delete op revoke(@path id: integer): {
+        @Http.statusCode statusCode: 200;
+    };
+}
+
 /**
  * Administrativní funkce
  */
@@ -2853,6 +2925,19 @@ namespace ElzaAPI.Admin {
     /** Return list of logged users */
     @route("info/logged-users")
     op loggedUsers(): LoggedUsers;
+
+    /** Seznam API klíčů daného uživatele (bez tajné hodnoty). */
+    @route("user/{userId}/api-keys")
+    @get op listUserApiKeys(@path userId: integer): ApiKeyInfo[];
+
+    /** Zruší API klíč libovolného uživatele. */
+    @route("user/{userId}/api-keys/{id}")
+    @delete op revokeUserApiKey(
+        @path userId: integer,
+        @path id: integer,
+    ): {
+        @Http.statusCode statusCode: 200;
+    };
 }
 
 /**
@@ -7723,6 +7808,7 @@ namespace ElzaAPI.Tasks {
     version: "1.0.0",
 })
 @tagMetadata("admin", #{description: "Administrativní funkce"})
+@tagMetadata("user", #{description: "Nastavení přihlášeného uživatele"})
 @tagMetadata("daos", #{description: "Digitální archivní objekty"})
 @tagMetadata("externalsystems", #{description: "Externí systémy"})
 @tagMetadata("aiprovider", #{description: "Externí AI systémy (poskytovatelé AI služeb)"})

@@ -40,6 +40,8 @@ public class UserDetail {
 
     private List<UsrAuthentication.AuthType> authTypes;
 
+    private AuthenticationMethod authenticationMethod = AuthenticationMethod.SESSION;
+
     public UserDetail(final UsrUser user, final Collection<UserPermission> userPermission, final NodePermissionChecker nodePermChecker,
 					  final List<UsrAuthentication.AuthType> authTypes) {
         this.id = user.getUserId();
@@ -183,6 +185,14 @@ public class UserDetail {
             }
         }
         return false;
+    }
+
+    public AuthenticationMethod getAuthenticationMethod() {
+        return authenticationMethod;
+    }
+
+    public void setAuthenticationMethod(AuthenticationMethod authenticationMethod) {
+        this.authenticationMethod = authenticationMethod;
     }
 
     @Override
