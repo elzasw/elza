@@ -5,10 +5,18 @@ import { BatchState } from 'elza-api';
 import { useWebsocket } from 'components/shared/web-socket/WebsocketProvider';
 import { useThunkDispatch } from 'utils/hooks';
 import { EventType } from 'typings/websocket/EventType';
-import { addToastrDanger, addToastrSuccess } from 'components/shared/toastr/ToastrActions';
-import { consumeImportBatch, isImportBatchPending } from 'utils/pendingImportBatches';
+import { addToastrDanger, addToastrInfo, addToastrSuccess } from 'components/shared/toastr/ToastrActions';
+import { consumeImportBatch, isImportBatchPending, onImportBatchTracked } from 'utils/pendingImportBatches';
 
 const messages = defineMessages({
+    enqueued: {
+        id: 'import.toast.enqueued',
+        defaultMessage: 'Import zahájen',
+    },
+    enqueuedDetail: {
+        id: 'import.toast.enqueued.detail',
+        defaultMessage: 'Podrobnosti najdete v části Administrace → Import.',
+    },
     finished: {
         id: 'import.toast.batch.finished',
         defaultMessage: 'Import „{name}" byl dokončen',
@@ -27,6 +35,14 @@ export function ImportBatchToaster(): null {
     const websocket = useWebsocket();
     const dispatch = useThunkDispatch();
     const intl = useIntl();
+
+    useEffect(() => {
+        return onImportBatchTracked(() => {
+            dispatch(addToastrInfo(
+                    intl.formatMessage(messages.enqueued),
+                    intl.formatMessage(messages.enqueuedDetail)));
+        });
+    }, [dispatch, intl]);
 
     useEffect(() => {
         const listener = websocket.addListener(async (msg: { eventType?: string; ids?: number[] }) => {
