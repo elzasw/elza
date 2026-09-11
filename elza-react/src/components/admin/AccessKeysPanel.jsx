@@ -29,6 +29,7 @@ const formatDate = (iso) => iso ? new Date(iso).toLocaleDateString() : '';
  */
 function AccessKeysPanel({userId}) {
     const [keys, setKeys] = useState([]);
+    const [showOnlyActive, setShowOnlyActive] = useState(false);
 
     const load = useCallback(async () => {
         const {data} = await Api.admin.adminListUserApiKeys(userId);
@@ -45,6 +46,13 @@ function AccessKeysPanel({userId}) {
         [keys]
     );
 
+    const visible = useMemo(
+        () => showOnlyActive
+            ? sorted.filter((k) => k.state === ApiKeyState.Active)
+            : sorted,
+        [sorted, showOnlyActive]
+    );
+
     const handleRevoke = async (key) => {
         const msg = i18n('admin.perms.tabs.accessKeys.revoke.confirm', {name: key.name});
         if (!window.confirm(msg)) return;
@@ -52,12 +60,29 @@ function AccessKeysPanel({userId}) {
         load();
     };
 
-    if (sorted.length === 0) {
-        return <div className="access-keys-panel">{i18n('admin.perms.tabs.accessKeys.empty')}</div>;
+    const filterCheckbox = (
+        <label style={{marginBottom: '0.5rem', display: 'inline-block'}}>
+            <input
+                type="checkbox"
+                checked={showOnlyActive}
+                onChange={(e) => setShowOnlyActive(e.target.checked)}
+            />
+            {' '}{i18n('admin.perms.tabs.accessKeys.filter.onlyActive')}
+        </label>
+    );
+
+    if (visible.length === 0) {
+        return (
+            <div className="access-keys-panel">
+                {filterCheckbox}
+                <div>{i18n('admin.perms.tabs.accessKeys.empty')}</div>
+            </div>
+        );
     }
 
     return (
         <div className="access-keys-panel">
+            {filterCheckbox}
             <table className="table table-sm">
                 <thead>
                     <tr>
@@ -71,7 +96,7 @@ function AccessKeysPanel({userId}) {
                     </tr>
                 </thead>
                 <tbody>
-                    {sorted.map((k) => (
+                    {visible.map((k) => (
                         <tr key={k.id} style={k.state !== ApiKeyState.Active ? {opacity: 0.6} : undefined}>
                             <td>{stateLabel(k.state)}</td>
                             <td>{k.name}</td>

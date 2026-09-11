@@ -3,6 +3,7 @@ import {
     Button,
     Card,
     CardHeader,
+    Checkbox,
     Dialog,
     DialogActions,
     DialogBody,
@@ -161,6 +162,10 @@ const messages = defineMessages({
         id: 'userSettings.accessKeys.create.failedFallback',
         defaultMessage: 'Klíč se nepodařilo vytvořit.',
     },
+    filterOnlyActive: {
+        id: 'userSettings.accessKeys.filter.onlyActive',
+        defaultMessage: 'Zobrazit pouze aktivní klíče',
+    },
 });
 
 const useStyles = makeStyles({
@@ -255,6 +260,7 @@ export function AccessKeysSettings() {
     const [keys, setKeys] = useState<ApiKeyInfo[]>([]);
     const [isCreating, setIsCreating] = useState(false);
     const [created, setCreated] = useState<ApiKeyCreated | null>(null);
+    const [showOnlyActive, setShowOnlyActive] = useState(false);
 
     const load = useCallback(async () => {
         const { data } = await Api.user.apiKeysList();
@@ -273,6 +279,13 @@ export function AccessKeysSettings() {
                 return b.createDate.localeCompare(a.createDate);
             }),
         [keys]
+    );
+
+    const visibleKeys = useMemo(
+        () => showOnlyActive
+            ? sortedKeys.filter((k) => k.state === ApiKeyState.Active)
+            : sortedKeys,
+        [sortedKeys, showOnlyActive]
     );
 
     const stateMessage = (state: ApiKeyState) =>
@@ -326,13 +339,18 @@ export function AccessKeysSettings() {
             >
                 <FormattedMessage {...messages.addKey} />
             </Button>
-            {sortedKeys.length === 0 ? (
+            <Checkbox
+                checked={showOnlyActive}
+                onChange={(_e, d) => setShowOnlyActive(!!d.checked)}
+                label={formatMessage(messages.filterOnlyActive)}
+            />
+            {visibleKeys.length === 0 ? (
                 <Text size={200} className={styles.empty}>
                     <FormattedMessage {...messages.empty} />
                 </Text>
             ) : (
                 <div className={styles.list}>
-                    {sortedKeys.map((k) => {
+                    {visibleKeys.map((k) => {
                         const inactive = k.state !== ApiKeyState.Active;
                         const soon =
                             k.state === ApiKeyState.Active &&

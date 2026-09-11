@@ -1580,6 +1580,7 @@ var messages = {
     "admin.perms.tabs.accessKeys.state.active": "Aktivní",
     "admin.perms.tabs.accessKeys.state.expired": "Expirovaný",
     "admin.perms.tabs.accessKeys.state.revoked": "Zrušený",
+    "admin.perms.tabs.accessKeys.filter.onlyActive": "Zobrazit pouze aktivní klíče",
     "admin.perms.fund.tabs.users": "Uživatelé",
     "admin.perms.fund.tabs.users.add.title": "Přidat uživatele",
     "admin.perms.fund.tabs.groups": "Skupiny",
