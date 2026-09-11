@@ -162,9 +162,9 @@ const messages = defineMessages({
         id: 'userSettings.accessKeys.create.failedFallback',
         defaultMessage: 'Klíč se nepodařilo vytvořit.',
     },
-    filterOnlyActive: {
-        id: 'userSettings.accessKeys.filter.onlyActive',
-        defaultMessage: 'Zobrazit pouze aktivní klíče',
+    filterShowAll: {
+        id: 'userSettings.accessKeys.filter.showAll',
+        defaultMessage: 'Zobrazit všechny klíče, včetně neaktivních',
     },
 });
 
@@ -260,12 +260,12 @@ export function AccessKeysSettings() {
     const [keys, setKeys] = useState<ApiKeyInfo[]>([]);
     const [isCreating, setIsCreating] = useState(false);
     const [created, setCreated] = useState<ApiKeyCreated | null>(null);
-    const [showOnlyActive, setShowOnlyActive] = useState(false);
+    const [showAll, setShowAll] = useState(false);
 
     const load = useCallback(async () => {
-        const { data } = await Api.user.apiKeysList();
+        const { data } = await Api.user.apiKeysList(showAll || undefined);
         setKeys(data);
-    }, []);
+    }, [showAll]);
 
     useEffect(() => {
         load();
@@ -279,13 +279,6 @@ export function AccessKeysSettings() {
                 return b.createDate.localeCompare(a.createDate);
             }),
         [keys]
-    );
-
-    const visibleKeys = useMemo(
-        () => showOnlyActive
-            ? sortedKeys.filter((k) => k.state === ApiKeyState.Active)
-            : sortedKeys,
-        [sortedKeys, showOnlyActive]
     );
 
     const stateMessage = (state: ApiKeyState) =>
@@ -340,17 +333,17 @@ export function AccessKeysSettings() {
                 <FormattedMessage {...messages.addKey} />
             </Button>
             <Checkbox
-                checked={showOnlyActive}
-                onChange={(_e, d) => setShowOnlyActive(!!d.checked)}
-                label={formatMessage(messages.filterOnlyActive)}
+                checked={showAll}
+                onChange={(_e, d) => setShowAll(!!d.checked)}
+                label={formatMessage(messages.filterShowAll)}
             />
-            {visibleKeys.length === 0 ? (
+            {sortedKeys.length === 0 ? (
                 <Text size={200} className={styles.empty}>
                     <FormattedMessage {...messages.empty} />
                 </Text>
             ) : (
                 <div className={styles.list}>
-                    {visibleKeys.map((k) => {
+                    {sortedKeys.map((k) => {
                         const inactive = k.state !== ApiKeyState.Active;
                         const soon =
                             k.state === ApiKeyState.Active &&
