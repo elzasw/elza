@@ -2229,6 +2229,14 @@
     "defaultMessage": "Yes",
     "srcHash": "HFtwBBU9Smvu"
   },
+  "import.toast.batch.cancelled": {
+    "defaultMessage": "Import “{name}” was aborted",
+    "srcHash": "7DDAl3TLvgNF"
+  },
+  "import.toast.batch.cancelled.detail": {
+    "defaultMessage": "The items completed before the abort stay imported; you can find the overview in Administration → Import.",
+    "srcHash": "9AXIF5_zRJwR"
+  },
   "import.toast.batch.failed": {
     "defaultMessage": "Import “{name}” ended with an error",
     "srcHash": "E3Zr-q1A6iUs"
