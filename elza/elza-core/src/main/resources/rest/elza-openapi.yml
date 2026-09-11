@@ -43,6 +43,8 @@ tags:
     description: Externí systémy
   - name: daos
     description: Digitální archivní objekty
+  - name: user
+    description: Nastavení přihlášeného uživatele
   - name: admin
     description: Administrativní funkce
 paths:
@@ -1554,6 +1556,47 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LoggedUsers'
+      tags:
+        - admin
+  /admin/user/{userId}/api-keys:
+    get:
+      operationId: Admin_listUserApiKeys
+      description: Seznam API klíčů daného uživatele (bez tajné hodnoty).
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ApiKeyInfo'
+      tags:
+        - admin
+  /admin/user/{userId}/api-keys/{id}:
+    delete:
+      operationId: Admin_revokeUserApiKey
+      description: Zruší API klíč libovolného uživatele.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
       tags:
         - admin
   /admin/user/{userId}/copy-permissions:
@@ -6129,6 +6172,58 @@ paths:
                   $ref: '#/components/schemas/Tasks.ViewDetail'
       tags:
         - tasks
+  /user/my/api-keys:
+    get:
+      operationId: ApiKeys_list
+      description: Seznam vlastních klíčů, nejnovější první.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ApiKeyInfo'
+      tags:
+        - user
+    post:
+      operationId: ApiKeys_create
+      description: |-
+        Vytvoří nový klíč. Plná hodnota tokenu je v odpovědi vrácena pouze
+        jednou; server ji dál nikde neukládá.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiKeyCreated'
+      tags:
+        - user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApiKeyCreateRequest'
+  /user/my/api-keys/{id}:
+    delete:
+      operationId: ApiKeys_revoke
+      description: Zruší klíč (nastaví revoked_date). Opakované zrušení je bez efektu.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+      tags:
+        - user
 components:
   parameters:
     AipIdParameter:
@@ -7580,6 +7675,78 @@ components:
           items:
             $ref: '#/components/schemas/PartValidationIssues'
       description: Entity validation issues/errors
+    ApiKeyCreateRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Uživatelské pojmenování, max 250 znaků.
+        expireDate:
+          type: string
+          format: date-time
+          description: |-
+            Konec platnosti; není-li uvedeno, použije se konfigurační default.
+            Nesmí překročit konfigurační maximum, jinak 400.
+      description: Požadavek na vytvoření klíče.
+    ApiKeyCreated:
+      type: object
+      required:
+        - apiKey
+        - token
+      properties:
+        apiKey:
+          $ref: '#/components/schemas/ApiKeyInfo'
+        token:
+          type: string
+      description: |-
+        Odpověď na vytvoření klíče. Pole `token` obsahuje plnou hodnotu ve tvaru
+        elza_<keyId>_<secret> a je jediné místo, kde se objeví — po odpovědi je
+        již není možné znovu získat.
+    ApiKeyInfo:
+      type: object
+      required:
+        - id
+        - name
+        - keyId
+        - createDate
+        - expireDate
+        - state
+      properties:
+        id:
+          type: integer
+          description: Interní ID záznamu.
+        name:
+          type: string
+          description: Uživatelské pojmenování.
+        keyId:
+          type: string
+          description: Veřejný identifikátor ve tvaru zobrazovaném v UI (elza_<keyId>).
+        createDate:
+          type: string
+          format: date-time
+        expireDate:
+          type: string
+          format: date-time
+        lastUsedDate:
+          type: string
+          format: date-time
+          description: Poslední úspěšné použití; nikdy = null.
+        revokedDate:
+          type: string
+          format: date-time
+          description: Vyplněno u zrušeného klíče.
+        state:
+          $ref: '#/components/schemas/ApiKeyState'
+      description: Metadata jednoho API klíče, bez tajné části.
+    ApiKeyState:
+      type: string
+      enum:
+        - ACTIVE
+        - EXPIRED
+        - REVOKED
+      description: Stav API klíče.
     ArrFundGen:
       type: object
       required:

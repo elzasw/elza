@@ -18,11 +18,13 @@ import { defineMessages, FormattedMessage, useIntl } from 'react-intl';
 import { useAppSelector } from 'utils/hooks/useAppSelector';
 import * as perms from 'actions/user/Permission';
 import { DisplaySettings } from './DisplaySettings';
+import { AccessKeysSettings } from './AccessKeysSettings';
 import { ApiKeysSettings } from './ApiKeysSettings';
 import { BrowserDataSettings } from './BrowserDataSettings';
 
 enum UserSettingCategoryKey {
     Display = 'Display',
+    AccessKeys = 'AccessKeys',
     ApiKeys = 'ApiKeys',
     BrowserData = 'BrowserData',
 }
@@ -34,6 +36,7 @@ interface UserSettingCategoryConfig {
 
 const UserSettingCategory: Record<UserSettingCategoryKey, UserSettingCategoryConfig> = {
     [UserSettingCategoryKey.Display]: { key: UserSettingCategoryKey.Display },
+    [UserSettingCategoryKey.AccessKeys]: { key: UserSettingCategoryKey.AccessKeys },
     [UserSettingCategoryKey.ApiKeys]: { key: UserSettingCategoryKey.ApiKeys },
     [UserSettingCategoryKey.BrowserData]: { key: UserSettingCategoryKey.BrowserData },
 };
@@ -47,6 +50,10 @@ const messages = defineMessages({
         id: 'userSettings.category.Display',
         defaultMessage: 'Zobrazení',
     },
+    categoryAccessKeys: {
+        id: 'userSettings.category.AccessKeys',
+        defaultMessage: 'Přístupové klíče API',
+    },
     categoryApiKeys: {
         id: 'userSettings.category.ApiKeys',
         defaultMessage: 'API Klíče',
@@ -59,6 +66,7 @@ const messages = defineMessages({
 
 const categoryMessages: Record<UserSettingCategoryKey, typeof messages.categoryDisplay> = {
     [UserSettingCategoryKey.Display]: messages.categoryDisplay,
+    [UserSettingCategoryKey.AccessKeys]: messages.categoryAccessKeys,
     [UserSettingCategoryKey.ApiKeys]: messages.categoryApiKeys,
     [UserSettingCategoryKey.BrowserData]: messages.categoryBrowserData,
 };
@@ -138,6 +146,7 @@ export function UserSettingsModal({ open, onClose }: Props) {
                                 </TabList>
                                 <div className={styles.view}>
                                     {activeView === UserSettingCategoryKey.Display && <DisplaySettings />}
+                                    {activeView === UserSettingCategoryKey.AccessKeys && <AccessKeysSettings />}
                                     {activeView === UserSettingCategoryKey.ApiKeys && <ApiKeysSettings />}
                                     {activeView === UserSettingCategoryKey.BrowserData && <BrowserDataSettings />}
                                 </div>
