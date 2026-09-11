@@ -1961,6 +1961,10 @@
     "defaultMessage": "Reset order",
     "srcHash": "OtQE8a7XDQQX"
   },
+  "descItem.structure.empty": {
+    "defaultMessage": "Not filled in",
+    "srcHash": "S4Fu2fAtjgYM"
+  },
   "descItemType.action.openInDataGrid": {
     "defaultMessage": "Show in table",
     "srcHash": "7jwQD-SqGXED"

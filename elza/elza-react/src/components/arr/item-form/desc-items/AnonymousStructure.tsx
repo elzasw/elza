@@ -1,11 +1,26 @@
-import { Spinner } from '@fluentui/react-components';
+import { Spinner, makeStyles, tokens } from '@fluentui/react-components';
 import { WebApi } from 'actions';
 import { StructureEdit } from 'components/arr/structure/StructureEdit';
 import { StructureView } from 'components/arr/structure/StructureView';
 import { DataStructureRef } from 'elza-api';
 import { useEffect, useRef, useState } from 'react';
+import { FormattedMessage, defineMessages } from 'react-intl';
 import { StructureType } from 'typings/store';
 import { useActiveFund } from 'utils/hooks';
+
+const messages = defineMessages({
+    empty: {
+        id: 'descItem.structure.empty',
+        defaultMessage: 'Nevyplněno',
+    },
+});
+
+const useStyles = makeStyles({
+    empty: {
+        color: tokens.colorNeutralForeground3,
+        fontStyle: 'italic',
+    },
+});
 
 interface Props {
   data: DataStructureRef;
@@ -17,6 +32,7 @@ interface Props {
 export function AnonymousStructure({ structureType, data, onCreate, readOnly }: Props) {
   const { id: fundId, versionId: fundVersionId } = useActiveFund();
   const [structureObjectId, setStructureObjectId] = useState<number>(data.structuredObjectId);
+  const styles = useStyles();
 
   // Callers pass a fresh onCreate closure on every render; keeping it out of the effect deps
   // (together with the in-flight guard) prevents a second structure object from being created
@@ -58,7 +74,16 @@ export function AnonymousStructure({ structureType, data, onCreate, readOnly }: 
       {structureObjectId == undefined ? (
         readOnly ? null : <Spinner />
       ) : readOnly ? (
-        <StructureView fundId={fundId} fundVersionId={fundVersionId} structureObjectId={structureObjectId} />
+        <StructureView
+          fundId={fundId}
+          fundVersionId={fundVersionId}
+          structureObjectId={structureObjectId}
+          emptyMessage={
+            <span className={styles.empty}>
+              <FormattedMessage {...messages.empty} />
+            </span>
+          }
+        />
       ) : (
         <StructureEdit fundId={fundId} fundVersionId={fundVersionId} structureObjectId={structureObjectId} confirmOnCreate={true} />
       )}
