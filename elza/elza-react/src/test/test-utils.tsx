@@ -39,7 +39,7 @@ export type RenderWithProvidersOptions = Omit<RenderOptions, 'wrapper'> & {
  * Testy vykreslují s prázdným katalogem a spoléhají na defaultMessage; hlášení
  * o chybějícím překladu proto není chyba. Ostatní chyby react-intl se hlásí dál.
  */
-const ignoreMissingTranslation = (error: {code?: string}) => {
+export const ignoreMissingTranslation = (error: {code?: string}) => {
     if (error?.code === 'MISSING_TRANSLATION') {
         return;
     }
