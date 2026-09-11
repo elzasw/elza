@@ -21,7 +21,13 @@ import {
     makeStyles,
     tokens,
 } from '@fluentui/react-components';
-import { AddRegular, CopyRegular, DeleteRegular } from '@fluentui/react-icons';
+import {
+    AddRegular,
+    CheckmarkCircleRegular,
+    CopyRegular,
+    DeleteRegular,
+    SubtractCircleRegular,
+} from '@fluentui/react-icons';
 import { Api } from 'api';
 import { ApiKeyCreated, ApiKeyInfo, ApiKeyState } from 'elza-api';
 import { globalMessages } from 'components/shared/lang';
@@ -193,11 +199,29 @@ const useStyles = makeStyles({
         fontFamily: tokens.fontFamilyMonospace,
         color: tokens.colorNeutralForeground3,
     },
+    headerRow: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: tokens.spacingHorizontalXS,
+    },
+    stateIconActive: {
+        display: 'flex',
+        color: tokens.colorPaletteGreenForeground1,
+    },
+    stateIconInactive: {
+        display: 'flex',
+        color: tokens.colorNeutralForeground3,
+    },
     props: {
-        display: 'grid',
-        gridTemplateColumns: 'auto 1fr',
-        columnGap: tokens.spacingHorizontalM,
+        display: 'flex',
+        flexWrap: 'wrap',
+        columnGap: tokens.spacingHorizontalL,
         rowGap: tokens.spacingVerticalXXS,
+        alignItems: 'baseline',
+    },
+    prop: {
+        display: 'inline-flex',
+        gap: tokens.spacingHorizontalXS,
         alignItems: 'baseline',
     },
     propLabel: {
@@ -357,8 +381,27 @@ export function AccessKeysSettings() {
                             >
                                 <CardHeader
                                     header={
-                                        <div>
-                                            <Text weight="semibold">{k.name}</Text>{' '}
+                                        <div className={styles.headerRow}>
+                                            <Tooltip
+                                                content={formatMessage(stateMessage(k.state))}
+                                                relationship="label"
+                                            >
+                                                <span
+                                                    className={
+                                                        inactive
+                                                            ? styles.stateIconInactive
+                                                            : styles.stateIconActive
+                                                    }
+                                                    aria-label={`${formatMessage(messages.columnState)}: ${formatMessage(stateMessage(k.state))}`}
+                                                >
+                                                    {inactive ? (
+                                                        <SubtractCircleRegular />
+                                                    ) : (
+                                                        <CheckmarkCircleRegular />
+                                                    )}
+                                                </span>
+                                            </Tooltip>
+                                            <Text weight="semibold">{k.name}</Text>
                                             <Text size={200} className={styles.keyId}>
                                                 {k.keyId}
                                             </Text>
@@ -380,34 +423,34 @@ export function AccessKeysSettings() {
                                     }
                                 />
                                 <div className={styles.props}>
-                                    <Text size={200} className={styles.propLabel}>
-                                        <FormattedMessage {...messages.columnState} />
-                                    </Text>
-                                    <Text size={200}>
-                                        <FormattedMessage {...stateMessage(k.state)} />
-                                    </Text>
-                                    <Text size={200} className={styles.propLabel}>
-                                        <FormattedMessage {...messages.columnCreated} />
-                                    </Text>
-                                    <Text size={200}>
-                                        <FormattedDate value={k.createDate} />
-                                    </Text>
-                                    <Text size={200} className={styles.propLabel}>
-                                        <FormattedMessage {...messages.columnExpires} />
-                                    </Text>
-                                    <Text size={200} className={soon ? styles.warningSoon : undefined}>
-                                        <FormattedDate value={k.expireDate} />
-                                    </Text>
-                                    <Text size={200} className={styles.propLabel}>
-                                        <FormattedMessage {...messages.columnLastUsed} />
-                                    </Text>
-                                    <Text size={200}>
-                                        {k.lastUsedDate ? (
-                                            <FormattedDate value={k.lastUsedDate} />
-                                        ) : (
-                                            <FormattedMessage {...messages.lastUsedNever} />
-                                        )}
-                                    </Text>
+                                    <span className={styles.prop}>
+                                        <Text size={200} className={styles.propLabel}>
+                                            <FormattedMessage {...messages.columnCreated} />
+                                        </Text>
+                                        <Text size={200}>
+                                            <FormattedDate value={k.createDate} />
+                                        </Text>
+                                    </span>
+                                    <span className={styles.prop}>
+                                        <Text size={200} className={styles.propLabel}>
+                                            <FormattedMessage {...messages.columnExpires} />
+                                        </Text>
+                                        <Text size={200} className={soon ? styles.warningSoon : undefined}>
+                                            <FormattedDate value={k.expireDate} />
+                                        </Text>
+                                    </span>
+                                    <span className={styles.prop}>
+                                        <Text size={200} className={styles.propLabel}>
+                                            <FormattedMessage {...messages.columnLastUsed} />
+                                        </Text>
+                                        <Text size={200}>
+                                            {k.lastUsedDate ? (
+                                                <FormattedDate value={k.lastUsedDate} />
+                                            ) : (
+                                                <FormattedMessage {...messages.lastUsedNever} />
+                                            )}
+                                        </Text>
+                                    </span>
                                 </div>
                             </Card>
                         );
