@@ -40,7 +40,7 @@ import {
 import { Api } from 'api';
 import { BatchImportType, BatchState, ImportBatch, ImportBatchDescCsv, ImportBatchEdx, ImportItem, ImportItemError, ItemState } from 'elza-api';
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
-import { FormattedMessage, defineMessages, useIntl } from 'react-intl';
+import { FormattedDate, FormattedMessage, FormattedTime, defineMessages, useIntl } from 'react-intl';
 import { useHistory, useParams } from 'react-router';
 import { showConfirmDialog } from 'components/shared/dialog';
 import { Ribbon } from 'components/index.jsx';
@@ -81,6 +81,10 @@ const messages = defineMessages({
     folderNotConfigured: {
         id: 'admin.import.detail.folderNotConfigured',
         defaultMessage: 'Složka pro import na serveru není nakonfigurovaná, neexistuje nebo je prázdná',
+    },
+    filesPurged: {
+        id: 'admin.import.detail.filesPurged',
+        defaultMessage: 'Vstupní soubory dávky byly odstraněny v rámci retence, dávku už nelze spustit',
     },
     openFund: {
         id: 'admin.import.detail.openFund',
@@ -239,6 +243,8 @@ export function AdminImportBatchDetailPage() {
     const edx = isEdx ? (batch as ImportBatchEdx) : null;
     const csv = !isEdx ? (batch as ImportBatchDescCsv) : null;
     const canEditItems = CAN_EDIT_ITEMS.includes(state);
+    // The retention sweep dropped the input files, so there is nothing left for a run to read.
+    const filesPurged = batch.filesDeletedAt != null;
 
     const content = (
         <>
@@ -251,8 +257,20 @@ export function AdminImportBatchDetailPage() {
                     <Tag size="small" appearance="brand">{state}</Tag>
                     <div className={styles.spacer} />
                     <div className={styles.actions}>
-                        {CAN_START.includes(state) && <Button icon={<PlayRegular />} appearance="primary" onClick={onStart}><FormattedMessage {...messages.start} /></Button>}
-                        {CAN_DRY_RUN.includes(state) && <Button icon={<BeakerRegular />} onClick={onDryRun}><FormattedMessage {...messages.dryRun} /></Button>}
+                        {CAN_START.includes(state) && (
+                            <Tooltip content={filesPurged ? intl.formatMessage(messages.filesPurged) : ''} relationship="label" withArrow>
+                                <Button icon={<PlayRegular />} appearance="primary" onClick={onStart} disabled={filesPurged}>
+                                    <FormattedMessage {...messages.start} />
+                                </Button>
+                            </Tooltip>
+                        )}
+                        {CAN_DRY_RUN.includes(state) && (
+                            <Tooltip content={filesPurged ? intl.formatMessage(messages.filesPurged) : ''} relationship="label" withArrow>
+                                <Button icon={<BeakerRegular />} onClick={onDryRun} disabled={filesPurged}>
+                                    <FormattedMessage {...messages.dryRun} />
+                                </Button>
+                            </Tooltip>
+                        )}
                         {CAN_PAUSE.includes(state) && <Button icon={<PauseRegular />} onClick={onPause}><FormattedMessage {...messages.pause} /></Button>}
                         {CAN_CANCEL.includes(state) && <Button icon={<StopRegular />} onClick={onCancel}><FormattedMessage {...messages.cancel} /></Button>}
                         {canDelete(state) && <Button icon={<DeleteRegular />} onClick={onDelete}><FormattedMessage {...messages.remove} /></Button>}
@@ -274,6 +292,14 @@ export function AdminImportBatchDetailPage() {
                         {csv && (<>
                             <span className={styles.label}>separator</span><span>{csv.separator ?? '—'}</span>
                             <span className={styles.label}>encoding</span><span>{csv.encoding ?? '—'}</span>
+                        </>)}
+                        {filesPurged && (<>
+                            <span className={styles.label}>filesDeletedAt</span>
+                            <span>
+                                <FormattedDate value={batch.filesDeletedAt} />
+                                {' '}
+                                <FormattedTime value={batch.filesDeletedAt} />
+                            </span>
                         </>)}
                     </div>
                 </Card>

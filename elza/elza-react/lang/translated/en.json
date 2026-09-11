@@ -183,6 +183,10 @@
     "defaultMessage": "Show the error",
     "srcHash": "NpDaypnO5HHo"
   },
+  "admin.import.detail.filesPurged": {
+    "defaultMessage": "The input files of the batch were removed by the retention sweep; it cannot be run any more",
+    "srcHash": "R9owdzBE4q0n"
+  },
   "admin.import.detail.folderNotConfigured": {
     "defaultMessage": "The server import folder is not configured, does not exist or is empty",
     "srcHash": "MWby0O70-kIm"
