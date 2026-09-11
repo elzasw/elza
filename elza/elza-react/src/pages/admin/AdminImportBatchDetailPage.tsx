@@ -118,7 +118,10 @@ const CAN_START: BatchState[] = [BatchState.Preparation, BatchState.TestFinished
 const CAN_DRY_RUN: BatchState[] = [BatchState.Preparation, BatchState.TestFinished];
 const CAN_PAUSE: BatchState[] = [BatchState.InProgress];
 const CAN_CANCEL: BatchState[] = [BatchState.Preparation, BatchState.InProgress, BatchState.TestInProgress, BatchState.TestFinished, BatchState.Paused, BatchState.Failed];
-const CAN_DELETE: BatchState[] = [BatchState.Preparation, BatchState.Finished, BatchState.Cancelled];
+// The runner is walking the items only in these two states; they are the ones in which an entry
+// in the asynchronous queue still refers to the batch. Mirrors BatchState.isRunning() on the server.
+const RUNNING: BatchState[] = [BatchState.InProgress, BatchState.TestInProgress];
+const canDelete = (state: BatchState) => !RUNNING.includes(state);
 const CAN_EDIT_ITEMS: BatchState[] = [BatchState.Preparation, BatchState.TestFinished];
 
 export function AdminImportBatchDetailPage() {
@@ -252,7 +255,7 @@ export function AdminImportBatchDetailPage() {
                         {CAN_DRY_RUN.includes(state) && <Button icon={<BeakerRegular />} onClick={onDryRun}><FormattedMessage {...messages.dryRun} /></Button>}
                         {CAN_PAUSE.includes(state) && <Button icon={<PauseRegular />} onClick={onPause}><FormattedMessage {...messages.pause} /></Button>}
                         {CAN_CANCEL.includes(state) && <Button icon={<StopRegular />} onClick={onCancel}><FormattedMessage {...messages.cancel} /></Button>}
-                        {CAN_DELETE.includes(state) && <Button icon={<DeleteRegular />} onClick={onDelete}><FormattedMessage {...messages.remove} /></Button>}
+                        {canDelete(state) && <Button icon={<DeleteRegular />} onClick={onDelete}><FormattedMessage {...messages.remove} /></Button>}
                     </div>
                 </div>
 
