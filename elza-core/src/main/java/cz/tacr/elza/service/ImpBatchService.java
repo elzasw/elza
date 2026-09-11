@@ -178,6 +178,15 @@ public class ImpBatchService {
                     "Illegal batch state transition: " + current + " -> " + newState,
                     BaseCode.INVALID_STATE);
         }
+        // The retention sweep removes the input files of a batch that has had a run and has been
+        // at rest for the retention period. FAILED is such a state and may still be started again,
+        // so a retry can land on a batch with nothing left to read; say so once here instead of
+        // letting every item fail with "Source file is no longer stored in DMS".
+        if (newState.isRunning() && managed.getFilesDeletedAt() != null) {
+            throw new BusinessException(
+                    "The input files of the batch were removed by the retention sweep; it cannot be run again",
+                    BaseCode.INVALID_STATE);
+        }
         OffsetDateTime now = OffsetDateTime.now();
         managed.setState(newState);
         managed.setLastStateChangeAt(now);
