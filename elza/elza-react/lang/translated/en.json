@@ -2713,9 +2713,117 @@
     "defaultMessage": "Select all",
     "srcHash": "tzdoYdlGzv8D"
   },
-  "userSettings.apiKeys.add": {
-    "defaultMessage": "Add API key",
-    "srcHash": "sHrpP_uv2Alt"
+  "userSettings.accessKeys.column.created": {
+    "defaultMessage": "Created",
+    "srcHash": "8zCOe8eH59_V"
+  },
+  "userSettings.accessKeys.column.expires": {
+    "defaultMessage": "Expires",
+    "srcHash": "MqwqKPGIgvYS"
+  },
+  "userSettings.accessKeys.column.lastUsed": {
+    "defaultMessage": "Last used",
+    "srcHash": "op9am0OL-M_N"
+  },
+  "userSettings.accessKeys.column.name": {
+    "defaultMessage": "Name",
+    "srcHash": "EQAs0dy3Z5es"
+  },
+  "userSettings.accessKeys.column.state": {
+    "defaultMessage": "State",
+    "srcHash": "1sRUDB31F_YQ"
+  },
+  "userSettings.accessKeys.copyTooltip": {
+    "defaultMessage": "Copy to clipboard",
+    "srcHash": "RrTAH8RAIxpZ"
+  },
+  "userSettings.accessKeys.create.expireDate": {
+    "defaultMessage": "Expiry date",
+    "srcHash": "bbuY1cdlu9a3"
+  },
+  "userSettings.accessKeys.create.failedFallback": {
+    "defaultMessage": "The key could not be created.",
+    "srcHash": "Xb6gKzVHWZ9t"
+  },
+  "userSettings.accessKeys.create.name": {
+    "defaultMessage": "Name",
+    "srcHash": "EQAs0dy3Z5es"
+  },
+  "userSettings.accessKeys.create.submit": {
+    "defaultMessage": "Create",
+    "srcHash": "O-socWGcRSWq"
+  },
+  "userSettings.accessKeys.create.validity": {
+    "defaultMessage": "Validity",
+    "srcHash": "fTYAVoGEctKI"
+  },
+  "userSettings.accessKeys.created.title": {
+    "defaultMessage": "Key created",
+    "srcHash": "IYuUsr7LQ344"
+  },
+  "userSettings.accessKeys.created.tokenLabel": {
+    "defaultMessage": "Token",
+    "srcHash": "0gib5nKVPRE2"
+  },
+  "userSettings.accessKeys.created.warning": {
+    "defaultMessage": "Copy the key now. Once the dialog is closed it can no longer be displayed.",
+    "srcHash": "TqtubNAB1Pt9"
+  },
+  "userSettings.accessKeys.empty": {
+    "defaultMessage": "You have no access keys.",
+    "srcHash": "auxXXzuM-4BZ"
+  },
+  "userSettings.accessKeys.filter.showAll": {
+    "defaultMessage": "Show inactive too",
+    "srcHash": "8SgR64EItAsX"
+  },
+  "userSettings.accessKeys.hint": {
+    "defaultMessage": "The key lets integrations sign in to Elza through the X-API-Key header. The full key value is shown only once, when it is created.",
+    "srcHash": "2DPLcdBcaBZA"
+  },
+  "userSettings.accessKeys.lastUsedNever": {
+    "defaultMessage": "never",
+    "srcHash": "IpN6kJHgOi8u"
+  },
+  "userSettings.accessKeys.revoke": {
+    "defaultMessage": "Revoke",
+    "srcHash": "bHfYpLCt8F6P"
+  },
+  "userSettings.accessKeys.revoke.message": {
+    "defaultMessage": "Revoke the key \"{name}\"? This action cannot be undone.",
+    "srcHash": "bxVGL-8HEb8U"
+  },
+  "userSettings.accessKeys.revoke.title": {
+    "defaultMessage": "Revoke key",
+    "srcHash": "fuDjiFprjHVS"
+  },
+  "userSettings.accessKeys.state.active": {
+    "defaultMessage": "Active",
+    "srcHash": "3E-fPSwx1dRG"
+  },
+  "userSettings.accessKeys.state.expired": {
+    "defaultMessage": "Expired",
+    "srcHash": "fj_k2Dy6PBmX"
+  },
+  "userSettings.accessKeys.state.revoked": {
+    "defaultMessage": "Revoked",
+    "srcHash": "XgF-tdgZO9aZ"
+  },
+  "userSettings.accessKeys.validity.30": {
+    "defaultMessage": "30 days",
+    "srcHash": "E84-GrB4m9E6"
+  },
+  "userSettings.accessKeys.validity.365": {
+    "defaultMessage": "1 year",
+    "srcHash": "a3rni3SS_toB"
+  },
+  "userSettings.accessKeys.validity.90": {
+    "defaultMessage": "90 days",
+    "srcHash": "0IJEgmAbMPs0"
+  },
+  "userSettings.accessKeys.validity.custom": {
+    "defaultMessage": "Custom date",
+    "srcHash": "Hcul7cuN4-dC"
   },
   "userSettings.apiKeys.delete": {
     "defaultMessage": "Delete key",
@@ -2745,9 +2853,13 @@
     "defaultMessage": "A personal key is used instead of the key configured for the whole instance whenever ELZA calls that external system on your behalf.",
     "srcHash": "2oXqGMNGdxB7"
   },
+  "userSettings.category.AccessKeys": {
+    "defaultMessage": "Elza",
+    "srcHash": "vVn94TddzKlG"
+  },
   "userSettings.category.ApiKeys": {
-    "defaultMessage": "API Keys",
-    "srcHash": "lg2gnlERUjor"
+    "defaultMessage": "External systems",
+    "srcHash": "oU8i4V-8EbbO"
   },
   "userSettings.category.BrowserData": {
     "defaultMessage": "Stored data",
@@ -2812,6 +2924,18 @@
   "userSettings.display.showExperimentalFeatures": {
     "defaultMessage": "Show experimental features",
     "srcHash": "3gowqNfmWIKX"
+  },
+  "userSettings.group.ApiKeys": {
+    "defaultMessage": "API keys",
+    "srcHash": "8ngkLMrmbfD0"
+  },
+  "userSettings.group.General": {
+    "defaultMessage": "General",
+    "srcHash": "WBsk11OEhB2R"
+  },
+  "userSettings.keys.add": {
+    "defaultMessage": "New key",
+    "srcHash": "RetZyP6kNeWU"
   },
   "userSettings.title": {
     "defaultMessage": "User settings",

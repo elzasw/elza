@@ -14,6 +14,7 @@ import {
 import { AddRegular, DeleteRegular } from '@fluentui/react-icons';
 import { MaskedValue } from 'components/shared/MaskedValue';
 import { globalMessages } from 'components/shared/lang';
+import { keyMessages } from './messages';
 import { defineMessages, FormattedMessage, useIntl } from 'react-intl';
 import { Form as FinalForm, Field as FinalField } from 'react-final-form';
 import { Api } from 'api';
@@ -53,10 +54,6 @@ const messages = defineMessages({
         id: 'userSettings.apiKeys.sectionHint',
         defaultMessage:
             'Osobní klíč se použije místo klíče nastaveného pro celou instanci, když ELZA volá daný externí systém za vás.',
-    },
-    apiKeysAdd: {
-        id: 'userSettings.apiKeys.add',
-        defaultMessage: 'Přidat API klíč',
     },
     apiKeysDelete: {
         id: 'userSettings.apiKeys.delete',
@@ -276,7 +273,7 @@ export function ApiKeysSettings() {
                     icon={<AddRegular />}
                     onClick={() => setIsAddingKey(true)}
                 >
-                    {formatMessage(messages.apiKeysAdd)}
+                    <FormattedMessage {...keyMessages.addKey} />
                 </Button>
             )}
             {canAddKey && isAddingKey && (
