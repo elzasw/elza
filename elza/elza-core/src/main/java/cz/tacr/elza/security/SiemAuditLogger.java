@@ -26,12 +26,14 @@ public class SiemAuditLogger {
     
     public enum AuthenticationType {
 		PASSWORD,
-		JWT, 
+		JWT,
 		SSO_HEADER,
 		// MS Active Directory - direct password authentication
-		ACTIVE_DIRECTORY, 
+		ACTIVE_DIRECTORY,
 		// Kerberos based authentication - suitable for SSO
-		KERBEROS
+		KERBEROS,
+		// Personal API key sent in the X-API-Key header
+		API_KEY
 	}
 	
 	public enum Outcome {
@@ -82,5 +84,56 @@ public class SiemAuditLogger {
 			builder.addArgument(kv("detail", detail));
 		}
 		builder.log();
+	}
+
+	/** Successful API-key authentication — includes the public key id. */
+	public void apiKeyLoginSuccess(String user, String sourceIp, String keyId) {
+		var builder = LOG.atInfo().setMessage("login_success")
+				.addArgument(kv("eventType", EventType.AUTHENTICATION.toString()))
+				.addArgument(kv("outcome", Outcome.SUCCESS.toString()))
+				.addArgument(kv("authenticationType", AuthenticationType.API_KEY.toString()))
+				.addArgument(kv("user", user))
+				.addArgument(kv("keyId", keyId));
+		if (sourceIp != null) {
+			builder.addArgument(kv("sourceIp", sourceIp));
+		}
+		builder.log();
+	}
+
+	/** Failed API-key authentication — keyId is null for MALFORMED_TOKEN. */
+	public void apiKeyLoginFailed(String sourceIp, String keyId, String detail) {
+		var builder = LOG.atInfo().setMessage("login_failed")
+				.addArgument(kv("eventType", EventType.AUTHENTICATION.toString()))
+				.addArgument(kv("outcome", Outcome.FAILURE.toString()))
+				.addArgument(kv("authenticationType", AuthenticationType.API_KEY.toString()));
+		if (keyId != null) {
+			builder.addArgument(kv("keyId", keyId));
+		}
+		if (sourceIp != null) {
+			builder.addArgument(kv("sourceIp", sourceIp));
+		}
+		if (detail != null) {
+			builder.addArgument(kv("detail", detail));
+		}
+		builder.log();
+	}
+
+	/** API key was created. Actor is the person who logged in; owner is the key's user. */
+	public void apiKeyCreated(String actor, String owner, String keyId, java.time.OffsetDateTime expireDate) {
+		LOG.atInfo().setMessage("api_key_created")
+				.addArgument(kv("actor", actor))
+				.addArgument(kv("owner", owner))
+				.addArgument(kv("keyId", keyId))
+				.addArgument(kv("expireDate", expireDate.toString()))
+				.log();
+	}
+
+	/** API key was revoked. Actor is the person who revoked it (owner or an admin). */
+	public void apiKeyRevoked(String actor, String owner, String keyId) {
+		LOG.atInfo().setMessage("api_key_revoked")
+				.addArgument(kv("actor", actor))
+				.addArgument(kv("owner", owner))
+				.addArgument(kv("keyId", keyId))
+				.log();
 	}
 }
