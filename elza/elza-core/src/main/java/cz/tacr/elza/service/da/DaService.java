@@ -120,6 +120,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.archivists.ead3.schema.Ead;
 import org.glassfish.jaxb.runtime.marshaller.NamespacePrefixMapper;
 import org.jetbrains.annotations.NotNull;
@@ -128,6 +129,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.ClassPathResource;
@@ -535,9 +537,8 @@ public class DaService {
 
     /**
      * Requests the metadata of the given AIPs, as an action of the current user.
-     *
-     * Not transactional on purpose - see {@link #aipUpdateAip}.
      */
+    @Transactional
     public DaAipAction requestMetadata(List<Integer> aipIds) {
         DaAipAction action = actionService.start(DaAipActionType.LOAD_METADATA, aipRepository.findAllById(aipIds));
         createDaoStructure(aipIds, actionService.sinkFor(action));
@@ -1633,9 +1634,15 @@ public class DaService {
         daLocalCacheRepository.save(localCache);
     }
 
-    @Transactional
+    /**
+     * The caller supplies the transaction: every call is internal to this class, so a
+     * {@code @Transactional} here would be bypassed together with the proxy.
+     */
     public DaSyncQueueItem createSyncQueueItem(String code, DaAip aip, ArrDigitalRepository digitalRepository,
                                                DaSyncQueueItem.QueueItemState queueItemState, String aipVersion, AipType aipType, boolean active) {
+        Validate.isTrue(TransactionSynchronizationManager.isActualTransactionActive(),
+                        "Zařazení do fronty vyžaduje otevřenou transakci");
+
         List<DaSyncQueueItem.QueueItemState> queueItemStates = getQueueItemStates(queueItemState);
         syncQueueItemRepository.updateActiveByCodeAndDigitalRepositoryAndStateInAndActiveIsTrue(code, digitalRepository, queueItemStates);
 

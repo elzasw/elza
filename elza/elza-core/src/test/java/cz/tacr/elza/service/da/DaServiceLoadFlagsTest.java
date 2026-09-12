@@ -16,9 +16,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.lang.Nullable;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import cz.tacr.elza.api.AipType;
 import cz.tacr.elza.api.DaAipActionItemState;
@@ -110,6 +112,14 @@ public class DaServiceLoadFlagsTest {
         setField(service, "daLocalCacheRepository", localCacheRepository);
         setField(service, "actionService", actionService);
         setField(service, "referenceResolver", referenceResolver);
+
+        // The service expects the caller to hold a transaction; here the test stands in for one.
+        TransactionSynchronizationManager.setActualTransactionActive(true);
+    }
+
+    @AfterEach
+    void clearTransaction() {
+        TransactionSynchronizationManager.setActualTransactionActive(false);
     }
 
     /** A download of the given form is waiting in the queue for the AIP. */
