@@ -22,7 +22,13 @@ import ActionsContainer from 'components/arr/aip/ActionsContainer';
 const AREA = "AIP"
 
 /**
- * Conditions the screen applies itself: this fund, with metadata loaded and no load error.
+ * Conditions the screen applies itself: this fund, and packages whose metadata processing did
+ * not fail.
+ *
+ * Deliberately not filtered by metadataLoad: the tab used to hide packages without loaded
+ * metadata, so a just-paired package was not visible and the ribbon could not offer to load its
+ * metadata - AipPageRibbon offers that action only for a selected AIP with metadataLoad !== true.
+ * The state is readable from the "Načtená metadata" column instead.
  */
 const initialFilters = (fundId: number): AipFilterEntry[] => [
     {
