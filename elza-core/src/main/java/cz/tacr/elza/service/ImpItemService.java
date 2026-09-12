@@ -9,6 +9,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -59,6 +60,14 @@ public class ImpItemService {
      */
     @Value("${elza.import.batchInputDir:}")
     private String batchInputDir;
+
+    /**
+     * Whether the configured folder has already been reported as missing. The listing is called
+     * from the UI to decide whether to offer the folder button, so without this a mis-configured
+     * deployment writes one line per page visit for a condition that does not change between two
+     * clicks. Cleared once the folder is found, so a deployment that breaks again is reported again.
+     */
+    private final AtomicBoolean missingFolderReported = new AtomicBoolean();
 
     @Transactional
     public ImpItem findById(int itemId) {
@@ -200,11 +209,16 @@ public class ImpItemService {
         }
         Path base = Paths.get(batchInputDir).toAbsolutePath().normalize();
         if (!Files.isDirectory(base)) {
-            // configured path is missing on disk – the feature is effectively off; log as
-            // ERROR so a mis-configured deployment is visible in the log
-            logger.error("Configured import folder does not exist: {} (elza.import.batchInputDir)", base);
+            // The configured path is missing on disk, so the feature is off just as it is when
+            // nothing is configured - the caller falls back the same way and the user is told by
+            // the disabled button. Reported once per change of state rather than per call: this is
+            // a deployment fault, and one line per page visit is how a log stops being read.
+            if (missingFolderReported.compareAndSet(false, true)) {
+                logger.warn("Configured import folder does not exist: {} (elza.import.batchInputDir)", base);
+            }
             return List.of();
         }
+        missingFolderReported.set(false);
         Path resolved = resolveFolder(relativePath);
         List<ServerFolderEntry> out = new ArrayList<>();
         try (Stream<Path> entries = Files.list(resolved)) {
