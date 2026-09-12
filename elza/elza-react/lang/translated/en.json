@@ -459,6 +459,10 @@
     "defaultMessage": "Import",
     "srcHash": "LP-bqr9WygAm"
   },
+  "admin.user.passwordChange.title": {
+    "defaultMessage": "Password change",
+    "srcHash": "P2dQlVQyZq9S"
+  },
   "admin_packages_label_action": {
     "defaultMessage": "Action",
     "srcHash": "zI4C_P1sVn28"
@@ -2641,17 +2645,85 @@
     "defaultMessage": "Download",
     "srcHash": "xxAzjqAuIzkG"
   },
+  "ribbon.action.admin": {
+    "defaultMessage": "Administration",
+    "srcHash": "eey_koOTo5Cp"
+  },
+  "ribbon.action.admin.backgroundProcesses": {
+    "defaultMessage": "Background tasks",
+    "srcHash": "U2XnpMnd4E_t"
+  },
+  "ribbon.action.admin.externalSystems": {
+    "defaultMessage": "External systems",
+    "srcHash": "oU8i4V-8EbbO"
+  },
+  "ribbon.action.admin.fund": {
+    "defaultMessage": "Archival funds",
+    "srcHash": "V7IN5C9Oo3fd"
+  },
+  "ribbon.action.admin.group": {
+    "defaultMessage": "Groups",
+    "srcHash": "j03RCNDIBF0_"
+  },
   "ribbon.action.admin.institution": {
     "defaultMessage": "Institutions",
     "srcHash": "AMtLLUW_r1z7"
+  },
+  "ribbon.action.admin.packages": {
+    "defaultMessage": "Package management",
+    "srcHash": "txLLrAl6aEqF"
+  },
+  "ribbon.action.admin.requestsQueue": {
+    "defaultMessage": "Request queue",
+    "srcHash": "71_vlF46maaC"
+  },
+  "ribbon.action.admin.showLogs": {
+    "defaultMessage": "Log viewer",
+    "srcHash": "fGegMAMRylyA"
+  },
+  "ribbon.action.admin.user": {
+    "defaultMessage": "Users",
+    "srcHash": "kWfNeM3r9zrt"
+  },
+  "ribbon.action.admin.user.passwordChange": {
+    "defaultMessage": "Change password",
+    "srcHash": "0iNPH3nqvHU4"
+  },
+  "ribbon.action.aip": {
+    "defaultMessage": "Archival packages",
+    "srcHash": "j-OwZ5UftK-t"
   },
   "ribbon.action.arr.fund.publicationSystems": {
     "defaultMessage": "Publication systems management",
     "srcHash": "3R1qxdjYgTmM"
   },
+  "ribbon.action.back": {
+    "defaultMessage": "Back",
+    "srcHash": "PiIMeDDyN-8f"
+  },
+  "ribbon.action.fund": {
+    "defaultMessage": "Archival funds",
+    "srcHash": "V7IN5C9Oo3fd"
+  },
+  "ribbon.action.home": {
+    "defaultMessage": "Home",
+    "srcHash": "effJubuENyjT"
+  },
+  "ribbon.action.logout": {
+    "defaultMessage": "Log out",
+    "srcHash": "rCFX_e0YsVMe"
+  },
   "ribbon.action.publication": {
     "defaultMessage": "Publication",
     "srcHash": "zSDsDTqzNIUA"
+  },
+  "ribbon.action.registry": {
+    "defaultMessage": "Archival entities",
+    "srcHash": "MgSyrZoDfhbs"
+  },
+  "ribbon.saving": {
+    "defaultMessage": "Saving",
+    "srcHash": "ox-UeRBnkMTi"
   },
   "ribbon_action_admin_reports": {
     "defaultMessage": "Reports",
@@ -2852,6 +2924,10 @@
   "userSettings.apiKeys.sectionHint": {
     "defaultMessage": "A personal key is used instead of the key configured for the whole instance whenever ELZA calls that external system on your behalf.",
     "srcHash": "2oXqGMNGdxB7"
+  },
+  "userSettings.button.title": {
+    "defaultMessage": "Settings",
+    "srcHash": "4BNW7MyPieeu"
   },
   "userSettings.category.AccessKeys": {
     "defaultMessage": "Elza",
