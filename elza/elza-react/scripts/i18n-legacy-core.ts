@@ -14,6 +14,10 @@ export type LegacyBaseline = Record<string, number>;
  * snadno vysvětlitelné a chybuje směrem k nadpočtu, což je u shrink-only
  * pojistky bezpečný směr.
  *
+ * Důsledek, na který se dá narazit: **i zmínka v dokumentačním komentáři se
+ * počítá.** Když je potřeba v komentáři mluvit o starém helperu, piš ho bez
+ * závorky (`i18n`), ne jako volání.
+ *
  * `\b` před `i18n` zabrání započítání `existsI18n(` a podobných.
  */
 export function countCalls(source: string): number {
