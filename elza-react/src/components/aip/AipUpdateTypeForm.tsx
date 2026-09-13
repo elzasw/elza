@@ -1,9 +1,14 @@
 import React from 'react';
-import { i18n } from 'components/shared';
+import { globalMessages } from 'components/shared/lang';
 import { Form, Modal } from 'react-bootstrap';
 import { Button } from '../ui';
 import { Form as FinalForm, Field } from 'react-final-form';
-import { useIntl } from 'react-intl';
+import { FormattedMessage, defineMessages, useIntl } from 'react-intl';
+
+// Id je převzaté z legacy katalogu beze změny.
+const messages = defineMessages({
+    updateType: { id: 'aip.form.update.type', defaultMessage: 'Co se má s AIPem udělat' },
+});
 import { AipDetailVO, AipProblemType, AipUpdateType } from "elza-api";
 
 import { updateTypeDescriptions, updateTypeMessages, updateTypeUnavailable } from './messages';
@@ -68,7 +73,7 @@ export function AipUpdateTypeForm({
         const errors: Partial<Record<keyof FormFields, string>> = {};
 
         if (!values.type) {
-            errors.type = i18n('global.validation.required');
+            errors.type = intl.formatMessage(globalMessages.validationRequired);
         }
 
         return errors;
@@ -90,7 +95,7 @@ export function AipUpdateTypeForm({
                     <Field name="type">
                         {({input, meta}) => (
                             <fieldset>
-                                <legend className="form-label">{i18n('aip.form.update.type')}</legend>
+                                <legend className="form-label"><FormattedMessage {...messages.updateType} /></legend>
                                 {UPDATE_TYPES.map(type => {
                                     const unavailable = unavailableReason(type, aips);
                                     return (
@@ -129,10 +134,10 @@ export function AipUpdateTypeForm({
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={handleSubmit} variant="outline-secondary" disabled={submitting}>
-                        {i18n('global.action.choose')}
+                        <FormattedMessage {...globalMessages.choose} />
                     </Button>
                     <Button onClick={onClose} variant="link">
-                        {i18n('global.action.cancel')}
+                        <FormattedMessage {...globalMessages.cancel} />
                     </Button>
                 </Modal.Footer>
             </Form>

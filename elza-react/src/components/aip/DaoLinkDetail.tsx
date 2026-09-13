@@ -6,7 +6,15 @@ import { AppState } from "typings/store";
 import {useEffect, useState} from "react";
 import {useThunkDispatch} from "../../utils/hooks";
 import {Button, Row} from "react-bootstrap";
-import {i18n, Icon} from "../shared";
+import { Icon } from "../shared";
+import { defineMessages, useIntl } from "react-intl";
+import { globalMessages } from "components/shared/lang";
+
+// Id je převzaté z legacy katalogu beze změny. ConfirmForm chce řetězce,
+// proto formatMessage a ne FormattedMessage.
+const messages = defineMessages({
+    deleteLink: { id: "arr.aip.dao.link.delete", defaultMessage: "Opravdu chcete smazat napojení?" },
+});
 import {Api} from "../../api";
 import {modalDialogHide, modalDialogShow} from "../../actions/global/modalDialog";
 import AipExplorerModalWrapper from "./explorer/AipExplorerWrapper.tsx";
@@ -23,6 +31,7 @@ type DaoLinkDetailProps = {
 }
 
 const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
+    const intl = useIntl();
     const daoLinks = useSelector((state: AppState) => storeFromArea(state, AREA_DAO_LINKS));
     const dispatch = useThunkDispatch();
     const [collapsed, setCollapsed] = useState<boolean>(false);
@@ -40,9 +49,9 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
         const confirmForm = (
             <ConfirmForm
                 //@ts-ignore
-                confirmMessage={i18n('arr.aip.dao.link.delete')}
-                submittingMessage={i18n('arr.aip.dao.link.delete')}
-                submitTitle={i18n('global.action.delete')}
+                confirmMessage={intl.formatMessage(messages.deleteLink)}
+                submittingMessage={intl.formatMessage(messages.deleteLink)}
+                submitTitle={intl.formatMessage(globalMessages.delete)}
                 onSubmit={() => {
                     return Api.aips.aipDeleteDaoLink(linkId)
                 }}

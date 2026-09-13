@@ -1,6 +1,8 @@
 import Ribbon from "components/page/Ribbon";
-import { i18n, Icon, RibbonGroup } from "components/shared";
+import { Icon, RibbonGroup } from "components/shared";
 import { Button } from "components/ui";
+import { FormattedMessage } from "react-intl";
+import { fundMessages } from "components/fund/messages";
 import * as perms from 'actions/user/Permission.jsx';
 import { useSelector } from "react-redux";
 import { AppState } from "typings/store";
@@ -21,7 +23,7 @@ export function HomePageRibbon({ onAddFund }: Props) {
       <Button key="add-fa" onClick={onAddFund}>
         <Icon glyph="fa-plus-circle" />
         <div>
-          <span className="btnText">{i18n('ribbon.action.arr.fund.add')}</span>
+          <span className="btnText"><FormattedMessage {...fundMessages.add} /></span>
         </div>
       </Button>,
     );
@@ -32,7 +34,7 @@ export function HomePageRibbon({ onAddFund }: Props) {
       <Button key="search-fa" onClick={showSearchModal}>
         <Icon glyph="fa-search" />
         <div>
-          <span className="btnText">{i18n('ribbon.action.arr.fund.search')}</span>
+          <span className="btnText"><FormattedMessage {...fundMessages.search} /></span>
         </div>
       </Button>,
     );

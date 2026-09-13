@@ -1,4 +1,4 @@
-import { Icon, Ribbon, i18n } from 'components';
+import { Icon, Ribbon } from 'components';
 import { Button } from 'components/ui';
 import * as perms from 'actions/user/Permission';
 import { RibbonGroup } from 'components/shared';
@@ -8,6 +8,7 @@ import { AppState } from 'typings/store';
 import { useSearchFundsModal } from 'components/shared/dialog/FluentModalDialog';
 import { PublicationSystemsDialog } from 'components/arr/publication/PublicationSystemsDialog';
 import { FormattedMessage } from 'react-intl';
+import { fundMessages } from './messages';
 
 interface Props {
     onAddFund: () => void;
@@ -29,7 +30,7 @@ export function FundPageRibbon({
             <Button key="add-fa" onClick={onAddFund}>
                 <Icon glyph="fa-plus-circle" />
                 <div>
-                    <span className="btnText important">{i18n('ribbon.action.arr.fund.add')}</span>
+                    <span className="btnText important"><FormattedMessage {...fundMessages.add} /></span>
                 </div>
             </Button>,
         );
@@ -39,7 +40,7 @@ export function FundPageRibbon({
         <Button key="search-fa" onClick={showSearchModal}>
             <Icon glyph="fa-search" />
             <div>
-                <span className="btnText">{i18n('ribbon.action.arr.fund.search')}</span>
+                <span className="btnText"><FormattedMessage {...fundMessages.search} /></span>
             </div>
         </Button>,
     );
@@ -49,7 +50,7 @@ export function FundPageRibbon({
             <Button key="fa-import" onClick={onImport}>
                 <Icon glyph="fa-upload" />
                 <div>
-                    <span className="btnText">{i18n('ribbon.action.arr.fund.import')}</span>
+                    <span className="btnText"><FormattedMessage {...fundMessages.import} /></span>
                 </div>
             </Button>,
         );
@@ -61,7 +62,7 @@ export function FundPageRibbon({
                 <Icon glyph="fa-newspaper-o" />
                 <div>
                     <span className="btnText">
-                        <FormattedMessage id="ribbon.action.arr.fund.publicationSystems" defaultMessage="Správa publikačních systémů" />
+                        <FormattedMessage {...fundMessages.publicationSystems} />
                     </span>
                 </div>
             </Button>,

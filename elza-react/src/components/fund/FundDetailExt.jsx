@@ -1,6 +1,7 @@
 import { downloadFile } from 'actions/global/download';
 import { UrlFactory } from 'actions/index.jsx';
-import { AbstractReactComponent, i18n } from 'components/shared';
+import { AbstractReactComponent } from 'components/shared';
+import { FormattedMessage, defineMessages } from 'react-intl';
 import { dateToString } from 'components/Utils.jsx';
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -9,6 +10,18 @@ import { LinkContainer } from 'react-router-bootstrap';
 import { urlFundTree } from "../../constants";
 import { Button } from '../ui';
 import './FundDetailExt.scss';
+
+// Id jsou převzatá z legacy katalogu beze změny. Placeholder {0} zůstává:
+// ICU bere jako jméno argumentu i číslo, takže legacy tvar funguje beze změny.
+const messages = defineMessages({
+    download: { id: 'global.action.download', defaultMessage: 'Stáhnout' },
+    activeOutputs: { id: 'arr.fund.outputDefinition.active', defaultMessage: 'Výstupy' },
+    versionList: { id: 'arr.fund.version.list', defaultMessage: 'Verze AS' },
+    version: { id: 'arr.fund.version', defaultMessage: 'Verze {0}' },
+    currentVersion: { id: 'arr.fund.currentVersion', defaultMessage: 'Aktuální verze' },
+    showInArr: { id: 'arr.fund.action.showInArr', defaultMessage: 'Zobrazit' },
+    openInArr: { id: 'arr.fund.action.openInArr', defaultMessage: 'Otevřít' },
+});
 
 const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
     static propTypes = {
@@ -44,7 +57,7 @@ const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
                             }}
                             variant="link"
                         >
-                            {i18n('global.action.download')}
+                            <FormattedMessage {...messages.download} />
                         </Button>
                     </div>
                 );
@@ -57,22 +70,22 @@ const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
             <div className="fund-detail-ext-container">
                 {validOutputs.length > 0 && (
                     <div className="outputs-container">
-                        <h1>{i18n('arr.fund.outputDefinition.active')}</h1>
+                        <h1><FormattedMessage {...messages.activeOutputs} /></h1>
                         {validOutputs}
                     </div>
                 )}
                 <div className="versions-container">
-                    <h1>{i18n('arr.fund.version.list')}</h1>
+                    <h1><FormattedMessage {...messages.versionList} /></h1>
                     {fundDetail.versions.map((ver, index) => {
                         if (ver.lockDate) {
                             return (
                                 <div className="fund-version" key={'fund-version-' + index}>
                                     <div className="version-label">
-                                        {i18n('arr.fund.version', dateToString(new Date(ver.lockDate)))}
+                                        <FormattedMessage {...messages.version} values={{ 0: dateToString(new Date(ver.lockDate)) }} />
                                     </div>
                                     <LinkContainer key={`fund-${ver.id}`} to={urlFundTree(fundDetail.id, ver.id)}>
                                         <Button variant='link'>
-                                        {i18n('arr.fund.action.showInArr')}
+                                        <FormattedMessage {...messages.showInArr} />
                                         </Button>
                                     </LinkContainer>
                                 </div>
@@ -80,10 +93,10 @@ const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
                         } else {
                             return (
                                 <div className="fund-version" key={'fund-version-' + index}>
-                                    <div className="version-label">{i18n('arr.fund.currentVersion')}</div>
+                                    <div className="version-label"><FormattedMessage {...messages.currentVersion} /></div>
                                     <LinkContainer key={`fund-${ver.id}`} to={urlFundTree(fundDetail.id)}>
                                         <Button variant='link'>
-                                        {i18n('arr.fund.action.openInArr')}
+                                        <FormattedMessage {...messages.openInArr} />
                                         </Button>
                                     </LinkContainer>
                                 </div>
