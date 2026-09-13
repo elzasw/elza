@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Icon, i18n } from 'components/shared';
+import { Icon} from 'components/shared';
+import { globalMessages } from 'components/shared/lang';
 
 import { deletePackage, getPackagesFetchIfNeeded } from 'actions/admin/packages.jsx';
 import { downloadFile } from '../../actions/global/download';
@@ -233,12 +234,12 @@ export function AdminPackagesListFn({ getExportUrl }) {
                                     <TableCellLayout {...columnSizing_unstable.getTableCellProps("action")}>
                                         <FluentButton
                                             icon={<Icon glyph="fa-download" />}
-                                            title={i18n('global.action.download')}
+                                            title=<FormattedMessage {...globalMessages.download} />
                                             onClick={() => handleDownload(item.code)}
                                         />
                                         <FluentButton
                                             icon={<Icon glyph="fa-trash" />}
-                                            title={i18n('global.action.delete')}
+                                            title=<FormattedMessage {...globalMessages.delete} />
                                             onClick={() => handleDeletePackage(item.code)}
                                         />
                                     </TableCellLayout>

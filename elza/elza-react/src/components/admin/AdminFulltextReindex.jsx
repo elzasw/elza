@@ -7,7 +7,14 @@
 import React from 'react';
 import {connect} from 'react-redux';
 import {Button} from '../ui';
-import {AbstractReactComponent, i18n} from 'components/shared';
+import {AbstractReactComponent} from 'components/shared';
+import { FormattedMessage, defineMessages } from 'react-intl';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    reindexing: { id: 'admin.fulltext.message.reindexing', defaultMessage: 'Probíhá reindexace...' },
+    reindex: { id: 'admin.fulltext.action.reindex', defaultMessage: 'Reindexovat' },
+});
 import {getIndexStateFetchIfNeeded, reindex} from 'actions/admin/fulltext.jsx';
 
 class AdminFulltextReindex extends AbstractReactComponent {
@@ -24,13 +31,13 @@ class AdminFulltextReindex extends AbstractReactComponent {
     }
 
     renderReindexing() {
-        return <div>{i18n('admin.fulltext.message.reindexing')}</div>;
+        return <div><FormattedMessage {...messages.reindexing} /></div>;
     }
 
     renderNotReindexing() {
         return (
             <Button onClick={this.startReindexing.bind(this)} bsSize="xsmall">
-                {i18n('admin.fulltext.action.reindex')}
+                <FormattedMessage {...messages.reindex} />
             </Button>
         );
     }
