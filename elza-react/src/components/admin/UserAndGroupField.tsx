@@ -62,9 +62,16 @@ class UserAndGroupField extends React.Component<Props, State> {
         tags: false,
         // WebApi se vyhledává až při volání, ne při definici třídy - vzniká na poslední řádce
         // svého modulu a v kruhu importů ještě nemusí existovat.
-        findUserApi: (fullText, active, disabled, max, groupId, searchTypeName, searchTypeUsername) =>
-            WebApi.findUser(fullText, active, disabled, max, groupId, searchTypeName, searchTypeUsername),
-        findGroupApi: (fulltext) => WebApi.findGroup(fulltext),
+        findUserApi: (
+            fullText: string,
+            active: boolean,
+            disabled: boolean,
+            max: number,
+            groupId: number | null,
+            searchTypeName?: ApSearchType,
+            searchTypeUsername?: ApSearchType,
+        ) => WebApi.findUser(fullText, active, disabled, max, groupId, searchTypeName, searchTypeUsername),
+        findGroupApi: (fulltext: string) => WebApi.findGroup(fulltext),
     };
 
     static propTypes = {

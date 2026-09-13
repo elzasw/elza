@@ -18,7 +18,7 @@ describe('websocket.onMessage', () => {
         const ws = new websocket('ws://test/stomp', {});
         const received: string[] = [];
 
-        const first = () => {
+        const first = (): void => {
             ws.removeListener(first);
             received.push('first');
         };
@@ -49,7 +49,7 @@ describe('websocket.onMessage', () => {
         const received: string[] = [];
 
         ws.addListener(() => received.push('live'));
-        ws.removeListener(() => undefined);
+        ws.removeListener((): void => undefined);
 
         ws.onMessage(frame());
 
