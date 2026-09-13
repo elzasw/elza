@@ -1,12 +1,12 @@
 import React, {PropsWithChildren, createContext, useContext, ReactNode} from 'react';
-import { websocket } from 'websocketActions';
+import { WebsocketClient } from '../../../websocket/WebsocketClient';
 
 interface Props {
     url: string;
     eventMap: Record<string, (message: any) => void>;
 }
 
-const WebsocketContext = createContext<websocket | undefined>(undefined)
+const WebsocketContext = createContext<WebsocketClient | undefined>(undefined)
 
 export const useWebsocket = () => {
     const websocketContext = useContext(WebsocketContext);
@@ -22,7 +22,7 @@ export const WebsocketProvider = ({children}: PropsWithChildren<Props>) => {
     </WebsocketContext.Provider>
 }
 
-export const WebsocketConsumer = ({children}:{children: (context: {websocket: websocket | undefined}) => ReactNode}) => {
+export const WebsocketConsumer = ({children}:{children: (context: {websocket: WebsocketClient | undefined}) => ReactNode}) => {
     return <WebsocketContext.Consumer>{(websocket) => {
         return children({websocket});
     }}</WebsocketContext.Consumer>
