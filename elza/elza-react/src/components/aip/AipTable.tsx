@@ -9,7 +9,7 @@ import { formatAipSize, formatUnitDate } from './format';
 import { findColDefByKey } from './columns';
 import './AipTable.scss';
 import { useHistory} from 'react-router';
-import {urlAip, urlEntity} from '../../constants.tsx';
+import {urlAip, urlEntity, urlFund} from '../../constants.tsx';
 import { Link } from 'react-router-dom';
 import { useThunkDispatch } from 'utils/hooks';
 import {aipsFetchIfNeeded, aipsFilter, AREA_AIP, AREA_AIPS, setSelectedAips, } from "../../actions/aip/aip.ts";
@@ -122,7 +122,32 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, onExplore, filterDisabled, in
             );
             case "aipSize": return formatAipSize(item[key]);
             case "unitdateFrom":  return item.unitdateFrom ? formatUnitDate(item.unitdateFrom, item.unitdateTo): "-";
-            case "fund.name": return item.fund?.name ?? "-";
+            // Napojený AIP vede rovnou do svého archivního souboru; nedohledaný fond
+            // zůstane pomlčkou, není kam odkázat.
+            case "fund.name": return item.fund
+                ? (
+                    <Link to={urlFund(item.fund.id)}
+                          title={item.fund.name}
+                          onClick={e => e.stopPropagation()}>
+                        {item.fund.name}
+                    </Link>
+                )
+                : "-";
+            case "fundCode": {
+                if (!item.fundCode) {
+                    return "-";
+                }
+                // Dohledaný fond se dá otevřít; nedohledaný zůstane jen kódem z balíčku.
+                return item.fund
+                    ? (
+                        <Link to={urlFund(item.fund.id)}
+                              title={item.fund.name}
+                              onClick={e => e.stopPropagation()}>
+                            {item.fundCode}
+                        </Link>
+                    )
+                    : item.fundCode;
+            }
             case "institution.name": return item.institution?.name ?? "-";
             case "institutionCode": {
                 if (!item.institutionCode) {
