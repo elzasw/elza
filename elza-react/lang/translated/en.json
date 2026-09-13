@@ -351,6 +351,62 @@
     "defaultMessage": "Reindexing in progress…",
     "srcHash": "1w27Yo3PPyOQ"
   },
+  "admin.group.add.title": {
+    "defaultMessage": "Create group",
+    "srcHash": "AMgjtnZXj8ij"
+  },
+  "admin.group.delete.success": {
+    "defaultMessage": "The group has been deleted",
+    "srcHash": "fG0IxojJxw-g"
+  },
+  "admin.group.edit.title": {
+    "defaultMessage": "Edit group",
+    "srcHash": "X-EZGCJipRxH"
+  },
+  "admin.group.emptyList.message": {
+    "defaultMessage": "There are no groups defined in the system",
+    "srcHash": "KtnXfkqB0sQS"
+  },
+  "admin.group.emptyList.title": {
+    "defaultMessage": "No groups",
+    "srcHash": "bDRectORY6OI"
+  },
+  "admin.group.noSelection.message": {
+    "defaultMessage": "Please select a group from the list, or create a new one",
+    "srcHash": "S21J_eexi94Q"
+  },
+  "admin.group.noSelection.title": {
+    "defaultMessage": "No group selected",
+    "srcHash": "tE2tJwER3ZNK"
+  },
+  "admin.group.title": {
+    "defaultMessage": "Group",
+    "srcHash": "McnQ70dy50nK"
+  },
+  "admin.group.title.code": {
+    "defaultMessage": "Code",
+    "srcHash": "lHt70Q2si8jP"
+  },
+  "admin.group.title.description": {
+    "defaultMessage": "Description",
+    "srcHash": "rx7qx-MBKenQ"
+  },
+  "admin.group.title.name": {
+    "defaultMessage": "Name",
+    "srcHash": "EQAs0dy3Z5es"
+  },
+  "admin.group.title.permissions": {
+    "defaultMessage": "Group permissions",
+    "srcHash": "LCMFbxcxXF6T"
+  },
+  "admin.group.title.users": {
+    "defaultMessage": "Group members",
+    "srcHash": "usv5J-0L8DXO"
+  },
+  "admin.group.user.add.title": {
+    "defaultMessage": "Add users to the group",
+    "srcHash": "Ffa7JGMRvtYt"
+  },
   "admin.import.action.addCsv": {
     "defaultMessage": "New CSV batch",
     "srcHash": "QusQdJdjIhAx"
@@ -730,6 +786,18 @@
   "admin.packages.action.import": {
     "defaultMessage": "Import",
     "srcHash": "yTA6PZurxTjn"
+  },
+  "admin.perms.tabs.advanced": {
+    "defaultMessage": "Advanced",
+    "srcHash": "sg8eCwVR4DSE"
+  },
+  "admin.perms.tabs.funds": {
+    "defaultMessage": "Archival funds",
+    "srcHash": "V7IN5C9Oo3fd"
+  },
+  "admin.perms.tabs.scopes": {
+    "defaultMessage": "Entity scopes",
+    "srcHash": "3-OKfmKJZsWr"
   },
   "admin.resetServerCache.success": {
     "defaultMessage": "Server caches have been reset",
@@ -2677,6 +2745,10 @@
     "defaultMessage": "Close",
     "srcHash": "0r4EKpo4ZhJv"
   },
+  "global.action.create": {
+    "defaultMessage": "Create",
+    "srcHash": "O-socWGcRSWq"
+  },
   "global.action.delete": {
     "defaultMessage": "Delete",
     "srcHash": "eQTkknH2OPF1"
@@ -3241,6 +3313,18 @@
     "defaultMessage": "Groups",
     "srcHash": "j03RCNDIBF0_"
   },
+  "ribbon.action.admin.group.add": {
+    "defaultMessage": "Add group",
+    "srcHash": "x732bPEPsaNx"
+  },
+  "ribbon.action.admin.group.delete": {
+    "defaultMessage": "Delete group",
+    "srcHash": "WQelcPh7sBK5"
+  },
+  "ribbon.action.admin.group.edit": {
+    "defaultMessage": "Edit group",
+    "srcHash": "3KrCnq2aMu7J"
+  },
   "ribbon.action.admin.institution": {
     "defaultMessage": "Institutions",
     "srcHash": "AMtLLUW_r1z7"
@@ -3360,6 +3444,10 @@
   "search.action.noResult": {
     "defaultMessage": "No records found",
     "srcHash": "_YTIcNZIg5jH"
+  },
+  "search.input.search": {
+    "defaultMessage": "Search…",
+    "srcHash": "ljz34dnOH0vG"
   },
   "search_funds_form_conformity_error": {
     "defaultMessage": "Error",
