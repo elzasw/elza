@@ -7,6 +7,10 @@
     "defaultMessage": "Add description element",
     "srcHash": "ckU6Xf-Ze6l2"
   },
+  "admin.extSystem.add.title": {
+    "defaultMessage": "New external system",
+    "srcHash": "bw_993MNN6Op"
+  },
   "admin.extSystem.apiKeyId": {
     "defaultMessage": "ApiKey - ID",
     "srcHash": "kvGkHecV93wA"
@@ -15,9 +19,65 @@
     "defaultMessage": "ApiKey - value",
     "srcHash": "oRAn41A0cbCo"
   },
+  "admin.extSystem.cam": {
+    "defaultMessage": "CAM",
+    "srcHash": "m3te5HTbqsLO"
+  },
+  "admin.extSystem.cam-complete": {
+    "defaultMessage": "CAM - Complete",
+    "srcHash": "lIiONECAsqQx"
+  },
+  "admin.extSystem.cam-complete-v2": {
+    "defaultMessage": "CAM - Complete v2",
+    "srcHash": "_F74uw6X0VQx"
+  },
+  "admin.extSystem.cam-uuid": {
+    "defaultMessage": "CAM - UUID",
+    "srcHash": "hgJq4Wr1qPA-"
+  },
+  "admin.extSystem.cam-v2": {
+    "defaultMessage": "CAM v2",
+    "srcHash": "3Cz0fdi5bo3H"
+  },
+  "admin.extSystem.class": {
+    "defaultMessage": "Class",
+    "srcHash": "CxmhM0w-b56B"
+  },
+  "admin.extSystem.class.AiExternalSystemVO": {
+    "defaultMessage": "AI service provider",
+    "srcHash": "tfsZ4QihqfCh"
+  },
+  "admin.extSystem.class.ApExternalSystemVO": {
+    "defaultMessage": "External system for entities/persons",
+    "srcHash": "Bngdwcx3AF3M"
+  },
+  "admin.extSystem.class.ArrDigitalRepositoryVO": {
+    "defaultMessage": "Digital object repository",
+    "srcHash": "pmKU6aca4UoB"
+  },
+  "admin.extSystem.class.ArrDigitizationFrontdeskVO": {
+    "defaultMessage": "Digitisation line",
+    "srcHash": "AGwK_ggfV2Wn"
+  },
+  "admin.extSystem.class.GisExternalSystemVO": {
+    "defaultMessage": "GIS system (map data)",
+    "srcHash": "1IFx3yOAtXn_"
+  },
+  "admin.extSystem.code": {
+    "defaultMessage": "Code",
+    "srcHash": "lHt70Q2si8jP"
+  },
+  "admin.extSystem.da": {
+    "defaultMessage": "Digital archive",
+    "srcHash": "iPgFLR6539C0"
+  },
   "admin.extSystem.daSyncDelay": {
     "defaultMessage": "Synchronization interval (s), 0 = no synchronization",
     "srcHash": "wXgprAUB_RPo"
+  },
+  "admin.extSystem.delete.confirm": {
+    "defaultMessage": "Do you really want to delete this external system?",
+    "srcHash": "7dPCsQ_XYM1e"
   },
   "admin.extSystem.downloadMethod": {
     "defaultMessage": "AIP download method",
@@ -31,6 +91,50 @@
     "defaultMessage": "Standard (HTTP)",
     "srcHash": "VRo4FuFYuHsJ"
   },
+  "admin.extSystem.edit.title": {
+    "defaultMessage": "Edit external system",
+    "srcHash": "VuFvb4lQcUIt"
+  },
+  "admin.extSystem.elzaCode": {
+    "defaultMessage": "ELZA code",
+    "srcHash": "H9rbTqtX96_D"
+  },
+  "admin.extSystem.filesystem": {
+    "defaultMessage": "File system",
+    "srcHash": "FNPva2hh39ED"
+  },
+  "admin.extSystem.gis-edit": {
+    "defaultMessage": "Edit",
+    "srcHash": "EH-_2po52cbz"
+  },
+  "admin.extSystem.gis-view": {
+    "defaultMessage": "View",
+    "srcHash": "d_FVmqRjYyP4"
+  },
+  "admin.extSystem.multipleLinks": {
+    "defaultMessage": "Multiple links",
+    "srcHash": "sFp6nzn6heH5"
+  },
+  "admin.extSystem.multipleLinks.false": {
+    "defaultMessage": "No",
+    "srcHash": "OM6_SDapGMta"
+  },
+  "admin.extSystem.multipleLinks.true": {
+    "defaultMessage": "Yes",
+    "srcHash": "HFtwBBU9Smvu"
+  },
+  "admin.extSystem.name": {
+    "defaultMessage": "Name",
+    "srcHash": "EQAs0dy3Z5es"
+  },
+  "admin.extSystem.noSelection.message": {
+    "defaultMessage": "Please select an external system from the list, or create a new one",
+    "srcHash": "JLOIsJnGOzDj"
+  },
+  "admin.extSystem.noSelection.title": {
+    "defaultMessage": "No external system selected",
+    "srcHash": "_vjOIj21SMSU"
+  },
   "admin.extSystem.onReceived": {
     "defaultMessage": "On AIP received",
     "srcHash": "bwX_RNjOd-dQ"
@@ -42,6 +146,90 @@
   "admin.extSystem.onReceivedNone": {
     "defaultMessage": "Do nothing",
     "srcHash": "6_xTndQHNNGM"
+  },
+  "admin.extSystem.password": {
+    "defaultMessage": "Password",
+    "srcHash": "pSKy5YhV1Jvy"
+  },
+  "admin.extSystem.publishOnlyApproved": {
+    "defaultMessage": "Send approved entities only",
+    "srcHash": "v0RugFN0r-6Y"
+  },
+  "admin.extSystem.publishOnlyApproved.false": {
+    "defaultMessage": "No",
+    "srcHash": "OM6_SDapGMta"
+  },
+  "admin.extSystem.publishOnlyApproved.true": {
+    "defaultMessage": "Yes",
+    "srcHash": "HFtwBBU9Smvu"
+  },
+  "admin.extSystem.sendNotification": {
+    "defaultMessage": "Send notifications",
+    "srcHash": "uqCjKapQCyTs"
+  },
+  "admin.extSystem.sendNotification.false": {
+    "defaultMessage": "No",
+    "srcHash": "OM6_SDapGMta"
+  },
+  "admin.extSystem.sendNotification.true": {
+    "defaultMessage": "Yes",
+    "srcHash": "HFtwBBU9Smvu"
+  },
+  "admin.extSystem.submit.add": {
+    "defaultMessage": "Add",
+    "srcHash": "5L0IaEkXdddR"
+  },
+  "admin.extSystem.submit.edit": {
+    "defaultMessage": "Edit",
+    "srcHash": "7D1xFD_em0Dr"
+  },
+  "admin.extSystem.syncDelay": {
+    "defaultMessage": "Synchronisation interval (s)",
+    "srcHash": "7T9gh0rWSgFP"
+  },
+  "admin.extSystem.synchronize": {
+    "defaultMessage": "Synchronise",
+    "srcHash": "AwcYHYq7J52i"
+  },
+  "admin.extSystem.sysScope": {
+    "defaultMessage": "Entity scope",
+    "srcHash": "SlY5BtKXdR6t"
+  },
+  "admin.extSystem.type": {
+    "defaultMessage": "Type",
+    "srcHash": "GwJBg8szaPQv"
+  },
+  "admin.extSystem.url": {
+    "defaultMessage": "URL",
+    "srcHash": "56JB3rrVZgnu"
+  },
+  "admin.extSystem.userInfo": {
+    "defaultMessage": "Change author — template",
+    "srcHash": "EGveORlfJTPx"
+  },
+  "admin.extSystem.userInfo.title": {
+    "defaultMessage": "Template for the user identification passed to the external system as the person responsible for making and sending the change.\nBy default it contains 'institution name: user name'; the following variables can be used to fill in the name:\n%u - username\n%i - user ID\n%n - preferred name of the user\n%s - short name of the user",
+    "srcHash": "I7A5-tTIU_gV"
+  },
+  "admin.extSystem.username": {
+    "defaultMessage": "Username",
+    "srcHash": "47ienTP4jlIw"
+  },
+  "admin.extSystem.viewDaoUrl": {
+    "defaultMessage": "DaoURL",
+    "srcHash": "2yJUhZoQrW30"
+  },
+  "admin.extSystem.viewFileUrl": {
+    "defaultMessage": "FileURL",
+    "srcHash": "pBEVUjA2b5TD"
+  },
+  "admin.extSystem.viewThumbnailUrl": {
+    "defaultMessage": "ThumbnailURL",
+    "srcHash": "vz7NXEE-e9B_"
+  },
+  "admin.extSystem.wsdl": {
+    "defaultMessage": "WSDL",
+    "srcHash": "3JJQk5QO07xd"
   },
   "admin.extSystemDetail.aiTestConnection": {
     "defaultMessage": "Test connection",
@@ -2905,6 +3093,18 @@
     "defaultMessage": "Developer mode",
     "srcHash": "sES4sOsLCBSb"
   },
+  "ribbon.action.admin.extSystem.add": {
+    "defaultMessage": "Add system",
+    "srcHash": "UAq9xc7s0v6J"
+  },
+  "ribbon.action.admin.extSystem.delete": {
+    "defaultMessage": "Delete system",
+    "srcHash": "yOGFZjyWOewX"
+  },
+  "ribbon.action.admin.extSystem.edit": {
+    "defaultMessage": "Edit system",
+    "srcHash": "BlJWo5leBjMh"
+  },
   "ribbon.action.admin.externalSystems": {
     "defaultMessage": "External systems",
     "srcHash": "oU8i4V-8EbbO"
@@ -3032,6 +3232,10 @@
   "ribbon_action_admin_reports": {
     "defaultMessage": "Reports",
     "srcHash": "rF9MELIDW5fD"
+  },
+  "search.action.noResult": {
+    "defaultMessage": "No records found",
+    "srcHash": "_YTIcNZIg5jH"
   },
   "search_funds_form_conformity_error": {
     "defaultMessage": "Error",

@@ -3,7 +3,8 @@ import { Form, Modal, Col, Row } from 'react-bootstrap';
 import { Form as FinalForm, Field, useFormState } from 'react-final-form';
 import { defineMessages, useIntl, MessageDescriptor } from 'react-intl';
 import { Button } from 'components/ui';
-import { i18n } from 'components';
+import { globalMessages } from 'components/shared/lang';
+import { getIntl } from 'components/shared/lang/intlInstance';
 import { FormInputField } from 'components/shared';
 import {
     JAVA_ATTR_CLASS,
@@ -27,32 +28,107 @@ export const EXT_SYSTEM_CLASS = {
 
 type ExtSystemClassValue = typeof EXT_SYSTEM_CLASS[keyof typeof EXT_SYSTEM_CLASS];
 
-export const EXT_SYSTEM_CLASS_LABEL: Record<ExtSystemClassValue, string> = {
-    [EXT_SYSTEM_CLASS.ApExternalSystem]: i18n('admin.extSystem.class.ApExternalSystemVO'),
-    [EXT_SYSTEM_CLASS.ArrDigitalRepository]: i18n('admin.extSystem.class.ArrDigitalRepositoryVO'),
-    [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: i18n('admin.extSystem.class.ArrDigitizationFrontdeskVO'),
-    [EXT_SYSTEM_CLASS.GisExternalSystem]: i18n('admin.extSystem.class.GisExternalSystemVO'),
-    [EXT_SYSTEM_CLASS.AiExternalSystem]: i18n('admin.extSystem.class.AiExternalSystemVO'),
+// Popisky voleb. Dřív se skládaly voláním helperu i18n při načtení modulu, tedy
+// dávno před tím, než je znám jazyk - po přepnutí by zůstaly v původním jazyce.
+// Deskriptor se formátuje až na místě použití.
+export const extSystemTypeMessages = defineMessages({
+    classApExternalSystem: {
+        id: 'admin.extSystem.class.ApExternalSystemVO',
+        defaultMessage: 'Externí systém pro rejstříky/osoby',
+    },
+    classArrDigitalRepository: {
+        id: 'admin.extSystem.class.ArrDigitalRepositoryVO',
+        defaultMessage: 'Uložiště digitalizátů',
+    },
+    classArrDigitizationFrontdesk: {
+        id: 'admin.extSystem.class.ArrDigitizationFrontdeskVO',
+        defaultMessage: 'Digitalizační linka',
+    },
+    classGisExternalSystem: {
+        id: 'admin.extSystem.class.GisExternalSystemVO',
+        defaultMessage: 'Systém GIS (mapové podklady)',
+    },
+    classAiExternalSystem: {
+        id: 'admin.extSystem.class.AiExternalSystemVO',
+        defaultMessage: 'Poskytovatel AI služeb',
+    },
+    cam: { id: 'admin.extSystem.cam', defaultMessage: 'CAM' },
+    camV2: { id: 'admin.extSystem.cam-v2', defaultMessage: 'CAM v2' },
+    camUuid: { id: 'admin.extSystem.cam-uuid', defaultMessage: 'CAM - UUID' },
+    camComplete: { id: 'admin.extSystem.cam-complete', defaultMessage: 'CAM - Kompletní' },
+    camCompleteV2: { id: 'admin.extSystem.cam-complete-v2', defaultMessage: 'CAM - Kompletní v2' },
+    gisView: { id: 'admin.extSystem.gis-view', defaultMessage: 'Zobrazení' },
+    gisEdit: { id: 'admin.extSystem.gis-edit', defaultMessage: 'Editace' },
+    wsdl: { id: 'admin.extSystem.wsdl', defaultMessage: 'WSDL' },
+    filesystem: { id: 'admin.extSystem.filesystem', defaultMessage: 'Souborový systém' },
+    da: { id: 'admin.extSystem.da', defaultMessage: 'Digitální archiv' },
+});
+
+export const EXT_SYSTEM_CLASS_MESSAGE: Record<ExtSystemClassValue, MessageDescriptor> = {
+    [EXT_SYSTEM_CLASS.ApExternalSystem]: extSystemTypeMessages.classApExternalSystem,
+    [EXT_SYSTEM_CLASS.ArrDigitalRepository]: extSystemTypeMessages.classArrDigitalRepository,
+    [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: extSystemTypeMessages.classArrDigitizationFrontdesk,
+    [EXT_SYSTEM_CLASS.GisExternalSystem]: extSystemTypeMessages.classGisExternalSystem,
+    [EXT_SYSTEM_CLASS.AiExternalSystem]: extSystemTypeMessages.classAiExternalSystem,
 };
 
-export const AP_EXT_SYSTEM_LABEL: Record<string, string> = {
-    [AP_EXT_SYSTEM_TYPE.CAM]: i18n('admin.extSystem.cam'),
-    [AP_EXT_SYSTEM_TYPE.CAM_V2]: i18n('admin.extSystem.cam-v2'),
-    [AP_EXT_SYSTEM_TYPE.CAM_UUID]: i18n('admin.extSystem.cam-uuid'),
-    [AP_EXT_SYSTEM_TYPE.CAM_COMPLETE]: i18n('admin.extSystem.cam-complete'),
-    [AP_EXT_SYSTEM_TYPE.CAM_COMPLETE_V2]: i18n('admin.extSystem.cam-complete-v2'),
+export const AP_EXT_SYSTEM_MESSAGE: Record<string, MessageDescriptor> = {
+    [AP_EXT_SYSTEM_TYPE.CAM]: extSystemTypeMessages.cam,
+    [AP_EXT_SYSTEM_TYPE.CAM_V2]: extSystemTypeMessages.camV2,
+    [AP_EXT_SYSTEM_TYPE.CAM_UUID]: extSystemTypeMessages.camUuid,
+    [AP_EXT_SYSTEM_TYPE.CAM_COMPLETE]: extSystemTypeMessages.camComplete,
+    [AP_EXT_SYSTEM_TYPE.CAM_COMPLETE_V2]: extSystemTypeMessages.camCompleteV2,
 };
 
-export const GIS_SYSTEM_TYPE_LABEL: Record<string, string> = {
-    [GisSystemType.FrameApiView]: i18n('admin.extSystem.gis-view'),
-    [GisSystemType.FrameApiEdit]: i18n('admin.extSystem.gis-edit'),
+export const GIS_SYSTEM_TYPE_MESSAGE: Record<string, MessageDescriptor> = {
+    [GisSystemType.FrameApiView]: extSystemTypeMessages.gisView,
+    [GisSystemType.FrameApiEdit]: extSystemTypeMessages.gisEdit,
 };
 
-export const DIGITAL_REPOSITORY_TYPE_LABEL: Record<string, string> = {
-    [DigitalRepositoryType.Wsdl]: i18n('admin.extSystem.wsdl'),
-    [DigitalRepositoryType.Filesystem]: i18n('admin.extSystem.filesystem'),
-    [DigitalRepositoryType.Da]: i18n('admin.extSystem.da'),
+export const DIGITAL_REPOSITORY_TYPE_MESSAGE: Record<string, MessageDescriptor> = {
+    [DigitalRepositoryType.Wsdl]: extSystemTypeMessages.wsdl,
+    [DigitalRepositoryType.Filesystem]: extSystemTypeMessages.filesystem,
+    [DigitalRepositoryType.Da]: extSystemTypeMessages.da,
 };
+
+/**
+ * Popisky polí. Exportované, protože stejná pole vypisuje i detail
+ * (AdminExtSystemDetail), kde se klíč skládal z názvu pole - množina je
+ * uzavřená, takže stačí indexovat tuhle mapu.
+ */
+export const fieldMessages = defineMessages({
+    class: { id: 'admin.extSystem.class', defaultMessage: 'Třída' },
+    name: { id: 'admin.extSystem.name', defaultMessage: 'Název' },
+    code: { id: 'admin.extSystem.code', defaultMessage: 'Kód' },
+    url: { id: 'admin.extSystem.url', defaultMessage: 'URL' },
+    username: { id: 'admin.extSystem.username', defaultMessage: 'Username' },
+    password: { id: 'admin.extSystem.password', defaultMessage: 'Heslo' },
+    elzaCode: { id: 'admin.extSystem.elzaCode', defaultMessage: 'Kód ELZA' },
+    type: { id: 'admin.extSystem.type', defaultMessage: 'Typ' },
+    sysScope: { id: 'admin.extSystem.sysScope', defaultMessage: 'Oblast entit' },
+    syncDelay: { id: 'admin.extSystem.syncDelay', defaultMessage: 'Interval synchronizace (s)' },
+    viewDaoUrl: { id: 'admin.extSystem.viewDaoUrl', defaultMessage: 'DaoURL' },
+    viewFileUrl: { id: 'admin.extSystem.viewFileUrl', defaultMessage: 'FileURL' },
+    viewThumbnailUrl: { id: 'admin.extSystem.viewThumbnailUrl', defaultMessage: 'ThumbnailURL' },
+    sendNotification: { id: 'admin.extSystem.sendNotification', defaultMessage: 'Zasílání upozornění' },
+    sendNotificationTrue: { id: 'admin.extSystem.sendNotification.true', defaultMessage: 'Ano' },
+    sendNotificationFalse: { id: 'admin.extSystem.sendNotification.false', defaultMessage: 'Ne' },
+    multipleLinks: { id: 'admin.extSystem.multipleLinks', defaultMessage: 'Vícenásobné napojení' },
+    multipleLinksTrue: { id: 'admin.extSystem.multipleLinks.true', defaultMessage: 'Ano' },
+    multipleLinksFalse: { id: 'admin.extSystem.multipleLinks.false', defaultMessage: 'Ne' },
+    apiKeyId: { id: 'admin.extSystem.apiKeyId', defaultMessage: 'ApiKey - ID' },
+    apiKeyValue: { id: 'admin.extSystem.apiKeyValue', defaultMessage: 'ApiKey - hodnota' },
+    userInfo: { id: 'admin.extSystem.userInfo', defaultMessage: 'Autor změny - šablona' },
+    userInfoTitle: {
+        id: 'admin.extSystem.userInfo.title',
+        defaultMessage: "Šablona pro označení uživatele, které je předáváno do externího systému, jako osoby zodpovědné za provedení a zaslání změny.\nStandardně obsahuje 'název instituce: jméno uživatele', pro vyplnění jména lze použít proměnné:\n%u - uživatelské jméno\n%i - ID uživatele\n%n - preferované označení osoby uživatele\n%s - zkrácené označení osoby uživatele",
+    },
+    publishOnlyApproved: { id: 'admin.extSystem.publishOnlyApproved', defaultMessage: 'Odeslání jen schválených' },
+    publishOnlyApprovedTrue: { id: 'admin.extSystem.publishOnlyApproved.true', defaultMessage: 'Ano' },
+    publishOnlyApprovedFalse: { id: 'admin.extSystem.publishOnlyApproved.false', defaultMessage: 'Ne' },
+    submitAdd: { id: 'admin.extSystem.submit.add', defaultMessage: 'Přidat' },
+    submitEdit: { id: 'admin.extSystem.submit.edit', defaultMessage: 'Upravit' },
+});
 
 export const daSettingsMessages = defineMessages({
     downloadMethod: {
@@ -185,7 +261,7 @@ function validate(values: ExtSystemFormValues) {
         // A stored boolean false (e.g. sendNotification) is a filled value, not a missing one.
         const value = (values as Record<string, unknown>)[name];
         if (value == null || value === '') {
-            errors[name] = i18n('global.validation.required');
+            errors[name] = getIntl().formatMessage(globalMessages.validationRequired);
         }
         return errors;
     }, {});
@@ -213,13 +289,13 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
                 name={JAVA_ATTR_CLASS}
                 type="select"
                 component={FormInputField}
-                label={i18n('admin.extSystem.class')}
+                label={intl.formatMessage(fieldMessages.class)}
                 disabled={isUpdate}
             >
                 <option key={null} />
                 {Object.values(EXT_SYSTEM_CLASS).map((i, index) => (
                     <option key={index} value={i}>
-                        {EXT_SYSTEM_CLASS_LABEL[i]}
+                        {intl.formatMessage(EXT_SYSTEM_CLASS_MESSAGE[i])}
                     </option>
                 ))}
             </Field>
@@ -229,13 +305,13 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
                         name="type"
                         type="select"
                         component={FormInputField}
-                        label={i18n('admin.extSystem.type')}
+                        label={intl.formatMessage(fieldMessages.type)}
                         disabled={isTypeDisabled}
                     >
                         <option key={null} />
                         {allowedApTypes.map((i, index) => (
                             <option key={index} value={i}>
-                                {AP_EXT_SYSTEM_LABEL[i]}
+                                {intl.formatMessage(AP_EXT_SYSTEM_MESSAGE[i])}
                             </option>
                         ))}
                     </Field>
@@ -245,7 +321,7 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
                                 name="scope"
                                 type="select"
                                 component={FormInputField}
-                                label={i18n('admin.extSystem.sysScope')}
+                                label={intl.formatMessage(fieldMessages.sysScope)}
                             >
                                 <option key={null} />
                                 {defaultScopes.map((i, index) => (
@@ -260,7 +336,7 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
                                 name="syncDelay"
                                 type="number"
                                 component={FormInputField}
-                                label={i18n('admin.extSystem.syncDelay')}
+                                label={intl.formatMessage(fieldMessages.syncDelay)}
                                 parse={(v) => (v === '' || v == null ? undefined : Number(v))}
                             />
                         </Col>
@@ -273,13 +349,13 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
                         name="type"
                         type="select"
                         component={FormInputField}
-                        label={i18n('admin.extSystem.type')}
+                        label={intl.formatMessage(fieldMessages.type)}
                         disabled={isUpdate}
                     >
                         <option key={null} />
                         {Object.values(GisSystemType).map((i, index) => (
                             <option key={index} value={i}>
-                                {GIS_SYSTEM_TYPE_LABEL[i]}
+                                {intl.formatMessage(GIS_SYSTEM_TYPE_MESSAGE[i])}
                             </option>
                         ))}
                     </Field>
@@ -291,13 +367,13 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
                         name="digitalRepositoryType"
                         type="select"
                         component={FormInputField}
-                        label={i18n('admin.extSystem.type')}
+                        label={intl.formatMessage(fieldMessages.type)}
                         disabled={isUpdate}
                     >
                         <option key={null} />
                         {Object.values(DigitalRepositoryType).map((i, index) => (
                             <option key={index} value={i}>
-                                {DIGITAL_REPOSITORY_TYPE_LABEL[i]}
+                                {intl.formatMessage(DIGITAL_REPOSITORY_TYPE_MESSAGE[i])}
                             </option>
                         ))}
                     </Field>
@@ -307,19 +383,19 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
                                 name="viewDaoUrl"
                                 type="text"
                                 component={FormInputField}
-                                label={i18n('admin.extSystem.viewDaoUrl')}
+                                label={intl.formatMessage(fieldMessages.viewDaoUrl)}
                             />
                             <Field
                                 name="viewFileUrl"
                                 type="text"
                                 component={FormInputField}
-                                label={i18n('admin.extSystem.viewFileUrl')}
+                                label={intl.formatMessage(fieldMessages.viewFileUrl)}
                             />
                             <Field
                                 name="viewThumbnailUrl"
                                 type="text"
                                 component={FormInputField}
-                                label={i18n('admin.extSystem.viewThumbnailUrl')}
+                                label={intl.formatMessage(fieldMessages.viewThumbnailUrl)}
                             />
                         </>
                     )}
@@ -328,14 +404,14 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
                             name="sendNotification"
                             type="select"
                             component={FormInputField}
-                            label={i18n('admin.extSystem.sendNotification')}
+                            label={intl.formatMessage(fieldMessages.sendNotification)}
                         >
                             <option key={null} />
                             <option key="true" value={true as any}>
-                                {i18n('admin.extSystem.sendNotification.true')}
+                                {intl.formatMessage(fieldMessages.sendNotificationTrue)}
                             </option>
                             <option key="false" value={false as any}>
-                                {i18n('admin.extSystem.sendNotification.false')}
+                                {intl.formatMessage(fieldMessages.sendNotificationFalse)}
                             </option>
                         </Field>
                     )}
@@ -343,14 +419,14 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
                         name="multipleLinks"
                         type="select"
                         component={FormInputField}
-                        label={i18n('admin.extSystem.multipleLinks')}
+                        label={intl.formatMessage(fieldMessages.multipleLinks)}
                     >
                         <option key={null} />
                         <option key="true" value={true as any}>
-                            {i18n('admin.extSystem.multipleLinks.true')}
+                            {intl.formatMessage(fieldMessages.multipleLinksTrue)}
                         </option>
                         <option key="false" value={false as any}>
-                            {i18n('admin.extSystem.multipleLinks.false')}
+                            {intl.formatMessage(fieldMessages.multipleLinksFalse)}
                         </option>
                     </Field>
                     {isDaRepo && (
@@ -397,11 +473,11 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
                 name="code"
                 type="text"
                 component={FormInputField}
-                label={i18n('admin.extSystem.code')}
+                label={intl.formatMessage(fieldMessages.code)}
                 disabled={isUpdate}
             />
-            <Field name="name" type="text" component={FormInputField} label={i18n('admin.extSystem.name')} />
-            <Field name="url" type="text" component={FormInputField} label={i18n('admin.extSystem.url')} />
+            <Field name="name" type="text" component={FormInputField} label={intl.formatMessage(fieldMessages.name)} />
+            <Field name="url" type="text" component={FormInputField} label={intl.formatMessage(fieldMessages.url)} />
             {classJ !== EXT_SYSTEM_CLASS.ApExternalSystem && classJ !== EXT_SYSTEM_CLASS.GisExternalSystem
                 && !isFsRepo && (
                 <>
@@ -409,13 +485,13 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
                         name="username"
                         type="text"
                         component={FormInputField}
-                        label={i18n('admin.extSystem.username')}
+                        label={intl.formatMessage(fieldMessages.username)}
                     />
                     <Field
                         name="password"
                         type="text"
                         component={FormInputField}
-                        label={i18n('admin.extSystem.password')}
+                        label={intl.formatMessage(fieldMessages.password)}
                     />
                 </>
             )}
@@ -426,7 +502,7 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
                     name="elzaCode"
                     type="text"
                     component={FormInputField}
-                    label={i18n('admin.extSystem.elzaCode')}
+                    label={intl.formatMessage(fieldMessages.elzaCode)}
                 />
             )}
             {(classJ === EXT_SYSTEM_CLASS.ApExternalSystem ||
@@ -437,38 +513,38 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
                         name="apiKeyId"
                         type="text"
                         component={FormInputField}
-                        label={i18n('admin.extSystem.apiKeyId')}
+                        label={intl.formatMessage(fieldMessages.apiKeyId)}
                     />
                     <Field
                         name="apiKeyValue"
                         type="text"
                         component={FormInputField}
-                        label={i18n('admin.extSystem.apiKeyValue')}
+                        label={intl.formatMessage(fieldMessages.apiKeyValue)}
                     />
                 </>
             )}
             {classJ === EXT_SYSTEM_CLASS.ApExternalSystem && (
                 <>
-                    <div title={i18n('admin.extSystem.userInfo.title')}>
+                    <div title={intl.formatMessage(fieldMessages.userInfoTitle)}>
                         <Field
                             name="userInfo"
                             type="text"
                             component={FormInputField}
-                            label={i18n('admin.extSystem.userInfo')}
+                            label={intl.formatMessage(fieldMessages.userInfo)}
                         />
                     </div>
                     <Field
                         name="publishOnlyApproved"
                         type="select"
                         component={FormInputField}
-                        label={i18n('admin.extSystem.publishOnlyApproved')}
+                        label={intl.formatMessage(fieldMessages.publishOnlyApproved)}
                     >
                         <option key={null} />
                         <option key="true" value={true as any}>
-                            {i18n('admin.extSystem.publishOnlyApproved.true')}
+                            {intl.formatMessage(fieldMessages.publishOnlyApprovedTrue)}
                         </option>
                         <option key="false" value={false as any}>
-                            {i18n('admin.extSystem.publishOnlyApproved.false')}
+                            {intl.formatMessage(fieldMessages.publishOnlyApprovedFalse)}
                         </option>
                     </Field>
                 </>
@@ -478,6 +554,7 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
 };
 
 const ExtSystemForm = ({ initialValues, onSubmitForm }: Props) => {
+    const intl = useIntl();
     const [defaultScopes, setDefaultScopes] = useState<Scope[]>([]);
     const isUpdate = !!initialValues?.id;
     const dispatch = useAppThunkDispatch();
@@ -504,7 +581,7 @@ const ExtSystemForm = ({ initialValues, onSubmitForm }: Props) => {
                     <ExtSystemFormFields isUpdate={isUpdate} defaultScopes={defaultScopes} />
                     <Modal.Footer>
                         <Button type="submit" variant="outline-secondary" disabled={pristine || submitting}>
-                            {isUpdate ? i18n('admin.extSystem.submit.edit') : i18n('admin.extSystem.submit.add')}
+                            {intl.formatMessage(isUpdate ? fieldMessages.submitEdit : fieldMessages.submitAdd)}
                         </Button>
                     </Modal.Footer>
                 </Form>

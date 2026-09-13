@@ -1,6 +1,6 @@
 import React from 'react';
 import {connect} from 'react-redux';
-import {AbstractReactComponent, i18n, StoreHorizontalLoader} from 'components/shared';
+import {AbstractReactComponent, StoreHorizontalLoader} from 'components/shared';
 import {AREA_EXT_SYSTEM_DETAIL, extSystemDetailFetchIfNeeded} from 'actions/admin/extSystem.jsx';
 import {storeFromArea} from 'shared/utils';
 
@@ -9,10 +9,11 @@ import {AP_EXT_SYSTEM_TYPE, DigitalRepositoryType, JAVA_ATTR_CLASS} from '../../
 import {WebApi} from 'actions/index.jsx';
 import {
     EXT_SYSTEM_CLASS,
-    EXT_SYSTEM_CLASS_LABEL,
-    GIS_SYSTEM_TYPE_LABEL,
-    AP_EXT_SYSTEM_LABEL,
-    DIGITAL_REPOSITORY_TYPE_LABEL,
+    EXT_SYSTEM_CLASS_MESSAGE,
+    GIS_SYSTEM_TYPE_MESSAGE,
+    AP_EXT_SYSTEM_MESSAGE,
+    DIGITAL_REPOSITORY_TYPE_MESSAGE,
+    fieldMessages,
     daSettingsMessages,
     DA_DOWNLOAD_METHOD_MESSAGE,
     DA_ON_RECEIVED_MESSAGE,
@@ -21,10 +22,31 @@ import { Api } from 'api';
 import { Button } from '@fluentui/react-components';
 import { FormattedMessage } from 'react-intl';
 import { MaskedValue } from 'components/shared/MaskedValue';
+import { defineMessages } from 'react-intl';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    noSelectionTitle: { id: 'admin.extSystem.noSelection.title', defaultMessage: 'Není vybrán externí systém' },
+    noSelectionMessage: {
+        id: 'admin.extSystem.noSelection.message',
+        defaultMessage: 'Prosím vyberte externí systém ze seznamu nebo vytvořte nový',
+    },
+    synchronize: { id: 'admin.extSystem.synchronize', defaultMessage: 'Synchronizovat' },
+});
 
 /**
  * Komponenta detailu osoby
  */
+/** Popisek pole detailu; pole jsou uzavřená množina sdílená s formulářem. */
+function renderFieldLabel(field) {
+    const descriptor = fieldMessages[field];
+    if (!descriptor) {
+        console.warn(`i18n: chybí popisek pole '${field}' v fieldMessages`);
+        return field;
+    }
+    return <FormattedMessage {...descriptor} />;
+}
+
 class AdminExtSystemDetail extends AbstractReactComponent {
     static state = {
         defaultScopes: [],
@@ -65,7 +87,7 @@ class AdminExtSystemDetail extends AbstractReactComponent {
         const value = extSystem[field];
         if (value != null) {
             return <>
-                <h4>{i18n('admin.extSystem.' + field)}</h4>
+                <h4>{renderFieldLabel(field)}</h4>
                 <span>{value}</span>
             </>
         }
@@ -75,7 +97,7 @@ class AdminExtSystemDetail extends AbstractReactComponent {
         const value = extSystem[field];
         if (value != null) {
             return <>
-                <h4>{i18n('admin.extSystem.' + field)}</h4>
+                <h4>{renderFieldLabel(field)}</h4>
                 <div><MaskedValue value={value} /></div>
             </>
         }
@@ -85,7 +107,7 @@ class AdminExtSystemDetail extends AbstractReactComponent {
         const scope = this.state?.defaultScopes.find(e => e.id === id);
         if (scope != null) {
             return <>
-                <h4>{i18n('admin.extSystem.sysScope')}</h4>
+                <h4><FormattedMessage {...fieldMessages.sysScope} /></h4>
                 <span>{scope.name}</span>
             </>
         }
@@ -247,8 +269,8 @@ class AdminExtSystemDetail extends AbstractReactComponent {
         if (!extSystemDetail.isFetching && !extSystemDetail.fetched) {
             return (
                 <div className="unselected-msg">
-                    <div className="title">{i18n('admin.extSystem.noSelection.title')}</div>
-                    <div className="msg-text">{i18n('admin.extSystem.noSelection.message')}</div>
+                    <div className="title"><FormattedMessage {...messages.noSelectionTitle} /></div>
+                    <div className="msg-text"><FormattedMessage {...messages.noSelectionMessage} /></div>
                 </div>
             );
         }
@@ -264,11 +286,11 @@ class AdminExtSystemDetail extends AbstractReactComponent {
                 <div className="ext-system-detail">
                     {classJ === EXT_SYSTEM_CLASS.ApExternalSystem && (
                         <div>
-                            <h4>{i18n('admin.extSystem.class')}</h4>
-                            <span>{EXT_SYSTEM_CLASS_LABEL[EXT_SYSTEM_CLASS.ApExternalSystem]}</span>
+                            <h4><FormattedMessage {...fieldMessages.class} /></h4>
+                            <span><FormattedMessage {...EXT_SYSTEM_CLASS_MESSAGE[EXT_SYSTEM_CLASS.ApExternalSystem]} /></span>
 
-                            <h4>{i18n('admin.extSystem.type')}</h4>
-                            <span>{AP_EXT_SYSTEM_LABEL[extSystem.type]}</span>
+                            <h4><FormattedMessage {...fieldMessages.type} /></h4>
+                            <span><FormattedMessage {...AP_EXT_SYSTEM_MESSAGE[extSystem.type]} /></span>
 
                             {this.scopeValue(extSystem.scope)}
                             {this.renderValue(extSystem, 'syncDelay')}
@@ -276,22 +298,22 @@ class AdminExtSystemDetail extends AbstractReactComponent {
                     )}
                     {classJ === EXT_SYSTEM_CLASS.GisExternalSystem && (
                         <div>
-                            <h4>{i18n('admin.extSystem.class')}</h4>
-                            <span>{EXT_SYSTEM_CLASS_LABEL[EXT_SYSTEM_CLASS.GisExternalSystem]}</span>
+                            <h4><FormattedMessage {...fieldMessages.class} /></h4>
+                            <span><FormattedMessage {...EXT_SYSTEM_CLASS_MESSAGE[EXT_SYSTEM_CLASS.GisExternalSystem]} /></span>
 
-                            <h4>{i18n('admin.extSystem.type')}</h4>
-                            <span>{GIS_SYSTEM_TYPE_LABEL[extSystem.type]}</span>
+                            <h4><FormattedMessage {...fieldMessages.type} /></h4>
+                            <span><FormattedMessage {...GIS_SYSTEM_TYPE_MESSAGE[extSystem.type]} /></span>
 
                             {this.scopeValue(extSystem.scope)}
                         </div>
                     )}
                     {classJ === EXT_SYSTEM_CLASS.ArrDigitalRepository && (
                         <div>
-                            <h4>{i18n('admin.extSystem.class')}</h4>
-                            <span>{EXT_SYSTEM_CLASS_LABEL[EXT_SYSTEM_CLASS.ArrDigitalRepository]}</span>
+                            <h4><FormattedMessage {...fieldMessages.class} /></h4>
+                            <span><FormattedMessage {...EXT_SYSTEM_CLASS_MESSAGE[EXT_SYSTEM_CLASS.ArrDigitalRepository]} /></span>
 
-                            <h4>{i18n('admin.extSystem.type')}</h4>
-                            <span>{DIGITAL_REPOSITORY_TYPE_LABEL[extSystem.digitalRepositoryType]}</span>
+                            <h4><FormattedMessage {...fieldMessages.type} /></h4>
+                            <span><FormattedMessage {...DIGITAL_REPOSITORY_TYPE_MESSAGE[extSystem.digitalRepositoryType]} /></span>
 
                             {!isFsRepo && this.renderValue(extSystem, 'viewDaoUrl')}
                             {!isFsRepo && this.renderValue(extSystem, 'viewFileUrl')}
@@ -299,19 +321,19 @@ class AdminExtSystemDetail extends AbstractReactComponent {
 
                             {!isFsRepo && (
                                 <>
-                                    <h4>{i18n('admin.extSystem.sendNotification')}</h4>
+                                    <h4><FormattedMessage {...fieldMessages.sendNotification} /></h4>
                                     <span>
                                         {extSystem.sendNotification
-                                            ? i18n('admin.extSystem.sendNotification.true')
-                                            : i18n('admin.extSystem.sendNotification.false')}
+                                            ? <FormattedMessage {...fieldMessages.sendNotificationTrue} />
+                                            : <FormattedMessage {...fieldMessages.sendNotificationFalse} />}
                                     </span>
                                 </>
                             )}
-                            <h4>{i18n('admin.extSystem.multipleLinks')}</h4>
+                            <h4><FormattedMessage {...fieldMessages.multipleLinks} /></h4>
                             <span>
                                 {extSystem.multipleLinks
-                                    ? i18n('admin.extSystem.multipleLinks.true')
-                                    : i18n('admin.extSystem.multipleLinks.false')}
+                                    ? <FormattedMessage {...fieldMessages.multipleLinksTrue} />
+                                    : <FormattedMessage {...fieldMessages.multipleLinksFalse} />}
                             </span>
                             {extSystem.digitalRepositoryType === DigitalRepositoryType.Da && (
                                 <>
@@ -337,14 +359,14 @@ class AdminExtSystemDetail extends AbstractReactComponent {
                     )}
                     {classJ === EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk && (
                         <div>
-                            <h4>{i18n('admin.extSystem.class')}</h4>
-                            <span>{EXT_SYSTEM_CLASS_LABEL[EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]}</span>
+                            <h4><FormattedMessage {...fieldMessages.class} /></h4>
+                            <span><FormattedMessage {...EXT_SYSTEM_CLASS_MESSAGE[EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]} /></span>
                         </div>
                     )}
                     {classJ === EXT_SYSTEM_CLASS.AiExternalSystem && (
                         <div>
-                            <h4>{i18n('admin.extSystem.class')}</h4>
-                            <span>{EXT_SYSTEM_CLASS_LABEL[EXT_SYSTEM_CLASS.AiExternalSystem]}</span>
+                            <h4><FormattedMessage {...fieldMessages.class} /></h4>
+                            <span><FormattedMessage {...EXT_SYSTEM_CLASS_MESSAGE[EXT_SYSTEM_CLASS.AiExternalSystem]} /></span>
                         </div>
                     )}
                     <div>
@@ -359,15 +381,15 @@ class AdminExtSystemDetail extends AbstractReactComponent {
                         {this.renderValue(extSystem, 'userInfo')}
                         {extSystem.publishOnlyApproved != null && (
                             <>
-                            <h4>{i18n('admin.extSystem.publishOnlyApproved')}</h4>
-                            <span>{extSystem.publishOnlyApproved?i18n('admin.extSystem.publishOnlyApproved.true'):i18n('admin.extSystem.publishOnlyApproved.false')}</span>
+                            <h4><FormattedMessage {...fieldMessages.publishOnlyApproved} /></h4>
+                            <span><FormattedMessage {...(extSystem.publishOnlyApproved ? fieldMessages.publishOnlyApprovedTrue : fieldMessages.publishOnlyApprovedFalse)} /></span>
                             </>
                         )}
                     </div>
                     {(extSystem.type === AP_EXT_SYSTEM_TYPE.CAM_COMPLETE
                         || extSystem.type === AP_EXT_SYSTEM_TYPE.CAM_COMPLETE_V2)
                         && <div style={{margin: "8px 0"}}>
-                        <Button onClick={this.handleResyncExtSystem}>{i18n('admin.extSystem.synchronize')}</Button>
+                        <Button onClick={this.handleResyncExtSystem}><FormattedMessage {...messages.synchronize} /></Button>
                     </div>}
                     {classJ === EXT_SYSTEM_CLASS.ArrDigitalRepository
                         && (extSystem.digitalRepositoryType === DigitalRepositoryType.Filesystem
