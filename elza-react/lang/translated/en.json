@@ -83,6 +83,10 @@
     "defaultMessage": "Repository is not available",
     "srcHash": "WSrg3PozscWF"
   },
+  "admin.fulltext.message.reindexing": {
+    "defaultMessage": "Reindexing in progress…",
+    "srcHash": "1w27Yo3PPyOQ"
+  },
   "admin.import.action.addCsv": {
     "defaultMessage": "New CSV batch",
     "srcHash": "QusQdJdjIhAx"
@@ -458,6 +462,10 @@
   "admin.nav.import": {
     "defaultMessage": "Import",
     "srcHash": "LP-bqr9WygAm"
+  },
+  "admin.resetServerCache.success": {
+    "defaultMessage": "Server caches have been reset",
+    "srcHash": "Yc5ZWdN1terG"
   },
   "admin.user.passwordChange.title": {
     "defaultMessage": "Password change",
@@ -2209,6 +2217,10 @@
     "defaultMessage": "Show in map",
     "srcHash": "3dFzZlmKhOwe"
   },
+  "global.title.processAction": {
+    "defaultMessage": "Do you really want to perform the selected action?",
+    "srcHash": "Rc7FypsLL7X4"
+  },
   "global_cancel": {
     "defaultMessage": "Cancel",
     "srcHash": "bHfYpLCt8F6P"
@@ -2296,6 +2308,10 @@
   "itemForm.conflict.takeOver": {
     "defaultMessage": "Take over",
     "srcHash": "Zl25rJ2urUHA"
+  },
+  "loggedUsers.title": {
+    "defaultMessage": "Signed-in users",
+    "srcHash": "Z4fQxDmHvFCP"
   },
   "mandatoryType.impossible": {
     "defaultMessage": "Impossible",
@@ -2657,6 +2673,10 @@
     "defaultMessage": "Background tasks",
     "srcHash": "U2XnpMnd4E_t"
   },
+  "ribbon.action.admin.developer": {
+    "defaultMessage": "Developer mode",
+    "srcHash": "sES4sOsLCBSb"
+  },
   "ribbon.action.admin.externalSystems": {
     "defaultMessage": "External systems",
     "srcHash": "oU8i4V-8EbbO"
@@ -2677,9 +2697,33 @@
     "defaultMessage": "Package management",
     "srcHash": "txLLrAl6aEqF"
   },
+  "ribbon.action.admin.reindex": {
+    "defaultMessage": "Rebuild indexes",
+    "srcHash": "uDMPdtV9WO_q"
+  },
+  "ribbon.action.admin.reindex.title": {
+    "defaultMessage": "Rebuild indexes",
+    "srcHash": "uDMPdtV9WO_q"
+  },
   "ribbon.action.admin.requestsQueue": {
     "defaultMessage": "Request queue",
     "srcHash": "71_vlF46maaC"
+  },
+  "ribbon.action.admin.resetLocalStorage": {
+    "defaultMessage": "Clear local cache",
+    "srcHash": "snRoLxxXVSe3"
+  },
+  "ribbon.action.admin.resetLocalStorage.title": {
+    "defaultMessage": "Clears the history of recently opened items and resets the application view to its default state",
+    "srcHash": "DYdSQ3PteAii"
+  },
+  "ribbon.action.admin.resetServerCache": {
+    "defaultMessage": "Clear server cache",
+    "srcHash": "udUNPQy2EkIW"
+  },
+  "ribbon.action.admin.resetServerCache.title": {
+    "defaultMessage": "Clears all caches on the server",
+    "srcHash": "dlIRFZ7xfe1j"
   },
   "ribbon.action.admin.showLogs": {
     "defaultMessage": "Log viewer",
@@ -2764,6 +2808,26 @@
   "shared.maskedValue.show": {
     "defaultMessage": "Show",
     "srcHash": "sipeZrVinjX9"
+  },
+  "stats.accessPoints.title": {
+    "defaultMessage": "Archival entities",
+    "srcHash": "oYOl8cWRvxk_"
+  },
+  "stats.funds.title": {
+    "defaultMessage": "Archival funds",
+    "srcHash": "rZ7rjiz2DJJG"
+  },
+  "stats.levels.title": {
+    "defaultMessage": "Description units",
+    "srcHash": "DVbYbGzAGSwO"
+  },
+  "stats.loggedUsers.title": {
+    "defaultMessage": "Active sessions",
+    "srcHash": "OipdC_2BniSS"
+  },
+  "stats.users.title": {
+    "defaultMessage": "Users",
+    "srcHash": "5kd6mi3iCPIC"
   },
   "subNodeForm.descItemType.spec.all": {
     "defaultMessage": "All",
