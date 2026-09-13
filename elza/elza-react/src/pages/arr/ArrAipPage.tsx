@@ -71,14 +71,20 @@ class ArrAipPage extends ArrParentPage {
         this.selectAipFromUrl()
     }
 
+    /** Balíček, na který vede odkaz ze seznamu AIP - /fund/{id}/aip/{aipId}. */
+    focusAipId(): number | undefined {
+        const {aipId} = this.props.match.params;
+        return aipId ? Number(aipId) : undefined;
+    }
+
     /**
-     * Odkaz ze seznamu AIP vede na balíček v jeho fondu - v seznamu se rovnou vybere,
-     * aby bylo poznat, o který balíček šlo.
+     * Balíček z adresy se v seznamu rovnou vybere, aby bylo poznat, o který šlo; na kterou
+     * stránku seznamu patří, řeší samotný seznam (focusAipId).
      */
     selectAipFromUrl() {
-        const {aipId} = this.props.match.params;
-        if (aipId) {
-            this.props.dispatch(selectAip(Number(aipId)));
+        const aipId = this.focusAipId();
+        if (aipId != null) {
+            this.props.dispatch(selectAip(aipId));
         }
     }
 
@@ -153,6 +159,7 @@ class ArrAipPage extends ArrParentPage {
                         urlFundAipExplorer(activeFund.id, id, getFundVersion(activeFund)))}
                     initialFilters={initialFilters(activeFund.id)}
                     hiddenValues={["fund.name", "fundCode", "institution.name", "institutionCode"]}
+                    focusAipId={this.focusAipId()}
                 />
                 <ActionsContainer fund={activeFund} readMode={readMode}/>
             </div>

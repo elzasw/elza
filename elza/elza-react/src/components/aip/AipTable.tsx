@@ -1,7 +1,7 @@
 import { useIntl } from "react-intl";
 import { tableMessages } from "components/shared/lang/tableMessages";
 import { SortingOrder } from "elza-api";
-import {FC, useCallback, useEffect, useState, MouseEvent, KeyboardEvent} from 'react';
+import {FC, useCallback, useEffect, useRef, useState, MouseEvent, KeyboardEvent} from 'react';
 import { useAppSelector } from 'utils/hooks';
 import {StoreHorizontalLoader} from 'components/shared';
 import storeFromArea from '../../shared/utils/storeFromArea.jsx';
@@ -12,7 +12,7 @@ import { useHistory} from 'react-router';
 import {urlAip, urlEntity, urlFundAb} from '../../constants.tsx';
 import { Link } from 'react-router-dom';
 import { useThunkDispatch } from 'utils/hooks';
-import {aipsFetchIfNeeded, aipsFilter, AREA_AIP, AREA_AIPS, setSelectedAips, } from "../../actions/aip/aip.ts";
+import {aipsFetchIfNeeded, aipsFilter, aipsFocus, AREA_AIP, AREA_AIPS, setSelectedAips, } from "../../actions/aip/aip.ts";
 import {
     MenuCheckedValueChangeData,
     MenuCheckedValueChangeEvent,
@@ -36,7 +36,8 @@ import {
 import { Icon } from 'components/shared';
 import { Button } from 'react-bootstrap';
 import { QueueStateCell, getBoolIcon } from './AipCells';
-import { explorerPageMessages, linkStateMessages, problemMessages } from './messages';
+import { explorerPageMessages, linkStateMessages, listMessages, problemMessages } from './messages';
+import { addToastrWarning } from '../shared/toastr/ToastrActions';
 import { colDef } from './columns';
 import { Row } from 'react-bootstrap';
 import AipFilterSection from './filter/AipFilterSection.tsx';
@@ -54,6 +55,8 @@ type AipTableProps = {
     onExplore?: (aipId: number) => void;
     detailOpen?: boolean;
     setDetailOpen?: (open: boolean) => void;
+    /** Balíček, na kterém má seznam začít - místo první stránky se otevře ta, na které leží. */
+    focusAipId?: number;
 }
 
 /**
@@ -76,7 +79,7 @@ const getAipRows = (aips: Aips) => {
     return [];
 };
 
-const AipTable: FC<AipTableProps> = ({onAipSelect, onExplore, filterDisabled, initialFilters, hiddenValues, detailOpen, setDetailOpen}) => {
+const AipTable: FC<AipTableProps> = ({onAipSelect, onExplore, filterDisabled, initialFilters, hiddenValues, detailOpen, setDetailOpen, focusAipId}) => {
     const aips = useAppSelector(state => storeFromArea(state, AREA_AIPS) as Aips);
     const aip = useAppSelector(state => storeFromArea(state, AREA_AIP) as Aip);
     const {from, pageSize} = aips.filter;
@@ -188,8 +191,30 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, onExplore, filterDisabled, in
     }
 
 
+    /**
+     * Skok na balíček z adresy. Stránku, na které leží, umí najít jen server, proto se místo
+     * obyčejného načtení první stránky zeptáme na ni - jednou, při otevření seznamu.
+     */
+    const focusPending = useRef(focusAipId != null);
     useEffect(() => {
-        dispatch(aipsFetchIfNeeded());
+        if (focusAipId == null) {
+            return;
+        }
+        dispatch(aipsFocus(focusAipId, initialFilters ?? [], aips.filter.pageSize, aips.filter.sort))
+            .then((found: boolean) => {
+                if (!found) {
+                    dispatch(addToastrWarning(formatMessage(listMessages.focusNotFound)));
+                }
+            })
+            .finally(() => { focusPending.current = false; });
+        // jen při vstupu na seznam; další stránkování už jde obvyklou cestou
+    }, [focusAipId]);
+
+    useEffect(() => {
+        // dokud se hledá stránka s balíčkem, načetla by se zbytečně první stránka
+        if (!focusPending.current) {
+            dispatch(aipsFetchIfNeeded());
+        }
 
         if(hiddenValues) {
             const res = columns.filter(col => !hiddenValues.includes(col.columnId.toString()));
@@ -202,6 +227,12 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, onExplore, filterDisabled, in
         aips.filter.sort,
         dispatch,
     ]);
+
+    /** Vybraný balíček nemusí být na první obrazovce stránky, tak se na něj seznam odroluje. */
+    const focusedRow = useRef<HTMLTableRowElement | null>(null);
+    useEffect(() => {
+        focusedRow.current?.scrollIntoView({block: "center"});
+    }, [items]);
 
     const toggleColumns = (e: MenuCheckedValueChangeEvent, data: MenuCheckedValueChangeData) => {
         setColumns(
@@ -365,6 +396,7 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, onExplore, filterDisabled, in
                                 <TableRow
                                     key={item.code}
                                     className="table-row"
+                                    ref={isDetailShown ? focusedRow : undefined}
                                     style={{backgroundColor: isDetailShown ? "#ddd": undefined}}
                                 >
                                     <TableSelectionCell

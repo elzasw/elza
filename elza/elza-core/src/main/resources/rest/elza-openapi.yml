@@ -2325,7 +2325,14 @@ paths:
     post:
       operationId: Aip_findByFilter
       description: Find aips by filters
-      parameters: []
+      parameters:
+        - name: focusAipId
+          in: query
+          required: false
+          description: AIP the client wants to see; the page holding it is returned instead of the requested offset, in the sorting and filtering of the request
+          schema:
+            type: integer
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -7328,6 +7335,7 @@ components:
       required:
         - count
         - rows
+        - offset
       properties:
         count:
           type: integer
@@ -7337,6 +7345,12 @@ components:
           items:
             $ref: '#/components/schemas/AipDetailVO'
           description: Seznam objektů
+        offset:
+          type: integer
+          description: Pořadí prvního vráceného výsledku; při zadaném focusAipId se liší od požadovaného offsetu, protože se vrací stránka s hledaným balíčkem
+        focusFound:
+          type: boolean
+          description: Zda byl hledaný balíček (focusAipId) ve výsledku nalezen; bez focusAipId není vyplněno
     AipDetailVO:
       type: object
       required:

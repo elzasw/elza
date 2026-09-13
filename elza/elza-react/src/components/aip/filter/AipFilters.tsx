@@ -40,6 +40,11 @@ const AipFilters = ({filterDisabled, hiddenValues, filters, createFilter, remove
     }
 
 	useEffect(() => {
+		// Beze změny podmínek není co přefiltrovat - jinak by se seznam po otevření vrátil na
+		// první stránku, i když už stojí na jiné (odkaz na konkrétní balíček).
+		if (JSON.stringify(filters) === JSON.stringify(filter.filters)) {
+			return;
+		}
 		dispatch(aipsFilter(filters, 0, filter.pageSize));
 	}, [filters]);
 
