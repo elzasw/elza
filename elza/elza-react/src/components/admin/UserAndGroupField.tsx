@@ -25,7 +25,8 @@ type Props = {
         searchTypeName?: ApSearchType,
         searchTypeUsername?: ApSearchType,
     ) => Promise<RowsResponse<UsrUserVO>>;
-    findGroupApi: (fulltext: string) => Promise<RowsResponse<UsrGroupVO>>;
+    /** Vrací {groups, groupsCount}, ne RowsResponse - viz WebApi.findGroup. */
+    findGroupApi: (fulltext: string) => Promise<{groups: UsrGroupVO[]; groupsCount: number}>;
 };
 
 enum SEARCH_TYPE {
@@ -58,20 +59,14 @@ type AutocompleteItem = {id: string; user?: UsrUserVO; group?: UsrGroupVO};
  */
 class UserAndGroupField extends React.Component<Props, State> {
     autocompleteRef: React.ElementRef<typeof Autocomplete>;
-    static defaultProps = {
+    // Typ z Props: parametry lambd se odvodí a signatury zůstávají na jednom místě.
+    static defaultProps: Props = {
         tags: false,
         // WebApi se vyhledává až při volání, ne při definici třídy - vzniká na poslední řádce
         // svého modulu a v kruhu importů ještě nemusí existovat.
-        findUserApi: (
-            fullText: string,
-            active: boolean,
-            disabled: boolean,
-            max: number,
-            groupId: number | null,
-            searchTypeName?: ApSearchType,
-            searchTypeUsername?: ApSearchType,
-        ) => WebApi.findUser(fullText, active, disabled, max, groupId, searchTypeName, searchTypeUsername),
-        findGroupApi: (fulltext: string) => WebApi.findGroup(fulltext),
+        findUserApi: (fullText, active, disabled, max, groupId, searchTypeName, searchTypeUsername) =>
+            WebApi.findUser(fullText, active, disabled, max, groupId, searchTypeName, searchTypeUsername),
+        findGroupApi: (fulltext) => WebApi.findGroup(fulltext),
     };
 
     static propTypes = {
