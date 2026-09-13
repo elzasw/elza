@@ -28,6 +28,23 @@ public interface DaSyncQueueItemRepository extends JpaRepository<DaSyncQueueItem
             + " ORDER BY i.attemptCount, i.syncQueueItemId")
     Page<DaSyncQueueItem> findByStates(@Param("states") Collection<DaSyncQueueItem.QueueItemState> states, Pageable pageable);
 
+    /**
+     * Action items carried by the AIP's active queue items in the given states - what a newly
+     * queued request for the same AIP supersedes.
+     *
+     * A projection rather than the entities: only the identifiers are needed, and holding the queue
+     * items in the session would leave it with rows the deactivation below changes without it.
+     */
+    @Query("SELECT i.aipActionItem.aipActionItemId FROM da_sync_queue_item i"
+            + " WHERE i.code = :code"
+            + " AND i.digitalRepository = :digitalRepository"
+            + " AND i.state IN :states"
+            + " AND i.active IS TRUE"
+            + " AND i.aipActionItem IS NOT NULL")
+    List<Integer> findActionItemIdsToSupersede(@Param("code") String code,
+                                               @Param("digitalRepository") ArrDigitalRepository digitalRepository,
+                                               @Param("states") Collection<DaSyncQueueItem.QueueItemState> states);
+
     @Modifying
     @Query("UPDATE da_sync_queue_item i SET i.active = false " +
             "WHERE i.code = :code " +
