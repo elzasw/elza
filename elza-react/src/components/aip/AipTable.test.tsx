@@ -157,6 +157,26 @@ describe('AipTable', () => {
         expect(container.querySelector('a[href^="/entity/"]')).toBeNull();
     });
 
+    it('napojený fond odkazuje na archivní soubor, názvem i kódem', () => {
+        const { container } = renderWithProviders(
+            <AipTable filterDisabled hiddenValues={onlyColumns('fund.name', 'fundCode')} />,
+            { preloadedState: storeWithRows([aip({ fundCode: '11111' })]) },
+        );
+
+        const links = container.querySelectorAll('a[href="/fund/7"]');
+        expect(Array.from(links).map(link => link.textContent)).toEqual(['Fond A', '11111']);
+    });
+
+    it('kód nedohledaného fondu zůstane jen textem', () => {
+        const { container } = renderWithProviders(
+            <AipTable filterDisabled hiddenValues={onlyColumns('fundCode')} />,
+            { preloadedState: storeWithRows([aip({ fundCode: '11111', fund: null })]) },
+        );
+
+        expect(screen.getByText('11111')).toBeInTheDocument();
+        expect(container.querySelector('a[href^="/fund/"]')).toBeNull();
+    });
+
     it('stav importu se vypíše přeloženě, ne jako hodnota enumu', () => {
         renderWithProviders(
             <AipTable filterDisabled hiddenValues={onlyColumns('code', 'importState')} />,
