@@ -1042,6 +1042,15 @@ model AipDetailFilteredResult {
      * Seznam objektů
      */
     rows: AipDetailVO[];
+    /**
+     * Pořadí prvního vráceného výsledku; při zadaném focusAipId se liší od požadovaného offsetu,
+     * protože se vrací stránka s hledaným balíčkem
+     */
+    offset: integer;
+    /**
+     * Zda byl hledaný balíček (focusAipId) ve výsledku nalezen; bez focusAipId není vyplněno
+     */
+    focusFound?: boolean;
 }
 
 /**
@@ -6594,6 +6603,11 @@ namespace ElzaAPI.Aip {
       */
      @route("/find/filter")
      @post op findByFilter(
+        /**
+         * AIP the client wants to see; the page holding it is returned instead of the
+         * requested offset, in the sorting and filtering of the request
+         */
+        @query focusAipId?: integer;
         /** search parameters - filters, paging and sorting */
         @body params: SearchParams;
      ) : {

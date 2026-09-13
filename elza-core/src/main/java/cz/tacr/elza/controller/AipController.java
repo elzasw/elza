@@ -96,11 +96,14 @@ public class AipController implements AipsApi {
     }
 
     @Override
-    public ResponseEntity<AipDetailFilteredResult> aipFindByFilter(SearchParams searchParams) {
-        FilteredResult<DaAip> aips = aipService.findAipDetailsByFilter(searchParams);
+    public ResponseEntity<AipDetailFilteredResult> aipFindByFilter(SearchParams searchParams, Integer focusAipId) {
+        AipService.AipSearchResult found = aipService.findAipDetailsByFilter(searchParams, focusAipId);
+        FilteredResult<DaAip> aips = found.page();
         AipDetailFilteredResult result = new AipDetailFilteredResult();
         result.setCount(aips.getTotalCount());
         result.setRows(clientFactoryVO.createAips(aips.getList()));
+        result.setOffset(aips.getFirstResult());
+        result.setFocusFound(found.focusFound());
         return ResponseEntity.ok(result);
     }
 

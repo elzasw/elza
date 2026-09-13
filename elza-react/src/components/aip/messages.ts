@@ -76,6 +76,16 @@ export const updateTypeDescriptions = defineMessages({
 /**
  * Samostatná stránka průzkumníka AIPu.
  */
+/**
+ * Seznam balíčků.
+ */
+export const listMessages = defineMessages({
+    focusNotFound: {
+        id: "aip.list.focusNotFound",
+        defaultMessage: "Hledaný balíček neodpovídá nastavenému filtru, seznam proto začíná od začátku.",
+    },
+});
+
 export const explorerPageMessages = defineMessages({
     back:          { id: "aip.explorer.back",          defaultMessage: "Zpět na seznam" },
     open:          { id: "aip.explorer.open",          defaultMessage: "Otevřít průzkumník" },

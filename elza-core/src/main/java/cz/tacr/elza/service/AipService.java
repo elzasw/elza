@@ -32,9 +32,36 @@ public class AipService {
     @Autowired
     private DaoService daoService;
 
+    /**
+     * Stránka seznamu AIP; při hledání konkrétního balíčku nese i to, zda se ho podařilo najít.
+     *
+     * @param focusFound null, pokud se žádný balíček nehledal
+     */
+    public record AipSearchResult(FilteredResult<DaAip> page, Boolean focusFound) {
+    }
+
     @Transactional
     public FilteredResult<DaAip> findAipDetailsByFilter(SearchParams params) {
         return aipRepository.findAipsByFilter(params);
+    }
+
+    /**
+     * Seznam AIP; se zadaným focusAipId se místo požadovaného offsetu vrátí stránka, na které
+     * hledaný balíček ve zvoleném řazení a filtru leží.
+     *
+     * Balíček, který filtru neodpovídá, žádnou stránku nemá - vrátí se požadovaná stránka
+     * a focusFound = false, aby klient mohl uživateli říct, proč balíček nevidí.
+     */
+    @Transactional
+    public AipSearchResult findAipDetailsByFilter(SearchParams params, Integer focusAipId) {
+        if (focusAipId == null) {
+            return new AipSearchResult(aipRepository.findAipsByFilter(params), null);
+        }
+        Integer offset = aipRepository.findAipPageOffset(params, focusAipId);
+        if (offset != null) {
+            params.setOffset(offset);
+        }
+        return new AipSearchResult(aipRepository.findAipsByFilter(params), offset != null);
     }
 
     @Transactional

@@ -10,6 +10,7 @@ import cz.tacr.elza.repository.filter.AipFilterCapabilities;
 import cz.tacr.elza.repository.filter.AipFilterValueType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Tuple;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
 import java.time.LocalDateTime;
@@ -45,7 +46,7 @@ public class AipRepositoryImpl implements AipRepositoryCustom {
         query.select(root);
         queryCount.select(cb.countDistinct(aipRootCount));
 
-        query.where(condition).orderBy(prepareOrder(params.getSort(), cb, joins));
+        query.where(condition).orderBy(prepareOrder(sortKeys(params.getSort()), cb, joins));
         queryCount.where(conditionCount);
 
         TypedQuery<DaAip> tq = entityManager.createQuery(query)
@@ -57,6 +58,121 @@ public class AipRepositoryImpl implements AipRepositoryCustom {
         int count = entityManager.createQuery(queryCount).getSingleResult().intValue();
 
         return new FilteredResult<>(firstResult, maxResults, count, list);
+    }
+
+    /**
+     * Offset of the page holding one AIP.
+     *
+     * The position is counted, not searched for: the rows sorting before the AIP are counted under
+     * the very same filter and sorting, so the answer holds for a result of any size without
+     * walking it. The count is then aligned down to a page boundary.
+     *
+     * Null ordering follows PostgreSQL (ASC puts nulls last, DESC first) - the only database ELZA
+     * runs on; the comparison below must say the same thing as the ORDER BY of the page query.
+     */
+    @Override
+    public Integer findAipPageOffset(final SearchParams params, final Integer aipId) {
+        int pageSize = params.getSize() == null ? 0 : params.getSize();
+
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        List<SortKey> keys = sortKeys(params.getSort());
+
+        List<Object> values = sortValuesOf(params, aipId, keys, cb);
+        if (values == null) {
+            // the AIP is not part of the filtered result - there is no page to go to
+            return null;
+        }
+
+        CriteriaQuery<Long> query = cb.createQuery(Long.class);
+        Root<DaAip> root = query.from(DaAip.class);
+        Joins joins = joins(cb, root);
+
+        query.select(cb.countDistinct(root))
+                .where(cb.and(prepareCondition(params.getFilters(), cb, joins),
+                        sortsBefore(keys, values, cb, joins)));
+
+        int rank = entityManager.createQuery(query).getSingleResult().intValue();
+        return pageSize > 0 ? (rank / pageSize) * pageSize : 0;
+    }
+
+    /**
+     * Values the AIP is sorted by, read under the filter of the search - an AIP the filter leaves
+     * out has no position in the result and yields null.
+     */
+    private List<Object> sortValuesOf(final SearchParams params, final Integer aipId,
+                                      final List<SortKey> keys, final CriteriaBuilder cb) {
+        CriteriaQuery<Tuple> query = cb.createTupleQuery();
+        Root<DaAip> root = query.from(DaAip.class);
+        Joins joins = joins(cb, root);
+
+        List<Selection<?>> selections = new ArrayList<>(keys.size());
+        for (SortKey key : keys) {
+            selections.add(key.path(joins));
+        }
+        query.multiselect(selections)
+                .where(cb.and(prepareCondition(params.getFilters(), cb, joins),
+                        cb.equal(root.get(AipFieldMapping.AIP_ID.getAttribute()), aipId)));
+
+        List<Tuple> rows = entityManager.createQuery(query).setMaxResults(1).getResultList();
+        if (rows.isEmpty()) {
+            return null;
+        }
+        Tuple row = rows.get(0);
+        List<Object> values = new ArrayList<>(keys.size());
+        for (int i = 0; i < keys.size(); i++) {
+            values.add(row.get(i));
+        }
+        return values;
+    }
+
+    /**
+     * Rows sorting before the given values, compared key by key:
+     * {@code k1 < v1 OR (k1 = v1 AND k2 < v2) OR ...}
+     *
+     * The last key is the identifier, which is never null and never shared, so the chain always
+     * ends with a decision.
+     */
+    private Predicate sortsBefore(final List<SortKey> keys, final List<Object> values,
+                                  final CriteriaBuilder cb, final Joins joins) {
+        List<Predicate> alternatives = new ArrayList<>(keys.size());
+        for (int i = 0; i < keys.size(); i++) {
+            List<Predicate> parts = new ArrayList<>(i + 1);
+            for (int j = 0; j < i; j++) {
+                parts.add(sameValue(keys.get(j).path(joins), values.get(j), cb));
+            }
+            parts.add(beforeValue(keys.get(i), values.get(i), cb, joins));
+            alternatives.add(cb.and(parts.toArray(new Predicate[0])));
+        }
+        return cb.or(alternatives.toArray(new Predicate[0]));
+    }
+
+    private static Predicate sameValue(final Path<?> path, final Object value, final CriteriaBuilder cb) {
+        return value == null ? cb.isNull(path) : cb.equal(path, value);
+    }
+
+    /**
+     * Rows that come before one value of one sort key, nulls included:
+     * ascending puts them last (everything with a value is before a null),
+     * descending puts them first (nothing is before a null).
+     */
+    private static Predicate beforeValue(final SortKey key, final Object value, final CriteriaBuilder cb,
+                                         final Joins joins) {
+        Path<?> path = key.path(joins);
+        if (value == null) {
+            return key.descending() ? cb.disjunction() : cb.isNotNull(path);
+        }
+        Predicate byValue = key.descending() ? greaterThan(cb, path, value) : lessThan(cb, path, value);
+        return key.descending() ? cb.or(byValue, cb.isNull(path)) : byValue;
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private static Predicate lessThan(final CriteriaBuilder cb, final Path<?> path, final Object value) {
+        return cb.lessThan((Expression<Comparable>) path, (Comparable) value);
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private static Predicate greaterThan(final CriteriaBuilder cb, final Path<?> path, final Object value) {
+        return cb.greaterThan((Expression<Comparable>) path, (Comparable) value);
     }
 
     /**
@@ -296,17 +412,60 @@ public class AipRepositoryImpl implements AipRepositoryCustom {
 
     // --- sorting ------------------------------------------------------------------------
 
-    private List<Order> prepareOrder(final List<Sorting> sort, final CriteriaBuilder cb, final Joins joins) {
-        if (sort == null || sort.isEmpty()) {
-            return List.of(cb.asc(joins.get(AipJoin.AIP).get(DaAip.FIELD_CODE)));
+    /**
+     * One key of the sorting, resolved onto the entity model.
+     */
+    private record SortKey(AipFieldMapping mapping, boolean descending) {
+
+        Path<?> path(final Joins joins) {
+            return joins.get(mapping.getJoin()).get(mapping.getAttribute());
         }
-        List<Order> orders = new ArrayList<>(sort.size());
-        for (Sorting sorting : sort) {
-            AipFieldMapping mapping = AipFieldMapping.of(sortedField(sorting.getField()));
-            Path<?> path = joins.get(mapping.getJoin()).get(mapping.getAttribute());
-            orders.add(sorting.getOrder() == SortingOrder.DESC ? cb.desc(path) : cb.asc(path));
+    }
+
+    /**
+     * Keys the result is sorted by, always ending with the identifier.
+     *
+     * Without that last key the order of rows sharing the sorted value is up to the database and
+     * may differ between queries - a page could then repeat a row from the previous one, and the
+     * position of a single AIP in the result would not be defined at all. Fields of low
+     * cardinality (the load flags, states) make that likely, not theoretical.
+     */
+    private List<SortKey> sortKeys(final List<Sorting> sort) {
+        List<SortKey> keys = new ArrayList<>();
+        if (sort == null || sort.isEmpty()) {
+            keys.add(new SortKey(AipFieldMapping.CODE, false));
+        } else {
+            for (Sorting sorting : sort) {
+                keys.add(new SortKey(AipFieldMapping.of(sortedField(sorting.getField())),
+                        sorting.getOrder() == SortingOrder.DESC));
+            }
+        }
+        if (keys.stream().noneMatch(key -> key.mapping() == AipFieldMapping.AIP_ID)) {
+            keys.add(new SortKey(AipFieldMapping.AIP_ID, false));
+        }
+        return keys;
+    }
+
+    private List<Order> prepareOrder(final List<SortKey> keys, final CriteriaBuilder cb, final Joins joins) {
+        List<Order> orders = new ArrayList<>(keys.size() * 2);
+        for (SortKey key : keys) {
+            Path<?> path = key.path(joins);
+            orders.add(cb.asc(nullRank(key, path, cb)));
+            orders.add(key.descending() ? cb.desc(path) : cb.asc(path));
         }
         return orders;
+    }
+
+    /**
+     * Where rows with no value belong: last when ascending, first when descending.
+     *
+     * Said as an expression rather than left to the database, because databases disagree on it -
+     * PostgreSQL puts nulls last when ascending, H2 puts them first - and the position of a single
+     * AIP is counted from this very order. What the order says here, {@link #beforeValue} repeats.
+     */
+    private static Expression<Integer> nullRank(final SortKey key, final Path<?> path, final CriteriaBuilder cb) {
+        int whenNull = key.descending() ? 0 : 1;
+        return cb.<Integer> selectCase().when(cb.isNull(path), whenNull).otherwise(1 - whenNull);
     }
 
     private AipFieldName sortedField(final String field) {

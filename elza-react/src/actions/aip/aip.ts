@@ -22,21 +22,50 @@ export const aipsFilter = (
     return SimpleListActions.filter(AREA_AIPS, {from, pageSize, filters, sort});
 }
 
+const searchParams = (filter: AipsFilter = {}): SearchParams => {
+    const {filters, from, pageSize, sort} = filter;
+    return {
+        filters: (filters || []).map(entry => entry.filter),
+        offset: from && from > 0 ? from : 0,
+        size: pageSize,
+        sort: sort || [],
+    };
+}
+
 export const aipsFetchIfNeeded = (forceFetch = false) => {
     return SimpleListActions.fetchIfNeeded(AREA_AIPS, null, (parent?: unknown, filter: AipsFilter = {}) =>
-        {
-            const {filters, from, pageSize, sort} = filter;
-            const params: SearchParams = {
-                filters: (filters || []).map(entry => entry.filter),
-                offset: from && from > 0 ? from : 0,
-                size: pageSize,
-                sort: sort || [],
-            };
-
-            return Api.aips.aipFindByFilter(params).then(response => response.data);
-        },
+            Api.aips.aipFindByFilter(searchParams(filter)).then(response => response.data),
         forceFetch
     );
+}
+
+/**
+ * Zobrazení stránky, na které leží daný balíček.
+ *
+ * Seznam je stránkovaný a balíček může být kdekoliv v něm, takže stránku hledá server - jen on
+ * ví, kolik balíčků se ve zvoleném řazení a filtru řadí před ním. Vrácená stránka se uloží jako
+ * obyčejná odpověď seznamu, takže další stránkování a řazení pokračuje beze změny.
+ *
+ * Filtry obrazovky se předávají zvlášť, ne ze store: v okamžiku skoku tam ještě nemusí být a
+ * stránka spočtená nad jiným seznamem by vedla jinam.
+ *
+ * @return true, pokud balíček ve filtru je; jinak se vrátí první stránka a je na volajícím,
+ *         aby uživateli řekl, proč balíček nevidí
+ */
+export const aipsFocus = (
+    aipId: number,
+    filters: AipFilterEntry[],
+    pageSize: number = DEFAULT_PAGE_SIZE,
+    sort?: Sorting[],
+) => {
+    return async (dispatch: (action: unknown) => unknown): Promise<boolean> => {
+        const params = searchParams({filters, from: 0, pageSize, sort});
+        const {data} = await Api.aips.aipFindByFilter(params, aipId);
+
+        dispatch(aipsFilter(filters, data.offset ?? 0, pageSize, sort));
+        dispatch(SimpleListActions.setData(AREA_AIPS, null, data.rows, data.count));
+        return data.focusFound ?? false;
+    };
 }
 
 export function aipFetchIfNeeded(id: number, forceFetch = false) {
