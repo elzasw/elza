@@ -54,6 +54,8 @@ type ArrAipPageProps = {
     dispatch: (action: unknown) => unknown;
     userDetail: UserDetail;
     arrRegion: { activeIndex: number | null; funds: Fund[] };
+    /** Adresa může nést i konkrétní balíček - /fund/{id}/aip/{aipId}. */
+    match: { params: { id: string; versionId?: string; aipId?: string } };
 };
 
 class ArrAipPage extends ArrParentPage {
@@ -66,6 +68,18 @@ class ArrAipPage extends ArrParentPage {
     componentDidMount() {
         super.componentDidMount()
         this.resolveUrls()
+        this.selectAipFromUrl()
+    }
+
+    /**
+     * Odkaz ze seznamu AIP vede na balíček v jeho fondu - v seznamu se rovnou vybere,
+     * aby bylo poznat, o který balíček šlo.
+     */
+    selectAipFromUrl() {
+        const {aipId} = this.props.match.params;
+        if (aipId) {
+            this.props.dispatch(selectAip(Number(aipId)));
+        }
     }
 
     UNSAFE_componentWillReceiveProps(nextProps: ArrAipPageProps) {

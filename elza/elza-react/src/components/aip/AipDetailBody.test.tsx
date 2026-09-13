@@ -52,6 +52,15 @@ describe('AipDetailBody', () => {
         expect(screen.getByText('Balíček neobsahuje soubor PACKAGE-INFO.xml')).toBeInTheDocument();
     });
 
+    it('fond odkazuje na balíčky svého archivního souboru, rovnou na tento AIP', () => {
+        const { container } = renderWithProviders(<AipDetailBody detail={detail({
+            fund: { id: 106, name: 'Fond A' } as AipDetailVO['fund'],
+        })} />);
+
+        const link = container.querySelector('a[href="/fund/106/aip/3"]');
+        expect(link?.textContent).toBe('Fond A');
+    });
+
     it('napojení a velikost vypíše přeloženě', () => {
         renderWithProviders(<AipDetailBody detail={detail({
             aipSize: 2048,

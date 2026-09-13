@@ -275,8 +275,9 @@ export const urlFundGrid = (fundId: number, versionId?: number, filter?: string,
     return `${fundSub(fundId, versionId, sub)}${filter ? "?filter=" + filter : ""}`;
 }
 
-export const urlFundAb = (fundId: number, versionId?: number) => {
-    return fundSub(fundId, versionId, AIP);
+/** Seznam archivních balíčků fondu; s aipId se v seznamu rovnou vybere jeden balíček. */
+export const urlFundAb = (fundId: number, versionId?: number, aipId?: number) => {
+    return fundSub(fundId, versionId, AIP, aipId);
 }
 
 export const urlFundAipExplorer = (fundId: number, aipId: number, versionId?: number) => {

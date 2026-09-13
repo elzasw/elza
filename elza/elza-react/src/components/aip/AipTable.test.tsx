@@ -157,13 +157,13 @@ describe('AipTable', () => {
         expect(container.querySelector('a[href^="/entity/"]')).toBeNull();
     });
 
-    it('napojený fond odkazuje na archivní soubor, názvem i kódem', () => {
+    it('napojený fond odkazuje na balíčky svého archivního souboru, názvem i kódem', () => {
         const { container } = renderWithProviders(
             <AipTable filterDisabled hiddenValues={onlyColumns('fund.name', 'fundCode')} />,
             { preloadedState: storeWithRows([aip({ fundCode: '11111' })]) },
         );
 
-        const links = container.querySelectorAll('a[href="/fund/7"]');
+        const links = container.querySelectorAll('a[href="/fund/7/aip/1"]');
         expect(Array.from(links).map(link => link.textContent)).toEqual(['Fond A', '11111']);
     });
 

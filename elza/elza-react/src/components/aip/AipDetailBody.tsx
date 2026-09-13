@@ -6,7 +6,7 @@ import { Icon } from 'components/shared';
 import { useThunkDispatch } from 'utils/hooks';
 import { Api } from '../../api';
 import { aipFetchIfNeeded } from '../../actions/aip/aip.ts';
-import { urlEntity, urlFund } from '../../constants';
+import { urlEntity, urlFundAb } from '../../constants';
 import { DetailRow } from './DetailRow';
 import { QueueStateCell, getBoolIcon, getConnectedToJP } from './AipCells';
 import { formatAipSize, formatUnitDate } from './format';
@@ -50,7 +50,7 @@ export function AipDetailBody({ detail }: Props) {
                 </div>}
             {detail.fund &&
                 <DetailRow label={formatMessage(messages.fund)} value={
-                    <Link to={urlFund(detail.fund.id)}>{detail.fund.name}</Link>
+                    <Link to={urlFundAb(detail.fund.id, undefined, detail.aipId)}>{detail.fund.name}</Link>
                 } />}
             {detail.fundCode &&
                 <DetailRow label={formatMessage(messages.fundCode)} value={detail.fundCode} />}

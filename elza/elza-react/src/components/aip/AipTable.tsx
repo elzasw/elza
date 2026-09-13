@@ -9,7 +9,7 @@ import { formatAipSize, formatUnitDate } from './format';
 import { findColDefByKey } from './columns';
 import './AipTable.scss';
 import { useHistory} from 'react-router';
-import {urlAip, urlEntity, urlFund} from '../../constants.tsx';
+import {urlAip, urlEntity, urlFundAb} from '../../constants.tsx';
 import { Link } from 'react-router-dom';
 import { useThunkDispatch } from 'utils/hooks';
 import {aipsFetchIfNeeded, aipsFilter, AREA_AIP, AREA_AIPS, setSelectedAips, } from "../../actions/aip/aip.ts";
@@ -122,11 +122,11 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, onExplore, filterDisabled, in
             );
             case "aipSize": return formatAipSize(item[key]);
             case "unitdateFrom":  return item.unitdateFrom ? formatUnitDate(item.unitdateFrom, item.unitdateTo): "-";
-            // Napojený AIP vede rovnou do svého archivního souboru; nedohledaný fond
-            // zůstane pomlčkou, není kam odkázat.
+            // Napojený AIP vede na balíčky svého archivního souboru a rovnou se tam vybere;
+            // nedohledaný fond zůstane pomlčkou, není kam odkázat.
             case "fund.name": return item.fund
                 ? (
-                    <Link to={urlFund(item.fund.id)}
+                    <Link to={urlFundAb(item.fund.id, undefined, item.aipId)}
                           title={item.fund.name}
                           onClick={e => e.stopPropagation()}>
                         {item.fund.name}
@@ -140,7 +140,7 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, onExplore, filterDisabled, in
                 // Dohledaný fond se dá otevřít; nedohledaný zůstane jen kódem z balíčku.
                 return item.fund
                     ? (
-                        <Link to={urlFund(item.fund.id)}
+                        <Link to={urlFundAb(item.fund.id, undefined, item.aipId)}
                               title={item.fund.name}
                               onClick={e => e.stopPropagation()}>
                             {item.fundCode}
