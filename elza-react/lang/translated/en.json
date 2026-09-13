@@ -7,6 +7,78 @@
     "defaultMessage": "Add description element",
     "srcHash": "ckU6Xf-Ze6l2"
   },
+  "admin.bulk.detail.queue.empty": {
+    "defaultMessage": "There are no requests in the queue",
+    "srcHash": "kPYFYo8RPkiI"
+  },
+  "admin.bulk.header.title.AIP": {
+    "defaultMessage": "Archival packages",
+    "srcHash": "j-OwZ5UftK-t"
+  },
+  "admin.bulk.header.title.AP": {
+    "defaultMessage": "Archival entity validation",
+    "srcHash": "YWrf1pxqG2_7"
+  },
+  "admin.bulk.header.title.BATCH_IMPORT": {
+    "defaultMessage": "Batch import",
+    "srcHash": "CNlqwztWfT2_"
+  },
+  "admin.bulk.header.title.BULK": {
+    "defaultMessage": "Bulk actions",
+    "srcHash": "Fwv_7DJB4rQw"
+  },
+  "admin.bulk.header.title.EXPORT": {
+    "defaultMessage": "Publication",
+    "srcHash": "zSDsDTqzNIUA"
+  },
+  "admin.bulk.header.title.NODE": {
+    "defaultMessage": "Description unit validation",
+    "srcHash": "oUsCmG71xk_3"
+  },
+  "admin.bulk.header.title.OUTPUT": {
+    "defaultMessage": "Outputs",
+    "srcHash": "irSQ8aME65Fz"
+  },
+  "admin.bulk.title.beginTime": {
+    "defaultMessage": "Running since {0}",
+    "srcHash": "4rERt7oS74Wr"
+  },
+  "admin.bulk.title.currentId": {
+    "defaultMessage": "Link ID #{0}",
+    "srcHash": "WjC0gouaGL0E"
+  },
+  "admin.bulk.title.load": {
+    "defaultMessage": "Load",
+    "srcHash": "XGfjidFP3CtZ"
+  },
+  "admin.bulk.title.noRunningThread": {
+    "defaultMessage": "No thread is running",
+    "srcHash": "6FkeAci8veV5"
+  },
+  "admin.bulk.title.requestId": {
+    "defaultMessage": "Queue ID #{0}",
+    "srcHash": "PijbdOfAeHtj"
+  },
+  "admin.bulk.title.requestPerHour": {
+    "defaultMessage": "Requests per hour",
+    "srcHash": "kgrGr_dJgmtj"
+  },
+  "admin.bulk.title.runningThreadCount": {
+    "defaultMessage": "Running threads",
+    "srcHash": "vbw6wW-who-Z"
+  },
+  "admin.bulk.title.runningThreads": {
+    "defaultMessage": "Running threads",
+    "srcHash": "jRrMV0X_4DcG"
+  },
+  "admin.bulk.title.totalThreadCount": {
+    "defaultMessage": "Threads in total",
+    "srcHash": "LhV5444RkALK"
+  },
+  "admin.bulk.title.waitingRequests": {
+    "defaultMessage": "Waiting requests",
+    "srcHash": "yget6MsdhuDe"
+  },
   "admin.extSystem.add.title": {
     "defaultMessage": "New external system",
     "srcHash": "bw_993MNN6Op"
@@ -270,6 +342,10 @@
   "admin.extSystemDetail.repoTestUnavailable": {
     "defaultMessage": "Repository is not available",
     "srcHash": "WSrg3PozscWF"
+  },
+  "admin.fulltext.action.reindex": {
+    "defaultMessage": "Reindex",
+    "srcHash": "NSdbVaZGEs_5"
   },
   "admin.fulltext.message.reindexing": {
     "defaultMessage": "Reindexing in progress…",
@@ -650,6 +726,10 @@
   "admin.nav.import": {
     "defaultMessage": "Import",
     "srcHash": "LP-bqr9WygAm"
+  },
+  "admin.packages.action.import": {
+    "defaultMessage": "Import",
+    "srcHash": "yTA6PZurxTjn"
   },
   "admin.resetServerCache.success": {
     "defaultMessage": "Server caches have been reset",
@@ -2073,6 +2153,26 @@
     "defaultMessage": "Unknown template",
     "srcHash": "_eYll52DiTZN"
   },
+  "arr.request.title.type.DAO": {
+    "defaultMessage": "Destruction/transfer request",
+    "srcHash": "hRbuxIfZYS0P"
+  },
+  "arr.request.title.type.DAO_LINK": {
+    "defaultMessage": "Request to link to / unlink from a description unit",
+    "srcHash": "zsk7krm44863"
+  },
+  "arr.request.title.type.DIGITIZATION": {
+    "defaultMessage": "Digitisation request",
+    "srcHash": "BiGhw1AqrZm-"
+  },
+  "arr.request.title.type.dao.DESTRUCTION": {
+    "defaultMessage": "Destruction request",
+    "srcHash": "4eWr4Y38VQv1"
+  },
+  "arr.request.title.type.dao.TRANSFER": {
+    "defaultMessage": "Transfer request",
+    "srcHash": "dUIAHwUyr1Ib"
+  },
   "arr.structure.modal.increment": {
     "defaultMessage": "Increment",
     "srcHash": "pcWzMwLcSI6r"
@@ -3080,6 +3180,30 @@
   "publication.table.menu.download": {
     "defaultMessage": "Download",
     "srcHash": "xxAzjqAuIzkG"
+  },
+  "requestQueue.delete.confirm": {
+    "defaultMessage": "Do you really want to delete this item from the queue?",
+    "srcHash": "8OgWrn-WUa9V"
+  },
+  "requestQueue.title.attemptToSend": {
+    "defaultMessage": "Last send attempt",
+    "srcHash": "eDl1m4PfcIUw"
+  },
+  "requestQueue.title.create": {
+    "defaultMessage": "Created",
+    "srcHash": "8zCOe8eH59_V"
+  },
+  "requestQueue.title.description": {
+    "defaultMessage": "Description",
+    "srcHash": "rx7qx-MBKenQ"
+  },
+  "requestQueue.title.error": {
+    "defaultMessage": "Send error",
+    "srcHash": "S56Jdf3QSI5b"
+  },
+  "requestQueue.title.username": {
+    "defaultMessage": "User",
+    "srcHash": "sfdZSYORoLV9"
   },
   "ribbon.action.admin": {
     "defaultMessage": "Administration",

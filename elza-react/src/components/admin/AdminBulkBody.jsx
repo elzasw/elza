@@ -1,7 +1,12 @@
 import React from "react";
 import {WebApi} from 'actions/index.jsx';
 import './AdminBulkBody.scss';
-import i18n from "../i18n";
+import { FormattedMessage, defineMessages } from "react-intl";
+
+// Id je převzaté z legacy katalogu beze změny.
+const messages = defineMessages({
+    queueEmpty: { id: 'admin.bulk.detail.queue.empty', defaultMessage: 'Ve frontě nejsou žádné požadavky' },
+});
 
 class AdminBulkBody extends React.Component {
     state = {
@@ -39,7 +44,7 @@ class AdminBulkBody extends React.Component {
                         </div>
                     )) :
                     <div className={"bulk-detail"}>
-                        <b>{i18n('admin.bulk.detail.queue.empty')}</b>
+                        <b><FormattedMessage {...messages.queueEmpty} /></b>
                     </div>
             }
         </div>

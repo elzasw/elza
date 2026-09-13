@@ -5,7 +5,37 @@ import React from 'react';
 import {connect} from 'react-redux';
 import {Table} from 'react-bootstrap';
 import {Button} from '../../components/ui';
-import {AbstractReactComponent, i18n, StoreHorizontalLoader} from 'components/shared';
+import {AbstractReactComponent, StoreHorizontalLoader} from 'components/shared';
+import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang';
+import { messageFor } from 'components/shared/lang/dynamicMessage';
+
+// Id jsou převzatá z legacy katalogu beze změny; opraven jen překlep
+// "Poslední pokud o odeslání" -> "pokus".
+const messages = defineMessages({
+    deleteConfirm: { id: 'requestQueue.delete.confirm', defaultMessage: 'Opravdu chcete zmazat položku z fronty?' },
+    create: { id: 'requestQueue.title.create', defaultMessage: 'Vytvořeno' },
+    attemptToSend: { id: 'requestQueue.title.attemptToSend', defaultMessage: 'Poslední pokus o odeslání' },
+    description: { id: 'requestQueue.title.description', defaultMessage: 'Popis' },
+    error: { id: 'requestQueue.title.error', defaultMessage: 'Chyba odeslání' },
+    username: { id: 'requestQueue.title.username', defaultMessage: 'Uživatel' },
+});
+
+// Typy požadavků. Klíč se skládal za běhu, což statický extraktor nevidí;
+// množina je uzavřená (viz konstanty DIGITIZATION/DAO/DAO_LINK).
+const requestTypeMessages = defineMessages({
+    DIGITIZATION: { id: 'arr.request.title.type.DIGITIZATION', defaultMessage: 'Požadavek na digitalizaci' },
+    DAO: { id: 'arr.request.title.type.DAO', defaultMessage: 'Požadavek na skartaci/delimitaci' },
+    DAO_LINK: {
+        id: 'arr.request.title.type.DAO_LINK',
+        defaultMessage: 'Požadavek na připojení k/odpojení od JP',
+    },
+});
+
+const daoRequestTypeMessages = defineMessages({
+    DESTRUCTION: { id: 'arr.request.title.type.dao.DESTRUCTION', defaultMessage: 'Požadavek na skartaci' },
+    TRANSFER: { id: 'arr.request.title.type.dao.TRANSFER', defaultMessage: 'Požadavek na delimitaci' },
+});
 import {Ribbon} from 'components/index.jsx';
 import { AdminLayout } from '../shared/layout/AdminLayout';
 import './AdminRequestsQueuePage.scss';
@@ -37,7 +67,7 @@ class AdminRequestsQueuePage extends AbstractReactComponent {
 
     handleDelete = async (item) => {
         const {dispatch} = this.props;
-        const response = await dispatch(showConfirmDialog(i18n('requestQueue.delete.confirm')))
+        const response = await dispatch(showConfirmDialog(this.props.intl.formatMessage(messages.deleteConfirm)))
         if (response) {
             WebApi.removeArrRequestQueueItem(item.request.id);
         }
@@ -53,7 +83,7 @@ class AdminRequestsQueuePage extends AbstractReactComponent {
                 return ' - ' + createDaoLinkName(request, userDetail);
             }
             case DAO: {
-                return ' - ' + i18n('arr.request.title.type.dao.' + request.type);
+                return ' - ' + this.props.intl.formatMessage(messageFor(daoRequestTypeMessages, request.type, daoRequestTypeMessages.DESTRUCTION));
             }
             default:
                 return 'Unknown type: ' + type;
@@ -70,11 +100,11 @@ class AdminRequestsQueuePage extends AbstractReactComponent {
                     <Table striped bordered condensed hover>
                         <thead>
                             <tr>
-                                <th>{i18n('requestQueue.title.create')}</th>
-                                <th>{i18n('requestQueue.title.attemptToSend')}</th>
-                                <th>{i18n('requestQueue.title.description')}</th>
-                                <th>{i18n('requestQueue.title.error')}</th>
-                                <th>{i18n('requestQueue.title.username')}</th>
+                                <th><FormattedMessage {...messages.create} /></th>
+                                <th><FormattedMessage {...messages.attemptToSend} /></th>
+                                <th><FormattedMessage {...messages.description} /></th>
+                                <th><FormattedMessage {...messages.error} /></th>
+                                <th><FormattedMessage {...messages.username} /></th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -86,14 +116,14 @@ class AdminRequestsQueuePage extends AbstractReactComponent {
                                         <td>{dateTimeToString(new Date(item.create))}</td>
                                         <td>{item.attemptToSend && dateTimeToString(new Date(item.attemptToSend))}</td>
                                         <td>
-                                            {i18n('arr.request.title.type.' + type)}{' '}
+                                            <FormattedMessage {...messageFor(requestTypeMessages, type, requestTypeMessages.DAO)} />{' '}
                                             {this.createDescription(type, item.request)}
                                         </td>
                                         <td>{item.error}</td>
                                         <td>{item.request.username}</td>
                                         <td>
                                             <Button onClick={() => this.handleDelete(item)}>
-                                                {i18n('global.action.delete')}
+                                                <FormattedMessage {...globalMessages.delete} />
                                             </Button>
                                         </td>
                                     </tr>
@@ -132,4 +162,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps)(AdminRequestsQueuePage);
+export default connect(mapStateToProps)(injectIntl(AdminRequestsQueuePage));

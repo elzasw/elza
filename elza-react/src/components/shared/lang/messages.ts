@@ -52,6 +52,10 @@ export const globalMessages = defineMessages({
     id: "global.action.delete",
     defaultMessage: "Odstranit",
   },
+  download: {
+    id: "global.action.download",
+    defaultMessage: "Stáhnout",
+  },
   choose: {
     id: "global.action.choose",
     defaultMessage: "Vybrat",

@@ -2,6 +2,7 @@ import { downloadFile } from 'actions/global/download';
 import { UrlFactory } from 'actions/index.jsx';
 import { AbstractReactComponent } from 'components/shared';
 import { FormattedMessage, defineMessages } from 'react-intl';
+import { globalMessages } from 'components/shared/lang';
 import { dateToString } from 'components/Utils.jsx';
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -14,7 +15,6 @@ import './FundDetailExt.scss';
 // Id jsou převzatá z legacy katalogu beze změny. Placeholder {0} zůstává:
 // ICU bere jako jméno argumentu i číslo, takže legacy tvar funguje beze změny.
 const messages = defineMessages({
-    download: { id: 'global.action.download', defaultMessage: 'Stáhnout' },
     activeOutputs: { id: 'arr.fund.outputDefinition.active', defaultMessage: 'Výstupy' },
     versionList: { id: 'arr.fund.version.list', defaultMessage: 'Verze AS' },
     version: { id: 'arr.fund.version', defaultMessage: 'Verze {0}' },
@@ -57,7 +57,7 @@ const FundDetailExt = class FundDetailExt extends AbstractReactComponent {
                             }}
                             variant="link"
                         >
-                            <FormattedMessage {...messages.download} />
+                            <FormattedMessage {...globalMessages.download} />
                         </Button>
                     </div>
                 );
