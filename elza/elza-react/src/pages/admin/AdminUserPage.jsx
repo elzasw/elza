@@ -8,7 +8,6 @@ import {FormControl} from 'react-bootstrap';
 import {Button} from '../../components/ui';
 import {
     AbstractReactComponent,
-    i18n,
     Icon,
     ListBox,
     RibbonGroup,
@@ -16,6 +15,26 @@ import {
     StoreHorizontalLoader,
 } from '../../components/shared';
 import {AddUserForm, Ribbon, UserDetail} from '../../components/index';
+import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    addTitle: { id: 'admin.user.add.title', defaultMessage: 'Vytvoření uživatele' },
+    passwordChangeTitle: { id: 'admin.user.passwordChange.title', defaultMessage: 'Změna hesla' },
+    updateTitle: { id: 'admin.user.update.title', defaultMessage: 'Upravení uživatele' },
+    changeActiveConfirm: {
+        id: 'admin.user.changeActive.confirm',
+        defaultMessage: 'Jste si jisti, že chcete změnit stav uživatele?',
+    },
+    ribbonAdd: { id: 'ribbon.action.admin.user.add', defaultMessage: 'Přidat uživatele' },
+    ribbonDeactivate: { id: 'ribbon.action.admin.user.deactivate', defaultMessage: 'Zneplatnit účet' },
+    ribbonActivate: { id: 'ribbon.action.admin.user.activate', defaultMessage: 'Aktivovat' },
+    ribbonPasswordChange: { id: 'ribbon.action.admin.user.passwordChange', defaultMessage: 'Změnit heslo' },
+    ribbonEdit: { id: 'ribbon.action.admin.user.edit', defaultMessage: 'Upravit' },
+    searchPlaceholder: { id: 'search.input.search', defaultMessage: 'Vyhledat...' },
+    filterAll: { id: 'admin.user.filter.all', defaultMessage: 'Všichni uživatelé' },
+    filterOnlyActive: { id: 'admin.user.filter.onlyActive', defaultMessage: 'Aktivní uživatelé' },
+});
 import {
     adminPasswordChange,
     adminUserChangeActive,
@@ -115,7 +134,7 @@ class AdminUserPage extends AbstractReactComponent {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('admin.user.add.title'),
+                this.props.intl.formatMessage(messages.addTitle),
                 <AddUserForm create onSubmitForm={this.handleCreateUser} />,
             ),
         );
@@ -129,7 +148,7 @@ class AdminUserPage extends AbstractReactComponent {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('admin.user.passwordChange.title'),
+                this.props.intl.formatMessage(messages.passwordChangeTitle),
                 <PasswordForm admin={true} onSubmitForm={this.handleChangeUserPassword} />,
             ),
         );
@@ -169,7 +188,7 @@ class AdminUserPage extends AbstractReactComponent {
             this.props.dispatch(
                 modalDialogShow(
                     this,
-                    i18n('admin.user.update.title'),
+                    this.props.intl.formatMessage(messages.updateTitle),
                     <AddUserForm initialValues={initData} accessPoint={data.accessPoint} onSubmitForm={this.handleUpdateUser} />,
                 ),
             );
@@ -178,7 +197,7 @@ class AdminUserPage extends AbstractReactComponent {
 
     async handleChangeUserActive() {
         const {dispatch, user} = this.props;
-        const response = await dispatch(showConfirmDialog(i18n('admin.user.changeActive.confirm')))
+        const response = await dispatch(showConfirmDialog(this.props.intl.formatMessage(messages.changeActiveConfirm)))
         if (response) {
             this.props.dispatch(adminUserChangeActive(user.userDetail.id, !user.userDetail.active));
         }
@@ -193,7 +212,7 @@ class AdminUserPage extends AbstractReactComponent {
             <Button key="add-user" onClick={this.handleCreateUserForm}>
                 <Icon glyph="fa-plus-circle" />
                 <div>
-                    <span className="btnText">{i18n('ribbon.action.admin.user.add')}</span>
+                    <span className="btnText"><FormattedMessage {...messages.ribbonAdd} /></span>
                 </div>
             </Button>,
         );
@@ -206,9 +225,9 @@ class AdminUserPage extends AbstractReactComponent {
                     <Icon glyph={user.userDetail.active ? 'fa-ban' : 'fa-check'} />
                     <div>
                         <span className="btnText">
-                            {user.userDetail.active
-                                ? i18n('ribbon.action.admin.user.deactivate')
-                                : i18n('ribbon.action.admin.user.activate')}
+                            <FormattedMessage
+                                {...(user.userDetail.active ? messages.ribbonDeactivate : messages.ribbonActivate)}
+                            />
                         </span>
                     </div>
                 </Button>,
@@ -219,7 +238,7 @@ class AdminUserPage extends AbstractReactComponent {
                     <Button key="password-change-user" onClick={this.handleChangeUserPasswordForm}>
                         <Icon glyph="fa-key" />
                         <div>
-                            <span className="btnText">{i18n('ribbon.action.admin.user.passwordChange')}</span>
+                            <span className="btnText"><FormattedMessage {...messages.ribbonPasswordChange} /></span>
                         </div>
                     </Button>,
                 );
@@ -228,7 +247,7 @@ class AdminUserPage extends AbstractReactComponent {
                 <Button key="username-change-user" onClick={this.handleChangeUsernameForm}>
                     <Icon glyph="fa-edit" />
                     <div>
-                        <span className="btnText">{i18n('ribbon.action.admin.user.edit')}</span>
+                        <span className="btnText"><FormattedMessage {...messages.ribbonEdit} /></span>
                     </div>
                 </Button>,
             );
@@ -271,12 +290,12 @@ class AdminUserPage extends AbstractReactComponent {
                 <Search
                     onSearch={this.handleSearch}
                     onClear={this.handleSearchClear}
-                    placeholder={i18n('search.input.search')}
+                    placeholder={this.props.intl.formatMessage(messages.searchPlaceholder)}
                     value={user.filterText}
                 />
                 <FormControl className="form-select" as="select" value={user.filterState.type} onChange={this.handleFilterStateChange}>
-                    <option value="all">{i18n('admin.user.filter.all')}</option>
-                    <option value="onlyActive">{i18n('admin.user.filter.onlyActive')}</option>
+                    <option value="all">{this.props.intl.formatMessage(messages.filterAll)}</option>
+                    <option value="onlyActive">{this.props.intl.formatMessage(messages.filterOnlyActive)}</option>
                 </FormControl>
                 <StoreHorizontalLoader store={user} />
                 {user.fetched && (
@@ -320,4 +339,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps)(AdminUserPage);
+export default connect(mapStateToProps)(injectIntl(AdminUserPage));

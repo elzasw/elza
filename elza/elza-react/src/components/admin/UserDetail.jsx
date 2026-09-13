@@ -3,7 +3,31 @@ import PropTypes from 'prop-types';
 
 import React from 'react';
 import {connect} from 'react-redux';
-import {AbstractReactComponent, AddRemoveList, i18n, Icon, StoreHorizontalLoader, Tabs} from 'components/shared';
+import {AbstractReactComponent, AddRemoveList, Icon, StoreHorizontalLoader, Tabs} from 'components/shared';
+import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    tabsFunds: { id: 'admin.perms.tabs.funds', defaultMessage: 'Archivní soubory' },
+    tabsScopes: { id: 'admin.perms.tabs.scopes', defaultMessage: 'Oblasti entit' },
+    tabsAdvanced: { id: 'admin.perms.tabs.advanced', defaultMessage: 'Pokročilé' },
+    tabsAccessKeys: { id: 'admin.perms.tabs.accessKeys', defaultMessage: 'Přístupové klíče API' },
+    groupAddTitle: { id: 'admin.user.group.add.title', defaultMessage: 'Zařazení uživatele do skupin' },
+    noSelectionTitle: { id: 'admin.user.noSelection.title', defaultMessage: 'Není vybrán uživatel' },
+    noSelectionMessage: {
+        id: 'admin.user.noSelection.message',
+        defaultMessage: 'Prosím vyberte uživatele ze seznamu nebo vytvořte nového',
+    },
+    emptyListTitle: { id: 'admin.user.emptyList.title', defaultMessage: 'Žádní uživatelé' },
+    emptyListMessage: {
+        id: 'admin.user.emptyList.message',
+        defaultMessage: 'V systému nejsou zadáni žádní uživatelé',
+    },
+    titleActive: { id: 'admin.user.title.active', defaultMessage: 'Aktivní uživatel' },
+    titleNonactive: { id: 'admin.user.title.nonactive', defaultMessage: 'Neaktivní uživatel' },
+    titleGroups: { id: 'admin.user.title.groups', defaultMessage: 'Členství ve skupinách' },
+    titlePermissions: { id: 'admin.user.title.permissions', defaultMessage: 'Oprávnění uživatele' },
+});
 import {getIdsList} from 'stores/app/utils';
 import {joinGroups, leaveGroup, usersUserDetailFetchIfNeeded} from 'actions/admin/user';
 import {modalDialogShow} from 'actions/global/modalDialog';
@@ -33,11 +57,12 @@ class UserDetail extends AbstractReactComponent {
     static TAB_ADVANCED = 2;
     static TAB_ACCESS_KEYS = 3;
 
-    static tabItems = [
-        {id: UserDetail.TAB_FUNDS, title: i18n('admin.perms.tabs.funds')},
-        {id: UserDetail.TAB_SCOPES, title: i18n('admin.perms.tabs.scopes')},
-        {id: UserDetail.TAB_ADVANCED, title: i18n('admin.perms.tabs.advanced')},
-        {id: UserDetail.TAB_ACCESS_KEYS, title: i18n('admin.perms.tabs.accessKeys')},
+    /** Skládá se až při renderu, aby popisky reagovaly na přepnutí jazyka. */
+    getTabItems = () => [
+        {id: UserDetail.TAB_FUNDS, title: this.props.intl.formatMessage(messages.tabsFunds)},
+        {id: UserDetail.TAB_SCOPES, title: this.props.intl.formatMessage(messages.tabsScopes)},
+        {id: UserDetail.TAB_ADVANCED, title: this.props.intl.formatMessage(messages.tabsAdvanced)},
+        {id: UserDetail.TAB_ACCESS_KEYS, title: this.props.intl.formatMessage(messages.tabsAccessKeys)},
     ];
 
     /*
@@ -60,7 +85,7 @@ class UserDetail extends AbstractReactComponent {
         super(props);
 
         this.state = {
-            selectedTabItem: UserDetail.tabItems[UserDetail.TAB_FUNDS],
+            selectedTabItem: {id: UserDetail.TAB_FUNDS},
         };
     }
 
@@ -92,7 +117,7 @@ class UserDetail extends AbstractReactComponent {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('admin.user.group.add.title'),
+                this.props.intl.formatMessage(messages.groupAddTitle),
                 <SelectItemsForm
                     onSubmitForm={groups => {
                         this.props.dispatch(joinGroups(userDetail.id, getIdsList(groups)));
@@ -163,12 +188,12 @@ class UserDetail extends AbstractReactComponent {
                 <div className="user-detail-container">
                     <div className="unselected-msg">
                         <div className="title">
-                            {userCount > 0 ? i18n('admin.user.noSelection.title') : i18n('admin.user.emptyList.title')}
+                            <FormattedMessage {...(userCount > 0 ? messages.noSelectionTitle : messages.emptyListTitle)} />
                         </div>
                         <div className="message">
                             {userCount > 0
-                                ? i18n('admin.user.noSelection.message')
-                                : i18n('admin.user.emptyList.message')}
+                                ? <FormattedMessage {...messages.noSelectionMessage} />
+                                : <FormattedMessage {...messages.emptyListMessage} />}
                         </div>
                     </div>
                 </div>
@@ -187,15 +212,15 @@ class UserDetail extends AbstractReactComponent {
                                 rowFlagColor={userDetail.active ? 'success' : 'warning'}
                                 flagLeft={
                                     userDetail.active
-                                        ? i18n('admin.user.title.active')
-                                        : i18n('admin.user.title.nonactive')
+                                        ? <FormattedMessage {...messages.titleActive} />
+                                        : <FormattedMessage {...messages.titleNonactive} />
                                 }
                                 subtitle={userDetail.username}
                             />
                         }
                         left={
                             <AddRemoveList
-                                label={<h4>{i18n('admin.user.title.groups')}</h4>}
+                                label={<h4><FormattedMessage {...messages.titleGroups} /></h4>}
                                 addInLabel
                                 items={userDetail.groups}
                                 onAdd={this.handleAddGroups}
@@ -208,10 +233,10 @@ class UserDetail extends AbstractReactComponent {
                         }
                     >
                         <div className="permissions-container">
-                            <h4>{i18n('admin.user.title.permissions')}</h4>
+                            <h4><FormattedMessage {...messages.titlePermissions} /></h4>
                             <Tabs.Container>
                                 <Tabs.Tabs
-                                    items={UserDetail.tabItems}
+                                    items={this.getTabItems()}
                                     activeItem={selectedTabItem}
                                     onSelect={this.handleTabSelect}
                                     asTabs
@@ -226,4 +251,4 @@ class UserDetail extends AbstractReactComponent {
     }
 }
 
-export default connect()(UserDetail);
+export default connect()(injectIntl(UserDetail));
