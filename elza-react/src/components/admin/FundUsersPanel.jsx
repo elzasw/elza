@@ -1,7 +1,8 @@
 // --
 import React from 'react';
 import {connect} from 'react-redux';
-import {AbstractReactComponent, HorizontalLoader, i18n} from 'components/shared';
+import {AbstractReactComponent, HorizontalLoader} from 'components/shared';
+import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
 import * as adminPermissions from '../../actions/admin/adminPermissions';
 import storeFromArea from '../../shared/utils/storeFromArea';
 import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog';
@@ -13,6 +14,11 @@ import {WebApi} from '../../actions/WebApi';
 import SelectItemsForm from './SelectItemsForm';
 import getMapFromList from '../../shared/utils/getMapFromList';
 import UserField from './UserField';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    addTitle: { id: 'admin.perms.fund.tabs.users.add.title', defaultMessage: 'Přidat uživatele' },
+});
 
 class FundUsersPanel extends AbstractReactComponent {
     constructor(props) {
@@ -138,7 +144,7 @@ class FundUsersPanel extends AbstractReactComponent {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('admin.perms.fund.tabs.users.add.title'),
+                this.props.intl.formatMessage(messages.addTitle),
                 <SelectItemsForm
                     onSubmitForm={users => {
                         const {permissions} = this.state;
@@ -245,4 +251,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps)(FundUsersPanel);
+export default connect(mapStateToProps)(injectIntl(FundUsersPanel));

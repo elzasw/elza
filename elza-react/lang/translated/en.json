@@ -351,6 +351,10 @@
     "defaultMessage": "Reindexing in progress…",
     "srcHash": "1w27Yo3PPyOQ"
   },
+  "admin.fund.title": {
+    "defaultMessage": "Archival fund",
+    "srcHash": "cgFgSW7aSs8l"
+  },
   "admin.group.add.title": {
     "defaultMessage": "Create group",
     "srcHash": "AMgjtnZXj8ij"
@@ -787,21 +791,197 @@
     "defaultMessage": "Import",
     "srcHash": "yTA6PZurxTjn"
   },
+  "admin.perm.advanced.control.entity.add.title": {
+    "defaultMessage": "Add users and groups",
+    "srcHash": "SX5QLFdMFRM1"
+  },
+  "admin.perms.fund.tabs.groups": {
+    "defaultMessage": "Groups",
+    "srcHash": "j03RCNDIBF0_"
+  },
+  "admin.perms.fund.tabs.groups.add.title": {
+    "defaultMessage": "Add groups",
+    "srcHash": "IouJQfEar73b"
+  },
+  "admin.perms.fund.tabs.users": {
+    "defaultMessage": "Users",
+    "srcHash": "kWfNeM3r9zrt"
+  },
+  "admin.perms.fund.tabs.users.add.title": {
+    "defaultMessage": "Add users",
+    "srcHash": "of9W6IEjDMIY"
+  },
   "admin.perms.tabs.accessKeys": {
     "defaultMessage": "API access keys",
     "srcHash": "CNvYSmrnlu7Q"
+  },
+  "admin.perms.tabs.accessKeys.column.created": {
+    "defaultMessage": "Created",
+    "srcHash": "8zCOe8eH59_V"
+  },
+  "admin.perms.tabs.accessKeys.column.expires": {
+    "defaultMessage": "Valid until",
+    "srcHash": "MqwqKPGIgvYS"
+  },
+  "admin.perms.tabs.accessKeys.column.lastUsed": {
+    "defaultMessage": "Last used",
+    "srcHash": "op9am0OL-M_N"
+  },
+  "admin.perms.tabs.accessKeys.column.name": {
+    "defaultMessage": "Name",
+    "srcHash": "EQAs0dy3Z5es"
+  },
+  "admin.perms.tabs.accessKeys.column.state": {
+    "defaultMessage": "State",
+    "srcHash": "1sRUDB31F_YQ"
+  },
+  "admin.perms.tabs.accessKeys.empty": {
+    "defaultMessage": "This user has no access keys.",
+    "srcHash": "ZEWHrfSkrY4E"
+  },
+  "admin.perms.tabs.accessKeys.filter.showAll": {
+    "defaultMessage": "Show all keys, including inactive ones",
+    "srcHash": "8ZAT8IiN-unx"
+  },
+  "admin.perms.tabs.accessKeys.lastUsedNever": {
+    "defaultMessage": "never",
+    "srcHash": "IpN6kJHgOi8u"
+  },
+  "admin.perms.tabs.accessKeys.revoke": {
+    "defaultMessage": "Revoke",
+    "srcHash": "bHfYpLCt8F6P"
+  },
+  "admin.perms.tabs.accessKeys.revoke.confirm": {
+    "defaultMessage": "Do you want to revoke the key \"{name}\"? This action cannot be undone.",
+    "srcHash": "bxVGL-8HEb8U"
+  },
+  "admin.perms.tabs.accessKeys.state.active": {
+    "defaultMessage": "Active",
+    "srcHash": "3E-fPSwx1dRG"
+  },
+  "admin.perms.tabs.accessKeys.state.expired": {
+    "defaultMessage": "Expired",
+    "srcHash": "fj_k2Dy6PBmX"
+  },
+  "admin.perms.tabs.accessKeys.state.revoked": {
+    "defaultMessage": "Revoked",
+    "srcHash": "XgF-tdgZO9aZ"
   },
   "admin.perms.tabs.advanced": {
     "defaultMessage": "Advanced",
     "srcHash": "sg8eCwVR4DSE"
   },
+  "admin.perms.tabs.advanced.controller.entities.title": {
+    "defaultMessage": "Managed users and groups",
+    "srcHash": "FlSj8DOGFEWA"
+  },
+  "admin.perms.tabs.advanced.perm.ADMIN": {
+    "defaultMessage": "Superuser",
+    "srcHash": "lQZYZerG_H9g"
+  },
+  "admin.perms.tabs.advanced.perm.AP_EXTERNAL_WR": {
+    "defaultMessage": "Writing to external systems",
+    "srcHash": "_rakG8TF7v6V"
+  },
+  "admin.perms.tabs.advanced.perm.FUND_ADMIN": {
+    "defaultMessage": "Administration of all funds",
+    "srcHash": "AD4ufLyUX3Vt"
+  },
+  "admin.perms.tabs.advanced.perm.FUND_CREATE": {
+    "defaultMessage": "Creating new funds",
+    "srcHash": "3-YqCPu8Se8P"
+  },
+  "admin.perms.tabs.advanced.perm.FUND_ISSUE_ADMIN_ALL": {
+    "defaultMessage": "Review management for all funds",
+    "srcHash": "R6ycbCrI-PMb"
+  },
+  "admin.perms.tabs.advanced.perm.REPORT_ALL": {
+    "defaultMessage": "Viewing reports",
+    "srcHash": "gF88Z8eLlu8_"
+  },
+  "admin.perms.tabs.advanced.perm.USR_PERM": {
+    "defaultMessage": "User and permission management",
+    "srcHash": "Gi7C0dLlmmgX"
+  },
   "admin.perms.tabs.funds": {
     "defaultMessage": "Archival funds",
     "srcHash": "V7IN5C9Oo3fd"
   },
+  "admin.perms.tabs.funds.add.title": {
+    "defaultMessage": "Add archival funds",
+    "srcHash": "e4GmxJh65WnC"
+  },
+  "admin.perms.tabs.funds.items.fundAll": {
+    "defaultMessage": "All archival funds",
+    "srcHash": "huMU0g2BsHn0"
+  },
+  "admin.perms.tabs.funds.perm.FUND_ARR": {
+    "defaultMessage": "Arrangement",
+    "srcHash": "FGdc1B5n2Tq-"
+  },
+  "admin.perms.tabs.funds.perm.FUND_ARR_NODE.add": {
+    "defaultMessage": "Add a specific description unit for arrangement",
+    "srcHash": "pqfbC8yOZJ9s"
+  },
+  "admin.perms.tabs.funds.perm.FUND_BA": {
+    "defaultMessage": "Running bulk actions",
+    "srcHash": "JeVpzXlY9CgP"
+  },
+  "admin.perms.tabs.funds.perm.FUND_CL_VER_WR": {
+    "defaultMessage": "Minor edits to a closed fund",
+    "srcHash": "qceydx27BCcA"
+  },
+  "admin.perms.tabs.funds.perm.FUND_EXPORT": {
+    "defaultMessage": "Export",
+    "srcHash": "NmSJVXnwp-aM"
+  },
+  "admin.perms.tabs.funds.perm.FUND_ISSUE_ADMIN": {
+    "defaultMessage": "Review management",
+    "srcHash": "lWdIrhkkL7mD"
+  },
+  "admin.perms.tabs.funds.perm.FUND_OUTPUT_WR": {
+    "defaultMessage": "Creating outputs",
+    "srcHash": "9_xBMZrqTQko"
+  },
+  "admin.perms.tabs.funds.perm.FUND_PUBLISH": {
+    "defaultMessage": "Publishing",
+    "srcHash": "byRuaLArxIPc"
+  },
+  "admin.perms.tabs.funds.perm.FUND_RD": {
+    "defaultMessage": "Read",
+    "srcHash": "xFWnBeQHMtLR"
+  },
+  "admin.perms.tabs.funds.perm.FUND_VER_WR": {
+    "defaultMessage": "Versioning and editing properties",
+    "srcHash": "5dU3ynGoubSB"
+  },
   "admin.perms.tabs.scopes": {
     "defaultMessage": "Entity scopes",
     "srcHash": "3-OKfmKJZsWr"
+  },
+  "admin.perms.tabs.scopes.add.title": {
+    "defaultMessage": "Add entity scope",
+    "srcHash": "FRwBEkBveayJ"
+  },
+  "admin.perms.tabs.scopes.items.scopeAll": {
+    "defaultMessage": "All entity scopes",
+    "srcHash": "ePTcsiCsqaYx"
+  },
+  "admin.perms.tabs.scopes.perm.AP_CONFIRM": {
+    "defaultMessage": "Approving archival entities",
+    "srcHash": "JQB4hydeOZvK"
+  },
+  "admin.perms.tabs.scopes.perm.AP_EDIT_CONFIRMED": {
+    "defaultMessage": "Changing approved archival entities",
+    "srcHash": "e42za0Q904Jx"
+  },
+  "admin.perms.tabs.scopes.perm.AP_SCOPE_RD": {
+    "defaultMessage": "Read",
+    "srcHash": "xFWnBeQHMtLR"
+  },
+  "admin.perms.tabs.scopes.perm.AP_SCOPE_WR": {
+    "defaultMessage": "Creating and changing new entities",
+    "srcHash": "cIX0FW8KSTUD"
   },
   "admin.resetServerCache.success": {
     "defaultMessage": "Server caches have been reset",
@@ -1957,6 +2137,22 @@
     "defaultMessage": "External system",
     "srcHash": "oGs4SFZv0yF2"
   },
+  "apField.searchType.PARTY_FULLTEXT": {
+    "defaultMessage": "search by person - full text",
+    "srcHash": "DBIe5OokbloJ"
+  },
+  "apField.searchType.PARTY_RIGHT_LIKE": {
+    "defaultMessage": "search by person - prefix match",
+    "srcHash": "th35gQTaemZ1"
+  },
+  "apField.searchType.USERNAME": {
+    "defaultMessage": "search by username",
+    "srcHash": "LtROuyNok0xQ"
+  },
+  "apField.searchType.USERNAME_AND_PARTY": {
+    "defaultMessage": "search by username and by person",
+    "srcHash": "lBeiGZsdbGnT"
+  },
   "arr.aip.dao.link.delete": {
     "defaultMessage": "Do you really want to delete this link?",
     "srcHash": "swdNg_7H1jt3"
@@ -2113,9 +2309,21 @@
     "defaultMessage": "Description rules",
     "srcHash": "065mULbosm0j"
   },
+  "arr.fund.nodes.deleteNode": {
+    "defaultMessage": "Do you really want to delete this item?",
+    "srcHash": "3jqf7So1IfUB"
+  },
+  "arr.fund.nodes.title.select": {
+    "defaultMessage": "Select description units",
+    "srcHash": "TRKdGnjy0Tdf"
+  },
   "arr.fund.outputDefinition.active": {
     "defaultMessage": "Outputs",
     "srcHash": "irSQ8aME65Fz"
+  },
+  "arr.fund.regScope": {
+    "defaultMessage": "Entity scope",
+    "srcHash": "SlY5BtKXdR6t"
   },
   "arr.fund.title.add": {
     "defaultMessage": "New archival fund",
@@ -2849,6 +3057,10 @@
     "defaultMessage": "OR",
     "srcHash": "xSmsgIt1bLvs"
   },
+  "global.action.add": {
+    "defaultMessage": "Add",
+    "srcHash": "5L0IaEkXdddR"
+  },
   "global.action.change": {
     "defaultMessage": "Change",
     "srcHash": "OjdaGC2_rWb4"
@@ -3180,6 +3392,18 @@
   "node_action_visiblePolicy": {
     "defaultMessage": "Validation rules",
     "srcHash": "CJUhnRChHrzm"
+  },
+  "permission.activePermission.title": {
+    "defaultMessage": "Active permission",
+    "srcHash": "rvv_X90sYfA_"
+  },
+  "permission.explicit.title": {
+    "defaultMessage": "Explicit",
+    "srcHash": "i1dksm3sJbyQ"
+  },
+  "permission.source.title": {
+    "defaultMessage": "Source",
+    "srcHash": "nrAsFOO1Ph0p"
   },
   "publication.btn.confirmPublish": {
     "defaultMessage": "Really publish to {name}?",
@@ -3656,6 +3880,14 @@
   "table.selectAll": {
     "defaultMessage": "Select all",
     "srcHash": "tzdoYdlGzv8D"
+  },
+  "userAndGroupField.searchType.GROUP": {
+    "defaultMessage": "search for a group",
+    "srcHash": "LMUOxYe9xpa0"
+  },
+  "userAndGroupField.searchType.USERNAME_AND_GROUPS": {
+    "defaultMessage": "search by username and group",
+    "srcHash": "FxelvwZVPo6x"
   },
   "userSettings.accessKeys.column.created": {
     "defaultMessage": "Created",

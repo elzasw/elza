@@ -1,7 +1,8 @@
 // --
 import React from 'react';
 import {connect} from 'react-redux';
-import {AbstractReactComponent, HorizontalLoader, i18n} from 'components/shared';
+import {AbstractReactComponent, HorizontalLoader} from 'components/shared';
+import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
 import * as perms from './../../actions/user/Permission.jsx';
 import storeFromArea from '../../shared/utils/storeFromArea';
 import * as adminPermissions from './../../actions/admin/adminPermissions';
@@ -14,6 +15,12 @@ import {renderFundItem} from './adminRenderUtils';
 import getMapFromList from '../../shared/utils/getMapFromList';
 import AddRemoveListBox from '../shared/listbox/AddRemoveListBox';
 import './PermissionsPanel.scss';
+import { fundPermissionMessages, permissionScopeMessages } from './permissionMessages';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    addTitle: { id: 'admin.perms.tabs.funds.add.title', defaultMessage: 'Přidání archivních souborů' },
+});
 
 /**
  * Panel spravující oprávnění na archivní soubory.
@@ -372,7 +379,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('admin.perms.tabs.funds.add.title'),
+                this.props.intl.formatMessage(messages.addTitle),
                 <SelectItemsForm
                     onSubmitForm={funds => {
                         const {permissions} = this.state;
@@ -424,7 +431,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
         const {item} = props;
         //console.log("fund perms panel", item);
         if (item.id === FundsPermissionPanel.ALL_ID) {
-            return <div>{i18n('admin.perms.tabs.funds.items.fundAll')}</div>;
+            return <div><FormattedMessage {...permissionScopeMessages.fundAll} /></div>;
         } else if (item.fund) {
             return <div>{item.fund.name + (item.fund.internalCode? " [" + item.fund.internalCode + "]":"")}</div>;
         }
@@ -508,11 +515,11 @@ class FundsPermissionPanel extends AbstractReactComponent {
                         onChangePermission={this.changePermission}
                         onAddNodePermission={this.addNodePermission}
                         onRemoveNodePermission={this.removeNodePermission}
-                        labelPrefix="admin.perms.tabs.funds.perm."
+                        permissionMessages={fundPermissionMessages}
                         permission={permission}
                         groups={entityPermissions.data.groups}
                         permissionAll={permission.id !== FundsPermissionPanel.ALL_ID ? permissionAll : null}
-                        permissionAllTitle="admin.perms.tabs.funds.items.fundAll"
+                        permissionAllMessage={permissionScopeMessages.fundAll}
                         fundId={selectedPermission.id === FundsPermissionPanel.ALL_ID ? null : selectedPermission.id}
                         groupId={groupId}
                         disabled={isDeletingFund}
@@ -529,4 +536,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps)(FundsPermissionPanel);
+export default connect(mapStateToProps)(injectIntl(FundsPermissionPanel));
