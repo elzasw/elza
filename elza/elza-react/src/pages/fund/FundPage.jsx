@@ -29,10 +29,11 @@ import { refRuleSetFetchIfNeeded } from '../../actions/refTables/ruleSet';
 import { scopesDirty } from '../../actions/refTables/scopesData';
 import { routerNavigate } from '../../actions/router';
 import * as perms from '../../actions/user/Permission';
-import { ExportForm, FundForm, i18n, Icon, ImportForm } from '../../components';
+import { ExportForm, FundForm, Icon, ImportForm } from '../../components';
 import IssueLists from '../../components/arr/IssueLists';
 import SearchFundsForm from '../../components/arr/search-funds-form/SearchFundsForm';
 import { FundListImportListener } from '../../components/arr/FundListImportListener';
+
 import { AbstractReactComponent, ListBox } from '../../components/shared';
 import { urlEntity, urlFund, urlFundOutputs, urlFundTree } from "../../constants";
 import { objectById } from '../../shared/utils';
@@ -50,6 +51,30 @@ import { defineMessages, FormattedMessage, injectIntl } from 'react-intl';
 const OUTPUT_MAX_NUMBER = 10;
 
 const messages = defineMessages({
+    // Id převzatá z legacy katalogu beze změny. Placeholder {0} zůstává:
+    // ICU bere jako jméno argumentu i číslo.
+    addTitle: { id: 'arr.fund.title.add', defaultMessage: 'Vytvoření nového AS' },
+    importTitle: { id: 'import.title.fund', defaultMessage: 'Import archivního souboru' },
+    exportTitle: { id: 'export.title.fund', defaultMessage: 'Export archivního souboru' },
+    approveTitle: { id: 'arr.fund.title.approve', defaultMessage: 'Uzavření verze AS' },
+    ruleSetTitle: { id: 'arr.fund.title.ruleSet', defaultMessage: 'Změnit pravidla' },
+    updateTitle: { id: 'arr.fund.title.update', defaultMessage: 'Úprava AS' },
+    searchTitle: { id: 'arr.fund.title.search', defaultMessage: 'Vyhledat v archivních souborech' },
+    deleteConfirm: {
+        id: 'arr.fund.action.delete.confirm',
+        defaultMessage: 'Opravdu chcete vymazat celý AS {0}?',
+    },
+    deleteHistoryConfirm: {
+        id: 'arr.fund.action.deletehistory.confirm',
+        defaultMessage: 'Opravdu chcete vymazat historii změn AS {0}?',
+    },
+    issueSettingsTitle: { id: 'arr.issues.settings.title', defaultMessage: 'Nastavení lektorování' },
+    ribbonUpdate: { id: 'ribbon.action.arr.fund.update', defaultMessage: 'Upravit vlastnosti' },
+    ribbonRuleSet: { id: 'ribbon.action.arr.fund.ruleSet', defaultMessage: 'Změnit pravidla' },
+    ribbonApprove: { id: 'ribbon.action.arr.fund.approve', defaultMessage: 'Nová verze AS' },
+    ribbonExport: { id: 'ribbon.action.arr.fund.export', defaultMessage: 'Export' },
+    deleteHistory: { id: 'arr.fund.action.deletehistory', defaultMessage: 'Vymazání historie změn' },
+    delete: { id: 'arr.fund.action.delete', defaultMessage: 'Smazat AS' },
     fundPageExportResults: {
         id: "fundPage_export_results",
         defaultMessage: "Stáhnout CSV",
@@ -222,7 +247,7 @@ class FundPage extends AbstractReactComponent {
             this.props.dispatch(
                 modalDialogShow(
                     this,
-                    i18n('arr.fund.title.add'),
+                    this.props.intl.formatMessage(messages.addTitle),
                     <FundForm
                         create
                         initialValues={initData}
@@ -237,7 +262,7 @@ class FundPage extends AbstractReactComponent {
     }
 
     handleImport() {
-        this.props.dispatch(modalDialogShow(this, i18n('import.title.fund'), <ImportForm fund={true} />));
+        this.props.dispatch(modalDialogShow(this, this.props.intl.formatMessage(messages.importTitle), <ImportForm fund={true} />));
     }
 
     async handleExportDialog(fundId) {
@@ -247,7 +272,7 @@ class FundPage extends AbstractReactComponent {
         dispatch(
             modalDialogShow(
                 this,
-                i18n('export.title.fund'),
+                this.props.intl.formatMessage(messages.exportTitle),
                 <ExportForm
                     fund={true}
                     initialValues={{
@@ -275,7 +300,7 @@ class FundPage extends AbstractReactComponent {
         dispatch(
             modalDialogShow(
                 this,
-                `${i18n('arr.fund.title.approve')}`,
+                this.props.intl.formatMessage(messages.approveTitle),
                 <FundForm
                     approve
                     initialValues={data}
@@ -301,7 +326,7 @@ class FundPage extends AbstractReactComponent {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('arr.fund.title.ruleSet'),
+                this.props.intl.formatMessage(messages.ruleSetTitle),
                 <FundForm
                     ruleSet
                     initialValues={initData}
@@ -343,7 +368,7 @@ class FundPage extends AbstractReactComponent {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('arr.fund.title.update'),
+                this.props.intl.formatMessage(messages.updateTitle),
                 <FundForm
                     update
                     initialValues={data}
@@ -377,7 +402,7 @@ class FundPage extends AbstractReactComponent {
      * Vyvolání dialogu s vyhledáním na všemi AS.
      */
     handleFundsSearchForm = () => {
-        this.props.dispatch(modalDialogShow(this, i18n('arr.fund.title.search'), <SearchFundsForm />));
+        this.props.dispatch(modalDialogShow(this, this.props.intl.formatMessage(messages.searchTitle), <SearchFundsForm />));
     };
 
     buildRibbon() {
@@ -392,7 +417,7 @@ class FundPage extends AbstractReactComponent {
         const { dispatch } = this.props;
         const fundDetail = await getFundDetail(fundId);
 
-        const response = await dispatch(showConfirmDialog(i18n('arr.fund.action.delete.confirm', fundDetail.name)));
+        const response = await dispatch(showConfirmDialog(this.props.intl.formatMessage(messages.deleteConfirm, { 0: fundDetail.name })));
         if (response) {
             dispatch(deleteFund(fundDetail.id));
         }
@@ -402,7 +427,7 @@ class FundPage extends AbstractReactComponent {
         const { dispatch } = this.props;
         const fundDetail = await getFundDetail(fundId);
 
-        const response = await dispatch(showConfirmDialog(i18n('arr.fund.action.deletehistory.confirm', fundDetail.name)));
+        const response = await dispatch(showConfirmDialog(this.props.intl.formatMessage(messages.deleteHistoryConfirm, { 0: fundDetail.name })));
         if (response) {
             dispatch(deleteFundHistory(fundDetail.id));
         }
@@ -419,7 +444,7 @@ class FundPage extends AbstractReactComponent {
         const fundDetail = await getFundDetail(fundId);
 
         dispatch(
-            modalDialogShow(this, i18n('arr.issues.settings.title'), <IssueLists fundId={fundDetail.id} />),
+            modalDialogShow(this, this.props.intl.formatMessage(messages.issueSettingsTitle), <IssueLists fundId={fundDetail.id} />),
         );
     };
 
@@ -447,26 +472,26 @@ class FundPage extends AbstractReactComponent {
                     <MenuItem
                         key="edit-version"
                         icon={<Icon glyph="fa-pencil" />}
-                        title={i18n('ribbon.action.arr.fund.update')}
+                        title={this.props.intl.formatMessage(messages.ribbonUpdate)}
                         onClick={() => this.handleEditFundVersion(item.id)}
                     >
-                        {i18n('ribbon.action.arr.fund.update')}
+                        {<FormattedMessage {...messages.ribbonUpdate} />}
                     </MenuItem>,
                     <MenuItem
                         key="rule-set-version"
                         icon={<Icon glyph="fa-calendar-check-o" />}
-                        title={i18n('ribbon.action.arr.fund.ruleSet')}
+                        title={this.props.intl.formatMessage(messages.ribbonRuleSet)}
                         onClick={() => this.handleRuleSetUpdateFundVersion(item.id)}
                     >
-                        {i18n('ribbon.action.arr.fund.ruleSet')}
+                        {<FormattedMessage {...messages.ribbonRuleSet} />}
                     </MenuItem>,
                     <MenuItem
                         key="approve-version"
                         icon={<Icon glyph="fa-code-fork" />}
-                        title={i18n('ribbon.action.arr.fund.approve')}
+                        title={this.props.intl.formatMessage(messages.ribbonApprove)}
                         onClick={() => this.handleApproveFundVersion(item.id)}
                     >
-                        {i18n('ribbon.action.arr.fund.approve')}
+                        {<FormattedMessage {...messages.ribbonApprove} />}
                     </MenuItem>,
                 );
             }
@@ -475,10 +500,10 @@ class FundPage extends AbstractReactComponent {
                     <MenuItem
                         key="fa-lecturing"
                         icon={<Icon glyph="fa-commenting" />}
-                        title={i18n('arr.issues.settings.title')}
+                        title={this.props.intl.formatMessage(messages.issueSettingsTitle)}
                         onClick={() => this.handleIssuesSettings(item.id)}
                     >
-                        {i18n('arr.issues.settings.title')}
+                        {<FormattedMessage {...messages.issueSettingsTitle} />}
                     </MenuItem>,
                 );
             }
@@ -487,10 +512,10 @@ class FundPage extends AbstractReactComponent {
                     <MenuItem
                         key="fa-export"
                         icon={<Icon glyph="fa-download" />}
-                        title={i18n('ribbon.action.arr.fund.export')}
+                        title={this.props.intl.formatMessage(messages.ribbonExport)}
                         onClick={() => this.handleExportDialog(item.id)}
                     >
-                        {i18n('ribbon.action.arr.fund.export')}
+                        {<FormattedMessage {...messages.ribbonExport} />}
                     </MenuItem>,
                 );
             }
@@ -500,10 +525,10 @@ class FundPage extends AbstractReactComponent {
                         className="danger"
                         key="fa-deletehistory"
                         icon={<Icon glyph="fa-times-circle-o" />}
-                        title={i18n('arr.fund.action.deletehistory')}
+                        title={this.props.intl.formatMessage(messages.deleteHistory)}
                         onClick={() => this.handleDeleteFundHistory(item.id)}
                     >
-                        {i18n('arr.fund.action.deletehistory')}
+                        {<FormattedMessage {...messages.deleteHistory} />}
                     </MenuItem>,
                 );
                 itemActions.push(
@@ -511,10 +536,10 @@ class FundPage extends AbstractReactComponent {
                         className="danger"
                         key="fa-delete"
                         icon={<Icon glyph="fa-trash" />}
-                        title={i18n('arr.fund.action.delete')}
+                        title={this.props.intl.formatMessage(messages.delete)}
                         onClick={() => this.handleDeleteFund(item.id)}
                     >
-                        {i18n('arr.fund.action.delete')}
+                        {<FormattedMessage {...messages.delete} />}
                     </MenuItem>,
                 );
             }

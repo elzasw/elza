@@ -48,6 +48,19 @@ export const globalMessages = defineMessages({
     id: "global.action.edit",
     defaultMessage: "Upravit",
   },
+  delete: {
+    id: "global.action.delete",
+    defaultMessage: "Odstranit",
+  },
+  choose: {
+    id: "global.action.choose",
+    defaultMessage: "Vybrat",
+  },
+  // Nejčastější text v celé aplikaci (přes 60 volání) - proto sem.
+  validationRequired: {
+    id: "global.validation.required",
+    defaultMessage: "Pole je povinné",
+  },
   yes: {
     id: "global_yes",
     defaultMessage: "Ano",

@@ -1029,6 +1029,30 @@
     "defaultMessage": "Finished with errors",
     "srcHash": "kF6JUmfiJUhL"
   },
+  "aip.actions.deleteAips": {
+    "defaultMessage": "Delete complete AIPs",
+    "srcHash": "QpbA2v0FL19F"
+  },
+  "aip.actions.deleteMetadata": {
+    "defaultMessage": "Delete metadata",
+    "srcHash": "Boj2hKq82NB-"
+  },
+  "aip.actions.exportAips": {
+    "defaultMessage": "Generate change AIPs",
+    "srcHash": "5zMlPJnD6cw5"
+  },
+  "aip.actions.loadAips": {
+    "defaultMessage": "Load complete AIPs",
+    "srcHash": "nqH9xbDFAehF"
+  },
+  "aip.actions.metadata": {
+    "defaultMessage": "Load metadata",
+    "srcHash": "j8ZWWXwedLxE"
+  },
+  "aip.actions.updateAips": {
+    "defaultMessage": "Update and repair AIPs",
+    "srcHash": "rqcMXhFCtuLK"
+  },
   "aip.col.aipId": {
     "defaultMessage": "ID",
     "srcHash": "OEOXHc_e5Qg-"
@@ -1137,6 +1161,10 @@
     "defaultMessage": "Loading…",
     "srcHash": "kgjJ9rUTLs7l"
   },
+  "aip.detail.notSelected": {
+    "defaultMessage": "No AIP selected",
+    "srcHash": "c37HF39WJ3Xy"
+  },
   "aip.detail.title": {
     "defaultMessage": "AIP detail",
     "srcHash": "dNE8MdYQimxe"
@@ -1144,6 +1172,46 @@
   "aip.explorer.back": {
     "defaultMessage": "Back to the list",
     "srcHash": "nAub8TbwZrMW"
+  },
+  "aip.explorer.detail.action.download": {
+    "defaultMessage": "Download",
+    "srcHash": "xxAzjqAuIzkG"
+  },
+  "aip.explorer.detail.action.show": {
+    "defaultMessage": "Show",
+    "srcHash": "sipeZrVinjX9"
+  },
+  "aip.explorer.detail.as": {
+    "defaultMessage": "Linked archival description",
+    "srcHash": "YdRyTq2wXmKP"
+  },
+  "aip.explorer.detail.checksum": {
+    "defaultMessage": "Checksum",
+    "srcHash": "y0i3c7GiCvw1"
+  },
+  "aip.explorer.detail.format": {
+    "defaultMessage": "Format",
+    "srcHash": "vuY1Qafazrs1"
+  },
+  "aip.explorer.detail.name": {
+    "defaultMessage": "Name",
+    "srcHash": "EQAs0dy3Z5es"
+  },
+  "aip.explorer.detail.parent": {
+    "defaultMessage": "Parent",
+    "srcHash": "9F-ccR55hLbJ"
+  },
+  "aip.explorer.detail.relations.logical": {
+    "defaultMessage": "Relations — logical structure",
+    "srcHash": "pzh_omxL3L-C"
+  },
+  "aip.explorer.detail.relations.representation": {
+    "defaultMessage": "Relations — representation",
+    "srcHash": "R7Yfjyol26ZA"
+  },
+  "aip.explorer.detail.title": {
+    "defaultMessage": "Details",
+    "srcHash": "SpKDEP3fJGeY"
   },
   "aip.explorer.open": {
     "defaultMessage": "Open the explorer",
@@ -1232,6 +1300,14 @@
   "aip.form.to": {
     "defaultMessage": "To",
     "srcHash": "MAlOC-wARtqP"
+  },
+  "aip.form.update.title": {
+    "defaultMessage": "Update and repair AIPs",
+    "srcHash": "rqcMXhFCtuLK"
+  },
+  "aip.form.update.type": {
+    "defaultMessage": "What should be done with the AIP",
+    "srcHash": "z6n2LBsQ_dDa"
   },
   "aip.form.update.type.DbUpdate": {
     "defaultMessage": "Database update only",
@@ -1433,6 +1509,10 @@
     "defaultMessage": "External system",
     "srcHash": "oGs4SFZv0yF2"
   },
+  "arr.aip.dao.link.delete": {
+    "defaultMessage": "Do you really want to delete this link?",
+    "srcHash": "swdNg_7H1jt3"
+  },
   "arr.daos.fileSystem.context.download": {
     "defaultMessage": "Download",
     "srcHash": "xxAzjqAuIzkG"
@@ -1545,9 +1625,85 @@
     "defaultMessage": "Loading…",
     "srcHash": "kgjJ9rUTLs7l"
   },
+  "arr.fund.action.delete": {
+    "defaultMessage": "Delete fund",
+    "srcHash": "DrW4z04hQdLy"
+  },
+  "arr.fund.action.delete.confirm": {
+    "defaultMessage": "Do you really want to delete the whole fund {0}?",
+    "srcHash": "y-5PdSZ2kDfp"
+  },
+  "arr.fund.action.deletehistory": {
+    "defaultMessage": "Delete change history",
+    "srcHash": "Exd_9zVu2FDg"
+  },
+  "arr.fund.action.deletehistory.confirm": {
+    "defaultMessage": "Do you really want to delete the change history of fund {0}?",
+    "srcHash": "ffbgjn1RKy6P"
+  },
+  "arr.fund.action.openInArr": {
+    "defaultMessage": "Open",
+    "srcHash": "plG-0SBZmFxq"
+  },
+  "arr.fund.action.showInArr": {
+    "defaultMessage": "Show",
+    "srcHash": "sipeZrVinjX9"
+  },
+  "arr.fund.currentVersion": {
+    "defaultMessage": "Current version",
+    "srcHash": "0u9juJv4hc8n"
+  },
+  "arr.fund.detail.institution": {
+    "defaultMessage": "Institution",
+    "srcHash": "AMtLLUW_r1z7"
+  },
+  "arr.fund.detail.internalCode": {
+    "defaultMessage": "Internal code",
+    "srcHash": "p2eSz8FK6c9N"
+  },
+  "arr.fund.detail.ruleSet": {
+    "defaultMessage": "Description rules",
+    "srcHash": "065mULbosm0j"
+  },
+  "arr.fund.outputDefinition.active": {
+    "defaultMessage": "Outputs",
+    "srcHash": "irSQ8aME65Fz"
+  },
+  "arr.fund.title.add": {
+    "defaultMessage": "New archival fund",
+    "srcHash": "eDJrBfA064T8"
+  },
+  "arr.fund.title.approve": {
+    "defaultMessage": "Close fund version",
+    "srcHash": "og8-JWTT16lm"
+  },
+  "arr.fund.title.ruleSet": {
+    "defaultMessage": "Change rules",
+    "srcHash": "h77A_qYZAsD_"
+  },
+  "arr.fund.title.search": {
+    "defaultMessage": "Search in archival funds",
+    "srcHash": "HLs5mDt-e0rZ"
+  },
+  "arr.fund.title.update": {
+    "defaultMessage": "Edit fund",
+    "srcHash": "EVPCYiIbj3Qb"
+  },
+  "arr.fund.version": {
+    "defaultMessage": "Version {0}",
+    "srcHash": "b-NVXKKe0QGe"
+  },
+  "arr.fund.version.list": {
+    "defaultMessage": "Fund versions",
+    "srcHash": "_KU3_T5mA0jk"
+  },
   "arr.fundDataGrid.cellForm.notAllowed": {
     "defaultMessage": "This description element cannot be added to the description unit.",
     "srcHash": "1vJCdzTLLaix"
+  },
+  "arr.issues.settings.title": {
+    "defaultMessage": "Review settings",
+    "srcHash": "y3s3PdkWbIgB"
   },
   "arr.output.files.download": {
     "defaultMessage": "Download file",
@@ -2061,6 +2217,26 @@
     "defaultMessage": "Unsaved",
     "srcHash": "evoAyt3cLDJM"
   },
+  "export.title.fund": {
+    "defaultMessage": "Export archival fund",
+    "srcHash": "OFMDSJIwjHmc"
+  },
+  "fund.emptyList.message": {
+    "defaultMessage": "There are no archival funds, or you do not have read permission for any of them.",
+    "srcHash": "L6z0meLCf5D7"
+  },
+  "fund.emptyList.title": {
+    "defaultMessage": "No archival funds",
+    "srcHash": "myIyCK6gPdwE"
+  },
+  "fund.noSelection.message": {
+    "defaultMessage": "Please select an archival fund from the list.",
+    "srcHash": "6vDrWVeH2ZFk"
+  },
+  "fund.noSelection.title": {
+    "defaultMessage": "No archival fund selected",
+    "srcHash": "nzUJcNUIY9cv"
+  },
   "fundPage.drawer.allOutputs": {
     "defaultMessage": "All outputs...",
     "srcHash": "HnjxhpdDvqnt"
@@ -2116,6 +2292,14 @@
   "fundPage_export_results": {
     "defaultMessage": "Download CSV",
     "srcHash": "1LaqY8gF6JE1"
+  },
+  "fundTree.action.open": {
+    "defaultMessage": "Open in the current tab",
+    "srcHash": "aVnnU1TSMXvq"
+  },
+  "fundTree.action.openInNewTab": {
+    "defaultMessage": "Open in a new tab",
+    "srcHash": "xoftNDHsY74v"
   },
   "fundTreeDaos.action.openInArr": {
     "defaultMessage": "Open in arrangement",
@@ -2197,9 +2381,21 @@
     "defaultMessage": "OR",
     "srcHash": "xSmsgIt1bLvs"
   },
+  "global.action.choose": {
+    "defaultMessage": "Select",
+    "srcHash": "j7UiBDv3vOpU"
+  },
   "global.action.close": {
     "defaultMessage": "Close",
     "srcHash": "0r4EKpo4ZhJv"
+  },
+  "global.action.delete": {
+    "defaultMessage": "Delete",
+    "srcHash": "eQTkknH2OPF1"
+  },
+  "global.action.download": {
+    "defaultMessage": "Download",
+    "srcHash": "xxAzjqAuIzkG"
   },
   "global.action.edit": {
     "defaultMessage": "Edit",
@@ -2220,6 +2416,10 @@
   "global.title.processAction": {
     "defaultMessage": "Do you really want to perform the selected action?",
     "srcHash": "Rc7FypsLL7X4"
+  },
+  "global.validation.required": {
+    "defaultMessage": "This field is required",
+    "srcHash": "rKBLoscKlAdE"
   },
   "global_cancel": {
     "defaultMessage": "Cancel",
@@ -2252,6 +2452,34 @@
   "global_yes": {
     "defaultMessage": "Yes",
     "srcHash": "HFtwBBU9Smvu"
+  },
+  "home.recent.fund.emptyList.message": {
+    "defaultMessage": "This section shows the history of archival funds you have opened.",
+    "srcHash": "nEkU3Cu1sajZ"
+  },
+  "home.recent.fund.emptyList.title": {
+    "defaultMessage": "No archival funds have been opened yet.",
+    "srcHash": "4R2K_MDG7k2V"
+  },
+  "home.recent.fund.title": {
+    "defaultMessage": "Recently opened archival funds",
+    "srcHash": "EaIP9jLN_0Rw"
+  },
+  "home.recent.registry.emptyList.message": {
+    "defaultMessage": "This section shows the history of archival entities you have opened.",
+    "srcHash": "QnJVVypWfgq1"
+  },
+  "home.recent.registry.emptyList.title": {
+    "defaultMessage": "No archival entities have been opened yet.",
+    "srcHash": "y1dkQS0to56a"
+  },
+  "home.recent.registry.title": {
+    "defaultMessage": "Recently viewed archival entities",
+    "srcHash": "m2tYyo9Wv0i4"
+  },
+  "import.title.fund": {
+    "defaultMessage": "Import archival fund",
+    "srcHash": "vTH-w6LPMldy"
   },
   "import.toast.batch.cancelled": {
     "defaultMessage": "Import “{name}” was aborted",
@@ -2741,9 +2969,37 @@
     "defaultMessage": "Archival packages",
     "srcHash": "j-OwZ5UftK-t"
   },
+  "ribbon.action.arr.fund.add": {
+    "defaultMessage": "New fund",
+    "srcHash": "BfzcqMHB4P5Z"
+  },
+  "ribbon.action.arr.fund.approve": {
+    "defaultMessage": "New fund version",
+    "srcHash": "Orcba4a1D0aE"
+  },
+  "ribbon.action.arr.fund.export": {
+    "defaultMessage": "Export",
+    "srcHash": "NmSJVXnwp-aM"
+  },
+  "ribbon.action.arr.fund.import": {
+    "defaultMessage": "Import from file",
+    "srcHash": "pWM9Z1iGAxH4"
+  },
   "ribbon.action.arr.fund.publicationSystems": {
     "defaultMessage": "Publication systems management",
     "srcHash": "3R1qxdjYgTmM"
+  },
+  "ribbon.action.arr.fund.ruleSet": {
+    "defaultMessage": "Change rules",
+    "srcHash": "h77A_qYZAsD_"
+  },
+  "ribbon.action.arr.fund.search": {
+    "defaultMessage": "Search in archival funds",
+    "srcHash": "QxSycPEmnGPK"
+  },
+  "ribbon.action.arr.fund.update": {
+    "defaultMessage": "Edit properties",
+    "srcHash": "Kz6fnr3KjkCv"
   },
   "ribbon.action.back": {
     "defaultMessage": "Back",
