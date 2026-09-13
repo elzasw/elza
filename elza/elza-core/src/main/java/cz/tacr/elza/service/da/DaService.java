@@ -1644,6 +1644,15 @@ public class DaService {
                         "Zařazení do fronty vyžaduje otevřenou transakci");
 
         List<DaSyncQueueItem.QueueItemState> queueItemStates = getQueueItemStates(queueItemState);
+
+        // The request being queued replaces the ones already waiting for the same AIP. Their action
+        // items are closed here, where they lose their queue item - the processors read active items
+        // only, so nothing else would ever report on them again.
+        for (Integer superseded : syncQueueItemRepository.findActionItemIdsToSupersede(code, digitalRepository, queueItemStates)) {
+            actionService.recordOutcome(superseded, DaAipActionItemState.SKIPPED,
+                                        "Požadavek nahradil novější požadavek na tentýž AIP.");
+        }
+
         syncQueueItemRepository.updateActiveByCodeAndDigitalRepositoryAndStateInAndActiveIsTrue(code, digitalRepository, queueItemStates);
 
         DaSyncQueueItem syncQueueItem = new DaSyncQueueItem();
