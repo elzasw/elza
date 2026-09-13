@@ -3,10 +3,11 @@ import { defineMessages } from "react-intl";
 /**
  * Společná slovní zásoba UI - jedno znění pro jeden pojem.
  *
- * Při migraci z legacy helperu sahej **nejdřív sem**. Legacy katalog má pro
- * tytéž pojmy víc klíčů s různým zněním (`global.action.cancel` = "Storno",
- * `global_cancel` = "Storno", ale react-intl deskriptor "Zrušit"), a bez
+ * Při migraci z legacy helperu sahej **nejdřív sem**. Legacy katalog měl pro
+ * tytéž pojmy víc klíčů s různým zněním - `global.action.update` je dodnes
+ * "Upravit", zatímco react-intl deskriptor téhož id říkal "Uložit" - a bez
  * společného místa by se ta roztříštěnost jen rozkopírovala dál.
+ * **Před převzetím legacy id proto vždy porovnej český text s deskriptorem.**
  *
  * Terminologie: držíme běžné termíny, které uživatel zná z ostatních aplikací
  * (Windows, Office, Android), ne interní žargon - UI má být srozumitelné bez
