@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { websocket } from './websocketActions';
+import { WebsocketClient } from './websocket/WebsocketClient';
 
 /**
  * Rozesílání zpráv posluchačům.
@@ -15,10 +15,10 @@ describe('websocket.onMessage', () => {
     });
 
     it('doručí zprávu i posluchači za tím, který se právě odhlásil', () => {
-        const ws = new websocket('ws://test/stomp', {});
+        const ws = new WebsocketClient('ws://test/stomp', {});
         const received: string[] = [];
 
-        const first = (): void => {
+        const first = () => {
             ws.removeListener(first);
             received.push('first');
         };
@@ -31,7 +31,7 @@ describe('websocket.onMessage', () => {
     });
 
     it('odhlášenému posluchači už další zprávu nedoručí', () => {
-        const ws = new websocket('ws://test/stomp', {});
+        const ws = new WebsocketClient('ws://test/stomp', {});
         const received: string[] = [];
 
         const listener = () => received.push('listener');
@@ -45,11 +45,11 @@ describe('websocket.onMessage', () => {
 
     /** Odhlášení posluchače, který v seznamu není, nesmí odebrat nikoho jiného. */
     it('odhlášení neznámého posluchače nechá ostatní na pokoji', () => {
-        const ws = new websocket('ws://test/stomp', {});
+        const ws = new WebsocketClient('ws://test/stomp', {});
         const received: string[] = [];
 
         ws.addListener(() => received.push('live'));
-        ws.removeListener((): void => undefined);
+        ws.removeListener(() => undefined);
 
         ws.onMessage(frame());
 
