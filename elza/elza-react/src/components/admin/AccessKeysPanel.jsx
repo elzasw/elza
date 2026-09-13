@@ -1,7 +1,32 @@
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {Api} from 'api';
 import {ApiKeyState} from 'elza-api';
-import {i18n} from 'components/shared';
+import {} from 'components/shared';
+import { FormattedMessage, defineMessages, useIntl } from 'react-intl';
+
+// Id jsou převzatá z legacy katalogu beze změny; nové id dostal jen sloupec
+// "Název", který byl v JSX natvrdo česky.
+const messages = defineMessages({
+    stateActive: { id: 'admin.perms.tabs.accessKeys.state.active', defaultMessage: 'Aktivní' },
+    stateExpired: { id: 'admin.perms.tabs.accessKeys.state.expired', defaultMessage: 'Expirovaný' },
+    stateRevoked: { id: 'admin.perms.tabs.accessKeys.state.revoked', defaultMessage: 'Zrušený' },
+    revokeConfirm: {
+        id: 'admin.perms.tabs.accessKeys.revoke.confirm',
+        defaultMessage: 'Přejete si zrušit klíč "{name}"? Tato akce je nevratná.',
+    },
+    filterShowAll: {
+        id: 'admin.perms.tabs.accessKeys.filter.showAll',
+        defaultMessage: 'Zobrazit všechny klíče, včetně neaktivních',
+    },
+    empty: { id: 'admin.perms.tabs.accessKeys.empty', defaultMessage: 'Uživatel nemá žádné přístupové klíče.' },
+    columnState: { id: 'admin.perms.tabs.accessKeys.column.state', defaultMessage: 'Stav' },
+    columnName: { id: 'admin.perms.tabs.accessKeys.column.name', defaultMessage: 'Název' },
+    columnCreated: { id: 'admin.perms.tabs.accessKeys.column.created', defaultMessage: 'Vytvořeno' },
+    columnExpires: { id: 'admin.perms.tabs.accessKeys.column.expires', defaultMessage: 'Platnost do' },
+    columnLastUsed: { id: 'admin.perms.tabs.accessKeys.column.lastUsed', defaultMessage: 'Naposledy použito' },
+    lastUsedNever: { id: 'admin.perms.tabs.accessKeys.lastUsedNever', defaultMessage: 'nikdy' },
+    revoke: { id: 'admin.perms.tabs.accessKeys.revoke', defaultMessage: 'Zrušit' },
+});
 
 const stateOrder = (state) => {
     switch (state) {
@@ -12,12 +37,13 @@ const stateOrder = (state) => {
     }
 };
 
-const stateLabel = (state) => {
+/** Vrací deskriptor, ne text - formátuje se až při renderu buňky. */
+const stateMessage = (state) => {
     switch (state) {
-        case ApiKeyState.Active: return i18n('admin.perms.tabs.accessKeys.state.active');
-        case ApiKeyState.Expired: return i18n('admin.perms.tabs.accessKeys.state.expired');
-        case ApiKeyState.Revoked: return i18n('admin.perms.tabs.accessKeys.state.revoked');
-        default: return state;
+        case ApiKeyState.Active: return messages.stateActive;
+        case ApiKeyState.Expired: return messages.stateExpired;
+        case ApiKeyState.Revoked: return messages.stateRevoked;
+        default: return null;
     }
 };
 
@@ -28,6 +54,7 @@ const formatDate = (iso) => iso ? new Date(iso).toLocaleDateString() : '';
  * Creation is reserved for the key owner, so this panel has no "new key" button.
  */
 function AccessKeysPanel({userId}) {
+    const intl = useIntl();
     const [keys, setKeys] = useState([]);
     const [showAll, setShowAll] = useState(false);
 
@@ -47,7 +74,7 @@ function AccessKeysPanel({userId}) {
     );
 
     const handleRevoke = async (key) => {
-        const msg = i18n('admin.perms.tabs.accessKeys.revoke.confirm', {name: key.name});
+        const msg = intl.formatMessage(messages.revokeConfirm, { name: key.name });
         if (!window.confirm(msg)) return;
         await Api.admin.adminRevokeUserApiKey(userId, key.id);
         load();
@@ -60,7 +87,7 @@ function AccessKeysPanel({userId}) {
                 checked={showAll}
                 onChange={(e) => setShowAll(e.target.checked)}
             />
-            {' '}{i18n('admin.perms.tabs.accessKeys.filter.showAll')}
+            {' '}<FormattedMessage {...messages.filterShowAll} />
         </label>
     );
 
@@ -68,7 +95,7 @@ function AccessKeysPanel({userId}) {
         return (
             <div className="access-keys-panel">
                 {filterCheckbox}
-                <div>{i18n('admin.perms.tabs.accessKeys.empty')}</div>
+                <div><FormattedMessage {...messages.empty} /></div>
             </div>
         );
     }
@@ -79,28 +106,28 @@ function AccessKeysPanel({userId}) {
             <table className="table table-sm">
                 <thead>
                     <tr>
-                        <th>{i18n('admin.perms.tabs.accessKeys.column.state')}</th>
-                        <th>Název</th>
+                        <th><FormattedMessage {...messages.columnState} /></th>
+                        <th><FormattedMessage {...messages.columnName} /></th>
                         <th>ID</th>
-                        <th>{i18n('admin.perms.tabs.accessKeys.column.created')}</th>
-                        <th>{i18n('admin.perms.tabs.accessKeys.column.expires')}</th>
-                        <th>{i18n('admin.perms.tabs.accessKeys.column.lastUsed')}</th>
+                        <th><FormattedMessage {...messages.columnCreated} /></th>
+                        <th><FormattedMessage {...messages.columnExpires} /></th>
+                        <th><FormattedMessage {...messages.columnLastUsed} /></th>
                         <th />
                     </tr>
                 </thead>
                 <tbody>
                     {sorted.map((k) => (
                         <tr key={k.id} style={k.state !== ApiKeyState.Active ? {opacity: 0.6} : undefined}>
-                            <td>{stateLabel(k.state)}</td>
+                            <td>{stateMessage(k.state) ? <FormattedMessage {...stateMessage(k.state)} /> : k.state}</td>
                             <td>{k.name}</td>
                             <td><code>{k.keyId}</code></td>
                             <td>{formatDate(k.createDate)}</td>
                             <td>{formatDate(k.expireDate)}</td>
-                            <td>{k.lastUsedDate ? formatDate(k.lastUsedDate) : i18n('admin.perms.tabs.accessKeys.lastUsedNever')}</td>
+                            <td>{k.lastUsedDate ? formatDate(k.lastUsedDate) : <FormattedMessage {...messages.lastUsedNever} />}</td>
                             <td>
                                 {k.state === ApiKeyState.Active && (
                                     <button className="btn btn-sm btn-link" onClick={() => handleRevoke(k)}>
-                                        {i18n('admin.perms.tabs.accessKeys.revoke')}
+                                        <FormattedMessage {...messages.revoke} />
                                     </button>
                                 )}
                             </td>

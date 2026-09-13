@@ -4,7 +4,18 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {Form} from 'react-bootstrap';
 import {Spinner} from '@fluentui/react-components';
-import {AbstractReactComponent, i18n, Icon} from 'components/shared';
+import {AbstractReactComponent, Icon} from 'components/shared';
+import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
+import { messageFor } from 'components/shared/lang/dynamicMessage';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    deleteNode: { id: 'arr.fund.nodes.deleteNode', defaultMessage: 'Opravdu chcete smazat tuto položku?' },
+    selectNodes: { id: 'arr.fund.nodes.title.select', defaultMessage: 'Výběr jednotek popisu' },
+    activePermission: { id: 'permission.activePermission.title', defaultMessage: 'Aktivní oprávnění' },
+    source: { id: 'permission.source.title', defaultMessage: 'Zdroj' },
+    explicit: { id: 'permission.explicit.title', defaultMessage: 'Explicitní' },
+});
 import getMapFromList from '../../shared/utils/getMapFromList';
 import './PermissionCheckboxsForm.scss';
 import TooltipTrigger from '../shared/tooltip/TooltipTrigger';
@@ -25,10 +36,10 @@ class PermissionCheckboxsForm extends AbstractReactComponent {
         onChangePermission: PropTypes.func.isRequired, // callback při změně
         onAddNodePermission: PropTypes.func, // callback při přidání oprávnění na JP (povinné pokud je nastaveno fundId)
         onRemoveNodePermission: PropTypes.func, // callback při odebrání oprávnění na JP (povinné pokud je nastaveno fundId)
-        labelPrefix: PropTypes.string.isRequired, // i18n prefix pro názvy položek
+        permissionMessages: PropTypes.object.isRequired, // mapa deskriptorů popisků oprávnění
         permission: PropTypes.object.isRequired, // oprávnění, které se edituje
         permissionAll: PropTypes.object, // oprávnění pro all položky, pokud exisutje (a needituje se právě ono, tedy je naplněno pouze pokud permission !== permissionAll a vůbec permissionAll může existovat)
-        permissionAllTitle: PropTypes.string, // odkaz do resource textů jak se jmenuje zdroj all persmission
+        permissionAllMessage: PropTypes.object, // deskriptor popisku zdroje "všechna oprávnění"
         groups: PropTypes.array, // seznam přiřazených skupin
         fundId: PropTypes.number,
         disabled: PropTypes.bool,
@@ -96,7 +107,7 @@ class PermissionCheckboxsForm extends AbstractReactComponent {
 
     handleRemoveNode = async (node) => {
         const {dispatch} = this.props;
-        const response = await dispatch(showConfirmDialog(i18n('arr.fund.nodes.deleteNode')));
+        const response = await dispatch(showConfirmDialog(this.props.intl.formatMessage(messages.deleteNode)));
         if (response) {
             this.props.onRemoveNodePermission(this.props.fundId, node);
         }
@@ -106,7 +117,7 @@ class PermissionCheckboxsForm extends AbstractReactComponent {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('arr.fund.nodes.title.select'),
+                this.props.intl.formatMessage(messages.selectNodes),
                 <FundNodesSelectForm
                     fundId={this.props.fundId}
                     onSubmitForm={(ids, nodes) => {
@@ -135,7 +146,7 @@ class PermissionCheckboxsForm extends AbstractReactComponent {
     };
 
     render() {
-        const {permissionAllTitle, groups, permission, labelPrefix, permCodes, disabled} = this.props;
+        const {permissionAllMessage, groups, permission, permissionMessages, permCodes, disabled} = this.props;
         const {pendingPermCodes} = this.state;
         const groupMap = groups ? getMapFromList(groups) : {};
 
@@ -165,15 +176,15 @@ class PermissionCheckboxsForm extends AbstractReactComponent {
 
                             infoMessage = (
                                 <div className="permission-checkbox-form-tooltip">
-                                    <div>{i18n('permission.activePermission.title')}</div>
+                                    <div><FormattedMessage {...messages.activePermission} /></div>
                                     <br />
-                                    <div>{i18n('permission.source.title')}:</div>
+                                    <div><FormattedMessage {...messages.source} />:</div>
                                     <ul>
                                         {groupNames.map(x => (
                                             <li>{x}</li>
                                         ))}
-                                        {allChecked && <li>{i18n(permissionAllTitle)}</li>}
-                                        {checked && <li>{i18n('permission.explicit.title')}</li>}
+                                        {allChecked && permissionAllMessage && <li><FormattedMessage {...permissionAllMessage} /></li>}
+                                        {checked && <li><FormattedMessage {...messages.explicit} /></li>}
                                     </ul>
                                 </div>
                             );
@@ -198,7 +209,7 @@ class PermissionCheckboxsForm extends AbstractReactComponent {
                                     checked={checked}
                                     disabled={disabled || pendingPermCodes.size > 0}
                                     onChange={e => this.handleChangePermission(e, permCode)}
-                                    label={i18n(`${labelPrefix}${permCode}`)}
+                                    label={<FormattedMessage {...messageFor(permissionMessages, permCode, messages.explicit)} />}
                                 />
                             </div>
                         );
@@ -210,4 +221,4 @@ class PermissionCheckboxsForm extends AbstractReactComponent {
     }
 }
 
-export default connect()(PermissionCheckboxsForm);
+export default connect()(injectIntl(PermissionCheckboxsForm));

@@ -1,6 +1,12 @@
 import {FC, useEffect} from 'react';
 import {useSelector} from 'react-redux';
-import { i18n, ListBox, Search, StoreHorizontalLoader} from 'components/shared';
+import { ListBox, Search, StoreHorizontalLoader} from 'components/shared';
+import { defineMessages, useIntl } from 'react-intl';
+
+// Id je převzaté z legacy katalogu beze změny.
+const messages = defineMessages({
+    searchPlaceholder: { id: 'search.input.search', defaultMessage: 'Vyhledat...' },
+});
 import {indexById} from 'stores/app/utils';
 import {fundsFetchIfNeeded, fundsFilter} from '../../../actions/admin/fund';
 import {renderFundItem} from '../../admin/adminRenderUtils';
@@ -21,6 +27,7 @@ export const FundList:FC<{
 }> = ({
     activeFund,
 }) => {
+    const intl = useIntl();
     const dispatch = useThunkDispatch();
     const funds = useSelector((state: any) => storeFromArea(state, AREA_ADMIN_FUNDS))
     const fundRows = getFundRows(funds);
@@ -51,7 +58,7 @@ export const FundList:FC<{
         <Search
             onSearch={handleSearch}
             onClear={handleSearchClear}
-            placeholder={i18n('search.input.search')}
+            placeholder={intl.formatMessage(messages.searchPlaceholder)}
             value={funds.filter.text || ''}
         />
         <StoreHorizontalLoader store={funds} />
