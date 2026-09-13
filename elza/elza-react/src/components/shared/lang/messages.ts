@@ -36,6 +36,10 @@ export const globalMessages = defineMessages({
     id: "global_cancel",
     defaultMessage: "Zrušit",
   },
+  create: {
+    id: "global.action.create",
+    defaultMessage: "Vytvořit",
+  },
   save: {
     id: "global.action.save",
     defaultMessage: "Uložit",
