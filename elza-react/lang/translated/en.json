@@ -2189,29 +2189,29 @@
     "defaultMessage": "OR",
     "srcHash": "xSmsgIt1bLvs"
   },
-  "global.action.cancel": {
-    "defaultMessage": "Cancel",
-    "srcHash": "bHfYpLCt8F6P"
-  },
   "global.action.close": {
     "defaultMessage": "Close",
     "srcHash": "0r4EKpo4ZhJv"
+  },
+  "global.action.edit": {
+    "defaultMessage": "Edit",
+    "srcHash": "7D1xFD_em0Dr"
   },
   "global.action.editInMap": {
     "defaultMessage": "Edit in map",
     "srcHash": "Sp_7Y4R5xQsk"
   },
+  "global.action.save": {
+    "defaultMessage": "Save",
+    "srcHash": "eKX-T2uH2Zl7"
+  },
   "global.action.showInMap": {
     "defaultMessage": "Show in map",
     "srcHash": "3dFzZlmKhOwe"
   },
-  "global.action.update": {
-    "defaultMessage": "Save",
-    "srcHash": "eKX-T2uH2Zl7"
-  },
   "global_cancel": {
     "defaultMessage": "Cancel",
-    "srcHash": "ABDFIc1OzdTP"
+    "srcHash": "bHfYpLCt8F6P"
   },
   "global_copyToClipboard": {
     "defaultMessage": "Copy to clipboard",
