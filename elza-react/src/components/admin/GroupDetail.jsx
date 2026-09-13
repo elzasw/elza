@@ -75,7 +75,7 @@ class GroupDetail extends AbstractReactComponent {
         super(props);
 
         this.state = {
-            selectedTabItem: GroupDetail.tabItems[GroupDetail.TAB_FUNDS],
+            selectedTabItem: {id: GroupDetail.TAB_FUNDS},
         };
     }
 

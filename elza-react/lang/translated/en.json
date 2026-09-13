@@ -787,6 +787,10 @@
     "defaultMessage": "Import",
     "srcHash": "yTA6PZurxTjn"
   },
+  "admin.perms.tabs.accessKeys": {
+    "defaultMessage": "API access keys",
+    "srcHash": "CNvYSmrnlu7Q"
+  },
   "admin.perms.tabs.advanced": {
     "defaultMessage": "Advanced",
     "srcHash": "sg8eCwVR4DSE"
@@ -803,9 +807,117 @@
     "defaultMessage": "Server caches have been reset",
     "srcHash": "Yc5ZWdN1terG"
   },
+  "admin.user.add.loginMethod": {
+    "defaultMessage": "Sign-in method",
+    "srcHash": "PkLxOEFI4227"
+  },
+  "admin.user.add.party": {
+    "defaultMessage": "Person",
+    "srcHash": "Sa_Tsb2sQwuE"
+  },
+  "admin.user.add.password.checkbox": {
+    "defaultMessage": "Username and password",
+    "srcHash": "KK4PtBZxaKx9"
+  },
+  "admin.user.add.password.message": {
+    "defaultMessage": "The password is set.",
+    "srcHash": "3YLJ1B4pYJSf"
+  },
+  "admin.user.add.shibboleth": {
+    "defaultMessage": "Authentication token",
+    "srcHash": "PDTeKCh4mkq8"
+  },
+  "admin.user.add.shibboleth.checkbox": {
+    "defaultMessage": "SAML2",
+    "srcHash": "SX8qPGxTaUEp"
+  },
+  "admin.user.add.shibboleth.message": {
+    "defaultMessage": "The authentication token is set.",
+    "srcHash": "0TN4nUbCHHfO"
+  },
+  "admin.user.add.title": {
+    "defaultMessage": "Create user",
+    "srcHash": "htBZVZA6cJ8y"
+  },
+  "admin.user.add.username": {
+    "defaultMessage": "Username",
+    "srcHash": "NKH-IVRQBmnM"
+  },
+  "admin.user.changeActive.confirm": {
+    "defaultMessage": "Are you sure you want to change the state of this user?",
+    "srcHash": "uBjosh_3Tznx"
+  },
+  "admin.user.emptyList.message": {
+    "defaultMessage": "There are no users defined in the system",
+    "srcHash": "48v-2EQhXP68"
+  },
+  "admin.user.emptyList.title": {
+    "defaultMessage": "No users",
+    "srcHash": "8j1XnYrT8jEf"
+  },
+  "admin.user.filter.all": {
+    "defaultMessage": "All users",
+    "srcHash": "-15Myb37BKvI"
+  },
+  "admin.user.filter.onlyActive": {
+    "defaultMessage": "Active users",
+    "srcHash": "Zl-Gn44H_Lvn"
+  },
+  "admin.user.group.add.title": {
+    "defaultMessage": "Add the user to groups",
+    "srcHash": "6AyFm7Tug2hb"
+  },
+  "admin.user.newPassword": {
+    "defaultMessage": "New password",
+    "srcHash": "y1JR-63zmyWp"
+  },
+  "admin.user.noSelection.message": {
+    "defaultMessage": "Please select a user from the list, or create a new one",
+    "srcHash": "3j8KrHvvHNzO"
+  },
+  "admin.user.noSelection.title": {
+    "defaultMessage": "No user selected",
+    "srcHash": "vRRiMyn1KQ9B"
+  },
+  "admin.user.oldPassword": {
+    "defaultMessage": "Old password",
+    "srcHash": "SssOfmhY1x5W"
+  },
+  "admin.user.password": {
+    "defaultMessage": "Password",
+    "srcHash": "pSKy5YhV1Jvy"
+  },
+  "admin.user.passwordAgain": {
+    "defaultMessage": "Repeat password",
+    "srcHash": "dbbgtNsUsDuG"
+  },
   "admin.user.passwordChange.title": {
     "defaultMessage": "Password change",
     "srcHash": "P2dQlVQyZq9S"
+  },
+  "admin.user.title.active": {
+    "defaultMessage": "Active user",
+    "srcHash": "zPCoBHIwpaqb"
+  },
+  "admin.user.title.groups": {
+    "defaultMessage": "Group membership",
+    "srcHash": "7TikHhJgnzNh"
+  },
+  "admin.user.title.nonactive": {
+    "defaultMessage": "Inactive user",
+    "srcHash": "JoZxsHOFedYQ"
+  },
+  "admin.user.title.permissions": {
+    "defaultMessage": "User permissions",
+    "srcHash": "BsaO6XN5qfnr"
+  },
+  "admin.user.update.title": {
+    "defaultMessage": "Edit user",
+    "srcHash": "oyMOVtI-Rwgq"
+  },
+  "admin.user.validation.passNotEqual": {
+    "defaultMessage": "The passwords do not match",
+    "srcHash": "1rOyiAy_40BR"
   },
   "admin_packages_label_action": {
     "defaultMessage": "Action",
@@ -2737,6 +2849,10 @@
     "defaultMessage": "OR",
     "srcHash": "xSmsgIt1bLvs"
   },
+  "global.action.change": {
+    "defaultMessage": "Change",
+    "srcHash": "OjdaGC2_rWb4"
+  },
   "global.action.choose": {
     "defaultMessage": "Select",
     "srcHash": "j7UiBDv3vOpU"
@@ -3368,6 +3484,22 @@
   "ribbon.action.admin.user": {
     "defaultMessage": "Users",
     "srcHash": "kWfNeM3r9zrt"
+  },
+  "ribbon.action.admin.user.activate": {
+    "defaultMessage": "Activate",
+    "srcHash": "1T7f3yz_d3bq"
+  },
+  "ribbon.action.admin.user.add": {
+    "defaultMessage": "Add user",
+    "srcHash": "of9W6IEjDMIY"
+  },
+  "ribbon.action.admin.user.deactivate": {
+    "defaultMessage": "Deactivate account",
+    "srcHash": "Zp2WGYL2buXu"
+  },
+  "ribbon.action.admin.user.edit": {
+    "defaultMessage": "Edit",
+    "srcHash": "7D1xFD_em0Dr"
   },
   "ribbon.action.admin.user.passwordChange": {
     "defaultMessage": "Change password",
