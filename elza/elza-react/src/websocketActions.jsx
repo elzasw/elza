@@ -7,6 +7,7 @@ import { store } from 'stores/index.jsx';
 import { addToastrDanger, addToastrSuccess } from 'components/shared/toastr/ToastrActions.jsx';
 import { i18n } from 'components/shared';
 import { checkUserLogged } from 'actions/global/login.jsx';
+import { EventType } from 'typings/websocket/EventType';
 
 import {
     changeAccessPoint,
@@ -73,7 +74,15 @@ export const wsUrl = wsProtocol + '//' + url.host + url.pathname;
 console.log('Websocekt URL', wsUrl);
 
 export class websocket {
-    listeners = [];
+
+    /**
+     * Posluchači zpráv.
+     *
+     * Set, protože se posluchač smí odhlásit přímo ve chvíli, kdy zprávu zpracovává - watchAipAction
+     * to dělá, jakmile akce doběhne. Set to má definované: kdo je odebraný dřív, než na něj přijde
+     * řada, zprávu už nedostane, a na doručení ostatním to nemá vliv.
+     */
+    listeners = new Set();
 
     constructor(url, eventMap) {
         this.nextReceiptId = 0;
@@ -175,13 +184,14 @@ export class websocket {
     };
 
     addListener = (listener) => {
-        this.listeners.push(listener);
+        this.listeners.add(listener);
         return listener;
     }
 
     removeListener = (listener) => {
-        const listenerIndex = this.listeners.findIndex((_listener) => _listener === listener);
-        this.listeners.splice(listenerIndex, 1);
+        if (!this.listeners.delete(listener)) {
+            console.warn("#ws Odhlašovaný posluchač už v seznamu není", listener);
+        }
     }
 
     onConnect = (frame) => {
@@ -253,7 +263,9 @@ export class websocket {
 
         if (this.eventMap[eventType]) {
             this.eventMap[eventType](body);
-        } else {
+        } else if (!Object.values(EventType).includes(eventType)) {
+            // Typy, které si odebírají posluchači, se tu nesměrují - varovat smí jen typ,
+            // který klient nezná vůbec, jinak hlášení zevšední a nikdo si ho nevšimne.
             console.warn("#ws Unknown event type '" + eventType + "'", body);
         }
     };
