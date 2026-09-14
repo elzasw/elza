@@ -50,6 +50,26 @@ const messages = defineMessages({
         id: 'home.recent.registry.emptyList.message',
         defaultMessage: 'V této sekci se nachází historie otevřených archivních entit.',
     },
+    tasksTitle: {
+        id: 'home.tasks.title',
+        defaultMessage: 'Úkoly',
+    },
+});
+
+/**
+ * Názvy typů úkolů.
+ *
+ * Server posílá `taskTypeName` z `wf_task_type`, což je jazyk nastavený při
+ * importu balíčku pravidel - přeložit se nedá. Vedle toho ale posílá i
+ * `taskTypeCode`, a ten je stabilní identita (konstanty na `WfTaskType`),
+ * takže popisek si umíme složit sami. Kód mimo tuhle množinu (typ z jiného
+ * balíčku) spadne zpátky na serverové jméno.
+ */
+const taskTypeMessages = defineMessages({
+    AP_UPDATE: { id: 'home.tasks.type.AP_UPDATE', defaultMessage: 'Úprava entity' },
+    AP_CONFIRM: { id: 'home.tasks.type.AP_CONFIRM', defaultMessage: 'Schválení entity' },
+    AP_REV_UPDATE: { id: 'home.tasks.type.AP_REV_UPDATE', defaultMessage: 'Úprava revize' },
+    AP_REV_CONFIRM: { id: 'home.tasks.type.AP_REV_CONFIRM', defaultMessage: 'Schválení revize entity' },
 });
 
 export default function HomePage() {
@@ -186,12 +206,13 @@ export default function HomePage() {
             {renderHistory()}
         {activeTasks.length > 0 && <div className="history-list-container" style={{ height: "auto", flexShrink: 0, maxHeight: "40%" }}>
           <div className="button-container">
-            <h4>Úkoly</h4>
+            <h4><FormattedMessage {...messages.tasksTitle} /></h4>
             <div style={{padding: "10px"}}>
               {activeTasks.map((task) => {
                 const link = getEntityLink(task.primaryEntityId, task.primaryEntityType);
-                return <div>
-                  {task.taskTypeName} -
+                const taskType = taskTypeMessages[task.taskTypeCode as keyof typeof taskTypeMessages];
+                return <div key={task.taskId}>
+                  {taskType ? <FormattedMessage {...taskType} /> : task.taskTypeName} -
                   &nbsp;
                   {link ? <Link to={link}>{task.primaryEntityName}</Link> : <>{task.primaryEntityName}</>}
                   &nbsp;

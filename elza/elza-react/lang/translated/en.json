@@ -2713,6 +2713,10 @@
     "defaultMessage": "prefix search",
     "srcHash": "5HzI3-OkKkY_"
   },
+  "app.footer.buildVersion": {
+    "defaultMessage": "Application build version: {version}",
+    "srcHash": "OeYvnUZYVjUy"
+  },
   "arr.aip.dao.link.delete": {
     "defaultMessage": "Do you really want to delete this link?",
     "srcHash": "swdNg_7H1jt3"
@@ -3180,6 +3184,10 @@
   "arr.fund.filterSettings.value.empty": {
     "defaultMessage": "(Empty)",
     "srcHash": "xXDBPK8Dohie"
+  },
+  "arr.fund.list.created": {
+    "defaultMessage": "created: {date}, {time}",
+    "srcHash": "KhxrjgVDgXID"
   },
   "arr.fund.nodes.deleteNode": {
     "defaultMessage": "Do you really want to delete this item?",
@@ -5777,6 +5785,10 @@
     "defaultMessage": "Yes",
     "srcHash": "HFtwBBU9Smvu"
   },
+  "home.fund.lockedVersion": {
+    "defaultMessage": "Version {date}",
+    "srcHash": "_5DazIWSRFyM"
+  },
   "home.recent.fund.emptyList.message": {
     "defaultMessage": "This section shows the history of archival funds you have opened.",
     "srcHash": "nEkU3Cu1sajZ"
@@ -5800,6 +5812,26 @@
   "home.recent.registry.title": {
     "defaultMessage": "Recently viewed archival entities",
     "srcHash": "m2tYyo9Wv0i4"
+  },
+  "home.tasks.title": {
+    "defaultMessage": "Tasks",
+    "srcHash": "uby4uJdvD3sx"
+  },
+  "home.tasks.type.AP_CONFIRM": {
+    "defaultMessage": "Entity approval",
+    "srcHash": "QI5m70kbhBdi"
+  },
+  "home.tasks.type.AP_REV_CONFIRM": {
+    "defaultMessage": "Entity revision approval",
+    "srcHash": "txq8aBWSL40x"
+  },
+  "home.tasks.type.AP_REV_UPDATE": {
+    "defaultMessage": "Revision edit",
+    "srcHash": "rnP9Z_LINVFR"
+  },
+  "home.tasks.type.AP_UPDATE": {
+    "defaultMessage": "Entity edit",
+    "srcHash": "yt5NU-jMeNx1"
   },
   "import.file": {
     "defaultMessage": "File",
