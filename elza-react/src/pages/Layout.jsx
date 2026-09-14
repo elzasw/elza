@@ -6,6 +6,11 @@ import { routerNavigate } from 'actions/router.jsx';
 import Tetris from 'components/game/Tetris.jsx';
 import { AbstractReactComponent, ContextMenu, ModalDialog, Toastr, Utils, WebSocket } from 'components/shared';
 import keymap from 'src/keymap';
+import { FormattedMessage, defineMessages } from 'react-intl';
+
+const messages = defineMessages({
+    buildVersion: { id: 'app.footer.buildVersion', defaultMessage: 'Verze sestavení aplikace: {version}' },
+});
 import {
     AdminExtSystemPage,
     AdminInstitutionPage,
@@ -316,7 +321,11 @@ class Layout extends AbstractReactComponent {
                     </WebsocketProvider>
                 </div>
                 <IntegrationPanel id="integration-footer" integrationFunction={window.renderIntegrationFooter}>
-                    {window.versionNumber && <div className="version-container">Verze sestavení aplikace: {window.versionNumber}</div>}
+                    {window.versionNumber && (
+                        <div className="version-container">
+                            <FormattedMessage {...messages.buildVersion} values={{version: window.versionNumber}} />
+                        </div>
+                    )}
                 </IntegrationPanel>
             </Shortcuts>
         );

@@ -49,7 +49,7 @@ import { FundFilters } from 'components/fund/filters/FundFilters';
 import { FundPageRibbon } from 'components/fund/FundPageRibbon';
 import { FundPager } from 'components/fund/FundPager';
 import { MultiFundActionDialog } from 'components/fund/MultiFundActionDialog';
-import { defineMessages, FormattedMessage, injectIntl } from 'react-intl';
+import { defineMessages, FormattedDate, FormattedMessage, FormattedTime, injectIntl } from 'react-intl';
 
 const OUTPUT_MAX_NUMBER = 10;
 
@@ -63,6 +63,7 @@ const messages = defineMessages({
     ruleSetTitle: { id: 'arr.fund.title.ruleSet', defaultMessage: 'Změnit pravidla' },
     updateTitle: { id: 'arr.fund.title.update', defaultMessage: 'Úprava AS' },
     searchTitle: { id: 'arr.fund.title.search', defaultMessage: 'Vyhledat v archivních souborech' },
+    listCreated: { id: 'arr.fund.list.created', defaultMessage: 'vytvořeno: {date}, {time}' },
     deleteConfirm: {
         id: 'arr.fund.action.delete.confirm',
         defaultMessage: 'Opravdu chcete vymazat celý AS {0}?',
@@ -613,7 +614,15 @@ class FundPage extends AbstractReactComponent {
                 {/*     <Link to={urlFundOutputs(item.id, item.versionId)}><Icon glyph="fa-print" /> 0</Link> */}
                 {/* </div> */}
                 <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                    {item.createDate && <span className="desc-part muted">vytvořeno: {new Date(item.createDate).toLocaleDateString()}, {new Date(item.createDate).toLocaleTimeString(undefined, { timeStyle: "short" })}</span>}
+                    {item.createDate && <span className="desc-part muted">
+                        <FormattedMessage
+                            {...messages.listCreated}
+                            values={{
+                                date: <FormattedDate value={item.createDate} />,
+                                time: <FormattedTime value={item.createDate} />,
+                            }}
+                        />
+                    </span>}
                 </div>
             </div>
             <div className="fund-actions" onMouseDown={(e) => { e.stopPropagation() }}>
