@@ -8,7 +8,6 @@ import {indexById, storeFromArea} from 'shared/utils';
 
 import {DEFAULT_LIST_SIZE, urlEntity, urlEntityRevision} from '../../constants.tsx';
 import {savingApiWrapper} from 'actions/global/status.jsx';
-import {i18n} from 'components/shared';
 import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx';
 import {AP_VALIDATION} from '../../constants';
 

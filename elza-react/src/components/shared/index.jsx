@@ -6,7 +6,6 @@ import * as Tabs from 'components/shared/tabs/Tabs';
 export {Utils, ExceptionUtils, Toastr, Tabs};
 export {default as AbstractReactComponent} from '../AbstractReactComponent';
 
-export {default as i18n} from 'components/i18n';
 export {default as LongText} from 'components/LongText';
 export {default as CheckListBox} from 'components/shared/listbox/CheckListBox';
 export {default as ListBox} from 'components/shared/listbox/ListBox';

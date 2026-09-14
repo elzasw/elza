@@ -1,12 +1,11 @@
 /**
- * Převod parametrů zprávy z legacy tvaru do ICU.
+ * Úprava parametrů zprávy do tvaru, který ICU přijme.
  *
- * Starý helper (`components/i18n`) uměl navíc dvě věci, které ICU nemá:
- * spojoval pole hodnot čárkou a tiše přijímal `null`/`undefined`. ICU na poli
- * spadne. Převádíme proto jednou tady, ne na každém volajícím místě.
+ * ICU na poli hodnot spadne a `null`/`undefined` nesnese. Pole proto spojíme
+ * čárkou a prázdné hodnoty zahodíme - jednou tady, ne na každém volajícím
+ * místě.
  *
- * Placeholdery samotné převádět netřeba: ICU bere jako jméno argumentu i číslo,
- * takže legacy `{0}` i `{name}` fungují beze změny textu zprávy.
+ * Číslo je platné jméno argumentu, takže `{0}` i `{name}` fungují stejně.
  */
 export function icuValues(
     properties?: Record<string, unknown> | null,

@@ -60,14 +60,6 @@ class ControlledEntitiesPanel extends AbstractReactComponent {
         return permissionsList;
     };
 
-    // renderItem = (item, isActive, index, onCheckItem) => {
-    //     if (item.id === FundsPermissionPanel.ALL_ID) {
-    //         return <div>{i18n('admin.perms.tabs.funds.items.fundAll')}</div>;
-    //     } else {
-    //         return <div>{item.fund.name}</div>;
-    //     }
-    // };
-
     renderItem = props => {
         const { item, isActive } = props;
         if (item.permission === perms.USER_CONTROL_ENTITY) {
