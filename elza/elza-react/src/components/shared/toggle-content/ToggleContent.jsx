@@ -20,7 +20,14 @@ import React from 'react';
 
 import classNames from 'classnames';
 
-import i18n from '../../i18n';
+import { defineMessages } from 'react-intl';
+import { getIntl } from 'components/shared/lang/intlInstance';
+
+// Id jsou převzatá z legacy katalogu beze změny. Text jde do title=, tedy řetězec.
+const messages = defineMessages({
+    minimize: { id: 'toggle.action.minimize', defaultMessage: 'Minimalizovat' },
+    restore: { id: 'toggle.action.restore', defaultMessage: 'Zobrazit' },
+});
 import NoFocusButton from '../button/NoFocusButton';
 import Icon from '../icon/Icon';
 
@@ -67,7 +74,7 @@ class ToggleContent extends React.Component {
             [this.props.className]: true,
         });
 
-        const title = this.state.opened ? i18n('toggle.action.minimize') : i18n('toggle.action.restore');
+        const title = getIntl().formatMessage(this.state.opened ? messages.minimize : messages.restore);
 
         const render = this.state.opened || this.state.alwaysRender;
         let children = null;

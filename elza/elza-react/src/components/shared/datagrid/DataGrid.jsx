@@ -7,7 +7,13 @@ import AbstractReactComponent from '../../AbstractReactComponent';
 import * as Utils from '../../Utils';
 import Resizer from '../resizer/Resizer';
 import DataGridRow from './DataGridRow';
-import i18n from '../../i18n';
+import { FormattedMessage, defineMessages } from 'react-intl';
+
+// Id je převzaté z legacy katalogu beze změny. Placeholdery {0}/{1} zůstávají:
+// ICU bere jako jméno argumentu i číslo.
+const messages = defineMessages({
+    morePages: { id: 'fund.grid.morePages', defaultMessage: 'Zobrazeny záznamy {0} až {1}.' },
+});
 import { getScrollbarWidth, propsEquals } from 'components/Utils.jsx';
 import { Shortcuts } from 'react-shortcuts';
 import { PropTypes } from 'prop-types';
@@ -705,7 +711,7 @@ class DataGrid extends AbstractReactComponent {
                             </tbody>
                         </table>
                         {morePages && rows.length > 0 && (
-                            <div>{i18n('fund.grid.morePages', startRowIndex + 1, startRowIndex + rows.length)}</div>
+                            <div><FormattedMessage {...messages.morePages} values={{ 0: startRowIndex + 1, 1: startRowIndex + rows.length }} /></div>
                         )}
                     </div>
                 </div>

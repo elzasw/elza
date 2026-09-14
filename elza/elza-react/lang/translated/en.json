@@ -1043,6 +1043,14 @@
     "defaultMessage": "Active users",
     "srcHash": "Zl-Gn44H_Lvn"
   },
+  "admin.user.group.action.add": {
+    "defaultMessage": "Add the user to groups",
+    "srcHash": "6lvYp97kP-0h"
+  },
+  "admin.user.group.action.delete": {
+    "defaultMessage": "Remove the user from the group",
+    "srcHash": "h0tGv8SF_px3"
+  },
   "admin.user.group.add.title": {
     "defaultMessage": "Add the user to groups",
     "srcHash": "6AyFm7Tug2hb"
@@ -1094,6 +1102,14 @@
   "admin.user.update.title": {
     "defaultMessage": "Edit user",
     "srcHash": "oyMOVtI-Rwgq"
+  },
+  "admin.user.user.action.add": {
+    "defaultMessage": "Add a user to the group",
+    "srcHash": "NImD0GwI2CEc"
+  },
+  "admin.user.user.action.delete": {
+    "defaultMessage": "Remove the user from the group",
+    "srcHash": "qfAbxIc_lBFB"
   },
   "admin.user.validation.passNotEqual": {
     "defaultMessage": "The passwords do not match",
@@ -2313,6 +2329,10 @@
     "defaultMessage": "Do you really want to delete this item?",
     "srcHash": "3jqf7So1IfUB"
   },
+  "arr.fund.nodes.title.remove": {
+    "defaultMessage": "Remove the description unit from the selection",
+    "srcHash": "HLXoHVpf39PJ"
+  },
   "arr.fund.nodes.title.select": {
     "defaultMessage": "Select description units",
     "srcHash": "TRKdGnjy0Tdf"
@@ -2685,6 +2705,18 @@
     "defaultMessage": "The digital entity was unlinked from the description unit",
     "srcHash": "y4Kc7qIdN6LF"
   },
+  "autocomplete.list.allItems": {
+    "defaultMessage": "All items",
+    "srcHash": "nMVc8NiHHSLk"
+  },
+  "autocomplete.list.favoriteItems": {
+    "defaultMessage": "Favourites",
+    "srcHash": "i4s39EsnIrTA"
+  },
+  "confirmDialog.default.title": {
+    "defaultMessage": "Confirmation",
+    "srcHash": "ieBBZA1HMgIH"
+  },
   "confirmDialog.title": {
     "defaultMessage": "Confirmation",
     "srcHash": "ieBBZA1HMgIH"
@@ -2905,6 +2937,14 @@
     "defaultMessage": "No archival funds",
     "srcHash": "myIyCK6gPdwE"
   },
+  "fund.grid.morePages": {
+    "defaultMessage": "Showing records {0} to {1}.",
+    "srcHash": "Zt8-_RcUL0fZ"
+  },
+  "fund.grid.rowsCount": {
+    "defaultMessage": "Record count: {0}",
+    "srcHash": "B6nDmKFf7kSw"
+  },
   "fund.noSelection.message": {
     "defaultMessage": "Please select an archival fund from the list.",
     "srcHash": "6vDrWVeH2ZFk"
@@ -3085,6 +3125,10 @@
     "defaultMessage": "Download",
     "srcHash": "xxAzjqAuIzkG"
   },
+  "global.action.download.file": {
+    "defaultMessage": "Download the file “{0}”",
+    "srcHash": "S9jZhFWEHqiV"
+  },
   "global.action.edit": {
     "defaultMessage": "Edit",
     "srcHash": "7D1xFD_em0Dr"
@@ -3092,6 +3136,14 @@
   "global.action.editInMap": {
     "defaultMessage": "Edit in map",
     "srcHash": "Sp_7Y4R5xQsk"
+  },
+  "global.action.remove": {
+    "defaultMessage": "Remove",
+    "srcHash": "Ofs6avvgqpQw"
+  },
+  "global.action.replace": {
+    "defaultMessage": "Replace",
+    "srcHash": "klGxQ9AMZbDo"
   },
   "global.action.save": {
     "defaultMessage": "Save",
@@ -3101,9 +3153,29 @@
     "defaultMessage": "Show in map",
     "srcHash": "3dFzZlmKhOwe"
   },
+  "global.data.loading": {
+    "defaultMessage": "Loading data…",
+    "srcHash": "tRaCvBzxtiHY"
+  },
+  "global.title.no": {
+    "defaultMessage": "No",
+    "srcHash": "OM6_SDapGMta"
+  },
   "global.title.processAction": {
     "defaultMessage": "Do you really want to perform the selected action?",
     "srcHash": "Rc7FypsLL7X4"
+  },
+  "global.title.selectAll": {
+    "defaultMessage": "Select all",
+    "srcHash": "tzdoYdlGzv8D"
+  },
+  "global.title.unselectAll": {
+    "defaultMessage": "Clear",
+    "srcHash": "jc5igLMs9_Ww"
+  },
+  "global.title.yes": {
+    "defaultMessage": "Yes",
+    "srcHash": "HFtwBBU9Smvu"
   },
   "global.validation.required": {
     "defaultMessage": "This field is required",
@@ -3880,6 +3952,18 @@
   "table.selectAll": {
     "defaultMessage": "Select all",
     "srcHash": "tzdoYdlGzv8D"
+  },
+  "tabs.action.closeTab": {
+    "defaultMessage": "Close tab",
+    "srcHash": "YrK1R8qgqAym"
+  },
+  "toggle.action.minimize": {
+    "defaultMessage": "Minimise",
+    "srcHash": "SjG7EHPTUJxS"
+  },
+  "toggle.action.restore": {
+    "defaultMessage": "Show",
+    "srcHash": "sipeZrVinjX9"
   },
   "userAndGroupField.searchType.GROUP": {
     "defaultMessage": "search for a group",

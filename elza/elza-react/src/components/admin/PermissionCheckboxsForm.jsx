@@ -26,6 +26,7 @@ import {connect} from 'react-redux';
 import {WebApi} from '../../actions';
 import {FUND_ARR_NODE} from '../../actions/user/Permission';
 import { showConfirmDialog } from 'components/shared/dialog';
+import { fundPermissionMessages } from './permissionMessages';
 
 /**
  * Panel spravující oprávnění typu checkbox.
@@ -97,7 +98,7 @@ class PermissionCheckboxsForm extends AbstractReactComponent {
             <FundNodesList
                 nodes={this.state.nodes}
                 addInLabel
-                addLabel={'admin.perms.tabs.funds.perm.FUND_ARR_NODE.add'}
+                addLabel={fundPermissionMessages['FUND_ARR_NODE.add']}
                 onDeleteNode={this.handleRemoveNode}
                 onAddNode={this.handleAddNodes}
                 fundId={this.props.fundId}

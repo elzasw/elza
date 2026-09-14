@@ -1,4 +1,6 @@
-import { i18n } from 'components/shared';
+import {} from 'components/shared';
+import { FormattedMessage } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
 import { Form, Modal } from 'react-bootstrap';
 import { Button } from '../../ui';
 import HorizontalLoader from '../loading/HorizontalLoader';
@@ -10,9 +12,9 @@ export interface Props {
     onClose?: () => void;
     onSubmit?: () => void | Promise<unknown>;
     onSubmitSuccess?: (result?: unknown) => void;
-    confirmMessage: string;
+    confirmMessage: React.ReactNode;
     submittingMessage: string;
-    submitTitle: string;
+    submitTitle: React.ReactNode;
 }
 
 export default function ConfirmDialog({
@@ -21,7 +23,7 @@ export default function ConfirmDialog({
     onSubmitSuccess,
     confirmMessage,
     submittingMessage,
-    submitTitle = i18n('global.action.store'),
+    submitTitle,
 }: Props) {
     const handleFormSubmit = async () => {
         const result = await onSubmit?.();
@@ -42,7 +44,7 @@ export default function ConfirmDialog({
                                 {submitTitle}
                             </Button>
                             <Button variant="link" onClick={onClose}>
-                                {i18n('global.action.cancel')}
+                                <FormattedMessage {...globalMessages.cancel} />
                             </Button>
                         </Modal.Footer>
                     </div>

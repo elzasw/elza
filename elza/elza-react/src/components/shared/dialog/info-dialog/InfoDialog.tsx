@@ -1,4 +1,5 @@
-import { i18n } from "components/shared";
+import { FormattedMessage } from "react-intl";
+import { globalMessages } from "components/shared/lang/messages";
 import React, { FC } from "react";
 import { Modal } from "react-bootstrap";
 import { Action, ActionCreator } from "redux";
@@ -11,11 +12,11 @@ import "./InfoDialog.scss";
 
 const InfoDialog:FC<{
     message: React.ReactNode;
-    closeLabel?: string;
+    closeLabel?: React.ReactNode;
     onSubmit: () => void;
 }> = ({
     message,
-    closeLabel = i18n("global.action.close"),
+    closeLabel = <FormattedMessage {...globalMessages.close} />,
     onSubmit,
 }) => {
     const handleSubmit = () => onSubmit();
@@ -41,7 +42,7 @@ export const showInfoDialog: ActionCreator<
     title,
 }:{
     message: React.ReactNode;
-    title: string;
+    title: React.ReactNode;
 }) => {
     return (dispatch) => {
         return new Promise<boolean>((resolve) => {
