@@ -22,7 +22,7 @@ import {
 } from "@fluentui/react-components";
 import { useThunkDispatch } from 'utils/hooks';
 import { useSelector } from 'react-redux';
-import { FormattedMessage, defineMessages } from 'react-intl';
+import { FormattedMessage, defineMessages, useIntl } from 'react-intl';
 
 const headerLabels = defineMessages({
     code: {
@@ -121,6 +121,7 @@ const columns = [
  * Komponenta pro zobrazení naimportovaných balíčků.
  */
 export function AdminPackagesListFn({ getExportUrl }) {
+    const intl = useIntl();
     const dispatch = useThunkDispatch();
     const [columnSizingOptions] = useState({
         code: {
@@ -234,12 +235,12 @@ export function AdminPackagesListFn({ getExportUrl }) {
                                     <TableCellLayout {...columnSizing_unstable.getTableCellProps("action")}>
                                         <FluentButton
                                             icon={<Icon glyph="fa-download" />}
-                                            title=<FormattedMessage {...globalMessages.download} />
+                                            title={intl.formatMessage(globalMessages.download)}
                                             onClick={() => handleDownload(item.code)}
                                         />
                                         <FluentButton
                                             icon={<Icon glyph="fa-trash" />}
-                                            title=<FormattedMessage {...globalMessages.delete} />
+                                            title={intl.formatMessage(globalMessages.delete)}
                                             onClick={() => handleDeletePackage(item.code)}
                                         />
                                     </TableCellLayout>
