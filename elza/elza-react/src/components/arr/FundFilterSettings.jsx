@@ -1,7 +1,13 @@
 import './FundFilterSettings.scss';
 
 import React from 'react';
-import {AbstractReactComponent, FilterableListBox, FormInput, HorizontalLoader, i18n} from 'components/shared';
+import {AbstractReactComponent, FilterableListBox, FormInput, HorizontalLoader} from 'components/shared';
+import { FormattedMessage, injectIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { nodeListMessages } from './nodeListMessages';
+import { arrMessages } from './messages';
+import { coordinatesNearMessages } from './messages';
+import { messageFor } from 'components/shared/lang/dynamicMessage';
 import DescItemCoordinates from './nodeForm/DescItemCoordinates';
 import {Accordion, Card, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
@@ -99,7 +105,7 @@ class EntityField extends React.Component {
                     type="text"
                     value={selectedName || query}
                     onChange={this.handleQueryChange}
-                    placeholder={i18n('arr.fund.filterSettings.condition.containEntity')}
+                    placeholder={<FormattedMessage {...arrMessages.fundFilterSettingsConditionContainEntity} />}
                 />
                 {!selectedName && accessPoints.length > 0 && (
                     <div className="entity-autocomplete-list">
@@ -227,7 +233,7 @@ const renderCoordinatesFields = fields => {
                         {[100, 500, 1000, 10000, 20000, 50000, 100000].map(l => {
                             return (
                                 <option key={l} value={l}>
-                                    {i18n('arr.fund.filterSettings.condition.coordinates.near.' + l)}
+                                    {this.props.intl.formatMessage(messageFor(coordinatesNearMessages, 'm' + l, coordinatesNearMessages.m1000))}
                                 </option>
                             );
                         })}
@@ -334,7 +340,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
             if (specIds.indexOf(null) >= 0) {
                 specItems.push({
                     id: FILTER_NULL_VALUE,
-                    name: i18n('arr.fund.filterSettings.value.empty'),
+                    name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsValueEmpty),
                 });
             }
 
@@ -383,13 +389,13 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                 // TODO [stanekpa] Toto zde nebude, když se na server přidělá podpora na vracení a hledání NULL hodnot - problé je ale v locales (řetězec arr.fund.filterSettings.value.empty), měly by se doplnit i na server
                 if (
                     valueSearchText == '' ||
-                    i18n('arr.fund.filterSettings.value.empty').toLowerCase().indexOf(valueSearchText) !== -1
+                    this.props.intl.formatMessage(arrMessages.fundFilterSettingsValueEmpty).toLowerCase().indexOf(valueSearchText) !== -1
                 ) {
                     // u prázdného hledání a případně u hledání prázdné hodnoty doplňujeme null položku
                     valueItems = [
                         {
                             id: FILTER_NULL_VALUE,
-                            name: i18n('arr.fund.filterSettings.value.empty'),
+                            name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsValueEmpty),
                         },
                         ...valueItems,
                     ];
@@ -555,22 +561,22 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                 case 'UNITID':
                     renderFields = renderTextFields;
                     validateField = (code, valuesCount, value, index) => {
-                        return value ? null : i18n('global.validation.required');
+                        return value ? null : this.props.intl.formatMessage(globalMessages.validationRequired);
                     };
                     items = [
-                        {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
-                        {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
-                        {values: 0, code: 'NOT_EMPTY', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
-                        {values: 0, code: 'UNDEFINED', name: i18n('arr.fund.filterSettings.condition.undefined')},
-                        {values: 1, code: 'CONTAIN', name: i18n('arr.fund.filterSettings.condition.string.contain')},
+                        {values: 0, code: 'NONE', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionNone)},
+                        {values: 0, code: 'EMPTY', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionEmpty)},
+                        {values: 0, code: 'NOT_EMPTY', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionNotEmpty)},
+                        {values: 0, code: 'UNDEFINED', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionUndefined)},
+                        {values: 1, code: 'CONTAIN', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionStringContain)},
                         {
                             values: 1,
                             code: 'NOT_CONTAIN',
-                            name: i18n('arr.fund.filterSettings.condition.string.notContain'),
+                            name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionStringNotContain),
                         },
-                        {values: 1, code: 'BEGIN', name: i18n('arr.fund.filterSettings.condition.begin')},
-                        {values: 1, code: 'END', name: i18n('arr.fund.filterSettings.condition.end')},
-                        {values: 1, code: 'EQ', name: i18n('arr.fund.filterSettings.condition.eq')},
+                        {values: 1, code: 'BEGIN', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionBegin)},
+                        {values: 1, code: 'END', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionEnd)},
+                        {values: 1, code: 'EQ', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionEq)},
                     ];
                     break;
                 case 'INT':
@@ -580,22 +586,22 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                         return dataType.code === 'INT' ? normalizeInt(value) : normalizeDouble(value);
                     };
                     validateField = (code, valuesCount, value, index) => {
-                        if (!value) return i18n('global.validation.required');
+                        if (!value) return this.props.intl.formatMessage(globalMessages.validationRequired);
                         return dataType.code === 'INT' ? validateInt(value) : validateDouble(value);
                     };
                     items = [
-                        {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
-                        {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
-                        {values: 0, code: 'NOT_EMPTY', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
-                        {values: 0, code: 'UNDEFINED', name: i18n('arr.fund.filterSettings.condition.undefined')},
-                        {values: 1, code: 'GT', name: i18n('arr.fund.filterSettings.condition.gt')},
-                        {values: 1, code: 'GE', name: i18n('arr.fund.filterSettings.condition.ge')},
-                        {values: 1, code: 'LT', name: i18n('arr.fund.filterSettings.condition.lt')},
-                        {values: 1, code: 'LE', name: i18n('arr.fund.filterSettings.condition.le')},
-                        {values: 1, code: 'EQ', name: i18n('arr.fund.filterSettings.condition.eq')},
-                        {values: 1, code: 'NE', name: i18n('arr.fund.filterSettings.condition.ne')},
-                        {values: 2, code: 'INTERVAL', name: i18n('arr.fund.filterSettings.condition.interval')},
-                        {values: 2, code: 'NOT_INTERVAL', name: i18n('arr.fund.filterSettings.condition.notInterval')},
+                        {values: 0, code: 'NONE', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionNone)},
+                        {values: 0, code: 'EMPTY', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionEmpty)},
+                        {values: 0, code: 'NOT_EMPTY', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionNotEmpty)},
+                        {values: 0, code: 'UNDEFINED', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionUndefined)},
+                        {values: 1, code: 'GT', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionGt)},
+                        {values: 1, code: 'GE', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionGe)},
+                        {values: 1, code: 'LT', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionLt)},
+                        {values: 1, code: 'LE', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionLe)},
+                        {values: 1, code: 'EQ', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionEq)},
+                        {values: 1, code: 'NE', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionNe)},
+                        {values: 2, code: 'INTERVAL', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionInterval)},
+                        {values: 2, code: 'NOT_INTERVAL', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionNotInterval)},
                     ];
                     break;
                 case 'DATE':
@@ -604,21 +610,21 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                         return value;
                     };
                     validateField = (code, valuesCount, value, index) => {
-                        if (!value) return i18n('global.validation.required');
+                        if (!value) return this.props.intl.formatMessage(globalMessages.validationRequired);
                     };
                     items = [
-                        {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
-                        {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
-                        {values: 0, code: 'NOT_EMPTY', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
-                        {values: 0, code: 'UNDEFINED', name: i18n('arr.fund.filterSettings.condition.undefined')},
-                        {values: 1, code: 'GT', name: i18n('arr.fund.filterSettings.condition.gt')},
-                        {values: 1, code: 'GE', name: i18n('arr.fund.filterSettings.condition.ge')},
-                        {values: 1, code: 'LT', name: i18n('arr.fund.filterSettings.condition.lt')},
-                        {values: 1, code: 'LE', name: i18n('arr.fund.filterSettings.condition.le')},
-                        {values: 1, code: 'EQ', name: i18n('arr.fund.filterSettings.condition.eq')},
-                        {values: 1, code: 'NE', name: i18n('arr.fund.filterSettings.condition.ne')},
-                        {values: 2, code: 'INTERVAL', name: i18n('arr.fund.filterSettings.condition.interval')},
-                        {values: 2, code: 'NOT_INTERVAL', name: i18n('arr.fund.filterSettings.condition.notInterval')},
+                        {values: 0, code: 'NONE', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionNone)},
+                        {values: 0, code: 'EMPTY', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionEmpty)},
+                        {values: 0, code: 'NOT_EMPTY', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionNotEmpty)},
+                        {values: 0, code: 'UNDEFINED', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionUndefined)},
+                        {values: 1, code: 'GT', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionGt)},
+                        {values: 1, code: 'GE', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionGe)},
+                        {values: 1, code: 'LT', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionLt)},
+                        {values: 1, code: 'LE', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionLe)},
+                        {values: 1, code: 'EQ', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionEq)},
+                        {values: 1, code: 'NE', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionNe)},
+                        {values: 2, code: 'INTERVAL', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionInterval)},
+                        {values: 2, code: 'NOT_INTERVAL', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionNotInterval)},
                     ];
                     break;
                 case 'RECORD_REF': {
@@ -640,15 +646,15 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                         renderFields = renderTextFields;
                     }
                     validateField = (code, valuesCount, value, index) => {
-                        return value ? null : i18n('global.validation.required');
+                        return value ? null : this.props.intl.formatMessage(globalMessages.validationRequired);
                     };
                     items = [
-                        {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
-                        {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
-                        {values: 0, code: 'NOT_EMPTY', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
-                        {values: 0, code: 'UNDEFINED', name: i18n('arr.fund.filterSettings.condition.undefined')},
-                        {values: 1, code: 'CONTAIN', name: i18n('arr.fund.filterSettings.condition.string.contain')},
-                        {values: 1, code: 'CONTAIN_ENTITY', name: i18n('arr.fund.filterSettings.condition.containEntity')},
+                        {values: 0, code: 'NONE', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionNone)},
+                        {values: 0, code: 'EMPTY', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionEmpty)},
+                        {values: 0, code: 'NOT_EMPTY', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionNotEmpty)},
+                        {values: 0, code: 'UNDEFINED', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionUndefined)},
+                        {values: 1, code: 'CONTAIN', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionStringContain)},
+                        {values: 1, code: 'CONTAIN_ENTITY', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionContainEntity)},
                     ];
                     break;
                 }
@@ -659,18 +665,18 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                         return validateResult.valid ? null : validateResult.message;
                     };
                     items = [
-                        {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
-                        {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
-                        {values: 0, code: 'NOT_EMPTY', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
-                        {values: 0, code: 'UNDEFINED', name: i18n('arr.fund.filterSettings.condition.undefined')},
-                        {values: 1, code: 'EQ', name: i18n('arr.fund.filterSettings.condition.eq')},
-                        {values: 1, code: 'LT', name: i18n('arr.fund.filterSettings.condition.unitdate.lt')},
-                        {values: 1, code: 'GT', name: i18n('arr.fund.filterSettings.condition.unitdate.gt')},
-                        {values: 2, code: 'SUBSET', name: i18n('arr.fund.filterSettings.condition.unitdate.subset')},
+                        {values: 0, code: 'NONE', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionNone)},
+                        {values: 0, code: 'EMPTY', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionEmpty)},
+                        {values: 0, code: 'NOT_EMPTY', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionNotEmpty)},
+                        {values: 0, code: 'UNDEFINED', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionUndefined)},
+                        {values: 1, code: 'EQ', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionEq)},
+                        {values: 1, code: 'LT', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionUnitdateLt)},
+                        {values: 1, code: 'GT', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionUnitdateGt)},
+                        {values: 2, code: 'SUBSET', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionUnitdateSubset)},
                         {
                             values: 2,
                             code: 'INTERSECT',
-                            name: i18n('arr.fund.filterSettings.condition.unitdate.intersect'),
+                            name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionUnitdateIntersect),
                         },
                     ];
                     break;
@@ -680,12 +686,12 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                         return validateCoordinatePoint(value);
                     };
                     items = [
-                        {values: 0, code: 'NONE', name: i18n('arr.fund.filterSettings.condition.none')},
-                        {values: 0, code: 'EMPTY', name: i18n('arr.fund.filterSettings.condition.empty')},
-                        {values: 0, code: 'NOT_EMPTY', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
-                        {values: 0, code: 'UNDEFINED', name: i18n('arr.fund.filterSettings.condition.undefined')},
-                        {values: 1, code: 'SUBSET', name: i18n('arr.fund.filterSettings.condition.coordinates.subset')},
-                        {values: 2, code: 'NEAR', name: i18n('arr.fund.filterSettings.condition.coordinates.near')},
+                        {values: 0, code: 'NONE', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionNone)},
+                        {values: 0, code: 'EMPTY', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionEmpty)},
+                        {values: 0, code: 'NOT_EMPTY', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionNotEmpty)},
+                        {values: 0, code: 'UNDEFINED', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionUndefined)},
+                        {values: 1, code: 'SUBSET', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionCoordinatesSubset)},
+                        {values: 2, code: 'NEAR', name: this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionCoordinatesNear)},
                     ];
                     break;
                 case 'JSON_TABLE':
@@ -832,7 +838,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                 <SimpleCheckListBox
                     ref="specsListBox"
                     items={specItems}
-                    label={i18n('arr.fund.filterSettings.filterBySpecification.title')}
+                    label={<FormattedMessage {...arrMessages.fundFilterSettingsFilterBySpecificationTitle} />}
                     value={{type: selectedSpecItemsType, ids: selectedSpecItems}}
                     onChange={this.handleSpecItemsChange}
                 >
@@ -847,7 +853,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
 
         let okButtons = [
             <Button key="clear" variant="outline-secondary" className="mr-auto" onClick={this.handleClearSubmit}>
-                {i18n('arr.fund.filterSettings.action.clear')}
+                {<FormattedMessage {...arrMessages.fundFilterSettingsActionClear} />}
             </Button>,
         ];
         if (refType.id !== COL_REFERENCE_MARK) {
@@ -872,7 +878,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
             const okDisabled = conditionHasErrors || !hasAllValues;
             okButtons.push(
                 <Button key="store" variant="outline-secondary" disabled={okDisabled} onClick={this.handleSubmit}>
-                    {i18n('global.action.store')}
+                    {<FormattedMessage {...globalMessages.save} />}
                 </Button>,
             );
         } else {
@@ -893,7 +899,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                     disabled={okDisabled}
                     onClick={this.handleRefMarkSubmit}
                 >
-                    {i18n('global.action.select')}
+                    {<FormattedMessage {...arrMessages.globalActionSelect} />}
                 </Button>,
             );
         }
@@ -910,7 +916,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                 >
                     <Card className={valueAccodrionType === 'CONDITION' ? 'open' : ''}>
                         <Card.Header>
-                            <h4>{i18n('arr.fund.filterSettings.filterByCondition.title')}</h4>
+                            <h4>{<FormattedMessage {...arrMessages.fundFilterSettingsFilterByConditionTitle} />}</h4>
                         </Card.Header>
                         <Accordion.Collapse eventKey="CONDITION">
                             <Card.Body>{conditionContent}</Card.Body>
@@ -918,7 +924,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                     </Card>
                     <Card className={valueAccodrionType === 'VALUE' ? 'open' : ''}>
                         <Card.Header>
-                            <h4>{i18n('arr.fund.filterSettings.filterByValue.title')}</h4>
+                            <h4>{<FormattedMessage {...arrMessages.fundFilterSettingsFilterByValueTitle} />}</h4>
                         </Card.Header>
                         <Accordion.Collapse eventKey="VALUE">
                             <Card.Body>{valueContent}</Card.Body>
@@ -931,13 +937,13 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                 <div>
                     {conditionContent && (
                         <div>
-                            <h4>{i18n('arr.fund.filterSettings.filterByCondition.title')}</h4>
+                            <h4>{<FormattedMessage {...arrMessages.fundFilterSettingsFilterByConditionTitle} />}</h4>
                             {conditionContent}
                         </div>
                     )}
                     {valueContent && (
                         <div>
-                            <h4>{i18n('arr.fund.filterSettings.filterByValue.title')}</h4>
+                            <h4>{<FormattedMessage {...arrMessages.fundFilterSettingsFilterByValueTitle} />}</h4>
                             {valueContent}
                         </div>
                     )}
@@ -956,7 +962,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                 <Modal.Footer>
                     {okButtons}
                     <Button variant="link" onClick={onClose}>
-                        {i18n('global.action.cancel')}
+                        {<FormattedMessage {...globalMessages.cancel} />}
                     </Button>
                 </Modal.Footer>
             </div>

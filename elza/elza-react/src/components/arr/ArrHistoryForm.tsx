@@ -4,7 +4,13 @@
 import { modalDialogHide, modalDialogShow } from 'actions/global/modalDialog.jsx';
 import { WebApi } from 'actions/index.jsx';
 import { ErrorBoundary } from 'components/ErrorBoundary';
-import { FormInput, i18n, LazyListBox } from 'components/shared';
+import { FormInput, LazyListBox } from 'components/shared';
+import { FormattedMessage, useIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { nodeListMessages } from './nodeListMessages';
+import { arrMessages } from './messages';
+import { historyChangeMessages, historyDescriptionMessages } from './historyMessages';
+import { messageFor } from 'components/shared/lang/dynamicMessage';
 import { dateTimeToZonedUTC } from 'components/Utils';
 import { dateToString, getScrollbarWidth, timeToString } from 'components/Utils.jsx';
 import React, { useRef, useState } from 'react';
@@ -57,6 +63,7 @@ export const ArrHistoryFormFn = ({
     onClose,
     node,
 }:ArrHistoryFormProps) => {
+    const intl = useIntl();
     const dispatch = useThunkDispatch();
     const listboxRef = useRef<any>(null); // TODO - pridat typ pro LazyListBox
 
@@ -100,11 +107,14 @@ export const ArrHistoryFormFn = ({
     };
 
     const getItemTypeText = (item: ChangeItem) => {
-        return i18n(`arr.history.change.title.${item.type || 'unknown'}`);
+        return intl.formatMessage(messageFor(historyChangeMessages, item.type ?? 'unknown', historyChangeMessages.unknown));
     }
 
     const getItemDescription = (item: ChangeItem) => {
-        const description = i18n('^arr.history.change.description.' + item.type, String(item.nodeChanges));
+        const descriptor = item.type ? historyDescriptionMessages[item.type] : undefined;
+        const description = descriptor
+            ? intl.formatMessage(descriptor, { 0: String(item.nodeChanges) })
+            : null;
 
         if(description){ return description; }
         if (item.label) { return item.label; }
@@ -193,13 +203,13 @@ export const ArrHistoryFormFn = ({
                 <FormInput
                     className="selected-node-info-container"
                     type="static"
-                    label={i18n('arr.history.title.deleteFrom')}
+                    label={<FormattedMessage {...arrMessages.historyTitleDeleteFrom} />}
                 >
                     <span title={`${infoText}`} className="node-info full">
                         {`${infoText}`}
                     </span>
                     <Button variant="outline-secondary" disabled={!selectedItem} onClick={handleShowSelectedItem}>
-                        {i18n('arr.history.action.deleteFrom.show')}
+                        {<FormattedMessage {...arrMessages.historyActionDeleteFromShow} />}
                     </Button>
                 </FormInput>
             </ErrorBoundary>
@@ -210,7 +220,7 @@ export const ArrHistoryFormFn = ({
         dispatch(
             modalDialogShow(
                 undefined,
-                i18n('arr.fund.nodes.title.select'),
+                intl.formatMessage(nodeListMessages.select),
                 <FundNodesSelectForm
                     multipleSelection={false}
                     onSubmitForm={(_id: number, node: NodeBase) => {
@@ -252,7 +262,7 @@ export const ArrHistoryFormFn = ({
             || selectedItem?.changeId == null
             || selectedIndex == null
         ){return;}
-        const response = await dispatch(showConfirmDialog(i18n('arr.history.deleteQuestion', selectedIndex + 1)))
+        const response = await dispatch(showConfirmDialog(intl.formatMessage(arrMessages.historyDeleteQuestion, { 0: selectedIndex + 1 })))
         if (response) {
             setInProgress(true);
             await onDeleteChanges(getNodeId(), changeId, selectedItem.changeId);
@@ -291,7 +301,7 @@ export const ArrHistoryFormFn = ({
     if (showHistoryForNode === true && currentNode == null) {
         content = (
             <div className="lazy-listbox-container listbox-container data-container loading">
-                {i18n('arr.history.title.selectNode')}
+                {<FormattedMessage {...arrMessages.historyTitleSelectNode} />}
             </div>
         );
     } else {
@@ -315,7 +325,7 @@ export const ArrHistoryFormFn = ({
     if(inProgress){ return <div className="in-progress">
         <Icon glyph="fa-refresh" className="fa-spin"/>
         &nbsp;
-        {i18n('arr.history.delete.inProgress')}
+        {<FormattedMessage {...arrMessages.historyDeleteInProgress} />}
     </div>}
 
     return (
@@ -328,7 +338,7 @@ export const ArrHistoryFormFn = ({
                             type="radio"
                             checked={!showHistoryForNode}
                             onClick={() => onChangeRadio(false)}
-                            label={i18n('arr.history.title.globalChanges')}
+                            label={<FormattedMessage {...arrMessages.historyTitleGlobalChanges} />}
                             className="radio"
                             />
                         <div className="selected-node-container">
@@ -337,7 +347,7 @@ export const ArrHistoryFormFn = ({
                                 type="radio"
                                 checked={showHistoryForNode}
                                 onClick={() => onChangeRadio(true)}
-                                label={i18n('arr.history.title.nodeChanges')}
+                                label={<FormattedMessage {...arrMessages.historyTitleNodeChanges} />}
                                 className="radio"
                                 />
                             {currentNode && <FormInput
@@ -352,7 +362,7 @@ export const ArrHistoryFormFn = ({
                                     disabled={!showHistoryForNode || fetching}
                                     onClick={handleChooseNode}
                                 >
-                                    {i18n('global.action.choose')}
+                                    {<FormattedMessage {...globalMessages.choose} />}
                                 </Button>
                             </FormInput>}
                         </div>
@@ -362,24 +372,24 @@ export const ArrHistoryFormFn = ({
                                 placeholder="dd.mm.rrrr[ hh:mm[:ss]]"
                                 onChange={handleGoToDateChange}
                                 type="string"
-                                label={i18n('arr.history.title.goToDate')}
+                                label={<FormattedMessage {...arrMessages.historyTitleGoToDate} />}
                                 />
                             <Button
                                 variant="outline-secondary"
                                 disabled={!goToDateValue}
                                 onClick={handleGoToDate}
                             >
-                                {i18n('arr.history.action.goToDate')}
+                                {<FormattedMessage {...arrMessages.historyActionGoToDate} />}
                             </Button>
                         </div>
                     </Form.Group>
                     <div className="changes-listbox-container">
                         <div className="header-container">
-                            <div className="col col1">{i18n('arr.history.title.change.date')}</div>
-                            <div className="col col2">{i18n('arr.history.title.change.time')}</div>
-                            <div className="col col3">{i18n('arr.history.title.change.description')}</div>
-                            <div className="col col4">{i18n('arr.history.title.change.type')}</div>
-                            <div className="col col5">{i18n('arr.history.title.change.user')}</div>
+                            <div className="col col1">{<FormattedMessage {...arrMessages.historyTitleChangeDate} />}</div>
+                            <div className="col col2">{<FormattedMessage {...arrMessages.historyTitleChangeTime} />}</div>
+                            <div className="col col3">{<FormattedMessage {...arrMessages.historyTitleChangeDescription} />}</div>
+                            <div className="col col4">{<FormattedMessage {...arrMessages.historyTitleChangeType} />}</div>
+                            <div className="col col5">{<FormattedMessage {...arrMessages.historyTitleChangeUser} />}</div>
                             <div className="colScrollbar" style={{width: getScrollbarWidth()}}></div>
                         </div>
                         {content}
@@ -388,7 +398,7 @@ export const ArrHistoryFormFn = ({
                 </Modal.Body>
                 <Modal.Footer>
                     {selectedIndex !== null
-                        ? i18n('arr.history.title.changesForDelete', selectedIndex + 1) + ' '
+                        ? intl.formatMessage(arrMessages.historyTitleChangesForDelete, { 0: selectedIndex + 1 }) + ' '
                         : ''}
                     {!locked && (
                         <Button
@@ -397,11 +407,11 @@ export const ArrHistoryFormFn = ({
                             type="submit"
                             onClick={handleDeleteChanges}
                         >
-                            {i18n('arr.history.action.deleteChanges')}
+                            {<FormattedMessage {...arrMessages.historyActionDeleteChanges} />}
                         </Button>
                     )}
                     <Button variant="link" onClick={onClose}>
-                        {i18n('global.action.cancel')}
+                        {<FormattedMessage {...globalMessages.cancel} />}
                     </Button>
                 </Modal.Footer>
             </div>
@@ -409,415 +419,3 @@ export const ArrHistoryFormFn = ({
     );
 }
 export default ArrHistoryFormFn;
-/*
-class ArrHistoryForm extends AbstractReactComponent {
-    static propTypes = {};
-
-    static defaultProps = {
-        locked: false,
-    };
-
-    constructor(props) {
-        super(props);
-
-        this.state = {
-            node: typeof props.node !== 'undefined' ? props.node : null,
-            goToDate: '',
-            goToDateValue: null,
-            changeId: null,
-            selectedItem: null,
-            selectedIndex: null,
-            activeIndex: null,
-            fetching: false,
-            showHistoryForNode: props.node ? true : false, // pro node je true, globalni je false
-        };
-    }
-
-    renderItemContent = (item, isActive, index) => {
-        if (item == null) {
-            return null;
-        }
-
-        const {selectedItem} = this.state;
-        const canDelete = selectedItem && item.changeDate >= selectedItem.changeDate;
-        const typeText = this.getItemTypeText(item);
-        const description = this.getItemDescription(item);
-
-        return (
-            <div
-                key={index}
-                className={`row-container ${item.revert ? ' canRevert' : ''} ${canDelete ? ' delete' : ''}`}
-            >
-                <div className="col col1">{dateToString(new Date(item.changeDate))}</div>
-                <div className="col col2">{timeToString(new Date(item.changeDate))}</div>
-                <div className="col col3" title={description}>
-                    {description}
-                </div>
-                <div className="col col4" title={typeText}>
-                    {typeText}
-                </div>
-                <div className="col col5">{item.username ? item.username : <i>System</i>}</div>
-            </div>
-        );
-    };
-
-    getItemTypeText(item) {
-        return i18n(`arr.history.change.title.${item.type || 'unknown'}`);
-    }
-
-    getItemDescription(item) {
-        switch (item.type || '') {
-            case 'BULK_ACTION':
-            case 'ADD_NODES_OUTPUT':
-            case 'REMOVE_NODES_OUTPUT':
-            case 'CREATE_AS':
-            case 'BATCH_CHANGE_DESC_ITEM':
-            case 'BATCH_DELETE_DESC_ITEM':
-            case 'IMPORT':
-                return i18n('arr.history.change.description.' + item.type, String(item.nodeChanges));
-            default:
-                console.warn('Unknown item change type:', item.type, item);
-        }
-
-        if (item.label) {
-            return item.label;
-        }
-
-        return (
-            this.getItemTypeText(item) +
-            ', primaryNodeId: ' +
-            (item.primaryNodeId || '?') +
-            ', changeId: ' +
-            item.changeId +
-            ', changeDate: ' +
-            dateToString(new Date(item.changeDate))
-        );
-    }
-
-    // Returns id of the selected node. Returns null when id doesnt exist or when reverting global history
-    getNodeId = () => {
-        const {node, showHistoryForNode} = this.state;
-        return showHistoryForNode && node && typeof node.id !== 'undefined' ? node.id : null;
-    };
-
-    getItems = (fromIndex, toIndex) => {
-        const {versionId} = this.props;
-        const {changeId} = this.state;
-
-        this.setState({
-            fetching: true,
-        });
-
-        return WebApi.findChanges(versionId, this.getNodeId(), fromIndex, toIndex - fromIndex, changeId)
-            .then(json => {
-                if (json.totalCount > 0 && changeId === null) {
-                    // pokud nemáme uložen první changeId, uložíme si ho do state
-                    this.setState({
-                        changeId: json.changes[0].changeId,
-                    });
-                }
-
-                const lbData = {
-                    items: json.changes,
-                    count: json.totalCount,
-                    outdated: json.outdated,
-                };
-
-                this.setState({
-                    fetching: false,
-                });
-
-                return lbData;
-            })
-            .catch(e => {
-                this.setState({
-                    fetching: false,
-                });
-            });
-    };
-
-    handleSelect = (item, index) => {
-        if (!this.props.locked) {
-            if (item.revert) {
-                this.setState({
-                    selectedIndex: index,
-                    activeIndex: index,
-                    selectedItem: item,
-                });
-            } else {
-                this.setState({
-                    activeIndex: index,
-                });
-            }
-        }
-    };
-
-    handleShowSelectedItem = () => {
-        if (!this.props.locked) {
-            const {selectedIndex} = this.state;
-            this.setState(
-                {
-                    activeIndex: selectedIndex,
-                },
-                () => {
-                    this.refs.listbox.ensureItemVisible(selectedIndex);
-                },
-            );
-        }
-    };
-
-    renderSelectedItemInfo = () => {
-        const {selectedItem} = this.state;
-
-        let infoText;
-        if (selectedItem) {
-            const description = this.getItemDescription(selectedItem);
-            const typeText = this.getItemTypeText(selectedItem);
-            const username = selectedItem.username ? selectedItem.username : 'System';
-            infoText = `${dateToString(new Date(selectedItem.changeDate))}; ${timeToString(
-                new Date(selectedItem.changeDate),
-            )}; ${description}; ${typeText}; ${username}`;
-        } else {
-            infoText = null;
-        }
-
-        return (
-            <ErrorBoundary>
-                <FormInput
-                    className="selected-item-info-container"
-                    type="static"
-                    label={i18n('arr.history.title.deleteFrom')}
-                >
-                    <input type="text" value={infoText} disabled />
-                    <Button disabled={!selectedItem} onClick={this.handleShowSelectedItem}>
-                        {i18n('arr.history.action.deleteFrom.show')}
-                    </Button>
-                </FormInput>
-            </ErrorBoundary>
-        );
-    };
-
-    handleChooseNode = () => {
-        this.props.dispatch(
-            modalDialogShow(
-                this,
-                i18n('arr.fund.nodes.title.select'),
-                <FundNodesSelectForm
-                    multipleSelection={false}
-                    onSubmitForm={(id, node) => {
-                        this.setState(
-                            {
-                                node,
-                                selectedItem: null,
-                                selectedIndex: null,
-                                changeId: null,
-                                activeIndex: null,
-                            },
-                            this.refreshRows,
-                        );
-                        this.props.dispatch(modalDialogHide());
-                    }}
-                />,
-            ),
-        );
-    };
-
-    onChangeRadio = showHistoryForNode => {
-        this.setState(
-            {
-                showHistoryForNode,
-                selectedItem: null,
-                selectedIndex: null,
-                changeId: null,
-                activeIndex: null,
-            },
-            this.refreshRows,
-        );
-    };
-
-    refreshRows = () => {
-        const {showHistoryForNode, node} = this.state;
-        if (!(showHistoryForNode === true && node == null)) {
-            this.refs.listbox.reload();
-        }
-    };
-
-    handleDeleteChanges = () => {
-        const {onDeleteChanges} = this.props;
-        const {changeId, selectedIndex, selectedItem} = this.state;
-
-        if (window.confirm(i18n('arr.history.deleteQuestion', selectedIndex + 1))) {
-            onDeleteChanges(this.getNodeId(), changeId, selectedItem.changeId);
-        }
-    };
-
-    handleGoToDateChange = eventOrValue => {
-        const isEvent = !!(eventOrValue && eventOrValue.stopPropagation && eventOrValue.preventDefault);
-        const value = isEvent ? eventOrValue.target.value : eventOrValue;
-
-        const dateArr = value.match(/^(\d{2})\.(\d{2})\.(\d{4})(.(\d{2}):(\d{2})(:(\d{2}))?)?$/);
-        let goToDateValue = null;
-        if (dateArr) {
-            const day = parseInt(dateArr[1]);
-            const month = parseInt(dateArr[2]);
-            const year = parseInt(dateArr[3]);
-            const hh = parseInt(dateArr[5] ? dateArr[5] : '0');
-            const mm = parseInt(dateArr[6] ? dateArr[6] : '0');
-            const ss = parseInt(dateArr[8] ? dateArr[8] : '0');
-            goToDateValue = new Date(year, month - 1, day, hh, mm, ss, 0);
-        }
-        // console.log(value, dateArr);
-        // console.log(goToDateValue, dateTimeToLocalUTC(goToDateValue));
-
-        this.setState({
-            goToDate: value,
-            goToDateValue,
-        });
-    };
-
-    handleGoToDate = () => {
-        const {versionId} = this.props;
-        const {goToDateValue, changeId} = this.state;
-
-        return WebApi.findChangesByDate(versionId, this.getNodeId(), changeId, dateTimeToZonedUTC(goToDateValue)).then(
-            json => {
-                const offset = json.offset;
-                this.setState(
-                    {
-                        activeIndex: offset,
-                    },
-                    () => {
-                        this.refs.listbox.ensureItemVisible(offset);
-                    },
-                );
-            },
-        );
-    };
-
-    render() {
-        const {
-            goToDateValue,
-            goToDate,
-            selectedItem,
-            node,
-            showHistoryForNode,
-            selectedIndex,
-            activeIndex,
-            fetching,
-        } = this.state;
-        const {onClose, locked} = this.props;
-
-        let content;
-
-        if (showHistoryForNode === true && node == null) {
-            content = (
-                <div className="lazy-listbox-container listbox-container data-container loading">
-                    {i18n('arr.history.title.selectNode')}
-                </div>
-            );
-        } else {
-            content = (
-                <LazyListBox
-                    key={'listbox'}
-                    ref="listbox"
-                    className="data-container"
-                    itemIdAttrName={'changeId'}
-                    selectedIndex={selectedIndex}
-                    activeIndex={activeIndex}
-                    getItems={this.getItems}
-                    itemHeight={24} // nutne dat stejne cislo i do css jako .pokusny-listbox-container .listbox-item { height: 24px; }
-                    renderItemContent={this.renderItemContent}
-                    onSelect={this.handleSelect}
-                    fetching={fetching}
-                />
-            );
-        }
-
-        return (
-            <ErrorBoundary>
-                <div className="arr-history-form-container">
-                    <Modal.Body>
-                        <Form.Group>
-                            <FormInput
-                                disabled={fetching}
-                                type="radio"
-                                checked={!showHistoryForNode}
-                                onClick={() => this.onChangeRadio(false)}
-                                label={i18n('arr.history.title.globalChanges')}
-                            />
-                            <div className="selected-node-container">
-                                <FormInput
-                                    disabled={fetching}
-                                    type="radio"
-                                    checked={showHistoryForNode}
-                                    onClick={() => this.onChangeRadio(true)}
-                                    label={i18n('arr.history.title.nodeChanges')}
-                                />
-                                <FormInput className="selected-node-info-container" type="static" label={false}>
-                                    <input type="text" value={node ? node.name : ''} disabled />
-                                    <Button
-                                        variant="outline-secondary"
-                                        disabled={!showHistoryForNode || fetching}
-                                        onClick={this.handleChooseNode}
-                                    >
-                                        {i18n('global.action.choose')}
-                                    </Button>
-                                </FormInput>
-                            </div>
-                            <div className="go-to-date-container">
-                                <FormInput
-                                    value={goToDate}
-                                    placeholder="dd.mm.rrrr[ hh:mm[:ss]]"
-                                    onChange={this.handleGoToDateChange}
-                                    type="string"
-                                    label={i18n('arr.history.title.goToDate')}
-                                />
-                                <Button
-                                    variant="outline-secondary"
-                                    disabled={!goToDateValue}
-                                    onClick={this.handleGoToDate}
-                                >
-                                    {i18n('arr.history.action.goToDate')}
-                                </Button>
-                            </div>
-                        </Form.Group>
-                        <div className="changes-listbox-container">
-                            <div className="header-container">
-                                <div className="col col1">{i18n('arr.history.title.change.date')}</div>
-                                <div className="col col2">{i18n('arr.history.title.change.time')}</div>
-                                <div className="col col3">{i18n('arr.history.title.change.description')}</div>
-                                <div className="col col4">{i18n('arr.history.title.change.type')}</div>
-                                <div className="col col5">{i18n('arr.history.title.change.user')}</div>
-                                <div className="colScrollbar" style={{width: getScrollbarWidth()}}></div>
-                            </div>
-                            {content}
-                        </div>
-                        {!locked && this.renderSelectedItemInfo()}
-                    </Modal.Body>
-                    <Modal.Footer>
-                        {selectedIndex !== null
-                            ? i18n('arr.history.title.changesForDelete', selectedIndex + 1) + ' '
-                            : ''}
-                        {!locked && (
-                            <Button
-                                variant="outline-secondary"
-                                disabled={selectedItem === null || (showHistoryForNode && !node)}
-                                type="submit"
-                                variant="outline-secondary"
-                                onClick={this.handleDeleteChanges}
-                            >
-                                {i18n('arr.history.action.deleteChanges')}
-                            </Button>
-                        )}
-                        <Button variant="link" onClick={onClose}>
-                            {i18n('global.action.cancel')}
-                        </Button>
-                    </Modal.Footer>
-                </div>
-            </ErrorBoundary>
-        );
-    }
-}
-
-export default connect()(ArrHistoryForm);
-*/

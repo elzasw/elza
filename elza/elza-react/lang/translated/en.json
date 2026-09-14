@@ -2885,6 +2885,90 @@
     "defaultMessage": "Choose how to resolve the conflicts",
     "srcHash": "0Aq5CwWfw1ue"
   },
+  "arr.fund.bulkModifications.action.delete": {
+    "defaultMessage": "Remove",
+    "srcHash": "eQTkknH2OPF1"
+  },
+  "arr.fund.bulkModifications.action.findAndReplace": {
+    "defaultMessage": "Find and replace",
+    "srcHash": "GJvwaXs6cLg0"
+  },
+  "arr.fund.bulkModifications.action.replace": {
+    "defaultMessage": "Set",
+    "srcHash": "-u_5AWdGRhoi"
+  },
+  "arr.fund.bulkModifications.action.setSpecification": {
+    "defaultMessage": "Set",
+    "srcHash": "-u_5AWdGRhoi"
+  },
+  "arr.fund.bulkModifications.findAndRFeplace.findText": {
+    "defaultMessage": "Find",
+    "srcHash": "vKscuE80cmzM"
+  },
+  "arr.fund.bulkModifications.findAndRFeplace.replaceText": {
+    "defaultMessage": "Replace",
+    "srcHash": "klGxQ9AMZbDo"
+  },
+  "arr.fund.bulkModifications.itemsArea.all": {
+    "defaultMessage": "All in the archival fund",
+    "srcHash": "CSlC3btOXpqW"
+  },
+  "arr.fund.bulkModifications.itemsArea.page": {
+    "defaultMessage": "All on the page",
+    "srcHash": "Bwt2Npi2vuTl"
+  },
+  "arr.fund.bulkModifications.itemsArea.selected": {
+    "defaultMessage": "Checked on the page",
+    "srcHash": "djWyywlCtdRw"
+  },
+  "arr.fund.bulkModifications.itemsArea.unselected": {
+    "defaultMessage": "Unchecked on the page",
+    "srcHash": "lRHAg9fHlzX9"
+  },
+  "arr.fund.bulkModifications.operationType.append": {
+    "defaultMessage": "Append content to the description element",
+    "srcHash": "YQJsWxcBRews"
+  },
+  "arr.fund.bulkModifications.operationType.delete": {
+    "defaultMessage": "Remove the whole description element",
+    "srcHash": "L9-rpZNR_xuo"
+  },
+  "arr.fund.bulkModifications.operationType.findAndReplace": {
+    "defaultMessage": "Find and replace part of the content",
+    "srcHash": "zTNLdNmvwpve"
+  },
+  "arr.fund.bulkModifications.operationType.replace": {
+    "defaultMessage": "Set the whole content of the element",
+    "srcHash": "tYZ2CCgQbo2j"
+  },
+  "arr.fund.bulkModifications.operationType.setEnum": {
+    "defaultMessage": "Replace the value with another",
+    "srcHash": "zjMnIDVeviOR"
+  },
+  "arr.fund.bulkModifications.operationType.setSpecification": {
+    "defaultMessage": "Replace the specification with another",
+    "srcHash": "auH_0_9jMY6G"
+  },
+  "arr.fund.bulkModifications.replace.replaceEnum": {
+    "defaultMessage": "New value",
+    "srcHash": "Eqe2_C67lKKv"
+  },
+  "arr.fund.bulkModifications.replace.replaceSpec": {
+    "defaultMessage": "New specification",
+    "srcHash": "29_INtOQRR5P"
+  },
+  "arr.fund.bulkModifications.replace.replaceText": {
+    "defaultMessage": "New value",
+    "srcHash": "Eqe2_C67lKKv"
+  },
+  "arr.fund.bulkModifications.specs": {
+    "defaultMessage": "Apply to specifications",
+    "srcHash": "CqzGo_ODQWjP"
+  },
+  "arr.fund.bulkModifications.values": {
+    "defaultMessage": "Apply to values",
+    "srcHash": "fQD43C3fj7Rc"
+  },
   "arr.fund.currentVersion": {
     "defaultMessage": "Current version",
     "srcHash": "0u9juJv4hc8n"
@@ -2900,6 +2984,146 @@
   "arr.fund.detail.ruleSet": {
     "defaultMessage": "Description rules",
     "srcHash": "065mULbosm0j"
+  },
+  "arr.fund.filterSettings.action.clear": {
+    "defaultMessage": "Clear the filter",
+    "srcHash": "LlLv7HM8PHQX"
+  },
+  "arr.fund.filterSettings.condition.begin": {
+    "defaultMessage": "Begins with",
+    "srcHash": "hUnMYXutPl-l"
+  },
+  "arr.fund.filterSettings.condition.containEntity": {
+    "defaultMessage": "Contains the entity",
+    "srcHash": "6sRFcgO1SXtV"
+  },
+  "arr.fund.filterSettings.condition.coordinates.near": {
+    "defaultMessage": "Is near",
+    "srcHash": "V3ootrQQd-4G"
+  },
+  "arr.fund.filterSettings.condition.coordinates.near.100": {
+    "defaultMessage": "100 m",
+    "srcHash": "bAMQvKsw135d"
+  },
+  "arr.fund.filterSettings.condition.coordinates.near.1000": {
+    "defaultMessage": "1 km",
+    "srcHash": "LkypxKIlcUuo"
+  },
+  "arr.fund.filterSettings.condition.coordinates.near.10000": {
+    "defaultMessage": "10 km",
+    "srcHash": "EeWOaUZKqP4S"
+  },
+  "arr.fund.filterSettings.condition.coordinates.near.100000": {
+    "defaultMessage": "100 km",
+    "srcHash": "9f4gyZknioY8"
+  },
+  "arr.fund.filterSettings.condition.coordinates.near.20000": {
+    "defaultMessage": "20 km",
+    "srcHash": "zGP5IAFofSVC"
+  },
+  "arr.fund.filterSettings.condition.coordinates.near.500": {
+    "defaultMessage": "0.5 km",
+    "srcHash": "tKhXV8Y_VR0b"
+  },
+  "arr.fund.filterSettings.condition.coordinates.near.50000": {
+    "defaultMessage": "50 km",
+    "srcHash": "XAasB3iBgEV6"
+  },
+  "arr.fund.filterSettings.condition.coordinates.subset": {
+    "defaultMessage": "Is contained in",
+    "srcHash": "MYuXQmw6lGda"
+  },
+  "arr.fund.filterSettings.condition.empty": {
+    "defaultMessage": "Not filled in",
+    "srcHash": "0kLnGL1_1QlH"
+  },
+  "arr.fund.filterSettings.condition.end": {
+    "defaultMessage": "Ends with",
+    "srcHash": "F9YUvMGSfKgW"
+  },
+  "arr.fund.filterSettings.condition.eq": {
+    "defaultMessage": "Is exactly",
+    "srcHash": "raE2kLtJwsQU"
+  },
+  "arr.fund.filterSettings.condition.ge": {
+    "defaultMessage": "Greater than or equal to",
+    "srcHash": "GCjD-9ZZaobs"
+  },
+  "arr.fund.filterSettings.condition.gt": {
+    "defaultMessage": "Greater than",
+    "srcHash": "lEwFnMTlsMmV"
+  },
+  "arr.fund.filterSettings.condition.interval": {
+    "defaultMessage": "Is between",
+    "srcHash": "8tGMsw1AHuvN"
+  },
+  "arr.fund.filterSettings.condition.le": {
+    "defaultMessage": "Less than or equal to",
+    "srcHash": "ALAnyQt2KOhH"
+  },
+  "arr.fund.filterSettings.condition.lt": {
+    "defaultMessage": "Less than",
+    "srcHash": "MoNGElDDSncV"
+  },
+  "arr.fund.filterSettings.condition.ne": {
+    "defaultMessage": "Different from",
+    "srcHash": "ZpDsVQur4D9H"
+  },
+  "arr.fund.filterSettings.condition.none": {
+    "defaultMessage": "No condition",
+    "srcHash": "b1n2iEjxJi1T"
+  },
+  "arr.fund.filterSettings.condition.notEmpty": {
+    "defaultMessage": "Filled in",
+    "srcHash": "MqZ2GkrDDQ51"
+  },
+  "arr.fund.filterSettings.condition.notInterval": {
+    "defaultMessage": "Is not between",
+    "srcHash": "Fj1aqRw8Jb4o"
+  },
+  "arr.fund.filterSettings.condition.string.contain": {
+    "defaultMessage": "Contains",
+    "srcHash": "wGVYx0iW1rvw"
+  },
+  "arr.fund.filterSettings.condition.string.notContain": {
+    "defaultMessage": "Does not contain",
+    "srcHash": "bsWPcoUNHu8T"
+  },
+  "arr.fund.filterSettings.condition.undefined": {
+    "defaultMessage": "The value 'exception' (not determined, does not exist)",
+    "srcHash": "po94xKMHbDE0"
+  },
+  "arr.fund.filterSettings.condition.unitdate.gt": {
+    "defaultMessage": "Is after",
+    "srcHash": "bbP7lDj44ZL_"
+  },
+  "arr.fund.filterSettings.condition.unitdate.intersect": {
+    "defaultMessage": "Partly falls within the period",
+    "srcHash": "2T0kep9L0RpK"
+  },
+  "arr.fund.filterSettings.condition.unitdate.lt": {
+    "defaultMessage": "Is before",
+    "srcHash": "l8KBt8CEYSHq"
+  },
+  "arr.fund.filterSettings.condition.unitdate.subset": {
+    "defaultMessage": "Falls within the whole period",
+    "srcHash": "YCMw2o7tC5Xw"
+  },
+  "arr.fund.filterSettings.filterByCondition.title": {
+    "defaultMessage": "Filter by condition",
+    "srcHash": "0IHr1FBT8xEw"
+  },
+  "arr.fund.filterSettings.filterBySpecification.title": {
+    "defaultMessage": "Filter by specification",
+    "srcHash": "YMj1jmTHN7eV"
+  },
+  "arr.fund.filterSettings.filterByValue.title": {
+    "defaultMessage": "Filter by value",
+    "srcHash": "QnqCSrb8r_JP"
+  },
+  "arr.fund.filterSettings.value.empty": {
+    "defaultMessage": "(Empty)",
+    "srcHash": "xXDBPK8Dohie"
   },
   "arr.fund.nodes.deleteNode": {
     "defaultMessage": "Do you really want to delete this item?",
@@ -2988,6 +3212,274 @@
   "arr.fundDataGrid.cellForm.notAllowed": {
     "defaultMessage": "This description element cannot be added to the description unit.",
     "srcHash": "1vJCdzTLLaix"
+  },
+  "arr.history.action.deleteChanges": {
+    "defaultMessage": "Delete the changes",
+    "srcHash": "d50TMolJUTHx"
+  },
+  "arr.history.action.deleteFrom.show": {
+    "defaultMessage": "Go to",
+    "srcHash": "USrnp8mx-8tw"
+  },
+  "arr.history.action.goToDate": {
+    "defaultMessage": "Show",
+    "srcHash": "sipeZrVinjX9"
+  },
+  "arr.history.change.description.ADD_NODES_OUTPUT": {
+    "defaultMessage": "Description units ({0}) linked to the output",
+    "srcHash": "nW5-ibzfiV9a"
+  },
+  "arr.history.change.description.BATCH_CHANGE_DESC_ITEM": {
+    "defaultMessage": "Bulk change of attribute values",
+    "srcHash": "9TdaY2BcDzVW"
+  },
+  "arr.history.change.description.BATCH_DELETE_DESC_ITEM": {
+    "defaultMessage": "Bulk deletion of attribute values",
+    "srcHash": "xs314qJtwa41"
+  },
+  "arr.history.change.description.BULK_ACTION": {
+    "defaultMessage": "Function (description units affected: {0})",
+    "srcHash": "i7J8SDcGjAJ1"
+  },
+  "arr.history.change.description.CREATE_AS": {
+    "defaultMessage": "Archival fund created",
+    "srcHash": "bPYSdo481dEF"
+  },
+  "arr.history.change.description.CREATE_DAO_LINK": {
+    "defaultMessage": "Link to a digital object created",
+    "srcHash": "2DohEv2QM4PT"
+  },
+  "arr.history.change.description.CREATE_DIGI_REQUEST": {
+    "defaultMessage": "Digitisation request",
+    "srcHash": "BiGhw1AqrZm-"
+  },
+  "arr.history.change.description.CREATE_REQUEST_QUEUE": {
+    "defaultMessage": "Queue item created",
+    "srcHash": "6hJeaCFZw8uT"
+  },
+  "arr.history.change.description.DELETE_DAO_LINK": {
+    "defaultMessage": "Link to a digital object removed",
+    "srcHash": "G_VAG5BNBTfD"
+  },
+  "arr.history.change.description.IMPORT": {
+    "defaultMessage": "Import into the fund",
+    "srcHash": "PNxCOiT--XUK"
+  },
+  "arr.history.change.description.REMOVE_NODES_OUTPUT": {
+    "defaultMessage": "Description units ({0}) unlinked from the output",
+    "srcHash": "uiuHJ0chxLXZ"
+  },
+  "arr.history.change.title.ADD_ATTACHMENT": {
+    "defaultMessage": "file added",
+    "srcHash": "08kvdH7IB17A"
+  },
+  "arr.history.change.title.ADD_DESC_ITEM": {
+    "defaultMessage": "attribute created",
+    "srcHash": "E_k4GiAqwzZw"
+  },
+  "arr.history.change.title.ADD_FUND_STRUCTURE_EXT": {
+    "defaultMessage": "extension assigned to the fund",
+    "srcHash": "bsQduIhn4mur"
+  },
+  "arr.history.change.title.ADD_LEVEL": {
+    "defaultMessage": "description unit created",
+    "srcHash": "9aDqTbW0FOMl"
+  },
+  "arr.history.change.title.ADD_NODES_OUTPUT": {
+    "defaultMessage": "description units linked to the output",
+    "srcHash": "Y7pq4UEnfxoe"
+  },
+  "arr.history.change.title.ADD_NODE_EXTENSION": {
+    "defaultMessage": "extension added to the description unit",
+    "srcHash": "6KopkH97GJEp"
+  },
+  "arr.history.change.title.ADD_STRUCTURE_DATA": {
+    "defaultMessage": "structured type created",
+    "srcHash": "oN8SAUgfDbEc"
+  },
+  "arr.history.change.title.ADD_STRUCTURE_DATA_BATCH": {
+    "defaultMessage": "bulk creation of structured types",
+    "srcHash": "K33BJJPi36NI"
+  },
+  "arr.history.change.title.ADD_STRUCTURE_ITEM": {
+    "defaultMessage": "attribute of a structured type created",
+    "srcHash": "QJvSQ0fMSW0h"
+  },
+  "arr.history.change.title.BATCH_CHANGE_DESC_ITEM": {
+    "defaultMessage": "bulk change of attributes",
+    "srcHash": "s1i1gqidUvu1"
+  },
+  "arr.history.change.title.BATCH_DELETE_DESC_ITEM": {
+    "defaultMessage": "bulk deletion of attributes",
+    "srcHash": "UG9pUChSuinG"
+  },
+  "arr.history.change.title.BULK_ACTION": {
+    "defaultMessage": "bulk function",
+    "srcHash": "W-AYQDSUAfEQ"
+  },
+  "arr.history.change.title.CHANGE_SCENARIO_ITEMS": {
+    "defaultMessage": "record changed according to scenarios",
+    "srcHash": "2XF2SKrbDS7A"
+  },
+  "arr.history.change.title.CREATE_AS": {
+    "defaultMessage": "fund creation",
+    "srcHash": "Sfhx5kkw_wfS"
+  },
+  "arr.history.change.title.CREATE_DAO_LINK": {
+    "defaultMessage": "digital object linked to the description unit",
+    "srcHash": "Zl3Fq94FVvGE"
+  },
+  "arr.history.change.title.CREATE_DAO_REQUEST": {
+    "defaultMessage": "transfer/destruction request",
+    "srcHash": "n29TJiEJ9ox_"
+  },
+  "arr.history.change.title.CREATE_DIGI_REQUEST": {
+    "defaultMessage": "digitisation request",
+    "srcHash": "eg7jI5rAWC41"
+  },
+  "arr.history.change.title.CREATE_REQUEST_QUEUE": {
+    "defaultMessage": "queue item created",
+    "srcHash": "Tha7KdY8VNM5"
+  },
+  "arr.history.change.title.DELETE_ATTACHMENT": {
+    "defaultMessage": "files deleted",
+    "srcHash": "7C3POG-kjxWC"
+  },
+  "arr.history.change.title.DELETE_DAO_LINK": {
+    "defaultMessage": "digital object unlinked from the description unit",
+    "srcHash": "Cum9Rp46NI4Z"
+  },
+  "arr.history.change.title.DELETE_DESC_ITEM": {
+    "defaultMessage": "attribute removed",
+    "srcHash": "PTm35JBbeurR"
+  },
+  "arr.history.change.title.DELETE_FUND_STRUCTURE_EXT": {
+    "defaultMessage": "extension removed from the fund",
+    "srcHash": "UZ38Lwa8121J"
+  },
+  "arr.history.change.title.DELETE_LEVEL": {
+    "defaultMessage": "description unit removed",
+    "srcHash": "JW6Vmr9C6pzC"
+  },
+  "arr.history.change.title.DELETE_NODE_EXTENSION": {
+    "defaultMessage": "extension removed from the description unit",
+    "srcHash": "OhSSbJuanwD3"
+  },
+  "arr.history.change.title.DELETE_STRUCTURE_DATA": {
+    "defaultMessage": "structured type removed",
+    "srcHash": "JHrE3CPDVbi7"
+  },
+  "arr.history.change.title.DELETE_STRUCTURE_ITEM": {
+    "defaultMessage": "attribute of a structured type removed",
+    "srcHash": "94hP0KrKdI-9"
+  },
+  "arr.history.change.title.GENERATE_OUTPUT": {
+    "defaultMessage": "output generated",
+    "srcHash": "Wyu4PZHEjGIs"
+  },
+  "arr.history.change.title.IMPORT": {
+    "defaultMessage": "fund import",
+    "srcHash": "5VmSsePKNNzv"
+  },
+  "arr.history.change.title.MOVE_LEVEL": {
+    "defaultMessage": "description unit moved",
+    "srcHash": "-37-ooLN4qmH"
+  },
+  "arr.history.change.title.REMOVE_NODES_OUTPUT": {
+    "defaultMessage": "description units unlinked from the output",
+    "srcHash": "nHspAC93Q0nr"
+  },
+  "arr.history.change.title.REPLACE_PARTY": {
+    "defaultMessage": "party replace",
+    "srcHash": "4ib1jwHXN253"
+  },
+  "arr.history.change.title.REPLACE_REGISTER": {
+    "defaultMessage": "access point replaced",
+    "srcHash": "7OJ9QiEgOnKw"
+  },
+  "arr.history.change.title.SET_FUND_STRUCTURE_EXT": {
+    "defaultMessage": "fund assignment set",
+    "srcHash": "SqgbizX9tuBD"
+  },
+  "arr.history.change.title.SET_NODE_EXTENSION": {
+    "defaultMessage": "extension set on the description unit",
+    "srcHash": "eqJSR4CZhCrl"
+  },
+  "arr.history.change.title.SYNCHRONIZE_JP": {
+    "defaultMessage": "description unit synchronised",
+    "srcHash": "ThBWrM25nlBX"
+  },
+  "arr.history.change.title.UPDATE_DESC_ITEM": {
+    "defaultMessage": "attribute changed",
+    "srcHash": "O31CHv0m-8iM"
+  },
+  "arr.history.change.title.UPDATE_OUTPUT": {
+    "defaultMessage": "output data changed",
+    "srcHash": "8wsM9llE-9W7"
+  },
+  "arr.history.change.title.UPDATE_STRUCTURE_ITEM": {
+    "defaultMessage": "attribute of a structured type changed",
+    "srcHash": "iemol-moGO4Q"
+  },
+  "arr.history.change.title.UPDATE_STRUCT_DATA_BATCH": {
+    "defaultMessage": "bulk change of structured types",
+    "srcHash": "Ka5EXhOAMuzu"
+  },
+  "arr.history.change.title.unknown": {
+    "defaultMessage": "unknown",
+    "srcHash": "eZYKNqYuXiNu"
+  },
+  "arr.history.delete.inProgress": {
+    "defaultMessage": "Deleting the changes…",
+    "srcHash": "znpdhmNx3Ak9"
+  },
+  "arr.history.deleteQuestion": {
+    "defaultMessage": "Do you really want to delete the changes irreversibly? (number of changes that will be deleted: {0})",
+    "srcHash": "uWngBoX0h4cw"
+  },
+  "arr.history.title.change.date": {
+    "defaultMessage": "Date",
+    "srcHash": "kTWILTI82Dml"
+  },
+  "arr.history.title.change.description": {
+    "defaultMessage": "Change",
+    "srcHash": "Hd7EQBMMlmXu"
+  },
+  "arr.history.title.change.time": {
+    "defaultMessage": "Time",
+    "srcHash": "23LYRr9zSJfg"
+  },
+  "arr.history.title.change.type": {
+    "defaultMessage": "Change type",
+    "srcHash": "owh9kf3L6h4g"
+  },
+  "arr.history.title.change.user": {
+    "defaultMessage": "User",
+    "srcHash": "sfdZSYORoLV9"
+  },
+  "arr.history.title.changesForDelete": {
+    "defaultMessage": "Changes to delete: {0}",
+    "srcHash": "f8sPcNS5Wib6"
+  },
+  "arr.history.title.deleteFrom": {
+    "defaultMessage": "The record from which (inclusive) changes will be deleted",
+    "srcHash": "7B1jieceOv17"
+  },
+  "arr.history.title.globalChanges": {
+    "defaultMessage": "Global",
+    "srcHash": "6zidIjH93B-G"
+  },
+  "arr.history.title.goToDate": {
+    "defaultMessage": "Find a change by date",
+    "srcHash": "1FO-11CvoDBj"
+  },
+  "arr.history.title.nodeChanges": {
+    "defaultMessage": "Description unit",
+    "srcHash": "Kv_uHCGYZGrD"
+  },
+  "arr.history.title.selectNode": {
+    "defaultMessage": "A specific description unit must be selected",
+    "srcHash": "jpbZ8zy_w8sz"
   },
   "arr.issues.settings.title": {
     "defaultMessage": "Review settings",
@@ -4492,6 +4984,10 @@
   "global.action.search": {
     "defaultMessage": "Search",
     "srcHash": "Vm8ngnO9dDUD"
+  },
+  "global.action.select": {
+    "defaultMessage": "Select",
+    "srcHash": "j7UiBDv3vOpU"
   },
   "global.action.show.more": {
     "defaultMessage": "Show more",
