@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Button } from 'react-bootstrap';
-import { Tree, TreeItem, TreeItemLayout } from '@fluentui/react-components';
+import { Tree, TreeItem, TreeItemLayout, TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent } from '@fluentui/react-components';
 import { AddSquare16Regular, SubtractSquare16Regular } from '@fluentui/react-icons';
 import { FormattedMessage, useIntl } from 'react-intl';
 
@@ -40,9 +40,22 @@ export function PackageBrowser({aipId, problemType, problemDescription, problemF
     const [error, setError] = useState<string | null>(null);
     const [selected, setSelected] = useState<PackageNode | null>(null);
     const [content, setContent] = useState<string | null>(null);
+    const [openItems, setOpenItems] = useState<TreeItemValue[]>([]);
 
     const tree = useMemo(() => entries ? buildPackageTree(entries) : [], [entries]);
     const openFolders = useMemo(() => folderPaths(tree), [tree]);
+
+    /**
+     * Strom se otevře celý, balíčky jsou mělké; dál si otevřené složky řídí uživatel. Seznam
+     * otevřených položek je řízený, aby ikona složky odpovídala tomu, zda je opravdu otevřená.
+     */
+    useEffect(() => setOpenItems(openFolders), [openFolders]);
+
+    const handleOpenChange = (_event: TreeOpenChangeEvent, data: TreeOpenChangeData) =>
+        setOpenItems(current => data.open
+            ? [...current, data.value]
+            : current.filter(value => value !== data.value));
+
     /**
      * Balíček uvádí cestu souboru vůči kořeni balíčku, položky ZIPu ji navíc mají pod složkou
      * pojmenovanou kódem AIPu - hledá se tedy i podle konce cesty. Odkaz vznikne jen na
@@ -99,7 +112,7 @@ export function PackageBrowser({aipId, problemType, problemDescription, problemF
         ? (
             <TreeItem key={node.path} itemType="branch" value={node.path}>
                 <TreeItemLayout
-                    expandIcon={openFolders.includes(node.path)
+                    expandIcon={openItems.includes(node.path)
                         ? <SubtractSquare16Regular color="black"/>
                         : <AddSquare16Regular color="black"/>}
                 >
@@ -151,11 +164,14 @@ export function PackageBrowser({aipId, problemType, problemDescription, problemF
                     left={
                         <div className="package-tree-pane">
                             <div className="package-tree-header">{downloadAll}</div>
-                            <Tree aria-label={intl.formatMessage(packageMessages.treeLabel)}
-                                  defaultOpenItems={openFolders}
-                                  className="package-tree">
-                                {renderNodes(tree)}
-                            </Tree>
+                            <div className="package-tree-scroll">
+                                <Tree aria-label={intl.formatMessage(packageMessages.treeLabel)}
+                                      openItems={openItems}
+                                      onOpenChange={handleOpenChange}
+                                      className="package-tree">
+                                    {renderNodes(tree)}
+                                </Tree>
+                            </div>
                         </div>
                     }
                     center={
