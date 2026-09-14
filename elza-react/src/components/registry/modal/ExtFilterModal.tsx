@@ -5,7 +5,8 @@ import {connect} from "react-redux";
 import {Action} from "redux";
 import {ThunkDispatch} from "redux-thunk";
 import {Button} from "../../ui";
-import i18n from "../../i18n";
+import { FormattedMessage } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
 import TextFilterSection from "../form/filter/TextFilterSection";
 import BaseFilterSection from "../form/filter/BaseFilterSection";
 import CreExtFilterSection from "../form/filter/CreExtFilterSection";
@@ -64,9 +65,9 @@ const ExtFilterModal = ({
             </Row>
         </Modal.Body>
         <Modal.Footer>
-            <Button disabled={submitting} type="submit" variant="outline-secondary">{i18n('global.action.use')}</Button>
+            <Button disabled={submitting} type="submit" variant="outline-secondary">{<FormattedMessage {...globalMessages.use} />}</Button>
             <Button variant="link" onClick={onClose} disabled={submitting}>
-                {i18n('global.action.close')}
+                {<FormattedMessage {...globalMessages.close} />}
             </Button>
         </Modal.Footer>
     </ReduxForm>;

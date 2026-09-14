@@ -1,7 +1,40 @@
 import React, { useEffect, useState } from 'react';
 import {Modal} from 'react-bootstrap';
 import {Button} from "../../ui";
-import i18n from "../../i18n";
+import { FormattedMessage, defineMessages } from "react-intl";
+import { globalMessages } from "components/shared/lang/messages";
+
+// Id jsou převzatá z legacy katalogu beze změny. Zpráva se <b> není HTML, ale
+// rich-text značky react-intl - handler se předá ve values, takže tu mizí
+// dangerouslySetInnerHTML.
+const messages = defineMessages({
+    multipleSyncs: {
+        id: "ap.push-to-ext.multipleSyncs.message",
+        defaultMessage:
+            "Nahrání do externího systému není možné pro entity, které mají napojen více než jeden externí systém.",
+    },
+    readOnly: {
+        id: "ap.push-to-ext.readOnly.message",
+        defaultMessage: "Externí systém napojený k vybrané entitě je určen pouze pro čtení.",
+    },
+    unsyncedTitle: {
+        id: "ap.push-to-ext.unsyncedEntities.title",
+        defaultMessage:
+            "Odesílaný záznam odkazuje na jiné entity, které nejsou zapsány v cílovém systému. ",
+    },
+    unsyncedMessage: {
+        id: "ap.push-to-ext.unsyncedEntities.message",
+        defaultMessage: "Po potvrzení akce nedojde k odeslání všech vztahů. Záznam zůstane ve stavu Lokální změna nebo může dojít k celkové chybě odeslání.\nPro dosažení aktivní synchronizace je nutné odeslání všech souvisejících entit. Po jejich odeslání je třeba opětovně zapsat tuto entitu do externího systému.",
+    },
+    unsyncedListTitle: {
+        id: "ap.push-to-ext.unsyncedEntities.listTitle",
+        defaultMessage: "Dotčené části záznamu entity:",
+    },
+    selectedExtSystem: {
+        id: "ap.push-to-ext.selectedExtSystem.message",
+        defaultMessage: "Přejete si zapsat entitu <b>{0}</b> do systému <b>{1}</b>?",
+    },
+});
 import { ExtSystemFilterSectionFinal } from '../form/filter/ExtSystemFilterSection';
 import './ApPushToExt.scss';
 import { ApAccessPointVO } from 'api';
@@ -83,11 +116,11 @@ export const ApPushToExt = ({
     if(detail.bindings.length > 1){
         return <>
             <Modal.Body>
-                {i18n("ap.push-to-ext.multipleSyncs.message")}
+                <FormattedMessage {...messages.multipleSyncs} />
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="link" onClick={onClose}>
-                    {i18n('global.action.close')}
+                    <FormattedMessage {...globalMessages.close} />
                 </Button>
             </Modal.Footer>
         </>
@@ -97,11 +130,11 @@ export const ApPushToExt = ({
     if(syncedExtSystem?.type === AP_EXT_SYSTEM_TYPE.CAM_UUID){
         return <>
             <Modal.Body>
-                {i18n("ap.push-to-ext.readOnly.message")}
+                <FormattedMessage {...messages.readOnly} />
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="link" onClick={onClose}>
-                    {i18n('global.action.close')}
+                    <FormattedMessage {...globalMessages.close} />
                 </Button>
             </Modal.Footer>
         </>
@@ -123,13 +156,13 @@ export const ApPushToExt = ({
                         className="ap-validation-alert" 
                     >
                         <h3>
-                            <b>{i18n('ap.push-to-ext.unsyncedEntities.title')}</b>
+                            <b><FormattedMessage {...messages.unsyncedTitle} /></b>
                         </h3>
                         <p>
-                            {i18n('ap.push-to-ext.unsyncedEntities.message')}
+                            <FormattedMessage {...messages.unsyncedMessage} />
                         </p>
                         <p>
-                            {i18n('ap.push-to-ext.unsyncedEntities.listTitle')}
+                            <FormattedMessage {...messages.unsyncedListTitle} />
                         </p>
                         <ul>
                             {unsyncedEntities.map((unsyncedEntity) => {
@@ -144,15 +177,16 @@ export const ApPushToExt = ({
                     {fetchingRelatedEntities && <div><Icon glyph="fa-circle-o-notch fa-spin"/></div>}
                     {isExternalSystemSelectable && <ExtSystemFilterSectionFinal name="extSystem" hideName={true} disabled={submitting} extSystems={extSystems}/> }
                     {selectedExtSystem && <div className="confirm-message">
-                        <span dangerouslySetInnerHTML={{
-                            __html: i18n("^ap.push-to-ext.selectedExtSystem.message", detail.name, selectedExtSystem?.name)
-                        }}/>
+                        <FormattedMessage
+                            {...messages.selectedExtSystem}
+                            values={{ b: (chunks) => <b>{chunks}</b>, 0: detail.name, 1: selectedExtSystem?.name }}
+                        />
                     </div>}
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button disabled={submitting} onClick={handleSubmit} variant="outline-secondary">{i18n('global.action.write')}</Button>
+                    <Button disabled={submitting} onClick={handleSubmit} variant="outline-secondary"><FormattedMessage {...globalMessages.write} /></Button>
                     <Button variant="link" onClick={onClose} disabled={submitting}>
-                        {i18n('global.action.cancel')}
+                        <FormattedMessage {...globalMessages.cancel} />
                     </Button>
                 </Modal.Footer>
             </>

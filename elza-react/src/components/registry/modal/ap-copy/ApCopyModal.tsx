@@ -12,7 +12,15 @@ import { Modal } from 'react-bootstrap';
 import { Field, Form } from 'react-final-form';
 import { useSelector } from 'react-redux';
 import { AppState } from 'typings/store';
-import i18n from "../../../i18n";
+import { FormattedMessage, defineMessages, useIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    pendingMessage: { id: 'ap.copy.pending.message', defaultMessage: 'Vytváření kopie...' },
+    scope: { id: 'ap.copy.scope', defaultMessage: 'Oblast' },
+    replace: { id: 'ap.copy.replace', defaultMessage: 'Zneplatnit původní entitu a nahradit novou' },
+});
 import { Button } from "../../../ui";
 import './ApCopyModal.scss';
 
@@ -85,6 +93,7 @@ export const ApCopyModal = ({
     onSubmit,
     detail,
 }:Props) => {
+    const intl = useIntl();
     const {scopesData, partTypes, descItemTypes} = useSelector((state: AppState) => state.refTables);
     const apViewSettings:any = useSelector((state: AppState) => state.app.apViewSettings);
 
@@ -180,15 +189,15 @@ export const ApCopyModal = ({
                 <Modal.Body className="ap-copy-modal">
                     <div style={{height: "100%", position: "relative"}}>
                         {submitting && <WaitingOverlay>
-                            <span>{i18n("ap.copy.pending.message")}</span>
+                            <span>{<FormattedMessage {...messages.pendingMessage} />}</span>
                         </WaitingOverlay>}
-                        <FormScope name="scope" label={i18n("ap.copy.scope")} items={scopesData.scopes}/>
+                        <FormScope name="scope" label={intl.formatMessage(messages.scope)} items={scopesData.scopes}/>
                         <div style={{marginTop: "10px"}}>
                             <Field<boolean> name="replace">
                                 {(props) => {
                                     return <div style={{display: "flex", alignItems: "center"}}>
                                         <FormInput type="checkbox" {...props.input} checked={props.input.value} />
-                                        <span>{i18n("ap.copy.replace")}</span>
+                                        <span>{intl.formatMessage(messages.replace)}</span>
                                     </div>
                                 }}
                             </Field>
@@ -329,9 +338,9 @@ export const ApCopyModal = ({
                     </div>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button disabled={submitting || !valid} onClick={handleSubmit} variant="outline-secondary">{i18n('global.action.write')}</Button>
+                    <Button disabled={submitting || !valid} onClick={handleSubmit} variant="outline-secondary">{<FormattedMessage {...globalMessages.write} />}</Button>
                     <Button variant="link" onClick={onClose} disabled={submitting}>
-                        {i18n('global.action.cancel')}
+                        {<FormattedMessage {...globalMessages.cancel} />}
                     </Button>
                 </Modal.Footer>
             </>

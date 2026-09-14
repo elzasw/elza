@@ -36,6 +36,19 @@ export const filterMessages = defineMessages({
     search: { id: "ap.ext-search.search", defaultMessage: "Vyhledávání" },
     area: { id: "ap.ext-search.area", defaultMessage: "Oblast hledání" },
     onlyMainPart: { id: "ap.ext-search.only-main-part", defaultMessage: "Pouze hlavní část" },
+    // Podrobnosti filtrů; sdílí je modaly rozšířeného filtru a filtru vztahů.
+    extendsValue: { id: "ap.ext-search.section.extends.value", defaultMessage: "Hodnota" },
+    extendsSpec: { id: "ap.ext-search.section.extends.spec", defaultMessage: "Specifikace" },
+    extendsPart: { id: "ap.ext-search.section.extends.part", defaultMessage: "Část popisu" },
+    extendsType: { id: "ap.ext-search.section.extends.type", defaultMessage: "Typ prvku popisu" },
+    relationsType: { id: "ap.ext-search.section.relations.type", defaultMessage: "Typ vztahu" },
+    relationsSpec: { id: "ap.ext-search.section.relations.spec", defaultMessage: "Specifikace" },
+    relationsArea: { id: "ap.ext-search.section.relations.area", defaultMessage: "Oblast hledání" },
+    relationsObj: { id: "ap.ext-search.section.relations.obj", defaultMessage: "Archivní entita" },
+    relationsOnlyMainPart: {
+        id: "ap.ext-search.section.relations.only-main-part",
+        defaultMessage: "Pouze hlavní část",
+    },
 });
 
 /** Stav synchronizace s externím systémem; klíč se dřív skládal z hodnoty. */
