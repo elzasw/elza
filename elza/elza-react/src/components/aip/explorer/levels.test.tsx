@@ -46,8 +46,9 @@ describe('useNodeName', () => {
 });
 
 describe('levelIcon', () => {
-    it('dá ikonu každé známé úrovni', () => {
-        Object.values(AipLevelType).forEach(levelType => {
+    it('dá ikonu každé úrovni stromu průzkumníka', () => {
+        [AipLevelType.Package, AipLevelType.Representations, AipLevelType.LogicalStructure,
+         AipLevelType.Metadata].forEach(levelType => {
             expect(levelIcon(levelType)).toBeDefined();
         });
     });

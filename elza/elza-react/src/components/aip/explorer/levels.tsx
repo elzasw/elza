@@ -1,4 +1,4 @@
-import { ReactElement } from 'react';
+import { ReactElement, useCallback } from 'react';
 import { useIntl } from 'react-intl';
 import {
     Box16Regular,
@@ -22,12 +22,15 @@ export interface NamedNode {
     filename?: string;
 }
 
-const levelIcons: Record<AipLevelType, ReactElement> = {
+/**
+ * Ikony úrovní stromu průzkumníka. Úroveň "bez logické struktury" existuje jen ve stromu
+ * logických kontejnerů, který ikony nekreslí, a nic výstižného by pro ni ani nebylo.
+ */
+const levelIcons: Partial<Record<AipLevelType, ReactElement>> = {
     [AipLevelType.Package]: <Box16Regular />,
     [AipLevelType.Representations]: <DocumentMultiple16Regular />,
     [AipLevelType.LogicalStructure]: <TextBulletListTree16Regular />,
     [AipLevelType.Metadata]: <DocumentBulletList16Regular />,
-    [AipLevelType.WithoutLogicalStructure]: <TextBulletListTree16Regular />,
 };
 
 /** Ikona virtuální úrovně; reálné uzly i neznámý typ zůstávají bez ikony. */
@@ -37,12 +40,12 @@ export const levelIcon = (levelType?: AipLevelType): ReactElement | undefined =>
 /**
  * Název uzlu. Virtuální úroveň se překládá podle typu, ostatní uzly si název nesou samy.
  * Popisek ze serveru je záložní i u virtuální úrovně - typ, který klient nezná, tak nezůstane
- * bez jména.
+ * bez jména. Vrácená funkce mění identitu jen se změnou jazyka, takže na ní lze stavět memoizaci.
  */
 export function useNodeName() {
     const { formatMessage } = useIntl();
 
-    return (node?: NamedNode | null): string => {
+    return useCallback((node?: NamedNode | null): string => {
         if (!node) {
             return '';
         }
@@ -51,5 +54,5 @@ export function useNodeName() {
             return formatMessage(message);
         }
         return node.label || node.name || (node.filename ? getFileName(node.filename) : '');
-    };
+    }, [formatMessage]);
 }

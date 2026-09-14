@@ -33,6 +33,8 @@ export function AipExplorerTabs({aipId}: Props) {
     useEffect(() => {
         dispatch(selectAip(aipId));
         dispatch(aipFetchIfNeeded(aipId));
+        // a file to open belongs to the package it was chosen in
+        setFileToOpen(undefined);
     }, [aipId]);
 
     const handleTabSelect: TabListProps['onTabSelect'] = (_event, data) => setTab(data.value as TabKey);

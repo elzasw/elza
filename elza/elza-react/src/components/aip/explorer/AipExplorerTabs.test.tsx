@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AipDetailVO, AipLevelType, AipProblemType } from 'elza-api';
 
 import { WebApi } from 'actions/WebApi';
+import { DaoFileFolderVO } from 'api/DaoFileFolderVO';
 import { fireEvent, renderWithProviders, screen } from 'test/test-utils';
 import { AipExplorerTabs } from './AipExplorerTabs';
 
@@ -26,22 +27,23 @@ const detail = {
     problemFile: 'metadata/descriptive/pruvodka.xml',
 } as AipDetailVO;
 
+/** A node of the structure as the server sends it - the synthetic levels carry a negative daoId. */
+type StructureNode = DaoFileFolderVO & { daoId: number };
+
+const level = (uuid: string, daoId: number, label: string, levelType?: AipLevelType,
+               childFolders: StructureNode[] = []): StructureNode => ({
+    uuid, daoId, daoFileFolderId: daoId, label, levelType, childFiles: [], childFolders,
+});
+
 /**
  * The structure as the server builds it: a synthetic root over the three sections. The virtual
  * levels are identified by levelType and carry the Czech label only as a fallback.
  */
-const structure = {
-    uuid: 'root', daoId: -3, daoFileFolderId: -3, label: 'Balíček',
-    levelType: AipLevelType.Package, childFiles: [],
-    childFolders: [
-        {uuid: 'rep', daoId: -1, daoFileFolderId: -1, label: 'Reprezentace',
-         levelType: AipLevelType.Representations, childFiles: [], childFolders: []},
-        {uuid: 'log', daoId: -2, daoFileFolderId: -2, label: 'Logická struktura',
-         levelType: AipLevelType.LogicalStructure, childFiles: [], childFolders: []},
-        {uuid: 'meta', daoId: -4, daoFileFolderId: -4, label: 'Metadata',
-         levelType: AipLevelType.Metadata, childFiles: [], childFolders: []},
-    ],
-};
+const structure = level('root', -3, 'Balíček', AipLevelType.Package, [
+    level('rep', -1, 'Reprezentace', AipLevelType.Representations),
+    level('log', -2, 'Logická struktura', AipLevelType.LogicalStructure),
+    level('meta', -4, 'Metadata', AipLevelType.Metadata),
+]);
 
 beforeEach(() => {
     vi.spyOn(WebApi, 'getAip').mockResolvedValue(detail);
@@ -81,13 +83,8 @@ describe('AipExplorerTabs', () => {
 
     it('úroveň bez typu se pojmenuje popiskem ze serveru', async () => {
         // starší server typy úrovní neposílá - strom pak stojí jen na popisku
-        vi.spyOn(WebApi, 'getDaDaoListByAipId').mockResolvedValue({
-            uuid: 'root', daoId: -3, daoFileFolderId: -3, label: 'Balíček', childFiles: [],
-            childFolders: [
-                {uuid: 'rep', daoId: -1, daoFileFolderId: -1, label: 'Reprezentace',
-                 childFiles: [], childFolders: []},
-            ],
-        });
+        vi.spyOn(WebApi, 'getDaDaoListByAipId').mockResolvedValue(
+            level('root', -3, 'Balíček', undefined, [level('rep', -1, 'Reprezentace')]));
 
         renderWithProviders(<AipExplorerTabs aipId={11}/>);
         fireEvent.click(await screen.findByRole('tab', {name: 'Struktura'}));
