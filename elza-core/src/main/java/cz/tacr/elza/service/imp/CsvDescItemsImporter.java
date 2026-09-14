@@ -18,12 +18,15 @@ import org.apache.commons.csv.CSVRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataNull;
+import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDataUnitid;
@@ -34,6 +37,7 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.DescriptionItemService;
@@ -56,12 +60,18 @@ public class CsvDescItemsImporter {
 
     @Autowired
     private StaticDataService staticDataService;
+
     @Autowired
     private NodeRepository nodeRepository;
+
     @Autowired
     private FundVersionRepository fundVersionRepository;
+
     @Autowired
     private DescriptionItemService descriptionItemService;
+
+    @Autowired
+    private ApAccessPointRepository apAccessPointRepository;
 
     public Result importCsv(InputStream in,
                             String separator,
@@ -132,11 +142,11 @@ public class CsvDescItemsImporter {
             if (itemType == null) {
                 throw new BusinessException("Unknown item type: " + typeCode, BaseCode.INVALID_STATE);
             }
-            String dataTypeCode = itemType.getDataType().getCode();
+            DataType dataType = itemType.getDataType();
 
             String specCode = null;
             String value = null;
-            boolean isEnum = "ENUM".equals(dataTypeCode);
+            boolean isEnum = dataType == DataType.ENUM;
             boolean useSpec = Boolean.TRUE.equals(itemType.getEntity().getUseSpecification()) || isEnum;
 
             if (useSpec) {
@@ -164,40 +174,64 @@ public class CsvDescItemsImporter {
             ArrDescItem descItem = new ArrDescItem();
             descItem.setItemType(itemType.getEntity());
             descItem.setItemSpec(spec);
-            descItem.setData(buildData(dataTypeCode, value, typeCode));
+            descItem.setData(buildData(dataType, value, typeCode));
             items.add(descItem);
         }
         return items;
     }
 
-    private ArrData buildData(String dataTypeCode, String value, String typeCode) {
-        switch (dataTypeCode) {
-            case "STRING": {
+    private ArrData buildData(DataType dataType, String value, String typeCode) {
+        switch (dataType) {
+            case STRING: {
                 ArrDataString d = new ArrDataString();
                 d.setStringValue(value);
                 return d;
             }
-            case "TEXT":
-            case "FORMATTED_TEXT": {
+            case TEXT:
+            case FORMATTED_TEXT: {
                 ArrDataText d = new ArrDataText();
                 d.setTextValue(value);
                 return d;
             }
-            case "INT": {
+            case INT: {
                 ArrDataInteger d = new ArrDataInteger();
                 d.setIntegerValue(Integer.parseInt(value.trim()));
                 return d;
             }
-            case "UNITID": {
+            case UNITID: {
                 ArrDataUnitid d = new ArrDataUnitid();
                 d.setUnitId(value);
                 return d;
             }
-            case "ENUM":
+            case RECORD_REF: {
+                String trimmed = value == null ? "" : value.trim();
+                if (trimmed.isEmpty()) {
+                    throw new BusinessException(
+                            "Missing entity ID for type " + typeCode, BaseCode.INVALID_STATE);
+                }
+                int apId;
+                try {
+                    apId = Integer.parseInt(trimmed);
+                } catch (NumberFormatException e) {
+                    throw new BusinessException(
+                            "Invalid entity ID '" + trimmed + "' for type " + typeCode,
+                            BaseCode.INVALID_STATE);
+                }
+                ApAccessPoint ap = apAccessPointRepository.findById(apId).orElse(null);
+                if (ap == null) {
+                    throw new BusinessException(
+                            "Entity with ID '" + apId + "' not found (type " + typeCode + ")",
+                            BaseCode.INVALID_STATE);
+                }
+                ArrDataRecordRef d = new ArrDataRecordRef();
+                d.setRecord(ap);
+                return d;
+            }
+            case ENUM:
                 return new ArrDataNull();
             default:
                 throw new BusinessException(
-                        "CSV import for data type '" + dataTypeCode + "' is not supported yet (type " + typeCode + ")",
+                        "CSV import for data type '" + dataType.getCode() + "' is not supported yet (type " + typeCode + ")",
                         BaseCode.INVALID_STATE);
         }
     }
