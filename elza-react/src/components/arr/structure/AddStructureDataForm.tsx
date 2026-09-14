@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Form, FormCheck, Modal } from 'react-bootstrap';
 import { Button } from '../../ui';
-import { i18n } from 'components/shared';
+import {} from 'components/shared';
+import { FormattedMessage, useIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { templateMessages } from '../templateMessages';
 import { Form as FinalForm, Field } from 'react-final-form';
 import { FORM_ERROR } from 'final-form';
 import FormInputField from '../../shared/form/FormInputField';
@@ -41,6 +44,7 @@ function AddStructureDataForm({
     onConfirm,
     onClose,
 }: Props) {
+    const intl = useIntl();
     const dispatch = useAppThunkDispatch();
     const dataTypeRefs = useAppSelector(({ refTables }) => refTables.rulDataTypes.itemsMap);
 
@@ -80,10 +84,10 @@ function AddStructureDataForm({
         const errors: Record<string, string> = {};
         if (multiple) {
             if (!values.count || parseInt(values.count) < 2) {
-                errors.count = i18n('arr.structure.modal.addMultiple.error.count.tooSmall');
+                errors.count = intl.formatMessage(templateMessages.structureModalAddMultipleErrorCountTooSmall);
             }
             if (incrementedTypeIds.length < 1) {
-                errors[FORM_ERROR] = i18n('arr.structure.modal.addMultiple.error.itemTypeIds.required');
+                errors[FORM_ERROR] = intl.formatMessage(templateMessages.structureModalAddMultipleErrorItemTypeIdsRequired);
             }
         }
         return errors;
@@ -113,7 +117,7 @@ function AddStructureDataForm({
                             {(submitError || error) && <p>{submitError || error}</p>}
                             {isLoading ? (
                                 <div style={{ display: 'flex', justifyContent: 'center', padding: '10px' }}>
-                                    {i18n('global.data.loading')}
+                                    {<FormattedMessage {...templateMessages.globalDataLoading} />}
                                 </div>
                             ) : (
                                 <StructureEdit
@@ -136,7 +140,7 @@ function AddStructureDataForm({
                                                         setIncrementedTypeIds((ids) => [...ids, typeRef.id]);
                                                     }
                                                 }}
-                                                label={i18n('arr.structure.modal.increment')}
+                                                label={<FormattedMessage {...templateMessages.structureModalIncrement} />}
                                             />
                                         );
                                     } : undefined}
@@ -148,13 +152,13 @@ function AddStructureDataForm({
                                     component={FormInputField}
                                     min="2"
                                     type="number"
-                                    label={i18n('arr.structure.modal.addMultiple.count')}
+                                    label={<FormattedMessage {...templateMessages.structureModalAddMultipleCount} />}
                                 />
                             )}
                         </Modal.Body>
                         <Modal.Footer>
                             <Button type="submit" variant="outline-secondary" disabled={submitting || isLoading}>
-                                {i18n('global.action.add')}
+                                {<FormattedMessage {...globalMessages.add} />}
                             </Button>
                             <Button
                                 type="button"
@@ -164,7 +168,7 @@ function AddStructureDataForm({
                                 onMouseDown={(e) => e.preventDefault()}
                                 onClick={onClose}
                             >
-                                {i18n('global.action.cancel')}
+                                {<FormattedMessage {...globalMessages.cancel} />}
                             </Button>
                         </Modal.Footer>
                     </Form>

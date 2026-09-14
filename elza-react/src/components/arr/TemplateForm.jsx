@@ -1,6 +1,10 @@
 import React from 'react';
 import {Field, formValueSelector, reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n} from 'components/shared';
+import {AbstractReactComponent} from 'components/shared';
+import { FormattedMessage } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { getIntl } from 'components/shared/lang/intlInstance';
+import { templateMessages } from './templateMessages';
 import {Col, Form, Modal, Row} from 'react-bootstrap';
 import {Button} from '../ui';
 import {submitForm} from 'components/form/FormUtils.jsx';
@@ -21,17 +25,17 @@ class TemplateForm extends AbstractReactComponent {
         const errors = {};
 
         if (!values.type) {
-            errors.type = i18n('global.validation.required');
+            errors.type = getIntl().formatMessage(globalMessages.validationRequired);
         }
 
         if (!values.name) {
-            errors.name = i18n('global.validation.required');
+            errors.name = getIntl().formatMessage(globalMessages.validationRequired);
         }
 
         if (values.type === NEW_TEMPLATE) {
             for (const template of props.templates) {
                 if (values.name.toUpperCase() === template.toUpperCase()) {
-                    errors.name = i18n('global.validation.exists');
+                    errors.name = getIntl().formatMessage(templateMessages.globalValidationExists);
                 }
             }
         }
@@ -70,7 +74,7 @@ class TemplateForm extends AbstractReactComponent {
                                     type="radio"
                                     name="type"
                                     value={NEW_TEMPLATE}
-                                    label={i18n('arr.fund.addTemplate.new')}
+                                    label={<FormattedMessage {...templateMessages.fundAddTemplateNew} />}
                                     inline
                                 />
                             </Col>
@@ -81,7 +85,7 @@ class TemplateForm extends AbstractReactComponent {
                                     type="radio"
                                     name="type"
                                     value={EXISTS_TEMPLATE}
-                                    label={i18n('arr.fund.addTemplate.exists')}
+                                    label={<FormattedMessage {...templateMessages.fundAddTemplateExists} />}
                                     inline
                                 />
                             </Col>
@@ -92,7 +96,7 @@ class TemplateForm extends AbstractReactComponent {
                                 name="name"
                                 type="text"
                                 component={FormInputField}
-                                label={i18n('arr.fund.addTemplate.name')}
+                                label={<FormattedMessage {...templateMessages.fundAddTemplateName} />}
                             />
                         )}
                         {type === EXISTS_TEMPLATE && (
@@ -101,10 +105,10 @@ class TemplateForm extends AbstractReactComponent {
                                 name="name"
                                 type="select"
                                 component={FormInputField}
-                                label={i18n('arr.fund.addTemplate.name')}
+                                label={<FormattedMessage {...templateMessages.fundAddTemplateName} />}
                             >
                                 <option value={''} key="no-select">
-                                    {i18n('global.action.select')}
+                                    {<FormattedMessage {...templateMessages.globalActionSelect} />}
                                 </option>
                                 {templates.map(template => (
                                     <option value={template} key={template}>
@@ -117,15 +121,15 @@ class TemplateForm extends AbstractReactComponent {
                             name="withValues"
                             type="checkbox"
                             component={FormInputField}
-                            label={i18n('arr.fund.addTemplate.withValues')}
+                            label={<FormattedMessage {...templateMessages.fundAddTemplateWithValues} />}
                             inline
                             disabled={submitting}
                         />
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button type="submit" variant="outline-secondary">{i18n('global.action.add')}</Button>
+                        <Button type="submit" variant="outline-secondary">{<FormattedMessage {...globalMessages.add} />}</Button>
                         <Button variant="link" onClick={onClose}>
-                            {i18n('global.action.cancel')}
+                            {<FormattedMessage {...globalMessages.cancel} />}
                         </Button>
                     </Modal.Footer>
                 </Form>
