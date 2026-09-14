@@ -1,5 +1,7 @@
 import { fundSubNodeDaoChangeScenario } from "actions/arr/subNodeDaos";
-import { i18n } from 'components/shared';
+import {} from 'components/shared';
+import { useIntl } from 'react-intl';
+import { daoMessages } from 'components/arr/daoMessages';
 import { PropsWithChildren } from 'react';
 import { Dropdown } from 'react-bootstrap';
 import { ArrDaoVO } from "typings/dao";
@@ -21,12 +23,13 @@ export const ScenarioDropdown = ({
     nodeId,
     children,
 }: ScenarioDropdownProps) => {
+    const intl = useIntl();
     const dispatch = useThunkDispatch()
 
     return <Dropdown>
         <Dropdown.Toggle
             disabled={readMode}
-            title={i18n('subNodeDao.dao.action.changeScenario')}
+            title={intl.formatMessage(daoMessages.subNodeDaoDaoActionChangeScenario)}
             as={Button}
             id="scenario"
         >

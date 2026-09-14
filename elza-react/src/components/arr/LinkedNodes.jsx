@@ -3,7 +3,9 @@ import './LinkedNodes.scss';
 import PropTypes from 'prop-types';
 
 import React from 'react';
-import {AbstractReactComponent, i18n} from 'components/shared';
+import {AbstractReactComponent} from 'components/shared';
+import { FormattedMessage } from 'react-intl';
+import { daoMessages } from 'components/arr/daoMessages';
 import {connect} from 'react-redux';
 import {WebApi} from "../../actions/WebApi";
 import NodeLabel from "./NodeLabel";
@@ -49,7 +51,7 @@ class LinkedNodes extends AbstractReactComponent {
         }
 
         return <div className="linked-nodes">
-            <div className="linked-nodes-title">{i18n('arr.linked-nodes.title')}</div>
+            <div className="linked-nodes-title">{<FormattedMessage {...daoMessages.linkedNodesTitle} />}</div>
             {data.map((node, index) => <div className="node" onClick={() => this.handleNavigate(node.nodeUuid)}
                                             key={index}>
                 <NodeLabel inline node={node}/>

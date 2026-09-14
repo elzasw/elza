@@ -4,7 +4,9 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect} from 'react-redux';
-import {AbstractReactComponent, i18n, Tabs} from 'components/shared';
+import {AbstractReactComponent, Tabs} from 'components/shared';
+import { injectIntl } from 'react-intl';
+import { arrPanelMessages } from 'components/arr/panelMessages';
 import {fundCloseNodeTab, fundSelectNodeTab} from 'actions/arr/nodes.jsx';
 import {nodesFetchIfNeeded} from 'actions/arr/node.jsx';
 import {propsEquals} from 'components/Utils.jsx';
@@ -97,7 +99,7 @@ class NodeTabs extends AbstractReactComponent {
         }
 
         var tabs = nodes.map((node, i) => {
-            var name = node.name ? node.name : i18n('fundTree.node.name.undefined', node.id);
+            var name = node.name ? node.name : this.props.intl.formatMessage(arrPanelMessages.fundTreeNodeNameUndefined, { 0: node.id });
             return {
                 id: node.id,
                 index: i,
@@ -154,4 +156,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps)(NodeTabs);
+export default connect(mapStateToProps)(injectIntl(NodeTabs));

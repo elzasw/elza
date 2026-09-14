@@ -6,7 +6,9 @@ import { useThunkDispatch } from "utils/hooks";
 import * as aipActions from 'actions/aip/aip';
 import { AipDetailBody } from "components/aip/AipDetailBody";
 import { Button } from "components/ui";
-import { Icon, i18n } from "components/shared";
+import { Icon} from "components/shared";
+import { FormattedMessage } from 'react-intl';
+import { daoMessages } from 'components/arr/daoMessages';
 import { TreeItemValue } from "@fluentui/react-components";
 import {serverContextPath} from "../../../../api";
 
@@ -30,8 +32,8 @@ const NodeDetail: FC<NodeDetailProps> = ({tree, selectedNode, setSelectedAips}: 
 
     const renderHeader = () => (
         <>
-            <h4><b>{i18n("aip.detail.assignment.description")}</b></h4>
-            <p><b>{i18n("aip.detail.assignment.name")} </b>{node.name}</p>
+            <h4><b>{<FormattedMessage {...daoMessages.aipDetailAssignmentDescription} />}</b></h4>
+            <p><b>{<FormattedMessage {...daoMessages.aipDetailAssignmentName} />} </b>{node.name}</p>
         </>
     );
 
@@ -43,9 +45,9 @@ const NodeDetail: FC<NodeDetailProps> = ({tree, selectedNode, setSelectedAips}: 
         return (
             <div>
                 {renderHeader()}
-                <h4><b>{i18n("aip.detail.assignment.relatedAips")}</b></h4>
-                <b>{i18n("aip.detail.assignment.packagesNo")} </b>{node.value?.length} <br />
-                <b>{i18n("aip.detail.assignment.packages")} </b>{node.value?.map((aipId, index) => (
+                <h4><b>{<FormattedMessage {...daoMessages.aipDetailAssignmentRelatedAips} />}</b></h4>
+                <b>{<FormattedMessage {...daoMessages.aipDetailAssignmentPackagesNo} />} </b>{node.value?.length} <br />
+                <b>{<FormattedMessage {...daoMessages.aipDetailAssignmentPackages} />} </b>{node.value?.map((aipId, index) => (
                     <>
                         {index > 0 && ", "}
                         <a href={`${serverContextPath}/aip/${aipId}`}>
@@ -62,7 +64,7 @@ const NodeDetail: FC<NodeDetailProps> = ({tree, selectedNode, setSelectedAips}: 
     return (
        <div className="py-2">
            {renderHeader()}
-            <h4><b>{i18n("aip.detail.assignment.relatedAip")}</b>
+            <h4><b>{<FormattedMessage {...daoMessages.aipDetailAssignmentRelatedAip} />}</b>
             {aip.data && <Button as="a" href={`${serverContextPath}/aip/${aip.data.aipId}`}>
                 <Icon glyph="fa-sign-in" />
             </Button>}

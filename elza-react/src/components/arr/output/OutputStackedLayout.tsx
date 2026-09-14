@@ -1,5 +1,7 @@
 import {makeStyles, tokens} from '@fluentui/react-components';
-import {i18n} from 'components/shared';
+import {} from 'components/shared';
+import { FormattedMessage } from 'react-intl';
+import { daoMessages } from 'components/arr/daoMessages';
 import ToggleContent from '../../shared/toggle-content/ToggleContent';
 import {OutputDefinition} from './OutputDefinition';
 import {OutputLayoutProps} from './outputLayoutTypes';
@@ -21,7 +23,7 @@ export function OutputStackedLayout({form, ...definitionProps}: OutputLayoutProp
             <div className={styles.definition}>
                 <OutputDefinition {...definitionProps} />
                 <hr className="small" />
-                <h4 className="desc-items-title">{i18n('developer.title.descItems')}</h4>
+                <h4 className="desc-items-title">{<FormattedMessage {...daoMessages.developerTitleDescItems} />}</h4>
             </div>
             <ToggleContent opened={true} withText>
                 {form}
