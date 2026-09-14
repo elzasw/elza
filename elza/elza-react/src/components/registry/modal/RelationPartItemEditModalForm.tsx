@@ -20,6 +20,8 @@ import {ApViewSettings} from "../../../api/ApViewSettings";
 import {objectById} from "../../../shared/utils";
 import {RulPartTypeVO} from "../../../api/RulPartTypeVO";
 import { ApSearchArea } from 'elza-api';
+import { getIntl } from 'components/shared/lang/intlInstance';
+import { registryModalMessages } from './messages';
 
 const FORM_NAME = "relationPartItemEditModalForm";
 
@@ -28,7 +30,7 @@ function validate(values, props): any {
     const errors = {} as any;
 
     if (!values.codeObj || values.codeObj.id == null) {
-        errors.codeObj = "Návazná archivní entita je povinná";
+        errors.codeObj = getIntl().formatMessage(registryModalMessages.relatedEntityRequired);
     }
 
     return errors;
@@ -122,7 +124,7 @@ const RelationPartItemEditModalForm = ({
             <Row /*gutter={[8, 0]}*/ className={renderSpecification ? "pt-2" : ""}>
                 <Col xs={6}>
                     <Form.Label>
-                        Oblast hledání
+                        <FormattedMessage {...registryModalMessages.searchArea} />
                     </Form.Label>
                     <Field
                         name={'area'}

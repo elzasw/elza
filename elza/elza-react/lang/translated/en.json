@@ -2341,6 +2341,10 @@
     "defaultMessage": "Link to an external system",
     "srcHash": "Y3fpvCVOJgno"
   },
+  "ap.coordinate.edit-in-map": {
+    "defaultMessage": "Edit on the map",
+    "srcHash": "Sp_7Y4R5xQsk"
+  },
   "ap.coordinate.export.info": {
     "defaultMessage": "Choose the format for the exported coordinates:",
     "srcHash": "ZjndMvW7dHz6"
@@ -2356,6 +2360,14 @@
   "ap.coordinate.import.select": {
     "defaultMessage": "Choose a file",
     "srcHash": "yw27JWlB4zqO"
+  },
+  "ap.coordinate.import.title": {
+    "defaultMessage": "Import coordinates",
+    "srcHash": "g34UyrR8Bmq6"
+  },
+  "ap.coordinate.map-editor.title": {
+    "defaultMessage": "Coordinate editor",
+    "srcHash": "MCNucROrWSGr"
   },
   "ap.copy.pending.message": {
     "defaultMessage": "Creating the copy…",
@@ -2761,9 +2773,53 @@
     "defaultMessage": "awaiting approval",
     "srcHash": "EJKveJECICg3"
   },
+  "ap.modal.relatedEntityRequired": {
+    "defaultMessage": "The related archival entity is required",
+    "srcHash": "8X2nwOilmo83"
+  },
+  "ap.modal.searchArea": {
+    "defaultMessage": "Search scope",
+    "srcHash": "-m9JpOfia1Qa"
+  },
+  "ap.modal.unsupportedType": {
+    "defaultMessage": "Unsupported type",
+    "srcHash": "6IxyJqCp261b"
+  },
   "ap.not-in-ext": {
     "defaultMessage": "Not shared",
     "srcHash": "yftYQV4VCbEL"
+  },
+  "ap.part.complements.create": {
+    "defaultMessage": "Create the complements",
+    "srcHash": "XiqSY3uKXyu2"
+  },
+  "ap.part.complements.noChanges.message": {
+    "defaultMessage": "The complements have already been created.",
+    "srcHash": "a_f1rAyi1qtQ"
+  },
+  "ap.part.complements.noChanges.title": {
+    "defaultMessage": "Existing values",
+    "srcHash": "0UcnhUBb8E0O"
+  },
+  "ap.part.complements.noItems.message": {
+    "defaultMessage": "The complements could not be created.",
+    "srcHash": "tAby6Jg4__Fp"
+  },
+  "ap.part.complements.noItems.title": {
+    "defaultMessage": "Complements not created",
+    "srcHash": "4DfO8wmxkVZm"
+  },
+  "ap.partEdit.uriRef.description": {
+    "defaultMessage": "Name",
+    "srcHash": "EQAs0dy3Z5es"
+  },
+  "ap.partEdit.uriRef.invalidFormat": {
+    "defaultMessage": "Incorrect link format",
+    "srcHash": "86nGuwpSC_JT"
+  },
+  "ap.partEdit.validationErrors": {
+    "defaultMessage": "Form validation errors.",
+    "srcHash": "tTG3tA615qsT"
   },
   "ap.push-to-ext": {
     "defaultMessage": "Writing the entity to an external system",
@@ -2832,6 +2888,10 @@
   "ap.push-to-ext.unsyncedEntities.title": {
     "defaultMessage": "The record being sent refers to other entities that are not written in the target system. ",
     "srcHash": "SO-9drQtZYNs"
+  },
+  "ap.revMerge.sendToSystem": {
+    "defaultMessage": "Write the changes to {system}",
+    "srcHash": "z4qspnoGM2Kj"
   },
   "ap.revision.deletedValue": {
     "defaultMessage": "Deleted",
@@ -6812,6 +6872,10 @@
   "registry.version": {
     "defaultMessage": "Version",
     "srcHash": "Cml1nacv6hJG"
+  },
+  "registryField.emptyOption": {
+    "defaultMessage": "Empty",
+    "srcHash": "_4lPM4Nqnm7K"
   },
   "registryField.noItemsFound": {
     "defaultMessage": "No records were found.",

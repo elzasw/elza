@@ -8,6 +8,7 @@ import { getIntl } from 'components/shared/lang/intlInstance';
 const messages = defineMessages({
     state: { id: 'ap.state.title.state', defaultMessage: 'Stav' },
     comment: { id: 'ap.state.title.comment', defaultMessage: 'Komentář' },
+    sendToSystem: { id: 'ap.revMerge.sendToSystem', defaultMessage: 'Změny zapsat do {system}' },
 });
 import { Form, Modal } from 'react-bootstrap';
 import { Form as FinalForm, Field } from 'react-final-form';
@@ -99,7 +100,7 @@ export function RevMergeFormFn({
                             &&  <Field<boolean>
                                     name={'sendToCam'}
                                     component={FormInputField}
-                                    label={<span>{`Změny zapsat do ${bindings[0].externalSystemCode}`}</span>}
+                                    label={<span><FormattedMessage {...messages.sendToSystem} values={{ system: bindings[0].externalSystemCode }} /></span>}
                                     type='checkbox'
                                     defaultValue={true}>
                                 </Field>

@@ -5,7 +5,8 @@ import { addToastrSuccess } from 'components/shared/toastr/ToastrActions';
 import { ExternalSystem } from 'typings/store';
 import { Button } from 'components/ui';
 import { ModalDialogWrapper } from 'components/shared';
-import i18n from 'components/i18n';
+import { useIntl } from 'react-intl';
+import { partEditMessages } from '../../../messages';
 import { MODAL_DIALOG_VARIANT } from '../../../../../../constants';
 
 export interface Props {
@@ -25,6 +26,7 @@ export const MapEditor = ({
     allowedGeometryTypes,
     title,
 }: Props) => {
+    const intl = useIntl();
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const queryStartIndex = extSystem.url?.indexOf("?");
     const queryString = queryStartIndex != undefined && queryStartIndex >= 0 ? extSystem.url?.substring(queryStartIndex + 1) : undefined;
@@ -81,7 +83,7 @@ export const MapEditor = ({
     return <>
         <ModalDialogWrapper
             className={MODAL_DIALOG_VARIANT.FULLSCREEN}
-            title={title || i18n('ap.coordinate.map-editor.title')}
+            title={title || intl.formatMessage(partEditMessages.coordinateMapEditorTitle)}
             onHide={onClose}
         >
             <iframe

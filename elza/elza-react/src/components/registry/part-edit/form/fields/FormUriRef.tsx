@@ -7,6 +7,8 @@ import { handleValueUpdate } from '../valueChangeMutators';
 import { RevisionFieldExample, RevisionItem } from '../../../revision';
 import { ApItemUriRefVO } from 'api/ApItemUriRefVO';
 import { CommonFieldProps } from './types';
+import { getIntl } from 'components/shared/lang/intlInstance';
+import { partEditMessages } from '../../messages';
 
 export const FormUriRef:FC<CommonFieldProps<ApItemUriRefVO>> = ({
     name,
@@ -24,7 +26,7 @@ export const FormUriRef:FC<CommonFieldProps<ApItemUriRefVO>> = ({
 
     const validate = (value:string) => {
         if(!value?.match(/^.+:.+$/g)){
-            return "Nesprávný formát odkazu";
+            return getIntl().formatMessage(partEditMessages.uriRefInvalidFormat);
         }
         return undefined;
     }
@@ -71,7 +73,7 @@ export const FormUriRef:FC<CommonFieldProps<ApItemUriRefVO>> = ({
                 <div style={{display: "flex", flexDirection: "column", marginLeft: "16px"}}>
                     <Field
                         name={`${name}.updatedItem.description`}
-                        label="Název"
+                        label={getIntl().formatMessage(partEditMessages.uriRefDescription)}
                     >
                         {(props) => {
                             const handleBlur = (e: any) => {

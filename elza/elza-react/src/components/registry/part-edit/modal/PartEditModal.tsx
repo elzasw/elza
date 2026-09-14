@@ -2,7 +2,8 @@ import { ApCreateTypeVO } from 'api/ApCreateTypeVO';
 import { ApViewSettings } from 'api/ApViewSettings';
 import { PartType } from "api/generated/model";
 import { getPartEditDialogLabel } from "api/old/PartTypeInfo";
-import i18n from "components/i18n";
+import { FormattedMessage } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
 import { Loading } from 'components/shared';
 import { ModalDialogWrapper } from 'components/shared/dialog/ModalDialogWrapper';
 import { Button } from "components/ui";
@@ -113,11 +114,11 @@ const PartEditModal:FC<Props> = ({
                     </Modal.Body>
                     <Modal.Footer>
                         <Button type="submit" variant="outline-secondary" onClick={handleSubmit} disabled={submitting}>
-                            {i18n('global.action.store')}
+                            {<FormattedMessage {...globalMessages.save} />}
                         </Button>
 
                         <Button variant="link" onClick={handleClose} disabled={submitting}>
-                            {i18n('global.action.cancel')}
+                            {<FormattedMessage {...globalMessages.cancel} />}
                         </Button>
                     </Modal.Footer>
                     </>
