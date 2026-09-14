@@ -3,7 +3,9 @@ import './ArrParentPage.scss';
 import PropTypes from 'prop-types';
 
 import React from 'react';
-import {i18n, Loading} from 'components/shared';
+import { Loading} from 'components/shared';
+import { FormattedMessage } from 'react-intl';
+import { arrPageMessages } from './messages';
 import {AbstractReactComponent, ArrFundPanel} from 'components/index.jsx';
 import * as types from 'actions/constants/ActionTypes';
 import {fundChangeReadMode, fundsFetchIfNeeded} from 'actions/arr/fund.jsx';
@@ -284,10 +286,10 @@ export default class ArrParentPage extends AbstractReactComponent {
                 leftPanel = this.renderLeftPanel(readMode, closed);
                 rightPanel = this.renderRightPanel(readMode, closed);
             } else {
-                centerPanel = <div className="fund-noselect">{i18n('arr.fund.noselect')}</div>;
+                centerPanel = <div className="fund-noselect">{<FormattedMessage {...arrPageMessages.fundNoselect} />}</div>;
             }
         } else {
-            centerPanel = <div>{i18n('global.insufficient.right')}</div>;
+            centerPanel = <div>{<FormattedMessage {...arrPageMessages.globalInsufficientRight} />}</div>;
         }
 
         if(!this.isCurrentFundActive() && !this.isCurrentNodeActive()){

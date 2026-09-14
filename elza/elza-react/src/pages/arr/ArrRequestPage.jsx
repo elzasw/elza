@@ -9,11 +9,14 @@ import ReactDOM from 'react-dom';
 import {indexById} from 'stores/app/utils';
 import {connect} from 'react-redux';
 import {ArrRequestDetail, Ribbon} from 'components/index';
-import {FormInput, i18n, Icon, ListBox, RibbonGroup, SearchWithGoto, StoreHorizontalLoader} from 'components/shared';
+import {FormInput, Icon, ListBox, RibbonGroup, SearchWithGoto, StoreHorizontalLoader} from 'components/shared';
+import { FormattedMessage, injectIntl } from 'react-intl';
+import { messageFor } from 'components/shared/lang/dynamicMessage';
+import { arrPageMessages, requestStateMessages } from './messages';
 import {Button} from '../../components/ui';
 import {canSetFocus, focusWasSet, isFocusFor, setFocus} from 'actions/global/focus';
 import * as arrRequestActions from 'actions/arr/arrRequestActions';
-import {createDigitizationName, DIGITIZATION} from 'components/arr/ArrUtils';
+import {createDigitizationName} from 'components/arr/ArrUtils';
 import ArrParentPage from './ArrParentPage';
 
 import classNames from 'classnames';
@@ -132,7 +135,7 @@ class ArrRequestPage extends ArrParentPage {
                         >
                             <Icon glyph="fa-youtube-play" />
                             <div>
-                                <span className="btnText">{i18n('ribbon.action.arr.fund.request.send')}</span>
+                                <span className="btnText">{<FormattedMessage {...arrPageMessages.ribbonActionArrFundRequestSend} />}</span>
                             </div>
                         </Button>,
                     );
@@ -146,7 +149,7 @@ class ArrRequestPage extends ArrParentPage {
                         >
                             <Icon glyph="fa-trash" />
                             <div>
-                                <span className="btnText">{i18n('ribbon.action.arr.fund.request.delete')}</span>
+                                <span className="btnText">{<FormattedMessage {...arrPageMessages.ribbonActionArrFundRequestDelete} />}</span>
                             </div>
                         </Button>,
                     );
@@ -190,7 +193,7 @@ class ArrRequestPage extends ArrParentPage {
     handleDelete = async (id) => {
         const {dispatch} = this.props;
         const fund = this.getActiveFund(this.props);
-        const response = await dispatch(showConfirmDialog(i18n('ribbon.action.arr.fund.request.delete.confirm')))
+        const response = await dispatch(showConfirmDialog(this.props.intl.formatMessage(arrPageMessages.ribbonActionArrFundRequestDeleteConfirm)))
         if (response) {
             this.props.dispatch(arrRequestActions.deleteRequest(fund.versionId, id));
         }
@@ -206,7 +209,7 @@ class ArrRequestPage extends ArrParentPage {
             <div className={classNames(cls)}>
                 <div className="name">{createDigitizationName(item, userDetail)}</div>
                 <div className="state">
-                    {i18n('arr.request.title.state')}: {i18n('arr.request.title.state.' + item.state)}
+                    {<FormattedMessage {...arrPageMessages.requestTitleState} />}: {this.props.intl.formatMessage(messageFor(requestStateMessages, item.state, arrPageMessages.requestTitleStateOPEN))}
                 </div>
             </div>
         );
@@ -263,22 +266,22 @@ class ArrRequestPage extends ArrParentPage {
                         onChange={this.handleFilterType}
                         value={requestList.filter.type}
                     >
-                        <option value={''}>{i18n('global.all')}</option>
+                        <option value={''}>{this.props.intl.formatMessage(arrPageMessages.globalAll)}</option>
                         <option value="DIGITIZATION" key="DIGITIZATION">
-                            {i18n('arr.request.title.type.' + DIGITIZATION)}
+                            {this.props.intl.formatMessage(arrPageMessages.requestTitleTypeDIGITIZATION)}
                         </option>
                         <option value="DESTRUCTION" key="DESTRUCTION">
-                            {i18n('arr.request.title.type.dao.DESTRUCTION')}
+                            {this.props.intl.formatMessage(arrPageMessages.requestTitleTypeDaoDESTRUCTION)}
                         </option>
                         <option value="TRANSFER" key="TRANSFER">
-                            {i18n('arr.request.title.type.dao.TRANSFER')}
+                            {this.props.intl.formatMessage(arrPageMessages.requestTitleTypeDaoTRANSFER)}
                         </option>
-                        {/*<option value="DAO_LINK" key="DAO_LINK">{i18n("arr.request.title.type." + DAO_LINK)}</option>*/}
+                        {/* Požadavky typu DAO_LINK se ve filtru zatím nenabízejí. */}
                     </FormInput>
                     <SearchWithGoto
                         onFulltextSearch={this.handleFilterText}
                         onClear={this.handleFilterTextClear}
-                        placeholder={i18n('search.input.search')}
+                        placeholder={<FormattedMessage {...arrPageMessages.searchInputSearch} />}
                         filterText={requestList.filter.description}
                         showFilterResult={true}
                         type="INFO"
@@ -328,4 +331,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps)(ArrRequestPage);
+export default connect(mapStateToProps)(injectIntl(ArrRequestPage));
