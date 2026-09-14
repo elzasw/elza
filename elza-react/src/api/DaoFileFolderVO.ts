@@ -1,5 +1,5 @@
 import { DaoFileVO } from "./DaoFileVO";
-import {LinkedNodeVO} from "elza-api";
+import {AipLevelType, LinkedNodeVO} from "elza-api";
 
 export type DaoFileFolderVO = {
     uuid: string;
@@ -7,6 +7,8 @@ export type DaoFileFolderVO = {
     createChange?: string;
     deleteChange?: string;
     label: string;
+    /** Typ virtuální úrovně; reálné složky a soubory ho nemají. */
+    levelType?: AipLevelType;
     childFiles?: DaoFileVO[];
     childFolders?: DaoFileFolderVO[];
     parent?: DaoFileFolderVO;

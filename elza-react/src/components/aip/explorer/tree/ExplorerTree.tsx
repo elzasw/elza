@@ -16,6 +16,7 @@ import Folder from "./Folder";
 import { ExplorerMode, useExplorerContext } from "../ExplorerContext";
 import { DaoFileFolderVO } from "api/DaoFileFolderVO";
 import { findNodeByUUID } from "../utils";
+import { levelIcon, useNodeName } from "../levels";
 import { useIntl } from "react-intl";
 import { explorerMessages } from "../../messages";
 
@@ -24,7 +25,8 @@ const AipTree: FC<{onSelect?: (node: ExplorerNode) => void}> = ({onSelect}) => {
     const intl = useIntl();
     const aip = useSelector((state: AppState) => storeFromArea(state, AREA_AIP));
     const {data: structure} = useSelector((state: AppState) => storeFromArea(state, AREA_AIP_STRUCTURE));
-    const {selectedItem, setSelectedItem, mode} = useExplorerContext();
+    const {selectedItem, setSelectedItem, mode, hideRoot} = useExplorerContext();
+    const nodeName = useNodeName();
 
     if (structure) {
         structure.parent = null;
@@ -82,6 +84,26 @@ const AipTree: FC<{onSelect?: (node: ExplorerNode) => void}> = ({onSelect}) => {
         return <></>
     }
 
+    const sections = structure.childFolders?.map((folder: DaoFileFolderVO, index: number) => <Folder
+        key={`root-${index}`}
+        folder={folder}
+        openItems={openItems}
+        parent={structure}
+    />);
+
+    if (hideRoot) {
+        return (
+            <Tree
+                aria-label={intl.formatMessage(explorerMessages.treeLabel)}
+                openItems={openItems}
+                onOpenChange={handleOpenChange}
+                className="explorer-tree"
+            >
+                {sections}
+            </Tree>
+        );
+    }
+
     return (
          <Tree
             aria-label={intl.formatMessage(explorerMessages.treeLabel)}
@@ -90,27 +112,19 @@ const AipTree: FC<{onSelect?: (node: ExplorerNode) => void}> = ({onSelect}) => {
             defaultOpenItems={[structure.uuid]}
             className="explorer-tree"
         >
-            {structure && <TreeItem itemType="branch" value={structure.uuid}>
+            <TreeItem itemType="branch" value={structure.uuid}>
                 <TreeItemLayout
                     expandIcon={
                         openItems.includes(structure.uuid) ?
                             <SubtractSquare16Regular color="black"/> :
                             <AddSquare16Regular color="black"/>
                     }
+                    iconBefore={levelIcon(structure.levelType)}
                 >
-                    {structure.label}
+                    {nodeName(structure)}
                 </TreeItemLayout>
-                <Tree>
-                    {structure?.childFolders &&
-                    structure.childFolders.map((folder: DaoFileFolderVO, index: number) => <Folder
-                            key={`root-${index}`}
-                            folder={folder}
-                            openItems={openItems}
-                            parent={structure}
-                        />
-                    )}
-                </Tree>
-            </TreeItem>}
+                <Tree>{sections}</Tree>
+            </TreeItem>
          </Tree>
     );
 }

@@ -2708,9 +2708,21 @@ public class ClientFactoryVO {
         List<LinkedNodeVO> linkedNodeList = new ArrayList<>();
         for (ArrDaoLink daoLink : daoLinks) {
             TreeNodeVO treeNode = treeNodeMap.get(daoLink.getNodeId());
-            linkedNodeList.add(new LinkedNodeVO(daoLink.getDaoLinkId(), treeNode.getId(), treeNode.getName()));
+            linkedNodeList.add(createLinkedNode(daoLink, treeNode));
         }
         return linkedNodeList;
+    }
+
+    /**
+     * The type tells the client whether the link binds the whole package (AIP) or one of its
+     * parts, which the detail shows as two different things.
+     */
+    private LinkedNodeVO createLinkedNode(ArrDaoLink daoLink, TreeNodeVO treeNode) {
+        LinkedNodeVO vo = new LinkedNodeVO(daoLink.getDaoLinkId(), treeNode.getId(), treeNode.getName());
+        if (daoLink.getLinkType() != null) {
+            vo.setLinkType(mapArrDaoLink(daoLink.getLinkType()));
+        }
+        return vo;
     }
 
     private LinkType mapArrDaoLink(ArrDaoLink.LinkType type) {
@@ -2769,7 +2781,7 @@ public class ClientFactoryVO {
             for (ArrDaoLink daoLink : daoLinks) {
                 TreeNodeVO treeNode = treeNodeMap.get(daoLink.getNodeId());
                 if(treeNode != null) {
-                    linkedNodeList.add(new LinkedNodeVO(daoLink.getDaoLinkId(), treeNode.getId(), treeNode.getName()));
+                    linkedNodeList.add(createLinkedNode(daoLink, treeNode));
                 }
             }
             return linkedNodeList;

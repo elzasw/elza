@@ -384,6 +384,8 @@ model ExplorerTreeNode {
     parentFolderLogical: ExplorerTreeNode;
     /** Seznam připojených nodů */
     linkedNodes: LinkedNodeVO[];
+    /** Typ virtuální úrovně; reálné složky a soubory ho nemají */
+    levelType?: AipLevelType;
 }
 
 /** Model ExplorerTreeNodeFile */
@@ -921,7 +923,11 @@ model TreeNodeCustomGen {
     /**
      * Unikátení identifikátor rodičovského uzlu
      */
-    parent: string
+    parent: string;
+    /**
+     * Typ virtuální úrovně; uzly konkrétních AIPů ho nemají
+     */
+    levelType?: AipLevelType
 }
 
 /**
@@ -1267,6 +1273,10 @@ model LinkedNodeVO {
      * Jméno node
      */
     name: string;
+    /**
+     * Typ napojení - celý balíček, část, nebo komponenta
+     */
+    linkType?: LinkType;
 }
 
 /**
@@ -1536,6 +1546,18 @@ enum LinkType {
     AIP,
     PART_AIP,
     COMPONENT_AIP;
+}
+
+/**
+ * Typ virtuální úrovně stromu AIPu. Tyto úrovně nejsou daty balíčku, ale pevně danými
+ * pojmy (E-ARK / OAIS), takže jejich název si překládá klient.
+ */
+enum AipLevelType {
+    PACKAGE,
+    REPRESENTATIONS,
+    LOGICAL_STRUCTURE,
+    METADATA,
+    WITHOUT_LOGICAL_STRUCTURE;
 }
 
 /**

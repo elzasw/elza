@@ -1,5 +1,6 @@
-import type { ReactNode } from "react";
 import { FormattedMessage, defineMessages } from "react-intl";
+import { DetailRow } from "../../DetailRow";
+import { useNodeName } from "../levels";
 
 // Id aip.explorer.* jsou převzatá z legacy katalogu beze změny. Popisky, které
 // byly v JSX natvrdo česky, dostávají nová id v dot notaci.
@@ -42,7 +43,8 @@ import {WebApi} from 'actions/WebApi';
 import { explorerMessages } from "../../messages";
 
 const ExplorerDetail: FC<{selected?: string;}> = ({selected}) => {
-    const {selectedItem, setSelectedItem} = useExplorerContext();
+    const {selectedItem, setSelectedItem, hideRoot} = useExplorerContext();
+    const nodeName = useNodeName();
     const aip = useSelector((state: AppState) => storeFromArea(state, AREA_AIP));
     const structure = useSelector((state: AppState) => storeFromArea(state, AREA_AIP_STRUCTURE));
     const dispatch = useThunkDispatch();
@@ -88,19 +90,6 @@ const ExplorerDetail: FC<{selected?: string;}> = ({selected}) => {
     }, [structure.data, selected]);
 
 
-    // ReactNode, ne string: popisek je <FormattedMessage>, aby se přepnul s jazykem.
-    const DetailRow = ({label, value}: {label: ReactNode, value?: any}) => (
-        <div className="item-row">
-            <div className="label col">
-                <b>{label}</b>
-            </div>
-            {value && <div className="value col">
-                {value}
-            </div>
-            }
-        </div>
-    );
-
     const selectFolder = (id: number) => {
         const result = findNodeByUUID(structure.data, id);
         if(result) {
@@ -115,18 +104,24 @@ const ExplorerDetail: FC<{selected?: string;}> = ({selected}) => {
         return value;
     }
 
-    const renderName = () => {
-        return node.label || node.filename;
-    }
+    const renderName = () => nodeName(node);
 
     if(!node) {
         return <p><FormattedMessage {...explorerMessages.noSelection} /></p>
+    }
+    // The hidden root has nothing of its own to show; the package as a whole has its own tab.
+    if (hideRoot && node.uuid === structure.data?.uuid) {
+        return (
+            <div className="explorer-detail">
+                <p className="explorer-detail-hint"><FormattedMessage {...explorerMessages.selectPart} /></p>
+            </div>
+        );
     }
     const renderRepresentationParent = () => {
         return (
             <span>
                 <a className="detail-item" onClick={() => selectFolder(node.parentFolder.uuid)}>
-                    {renderValue(node.parentFolder?.label)}
+                    {renderValue(nodeName(node.parentFolder))}
                 </a>
             </span>
         );
@@ -136,7 +131,7 @@ const ExplorerDetail: FC<{selected?: string;}> = ({selected}) => {
         return (
             <span>
                 <a className="detail-item" onClick={() => selectFolder(node.parentFolderLogical.uuid)}>
-                    {renderValue(node.parentFolderLogical?.label)}
+                    {renderValue(nodeName(node.parentFolderLogical))}
                 </a>
             </span>
         );

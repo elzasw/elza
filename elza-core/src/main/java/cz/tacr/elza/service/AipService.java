@@ -95,7 +95,10 @@ public class AipService {
         List<DaAip> allAips = aipRepository.findAllById(aipIds);
         List<TreeNodeCustomGen> treeNodes = new ArrayList<>();
 
+        // Virtual level - the type identifies it, the name is only a fallback for a client
+        // that does not know the type.
         TreeNodeCustomGen withoutRoot = createNodeCustomGen(null, "Bez logické struktury", 1, null, null, null);
+        withoutRoot.setLevelType(AipLevelType.WITHOUT_LOGICAL_STRUCTURE);
         List<TreeNodeCustomGen> withoutStructure = new ArrayList<>(allAips.stream()
                 .filter(aip -> daoList
                         .stream()
@@ -119,6 +122,7 @@ public class AipService {
         List<Integer> withStructure = aipIds.stream().filter(i -> !withoutStructureAipIds.contains(i)).toList();
 
         TreeNodeCustomGen root = createNodeCustomGen(withStructure, "Logická struktura", 1, null, null, null);
+        root.setLevelType(AipLevelType.LOGICAL_STRUCTURE);
 
         if(!withoutStructure.isEmpty()) {
             withoutStructure.add(0, withoutRoot);

@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vitest';
-import { AipDetailVO, AipLinkState, AipProblemType, QueueItemState } from 'elza-api';
+import { describe, expect, it, vi } from 'vitest';
+import { AipDetailVO, AipLinkState, AipProblemType, LinkType, QueueItemState } from 'elza-api';
 
-import { renderWithProviders, screen } from 'test/test-utils';
+import { fireEvent, renderWithProviders, screen } from 'test/test-utils';
 import { AipDetailBody } from './AipDetailBody';
 
 /**
@@ -69,5 +69,52 @@ describe('AipDetailBody', () => {
 
         expect(screen.getByText('2.0 kB')).toBeInTheDocument();
         expect(screen.getByText('Nenapojeno')).toBeInTheDocument();
+    });
+
+    const fund = { id: 106, name: 'Fond A' } as AipDetailVO['fund'];
+
+    it('napojení celého balíčku vypíše jménem, napojené části jen spočítá', () => {
+        renderWithProviders(<AipDetailBody detail={detail({
+            fund,
+            linkedNodes: [
+                { id: 1, nodeId: 10, name: 'Celý balíček', linkType: LinkType.Aip },
+                { id: 2, nodeId: 11, name: 'Část A', linkType: LinkType.PartAip },
+                { id: 3, nodeId: 12, name: 'Komponenta B', linkType: LinkType.ComponentAip },
+            ],
+        })} />);
+
+        expect(screen.getByText('Celý balíček')).toBeInTheDocument();
+        expect(screen.queryByText('Část A')).toBeNull();
+        expect(screen.queryByText('Komponenta B')).toBeNull();
+        expect(screen.getByText('Napojené části')).toBeInTheDocument();
+        expect(screen.getByText(/\b2\b/)).toBeInTheDocument();
+    });
+
+    it('napojení bez typu bere jako napojení celého balíčku', () => {
+        renderWithProviders(<AipDetailBody detail={detail({
+            fund,
+            linkedNodes: [{ id: 1, nodeId: 10, name: 'Starý link' }],
+        })} />);
+
+        expect(screen.getByText('Starý link')).toBeInTheDocument();
+        expect(screen.queryByText('Napojené části')).toBeNull();
+    });
+
+    it('soubor problému nabídne k otevření jen tam, kde ho lze ukázat', () => {
+        const problem = {
+            problemType: AipProblemType.MetadataError,
+            problemDescription: 'Popis se nepodařilo načíst.',
+            problemFile: 'metadata/descriptive/pruvodka.xml',
+        };
+        const onOpenProblemFile = vi.fn();
+
+        const { unmount } = renderWithProviders(<AipDetailBody detail={detail(problem)} />);
+        expect(screen.queryByText('metadata/descriptive/pruvodka.xml')).toBeNull();
+        unmount();
+
+        renderWithProviders(<AipDetailBody detail={detail(problem)} onOpenProblemFile={onOpenProblemFile} />);
+        fireEvent.click(screen.getByText('metadata/descriptive/pruvodka.xml'));
+
+        expect(onOpenProblemFile).toHaveBeenCalledWith('metadata/descriptive/pruvodka.xml');
     });
 });
