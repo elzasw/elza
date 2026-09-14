@@ -8,7 +8,25 @@ import {WebApi} from 'actions/index.jsx';
 import './Login.scss';
 import {ModalDialogWrapper} from '../dialog/ModalDialogWrapper';
 import FormInput from 'components/shared/form/FormInput';
-import i18n from '../../i18n';
+import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    errorUnknown: { id: 'login.error.unknown', defaultMessage: 'Neznámá chyba přihlášení' },
+    formTitle: { id: 'login.form.title', defaultMessage: 'Přihlášení uživatele' },
+    ssoKerberos: {
+        id: 'login.action.ssoKerberos',
+        defaultMessage: 'Přihlásit se pomocí Windows autentizace (Kerberos)',
+    },
+    defaultUserEnabled: {
+        id: 'login.defaultUserEnabled',
+        defaultMessage:
+            'Je povolen výchozí uživatel. Vytvořte si vlastního uživatele s oprávněním administrátora a výchozího uživatele vypněte.',
+    },
+    username: { id: 'login.field.username', defaultMessage: 'Uživatelské jméno' },
+    password: { id: 'login.field.password', defaultMessage: 'Heslo' },
+    login: { id: 'login.action.login', defaultMessage: 'Přihlásit' },
+});
 import AbstractReactComponent from '../../AbstractReactComponent';
 
 const defaultEnabled = typeof window.defaultUserEnabled !== 'undefined' && window.defaultUserEnabled;
@@ -50,7 +68,7 @@ class Login extends AbstractReactComponent {
         if (err.data && err.data.message) {
             this.setState({error: err.data.message});
         } else {
-            this.setState({error: i18n('login.error.unknown')});
+            this.setState({error: this.props.intl.formatMessage(messages.errorUnknown)});
         }
     };
 
@@ -80,36 +98,36 @@ class Login extends AbstractReactComponent {
         return (
             <div className="login-container">
                 {displayLoginDialog && (
-                    <ModalDialogWrapper className="login" title={i18n('login.form.title')}>
+                    <ModalDialogWrapper className="login" title={this.props.intl.formatMessage(messages.formTitle)}>
                     {displaySsoKerberos && (
                             <div className="sso-kerberos-login">
                                 <Button
                                     variant="outline-secondary"
-                                    label={i18n('login.action.ssoKerberos')}
+                                    label={this.props.intl.formatMessage(messages.ssoKerberos)}
                                     onClick={() => {
                                         window.location.href = window.serverContextPath +window.ssoKerberosUrl;
                                     }}
                                 >
-                                    {i18n('login.action.ssoKerberos')}
+                                    <FormattedMessage {...messages.ssoKerberos} />
                                 </Button>
                             </div>
                     )}
                         <Form onSubmit={this.handleLogin}>
                             <Modal.Body>
-                                {defaultEnabled && <div className="error">{i18n('login.defaultUserEnabled')}</div>}
+                                {defaultEnabled && <div className="error"><FormattedMessage {...messages.defaultUserEnabled} /></div>}
                                 {error && <div className="error">{error}</div>}
                                 <FormInput
                                     type="text"
                                     value={username}
                                     onChange={this.handleChange.bind(this, 'username')}
-                                    label={i18n('login.field.username')}
+                                    label={this.props.intl.formatMessage(messages.username)}
                                     required
                                 />
                                 <FormInput
                                     type="password"
                                     value={password}
                                     onChange={this.handleChange.bind(this, 'password')}
-                                    label={i18n('login.field.password')}
+                                    label={this.props.intl.formatMessage(messages.password)}
                                     required
                                 />
                                 <div className="submit-button">
@@ -119,7 +137,7 @@ class Login extends AbstractReactComponent {
                                         onClick={this.handleLogin}
                                         disabled={submitting}
                                     >
-                                        {i18n('login.action.login')}
+                                        <FormattedMessage {...messages.login} />
                                     </Button>
                                 </div>
                             </Modal.Body>
@@ -134,4 +152,4 @@ class Login extends AbstractReactComponent {
 export default connect(state => {
     const {userDetail, login} = state;
     return {userDetail, login};
-})(Login);
+})(injectIntl(Login));

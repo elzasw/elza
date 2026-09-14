@@ -7,7 +7,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { connect } from 'react-redux';
 import { IndexLinkContainer, LinkContainer } from 'react-router-bootstrap';
-import { AbstractReactComponent, i18n, Icon, RibbonGroup, RibbonMenu, RibbonSplit } from 'components/shared';
+import { AbstractReactComponent, Icon, RibbonGroup, RibbonMenu, RibbonSplit } from 'components/shared';
 import { Dropdown, Button as BootstrapButton } from 'react-bootstrap';
 import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
 import { Button } from '../ui';
@@ -66,6 +66,14 @@ const messages = defineMessages({
         id: 'ribbon.action.logout',
         defaultMessage: 'Odhlásit',
     },
+    arrArr: { id: 'ribbon.action.arr.arr', defaultMessage: 'Pořádání' },
+    arrDataGrid: { id: 'ribbon.action.arr.dataGrid', defaultMessage: 'Tabulkové zobrazení' },
+    arrAb: { id: 'ribbon.action.arr.ab', defaultMessage: 'Archivní balíčky' },
+    arrMovements: { id: 'ribbon.action.arr.movements', defaultMessage: 'Přesuny' },
+    arrOutput: { id: 'ribbon.action.arr.output', defaultMessage: 'Výstupy' },
+    arrBulkActions: { id: 'ribbon.action.arr.fund.bulkActions', defaultMessage: 'Funkce' },
+    arrRequests: { id: 'ribbon.action.arr.fund.requests', defaultMessage: 'Požadavky' },
+    arrDaos: { id: 'ribbon.action.arr.fund.daos', defaultMessage: 'Digitální entity' },
     saving: {
         id: 'ribbon.saving',
         defaultMessage: 'Ukládání',
@@ -185,7 +193,7 @@ class Ribbon extends AbstractReactComponent {
                     <IndexLinkContainer key="ribbon-btn-arr-index" to={urlFundTree(fundId, versionId)}>
                         <BootstrapButton ref={this.ribbonDefaultFocusRef} variant={'default'} className={window.location.pathname.startsWith(URL_NODE) ? "active" : ""}>
                             <Icon glyph="fa-sitemap" />
-                            <span className="btnText">{i18n('ribbon.action.arr.arr')}</span>
+                            <span className="btnText"><FormattedMessage {...messages.arrArr} /></span>
                         </BootstrapButton>
                     </IndexLinkContainer>,
                 );
@@ -194,7 +202,7 @@ class Ribbon extends AbstractReactComponent {
                     <LinkContainer key="ribbon-btn-arr-dataGrid" to={urlFundGrid(fundId, versionId, this.props.serializedFilter)}>
                         <Button variant={'default'} className={window.location.pathname.includes(GRID) ? "active" : ""}>
                             <Icon glyph="fa-table" />
-                            <span className="btnText">{i18n('ribbon.action.arr.dataGrid')}</span>
+                            <span className="btnText"><FormattedMessage {...messages.arrDataGrid} /></span>
                         </Button>
                     </LinkContainer>,
                 );
@@ -202,7 +210,7 @@ class Ribbon extends AbstractReactComponent {
                     <LinkContainer key="ribbon-btn-arr-ab" to={urlFundAb(fundId, versionId)}>
                         <Button variant='default' className={window.location.pathname.includes(AIP) ? "active" : ""}>
                             <Icon glyph="fa-archive" />
-                            <span className="btnText">{i18n('ribbon.action.arr.ab')}</span>
+                            <span className="btnText"><FormattedMessage {...messages.arrAb} /></span>
                         </Button>
                     </LinkContainer>,
                 );
@@ -213,7 +221,7 @@ class Ribbon extends AbstractReactComponent {
                     <LinkContainer key="ribbon-btn-arr-movements" to={urlFundMovements(fundId, versionId)}>
                         <Button variant={'default'}>
                             <Icon glyph="fa-exchange" />
-                            <span className="btnText">{i18n('ribbon.action.arr.movements')}</span>
+                            <span className="btnText"><FormattedMessage {...messages.arrMovements} /></span>
                         </Button>
                     </LinkContainer>,
                 );
@@ -225,7 +233,7 @@ class Ribbon extends AbstractReactComponent {
                     <LinkContainer key="ribbon-btn-arr-output" to={urlFundOutputs(fundId, versionId)}>
                         <Button variant={'default'}>
                             <Icon glyph="fa-print" />
-                            <span className="btnText">{i18n('ribbon.action.arr.output')}</span>
+                            <span className="btnText"><FormattedMessage {...messages.arrOutput} /></span>
                         </Button>
                     </LinkContainer>,
                 );
@@ -247,7 +255,7 @@ class Ribbon extends AbstractReactComponent {
                     <LinkContainer key="ribbon-btn-arr-actions" to={urlFundActions(fundId, versionId)}>
                         <Button variant={'default'}>
                             <Icon glyph="fa-calculator" />
-                            <span className="btnText">{i18n('ribbon.action.arr.fund.bulkActions')}</span>
+                            <span className="btnText"><FormattedMessage {...messages.arrBulkActions} /></span>
                         </Button>
                     </LinkContainer>,
                 );
@@ -263,7 +271,7 @@ class Ribbon extends AbstractReactComponent {
                         <LinkContainer key="ribbon-btn-arr-requests" to={urlFundRequests(fundId, versionId)}>
                             <Button variant={'default'}>
                                 <Icon glyph="fa-shopping-basket" />
-                                <span className="btnText">{i18n('ribbon.action.arr.fund.requests')}</span>
+                                <span className="btnText"><FormattedMessage {...messages.arrRequests} /></span>
                             </Button>
                         </LinkContainer>,
                     );
@@ -278,7 +286,7 @@ class Ribbon extends AbstractReactComponent {
                         <LinkContainer key="ribbon-btn-arr-daos" to={urlFundDaos(fundId, versionId)}>
                             <Button variant={'default'}>
                                 <Icon glyph="fa-camera" />
-                                <span className="btnText">{i18n('ribbon.action.arr.fund.daos')}</span>
+                                <span className="btnText"><FormattedMessage {...messages.arrDaos} /></span>
                             </Button>
                         </LinkContainer>,
                     );
@@ -314,7 +322,6 @@ class Ribbon extends AbstractReactComponent {
             // standardní menu s hlavním rozcestníkem
             parts.push(<MainNavigation key="ribbon-group-main" ref={this.ribbonDefaultFocusRef} />);
         }
-        // <LinkContainer key="ribbon-btn-arr" to="/arr"><Button><Icon glyph="fa-file-text" /><div><span className="btnText">{i18n('ribbon.action.arr')}</span></div></Button></LinkContainer>
 
         section && parts.push(section);
         altSection && parts.push(altSection);

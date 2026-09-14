@@ -2149,6 +2149,18 @@
     "defaultMessage": "unknown",
     "srcHash": "eZYKNqYuXiNu"
   },
+  "ap.coordinate.export.info": {
+    "defaultMessage": "Choose the format for the exported coordinates:",
+    "srcHash": "ZjndMvW7dHz6"
+  },
+  "ap.coordinate.export.title": {
+    "defaultMessage": "Export coordinates",
+    "srcHash": "yIv41n0qX3bw"
+  },
+  "ap.coordinate.format": {
+    "defaultMessage": "Format {0}",
+    "srcHash": "9svfULmYPm_x"
+  },
   "ap.ext-syncs.ext-system": {
     "defaultMessage": "External system",
     "srcHash": "oGs4SFZv0yF2"
@@ -3137,6 +3149,10 @@
     "defaultMessage": "Edit in map",
     "srcHash": "Sp_7Y4R5xQsk"
   },
+  "global.action.export": {
+    "defaultMessage": "Export",
+    "srcHash": "4x5Fw-eTIoUs"
+  },
   "global.action.remove": {
     "defaultMessage": "Remove",
     "srcHash": "Ofs6avvgqpQw"
@@ -3156,6 +3172,34 @@
   "global.data.loading": {
     "defaultMessage": "Loading data…",
     "srcHash": "tRaCvBzxtiHY"
+  },
+  "global.exception.detail": {
+    "defaultMessage": "Detail",
+    "srcHash": "-18n1UV8RkEC"
+  },
+  "global.exception.detail.code": {
+    "defaultMessage": "Error code",
+    "srcHash": "n95MeUwAZu2e"
+  },
+  "global.exception.detail.message": {
+    "defaultMessage": "Technical description",
+    "srcHash": "BBVOuAJ73Ynr"
+  },
+  "global.exception.detail.properties": {
+    "defaultMessage": "Additional parameters",
+    "srcHash": "Dido-57hy0Fk"
+  },
+  "global.exception.detail.stack": {
+    "defaultMessage": "Stack",
+    "srcHash": "5VFkEkLOckau"
+  },
+  "global.geometry.label.objects": {
+    "defaultMessage": "Shapes",
+    "srcHash": "K90kS6v06PVw"
+  },
+  "global.geometry.label.points": {
+    "defaultMessage": "Points",
+    "srcHash": "bMqmQVte5Enj"
   },
   "global.title.no": {
     "defaultMessage": "No",
@@ -3180,6 +3224,30 @@
   "global.validation.required": {
     "defaultMessage": "This field is required",
     "srcHash": "rKBLoscKlAdE"
+  },
+  "global.websocket.disconnectedOnError.action.refresh": {
+    "defaultMessage": "Reload the application",
+    "srcHash": "I_nf9uIK0dNq"
+  },
+  "global.websocket.disconnectedOnError.title": {
+    "defaultMessage": "A communication error occurred",
+    "srcHash": "Tm1HLPIk3xnO"
+  },
+  "global.websocket.message": {
+    "defaultMessage": "Wait for the connection to be restored automatically",
+    "srcHash": "M6xMRE2lvw5K"
+  },
+  "global.websocket.message.loading": {
+    "defaultMessage": "The application is loading, please wait",
+    "srcHash": "ovHKDqyEKuW5"
+  },
+  "global.websocket.title": {
+    "defaultMessage": "Disconnected from the server",
+    "srcHash": "WkTH-sfMS4ah"
+  },
+  "global.websocket.title.loading": {
+    "defaultMessage": "Loading the application",
+    "srcHash": "5MiReMNEAXS8"
   },
   "global_cancel": {
     "defaultMessage": "Cancel",
@@ -3300,6 +3368,34 @@
   "loggedUsers.title": {
     "defaultMessage": "Signed-in users",
     "srcHash": "Z4fQxDmHvFCP"
+  },
+  "login.action.login": {
+    "defaultMessage": "Sign in",
+    "srcHash": "91Lx6D-7__pj"
+  },
+  "login.action.ssoKerberos": {
+    "defaultMessage": "Sign in with Windows authentication (Kerberos)",
+    "srcHash": "vaynD4nF5qXo"
+  },
+  "login.defaultUserEnabled": {
+    "defaultMessage": "The default user is enabled. Create your own user with administrator permissions and disable the default user.",
+    "srcHash": "5GQb-lCsvEuv"
+  },
+  "login.error.unknown": {
+    "defaultMessage": "Unknown sign-in error",
+    "srcHash": "jKOti0dKdTuK"
+  },
+  "login.field.password": {
+    "defaultMessage": "Password",
+    "srcHash": "pSKy5YhV1Jvy"
+  },
+  "login.field.username": {
+    "defaultMessage": "Username",
+    "srcHash": "NKH-IVRQBmnM"
+  },
+  "login.form.title": {
+    "defaultMessage": "User sign-in",
+    "srcHash": "5n0yZfWzxL0-"
   },
   "mandatoryType.impossible": {
     "defaultMessage": "Impossible",
@@ -3805,6 +3901,18 @@
     "defaultMessage": "Archival packages",
     "srcHash": "j-OwZ5UftK-t"
   },
+  "ribbon.action.arr.ab": {
+    "defaultMessage": "Archival packages",
+    "srcHash": "j-OwZ5UftK-t"
+  },
+  "ribbon.action.arr.arr": {
+    "defaultMessage": "Arrangement",
+    "srcHash": "FGdc1B5n2Tq-"
+  },
+  "ribbon.action.arr.dataGrid": {
+    "defaultMessage": "Table view",
+    "srcHash": "OPvyQwAFzdoD"
+  },
   "ribbon.action.arr.fund.add": {
     "defaultMessage": "New fund",
     "srcHash": "BfzcqMHB4P5Z"
@@ -3812,6 +3920,14 @@
   "ribbon.action.arr.fund.approve": {
     "defaultMessage": "New fund version",
     "srcHash": "Orcba4a1D0aE"
+  },
+  "ribbon.action.arr.fund.bulkActions": {
+    "defaultMessage": "Functions",
+    "srcHash": "xkotmJP_n7m-"
+  },
+  "ribbon.action.arr.fund.daos": {
+    "defaultMessage": "Digital objects",
+    "srcHash": "PQYhCBjzlUJO"
   },
   "ribbon.action.arr.fund.export": {
     "defaultMessage": "Export",
@@ -3825,6 +3941,10 @@
     "defaultMessage": "Publication systems management",
     "srcHash": "3R1qxdjYgTmM"
   },
+  "ribbon.action.arr.fund.requests": {
+    "defaultMessage": "Requests",
+    "srcHash": "9EIe2DCsqFGr"
+  },
   "ribbon.action.arr.fund.ruleSet": {
     "defaultMessage": "Change rules",
     "srcHash": "h77A_qYZAsD_"
@@ -3836,6 +3956,14 @@
   "ribbon.action.arr.fund.update": {
     "defaultMessage": "Edit properties",
     "srcHash": "Kz6fnr3KjkCv"
+  },
+  "ribbon.action.arr.movements": {
+    "defaultMessage": "Transfers",
+    "srcHash": "EVbsB3EZeaDI"
+  },
+  "ribbon.action.arr.output": {
+    "defaultMessage": "Outputs",
+    "srcHash": "irSQ8aME65Fz"
   },
   "ribbon.action.back": {
     "defaultMessage": "Back",
@@ -3873,9 +4001,21 @@
     "defaultMessage": "No records found",
     "srcHash": "_YTIcNZIg5jH"
   },
+  "search.found": {
+    "defaultMessage": "({0})",
+    "srcHash": "Te0ZgSveYi-t"
+  },
+  "search.found.more": {
+    "defaultMessage": "({0}/{1})",
+    "srcHash": "nNN_MATaqm8B"
+  },
   "search.input.search": {
     "defaultMessage": "Search…",
     "srcHash": "ljz34dnOH0vG"
+  },
+  "search.not.found": {
+    "defaultMessage": "not found",
+    "srcHash": "E8q1olXGqFrs"
   },
   "search_funds_form_conformity_error": {
     "defaultMessage": "Error",
@@ -3940,6 +4080,10 @@
   "subNodeForm.descItemType.title.add": {
     "defaultMessage": "Add description element",
     "srcHash": "ckU6Xf-Ze6l2"
+  },
+  "subNodeForm.descItemType.undefinedValue": {
+    "defaultMessage": "exception",
+    "srcHash": "-TA7X-GC8mvk"
   },
   "table.filter.columns": {
     "defaultMessage": "Columns",
