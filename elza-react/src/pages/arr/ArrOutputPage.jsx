@@ -17,7 +17,11 @@ import {
     Ribbon,
     RunActionForm,
 } from '../../components/index';
-import {i18n, Icon, ListBox, RibbonGroup, StoreHorizontalLoader, Tabs, Utils} from 'components/shared';
+import { Icon, ListBox, RibbonGroup, StoreHorizontalLoader, Tabs, Utils} from 'components/shared';
+import { FormattedMessage, injectIntl } from 'react-intl';
+import { nodeListMessages } from 'components/arr/nodeListMessages';
+import { messageFor } from 'components/shared/lang/dynamicMessage';
+import { arrPageMessages, outputStateMessages } from './messages';
 import {Button} from '../../components/ui';
 import {modalDialogShow} from 'actions/global/modalDialog';
 import {canSetFocus, focusWasSet, isFocusFor, setFocus} from 'actions/global/focus';
@@ -202,7 +206,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('arr.fund.nodes.title.select'),
+                this.props.intl.formatMessage(nodeListMessages.select),
                 <FundNodesSelectForm
                     onSubmitForm={(ids, nodes) => {
                         this.props.dispatch(fundOutputAddNodes(fund.versionId, fundOutputDetail.id, ids));
@@ -218,7 +222,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('arr.output.title.add'),
+                this.props.intl.formatMessage(arrPageMessages.outputTitleAdd),
                 <AddOutputForm
                     create
                     onSubmitForm={data => {
@@ -248,7 +252,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('arr.output.title.add'),
+                this.props.intl.formatMessage(arrPageMessages.outputTitleAdd),
                 <RunActionForm
                     versionId={fund.versionId}
                     onSubmitForm={data => {
@@ -285,7 +289,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
                     <Button key="add-output" onClick={this.handleAddOutput}>
                         <Icon glyph="fa-plus-circle" />
                         <div>
-                            <span className="btnText">{i18n('ribbon.action.arr.output.add')}</span>
+                            <span className="btnText">{<FormattedMessage {...arrPageMessages.ribbonActionArrOutputAdd} />}</span>
                         </div>
                     </Button>,
                 );
@@ -300,7 +304,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
                         >
                             <Icon glyph="fa-send" />
                             <div>
-                                <span className="btnText">{i18n('ribbon.action.arr.output.send')}</span>
+                                <span className="btnText">{<FormattedMessage {...arrPageMessages.ribbonActionArrOutputSend} />}</span>
                             </div>
                         </Button>,
                     );
@@ -320,7 +324,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
                 //             <Button key="fund-output-other-action" onClick={this.handleOtherActionDialog}>
                 //                 <Icon glyph="fa-cog" />
                 //                 <div>
-                //                     <span className="btnText">{i18n('ribbon.action.arr.output.otherAction')}</span>
+                //                     <span className="btnText">{<FormattedMessage {...arrPageMessages.ribbonActionArrOutputOtherAction} />}</span>
                 //                 </div>
                 //             </Button>,
                 //         );
@@ -328,7 +332,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
                 //             <Button key="fund-output-bulk-actions" onClick={this.handleBulkActions}>
                 //                 <Icon glyph="fa-cog" />
                 //                 <div>
-                //                     <span className="btnText">{i18n('ribbon.action.arr.output.bulkActions')}</span>
+                //                     <span className="btnText">{<FormattedMessage {...arrPageMessages.ribbonActionArrOutputBulkActions} />}</span>
                 //                 </div>
                 //             </Button>,
                 //         );
@@ -373,7 +377,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         const {dispatch} = this.props;
         const fund = this.getActiveFund(this.props);
         const fundOutputDetail = fund.fundOutput.fundOutputDetail;
-        const response = await dispatch(showConfirmDialog(i18n('arr.output.usageEnd.confirm')));
+        const response = await dispatch(showConfirmDialog(this.props.intl.formatMessage(arrPageMessages.outputUsageEndConfirm)));
         if (response) {
             this.props.dispatch(fundOutputUsageEnd(fund.versionId, fundOutputDetail.id));
         }
@@ -383,7 +387,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         const {dispatch} = this.props;
         const fund = this.getActiveFund(this.props);
         const fundOutputDetail = fund.fundOutput.fundOutputDetail;
-        const response = await dispatch(showConfirmDialog(i18n('arr.output.delete.confirm')));
+        const response = await dispatch(showConfirmDialog(this.props.intl.formatMessage(arrPageMessages.outputDeleteConfirm)));
         if (response) {
             this.props.dispatch(fundOutputDelete(fund.versionId, fundOutputDetail.id));
         }
@@ -399,10 +403,10 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
             <div className={classNames('item')}>
                 <div className="name">{item.internalCode }{item.name}</div>
                 <div className="type">
-                    {i18n('arr.output.list.type', typeIndex !== null ? outputTypes[typeIndex].name : '')}
+                    {this.props.intl.formatMessage(arrPageMessages.outputListType, { 0: typeIndex !== null ? outputTypes[typeIndex].name : '' })}
                 </div>
                 <div className="state">
-                    {i18n('arr.output.list.state.label')} {i18n('arr.output.list.state.' + item.state.toLowerCase())}{' '}
+                    {<FormattedMessage {...arrPageMessages.outputListStateLabel} />} {this.props.intl.formatMessage(messageFor(outputStateMessages, item.state.toLowerCase(), arrPageMessages.outputListStateOpen))}{' '}
                     {item.generatedDate && <span>({Utils.dateToString(new Date(item.generatedDate))})</span>}
                 </div>
                 {item.deleteDate ? <div>{Utils.dateTimeToString(new Date(item.deleteDate))}</div> : <div>&nbsp;</div>}
@@ -439,11 +443,11 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         let tabContent;
         let tabIndex = 0;
 
-        items.push({id: '' + tabIndex, title: i18n('arr.output.panel.title.function')});
+        items.push({id: '' + tabIndex, title: this.props.intl.formatMessage(arrPageMessages.outputPanelTitleFunction)});
         if (selectedTab === '' + tabIndex) tabContent = this.renderFunctionsPanel(readMode);
         tabIndex++;
 
-        items.push({id: '' + tabIndex, title: i18n('arr.output.panel.title.template')});
+        items.push({id: '' + tabIndex, title: this.props.intl.formatMessage(arrPageMessages.outputPanelTitleTemplate)});
 
         if (selectedTab === '' + tabIndex) tabContent = this.renderTemplatesPanel(readMode);
         tabIndex++;
@@ -476,11 +480,11 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
             <div className="fund-output-list-container">
                 <FormInput type="select" onChange={this.handleOutputStateSearch} value={fundOutput.filterState || -1}>
                     <option value="" key="no-filter">
-                        {i18n('arr.output.list.state.all')}
+                        {this.props.intl.formatMessage(arrPageMessages.outputListStateAll)}
                     </option>
                     {outputStates.map((state)=>
                         <option value={state} key={'state' + state}>
-                            {i18n('arr.output.list.state.' + state.toLocaleLowerCase())}
+                            {this.props.intl.formatMessage(messageFor(outputStateMessages, state.toLocaleLowerCase(), arrPageMessages.outputListStateAll))}
                         </option>
                     )}
                 </FormInput>
@@ -532,7 +536,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
         const {userDetail} = this.props;
         if (!userDetail.hasFundActionPage(activeFund.id)) {
             //Pokud uživatel nemá oprávnění spouštět funkce
-            return <span>{i18n('arr.output.functions.noPermissions')}</span>;
+            return <span>{<FormattedMessage {...arrPageMessages.outputFunctionsNoPermissions} />}</span>;
         }
 
         const {fundOutput} = activeFund;
@@ -590,9 +594,8 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
     handleRevertToOpen() {
         const fund = this.getActiveFund(this.props);
         const fundOutputDetail = fund.fundOutput.fundOutputDetail;
-        //if (window.confirm(i18n('arr.output.revert.confirm'))) {
+        // Potvrzení je záměrně vypnuté (dřív window.confirm nad klíčem arr.output.revert.confirm):
         this.props.dispatch(fundOutputRevert(fund.versionId, fundOutputDetail.id));
-        //}
     }
 
     handleClone() {
@@ -636,4 +639,4 @@ ArrOutputPage.propTypes = {
     userDetail: PropTypes.object.isRequired,
 };
 
-export default connect(mapStateToProps)(ArrOutputPage);
+export default connect(mapStateToProps)(injectIntl(ArrOutputPage));

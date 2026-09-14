@@ -1,5 +1,7 @@
 import { useSelector } from 'react-redux';
-import { i18n, Icon, RibbonGroup } from 'components/shared';
+import { Icon, RibbonGroup } from 'components/shared';
+import { FormattedMessage, useIntl } from 'react-intl';
+import { arrPageMessages } from './messages';
 import { Button } from '../../components/ui';
 import * as perms from '../../actions/user/Permission';
 import { Dropdown, DropdownButton } from 'react-bootstrap';
@@ -46,6 +48,7 @@ export default function ArrPageRibbonFn({
     const issueProtocol = useSelector((state: AppState) => storeFromArea(state, issuesActions.AREA_PROTOCOL));
     const issueTypes = useSelector((state: AppState) => state.refTables.issueTypes);
 
+    const intl = useIntl();
     const dispatch = useThunkDispatch();
     const showSearchModal = useSearchFundsModal();
 
@@ -57,7 +60,7 @@ export default function ArrPageRibbonFn({
                 onDeleteChanges={handleDeleteChanges}
             />
         );
-        dispatch(modalDialogShow(this, i18n('arr.history.title'), form, 'dialog-lg'));
+        dispatch(modalDialogShow(this, intl.formatMessage(arrPageMessages.historyTitle), form, 'dialog-lg'));
     };
 
     const handleDeleteChanges = (nodeId: number, fromChangeId: number, toChangeId: number) => {
@@ -73,9 +76,9 @@ export default function ArrPageRibbonFn({
     const handleShowSyncDaosByFund = async (versionId: number) => {
         const confirmForm = (
             <ConfirmForm
-                confirmMessage={i18n('arr.daos.fund.sync.confirm-message')}
-                submittingMessage={i18n('arr.daos.fund.sync.submitting-message')}
-                submitTitle={i18n('global.action.run')}
+                confirmMessage={<FormattedMessage {...arrPageMessages.daosFundSyncConfirmMessage} />}
+                submittingMessage={intl.formatMessage(arrPageMessages.daosFundSyncSubmittingMessage)}
+                submitTitle={<FormattedMessage {...arrPageMessages.globalActionRun} />}
                 onSubmit={async () => {
                     const result = await WebApi.syncDaosByFund(versionId);
                     dispatch(modalDialogHide());
@@ -83,7 +86,7 @@ export default function ArrPageRibbonFn({
                 }}
             />
         );
-        dispatch(modalDialogShow(this, i18n('arr.daos.fund.sync.title'), confirmForm));
+        dispatch(modalDialogShow(this, intl.formatMessage(arrPageMessages.daosFundSyncTitle), confirmForm));
     };
 
     const canCreateIssue = () => {
@@ -95,7 +98,7 @@ export default function ArrPageRibbonFn({
         dispatch(
             modalDialogShow(
                 this,
-                nodeId != null ? i18n('arr.issues.add.node.title') : i18n('arr.issues.add.arr.title'),
+                nodeId != null ? intl.formatMessage(arrPageMessages.issuesAddNodeTitle) : intl.formatMessage(arrPageMessages.issuesAddArrTitle),
                 <IssueForm
                     initialValues={{
                         issueListId: issueProtocol.id,
@@ -156,14 +159,14 @@ export default function ArrPageRibbonFn({
         altActions.push(
             <Button key="fund-settings" onClick={handleChangeFundSettings} variant={'default'}>
                 <Icon glyph="fa-wrench" />
-                <span className="btnText">{i18n('ribbon.action.arr.fund.settings.ui')}</span>
+                <span className="btnText">{<FormattedMessage {...arrPageMessages.ribbonActionArrFundSettingsUi} />}</span>
             </Button>,
         );
 
         altActions.push(
             <Button key="fund-templates" onClick={handleChangeFundTemplateSettings} variant={'default'}>
                 <Icon glyph="fa-wrench" />
-                <span className="btnText">{i18n('ribbon.action.arr.fund.settings.template')}</span>
+                <span className="btnText">{<FormattedMessage {...arrPageMessages.ribbonActionArrFundSettingsTemplate} />}</span>
             </Button>,
         );
 
@@ -174,7 +177,7 @@ export default function ArrPageRibbonFn({
                 variant={'default'}
             >
                 <Icon glyph="fa-wrench" />
-                <span className="btnText">{i18n('ribbon.action.arr.fund.settings.refTemplate')}</span>
+                <span className="btnText">{<FormattedMessage {...arrPageMessages.ribbonActionArrFundSettingsRefTemplate} />}</span>
             </Button>,
         );
 
@@ -198,7 +201,7 @@ export default function ArrPageRibbonFn({
                 >
                     <Icon glyph="fa-clock-o" />
                     <div>
-                        <span className="btnText">{i18n('ribbon.action.showFundHistory')}</span>
+                        <span className="btnText">{<FormattedMessage {...arrPageMessages.ribbonActionShowFundHistory} />}</span>
                     </div>
                 </Button>,
             );
@@ -223,7 +226,7 @@ export default function ArrPageRibbonFn({
                 >
                     <Icon glyph="fa-camera" />
                     <div>
-                        <span className="btnText">{i18n('ribbon.action.syncDaosByFund')}</span>
+                        <span className="btnText">{<FormattedMessage {...arrPageMessages.ribbonActionSyncDaosByFund} />}</span>
                     </div>
                 </Button>,
             );
@@ -235,11 +238,11 @@ export default function ArrPageRibbonFn({
             itemActions.push(
                 <Button key="next-error" onClick={handleErrorPrevious} variant={'default'}>
                     <Icon glyph="fa-arrow-left" />
-                    <span className="btnText">{i18n('ribbon.action.arr.validation.error.previous')}</span>
+                    <span className="btnText">{<FormattedMessage {...arrPageMessages.ribbonActionArrValidationErrorPrevious} />}</span>
                 </Button>,
                 <Button key="previous-error" onClick={handleErrorNext} variant={'default'}>
                     <Icon glyph="fa-arrow-right" />
-                    <span className="btnText">{i18n('ribbon.action.arr.validation.error.next')}</span>
+                    <span className="btnText">{<FormattedMessage {...arrPageMessages.ribbonActionArrValidationErrorNext} />}</span>
                 </Button>,
             );
             if (userDetail.hasOne(perms.FUND_BA_ALL, { type: perms.FUND_BA, fundId: activeFund.id })) {
@@ -251,7 +254,7 @@ export default function ArrPageRibbonFn({
                         variant={'default'}
                     >
                         <Icon glyph="fa-calculator" />
-                        <span className="btnText">{i18n('ribbon.action.arr.fund.newFundAction')}</span>
+                        <span className="btnText">{<FormattedMessage {...arrPageMessages.ribbonActionArrFundNewFundAction} />}</span>
                     </Button>,
                 );
             }
@@ -262,11 +265,11 @@ export default function ArrPageRibbonFn({
             itemActions.push(
                 <Button key="next-issue" onClick={handleIssuePrevious}>
                     <Icon glyph="fa-arrow-left" />
-                    <span className="btnText">{i18n('ribbon.action.arr.issue.previous')}</span>
+                    <span className="btnText">{<FormattedMessage {...arrPageMessages.ribbonActionArrIssuePrevious} />}</span>
                 </Button>,
                 <Button key="previous-issue" onClick={handleIssueNext}>
                     <Icon glyph="fa-arrow-right" />
-                    <span className="btnText">{i18n('ribbon.action.arr.issue.next')}</span>
+                    <span className="btnText">{<FormattedMessage {...arrPageMessages.ribbonActionArrIssueNext} />}</span>
                 </Button>,
             );
         }
@@ -278,21 +281,21 @@ export default function ArrPageRibbonFn({
                 title={
                     <span>
                         <Icon glyph="fa-commenting" />
-                        <span className="btnText">{i18n('ribbon.action.arr.issue.add')}</span>
+                        <span className="btnText">{<FormattedMessage {...arrPageMessages.ribbonActionArrIssueAdd} />}</span>
                     </span>
                 }
                 key="add-issue"
                 id="add-issue"
             >
                 <Dropdown.Item eventKey="1" onClick={createIssueFund}>
-                    {i18n('arr.issues.add.arr')}
+                    {<FormattedMessage {...arrPageMessages.issuesAddArr} />}
                 </Dropdown.Item>
                 <Dropdown.Item
                     eventKey="2"
                     disabled={subNodeId === null}
                     onClick={subNodeId !== null ? createIssueNode : null}
                 >
-                    {i18n('arr.issues.add.node')}
+                    {<FormattedMessage {...arrPageMessages.issuesAddNode} />}
                 </Dropdown.Item>
             </DropdownButton>,
         );
@@ -303,7 +306,7 @@ export default function ArrPageRibbonFn({
         <Button key="search-fa" onClick={showSearchModal}>
             <Icon glyph="fa-search" />
             <div>
-                <span className="btnText">{i18n('ribbon.action.arr.fund.search')}</span>
+                <span className="btnText">{<FormattedMessage {...arrPageMessages.ribbonActionArrFundSearch} />}</span>
             </div>
         </Button>,
     );

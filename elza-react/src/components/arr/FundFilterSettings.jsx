@@ -4,7 +4,6 @@ import React from 'react';
 import {AbstractReactComponent, FilterableListBox, FormInput, HorizontalLoader} from 'components/shared';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import { globalMessages } from 'components/shared/lang/messages';
-import { nodeListMessages } from './nodeListMessages';
 import { arrMessages } from './messages';
 import { coordinatesNearMessages } from './messages';
 import { messageFor } from 'components/shared/lang/dynamicMessage';

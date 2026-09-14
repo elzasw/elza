@@ -10,7 +10,10 @@ import React from 'react';
 import {indexById} from 'stores/app/utils';
 import {connect} from 'react-redux';
 import {FormInput, FundNodesList, FundNodesSelectForm, Ribbon} from 'components/index';
-import {i18n, Icon, ListBox, RibbonGroup, StoreHorizontalLoader, Utils} from 'components/shared';
+import { Icon, ListBox, RibbonGroup, StoreHorizontalLoader, Utils} from 'components/shared';
+import { FormattedMessage, injectIntl } from 'react-intl';
+import { nodeListMessages } from 'components/arr/nodeListMessages';
+import { arrPageMessages } from './messages';
 import {Button} from '../../components/ui';
 import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog';
 import {
@@ -210,7 +213,7 @@ class FundActionPage extends ArrParentPage {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('arr.fund.nodes.title.select'),
+                this.props.intl.formatMessage(nodeListMessages.select),
                 <FundNodesSelectForm
                     onSubmitForm={(nodeIds, nodes) => {
                         const fund = this.getActiveFund(this.props);
@@ -268,7 +271,7 @@ class FundActionPage extends ArrParentPage {
                         <Button key="new-action" onClick={this.handleRibbonNewAction}>
                             <Icon glyph="fa-plus-circle" />
                             <div>
-                                <span className="btnText">{i18n('ribbon.action.fundAction.action.new')}</span>
+                                <span className="btnText">{<FormattedMessage {...arrPageMessages.ribbonActionFundActionActionNew} />}</span>
                             </div>
                         </Button>,
                     );
@@ -284,13 +287,13 @@ class FundActionPage extends ArrParentPage {
                         <Button key="run-action" onClick={this.handleRibbonCreateAction}>
                             <Icon glyph="fa-play" />
                             <div>
-                                <span className="btnText">{i18n('ribbon.action.fundAction.form.run')}</span>
+                                <span className="btnText">{<FormattedMessage {...arrPageMessages.ribbonActionFundActionFormRun} />}</span>
                             </div>
                         </Button>,
                         <Button key="clear-action" onClick={this.handleRibbonFormClear}>
                             <Icon glyph="fa-trash" />
                             <div>
-                                <span className="btnText">{i18n('ribbon.action.fundAction.form.clear')}</span>
+                                <span className="btnText">{<FormattedMessage {...arrPageMessages.ribbonActionFundActionFormClear} />}</span>
                             </div>
                         </Button>,
                     );
@@ -305,7 +308,7 @@ class FundActionPage extends ArrParentPage {
                         <Button key="copy-action" onClick={this.handleRibbonCopyAction}>
                             <Icon glyph="fa-refresh" />
                             <div>
-                                <span className="btnText">{i18n('ribbon.action.fundAction.action.copy')}</span>
+                                <span className="btnText">{<FormattedMessage {...arrPageMessages.ribbonActionFundActionActionCopy} />}</span>
                             </div>
                         </Button>,
                     );
@@ -317,7 +320,7 @@ class FundActionPage extends ArrParentPage {
                                     <Icon glyph="fa-sync" />
                                     <div>
                                         <span className="btnText">
-                                            {i18n('ribbon.action.fundAction.action.interrupt')}
+                                            {<FormattedMessage {...arrPageMessages.ribbonActionFundActionActionInterrupt} />}
                                         </span>
                                     </div>
                                 </Button>,
@@ -330,7 +333,7 @@ class FundActionPage extends ArrParentPage {
                                     <Icon glyph="fa-times" />
                                     <div>
                                         <span className="btnText">
-                                            {i18n('ribbon.action.fundAction.action.cancel')}
+                                            {<FormattedMessage {...arrPageMessages.ribbonActionFundActionActionCancel} />}
                                         </span>
                                     </div>
                                 </Button>,
@@ -472,11 +475,11 @@ class FundActionPage extends ArrParentPage {
                     <StoreHorizontalLoader store={config} />
                     {config.fetched && (
                         <div>
-                            <h2>{i18n('arr.fundAction.form.newAction')}</h2>
+                            <h2>{<FormattedMessage {...arrPageMessages.fundActionFormNewAction} />}</h2>
                             <div>
                                 <FormInput
                                     type="select"
-                                    label={i18n('arr.fundAction.form.type')}
+                                    label={<FormattedMessage {...arrPageMessages.fundActionFormType} />}
                                     key="code-action"
                                     ref="code-action"
                                     value={form.code}
@@ -493,14 +496,14 @@ class FundActionPage extends ArrParentPage {
                                 </FormInput>
                             </div>
                             {description}
-                            <h2>{i18n('arr.fundAction.title.nodes')}</h2>
+                            <h2>{<FormattedMessage {...arrPageMessages.fundActionTitleNodes} />}</h2>
                             <FundNodesList
                                 nodes={form.nodes}
                                 onAddNode={this.handleFormNodesAdd}
                                 onDeleteNode={this.handleFormNodeDelete}
                             />
                             {form.code === PERSISTENT_SORT_CODE && [
-                                <h2>{i18n('arr.functions.configuration')}</h2>,
+                                <h2>{<FormattedMessage {...arrPageMessages.functionsConfiguration} />}</h2>,
                                 <PersistentSortForm
                                     initialValues={detail.data && detail.data.config && JSON.parse(detail.data.config)}
                                     onSubmit={this.submitPersistentSortForm}
@@ -523,13 +526,13 @@ class FundActionPage extends ArrParentPage {
                         <div className="unselected-msg">
                             <div className="title">
                                 {fundActionCount > 0
-                                    ? i18n('arr.fundAction.noSelection.title')
-                                    : i18n('arr.fundAction.emptyList.title')}
+                                    ? this.props.intl.formatMessage(arrPageMessages.fundActionNoSelectionTitle)
+                                    : this.props.intl.formatMessage(arrPageMessages.fundActionEmptyListTitle)}
                             </div>
                             <div className="msg-text">
                                 {fundActionCount > 0
-                                    ? i18n('arr.fundAction.noSelection.message')
-                                    : i18n('arr.fundAction.emptyList.message')}
+                                    ? this.props.intl.formatMessage(arrPageMessages.fundActionNoSelectionMessage)
+                                    : this.props.intl.formatMessage(arrPageMessages.fundActionEmptyListMessage)}
                             </div>
                         </div>
                     </div>
@@ -570,7 +573,7 @@ class FundActionPage extends ArrParentPage {
                             </div>
                             {data.error ? (
                                 <div>
-                                    <h3>{i18n('arr.fundAction.error')}</h3>
+                                    <h3>{<FormattedMessage {...arrPageMessages.fundActionError} />}</h3>
                                     <div>{data.error}</div>
                                 </div>
                             ) : (
@@ -593,4 +596,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps)(FundActionPage);
+export default connect(mapStateToProps)(injectIntl(FundActionPage));

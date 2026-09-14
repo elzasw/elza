@@ -16,7 +16,11 @@ import { routerNavigate } from 'actions/router';
 import { userDetailsSaveSettings } from 'actions/user/userDetail';
 import ArrHistoryForm from 'components/arr/ArrHistoryForm';
 import { createFundRoot, getOneSettings, isFundRootId, setSettings } from 'components/arr/ArrUtils';
-import { i18n, Icon, ListBox2, Loading, Tabs, Utils } from 'components/shared';
+import { Icon, ListBox2, Loading, Tabs, Utils } from 'components/shared';
+import { FormattedMessage, injectIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { messageFor } from 'components/shared/lang/dynamicMessage';
+import { arrPageMessages, scenarioDirectionMessages } from './messages';
 import { PropTypes } from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -455,36 +459,36 @@ class ArrPage extends ArrParentPage {
             centerPanel: {
                 panels: [
                     {
-                        name: i18n('arr.fund.settings.panel.center.parents'),
+                        name: this.props.intl.formatMessage(arrPageMessages.fundSettingsPanelCenterParents),
                         key: 'parents',
                         checked: dataCenter && dataCenter.parents,
                     },
                     {
-                        name: i18n('arr.fund.settings.panel.center.children'),
+                        name: this.props.intl.formatMessage(arrPageMessages.fundSettingsPanelCenterChildren),
                         key: 'children',
                         checked: dataCenter && dataCenter.children,
                     },
                     {
-                        name: i18n('arr.fund.settings.panel.rightPanel'),
+                        name: this.props.intl.formatMessage(arrPageMessages.fundSettingsPanelRightPanel),
                         key: 'rightPanel',
                         checked: dataCenter && dataCenter.rightPanel !== undefined ? dataCenter.rightPanel : true,
                     },
                     {
-                        name: i18n('arr.fund.settings.panel.acordeon'),
+                        name: this.props.intl.formatMessage(arrPageMessages.fundSettingsPanelAcordeon),
                         key: 'acordeon',
                         checked: dataCenter && dataCenter.acordeon !== undefined ? dataCenter.acordeon : false,
                     },
                 ],
             },
             strictMode: {
-                name: i18n('arr.fund.settings.rules.strictMode'),
+                name: this.props.intl.formatMessage(arrPageMessages.fundSettingsRulesStrictMode),
                 key: 'strictMode',
                 value: dataStrictMode,
             },
         };
 
         const form = <FundSettingsForm initialValues={init} onSubmitForm={this.handleChangeFundSettingsSubmit} />;
-        this.props.dispatch(modalDialogShow(this, i18n('arr.fund.settings.title'), form));
+        this.props.dispatch(modalDialogShow(this, this.props.intl.formatMessage(arrPageMessages.fundSettingsTitle), form));
     };
 
     handleChangeFundTemplateSettings = () => {
@@ -513,7 +517,7 @@ class ArrPage extends ArrParentPage {
                 }}
             />
         );
-        this.props.dispatch(modalDialogShow(this, i18n('arr.fund.template.title'), form));
+        this.props.dispatch(modalDialogShow(this, this.props.intl.formatMessage(arrPageMessages.fundTemplateTitle), form));
     };
 
     handleChangeFundSettingsSubmit(data) {
@@ -559,7 +563,7 @@ class ArrPage extends ArrParentPage {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('arr.refTemplates.title'),
+                this.props.intl.formatMessage(arrPageMessages.refTemplatesTitle),
                 <ArrRefTemplates fundId={fundId} />,
                 MODAL_DIALOG_SIZE.XL,
             ),
@@ -575,7 +579,7 @@ class ArrPage extends ArrParentPage {
         const form = (
             <ArrHistoryForm versionId={versionId} locked={locked} onDeleteChanges={this.handleDeleteChanges} />
         );
-        this.props.dispatch(modalDialogShow(this, i18n('arr.history.title'), form, 'dialog-lg'));
+        this.props.dispatch(modalDialogShow(this, this.props.intl.formatMessage(arrPageMessages.historyTitle), form, 'dialog-lg'));
     };
 
     handleDeleteChanges = (nodeId, fromChangeId, toChangeId) => {
@@ -590,7 +594,7 @@ class ArrPage extends ArrParentPage {
      * Vyvolání dialogu s vyhledáním na všemi AS.
      */
     handleFundsSearchForm = () => {
-        this.props.dispatch(modalDialogShow(this, i18n('arr.fund.title.search'), <SearchFundsForm />));
+        this.props.dispatch(modalDialogShow(this, this.props.intl.formatMessage(arrPageMessages.fundTitleSearch), <SearchFundsForm />));
     };
 
 
@@ -668,7 +672,7 @@ class ArrPage extends ArrParentPage {
                 onSubmitSuccess={() => this.props.dispatch(modalDialogHide())}
             />
         );
-        this.props.dispatch(modalDialogShow(this, i18n('visiblePolicy.form.title'), form));
+        this.props.dispatch(modalDialogShow(this, this.props.intl.formatMessage(arrPageMessages.visiblePolicyFormTitle), form));
     }
 
     handleSetVisiblePolicy(data) {
@@ -706,7 +710,7 @@ class ArrPage extends ArrParentPage {
         }
 
         if (nodesPolicy.items.length === 0) {
-            return <div>{i18n('global.data.noitem')}</div>;
+            return <div>{<FormattedMessage {...arrPageMessages.globalDataNoitem} />}</div>;
         }
 
         return (
@@ -758,7 +762,7 @@ class ArrPage extends ArrParentPage {
                                             </div>
                                             <div key="2">
                                                 <label>repeatable:</label>
-                                                {spec.repeatable ? i18n('global.title.yes') : i18n('global.title.no')}
+                                                {spec.repeatable ? this.props.intl.formatMessage(globalMessages.yes) : this.props.intl.formatMessage(globalMessages.no)}
                                             </div>
                                             <div key="3">
                                                 <label>viewOrder:</label>
@@ -769,7 +773,7 @@ class ArrPage extends ArrParentPage {
                                 );
                             });
                         } else {
-                            specs = i18n('developer.descItems.specs.empty');
+                            specs = this.props.intl.formatMessage(arrPageMessages.developerDescItemsSpecsEmpty);
                         }
                         specs = <div>{specs}</div>;
                     }
@@ -789,7 +793,7 @@ class ArrPage extends ArrParentPage {
                                 </div>
                                 <div key="2">
                                     <label>repeatable:</label>
-                                    {infoType.rep === 1 ? i18n('global.title.yes') : i18n('global.title.no')}
+                                    {infoType.rep === 1 ? this.props.intl.formatMessage(globalMessages.yes) : this.props.intl.formatMessage(globalMessages.no)}
                                 </div>
                                 <div key="3">
                                     <label>dataType:</label>
@@ -805,11 +809,11 @@ class ArrPage extends ArrParentPage {
                                 </div>
                                 <div key="6">
                                     <label>isValueUnique:</label>
-                                    {refType.isValueUnique ? i18n('global.title.yes') : i18n('global.title.no')}
+                                    {refType.isValueUnique ? this.props.intl.formatMessage(globalMessages.yes) : this.props.intl.formatMessage(globalMessages.no)}
                                 </div>
                                 <div key="7">
                                     <label>canBeOrdered:</label>
-                                    {refType.canBeOrdered ? i18n('global.title.yes') : i18n('global.title.no')}
+                                    {refType.canBeOrdered ? this.props.intl.formatMessage(globalMessages.yes) : this.props.intl.formatMessage(globalMessages.no)}
                                 </div>
                             </div>
                             {refType.useSpecification && (
@@ -901,7 +905,7 @@ class ArrPage extends ArrParentPage {
             /** key = after, before, child */
             rows.push(
                 <div>
-                    <h1>{i18n('developer.scenarios.' + key)}</h1>
+                    <h1>{this.props.intl.formatMessage(messageFor(scenarioDirectionMessages, key, arrPageMessages.developerScenariosChild))}</h1>
                     <div>{types}</div>
                 </div>,
             );
@@ -1011,7 +1015,7 @@ class ArrPage extends ArrParentPage {
             files: {
                 id: 'files',
                 key: 'files',
-                name: i18n('arr.panel.title.files'),
+                name: this.props.intl.formatMessage(arrPageMessages.panelTitleFiles),
                 ref: 'fundFiles',
                 render: () => this.renderFundFiles(activeFund, readMode),
                 focus: () => this.wrappedFocus('fundFiles'),
@@ -1021,21 +1025,21 @@ class ArrPage extends ArrParentPage {
                 id: 'discrepancies',
                 key: 'discrepancies',
                 ref: 'fundErrors',
-                name: i18n('arr.panel.title.discrepancies'),
+                name: this.props.intl.formatMessage(arrPageMessages.panelTitleDiscrepancies),
                 render: () => <DiscrepanciesList key={activeFund.id} activeFund={activeFund}/>,
             },
             visiblePolicies: {
                 id: 'visiblePolicies',
                 key: 'visiblePolicies',
                 ref: 'fundVisiblePolicies',
-                name: i18n('arr.panel.title.visiblePolicies'),
+                name: this.props.intl.formatMessage(arrPageMessages.panelTitleVisiblePolicies),
                 render: () => this.renderFundVisiblePolicies(activeFund),
                 update: () => this.props.dispatch(fundNodesPolicyFetchIfNeeded(activeFund.versionId)),
             },
             descItems: {
                 id: 'descItems',
                 key: 'descItems',
-                name: i18n('developer.title.descItems'),
+                name: this.props.intl.formatMessage(arrPageMessages.developerTitleDescItems),
                 render: () => this.renderDeveloperDescItems(activeFund, node),
                 condition: developer.enabled,
                 showCondition: !!node,
@@ -1043,7 +1047,7 @@ class ArrPage extends ArrParentPage {
             scenarios: {
                 id: 'scenarios',
                 key: 'scenarios',
-                name: i18n('developer.title.scenarios'),
+                name: this.props.intl.formatMessage(arrPageMessages.developerTitleScenarios),
                 render: () => this.renderDeveloperScenarios(activeFund, node),
                 condition: developer.enabled,
                 showCondition: !!node,
@@ -1051,7 +1055,7 @@ class ArrPage extends ArrParentPage {
             lecturing: {
                 id: 'lecturing',
                 key: 'lecturing',
-                name: i18n('arr.panel.title.lecturing'),
+                name: this.props.intl.formatMessage(arrPageMessages.panelTitleLecturing),
                 render: () => this.renderLecturingPanel(activeFund, node),
             },
         };
@@ -1155,8 +1159,8 @@ class ArrPage extends ArrParentPage {
             return (
                 <div className="arr-output-detail-container">
                     <div className="unselected-msg">
-                        <div className="title">{i18n('arr.node.noSelection.title')}</div>
-                        <div className="msg-text">{i18n('arr.node.noSelection.message')}</div>
+                        <div className="title">{<FormattedMessage {...arrPageMessages.nodeNoSelectionTitle} />}</div>
+                        <div className="msg-text">{<FormattedMessage {...arrPageMessages.nodeNoSelectionMessage} />}</div>
                     </div>
                 </div>
             );
@@ -1248,4 +1252,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps)(ArrPage);
+export default connect(mapStateToProps)(injectIntl(ArrPage));
