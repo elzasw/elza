@@ -5,7 +5,10 @@
 import React from 'react';
 import {dateTimeToString} from '../../components/Utils';
 import {connect} from 'react-redux';
-import {AbstractReactComponent, i18n, StoreHorizontalLoader, Utils} from 'components/shared';
+import {AbstractReactComponent, StoreHorizontalLoader, Utils} from 'components/shared';
+import { FormattedMessage, injectIntl } from 'react-intl';
+import { messageFor } from 'components/shared/lang/dynamicMessage';
+import { requestMessages, requestTypeMessages, daoRequestTypeMessages } from './requestMessages';
 import FundNodesSelectForm from './FundNodesSelectForm';
 import FundNodesList from './FundNodesList';
 import NodeLabel from './NodeLabel';
@@ -88,7 +91,7 @@ class ArrRequestDetail extends AbstractReactComponent {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('arr.fund.nodes.title.select'),
+                this.props.intl.formatMessage(requestMessages.fundNodesTitleSelect),
                 <FundNodesSelectForm
                     onSubmitForm={(ids, nodes) => {
                         this.props.dispatch(
@@ -108,7 +111,7 @@ class ArrRequestDetail extends AbstractReactComponent {
     handleRemoveNode = async (node) => {
         const {versionId, requestDetail, dispatch} = this.props;
 
-        const response = await dispatch(showConfirmDialog(i18n('arr.fund.nodes.deleteNode')))
+        const response = await dispatch(showConfirmDialog(this.props.intl.formatMessage(requestMessages.fundNodesDeleteNode)))
         if (response) {
             this.props.dispatch(arrRequestActions.removeNode(versionId, requestDetail, node.id));
         }
@@ -175,7 +178,7 @@ class ArrRequestDetail extends AbstractReactComponent {
             <div>
                 {countMap[NO_NODE_ID] > 0 && (
                     <div>
-                        {i18n('arr.request.title.nodes.daosWithoutNode')} ({countMap[NO_NODE_ID]})
+                        {<FormattedMessage {...requestMessages.requestTitleNodesDaosWithoutNode} />} ({countMap[NO_NODE_ID]})
                     </div>
                 )}
                 {nodesInfo}
@@ -190,8 +193,8 @@ class ArrRequestDetail extends AbstractReactComponent {
         if (requestDetail.id === null) {
             form = (
                 <div className="unselected-msg">
-                    <div className="title">{i18n('arr.request.noSelection.title')}</div>
-                    <div className="msg-text">{i18n('arr.request.noSelection.message')}</div>
+                    <div className="title">{<FormattedMessage {...requestMessages.requestNoSelectionTitle} />}</div>
+                    <div className="msg-text">{<FormattedMessage {...requestMessages.requestNoSelectionMessage} />}</div>
                 </div>
             );
         } else if (requestDetail.fetched) {
@@ -211,37 +214,37 @@ class ArrRequestDetail extends AbstractReactComponent {
 
             form = (
                 <div>
-                    <h2>{i18n('arr.request.title.request')}</h2>
+                    <h2>{<FormattedMessage {...requestMessages.requestTitleRequest} />}</h2>
                     <div className="form-group">
-                        <label>{i18n('arr.request.title.created')}</label> {dateTimeToString(new Date(req.create))}
+                        <label>{<FormattedMessage {...requestMessages.requestTitleCreated} />}</label> {dateTimeToString(new Date(req.create))}
                     </div>
                     {req.queued && (
                         <div className="form-group">
-                            <label>{i18n('arr.request.title.queued')}</label> {dateTimeToString(new Date(req.queued))}
+                            <label>{<FormattedMessage {...requestMessages.requestTitleQueued} />}</label> {dateTimeToString(new Date(req.queued))}
                         </div>
                     )}
                     {req.send && (
                         <div className="form-group">
                             <label>
                                 {req.state === 'QUEUED'
-                                    ? i18n('arr.request.title.trysend')
-                                    : i18n('arr.request.title.send')}
+                                    ? this.props.intl.formatMessage(requestMessages.requestTitleTrysend)
+                                    : this.props.intl.formatMessage(requestMessages.requestTitleSend)}
                             </label>{' '}
                             {dateTimeToString(new Date(req.send))}
                         </div>
                     )}
                     <div className="form-group">
-                        <label>{i18n('arr.request.title.type')}</label> {i18n('arr.request.title.type.' + reqType)}
+                        <label>{<FormattedMessage {...requestMessages.requestTitleType} />}</label> {this.props.intl.formatMessage(messageFor(requestTypeMessages, reqType, requestMessages.requestTitleTypeDIGITIZATION))}
                     </div>
 
                     <div className="form-group">
-                        <label>{i18n('arr.request.title.daoRequest.system')}</label> {extSystem ? extSystem.name : '-'}
+                        <label>{<FormattedMessage {...requestMessages.requestTitleDaoRequestSystem} />}</label> {extSystem ? extSystem.name : '-'}
                     </div>
 
                     {reqType === DAO && (
                         <div className="form-group">
-                            <label>{i18n('arr.request.title.daoRequest.type')}</label>{' '}
-                            {i18n('arr.request.title.type.dao.' + req.type)}
+                            <label>{<FormattedMessage {...requestMessages.requestTitleDaoRequestType} />}</label>{' '}
+                            {this.props.intl.formatMessage(messageFor(daoRequestTypeMessages, req.type, requestMessages.requestTitleTypeDaoTRANSFER))}
                         </div>
                     )}
 
@@ -255,20 +258,20 @@ class ArrRequestDetail extends AbstractReactComponent {
 
                     {
                         <div className="form-group">
-                            <label>{i18n('arr.request.title.daoRequest.identifiers.code')}</label> {req.code}
+                            <label>{<FormattedMessage {...requestMessages.requestTitleDaoRequestIdentifiersCode} />}</label> {req.code}
                         </div>
                     }
 
                     {req.externalSystemCode && (
                         <div className="form-group">
-                            <label>{i18n('arr.request.title.daoRequest.identifiers.externalCode')}</label>{' '}
+                            <label>{<FormattedMessage {...requestMessages.requestTitleDaoRequestIdentifiersExternalCode} />}</label>{' '}
                             {req.externalSystemCode}
                         </div>
                     )}
 
                     {reqType === DIGITIZATION && (
                         <div>
-                            <label className="control-label">{i18n('arr.request.title.nodes')}</label>
+                            <label className="control-label">{<FormattedMessage {...requestMessages.requestTitleNodes} />}</label>
                             <FundNodesList
                                 nodes={req.nodes}
                                 onDeleteNode={this.handleRemoveNode}
@@ -279,19 +282,19 @@ class ArrRequestDetail extends AbstractReactComponent {
                     )}
                     {reqType === DAO && (
                         <div>
-                            <label className="control-label">{i18n('arr.request.title.nodes')}</label>
+                            <label className="control-label">{<FormattedMessage {...requestMessages.requestTitleNodes} />}</label>
                             {this.renderDaoNodes(req)}
                         </div>
                     )}
                     {reqType === DAO_LINK && (
                         <div>
-                            <label className="control-label">{i18n('arr.request.title.nodes')}</label>
+                            <label className="control-label">{<FormattedMessage {...requestMessages.requestTitleNodes} />}</label>
                             {this.renderDaoLinkNode(req)}
                         </div>
                     )}
                     {req.state === 'REJECTED' && req.rejectReason && (
                         <div>
-                            <FormLabel>{i18n('arr.request.title.rejectReason')}</FormLabel> {req.rejectReason}
+                            <FormLabel>{<FormattedMessage {...requestMessages.requestTitleRejectReason} />}</FormLabel> {req.rejectReason}
                         </div>
                     )}
                 </div>
@@ -316,4 +319,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps)(ArrRequestDetail);
+export default connect(mapStateToProps)(injectIntl(ArrRequestDetail));

@@ -7,7 +7,11 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {Field, reduxForm, formValueSelector} from 'redux-form';
 import {connect} from 'react-redux';
-import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
+import {AbstractReactComponent, FormInput} from 'components/shared';
+import { FormattedMessage, injectIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { messageFor } from 'components/shared/lang/dynamicMessage';
+import { requestMessages, daoRequestTypeMessages } from './requestMessages';
 import {Form, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
 import {createDigitizationName} from './ArrUtils';
@@ -37,12 +41,12 @@ const ArrRequestForm = class extends AbstractReactComponent {
         const errors = {};
         if (props.type === 'DIGITIZATION') {
             if (values.digitizationFrontdesk === '') {
-                errors.digitizationFrontdesk = i18n('global.validation.required');
+                errors.digitizationFrontdesk = this.props.intl.formatMessage(globalMessages.validationRequired);
             }
         }
         if (props.type === 'DAO') {
             if (values.daoType === '') {
-                errors.daoType = i18n('global.validation.required');
+                errors.daoType = this.props.intl.formatMessage(globalMessages.validationRequired);
             }
         }
         return errors;
@@ -179,7 +183,7 @@ const ArrRequestForm = class extends AbstractReactComponent {
                     {showDaoTypeSelect && (
                         <Field
                             component={FormInputField}
-                            label={i18n('arr.request.title.daoRequest.type')}
+                            label={<FormattedMessage {...requestMessages.requestTitleDaoRequestType} />}
                             type="select"
                             onChange={this.handleDaoTypeChange}
                             name={'daoType'}
@@ -187,7 +191,7 @@ const ArrRequestForm = class extends AbstractReactComponent {
                             <option key={-1} value=""></option>
                             {DAO_TYPE_ALL.map(i => (
                                 <option key={i} value={i}>
-                                    {i18n('arr.request.title.type.dao.' + i)}
+                                    {this.props.intl.formatMessage(messageFor(daoRequestTypeMessages, i, requestMessages.requestTitleTypeDaoTRANSFER))}
                                 </option>
                             ))}
                         </Field>
@@ -195,14 +199,14 @@ const ArrRequestForm = class extends AbstractReactComponent {
                     {showRequestFields && (
                         <Field
                             component={FormInputField}
-                            label={i18n('arr.request.title.digitizationRequest')}
+                            label={<FormattedMessage {...requestMessages.requestTitleDigitizationRequest} />}
                             type="select"
                             name={'requestId'}
                             onChange={this.handleRequestChange}
                             disabled={!requestFetched}
                         >
                             <option key={-1} value={null}>
-                                {i18n('arr.request.title.newRequest')}
+                                {<FormattedMessage {...requestMessages.requestTitleNewRequest} />}
                             </option>
                             {preparedRequestList.fetched &&
                                 !preparedRequestList.isFetching &&
@@ -216,7 +220,7 @@ const ArrRequestForm = class extends AbstractReactComponent {
                     {showDigitizationFrontdeskSelect && (
                         <Field
                             component={FormInputField}
-                            label={i18n('arr.request.title.daoRequest.digitizationFrontdesk')}
+                            label={<FormattedMessage {...requestMessages.requestTitleDaoRequestDigitizationFrontdesk} />}
                             type="select"
                             name={'digitizationFrontdesk'}
                             disabled={!requestFetched}
@@ -232,7 +236,7 @@ const ArrRequestForm = class extends AbstractReactComponent {
                     {showRequestFields && (
                         <Field
                             component={FormInputField}
-                            label={i18n('arr.request.title.description')}
+                            label={<FormattedMessage {...requestMessages.requestTitleDescription} />}
                             type="textarea"
                             name={'description'}
                             disabled={!requestFetched}
@@ -245,17 +249,17 @@ const ArrRequestForm = class extends AbstractReactComponent {
                         variant="outline-secondary"
                         onClick={handleSubmit(onSubmitForm.bind(this, false))}
                     >
-                        {i18n('global.action.store')}
+                        {<FormattedMessage {...globalMessages.save} />}
                     </Button>
                     <Button
                         type="submit"
                         variant="outline-secondary"
                         onClick={handleSubmit(onSubmitForm.bind(this, true))}
                     >
-                        {i18n('arr.request.action.storeAndSend')}
+                        {<FormattedMessage {...requestMessages.requestActionStoreAndSend} />}
                     </Button>
                     <Button variant="link" onClick={onClose}>
-                        {i18n('global.action.close')}
+                        {<FormattedMessage {...globalMessages.close} />}
                     </Button>
                 </Modal.Footer>
             </Form>
@@ -282,6 +286,6 @@ function mapStateToProps(state) {
 const form = reduxForm({
     form: ArrRequestForm.FORM,
     validate: ArrRequestForm.validate,
-})(ArrRequestForm);
+})(injectIntl(ArrRequestForm));
 
 export default connect(mapStateToProps)(form);
