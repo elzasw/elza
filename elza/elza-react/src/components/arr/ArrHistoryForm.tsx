@@ -8,7 +8,7 @@ import { FormInput, LazyListBox } from 'components/shared';
 import { FormattedMessage, useIntl } from 'react-intl';
 import { globalMessages } from 'components/shared/lang/messages';
 import { nodeListMessages } from './nodeListMessages';
-import { arrMessages } from './messages';
+import { arrExtraMessages, arrMessages } from './messages';
 import { historyChangeMessages, historyDescriptionMessages } from './historyMessages';
 import { messageFor } from 'components/shared/lang/dynamicMessage';
 import { dateTimeToZonedUTC } from 'components/Utils';
@@ -369,7 +369,7 @@ export const ArrHistoryFormFn = ({
                         <div className="go-to-date-container">
                             <FormInput
                                 value={goToDate}
-                                placeholder="dd.mm.rrrr[ hh:mm[:ss]]"
+                                placeholder={intl.formatMessage(arrExtraMessages.historyGoToDateFormat)}
                                 onChange={handleGoToDateChange}
                                 type="string"
                                 label={<FormattedMessage {...arrMessages.historyTitleGoToDate} />}

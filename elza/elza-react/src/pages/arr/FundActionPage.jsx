@@ -463,7 +463,7 @@ class FundActionPage extends ArrParentPage {
                     const text = config.data[index].description;
                     description = (
                         <div>
-                            <div>Popis</div>
+                            <div><FormattedMessage {...arrPageMessages.fundActionDescription} /></div>
                             <div>{text}</div>
                         </div>
                     );

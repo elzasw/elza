@@ -2053,6 +2053,10 @@
     "defaultMessage": "Create filter {name}",
     "srcHash": "Es1YqY4zWi8-"
   },
+  "aip.filter.group.label": {
+    "defaultMessage": "Filters",
+    "srcHash": "diT1la9ocS5l"
+  },
   "aip.filter.loading": {
     "defaultMessage": "Loading…",
     "srcHash": "kgjJ9rUTLs7l"
@@ -2509,6 +2513,10 @@
     "defaultMessage": "entity record description",
     "srcHash": "qJt_ofVMzNBZ"
   },
+  "ap.detail.item.noSpecification": {
+    "defaultMessage": "Without a specification",
+    "srcHash": "BTd8RsciYlcu"
+  },
   "ap.detail.lastChange": {
     "defaultMessage": "Last change",
     "srcHash": "5DBjYQpcER51"
@@ -2841,6 +2849,10 @@
     "defaultMessage": "The related archival entity is required",
     "srcHash": "8X2nwOilmo83"
   },
+  "ap.modal.relationSpecification": {
+    "defaultMessage": "Relation specification",
+    "srcHash": "WHp2RxOn2htM"
+  },
   "ap.modal.searchArea": {
     "defaultMessage": "Search scope",
     "srcHash": "-m9JpOfia1Qa"
@@ -3080,6 +3092,18 @@
   "apField.searchType.create.RIGHT_LIKE": {
     "defaultMessage": "prefix search",
     "srcHash": "5HzI3-OkKkY_"
+  },
+  "app.error.boundary.continue": {
+    "defaultMessage": "To continue:",
+    "srcHash": "KZp9EQGBYCfN"
+  },
+  "app.error.boundary.message": {
+    "defaultMessage": "Something went wrong. Clear the cache and reload the page.",
+    "srcHash": "_1MhI2w9vtU3"
+  },
+  "app.error.boundary.reload": {
+    "defaultMessage": "Clear and reload",
+    "srcHash": "6TfRT15F2Ic-"
   },
   "app.footer.buildVersion": {
     "defaultMessage": "Application build version: {version}",
@@ -3389,6 +3413,10 @@
     "defaultMessage": "New value",
     "srcHash": "Eqe2_C67lKKv"
   },
+  "arr.fund.bulkModifications.selectOperation": {
+    "defaultMessage": "Choose an operation…",
+    "srcHash": "v22Bjx4CW1rc"
+  },
   "arr.fund.bulkModifications.specs": {
     "defaultMessage": "Apply to specifications",
     "srcHash": "CqzGo_ODQWjP"
@@ -3581,6 +3609,10 @@
     "defaultMessage": "Entity scope",
     "srcHash": "SlY5BtKXdR6t"
   },
+  "arr.fund.search.windowTitle": {
+    "defaultMessage": "Search in archival funds",
+    "srcHash": "ShZfp9ZF7Dgm"
+  },
   "arr.fund.settings.panel.acordeon": {
     "defaultMessage": "Accordion",
     "srcHash": "7og7gcIUY0qA"
@@ -3664,6 +3696,10 @@
   "arr.fund.version.list": {
     "defaultMessage": "Fund versions",
     "srcHash": "_KU3_T5mA0jk"
+  },
+  "arr.fundAction.description": {
+    "defaultMessage": "Description",
+    "srcHash": "rx7qx-MBKenQ"
   },
   "arr.fundAction.emptyList.message": {
     "defaultMessage": "No functions have been run yet. To create a function you first need to enable editing.",
@@ -3953,6 +3989,10 @@
     "defaultMessage": "Do you really want to delete the changes irreversibly? (number of changes that will be deleted: {0})",
     "srcHash": "uWngBoX0h4cw"
   },
+  "arr.history.goToDate.format": {
+    "defaultMessage": "dd.mm.yyyy[ hh:mm[:ss]]",
+    "srcHash": "Ibl8OvC9mAW6"
+  },
   "arr.history.title": {
     "defaultMessage": "Change history",
     "srcHash": "aAmTaMvOZjqa"
@@ -4068,6 +4108,18 @@
   "arr.node.status.ok": {
     "defaultMessage": "Ok",
     "srcHash": "hDrAEUnM7Xhd"
+  },
+  "arr.node.toolbar.main": {
+    "defaultMessage": "Description unit tools",
+    "srcHash": "eRupQFNBwf1a"
+  },
+  "arr.node.toolbar.moreItems": {
+    "defaultMessage": "More items",
+    "srcHash": "lL_Y3GPHYQCU"
+  },
+  "arr.node.toolbar.viewSettings": {
+    "defaultMessage": "Display settings",
+    "srcHash": "UblYRYJ_20Pq"
   },
   "arr.output.delete.confirm": {
     "defaultMessage": "Do you really want to delete the output?",
@@ -5933,6 +5985,10 @@
     "defaultMessage": "Close",
     "srcHash": "0r4EKpo4ZhJv"
   },
+  "global.action.confirm": {
+    "defaultMessage": "Confirm",
+    "srcHash": "k0lmE6n_VVk_"
+  },
   "global.action.create": {
     "defaultMessage": "Create",
     "srcHash": "O-socWGcRSWq"
@@ -6328,6 +6384,10 @@
   "invalidated_entities": {
     "defaultMessage": "Invalidated entities",
     "srcHash": "anb_5TqFryuh"
+  },
+  "issue.issueList": {
+    "defaultMessage": "Review protocol",
+    "srcHash": "7e4xoOEBiGli"
   },
   "issue.text": {
     "defaultMessage": "Comment text",

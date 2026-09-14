@@ -30,6 +30,7 @@ export const arrPageMessages = defineMessages({
     fundTitleSearch: { id: "arr.fund.title.search", defaultMessage: "Vyhledat v archivních souborech" },
     fundActionEmptyListMessage: { id: "arr.fundAction.emptyList.message", defaultMessage: "Zatím nebyly spuštěny žádné funkce. Pro vytvoření funkce je potřeba povolit úpravy." },
     fundActionEmptyListTitle: { id: "arr.fundAction.emptyList.title", defaultMessage: "Žádné funkce" },
+    fundActionDescription: { id: "arr.fundAction.description", defaultMessage: "Popis" },
     fundActionError: { id: "arr.fundAction.error", defaultMessage: "Chyba hromadné akce" },
     fundActionFormNewAction: { id: "arr.fundAction.form.newAction", defaultMessage: "Nová akce" },
     fundActionFormType: { id: "arr.fundAction.form.type", defaultMessage: "Typ akce" },
