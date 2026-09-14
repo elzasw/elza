@@ -26,7 +26,7 @@ export const globalMessages = defineMessages({
   copyToClipboardUnavailable: {
     id: "global_copyToClipboard_unavailable",
     defaultMessage:
-      "Zkopírování do schránky není dostupné. Aplikace pravděpodobně neběží v zabezpečeném režimu (https).",
+      "Zkopírování do schránky se nezdařilo. Označte hodnotu a zkopírujte ji ručně (Ctrl+C).",
   },
   ok: {
     id: "global_ok",

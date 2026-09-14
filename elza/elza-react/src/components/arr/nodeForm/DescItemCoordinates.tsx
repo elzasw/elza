@@ -2,6 +2,7 @@ import { AbstractReactComponent, FormInput, i18n, Icon, NoFocusButton, TooltipTr
 import { CoordinatesDisplay } from 'components/shared/coordinates/CoordinatesDisplay';
 import { addToastr } from 'components/shared/toastr/ToastrActions.jsx';
 import { objectFromWKT, wktFromTypeAndData } from 'components/Utils.jsx';
+import { copyTextToClipboard } from 'utils/clipboard';
 import PropTypes from 'prop-types';
 import * as React from 'react';
 import { connect } from "react-redux";
@@ -211,9 +212,12 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, void, Action>) => 
                 <ExportCoordinateModal onClose={() => dispatch(modalDialogHide())} itemId={itemId} arrangement={true} />,
             ),
         ),
-    copyValueToClipboard: (value: string) => {
-        dispatch(addToastr(i18n('global.action.copyToClipboard.finished'), undefined, undefined, "md", 3000));
-        navigator.clipboard.writeText(value);
+    // Hlášku o nedostupné schránce tu nezobrazujeme — komponenta ještě není převedená na
+    // react-intl a nová volání legacy helperu přidávat nesmíme (viz .claude/rules/i18n.md).
+    copyValueToClipboard: async (value: string) => {
+        if (await copyTextToClipboard(value)) {
+            dispatch(addToastr(i18n('global.action.copyToClipboard.finished'), undefined, undefined, "md", 3000));
+        }
     }
 });
 

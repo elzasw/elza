@@ -56,6 +56,12 @@ import { FormattedMessage, defineMessages, useIntl } from "react-intl";
 import { IssueVO } from "types";
 import { ArrDaoVO } from "typings/dao";
 import { DescItemTypeRef } from "typings/store";
+import { globalMessages } from "components/shared/lang/messages";
+import {
+  addToastrDanger,
+  addToastrInfo,
+} from "components/shared/toastr/ToastrActions";
+import { copyTextToClipboard } from "utils/clipboard";
 import { useAppThunkDispatch } from "utils/hooks";
 import { useAppSelector } from "utils/hooks/useAppSelector";
 import { urlFundNode } from "../../../constants";
@@ -399,7 +405,14 @@ export const NodeToolbar = ({
   }
 
   async function handleCopyUuid() {
-    await navigator.clipboard.writeText(parent.uuid);
+    const copied = await copyTextToClipboard(parent?.uuid);
+    dispatch(
+      copied
+        ? addToastrInfo(formatMessage(globalMessages.copyToClipboardFinished))
+        : addToastrDanger(
+            formatMessage(globalMessages.copyToClipboardUnavailable),
+          ),
+    );
   }
 
   function handleToggleCompact() {

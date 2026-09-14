@@ -16,6 +16,7 @@ import Icon from 'components/shared/icon/Icon';
 import { addToastr, addToastrDanger, addToastrInfo } from 'components/shared/toastr/ToastrActions';
 import React from 'react';
 import { Button } from 'react-bootstrap';
+import { copyTextToClipboard } from 'utils/clipboard';
 import { useThunkDispatch } from 'utils/hooks';
 import { ExportCoordinateModal } from './ExportCoordinateModal';
 import './CoordinatesDisplay.scss';
@@ -44,13 +45,13 @@ export const CoordinatesDisplay: React.FC<Props> = ({
     const dispatch = useThunkDispatch();
     const { formatMessage } = useIntl()
 
-    const copyValueToClipboard = () => {
-        if(navigator.clipboard){
-            navigator.clipboard.writeText(value);
-            dispatch(addToastrInfo(formatMessage({...globalMessages.copyToClipboardFinished})));
-        } else {
-            dispatch(addToastrDanger(formatMessage({...globalMessages.copyToClipboardUnavailable})));
-        }
+    const copyValueToClipboard = async () => {
+        const copied = await copyTextToClipboard(value);
+        dispatch(
+            copied
+                ? addToastrInfo(formatMessage({...globalMessages.copyToClipboardFinished}))
+                : addToastrDanger(formatMessage({...globalMessages.copyToClipboardUnavailable})),
+        );
     };
 
     const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {

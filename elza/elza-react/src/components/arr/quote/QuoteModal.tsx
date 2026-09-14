@@ -6,6 +6,7 @@ import { FormattedMessage, useIntl } from 'react-intl';
 import { Api } from 'api';
 import { NodePlainTextRepresentation } from 'elza-api';
 import { addToastrDanger, addToastrInfo } from 'components/shared/toastr/ToastrActions';
+import { copyTextToClipboard } from 'utils/clipboard';
 import { useThunkDispatch } from 'utils/hooks';
 import { globalMessages } from 'components/shared/lang';
 
@@ -27,13 +28,13 @@ export function QuoteModal({ nodeId, versionId, onClose }: Props) {
         })()
     }, [nodeId, versionId])
 
-    const copyToClipboard = (string: string) => {
-        if(navigator.clipboard){
-            navigator.clipboard.writeText(string);
-            dispatch(addToastrInfo(formatMessage({...globalMessages.copyToClipboardFinished})));
-        } else {
-            dispatch(addToastrDanger(formatMessage({...globalMessages.copyToClipboardUnavailable})));
-        }
+    const copyToClipboard = async (string: string) => {
+        const copied = await copyTextToClipboard(string);
+        dispatch(
+            copied
+                ? addToastrInfo(formatMessage({...globalMessages.copyToClipboardFinished}))
+                : addToastrDanger(formatMessage({...globalMessages.copyToClipboardUnavailable})),
+        );
     };
 
     return (

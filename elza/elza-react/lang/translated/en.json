@@ -5758,8 +5758,8 @@
     "srcHash": "APFyMCzeV0tp"
   },
   "global_copyToClipboard_unavailable": {
-    "defaultMessage": "Copying to clipboard is not available. The application is probably not running in secure mode (https).",
-    "srcHash": "tvxg4i5XBgIq"
+    "defaultMessage": "Copying to clipboard failed. Select the value and copy it manually (Ctrl+C).",
+    "srcHash": "u3SrrcptWxTx"
   },
   "global_no": {
     "defaultMessage": "No",
