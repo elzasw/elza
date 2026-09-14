@@ -4,7 +4,7 @@ import type { MessageDescriptor } from "react-intl";
  * Mapa zpráv, ze které se vybírá podle hodnoty známé až za běhu.
  *
  * Statický extraktor (`locale:extract`) vidí jen literály v `defineMessages`.
- * Skládat id za běhu (``i18n(`stats.${key}.title`)``) proto znamená, že klíč
+ * Skládat id za běhu (helper i18n nad `stats.${key}.title`) proto znamená, že klíč
  * v katalogu nikdy nevznikne. Řešení je vždycky stejné: **celou množinu klíčů
  * vypsat staticky přes `defineMessages`; dynamický je jen výběr z ní.**
  */
