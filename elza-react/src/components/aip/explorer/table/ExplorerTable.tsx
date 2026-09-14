@@ -73,7 +73,7 @@ const ExplorerTable: FC = () => {
     const [columnSizingOptions] = useState<TableColumnSizingOptions>(columnSizes);
     const dispatch = useThunkDispatch();
     const nodeName = useNodeName();
-    const columns = useMemo(() => buildColumns(nodeName), [intl.locale]);
+    const columns = useMemo(() => buildColumns(nodeName), [nodeName]);
 
     useEffect(() => {
         let newItems = [];

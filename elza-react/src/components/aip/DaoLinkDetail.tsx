@@ -127,9 +127,9 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
         const openItem = openItems.includes(item.daoLinkUuid);
 
         return (<p>
-            {/* Neznámý typ zůstává u původního znění - popisuje celý balíček. */}
+            {/* Napojení bez typu zůstává u původního znění - popisuje celý balíček. */}
             {item.path ? item.path + " "
-                : intl.formatMessage(daoTypeMessages[item.daoType] ?? levelMessages[AipLevelType.Package]) + ": "}
+                : intl.formatMessage((item.daoType && daoTypeMessages[item.daoType]) || levelMessages[AipLevelType.Package]) + ": "}
             <Button key="explorerLink" variant="link" onClick={() => handleOpenExplorer(item.aipId, item.daoCode)}>
                 {item.name}
             </Button>
