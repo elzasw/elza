@@ -3053,6 +3053,62 @@
     "defaultMessage": "<p><b>Date format</b></p><p>Century: 20. st. <i>or</i> 20.st. <i>or</i> 20st</p><p>Year: 1968</p><p>Month: 8.1968</p><p>Day: 21.8.1968</p><p>Hours, minutes, seconds: 21.8.1968 2:43 <i>or</i> 21.8.1968 8:23:31</p><p><b>Intervals</b></p><p>Years: 1968-1969</p><p>Combination: 8.1968-1969 <i>or</i> 21.8.1968 2:43-27.6.1989</p><p><b>Estimate</b></p><p>Defined by enclosing the value in round or square brackets:</p><p>E.g.: [16.8.1977] <i>or</i> [1990]-1992</p><p>When the '/' character is used to separate an interval, both from and to are treated as an estimate:</p><p>E.g.: 1985/1990</p>",
     "srcHash": "eW59aBerEcN3"
   },
+  "dataType.unitdate.format.century": {
+    "defaultMessage": "Century: 20. st. <i>or</i> 20.st. <i>or</i> 20st",
+    "srcHash": "pnH-szqQNR37"
+  },
+  "dataType.unitdate.format.day": {
+    "defaultMessage": "Day: 21.8.1968",
+    "srcHash": "QtGB4sUeEReX"
+  },
+  "dataType.unitdate.format.estimate.brackets": {
+    "defaultMessage": "Defined by enclosing the value in round or square brackets:",
+    "srcHash": "O7DuiUHQ9Sxd"
+  },
+  "dataType.unitdate.format.estimate.bracketsExample": {
+    "defaultMessage": "For example: [16.8.1977] <i>or</i> [1990]-1992",
+    "srcHash": "J_oEJsVE5e5u"
+  },
+  "dataType.unitdate.format.estimate.heading": {
+    "defaultMessage": "Estimate",
+    "srcHash": "e_i-ZgRIISuA"
+  },
+  "dataType.unitdate.format.estimate.slash": {
+    "defaultMessage": "When the \"/\" character is used to separate an interval, both ends are treated as an estimate:",
+    "srcHash": "wIiXpvjgfaRk"
+  },
+  "dataType.unitdate.format.estimate.slashExample": {
+    "defaultMessage": "For example: 1985/1990",
+    "srcHash": "cQz65spn-04-"
+  },
+  "dataType.unitdate.format.heading": {
+    "defaultMessage": "Date format",
+    "srcHash": "awuEWz-ElkJG"
+  },
+  "dataType.unitdate.format.intervals.combined": {
+    "defaultMessage": "Combined: 8.1968-1969 <i>or</i> 21.8.1968 2:43-27.6.1989",
+    "srcHash": "UrWFTi-M6vtc"
+  },
+  "dataType.unitdate.format.intervals.heading": {
+    "defaultMessage": "Intervals",
+    "srcHash": "Iw-A2gDo2i_3"
+  },
+  "dataType.unitdate.format.intervals.years": {
+    "defaultMessage": "Years: 1968-1969",
+    "srcHash": "y-nDxchCbXQf"
+  },
+  "dataType.unitdate.format.month": {
+    "defaultMessage": "Month: 8.1968",
+    "srcHash": "u1HsdOk6gNa7"
+  },
+  "dataType.unitdate.format.time": {
+    "defaultMessage": "Hours, minutes, seconds: 21.8.1968 2:43 <i>or</i> 21.8.1968 8:23:31",
+    "srcHash": "A9cmcmPkHlWU"
+  },
+  "dataType.unitdate.format.year": {
+    "defaultMessage": "Year: 1968",
+    "srcHash": "Z5zW1BerWdAy"
+  },
   "deleted_entity_table_column_deleteDate": {
     "defaultMessage": "Deletion date",
     "srcHash": "h-p2CKxKE-Vf"
@@ -3965,6 +4021,10 @@
     "defaultMessage": "Import",
     "srcHash": "yTA6PZurxTjn"
   },
+  "global.action.layerSelection": {
+    "defaultMessage": "Layer selection",
+    "srcHash": "O8wG5f4l2yjM"
+  },
   "global.action.remove": {
     "defaultMessage": "Remove",
     "srcHash": "Ofs6avvgqpQw"
@@ -3977,9 +4037,17 @@
     "defaultMessage": "Save",
     "srcHash": "eKX-T2uH2Zl7"
   },
+  "global.action.show.more": {
+    "defaultMessage": "Show more",
+    "srcHash": "OGdBbuXj5BWE"
+  },
   "global.action.showInMap": {
     "defaultMessage": "Show in map",
     "srcHash": "3dFzZlmKhOwe"
+  },
+  "global.action.systemLayerOSM": {
+    "defaultMessage": "System OSM",
+    "srcHash": "5o-Om3Kgse8y"
   },
   "global.all": {
     "defaultMessage": "All",
@@ -4040,6 +4108,22 @@
   "global.title.yes": {
     "defaultMessage": "Yes",
     "srcHash": "HFtwBBU9Smvu"
+  },
+  "global.validation.datation.invalid": {
+    "defaultMessage": "The input string is not valid.",
+    "srcHash": "8i4cWQmlLzwN"
+  },
+  "global.validation.datation.invalidFormat": {
+    "defaultMessage": "Invalid format {0}",
+    "srcHash": "iQUdW4TzdpKs"
+  },
+  "global.validation.datation.invalidISODateLength": {
+    "defaultMessage": "Invalid ISO date length",
+    "srcHash": "ajGtEOUFpaUz"
+  },
+  "global.validation.datation.invalidInterval": {
+    "defaultMessage": "Invalid ISO date interval: from > to",
+    "srcHash": "HUm49wWhr4sU"
   },
   "global.validation.required": {
     "defaultMessage": "This field is required",
@@ -4757,6 +4841,10 @@
     "defaultMessage": "Download",
     "srcHash": "xxAzjqAuIzkG"
   },
+  "registry.addRegistry": {
+    "defaultMessage": "New archival entity",
+    "srcHash": "M74gLvBzE7Qt"
+  },
   "registry.merge": {
     "defaultMessage": "Merge",
     "srcHash": "v7eMZiFp_Leo"
@@ -5448,5 +5536,13 @@
   "validate.validateInt.outOfRange": {
     "defaultMessage": "The number is outside the range of the INT type",
     "srcHash": "mfLzGOLt8l24"
+  },
+  "validationResult.show": {
+    "defaultMessage": "Show the validation result",
+    "srcHash": "N4QYIPxVZhDf"
+  },
+  "validationResult.title": {
+    "defaultMessage": "Archival entity validation result",
+    "srcHash": "5k2yrVamZmym"
   }
 }

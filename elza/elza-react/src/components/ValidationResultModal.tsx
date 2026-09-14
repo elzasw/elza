@@ -2,7 +2,8 @@ import React from 'react';
 import {Icon} from "./index";
 import {Modal} from "react-bootstrap";
 import {Button} from "./ui";
-import i18n from "./i18n";
+import { FormattedMessage } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
 
 interface OwnProps {
   message: string[];
@@ -25,7 +26,7 @@ const ValidationResultModal: React.FC<Props> = ({
       </Modal.Body>
       <Modal.Footer>
           <Button variant="link" onClick={onClose}>
-              {i18n('global.action.close')}
+              {<FormattedMessage {...globalMessages.close} />}
           </Button>
       </Modal.Footer>
   </>
