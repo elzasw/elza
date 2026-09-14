@@ -12,11 +12,15 @@ import {
     DataGrid,
     DataGridColumnsSettings,
     DataGridPagination,
-    i18n,
     Icon,
     SearchWithGoto,
     StoreHorizontalLoader,
 } from 'components/shared';
+import { FormattedMessage, injectIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { nodeMessages } from 'components/arr/nodeMessages';
+import { arrPanelMessages } from 'components/arr/panelMessages';
+
 import FundBulkModificationsForm, { OperationType } from './FundBulkModificationsForm';
 import FundFilterSettings from './FundFilterSettings';
 import { FundDataGridCellForm } from './node-edit/FundDataGridCellForm';
@@ -366,7 +370,7 @@ class FundDataGridClass extends AbstractReactComponent {
                                     itemValue = (
                                         <span key={row.id + '-' + value.position}>
                                             <Button disabled>{value.geomType}</Button>{' '}
-                                            {i18n('subNodeForm.countOfCoordinates', value.value)}
+                                            {this.props.intl.formatMessage(nodeMessages.subNodeFormCountOfCoordinates, { 0: value.value })}
                                         </span>
                                     );
                                     break;
@@ -376,11 +380,10 @@ class FundDataGridClass extends AbstractReactComponent {
                             itemValue = value.value;
                             break;
                         case 'JSON_TABLE':
-                            itemValue = i18n(
-                                'arr.fund.jsonTable.cell.title',
-                                col.refType.viewDefinition.length,
-                                value.rows,
-                            );
+                            itemValue = this.props.intl.formatMessage(nodeMessages.fundJsonTableCellTitle, {
+                                0: col.refType.viewDefinition.length,
+                                1: value.rows,
+                            });
                             break;
                         case 'INT':
                             const refType = col.refType;
@@ -472,14 +475,14 @@ class FundDataGridClass extends AbstractReactComponent {
                 {showBulkModifications && !readMode && (
                     <Button
                         onClick={this.handleBulkModifications.bind(this, col.refType, col.dataType)}
-                        title={i18n('arr.fund.bulkModifications.action')}
+                        title={this.props.intl.formatMessage(nodeMessages.fundBulkModificationsAction)}
                     >
                         <Icon glyph="fa-pencil" />
                     </Button>
                 )}
                 <Button
                     onClick={this.handleFilterSettings.bind(this, col.refType, col.dataType)}
-                    title={i18n('arr.fund.filterSettings.action')}
+                    title={this.props.intl.formatMessage(nodeMessages.fundFilterSettingsAction)}
                 >
                     <Icon glyph="fa-filter" />
                 </Button>
@@ -570,9 +573,9 @@ class FundDataGridClass extends AbstractReactComponent {
             refType: {
                 id: COL_REFERENCE_MARK,
                 code: COL_REFERENCE_MARK,
-                shortcut: i18n('arr.fund.title.referendeMark'),
+                shortcut: this.props.intl.formatMessage(nodeMessages.fundTitleReferendeMark),
             },
-            title: i18n('arr.fund.title.referendeMark'),
+            title: this.props.intl.formatMessage(nodeMessages.fundTitleReferendeMark),
             width: refMarkColInfo ? refMarkColInfo.width : COL_DEFAULT_WIDTH,
             headerColRenderer: this.headerColRenderer,
             cellRenderer: this.referenceMarkCellRenderer,
@@ -663,7 +666,7 @@ class FundDataGridClass extends AbstractReactComponent {
             this.props.dispatch(
                 modalDialogShow(
                     this,
-                    i18n('arr.fund.columnSettings.title'),
+                    this.props.intl.formatMessage(nodeMessages.fundColumnSettingsTitle),
                     <DataGridColumnsSettings
                         onSubmitForm={this.handleChangeColumnsSettings}
                         columns={[...selectedColumns, ...unselectedColumns]}
@@ -685,7 +688,7 @@ class FundDataGridClass extends AbstractReactComponent {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('arr.fund.filterSettings.title', refType.shortcut),
+                this.props.intl.formatMessage(nodeMessages.fundFilterSettingsTitle, { 0: refType.shortcut }),
                 <FundFilterSettings
                     versionId={versionId}
                     refType={refType}
@@ -783,7 +786,7 @@ class FundDataGridClass extends AbstractReactComponent {
                 }
             }
 
-            const response = selectionType !== 'FUND' || await dispatch(showConfirmDialog(i18n('arr.fund.bulkModifications.warn')));
+            const response = selectionType !== 'FUND' || await dispatch(showConfirmDialog(this.props.intl.formatMessage(nodeMessages.fundBulkModificationsWarn)));
             if (response) {
                 return this.props.dispatch(
                     fundBulkModifications(
@@ -807,7 +810,7 @@ class FundDataGridClass extends AbstractReactComponent {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('arr.fund.bulkModifications.title'),
+                this.props.intl.formatMessage(nodeMessages.fundBulkModificationsTitle),
                 <FundBulkModificationsForm
                     refType={refType}
                     dataType={dataType}
@@ -842,10 +845,10 @@ class FundDataGridClass extends AbstractReactComponent {
         var menu = (
             <ul className="dropdown-menu">
                 <Dropdown.Item onClick={this.handleSelectInNewTab.bind(this, row)}>
-                    {i18n('arr.fund.bulkModifications.action.openInNewTab')}
+                    {<FormattedMessage {...nodeMessages.fundBulkModificationsActionOpenInNewTab} />}
                 </Dropdown.Item>
                 <Dropdown.Item onClick={this.handleSelectInTab.bind(this, row)}>
-                    {i18n('arr.fund.bulkModifications.action.open')}
+                    {<FormattedMessage {...nodeMessages.fundBulkModificationsActionOpen} />}
                 </Dropdown.Item>
                 <Dropdown.Item
                     onClick={() => {
@@ -853,7 +856,7 @@ class FundDataGridClass extends AbstractReactComponent {
                         this.handleEdit(row, rowIndex, col, colIndex);
                     }}
                 >
-                    {i18n('global.action.update')}
+                    {<FormattedMessage {...globalMessages.save} />}
                 </Dropdown.Item>
             </ul>
         );
@@ -993,7 +996,7 @@ class FundDataGridClass extends AbstractReactComponent {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('search.extended.title'),
+                this.props.intl.formatMessage(arrPanelMessages.searchExtendedTitle),
                 <ArrSearchForm
                     onSubmitForm={this.handleExtendedSearchData}
                     initialValues={this.props.fundDataGrid.data}
@@ -1053,8 +1056,12 @@ class FundDataGridClass extends AbstractReactComponent {
                 itemsCount={fundDataGrid.searchedItems.length}
                 selIndex={fundDataGrid.searchedCurrentIndex}
                 textAreaInput={fundDataGrid.searchExtended}
-                filterText={fundDataGrid.luceneQuery ? i18n('search.extended.label') : fundDataGrid.searchText}
-                placeholder={i18n(fundDataGrid.searchExtended ? 'arr.fund.extendedSearch.text' : 'search.input.search')}
+                filterText={fundDataGrid.luceneQuery ? this.props.intl.formatMessage(arrPanelMessages.searchExtendedLabel) : fundDataGrid.searchText}
+                placeholder={this.props.intl.formatMessage(
+                                fundDataGrid.searchExtended
+                                    ? arrPanelMessages.searchExtendedInputText
+                                    : arrPanelMessages.searchInputSearch,
+                            )}
                 showFilterResult={fundDataGrid.showFilterResult}
                 onFulltextSearch={this.handleFulltextSearch}
                 onFulltextChange={this.handleFulltextChange}
@@ -1079,13 +1086,13 @@ class FundDataGridClass extends AbstractReactComponent {
                                 onClick={this.handleFilterUpdateData}
                             >
                                 <Icon glyph="fa-refresh" />
-                                {i18n('arr.fund.filterSettings.updateData.action')}
+                                {<FormattedMessage {...nodeMessages.fundFilterSettingsUpdateDataAction} />}
                             </Button>
                             <Button onClick={this.handleFilterClearAll}>
                                 <Icon glyph="fa-trash" />
-                                {i18n('arr.fund.filterSettings.clearAll.action')}
+                                {<FormattedMessage {...nodeMessages.fundFilterSettingsClearAllAction} />}
                             </Button>
-                            <Button onClick={this.handleColumnSettings} title={i18n('arr.fund.columnSettings.action')}>
+                            <Button onClick={this.handleColumnSettings} title={this.props.intl.formatMessage(nodeMessages.fundColumnSettingsAction)}>
                                 <Icon glyph="fa-columns" />
                             </Button>
                         </div>
@@ -1154,4 +1161,4 @@ function mapStateToProps(state) {
     };
 }
 
-export const FundDataGridConnected = withRouter(connect(mapStateToProps)(FundDataGridClass));
+export const FundDataGridConnected = withRouter(connect(mapStateToProps)(injectIntl(FundDataGridClass)));

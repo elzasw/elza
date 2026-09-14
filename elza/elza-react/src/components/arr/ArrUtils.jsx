@@ -4,7 +4,11 @@
 import {getSetFromIdsList, indexById, getMapFromList} from 'stores/app/utils';
 import React from 'react';
 import {dateTimeToString} from 'components/Utils';
-import {i18n} from 'components/shared';
+import {} from 'components/shared';
+import { nodeMessages, daoLinkTypeMessages } from 'components/arr/nodeMessages';
+import { messageFor } from 'components/shared/lang/dynamicMessage';
+import { getIntl } from 'components/shared/lang/intlInstance';
+
 import {JAVA_ATTR_CLASS} from '../../constants';
 
 /**
@@ -439,7 +443,7 @@ export function createDigitizationName(digitizationRequest, userDetail) {
  */
 export function createDaoLinkName(daoLinkRequest, userDetail) {
     let text = '';
-    text += i18n('arr.request.title.type.DAO_LINK.' + daoLinkRequest.type);
+    text += getIntl().formatMessage(messageFor(daoLinkTypeMessages, daoLinkRequest.type, nodeMessages.requestTitleTypeDAO_LINKLINK));
     text += ' ' + daoLinkRequest.didCode;
     return text;
 }

@@ -11,7 +11,12 @@ import {connect} from 'react-redux';
 import {Button} from '../../ui';
 import {Col, Form, FormControl, FormGroup, FormLabel, Modal, Row} from 'react-bootstrap';
 import {WebApi} from 'actions/index';
-import {AbstractReactComponent, Autocomplete, FormInput, HorizontalLoader, i18n, Icon} from 'components/shared';
+import {AbstractReactComponent, Autocomplete, FormInput, HorizontalLoader, Icon} from 'components/shared';
+import { FormattedMessage, injectIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { nodeMessages, addNodeDirectionMessages } from 'components/arr/nodeMessages';
+import { messageFor } from 'components/shared/lang/dynamicMessage';
+
 import {getOneSettings, isFundRootId} from 'components/arr/ArrUtils';
 import {getSetFromIdsList, indexById} from 'stores/app/utils';
 import './AddNodeForm.scss';
@@ -493,7 +498,7 @@ class AddNodeForm extends AbstractReactComponent {
                 }
                 options.push(
                     <option value={d} key={d}>
-                        {i18n(`arr.fund.addNode.${directions[d]}`)}
+                        {this.props.intl.formatMessage(messageFor(addNodeDirectionMessages, directions[d], nodeMessages.fundAddNodeChild))}
                     </option>,
                 );
             }
@@ -512,7 +517,7 @@ class AddNodeForm extends AbstractReactComponent {
                                     name="selectType"
                                     checked={this.state.selectedType === 'NEW'}
                                     onChange={this.changeNodeSource('NEW')}
-                                    label={i18n('arr.fund.addNode.type.new')}
+                                    label={<FormattedMessage {...nodeMessages.fundAddNodeTypeNew} />}
                                 />
                             </Col>
                             <Col xs={3}>
@@ -523,7 +528,7 @@ class AddNodeForm extends AbstractReactComponent {
                                     name="selectType"
                                     checked={this.state.selectedType === 'EXISTING'}
                                     onChange={this.changeNodeSource('EXISTING')}
-                                    label={i18n('arr.fund.addNode.type.existing')}
+                                    label={<FormattedMessage {...nodeMessages.fundAddNodeTypeExisting} />}
                                 />
                             </Col>
                         </Row>
@@ -533,7 +538,7 @@ class AddNodeForm extends AbstractReactComponent {
                                     ref="selsel"
                                     type="select"
                                     disabled={loading || submitting}
-                                    label={i18n('arr.fund.addNode.direction')}
+                                    label={<FormattedMessage {...nodeMessages.fundAddNodeDirection} />}
                                     defaultValue={initDirection}
                                     onChange={this.handleDirectionChange}
                                     className="form-select"
@@ -560,7 +565,7 @@ class AddNodeForm extends AbstractReactComponent {
                                     };
                                 });
                             }}
-                            label={i18n('arr.fund.addNode.ignoreRootNodes')}
+                            label={<FormattedMessage {...nodeMessages.fundAddNodeIgnoreRootNodes} />}
                             className={'mr-auto'}
                         />
                     )}
@@ -570,10 +575,10 @@ class AddNodeForm extends AbstractReactComponent {
                         type="submit"
                         onClick={this.handleFormSubmit}
                     >
-                        {submitting ? <Icon glyph={"fa-circle-o-notch fa-spin"}/> : i18n('global.action.store')}
+                        {submitting ? <Icon glyph={"fa-circle-o-notch fa-spin"}/> : this.props.intl.formatMessage(globalMessages.save)}
                     </Button>
                     <Button disabled={submitting} variant="link" onClick={onClose}>
-                        {i18n('global.action.cancel')}
+                        {<FormattedMessage {...globalMessages.cancel} />}
                     </Button>
                 </Modal.Footer>
             </Form>
@@ -636,7 +641,7 @@ class AddNodeForm extends AbstractReactComponent {
                         onChange={this.handleScenarioChange}
                         value={''}
                         checked={selectedScenario === ''}
-                        label={i18n('subNodeForm.add.noScenario')}
+                        label={<FormattedMessage {...nodeMessages.subNodeFormAddNoScenario} />}
                     />,
                 );
                 i++;
@@ -653,11 +658,11 @@ class AddNodeForm extends AbstractReactComponent {
                     onChange={this.handleScenarioChange}
                     value={TEMPLATE_SCENARIOS}
                     checked={selectedScenario === TEMPLATE_SCENARIOS}
-                    label={i18n('subNodeForm.add.fromTemplate')}
+                    label={<FormattedMessage {...nodeMessages.subNodeFormAddFromTemplate} />}
                 />,
             );
         } else {
-            scnRadios.push(<div>{i18n('arr.fund.addNode.noDirection')}</div>);
+            scnRadios.push(<div>{<FormattedMessage {...nodeMessages.fundAddNodeNoDirection} />}</div>);
         }
 
         let defaultValueTemplate = '';
@@ -671,7 +676,7 @@ class AddNodeForm extends AbstractReactComponent {
         return (
             <div>
                 <FormGroup>
-                    <FormLabel>{i18n('arr.fund.addNode.scenario')}</FormLabel>
+                    <FormLabel>{<FormattedMessage {...nodeMessages.fundAddNodeScenario} />}</FormLabel>
                     {loading ? (
                         <HorizontalLoader />
                     ) : (
@@ -690,7 +695,7 @@ class AddNodeForm extends AbstractReactComponent {
                                     className="form-select"
                                 >
                                     <option value={''} key="no-select">
-                                        {i18n('global.action.select')}
+                                        {<FormattedMessage {...nodeMessages.globalActionSelect} />}
                                     </option>
                                     {templates.map(tmp => (
                                         <option value={tmp} key={tmp}>
@@ -704,7 +709,7 @@ class AddNodeForm extends AbstractReactComponent {
                     <FormInput
                         ref="count"
                         disabled={loading || submitting}
-                        label={i18n('arr.fund.addNode.count')}
+                        label={<FormattedMessage {...nodeMessages.fundAddNodeCount} />}
                         type="number"
                         value={this.state.count}
                         onChange={this.handleCountChange}
@@ -728,7 +733,7 @@ class AddNodeForm extends AbstractReactComponent {
                             name="selectSource"
                             checked={this.state.selectedSourceAS === 'FILE'}
                             onChange={this.changeNodeSource('EXISTING', 'FILE')}
-                            label={i18n('arr.fund.addNode.type.existing.file')}
+                            label={<FormattedMessage {...nodeMessages.fundAddNodeTypeExistingFile} />}
                             id={'select-source-file'}
                         />
                     </Col>
@@ -741,7 +746,7 @@ class AddNodeForm extends AbstractReactComponent {
                             name="selectSource"
                             checked={this.state.selectedSourceAS === 'OTHER'}
                             onChange={this.changeNodeSource('EXISTING', 'OTHER')}
-                            label={i18n('arr.fund.addNode.type.existing.other')}
+                            label={<FormattedMessage {...nodeMessages.fundAddNodeTypeExistingOther} />}
                         />
                     </Col>
                 </Row>
@@ -779,7 +784,7 @@ class AddNodeForm extends AbstractReactComponent {
             <FormGroup>
                 <Autocomplete
                     disabled={submitting}
-                    label={i18n('arr.fund.regScope')}
+                    label={<FormattedMessage {...nodeMessages.fundRegScope} />}
                     items={scopeList}
                     getItemId={item => (item ? item.id : null)}
                     getItemName={item => {
@@ -801,7 +806,7 @@ class AddNodeForm extends AbstractReactComponent {
 
         return [
             <FormGroup>
-                <FormLabel>{i18n('arr.fund.addNode.type.existing.archiveFile')}</FormLabel>
+                <FormLabel>{<FormattedMessage {...nodeMessages.fundAddNodeTypeExistingArchiveFile} />}</FormLabel>
                 <FundField
                     excludedId={versionId}
                     ref="fundField"
@@ -820,7 +825,7 @@ class AddNodeForm extends AbstractReactComponent {
                 />
             </FormGroup>,
             <div>
-                {fund && <FormLabel>{i18n('arr.history.title.nodeChanges')}</FormLabel>}
+                {fund && <FormLabel>{<FormattedMessage {...nodeMessages.historyTitleNodeChanges} />}</FormLabel>}
                 {fund && (
                     <FundTreeCopy
                         disabled={submitting}
@@ -832,7 +837,7 @@ class AddNodeForm extends AbstractReactComponent {
                 )}
             </div>,
             <FormGroup>
-                {refTemplatesLoad.loaded && refTemplatesLoad.data.length > 0 && <FormLabel>{i18n('arr.fund.addNode.refTemplate')}</FormLabel>}
+                {refTemplatesLoad.loaded && refTemplatesLoad.data.length > 0 && <FormLabel>{<FormattedMessage {...nodeMessages.fundAddNodeRefTemplate} />}</FormLabel>}
                 <RefTemplateField
                     fundId={activeFund.id}
                     useIdAsValue
@@ -874,4 +879,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps)(AddNodeForm);
+export default connect(mapStateToProps)(injectIntl(AddNodeForm));

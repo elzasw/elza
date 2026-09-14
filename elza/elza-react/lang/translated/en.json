@@ -83,6 +83,10 @@
     "defaultMessage": "Description rules",
     "srcHash": "oEAVrrjMbk2s"
   },
+  "accordion.title.left.name.undefined": {
+    "defaultMessage": "'<'Description unit accordion left ID={0}'>'",
+    "srcHash": "Rhgoi4zm_khU"
+  },
   "add_desc_item_form_multi_hint": {
     "defaultMessage": "Tip: use CTRL to select multiple elements from the menu, or pick an element from the autocomplete field (ENTER on an empty field confirms the selection)",
     "srcHash": "pfHmpablPa6K"
@@ -3317,6 +3321,18 @@
     "defaultMessage": "Link to a description unit",
     "srcHash": "NYGXBdMDTXi-"
   },
+  "arr.daos.node.sync.confirm-message": {
+    "defaultMessage": "Do you really want to synchronise the digital objects linked to the description unit?",
+    "srcHash": "9rYNyZUxYlAa"
+  },
+  "arr.daos.node.sync.submitting-message": {
+    "defaultMessage": "Synchronising the digital objects for the description unit…",
+    "srcHash": "OOvmHFimLVSz"
+  },
+  "arr.daos.node.sync.title": {
+    "defaultMessage": "Synchronise all digital objects linked to the description unit",
+    "srcHash": "xtHJsgLOi5-1"
+  },
   "arr.daos.tab.fileSystemTree": {
     "defaultMessage": "File system",
     "srcHash": "FNPva2hh39ED"
@@ -3461,6 +3477,50 @@
     "defaultMessage": "Use the one from the target fund",
     "srcHash": "y2SXGAvGJ8qN"
   },
+  "arr.fund.addNode.count": {
+    "defaultMessage": "Count",
+    "srcHash": "8ZRMjCo78pBl"
+  },
+  "arr.fund.addNode.direction": {
+    "defaultMessage": "Placement",
+    "srcHash": "tWMlkxxHjoo4"
+  },
+  "arr.fund.addNode.ignoreRootNodes": {
+    "defaultMessage": "Ignore root nodes",
+    "srcHash": "aZ4I5IDRqzp3"
+  },
+  "arr.fund.addNode.noDirection": {
+    "defaultMessage": "No placement was selected.",
+    "srcHash": "8PUV2iSB2rx-"
+  },
+  "arr.fund.addNode.refTemplate": {
+    "defaultMessage": "Synchronisation template",
+    "srcHash": "ju4dIU8XaJtg"
+  },
+  "arr.fund.addNode.scenario": {
+    "defaultMessage": "Description unit type",
+    "srcHash": "Xn62NHxVRgaW"
+  },
+  "arr.fund.addNode.type.existing": {
+    "defaultMessage": "Existing",
+    "srcHash": "GelmPG1TZuy8"
+  },
+  "arr.fund.addNode.type.existing.archiveFile": {
+    "defaultMessage": "Archival fund",
+    "srcHash": "cgFgSW7aSs8l"
+  },
+  "arr.fund.addNode.type.existing.file": {
+    "defaultMessage": "From a file",
+    "srcHash": "VnhpLtNys220"
+  },
+  "arr.fund.addNode.type.existing.other": {
+    "defaultMessage": "From another fund…",
+    "srcHash": "qLcSwP1CoIc2"
+  },
+  "arr.fund.addNode.type.new": {
+    "defaultMessage": "New",
+    "srcHash": "FzR-6REK3Bz4"
+  },
   "arr.fund.addTemplate.create": {
     "defaultMessage": "Create a template",
     "srcHash": "HHRc_Zs5Wve5"
@@ -3493,6 +3553,10 @@
     "defaultMessage": "The fund cannot be closed because a function is running",
     "srcHash": "BnT0vM1JHXzo"
   },
+  "arr.fund.bulkModifications.action": {
+    "defaultMessage": "Bulk edit of a description element",
+    "srcHash": "VrS2yNgByEN_"
+  },
   "arr.fund.bulkModifications.action.delete": {
     "defaultMessage": "Remove",
     "srcHash": "eQTkknH2OPF1"
@@ -3500,6 +3564,14 @@
   "arr.fund.bulkModifications.action.findAndReplace": {
     "defaultMessage": "Find and replace",
     "srcHash": "GJvwaXs6cLg0"
+  },
+  "arr.fund.bulkModifications.action.open": {
+    "defaultMessage": "Show in the description unit form",
+    "srcHash": "Oit7piB4w2B7"
+  },
+  "arr.fund.bulkModifications.action.openInNewTab": {
+    "defaultMessage": "Show in a new description unit form tab",
+    "srcHash": "zEkQvPpgkiJK"
   },
   "arr.fund.bulkModifications.action.replace": {
     "defaultMessage": "Set",
@@ -3581,13 +3653,33 @@
     "defaultMessage": "Apply to specifications",
     "srcHash": "CqzGo_ODQWjP"
   },
+  "arr.fund.bulkModifications.title": {
+    "defaultMessage": "Bulk edit of a description element",
+    "srcHash": "VrS2yNgByEN_"
+  },
   "arr.fund.bulkModifications.values": {
     "defaultMessage": "Apply to values",
     "srcHash": "fQD43C3fj7Rc"
   },
+  "arr.fund.bulkModifications.warn": {
+    "defaultMessage": "Do you really want to run the action over the whole fund?",
+    "srcHash": "j_94QaiQyymj"
+  },
+  "arr.fund.columnSettings.action": {
+    "defaultMessage": "Set the column display",
+    "srcHash": "wKsZGTdMD0fK"
+  },
+  "arr.fund.columnSettings.title": {
+    "defaultMessage": "Column settings",
+    "srcHash": "KVgKSwLmMIQO"
+  },
   "arr.fund.currentVersion": {
     "defaultMessage": "Current version",
     "srcHash": "0u9juJv4hc8n"
+  },
+  "arr.fund.deleteNode.confirm": {
+    "defaultMessage": "Do you really want to delete this description unit?",
+    "srcHash": "_w6qxGSm9U7q"
   },
   "arr.fund.detail.institution": {
     "defaultMessage": "Institution",
@@ -3613,9 +3705,17 @@
     "defaultMessage": "No editable file format is defined in the application configuration. At least one editable format has to be set for hand-written text. An administrator can change the application settings accordingly",
     "srcHash": "2Wfn8oaTZnuA"
   },
+  "arr.fund.filterSettings.action": {
+    "defaultMessage": "Set a filter for the description element",
+    "srcHash": "FvsiFJdGgj1G"
+  },
   "arr.fund.filterSettings.action.clear": {
     "defaultMessage": "Clear the filter",
     "srcHash": "LlLv7HM8PHQX"
+  },
+  "arr.fund.filterSettings.clearAll.action": {
+    "defaultMessage": "Remove all filters",
+    "srcHash": "O-VtSCchKOJ7"
   },
   "arr.fund.filterSettings.condition.begin": {
     "defaultMessage": "Begins with",
@@ -3749,6 +3849,14 @@
     "defaultMessage": "Filter by value",
     "srcHash": "QnqCSrb8r_JP"
   },
+  "arr.fund.filterSettings.title": {
+    "defaultMessage": "Filter settings for the description element: {0}",
+    "srcHash": "4d718JfJ4Zf0"
+  },
+  "arr.fund.filterSettings.updateData.action": {
+    "defaultMessage": "Refresh the data according to the filter",
+    "srcHash": "n-peOgAMOy3n"
+  },
   "arr.fund.filterSettings.value.empty": {
     "defaultMessage": "(Empty)",
     "srcHash": "xXDBPK8Dohie"
@@ -3765,6 +3873,10 @@
     "defaultMessage": "Internal code",
     "srcHash": "p2eSz8FK6c9N"
   },
+  "arr.fund.jsonTable.cell.title": {
+    "defaultMessage": "Table {0}x{1}",
+    "srcHash": "VBAxod7KQN8_"
+  },
   "arr.fund.list.created": {
     "defaultMessage": "created: {date}, {time}",
     "srcHash": "KhxrjgVDgXID"
@@ -3776,6 +3888,10 @@
   "arr.fund.name": {
     "defaultMessage": "Name",
     "srcHash": "EQAs0dy3Z5es"
+  },
+  "arr.fund.next": {
+    "defaultMessage": "Next",
+    "srcHash": "x-jE5EpA_66l"
   },
   "arr.fund.nodes.deleteNode": {
     "defaultMessage": "Do you really want to delete this item?",
@@ -3816,6 +3932,10 @@
   "arr.fund.panel.readOnly": {
     "defaultMessage": "You only have read permission",
     "srcHash": "GU4n-7GtjJAq"
+  },
+  "arr.fund.prev": {
+    "defaultMessage": "Previous",
+    "srcHash": "zOLN3BpLNrFE"
   },
   "arr.fund.regScope": {
     "defaultMessage": "Entity scope",
@@ -3944,6 +4064,10 @@
   "arr.fund.title.approved": {
     "defaultMessage": "The fund was closed",
     "srcHash": "5HpiKAHjK6k8"
+  },
+  "arr.fund.title.referendeMark": {
+    "defaultMessage": "Description unit number",
+    "srcHash": "2Gi98_eU3ooD"
   },
   "arr.fund.title.ruleSet": {
     "defaultMessage": "Change rules",
@@ -4425,9 +4549,21 @@
     "defaultMessage": "Errors",
     "srcHash": "79K9pXBMuzZy"
   },
+  "arr.node.status.err.missing": {
+    "defaultMessage": "Missing elements",
+    "srcHash": "GCeqQF3wpKPZ"
+  },
   "arr.node.status.ok": {
     "defaultMessage": "Ok",
     "srcHash": "hDrAEUnM7Xhd"
+  },
+  "arr.node.status.okx": {
+    "defaultMessage": "Ok*",
+    "srcHash": "a4VnQa8_OAvm"
+  },
+  "arr.node.status.undefined": {
+    "defaultMessage": "Not validated",
+    "srcHash": "CRpyd7Uf7COx"
   },
   "arr.node.toolbar.main": {
     "defaultMessage": "Description unit tools",
@@ -4873,6 +5009,10 @@
     "defaultMessage": "Save and send",
     "srcHash": "wU2I5Obm_Z1h"
   },
+  "arr.request.digitizationRequest.form.title": {
+    "defaultMessage": "Digitised copy request",
+    "srcHash": "p9oOPBOujYZ5"
+  },
   "arr.request.noSelection.message": {
     "defaultMessage": "Please select a digitisation request from the list.",
     "srcHash": "4vb62tFxYtx6"
@@ -4984,6 +5124,14 @@
   "arr.request.title.type.DAO_LINK": {
     "defaultMessage": "Request to link to / unlink from a description unit",
     "srcHash": "zsk7krm44863"
+  },
+  "arr.request.title.type.DAO_LINK.LINK": {
+    "defaultMessage": "Link to",
+    "srcHash": "0o9VtgmbNnO2"
+  },
+  "arr.request.title.type.DAO_LINK.UNLINK": {
+    "defaultMessage": "Unlink from",
+    "srcHash": "sfhaKz4G4mDx"
   },
   "arr.request.title.type.DIGITIZATION": {
     "defaultMessage": "Digitisation request",
@@ -5132,6 +5280,10 @@
   "arr.syncNodes.childrenNodes": {
     "defaultMessage": "Including subordinate units",
     "srcHash": "6Z6cSfIpTJEl"
+  },
+  "arr.syncNodes.title": {
+    "defaultMessage": "Synchronise description units from source funds",
+    "srcHash": "Jt3ysspgvsFR"
   },
   "arrDao.action.copyLink": {
     "defaultMessage": "Copy link",
@@ -5424,6 +5576,14 @@
   "dataType.UNITDATE.format": {
     "defaultMessage": "<p><b>Date format</b></p><p>Century: 20. st. <i>or</i> 20.st. <i>or</i> 20st</p><p>Year: 1968</p><p>Month: 8.1968</p><p>Day: 21.8.1968</p><p>Hours, minutes, seconds: 21.8.1968 2:43 <i>or</i> 21.8.1968 8:23:31</p><p><b>Intervals</b></p><p>Years: 1968-1969</p><p>Combination: 8.1968-1969 <i>or</i> 21.8.1968 2:43-27.6.1989</p><p><b>Estimate</b></p><p>Defined by enclosing the value in round or square brackets:</p><p>E.g.: [16.8.1977] <i>or</i> [1990]-1992</p><p>When the '/' character is used to separate an interval, both from and to are treated as an estimate:</p><p>E.g.: 1985/1990</p>",
     "srcHash": "eW59aBerEcN3"
+  },
+  "dataType.coordinates.format": {
+    "defaultMessage": "<div><b>Loading coordinates from a file</b> in the<br />KML, GML or WKT format<br /><b>WGS84 system</b> (e.g. Mapy.cz)<br /><i>example: 49.5765442N, 14.3965617E</i><br /><b>WKT markup language</b><br /><i>examples: POINT (14.3965617 49.5765442)</i><br /><i>LINESTRING (14.3965528 49.5765909,14.4172300 49.5551484)</i><br /><i>POLYGON ((14.3828494 49.5976066,14.3829031 49.5971094,<br />14.3842817 49.5971546,14.3842281 49.5976379,<br />14.3828494 49.5976066))</i></div>",
+    "srcHash": "eF7NJdW2to1P"
+  },
+  "dataType.unitdate.format": {
+    "defaultMessage": "<div><b>Date format</b><br />Century: 20. st. <i>or</i> 20.st. <i>or</i> 20st<br />Year: 1968<br />Month: 8.1968<br />Day: 21.8.1968<br />Hours, minutes, seconds: 21.8.1968 2:43 <i>or</i> 21.8.1968 8:23:31<br /><b>Intervals</b><br />Years: 1968-1969<br />Combinations: 8.1968-1969 <i>or</i> 21.8.1968 2:43-27.6.1989<br /><b>Estimate</b><br />Written by enclosing the value in round or square brackets:<br />For example: [16.8.1977] <i>or</i> [1990]-1992<br />When \"/\" is used to separate an interval, both ends are read as an estimate:<br />For example: 1985/1990</div>",
+    "srcHash": "xnAtbsKZetGY"
   },
   "dataType.unitdate.format.century": {
     "defaultMessage": "Century: 20. st. <i>or</i> 20.st. <i>or</i> 20st",
@@ -6441,6 +6601,10 @@
     "defaultMessage": "Confirm",
     "srcHash": "k0lmE6n_VVk_"
   },
+  "global.action.copyToClipboard.finished": {
+    "defaultMessage": "Copied to the clipboard",
+    "srcHash": "APFyMCzeV0tp"
+  },
   "global.action.create": {
     "defaultMessage": "Create",
     "srcHash": "O-socWGcRSWq"
@@ -6545,6 +6709,14 @@
     "defaultMessage": "Loading data…",
     "srcHash": "tRaCvBzxtiHY"
   },
+  "global.data.loading.node": {
+    "defaultMessage": "Loading the list of description units",
+    "srcHash": "Nie3sBydcP2X"
+  },
+  "global.data.loading.node.children": {
+    "defaultMessage": "Loading the list of child description units",
+    "srcHash": "zOOsY1vPE22f"
+  },
   "global.data.noitem": {
     "defaultMessage": "No items",
     "srcHash": "L42h3al15ZVt"
@@ -6592,6 +6764,10 @@
   "global.insufficient.right": {
     "defaultMessage": "You do not have sufficient permissions to access this.",
     "srcHash": "hQuBJNAIBA5P"
+  },
+  "global.title.moreRows": {
+    "defaultMessage": "There are further records ({0}).",
+    "srcHash": "YDEDoIJf7U2D"
   },
   "global.title.no": {
     "defaultMessage": "No",
@@ -8085,9 +8261,45 @@
     "defaultMessage": "Digital objects",
     "srcHash": "PQYhCBjzlUJO"
   },
+  "subNodeForm.add.fromTemplate": {
+    "defaultMessage": "From a template",
+    "srcHash": "j3aqWoc4lnnR"
+  },
+  "subNodeForm.add.noScenario": {
+    "defaultMessage": "Without a scenario",
+    "srcHash": "lvzGyErjpnrj"
+  },
+  "subNodeForm.countOfCoordinates": {
+    "defaultMessage": "Number of points: {0}",
+    "srcHash": "Elb2Xm6tDrrC"
+  },
+  "subNodeForm.descItem.coordinates.action.add": {
+    "defaultMessage": "Upload coordinates",
+    "srcHash": "vb8BX1ZiEPD3"
+  },
+  "subNodeForm.descItem.link.description": {
+    "defaultMessage": "Label",
+    "srcHash": "cc7IqIIUNBbl"
+  },
+  "subNodeForm.descItem.link.refTemplate": {
+    "defaultMessage": "Synchronisation template",
+    "srcHash": "x8fOpquJ_SVY"
+  },
+  "subNodeForm.descItem.link.uri": {
+    "defaultMessage": "URI",
+    "srcHash": "1w-62I0Pnq8s"
+  },
   "subNodeForm.descItemGroup.default": {
     "defaultMessage": "No group",
     "srcHash": "G_l35mUDgTO4"
+  },
+  "subNodeForm.descItemType.all": {
+    "defaultMessage": "All elements",
+    "srcHash": "H6yUhlj-GIjO"
+  },
+  "subNodeForm.descItemType.calculable": {
+    "defaultMessage": "The value is calculated by a function",
+    "srcHash": "bUxfh_c6iECU"
   },
   "subNodeForm.descItemType.spec.all": {
     "defaultMessage": "All",
@@ -8421,8 +8633,24 @@
     "defaultMessage": "Edit",
     "srcHash": "7D1xFD_em0Dr"
   },
+  "visiblePolicy.extensions": {
+    "defaultMessage": "Extensions",
+    "srcHash": "g1P6Axk7PzUU"
+  },
   "visiblePolicy.form.title": {
     "defaultMessage": "Display settings for description unit validation rules",
     "srcHash": "E3Ji8UbMdmaJ"
+  },
+  "visiblePolicy.rules": {
+    "defaultMessage": "Validation rules",
+    "srcHash": "CJUhnRChHrzm"
+  },
+  "visiblePolicy.rules.node": {
+    "defaultMessage": "Settings for the description unit",
+    "srcHash": "iuESeSQuT5ml"
+  },
+  "visiblePolicy.rules.parent": {
+    "defaultMessage": "Settings from higher levels",
+    "srcHash": "fh2C_FuYgoHX"
   }
 }

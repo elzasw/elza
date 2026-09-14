@@ -19,27 +19,13 @@ const LITERAL_CALL = /\bi18n\(\s*['"`]\^?([^'"`]+)['"`]/g;
  * ho nenajde a klíč by se z katalogu ztratil; hlídá to test, který kontroluje,
  * že v `src/` nepřibylo skládané volání mimo tenhle seznam.
  */
-export const DYNAMIC_KEYS = [
-    // ArrUtils.jsx: 'arr.request.title.type.DAO_LINK.' + daoLinkRequest.type
-    "arr.request.title.type.DAO_LINK.LINK",
-    "arr.request.title.type.DAO_LINK.UNLINK",
-    // nodeForm/AddNodeForm.jsx: `arr.fund.addNode.${directions[d]}`
-    "arr.fund.addNode.before",
-    "arr.fund.addNode.after",
-    "arr.fund.addNode.child",
-    "arr.fund.addNode.atEnd",
-    // nodeForm/ItemTooltipWrapper.jsx: i18n('^' + tooltipTitle)
-    "dataType.coordinates.format",
-    "dataType.recordRef.format",
-    "dataType.unitdate.format",
+export const DYNAMIC_KEYS: string[] = [
+    // Prázdné: všechna místa, která klíč skládala, jsou převedená na react-intl
+    // (uzavřené množiny se tam vypisují staticky a vybírá se přes messageFor).
 ];
 
 /** Soubory, ve kterých je skládané volání očekávané (viz DYNAMIC_KEYS). */
-export const DYNAMIC_CALL_FILES = [
-    "src/components/arr/ArrUtils.jsx",
-    "src/components/arr/nodeForm/AddNodeForm.jsx",
-    "src/components/arr/nodeForm/ItemTooltipWrapper.jsx",
-];
+export const DYNAMIC_CALL_FILES: string[] = [];
 
 /**
  * Zachycený text, který ve skutečnosti není klíč: prefix skládaného klíče

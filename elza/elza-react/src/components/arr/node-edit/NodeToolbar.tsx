@@ -42,7 +42,11 @@ import { fundSubNodeDaoChangeScenario } from "actions/arr/subNodeDaos";
 import { modalDialogHide, modalDialogShow } from "actions/global/modalDialog";
 import { routerNavigate } from "actions/router";
 import IssueForm from "components/form/IssueForm";
-import i18n from "components/i18n";
+import { FormattedMessage, defineMessages, useIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { nodeMessages } from 'components/arr/nodeMessages';
+import { daoMessages } from 'components/arr/daoMessages';
+
 import { showConfirmDialog } from "components/shared/dialog";
 import ConfirmForm from "components/shared/form/ConfirmForm";
 import {
@@ -52,11 +56,9 @@ import {
   NodeStatus,
 } from "elza-api";
 import { useState } from "react";
-import { FormattedMessage, defineMessages, useIntl } from "react-intl";
 import { IssueVO } from "types";
 import { ArrDaoVO } from "typings/dao";
 import { DescItemTypeRef } from "typings/store";
-import { globalMessages } from "components/shared/lang/messages";
 import {
   addToastrDanger,
   addToastrInfo,
@@ -236,7 +238,7 @@ export const NodeToolbar = ({
     dispatch(
       modalDialogShow(
         this,
-        i18n("arr.history.title"),
+        intl.formatMessage(nodeMessages.historyTitle),
         <ArrHistoryForm
           locked={false}
           versionId={activeFund.versionId}
@@ -252,7 +254,7 @@ export const NodeToolbar = ({
 
   async function handleDeleteNode() {
     const response = await dispatch(
-      showConfirmDialog(i18n("arr.fund.deleteNode.confirm")),
+      showConfirmDialog(intl.formatMessage(nodeMessages.fundDeleteNodeConfirm)),
     );
 
     if (response) {
@@ -297,7 +299,7 @@ export const NodeToolbar = ({
     dispatch(
       modalDialogShow(
         this,
-        i18n("arr.issues.add.node.title"),
+        intl.formatMessage(nodeMessages.issuesAddNodeTitle),
         <IssueForm
           onSubmit={(data: IssueVO) =>
             WebApi.addIssue({
@@ -352,7 +354,7 @@ export const NodeToolbar = ({
     dispatch(
       modalDialogShow(
         this,
-        i18n("arr.request.digitizationRequest.form.title"),
+        intl.formatMessage(nodeMessages.requestDigitizationRequestFormTitle),
         form,
       ),
     );
@@ -364,9 +366,9 @@ export const NodeToolbar = ({
 
     const confirmForm = (
       <ConfirmForm
-        confirmMessage={i18n("arr.daos.node.sync.confirm-message")}
-        submittingMessage={i18n("arr.daos.node.sync.submitting-message")}
-        submitTitle={i18n("global.action.run")}
+        confirmMessage={<FormattedMessage {...nodeMessages.daosNodeSyncConfirmMessage} />}
+        submittingMessage={intl.formatMessage(nodeMessages.daosNodeSyncSubmittingMessage)}
+        submitTitle={<FormattedMessage {...globalMessages.run} />}
         onSubmit={async () => {
           const result = await WebApi.syncDaoLink(versionId, nodeId);
           dispatch(modalDialogHide());
@@ -375,7 +377,7 @@ export const NodeToolbar = ({
       />
     );
     dispatch(
-      modalDialogShow(this, i18n("arr.daos.node.sync.title"), confirmForm),
+      modalDialogShow(this, intl.formatMessage(nodeMessages.daosNodeSyncTitle), confirmForm),
     );
   }
 
@@ -396,7 +398,7 @@ export const NodeToolbar = ({
     dispatch(
       modalDialogShow(
         this,
-        i18n("arr.syncNodes.title"),
+        intl.formatMessage(nodeMessages.syncNodesTitle),
         <SyncNodes
           nodeId={nodeId}
           nodeVersion={nodeVersion}
@@ -429,7 +431,7 @@ export const NodeToolbar = ({
     dispatch(
       modalDialogShow(
         this,
-        i18n("visiblePolicy.form.title"),
+        intl.formatMessage(nodeMessages.visiblePolicyFormTitle),
         <NodeSettingsModal
           nodeId={nodeData?.id}
           fundVersionId={activeFund.versionId}
@@ -648,11 +650,11 @@ export const NodeToolbar = ({
                 <MenuTrigger disableButtonEnhancement={true}>
                   <MenuButton
                     size="small"
-                    title={i18n("subNodeDao.dao.action.changeScenario")}
+                    title={intl.formatMessage(daoMessages.subNodeDaoDaoActionChangeScenario)}
                     className={styles.toolbarScenarioButton}
                     icon={<LinkMultipleRegular />}
                   >
-                    {/*{i18n("subNodeDao.dao.action.changeScenario")}*/}
+                    {/*{<FormattedMessage {...daoMessages.subNodeDaoDaoActionChangeScenario} />}*/}
                   </MenuButton>
                 </MenuTrigger>
                 <MenuPopover>
