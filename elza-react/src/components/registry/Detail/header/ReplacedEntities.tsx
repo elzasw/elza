@@ -1,6 +1,7 @@
 import { WebApi } from 'actions';
 import { urlEntity } from '../../../../constants';
-import i18n from "components/i18n";
+import { FormattedMessage, useIntl } from 'react-intl';
+import { apDetailMessages } from '../messages';
 import { TooltipTrigger } from 'components/shared';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -10,6 +11,7 @@ import DetailDescriptionsItem from './DetailDescriptionsItem';
 import './DetailHeader.scss';
 
 export const ReplacedEntities = ({ids = []}:{ids?: number[]}) => {
+    const intl = useIntl();
     const [entities, setEntities] = useState<ApAccessPointVO[]>();
     const [fetching, setFetching] = useState(false);
     const isFetched = entities !== undefined;
@@ -42,10 +44,10 @@ export const ReplacedEntities = ({ids = []}:{ids?: number[]}) => {
 
                 </div>
                 : <div>
-                    <div>{`${i18n("ap.detail.replacingEntities")}: `}</div>
+                    <div>{`${<FormattedMessage {...apDetailMessages.detailReplacingEntities} />}: `}</div>
                     {entities?.map((entity) => {
                         return <div>
-                            <Link style={{color: "#33afff"}} to={urlEntity(entity.id)}> {`${entity.id}: ${entity.name || i18n("ap.detail.replacedEntity.noName")}`} </Link>
+                            <Link style={{color: "#33afff"}} to={urlEntity(entity.id)}> {`${entity.id}: ${entity.name || intl.formatMessage(apDetailMessages.detailReplacedEntityNoName)}`} </Link>
                         </div>
                     })
                 }

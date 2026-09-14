@@ -4,7 +4,8 @@ import React, { FC, useEffect, useState } from 'react';
 import { ItemType } from "../../../../api/ApViewSettings";
 import { PartValidationErrorsVO } from "../../../../api/PartValidationErrorsVO";
 import { Bindings } from "../../../../types";
-import i18n from "../../../i18n";
+import { useIntl } from 'react-intl';
+import { apDetailMessages } from '../messages';
 import Icon from '../../../shared/icon/Icon';
 import ValidationResultIcon from "../../../ValidationResultIcon";
 import { DetailPartInfo } from "./DetailPartInfo";
@@ -45,6 +46,7 @@ const DetailRelatedPart: FC<Props> = ({
     itemTypeSettings,
     select,
 }) => {
+    const intl = useIntl();
     const [collapsed, setCollapsed] = useState(true);
     // const [modalVisible, setModalVisible] = useState(false);
 
@@ -109,7 +111,7 @@ const DetailRelatedPart: FC<Props> = ({
                     { editMode && !isDeleted &&
                         <SmallButton
                             onClick={() => onEdit && onEdit({part, updatedPart})}
-                            title={i18n("ap.detail.edit", "")}
+                            title={intl.formatMessage(apDetailMessages.detailEdit, { 0: "" })}
                         >
                             <Icon glyph={'fa-pencil'} />
                         </SmallButton>
@@ -117,13 +119,13 @@ const DetailRelatedPart: FC<Props> = ({
                     {editMode && !isDeleted &&
                         <SmallButton
                             onClick={() => onDelete && onDelete({part, updatedPart})}
-                            title={i18n("ap.detail.delete")}
+                            title={intl.formatMessage(apDetailMessages.detailDelete)}
                         >
                             <Icon glyph={'fa-trash'} />
                         </SmallButton>
                     }
                     {(isDeleted || hasLocalChange) &&
-                        <SmallButton title={i18n("ap.detail.revert")} onClick={()=> onRevert({part, updatedPart})}>
+                        <SmallButton title={intl.formatMessage(apDetailMessages.detailRevert)} onClick={()=> onRevert({part, updatedPart})}>
                             <Icon glyph="fa-undo" />
                         </SmallButton>
                     }

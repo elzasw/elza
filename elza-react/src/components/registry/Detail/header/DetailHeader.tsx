@@ -1,5 +1,6 @@
 import { StateApprovalEx } from 'api/StateApproval';
-import i18n from "components/i18n";
+import { FormattedMessage, useIntl } from 'react-intl';
+import { apDetailMessages } from '../messages';
 import { TooltipTrigger } from 'components/shared';
 import React, { FC, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -63,6 +64,7 @@ const DetailHeader: FC<Props> = ({
     validationPartErrors,
     revisionActive,
 }) => {
+    const intl = useIntl();
     const scopes = useSelector(({ refTables: { scopesData } }: AppState) =>
         scopesData.scopes.find((scope) => scope.versionId === -1)?.scopes || []) // všechny scope
     const apTypesMap = useSelector(({ refTables }: AppState) => refTables.recordTypes.itemsMap);
@@ -154,9 +156,9 @@ const DetailHeader: FC<Props> = ({
                                     content={
                                         <>
                                             <div>id: {id}</div>
-                                            <div>{i18n("registry.version").toLowerCase()}: {item.version}</div>
+                                            <div>{intl.formatMessage(apDetailMessages.registryVersion).toLowerCase()}: {item.version}</div>
                                             <div>uuid: {item.uuid}</div>
-                                            {itemScope && <div>{i18n("registry.scopeClass").toLowerCase()}: {itemScope.name}</div>}
+                                            {itemScope && <div>{intl.formatMessage(apDetailMessages.registryScopeClass).toLowerCase()}: {itemScope.name}</div>}
                                         </>
                                     }
                                 >
@@ -172,12 +174,12 @@ const DetailHeader: FC<Props> = ({
                                         <>
                                             {item.lastChange ?
                                                 <>
-                                                    <div>{i18n("ap.detail.lastChange")}: {formatDateTime(item.lastChange.change)}</div>
-                                                    <div>{i18n("ap.detail.modifiedBy")}: {item.lastChange.user?.displayName || i18n("ap.detail.lastChange.user.notAvailable")}</div>
+                                                    <div>{<FormattedMessage {...apDetailMessages.detailLastChange} />}: {formatDateTime(item.lastChange.change)}</div>
+                                                    <div>{<FormattedMessage {...apDetailMessages.detailModifiedBy} />}: {item.lastChange.user?.displayName || intl.formatMessage(apDetailMessages.detailLastChangeUserNotAvailable)}</div>
                                                 </>
-                                                : <div>{i18n("ap.detail.lastChange.notAvailable")}</div>
+                                                : <div>{<FormattedMessage {...apDetailMessages.detailLastChangeNotAvailable} />}</div>
                                             }
-                                            {assignedUser && <div>{i18n("ap.ext-search.assignedTo")}: {assignedUser.username}</div>}
+                                            {assignedUser && <div>{<FormattedMessage {...apDetailMessages.extSearchAssignedTo} />}: {assignedUser.username}</div>}
                                         </>
                                     }
                                 >
@@ -191,7 +193,7 @@ const DetailHeader: FC<Props> = ({
                                     ?
                                     <div>
                                         <div>
-                                            <b>{i18n('arr.node.status.err.errors')}</b>
+                                            <b>{<FormattedMessage {...apDetailMessages.arrNodeStatusErrErrors} />}</b>
                                         </div>
                                         <div>
                                             {validationErrors?.map((error, i) => <div key={i}> {error}</div>)}
@@ -202,14 +204,14 @@ const DetailHeader: FC<Props> = ({
                                             </div>)}
                                         </div>
                                     </div>
-                                    : errorsFetched ? i18n('arr.node.status.ok') : i18n('global.validation.loading')}
+                                    : errorsFetched ? intl.formatMessage(apDetailMessages.arrNodeStatusOk) : intl.formatMessage(apDetailMessages.globalValidationLoading)}
                                 {!revisionActive && errorsFetched && <div>
                                     <button className="tooltip-link" onClick={async () => {
                                         if (id != undefined) {
                                             await Api.accesspoints.accessPointValidateAccessPoint(id)
                                             if (onInvalidateValidation) onInvalidateValidation();
                                         }
-                                    }}>{i18n('global.validation.run')}</button>
+                                    }}>{<FormattedMessage {...apDetailMessages.globalValidationRun} />}</button>
                                 </div>}
 
                             </div>
@@ -256,7 +258,7 @@ const DetailHeader: FC<Props> = ({
                             <Button
                                 onClick={onToggleGlobalCollapsed}
                                 variant={'light'}
-                                title={globalCollapsed ? 'Rozbalit všechny části' : 'Sbalit všechny části'}
+                                title={intl.formatMessage(globalCollapsed ? apDetailMessages.detailExpandAll : apDetailMessages.detailCollapseAll)}
                                 className='button'
                                 style={{fontSize: "0.8em"}}
                             >
@@ -266,7 +268,7 @@ const DetailHeader: FC<Props> = ({
                         <Button
                             onClick={onToggleCollapsed}
                             variant={'light'}
-                            title={collapsed ? 'Zobrazit podrobnosti' : 'Skrýt podrobnosti'}
+                            title={intl.formatMessage(collapsed ? apDetailMessages.detailShowDetails : apDetailMessages.detailHideDetails)}
                             className='button'
                         >
                             <Icon glyph={collapsed ? 'fa-angle-double-down' : 'fa-angle-double-up'} />

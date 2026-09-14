@@ -1,4 +1,5 @@
-import i18n from 'components/i18n';
+import { FormattedMessage, useIntl } from 'react-intl';
+import { apDetailMessages } from '../messages';
 import { SmallButton } from 'components/shared/button/small-button';
 import React, { FC } from 'react';
 import { ApPartVO } from '../../../../api/ApPartVO';
@@ -63,6 +64,7 @@ const DetailMultiSection: FC<Props> = ({
     partType,
     select,
 }) => {
+    const intl = useIntl();
     if (!editMode && parts.length === 0) {
         return null;
     }
@@ -103,12 +105,12 @@ const DetailMultiSection: FC<Props> = ({
         return <>
             {editMode && <>
                 {!singlePart && (
-                    <SmallButton title={i18n("ap.detail.add", partType.name)} onClick={() => onAdd()}>
+                    <SmallButton title={intl.formatMessage(apDetailMessages.detailAdd, { 0: partType.name })} onClick={() => onAdd()}>
                         <Icon glyph="fa-plus"/>
                     </SmallButton>
                 )}
                 {singlePart && parts.length === 0 &&
-                    <SmallButton title={i18n("ap.detail.edit", partType.name)} onClick={()=> onAdd()}>
+                    <SmallButton title={intl.formatMessage(apDetailMessages.detailEdit, { 0: partType.name })} onClick={()=> onAdd()}>
                         <Icon glyph="fa-pencil"/>
                     </SmallButton>
                 }
@@ -172,29 +174,29 @@ const DetailMultiSection: FC<Props> = ({
             {editMode &&
                 <>
                     {showPreferredSwitch && !isPreferred && !isDeleted && (
-                        <SmallButton title={i18n("ap.detail.setPreferred")} onClick={()=> onSetPreferred(part)}>
+                        <SmallButton title={intl.formatMessage(apDetailMessages.detailSetPreferred)} onClick={()=> onSetPreferred(part)}>
                             <Icon glyph={'fa-star'} />
                         </SmallButton>
                     )}
                     {!isDeleted &&
-                        <SmallButton title={i18n("ap.detail.edit", "")} onClick={()=> onEdit(part)}>
+                        <SmallButton title={intl.formatMessage(apDetailMessages.detailEdit, { 0: "" })} onClick={()=> onEdit(part)}>
                             <Icon glyph="fa-pencil" />
                         </SmallButton>
                     }
                     {!isDeleted && onAddRelated && (
                         <SmallButton 
-                            title={i18n("ap.detail.add.related")} 
+                            title={intl.formatMessage(apDetailMessages.detailAddRelated)} 
                             onClick={() => onAddRelated(partId, revPartId)}
                         >
                             <Icon glyph="fa-link"/>
                         </SmallButton>
                     )}
                     {!isPreferred && !isDeleted &&
-                        <SmallButton title={i18n("ap.detail.delete")} onClick={()=> onDelete(part)}>
+                        <SmallButton title={intl.formatMessage(apDetailMessages.detailDelete)} onClick={()=> onDelete(part)}>
                             <Icon glyph="fa-trash"/>
                         </SmallButton>}
                     {(isDeleted || isModified) &&
-                        <SmallButton title={i18n("ap.detail.revert")} onClick={()=> onRevert(part)}>
+                        <SmallButton title={intl.formatMessage(apDetailMessages.detailRevert)} onClick={()=> onRevert(part)}>
                             <Icon glyph="fa-undo" />
                         </SmallButton>
                     }
@@ -219,7 +221,7 @@ const DetailMultiSection: FC<Props> = ({
             </div>
 
             <div className={`parts ${singlePart ? "single-part" : ""}`}>
-            {parts.length === 0 && <span className="no-info-msg">{i18n("ap.detail.noInfo")}</span>}
+            {parts.length === 0 && <span className="no-info-msg">{<FormattedMessage {...apDetailMessages.detailNoInfo} />}</span>}
             {parts.map(({part, updatedPart}, index) => {
                     const relatedParts = part?.id != null && relatedRevisionPartsMap[part.id] ? relatedRevisionPartsMap[part.id] : [];
                     const revRelatedParts = updatedPart?.id != null && relatedRevisionPartsMap[updatedPart.id] ? relatedRevisionPartsMap[updatedPart.id] : [];

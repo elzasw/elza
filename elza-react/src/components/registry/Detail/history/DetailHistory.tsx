@@ -12,6 +12,8 @@ import Icon from '../../../shared/icon/Icon';
 import Loading from '../../../shared/loading/Loading';
 import './DetailHistory.scss';
 import DetailHistoryItem from './DetailHistoryItem';
+import { FormattedMessage } from 'react-intl';
+import { apDetailMessages } from '../messages';
 
 type Props = {
     apId: number;
@@ -40,7 +42,7 @@ const DetailHistory: React.FC<AllProps> = props => {
     const renderList = () => {
         const itemCount = registryDetailHistory.fetched ? registryDetailHistory.count : props.commentCount;
         return <div>
-            <h3>Historie stavů ({itemCount})</h3>
+            <h3><FormattedMessage {...apDetailMessages.detailHistoryTitle} values={{ count: itemCount }} /></h3>
             {registryDetailHistory.fetched && registryDetailHistory.rows!.map((item, index) => (
                 <DetailHistoryItem key={index} historyItem={item}/>))}
             {!registryDetailHistory.fetched && <Loading/>}
@@ -66,7 +68,7 @@ const DetailHistory: React.FC<AllProps> = props => {
         if (collapsed) {
             content = <Icon type={'left'}/>;
         } else {
-            content = <><Icon type={'right'}/> Skrýt panel</>;
+            content = <><Icon type={'right'}/> <FormattedMessage {...apDetailMessages.detailHistoryHide} /></>;
         }
 
         return <div className="brt-1 brb-1">

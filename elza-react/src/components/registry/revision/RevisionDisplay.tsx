@@ -1,6 +1,8 @@
 import React, { FC } from 'react';
 import './RevisionDisplay.scss';
 import classnames from 'classnames';
+import { FormattedMessage } from 'react-intl';
+import { apDetailMessages } from '../Detail/messages';
 
 type Props = {
     renderPrevValue: () => React.ReactNode;
@@ -42,7 +44,7 @@ export const RevisionDisplay: FC<Props> = ({
             {!valuesEqual && !disableRevision &&
                 <>
                     <div className={`value-previous ${colorize && !isNew ? 'colored' : ''}`}>
-                        {!isNew ? renderPrevValue() : <span className="constant">Nevyplněno</span>}
+                        {!isNew ? renderPrevValue() : <span className="constant"><FormattedMessage {...apDetailMessages.revisionEmptyValue} /></span>}
                     </div>
                     <div className="arrow constant">
                     🡒
@@ -61,7 +63,7 @@ export const RevisionDisplay: FC<Props> = ({
             {isDeleted && !disableRevision &&
                 <>
                     <div className="value-current">
-                        <span className="constant">Smazáno</span>
+                        <span className="constant"><FormattedMessage {...apDetailMessages.revisionDeletedValue} /></span>
                     </div>
                 </>
             }

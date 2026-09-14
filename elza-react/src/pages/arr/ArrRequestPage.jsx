@@ -281,7 +281,7 @@ class ArrRequestPage extends ArrParentPage {
                     <SearchWithGoto
                         onFulltextSearch={this.handleFilterText}
                         onClear={this.handleFilterTextClear}
-                        placeholder={<FormattedMessage {...arrPageMessages.searchInputSearch} />}
+                        placeholder={this.props.intl.formatMessage(arrPageMessages.searchInputSearch)}
                         filterText={requestList.filter.description}
                         showFilterResult={true}
                         type="INFO"

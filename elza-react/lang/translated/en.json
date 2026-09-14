@@ -2229,6 +2229,42 @@
     "defaultMessage": "Revision history",
     "srcHash": "0ig3oH3A4qzi"
   },
+  "ap.binding.action.synchronize": {
+    "defaultMessage": "Update the data",
+    "srcHash": "Lkx1CgYgp5EF"
+  },
+  "ap.binding.action.synchronize.confirmation": {
+    "defaultMessage": "Do you really want to update the entity record from the external system? Any local changes to the parts of the record that exist in the external system may be overwritten.",
+    "srcHash": "M_hPGEgF1qSr"
+  },
+  "ap.binding.action.take-rel-entities": {
+    "defaultMessage": "Take over the linked entities",
+    "srcHash": "VhkNwoYMvxmP"
+  },
+  "ap.binding.action.update": {
+    "defaultMessage": "Write the changes",
+    "srcHash": "bjtpga2-_jkN"
+  },
+  "ap.binding.extState.APPROVED": {
+    "defaultMessage": "approved",
+    "srcHash": "sC1xEqXtGn91"
+  },
+  "ap.binding.extState.ERS_APPROVED": {
+    "defaultMessage": "approved",
+    "srcHash": "sC1xEqXtGn91"
+  },
+  "ap.binding.extState.ERS_INVALID": {
+    "defaultMessage": "invalid",
+    "srcHash": "5tzfBnWTX8DH"
+  },
+  "ap.binding.extState.ERS_NEW": {
+    "defaultMessage": "new",
+    "srcHash": "vfLwlREpDXpC"
+  },
+  "ap.binding.extState.ERS_REPLACED": {
+    "defaultMessage": "replaced",
+    "srcHash": "CE_oh2Kl0ejG"
+  },
   "ap.binding.history.approval": {
     "defaultMessage": "Approved by: {names}",
     "srcHash": "ru7EBVZP9152"
@@ -2265,6 +2301,22 @@
     "defaultMessage": "unknown",
     "srcHash": "eZYKNqYuXiNu"
   },
+  "ap.binding.issues.none": {
+    "defaultMessage": "No problems",
+    "srcHash": "IDAHNoG8u4e9"
+  },
+  "ap.binding.processing.synchronize": {
+    "defaultMessage": "Updating the data from the external system…",
+    "srcHash": "mO4u4dUNxGIJ"
+  },
+  "ap.binding.processing.take-rel-entities": {
+    "defaultMessage": "Creating access points from the linked ones…",
+    "srcHash": "8EZZ4LIXoju2"
+  },
+  "ap.binding.source": {
+    "defaultMessage": "source",
+    "srcHash": "Yy5p9OTdg9_C"
+  },
   "ap.binding.syncState.LOCAL_CHANGE": {
     "defaultMessage": "A local change exists",
     "srcHash": "IIpemxizIOmd"
@@ -2276,6 +2328,10 @@
   "ap.binding.syncState.SYNC_OK": {
     "defaultMessage": "Synchronisation active",
     "srcHash": "herQzTk60jbB"
+  },
+  "ap.binding.user": {
+    "defaultMessage": "edited by",
+    "srcHash": "aAotR0jcWyLO"
   },
   "ap.changeState": {
     "defaultMessage": "Change the entity properties",
@@ -2297,6 +2353,10 @@
     "defaultMessage": "Format {0}",
     "srcHash": "9svfULmYPm_x"
   },
+  "ap.coordinate.import.select": {
+    "defaultMessage": "Choose a file",
+    "srcHash": "yw27JWlB4zqO"
+  },
   "ap.copy.pending.message": {
     "defaultMessage": "Creating the copy…",
     "srcHash": "NKPDTciU_Olz"
@@ -2313,6 +2373,26 @@
     "defaultMessage": "Entity copy",
     "srcHash": "0bxLC7d4HT2G"
   },
+  "ap.detail.add": {
+    "defaultMessage": "Add {0}",
+    "srcHash": "usVyYcMBqtbI"
+  },
+  "ap.detail.add.related": {
+    "defaultMessage": "Add a relation",
+    "srcHash": "18ghQtdqIiNY"
+  },
+  "ap.detail.collapseAll": {
+    "defaultMessage": "Collapse all parts",
+    "srcHash": "-2L2HdsHM5t5"
+  },
+  "ap.detail.collapseInfo": {
+    "defaultMessage": "hide details",
+    "srcHash": "mmII-3gXM8tl"
+  },
+  "ap.detail.delete": {
+    "defaultMessage": "Delete",
+    "srcHash": "oe4iuqXX4rqm"
+  },
   "ap.detail.delete.confirm": {
     "defaultMessage": "Delete the whole part?",
     "srcHash": "X4uZW9HJwi-b"
@@ -2321,13 +2401,101 @@
     "defaultMessage": "Delete the whole part? ({0})",
     "srcHash": "FSE_QmdCepNM"
   },
+  "ap.detail.edit": {
+    "defaultMessage": "Edit {0}",
+    "srcHash": "42dgUstXHvhF"
+  },
   "ap.detail.entityMissing": {
     "defaultMessage": "The entity does not exist",
     "srcHash": "zUOHnWR7bTC4"
   },
+  "ap.detail.expandAll": {
+    "defaultMessage": "Expand all parts",
+    "srcHash": "zSMSshy4HbQ8"
+  },
+  "ap.detail.expandInfo": {
+    "defaultMessage": "show details",
+    "srcHash": "HtEdpbR26_8V"
+  },
+  "ap.detail.hideDetails": {
+    "defaultMessage": "Hide details",
+    "srcHash": "HhAalHhuctbO"
+  },
+  "ap.detail.history.hide": {
+    "defaultMessage": "Hide the panel",
+    "srcHash": "3mlkPaoXzFDd"
+  },
+  "ap.detail.history.title": {
+    "defaultMessage": "State history ({count})",
+    "srcHash": "CUyuLCMpdn8R"
+  },
+  "ap.detail.info": {
+    "defaultMessage": "entity record description",
+    "srcHash": "qJt_ofVMzNBZ"
+  },
+  "ap.detail.lastChange": {
+    "defaultMessage": "Last change",
+    "srcHash": "5DBjYQpcER51"
+  },
+  "ap.detail.lastChange.notAvailable": {
+    "defaultMessage": "Information about the last change is not available",
+    "srcHash": "ceISGurhGq2J"
+  },
+  "ap.detail.lastChange.user.notAvailable": {
+    "defaultMessage": "User not stated",
+    "srcHash": "XUMmgP2HvKs0"
+  },
+  "ap.detail.modifiedBy": {
+    "defaultMessage": "Edited by",
+    "srcHash": "ayTNT4gkhTnX"
+  },
+  "ap.detail.noInfo": {
+    "defaultMessage": "The section contains no information",
+    "srcHash": "J3z-1lCj0ZMn"
+  },
+  "ap.detail.part.noItems": {
+    "defaultMessage": "No attribute values are defined",
+    "srcHash": "TAuCjjApgJu-"
+  },
+  "ap.detail.part.preferred": {
+    "defaultMessage": "Preferred",
+    "srcHash": "jZKDAIZ5SKxp"
+  },
+  "ap.detail.part.preferred.new": {
+    "defaultMessage": "Newly preferred",
+    "srcHash": "BJzSzfsPBGNp"
+  },
+  "ap.detail.part.preferred.old": {
+    "defaultMessage": "Previously preferred",
+    "srcHash": "6K01DmoR2KGV"
+  },
+  "ap.detail.replacedBy": {
+    "defaultMessage": "Replacing entity",
+    "srcHash": "zI-X8eoeEy51"
+  },
+  "ap.detail.replacedEntity.noName": {
+    "defaultMessage": "Without a name",
+    "srcHash": "JmYlApRFbW7n"
+  },
+  "ap.detail.replacingEntities": {
+    "defaultMessage": "Replaces the entities",
+    "srcHash": "S4EQENdj4Lup"
+  },
+  "ap.detail.revert": {
+    "defaultMessage": "Revert",
+    "srcHash": "vmFCmh1k3pA7"
+  },
   "ap.detail.revert.confirm": {
     "defaultMessage": "Do you want to restore the original values?",
     "srcHash": "SsV0V3hZ_6J-"
+  },
+  "ap.detail.setPreferred": {
+    "defaultMessage": "Mark as preferred",
+    "srcHash": "em2Hg8x4laqd"
+  },
+  "ap.detail.showDetails": {
+    "defaultMessage": "Show details",
+    "srcHash": "jZfk00jIAt1h"
   },
   "ap.ext-filter.assignedTo.currentUser": {
     "defaultMessage": "My tasks",
@@ -2513,6 +2681,10 @@
     "defaultMessage": "Synchronisation with external systems",
     "srcHash": "oI5aZn3A_aF7"
   },
+  "ap.form.ref.value": {
+    "defaultMessage": "External entity [{0}]",
+    "srcHash": "zS9-fuXAFfb3"
+  },
   "ap.history.title": {
     "defaultMessage": "State history",
     "srcHash": "9IF-j_1dSRnB"
@@ -2589,6 +2761,14 @@
     "defaultMessage": "awaiting approval",
     "srcHash": "EJKveJECICg3"
   },
+  "ap.not-in-ext": {
+    "defaultMessage": "Not shared",
+    "srcHash": "yftYQV4VCbEL"
+  },
+  "ap.push-to-ext": {
+    "defaultMessage": "Writing the entity to an external system",
+    "srcHash": "RDQ2K8c3efZV"
+  },
   "ap.push-to-ext.confirmation": {
     "defaultMessage": "Do you really want to send an entity record that has a revision in progress?",
     "srcHash": "Jn62uh0eq1iF"
@@ -2652,6 +2832,14 @@
   "ap.push-to-ext.unsyncedEntities.title": {
     "defaultMessage": "The record being sent refers to other entities that are not written in the target system. ",
     "srcHash": "SO-9drQtZYNs"
+  },
+  "ap.revision.deletedValue": {
+    "defaultMessage": "Deleted",
+    "srcHash": "R43fioYCCsqC"
+  },
+  "ap.revision.emptyValue": {
+    "defaultMessage": "Not filled in",
+    "srcHash": "S4Fu2fAtjgYM"
   },
   "ap.state.title.assignedUser": {
     "defaultMessage": "Assigned to",
@@ -3684,6 +3872,14 @@
   "arr.node.noSelection.title": {
     "defaultMessage": "No description unit selected",
     "srcHash": "YO0GS3Tz8jVl"
+  },
+  "arr.node.status.err.errors": {
+    "defaultMessage": "Errors",
+    "srcHash": "79K9pXBMuzZy"
+  },
+  "arr.node.status.ok": {
+    "defaultMessage": "Ok",
+    "srcHash": "hDrAEUnM7Xhd"
   },
   "arr.output.delete.confirm": {
     "defaultMessage": "Do you really want to delete the output?",
@@ -5725,9 +5921,17 @@
     "defaultMessage": "Already exists",
     "srcHash": "D3GOt99lDl4e"
   },
+  "global.validation.loading": {
+    "defaultMessage": "Loading the validation result",
+    "srcHash": "24vGtEYHQI9q"
+  },
   "global.validation.required": {
     "defaultMessage": "This field is required",
     "srcHash": "rKBLoscKlAdE"
+  },
+  "global.validation.run": {
+    "defaultMessage": "Run validation",
+    "srcHash": "GRLh9I5k2Clz"
   },
   "global.websocket.disconnectedOnError.action.refresh": {
     "defaultMessage": "Reload the application",
@@ -6604,6 +6808,10 @@
   "registry.usage.tooMany": {
     "defaultMessage": "Too many occurrences were found",
     "srcHash": "fiEzhN3fLJFx"
+  },
+  "registry.version": {
+    "defaultMessage": "Version",
+    "srcHash": "Cml1nacv6hJG"
   },
   "registryField.noItemsFound": {
     "defaultMessage": "No records were found.",

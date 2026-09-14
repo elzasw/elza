@@ -104,7 +104,7 @@ class EntityField extends React.Component {
                     type="text"
                     value={selectedName || query}
                     onChange={this.handleQueryChange}
-                    placeholder={<FormattedMessage {...arrMessages.fundFilterSettingsConditionContainEntity} />}
+                    placeholder={this.props.intl.formatMessage(arrMessages.fundFilterSettingsConditionContainEntity)}
                 />
                 {!selectedName && accessPoints.length > 0 && (
                     <div className="entity-autocomplete-list">
