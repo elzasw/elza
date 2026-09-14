@@ -1,5 +1,7 @@
 import * as types from 'actions/constants/ActionTypes';
-import { i18n } from 'components/shared';
+import {} from 'components/shared';
+import { getIntl } from 'components/shared/lang/intlInstance';
+import { validationMessages } from 'components/shared/lang/validationMessages';
 import { getMapFromList, indexById } from 'stores/app/utils';
 import { validateCoordinatePoint, validateDouble, validateDuration, validateInt } from 'components/validate';
 import { valuesEquals } from 'components/Utils';
@@ -117,7 +119,7 @@ export function validate(descItem, refType, valueServerError) {
     // Specifikace
     if (refType.useSpecification) {
         if (typeof descItem.descItemSpecId === 'undefined' || descItem.descItemSpecId === '') {
-            error.spec = i18n('subNodeForm.validate.spec.required');
+            error.spec = getIntl().formatMessage(validationMessages.specRequired);
         }
     }
 
@@ -125,17 +127,17 @@ export function validate(descItem, refType, valueServerError) {
     switch (refType.dataType.code) {
         case 'URI_REF':
             if (!descItem.value) {
-                error.value = i18n('subNodeForm.validate.value.notEmpty');
+                error.value = getIntl().formatMessage(validationMessages.valueNotEmpty);
             }
             break;
         case 'RECORD_REF':
             if (!descItem.value || typeof descItem.value !== 'number') {
-                error.value = i18n('subNodeForm.validate.value.notEmpty');
+                error.value = getIntl().formatMessage(validationMessages.valueNotEmpty);
             }
             break;
         case 'STRUCTURED':
             if (!descItem.value || typeof descItem.value !== 'number') {
-                error.value = i18n('subNodeForm.validate.value.notEmpty');
+                error.value = getIntl().formatMessage(validationMessages.valueNotEmpty);
             }
             break;
         case 'JSON_TABLE':
@@ -144,7 +146,7 @@ export function validate(descItem, refType, valueServerError) {
             break;
         case 'UNITDATE':
             if (!descItem.value || descItem.value.length === 0) {
-                error.value = i18n('subNodeForm.validate.value.notEmpty');
+                error.value = getIntl().formatMessage(validationMessages.valueNotEmpty);
             } else {
                 const validateResult = validateUnitDate(descItem.value);
                 if (!validateResult.valid) {
@@ -158,17 +160,17 @@ export function validate(descItem, refType, valueServerError) {
         case 'TEXT':
         case 'STRING':
             if (!descItem.value || descItem.value.length === 0) {
-                error.value = i18n('subNodeForm.validate.value.notEmpty');
+                error.value = getIntl().formatMessage(validationMessages.valueNotEmpty);
             }
             break;
         case 'BIT':
             if (descItem.value === undefined || descItem.value === null) {
-                error.value = i18n('subNodeForm.validate.value.notEmpty');
+                error.value = getIntl().formatMessage(validationMessages.valueNotEmpty);
             }
             break;
         case 'INT':
             if (!descItem.value || descItem.value.length === 0) {
-                error.value = i18n('subNodeForm.validate.value.notEmpty');
+                error.value = getIntl().formatMessage(validationMessages.valueNotEmpty);
             } else {
                 if (refType.viewDefinition === DisplayType.DURATION) {
                     error.value = validateDuration(descItem.value);
@@ -182,14 +184,14 @@ export function validate(descItem, refType, valueServerError) {
             break;
         case 'DECIMAL':
             if (!descItem.value || descItem.value.length === 0) {
-                error.value = i18n('subNodeForm.validate.value.notEmpty');
+                error.value = getIntl().formatMessage(validationMessages.valueNotEmpty);
             } else {
                 error.value = validateDouble(descItem.value);
             }
             break;
         case 'DATE':
             if (!descItem.value || descItem.value.length === 0) {
-                error.value = i18n('subNodeForm.validate.value.notEmpty');
+                error.value = getIntl().formatMessage(validationMessages.valueNotEmpty);
             }
             break;
         default:

@@ -54,7 +54,6 @@
   "src/components/arr/FundFiles.jsx": 7,
   "src/components/arr/FundFilterSettings.jsx": 72,
   "src/components/arr/FundForm.tsx": 15,
-  "src/components/arr/fundFormValidation.ts": 6,
   "src/components/arr/FundNodesSelectForm.jsx": 2,
   "src/components/arr/FundOutputFiles.jsx": 3,
   "src/components/arr/FundOutputFunctions.jsx": 3,
@@ -153,7 +152,6 @@
   "src/components/registry/RegistryList.jsx": 20,
   "src/components/registry/RevMergeForm.tsx": 5,
   "src/components/registry/RevStateChangeForm.tsx": 9,
-  "src/components/validate.jsx": 15,
   "src/components/ValidationResultIcon.tsx": 2,
   "src/components/ValidationResultModal.tsx": 1,
   "src/index.jsx": 2,
@@ -170,10 +168,5 @@
   "src/pages/map/MapPage.jsx": 2,
   "src/pages/registry/RegistryPage.jsx": 36,
   "src/pages/select/RegistrySelectPage.jsx": 1,
-  "src/shared/utils/requireFields.ts": 1,
-  "src/stores/app/arr/fundTree.jsx": 1,
-  "src/stores/app/arr/subNodeForm.jsx": 10,
-  "src/stores/app/registry/registryDetail.jsx": 3,
-  "src/utils/FieldUtils.tsx": 1,
   "src/websocketActions.jsx": 8
 }
