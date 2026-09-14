@@ -4,7 +4,21 @@ import * as arrRequestActions from 'actions/arr/arrRequestActions';
 import * as daoActions from 'actions/arr/daoActions';
 import { store } from 'stores/index.jsx';
 import { addToastrDanger, addToastrSuccess } from 'components/shared/toastr/ToastrActions.jsx';
-import { i18n } from 'components/shared';
+import {} from 'components/shared';
+import { FormattedMessage, defineMessages } from "react-intl";
+
+// Id jsou převzatá z legacy katalogu beze změny; sortFailed v katalogu chyběl,
+// takže se v toastru vypisovalo "[klíč]".
+const messages = defineMessages({
+    importSuccess: { id: "ribbon.action.arr.dataGrid.import.success", defaultMessage: "Import byl dokončen" },
+    importFailed: { id: "ribbon.action.arr.dataGrid.import.failed", defaultMessage: "Import selhal" },
+    sortSuccess: { id: "arr.functions.persistentSort.sortSuccess", defaultMessage: "Seřazení proběhlo úspěšně" },
+    sortInterrupted: { id: "arr.functions.persistentSort.sortInterrupted", defaultMessage: "Seřazení bylo přerušeno" },
+    sortFailed: { id: "arr.functions.persistentSort.sortFailed", defaultMessage: "Seřazení selhalo" },
+    ejSuccess: { id: "arr.functions.computeAndVizualizeEJ.success", defaultMessage: "Výpočet a vizualizace EJ proběhlo úspěšně" },
+    ejInterrupted: { id: "arr.functions.computeAndVizualizeEJ.interrupted", defaultMessage: "Výpočet a vizualizace EJ bylo přerušeno" },
+    ejError: { id: "arr.functions.computeAndVizualizeEJ.error", defaultMessage: "Výpočet a vizualizace EJ selhalo" },
+});
 
 import {
     changeAccessPoint,
@@ -139,14 +153,14 @@ let eventMap = {
 };
 
 function importFundCompleted(value) {
-    store.dispatch(addToastrSuccess(i18n('ribbon.action.arr.dataGrid.import.success')));
+    store.dispatch(addToastrSuccess(<FormattedMessage {...messages.importSuccess} />));
     if (value?.versionId) {
         store.dispatch(fundDataGridRefreshRows(value.versionId));
     }
 }
 
 function importFundFailed(value) {
-    store.dispatch(addToastrDanger(i18n('ribbon.action.arr.dataGrid.import.failed'), value?.message || ''));
+    store.dispatch(addToastrDanger(<FormattedMessage {...messages.importFailed} />, value?.message || ''));
 }
 
 if (!window.ws) {
@@ -356,11 +370,11 @@ function processPersistentSort(value) {
             //Přenačtení nodeForm
             store.dispatch(fundNodeSubNodeFulltextSearch(undefined));
         }
-        store.dispatch(addToastrSuccess(i18n('arr.functions.persistentSort.sortSuccess')));
+        store.dispatch(addToastrSuccess(<FormattedMessage {...messages.sortSuccess} />));
     } else if (value.state === 'INTERRUPTED') {
-        store.dispatch(addToastrDanger(i18n('arr.functions.persistentSort.sortInterrupted')));
+        store.dispatch(addToastrDanger(<FormattedMessage {...messages.sortInterrupted} />));
     } else if (value.state === 'FAILED') {
-        store.dispatch(addToastrDanger(i18n('arr.functions.persistentSort.sortFailed')));
+        store.dispatch(addToastrDanger(<FormattedMessage {...messages.sortFailed} />));
     }
 }
 
@@ -372,11 +386,11 @@ function processVisualizeEJ(value) {
             //Přenačtení nodeForm
             store.dispatch(fundNodeSubNodeFulltextSearch(undefined));
         }
-        store.dispatch(addToastrSuccess(i18n('arr.functions.computeAndVizualizeEJ.success')));
+        store.dispatch(addToastrSuccess(<FormattedMessage {...messages.ejSuccess} />));
     } else if (value.state === 'INTERRUPTED') {
-        store.dispatch(addToastrDanger(i18n('arr.functions.computeAndVizualizeEJ.interrupted')));
+        store.dispatch(addToastrDanger(<FormattedMessage {...messages.ejInterrupted} />));
     } else if (value.state === 'FAILED') {
-        store.dispatch(addToastrDanger(i18n('arr.functions.computeAndVizualizeEJ.error')));
+        store.dispatch(addToastrDanger(<FormattedMessage {...messages.ejError} />));
     }
 }
 

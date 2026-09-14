@@ -2,7 +2,13 @@ import React from 'react';
 import {WebApi} from 'actions/index.jsx';
 import {SimpleListActions} from 'shared/list';
 import {DetailActions} from 'shared/detail';
-import {i18n} from 'components/shared';
+import {} from 'components/shared';
+import { FormattedMessage, defineMessages } from 'react-intl';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    invalidWarning: { id: "accesspoint.scope.invalid.warning", defaultMessage: "Zobrazená třída restříku je neplatná" },
+});
 import {addToastrWarning} from '../../components/shared/toastr/ToastrActions.jsx';
 
 export const AREA_SCOPE_LIST = 'scopeList';
@@ -43,7 +49,7 @@ export function scopeDetailFetchIfNeeded(id) {
                 return WebApi.getScopeWithConnected(id)
                     .then(data => {
                         if (data && data.invalid) {
-                            dispatch(addToastrWarning(i18n('accesspoint.scope.invalid.warning')));
+                            dispatch(addToastrWarning(<FormattedMessage {...messages.invalidWarning} />));
                         }
                         return data;
                     })

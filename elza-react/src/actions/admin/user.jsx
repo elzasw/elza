@@ -7,7 +7,14 @@ import {WebApi} from 'actions/index.jsx';
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
 import {savingApiWrapper} from 'actions/global/status.jsx';
 import {modalDialogHide} from 'actions/global/modalDialog.jsx';
-import i18n from '../../components/i18n';
+import { FormattedMessage, defineMessages } from 'react-intl';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    addSuccess: { id: "admin.user.add.success", defaultMessage: "Uživatel byl přidán" },
+    updateSuccess: { id: "admin.user.update.success", defaultMessage: "Uživatel byl upraven" },
+    passwordChangeSuccess: { id: "admin.user.passwordChange.success", defaultMessage: "Heslo bylo změněno" },
+});
 
 export function joinGroups(userId, groupIds) {
     return (dispatch, getState) => {
@@ -164,7 +171,7 @@ function usersUserDetailReceive(data) {
 export function userCreate(username, valuesMap, accessPointId) {
     return (dispatch, getState) => {
         return savingApiWrapper(dispatch, WebApi.createUser(username, valuesMap, accessPointId)).then(response => {
-            dispatch(addToastrSuccess(i18n('admin.user.add.success')));
+            dispatch(addToastrSuccess(<FormattedMessage {...messages.addSuccess} />));
             dispatch(usersSelectUser(response.id));
         });
     };
@@ -173,7 +180,7 @@ export function userCreate(username, valuesMap, accessPointId) {
 export function userUpdate(id, accessPointId, username, valuesMap) {
     return dispatch => {
         return savingApiWrapper(dispatch, WebApi.updateUser(id, accessPointId, username, valuesMap)).then(response => {
-            dispatch(addToastrSuccess(i18n('admin.user.update.success')));
+            dispatch(addToastrSuccess(<FormattedMessage {...messages.updateSuccess} />));
             dispatch(usersSelectUser(response.id));
         });
     };
@@ -182,7 +189,7 @@ export function userUpdate(id, accessPointId, username, valuesMap) {
 export function userPasswordChange(oldPass, newPass) {
     return (dispatch, getState) => {
         return savingApiWrapper(dispatch, WebApi.changePasswordUser(oldPass, newPass)).then(response => {
-            dispatch(addToastrSuccess(i18n('admin.user.passwordChange.success')));
+            dispatch(addToastrSuccess(<FormattedMessage {...messages.passwordChangeSuccess} />));
         });
     };
 }
@@ -190,7 +197,7 @@ export function userPasswordChange(oldPass, newPass) {
 export function adminPasswordChange(userId, newPassword) {
     return (dispatch, getState) => {
         return savingApiWrapper(dispatch, WebApi.changePassword(userId, newPassword)).then(response => {
-            dispatch(addToastrSuccess(i18n('admin.user.passwordChange.success')));
+            dispatch(addToastrSuccess(<FormattedMessage {...messages.passwordChangeSuccess} />));
         });
     };
 }

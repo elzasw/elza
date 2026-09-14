@@ -2,7 +2,13 @@ import {WebApi} from 'actions/index.jsx';
 import * as types from 'actions/constants/ActionTypes';
 import {barrier} from 'components/Utils.jsx';
 import {fundSelectSubNode} from 'actions/arr/node.jsx';
-import {i18n} from 'components/shared';
+import {} from 'components/shared';
+import { FormattedMessage, defineMessages } from 'react-intl';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    errorNotFound: { id: "toast.arr.validation.error.notFound", defaultMessage: "Nebyla nalezena další chyba" },
+});
 import {addToastrInfo} from 'components/shared/toastr/ToastrActions.jsx';
 
 export function isVersionValidation(action) {
@@ -80,7 +86,7 @@ export function versionValidationErrorNext(versionId, nodeId) {
                 dispatch(versionValidationErrorNextReceive(versionId, node));
                 dispatch(fundSelectSubNode(versionId, node.id, node.parentNode));
             } else {
-                dispatch(addToastrInfo(i18n('toast.arr.validation.error.notFound')));
+                dispatch(addToastrInfo(<FormattedMessage {...messages.errorNotFound} />));
             }
         });
     };
@@ -111,7 +117,7 @@ export function versionValidationErrorPrevious(versionId, nodeId) {
                 dispatch(versionValidationErrorPreviousReceive(versionId, node));
                 dispatch(fundSelectSubNode(versionId, node.id, node.parentNode));
             } else {
-                dispatch(addToastrInfo(i18n('toast.arr.validation.error.notFound')));
+                dispatch(addToastrInfo(<FormattedMessage {...messages.errorNotFound} />));
             }
         });
     };

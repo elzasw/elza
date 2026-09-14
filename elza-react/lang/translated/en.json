@@ -39,6 +39,10 @@
     "defaultMessage": "Code",
     "srcHash": "lHt70Q2si8jP"
   },
+  "accesspoint.scope.invalid.warning": {
+    "defaultMessage": "The displayed entity class is invalid",
+    "srcHash": "hqGNTJlqTLNi"
+  },
   "accesspoint.scope.language": {
     "defaultMessage": "Language",
     "srcHash": "ARpdV1qvwAV4"
@@ -407,9 +411,17 @@
     "defaultMessage": "Reindexing in progress…",
     "srcHash": "1w27Yo3PPyOQ"
   },
+  "admin.fulltext.message.success": {
+    "defaultMessage": "Fulltext reindexing finished",
+    "srcHash": "YU2wN1TVDC2O"
+  },
   "admin.fund.title": {
     "defaultMessage": "Archival fund",
     "srcHash": "cgFgSW7aSs8l"
+  },
+  "admin.group.add.success": {
+    "defaultMessage": "The group was created",
+    "srcHash": "RnDGCFxTTuiq"
   },
   "admin.group.add.title": {
     "defaultMessage": "Create group",
@@ -847,6 +859,22 @@
     "defaultMessage": "Import",
     "srcHash": "yTA6PZurxTjn"
   },
+  "admin.packages.message.delete.message": {
+    "defaultMessage": "The package {0} was deleted successfully",
+    "srcHash": "ev_5z5Tdeg4p"
+  },
+  "admin.packages.message.delete.title": {
+    "defaultMessage": "Package deletion",
+    "srcHash": "lnje0lIJ8kii"
+  },
+  "admin.packages.message.import.message": {
+    "defaultMessage": "The package was uploaded successfully",
+    "srcHash": "Z8-B84kAX3z9"
+  },
+  "admin.packages.message.import.title": {
+    "defaultMessage": "Package import",
+    "srcHash": "VEr6BP5UcCdM"
+  },
   "admin.perm.advanced.control.entity.add.title": {
     "defaultMessage": "Add users and groups",
     "srcHash": "SX5QLFdMFRM1"
@@ -1071,6 +1099,10 @@
     "defaultMessage": "The authentication token is set.",
     "srcHash": "0TN4nUbCHHfO"
   },
+  "admin.user.add.success": {
+    "defaultMessage": "The user was added",
+    "srcHash": "eyTPdn-WT6Jc"
+  },
   "admin.user.add.title": {
     "defaultMessage": "Create user",
     "srcHash": "htBZVZA6cJ8y"
@@ -1135,6 +1167,10 @@
     "defaultMessage": "Repeat password",
     "srcHash": "dbbgtNsUsDuG"
   },
+  "admin.user.passwordChange.success": {
+    "defaultMessage": "The password was changed",
+    "srcHash": "GCDrhrwSKDfR"
+  },
   "admin.user.passwordChange.title": {
     "defaultMessage": "Password change",
     "srcHash": "P2dQlVQyZq9S"
@@ -1154,6 +1190,10 @@
   "admin.user.title.permissions": {
     "defaultMessage": "User permissions",
     "srcHash": "BsaO6XN5qfnr"
+  },
+  "admin.user.update.success": {
+    "defaultMessage": "The user was updated",
+    "srcHash": "j4zhqmrjfTRX"
   },
   "admin.user.update.title": {
     "defaultMessage": "Edit user",
@@ -2353,6 +2393,30 @@
     "defaultMessage": "Loading…",
     "srcHash": "kgjJ9rUTLs7l"
   },
+  "arr.functions.computeAndVizualizeEJ.error": {
+    "defaultMessage": "Calculating and visualising storage units failed",
+    "srcHash": "NfmUhVKrTMDJ"
+  },
+  "arr.functions.computeAndVizualizeEJ.interrupted": {
+    "defaultMessage": "Calculating and visualising storage units was interrupted",
+    "srcHash": "v6GbkTmI3n9P"
+  },
+  "arr.functions.computeAndVizualizeEJ.success": {
+    "defaultMessage": "Calculating and visualising storage units finished successfully",
+    "srcHash": "JrJayujmJepK"
+  },
+  "arr.functions.persistentSort.sortFailed": {
+    "defaultMessage": "Sorting failed",
+    "srcHash": "Nc1wMRyw8fLf"
+  },
+  "arr.functions.persistentSort.sortInterrupted": {
+    "defaultMessage": "Sorting was interrupted",
+    "srcHash": "5wGhPmy4IGrx"
+  },
+  "arr.functions.persistentSort.sortSuccess": {
+    "defaultMessage": "Sorting finished successfully",
+    "srcHash": "AySVcOi1HMey"
+  },
   "arr.fund.action.delete": {
     "defaultMessage": "Delete fund",
     "srcHash": "DrW4z04hQdLy"
@@ -2376,6 +2440,14 @@
   "arr.fund.action.showInArr": {
     "defaultMessage": "Show",
     "srcHash": "sipeZrVinjX9"
+  },
+  "arr.fund.addNode": {
+    "defaultMessage": "Add a description unit",
+    "srcHash": "7tQjPG9o73mM"
+  },
+  "arr.fund.addNode.conflict": {
+    "defaultMessage": "Choose how to resolve the conflicts",
+    "srcHash": "0Aq5CwWfw1ue"
   },
   "arr.fund.currentVersion": {
     "defaultMessage": "Current version",
@@ -2417,9 +2489,17 @@
     "defaultMessage": "New archival fund",
     "srcHash": "eDJrBfA064T8"
   },
+  "arr.fund.title.added": {
+    "defaultMessage": "The fund was created",
+    "srcHash": "JvdSJPTjhf5g"
+  },
   "arr.fund.title.approve": {
     "defaultMessage": "Close fund version",
     "srcHash": "og8-JWTT16lm"
+  },
+  "arr.fund.title.approved": {
+    "defaultMessage": "The fund was closed",
+    "srcHash": "5HpiKAHjK6k8"
   },
   "arr.fund.title.ruleSet": {
     "defaultMessage": "Change rules",
@@ -2440,6 +2520,34 @@
   "arr.fund.version.list": {
     "defaultMessage": "Fund versions",
     "srcHash": "_KU3_T5mA0jk"
+  },
+  "arr.fundAction.state.error": {
+    "defaultMessage": "Error",
+    "srcHash": "tiLo1toEkOGZ"
+  },
+  "arr.fundAction.state.finished": {
+    "defaultMessage": "Finished",
+    "srcHash": "xWQzBVFQyQ1H"
+  },
+  "arr.fundAction.state.interrupted": {
+    "defaultMessage": "Interrupted",
+    "srcHash": "J_63AMJkkVtT"
+  },
+  "arr.fundAction.state.outdated": {
+    "defaultMessage": "Finished (out of date)",
+    "srcHash": "cKCq0-KXbcFt"
+  },
+  "arr.fundAction.state.planned": {
+    "defaultMessage": "Planned",
+    "srcHash": "9PcVRQ6DmniJ"
+  },
+  "arr.fundAction.state.running": {
+    "defaultMessage": "Running",
+    "srcHash": "eKnPSSs45fDx"
+  },
+  "arr.fundAction.state.waiting": {
+    "defaultMessage": "Waiting",
+    "srcHash": "ZFjCEuIqOTpj"
   },
   "arr.fundDataGrid.cellForm.notAllowed": {
     "defaultMessage": "This description element cannot be added to the description unit.",
@@ -2641,6 +2749,34 @@
     "defaultMessage": "Unknown template",
     "srcHash": "_eYll52DiTZN"
   },
+  "arr.output.title.added": {
+    "defaultMessage": "The output was created",
+    "srcHash": "bHax64lZbwP3"
+  },
+  "arr.output.title.clone": {
+    "defaultMessage": "A copy was created",
+    "srcHash": "DDI1bqej6YD5"
+  },
+  "arr.output.title.deleted": {
+    "defaultMessage": "The output was deleted",
+    "srcHash": "HSJ3Go1JLHk2"
+  },
+  "arr.output.title.nodesAdded": {
+    "defaultMessage": "The description units were added",
+    "srcHash": "CtI0EZyqtvtF"
+  },
+  "arr.output.title.revert": {
+    "defaultMessage": "Returned to preparation",
+    "srcHash": "e_sC1p9uh262"
+  },
+  "arr.output.title.usageEnded": {
+    "defaultMessage": "The output is no longer in use",
+    "srcHash": "N9oVFqauW6zx"
+  },
+  "arr.request.title.nodesAdded": {
+    "defaultMessage": "The description units were added",
+    "srcHash": "CtI0EZyqtvtF"
+  },
   "arr.request.title.type.DAO": {
     "defaultMessage": "Destruction/transfer request",
     "srcHash": "hRbuxIfZYS0P"
@@ -2793,6 +2929,38 @@
     "defaultMessage": "Favourites",
     "srcHash": "i4s39EsnIrTA"
   },
+  "change.arr.output.clickToShow": {
+    "defaultMessage": "Click here to show",
+    "srcHash": "EIlUdZCUpRb7"
+  },
+  "change.arr.output.error.extended.title": {
+    "defaultMessage": "Error while generating the output <b>{0}</b> from the archival fund <b>{1}</b>",
+    "srcHash": "hP1gem9_wVta"
+  },
+  "change.arr.output.error.title": {
+    "defaultMessage": "Error while generating the output",
+    "srcHash": "KNRhurKrFXGz"
+  },
+  "change.arr.output.finished.extended.title": {
+    "defaultMessage": "The output <b>{0}</b> from the archival fund <b>{1}</b> was generated",
+    "srcHash": "rxNagdqzv6Ab"
+  },
+  "change.arr.output.finished.title": {
+    "defaultMessage": "The output was generated",
+    "srcHash": "zPCC43j7ajjN"
+  },
+  "change.arr.output.generating.title": {
+    "defaultMessage": "The output is being generated",
+    "srcHash": "85ofEWWryH0L"
+  },
+  "change.arr.output.outdated.extended.title": {
+    "defaultMessage": "The output <b>{0}</b> from the archival fund <b>{1}</b> was generated, but the data is out of date",
+    "srcHash": "R2IlUVg31eKx"
+  },
+  "change.arr.output.outdated.title": {
+    "defaultMessage": "The output was generated, but the data is out of date",
+    "srcHash": "67vUYfTvOiFR"
+  },
   "confirmDialog.default.title": {
     "defaultMessage": "Confirmation",
     "srcHash": "ieBBZA1HMgIH"
@@ -2844,6 +3012,18 @@
   "dataGrid.import.separator.tab": {
     "defaultMessage": "\\t (tab)",
     "srcHash": "I1mk9dLkxE9t"
+  },
+  "dataGrid.loadFailed": {
+    "defaultMessage": "The table data could not be loaded.",
+    "srcHash": "GiBsKT0l3GAf"
+  },
+  "dataGrid.restore.nodeNotFound": {
+    "defaultMessage": "The previously selected description unit could not be restored, the saved page is shown.",
+    "srcHash": "dOK_28ZBAFLI"
+  },
+  "dataGrid.restore.nodeNotFound.filtered": {
+    "defaultMessage": "The previously selected description unit does not match the current filter, the saved page is shown.",
+    "srcHash": "8JAKVy4I121L"
   },
   "dataGridColumns_add": {
     "defaultMessage": "Add",
@@ -3000,6 +3180,18 @@
   "desc_item_uri_ref_uri": {
     "defaultMessage": "Link",
     "srcHash": "Qhbg776bTQzH"
+  },
+  "download.allreadyDownloading": {
+    "defaultMessage": "The file download request has already been sent",
+    "srcHash": "e_KcjxEyNdJR"
+  },
+  "download.error.timeout": {
+    "defaultMessage": "The request timed out",
+    "srcHash": "ADbHhzBhbBji"
+  },
+  "download.error.title": {
+    "defaultMessage": "Download error",
+    "srcHash": "aJkOq9Tk7yCO"
   },
   "edit_state_unsaved": {
     "defaultMessage": "Unsaved",
@@ -3533,6 +3725,10 @@
     "defaultMessage": "Export filter",
     "srcHash": "70KxI5SaQkaN"
   },
+  "export.generating": {
+    "defaultMessage": "Generating the export…",
+    "srcHash": "DbRzV0ASgFuH"
+  },
   "export.includeAccessPoints": {
     "defaultMessage": "Export entities",
     "srcHash": "9WgqxMFiJ_7r"
@@ -3544,6 +3740,10 @@
   "export.includeUUID": {
     "defaultMessage": "Export UUIDs",
     "srcHash": "YNOkbRuzBGvI"
+  },
+  "export.success": {
+    "defaultMessage": "The file was generated successfully",
+    "srcHash": "CUEJ6CMfJxWJ"
   },
   "export.title.fund": {
     "defaultMessage": "Export archival fund",
@@ -3789,6 +3989,10 @@
     "defaultMessage": "Loading data…",
     "srcHash": "tRaCvBzxtiHY"
   },
+  "global.exception.bad.request.tech": {
+    "defaultMessage": "The syntax of the request sent to the server is invalid",
+    "srcHash": "73j67fUyNdUj"
+  },
   "global.exception.detail": {
     "defaultMessage": "Detail",
     "srcHash": "-18n1UV8RkEC"
@@ -3964,6 +4168,42 @@
   "import.toast.enqueued.detail": {
     "defaultMessage": "You can find the details in Administration → Import.",
     "srcHash": "Nr2AUYz0hYBs"
+  },
+  "import.toast.error": {
+    "defaultMessage": "An error occurred",
+    "srcHash": "7hL9O8obAmaS"
+  },
+  "import.toast.errorCoordinates": {
+    "defaultMessage": "An error occurred while importing the coordinates",
+    "srcHash": "66NKbL5fYxcM"
+  },
+  "import.toast.errorJsonTable": {
+    "defaultMessage": "An error occurred while importing the CSV",
+    "srcHash": "YGW1pSTF8tLm"
+  },
+  "import.toast.success": {
+    "defaultMessage": "Import finished",
+    "srcHash": "XX3-fv5TsXv_"
+  },
+  "import.toast.successCoordinates": {
+    "defaultMessage": "The coordinate import finished successfully.",
+    "srcHash": "dUnqQaTLg6Qy"
+  },
+  "import.toast.successFund": {
+    "defaultMessage": "The archival fund import finished successfully.",
+    "srcHash": "70YGyw9IvqWF"
+  },
+  "import.toast.successJsonTable": {
+    "defaultMessage": "The CSV import finished successfully.",
+    "srcHash": "jLrxNwzIx42v"
+  },
+  "import.toast.successParty": {
+    "defaultMessage": "The person import finished successfully.",
+    "srcHash": "GKPkYiFT7sUX"
+  },
+  "import.toast.successRecord": {
+    "defaultMessage": "The archival entity import finished successfully.",
+    "srcHash": "PEb47N3hAYnb"
   },
   "invalidated_entities": {
     "defaultMessage": "Invalidated entities",
@@ -4537,6 +4777,18 @@
     "defaultMessage": "Replacing the entity in its occurrences with another entity",
     "srcHash": "sm1Gb_GAIhDq"
   },
+  "registry.revision.state.active": {
+    "defaultMessage": "Revision in preparation",
+    "srcHash": "6vSffcBpoDZ8"
+  },
+  "registry.revision.state.toAmend": {
+    "defaultMessage": "Revision to be amended",
+    "srcHash": "ypQ2qsHrAXXG"
+  },
+  "registry.revision.state.toApprove": {
+    "defaultMessage": "Revision awaiting approval",
+    "srcHash": "EN4GDVzlKaY0"
+  },
   "registry.usage.tooMany": {
     "defaultMessage": "Too many occurrences were found",
     "srcHash": "fiEzhN3fLJFx"
@@ -4693,6 +4945,14 @@
     "defaultMessage": "Table view",
     "srcHash": "OPvyQwAFzdoD"
   },
+  "ribbon.action.arr.dataGrid.import.failed": {
+    "defaultMessage": "The import failed",
+    "srcHash": "xf-lzTX7_jSA"
+  },
+  "ribbon.action.arr.dataGrid.import.success": {
+    "defaultMessage": "The import finished",
+    "srcHash": "NP17Rege5e1Q"
+  },
   "ribbon.action.arr.fund.add": {
     "defaultMessage": "New fund",
     "srcHash": "BfzcqMHB4P5Z"
@@ -4744,6 +5004,26 @@
   "ribbon.action.arr.output": {
     "defaultMessage": "Outputs",
     "srcHash": "irSQ8aME65Fz"
+  },
+  "ribbon.action.arr.output.generate.continue": {
+    "defaultMessage": "{0}, do you still want to continue?",
+    "srcHash": "mi0A2k9oHIWM"
+  },
+  "ribbon.action.arr.output.generate.detectChange": {
+    "defaultMessage": "Changes were detected in the archival description. Some values calculated by functions may be out of date",
+    "srcHash": "cjxHClWDQovy"
+  },
+  "ribbon.action.arr.output.generate.recommendedAction": {
+    "defaultMessage": "Not all recommended actions have been run",
+    "srcHash": "5zccJuUKsoCT"
+  },
+  "ribbon.action.arr.output.send.confirm": {
+    "defaultMessage": "Send the output?",
+    "srcHash": "sRcLawKK_RXe"
+  },
+  "ribbon.action.arr.output.send.success": {
+    "defaultMessage": "The output was sent",
+    "srcHash": "MaVnm6ZpKi27"
   },
   "ribbon.action.back": {
     "defaultMessage": "Back",
@@ -4849,6 +5129,10 @@
     "defaultMessage": "Users",
     "srcHash": "5kd6mi3iCPIC"
   },
+  "subNodeForm.descItemGroup.default": {
+    "defaultMessage": "No group",
+    "srcHash": "G_l35mUDgTO4"
+  },
   "subNodeForm.descItemType.spec.all": {
     "defaultMessage": "All",
     "srcHash": "5C_lbtoov7Gn"
@@ -4892,6 +5176,14 @@
   "tabs.action.closeTab": {
     "defaultMessage": "Close tab",
     "srcHash": "YrK1R8qgqAym"
+  },
+  "toast.arr.validation.error.notFound": {
+    "defaultMessage": "No further error was found",
+    "srcHash": "MyNwbGui94aJ"
+  },
+  "toast.arr.validation.issues.notFound": {
+    "defaultMessage": "No further comment was found",
+    "srcHash": "xSdz0yRZ3DYG"
   },
   "toggle.action.minimize": {
     "defaultMessage": "Minimise",

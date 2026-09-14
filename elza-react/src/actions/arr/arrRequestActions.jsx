@@ -6,7 +6,13 @@ import * as SimpleListActions from 'shared/list/simple/SimpleListActions';
 import * as DetailActions from 'shared/detail/DetailActions';
 import {WebApi} from 'actions/index.jsx';
 import {savingApiWrapper} from 'actions/global/status.jsx';
-import {i18n} from 'components/shared';
+import {} from 'components/shared';
+import { FormattedMessage, defineMessages } from 'react-intl';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    nodesAdded: { id: "arr.request.title.nodesAdded", defaultMessage: "JP byly přidány" },
+});
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
 import {modalDialogHide} from 'actions/global/modalDialog.jsx';
 import {storeFromArea} from 'shared/utils';
@@ -241,7 +247,7 @@ export function addNodes(versionId, request, nodeIds, digitizationFrontdeskId) {
             nodeIds,
             digitizationFrontdeskId,
         ).then(json => {
-            dispatch(addToastrSuccess(i18n('arr.request.title.nodesAdded')));
+            dispatch(addToastrSuccess(<FormattedMessage {...messages.nodesAdded} />));
             dispatch(modalDialogHide());
         });
     };

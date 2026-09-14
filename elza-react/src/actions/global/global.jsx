@@ -4,7 +4,21 @@ import {modalDialogHide} from 'actions/global/modalDialog.jsx';
 import {WebApi} from 'actions/index.jsx';
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
 import {trackImportBatch} from 'utils/pendingImportBatches';
-import {i18n, Utils} from 'components/shared';
+import { Utils} from 'components/shared';
+import { FormattedMessage, defineMessages } from 'react-intl';
+import { messageFor } from 'components/shared/lang/dynamicMessage';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    success: { id: 'import.toast.success', defaultMessage: 'Import dokončen' },
+});
+
+/** Podrobnost hlášky podle typu importu; klíč se dřív skládal za běhu. */
+const importDetailMessages = defineMessages({
+    Fund: { id: 'import.toast.successFund', defaultMessage: 'Import archivního souboru byl úspěšně dokončen.' },
+    Party: { id: 'import.toast.successParty', defaultMessage: 'Import osob byl úspěšně dokončen.' },
+    Record: { id: 'import.toast.successRecord', defaultMessage: 'Import rejstříkových hesel byl úspěšně dokončen.' },
+});
 import {registryListInvalidate} from 'actions/registry/registry.jsx';
 
 export const ObjectInfo = class ObjectInfo {
@@ -45,7 +59,12 @@ export function importForm(data, messageType) {
                 if (result && result.batchId != null) {
                     trackImportBatch(result.batchId);
                 } else {
-                    dispatch(addToastrSuccess(i18n('import.toast.success'), i18n('import.toast.success' + messageType)));
+                    dispatch(
+                        addToastrSuccess(
+                            <FormattedMessage {...messages.success} />,
+                            <FormattedMessage {...messageFor(importDetailMessages, messageType, importDetailMessages.Fund)} />,
+                        ),
+                    );
                 }
                 switch (messageType) {
                     case 'Fund':

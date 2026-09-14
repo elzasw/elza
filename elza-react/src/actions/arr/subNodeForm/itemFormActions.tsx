@@ -5,7 +5,24 @@
 import { setFocus } from 'actions/global/focus';
 import { statusSaved, statusSaving, savingApiWrapper } from 'actions/global/status';
 import { WebApi } from 'actions/index';
-import { i18n } from 'components/shared';
+import {} from 'components/shared';
+import { FormattedMessage, defineMessages } from 'react-intl';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    success: { id: 'import.toast.success', defaultMessage: 'Import dokončen' },
+    error: { id: 'import.toast.error', defaultMessage: 'Nastala chyba' },
+    successCoordinates: {
+        id: 'import.toast.successCoordinates',
+        defaultMessage: 'Import souřadnic byl úspěšně dokončen.',
+    },
+    errorCoordinates: {
+        id: 'import.toast.errorCoordinates',
+        defaultMessage: 'Při importu souřadnic nastala chyba',
+    },
+    successJsonTable: { id: 'import.toast.successJsonTable', defaultMessage: 'Import CSV byl úspěšně dokončen.' },
+    errorJsonTable: { id: 'import.toast.errorJsonTable', defaultMessage: 'Při importu CSV nastala chyba' },
+});
 import { addToastrDanger, addToastrSuccess } from 'components/shared/toastr/ToastrActions';
 import { valuesEquals } from 'components/Utils';
 import { indexById } from 'stores/app/utils';
@@ -471,10 +488,10 @@ export class ItemFormActions {
                 file,
             )
                 .then(() => {
-                    dispatch(addToastrSuccess(i18n('import.toast.success'), i18n('import.toast.successCoordinates')));
+                    dispatch(addToastrSuccess(<FormattedMessage {...messages.success} />, <FormattedMessage {...messages.successCoordinates} />));
                 })
                 .catch(() => {
-                    dispatch(addToastrDanger(i18n('import.toast.error'), i18n('import.toast.errorCoordinates')));
+                    dispatch(addToastrDanger(<FormattedMessage {...messages.error} />, <FormattedMessage {...messages.errorCoordinates} />));
                 });
         };
     }
@@ -503,10 +520,10 @@ export class ItemFormActions {
                 file,
             )
                 .then(() => {
-                    dispatch(addToastrSuccess(i18n('import.toast.success'), i18n('import.toast.successJsonTable')));
+                    dispatch(addToastrSuccess(<FormattedMessage {...messages.success} />, <FormattedMessage {...messages.successJsonTable} />));
                 })
                 .catch(() => {
-                    dispatch(addToastrDanger(i18n('import.toast.error'), i18n('import.toast.errorJsonTable')));
+                    dispatch(addToastrDanger(<FormattedMessage {...messages.error} />, <FormattedMessage {...messages.errorJsonTable} />));
                 });
         };
     }
