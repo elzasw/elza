@@ -11,6 +11,8 @@ import { DataStructureRef, DataType } from "elza-api";
 import { useEffect, useRef, useState } from "react";
 import { useActiveFund } from "utils/hooks";
 import { DescItemProps } from "./types";
+import { FormattedMessage } from "react-intl";
+import { messages as commonMessages } from "components/arr/item-form/desc-items/commonMessages";
 
 const HOVER_OPEN_DELAY = 600;
 
@@ -60,7 +62,7 @@ export function DescItemStructured({ item, nodeId }: DescItemProps) {
       }}
     >
       {item.undefined ? (
-        "Výjimka"
+        <FormattedMessage {...commonMessages.undefined} />
       ) : (
         <>
           {data.value}

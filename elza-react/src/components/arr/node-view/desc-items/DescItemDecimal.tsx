@@ -1,6 +1,8 @@
 import { DataDecimal, DataType } from "elza-api";
 import { FormattedNumber } from "react-intl";
 import { DescItemProps } from "./types";
+import { FormattedMessage } from "react-intl";
+import { messages as commonMessages } from "components/arr/item-form/desc-items/commonMessages";
 
 export function DescItemDecimal({ item, nodeId }: DescItemProps) {
   if (item.data?.dataType !== DataType.Decimal) {
@@ -19,7 +21,7 @@ export function DescItemDecimal({ item, nodeId }: DescItemProps) {
       }}
     >
       {item.undefined ? (
-        "Výjimka"
+        <FormattedMessage {...commonMessages.undefined} />
       ) : data.value != null ? (
         <FormattedNumber value={data.value} maximumFractionDigits={20} useGrouping={false} />
       ) : null}

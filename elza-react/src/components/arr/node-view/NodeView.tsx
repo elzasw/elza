@@ -22,6 +22,8 @@ import {
 } from "./desc-items";
 import { Tooltip } from "@fluentui/react-components";
 import { useVisibleFormItems } from "./hooks";
+import { FormattedMessage } from "react-intl";
+import { messages as commonMessages } from "components/arr/item-form/desc-items/commonMessages";
 
 interface Props {
   fondsVersionId: number;
@@ -179,7 +181,7 @@ export function NodeView({ fondsVersionId, nodeId, nodeVersionId, seedFromParent
                                   typeForm={typeForm}
                                 />
                               ) : item.undefined ? (
-                                "Nezjištěno"
+                                <FormattedMessage {...commonMessages.undefined} />
                               ) : (
                                 "Not implemented"
                               )}

@@ -1,6 +1,8 @@
 import { DataInteger, DataType } from "elza-api";
 import { DescItemProps } from "./types";
 import { toDuration } from "components/validate";
+import { FormattedMessage } from "react-intl";
+import { messages as commonMessages } from "components/arr/item-form/desc-items/commonMessages";
 
 export function DescItemInt({ item, nodeId, typeRef }: DescItemProps) {
   if (item.data?.dataType !== DataType.Int) {
@@ -21,7 +23,7 @@ export function DescItemInt({ item, nodeId, typeRef }: DescItemProps) {
         opacity: isInherited ? 0.5 : undefined,
       }}
     >
-      {item.undefined ? "Výjimka" : value}
+      {item.undefined ? <FormattedMessage {...commonMessages.undefined} /> : value}
     </div>
   );
 }

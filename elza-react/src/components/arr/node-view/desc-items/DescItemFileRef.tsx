@@ -7,6 +7,8 @@ import { DataFileRef, DataType } from "elza-api";
 import { useEffect, useState } from "react";
 import { useAppThunkDispatch } from "utils/hooks";
 import { DescItemProps } from "./types";
+import { FormattedMessage } from "react-intl";
+import { messages as commonMessages } from "components/arr/item-form/desc-items/commonMessages";
 
 export function DescItemFileRef({ item, nodeId }: DescItemProps) {
   if (item.data?.dataType !== DataType.FileRef) {
@@ -45,7 +47,7 @@ export function DescItemFileRef({ item, nodeId }: DescItemProps) {
       }}
     >
       {item.undefined ? (
-        "Výjimka"
+        <FormattedMessage {...commonMessages.undefined} />
       ) : (
         <Link appearance="subtle" onClick={handleDownload} inline={true}>
           {file?.name || data.fileId}
