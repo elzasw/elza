@@ -1,6 +1,15 @@
 import { modalDialogHide, modalDialogShow } from 'actions/global/modalDialog';
 import classNames from 'classnames';
-import i18n from 'components/i18n';
+import { defineMessages } from 'react-intl';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    exportTitle: { id: 'ap.coordinate.export.title', defaultMessage: 'Export souřadnic' },
+    labelPoints: { id: 'global.geometry.label.points', defaultMessage: 'Body' },
+    labelObjects: { id: 'global.geometry.label.objects', defaultMessage: 'Obrazce' },
+    undefinedValue: { id: 'subNodeForm.descItemType.undefinedValue', defaultMessage: 'výjimka' },
+    exportAction: { id: 'global.action.export', defaultMessage: 'Exportovat' },
+});
 import { PolygonShowInMap } from "components/PolygonShowInMap";
 import { TooltipTrigger } from 'components/shared';
 import Icon from 'components/shared/icon/Icon';
@@ -52,7 +61,7 @@ export const CoordinatesDisplay: React.FC<Props> = ({
         dispatch(
             modalDialogShow(
                 undefined,
-                i18n('ap.coordinate.export.title'),
+                formatMessage(messages.exportTitle),
                 <ExportCoordinateModal
                     onClose={() => dispatch(modalDialogHide())}
                     itemId={id}
@@ -71,9 +80,9 @@ export const CoordinatesDisplay: React.FC<Props> = ({
             return geometryType;
         }
         if (objectCount === 1) {
-            return `${geometryType} ( ${i18n("global.geometry.label.points")}: ${coordinateCount} )`;
+            return `${geometryType} ( ${formatMessage(messages.labelPoints)}: ${coordinateCount} )`;
         }
-        return `${geometryType} ( ${i18n("global.geometry.label.objects")}: ${objectCount} ${i18n("global.geometry.label.points")}: ${coordinateCount} )`;
+        return `${geometryType} ( ${formatMessage(messages.labelObjects)}: ${objectCount} ${formatMessage(messages.labelPoints)}: ${coordinateCount} )`;
     }
 
     if (value == undefined) {
@@ -81,7 +90,7 @@ export const CoordinatesDisplay: React.FC<Props> = ({
     }
 
     if (isUndefined) {
-        return <span>{i18n("subNodeForm.descItemType.undefinedValue")}</span>
+        return <span>{formatMessage(messages.undefinedValue)}</span>
     }
 
     return (
@@ -109,7 +118,7 @@ export const CoordinatesDisplay: React.FC<Props> = ({
                 }
                 }
             </PolygonShowInMap>
-            <TooltipTrigger placement="vertical" content={i18n('global.action.copyToClipboard')}>
+            <TooltipTrigger placement="vertical" content={formatMessage(globalMessages.copyToClipboard)}>
                 <Button
                     variant={'action'}
                     className={classNames('side-container-button', 'right')}
@@ -119,7 +128,7 @@ export const CoordinatesDisplay: React.FC<Props> = ({
                     <Icon glyph="fa-clone" fixedWidth className="icon" />
                 </Button>
             </TooltipTrigger>
-            <TooltipTrigger placement="vertical" content={i18n('global.action.export')}>
+            <TooltipTrigger placement="vertical" content={formatMessage(messages.exportAction)}>
                 <Button
                     variant={'action'}
                     className={classNames('side-container-button', 'right')}
