@@ -1,6 +1,8 @@
 import React, {memo} from 'react';
 import {FieldArray, FormSection, formValueSelector, InjectedFormProps, WrappedFieldArrayProps} from 'redux-form';
-import i18n from "../../../i18n";
+import { FormattedMessage, type MessageDescriptor } from 'react-intl';
+import { getIntl } from 'components/shared/lang/intlInstance';
+import { filterMessages } from './messages';
 import {Button} from "../../../ui";
 import {Icon} from "../../../index";
 import {connect} from "react-redux";
@@ -19,7 +21,8 @@ import {FilteredResultVO} from "../../../../api/FilteredResultVO";
 
 type OwnProps = {
     submitting: boolean;
-    name?: string;
+    /** Nadpis sekce; ne název pole formuláře. */
+    sectionTitle?: MessageDescriptor;
     nameFormSection?: string; // název pro FormSection
     scopeId?: number;
     rulSetsIds?: number[];
@@ -35,13 +38,13 @@ const ExtendsFilterSection = ({
     dispatch, 
     array, 
     nameFormSection = "", 
-    name = 'ap.ext-search.section.extends', 
+    sectionTitle = filterMessages.sectionExtends, 
     relEntityApi,
     scopeId,
     rulSetsIds
 }: Props) => {
     return <FormSection name={nameFormSection} className="filter-section">
-        <span className="name-section">{i18n(name)}</span>
+        <span className="name-section"><FormattedMessage {...sectionTitle} /></span>
         <FieldArray
             name="extFilters"
             dispatch={dispatch}
@@ -101,7 +104,7 @@ const ExtFilters: React.FC<ExtFilterFieldProps> = memo(({
             dispatch(
                 modalDialogShow(
                     this,
-                    i18n('ap.ext-search.section.extends.title'),
+                    getIntl().formatMessage(filterMessages.sectionExtends),
                     <ExtendsFilterModal
                         initialValues={{
                             onlyMainPart: true,

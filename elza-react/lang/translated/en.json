@@ -2245,6 +2245,18 @@
     "defaultMessage": "unknown",
     "srcHash": "eZYKNqYuXiNu"
   },
+  "ap.binding.syncState.LOCAL_CHANGE": {
+    "defaultMessage": "A local change exists",
+    "srcHash": "IIpemxizIOmd"
+  },
+  "ap.binding.syncState.NOT_SYNCED": {
+    "defaultMessage": "Not synchronised",
+    "srcHash": "euiRLP3RZh5q"
+  },
+  "ap.binding.syncState.SYNC_OK": {
+    "defaultMessage": "Synchronisation active",
+    "srcHash": "herQzTk60jbB"
+  },
   "ap.coordinate.export.info": {
     "defaultMessage": "Choose the format for the exported coordinates:",
     "srcHash": "ZjndMvW7dHz6"
@@ -2256,6 +2268,86 @@
   "ap.coordinate.format": {
     "defaultMessage": "Format {0}",
     "srcHash": "9svfULmYPm_x"
+  },
+  "ap.ext-search.area": {
+    "defaultMessage": "Search area",
+    "srcHash": "-m9JpOfia1Qa"
+  },
+  "ap.ext-search.assignedTo": {
+    "defaultMessage": "Assigned to",
+    "srcHash": "VUvZY2W9VXei"
+  },
+  "ap.ext-search.creation": {
+    "defaultMessage": "Creation date",
+    "srcHash": "5GQLpa4q9pE4"
+  },
+  "ap.ext-search.ext-system": {
+    "defaultMessage": "External system",
+    "srcHash": "oGs4SFZv0yF2"
+  },
+  "ap.ext-search.extinction": {
+    "defaultMessage": "Extinction date",
+    "srcHash": "b39yRz1VxDAR"
+  },
+  "ap.ext-search.id": {
+    "defaultMessage": "ID",
+    "srcHash": "OEOXHc_e5Qg-"
+  },
+  "ap.ext-search.input.select.all": {
+    "defaultMessage": "All",
+    "srcHash": "5C_lbtoov7Gn"
+  },
+  "ap.ext-search.only-main-part": {
+    "defaultMessage": "Main part only",
+    "srcHash": "2aRlRp9Jetaq"
+  },
+  "ap.ext-search.search": {
+    "defaultMessage": "Search",
+    "srcHash": "VlGwesPAI6ap"
+  },
+  "ap.ext-search.section.base": {
+    "defaultMessage": "General filter",
+    "srcHash": "XFm0Sg34VVjn"
+  },
+  "ap.ext-search.section.cre-ext": {
+    "defaultMessage": "Creation/Extinction",
+    "srcHash": "e-eSsE8WuLyl"
+  },
+  "ap.ext-search.section.ext-systems": {
+    "defaultMessage": "External systems",
+    "srcHash": "oU8i4V-8EbbO"
+  },
+  "ap.ext-search.section.extends.title": {
+    "defaultMessage": "Add an extended filter",
+    "srcHash": "4oJzNCc16hjs"
+  },
+  "ap.ext-search.section.relations.title": {
+    "defaultMessage": "Add a relation filter",
+    "srcHash": "iw_tI_iRYhPV"
+  },
+  "ap.ext-search.section.text": {
+    "defaultMessage": "Full-text search",
+    "srcHash": "9j6F1mrDpUAx"
+  },
+  "ap.ext-search.syncState": {
+    "defaultMessage": "Synchronisation state",
+    "srcHash": "jW0ExEDsrEBo"
+  },
+  "ap.ext-search.user": {
+    "defaultMessage": "Last change author",
+    "srcHash": "mVaEgOEc4Nul"
+  },
+  "ap.ext-search.validationResult": {
+    "defaultMessage": "Validation state",
+    "srcHash": "TCqMSh6RlwnQ"
+  },
+  "ap.ext-search.validationResult.error": {
+    "defaultMessage": "Error",
+    "srcHash": "tiLo1toEkOGZ"
+  },
+  "ap.ext-search.validationResult.ok": {
+    "defaultMessage": "OK",
+    "srcHash": "VlM5vE0z1ygX"
   },
   "ap.ext-syncs.ext-system": {
     "defaultMessage": "External system",
@@ -4876,6 +4968,10 @@
   "registry.revision.state.toApprove": {
     "defaultMessage": "Revision awaiting approval",
     "srcHash": "EN4GDVzlKaY0"
+  },
+  "registry.type": {
+    "defaultMessage": "Entity class / subclass",
+    "srcHash": "0yItqrrxX9pT"
   },
   "registry.usage.tooMany": {
     "defaultMessage": "Too many occurrences were found",

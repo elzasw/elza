@@ -1,6 +1,8 @@
 import React from 'react';
 import {Field, FieldArray, FormSection} from 'redux-form';
-import i18n from "../../../i18n";
+import { FormattedMessage, useIntl, type MessageDescriptor } from 'react-intl';
+import { messageFor } from 'components/shared/lang/dynamicMessage';
+import { filterMessages, syncStateMessages, validationResultMessages } from './messages';
 import {FormInputField} from "../../../shared";
 import {ApTypeVO} from "../../../../api/ApTypeVO";
 import {TypesField} from "../../field/TypesField";
@@ -10,7 +12,8 @@ import { UsrUserVO } from 'api/UsrUserVO';
 
 type OwnProps = {
     submitting: boolean;
-    name?: string;
+    /** Nadpis sekce; ne název pole formuláře (to je `nameFormSection`). */
+    sectionTitle?: MessageDescriptor;
     nameFormSection?: string; // název pro FormSection
     types: ApTypeVO[];
     hideType?: boolean;
@@ -18,28 +21,29 @@ type OwnProps = {
 
 type Props = {} & OwnProps;
 
-const BaseFilterSection = ({submitting, nameFormSection = "", name = 'ap.ext-search.section.base', types = [], hideType = false}: Props) => {
+const BaseFilterSection = ({submitting, nameFormSection = "", sectionTitle = filterMessages.sectionBase, types = [], hideType = false}: Props) => {
+    const intl = useIntl();
 
 
     return <FormSection name={nameFormSection} className="filter-section">
-        <span className="name-section">{i18n(name)}</span>
+        <span className="name-section"><FormattedMessage {...sectionTitle} /></span>
         {!hideType && <FieldArray
             name="types"
             component={TypesField}
-            label={i18n('registry.type')}
+            label={intl.formatMessage(filterMessages.type)}
             disabled={submitting}
             items={types}
         />}
         <Field name="id"
                type="text"
                component={FormInputField}
-               label={i18n('ap.ext-search.id')}
+               label={intl.formatMessage(filterMessages.id)}
                disabled={submitting}
         />
         <Field name="user"
                type="text"
                component={FormInputField}
-               label={i18n('ap.ext-search.user')}
+               label={intl.formatMessage(filterMessages.user)}
                disabled={submitting}
         />
         <Field name="assignedTo"
@@ -52,7 +56,7 @@ const BaseFilterSection = ({submitting, nameFormSection = "", name = 'ap.ext-sea
                 //@ts-expect-error Wrong types on FormInputField
                 return <FormInputField
                     type="static"
-                    label={i18n('ap.ext-search.assignedTo')}
+                    label={intl.formatMessage(filterMessages.assignedTo)}
                 >
                     <UserField
                         {...input}
@@ -63,31 +67,31 @@ const BaseFilterSection = ({submitting, nameFormSection = "", name = 'ap.ext-sea
                     />
                 </FormInputField>
             }}
-            label={i18n('ap.ext-search.assignedTo')}
+            label={intl.formatMessage(filterMessages.assignedTo)}
             disabled={submitting}
         />
         <Field name="syncState"
                type="select"
                component={FormInputField}
-               label={i18n('ap.ext-search.syncState')}
+               label={intl.formatMessage(filterMessages.syncState)}
                disabled={submitting}
         >
             <option value={undefined}/>
             {[SyncState.SyncOk, SyncState.NotSynced].map((value) => {
                 return <option value={value}>
-                    {i18n(`ap.binding.syncState.${value}`)}
+                    {intl.formatMessage(messageFor(syncStateMessages, value, syncStateMessages.NOT_SYNCED))}
                 </option>
             })}</Field>
         <Field name="validationResult"
                type="select"
                component={FormInputField}
-               label={i18n('ap.ext-search.validationResult')}
+               label={intl.formatMessage(filterMessages.validationResult)}
                disabled={submitting}
         >
             <option value={undefined}/>
             {["ok", "error"].map((value) => {
                 return <option value={value}>
-                    {i18n(`ap.ext-search.validationResult.${value}`)}
+                    {intl.formatMessage(messageFor(validationResultMessages, value, validationResultMessages.ok))}
                 </option>
             })}</Field>
     </FormSection>

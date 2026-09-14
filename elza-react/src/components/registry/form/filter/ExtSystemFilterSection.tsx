@@ -1,14 +1,16 @@
 import React from 'react';
 import {Field, FormSection} from 'redux-form';
 import {Field as FinalField} from 'react-final-form';
-import i18n from "../../../i18n";
+import { FormattedMessage, useIntl, type MessageDescriptor } from 'react-intl';
+import { filterMessages } from './messages';
 import {FormInputField} from "../../../shared";
 import { ApExternalSystemSimpleVO } from 'typings/store';
 
 type OwnProps = {
     submitting: boolean;
     nameFormSection?: string; // název pro FormSection
-    name?: string;
+    /** Nadpis sekce; ne název pole formuláře. */
+    sectionTitle?: MessageDescriptor;
     hideName?: boolean;
     extSystems: any[];
 }
@@ -27,15 +29,19 @@ interface FinalProps {
 export const ExtSystemFilterSectionFinal = ({
     disabled, 
     name = "extSystem", 
-    label = i18n('ap.ext-search.ext-system'),
+    label,
     extSystems, 
-    sectionName = i18n('ap.ext-search.section.ext-systems'), 
+    sectionName,
+    
     hideName = false
 }: FinalProps) => {
+    const intl = useIntl();
+    const resolvedLabel = label ?? intl.formatMessage(filterMessages.extSystem);
+    const resolvedSectionName = sectionName ?? intl.formatMessage(filterMessages.sectionExtSystems);
     return <div className="filter-section">
-        {!hideName && <span className="name-section">{sectionName}</span>}
+        {!hideName && <span className="name-section">{resolvedSectionName}</span>}
         <FinalField name={name}
-               label={label}
+               label={resolvedLabel}
                type="autocomplete"
                component={FormInputField}
                getItemId={(item:ApExternalSystemSimpleVO) => item && item.code}
@@ -46,11 +52,12 @@ export const ExtSystemFilterSectionFinal = ({
     </div>
 };
 
-const ExtSystemFilterSection = ({submitting, nameFormSection = "", extSystems, name = 'ap.ext-search.section.ext-systems', hideName = false}: Props) => {
+const ExtSystemFilterSection = ({submitting, nameFormSection = "", extSystems, sectionTitle = filterMessages.sectionExtSystems, hideName = false}: Props) => {
+    const intl = useIntl();
     return <FormSection name={nameFormSection} className="filter-section">
-        {!hideName && <span className="name-section">{i18n(name)}</span>}
+        {!hideName && <span className="name-section"><FormattedMessage {...sectionTitle} /></span>}
         <Field name="extSystem"
-               label={i18n('ap.ext-search.ext-system')}
+               label={intl.formatMessage(filterMessages.extSystem)}
                type="autocomplete"
                component={FormInputField}
                getItemId={item => item && item.code}
