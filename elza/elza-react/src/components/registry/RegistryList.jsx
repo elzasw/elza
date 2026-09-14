@@ -495,7 +495,7 @@ class RegistryList extends AbstractReactComponent {
                             <SearchWithGoto
                                 onFulltextSearch={this.handleFilterText}
                                 onClear={this.handleFilterTextClear}
-                                placeholder={<FormattedMessage {...sharedSearchMessages.searchPlaceholder} />}
+                                placeholder={this.props.intl.formatMessage(sharedSearchMessages.searchPlaceholder)}
                                 filterText={registryList.filter.text}
                                 showFilterResult={true}
                                 type="INFO"
@@ -509,7 +509,7 @@ class RegistryList extends AbstractReactComponent {
                                     variant="link"
                                     size="sm"
                                     id="registry-more-actions"
-                                    title={<FormattedMessage {...registryMessages.moreActionsTitle} />}
+                                    title={this.props.intl.formatMessage(registryMessages.moreActionsTitle)}
                                     bsPrefix="registry-more-actions-toggle"
                                 >
                                     <Icon glyph="fa-ellipsis-h" />
@@ -538,7 +538,7 @@ class RegistryList extends AbstractReactComponent {
                         )}
                         {registryList.filter.searchFilter && (
                             <>
-                                <Col title={<FormattedMessage {...registryMessages.extFilterUsed} />} className="align-self-center used">
+                                <Col title={this.props.intl.formatMessage(registryMessages.extFilterUsed)} className="align-self-center used">
                                     {<FormattedMessage {...registryMessages.extFilterUsed} />}
                                 </Col>
                                 <Col xs="auto">

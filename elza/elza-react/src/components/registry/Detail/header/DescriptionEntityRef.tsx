@@ -1,7 +1,8 @@
 import { WebApi } from "actions";
 import { urlEntity } from "../../../../constants";
 import { ApAccessPointVO } from 'api/ApAccessPointVO';
-import i18n from "components/i18n";
+import { FormattedMessage } from 'react-intl';
+import { apDetailMessages } from '../messages';
 import { TooltipTrigger } from 'components/shared';
 import React, { FC, useEffect, useState } from 'react';
 import { Link } from "react-router-dom";
@@ -32,7 +33,7 @@ export const DescriptionEntityRef: FC<Props> = ({
                 </>
         }
         >
-            {`${i18n("ap.detail.replacedBy")}: `}
+            {`${<FormattedMessage {...apDetailMessages.detailReplacedBy} />}: `}
             <Link to={urlEntity(entityId)}>
                 {replacedByItem ? replacedByItem.name : entityId}
             </Link>

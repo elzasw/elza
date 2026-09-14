@@ -582,7 +582,7 @@ class ArrStructurePanel extends AbstractReactComponent {
                         type="text"
                         onChange={({target: {value}}) => this.filter({text: value})}
                         value={filter.text}
-                        placeholder={<FormattedMessage {...templateMessages.structureFilterTextPlacholder} />}
+                        placeholder={this.props.intl.formatMessage(templateMessages.structureFilterTextPlacholder)}
                     />
                 </div>
                 {rows && rows.length > 0 ? (

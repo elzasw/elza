@@ -7,6 +7,8 @@ import { AppState } from '../../../../typings/store';
 import { DetailMultipleItem } from '../item';
 import './DetailPartInfo.scss';
 import { RevisionItem } from '../../revision';
+import { FormattedMessage } from 'react-intl';
+import { apDetailMessages } from '../messages';
 
 interface Props {
     items: RevisionItem[];
@@ -33,7 +35,7 @@ export const DetailPartInfo: FC<Props> = ({
     const renderItems = (items: RevisionItem[]) => {
         if (items.length === 0) {
             return (
-                <i>Nejsou definovány žádné hodnoty atributů</i>
+                <i><FormattedMessage {...apDetailMessages.detailPartNoItems} /></i>
             );
         }
 

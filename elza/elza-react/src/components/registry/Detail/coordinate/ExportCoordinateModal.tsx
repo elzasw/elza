@@ -2,7 +2,9 @@ import React, {ChangeEvent, useState} from 'react';
 import {connect} from 'react-redux';
 import {Button, Col, Form, Modal, Row} from 'react-bootstrap';
 import {downloadFileInFrame} from '../../../../actions/global/download';
-import i18n from '../../../i18n';
+import { FormattedMessage, useIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { apDetailMessages } from '../messages';
 import {UrlFactory} from '../../../../actions/WebApi';
 import {CoordinateFileType} from '../../../../constants';
 import {Action, Dispatch} from 'redux';
@@ -14,6 +16,7 @@ type Props = {
 } & ReturnType<typeof mapDispatchToProps>;
 
 const ExportCoordinateModal = ({itemId, arrangement, onClose, handleExport}: Props) => {
+    const intl = useIntl();
     const [format, setFormat] = useState(CoordinateFileType.KML);
 
     const onChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -24,7 +27,7 @@ const ExportCoordinateModal = ({itemId, arrangement, onClose, handleExport}: Pro
         <>
             <Modal.Body>
                 <Row>
-                    <Col>{i18n('ap.coordinate.export.info')}</Col>
+                    <Col>{<FormattedMessage {...apDetailMessages.coordinateExportInfo} />}</Col>
                 </Row>
                 <Row className="pt-2">
                     <Col>
@@ -35,7 +38,7 @@ const ExportCoordinateModal = ({itemId, arrangement, onClose, handleExport}: Pro
                                 checked={format === x}
                                 value={x}
                                 onChange={onChange}
-                                label={i18n('ap.coordinate.format', x.toUpperCase())}
+                                label={intl.formatMessage(apDetailMessages.coordinateFormat, { 0: x.toUpperCase() })}
                             />
                         ))}
                     </Col>
@@ -43,10 +46,10 @@ const ExportCoordinateModal = ({itemId, arrangement, onClose, handleExport}: Pro
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="outline-secondary" onClick={() => handleExport(itemId, arrangement, format, onClose)}>
-                    {i18n('global.action.export')}
+                    {<FormattedMessage {...apDetailMessages.globalActionExport} />}
                 </Button>
                 <Button variant="link" onClick={onClose}>
-                    {i18n('global.action.cancel')}
+                    {<FormattedMessage {...globalMessages.cancel} />}
                 </Button>
             </Modal.Footer>
         </>
