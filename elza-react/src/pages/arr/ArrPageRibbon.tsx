@@ -19,6 +19,7 @@ import { useThunkDispatch } from 'utils/hooks';
 import { AppState, UserDetail, Node } from 'typings/store';
 import { IssueVO } from 'types';
 import { useSearchFundsModal } from 'components/shared/dialog/FluentModalDialog';
+import { globalMessages } from 'components/shared/lang/messages';
 
 interface Props {
     handleChangeFundSettings: () => void;
@@ -78,7 +79,7 @@ export default function ArrPageRibbonFn({
             <ConfirmForm
                 confirmMessage={<FormattedMessage {...arrPageMessages.daosFundSyncConfirmMessage} />}
                 submittingMessage={intl.formatMessage(arrPageMessages.daosFundSyncSubmittingMessage)}
-                submitTitle={<FormattedMessage {...arrPageMessages.globalActionRun} />}
+                submitTitle={<FormattedMessage {...globalMessages.run} />}
                 onSubmit={async () => {
                     const result = await WebApi.syncDaosByFund(versionId);
                     dispatch(modalDialogHide());

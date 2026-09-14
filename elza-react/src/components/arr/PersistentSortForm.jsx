@@ -8,7 +8,8 @@ import React from 'react';
 import {Field, formValueSelector, reduxForm} from 'redux-form';
 import {Form} from 'react-bootstrap';
 import AbstractReactComponent from '../AbstractReactComponent';
-import i18n from '../i18n';
+import { FormattedMessage, injectIntl } from 'react-intl';
+import { fundFormMessages } from './fundFormMessages';
 import {connect} from 'react-redux';
 import {WebApi} from '../../actions/WebApi';
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx';
@@ -91,7 +92,7 @@ class PersistentSortForm extends AbstractReactComponent {
             <Form>
                 <Field
                     alwaysExpanded
-                    label={i18n('arr.fund.bulkModifications.descItemType')}
+                    label={<FormattedMessage {...fundFormMessages.fundBulkModificationsDescItemType} />}
                     items={filteredDescItems}
                     name="itemType"
                     disabled={submitting}
@@ -103,7 +104,7 @@ class PersistentSortForm extends AbstractReactComponent {
                     <Field
                         name="itemSpec"
                         alwaysExpanded
-                        label={i18n('arr.functions.persistentSort.spec')}
+                        label={<FormattedMessage {...fundFormMessages.functionsPersistentSortSpec} />}
                         items={itemType.descItemSpecs}
                         getItemRenderClass={item => item.name.toLowerCase()}
                         disabled={submitting}
@@ -118,7 +119,7 @@ class PersistentSortForm extends AbstractReactComponent {
                     disabled={submitting}
                     component={FormInputField}
                     value={DIRECTION.ASC}
-                    label={i18n('arr.functions.persistentSort.direction.asc')}
+                    label={<FormattedMessage {...fundFormMessages.functionsPersistentSortDirectionAsc} />}
                     inline
                 />
 
@@ -128,7 +129,7 @@ class PersistentSortForm extends AbstractReactComponent {
                     disabled={submitting}
                     component={FormInputField}
                     value={DIRECTION.DESC}
-                    label={i18n('arr.functions.persistentSort.direction.desc')}
+                    label={<FormattedMessage {...fundFormMessages.functionsPersistentSortDirectionDesc} />}
                     inline
                 />
 
@@ -136,7 +137,7 @@ class PersistentSortForm extends AbstractReactComponent {
                     name="sortChildren"
                     type="checkbox"
                     component={FormInputField}
-                    label={i18n('arr.functions.persistentSort.sortChildren')}
+                    label={<FormattedMessage {...fundFormMessages.functionsPersistentSortSortChildren} />}
                     disabled={submitting}
                 />
             </Form>
@@ -146,7 +147,7 @@ class PersistentSortForm extends AbstractReactComponent {
 
 const formComponent = reduxForm({
     form: PersistentSortForm.FORM,
-})(PersistentSortForm);
+})(injectIntl(PersistentSortForm));
 
 const selector = formValueSelector(PersistentSortForm.FORM);
 
@@ -196,11 +197,11 @@ export default connect(
 const validate = values => {
     const errors = {};
     if (!values.itemType) {
-        errors.itemType = i18n('arr.functions.persistentSort.noSelection.item');
+        errors.itemType = this.props.intl.formatMessage(fundFormMessages.functionsPersistentSortNoSelectionItem);
     }
 
     if (values.itemType && values.itemType.useSpecification && !values.itemSpec) {
-        errors.itemSpec = i18n('arr.functions.persistentSort.noSelection.spec');
+        errors.itemSpec = this.props.intl.formatMessage(fundFormMessages.functionsPersistentSortNoSelectionSpec);
     }
 
     return errors;

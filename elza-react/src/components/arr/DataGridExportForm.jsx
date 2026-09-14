@@ -8,7 +8,8 @@ import React from 'react';
 import {reduxForm, Field} from 'redux-form';
 import {Form} from 'react-bootstrap';
 import AbstractReactComponent from '../AbstractReactComponent';
-import i18n from '../i18n';
+import { FormattedMessage, injectIntl } from 'react-intl';
+import { fundFormMessages } from './fundFormMessages';
 import {connect} from 'react-redux';
 import {UrlFactory} from '../../actions/WebApi';
 import {modalDialogHide} from '../../actions/global/modalDialog';
@@ -54,7 +55,7 @@ class DataGridExportForm extends AbstractReactComponent {
                     type="radio"
                     name="exportType"
                     value={EXPORT_TYPE.TABLE}
-                    label={i18n('dataGrid.export.exportType.table')}
+                    label={<FormattedMessage {...fundFormMessages.dataGridExportExportTypeTable} />}
                     inline
                 />
 
@@ -63,7 +64,7 @@ class DataGridExportForm extends AbstractReactComponent {
                     type="radio"
                     name="exportType"
                     value={EXPORT_TYPE.DATA}
-                    label={i18n('dataGrid.export.exportType.data')}
+                    label={<FormattedMessage {...fundFormMessages.dataGridExportExportTypeData} />}
                     inline
                 />
             </Form>
@@ -73,7 +74,7 @@ class DataGridExportForm extends AbstractReactComponent {
 
 const formComponent = reduxForm({
     form: FORM_DATA_GRID_EXPORT,
-})(DataGridExportForm);
+})(injectIntl(DataGridExportForm));
 
 export default connect((state, props) => {
     const {initialValues} = props;
@@ -101,7 +102,7 @@ export default connect((state, props) => {
 const validate = values => {
     const errors = {};
     if (!values.exportType) {
-        errors.itemType = i18n('dataGrid.export.exportType.noSelection.item');
+        errors.itemType = this.props.intl.formatMessage(fundFormMessages.dataGridExportExportTypeNoSelectionItem);
     }
 
     return errors;

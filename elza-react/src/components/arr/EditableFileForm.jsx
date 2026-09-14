@@ -1,7 +1,10 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {Field, reduxForm} from 'redux-form';
-import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
+import {AbstractReactComponent, FormInput} from 'components/shared';
+import { FormattedMessage, injectIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { fundFormMessages } from './fundFormMessages';
 import {Form, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx';
@@ -24,16 +27,16 @@ class EditableFileForm extends AbstractReactComponent {
         const errors = {};
 
         if (!values.name) {
-            errors.name = i18n('global.validation.required');
+            errors.name = this.props.intl.formatMessage(globalMessages.validationRequired);
         }
         if (!values.mimeType) {
-            errors.mimeType = i18n('global.validation.required');
+            errors.mimeType = this.props.intl.formatMessage(globalMessages.validationRequired);
         }
         if (!values.fileName) {
-            errors.fileName = i18n('global.validation.required');
+            errors.fileName = this.props.intl.formatMessage(globalMessages.validationRequired);
         }
         if (!values.content) {
-            errors.content = i18n('global.validation.required');
+            errors.content = this.props.intl.formatMessage(globalMessages.validationRequired);
         }
 
         return errors;
@@ -74,17 +77,17 @@ class EditableFileForm extends AbstractReactComponent {
                             name="name"
                             type="text"
                             component={FormInputField}
-                            label={i18n('dms.file.name')}
+                            label={<FormattedMessage {...fundFormMessages.dmsFileName} />}
                         />
                         <Field
                             disabled={submitting}
                             name="mimeType"
                             type="select"
                             component={FormInputField}
-                            label={i18n('dms.file.mimeType')}
+                            label={<FormattedMessage {...fundFormMessages.dmsFileMimeType} />}
                         >
                             <option value={''} key="no-select">
-                                {i18n('global.action.select')}
+                                {<FormattedMessage {...fundFormMessages.globalActionSelect} />}
                             </option>
                             {dms.fetched && dms.rows.map(x => <option value={x}>{x}</option>)}
                         </Field>
@@ -93,20 +96,20 @@ class EditableFileForm extends AbstractReactComponent {
                             name="fileName"
                             type="text"
                             component={FormInputField}
-                            label={i18n('dms.file.fileName')}
+                            label={<FormattedMessage {...fundFormMessages.dmsFileFileName} />}
                         />
                         <Field
                             name="content"
                             type="textarea"
                             component={FormInputField}
-                            label={i18n('dms.file.content')}
+                            label={<FormattedMessage {...fundFormMessages.dmsFileContent} />}
                             disabled={submitting}
                         />
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button type="submit" variant="outline-secondary">{i18n(create ? 'global.action.add' : 'global.action.update')}</Button>
+                        <Button type="submit" variant="outline-secondary">{this.props.intl.formatMessage(create ? globalMessages.add : globalMessages.save)}</Button>
                         <Button variant="link" onClick={onClose}>
-                            {i18n('global.action.cancel')}
+                            {<FormattedMessage {...globalMessages.cancel} />}
                         </Button>
                     </Modal.Footer>
                 </Form>
@@ -129,4 +132,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps)(editableFileReduxForm);
+export default connect(mapStateToProps)(injectIntl(editableFileReduxForm));

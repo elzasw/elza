@@ -84,7 +84,6 @@ export const arrPageMessages = defineMessages({
     developerScenariosChild: { id: "developer.scenarios.child", defaultMessage: "Pod" },
     developerTitleDescItems: { id: "developer.title.descItems", defaultMessage: "Prvky popisu" },
     developerTitleScenarios: { id: "developer.title.scenarios", defaultMessage: "Scénáře" },
-    globalActionRun: { id: "global.action.run", defaultMessage: "Spustit" },
     globalAll: { id: "global.all", defaultMessage: "Vše" },
     globalDataNoitem: { id: "global.data.noitem", defaultMessage: "Žádné položky" },
     globalInsufficientRight: { id: "global.insufficient.right", defaultMessage: "Nemáte dostatečná oprávnění pro přístup." },

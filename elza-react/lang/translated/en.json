@@ -3277,6 +3277,26 @@
     "defaultMessage": "Configuration",
     "srcHash": "GN9jjDsGebnj"
   },
+  "arr.functions.persistentSort.direction.asc": {
+    "defaultMessage": "Ascending",
+    "srcHash": "lPRfdlgzA6eC"
+  },
+  "arr.functions.persistentSort.direction.desc": {
+    "defaultMessage": "Descending",
+    "srcHash": "gPb-d71yuauX"
+  },
+  "arr.functions.persistentSort.noSelection.item": {
+    "defaultMessage": "No description element is selected",
+    "srcHash": "8NGXocBkO67t"
+  },
+  "arr.functions.persistentSort.noSelection.spec": {
+    "defaultMessage": "No specification is selected",
+    "srcHash": "7MBS0lCI-LZl"
+  },
+  "arr.functions.persistentSort.sortChildren": {
+    "defaultMessage": "Sort the lower levels",
+    "srcHash": "OTDewr_kPKg5"
+  },
   "arr.functions.persistentSort.sortFailed": {
     "defaultMessage": "Sorting failed",
     "srcHash": "Nc1wMRyw8fLf"
@@ -3288,6 +3308,10 @@
   "arr.functions.persistentSort.sortSuccess": {
     "defaultMessage": "Sorting finished successfully",
     "srcHash": "AySVcOi1HMey"
+  },
+  "arr.functions.persistentSort.spec": {
+    "defaultMessage": "Specification",
+    "srcHash": "60oXFP38RDRJ"
   },
   "arr.fund.action.delete": {
     "defaultMessage": "Delete fund",
@@ -3337,6 +3361,18 @@
     "defaultMessage": "Save including the filled-in values",
     "srcHash": "fqkeFMDRB2Je"
   },
+  "arr.fund.approveVersion.approve": {
+    "defaultMessage": "Close the fund version",
+    "srcHash": "lNaM8sZUw5cY"
+  },
+  "arr.fund.approveVersion.confirm": {
+    "defaultMessage": "The following functions need to be run",
+    "srcHash": "GnmmZx-wS-03"
+  },
+  "arr.fund.approveVersion.runningBulkAction": {
+    "defaultMessage": "The fund cannot be closed because a function is running",
+    "srcHash": "BnT0vM1JHXzo"
+  },
   "arr.fund.bulkModifications.action.delete": {
     "defaultMessage": "Remove",
     "srcHash": "eQTkknH2OPF1"
@@ -3352,6 +3388,10 @@
   "arr.fund.bulkModifications.action.setSpecification": {
     "defaultMessage": "Set",
     "srcHash": "-u_5AWdGRhoi"
+  },
+  "arr.fund.bulkModifications.descItemType": {
+    "defaultMessage": "Description element",
+    "srcHash": "XiZVb4j65GrQ"
   },
   "arr.fund.bulkModifications.findAndRFeplace.findText": {
     "defaultMessage": "Find",
@@ -3440,6 +3480,18 @@
   "arr.fund.detail.ruleSet": {
     "defaultMessage": "Description rules",
     "srcHash": "065mULbosm0j"
+  },
+  "arr.fund.files.action.add.editable": {
+    "defaultMessage": "Hand-written text",
+    "srcHash": "x028mE1kjfFf"
+  },
+  "arr.fund.files.action.add.fromFile": {
+    "defaultMessage": "From a file",
+    "srcHash": "VnhpLtNys220"
+  },
+  "arr.fund.files.noMimetypeConfig": {
+    "defaultMessage": "No editable file format is defined in the application configuration. At least one editable format has to be set for hand-written text. An administrator can change the application settings accordingly",
+    "srcHash": "2Wfn8oaTZnuA"
   },
   "arr.fund.filterSettings.action.clear": {
     "defaultMessage": "Clear the filter",
@@ -3581,9 +3633,29 @@
     "defaultMessage": "(Empty)",
     "srcHash": "xXDBPK8Dohie"
   },
+  "arr.fund.fundAdmins": {
+    "defaultMessage": "Administrators",
+    "srcHash": "Ptn-_LFkIUi2"
+  },
+  "arr.fund.institution": {
+    "defaultMessage": "Institution",
+    "srcHash": "AMtLLUW_r1z7"
+  },
+  "arr.fund.internalCode": {
+    "defaultMessage": "Internal code",
+    "srcHash": "p2eSz8FK6c9N"
+  },
   "arr.fund.list.created": {
     "defaultMessage": "created: {date}, {time}",
     "srcHash": "KhxrjgVDgXID"
+  },
+  "arr.fund.mark": {
+    "defaultMessage": "Archival fund mark",
+    "srcHash": "_8Shcbn6hcE2"
+  },
+  "arr.fund.name": {
+    "defaultMessage": "Name",
+    "srcHash": "EQAs0dy3Z5es"
   },
   "arr.fund.nodes.deleteNode": {
     "defaultMessage": "Do you really want to delete this item?",
@@ -3601,6 +3673,10 @@
     "defaultMessage": "No archival fund selected",
     "srcHash": "6_nVU9Tpx55a"
   },
+  "arr.fund.number": {
+    "defaultMessage": "Archival fund number",
+    "srcHash": "1hTM8088aRU2"
+  },
   "arr.fund.outputDefinition.active": {
     "defaultMessage": "Outputs",
     "srcHash": "irSQ8aME65Fz"
@@ -3608,6 +3684,10 @@
   "arr.fund.regScope": {
     "defaultMessage": "Entity scope",
     "srcHash": "SlY5BtKXdR6t"
+  },
+  "arr.fund.ruleSet": {
+    "defaultMessage": "Arrangement rules",
+    "srcHash": "065mULbosm0j"
   },
   "arr.fund.search.windowTitle": {
     "defaultMessage": "Search in archival funds",
@@ -3625,13 +3705,37 @@
     "defaultMessage": "List of parent description units",
     "srcHash": "Oy7eUUQ1rX5R"
   },
+  "arr.fund.settings.panel.center.title": {
+    "defaultMessage": "Main panel",
+    "srcHash": "YAIDH6Dr-nC9"
+  },
+  "arr.fund.settings.panel.right.title": {
+    "defaultMessage": "Tabs in the right panel",
+    "srcHash": "CV6bABVXbUwf"
+  },
   "arr.fund.settings.panel.rightPanel": {
     "defaultMessage": "Right panel",
     "srcHash": "xAgLg534RTYa"
   },
+  "arr.fund.settings.rules": {
+    "defaultMessage": "Other",
+    "srcHash": "BcdPoyWOeFzl"
+  },
   "arr.fund.settings.rules.strictMode": {
     "defaultMessage": "Strict mode",
     "srcHash": "QtvhemXpev_g"
+  },
+  "arr.fund.settings.rules.strictMode.default": {
+    "defaultMessage": "Default setting",
+    "srcHash": "3ivm6VzTXEGS"
+  },
+  "arr.fund.settings.rules.strictMode.false": {
+    "defaultMessage": "Off",
+    "srcHash": "2vrIm73Ehw8r"
+  },
+  "arr.fund.settings.rules.strictMode.true": {
+    "defaultMessage": "On",
+    "srcHash": "BTctTODef3qE"
   },
   "arr.fund.settings.title": {
     "defaultMessage": "Archival fund display settings",
@@ -3680,6 +3784,10 @@
   "arr.fund.title.update": {
     "defaultMessage": "Edit fund",
     "srcHash": "EVPCYiIbj3Qb"
+  },
+  "arr.fund.unitdate": {
+    "defaultMessage": "Dating",
+    "srcHash": "AHJyH1dAn8cV"
   },
   "arr.fund.useTemplate.name": {
     "defaultMessage": "Name",
@@ -4933,6 +5041,18 @@
     "defaultMessage": "Confirm",
     "srcHash": "k0lmE6n_VVk_"
   },
+  "dataGrid.export.exportType.data": {
+    "defaultMessage": "Data",
+    "srcHash": "zsOpuJsuOROT"
+  },
+  "dataGrid.export.exportType.noSelection.item": {
+    "defaultMessage": "No description element is selected",
+    "srcHash": "8NGXocBkO67t"
+  },
+  "dataGrid.export.exportType.table": {
+    "defaultMessage": "Table",
+    "srcHash": "q6XdtEZJStdQ"
+  },
   "dataGrid.export.title": {
     "defaultMessage": "Export the table view",
     "srcHash": "Wqk3SDl1Zg0J"
@@ -4940,6 +5060,46 @@
   "dataGrid.import.encoding.label": {
     "defaultMessage": "File encoding",
     "srcHash": "te63aENJOlWD"
+  },
+  "dataGrid.import.example.formalTitle": {
+    "defaultMessage": "Formal title: Divá Bára",
+    "srcHash": "7iL9TS78CMMN"
+  },
+  "dataGrid.import.example.otherId": {
+    "defaultMessage": "Other identifiers: shelf mark: 1234/75",
+    "srcHash": "izSVgDNxG2Sj"
+  },
+  "dataGrid.import.example.unitType": {
+    "defaultMessage": "Archival material type: manuscript",
+    "srcHash": "VLOeRWTmTLRt"
+  },
+  "dataGrid.import.format.example.title": {
+    "defaultMessage": "Example of adding elements",
+    "srcHash": "MLd1hj7Am-rD"
+  },
+  "dataGrid.import.hint.intro": {
+    "defaultMessage": "To add description elements, upload a CSV file in which each row corresponds to one description unit, in the form:",
+    "srcHash": "u3KEwYnMbozW"
+  },
+  "dataGrid.import.hint.note": {
+    "defaultMessage": "Several description elements can be added to one description unit in a single row. The specification code and the element value are required or optional depending on the type of the description element.",
+    "srcHash": "MVD2H_NGbpbg"
+  },
+  "dataGrid.import.hint.token.itemCode": {
+    "defaultMessage": "Element code",
+    "srcHash": "gEoLM2oAqL3_"
+  },
+  "dataGrid.import.hint.token.specCode": {
+    "defaultMessage": "Specification code",
+    "srcHash": "JbNXSIXjJa23"
+  },
+  "dataGrid.import.hint.token.uuid": {
+    "defaultMessage": "UUID",
+    "srcHash": "KomLyYqvbJby"
+  },
+  "dataGrid.import.hint.token.value": {
+    "defaultMessage": "Element value",
+    "srcHash": "y9wu6ytlT3SN"
   },
   "dataGrid.import.preview.empty": {
     "defaultMessage": "Select a file to show a preview.",
@@ -5224,6 +5384,34 @@
   "developer.title.scenarios": {
     "defaultMessage": "Scenarios",
     "srcHash": "sadmUL9jLABV"
+  },
+  "dms.file.content": {
+    "defaultMessage": "Text",
+    "srcHash": "cZiMTY4IA7pF"
+  },
+  "dms.file.fileName": {
+    "defaultMessage": "File name with extension",
+    "srcHash": "ERFxHaR2bpvV"
+  },
+  "dms.file.mimeType": {
+    "defaultMessage": "File type",
+    "srcHash": "zdeCfi0CCmcN"
+  },
+  "dms.file.name": {
+    "defaultMessage": "Name",
+    "srcHash": "EQAs0dy3Z5es"
+  },
+  "dms.file.title.editable.add": {
+    "defaultMessage": "Add an attachment as text",
+    "srcHash": "5DMYuVw62lcf"
+  },
+  "dms.file.title.editable.edit": {
+    "defaultMessage": "Edit the attachment",
+    "srcHash": "_X2zpyyH46O6"
+  },
+  "dms.file.title.file.add": {
+    "defaultMessage": "Add an attachment from a file",
+    "srcHash": "scUtfdhTFl6E"
   },
   "download.allreadyDownloading": {
     "defaultMessage": "The file download request has already been sent",
@@ -7260,6 +7448,10 @@
   "ribbon.action.arr.dataGrid.import.failed": {
     "defaultMessage": "The import failed",
     "srcHash": "xf-lzTX7_jSA"
+  },
+  "ribbon.action.arr.dataGrid.import.started": {
+    "defaultMessage": "The import has started",
+    "srcHash": "sKobssDfmRhs"
   },
   "ribbon.action.arr.dataGrid.import.success": {
     "defaultMessage": "The import finished",

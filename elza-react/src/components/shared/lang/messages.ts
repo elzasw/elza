@@ -76,6 +76,15 @@ export const globalMessages = defineMessages({
     id: "global.action.download",
     defaultMessage: "Stáhnout",
   },
+  /** Pozor: "Exportovat" je jiná akce než download ("Stáhnout"). */
+  export: {
+    id: "global.action.export",
+    defaultMessage: "Exportovat",
+  },
+  run: {
+    id: "global.action.run",
+    defaultMessage: "Spustit",
+  },
   choose: {
     id: "global.action.choose",
     defaultMessage: "Vybrat",

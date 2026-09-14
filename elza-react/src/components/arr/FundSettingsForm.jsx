@@ -1,6 +1,9 @@
 import React from 'react';
 import {reduxForm, Field, FieldArray} from 'redux-form';
-import {AbstractReactComponent, i18n} from 'components/shared';
+import {AbstractReactComponent} from 'components/shared';
+import { FormattedMessage, injectIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { fundFormMessages } from './fundFormMessages';
 import {Form, FormCheck, FormControl, FormLabel, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
 import {submitForm} from 'components/form/FormUtils.jsx';
@@ -31,7 +34,7 @@ class FundSettingsForm extends AbstractReactComponent {
                 <Modal.Body>
                     <div className="fund-settings-form">
                         <div className="center-panel">
-                            <h4>{i18n('arr.fund.settings.panel.center.title')}</h4>
+                            <h4>{<FormattedMessage {...fundFormMessages.fundSettingsPanelCenterTitle} />}</h4>
                             <FieldArray
                                 name={'centerPanel.panels'}
                                 component={({fields, meta}) => {
@@ -52,7 +55,7 @@ class FundSettingsForm extends AbstractReactComponent {
                             />
                         </div>
                         <div className="right-panel">
-                            <h4>{i18n('arr.fund.settings.panel.right.title')}</h4>
+                            <h4>{<FormattedMessage {...fundFormMessages.fundSettingsPanelRightTitle} />}</h4>
                             <FieldArray
                                 name={'rightPanel.tabs'}
                                 component={({fields, meta}) => {
@@ -73,27 +76,27 @@ class FundSettingsForm extends AbstractReactComponent {
                             />
                         </div>
                         <div className="rules">
-                            <h4>{i18n('arr.fund.settings.rules')}</h4>
-                            <FormLabel>{i18n('arr.fund.settings.rules.strictMode')}</FormLabel>
+                            <h4>{<FormattedMessage {...fundFormMessages.fundSettingsRules} />}</h4>
+                            <FormLabel>{<FormattedMessage {...fundFormMessages.fundSettingsRulesStrictMode} />}</FormLabel>
                             <Field
                                 component={FormInputField}
                                 name={'strictMode.value'}
                                 type="select"
                                 placeholder="select"
                             >
-                                <option value="">{i18n('arr.fund.settings.rules.strictMode.default')}</option>
-                                <option value="true">{i18n('arr.fund.settings.rules.strictMode.true')}</option>
-                                <option value="false">{i18n('arr.fund.settings.rules.strictMode.false')}</option>
+                                <option value="">{<FormattedMessage {...fundFormMessages.fundSettingsRulesStrictModeDefault} />}</option>
+                                <option value="true">{<FormattedMessage {...fundFormMessages.fundSettingsRulesStrictModeTrue} />}</option>
+                                <option value="false">{<FormattedMessage {...fundFormMessages.fundSettingsRulesStrictModeFalse} />}</option>
                             </Field>
                         </div>
                     </div>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button type="submit" variant="outline-secondary">
-                        {i18n('visiblePolicy.action.save')}
+                        {<FormattedMessage {...fundFormMessages.visiblePolicyActionSave} />}
                     </Button>
                     <Button variant="link" onClick={onClose}>
-                        {i18n('global.action.cancel')}
+                        {<FormattedMessage {...globalMessages.cancel} />}
                     </Button>
                 </Modal.Footer>
             </Form>
@@ -103,4 +106,4 @@ class FundSettingsForm extends AbstractReactComponent {
 
 export default reduxForm({
     form: 'fundSettingsForm',
-})(FundSettingsForm);
+})(injectIntl(FundSettingsForm));
