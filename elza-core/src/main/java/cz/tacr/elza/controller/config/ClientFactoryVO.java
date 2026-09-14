@@ -863,6 +863,10 @@ public class ClientFactoryVO {
      * @return VO hodnota atributu
      */
     public <T extends ArrItem> NodeItem createNodeItem(final T item) {
+        return createNodeItem(item, Collections.emptyMap());
+    }
+
+    private <T extends ArrItem> NodeItem createNodeItem(final T item, final Map<Integer, String> apNameMap) {
         Assert.notNull(item, "Hodnota musí být vyplněna");
 
         NodeItem nodeItem = new NodeItem();
@@ -889,6 +893,14 @@ public class ClientFactoryVO {
             Function<ArrData, ItemData> dataConvertor = dataConvertors.get(dataType);
             Objects.requireNonNull(dataConvertor);
             ItemData data = dataConvertor.apply(arrData);
+            if (data instanceof DataRecordRef recordRefData) {
+                ArrDataRecordRef recordRef = (ArrDataRecordRef) arrData;
+                String name = apNameMap.get(recordRef.getRecordId());
+                if (name == null && recordRef.getRecord() != null) {
+                    name = accessPointService.findPreferredPartDisplayName(recordRef.getRecord());
+                }
+                recordRefData.setName(name);
+            }
             nodeItem.setData(data);
         }
 
@@ -946,22 +958,11 @@ public class ClientFactoryVO {
             return null;
         }
         List<NodeItem> result = new ArrayList<>(items.size());
-
-//        List<ApAccessPoint> apList = new ArrayList<>();
-//        for (ArrDescItem item : items) {
-//            ArrData data = HibernateUtils.unproxy(item.getData());
-//            if (data instanceof ArrDataRecordRef) {
-//                ApAccessPoint ap = ((ArrDataRecordRef) data).getRecord();
-//                apList.add(ap);
-//            }
-//        }
-//
-//        List<ApAccessPointVO> apListVO = apFactory.createVO(apList);
-//        Iterator<ApAccessPointVO> apVoIt = apListVO.iterator();
+        Map<Integer, String> apNameMap = collectRecordRefNames(items);
 
         int inhPos = -items.size();
         for (ArrDescItem item : items) {
-        	NodeItem nodeItem = createNodeItem(item);
+        	NodeItem nodeItem = createNodeItem(item, apNameMap);
             if (!nodeItem.getNodeId().equals(nodeId)) {
             	nodeItem.setNodeId(item.getNodeId());
             	nodeItem.setPosition(inhPos++);
@@ -969,11 +970,6 @@ public class ClientFactoryVO {
             if (inhibitedDescItemObjectIds.contains(item.getDescItemObjectId())) {
             	nodeItem.setInhibited(true);
             }
-//            ArrData data = HibernateUtils.unproxy(item.getData());
-//            if (data instanceof ArrDataRecordRef) {
-//                ApAccessPointVO apVo = apVoIt.next();
-//                ((ArrItemRecordRefVO) nodeItem).setRecord(apVo);
-//            }
             result.add(nodeItem);
         }
 
@@ -981,6 +977,20 @@ public class ClientFactoryVO {
         Collections.sort(result, (o1, o2) -> o1.getPosition() - o2.getPosition());
 
         return result;
+    }
+
+    private <T extends ArrItem> Map<Integer, String> collectRecordRefNames(Collection<T> items) {
+        Set<Integer> apIds = items.stream()
+                .map(i -> HibernateUtils.unproxy(i.getData()))
+                .filter(ArrDataRecordRef.class::isInstance)
+                .map(d -> ((ArrDataRecordRef) d).getRecordId())
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        if (apIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        return accessPointService.findPreferredPartIndexMapByIds(apIds).entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getIndexValue()));
     }
 
     public StructuredObject createStructuredObject(final ArrStructuredObject aso) {

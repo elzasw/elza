@@ -2329,7 +2329,9 @@ paths:
         - name: focusAipId
           in: query
           required: false
-          description: AIP the client wants to see; the page holding it is returned instead of the requested offset, in the sorting and filtering of the request
+          description: |-
+            AIP the client wants to see; the page holding it is returned instead of the
+            requested offset, in the sorting and filtering of the request
           schema:
             type: integer
           explode: false
@@ -7347,7 +7349,9 @@ components:
           description: Seznam objektů
         offset:
           type: integer
-          description: Pořadí prvního vráceného výsledku; při zadaném focusAipId se liší od požadovaného offsetu, protože se vrací stránka s hledaným balíčkem
+          description: |-
+            Pořadí prvního vráceného výsledku; při zadaném focusAipId se liší od požadovaného offsetu,
+            protože se vrací stránka s hledaným balíčkem
         focusFound:
           type: boolean
           description: Zda byl hledaný balíček (focusAipId) ve výsledku nalezen; bez focusAipId není vyplněno
@@ -8446,6 +8450,8 @@ components:
       properties:
         value:
           type: integer
+        name:
+          type: string
       allOf:
         - $ref: '#/components/schemas/ItemData'
     DataString:
