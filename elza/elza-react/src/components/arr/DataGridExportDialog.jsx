@@ -1,5 +1,8 @@
 import React from 'react';
-import {AbstractReactComponent, i18n} from 'components/shared';
+import {AbstractReactComponent} from 'components/shared';
+import { FormattedMessage } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { fundFormMessages } from './fundFormMessages';
 import {connect} from 'react-redux';
 import {submit} from 'redux-form';
 import {Modal} from 'react-bootstrap';
@@ -22,16 +25,16 @@ class DataGridExportDialog extends AbstractReactComponent {
             <div>
                 <Modal.Body>
                     <span>
-                        <label>{i18n('dataGrid.export.title')}</label>
+                        <label>{<FormattedMessage {...fundFormMessages.dataGridExportTitle} />}</label>
                     </span>
                     <DataGridExportForm versionId={versionId} fundDataGrid={fundDataGrid} />
                 </Modal.Body>
                 <Modal.Footer>
                     <Button type="submit" variant="outline-secondary" onClick={this.handleSubmit}>
-                        {i18n('global.action.export')}
+                        {<FormattedMessage {...globalMessages.export} />}
                     </Button>
                     <Button variant="link" onClick={onClose}>
-                        {i18n('global.action.cancel')}
+                        {<FormattedMessage {...globalMessages.cancel} />}
                     </Button>
                 </Modal.Footer>
             </div>

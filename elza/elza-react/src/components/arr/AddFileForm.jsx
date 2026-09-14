@@ -1,7 +1,10 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n} from 'components/shared';
+import {AbstractReactComponent} from 'components/shared';
+import { FormattedMessage, injectIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { fundFormMessages } from './fundFormMessages';
 import {Form, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
 import {submitForm} from 'components/form/FormUtils.jsx';
@@ -19,10 +22,10 @@ class AddFileForm extends AbstractReactComponent {
         const errors = {};
 
         if (!values.name) {
-            errors.name = i18n('global.validation.required');
+            errors.name = this.props.intl.formatMessage(globalMessages.validationRequired);
         }
         if (!values.file) {
-            errors.file = i18n('global.validation.required');
+            errors.file = this.props.intl.formatMessage(globalMessages.validationRequired);
         }
 
         return errors;
@@ -49,13 +52,13 @@ class AddFileForm extends AbstractReactComponent {
             <div className="add-file-form-container">
                 <Form onSubmit={handleSubmit(this.submitReduxForm)}>
                     <Modal.Body>
-                        <FF label={i18n('dms.file.name')} name={"name"} />
+                        <FF label={<FormattedMessage {...fundFormMessages.dmsFileName} />} name={"name"} />
                         <FF field={FileInput} name={"file"} />
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button variant="outline-secondary" type="submit">{i18n('global.action.add')}</Button>
+                        <Button variant="outline-secondary" type="submit">{<FormattedMessage {...globalMessages.add} />}</Button>
                         <Button variant="link" onClick={onClose}>
-                            {i18n('global.action.cancel')}
+                            {<FormattedMessage {...globalMessages.cancel} />}
                         </Button>
                     </Modal.Footer>
                 </Form>
@@ -66,4 +69,4 @@ class AddFileForm extends AbstractReactComponent {
 
 export default reduxForm({
     form: 'addFileForm'
-})(AddFileForm);
+})(injectIntl(AddFileForm));
