@@ -20,8 +20,8 @@ import {modalDialogHide, modalDialogShow} from "../../actions/global/modalDialog
 import AipExplorerModalWrapper from "./explorer/AipExplorerWrapper.tsx";
 import {ExplorerMode} from "./explorer/ExplorerContext.tsx";
 import * as aipActions from "../../actions/aip/aip.ts";
-import {DaDaoTypeCaption} from "../../api/DaDaoType.ts";
-import {DaDaoType, DaoLink, DaoViewRequestVO} from "elza-api";
+import { daoTypeMessages, levelMessages } from "./messages";
+import {AipLevelType, DaDaoType, DaoLink, DaoViewRequestVO} from "elza-api";
 import CrossTabHelper, {CrossTabEventType, getThisLayout} from "../CrossTabHelper.tsx";
 import {WebApi} from "../../actions";
 import ConfirmForm from "../shared/form/ConfirmForm";
@@ -127,7 +127,9 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
         const openItem = openItems.includes(item.daoLinkUuid);
 
         return (<p>
-            {item.path ? item.path + " " : DaDaoTypeCaption(item.daoType) + ": "}
+            {/* Neznámý typ zůstává u původního znění - popisuje celý balíček. */}
+            {item.path ? item.path + " "
+                : intl.formatMessage(daoTypeMessages[item.daoType] ?? levelMessages[AipLevelType.Package]) + ": "}
             <Button key="explorerLink" variant="link" onClick={() => handleOpenExplorer(item.aipId, item.daoCode)}>
                 {item.name}
             </Button>

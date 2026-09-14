@@ -1,6 +1,6 @@
 import { useIntl } from 'react-intl';
 import { Link } from 'react-router-dom';
-import { AipDetailVO } from 'elza-api';
+import { AipDetailVO, LinkType, LinkedNodeVO } from 'elza-api';
 
 import { Icon } from 'components/shared';
 import { useThunkDispatch } from 'utils/hooks';
@@ -10,18 +10,27 @@ import { urlEntity, urlFundAb } from '../../constants';
 import { DetailRow } from './DetailRow';
 import { QueueStateCell, getBoolIcon, getConnectedToJP } from './AipCells';
 import { formatAipSize, formatUnitDate } from './format';
-import { detailMessages, linkStateMessages, messages, problemMessages } from './messages';
+import { detailMessages, linkStateMessages, messages, packageMessages, problemMessages } from './messages';
+import './AipDetailBody.scss';
 
 interface Props {
     detail: AipDetailVO;
+    /** Offered next to the problem when the caller can show the file the problem is about. */
+    onOpenProblemFile?: (file: string) => void;
 }
+
+/**
+ * A link without a type comes from a server that does not send it yet; it is treated as
+ * a whole-package link, which is what the detail showed before the types existed.
+ */
+const isPackageLink = (link: LinkedNodeVO) => link.linkType == null || link.linkType === LinkType.Aip;
 
 /**
  * Values of one AIP. A row is shown only for a value the AIP has - an empty row says nothing -
  * except the load and link flags, where "no" is information too. Labels shared with the list
  * come from the column messages, so the two never drift apart.
  */
-export function AipDetailBody({ detail }: Props) {
+export function AipDetailBody({ detail, onOpenProblemFile }: Props) {
     const { formatMessage } = useIntl();
     const dispatch = useThunkDispatch();
 
@@ -30,6 +39,11 @@ export function AipDetailBody({ detail }: Props) {
             dispatch(aipFetchIfNeeded(detail.aipId, true));
         });
     };
+
+    // Links of the whole package are shown by name; links of its parts only counted - the parts
+    // are browsed in the structure of the package, not here.
+    const packageLinks = (detail.linkedNodes ?? []).filter(isPackageLink);
+    const partLinkCount = (detail.linkedNodes ?? []).length - packageLinks.length;
 
     return (
         <>
@@ -47,6 +61,14 @@ export function AipDetailBody({ detail }: Props) {
                     </div>
                     {detail.problemDescription &&
                         <div className="aip-problem-description">{detail.problemDescription}</div>}
+                    {detail.problemFile && onOpenProblemFile &&
+                        <div className="aip-problem-file">
+                            {formatMessage(packageMessages.problemHint)}
+                            <button type="button" className="aip-problem-file-link"
+                                    onClick={() => onOpenProblemFile(detail.problemFile)}>
+                                {detail.problemFile}
+                            </button>
+                        </div>}
                 </div>}
             {detail.fund &&
                 <DetailRow label={formatMessage(messages.fund)} value={
@@ -96,7 +118,10 @@ export function AipDetailBody({ detail }: Props) {
                            value={formatMessage(linkStateMessages[detail.linkState])} />}
             {detail.fund &&
                 <DetailRow label={formatMessage(detailMessages.linkedNodes)}
-                           value={getConnectedToJP(detail.linkedNodes, detail.fund.id, handleDeleteLink)} />}
+                           value={getConnectedToJP(packageLinks, detail.fund.id, handleDeleteLink)} />}
+            {partLinkCount > 0 &&
+                <DetailRow label={formatMessage(detailMessages.partLinks)}
+                           value={formatMessage(detailMessages.partLinksCount, { count: partLinkCount })} />}
         </>
     );
 }

@@ -139,4 +139,26 @@ describe('PackageBrowser', () => {
         expect(await screen.findByText('Balíček neobsahuje soubor EAD-INHERENT.xml')).toBeInTheDocument();
         expect(screen.queryByText('Soubor, kterého se problém týká:')).not.toBeInTheDocument();
     });
+
+    it('požadovaný soubor otevře, jakmile je balíček načtený', async () => {
+        listPackageEntries.mockResolvedValue({data: [
+            {path: 'aip/METS.xml', size: 10},
+            {path: 'aip/metadata/descriptive/pruvodka.xml', size: 20},
+        ]});
+
+        renderWithProviders(<PackageBrowser aipId={11} selectPath="metadata/descriptive/pruvodka.xml"/>);
+
+        await waitFor(() => expect(fetch).toHaveBeenCalledWith(
+            '/api/v1/aip/11/package/content?path=aip%2Fmetadata%2Fdescriptive%2Fpruvodka.xml'));
+    });
+
+    it('soubor, který balíček neobsahuje, neotevře', async () => {
+        listPackageEntries.mockResolvedValue({data: [{path: 'aip/METS.xml', size: 10}]});
+
+        renderWithProviders(<PackageBrowser aipId={11} selectPath="metadata/descriptive/pruvodka.xml"/>);
+
+        expect(await screen.findByText('METS.xml')).toBeInTheDocument();
+        expect(fetch).not.toHaveBeenCalled();
+        expect(screen.getByText('Vyberte soubor balíčku.')).toBeInTheDocument();
+    });
 });

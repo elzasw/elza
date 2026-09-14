@@ -1,5 +1,5 @@
 import { defineMessages } from "react-intl";
-import { AipLinkState, AipProblemType, AipUpdateType, DaAipActionItemState, QueueItemState } from "elza-api";
+import { AipLevelType, AipLinkState, AipProblemType, AipUpdateType, DaAipActionItemState, DaDaoType, QueueItemState } from "elza-api";
 
 export const messages = defineMessages({
     aipId:            { id: "aip.col.aipId",            defaultMessage: "ID" },
@@ -98,6 +98,7 @@ export const explorerMessages = defineMessages({
     selectAll:       { id: "aip.explorer.selectAll",        defaultMessage: "Vybrat vše" },
     noSelection:     { id: "aip.explorer.noSelection",      defaultMessage: "Nebyl vybrán žádný objekt" },
     moreFolders:     { id: "aip.explorer.moreFolders",      defaultMessage: "{count, plural, one {# další složka} few {# další složky} other {# dalších složek}}" },
+    selectPart:      { id: "aip.explorer.detail.selectPart", defaultMessage: "Vyberte část balíčku" },
 });
 
 /**
@@ -115,6 +116,7 @@ export const explorerPageMessages = defineMessages({
     open:          { id: "aip.explorer.open",          defaultMessage: "Otevřít průzkumník" },
     packageTab:    { id: "aip.explorer.tab.package",   defaultMessage: "Balíček" },
     structureTab:  { id: "aip.explorer.tab.structure", defaultMessage: "Struktura" },
+    filesTab:      { id: "aip.explorer.tab.files",     defaultMessage: "Soubory" },
 });
 
 /**
@@ -157,6 +159,8 @@ export const detailMessages = defineMessages({
     downloadPackage:    { id: "aip.detail.downloadPackage",    defaultMessage: "Stáhnout balíček" },
     aipVersionMetadata: { id: "aip.detail.aipVersionMetadata", defaultMessage: "Verze s načtenými metadaty" },
     linkedNodes:        { id: "aip.detail.linkedNode",         defaultMessage: "Napojené jednotky popisu" },
+    partLinks:          { id: "aip.detail.partLinks",          defaultMessage: "Napojené části" },
+    partLinksCount:     { id: "aip.detail.partLinksCount",     defaultMessage: "{count, plural, one {# část} few {# části} other {# částí}}" },
 });
 
 /**
@@ -179,6 +183,30 @@ export const problemMessages = defineMessages({
         id: "aip.problem.UNKNOWN_INSTITUTION",
         defaultMessage: "Nenalezena instituce",
     },
+});
+
+/**
+ * Virtuální úrovně stromu AIPu. Nejsou daty balíčku, ale pevně danými pojmy (E-ARK / OAIS),
+ * takže jejich název i ikona patří klientovi - server posílá jen typ úrovně.
+ */
+export const levelMessages = defineMessages({
+    [AipLevelType.Package]:                 { id: "aip.level.PACKAGE",                   defaultMessage: "Balíček" },
+    [AipLevelType.Representations]:         { id: "aip.level.REPRESENTATIONS",           defaultMessage: "Reprezentace" },
+    [AipLevelType.LogicalStructure]:        { id: "aip.level.LOGICAL_STRUCTURE",         defaultMessage: "Logická struktura" },
+    [AipLevelType.Metadata]:                { id: "aip.level.METADATA",                  defaultMessage: "Metadata" },
+    [AipLevelType.WithoutLogicalStructure]: { id: "aip.level.WITHOUT_LOGICAL_STRUCTURE", defaultMessage: "Bez logické struktury" },
+});
+
+/**
+ * Typ digitálního objektu balíčku.
+ */
+export const daoTypeMessages = defineMessages({
+    [DaDaoType.Logical]:           { id: "aip.daoType.LOGICAL",           defaultMessage: "Úroveň inherentního popisu" },
+    [DaDaoType.Representation]:    { id: "aip.daoType.REPRESENTATION",    defaultMessage: "Reprezentace" },
+    [DaDaoType.File]:              { id: "aip.daoType.FILE",              defaultMessage: "Komponenta" },
+    [DaDaoType.Metaamd]:           { id: "aip.daoType.METAAMD",           defaultMessage: "Administrativní metadata" },
+    [DaDaoType.Metadmdinherent]:   { id: "aip.daoType.METADMDINHERENT",   defaultMessage: "Inherentní archivní popis" },
+    [DaDaoType.Metadmdcontextual]: { id: "aip.daoType.METADMDCONTEXTUAL", defaultMessage: "Kontextuální archivní popis" },
 });
 
 export const queueStateMessages = defineMessages({

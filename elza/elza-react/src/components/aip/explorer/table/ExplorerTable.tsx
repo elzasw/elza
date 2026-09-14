@@ -16,10 +16,11 @@ import {
     createTableColumn,
     TableColumnId,
 } from "@fluentui/react-components";
-import { FC, useCallback, useState, KeyboardEvent, useEffect } from "react";
+import { FC, useCallback, useMemo, useState, KeyboardEvent, useEffect } from "react";
 import "./ExplorerTable.scss"
 import { formatAipSize } from "components/aip/format";
-import { getFileName } from "../utils";
+import { AipLevelType } from "elza-api";
+import { useNodeName } from "../levels";
 import { ExplorerMode, useExplorerContext } from "../ExplorerContext";
 import { useThunkDispatch } from "utils/hooks";
 import { setSelectedAipDaos } from "actions/aip/aip";
@@ -29,19 +30,21 @@ import { explorerMessages } from "../../messages";
 type Item = {
     filename?: string;
     label?: string;
+    levelType?: AipLevelType;
     size?: number;
     mimeType?: string;
 }
 
-const columns: TableColumnDefinition<Item>[] = [
+/**
+ * Sloupce se skládají až v komponentě - název virtuální úrovně se překládá, takže ho i řazení
+ * musí brát z překladu, ne z popisku ze serveru.
+ */
+const buildColumns = (nodeName: (item: Item) => string): TableColumnDefinition<Item>[] => [
     createTableColumn<Item>({
       columnId: "name",
       renderHeaderCell: () => <FormattedMessage {...explorerMessages.colName} />,
-      renderCell: (item) => <>{item.filename ? getFileName(item.filename ): item.label || "-"}</>,
-      compare: (a, b) => {
-        const nameA = a.filename || a.label;
-        const nameB = b.filename || b.label;
-        return nameA?.localeCompare(nameB)}
+      renderCell: (item) => <>{nodeName(item) || "-"}</>,
+      compare: (a, b) => nodeName(a).localeCompare(nodeName(b)),
     }),
     createTableColumn<Item>({
       columnId: "size",
@@ -69,6 +72,8 @@ const ExplorerTable: FC = () => {
     const [items, setItems] = useState([]);
     const [columnSizingOptions] = useState<TableColumnSizingOptions>(columnSizes);
     const dispatch = useThunkDispatch();
+    const nodeName = useNodeName();
+    const columns = useMemo(() => buildColumns(nodeName), [intl.locale]);
 
     useEffect(() => {
         let newItems = [];

@@ -6,7 +6,7 @@ import {
   } from "@fluentui/react-icons";
 import { useExplorerContext } from "../ExplorerContext";
 import { DaoFileFolderVO } from "api/DaoFileFolderVO";
-import { turncate } from "../utils";
+import { levelIcon, useNodeName } from "../levels";
 
 type FolderProps = {
     folder: DaoFileFolderVO;
@@ -16,7 +16,8 @@ type FolderProps = {
 
 const Folder = ({folder, openItems, parent}: FolderProps) => {
     const {selectedItem} = useExplorerContext();
-    const isSelected: boolean = selectedItem.uuid == folder.uuid;
+    const nodeName = useNodeName();
+    const isSelected: boolean = selectedItem?.uuid == folder.uuid;
     folder.parent = parent;
     const isLast = folder.childFolders?.length === 0;
 
@@ -33,8 +34,9 @@ const Folder = ({folder, openItems, parent}: FolderProps) => {
             <TreeItemLayout
                 style={{backgroundColor: isSelected ?  "#e3e3e3ff" : undefined}}
                 expandIcon={isLast ? undefined : getExpandIcon()}
+                iconBefore={levelIcon(folder.levelType)}
             >
-                {folder.label}
+                {nodeName(folder)}
             </TreeItemLayout>
             <Tree>
                 {folder.childFolders?.map((item, index) =>

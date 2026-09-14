@@ -20,6 +20,8 @@ type Props = {
     problemDescription?: string;
     /** Soubor balíčku, kterého se problém týká, pokud se týká jednoho. */
     problemFile?: string;
+    /** File to open once the package is listed; ignored when the package does not contain it. */
+    selectPath?: string;
 };
 
 /** Soubory, které lze rozumně zobrazit jako text. */
@@ -28,13 +30,27 @@ const TEXT_SUFFIXES = ['.xml', '.txt', '.json', '.csv', '.md'];
 const isText = (path: string) => TEXT_SUFFIXES.some(suffix => path.toLowerCase().endsWith(suffix));
 
 /**
+ * Balíček uvádí cestu souboru vůči kořeni balíčku, položky ZIPu ji navíc mají pod složkou
+ * pojmenovanou kódem AIPu - hledá se tedy i podle konce cesty.
+ */
+const findEntry = (entries: AipPackageEntry[], file?: string) => file
+    ? entries.find(entry => entry.path === file || entry.path.endsWith(`/${file}`))
+    : undefined;
+
+const toNode = (entry: AipPackageEntry): PackageNode => ({
+    name: entry.path.substring(entry.path.lastIndexOf('/') + 1),
+    path: entry.path,
+    size: entry.size,
+});
+
+/**
  * Prohlížeč staženého balíčku tak, jak přišel z digitálního archivu.
  *
  * Nezávisí na zpracování balíčku, takže je k dispozici i tehdy, když zpracování selhalo -
  * právě to je situace, kdy je potřeba se do balíčku podívat. Popis problému je proto vidět
  * rovnou nad obsahem balíčku a soubor, kterého se týká, otevře kliknutí na jeho cestu.
  */
-export function PackageBrowser({aipId, problemType, problemDescription, problemFile}: Props) {
+export function PackageBrowser({aipId, problemType, problemDescription, problemFile, selectPath}: Props) {
     const intl = useIntl();
     const [entries, setEntries] = useState<AipPackageEntry[] | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -56,14 +72,8 @@ export function PackageBrowser({aipId, problemType, problemDescription, problemF
             ? [...current, data.value]
             : current.filter(value => value !== data.value));
 
-    /**
-     * Balíček uvádí cestu souboru vůči kořeni balíčku, položky ZIPu ji navíc mají pod složkou
-     * pojmenovanou kódem AIPu - hledá se tedy i podle konce cesty. Odkaz vznikne jen na
-     * položku, kterou balíček opravdu obsahuje.
-     */
-    const problemEntry = useMemo(() => (entries ?? []).find(entry =>
-        problemFile && (entry.path === problemFile || entry.path.endsWith(`/${problemFile}`))),
-        [problemFile, entries]);
+    /** Odkaz vznikne jen na položku, kterou balíček opravdu obsahuje. */
+    const problemEntry = useMemo(() => findEntry(entries ?? [], problemFile), [problemFile, entries]);
 
     useEffect(() => {
         setEntries(null);
@@ -73,6 +83,13 @@ export function PackageBrowser({aipId, problemType, problemDescription, problemF
             .then(response => setEntries(response.data))
             .catch(() => setError(intl.formatMessage(packageMessages.notDownloaded)));
     }, [aipId]);
+
+    useEffect(() => {
+        const entry = findEntry(entries ?? [], selectPath);
+        if (entry) {
+            setSelected(toNode(entry));
+        }
+    }, [entries, selectPath]);
 
     useEffect(() => {
         setContent(null);
@@ -97,11 +114,7 @@ export function PackageBrowser({aipId, problemType, problemDescription, problemF
             {problemEntry && <p className="package-problem-files">
                 <FormattedMessage {...packageMessages.problemHint}/>
                 <button type="button" className="package-problem-file"
-                        onClick={() => setSelected({
-                            name: problemEntry.path.substring(problemEntry.path.lastIndexOf('/') + 1),
-                            path: problemEntry.path,
-                            size: problemEntry.size,
-                        })}>
+                        onClick={() => setSelected(toNode(problemEntry))}>
                     {problemEntry.path}
                 </button>
             </p>}

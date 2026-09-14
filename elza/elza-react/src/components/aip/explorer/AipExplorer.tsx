@@ -22,13 +22,15 @@ type AipExplorerProps = {
     mode: ExplorerMode;
     onSelect?: (node: ExplorerNode) => void;
     selected?: string;
+    /** Hide the synthetic root; the sections of the package become the top level. */
+    hideRoot?: boolean;
 }
 
-const AipExplorer = ({mode, onSelect, selected}: AipExplorerProps) => {
+const AipExplorer = ({mode, onSelect, selected, hideRoot}: AipExplorerProps) => {
     const aip = useSelector((state: AppState) => storeFromArea(state, AREA_AIP));
 
     return (
-        <ExplorerContext mode={mode}>
+        <ExplorerContext mode={mode} hideRoot={hideRoot}>
             <div className="aip-explorer">
                 {!aip.id && <div className="not-selected">
                         <p><FormattedMessage {...messages.notSelected} /></p>

@@ -11,6 +11,7 @@ import { FormattedMessage } from 'react-intl';
 import { daoMessages } from 'components/arr/daoMessages';
 import { TreeItemValue } from "@fluentui/react-components";
 import {serverContextPath} from "../../../../api";
+import { useNodeName } from "components/aip/explorer/levels";
 
 type NodeDetailProps = {
     tree: any;
@@ -22,6 +23,7 @@ const NodeDetail: FC<NodeDetailProps> = ({tree, selectedNode, setSelectedAips}: 
     const aip = useSelector((state: AppState) => storeFromArea(state, aipActions.AREA_AIP))
     const dispatch = useThunkDispatch();
     const node = tree.nodes.find(n => n.UUID == selectedNode);
+    const nodeName = useNodeName();
 
     useEffect(() => {
         if(node) {
@@ -33,7 +35,7 @@ const NodeDetail: FC<NodeDetailProps> = ({tree, selectedNode, setSelectedAips}: 
     const renderHeader = () => (
         <>
             <h4><b>{<FormattedMessage {...daoMessages.aipDetailAssignmentDescription} />}</b></h4>
-            <p><b>{<FormattedMessage {...daoMessages.aipDetailAssignmentName} />} </b>{node.name}</p>
+            <p><b>{<FormattedMessage {...daoMessages.aipDetailAssignmentName} />} </b>{nodeName(node)}</p>
         </>
     );
 

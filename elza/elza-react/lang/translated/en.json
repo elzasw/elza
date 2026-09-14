@@ -1941,6 +1941,30 @@
     "defaultMessage": "Links",
     "srcHash": "zLOXNvy1g0hm"
   },
+  "aip.daoType.FILE": {
+    "defaultMessage": "Component",
+    "srcHash": "jwtKFad6H2pG"
+  },
+  "aip.daoType.LOGICAL": {
+    "defaultMessage": "Inherent description level",
+    "srcHash": "ZXd0zPO9rZM5"
+  },
+  "aip.daoType.METAAMD": {
+    "defaultMessage": "Administrative metadata",
+    "srcHash": "GZCzbdahJ5AV"
+  },
+  "aip.daoType.METADMDCONTEXTUAL": {
+    "defaultMessage": "Contextual archival description",
+    "srcHash": "FUkzjYeTUdBX"
+  },
+  "aip.daoType.METADMDINHERENT": {
+    "defaultMessage": "Inherent archival description",
+    "srcHash": "tDbWLWZ8pMiH"
+  },
+  "aip.daoType.REPRESENTATION": {
+    "defaultMessage": "Representation",
+    "srcHash": "XwLpB2WTPXcQ"
+  },
   "aip.detail.aipVersionMetadata": {
     "defaultMessage": "Version with loaded metadata",
     "srcHash": "cb4Tq2NMj0fN"
@@ -1988,6 +2012,14 @@
   "aip.detail.notSelected": {
     "defaultMessage": "No AIP selected",
     "srcHash": "c37HF39WJ3Xy"
+  },
+  "aip.detail.partLinks": {
+    "defaultMessage": "Linked parts",
+    "srcHash": "rCAYdnEvdU8o"
+  },
+  "aip.detail.partLinksCount": {
+    "defaultMessage": "{count, plural, one {# part} other {# parts}}",
+    "srcHash": "yMvFg7ymRJLa"
   },
   "aip.detail.title": {
     "defaultMessage": "AIP detail",
@@ -2045,6 +2077,10 @@
     "defaultMessage": "Relations — representation",
     "srcHash": "R7Yfjyol26ZA"
   },
+  "aip.explorer.detail.selectPart": {
+    "defaultMessage": "Select a part of the package",
+    "srcHash": "6nCm1S5zXZ8I"
+  },
   "aip.explorer.detail.title": {
     "defaultMessage": "Details",
     "srcHash": "SpKDEP3fJGeY"
@@ -2064,6 +2100,10 @@
   "aip.explorer.selectAll": {
     "defaultMessage": "Select all",
     "srcHash": "tzdoYdlGzv8D"
+  },
+  "aip.explorer.tab.files": {
+    "defaultMessage": "Files",
+    "srcHash": "nTEkFmNPvJ6o"
   },
   "aip.explorer.tab.package": {
     "defaultMessage": "Package",
@@ -2212,6 +2252,26 @@
   "aip.form.value": {
     "defaultMessage": "Value",
     "srcHash": "2al7WSQS6DjX"
+  },
+  "aip.level.LOGICAL_STRUCTURE": {
+    "defaultMessage": "Logical structure",
+    "srcHash": "hx5bVqYWSIsK"
+  },
+  "aip.level.METADATA": {
+    "defaultMessage": "Metadata",
+    "srcHash": "nt31c8tQnx9i"
+  },
+  "aip.level.PACKAGE": {
+    "defaultMessage": "Package",
+    "srcHash": "O-2iMJ9LuP-v"
+  },
+  "aip.level.REPRESENTATIONS": {
+    "defaultMessage": "Representations",
+    "srcHash": "XwLpB2WTPXcQ"
+  },
+  "aip.level.WITHOUT_LOGICAL_STRUCTURE": {
+    "defaultMessage": "Without logical structure",
+    "srcHash": "1vdTovjOm3Is"
   },
   "aip.linkState.FULLY_LINKED": {
     "defaultMessage": "Linked",

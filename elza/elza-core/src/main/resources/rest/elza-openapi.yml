@@ -7503,6 +7503,17 @@ components:
         AIP specific field names.
 
         `unitdate` covers the whole dating of the AIP, that is both its start and its end.
+    AipLevelType:
+      type: string
+      enum:
+        - PACKAGE
+        - REPRESENTATIONS
+        - LOGICAL_STRUCTURE
+        - METADATA
+        - WITHOUT_LOGICAL_STRUCTURE
+      description: |-
+        Typ virtuální úrovně stromu AIPu. Tyto úrovně nejsou daty balíčku, ale pevně danými
+        pojmy (E-ARK / OAIS), takže jejich název si překládá klient.
     AipLinkState:
       type: string
       enum:
@@ -8774,6 +8785,10 @@ components:
           items:
             $ref: '#/components/schemas/LinkedNodeVO'
           description: Seznam připojených nodů
+        levelType:
+          allOf:
+            - $ref: '#/components/schemas/AipLevelType'
+          description: Typ virtuální úrovně; reálné složky a soubory ho nemají
       description: Model ExplorerTreeNode
     ExplorerTreeNodeFile:
       type: object
@@ -10267,6 +10282,10 @@ components:
         name:
           type: string
           description: Jméno node
+        linkType:
+          allOf:
+            - $ref: '#/components/schemas/LinkType'
+          description: Typ napojení - celý balíček, část, nebo komponenta
     LoggedUser:
       type: object
       required:
@@ -12115,6 +12134,10 @@ components:
         parent:
           type: string
           description: Unikátení identifikátor rodičovského uzlu
+        levelType:
+          allOf:
+            - $ref: '#/components/schemas/AipLevelType'
+          description: Typ virtuální úrovně; uzly konkrétních AIPů ho nemají
       description: Custom uzel stromu
     UpdateFund:
       type: object
