@@ -1,17 +1,25 @@
 import { downloadFile } from "actions/global/download";
 import { Api, getFullPath } from "api";
-import { i18n } from "components";
+import {} from "components";
+import { FormattedMessage, defineMessages } from 'react-intl';
 import { createException } from "components/ExceptionUtils";
 import { addToastrInfo, removeToastr, addToastrSuccess } from "components/shared/toastr/ToastrActions";
 import { RequestProcessState, IoApiAxiosParamCreator } from "elza-api";
 
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    generating: { id: "export.generating", defaultMessage: "Generování exportu..." },
+    success: { id: "export.success", defaultMessage: "Soubor úspěšně vygenerován" },
+});
+
+
 // opakovane dotazovani na stav exportu, konci stazenim souboru ci hlaskou o neuspechu
-export function downloadExportFile(fileId: number, interval = 4000, toastKey = undefined) {
+export function downloadExportFile(fileId: number, interval = 4000, toastKey: number | undefined = undefined) {
   return async (dispatch, getState) => {
     // toastKey obsahuje key posledne vytvoreneho toastu, coz je info toast o generovani
     if (!toastKey) {
       // pokud toastKey neni predan, vytvorim info toast
-      dispatch(addToastrInfo(i18n('export.generating'), undefined, undefined, null));
+      dispatch(addToastrInfo(<FormattedMessage {...messages.generating} />, undefined, undefined, null));
       const { toastr } = getState();
       // ziskani lastKey ze statu, pomoci nehoz toast odstranime pri (ne)uspechu exportu
       toastKey = toastr.lastKey;
@@ -24,7 +32,7 @@ export function downloadExportFile(fileId: number, interval = 4000, toastKey = u
         // odstraneni info toastu pomoci toastKey o generovani exportu
         dispatch(removeToastr(toastKey));
         // hlaska o uspesnem exportu
-        dispatch(addToastrSuccess(i18n('export.success'), undefined, undefined, 4000));
+        dispatch(addToastrSuccess(<FormattedMessage {...messages.success} />, undefined, undefined, 4000));
         // ziskani cesty k souboru
         const { url } = await IoApiAxiosParamCreator().ioGetExportFile(fileId);
         // stazeni souboru

@@ -3,7 +3,14 @@
  */
 import {WebApi} from 'actions/index.jsx';
 import {DetailActions} from 'shared/detail';
-import { i18n } from 'components';
+import {} from 'components';
+import { defineMessages } from 'react-intl';
+import { getIntl } from 'components/shared/lang/intlInstance';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    descItemGroupDefault: { id: "subNodeForm.descItemGroup.default", defaultMessage: "Bez skupiny" },
+});
 
 export const REF_GROUPS = 'refTables.groups';
 
@@ -14,7 +21,7 @@ export function invalidate() {
 export function generateDefaultGroup (types, groups){
     const defaultGroup = {
         code: "DEFAULT", 
-        name: i18n('subNodeForm.descItemGroup.default'), 
+        name: getIntl().formatMessage(messages.descItemGroupDefault), 
         itemTypes: []
     };
 

@@ -1,4 +1,15 @@
-import {i18n} from 'components/shared';
+import {} from 'components/shared';
+import { FormattedMessage, defineMessages } from 'react-intl';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    alreadyDownloading: {
+        id: 'download.allreadyDownloading',
+        defaultMessage: 'Požadavek na stažení souboru již byl odeslán',
+    },
+    errorTitle: { id: 'download.error.title', defaultMessage: 'Chyba stahování' },
+    errorTimeout: { id: 'download.error.timeout', defaultMessage: 'Vypršel časový limit na obsluhu požadavku' },
+});
 import {addToastr} from 'components/shared/toastr/ToastrActions.jsx';
 import {createException} from 'components/ExceptionUtils.jsx';
 
@@ -56,7 +67,7 @@ export function downloadFileInFrame(url, id) {
 
         if (document.getElementById(frameId)) {
             //Vypíše upozornění pokud existuje frame se stejným id
-            createToaster(i18n('download.allreadyDownloading'), '', 'info');
+            createToaster(<FormattedMessage {...messages.alreadyDownloading} />, '', 'info');
             return;
         }
 
@@ -75,7 +86,7 @@ export function downloadFileInFrame(url, id) {
 
             //Pokud je frame načten (začalo stahování) nebo vypršel čas, smaže vytvořený frame a případně vypíše upozornění, že čas vypršel.
             if (timedOut || iframeDoc.readyState === 'complete' || iframeDoc.readyState === 'interactive') {
-                timedOut && createToaster(i18n('download.error.title'), i18n('download.error.timeout'), 'warning');
+                timedOut && createToaster(<FormattedMessage {...messages.errorTitle} />, <FormattedMessage {...messages.errorTimeout} />, 'warning');
                 clearInterval(timer);
                 downloadFrame.parentElement.removeChild(downloadFrame);
             }

@@ -7,7 +7,15 @@ import * as types from 'actions/constants/ActionTypes';
 import { objectById } from 'stores/app/utils';
 import { COL_REFERENCE_MARK } from 'components/arr/FundDataGridConst';
 import { Api } from 'api';
-import { i18n } from 'components/shared';
+import {} from 'components/shared';
+import { FormattedMessage, defineMessages } from 'react-intl';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    loadFailed: { id: "dataGrid.loadFailed", defaultMessage: "Načtení dat tabulky se nezdařilo." },
+    nodeNotFoundFiltered: { id: "dataGrid.restore.nodeNotFound.filtered", defaultMessage: "Dříve vybraná jednotka popisu neodpovídá aktuálnímu filtru, zobrazuje se uložená stránka." },
+    nodeNotFound: { id: "dataGrid.restore.nodeNotFound", defaultMessage: "Dříve vybranou jednotku popisu se nepodařilo obnovit, zobrazuje se uložená stránka." },
+});
 import { addToastrDanger, addToastrWarning } from 'components/shared/toastr/ToastrActions';
 
 // Null hodnota, která se používaná v klientovi pro reprezentaci null hodnoty
@@ -290,7 +298,7 @@ export function fundDataGridFetchDataIfNeeded(versionId, pageIndex, pageSize, fo
             } catch (e) {
                 // Reset the fetch state so the same page can be requested again.
                 dispatch(_dataError(versionId));
-                dispatch(addToastrDanger(i18n('dataGrid.loadFailed')));
+                dispatch(addToastrDanger(<FormattedMessage {...messages.loadFailed} />));
                 return;
             }
 
@@ -336,9 +344,9 @@ export function fundDataGridResolveNodePage(versionId, nodeId, pageSize) {
             // With an active filter a missing node is expected, so warn only.
             const hasActiveFilter = fundDataGrid && Object.keys(fundDataGrid.filter).length > 0;
             if (hasActiveFilter) {
-                dispatch(addToastrWarning(i18n('dataGrid.restore.nodeNotFound.filtered')));
+                dispatch(addToastrWarning(<FormattedMessage {...messages.nodeNotFoundFiltered} />));
             } else {
-                dispatch(addToastrDanger(i18n('dataGrid.restore.nodeNotFound')));
+                dispatch(addToastrDanger(<FormattedMessage {...messages.nodeNotFound} />));
             }
             return null;
         }

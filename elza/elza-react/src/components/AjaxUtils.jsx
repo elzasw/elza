@@ -13,7 +13,17 @@ import React from 'react';
 import { lenToBytesStr, roughSizeOfObject } from 'components/Utils.jsx';
 //import {store} from '../stores/AppStoreState.jsx';
 import { createException } from 'components/ExceptionUtils.jsx';
-import i18n from './i18n';
+import { defineMessages } from "react-intl";
+import { getIntl } from "components/shared/lang/intlInstance";
+
+// Id je převzaté z legacy katalogu beze změny. Text jde do data.message
+// výjimky, odkud ho detail chyby vypisuje do textarey - tedy řetězec.
+const messages = defineMessages({
+    badRequestTech: {
+        id: "global.exception.bad.request.tech",
+        defaultMessage: "Syntaxe požadavku odeslaného na server je chybná",
+    },
+});
 
 import $ from 'jquery';
 import { logout } from 'actions/global/login';
@@ -70,7 +80,7 @@ function resolveException(status, statusText, data) {
             type: 'BaseCode',
             code: 'BAD_REQUEST',
             level: 'danger',
-            message: i18n('global.exception.bad.request.tech'),
+            message: getIntl().formatMessage(messages.badRequestTech),
             status: status,
             statusText: statusText,
         };

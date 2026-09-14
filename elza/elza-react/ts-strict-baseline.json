@@ -24,12 +24,7 @@
     "error TS7006: Parameter 'data' implicitly has an 'any' type.",
     "error TS7006: Parameter 'data' implicitly has an 'any' type.",
     "error TS7006: Parameter 'data' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'data' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'data' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'data' implicitly has an 'any' type.",
     "error TS7006: Parameter 'deleteDescItem' implicitly has an 'any[]' type.",
-    "error TS7006: Parameter 'descItem' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'descItem' implicitly has an 'any' type.",
     "error TS7006: Parameter 'descItem' implicitly has an 'any' type.",
     "error TS7006: Parameter 'descItem' implicitly has an 'any' type.",
     "error TS7006: Parameter 'descItem' implicitly has an 'any' type.",
@@ -46,8 +41,6 @@
     "error TS7006: Parameter 'exportType' implicitly has an 'any' type.",
     "error TS7006: Parameter 'extSystem' implicitly has an 'any' type.",
     "error TS7006: Parameter 'extSystem' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'file' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'file' implicitly has an 'any' type.",
     "error TS7006: Parameter 'file' implicitly has an 'any' type.",
     "error TS7006: Parameter 'file' implicitly has an 'any' type.",
     "error TS7006: Parameter 'filesConflictResolve' implicitly has an 'any' type.",
@@ -102,14 +95,6 @@
     "error TS7006: Parameter 'oldPassword' implicitly has an 'any' type.",
     "error TS7006: Parameter 'origMethod' implicitly has an 'any' type.",
     "error TS7006: Parameter 'outputSettings' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'outputVersion' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'outputVersion' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'outputVersion' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'outputVersion' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'outputVersion' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'outputVersion' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'outputVersion' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'outputVersion' implicitly has an 'any' type.",
     "error TS7006: Parameter 'parentNode' implicitly has an 'any' type.",
     "error TS7006: Parameter 'parentNode' implicitly has an 'any' type.",
     "error TS7006: Parameter 'parentNodeVersion' implicitly has an 'any' type.",
@@ -254,10 +239,9 @@
     "error TS7006: Parameter 'aip' implicitly has an 'any' type.",
     "error TS7006: Parameter 'aipId' implicitly has an 'any' type."
   ],
-  "src/actions/global/downloadExportFile.ts": [
+  "src/actions/global/downloadExportFile.tsx": [
     "error TS7006: Parameter 'dispatch' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'getState' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'toastKey' implicitly has an 'any' type."
+    "error TS7006: Parameter 'getState' implicitly has an 'any' type."
   ],
   "src/actions/registry/batchExportAccessPoints.ts": [
     "error TS7006: Parameter 'dispatch' implicitly has an 'any' type."
@@ -382,9 +366,6 @@
     "error TS7034: Variable 'items' implicitly has type 'any[]' in some locations where its type cannot be determined.",
     "error TS7034: Variable 'items' implicitly has type 'any[]' in some locations where its type cannot be determined."
   ],
-  "src/components/arr/item-form/DescItemTypeHeader.tsx": [
-    "error TS7053: Element implicitly has an 'any' type because expression of type '`gridItem_${number}`' can't be used to index type 'Record<\"groupWrapper\" | \"groupWrapperCompact\" | \"groupLabel\" | \"gridContainer\" | \"gridContainerCard\" | \"gridContainerCompact\" | \"gridItem\" | \"gridItemCompact\" | \"gridItem_0\" | ... 16 more ... | \"addDescItemButton\", string>'."
-  ],
   "src/components/arr/item-form/desc-items/DescItemCoordinates.tsx": [
     "error TS7006: Parameter 'formData' implicitly has an 'any' type."
   ],
@@ -422,10 +403,6 @@
   ],
   "src/components/arr/node-view/NodeView.tsx": [
     "error TS7053: Element implicitly has an 'any' type because expression of type 'DataType' can't be used to index type '{ TEXT: ({ item, nodeId }: DescItemProps) => Element; INT: ({ item, nodeId, typeRef }: DescItemProps) => Element; DECIMAL: ({ item, nodeId }: DescItemProps) => Element; ... 11 more ...; JSON_TABLE: ({ item, nodeId, typeRef, onExportCsv }: DescItemProps) => Element; }'."
-  ],
-  "src/components/arr/nodeForm/DescItemBit.tsx": [
-    "error TS7006: Parameter 'e' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'props' implicitly has an 'any' type."
   ],
   "src/components/arr/nodeForm/DescItemCoordinates.tsx": [
     "error TS7006: Parameter 'e' implicitly has an 'any' type.",
@@ -849,10 +826,6 @@
   "src/stores/app/status.test.ts": [
     "error TS2339: Property 'saving' does not exist on type '{ saveCounter: number; } | { saving: boolean; saveCounter: number; }'.",
     "error TS2353: Object literal may only specify known properties, and 'saving' does not exist in type '{ saveCounter: number; }'."
-  ],
-  "src/stores/app/structures/structures.ts": [
-    "error TS7015: Element implicitly has an 'any' type because index expression is not of type 'number'.",
-    "error TS7053: Element implicitly has an 'any' type because expression of type 'number' can't be used to index type '{}'."
   ],
   "src/stores/app/utils.tsx": [
     "error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.",
