@@ -618,6 +618,7 @@ model DataRecordRef extends ItemData {
     @invisible(Lifecycle)
     dataType: DataType.RECORD_REF;
     value: integer;
+    name?: string;
 }
 
 model DataString extends ItemData {
