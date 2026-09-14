@@ -1,7 +1,13 @@
 import React, { FC } from "react";
 import { useDispatch } from "react-redux";
 import { modalDialogHide, modalDialogShow } from "../actions/global/modalDialog";
-import i18n from "./i18n";
+import { defineMessages, useIntl } from 'react-intl';
+
+// Id jsou převzatá z legacy katalogu beze změny. Texty jdou do title=, tedy řetězec.
+const messages = defineMessages({
+    title: { id: 'validationResult.title', defaultMessage: 'Výsledek validace archivní entity' },
+    show: { id: 'validationResult.show', defaultMessage: 'Zobrazit výsledek validace' },
+});
 import { Icon } from "./index";
 import "./ValidationResultIcon.scss";
 import ValidationResultModal from "./ValidationResultModal";
@@ -14,19 +20,20 @@ type Props = {
 const ValidationResultIcon: FC<Props> = ({
     message,
 }) => {
+    const intl = useIntl();
     const dispatch = useDispatch();
 
     const openValidationDialog = (message: string[]) => {
         return dispatch(modalDialogShow(
             this,
-            i18n('validationResult.title'),
+            intl.formatMessage(messages.title),
             <ValidationResultModal onClose={() => {
                 dispatch(modalDialogHide())
             }} message={message}/>));
     }
 
     if (message) {
-        return <SmallButton title={i18n("validationResult.show")} onClick={() => openValidationDialog(message)} >
+        return <SmallButton title={intl.formatMessage(messages.show)} onClick={() => openValidationDialog(message)} >
             <Icon className="validation-icon" glyph="fa-exclamation-triangle" />
         </SmallButton>
     }

@@ -15,7 +15,16 @@ import {
 import {connect} from "react-redux";
 import {storeFromArea} from 'shared/utils';
 import {LayerType} from "../../api/LayerType";
-import {i18n} from 'components/shared';
+import {} from 'components/shared';
+import { defineMessages } from 'react-intl';
+import { getIntl } from 'components/shared/lang/intlInstance';
+
+// Id jsou převzatá z legacy katalogu beze změny. Názvy vrstev jdou do
+// konfigurace mapy, ne do JSX, proto sdílená instance.
+const messages = defineMessages({
+    systemLayerOSM: { id: 'global.action.systemLayerOSM', defaultMessage: 'Systémová OSM' },
+    layerSelection: { id: 'global.action.layerSelection', defaultMessage: 'Výběr vrstvy' },
+});
 import {PropTypes} from "prop-types";
 import 'ol/ol.css';
 import './MapPage.scss';
@@ -26,7 +35,7 @@ export const MAP_URL = `/map`;
 // fully evaluated, so we can't safely call it at module top-level (transitive
 // importers may load this file before `api.ts` finishes binding its exports).
 export const getMapUrlWithContext = () => `${getServerContextPath()}${MAP_URL}`;
-export const DEFAULT_SYSTEM_LAYER = {name: i18n('global.action.systemLayerOSM'), type: LayerType.OSM};
+export const DEFAULT_SYSTEM_LAYER = {name: getIntl().formatMessage(messages.systemLayerOSM), type: LayerType.OSM};
 
 /**
  * Stránka mapy.
@@ -189,7 +198,7 @@ class MapPage extends AbstractReactComponent {
                             getItemId={item => item ? JSON.stringify(item) : null}
                             getItemName={item => item ? item.name : ''}
                             items={[...rows, DEFAULT_SYSTEM_LAYER]}
-                            label={i18n('global.action.layerSelection')}
+                            label={getIntl().formatMessage(messages.layerSelection)}
                             onChange={this.handleChangeSelected}
                             value={selectedLayer}
                         />
