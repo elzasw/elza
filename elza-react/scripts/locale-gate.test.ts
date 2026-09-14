@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 
 import { checkCatalog } from "./locale-check-core.ts";
 import { hashMessage, type Catalog } from "./locale-merge-core.ts";
+import { compareArguments } from "./icu-args-core.ts";
 
 /**
  * Překladová pojistka spuštěná jako běžný test.
@@ -67,5 +68,27 @@ describe("lang/translated/en.json", () => {
                 .map(([id]) => `${path}: ${id}`),
         );
         expect(offenders).toEqual([]);
+    });
+});
+
+/**
+ * Argument, který v překladu chybí, je tichá ztráta dat: text se vypíše, jen
+ * v něm není hodnota. Formát zprávy se přitom mezi jazyky lišit může - čeština
+ * má `{count}` tam, kde angličtina potřebuje `{count, plural, ...}` - takže se
+ * porovnávají jména argumentů, ne tvar zprávy.
+ */
+describe("argumenty zpráv", () => {
+    it.runIf(existsSync(sourcePath))("se v en shodují se zdrojem", () => {
+        const toMessages = (catalog: Catalog): Record<string, string> =>
+            Object.fromEntries(
+                Object.entries(catalog).map(([id, entry]) => [id, entry.defaultMessage]),
+            );
+
+        const mismatches = compareArguments(
+            toMessages(readCatalog(sourcePath)),
+            toMessages(readCatalog(requiredPath)),
+        );
+
+        expect(mismatches).toEqual([]);
     });
 });

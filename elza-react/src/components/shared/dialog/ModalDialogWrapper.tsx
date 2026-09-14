@@ -9,7 +9,7 @@ import { FluentProvider } from '@fluentui/react-components';
  */
 export interface Props extends PropsWithChildren {
     className: string;
-    title?: string;
+    title?: React.ReactNode;
     onHide?: () => void;
     closeOnClickOutside?: boolean;
     visible?: boolean;

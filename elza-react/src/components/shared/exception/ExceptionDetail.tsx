@@ -17,7 +17,7 @@ import { ExceptionData } from './Exception';
 interface Props<T> {
     data: ExceptionData<T>;
     onClose: () => void;
-    title?: string;
+    title?: React.ReactNode;
 }
 
 export default function ExceptionDetail<T>({

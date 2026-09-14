@@ -3005,6 +3005,530 @@
     "defaultMessage": "Unsaved",
     "srcHash": "evoAyt3cLDJM"
   },
+  "exception.arr.ADMIN_GROUP_MISSING_FUND_CREATE_PERM": {
+    "defaultMessage": "The group cannot be assigned as a fund administrator because it lacks the permission to create funds",
+    "srcHash": "TR-W3znUxFgh"
+  },
+  "exception.arr.ADMIN_USER_MISSING_FUND_CREATE_PERM": {
+    "defaultMessage": "The user cannot be assigned as a fund administrator because they lack the permission to create funds",
+    "srcHash": "K-dPTsPWXivD"
+  },
+  "exception.arr.ALREADY_ADDED": {
+    "defaultMessage": "The item has already been added",
+    "srcHash": "BqwEVGJWPf3W"
+  },
+  "exception.arr.ALREADY_CREATED": {
+    "defaultMessage": "The entity has already been created",
+    "srcHash": "8TS8x423yGDv"
+  },
+  "exception.arr.ALREADY_INDEFINABLE": {
+    "defaultMessage": "The item is already set as an 'exception'.",
+    "srcHash": "KKL1uGHHbCze"
+  },
+  "exception.arr.ALREADY_REMOVED": {
+    "defaultMessage": "The item has already been removed",
+    "srcHash": "0plezks1wXJO"
+  },
+  "exception.arr.ATTACHMENT_DELETE_ERROR": {
+    "defaultMessage": "The attachment cannot be deleted because it is used in the archival description",
+    "srcHash": "zLVKDg0-a3ku"
+  },
+  "exception.arr.BULK_ACTION_INTERRUPTED": {
+    "defaultMessage": "The bulk action “{code}” was interrupted",
+    "srcHash": "5p0GfPZ9n6tZ"
+  },
+  "exception.arr.CANT_SET_INDEFINABLE": {
+    "defaultMessage": "The item cannot be set as an 'exception'.",
+    "srcHash": "sd3_KuTKGjHg"
+  },
+  "exception.arr.DAO_ALREADY_LINKED": {
+    "defaultMessage": "The digital object is already linked to a description unit and the repository does not allow multiple links",
+    "srcHash": "55DmVayrdH9N"
+  },
+  "exception.arr.DAO_LINK_NOT_FOUND": {
+    "defaultMessage": "The link between the digital object and the description unit does not exist",
+    "srcHash": "bsqvvJeyojeU"
+  },
+  "exception.arr.DATA_NOT_FOUND": {
+    "defaultMessage": "The data does not exist.",
+    "srcHash": "jz8_FI-2pi7x"
+  },
+  "exception.arr.EXISTS_BLOCKING_CHANGE": {
+    "defaultMessage": "The revert cannot be performed because a blocking change exists in the description unit",
+    "srcHash": "4WK3kEQi-F_4"
+  },
+  "exception.arr.EXISTS_NEWER_CHANGE": {
+    "defaultMessage": "A newer change exists, the list needs to be reloaded",
+    "srcHash": "jXlhE1xkqcN1"
+  },
+  "exception.arr.FUND_NOT_FOUND": {
+    "defaultMessage": "The archival fund does not exist.",
+    "srcHash": "NvoHyzJ7hdjG"
+  },
+  "exception.arr.FUND_VERSION_NOT_FOUND": {
+    "defaultMessage": "The archival fund version does not exist.",
+    "srcHash": "jSSO1q5J5WMP"
+  },
+  "exception.arr.ILLEGAL_COUNT_EXTERNAL_SYSTEM": {
+    "defaultMessage": "Invalid number of external systems",
+    "srcHash": "Nc1cn5JQDlrT"
+  },
+  "exception.arr.INVALID_DAO": {
+    "defaultMessage": "The digital object cannot be linked to the description unit because it is invalid",
+    "srcHash": "VEBdFzTB83In"
+  },
+  "exception.arr.INVALID_REQUEST_DIGITAL_REPOSITORY_DAO": {
+    "defaultMessage": "The digital object cannot be linked to the description unit because the request targets a different digital repository",
+    "srcHash": "OPsSWm4Q4bnC"
+  },
+  "exception.arr.INVALID_VERSION": {
+    "defaultMessage": "Invalid version",
+    "srcHash": "1VE7t3h6LHEG"
+  },
+  "exception.arr.ITEM_SPEC_FOUND": {
+    "defaultMessage": "A specification must not be filled in for this attribute type.",
+    "srcHash": "4SVAqcLJj_Rs"
+  },
+  "exception.arr.ITEM_SPEC_NOT_FOUND": {
+    "defaultMessage": "A specification must be filled in for this attribute type.",
+    "srcHash": "YR8Kjw_zsGFM"
+  },
+  "exception.arr.ITEM_TYPE_NOT_FOUND": {
+    "defaultMessage": "The attribute type with ID={id} does not exist",
+    "srcHash": "fQm0A5n5fO-e"
+  },
+  "exception.arr.NODE_NOT_FOUND": {
+    "defaultMessage": "The description unit was not found, it has probably been removed.",
+    "srcHash": "hglo0ScHPEEg"
+  },
+  "exception.arr.NOT_REPEATABLE": {
+    "defaultMessage": "Non-repeatable item",
+    "srcHash": "PYYnjZLawVEH"
+  },
+  "exception.arr.PACKET_DELETE_ERROR": {
+    "defaultMessage": "The containers could not be deleted",
+    "srcHash": "fi6pNl4LhOGe"
+  },
+  "exception.arr.PACKET_DELETE_ERROR.detail": {
+    "defaultMessage": "The containers ({0}) cannot be deleted because linked entities exist.",
+    "srcHash": "6V2NHIAHZacz"
+  },
+  "exception.arr.PACKET_DUPLICATE": {
+    "defaultMessage": "A container with the number {storageNumber} already exists for this finding aid",
+    "srcHash": "3FCnXSMrbAII"
+  },
+  "exception.arr.PARTY_NAME_FORM_TYPE_NOT_FOUND": {
+    "defaultMessage": "The name form type does not exist",
+    "srcHash": "zSU5MqIS8qtt"
+  },
+  "exception.arr.REQUEST_INVALID": {
+    "defaultMessage": "Invalid request",
+    "srcHash": "Fl_8Q5xEHjBr"
+  },
+  "exception.arr.REQUEST_INVALID_STATE": {
+    "defaultMessage": "Invalid request state",
+    "srcHash": "vwcKFjtMj2VR"
+  },
+  "exception.arr.REQUEST_NOT_FOUND_IN_QUEUE": {
+    "defaultMessage": "The request was not found in the queue",
+    "srcHash": "5zlityX5fLY4"
+  },
+  "exception.arr.STRUCTURE_DATA_DELETE_ERROR": {
+    "defaultMessage": "The item cannot be deleted because linked entities exist",
+    "srcHash": "VgVmKEb5vVqX"
+  },
+  "exception.arr.VERSION_ALREADY_CLOSED": {
+    "defaultMessage": "The fund version is already closed.",
+    "srcHash": "Ln47TaF4lQSJ"
+  },
+  "exception.arr.VERSION_CANNOT_CLOSE_ACTION": {
+    "defaultMessage": "The version cannot be closed because a bulk action is running.",
+    "srcHash": "VeZ46Rv_KeuV"
+  },
+  "exception.arr.VERSION_CANNOT_CLOSE_VALIDATION": {
+    "defaultMessage": "The version cannot be closed because validation is running.",
+    "srcHash": "F2si2gARcH5K"
+  },
+  "exception.ba.INCORRECT_CONFIG": {
+    "defaultMessage": "Incorrect bulk action configuration.",
+    "srcHash": "31Xm_riqVxbq"
+  },
+  "exception.ba.LEVELS_NOT_FOUND": {
+    "defaultMessage": "Some description units were deleted during the bulk action. The action needs to be run again.",
+    "srcHash": "AFAIh2sYixev"
+  },
+  "exception.ba.PREFIX_VALUE_NOT_FOUND": {
+    "defaultMessage": "The storage unit prefix cannot be determined, the description element {itemType} is not filled in correctly on the description unit.",
+    "srcHash": "HFPNsbUmjbDK"
+  },
+  "exception.ba.UNITID_NOT_SEALED": {
+    "defaultMessage": "The description unit identifier is not sealed.",
+    "srcHash": "sUuWc7umyV4Z"
+  },
+  "exception.base.BAD_REQUEST": {
+    "defaultMessage": "Invalid request",
+    "srcHash": "Fl_8Q5xEHjBr"
+  },
+  "exception.base.CYCLE_DETECT": {
+    "defaultMessage": "Cannot be performed because a circular dependency was detected",
+    "srcHash": "_5i1njhoDllm"
+  },
+  "exception.base.DB_INTEGRITY_PROBLEM": {
+    "defaultMessage": "Database integrity problem",
+    "srcHash": "Hp41eeKLYlFB"
+  },
+  "exception.base.EXPORT_FAILED_DELETED_AP": {
+    "defaultMessage": "Export generation failed because invalidated archival entities are present",
+    "srcHash": "jsPRQvj5AGH2"
+  },
+  "exception.base.EXPORT_FAILED_DELETED_AP.detail": {
+    "defaultMessage": "Invalidated archival entities",
+    "srcHash": "LoCxVBRlGZcW"
+  },
+  "exception.base.GENERATING_EXPORT_FAILED": {
+    "defaultMessage": "Export generation failed",
+    "srcHash": "BqG2_lMRZC62"
+  },
+  "exception.base.ID_EXIST": {
+    "defaultMessage": "The entity identifier must not exist",
+    "srcHash": "5Pg2ufPPB4MN"
+  },
+  "exception.base.ID_NOT_EXIST": {
+    "defaultMessage": "The entity identifier must exist",
+    "srcHash": "9m9qHHyjI5Zu"
+  },
+  "exception.base.IMPORT_FAILED": {
+    "defaultMessage": "Error while importing the file",
+    "srcHash": "IBIVMX7f_lta"
+  },
+  "exception.base.INSUFFICIENT_PERMISSIONS": {
+    "defaultMessage": "Insufficient permissions",
+    "srcHash": "dI7KoQwnLt7C"
+  },
+  "exception.base.INSUFFICIENT_PERMISSIONS.detail": {
+    "defaultMessage": "Required permission",
+    "srcHash": "AKQVCTH2-p7q"
+  },
+  "exception.base.INVALID_STATE": {
+    "defaultMessage": "Invalid state",
+    "srcHash": "EGlBmKky1B-o"
+  },
+  "exception.base.INVALID_URI": {
+    "defaultMessage": "The URI is not valid",
+    "srcHash": "VzgDbZLpgoBI"
+  },
+  "exception.base.JSON_PARSE": {
+    "defaultMessage": "Error while converting the JSON object",
+    "srcHash": "pBnDh4ixRfsg"
+  },
+  "exception.base.OPTIMISTIC_LOCKING_ERROR": {
+    "defaultMessage": "Working with out-of-date data was detected",
+    "srcHash": "VV-YhCNH-Brq"
+  },
+  "exception.base.PROPERTY_HAS_INVALID_TYPE": {
+    "defaultMessage": "The field “{property}” has the wrong data type ({actual}, {expected})",
+    "srcHash": "M72rdgm9J7kN"
+  },
+  "exception.base.PROPERTY_IS_INVALID": {
+    "defaultMessage": "The field “{property}” is not filled in correctly",
+    "srcHash": "4JPtKKmkmyo7"
+  },
+  "exception.base.PROPERTY_NOT_EXIST": {
+    "defaultMessage": "The field “{property}” must be filled in",
+    "srcHash": "6xdFfWP2D8uo"
+  },
+  "exception.base.SYSTEM_ERROR": {
+    "defaultMessage": "System error",
+    "srcHash": "B9TMuk8BibX3"
+  },
+  "exception.client": {
+    "defaultMessage": "Error in the client application",
+    "srcHash": "vYVtybBlw8Om"
+  },
+  "exception.dig.DAO_AND_NODE_HAS_DIFFERENT_PACKAGE": {
+    "defaultMessage": "The digital object and the description unit point to different packages",
+    "srcHash": "RcQfAKCXtaW0"
+  },
+  "exception.dig.DAO_HAS_REQUEST": {
+    "defaultMessage": "The digital object has active requests to an external system",
+    "srcHash": "lJuSd2ab2PwE"
+  },
+  "exception.dig.DAO_NOT_FOUND": {
+    "defaultMessage": "The digital object does not exist ({code})",
+    "srcHash": "H0YEeTMmGVSO"
+  },
+  "exception.dig.NOT_FILLED_EXTERNAL_IDENTIRIER": {
+    "defaultMessage": "The required external identifier is not filled in",
+    "srcHash": "4Qk3EN0uM4wb"
+  },
+  "exception.dig.PACKAGE_NOT_FOUND": {
+    "defaultMessage": "The digital object package does not exist ({code})",
+    "srcHash": "q0A8UfTem_2Y"
+  },
+  "exception.dig.REPOSITORY_NOT_FOUND": {
+    "defaultMessage": "The digitisation repository does not exist ({code})",
+    "srcHash": "SXzFgsOUVA15"
+  },
+  "exception.dig.UNWANTED_REQUEST_TYPE": {
+    "defaultMessage": "The digital object request is of an unexpected type",
+    "srcHash": "X9bAOpH6RVQD"
+  },
+  "exception.ext.ALREADY_IMPORTED": {
+    "defaultMessage": "The record with the identifier “{id}” has already been imported into the entity scope “{scope}”",
+    "srcHash": "lPiz9pHRBXhm"
+  },
+  "exception.ext.EXTERNAL_RECORD_NOT_FOUND": {
+    "defaultMessage": "No exported archival entity with ID={id} was found",
+    "srcHash": "CM8KSp3Y3xGo"
+  },
+  "exception.ext.EXTERNAL_SYSTEM_ERROR": {
+    "defaultMessage": "Error from the external system",
+    "srcHash": "LqMYb-2a1pTH"
+  },
+  "exception.ext.IMPORT_FAIL": {
+    "defaultMessage": "Import failed",
+    "srcHash": "-_pzyg707us3"
+  },
+  "exception.ext.RECORD_NOT_FOUND": {
+    "defaultMessage": "The record was not found",
+    "srcHash": "CSvUs72mg2qt"
+  },
+  "exception.out.ALREADY_DELETED": {
+    "defaultMessage": "An already deleted output cannot be deleted",
+    "srcHash": "7YubGXigUa1E"
+  },
+  "exception.out.CANNOT_CHANGE_STATE": {
+    "defaultMessage": "The state cannot be changed",
+    "srcHash": "BGC_cnsZGpj8"
+  },
+  "exception.out.CANNOT_CLONE_DELETED": {
+    "defaultMessage": "A deleted output cannot be cloned",
+    "srcHash": "mV7_RfjQiMPh"
+  },
+  "exception.out.CANNOT_DELETED_IN_STATE": {
+    "defaultMessage": "The output cannot be deleted in this state: {state}",
+    "srcHash": "EneXPgTuJWCI"
+  },
+  "exception.out.CANNOT_SWITCH_CALCULATING": {
+    "defaultMessage": "The fill mode cannot be switched because no value generated by a function exists",
+    "srcHash": "gl7ghKiix1fb"
+  },
+  "exception.out.INVALID_FORMAT": {
+    "defaultMessage": "The format of the resulting file does not match the schema",
+    "srcHash": "YCeB1MGCIsJE"
+  },
+  "exception.out.ITEM_TYPE_CALC": {
+    "defaultMessage": "This attribute is calculated automatically and cannot be edited manually",
+    "srcHash": "loiLiz_CSorU"
+  },
+  "exception.out.LOCKED": {
+    "defaultMessage": "The output is already locked",
+    "srcHash": "k40veXtjS-cZ"
+  },
+  "exception.out.NOT_PROCESS_IN_STATE": {
+    "defaultMessage": "Cannot be performed in the current state",
+    "srcHash": "mLa1afU1Pzeo"
+  },
+  "exception.out.OUTPUT_NOT_EXISTS": {
+    "defaultMessage": "No output with ID={id} was found",
+    "srcHash": "wRcjTc1aJUMH"
+  },
+  "exception.out.SCHEMA_NOT_FOUND": {
+    "defaultMessage": "The validation schema was not found",
+    "srcHash": "Mt7-YWJX3tMk"
+  },
+  "exception.pkg.CIRCULAR_DEPENDENCY": {
+    "defaultMessage": "Circular dependency",
+    "srcHash": "giQQgfFkV64c"
+  },
+  "exception.pkg.CODE_NOT_FOUND": {
+    "defaultMessage": "No entity was found for the code “{code}” in the file “{file}”",
+    "srcHash": "LXlQVC3YaY0M"
+  },
+  "exception.pkg.FILE_NOT_FOUND": {
+    "defaultMessage": "The file “{file}” was not found",
+    "srcHash": "vQRE11I0FxnD"
+  },
+  "exception.pkg.FOREIGN_DEPENDENCY": {
+    "defaultMessage": "The package has a dependency: {foreignPackageCodes}",
+    "srcHash": "pMp18kvx6mMH"
+  },
+  "exception.pkg.FOREIGN_PACKAGES_NOT_EXIST": {
+    "defaultMessage": "The required packages were not found: {codes}",
+    "srcHash": "pwkQJfvnX8zM"
+  },
+  "exception.pkg.MIN_DEPENDENCY": {
+    "defaultMessage": "The minimum version of package {code} is not met: {version}.",
+    "srcHash": "ePY5iK9u_eLf"
+  },
+  "exception.pkg.OTHER_PACKAGE": {
+    "defaultMessage": "The entity already exists in package {code}",
+    "srcHash": "_U0pl8bB-xwa"
+  },
+  "exception.pkg.PACKAGE_NOT_EXIST": {
+    "defaultMessage": "The package with the code “{code}” does not exist",
+    "srcHash": "KAlxvfi7PlkB"
+  },
+  "exception.pkg.PARSE_ERROR": {
+    "defaultMessage": "Error while parsing the XML file",
+    "srcHash": "j9Xrpj5ZuZnR"
+  },
+  "exception.pkg.VERSION_APPLIED": {
+    "defaultMessage": "Package {code} is already applied at version {version}",
+    "srcHash": "NW8GVCeF9F0a"
+  },
+  "exception.reg.CANT_CHANGE_DELETED_AP": {
+    "defaultMessage": "An invalidated archival entity cannot be changed",
+    "srcHash": "FGScL2RS7WZ8"
+  },
+  "exception.reg.CANT_CHANGE_DELETED_NAME": {
+    "defaultMessage": "An invalidated name cannot be changed",
+    "srcHash": "BOk-bsMVDcIN"
+  },
+  "exception.reg.CANT_CHANGE_STATE_ENTITY_WITH_REVISION": {
+    "defaultMessage": "The state of an archival entity that has a revision cannot be changed",
+    "srcHash": "2ERSGkCc1CGe"
+  },
+  "exception.reg.CANT_CONNECT_SCOPE_TO_SELF": {
+    "defaultMessage": "A scope cannot be linked to itself",
+    "srcHash": "M9SozD1VXwEb"
+  },
+  "exception.reg.CANT_CREATE_REVISION": {
+    "defaultMessage": "A revision cannot be created because the archival entity is in an unsuitable state",
+    "srcHash": "aMlKi36e3nWI"
+  },
+  "exception.reg.CANT_DELETE_CONNECTED_SCOPE": {
+    "defaultMessage": "A scope that is a related scope of another scope cannot be deleted",
+    "srcHash": "8HVS2eizaKTf"
+  },
+  "exception.reg.CANT_DELETE_PREFERRED_NAME": {
+    "defaultMessage": "The preferred name of an archival entity cannot be deleted",
+    "srcHash": "ak6aZhsATI-Y"
+  },
+  "exception.reg.CANT_DELETE_SCOPE_RELATION_EXISTS": {
+    "defaultMessage": "The related scope cannot be removed - a relation exists between persons of these scopes",
+    "srcHash": "6GvRFZxaJ0gN"
+  },
+  "exception.reg.CANT_DELETE_SCOPE_WITH_CONNECTED": {
+    "defaultMessage": "A scope containing related scopes cannot be deleted",
+    "srcHash": "nI7XH1d0ONCd"
+  },
+  "exception.reg.CANT_MERGE": {
+    "defaultMessage": "The target entity is approved or awaiting approval and cannot be changed",
+    "srcHash": "gmkVlPSXrfJ-"
+  },
+  "exception.reg.CANT_MIGRATE_AP": {
+    "defaultMessage": "The archival entity cannot be migrated",
+    "srcHash": "rNQ3u4ik0oOr"
+  },
+  "exception.reg.EXIST_FOREIGN_DATA": {
+    "defaultMessage": "The entry is used in a related table",
+    "srcHash": "MSRn2SbUasTh"
+  },
+  "exception.reg.EXIST_FOREIGN_PARTY": {
+    "defaultMessage": "A link from a person exists",
+    "srcHash": "kLEPt8zSevF_"
+  },
+  "exception.reg.EXT_SYSTEM_CONNECTED": {
+    "defaultMessage": "The archival entity already has a link to an external system",
+    "srcHash": "yG0TQNvVRjAU"
+  },
+  "exception.reg.FOREIGN_ENTITY_INVALID_SCOPE": {
+    "defaultMessage": "The linked entity must have the same scope as the person it is linked to",
+    "srcHash": "rCuTZ9pMK70L"
+  },
+  "exception.reg.FOREIGN_ENTITY_INVALID_SUBTYPE": {
+    "defaultMessage": "The access point must belong to a class allowed for the entity role used in the Archival funds module",
+    "srcHash": "J6N70oozBgqh"
+  },
+  "exception.reg.INVALID_ENTITY_SCOPE": {
+    "defaultMessage": "The archival entity has an unsuitable scope",
+    "srcHash": "p_qoziEdWt3G"
+  },
+  "exception.reg.INVALID_ENTITY_VERSION": {
+    "defaultMessage": "Incorrect archival entity version",
+    "srcHash": "6z-jhKto9TZ3"
+  },
+  "exception.reg.NOT_UNIQUE_FULL_NAME": {
+    "defaultMessage": "The full name is not unique within the class",
+    "srcHash": "fK167enGFPHF"
+  },
+  "exception.reg.PARTY_NOT_EXIST": {
+    "defaultMessage": "The person does not exist",
+    "srcHash": "Y-Zj3cxsXpYn"
+  },
+  "exception.reg.REGISTRY_TYPE_NOT_FOUND": {
+    "defaultMessage": "The archival entity class “{name}” was not found",
+    "srcHash": "nQcBLmHY4N5X"
+  },
+  "exception.reg.SCOPES_ALREADY_CONNECTED": {
+    "defaultMessage": "The scopes cannot be linked - the link already exists",
+    "srcHash": "D3os5ky8Kivi"
+  },
+  "exception.reg.SCOPES_NOT_CONNECTED": {
+    "defaultMessage": "The related scope cannot be removed - no link exists between the scopes",
+    "srcHash": "h_STds6penxR"
+  },
+  "exception.reg.SCOPE_CODE_CANT_CHANGE": {
+    "defaultMessage": "The scope code cannot be changed",
+    "srcHash": "fDFGygzYuJ7Z"
+  },
+  "exception.reg.SCOPE_EXISTS": {
+    "defaultMessage": "The entity scope code already exists",
+    "srcHash": "pE_2Ngm2HXn6"
+  },
+  "exception.reg.USING_SCOPE_CANT_DELETE": {
+    "defaultMessage": "A scope containing archival entities cannot be deleted",
+    "srcHash": "4yhGQsfhbB4c"
+  },
+  "exception.sobj.NO_VALID_ITEMS": {
+    "defaultMessage": "The item cannot be added without filling in at least some description elements. Fill in the relevant description elements.",
+    "srcHash": "xUW6EEcIPbMk"
+  },
+  "exception.usr.ALREADY_IN_GROUP": {
+    "defaultMessage": "The user {user} is already a member of the group {group}",
+    "srcHash": "Q56jVxSxj3V7"
+  },
+  "exception.usr.GROUP_CODE_EXISTS": {
+    "defaultMessage": "A group with the code {code} already exists",
+    "srcHash": "vDxGArh2619w"
+  },
+  "exception.usr.NEED_CHANGE_PASSWORD": {
+    "defaultMessage": "The password needs to be changed as well",
+    "srcHash": "XWLDggIINZ6h"
+  },
+  "exception.usr.NOT_IN_GROUP": {
+    "defaultMessage": "The user {user} is not a member of the group {group}",
+    "srcHash": "Ex08Uo36d0Uo"
+  },
+  "exception.usr.PASSWORD_NOT_MATCH": {
+    "defaultMessage": "The original password does not match",
+    "srcHash": "nD5ehB9gcYOn"
+  },
+  "exception.usr.PERM_ILLEGAL_INPUT": {
+    "defaultMessage": "Invalid permission input: {type}",
+    "srcHash": "iSigoQmgIJ2n"
+  },
+  "exception.usr.PERM_NOT_EXIST": {
+    "defaultMessage": "The permission does not exist",
+    "srcHash": "XO3WO2FurdpF"
+  },
+  "exception.usr.USERNAME_EXISTS": {
+    "defaultMessage": "The username already exists",
+    "srcHash": "I9GQiwki-Hmi"
+  },
+  "exception.usr.USER_DELETE_ERROR": {
+    "defaultMessage": "The person cannot be deleted because of linked users",
+    "srcHash": "axDyfJw7uFPz"
+  },
+  "exception.usr.USER_NOT_FOUND": {
+    "defaultMessage": "The user with ID={id} does not exist",
+    "srcHash": "LkdQnTSqiKVl"
+  },
+  "exception.usr.USER_NOT_LOGGED": {
+    "defaultMessage": "The user is not signed in",
+    "srcHash": "ethIBMU-UI6i"
+  },
   "export.exportFilter": {
     "defaultMessage": "Export filter",
     "srcHash": "70KxI5SaQkaN"
@@ -3688,6 +4212,110 @@
   "node_action_visiblePolicy": {
     "defaultMessage": "Validation rules",
     "srcHash": "CJUhnRChHrzm"
+  },
+  "permission.ADMIN": {
+    "defaultMessage": "Administrator",
+    "srcHash": "Y_c_Z-MQpK2B"
+  },
+  "permission.AP_CONFIRM": {
+    "defaultMessage": "Approving archival entities in the selected entity scope",
+    "srcHash": "bbQEAqnW_yrL"
+  },
+  "permission.AP_CONFIRM_ALL": {
+    "defaultMessage": "Approving archival entities in all entity scopes",
+    "srcHash": "wwSfFxqDQGsG"
+  },
+  "permission.AP_EDIT_CONFIRMED": {
+    "defaultMessage": "Changing approved archival entities in the selected entity scope",
+    "srcHash": "zFL6kFkZFL98"
+  },
+  "permission.AP_EDIT_CONFIRMED_ALL": {
+    "defaultMessage": "Changing approved archival entities in all entity scopes",
+    "srcHash": "rNOxbHMiNoAN"
+  },
+  "permission.AP_SCOPE_RD": {
+    "defaultMessage": "Reading the selected entity scope",
+    "srcHash": "m5wESVzyT8dn"
+  },
+  "permission.AP_SCOPE_RD_ALL": {
+    "defaultMessage": "Reading all entity scopes",
+    "srcHash": "3IHBBul3S_4H"
+  },
+  "permission.AP_SCOPE_WR": {
+    "defaultMessage": "Creating and changing archival entities in the selected entity scope",
+    "srcHash": "RMZhHqqLScdm"
+  },
+  "permission.AP_SCOPE_WR_ALL": {
+    "defaultMessage": "Creating and changing archival entities in all entity scopes",
+    "srcHash": "wsFzdEe7Y4u9"
+  },
+  "permission.FUND_ADMIN": {
+    "defaultMessage": "Administration of all funds",
+    "srcHash": "AD4ufLyUX3Vt"
+  },
+  "permission.FUND_ARR": {
+    "defaultMessage": "Arrangement of the selected fund",
+    "srcHash": "8QVbCNlI-R9k"
+  },
+  "permission.FUND_ARR_ALL": {
+    "defaultMessage": "Arrangement of all funds",
+    "srcHash": "MC4QxPj2_p-u"
+  },
+  "permission.FUND_BA": {
+    "defaultMessage": "Running bulk actions on the selected fund",
+    "srcHash": "tm2196hRIpfE"
+  },
+  "permission.FUND_BA_ALL": {
+    "defaultMessage": "Running bulk actions on all funds",
+    "srcHash": "ghf4C3JNeeP8"
+  },
+  "permission.FUND_CL_VER_WR": {
+    "defaultMessage": "Minor edits to the selected closed funds",
+    "srcHash": "ImHoFB37bG_Y"
+  },
+  "permission.FUND_CL_VER_WR_ALL": {
+    "defaultMessage": "Minor edits to all closed funds",
+    "srcHash": "BcJlZ4pRPW1r"
+  },
+  "permission.FUND_EXPORT": {
+    "defaultMessage": "Export of the selected fund",
+    "srcHash": "n1xke5onlerS"
+  },
+  "permission.FUND_EXPORT_ALL": {
+    "defaultMessage": "Export of all funds",
+    "srcHash": "AJq_h47LK7vD"
+  },
+  "permission.FUND_OUTPUT_WR": {
+    "defaultMessage": "Creating outputs for the selected fund",
+    "srcHash": "-De0Vz350kQ9"
+  },
+  "permission.FUND_OUTPUT_WR_ALL": {
+    "defaultMessage": "Creating outputs for all funds",
+    "srcHash": "0Tl2JFILzusI"
+  },
+  "permission.FUND_PUBLISH": {
+    "defaultMessage": "Publishing the selected fund",
+    "srcHash": "_SyJ51z5-nF3"
+  },
+  "permission.FUND_PUBLISH_ALL": {
+    "defaultMessage": "Publishing all funds",
+    "srcHash": "rpmaQTO9P41B"
+  },
+  "permission.FUND_RD": {
+    "defaultMessage": "Reading the selected fund",
+    "srcHash": "FYm1G7OIJ4oS"
+  },
+  "permission.FUND_RD_ALL": {
+    "defaultMessage": "Reading all funds",
+    "srcHash": "ym-gkd4EvNs7"
+  },
+  "permission.FUND_VER_WR": {
+    "defaultMessage": "Fund configuration",
+    "srcHash": "IosQjgqQYZrd"
+  },
+  "permission.USR_PERM": {
+    "defaultMessage": "User and permission management",
+    "srcHash": "Gi7C0dLlmmgX"
   },
   "permission.activePermission.title": {
     "defaultMessage": "Active permission",
