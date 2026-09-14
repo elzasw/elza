@@ -9,7 +9,20 @@ import {Button} from '../ui';
 import {submitForm} from 'components/form/FormUtils.jsx';
 import AbstractReactComponent from '../AbstractReactComponent';
 import HorizontalLoader from '../shared/loading/HorizontalLoader';
-import i18n from '../i18n';
+import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    exportFilter: { id: 'export.exportFilter', defaultMessage: 'Exportní filtr' },
+    includeUUID: { id: 'export.includeUUID', defaultMessage: 'Exportovat UUID' },
+    includeAccessPoints: { id: 'export.includeAccessPoints', defaultMessage: 'Exportovat entity' },
+    includeDaos: {
+        id: 'export.includeDaos',
+        defaultMessage: 'Exportovat digitální archivní objekty (DAO)',
+    },
+    exportAction: { id: 'global.action.export', defaultMessage: 'Exportovat' },
+});
 import FormInputField from '../shared/form/FormInputField';
 import {connect} from "react-redux";
 import * as exportFilters from "../../actions/refTables/exportFilters";
@@ -59,7 +72,7 @@ class ExportForm extends AbstractReactComponent {
                                     name="exportFilter"
                                     component={FormInputField}
                                     type="select"
-                                    label={i18n('export.exportFilter')}
+                                    label={this.props.intl.formatMessage(messages.exportFilter)}
                                 >
                                     <option key="blankName" />
                                     {exportFilters.data && exportFilters.data.map((i, index) => {
@@ -74,27 +87,27 @@ class ExportForm extends AbstractReactComponent {
                                     name="includeUUID"
                                     component={FormInputField}
                                     type="checkbox"
-                                    label={i18n('export.includeUUID')}
+                                    label={this.props.intl.formatMessage(messages.includeUUID)}
                                 />
                                 <Field
                                     name="includeAccessPoints"
                                     component={FormInputField}
                                     type="checkbox"
-                                    label={i18n('export.includeAccessPoints')}
+                                    label={this.props.intl.formatMessage(messages.includeAccessPoints)}
                                 />
                                 <Field
                                     name="includeDaos"
                                     component={FormInputField}
                                     type="checkbox"
-                                    label={i18n('export.includeDaos')}
+                                    label={this.props.intl.formatMessage(messages.includeDaos)}
                                 />
                             </>
                     )}
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button type="submit" variant="outline-secondary">{i18n('global.action.export')}</Button>
+                    <Button type="submit" variant="outline-secondary"><FormattedMessage {...messages.exportAction} /></Button>
                     <Button variant="link" onClick={onClose}>
-                        {i18n('global.action.cancel')}
+                        <FormattedMessage {...globalMessages.cancel} />
                     </Button>
                 </Modal.Footer>
             </Form>
@@ -110,4 +123,4 @@ export default connect((state, props) => {
     return {
         exportFilters: state.refTables.exportFilters,
     };
-})(form);
+})(injectIntl(form));
