@@ -7,8 +7,8 @@ import { validateFundForm } from './fundFormValidation';
  * prostý řetězec redux-form zahodí a uživatel nedostane žádné upozornění.
  */
 
-// Legacy i18n() nemá v testech načtené texty a vrací '[klíč]'.
-const REQUIRED = '[global.validation.required]';
+// Bez zaregistrovaného katalogu se použije defaultMessage deskriptoru.
+const REQUIRED = 'Pole je povinné';
 
 const admin = {userDetail: {isAdmin: () => true}};
 const nonAdmin = {userDetail: {isAdmin: () => false}};

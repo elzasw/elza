@@ -1,4 +1,11 @@
-import {i18n} from "../components";
+import {} from "../components";
+import { getIntl } from 'components/shared/lang/intlInstance';
+import { defineMessages } from 'react-intl';
+
+// Id je převzaté z legacy katalogu beze změny.
+const messages = defineMessages({
+    all: { id: 'global.all', defaultMessage: 'Vše' },
+});
 
 export type Extend = {
     addEmpty: boolean;
@@ -26,7 +33,7 @@ export function createItems(
     getItems: () => any[],
     getName: (value: any) => string,
     addEmpty = false,
-    emptyName = i18n('global.all'),
+    emptyName = getIntl().formatMessage(messages.all),
     emptyValue = -1,
 ) {
     return buildEnumItems(getItems(), getName, {

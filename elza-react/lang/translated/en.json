@@ -3257,6 +3257,10 @@
     "defaultMessage": "Show in map",
     "srcHash": "3dFzZlmKhOwe"
   },
+  "global.all": {
+    "defaultMessage": "All",
+    "srcHash": "5C_lbtoov7Gn"
+  },
   "global.data.loading": {
     "defaultMessage": "Loading data…",
     "srcHash": "tRaCvBzxtiHY"
@@ -4233,6 +4237,18 @@
     "defaultMessage": "exception",
     "srcHash": "-TA7X-GC8mvk"
   },
+  "subNodeForm.errorPointCoordinates": {
+    "defaultMessage": "Invalid coordinate format. WKT is supported, or a point given as \"15.5154,49.535\"",
+    "srcHash": "ImxJRLi4DFDD"
+  },
+  "subNodeForm.validate.spec.required": {
+    "defaultMessage": "A specification must be entered",
+    "srcHash": "CM0UPx0J927N"
+  },
+  "subNodeForm.validate.value.notEmpty": {
+    "defaultMessage": "A value must be entered",
+    "srcHash": "v0CgxOA9-V-k"
+  },
   "table.filter.columns": {
     "defaultMessage": "Columns",
     "srcHash": "nkGHuHwAI1Yf"
@@ -4496,5 +4512,21 @@
   "userSettings.title": {
     "defaultMessage": "User settings",
     "srcHash": "bNMb206NTDO5"
+  },
+  "validate.validateDouble.outOfRange": {
+    "defaultMessage": "The number is outside the range of the Decimal(18,6) type",
+    "srcHash": "Oq2KztJyJuer"
+  },
+  "validate.validateDuration.outOfRange": {
+    "defaultMessage": "The duration is outside the range <00:00:00,596523:14:07>",
+    "srcHash": "i8WsYUU7Mnwx"
+  },
+  "validate.validateInt.notInt": {
+    "defaultMessage": "This is not a whole number",
+    "srcHash": "i71vVXq6hAis"
+  },
+  "validate.validateInt.outOfRange": {
+    "defaultMessage": "The number is outside the range of the INT type",
+    "srcHash": "mfLzGOLt8l24"
   }
 }
