@@ -21,7 +21,6 @@ import { DescItemProps } from "./types";
 import { findInSources, useValueManager } from "./utils";
 import { modalDialogHide, modalDialogShow } from "actions/global/modalDialog";
 import { SelectSearchFundsForm } from "components/arr/search-funds-form/SelectSearchFundsForm";
-import { i18n } from "components";
 import { FormattedMessage, defineMessages, useIntl } from "react-intl";
 import { messages as commonMessages } from "./commonMessages";
 import { useStyles } from "./styles";

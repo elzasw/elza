@@ -4,7 +4,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import {AbstractReactComponent, AddRemoveList, Icon, i18n} from 'components/shared';
+import {AbstractReactComponent, AddRemoveList, Icon} from 'components/shared';
 
 import './FundNodesList.scss';
 import {ApScopeVO} from '../../typings/Outputs';
