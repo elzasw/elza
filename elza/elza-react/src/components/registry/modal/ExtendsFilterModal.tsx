@@ -13,7 +13,10 @@ import {connect} from 'react-redux';
 import {Action} from 'redux';
 import {ThunkDispatch} from 'redux-thunk';
 import {Button} from '../../ui';
-import i18n from '../../i18n';
+import { FormattedMessage, useIntl } from "react-intl";
+import { globalMessages } from "components/shared/lang/messages";
+import { getIntl } from "components/shared/lang/intlInstance";
+import { filterMessages } from "../form/filter/messages";
 import './ApExtSearchModal.scss';
 import {FormInputField} from '../../shared';
 import {RulDataTypeVO} from '../../../api/RulDataTypeVO';
@@ -36,10 +39,10 @@ type FormProps = {};
 const validate = values => {
     const errors: any = {};
     if (!values.itemType) {
-        errors.itemType = i18n('global.validation.required');
+        errors.itemType = getIntl().formatMessage(globalMessages.validationRequired);
     }
     if (!values.value) {
-        errors.value = i18n('global.validation.required');
+        errors.value = getIntl().formatMessage(globalMessages.validationRequired);
     }
     return errors;
 };
@@ -65,16 +68,7 @@ type Props = {
     ReturnType<typeof mapStateToProps> &
     InjectedFormProps;
 
-const bitItems = [
-    {
-        id: 'true',
-        name: i18n('global.title.yes'),
-    },
-    {
-        id: 'false',
-        name: i18n('global.title.no'),
-    },
-];
+
 
 const ExtendsFilterModal = ({
     handleSubmit,
@@ -89,6 +83,12 @@ const ExtendsFilterModal = ({
     scopeId,
     rulSetsIds = [],
 }: Props) => {
+    const intl = useIntl();
+    // Skládá se při renderu, aby popisky reagovaly na přepnutí jazyka.
+    const bitItems = [
+        { id: 'true', name: intl.formatMessage(globalMessages.yes) },
+        { id: 'false', name: intl.formatMessage(globalMessages.no) },
+    ];
     const [rulDescItemTypes, setRulDescItemTypes] = useState<string[]>([]);
     const parts = refTables.partTypes.items;
     const dataType = itemType == null ? null : (refTables.rulDataTypes.itemsMap[itemType.dataTypeId] as RulDataTypeVO);
@@ -141,7 +141,7 @@ const ExtendsFilterModal = ({
                         name="value"
                         type="text"
                         component={FormInputField}
-                        label={i18n('ap.ext-search.section.extends.value')}
+                        label={intl.formatMessage(filterMessages.extendsValue)}
                         disabled={submitting}
                     />
                 );
@@ -152,7 +152,7 @@ const ExtendsFilterModal = ({
                         name="value"
                         type="textarea"
                         component={FormInputField}
-                        label={i18n('ap.ext-search.section.extends.value')}
+                        label={intl.formatMessage(filterMessages.extendsValue)}
                         disabled={submitting}
                     />
                 );
@@ -160,7 +160,7 @@ const ExtendsFilterModal = ({
                 return (
                     <Field
                         name="value"
-                        label={i18n('ap.ext-search.section.extends.value')}
+                        label={intl.formatMessage(filterMessages.extendsValue)}
                         disabled={submitting}
                         component={ReduxFormFieldErrorDecorator}
                         renderComponent={UnitdateField}
@@ -188,7 +188,7 @@ const ExtendsFilterModal = ({
                         <Col xs={6}>
                                 {area !== ApSearchArea.AllParts && <>
                                     <Form.Label>
-                                        {i18n('ap.ext-search.section.relations.only-main-part')}
+                                        {intl.formatMessage(filterMessages.relationsOnlyMainPart)}
                                     </Form.Label>
                                         <Field
                                         name="onlyMainPart"
@@ -202,7 +202,7 @@ const ExtendsFilterModal = ({
                             <Col xs={12}>
                                 <ArchiveEntityRel
                                     name={'obj'}
-                                    label={i18n('ap.ext-search.section.relations.obj')}
+                                    label={intl.formatMessage(filterMessages.relationsObj)}
                                     onlyMainPart={area !== ApSearchArea.AllParts && onlyMainPart}
                                     area={area}
                                     api={relEntityApi}
@@ -229,7 +229,7 @@ const ExtendsFilterModal = ({
                         name="value"
                         type="autocomplete"
                         component={FormInputField}
-                        label={i18n('ap.ext-search.section.extends.value')}
+                        label={intl.formatMessage(filterMessages.extendsValue)}
                         useIdAsValue
                         items={bitItems}
                         disabled={submitting}
@@ -255,7 +255,7 @@ const ExtendsFilterModal = ({
                     name="partType"
                     type="autocomplete"
                     component={FormInputField}
-                    label={i18n('ap.ext-search.section.extends.part')}
+                    label={intl.formatMessage(filterMessages.extendsPart)}
                     items={parts}
                     disabled={submitting}
                 />
@@ -263,7 +263,7 @@ const ExtendsFilterModal = ({
                     name="itemType"
                     type="autocomplete"
                     component={FormInputField}
-                    label={i18n('ap.ext-search.section.extends.type')}
+                    label={intl.formatMessage(filterMessages.extendsType)}
                     items={itemTypes}
                     disabled={submitting}
                 />
@@ -272,10 +272,10 @@ const ExtendsFilterModal = ({
                         name="itemSpec"
                         type="autocomplete"
                         component={FormInputField}
-                        label={i18n(
+                        label={intl.formatMessage(
                             dataType && RulDataTypeCodeEnum.ENUM === dataType.code
-                                ? 'ap.ext-search.section.extends.value'
-                                : 'ap.ext-search.section.extends.spec',
+                                ? filterMessages.extendsValue
+                                : filterMessages.extendsSpec,
                         )}
                         items={itemSpecs}
                         disabled={submitting}
@@ -285,10 +285,10 @@ const ExtendsFilterModal = ({
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="link" onClick={handleSubmit(onSubmit)}>
-                    {i18n('global.action.use')}
+                    <FormattedMessage {...globalMessages.use} />
                 </Button>
                 <Button variant="link" onClick={onClose} disabled={submitting}>
-                    {i18n('global.action.close')}
+                    <FormattedMessage {...globalMessages.close} />
                 </Button>
             </Modal.Footer>
         </ReduxForm>

@@ -1,4 +1,8 @@
 {
+  "accesspoint.create.titleMessage": {
+    "defaultMessage": "First choose the subclass and scope of the new archival entity. The relevant attributes are shown according to the chosen subclass. Once the main part of the name is filled in, the archival entity can be created.",
+    "srcHash": "o_2XettCsbEL"
+  },
   "accesspoint.removeDuplicity.confirm.merge.a": {
     "defaultMessage": "Do you really want to invalidate and merge the entity",
     "srcHash": "CSxEnK2FR8cA"
@@ -2269,6 +2273,18 @@
     "defaultMessage": "Format {0}",
     "srcHash": "9svfULmYPm_x"
   },
+  "ap.copy.pending.message": {
+    "defaultMessage": "Creating the copy…",
+    "srcHash": "NKPDTciU_Olz"
+  },
+  "ap.copy.replace": {
+    "defaultMessage": "Invalidate the original entity and replace it with the new one",
+    "srcHash": "7OZCRv0RM51o"
+  },
+  "ap.copy.scope": {
+    "defaultMessage": "Scope",
+    "srcHash": "K6XBwbqHYyDh"
+  },
   "ap.ext-search.area": {
     "defaultMessage": "Search area",
     "srcHash": "-m9JpOfia1Qa"
@@ -2297,6 +2313,22 @@
     "defaultMessage": "All",
     "srcHash": "5C_lbtoov7Gn"
   },
+  "ap.ext-search.label.action": {
+    "defaultMessage": "Link",
+    "srcHash": "VGsg0H9h0VHe"
+  },
+  "ap.ext-search.label.no-entities": {
+    "defaultMessage": "No entities were found",
+    "srcHash": "hzBfYAMC4Ik8"
+  },
+  "ap.ext-search.label.params": {
+    "defaultMessage": "Choose the search parameters",
+    "srcHash": "DJVMdXuTTqES"
+  },
+  "ap.ext-search.label.take-to-scope": {
+    "defaultMessage": "Take into the scope",
+    "srcHash": "_kN0U6FcxX7g"
+  },
   "ap.ext-search.only-main-part": {
     "defaultMessage": "Main part only",
     "srcHash": "2aRlRp9Jetaq"
@@ -2317,13 +2349,49 @@
     "defaultMessage": "External systems",
     "srcHash": "oU8i4V-8EbbO"
   },
+  "ap.ext-search.section.extends.part": {
+    "defaultMessage": "Description part",
+    "srcHash": "gaPafU3S0zUp"
+  },
+  "ap.ext-search.section.extends.spec": {
+    "defaultMessage": "Specification",
+    "srcHash": "60oXFP38RDRJ"
+  },
   "ap.ext-search.section.extends.title": {
     "defaultMessage": "Add an extended filter",
     "srcHash": "4oJzNCc16hjs"
   },
+  "ap.ext-search.section.extends.type": {
+    "defaultMessage": "Description element type",
+    "srcHash": "m-DfzLHuEopl"
+  },
+  "ap.ext-search.section.extends.value": {
+    "defaultMessage": "Value",
+    "srcHash": "2al7WSQS6DjX"
+  },
+  "ap.ext-search.section.relations.area": {
+    "defaultMessage": "Search area",
+    "srcHash": "-m9JpOfia1Qa"
+  },
+  "ap.ext-search.section.relations.obj": {
+    "defaultMessage": "Archival entity",
+    "srcHash": "we58htlMi7T9"
+  },
+  "ap.ext-search.section.relations.only-main-part": {
+    "defaultMessage": "Main part only",
+    "srcHash": "2aRlRp9Jetaq"
+  },
+  "ap.ext-search.section.relations.spec": {
+    "defaultMessage": "Specification",
+    "srcHash": "60oXFP38RDRJ"
+  },
   "ap.ext-search.section.relations.title": {
     "defaultMessage": "Add a relation filter",
     "srcHash": "iw_tI_iRYhPV"
+  },
+  "ap.ext-search.section.relations.type": {
+    "defaultMessage": "Relation type",
+    "srcHash": "1Q0WE9bU-bwj"
   },
   "ap.ext-search.section.text": {
     "defaultMessage": "Full-text search",
@@ -2349,9 +2417,53 @@
     "defaultMessage": "OK",
     "srcHash": "VlM5vE0z1ygX"
   },
+  "ap.ext-syncs.date": {
+    "defaultMessage": "Last change",
+    "srcHash": "5DBjYQpcER51"
+  },
   "ap.ext-syncs.ext-system": {
     "defaultMessage": "External system",
     "srcHash": "oGs4SFZv0yF2"
+  },
+  "ap.ext-syncs.label.no-entities": {
+    "defaultMessage": "No requests were found",
+    "srcHash": "Pb1nVlv6ulCA"
+  },
+  "ap.ext-syncs.label.params": {
+    "defaultMessage": "Choose the search parameters",
+    "srcHash": "DJVMdXuTTqES"
+  },
+  "ap.ext-syncs.scope": {
+    "defaultMessage": "Scope",
+    "srcHash": "K6XBwbqHYyDh"
+  },
+  "ap.ext-syncs.state": {
+    "defaultMessage": "State",
+    "srcHash": "1sRUDB31F_YQ"
+  },
+  "ap.push-to-ext.multipleSyncs.message": {
+    "defaultMessage": "Uploading to an external system is not possible for entities linked to more than one external system.",
+    "srcHash": "U45Al79I8YeP"
+  },
+  "ap.push-to-ext.readOnly.message": {
+    "defaultMessage": "The external system linked to the selected entity is read-only.",
+    "srcHash": "IodP0TDVzJus"
+  },
+  "ap.push-to-ext.selectedExtSystem.message": {
+    "defaultMessage": "Do you want to write the entity <b>{0}</b> to the system <b>{1}</b>?",
+    "srcHash": "6glC8Qs0MAMl"
+  },
+  "ap.push-to-ext.unsyncedEntities.listTitle": {
+    "defaultMessage": "Affected parts of the entity record:",
+    "srcHash": "iQGPOgEI1xwD"
+  },
+  "ap.push-to-ext.unsyncedEntities.message": {
+    "defaultMessage": "After confirming the action, not all relations will be sent. The record will stay in the Local change state, or the send may fail entirely.\nActive synchronisation requires sending all related entities. Once they are sent, this entity has to be written to the external system again.",
+    "srcHash": "rQYsV4iW6K6q"
+  },
+  "ap.push-to-ext.unsyncedEntities.title": {
+    "defaultMessage": "The record being sent refers to other entities that are not written in the target system. ",
+    "srcHash": "SO-9drQtZYNs"
   },
   "apField.searchType.PARTY_FULLTEXT": {
     "defaultMessage": "search by person - full text",
@@ -4109,6 +4221,10 @@
     "defaultMessage": "Export",
     "srcHash": "4x5Fw-eTIoUs"
   },
+  "global.action.filter.clean": {
+    "defaultMessage": "Clear the filter",
+    "srcHash": "LlLv7HM8PHQX"
+  },
   "global.action.import": {
     "defaultMessage": "Import",
     "srcHash": "yTA6PZurxTjn"
@@ -4116,6 +4232,10 @@
   "global.action.layerSelection": {
     "defaultMessage": "Layer selection",
     "srcHash": "O8wG5f4l2yjM"
+  },
+  "global.action.merge": {
+    "defaultMessage": "Merge",
+    "srcHash": "v7eMZiFp_Leo"
   },
   "global.action.remove": {
     "defaultMessage": "Remove",
@@ -4129,6 +4249,10 @@
     "defaultMessage": "Save",
     "srcHash": "eKX-T2uH2Zl7"
   },
+  "global.action.search": {
+    "defaultMessage": "Search",
+    "srcHash": "Vm8ngnO9dDUD"
+  },
   "global.action.show.more": {
     "defaultMessage": "Show more",
     "srcHash": "OGdBbuXj5BWE"
@@ -4140,6 +4264,14 @@
   "global.action.systemLayerOSM": {
     "defaultMessage": "System OSM",
     "srcHash": "5o-Om3Kgse8y"
+  },
+  "global.action.use": {
+    "defaultMessage": "Apply",
+    "srcHash": "GQQ5u8NYPPTv"
+  },
+  "global.action.write": {
+    "defaultMessage": "Write",
+    "srcHash": "LAWt0XGpk-Ek"
   },
   "global.all": {
     "defaultMessage": "All",
@@ -4933,6 +5065,10 @@
     "defaultMessage": "Download",
     "srcHash": "xxAzjqAuIzkG"
   },
+  "registry.add.type": {
+    "defaultMessage": "Subclass",
+    "srcHash": "_jrDercTzKxJ"
+  },
   "registry.addRegistry": {
     "defaultMessage": "New archival entity",
     "srcHash": "M74gLvBzE7Qt"
@@ -4968,6 +5104,10 @@
   "registry.revision.state.toApprove": {
     "defaultMessage": "Revision awaiting approval",
     "srcHash": "EN4GDVzlKaY0"
+  },
+  "registry.scopeClass": {
+    "defaultMessage": "Scope",
+    "srcHash": "K6XBwbqHYyDh"
   },
   "registry.type": {
     "defaultMessage": "Entity class / subclass",

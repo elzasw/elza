@@ -3,7 +3,10 @@ import {ConfigProps, Field, formValueSelector, InjectedFormProps, reduxForm} fro
 import {connect} from "react-redux";
 import {Col, Form, Modal, Row} from "react-bootstrap";
 import {Button} from "../../ui";
-import i18n from "../../i18n";
+import { FormattedMessage, useIntl } from "react-intl";
+import { globalMessages } from "components/shared/lang/messages";
+import { getIntl } from "components/shared/lang/intlInstance";
+import { filterMessages } from "../form/filter/messages";
 import ReduxFormFieldErrorDecorator from "../../shared/form/ReduxFormFieldErrorDecorator";
 import * as AreaInfo from "../form/filter/AreaInfo";
 import {ArchiveEntityRel} from "../field/ArchiveEntityRel";
@@ -23,11 +26,11 @@ function validate(values, props): any {
     const errors = {} as any;
 
     if (!values.itemType) {
-        errors.itemType = i18n('global.validation.required');
+        errors.itemType = getIntl().formatMessage(globalMessages.validationRequired);
     }
 
     if (!values.obj) {
-        errors.obj = i18n('global.validation.required');
+        errors.obj = getIntl().formatMessage(globalMessages.validationRequired);
     }
 
     return errors;
@@ -59,6 +62,7 @@ const RelationFilterModal = ({
     scopeId,
     rulSetsIds = [],
 }: Props) => {
+    const intl = useIntl();
     const [rulDescItemTypes, setRulDescItemTypes] = useState<string[]>([]);
     useEffect(() => {
         (async () => {
@@ -87,17 +91,17 @@ const RelationFilterModal = ({
             <Row>
                 <Col xs={12}>
                     <Field name="itemType"
-                           label={i18n('ap.ext-search.section.relations.type')}
+                           label={intl.formatMessage(filterMessages.relationsType)}
                            type="autocomplete"
                            component={FormInputField}
-                           items={[{id: null, name: i18n('ap.ext-search.input.select.all')},...itemTypes]}
+                           items={[{id: null, name: intl.formatMessage(filterMessages.selectAll)},...itemTypes]}
                            disabled={submitting}
                     />
                 </Col>
                 {itemSpecs && <Col xs={12}>
                     <Field name="itemSpec"
                            type="autocomplete"
-                           label={i18n('ap.ext-search.section.relations.spec')}
+                           label={intl.formatMessage(filterMessages.relationsSpec)}
                            component={FormInputField}
                            items={itemSpecs}
                            disabled={submitting}
@@ -105,7 +109,7 @@ const RelationFilterModal = ({
                 </Col>}
                 <Col xs={6}>
                     <Form.Label>
-                        {i18n('ap.ext-search.section.relations.area')}
+                        {intl.formatMessage(filterMessages.relationsArea)}
                     </Form.Label>
                     <Field
                         name={'area'}
@@ -123,7 +127,7 @@ const RelationFilterModal = ({
                 <Col xs={6}>
                     {area !== ApSearchArea.AllParts && <>
                         <Form.Label>
-                            {i18n('ap.ext-search.section.relations.only-main-part')}
+                            {intl.formatMessage(filterMessages.relationsOnlyMainPart)}
                         </Form.Label>
                             <Field
                             name="onlyMainPart"
@@ -136,7 +140,7 @@ const RelationFilterModal = ({
                 {<Col xs={12}>
                     <ArchiveEntityRel
                         name={'obj'}
-                        label={i18n('ap.ext-search.section.relations.obj')}
+                        label={intl.formatMessage(filterMessages.relationsObj)}
                         onlyMainPart={area !== ApSearchArea.AllParts && onlyMainPart}
                         area={area}
                         api={relApi}
@@ -157,11 +161,11 @@ const RelationFilterModal = ({
         </Modal.Body>
         <Modal.Footer>
             <Button type={'submit'} variant={'outline-secondary'} onClick={handleSubmit} disabled={submitting}>
-                {i18n('global.action.use')}
+                <FormattedMessage {...globalMessages.use} />
             </Button>
 
             <Button variant={'link'} onClick={onClose} disabled={submitting}>
-                {i18n('global.action.cancel')}
+                <FormattedMessage {...globalMessages.cancel} />
             </Button>
         </Modal.Footer>
     </Form>;

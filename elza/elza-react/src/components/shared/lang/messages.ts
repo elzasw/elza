@@ -80,6 +80,26 @@ export const globalMessages = defineMessages({
     id: "global.action.choose",
     defaultMessage: "Vybrat",
   },
+  merge: {
+    id: "global.action.merge",
+    defaultMessage: "Sloučit",
+  },
+  search: {
+    id: "global.action.search",
+    defaultMessage: "Vyhledat",
+  },
+  filterClean: {
+    id: "global.action.filter.clean",
+    defaultMessage: "Zrušit filtr",
+  },
+  use: {
+    id: "global.action.use",
+    defaultMessage: "Použít",
+  },
+  write: {
+    id: "global.action.write",
+    defaultMessage: "Zapsat",
+  },
   // Nejčastější text v celé aplikaci (přes 60 volání) - proto sem.
   validationRequired: {
     id: "global.validation.required",
