@@ -1,4 +1,60 @@
 {
+  "accesspoint.removeDuplicity.confirm.merge.a": {
+    "defaultMessage": "Do you really want to invalidate and merge the entity",
+    "srcHash": "CSxEnK2FR8cA"
+  },
+  "accesspoint.removeDuplicity.confirm.merge.b": {
+    "defaultMessage": "with the replacing entity",
+    "srcHash": "A0SxHt5HkLCr"
+  },
+  "accesspoint.removeDuplicity.confirm.nonEqualNames": {
+    "defaultMessage": "The entities have different names",
+    "srcHash": "W3DzTJO9UVHr"
+  },
+  "accesspoint.removeDuplicity.confirm.replace.a": {
+    "defaultMessage": "Do you really want to replace the entity",
+    "srcHash": "Kh69j54d_9cl"
+  },
+  "accesspoint.removeDuplicity.confirm.replace.b": {
+    "defaultMessage": "with the entity",
+    "srcHash": "iyZQVfeXnSxB"
+  },
+  "accesspoint.removeDuplicity.inProgress": {
+    "defaultMessage": "Removing the duplicate…",
+    "srcHash": "HsuGUuwqgaba"
+  },
+  "accesspoint.removeDuplicity.replacedAccesspoint": {
+    "defaultMessage": "To be replaced",
+    "srcHash": "Hdg_48OvGacm"
+  },
+  "accesspoint.removeDuplicity.replacingAccesspoint": {
+    "defaultMessage": "Replacing access point",
+    "srcHash": "1DVv_f_fWOJ6"
+  },
+  "accesspoint.removeDuplicity.resolve": {
+    "defaultMessage": "Resolve the duplicate",
+    "srcHash": "Q4I9CsbfIZkH"
+  },
+  "accesspoint.scope.code": {
+    "defaultMessage": "Code",
+    "srcHash": "lHt70Q2si8jP"
+  },
+  "accesspoint.scope.language": {
+    "defaultMessage": "Language",
+    "srcHash": "ARpdV1qvwAV4"
+  },
+  "accesspoint.scope.name": {
+    "defaultMessage": "Name",
+    "srcHash": "hgaTciNvSvUL"
+  },
+  "accesspoint.scope.relatedScopes": {
+    "defaultMessage": "Related scopes",
+    "srcHash": "p4k3h4l8mX9F"
+  },
+  "accesspoint.scope.ruleSetCode": {
+    "defaultMessage": "Description rules",
+    "srcHash": "oEAVrrjMbk2s"
+  },
   "add_desc_item_form_multi_hint": {
     "defaultMessage": "Tip: use CTRL to select multiple elements from the menu, or pick an element from the autocomplete field (ENTER on an empty field confirms the selection)",
     "srcHash": "pfHmpablPa6K"
@@ -2393,6 +2449,18 @@
     "defaultMessage": "Review settings",
     "srcHash": "y3s3PdkWbIgB"
   },
+  "arr.issuesList.form.permission": {
+    "defaultMessage": "Permission",
+    "srcHash": "rjKoKysWxpPH"
+  },
+  "arr.issuesList.form.permission.read": {
+    "defaultMessage": "Read",
+    "srcHash": "xFWnBeQHMtLR"
+  },
+  "arr.issuesList.form.permission.write": {
+    "defaultMessage": "Write and edit",
+    "srcHash": "W-JXPSQrvKfm"
+  },
   "arr.output.files.download": {
     "defaultMessage": "Download file",
     "srcHash": "us0j-6FJtyPZ"
@@ -2937,6 +3005,22 @@
     "defaultMessage": "Unsaved",
     "srcHash": "evoAyt3cLDJM"
   },
+  "export.exportFilter": {
+    "defaultMessage": "Export filter",
+    "srcHash": "70KxI5SaQkaN"
+  },
+  "export.includeAccessPoints": {
+    "defaultMessage": "Export entities",
+    "srcHash": "9WgqxMFiJ_7r"
+  },
+  "export.includeDaos": {
+    "defaultMessage": "Export digital archival objects (DAO)",
+    "srcHash": "cRUYm8sQfwnP"
+  },
+  "export.includeUUID": {
+    "defaultMessage": "Export UUIDs",
+    "srcHash": "YNOkbRuzBGvI"
+  },
   "export.title.fund": {
     "defaultMessage": "Export archival fund",
     "srcHash": "OFMDSJIwjHmc"
@@ -3153,6 +3237,10 @@
     "defaultMessage": "Export",
     "srcHash": "4x5Fw-eTIoUs"
   },
+  "global.action.import": {
+    "defaultMessage": "Import",
+    "srcHash": "yTA6PZurxTjn"
+  },
   "global.action.remove": {
     "defaultMessage": "Remove",
     "srcHash": "Ofs6avvgqpQw"
@@ -3305,6 +3393,18 @@
     "defaultMessage": "Recently viewed archival entities",
     "srcHash": "m2tYyo9Wv0i4"
   },
+  "import.file": {
+    "defaultMessage": "File",
+    "srcHash": "XuE2x3rNQQt-"
+  },
+  "import.registryScope": {
+    "defaultMessage": "Entity scope",
+    "srcHash": "SlY5BtKXdR6t"
+  },
+  "import.running": {
+    "defaultMessage": "Import in progress",
+    "srcHash": "tkvNE-8-A86L"
+  },
   "import.title.fund": {
     "defaultMessage": "Import archival fund",
     "srcHash": "vTH-w6LPMldy"
@@ -3340,6 +3440,30 @@
   "invalidated_entities": {
     "defaultMessage": "Invalidated entities",
     "srcHash": "anb_5TqFryuh"
+  },
+  "issue.text": {
+    "defaultMessage": "Comment text",
+    "srcHash": "qYjD6xpAuJTW"
+  },
+  "issue.type": {
+    "defaultMessage": "Comment type",
+    "srcHash": "KD20KWH3oUzp"
+  },
+  "issueList.name": {
+    "defaultMessage": "Name",
+    "srcHash": "EQAs0dy3Z5es"
+  },
+  "issueList.open": {
+    "defaultMessage": "State",
+    "srcHash": "1sRUDB31F_YQ"
+  },
+  "issueList.open.false": {
+    "defaultMessage": "Closed",
+    "srcHash": "Oa6BuSEJf2TH"
+  },
+  "issueList.open.true": {
+    "defaultMessage": "Open",
+    "srcHash": "zOKRC4-Op8qF"
   },
   "itemForm.calculate.placeholder": {
     "defaultMessage": "Value calculated by a function",
@@ -3760,6 +3884,30 @@
   "publication.table.menu.download": {
     "defaultMessage": "Download",
     "srcHash": "xxAzjqAuIzkG"
+  },
+  "registry.merge": {
+    "defaultMessage": "Merge",
+    "srcHash": "v7eMZiFp_Leo"
+  },
+  "registry.registryUsageCount": {
+    "defaultMessage": "Occurrences found",
+    "srcHash": "eQq_EnaW3GCP"
+  },
+  "registry.replace": {
+    "defaultMessage": "Replace",
+    "srcHash": "klGxQ9AMZbDo"
+  },
+  "registry.replaceSuccess": {
+    "defaultMessage": "The archival entity was replaced successfully",
+    "srcHash": "AUbF-9jgYKTq"
+  },
+  "registry.replaceText": {
+    "defaultMessage": "Replacing the entity in its occurrences with another entity",
+    "srcHash": "sm1Gb_GAIhDq"
+  },
+  "registry.usage.tooMany": {
+    "defaultMessage": "Too many occurrences were found",
+    "srcHash": "fiEzhN3fLJFx"
   },
   "requestQueue.delete.confirm": {
     "defaultMessage": "Do you really want to delete this item from the queue?",
