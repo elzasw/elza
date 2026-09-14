@@ -1,6 +1,8 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import {AbstractReactComponent, i18n, Icon} from 'components/shared';
+import {AbstractReactComponent, Icon} from 'components/shared';
+import { injectIntl } from 'react-intl';
+import { arrPanelMessages } from './panelMessages';
 import {Button} from '../ui';
 
 import './ArrPanel.scss';
@@ -22,13 +24,13 @@ class ArrPanel extends AbstractReactComponent {
     render() {
         return (
             <div key="arr-panel" className="arr-panel">
-                <Button className="reset-button" title={i18n('arr.panel.reset')} onClick={this.handleReset}>
+                <Button className="reset-button" title={this.props.intl.formatMessage(arrPanelMessages.panelReset)} onClick={this.handleReset}>
                     <Icon glyph="fa-times" />
                 </Button>
-                <span className="title">{i18n('arr.panel.title', this.props.name)}</span>
+                <span className="title">{this.props.intl.formatMessage(arrPanelMessages.panelTitle, { 0: this.props.name })}</span>
             </div>
         );
     }
 }
 
-export default ArrPanel;
+export default injectIntl(ArrPanel);

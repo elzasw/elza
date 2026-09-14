@@ -1,7 +1,9 @@
 import { Modal } from 'react-bootstrap';
 import classNames from 'classnames';
 import { createReferenceMark, getNodeIcon } from 'components/arr/ArrUtils.jsx';
-import { i18n, Icon, HorizontalLoader } from 'components/shared';
+import { Icon, HorizontalLoader } from 'components/shared';
+import { useIntl } from 'react-intl';
+import { arrPanelMessages } from '../panelMessages';
 
 import { routerNavigate } from 'actions/router.jsx';
 import { modalDialogHide } from 'actions/global/modalDialog.jsx';
@@ -21,6 +23,7 @@ import { MultiFilterObject } from './filters/types';
 const FUND_NAME_MAX_CHARS = 60;
 
 export function SearchFundsFormFn() {
+    const intl = useIntl();
     // const [currentFilters, setCurrentFilters] = useState<MultiFilterObject[]>([]);
     const arrRegion = useSelector((state: AppState) => state.arrRegion);
     const { fundSearch } = arrRegion;
@@ -166,11 +169,11 @@ export function SearchFundsFormFn() {
             <NodeSearchFilters onChange={(filters) => handleFluentSearch(filters)} onRefresh={handleRefresh} currentFilters={fundSearch.filters} />
             {fundSearch.isFetching && <HorizontalLoader hover showText={false} key="loader" />}
             {isFulltext && <>
-                {i18n('arr.fund.search.result.count', fundSearch.totalCount)}
-                {fundSearch.partialResult && <>&nbsp;({i18n('arr.fund.search.result.displayedCount', displayedCount)})</>}
+                {intl.formatMessage(arrPanelMessages.fundSearchResultCount, { 0: fundSearch.totalCount })}
+                {fundSearch.partialResult && <>&nbsp;({intl.formatMessage(arrPanelMessages.fundSearchResultDisplayedCount, { 0: displayedCount })})</>}
             </>}
             <div className={`fund-search ${isFulltext && displayedCount > 0 ? 'result' : 'no-fulltext'}`}>
-                {isFulltext ? renderResult() : i18n('arr.fund.search.noFulltext')}
+                {isFulltext ? renderResult() : intl.formatMessage(arrPanelMessages.fundSearchNoFulltext)}
             </div>
         </Modal.Body>
     );

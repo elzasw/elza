@@ -4,7 +4,9 @@
  **/
 
 import React from 'react';
-import {AbstractReactComponent, FilterableListBox, i18n, HorizontalLoader} from 'components/shared';
+import {AbstractReactComponent, FilterableListBox, HorizontalLoader} from 'components/shared';
+import { injectIntl } from 'react-intl';
+import { arrPanelMessages } from './panelMessages';
 import {WebApi} from 'actions/index';
 
 class ValueCheckListBox extends AbstractReactComponent {
@@ -95,7 +97,7 @@ class ValueCheckListBox extends AbstractReactComponent {
 
             if (
                 valueSearchText === '' ||
-                i18n('arr.fund.filterSettings.value.empty').toLowerCase().indexOf(valueSearchText) !== -1
+                this.props.intl.formatMessage(arrPanelMessages.fundFilterSettingsValueEmpty).toLowerCase().indexOf(valueSearchText) !== -1
             ) {
 
                 this.setState({
@@ -105,7 +107,7 @@ class ValueCheckListBox extends AbstractReactComponent {
                 valueItems = [
                     {
                         id: -1,
-                        name: i18n('arr.fund.filterSettings.value.empty'),
+                        name: this.props.intl.formatMessage(arrPanelMessages.fundFilterSettingsValueEmpty),
                     },
                     ...valueItems,
                 ];
@@ -151,4 +153,4 @@ class ValueCheckListBox extends AbstractReactComponent {
     }
 }
 
-export default ValueCheckListBox;
+export default injectIntl(ValueCheckListBox);

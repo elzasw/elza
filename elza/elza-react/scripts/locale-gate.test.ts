@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { existsSync, readFileSync } from "node:fs";
+import { parse } from "@formatjs/icu-messageformat-parser";
 
 import { checkCatalog } from "./locale-check-core.ts";
 import { hashMessage, type Catalog } from "./locale-merge-core.ts";
@@ -66,6 +67,30 @@ describe("lang/translated/en.json", () => {
             Object.entries(readCatalog(path))
                 .filter(([, entry]) => /'\{[^}]+\}'/.test(entry.defaultMessage))
                 .map(([id]) => `${path}: ${id}`),
+        );
+        expect(offenders).toEqual([]);
+    });
+
+    /**
+     * Druhá tichá past: `<` v ICU otevírá rich-text tag. Zpráva jako
+     * `<JP ID={0}>` se neparsuje (INVALID_TAG), formatjs ji vypíše **doslova**
+     * a placeholder se nedosadí - opět bez viditelné chyby, jen se ztratí
+     * hodnota. Uvozením (`'<'JP ID={0}'>'`) se původní vzhled zachová.
+     *
+     * Test parsuje každou hlášku týmž parserem, jaký používá `locale:compile`,
+     * takže chytí i jiné syntaktické chyby, ne jen tuhle jednu.
+     */
+    it("je celý platný ICU", () => {
+        const catalogs = [requiredPath, sourcePath].filter(existsSync);
+        const offenders = catalogs.flatMap((path) =>
+            Object.entries(readCatalog(path)).flatMap(([id, entry]) => {
+                try {
+                    parse(entry.defaultMessage);
+                    return [];
+                } catch (error) {
+                    return [`${path}: ${id}: ${(error as Error).message}`];
+                }
+            }),
         );
         expect(offenders).toEqual([]);
     });

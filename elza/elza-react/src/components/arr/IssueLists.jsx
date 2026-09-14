@@ -9,7 +9,9 @@ import {Button} from '../../components/ui';
 import indexById from '../../shared/utils/indexById';
 import storeFromArea from '../../shared/utils/storeFromArea';
 import IssueListForm, {IssueListFormInitial} from '../form/IssueListForm';
-import i18n from '../i18n';
+import { FormattedMessage, injectIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { arrPanelMessages } from './panelMessages';
 import FormInput from 'components/shared/form/FormInput';
 import ListBox from '../shared/listbox/ListBox';
 import Loading from '../shared/loading/Loading';
@@ -43,7 +45,7 @@ class IssueLists extends AbstractReactComponent {
     create = () => {
         WebApi.addIssueList({
             ...IssueListForm.initialValues,
-            name: i18n('issueList.new.unnamed'),
+            name: this.props.intl.formatMessage(arrPanelMessages.issueListNewUnnamed),
             fundId: this.props.fundId,
         }).then(this.onCreate);
     };
@@ -87,8 +89,8 @@ class IssueLists extends AbstractReactComponent {
                     <Row className="flex">
                         <Col xs={6} sm={3} className="flex flex-column">
                             <FormInput type="select" name="state" onChange={this.filter}>
-                                <option value={'true'}>{i18n('issueList.open.true')}</option>
-                                <option value={'false'}>{i18n('issueList.open.false')}</option>
+                                <option value={'true'}>{<FormattedMessage {...arrPanelMessages.issueListOpenTrue} />}</option>
+                                <option value={'false'}>{<FormattedMessage {...arrPanelMessages.issueListOpenFalse} />}</option>
                             </FormInput>
                             <ListBox
                                 className="flex-1"
@@ -123,7 +125,7 @@ class IssueLists extends AbstractReactComponent {
                 </ModalBody>
                 <ModalFooter>
                     <Button variant="link" onClick={onClose}>
-                        {i18n('global.action.close')}
+                        {<FormattedMessage {...globalMessages.close} />}
                     </Button>
                 </ModalFooter>
             </div>
@@ -137,4 +139,4 @@ export default connect(state => {
         issueList: storeFromArea(state, issuesActions.AREA_LIST),
         issueProtocols: storeFromArea(state, issuesActions.AREA_PROTOCOLS_CONFIG),
     };
-})(IssueLists);
+})(injectIntl(IssueLists));

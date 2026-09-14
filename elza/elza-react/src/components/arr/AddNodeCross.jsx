@@ -12,7 +12,9 @@ import React from 'react';
 import {connect} from 'react-redux';
 import {addNodeFormArr} from 'actions/arr/addNodeForm.jsx';
 import * as perms from 'actions/user/Permission.jsx';
-import {AbstractReactComponent, i18n} from 'components/shared';
+import {AbstractReactComponent} from 'components/shared';
+import { FormattedMessage } from 'react-intl';
+import { arrPanelMessages } from './panelMessages';
 import {getOneSettings, isFundRootId} from 'components/arr/ArrUtils.jsx';
 
 import './AddNodeCross.scss';
@@ -40,26 +42,26 @@ const AddNodeCross = class AddNodeCross extends AbstractReactComponent {
                         <div className="ico">
                             <span className="fa fa-arrow-up"></span>
                         </div>
-                        <div className="lbl">{i18n('arr.fund.addNode.before')}</div>
+                        <div className="lbl">{<FormattedMessage {...arrPanelMessages.fundAddNodeBefore} />}</div>
                     </div>,
                     <div key="addAfter" className="but bottom" onClick={this.handleAddNode.bind(this, 'AFTER')}>
                         <div className="ico">
                             <span className="fa fa-arrow-down"></span>
                         </div>
-                        <div className="lbl">{i18n('arr.fund.addNode.after')}</div>
+                        <div className="lbl">{<FormattedMessage {...arrPanelMessages.fundAddNodeAfter} />}</div>
                     </div>,
                     <div key="addAtEnd" className="but bottom2" onClick={this.handleAddNode.bind(this, 'ATEND')}>
                         <div className="ico">
                             <span className="fa fa-arrow-down"></span>
                         </div>
-                        <div className="lbl">{i18n('arr.fund.addNode.atEnd')}</div>
+                        <div className="lbl">{<FormattedMessage {...arrPanelMessages.fundAddNodeAtEnd} />}</div>
                     </div>,
                 ]}
                 <div key="addChild" className="but right" onClick={this.handleAddNode.bind(this, 'CHILD')}>
                     <div className="ico">
                         <span className="fa fa-level-up fa-rotate-90"></span>
                     </div>
-                    <div className="lbl">{i18n('arr.fund.addNode.child')}</div>
+                    <div className="lbl">{<FormattedMessage {...arrPanelMessages.fundAddNodeChild} />}</div>
                 </div>
             </div>
         );
