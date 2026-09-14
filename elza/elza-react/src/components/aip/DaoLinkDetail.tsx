@@ -7,7 +7,7 @@ import {useEffect, useState} from "react";
 import {useThunkDispatch} from "../../utils/hooks";
 import {Button, Row} from "react-bootstrap";
 import { Icon } from "../shared";
-import { defineMessages, useIntl } from "react-intl";
+import { FormattedMessage, defineMessages, useIntl } from "react-intl";
 import { globalMessages } from "components/shared/lang";
 
 // Id je převzaté z legacy katalogu beze změny. ConfirmForm chce řetězce,
@@ -25,6 +25,7 @@ import {DaDaoType, DaoLink, DaoViewRequestVO} from "elza-api";
 import CrossTabHelper, {CrossTabEventType, getThisLayout} from "../CrossTabHelper.tsx";
 import {WebApi} from "../../actions";
 import ConfirmForm from "../shared/form/ConfirmForm";
+import { daoLinkMessages, explorerMessages } from "./messages";
 
 type DaoLinkDetailProps = {
     nodeId: number;
@@ -69,7 +70,7 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
         dispatch(
             modalDialogShow(
                 this,
-                "AIP Průzkumník",
+                intl.formatMessage(explorerMessages.title),
                 <AipExplorerModalWrapper
                     //@ts-ignore
                     onOk={() => dispatch(modalDialogHide())}
@@ -162,7 +163,7 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
                             <Row className="napojeni-row" key={'dao-link-row' + item.daoLinkUuid + "dalsi"}>
                                 <p>
                                     <Button key="showAll" variant="link" onClick={() => setShowAllMainLinks(!showAllMainLinks)}>
-                                        a {items.length - maxCount} dalších...
+                                        <FormattedMessage {...daoLinkMessages.showMore} values={{ count: items.length - maxCount }} />
                                     </Button>
                                 </p>
                             </Row>
@@ -177,7 +178,7 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
                         <Row className="napojeni-row" key={'dao-link-row' + item.daoLinkUuid + "skryt"}>
                             <p>
                                 <Button key="hideAll" variant="link" onClick={() => setShowAllMainLinks(!showAllMainLinks)}>
-                                    Skrýt
+                                    <FormattedMessage {...daoLinkMessages.hide} />
                                 </Button>
                             </p>
                         </Row>
@@ -211,7 +212,7 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
                         <Row className="napojeni-row-child" key={'dao-link-row' + item.daoLinkUuid + "zobrazit-vse"}>
                             <p>
                                 <Button key="hideAll" variant="link" onClick={() => handleOpenExplorer(item.aipId, null)}>
-                                    Zobrazit vše v průzkumníku...
+                                    <FormattedMessage {...daoLinkMessages.showInExplorer} />
                                 </Button>
                             </p>
                         </Row>
@@ -236,7 +237,7 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
     return (
         <div className="napojeni">
             <p>
-                <b>Napojení</b>
+                <b><FormattedMessage {...daoLinkMessages.title} /></b>
                 <Button key="expand" variant="action" onClick={() => setCollapsed(!collapsed)}>
                     {collapsed && <Icon glyph="fa fa-chevron-down"/>}
                     {!collapsed && <Icon glyph="fa fa-chevron-up"/>}

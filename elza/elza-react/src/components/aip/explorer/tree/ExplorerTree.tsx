@@ -16,9 +16,12 @@ import Folder from "./Folder";
 import { ExplorerMode, useExplorerContext } from "../ExplorerContext";
 import { DaoFileFolderVO } from "api/DaoFileFolderVO";
 import { findNodeByUUID } from "../utils";
+import { useIntl } from "react-intl";
+import { explorerMessages } from "../../messages";
 
 
 const AipTree: FC<{onSelect?: (node: ExplorerNode) => void}> = ({onSelect}) => {
+    const intl = useIntl();
     const aip = useSelector((state: AppState) => storeFromArea(state, AREA_AIP));
     const {data: structure} = useSelector((state: AppState) => storeFromArea(state, AREA_AIP_STRUCTURE));
     const {selectedItem, setSelectedItem, mode} = useExplorerContext();
@@ -81,7 +84,7 @@ const AipTree: FC<{onSelect?: (node: ExplorerNode) => void}> = ({onSelect}) => {
 
     return (
          <Tree
-            aria-label="Průzkumník"
+            aria-label={intl.formatMessage(explorerMessages.treeLabel)}
             openItems={openItems}
             onOpenChange={handleOpenChange}
             defaultOpenItems={[structure.uuid]}

@@ -39,6 +39,7 @@ import {AipsApiAxiosParamCreator, DaoViewRequestVO} from "elza-api";
 import { AREA_AIP_STRUCTURE } from "actions/aip/exp.ts";
 import CrossTabHelper, { CrossTabEventType, getThisLayout } from "../../../CrossTabHelper";
 import {WebApi} from 'actions/WebApi';
+import { explorerMessages } from "../../messages";
 
 const ExplorerDetail: FC<{selected?: string;}> = ({selected}) => {
     const {selectedItem, setSelectedItem} = useExplorerContext();
@@ -119,7 +120,7 @@ const ExplorerDetail: FC<{selected?: string;}> = ({selected}) => {
     }
 
     if(!node) {
-        return <p>Nebyl vybrám žádný objekt</p>
+        return <p><FormattedMessage {...explorerMessages.noSelection} /></p>
     }
     const renderRepresentationParent = () => {
         return (

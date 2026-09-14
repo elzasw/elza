@@ -210,7 +210,7 @@ const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
             <div className="movements-content-container">
                 <div className={fund.moving ? 'moving-overlay visible' : 'moving-overlay'}>
                     <Icon glyph="fa-cog fa-spin" />
-                    <div>Probíhá přesun</div>
+                    <div><FormattedMessage {...arrPageMessages.movementsInProgress} /></div>
                 </div>
                 <div key={1} className="tree-left-container">
                     <FundTreeMovementsLeft fund={fund} versionId={fund.versionId} {...fund.fundTreeMovementsLeft} />

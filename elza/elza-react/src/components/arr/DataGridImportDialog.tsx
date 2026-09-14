@@ -12,6 +12,8 @@ import { Button } from '../ui';
 import { fundDataGridImport } from 'actions/arr/fundDataGrid';
 import { modalDialogHide } from 'actions/global/modalDialog';
 import { addToastrSuccess } from 'components/shared/toastr/ToastrActions';
+import { getIntl } from 'components/shared/lang/intlInstance';
+import { globalMessages } from 'components/shared/lang/messages';
 
 const DEFAULT_SEPARATOR = ';';
 const DEFAULT_ENCODING = 'windows-1250';
@@ -58,10 +60,10 @@ const messages = defineMessages({
 });
 
 const ENCODING_OPTIONS = [
-    { value: 'windows-1250', label: 'Windows-1250 (středoevropské)' },
+    { value: 'windows-1250', label: getIntl().formatMessage(globalMessages.encodingCentralEuropean) },
     { value: 'utf-8', label: 'UTF-8' },
     { value: 'iso-8859-2', label: 'ISO-8859-2 (Latin-2)' },
-    { value: 'windows-1252', label: 'Windows-1252 (západoevropské)' },
+    { value: 'windows-1252', label: getIntl().formatMessage(globalMessages.encodingWesternEuropean) },
 ];
 
 interface ImportFormFields {

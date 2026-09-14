@@ -41,6 +41,7 @@ export const arrPageMessages = defineMessages({
     issuesAddArrTitle: { id: "arr.issues.add.arr.title", defaultMessage: "Přidat připomínku - Archivní soubor" },
     issuesAddNode: { id: "arr.issues.add.node", defaultMessage: "Zobrazená jednotka popisu" },
     issuesAddNodeTitle: { id: "arr.issues.add.node.title", defaultMessage: "Přidat připomínku - Jednotka popisu" },
+    movementsInProgress: { id: "arr.movements.inProgress", defaultMessage: "Probíhá přesun" },
     movementsMoveAfter: { id: "arr.movements.move.after", defaultMessage: "Přesunout za" },
     movementsMoveBefore: { id: "arr.movements.move.before", defaultMessage: "Přesunout před" },
     movementsMoveUnder: { id: "arr.movements.move.under", defaultMessage: "Přesunout pod" },

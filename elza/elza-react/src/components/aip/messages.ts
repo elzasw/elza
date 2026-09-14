@@ -86,6 +86,30 @@ export const listMessages = defineMessages({
     },
 });
 
+/**
+ * Průzkumník obsahu AIP - strom, tabulka a navigace.
+ */
+export const explorerMessages = defineMessages({
+    treeLabel:       { id: "aip.explorer.tree.label",       defaultMessage: "Průzkumník" },
+    title:           { id: "aip.explorer.title",            defaultMessage: "AIP Průzkumník" },
+    colName:         { id: "aip.explorer.col.name",         defaultMessage: "Název" },
+    colSize:         { id: "aip.explorer.col.size",         defaultMessage: "Velikost" },
+    colFormat:       { id: "aip.explorer.col.format",       defaultMessage: "Formát" },
+    selectAll:       { id: "aip.explorer.selectAll",        defaultMessage: "Vybrat vše" },
+    noSelection:     { id: "aip.explorer.noSelection",      defaultMessage: "Nebyl vybrán žádný objekt" },
+    moreFolders:     { id: "aip.explorer.moreFolders",      defaultMessage: "{count, plural, one {# další složka} few {# další složky} other {# dalších složek}}" },
+});
+
+/**
+ * Napojení jednotky popisu na digitální objekty.
+ */
+export const daoLinkMessages = defineMessages({
+    title:        { id: "aip.daoLink.title",        defaultMessage: "Napojení" },
+    showMore:     { id: "aip.daoLink.showMore",     defaultMessage: "a {count, plural, one {# další} few {# další} other {# dalších}}…" },
+    hide:         { id: "aip.daoLink.hide",         defaultMessage: "Skrýt" },
+    showInExplorer: { id: "aip.daoLink.showInExplorer", defaultMessage: "Zobrazit vše v průzkumníku…" },
+});
+
 export const explorerPageMessages = defineMessages({
     back:          { id: "aip.explorer.back",          defaultMessage: "Zpět na seznam" },
     open:          { id: "aip.explorer.open",          defaultMessage: "Otevřít průzkumník" },

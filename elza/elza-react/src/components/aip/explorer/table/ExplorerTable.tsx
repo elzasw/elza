@@ -23,6 +23,8 @@ import { getFileName } from "../utils";
 import { ExplorerMode, useExplorerContext } from "../ExplorerContext";
 import { useThunkDispatch } from "utils/hooks";
 import { setSelectedAipDaos } from "actions/aip/aip";
+import { FormattedMessage, useIntl } from "react-intl";
+import { explorerMessages } from "../../messages";
 
 type Item = {
     filename?: string;
@@ -34,7 +36,7 @@ type Item = {
 const columns: TableColumnDefinition<Item>[] = [
     createTableColumn<Item>({
       columnId: "name",
-      renderHeaderCell: () => <>Název</>,
+      renderHeaderCell: () => <FormattedMessage {...explorerMessages.colName} />,
       renderCell: (item) => <>{item.filename ? getFileName(item.filename ): item.label || "-"}</>,
       compare: (a, b) => {
         const nameA = a.filename || a.label;
@@ -43,13 +45,13 @@ const columns: TableColumnDefinition<Item>[] = [
     }),
     createTableColumn<Item>({
       columnId: "size",
-      renderHeaderCell: () => <>Velikost</>,
+      renderHeaderCell: () => <FormattedMessage {...explorerMessages.colSize} />,
       renderCell: (item) => <>{item.size ? formatAipSize(item.size) : "-"}</>,
       compare: (a, b) => b.size - a.size
     }),
     createTableColumn<Item>({
       columnId: "format",
-      renderHeaderCell: () => <>Formát</>,
+      renderHeaderCell: () => <FormattedMessage {...explorerMessages.colFormat} />,
       renderCell: (item) => <>{item.mimeType || "-"}</>,
       compare: (a, b) => a.mimeType?.localeCompare(b.mimeType)
     }),
@@ -62,6 +64,7 @@ const columnSizes = {
 }
 
 const ExplorerTable: FC = () => {
+    const intl = useIntl();
     const {selectedItem, setSelectedItem, mode} = useExplorerContext();
     const [items, setItems] = useState([]);
     const [columnSizingOptions] = useState<TableColumnSizingOptions>(columnSizes);
@@ -163,7 +166,7 @@ const ExplorerTable: FC = () => {
                         checked={allRowsSelected ? true : someRowsSelected ? "mixed" : false}
                         onClick={toggleAllRows}
                         onKeyDown={toggleAllKeydown}
-                        checkboxIndicator={{"aria-label": "Vybrat vše"}}
+                        checkboxIndicator={{"aria-label": intl.formatMessage(explorerMessages.selectAll)}}
                         className="header"
 
                     />}

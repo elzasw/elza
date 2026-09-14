@@ -5,6 +5,14 @@ import {Button, SpinButton, Tooltip} from '@fluentui/react-components';
 import {ArrowDownRegular, PauseRegular, PlayRegular} from '@fluentui/react-icons';
 
 import './AdminLogsDetail.scss';
+import { defineMessages, injectIntl } from 'react-intl';
+
+const messages = defineMessages({
+    scrollDown: { id: 'admin.logs.action.scrollDown', defaultMessage: 'Posunout dolů' },
+    resume: { id: 'admin.logs.action.resume', defaultMessage: 'Pokračovat' },
+    pause: { id: 'admin.logs.action.pause', defaultMessage: 'Pozastavit' },
+    loading: { id: 'admin.logs.loading', defaultMessage: 'Načítání...' },
+});
 
 /**
  * Komponenta detailu osoby
@@ -135,7 +143,7 @@ class AdminLogsDetail extends AbstractReactComponent {
         return (
             <section className="logs-detail">
                 <div className="log-controll-buttons">
-                    <Tooltip content="Posunout dolů" relationship="label" withArrow>
+                    <Tooltip content={this.props.intl.formatMessage(messages.scrollDown)} relationship="label" withArrow>
                         <Button
                             appearance="outline"
                             disabled={isOnEnd}
@@ -144,7 +152,7 @@ class AdminLogsDetail extends AbstractReactComponent {
                         />
                     </Tooltip>
                     <Tooltip
-                        content={this.stop ? 'Pokračovat' : 'Pozastavit'}
+                        content={this.props.intl.formatMessage(this.stop ? messages.resume : messages.pause)}
                         relationship="label"
                         withArrow
                     >
@@ -169,7 +177,7 @@ class AdminLogsDetail extends AbstractReactComponent {
                         spellCheck="false"
                         ref="textLog"
                         className="logs"
-                        value={fetched ? logs.map(line => line + '\n').join('') : 'Načítání...'}
+                        value={fetched ? logs.map(line => line + '\n').join('') : this.props.intl.formatMessage(messages.loading)}
                     ></textarea>
                 </div>
             </section>
@@ -177,4 +185,4 @@ class AdminLogsDetail extends AbstractReactComponent {
     }
 }
 
-export default AdminLogsDetail;
+export default injectIntl(AdminLogsDetail);

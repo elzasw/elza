@@ -129,4 +129,9 @@ export const globalMessages = defineMessages({
     id: "global.action.editInMap",
     defaultMessage: "Upravit v mapě",
   },
+    /** Popisky kódování v importních dialozích. */
+    encodingCentralEuropean: { id: 'global.encoding.centralEuropean', defaultMessage: 'Windows-1250 (středoevropské)' },
+    encodingWesternEuropean: { id: 'global.encoding.westernEuropean', defaultMessage: 'Windows-1252 (západoevropské)' },
+    selectAll: { id: 'global.action.selectAll', defaultMessage: 'Vybrat vše' },
+    selectedCount: { id: 'global.title.selectedCount', defaultMessage: 'Vybráno: {count}' },
 });
