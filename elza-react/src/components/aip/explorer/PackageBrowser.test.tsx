@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { AipProblemType } from 'elza-api';
-import { renderWithProviders, screen, fireEvent, waitFor } from 'test/test-utils';
+import { AddSquare16Regular, SubtractSquare16Regular } from '@fluentui/react-icons';
+import { render, renderWithProviders, screen, fireEvent, waitFor } from 'test/test-utils';
 import PackageBrowser from './PackageBrowser';
 
 /**
@@ -38,6 +39,27 @@ describe('PackageBrowser', () => {
         expect(await screen.findByText('METS.xml')).toBeInTheDocument();
         expect(screen.getByText('data')).toBeInTheDocument();
         expect(screen.getByText('scan.jpg')).toBeInTheDocument();
+    });
+
+    it('ikona složky odpovídá tomu, zda je složka otevřená', async () => {
+        listPackageEntries.mockResolvedValue({data: [{path: 'aip/data/scan.jpg', size: 1024}]});
+
+        renderWithProviders(<PackageBrowser aipId={11}/>);
+
+        const folder = (await screen.findByText('data')).closest('[role="treeitem"]')!;
+        const expandIcon = () => folder.querySelector('.fui-TreeItemLayout__expandIcon')!.innerHTML;
+        // markup ikon, aby se porovnávalo proti nim, ne proti natvrdo opsané kresbě
+        const minus = render(<SubtractSquare16Regular color="black"/>).container.innerHTML;
+        const plus = render(<AddSquare16Regular color="black"/>).container.innerHTML;
+
+        // strom se otevírá celý, otevřená složka se nabízí ke sbalení
+        expect(expandIcon()).toBe(minus);
+
+        fireEvent.click(screen.getByText('data'));
+
+        await waitFor(() => expect(folder).toHaveAttribute('aria-expanded', 'false'));
+        // sbalená složka se naopak nabízí k rozbalení
+        expect(expandIcon()).toBe(plus);
     });
 
     it('u nestaženého balíčku vysvětlí, proč není co ukázat', async () => {
