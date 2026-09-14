@@ -20,7 +20,7 @@ export interface ExceptionData<PropertyType> {
 }
 
 interface Props<PropertyType extends object> {
-    title?: string;
+    title?: React.ReactNode;
     data?: ExceptionData<PropertyType>;
     textRenderer?: (properties: PropertyType | Record<string, never>, message: string) => string;
 }
