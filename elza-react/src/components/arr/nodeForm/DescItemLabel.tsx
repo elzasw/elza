@@ -1,5 +1,8 @@
 import React, { ReactNode } from 'react';
-import { i18n } from 'components/shared';
+import {} from 'components/shared';
+import { FormattedMessage } from 'react-intl';
+import { nodeMessages } from 'components/arr/nodeMessages';
+
 import classNames from 'classnames';
 import './DescItemLabel.scss';
 import { Button } from '../../ui';
@@ -42,7 +45,7 @@ export const DescItemLabel = ({
     }
 
     if (isValueUndefined) {
-        renderItem = <i>{i18n('subNodeForm.descItemType.undefinedValue')}</i>;
+        renderItem = <i>{<FormattedMessage {...nodeMessages.subNodeFormDescItemTypeUndefinedValue} />}</i>;
     }
 
     return (

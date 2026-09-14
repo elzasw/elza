@@ -1,5 +1,9 @@
 import { CheckboxGroup } from 'components/arr/nodeForm/checkbox-group';
-import { FormInputField, i18n } from 'components/shared';
+import { FormInputField} from 'components/shared';
+import { FormattedMessage, defineMessages } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { nodeMessages } from 'components/arr/nodeMessages';
+
 import { useState } from 'react';
 import { Col, Form, Modal, Nav, Row } from 'react-bootstrap';
 import { connect } from 'react-redux';
@@ -8,7 +12,6 @@ import { AppState } from "../../../typings/store";
 import { Button } from '../../ui';
 import './NodeSettingsForm.scss';
 import { VIEW_KEYS, VIEW_POLICY_STATE } from "./static-data";
-import { FormattedMessage, defineMessages } from 'react-intl';
 
 const messages = defineMessages({
     noActiveExtensions: {
@@ -81,11 +84,11 @@ const NodeSettingsForm = ({
                     <Col sm={3} className="menu">
                         <Nav variant="pills" activeKey={activeView} onSelect={changeView}>
                             <Nav.Item>
-                                <Nav.Link eventKey={VIEW_KEYS.RULES}>{i18n('visiblePolicy.rules')}</Nav.Link>
+                                <Nav.Link eventKey={VIEW_KEYS.RULES}>{<FormattedMessage {...nodeMessages.visiblePolicyRules} />}</Nav.Link>
                             </Nav.Item>
                             <Nav.Item>
                                 <Nav.Link eventKey={VIEW_KEYS.EXTENSIONS}>
-                                    {i18n('visiblePolicy.extensions')}
+                                    {<FormattedMessage {...nodeMessages.visiblePolicyExtensions} />}
                                 </Nav.Link>
                             </Nav.Item>
                         </Nav>
@@ -98,14 +101,14 @@ const NodeSettingsForm = ({
                                         name="rules"
                                         type="radio"
                                         component={FormInputField}
-                                        label={i18n('visiblePolicy.rules.parent')}
+                                        label={<FormattedMessage {...nodeMessages.visiblePolicyRulesParent} />}
                                         value={VIEW_POLICY_STATE.PARENT}
                                         />
                                     <Field
                                         name="rules"
                                         type="radio"
                                         component={FormInputField}
-                                        label={i18n('visiblePolicy.rules.node')}
+                                        label={<FormattedMessage {...nodeMessages.visiblePolicyRulesNode} />}
                                         value={VIEW_POLICY_STATE.NODE}
                                         />
 
@@ -124,7 +127,7 @@ const NodeSettingsForm = ({
                         {activeView === VIEW_KEYS.EXTENSIONS && (
                             <Row key={VIEW_KEYS.EXTENSIONS}>
                                 <Col xs={12}>
-                                    <h4>{i18n('visiblePolicy.rules.parent')}</h4>
+                                    <h4>{<FormattedMessage {...nodeMessages.visiblePolicyRulesParent} />}</h4>
                                     <div className="listbox-wrapper">
                                         <div className="listbox-container">
                                             {parentExtensions && parentExtensions.length > 0
@@ -136,7 +139,7 @@ const NodeSettingsForm = ({
                                     </div>
                                 </Col>
                                 <Col xs={12}>
-                                    <h4>{i18n('visiblePolicy.rules.node')}</h4>
+                                    <h4>{<FormattedMessage {...nodeMessages.visiblePolicyRulesNode} />}</h4>
                                     <div className="listbox-wrapper">
                                         <div className="listbox-container">
                                             <CheckboxGroup
@@ -153,10 +156,10 @@ const NodeSettingsForm = ({
             </Modal.Body>
             <Modal.Footer>
                 <Button type="submit" variant="outline-secondary" disabled={pristine || submitting}>
-                    {i18n('visiblePolicy.action.save')}
+                    {<FormattedMessage {...nodeMessages.visiblePolicyActionSave} />}
                 </Button>
                 <Button variant="link" disabled={submitting} onClick={onClose}>
-                    {i18n('global.action.cancel')}
+                    {<FormattedMessage {...globalMessages.cancel} />}
                 </Button>
             </Modal.Footer>
         </Form>

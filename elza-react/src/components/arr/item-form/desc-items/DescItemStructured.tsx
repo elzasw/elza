@@ -18,11 +18,13 @@ import { useActiveFund } from "utils/hooks";
 import { FIELD_HEIGHT } from "../../../../constants";
 import { AnonymousStructure } from "./AnonymousStructure";
 import { DescItemProps } from "./types";
-import { i18n } from "components";
+import {} from "components";
+import { FormattedMessage, defineMessages, useIntl } from 'react-intl';
+import { templateMessages } from 'components/arr/templateMessages';
+
 import AddStructureDataForm from "components/arr/structure/AddStructureDataForm";
 import { modalDialogShow } from "actions/global/modalDialog";
 import { useAppThunkDispatch } from "utils/hooks";
-import { FormattedMessage, defineMessages } from "react-intl";
 import { useStyles } from "./styles";
 
 interface Props extends DescItemProps {
@@ -48,6 +50,7 @@ export function DescItemStructured({
   isDisabled: _isDisabled,
   compact,
 }: Props) {
+  const intl = useIntl();
   if (item.data && item.data?.dataType !== DataType.Structured && !item.undefined) {
     throw "Incorrect data type";
   }
@@ -165,7 +168,7 @@ export function DescItemStructured({
     dispatch(
       modalDialogShow(
         this,
-        i18n("arr.structure.modal.add.title", structureType.name),
+        intl.formatMessage(templateMessages.structureModalAddTitle, { 0: structureType.name }),
         <AddStructureDataForm
           fundId={fundId}
           fundVersionId={fundVersionId}
