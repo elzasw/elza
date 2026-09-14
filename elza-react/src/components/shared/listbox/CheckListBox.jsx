@@ -10,6 +10,8 @@ import scrollIntoView from 'dom-scroll-into-view';
 
 import defaultKeymap from './ListBoxKeymap.jsx';
 import './CheckListBox.scss';
+import { FormattedMessage } from 'react-intl';
+import { globalMessages } from '../lang/messages';
 
 let _ListBox_placeholder = document.createElement('div');
 let _ListBox_placeholder_cls = 'placeholder';
@@ -529,10 +531,13 @@ class ListBox extends AbstractReactComponent {
                 {multiselect && (
                     <div className="listbox-selection">
                         <Button variant="default" onClick={this.handleCheckAll}>
-                            Vybrat vše
+                            <FormattedMessage {...globalMessages.selectAll} />
                         </Button>
                         <div className="listbox-selection-count">
-                            Vybráno: {(checkedIndexes && Object.keys(checkedIndexes).length) || 0}
+                            <FormattedMessage
+                                {...globalMessages.selectedCount}
+                                values={{count: (checkedIndexes && Object.keys(checkedIndexes).length) || 0}}
+                            />
                         </div>
                     </div>
                 )}

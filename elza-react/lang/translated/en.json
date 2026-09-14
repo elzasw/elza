@@ -871,6 +871,22 @@
     "defaultMessage": "List",
     "srcHash": "lR0bsF8Q5ccq"
   },
+  "admin.logs.action.pause": {
+    "defaultMessage": "Pause",
+    "srcHash": "84XhoaA240bs"
+  },
+  "admin.logs.action.resume": {
+    "defaultMessage": "Resume",
+    "srcHash": "xGnq7PtrG9AV"
+  },
+  "admin.logs.action.scrollDown": {
+    "defaultMessage": "Scroll down",
+    "srcHash": "diTqvnzq62es"
+  },
+  "admin.logs.loading": {
+    "defaultMessage": "Loading…",
+    "srcHash": "huKZrEM4ZxuE"
+  },
   "admin.nav.import": {
     "defaultMessage": "Import",
     "srcHash": "LP-bqr9WygAm"
@@ -1901,6 +1917,22 @@
     "defaultMessage": "Show list",
     "srcHash": "MYJ1K8DLdJht"
   },
+  "aip.daoLink.hide": {
+    "defaultMessage": "Hide",
+    "srcHash": "DHMh5qFxi1zF"
+  },
+  "aip.daoLink.showInExplorer": {
+    "defaultMessage": "Show everything in the explorer…",
+    "srcHash": "pBHKRz6nIY2e"
+  },
+  "aip.daoLink.showMore": {
+    "defaultMessage": "and {count, plural, one {# more} other {# more}}…",
+    "srcHash": "qNNu4vjT00El"
+  },
+  "aip.daoLink.title": {
+    "defaultMessage": "Links",
+    "srcHash": "zLOXNvy1g0hm"
+  },
   "aip.detail.aipVersionMetadata": {
     "defaultMessage": "Version with loaded metadata",
     "srcHash": "cb4Tq2NMj0fN"
@@ -1932,6 +1964,18 @@
   "aip.explorer.back": {
     "defaultMessage": "Back to the list",
     "srcHash": "nAub8TbwZrMW"
+  },
+  "aip.explorer.col.format": {
+    "defaultMessage": "Format",
+    "srcHash": "vuY1Qafazrs1"
+  },
+  "aip.explorer.col.name": {
+    "defaultMessage": "Name",
+    "srcHash": "EQAs0dy3Z5es"
+  },
+  "aip.explorer.col.size": {
+    "defaultMessage": "Size",
+    "srcHash": "HkMRVxaPFOh5"
   },
   "aip.explorer.detail.action.download": {
     "defaultMessage": "Download",
@@ -1973,9 +2017,21 @@
     "defaultMessage": "Details",
     "srcHash": "SpKDEP3fJGeY"
   },
+  "aip.explorer.moreFolders": {
+    "defaultMessage": "{count, plural, one {# more folder} other {# more folders}}",
+    "srcHash": "YNXXz2i3DqsL"
+  },
+  "aip.explorer.noSelection": {
+    "defaultMessage": "No object is selected",
+    "srcHash": "j73JLM2nnijD"
+  },
   "aip.explorer.open": {
     "defaultMessage": "Open the explorer",
     "srcHash": "_QWqGVI3J8rQ"
+  },
+  "aip.explorer.selectAll": {
+    "defaultMessage": "Select all",
+    "srcHash": "tzdoYdlGzv8D"
   },
   "aip.explorer.tab.package": {
     "defaultMessage": "Package",
@@ -1984,6 +2040,14 @@
   "aip.explorer.tab.structure": {
     "defaultMessage": "Structure",
     "srcHash": "zYUhA8KwsL8v"
+  },
+  "aip.explorer.title": {
+    "defaultMessage": "AIP explorer",
+    "srcHash": "I-2shepkwVQC"
+  },
+  "aip.explorer.tree.label": {
+    "defaultMessage": "Explorer",
+    "srcHash": "6aEBTv9-koHD"
   },
   "aip.filter.createFilter": {
     "defaultMessage": "Create filter {name}",
@@ -2808,6 +2872,62 @@
   "ap.part.complements.noItems.title": {
     "defaultMessage": "Complements not created",
     "srcHash": "4DfO8wmxkVZm"
+  },
+  "ap.part.create.BODY": {
+    "defaultMessage": "New body",
+    "srcHash": "01fhrHO_liO1"
+  },
+  "ap.part.create.CRE": {
+    "defaultMessage": "New creation",
+    "srcHash": "B35ZxbfvUK5H"
+  },
+  "ap.part.create.EVENT": {
+    "defaultMessage": "New event",
+    "srcHash": "6AD3KWu5IEhf"
+  },
+  "ap.part.create.EXT": {
+    "defaultMessage": "New extinction",
+    "srcHash": "P3lzcmWrw_zD"
+  },
+  "ap.part.create.IDENT": {
+    "defaultMessage": "New identifier",
+    "srcHash": "GUMx5WJAI5QO"
+  },
+  "ap.part.create.NAME": {
+    "defaultMessage": "New appellation",
+    "srcHash": "ApFbojgb2Izj"
+  },
+  "ap.part.create.REL": {
+    "defaultMessage": "New relation",
+    "srcHash": "BuwNSGvncy3R"
+  },
+  "ap.part.edit.BODY": {
+    "defaultMessage": "Edit the body",
+    "srcHash": "tCqOmfkBALd4"
+  },
+  "ap.part.edit.CRE": {
+    "defaultMessage": "Edit the creation",
+    "srcHash": "gXSL-HcO2GBi"
+  },
+  "ap.part.edit.EVENT": {
+    "defaultMessage": "Edit the event",
+    "srcHash": "swq97IBFxwdE"
+  },
+  "ap.part.edit.EXT": {
+    "defaultMessage": "Edit the extinction",
+    "srcHash": "CnlVULPtR4fp"
+  },
+  "ap.part.edit.IDENT": {
+    "defaultMessage": "Edit the identifier",
+    "srcHash": "PWcT3Dpyo2Fe"
+  },
+  "ap.part.edit.NAME": {
+    "defaultMessage": "Edit the appellation",
+    "srcHash": "umuOlHUZPe1v"
+  },
+  "ap.part.edit.REL": {
+    "defaultMessage": "Edit the relation",
+    "srcHash": "mbkH7R_liDoK"
   },
   "ap.partEdit.uriRef.description": {
     "defaultMessage": "Name",
@@ -3913,6 +4033,10 @@
     "defaultMessage": "Write and edit",
     "srcHash": "W-JXPSQrvKfm"
   },
+  "arr.movements.inProgress": {
+    "defaultMessage": "The transfer is running",
+    "srcHash": "W6ErllIEQFrM"
+  },
   "arr.movements.move.after": {
     "defaultMessage": "Move after",
     "srcHash": "GEwvq1r40b02"
@@ -3932,6 +4056,10 @@
   "arr.node.noSelection.title": {
     "defaultMessage": "No description unit selected",
     "srcHash": "YO0GS3Tz8jVl"
+  },
+  "arr.node.settings.noActiveExtensions": {
+    "defaultMessage": "No extensions are active",
+    "srcHash": "E1KobIoT18XR"
   },
   "arr.node.status.err.errors": {
     "defaultMessage": "Errors",
@@ -5873,6 +6001,10 @@
     "defaultMessage": "Select",
     "srcHash": "j7UiBDv3vOpU"
   },
+  "global.action.selectAll": {
+    "defaultMessage": "Select all",
+    "srcHash": "tzdoYdlGzv8D"
+  },
   "global.action.show.more": {
     "defaultMessage": "Show more",
     "srcHash": "OGdBbuXj5BWE"
@@ -5904,6 +6036,14 @@
   "global.data.noitem": {
     "defaultMessage": "No items",
     "srcHash": "L42h3al15ZVt"
+  },
+  "global.encoding.centralEuropean": {
+    "defaultMessage": "Windows-1250 (Central European)",
+    "srcHash": "nKiagWuG4rXQ"
+  },
+  "global.encoding.westernEuropean": {
+    "defaultMessage": "Windows-1252 (Western European)",
+    "srcHash": "dpsB5qzp706f"
   },
   "global.exception.bad.request.tech": {
     "defaultMessage": "The syntax of the request sent to the server is invalid",
@@ -5952,6 +6092,10 @@
   "global.title.selectAll": {
     "defaultMessage": "Select all",
     "srcHash": "tzdoYdlGzv8D"
+  },
+  "global.title.selectedCount": {
+    "defaultMessage": "Selected: {count}",
+    "srcHash": "7GUXxnPp2Qk5"
   },
   "global.title.unselectAll": {
     "defaultMessage": "Clear",

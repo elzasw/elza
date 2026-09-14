@@ -8,26 +8,17 @@ import {
   AePartNameClass,
   AePartRelationClass
 } from "./ApPartInfo";
+import { getIntl } from "components/shared/lang/intlInstance";
+import { partCreateMessages, partEditMessages } from "./partTypeMessages";
 
 // TODO: na zahození, je třeba rozmyslet kde brát popisky
 export function getPartEditDialogLabel(value: PartType, createDialog: boolean) {
-  switch (value) {
-    case PartType.BODY:
-      return createDialog ? "Nové tělo" : "Upravit tělo";
-    case PartType.CRE:
-      return createDialog ? "Nový vznik" : "Upravit vznik";
-    case PartType.EVENT:
-      return createDialog ? "Nová událost" : "Upravit událost";
-    case PartType.EXT:
-      return createDialog ? "Nový zánik" : "Upravit zánik";
-    case PartType.IDENT:
-      return createDialog ? "Nový identifikátor" : "Upravit identifikátor";
-    case PartType.NAME:
-      return createDialog ? "Nové označení" : "Upravit označení";
-    case PartType.REL:
-      return createDialog ? "Nový vztah" : "Upravit vztah";
-    default:
-      console.warn("Nepřeložená hodnota", value);
-      return "?";
+  const descriptors = createDialog ? partCreateMessages : partEditMessages;
+  const descriptor = descriptors[value as keyof typeof descriptors];
+  if (!descriptor) {
+    console.warn("Nepřeložená hodnota", value);
+    return "?";
   }
+  // Návratová hodnota jde do modalDialogShow, tedy mimo React strom.
+  return getIntl().formatMessage(descriptor);
 }

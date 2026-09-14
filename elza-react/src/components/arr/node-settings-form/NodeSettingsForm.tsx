@@ -8,6 +8,14 @@ import { AppState } from "../../../typings/store";
 import { Button } from '../../ui';
 import './NodeSettingsForm.scss';
 import { VIEW_KEYS, VIEW_POLICY_STATE } from "./static-data";
+import { FormattedMessage, defineMessages } from 'react-intl';
+
+const messages = defineMessages({
+    noActiveExtensions: {
+        id: 'arr.node.settings.noActiveExtensions',
+        defaultMessage: 'Nejsou aktivní žádná rozšíření',
+    },
+});
 
 interface OwnProps {
     onClose: () => void;
@@ -123,7 +131,7 @@ const NodeSettingsForm = ({
                                             ? parentExtensions.map((i, index) => (
                                                 <div key={index}>{i.name}</div>
                                             ))
-                                            : 'Nejsou aktivní žádná rozšíření'}
+                                            : <FormattedMessage {...messages.noActiveExtensions} />}
                                         </div>
                                     </div>
                                 </Col>
