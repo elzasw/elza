@@ -4,7 +4,11 @@ import { WebApi } from 'actions/index';
 import { descItemTypesFetchIfNeeded } from 'actions/refTables/descItemTypes';
 import { getSpecsIds } from 'components/arr/ArrUtils';
 import { submitForm } from 'components/form/FormUtils';
-import { i18n } from 'components/shared';
+import {} from 'components/shared';
+import { FormattedMessage, useIntl } from 'react-intl';
+import { getIntl } from 'components/shared/lang/intlInstance';
+import { globalMessages } from 'components/shared/lang/messages';
+import { arrMessages } from './messages';
 import { Form, FormGroup, FormLabel, Modal } from 'react-bootstrap';
 import { Field, Form as FinalForm } from 'react-final-form';
 import { objectById } from "stores/app/utils";
@@ -60,26 +64,26 @@ const validate = (values: SubmitValues, props: { refType: RulDescItemTypeExtVO, 
     const errors: any = {};
 
     if (!values.operationType) {
-        errors.operationType = i18n('global.validation.required');
+        errors.operationType = getIntl().formatMessage(globalMessages.validationRequired);
     }
 
     if (props.refType.useSpecification) {
         const specsIds = values.specIds;
         if (specsIds.length === 0 && specsIds.indexOf(FILTER_NULL_VALUE) === -1) {
-            errors.specs = i18n('global.validation.required');
+            errors.specs = getIntl().formatMessage(globalMessages.validationRequired);
         }
     }
 
     switch (values.operationType) {
         case OperationType.FIND_AND_REPLACE:
             if (!values.findText) {
-                errors.findText = i18n('global.validation.required');
+                errors.findText = getIntl().formatMessage(globalMessages.validationRequired);
             }
             break;
         case OperationType.REPLACE:
         case OperationType.APPEND:
             if (!values.replaceText) {
-                errors.replaceText = i18n('global.validation.required');
+                errors.replaceText = getIntl().formatMessage(globalMessages.validationRequired);
             }
 
             switch (props.dataType.code) {
@@ -94,7 +98,7 @@ const validate = (values: SubmitValues, props: { refType: RulDescItemTypeExtVO, 
                     try {
                         DatationField.validate(values.replaceText);
                     } catch (err) {
-                        errors.replaceText = err && err.message ? err.message : i18n('global.validation.required');
+                        errors.replaceText = err && err.message ? err.message : getIntl().formatMessage(globalMessages.validationRequired);
                     }
                     break;
 
@@ -107,19 +111,19 @@ const validate = (values: SubmitValues, props: { refType: RulDescItemTypeExtVO, 
             }
 
             if (props.refType.useSpecification && !values.replaceSpec) {
-                errors.replaceSpec = i18n('global.validation.required');
+                errors.replaceSpec = getIntl().formatMessage(globalMessages.validationRequired);
             }
             break;
         case OperationType.DELETE:
             break;
         case OperationType.SET_SPECIFICATION:
             if (!values.replaceSpec) {
-                errors.replaceSpec = i18n('global.validation.required');
+                errors.replaceSpec = getIntl().formatMessage(globalMessages.validationRequired);
             }
             break;
         case OperationType.SET_VALUE:
             if (!values.replaceValueId) {
-                errors.replaceValueId = i18n('global.validation.required');
+                errors.replaceValueId = getIntl().formatMessage(globalMessages.validationRequired);
             }
             break;
         default:
@@ -127,7 +131,7 @@ const validate = (values: SubmitValues, props: { refType: RulDescItemTypeExtVO, 
     }
 
     if (!values.itemsArea) {
-        errors.itemsArea = i18n('global.validation.required');
+        errors.itemsArea = getIntl().formatMessage(globalMessages.validationRequired);
     }
 
     return errors;
@@ -182,6 +186,7 @@ const FundBulkModificationsForm = ({
     onClose,
     onSubmitForm,
 }: Props) => {
+    const intl = useIntl();
     const structureTypes = useSelector((state: AppState) => state.refTables.structureTypes);
 
     const dispatch = useThunkDispatch();
@@ -311,17 +316,26 @@ const FundBulkModificationsForm = ({
         }));
     }
 
+    /**
+     * Popisek potvrzovacího tlačítka podle typu úpravy.
+     *
+     * Klíč se dřív skládal z hodnoty enumu velkými písmeny
+     * (`...action.FIND_AND_REPLACE`), ale v katalogu jsou klíče camelCase -
+     * nikdy tedy nesedly a na tlačítku se vypisovalo "[klíč]".
+     */
     const getSubmitButtonLabel = (operationType?: OperationType) => {
         switch (operationType) {
             case OperationType.FIND_AND_REPLACE:
+                return arrMessages.fundBulkModificationsActionFindAndReplace;
             case OperationType.REPLACE:
+                return arrMessages.fundBulkModificationsActionReplace;
             case OperationType.DELETE:
-                return `arr.fund.bulkModifications.action.${operationType}`;
+                return arrMessages.fundBulkModificationsActionDelete;
             case OperationType.SET_VALUE:
             case OperationType.SET_SPECIFICATION:
-                return `arr.fund.bulkModifications.action.setSpecification`;
+                return arrMessages.fundBulkModificationsActionSetSpecification;
             default:
-                return `global.action.store`;
+                return globalMessages.save;
         }
     }
 
@@ -338,10 +352,10 @@ const FundBulkModificationsForm = ({
                         name="replaceSpec"
                         type={'select'}
                         component={FormInputField}
-                        label={i18n(
+                        label={intl.formatMessage(
                             getIsEnumType()
-                                ? 'arr.fund.bulkModifications.replace.replaceEnum'
-                                : 'arr.fund.bulkModifications.replace.replaceSpec',
+                                ? arrMessages.fundBulkModificationsReplaceReplaceEnum
+                                : arrMessages.fundBulkModificationsReplaceReplaceSpec,
                         )}
                         disabled={submitting}
                     >
@@ -361,7 +375,7 @@ const FundBulkModificationsForm = ({
                         name="findText"
                         type={dataType.code === "TEXT" ? "textarea" : "text"}
                         component={FormInputField}
-                        label={i18n('arr.fund.bulkModifications.findAndRFeplace.findText')}
+                        label={<FormattedMessage {...arrMessages.fundBulkModificationsFindAndRFeplaceFindText} />}
                         disabled={submitting}
                     />,
                 );
@@ -371,7 +385,7 @@ const FundBulkModificationsForm = ({
                         name="replaceText"
                         type={dataType.code === "TEXT" ? "textarea" : "text"}
                         component={FormInputField}
-                        label={i18n('arr.fund.bulkModifications.findAndRFeplace.replaceText')}
+                        label={<FormattedMessage {...arrMessages.fundBulkModificationsFindAndRFeplaceReplaceText} />}
                         disabled={submitting}
                     />,
                 );
@@ -385,10 +399,10 @@ const FundBulkModificationsForm = ({
                             name="replaceSpec"
                             type={'select'}
                             component={FormInputField}
-                            label={i18n(
+                            label={intl.formatMessage(
                                 getIsEnumType()
-                                    ? 'arr.fund.bulkModifications.replace.replaceEnum'
-                                    : 'arr.fund.bulkModifications.replace.replaceSpec',
+                                    ? arrMessages.fundBulkModificationsReplaceReplaceEnum
+                                    : arrMessages.fundBulkModificationsReplaceReplaceSpec,
                             )}
                             disabled={submitting}
                         >
@@ -417,7 +431,7 @@ const FundBulkModificationsForm = ({
                             <Field
                                 key="replaceText"
                                 name="replaceText"
-                                label={i18n('arr.fund.bulkModifications.replace.replaceText')}
+                                label={<FormattedMessage {...arrMessages.fundBulkModificationsReplaceReplaceText} />}
                             >{({ input }) => {
                                 let data = {
                                     ...descItemProps,
@@ -441,7 +455,7 @@ const FundBulkModificationsForm = ({
                             <Field
                                 key="replaceText"
                                 name="replaceText"
-                                label={i18n('arr.fund.bulkModifications.replace.replaceText')}
+                                label={<FormattedMessage {...arrMessages.fundBulkModificationsReplaceReplaceText} />}
                             >
                                 {({ input }) => {
                                     let specName = null;
@@ -473,7 +487,7 @@ const FundBulkModificationsForm = ({
                             <Field
                                 key="replaceText"
                                 name="replaceText"
-                                label={i18n('arr.fund.bulkModifications.replace.replaceText')}
+                                label={<FormattedMessage {...arrMessages.fundBulkModificationsReplaceReplaceText} />}
                             >
                                 {({ input }) => {
                                     let data = {
@@ -498,7 +512,7 @@ const FundBulkModificationsForm = ({
                                 name="replaceText"
                                 type={dataType.code === "TEXT" ? "textarea" : "text"}
                                 component={FormInputField}
-                                label={i18n('arr.fund.bulkModifications.replace.replaceText')}
+                                label={<FormattedMessage {...arrMessages.fundBulkModificationsReplaceReplaceText} />}
                                 disabled={submitting}
                             />,
                         );
@@ -512,7 +526,7 @@ const FundBulkModificationsForm = ({
                         name="replaceValueId"
                         type={'asyncAutocomplete'}
                         component={FormInputField}
-                        label={i18n('arr.fund.bulkModifications.replace.replaceEnum')}
+                        label={<FormattedMessage {...arrMessages.fundBulkModificationsReplaceReplaceEnum} />}
                         disabled={submitting}
                         getItems={(search: string) => findStructureData(search)}
                     />
@@ -555,7 +569,7 @@ const FundBulkModificationsForm = ({
                                     component={ReduxFormFieldErrorDecorator}
                                     renderComponent={Form.Check}
                                     label={<div>
-                                        <span>{i18n('arr.fund.bulkModifications.itemsArea.selected')}</span>
+                                        <span>{<FormattedMessage {...arrMessages.fundBulkModificationsItemsAreaSelected} />}</span>
                                         <span className="item-count-label">{checkedItemsCount}</span>
                                     </div>}
                                     type="radio"
@@ -568,7 +582,7 @@ const FundBulkModificationsForm = ({
                                     component={ReduxFormFieldErrorDecorator}
                                     renderComponent={Form.Check}
                                     label={<div>
-                                        <span>{i18n('arr.fund.bulkModifications.itemsArea.unselected')}</span>
+                                        <span>{<FormattedMessage {...arrMessages.fundBulkModificationsItemsAreaUnselected} />}</span>
                                         <span className="item-count-label">{uncheckedItemsCount}</span>
                                     </div>}
                                     type="radio"
@@ -580,7 +594,7 @@ const FundBulkModificationsForm = ({
                                 component={ReduxFormFieldErrorDecorator}
                                 renderComponent={Form.Check}
                                 label={<div>
-                                    <span>{i18n('arr.fund.bulkModifications.itemsArea.page')}</span>
+                                    <span>{<FormattedMessage {...arrMessages.fundBulkModificationsItemsAreaPage} />}</span>
                                     <span className="item-count-label">{allItemsCount}</span>
                                 </div>}
                                 type="radio"
@@ -591,7 +605,7 @@ const FundBulkModificationsForm = ({
                                 component={ReduxFormFieldErrorDecorator}
                                 renderComponent={Form.Check}
                                 label={<div>
-                                    <span>{i18n('arr.fund.bulkModifications.itemsArea.all')}</span>
+                                    <span>{<FormattedMessage {...arrMessages.fundBulkModificationsItemsAreaAll} />}</span>
                                 </div>}
                                 type="radio"
                                 value={'all'}
@@ -609,35 +623,35 @@ const FundBulkModificationsForm = ({
                                 <option value={""} selected={true}>Vyberte operaci...</option>
                                 {getIsFindAndReplaceSupported() && (
                                     <option key="findAndReplace" value={OperationType.FIND_AND_REPLACE}>
-                                        {i18n('arr.fund.bulkModifications.operationType.findAndReplace')}
+                                        {intl.formatMessage(arrMessages.fundBulkModificationsOperationTypeFindAndReplace)}
                                     </option>
                                 )}
                                 {getIsReplaceSupported() && (
                                     <option key="replace" value={OperationType.REPLACE}>
-                                        {i18n('arr.fund.bulkModifications.operationType.replace')}
+                                        {intl.formatMessage(arrMessages.fundBulkModificationsOperationTypeReplace)}
                                     </option>
                                 )}
                                 {getIsAppendSupported() && (
                                     <option key="append" value={OperationType.APPEND}>
-                                        {i18n('arr.fund.bulkModifications.operationType.append')}
+                                        {intl.formatMessage(arrMessages.fundBulkModificationsOperationTypeAppend)}
                                     </option>
                                 )}
                                 {getIsSetSpecificationSupported() && (
                                     <option key="setSpecification" value={OperationType.SET_SPECIFICATION}>
-                                        {i18n(
+                                        {intl.formatMessage(
                                             getIsEnumType()
-                                                ? 'arr.fund.bulkModifications.operationType.setEnum'
-                                                : 'arr.fund.bulkModifications.operationType.setSpecification',
+                                                ? arrMessages.fundBulkModificationsOperationTypeSetEnum
+                                                : arrMessages.fundBulkModificationsOperationTypeSetSpecification,
                                         )}
                                     </option>
                                 )}
                                 {getIsSetValueSupported() && (
                                     <option key="setValue" value={OperationType.SET_VALUE}>
-                                        {i18n('arr.fund.bulkModifications.operationType.setEnum')}
+                                        {intl.formatMessage(arrMessages.fundBulkModificationsOperationTypeSetEnum)}
                                     </option>
                                 )}
                                 <option key="delete" value={OperationType.DELETE}>
-                                    {i18n('arr.fund.bulkModifications.operationType.delete')}
+                                    {intl.formatMessage(arrMessages.fundBulkModificationsOperationTypeDelete)}
                                 </option>
                             </Field>
                             {operationInputs}
@@ -649,10 +663,10 @@ const FundBulkModificationsForm = ({
                                 {refType.useSpecification && formState.values.operationType && <div className="separator" />}
                                 <section>
                                     <FormLabel>
-                                        {i18n(
+                                        {intl.formatMessage(
                                             getIsEnumType()
-                                                ? 'arr.fund.bulkModifications.values'
-                                                : 'arr.fund.bulkModifications.specs',
+                                                ? arrMessages.fundBulkModificationsValues
+                                                : arrMessages.fundBulkModificationsSpecs,
                                         )}
                                     </FormLabel>
                                     <Field
@@ -664,7 +678,7 @@ const FundBulkModificationsForm = ({
                                                 formState.values.operationType != OperationType.SET_SPECIFICATION || getIsEnumType() ? [
                                                     {
                                                         id: FILTER_NULL_VALUE,
-                                                        name: i18n('arr.fund.filterSettings.value.empty')
+                                                        name: intl.formatMessage(arrMessages.fundFilterSettingsValueEmpty)
                                                     },
                                                     ...refType.descItemSpecs,
                                                 ] : [...refType.descItemSpecs]
@@ -678,10 +692,10 @@ const FundBulkModificationsForm = ({
                     </Modal.Body>
                     <Modal.Footer>
                         <Button disabled={!formState.values.operationType} type="submit" variant="outline-secondary">
-                            {i18n(submitButtonTitle)}
+                            {intl.formatMessage(submitButtonTitle)}
                         </Button>
                         <Button variant="link" onClick={onClose}>
-                            {i18n('global.action.close')}
+                            <FormattedMessage {...globalMessages.close} />
                         </Button>
                     </Modal.Footer>
                 </Form>
