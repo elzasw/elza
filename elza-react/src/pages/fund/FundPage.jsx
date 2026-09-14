@@ -36,6 +36,9 @@ import { FundListImportListener } from '../../components/arr/FundListImportListe
 
 import { AbstractReactComponent, ListBox } from '../../components/shared';
 import { urlEntity, urlFund, urlFundOutputs, urlFundTree } from "../../constants";
+import { globalMessages } from '../../components/shared/lang';
+import { addToastrDanger, addToastrInfo } from '../../components/shared/toastr/ToastrActions';
+import { copyTextToClipboard } from '../../utils/clipboard';
 import { objectById } from '../../shared/utils';
 import { indexById } from '../../stores/app/utils';
 import PageLayout from '../shared/layout/PageLayout';
@@ -434,9 +437,13 @@ class FundPage extends AbstractReactComponent {
     }
 
     copyToClipboard = async (string) => {
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(string);
-        }
+        const { dispatch, intl } = this.props;
+        const copied = await copyTextToClipboard(string);
+        dispatch(
+            copied
+                ? addToastrInfo(intl.formatMessage(globalMessages.copyToClipboardFinished))
+                : addToastrDanger(intl.formatMessage(globalMessages.copyToClipboardUnavailable)),
+        );
     };
 
     handleIssuesSettings = async (fundId) => {

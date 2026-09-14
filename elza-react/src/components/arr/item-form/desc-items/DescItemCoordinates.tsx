@@ -28,6 +28,7 @@ import { useRef } from "react";
 import { useStyles } from "./styles";
 import { objectFromWKT, wktFromTypeAndData } from "components/Utils";
 import { parseCoordinateSummary } from "components/shared/coordinates/utils";
+import { copyTextToClipboard } from "utils/clipboard";
 
 const COORDINATE_CROP_LENGTH = 100;
 
@@ -146,21 +147,17 @@ export function DescItemCoordinates({
     resetConflict();
   }
 
-  const handleCopyToClipboard = () => {
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(value);
-      dispatch(
-        addToastrInfo(
-          formatMessage({ ...globalMessages.copyToClipboardFinished }),
-        ),
-      );
-    } else {
-      dispatch(
-        addToastrDanger(
-          formatMessage({ ...globalMessages.copyToClipboardUnavailable }),
-        ),
-      );
-    }
+  const handleCopyToClipboard = async () => {
+    const copied = await copyTextToClipboard(value);
+    dispatch(
+      copied
+        ? addToastrInfo(
+            formatMessage({ ...globalMessages.copyToClipboardFinished }),
+          )
+        : addToastrDanger(
+            formatMessage({ ...globalMessages.copyToClipboardUnavailable }),
+          ),
+    );
   };
 
   const handleExport = () =>

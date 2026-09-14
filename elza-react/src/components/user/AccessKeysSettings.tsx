@@ -31,6 +31,9 @@ import {
 import { Api } from 'api';
 import { ApiKeyCreated, ApiKeyInfo, ApiKeyState } from 'elza-api';
 import { globalMessages } from 'components/shared/lang';
+import { addToastrDanger, addToastrInfo } from 'components/shared/toastr/ToastrActions';
+import { copyTextToClipboard } from 'utils/clipboard';
+import { useAppThunkDispatch } from 'utils/hooks';
 import { useConfirmModal } from 'components/shared/dialog/useConfirmModal';
 import { keyMessages } from './messages';
 import { Form as FinalForm, Field as FinalField } from 'react-final-form';
@@ -275,6 +278,7 @@ export function AccessKeysSettings() {
     const styles = useStyles();
     const { formatMessage } = useIntl();
     const confirm = useConfirmModal();
+    const dispatch = useAppThunkDispatch();
 
     const [keys, setKeys] = useState<ApiKeyInfo[]>([]);
     const [isCreating, setIsCreating] = useState(false);
@@ -331,11 +335,12 @@ export function AccessKeysSettings() {
 
     const copyToken = async () => {
         if (!created) return;
-        try {
-            await navigator.clipboard.writeText(created.token);
-        } catch (e) {
-            console.error('Failed to copy token to clipboard', e);
-        }
+        const copied = await copyTextToClipboard(created.token);
+        dispatch(
+            copied
+                ? addToastrInfo(formatMessage(globalMessages.copyToClipboardFinished))
+                : addToastrDanger(formatMessage(globalMessages.copyToClipboardUnavailable)),
+        );
     };
 
     return (
