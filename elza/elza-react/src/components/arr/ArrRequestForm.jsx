@@ -10,6 +10,7 @@ import {connect} from 'react-redux';
 import {AbstractReactComponent, FormInput} from 'components/shared';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import { globalMessages } from 'components/shared/lang/messages';
+import { getIntl } from 'components/shared/lang/intlInstance';
 import { messageFor } from 'components/shared/lang/dynamicMessage';
 import { requestMessages, daoRequestTypeMessages } from './requestMessages';
 import {Form, Modal} from 'react-bootstrap';
@@ -41,12 +42,12 @@ const ArrRequestForm = class extends AbstractReactComponent {
         const errors = {};
         if (props.type === 'DIGITIZATION') {
             if (values.digitizationFrontdesk === '') {
-                errors.digitizationFrontdesk = this.props.intl.formatMessage(globalMessages.validationRequired);
+                errors.digitizationFrontdesk = getIntl().formatMessage(globalMessages.validationRequired);
             }
         }
         if (props.type === 'DAO') {
             if (values.daoType === '') {
-                errors.daoType = this.props.intl.formatMessage(globalMessages.validationRequired);
+                errors.daoType = getIntl().formatMessage(globalMessages.validationRequired);
             }
         }
         return errors;

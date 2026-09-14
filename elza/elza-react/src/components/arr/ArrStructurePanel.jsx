@@ -1,5 +1,7 @@
 import React from 'react';
-import {AbstractReactComponent, CheckListBox, FormInput, i18n, Icon, Loading, TooltipTrigger} from 'components/shared';
+import {AbstractReactComponent, CheckListBox, FormInput, Icon, Loading, TooltipTrigger} from 'components/shared';
+import { FormattedMessage, injectIntl } from 'react-intl';
+import { templateMessages } from './templateMessages';
 import FloatingMenu from 'components/shared/floating-menu/FloatingMenu.jsx';
 import {objectById} from 'shared/utils';
 import {Button} from '../ui';
@@ -77,7 +79,7 @@ class ArrStructurePanel extends AbstractReactComponent {
             this.props.dispatch(
                 modalDialogShow(
                     this,
-                    i18n('arr.structure.modal.settings.title', name),
+                    this.props.intl.formatMessage(templateMessages.structureModalSettingsTitle, { 0: name }),
                     <StructureExtensionsForm
                         initialValues={{extensions}}
                         onSubmit={data => {
@@ -106,7 +108,7 @@ class ArrStructurePanel extends AbstractReactComponent {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('arr.structure.modal.add.title', name),
+                this.props.intl.formatMessage(templateMessages.structureModalAddTitle, { 0: name }),
                 <AddStructureDataForm
                     fundId={fundId}
                     fundVersionId={fundVersionId}
@@ -121,7 +123,7 @@ class ArrStructurePanel extends AbstractReactComponent {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('arr.structure.modal.addMultiple.title', name),
+                this.props.intl.formatMessage(templateMessages.structureModalAddMultipleTitle, { 0: name }),
                 <AddStructureDataForm
                     multiple
                     fundId={fundId}
@@ -173,7 +175,10 @@ class ArrStructurePanel extends AbstractReactComponent {
             structureDataIds = [structureData.id];
         }
 
-        const title = i18n(readMode ? 'arr.structure.modal.show.title' : 'arr.structure.modal.update.title', name);
+        const title = this.props.intl.formatMessage(
+            readMode ? templateMessages.structureModalShowTitle : templateMessages.structureModalUpdateTitle,
+            { 0: name },
+        );
 
         if (structureDataIds.length === 1) {
             this.props.dispatch(
@@ -202,7 +207,7 @@ class ArrStructurePanel extends AbstractReactComponent {
                 ),
             );
         } else if (readMode) {
-            this.props.dispatch(addToastrWarning(i18n('arr.structure.modal.noshow')));
+            this.props.dispatch(addToastrWarning(this.props.intl.formatMessage(templateMessages.structureModalNoshow)));
         }
         this.closeContextMenu();
     };
@@ -349,7 +354,7 @@ class ArrStructurePanel extends AbstractReactComponent {
                     onKeyDown={e => this.handleKeyMenu(e, this.handleUpdate.bind(this, node))}
                     onClick={this.handleUpdate.bind(this, node)}
                 >
-                    {i18n('arr.structure.item.contextMenu.show')}
+                    {<FormattedMessage {...templateMessages.structureItemContextMenuShow} />}
                 </div>,
             );
         } else {
@@ -362,7 +367,7 @@ class ArrStructurePanel extends AbstractReactComponent {
                         onKeyDown={e => this.handleKeyMenu(e, this.handleSetAssignable.bind(this, node, false))}
                         onClick={this.handleSetAssignable.bind(this, node, false)}
                     >
-                        {i18n('arr.structure.item.contextMenu.changeToClosed')}
+                        {<FormattedMessage {...templateMessages.structureItemContextMenuChangeToClosed} />}
                     </div>,
                 );
             } else {
@@ -374,7 +379,7 @@ class ArrStructurePanel extends AbstractReactComponent {
                         onKeyDown={e => this.handleKeyMenu(e, this.handleSetAssignable.bind(this, node, true))}
                         onClick={this.handleSetAssignable.bind(this, node, true)}
                     >
-                        {i18n('arr.structure.item.contextMenu.changeToOpen')}
+                        {<FormattedMessage {...templateMessages.structureItemContextMenuChangeToOpen} />}
                     </div>,
                 );
             }
@@ -387,7 +392,7 @@ class ArrStructurePanel extends AbstractReactComponent {
                     onKeyDown={e => this.handleKeyMenu(e, this.handleUpdate.bind(this, node))}
                     onClick={this.handleUpdate.bind(this, node)}
                 >
-                    {i18n('arr.structure.item.contextMenu.update')}
+                    {<FormattedMessage {...templateMessages.structureItemContextMenuUpdate} />}
                 </div>,
             );
             menuParts.push(<div key="d2" className="divider" />);
@@ -399,7 +404,7 @@ class ArrStructurePanel extends AbstractReactComponent {
                     onKeyDown={e => this.handleKeyMenu(e, this.handleDelete.bind(this, node))}
                     onClick={this.handleDelete.bind(this, node)}
                 >
-                    {i18n('arr.structure.item.contextMenu.delete')}
+                    {<FormattedMessage {...templateMessages.structureItemContextMenuDelete} />}
                 </div>,
             );
         }
@@ -432,14 +437,14 @@ class ArrStructurePanel extends AbstractReactComponent {
         if (error.emptyValue) {
             parts.push(
                 <div key="empty" className="error-item">
-                    {i18n('arr.structure.item.error.emptyValue')}
+                    {<FormattedMessage {...templateMessages.structureItemErrorEmptyValue} />}
                 </div>,
             );
         }
         if (error.duplicateValue) {
             parts.push(
                 <div key="duplicate" className="error-item">
-                    {i18n('arr.structure.item.error.duplicateValue')}
+                    {<FormattedMessage {...templateMessages.structureItemErrorDuplicateValue} />}
                 </div>,
             );
         }
@@ -451,7 +456,7 @@ class ArrStructurePanel extends AbstractReactComponent {
             });
             parts.push(
                 <div key="items" className="error-list error-item">
-                    <div>{i18n('arr.structure.item.error.impossibleItemTypes')}</div>
+                    <div>{<FormattedMessage {...templateMessages.structureItemErrorImpossibleItemTypes} />}</div>
                     <ul>{items}</ul>
                 </div>,
             );
@@ -469,7 +474,7 @@ class ArrStructurePanel extends AbstractReactComponent {
             });
             parts.push(
                 <div className="error-list error-item">
-                    <div>{i18n('arr.structure.item.error.requiredItemTypes')}</div>
+                    <div>{<FormattedMessage {...templateMessages.structureItemErrorRequiredItemTypes} />}</div>
                     <ul>{items}</ul>
                 </div>,
             );
@@ -486,7 +491,7 @@ class ArrStructurePanel extends AbstractReactComponent {
         return (
             <div {...otherProps} key={index} onContextMenu={this.openContextMenu.bind(this, item)}>
                 <div className="structure-name">
-                    {item.value || <em key="no-val">{i18n('arr.structure.list.item.noValue')}</em>}
+                    {item.value || <em key="no-val">{<FormattedMessage {...templateMessages.structureListItemNoValue} />}</em>}
                     {complement && (
                         <div key="complement" className="structure-name-complement">
                             {complement}
@@ -534,10 +539,10 @@ class ArrStructurePanel extends AbstractReactComponent {
                             id="arr-structure-panel-add"
                         >
                             <Dropdown.Item eventKey="1" onClick={this.handleCreate}>
-                                {i18n('arr.structure.addOne')}
+                                {<FormattedMessage {...templateMessages.structureAddOne} />}
                             </Dropdown.Item>
                             <Dropdown.Item eventKey="2" onClick={this.handleCreateMulti}>
-                                {i18n('arr.structure.addMany')}
+                                {<FormattedMessage {...templateMessages.structureAddMany} />}
                             </Dropdown.Item>
                         </DropdownButton>
                         <Button className="btn--multiselect" variant="default" onClick={this.handleMultiselect}>
@@ -566,9 +571,9 @@ class ArrStructurePanel extends AbstractReactComponent {
                             value={filter.assignable}
                             className="form-select"
                         >
-                            <option value={''}>{i18n('arr.structure.filter.assignable.all')}</option>
-                            <option value={true}>{i18n('arr.structure.filter.assignable.true')}</option>
-                            <option value={false}>{i18n('arr.structure.filter.assignable.false')}</option>
+                            <option value={''}>{<FormattedMessage {...templateMessages.structureFilterAssignableAll} />}</option>
+                            <option value={true}>{<FormattedMessage {...templateMessages.structureFilterAssignableTrue} />}</option>
+                            <option value={false}>{<FormattedMessage {...templateMessages.structureFilterAssignableFalse} />}</option>
                         </FormControl>
                     </div>
                     <FormInput
@@ -577,7 +582,7 @@ class ArrStructurePanel extends AbstractReactComponent {
                         type="text"
                         onChange={({target: {value}}) => this.filter({text: value})}
                         value={filter.text}
-                        placeholder={i18n('arr.structure.filter.text.placholder')}
+                        placeholder={<FormattedMessage {...templateMessages.structureFilterTextPlacholder} />}
                     />
                 </div>
                 {rows && rows.length > 0 ? (
@@ -597,7 +602,7 @@ class ArrStructurePanel extends AbstractReactComponent {
                     />
                 ) : (
                     <div key="no-result" className="list listbox-wrapper no-result text-center">
-                        {i18n('search.action.noResult')}
+                        {<FormattedMessage {...templateMessages.searchActionNoResult} />}
                     </div>
                 )}
                 {contextMenu.isOpen && this.renderContextMenu()}
@@ -626,4 +631,4 @@ export default connect(
     null,
     null,
     {forwardRef: true},
-)(ArrStructurePanel);
+)(injectIntl(ArrStructurePanel, { forwardRef: true }));

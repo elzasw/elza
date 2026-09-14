@@ -1,7 +1,9 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {Field, reduxForm} from 'redux-form';
-import {i18n} from 'components/shared';
+import {} from 'components/shared';
+import { FormattedMessage, injectIntl } from 'react-intl';
+import { templateMessages } from './templateMessages';
 import {Form} from 'react-bootstrap';
 import {Button} from '../ui';
 import {WebApi} from '../../actions/WebApi';
@@ -20,7 +22,7 @@ class TemplateSettingsForm extends React.Component {
     handleSubmit = settings => {
         const {outputId} = this.props;
         return WebApi.updateOutputSettings(outputId, settings).then(() => {
-            this.props.dispatch(addToastrSuccess(i18n('arr.output.template.settings.success')));
+            this.props.dispatch(addToastrSuccess(this.props.intl.formatMessage(templateMessages.outputTemplateSettingsSuccess)));
         });
     };
 
@@ -38,28 +40,28 @@ class TemplateSettingsForm extends React.Component {
                         name="evenPageOffsetX"
                         type="text"
                         component={FormInputField}
-                        label={i18n('arr.output.template.oddPageOffsetX')}
+                        label={<FormattedMessage {...templateMessages.outputTemplateOddPageOffsetX} />}
                         {...commonProps}
                     />
                     <Field
                         name="evenPageOffsetY"
                         type="text"
                         component={FormInputField}
-                        label={i18n('arr.output.template.oddPageOffsetY')}
+                        label={<FormattedMessage {...templateMessages.outputTemplateOddPageOffsetY} />}
                         {...commonProps}
                     />
                     <Field
                         name="oddPageOffsetX"
                         type="text"
                         component={FormInputField}
-                        label={i18n('arr.output.template.evenPageOffsetX')}
+                        label={<FormattedMessage {...templateMessages.outputTemplateEvenPageOffsetX} />}
                         {...commonProps}
                     />
                     <Field
                         name="oddPageOffsetY"
                         type="text"
                         component={FormInputField}
-                        label={i18n('arr.output.template.evenPageOffsetY')}
+                        label={<FormattedMessage {...templateMessages.outputTemplateEvenPageOffsetY} />}
                         {...commonProps}
                     />
                     {!readMode && (
@@ -69,17 +71,17 @@ class TemplateSettingsForm extends React.Component {
                             type="submit"
                             variant="outline-secondary"
                         >
-                            {i18n('arr.output.template.set')}
+                            {<FormattedMessage {...templateMessages.outputTemplateSet} />}
                         </Button>
                     )}
                 </Form>
             );
         }
 
-        return <div>{i18n('arr.output.panel.template.noSettings')}</div>;
+        return <div>{<FormattedMessage {...templateMessages.outputPanelTemplateNoSettings} />}</div>;
     }
 }
 
 export default reduxForm({
     form: 'templateSettingsForm',
-})(TemplateSettingsForm);
+})(injectIntl(TemplateSettingsForm));

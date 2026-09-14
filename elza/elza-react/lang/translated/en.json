@@ -2925,6 +2925,22 @@
     "defaultMessage": "Choose how to resolve the conflicts",
     "srcHash": "0Aq5CwWfw1ue"
   },
+  "arr.fund.addTemplate.exists": {
+    "defaultMessage": "Replace an existing one",
+    "srcHash": "RQB2Ys677hDA"
+  },
+  "arr.fund.addTemplate.name": {
+    "defaultMessage": "Name",
+    "srcHash": "EQAs0dy3Z5es"
+  },
+  "arr.fund.addTemplate.new": {
+    "defaultMessage": "New",
+    "srcHash": "FzR-6REK3Bz4"
+  },
+  "arr.fund.addTemplate.withValues": {
+    "defaultMessage": "Save including the filled-in values",
+    "srcHash": "fqkeFMDRB2Je"
+  },
   "arr.fund.bulkModifications.action.delete": {
     "defaultMessage": "Remove",
     "srcHash": "eQTkknH2OPF1"
@@ -3213,9 +3229,21 @@
     "defaultMessage": "Archival fund display settings",
     "srcHash": "jQZ0ZNIBIXRD"
   },
+  "arr.fund.template.empty": {
+    "defaultMessage": "No templates are defined",
+    "srcHash": "kHDUhlYPDf5m"
+  },
+  "arr.fund.template.error.duplicate": {
+    "defaultMessage": "The template name is already used: {0}",
+    "srcHash": "g2mXXWbARJR3"
+  },
   "arr.fund.template.title": {
     "defaultMessage": "Template management",
     "srcHash": "92WR7EvC6RVA"
+  },
+  "arr.fund.template.undefined": {
+    "defaultMessage": "exception",
+    "srcHash": "-TA7X-GC8mvk"
   },
   "arr.fund.title.add": {
     "defaultMessage": "New archival fund",
@@ -3244,6 +3272,14 @@
   "arr.fund.title.update": {
     "defaultMessage": "Edit fund",
     "srcHash": "EVPCYiIbj3Qb"
+  },
+  "arr.fund.useTemplate.name": {
+    "defaultMessage": "Name",
+    "srcHash": "EQAs0dy3Z5es"
+  },
+  "arr.fund.useTemplate.replaceValues": {
+    "defaultMessage": "Replace the filled-in values",
+    "srcHash": "_oyLvu2CIU53"
   },
   "arr.fund.version": {
     "defaultMessage": "Version {0}",
@@ -3885,6 +3921,10 @@
     "defaultMessage": "Output type",
     "srcHash": "hD5bBOE7z9eZ"
   },
+  "arr.output.panel.template.noSettings": {
+    "defaultMessage": "The selected template has no settings",
+    "srcHash": "uqnPWUKgBiIr"
+  },
   "arr.output.panel.title.function": {
     "defaultMessage": "Functions",
     "srcHash": "xkotmJP_n7m-"
@@ -3896,6 +3936,30 @@
   "arr.output.template": {
     "defaultMessage": "Template",
     "srcHash": "BqmENbGuMyV1"
+  },
+  "arr.output.template.evenPageOffsetX": {
+    "defaultMessage": "Odd page offset X",
+    "srcHash": "y0QDsj3sgweY"
+  },
+  "arr.output.template.evenPageOffsetY": {
+    "defaultMessage": "Odd page offset Y",
+    "srcHash": "WMfQYMPwefNW"
+  },
+  "arr.output.template.oddPageOffsetX": {
+    "defaultMessage": "Even page offset X",
+    "srcHash": "QTweVwJvBCtk"
+  },
+  "arr.output.template.oddPageOffsetY": {
+    "defaultMessage": "Even page offset Y",
+    "srcHash": "haaLtEKM3Qix"
+  },
+  "arr.output.template.set": {
+    "defaultMessage": "Apply",
+    "srcHash": "-u_5AWdGRhoi"
+  },
+  "arr.output.template.settings.success": {
+    "defaultMessage": "The template settings were applied successfully",
+    "srcHash": "f248_aMk1Qfu"
   },
   "arr.output.title.add": {
     "defaultMessage": "Create a new output",
@@ -3944,6 +4008,74 @@
   "arr.panel.title.visiblePolicies": {
     "defaultMessage": "Settings",
     "srcHash": "4BNW7MyPieeu"
+  },
+  "arr.refTemplates.detail.basicInfo": {
+    "defaultMessage": "Basic information",
+    "srcHash": "2XcXKwbUTg_N"
+  },
+  "arr.refTemplates.detail.itemTypeId": {
+    "defaultMessage": "Description element type",
+    "srcHash": "m-DfzLHuEopl"
+  },
+  "arr.refTemplates.detail.name": {
+    "defaultMessage": "Name",
+    "srcHash": "EQAs0dy3Z5es"
+  },
+  "arr.refTemplates.detail.update": {
+    "defaultMessage": "Edit basic information",
+    "srcHash": "RGkdDO3xBXH3"
+  },
+  "arr.refTemplates.list.title": {
+    "defaultMessage": "List of templates",
+    "srcHash": "SslMO0-r8NtT"
+  },
+  "arr.refTemplates.mapping.create.title": {
+    "defaultMessage": "New description element mapping",
+    "srcHash": "zCt5MKeQFJil"
+  },
+  "arr.refTemplates.mapping.fromItemSpecId": {
+    "defaultMessage": "Source specification",
+    "srcHash": "L-V_hihit4EE"
+  },
+  "arr.refTemplates.mapping.fromItemTypeId": {
+    "defaultMessage": "Source element type",
+    "srcHash": "bE_l61LeBQqI"
+  },
+  "arr.refTemplates.mapping.fromParentLevel": {
+    "defaultMessage": "Search in parent levels",
+    "srcHash": "o6NGMmY0UUuQ"
+  },
+  "arr.refTemplates.mapping.mapAllSpec": {
+    "defaultMessage": "Take over all specifications",
+    "srcHash": "GlGegG9nj8Ba"
+  },
+  "arr.refTemplates.mapping.refTemplateMapSpecVOList": {
+    "defaultMessage": "Element specifications",
+    "srcHash": "_4_aH78NnVUp"
+  },
+  "arr.refTemplates.mapping.specMapping": {
+    "defaultMessage": "Description element specification mapping",
+    "srcHash": "0UJDc7IgMZvU"
+  },
+  "arr.refTemplates.mapping.title": {
+    "defaultMessage": "Description element mapping",
+    "srcHash": "m5-GsIC_Znnr"
+  },
+  "arr.refTemplates.mapping.toItemSpecId": {
+    "defaultMessage": "Target specification",
+    "srcHash": "bqZZKcIasN5X"
+  },
+  "arr.refTemplates.mapping.toItemTypeId": {
+    "defaultMessage": "Target element type",
+    "srcHash": "_byewE3kNEy_"
+  },
+  "arr.refTemplates.mapping.update.title": {
+    "defaultMessage": "Edit the description element mapping",
+    "srcHash": "3EnjYi8TMYzZ"
+  },
+  "arr.refTemplates.noSelected": {
+    "defaultMessage": "Select a template to edit",
+    "srcHash": "JHoGnOxfInur"
   },
   "arr.refTemplates.title": {
     "defaultMessage": "Description unit synchronisation templates",
@@ -4077,9 +4209,109 @@
     "defaultMessage": "Transfer request",
     "srcHash": "dUIAHwUyr1Ib"
   },
+  "arr.structure.addMany": {
+    "defaultMessage": "Add in bulk",
+    "srcHash": "OsRb7q3McG3y"
+  },
+  "arr.structure.addOne": {
+    "defaultMessage": "Add individually",
+    "srcHash": "Gk8ygyeuyLCG"
+  },
+  "arr.structure.filter.assignable.all": {
+    "defaultMessage": "All",
+    "srcHash": "5C_lbtoov7Gn"
+  },
+  "arr.structure.filter.assignable.false": {
+    "defaultMessage": "Closed",
+    "srcHash": "N9qe2E0DpKfH"
+  },
+  "arr.structure.filter.assignable.true": {
+    "defaultMessage": "Open",
+    "srcHash": "zOKRC4-Op8qF"
+  },
+  "arr.structure.filter.text.placholder": {
+    "defaultMessage": "Filter…",
+    "srcHash": "yPvtdk4iir_7"
+  },
+  "arr.structure.item.contextMenu.changeToClosed": {
+    "defaultMessage": "Change the state to: Closed",
+    "srcHash": "5d7aK2Gqb8e7"
+  },
+  "arr.structure.item.contextMenu.changeToOpen": {
+    "defaultMessage": "Change the state to: Open",
+    "srcHash": "e_YdSKC48COv"
+  },
+  "arr.structure.item.contextMenu.delete": {
+    "defaultMessage": "Remove",
+    "srcHash": "eQTkknH2OPF1"
+  },
+  "arr.structure.item.contextMenu.show": {
+    "defaultMessage": "Detail",
+    "srcHash": "-18n1UV8RkEC"
+  },
+  "arr.structure.item.contextMenu.update": {
+    "defaultMessage": "Edit",
+    "srcHash": "7D1xFD_em0Dr"
+  },
+  "arr.structure.item.error.duplicateValue": {
+    "defaultMessage": "The value already exists",
+    "srcHash": "qNdEjFzQo5xK"
+  },
+  "arr.structure.item.error.emptyValue": {
+    "defaultMessage": "No description elements",
+    "srcHash": "Dx9LfDBhvOtQ"
+  },
+  "arr.structure.item.error.impossibleItemTypes": {
+    "defaultMessage": "Description elements that are not allowed:",
+    "srcHash": "iNTtn_CUp2Ro"
+  },
+  "arr.structure.item.error.requiredItemTypes": {
+    "defaultMessage": "Required description elements not filled in:",
+    "srcHash": "IGbc1gf9JnTV"
+  },
+  "arr.structure.list.item.noValue": {
+    "defaultMessage": "Recomputing…",
+    "srcHash": "FkCRfw_7RxJN"
+  },
+  "arr.structure.modal.add.title": {
+    "defaultMessage": "Add — {0}",
+    "srcHash": "lJbdS7LkABmy"
+  },
+  "arr.structure.modal.addMultiple.count": {
+    "defaultMessage": "Count",
+    "srcHash": "8ZRMjCo78pBl"
+  },
+  "arr.structure.modal.addMultiple.error.count.tooSmall": {
+    "defaultMessage": "Must be greater than 1",
+    "srcHash": "zmCaIlb5gdEn"
+  },
+  "arr.structure.modal.addMultiple.error.itemTypeIds.required": {
+    "defaultMessage": "When adding several items at once, at least one of them must have incrementing set.",
+    "srcHash": "GltfMTYifSCl"
+  },
+  "arr.structure.modal.addMultiple.title": {
+    "defaultMessage": "Add in bulk — {0}",
+    "srcHash": "b1opU3Ci6edm"
+  },
   "arr.structure.modal.increment": {
     "defaultMessage": "Increment",
     "srcHash": "pcWzMwLcSI6r"
+  },
+  "arr.structure.modal.noshow": {
+    "defaultMessage": "The detail cannot be shown for several items",
+    "srcHash": "2iRh--rTYvTa"
+  },
+  "arr.structure.modal.settings.title": {
+    "defaultMessage": "Settings — {0}",
+    "srcHash": "tKGon3cnNXTF"
+  },
+  "arr.structure.modal.show.title": {
+    "defaultMessage": "Detail — {0}",
+    "srcHash": "cS7WG2dhuYhZ"
+  },
+  "arr.structure.modal.update.title": {
+    "defaultMessage": "Edit — {0}",
+    "srcHash": "FrI7316O95I9"
   },
   "arr.structure.modal.updateMultiple.delete": {
     "defaultMessage": "Delete value",
@@ -5480,6 +5712,10 @@
   "global.validation.datation.invalidInterval": {
     "defaultMessage": "Invalid ISO date interval: from > to",
     "srcHash": "HUm49wWhr4sU"
+  },
+  "global.validation.exists": {
+    "defaultMessage": "Already exists",
+    "srcHash": "D3GOt99lDl4e"
   },
   "global.validation.required": {
     "defaultMessage": "This field is required",
@@ -7128,6 +7364,10 @@
   "validationResult.title": {
     "defaultMessage": "Archival entity validation result",
     "srcHash": "5k2yrVamZmym"
+  },
+  "visiblePolicy.action.save": {
+    "defaultMessage": "Edit",
+    "srcHash": "7D1xFD_em0Dr"
   },
   "visiblePolicy.form.title": {
     "defaultMessage": "Display settings for description unit validation rules",

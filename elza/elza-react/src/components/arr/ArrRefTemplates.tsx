@@ -4,7 +4,10 @@ import {Button} from '../ui';
 import Loading from '../shared/loading/Loading';
 import IssueListForm from '../form/IssueListForm';
 import React, {useEffect, useState} from 'react';
-import i18n from '../i18n';
+import { FormattedMessage, useIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { getIntl } from 'components/shared/lang/intlInstance';
+import { templateMessages } from './templateMessages';
 import Icon from '../shared/icon/Icon';
 import {WebApi} from '../../actions/WebApi';
 import {ArrRefTemplateMapTypeVO, ArrRefTemplateVO} from '../../types';
@@ -26,6 +29,7 @@ type Props = {dispatch: ThunkDispatch<any, any, any>} & ReturnType<typeof mapSta
     };
 
 const ArrRefTemplates = ({descItemTypes, onUpdateBase, onClose, fundId, onCreateMapping, onUpdateMapping}: Props) => {
+    const intl = useIntl();
     const [activeIndex, setActiveIndex] = useState<number | null>(null);
     const [list, setList] = useState<ArrRefTemplateVO[] | null>(null);
 
@@ -117,7 +121,7 @@ const ArrRefTemplates = ({descItemTypes, onUpdateBase, onClose, fundId, onCreate
                 <Row className="flex">
                     <Col xs={6} sm={3} className="flex flex-column">
                         <div className={'d-flex'}>
-                            <h3>{i18n('arr.refTemplates.list.title')}</h3>
+                            <h3>{<FormattedMessage {...templateMessages.refTemplatesListTitle} />}</h3>
                             <Button variant={'action'} onClick={onCreate}>
                                 <Icon glyph="fa-plus" />
                             </Button>
@@ -155,14 +159,14 @@ const ArrRefTemplates = ({descItemTypes, onUpdateBase, onClose, fundId, onCreate
                         )}
                     </Col>
                     <Col xs={6} sm={9}>
-                        {activeIndex === null && <div>{i18n('arr.refTemplates.noSelected')}</div>}
+                        {activeIndex === null && <div>{<FormattedMessage {...templateMessages.refTemplatesNoSelected} />}</div>}
                         {activeIndex !== null &&
                             (list === null ? (
                                 <Loading />
                             ) : (
                                 <>
                                     <h2>
-                                        {i18n('arr.refTemplates.detail.basicInfo')}{' '}
+                                        {<FormattedMessage {...templateMessages.refTemplatesDetailBasicInfo} />}{' '}
                                         <Button
                                             variant={'action'}
                                             onClick={() => onUpdateBase(selectedItem!, afterUpdateItem)}
@@ -173,13 +177,13 @@ const ArrRefTemplates = ({descItemTypes, onUpdateBase, onClose, fundId, onCreate
                                     <Row>
                                         <Col>
                                             <dl>
-                                                <dt>{i18n('arr.refTemplates.detail.name')}</dt>
+                                                <dt>{<FormattedMessage {...templateMessages.refTemplatesDetailName} />}</dt>
                                                 <dd>{selectedItem?.name}</dd>
                                             </dl>
                                         </Col>
                                         <Col>
                                             <dl>
-                                                <dt>{i18n('arr.refTemplates.detail.itemTypeId')}</dt>
+                                                <dt>{<FormattedMessage {...templateMessages.refTemplatesDetailItemTypeId} />}</dt>
                                                 <dd>
                                                     {selectedItem!.itemTypeId
                                                         ? descItemTypes.itemsMap[selectedItem!.itemTypeId].name
@@ -189,7 +193,7 @@ const ArrRefTemplates = ({descItemTypes, onUpdateBase, onClose, fundId, onCreate
                                         </Col>
                                     </Row>
                                     <h2>
-                                        {i18n('arr.refTemplates.mapping.title')}{' '}
+                                        {<FormattedMessage {...templateMessages.refTemplatesMappingTitle} />}{' '}
                                         <Button
                                             variant={'action'}
                                             onClick={() => onCreateMapping(selectedItem!.id, afterCreateMapping)}
@@ -200,11 +204,11 @@ const ArrRefTemplates = ({descItemTypes, onUpdateBase, onClose, fundId, onCreate
                                     <Table>
                                         <thead>
                                             <tr>
-                                                <th>{i18n('arr.refTemplates.mapping.fromItemTypeId')}</th>
-                                                <th>{i18n('arr.refTemplates.mapping.toItemTypeId')}</th>
-                                                <th>{i18n('arr.refTemplates.mapping.fromParentLevel')}</th>
-                                                <th>{i18n('arr.refTemplates.mapping.mapAllSpec')}</th>
-                                                <th>{i18n('arr.refTemplates.mapping.refTemplateMapSpecVOList')}</th>
+                                                <th>{<FormattedMessage {...templateMessages.refTemplatesMappingFromItemTypeId} />}</th>
+                                                <th>{<FormattedMessage {...templateMessages.refTemplatesMappingToItemTypeId} />}</th>
+                                                <th>{<FormattedMessage {...templateMessages.refTemplatesMappingFromParentLevel} />}</th>
+                                                <th>{<FormattedMessage {...templateMessages.refTemplatesMappingMapAllSpec} />}</th>
+                                                <th>{<FormattedMessage {...templateMessages.refTemplatesMappingRefTemplateMapSpecVOList} />}</th>
                                                 <th></th>
                                             </tr>
                                         </thead>
@@ -227,13 +231,13 @@ const ArrRefTemplates = ({descItemTypes, onUpdateBase, onClose, fundId, onCreate
                                                             </td>
                                                             <td>
                                                                 {i.fromParentLevel
-                                                                    ? i18n('global.title.yes')
-                                                                    : i18n('global.title.no')}
+                                                                    ? intl.formatMessage(globalMessages.yes)
+                                                                    : intl.formatMessage(globalMessages.no)}
                                                             </td>
                                                             <td>
                                                                 {i.mapAllSpec
-                                                                    ? i18n('global.title.yes')
-                                                                    : i18n('global.title.no')}
+                                                                    ? intl.formatMessage(globalMessages.yes)
+                                                                    : intl.formatMessage(globalMessages.no)}
                                                             </td>
 
                                                             <td>
@@ -260,12 +264,12 @@ const ArrRefTemplates = ({descItemTypes, onUpdateBase, onClose, fundId, onCreate
                                                                                 )
                                                                             }
                                                                         >
-                                                                            {i18n('global.action.update')}
+                                                                            {<FormattedMessage {...globalMessages.save} />}
                                                                         </Dropdown.Item>
                                                                         <Dropdown.Item
                                                                             onClick={() => onDeleteMapping(i.id)}
                                                                         >
-                                                                            {i18n('global.action.delete')}
+                                                                            {<FormattedMessage {...globalMessages.delete} />}
                                                                         </Dropdown.Item>
                                                                     </Dropdown.Menu>
                                                                 </Dropdown>
@@ -282,7 +286,7 @@ const ArrRefTemplates = ({descItemTypes, onUpdateBase, onClose, fundId, onCreate
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="link" onClick={onClose}>
-                    {i18n('global.action.close')}
+                    {<FormattedMessage {...globalMessages.close} />}
                 </Button>
             </Modal.Footer>
         </>
@@ -304,7 +308,7 @@ function mapDispatchToProps(dispatch: ThunkDispatch<any, any, any>, props: OwnPr
             dispatch(
                 modalDialogShow(
                     this,
-                    i18n('arr.refTemplates.detail.update'),
+                    getIntl().formatMessage(templateMessages.refTemplatesDetailUpdate),
                     <ArrRefTemplateForm
                         initialValues={base}
                         onSubmit={data => {
@@ -321,7 +325,7 @@ function mapDispatchToProps(dispatch: ThunkDispatch<any, any, any>, props: OwnPr
             dispatch(
                 modalDialogShow(
                     this,
-                    i18n('arr.refTemplates.mapping.create.title'),
+                    getIntl().formatMessage(templateMessages.refTemplatesMappingCreateTitle),
                     <ArrRefMappingTypeForm
                         create
                         onSubmit={data => {
@@ -338,7 +342,7 @@ function mapDispatchToProps(dispatch: ThunkDispatch<any, any, any>, props: OwnPr
             dispatch(
                 modalDialogShow(
                     this,
-                    i18n('arr.refTemplates.mapping.update.title'),
+                    getIntl().formatMessage(templateMessages.refTemplatesMappingUpdateTitle),
                     <ArrRefMappingTypeForm
                         initialValues={base}
                         onSubmit={data => {
