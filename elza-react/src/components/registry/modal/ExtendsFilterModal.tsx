@@ -31,6 +31,7 @@ import {FilteredResultVO} from '../../../api/FilteredResultVO';
 import {ApAccessPointVO} from '../../../api/ApAccessPointVO';
 import {WebApi} from "../../../actions/WebApi";
 import { RulDescItemTypeExtVO } from 'api/RulDescItemTypeExtVO';
+import { registryModalMessages } from './messages';
 
 const FORM_NAME = 'extendsFilter';
 
@@ -171,7 +172,7 @@ const ExtendsFilterModal = ({
                 return (
                     <Row>
                         <Col xs={6}>
-                            <Form.Label>Oblast hledání</Form.Label>
+                            <Form.Label><FormattedMessage {...registryModalMessages.searchArea} /></Form.Label>
                             <Field
                                 name={'area'}
                                 component={ReduxFormFieldErrorDecorator}
@@ -244,7 +245,7 @@ const ExtendsFilterModal = ({
             case RulDataTypeCodeEnum.FILE_REF:
             case RulDataTypeCodeEnum.JSON_TABLE:
             case RulDataTypeCodeEnum.STRUCTURED:
-                return <div className="mt-2 text-center">Nepodporovaný typ</div>;
+                return <div className="mt-2 text-center"><FormattedMessage {...registryModalMessages.unsupportedType} /></div>;
         }
     };
 

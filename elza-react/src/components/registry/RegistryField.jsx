@@ -11,6 +11,7 @@ const messages = defineMessages({
     visibleCount: { id: 'registryField.visibleCount', defaultMessage: 'Zobrazeno {0} z {1} záznamů' },
     noItemsFound: { id: 'registryField.noItemsFound', defaultMessage: 'Záznamy nebyly nalezeny.' },
     undefinedValue: { id: 'subNodeForm.descItemType.undefinedValue', defaultMessage: 'výjimka' },
+    emptyOption: { id: 'registryField.emptyOption', defaultMessage: 'Prázdný' },
 });
 
 import {Button} from '../ui';
@@ -231,7 +232,7 @@ class RegistryField extends AbstractReactComponent {
 
         let items = this.state.registryList;
         if (addEmpty) {
-            items = [{id: -1, name: 'Prázdný'}, ...items];
+            items = [{id: -1, name: getIntl().formatMessage(messages.emptyOption)}, ...items];
         }
 
         return (

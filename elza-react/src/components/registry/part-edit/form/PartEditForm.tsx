@@ -1,6 +1,8 @@
 import { Api } from 'api';
 import { ApPartFormVO } from "api/ApPartFormVO";
-import { i18n } from 'components/shared';
+import {} from 'components/shared';
+import { FormattedMessage } from 'react-intl';
+import { partEditMessages } from '../messages';
 import React from 'react';
 import { Button, Col, Row } from 'react-bootstrap';
 import { useForm } from 'react-final-form';
@@ -186,7 +188,7 @@ export const PartEditForm = ({
                         <Row key="validationAlert" className="mb-3">
                             <Col className="w-100">
                                 <div className="ap-validation-alert">
-                                    <h3>Chyby validace formuláře.</h3>
+                                    <h3><FormattedMessage {...partEditMessages.formValidationErrors} /></h3>
                                     {renderValidationErrors(editErrors)}
                                 </div>
                             </Col>
@@ -207,7 +209,7 @@ export const PartEditForm = ({
                         </Col>
                         { apId != undefined && isName && <Col xs="auto">
                             <Button variant={'outline-dark'} onClick={() => handleAutoItems()}>
-                                {i18n('ap.part.complements.create')}
+                                {<FormattedMessage {...partEditMessages.partComplementsCreate} />}
                             </Button>
                         </Col>}
                     </Row>

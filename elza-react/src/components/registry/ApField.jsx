@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {WebApi} from 'actions/index.jsx';
 import {AbstractReactComponent, Autocomplete, Icon, TooltipTrigger} from 'components/shared';
-import { FormattedMessage, defineMessages } from 'react-intl';
+import { defineMessages } from 'react-intl';
 import { getIntl } from 'components/shared/lang/intlInstance';
 import { searchTypeMessages } from './searchTypeMessages';
 
