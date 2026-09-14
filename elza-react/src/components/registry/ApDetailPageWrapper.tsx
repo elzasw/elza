@@ -23,7 +23,16 @@ import Loading from '../shared/loading/Loading';
 import { DetailBodySection, DetailMultiSection } from './Detail/section';
 import { DetailHeader } from './Detail/header';
 import { showPartCreateModal, showPartEditModal } from './part-edit';
-import i18n from 'components/i18n';
+import { FormattedMessage, defineMessages } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { registryMessages } from './messages';
+import { getIntl } from 'components/shared/lang/intlInstance';
+
+// Popisek revize je jen tady; zbytek drží registryMessages.
+const stateMessages = defineMessages({
+    comment: { id: 'ap.state.title.comment', defaultMessage: 'Komentář' },
+    revComment: { id: 'ap.state.title.revComment', defaultMessage: 'Komentář revize' },
+});
 import { showConfirmDialog, showInfoDialog } from "components/shared/dialog";
 import { modalDialogHide } from "../../actions/global/modalDialog";
 import { formatExportIssues, IssueNavTarget } from "./formatExportIssues";
@@ -268,7 +277,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
             },
             [WebsocketEventType.ACCESS_POINT_EXPORT_NEED_CONFIRM]: ({ accessPointId, state, itemQueueId }) => {
                 if (accessPointId.toString() === id.toString()) {
-                    setExportMessage(state || i18n("ap.push-to-ext.failed.message"));
+                    setExportMessage(state || getIntl().formatMessage(registryMessages.pushToExtFailedMessage));
                     setItemQueueId(itemQueueId);
                     setExportState(ExportState.NEED_CONFIRM);
                     refreshDetail(id, true, false, revisionActive);
@@ -283,10 +292,10 @@ const ApDetailPageWrapper: React.FC<Props> = ({
             [WebsocketEventType.ACCESS_POINT_EXPORT_FAILED]: ({ accessPointId, state }) => {
                 if (accessPointId.toString() === id.toString()) {
                     const body = state
-                        ? formatExportIssues(state, i18n("ap.push-to-ext.failed.intro"), "ERROR", handleIssueNav)
-                        : i18n("ap.push-to-ext.failed.message");
+                        ? formatExportIssues(state, getIntl().formatMessage(registryMessages.pushToExtFailedIntro), "ERROR", handleIssueNav)
+                        : getIntl().formatMessage(registryMessages.pushToExtFailedMessage);
                     dispatch(showInfoDialog({
-                        title: i18n("ap.push-to-ext.failed.title"),
+                        title: getIntl().formatMessage(registryMessages.pushToExtFailedTitle),
                         message: body,
                     }));
                     setExportState(ExportState.COMPLETED);
@@ -330,12 +339,12 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     // ReferenceError when early returns below skip the original declaration
     // (useEffect registers with a closure that references this binding by name).
     const handleExportConfirm = useCallback(async (message: string, qId: number) => {
-        const body = formatExportIssues(message, i18n("ap.push-to-ext.needConfirm.intro"), "WARNING", handleIssueNav);
+        const body = formatExportIssues(message, getIntl().formatMessage(registryMessages.pushToExtNeedConfirmIntro), "WARNING", handleIssueNav);
         const confirmResult = await showConfirmDialog(
             body,
-            i18n("ap.push-to-ext.needConfirm.title"),
-            i18n("ap.push-to-ext.needConfirm.confirm"),
-            i18n("global.action.cancel"),
+            getIntl().formatMessage(registryMessages.pushToExtNeedConfirmTitle),
+            getIntl().formatMessage(registryMessages.pushToExtNeedConfirmConfirm),
+            getIntl().formatMessage(globalMessages.cancel),
         );
         await Api.accesspoints.accessPointExportForceOrNo(qId, confirmResult);
         // reset state so a later NEED_CONFIRM for the same entity re-triggers the effect
@@ -377,7 +386,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                         <Icon glyph="fa-regular fa-times-circle-o" />
                     </div>
                     <div className="message-text">
-                        {i18n("ap.detail.entityMissing")}
+                        {<FormattedMessage {...registryMessages.detailEntityMissing} />}
                     </div>
                 </div>
             </div>
@@ -396,7 +405,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
 
     const handleDelete = async ({ part, updatedPart }: RevisionPart) => {
         const deletedPart = part ? part : updatedPart;
-        const message = deletedPart?.value ? i18n("ap.detail.delete.confirm.value", deletedPart.value) : i18n("ap.detail.delete.confirm");
+        const message = deletedPart?.value ? getIntl().formatMessage(registryMessages.detailDeleteConfirmValue, { 0: deletedPart.value }) : getIntl().formatMessage(registryMessages.detailDeleteConfirm);
         const confirmResult = await showConfirmDialog(message);
 
         if (confirmResult) {
@@ -411,7 +420,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
 
     const handleRevert = async ({ part, updatedPart }: RevisionPart) => {
         if (!part || !updatedPart) { throw "No part to update." }
-        const confirmResult = await showConfirmDialog(i18n("ap.detail.revert.confirm"));
+        const confirmResult = await showConfirmDialog(getIntl().formatMessage(registryMessages.detailRevertConfirm));
 
         if (confirmResult) {
             saveScrollPosition();
@@ -546,8 +555,8 @@ const ApDetailPageWrapper: React.FC<Props> = ({
             {exportState !== "COMPLETED" && <WaitingOverlay>
                 {
                     exportState === ExportState.PENDING
-                        ? i18n("ap.push-to-ext.pending.message")
-                        : i18n("ap.push-to-ext.started.message")
+                        ? getIntl().formatMessage(registryMessages.pushToExtPendingMessage)
+                        : getIntl().formatMessage(registryMessages.pushToExtStartedMessage)
                 }
             </WaitingOverlay>}
             <div key="1" className="layout-scroll">
@@ -571,7 +580,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                 />
                 {detail.data?.comment && <div>
                     <div className="detail-multi-selection">
-                        <div className="detail-section-header" style={{ display: "flex" }}>{i18n('ap.state.title.comment')}</div>
+                        <div className="detail-section-header" style={{ display: "flex" }}>{<FormattedMessage {...stateMessages.comment} />}</div>
                         <div className={`parts single-part`}>
                             <div className="part comment">
                                 {detail.data.comment}
@@ -581,7 +590,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                 </div>}
                 {detail.data?.revComment && revisionActive && <div>
                     <div className="detail-multi-selection">
-                        <div className="detail-section-header" style={{ display: "flex" }}>{i18n('ap.state.title.revComment')}</div>
+                        <div className="detail-section-header" style={{ display: "flex" }}>{getIntl().formatMessage(stateMessages.revComment)}</div>
                         <div className={`parts single-part`}>
                             <div className="part comment">
                                 {detail.data.revComment}

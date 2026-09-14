@@ -4,7 +4,24 @@ import {Datace} from "../../shared/datace/datace-types";
 import {parse} from "components/shared/datace/datace";
 import {OverlayTrigger, Tooltip} from "react-bootstrap";
 import {FormInput} from "../../index";
-import {i18n} from "../../shared";
+import {} from "../../shared";
+import { defineMessages } from 'react-intl';
+import { getIntl } from 'components/shared/lang/intlInstance';
+
+// Id jsou převzatá z legacy katalogu beze změny. Hlášky vznikají mimo render
+// (validace a potvrzovací dialog), proto řetězec.
+const messages = defineMessages({
+    invalid: { id: 'global.validation.datation.invalid', defaultMessage: 'Vstupní řetězec není validní.' },
+    convertToEstimateMessage: {
+        id: 'field.unitdate.convertToEstimate.message',
+        defaultMessage:
+            'Byla vložena datace velkého rozsahu, pravděpodobně se jedná o odhad. Má se hodnota označit jako odhad?',
+    },
+    convertToEstimateTitle: {
+        id: 'field.unitdate.convertToEstimate.title',
+        defaultMessage: 'Potvrzení datace',
+    },
+});
 import { showYesNoDialog, YesNoDialogResult } from 'components/shared/dialog';
 import ItemTooltipWrapper from 'components/arr/nodeForm/ItemTooltipWrapper';
 
@@ -67,7 +84,7 @@ export function validateUnitDate(value?: string): {valid: boolean, message?: str
     const isValid = !validateError;
     const result = {
         valid: isValid,
-        message: isValid ? null : i18n("global.validation.datation.invalid")
+        message: isValid ? null : getIntl().formatMessage(messages.invalid)
     }
     return result;
 }
@@ -121,7 +138,7 @@ export const convertToEstimate = (value: string) => {
 */
 export const convertToEstimateWithConfirmation = async (value: string, dispatch: any) => {
     const {from, to, c, estimate} = parse(value) || {};
-    const getResult = async () => await dispatch(showYesNoDialog(i18n("field.unitdate.convertToEstimate.message"), i18n("field.unitdate.convertToEstimate.title")));
+    const getResult = async () => await dispatch(showYesNoDialog(getIntl().formatMessage(messages.convertToEstimateMessage), getIntl().formatMessage(messages.convertToEstimateTitle)));
 
     if(
         (from?.c && !from?.estimate)

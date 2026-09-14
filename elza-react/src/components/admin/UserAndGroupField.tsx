@@ -8,30 +8,9 @@ import {renderUserOrGroupItem} from './adminRenderUtils.jsx';
 import {RowsResponse, UsrGroupVO} from '../../types';
 import {ApSearchType} from '../../typings/globals';
 import {DEFAULT_LIST_SIZE} from '../../constants';
-import { FormattedMessage, defineMessages, type MessageDescriptor } from 'react-intl';
+import { FormattedMessage, type MessageDescriptor } from 'react-intl';
+import { searchTypeMessages } from 'components/registry/searchTypeMessages';
 import {Dropdown} from 'react-bootstrap';
-
-// Id jsou převzatá z legacy katalogu beze změny.
-const searchTypeMessages = defineMessages({
-    username: { id: 'apField.searchType.USERNAME', defaultMessage: 'vyhledání dle username' },
-    usernameAndParty: {
-        id: 'apField.searchType.USERNAME_AND_PARTY',
-        defaultMessage: 'vyhledání dle username i dle osoby',
-    },
-    partyRightLike: {
-        id: 'apField.searchType.PARTY_RIGHT_LIKE',
-        defaultMessage: 'vyhledání dle osoby - pravostranné',
-    },
-    partyFulltext: {
-        id: 'apField.searchType.PARTY_FULLTEXT',
-        defaultMessage: 'vyhledání dle osoby - fulltext',
-    },
-    group: { id: 'userAndGroupField.searchType.GROUP', defaultMessage: 'vyhledání skupiny' },
-    usernameAndGroups: {
-        id: 'userAndGroupField.searchType.USERNAME_AND_GROUPS',
-        defaultMessage: 'vyhledání dle username a skupiny',
-    },
-});
 
 import './UserAndGroupField.scss';
 import {UsrUserVO} from '../../api/UsrUserVO';
