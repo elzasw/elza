@@ -2,7 +2,10 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {connect} from 'react-redux';
 import {reduxForm, Field, formValueSelector} from 'redux-form';
-import {AbstractReactComponent, FormInput, FormInputField, i18n} from '../../components/shared';
+import {AbstractReactComponent, FormInput, FormInputField} from '../../components/shared';
+import { FormattedMessage, injectIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { requestMessages } from './requestMessages';
 import {Form, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
 import {decorateFormField, submitForm} from '../form/FormUtils';
@@ -34,10 +37,10 @@ class AddOutputForm extends AbstractReactComponent {
         const errors = {};
 
         if (!values.name) {
-            errors.name = i18n('global.validation.required');
+            errors.name = this.props.intl.formatMessage(globalMessages.validationRequired);
         }
         if (props.create && !values.outputTypeId) {
-            errors.outputTypeId = i18n('global.validation.required');
+            errors.outputTypeId = this.props.intl.formatMessage(globalMessages.validationRequired);
         }
 
         return errors;
@@ -78,11 +81,11 @@ class AddOutputForm extends AbstractReactComponent {
             <div className="add-output-form-container">
                 <Form onSubmit={handleSubmit(this.submitReduxForm)}>
                     <Modal.Body>
-                        <Field component={FormInputField} disabled={submitting} type="text" label={i18n('arr.output.name')} name={'name'} />
+                        <Field component={FormInputField} disabled={submitting} type="text" label={<FormattedMessage {...requestMessages.outputName} />} name={'name'} />
                         <Field
                             component={FormInputField}
                             type="text"
-                            label={i18n('arr.output.internalCode')}
+                            label={<FormattedMessage {...requestMessages.outputInternalCode} />}
                             name={'internalCode'}
                             disabled={submitting}
                         />
@@ -90,7 +93,7 @@ class AddOutputForm extends AbstractReactComponent {
                             <Field
                                 component={FormInputField}
                                 type="select"
-                                label={i18n('arr.output.outputType')}
+                                label={<FormattedMessage {...requestMessages.outputOutputType} />}
                                 name={'outputTypeId'}
                                 disabled={submitting}
                             >
@@ -105,7 +108,7 @@ class AddOutputForm extends AbstractReactComponent {
                         <Field
                             component={FormInputField}
                             type="select"
-                            label={i18n('arr.output.template')}
+                            label={<FormattedMessage {...requestMessages.outputTemplate} />}
                             name={'templateId'}
                             disabled={!outputTypeId || !templates || submitting}
                         >
@@ -120,7 +123,7 @@ class AddOutputForm extends AbstractReactComponent {
                         <Field
                             component={FormInputField}
                             type="select"
-                            label={i18n('arr.output.outputFilter')}
+                            label={<FormattedMessage {...requestMessages.outputOutputFilter} />}
                             name={'outputFilterId'}
                             disabled={submitting}
                         >
@@ -135,10 +138,10 @@ class AddOutputForm extends AbstractReactComponent {
                     </Modal.Body>
                     <Modal.Footer>
                         <Button type="submit" disabled={submitting} variant="outline-secondary">
-                            {create ? i18n('global.action.create') : i18n('global.action.update')}
+                            {create ? this.props.intl.formatMessage(globalMessages.create) : this.props.intl.formatMessage(globalMessages.save)}
                         </Button>
                         <Button variant="link" onClick={onClose}>
-                            {i18n('global.action.cancel')}
+                            {<FormattedMessage {...globalMessages.cancel} />}
                         </Button>
                     </Modal.Footer>
                 </Form>
@@ -149,7 +152,7 @@ class AddOutputForm extends AbstractReactComponent {
 
 const form = reduxForm({
     form: AddOutputForm.FORM,
-})(AddOutputForm);
+})(injectIntl(AddOutputForm));
 
 const selector = formValueSelector(AddOutputForm.FORM);
 

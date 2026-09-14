@@ -3829,6 +3829,10 @@
     "defaultMessage": "You do not have permission to run functions.",
     "srcHash": "tw_6IJopDk4F"
   },
+  "arr.output.internalCode": {
+    "defaultMessage": "Output internal code",
+    "srcHash": "00QxuzpXDoQI"
+  },
   "arr.output.list.state.all": {
     "defaultMessage": "All",
     "srcHash": "5C_lbtoov7Gn"
@@ -3861,6 +3865,26 @@
     "defaultMessage": "Type: {0}",
     "srcHash": "l6MDbYzB7wVn"
   },
+  "arr.output.name": {
+    "defaultMessage": "Output name",
+    "srcHash": "8uMyaFpXAcJK"
+  },
+  "arr.output.noSelection.message": {
+    "defaultMessage": "Please select an output from the list, or create a new one. To create an output you first need to enable editing.",
+    "srcHash": "05fSELFv6SV2"
+  },
+  "arr.output.noSelection.title": {
+    "defaultMessage": "No output selected",
+    "srcHash": "SCF4ZxdfYK4E"
+  },
+  "arr.output.outputFilter": {
+    "defaultMessage": "Output filter",
+    "srcHash": "81owipUZcq0v"
+  },
+  "arr.output.outputType": {
+    "defaultMessage": "Output type",
+    "srcHash": "hD5bBOE7z9eZ"
+  },
   "arr.output.panel.title.function": {
     "defaultMessage": "Functions",
     "srcHash": "xkotmJP_n7m-"
@@ -3868,6 +3892,10 @@
   "arr.output.panel.title.template": {
     "defaultMessage": "Templates",
     "srcHash": "8MlyaT98c9AY"
+  },
+  "arr.output.template": {
+    "defaultMessage": "Template",
+    "srcHash": "BqmENbGuMyV1"
   },
   "arr.output.title.add": {
     "defaultMessage": "Create a new output",
@@ -3921,9 +3949,81 @@
     "defaultMessage": "Description unit synchronisation templates",
     "srcHash": "82ZbGASWVYnq"
   },
+  "arr.request.action.storeAndSend": {
+    "defaultMessage": "Save and send",
+    "srcHash": "wU2I5Obm_Z1h"
+  },
+  "arr.request.noSelection.message": {
+    "defaultMessage": "Please select a digitisation request from the list.",
+    "srcHash": "4vb62tFxYtx6"
+  },
+  "arr.request.noSelection.title": {
+    "defaultMessage": "No digitisation request selected",
+    "srcHash": "-eMbBMqkcNvq"
+  },
+  "arr.request.title.created": {
+    "defaultMessage": "Created",
+    "srcHash": "D-9lW437hDCF"
+  },
+  "arr.request.title.daoRequest.digitizationFrontdesk": {
+    "defaultMessage": "Digitisation line",
+    "srcHash": "AGwK_ggfV2Wn"
+  },
+  "arr.request.title.daoRequest.identifiers.code": {
+    "defaultMessage": "Internal code",
+    "srcHash": "p2eSz8FK6c9N"
+  },
+  "arr.request.title.daoRequest.identifiers.externalCode": {
+    "defaultMessage": "External system code",
+    "srcHash": "Qc8LLukBPRJO"
+  },
+  "arr.request.title.daoRequest.system": {
+    "defaultMessage": "External system",
+    "srcHash": "CqCRwyHHLY2h"
+  },
+  "arr.request.title.daoRequest.type": {
+    "defaultMessage": "Request type",
+    "srcHash": "wXwsX3xTFrbH"
+  },
+  "arr.request.title.description": {
+    "defaultMessage": "Comment",
+    "srcHash": "_JsgPGrEmY3_"
+  },
+  "arr.request.title.digitizationRequest": {
+    "defaultMessage": "Digitised copy request",
+    "srcHash": "p9oOPBOujYZ5"
+  },
+  "arr.request.title.newRequest": {
+    "defaultMessage": "New",
+    "srcHash": "IXSeRDm8HiWB"
+  },
+  "arr.request.title.nodes": {
+    "defaultMessage": "List of description units",
+    "srcHash": "D0N6sfywBZg5"
+  },
+  "arr.request.title.nodes.daosWithoutNode": {
+    "defaultMessage": "Without a description unit",
+    "srcHash": "BCRpfWjbMUnF"
+  },
   "arr.request.title.nodesAdded": {
     "defaultMessage": "The description units were added",
     "srcHash": "CtI0EZyqtvtF"
+  },
+  "arr.request.title.queued": {
+    "defaultMessage": "Queued since",
+    "srcHash": "wsU9QEIWGkSt"
+  },
+  "arr.request.title.rejectReason": {
+    "defaultMessage": "Reason for rejection",
+    "srcHash": "G8Yt8we5dLgx"
+  },
+  "arr.request.title.request": {
+    "defaultMessage": "Request",
+    "srcHash": "_GcrJzrwtG9G"
+  },
+  "arr.request.title.send": {
+    "defaultMessage": "Sent",
+    "srcHash": "8O9mUYXd2-3v"
   },
   "arr.request.title.state": {
     "defaultMessage": "State",
@@ -3948,6 +4048,14 @@
   "arr.request.title.state.SENT": {
     "defaultMessage": "sent",
     "srcHash": "-gVwuYfNwNWN"
+  },
+  "arr.request.title.trysend": {
+    "defaultMessage": "Last send attempt",
+    "srcHash": "ExrDBzuXZ-P8"
+  },
+  "arr.request.title.type": {
+    "defaultMessage": "Type",
+    "srcHash": "GwJBg8szaPQv"
   },
   "arr.request.title.type.DAO": {
     "defaultMessage": "Destruction/transfer request",
