@@ -1,4 +1,6 @@
-import { HorizontalLoader, i18n, Icon } from 'components/shared';
+import { HorizontalLoader, Icon } from 'components/shared';
+import { FormattedMessage } from 'react-intl';
+import { daoMessages } from 'components/arr/daoMessages';
 import { FC } from 'react';
 import { connect } from 'react-redux';
 import { ArrSubNodeDaosVO } from "typings/dao";
@@ -31,9 +33,9 @@ const SubNodeDao:FC<{
     return (
         daos.data.length > 0 ? (
             <div className="node-dao">
-                <div className="node-dao-title">{i18n('subNodeDao.title')}</div>
+                <div className="node-dao-title">{<FormattedMessage {...daoMessages.subNodeDaoTitle} />}</div>
                 <div className="actions">
-                    <Button onClick={handleShowDetailAll} title={i18n('subNodeDao.dao.action.showDetailAll')}>
+                    <Button onClick={handleShowDetailAll} title={<FormattedMessage {...daoMessages.subNodeDaoDaoActionShowDetailAll} />}>
                         <Icon glyph="fa-eye" />
                     </Button>
                 </div>

@@ -1,7 +1,9 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {connect} from 'react-redux';
-import {AbstractReactComponent, i18n, ListBox, Search, StoreHorizontalLoader} from 'components/shared';
+import {AbstractReactComponent, ListBox, Search, StoreHorizontalLoader} from 'components/shared';
+import { injectIntl } from 'react-intl';
+import { daoMessages } from 'components/arr/daoMessages';
 import * as daoActions from 'actions/arr/daoActions.jsx';
 import classNames from 'classnames';
 import './ArrDaoPackages.scss';
@@ -58,7 +60,7 @@ class ArrDaoPackages extends AbstractReactComponent {
             <div className="dao-packages-container">
                 <Search
                     key="search"
-                    placeholder={i18n('search.input.search')}
+                    placeholder={this.props.intl.formatMessage(daoMessages.searchInputSearch)}
                     filterText={null}
                     onSearch={this.handleSearch}
                     onClear={this.handleClear}
@@ -94,4 +96,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps)(ArrDaoPackages);
+export default connect(mapStateToProps)(injectIntl(ArrDaoPackages));

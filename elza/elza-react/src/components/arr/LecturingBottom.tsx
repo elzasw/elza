@@ -11,7 +11,9 @@ import {Button} from '../../components/ui';
 import objectById from '../../shared/utils/objectById';
 import storeFromArea from '../../shared/utils/storeFromArea';
 import IssueForm from '../form/IssueForm';
-import i18n from '../i18n';
+import { FormattedMessage, injectIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { daoMessages } from 'components/arr/daoMessages';
 import Icon from '../shared/icon/Icon';
 import Loading from '../shared/loading/Loading';
 import {dateTimeToString} from '../Utils';
@@ -97,7 +99,7 @@ class LecturingBottom extends React.Component<any> {
         dispatch(
             modalDialogShow(
                 this,
-                i18n('arr.issues.update.title'),
+                this.props.intl.formatMessage(daoMessages.issuesUpdateTitle),
                 <IssueForm
                     // @ts-ignore
                     update
@@ -146,7 +148,7 @@ class LecturingBottom extends React.Component<any> {
 
         return (
             <div className="lecturing-bottom">
-                {!id && <div className="text-center">{i18n('arr.issues.choose')}</div>}
+                {!id && <div className="text-center">{<FormattedMessage {...daoMessages.issuesChoose} />}</div>}
                 {isFetching && <Loading />}
                 {fetched && (
                     <div className="lecturing-bottom-container">
@@ -212,7 +214,7 @@ class LecturingBottom extends React.Component<any> {
                                     <DropdownButton
                                         drop={'up'}
                                         align="end"
-                                        title={i18n('arr.issues.state.change')}
+                                        title={<FormattedMessage {...daoMessages.issuesStateChange} />}
                                         variant={'action' as any}
                                         id="comment-state"
                                         disabled={!this.state.text} //disabled={!this.state.text || textFieldDisabled}
@@ -249,7 +251,7 @@ class LecturingBottom extends React.Component<any> {
                                 </div>
                                 <div className="text-right">
                                     <Button variant={'action' as any} disabled={submitting} onClick={this.reset}>
-                                        {i18n('global.action.cancel')}
+                                        {<FormattedMessage {...globalMessages.cancel} />}
                                     </Button>
                                     <Button
                                         variant={'action' as any}
@@ -278,4 +280,4 @@ export default connect((state: any) => {
         issueComments: storeFromArea(state, issuesActions.AREA_COMMENTS),
         userDetail: state.userDetail,
     };
-})(LecturingBottom);
+})(injectIntl(LecturingBottom));

@@ -1,4 +1,5 @@
-import { Icon, NoFocusButton, TooltipTrigger, i18n } from 'components/shared';
+import { Icon, NoFocusButton, TooltipTrigger} from 'components/shared';
+import { globalMessages } from 'components/shared/lang/messages';
 import { Button } from 'components/ui';
 import { useEffect, useState } from 'react';
 import { Modal } from 'react-bootstrap';
@@ -8,7 +9,6 @@ import { NodePlainTextRepresentation } from 'elza-api';
 import { addToastrDanger, addToastrInfo } from 'components/shared/toastr/ToastrActions';
 import { copyTextToClipboard } from 'utils/clipboard';
 import { useThunkDispatch } from 'utils/hooks';
-import { globalMessages } from 'components/shared/lang';
 
 interface Props {
     nodeId: number;
@@ -57,7 +57,7 @@ export function QuoteModal({ nodeId, versionId, onClose }: Props) {
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="link" onClick={onClose}>
-                    {i18n('global.action.close')}
+                    {<FormattedMessage {...globalMessages.close} />}
                 </Button>
             </Modal.Footer>
         </>

@@ -1941,6 +1941,30 @@
     "defaultMessage": "Version with loaded metadata",
     "srcHash": "cb4Tq2NMj0fN"
   },
+  "aip.detail.assignment.description": {
+    "defaultMessage": "Description",
+    "srcHash": "rx7qx-MBKenQ"
+  },
+  "aip.detail.assignment.name": {
+    "defaultMessage": "Name",
+    "srcHash": "EQAs0dy3Z5es"
+  },
+  "aip.detail.assignment.packages": {
+    "defaultMessage": "List of packages",
+    "srcHash": "-l7nwELYSQi7"
+  },
+  "aip.detail.assignment.packagesNo": {
+    "defaultMessage": "Number of packages",
+    "srcHash": "EZSVMiCUEUKJ"
+  },
+  "aip.detail.assignment.relatedAip": {
+    "defaultMessage": "Related AIP",
+    "srcHash": "bkighM6Jb80L"
+  },
+  "aip.detail.assignment.relatedAips": {
+    "defaultMessage": "Related AIPs",
+    "srcHash": "ryLU5OVsgNKL"
+  },
   "aip.detail.downloadPackage": {
     "defaultMessage": "Download package",
     "srcHash": "yf8e5gZ_YbcN"
@@ -3113,6 +3137,42 @@
     "defaultMessage": "Application build version: {version}",
     "srcHash": "OeYvnUZYVjUy"
   },
+  "arr.aip.assignment.bulk": {
+    "defaultMessage": "Link in bulk",
+    "srcHash": "ZuJohRiCpnY6"
+  },
+  "arr.aip.assignment.bulk.title": {
+    "defaultMessage": "Bulk linking of a package to the archival description",
+    "srcHash": "c4kvrLqKymwy"
+  },
+  "arr.aip.assignment.create": {
+    "defaultMessage": "Create description units from the selected ones",
+    "srcHash": "gp63O4KTbclU"
+  },
+  "arr.aip.assignment.create-and-link": {
+    "defaultMessage": "Create description units with a link",
+    "srcHash": "rcMZ18W8oSsR"
+  },
+  "arr.aip.assignment.individually": {
+    "defaultMessage": "Link individually",
+    "srcHash": "5747DsAcQWRE"
+  },
+  "arr.aip.assignment.individually.title": {
+    "defaultMessage": "Linking a package to the archival description",
+    "srcHash": "Vb22Cg92eMNb"
+  },
+  "arr.aip.assignment.link": {
+    "defaultMessage": "Link to a description unit",
+    "srcHash": "NYGXBdMDTXi-"
+  },
+  "arr.aip.assignment.part.confirm": {
+    "defaultMessage": "Do you really want to link only the selected part? With this option the related parts of the package will not be linked.",
+    "srcHash": "E1EktVUIcpnH"
+  },
+  "arr.aip.assignment.select-and-create": {
+    "defaultMessage": "Selective linking with a description unit",
+    "srcHash": "-Ejl0u_vM2bg"
+  },
   "arr.aip.dao.link.delete": {
     "defaultMessage": "Do you really want to delete this link?",
     "srcHash": "swdNg_7H1jt3"
@@ -3173,6 +3233,10 @@
     "defaultMessage": "List of links",
     "srcHash": "gmYy4uXyxEID"
   },
+  "arr.daos.fileSystem.loadMore": {
+    "defaultMessage": "Load more…",
+    "srcHash": "hs_-oe1m-wRC"
+  },
   "arr.daos.fileSystem.refresh": {
     "defaultMessage": "Refresh the list of files and folders",
     "srcHash": "jb7MnKAw5Rxa"
@@ -3196,6 +3260,10 @@
   "arr.daos.fileSystem.repos.loadErrorTitle": {
     "defaultMessage": "Cannot load the list of repositories",
     "srcHash": "K7f-Qu7B7w3g"
+  },
+  "arr.daos.fileSystem.selectParent": {
+    "defaultMessage": "Go one level up",
+    "srcHash": "t7b20fcHYrSM"
   },
   "arr.daos.fileSystem.sort.label": {
     "defaultMessage": "Sorting",
@@ -3392,6 +3460,10 @@
   "arr.fund.addNode.conflict.useTarget": {
     "defaultMessage": "Use the one from the target fund",
     "srcHash": "y2SXGAvGJ8qN"
+  },
+  "arr.fund.addTemplate.create": {
+    "defaultMessage": "Create a template",
+    "srcHash": "HHRc_Zs5Wve5"
   },
   "arr.fund.addTemplate.exists": {
     "defaultMessage": "Replace an existing one",
@@ -3897,6 +3969,10 @@
     "defaultMessage": "Replace the filled-in values",
     "srcHash": "_oyLvu2CIU53"
   },
+  "arr.fund.useTemplate.title": {
+    "defaultMessage": "Use a template",
+    "srcHash": "cqu19XIzCfZc"
+  },
   "arr.fund.version": {
     "defaultMessage": "Version {0}",
     "srcHash": "b-NVXKKe0QGe"
@@ -4269,6 +4345,10 @@
     "defaultMessage": "Add a comment — archival fund",
     "srcHash": "Aas5Qnc3MqkL"
   },
+  "arr.issues.add.deletedLevel": {
+    "defaultMessage": "deleted description unit",
+    "srcHash": "QhhwYB37IPAv"
+  },
   "arr.issues.add.node": {
     "defaultMessage": "Displayed description unit",
     "srcHash": "U5XZx3OvdARG"
@@ -4277,9 +4357,25 @@
     "defaultMessage": "Add a comment — description unit",
     "srcHash": "LyTXum2Y4KhA"
   },
+  "arr.issues.choose": {
+    "defaultMessage": "Choose a comment",
+    "srcHash": "ggXWWmOsEt8Q"
+  },
   "arr.issues.settings.title": {
     "defaultMessage": "Review settings",
     "srcHash": "y3s3PdkWbIgB"
+  },
+  "arr.issues.state.change": {
+    "defaultMessage": "change the state…",
+    "srcHash": "krwwYPOW_DxN"
+  },
+  "arr.issues.type.change": {
+    "defaultMessage": "Change the type: {0}",
+    "srcHash": "WiZ92R89X0ua"
+  },
+  "arr.issues.update.title": {
+    "defaultMessage": "Edit the comment",
+    "srcHash": "PymAP0Y8FKUN"
   },
   "arr.issuesList.form.permission": {
     "defaultMessage": "Permission",
@@ -4292,6 +4388,10 @@
   "arr.issuesList.form.permission.write": {
     "defaultMessage": "Write and edit",
     "srcHash": "W-JXPSQrvKfm"
+  },
+  "arr.linked-nodes.title": {
+    "defaultMessage": "Referring description units",
+    "srcHash": "fOoiZ6kJ0JQr"
   },
   "arr.movements.inProgress": {
     "defaultMessage": "The transfer is running",
@@ -7957,6 +8057,34 @@
     "defaultMessage": "Users",
     "srcHash": "5kd6mi3iCPIC"
   },
+  "subNodeDao.dao.action.changeScenario": {
+    "defaultMessage": "Linking method",
+    "srcHash": "2IsOu35vhZuL"
+  },
+  "subNodeDao.dao.action.showDetailAll": {
+    "defaultMessage": "Show the digital object details",
+    "srcHash": "lEgNGe1uTEf1"
+  },
+  "subNodeDao.dao.action.showDetailOne": {
+    "defaultMessage": "Show the digital object detail",
+    "srcHash": "PLpz1vldY2A4"
+  },
+  "subNodeDao.dao.fileCount": {
+    "defaultMessage": "{count, plural, one {# file} other {# files}}",
+    "srcHash": "Kh_ocu4Is_VP"
+  },
+  "subNodeDao.dao.fileCountTruncated": {
+    "defaultMessage": "{count, plural, one {#+ file} other {#+ files}}",
+    "srcHash": "LzbGmXn87GrV"
+  },
+  "subNodeDao.dao.files.truncated": {
+    "defaultMessage": "Only the first 1000 files are shown",
+    "srcHash": "FmDbLI6jd4Eq"
+  },
+  "subNodeDao.title": {
+    "defaultMessage": "Digital objects",
+    "srcHash": "PQYhCBjzlUJO"
+  },
   "subNodeForm.descItemGroup.default": {
     "defaultMessage": "No group",
     "srcHash": "G_l35mUDgTO4"
@@ -8004,6 +8132,10 @@
   "tabs.action.closeTab": {
     "defaultMessage": "Close tab",
     "srcHash": "YrK1R8qgqAym"
+  },
+  "textFragments.title": {
+    "defaultMessage": "Special characters",
+    "srcHash": "-z9nKbs1XLdO"
   },
   "toast.arr.validation.error.notFound": {
     "defaultMessage": "No further error was found",

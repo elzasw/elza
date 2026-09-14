@@ -1,7 +1,9 @@
 import { TreeItemValue } from "@fluentui/react-components";
 import { Modal, Button, Col, Row } from "react-bootstrap";
 import "./AipAssignmentModal.scss";
-import { Icon, i18n } from "components/shared";
+import { Icon} from "components/shared";
+import { FormattedMessage, useIntl } from 'react-intl';
+import { daoMessages } from 'components/arr/daoMessages';
 import AipsLogicalTree from "./AipsLogicalContainer";
 import { useEffect, useState } from "react";
 import FundTree from "./FundTree";
@@ -12,7 +14,6 @@ import { AIP_LOGICAL_TREE, fetchAipLogicalTreeIfNeeded } from "actions/aip/aip";
 import { useThunkDispatch } from "utils/hooks";
 import { useWebsocket } from "components/shared/web-socket/WebsocketProvider";
 import {AipConnectBlockedVO, AipDetailVO} from "elza-api";
-import { useIntl } from "react-intl";
 import { Api } from "../../../../api";
 import AipConnectBlockedPanel from "../../../aip/AipConnectBlockedPanel";
 import { runAipAction } from "../../../aip/AipActionRunner";
@@ -62,7 +63,7 @@ const AipAssignmentModal = ({aips, tree}: AipAssignmentModalProps) =>  {
     },[structure]);
 
     const handleConnectToJP = () => {
-        const title = i18n("arr.aip.assignment.link");
+        const title = intl.formatMessage(daoMessages.aipAssignmentLink);
         // Napojení běží na pozadí, po jednom AIPu; dialog ukáže, jak dopadl každý z nich.
         runAipAction(dispatch, intl, websocket, title, () => selectedAips.daLevelViewId
             ? Api.aips.aipBulkConnectLogicToJp(selectedArrNodeId as number, selectedAips.aipIds,
@@ -71,7 +72,7 @@ const AipAssignmentModal = ({aips, tree}: AipAssignmentModalProps) =>  {
     }
 
     const handleCreateFromSelected = () => {
-        const title = i18n("arr.aip.assignment.create");
+        const title = intl.formatMessage(daoMessages.aipAssignmentCreate);
         runAipAction(dispatch, intl, websocket, title, () => selectedAips.daLevelViewId
             ? Api.aips.aipBulkCreateSelectedToJp(selectedArrNodeId as number, selectedAips.aipIds,
                                                  selectedAips.daLevelViewId)
@@ -91,11 +92,11 @@ const AipAssignmentModal = ({aips, tree}: AipAssignmentModalProps) =>  {
                     <div className="aip-actions-container">
                         <Button onClick={handleConnectToJP} disabled={blocked.length > 0}>
                             <Icon glyph="fa-solid fa-link" />
-                            <div>{i18n('arr.aip.assignment.link')}</div>
+                            <div>{<FormattedMessage {...daoMessages.aipAssignmentLink} />}</div>
                         </Button>
                         <Button onClick={handleCreateFromSelected} disabled={blocked.length > 0}>
                             <Icon glyph="fa-solid fa-plus" />
-                            <div>{i18n('arr.aip.assignment.create')}</div>
+                            <div>{<FormattedMessage {...daoMessages.aipAssignmentCreate} />}</div>
                         </Button>
                     </div>
                 </Col>
