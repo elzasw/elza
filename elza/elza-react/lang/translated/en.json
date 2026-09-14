@@ -3,6 +3,10 @@
     "defaultMessage": "First choose the subclass and scope of the new archival entity. The relevant attributes are shown according to the chosen subclass. Once the main part of the name is filled in, the archival entity can be created.",
     "srcHash": "o_2XettCsbEL"
   },
+  "accesspoint.removeDuplicity": {
+    "defaultMessage": "Remove the duplicate",
+    "srcHash": "l7HXV-zYBPqP"
+  },
   "accesspoint.removeDuplicity.confirm.merge.a": {
     "defaultMessage": "Do you really want to invalidate and merge the entity",
     "srcHash": "CSxEnK2FR8cA"
@@ -23,6 +27,10 @@
     "defaultMessage": "with the entity",
     "srcHash": "iyZQVfeXnSxB"
   },
+  "accesspoint.removeDuplicity.confirmation": {
+    "defaultMessage": "Do you really want to remove an archival entity that has a revision in progress?",
+    "srcHash": "R957hPmyvt1z"
+  },
   "accesspoint.removeDuplicity.inProgress": {
     "defaultMessage": "Removing the duplicate…",
     "srcHash": "HsuGUuwqgaba"
@@ -39,6 +47,10 @@
     "defaultMessage": "Resolve the duplicate",
     "srcHash": "Q4I9CsbfIZkH"
   },
+  "accesspoint.removeDuplicity.title": {
+    "defaultMessage": "Duplicate removal",
+    "srcHash": "uuNPgTo8FhLw"
+  },
   "accesspoint.scope.code": {
     "defaultMessage": "Code",
     "srcHash": "lHt70Q2si8jP"
@@ -50,6 +62,10 @@
   "accesspoint.scope.language": {
     "defaultMessage": "Language",
     "srcHash": "ARpdV1qvwAV4"
+  },
+  "accesspoint.scope.management.title": {
+    "defaultMessage": "Archival entity scope management",
+    "srcHash": "XwMuVX1OERKu"
   },
   "accesspoint.scope.name": {
     "defaultMessage": "Name",
@@ -2261,6 +2277,14 @@
     "defaultMessage": "Synchronisation active",
     "srcHash": "herQzTk60jbB"
   },
+  "ap.changeState": {
+    "defaultMessage": "Change the entity properties",
+    "srcHash": "L_gyhc2Ao5eg"
+  },
+  "ap.connect": {
+    "defaultMessage": "Link to an external system",
+    "srcHash": "Y3fpvCVOJgno"
+  },
   "ap.coordinate.export.info": {
     "defaultMessage": "Choose the format for the exported coordinates:",
     "srcHash": "ZjndMvW7dHz6"
@@ -2284,6 +2308,42 @@
   "ap.copy.scope": {
     "defaultMessage": "Scope",
     "srcHash": "K6XBwbqHYyDh"
+  },
+  "ap.copy.title": {
+    "defaultMessage": "Entity copy",
+    "srcHash": "0bxLC7d4HT2G"
+  },
+  "ap.detail.delete.confirm": {
+    "defaultMessage": "Delete the whole part?",
+    "srcHash": "X4uZW9HJwi-b"
+  },
+  "ap.detail.delete.confirm.value": {
+    "defaultMessage": "Delete the whole part? ({0})",
+    "srcHash": "FSE_QmdCepNM"
+  },
+  "ap.detail.entityMissing": {
+    "defaultMessage": "The entity does not exist",
+    "srcHash": "zUOHnWR7bTC4"
+  },
+  "ap.detail.revert.confirm": {
+    "defaultMessage": "Do you want to restore the original values?",
+    "srcHash": "SsV0V3hZ_6J-"
+  },
+  "ap.ext-filter.assignedTo.currentUser": {
+    "defaultMessage": "My tasks",
+    "srcHash": "FaFk3OxMJMEG"
+  },
+  "ap.ext-filter.title": {
+    "defaultMessage": "Extended filter",
+    "srcHash": "PBaoIG0EMz5n"
+  },
+  "ap.ext-filter.use": {
+    "defaultMessage": "Apply the extended filter",
+    "srcHash": "dCQA960salSR"
+  },
+  "ap.ext-filter.used": {
+    "defaultMessage": "An extended filter is applied",
+    "srcHash": "cNX5eQGQFUZ3"
   },
   "ap.ext-search.area": {
     "defaultMessage": "Search area",
@@ -2401,6 +2461,14 @@
     "defaultMessage": "Synchronisation state",
     "srcHash": "jW0ExEDsrEBo"
   },
+  "ap.ext-search.title": {
+    "defaultMessage": "Import from a system",
+    "srcHash": "AnlD6lFSErzX"
+  },
+  "ap.ext-search.title-connect": {
+    "defaultMessage": "Link to an external system",
+    "srcHash": "Y3fpvCVOJgno"
+  },
   "ap.ext-search.user": {
     "defaultMessage": "Last change author",
     "srcHash": "mVaEgOEc4Nul"
@@ -2441,9 +2509,121 @@
     "defaultMessage": "State",
     "srcHash": "1sRUDB31F_YQ"
   },
+  "ap.ext-syncs.title": {
+    "defaultMessage": "Synchronisation with external systems",
+    "srcHash": "oI5aZn3A_aF7"
+  },
+  "ap.history.title": {
+    "defaultMessage": "State history",
+    "srcHash": "9IF-j_1dSRnB"
+  },
+  "ap.history.title.change.comment": {
+    "defaultMessage": "Comment",
+    "srcHash": "_JsgPGrEmY3_"
+  },
+  "ap.history.title.change.date": {
+    "defaultMessage": "Date",
+    "srcHash": "kTWILTI82Dml"
+  },
+  "ap.history.title.change.operace": {
+    "defaultMessage": "Operation",
+    "srcHash": "1Q6hNuIDK6NE"
+  },
+  "ap.history.title.change.scope": {
+    "defaultMessage": "Scope",
+    "srcHash": "K6XBwbqHYyDh"
+  },
+  "ap.history.title.change.state": {
+    "defaultMessage": "State",
+    "srcHash": "1sRUDB31F_YQ"
+  },
+  "ap.history.title.change.time": {
+    "defaultMessage": "Time",
+    "srcHash": "23LYRr9zSJfg"
+  },
+  "ap.history.title.change.type": {
+    "defaultMessage": "Subclass",
+    "srcHash": "_jrDercTzKxJ"
+  },
+  "ap.history.title.change.user": {
+    "defaultMessage": "User",
+    "srcHash": "sfdZSYORoLV9"
+  },
+  "ap.history.title.operation.AP_CREATE": {
+    "defaultMessage": "creation",
+    "srcHash": "z_Wkhhx_5AJ4"
+  },
+  "ap.history.title.operation.AP_SYNCH": {
+    "defaultMessage": "synchronisation",
+    "srcHash": "Cv76dRbDphOT"
+  },
+  "ap.history.title.operation.AP_UPDATE": {
+    "defaultMessage": "update",
+    "srcHash": "8O44oH7EqfTx"
+  },
+  "ap.history.title.state.APPROVED": {
+    "defaultMessage": "approved",
+    "srcHash": "sC1xEqXtGn91"
+  },
+  "ap.history.title.state.NEW": {
+    "defaultMessage": "new",
+    "srcHash": "vfLwlREpDXpC"
+  },
+  "ap.history.title.state.REV_ACTIVE": {
+    "defaultMessage": "revision in preparation",
+    "srcHash": "yL6o_K23rqv-"
+  },
+  "ap.history.title.state.REV_TO_AMEND": {
+    "defaultMessage": "revision to be amended",
+    "srcHash": "-zTZZB2haWEF"
+  },
+  "ap.history.title.state.REV_TO_APPROVE": {
+    "defaultMessage": "revision awaiting approval",
+    "srcHash": "9eIz2_teNCuO"
+  },
+  "ap.history.title.state.TO_AMEND": {
+    "defaultMessage": "to be amended",
+    "srcHash": "8t-3IMxinpkr"
+  },
+  "ap.history.title.state.TO_APPROVE": {
+    "defaultMessage": "awaiting approval",
+    "srcHash": "EJKveJECICg3"
+  },
+  "ap.push-to-ext.confirmation": {
+    "defaultMessage": "Do you really want to send an entity record that has a revision in progress?",
+    "srcHash": "Jn62uh0eq1iF"
+  },
+  "ap.push-to-ext.failed.intro": {
+    "defaultMessage": "Sending the entity failed for the following reasons:",
+    "srcHash": "SEdlsd3ChtfD"
+  },
+  "ap.push-to-ext.failed.message": {
+    "defaultMessage": "The entity could not be saved to the connected system. See the Synchronisation queue window for details.",
+    "srcHash": "BOJRQgGJ550f"
+  },
+  "ap.push-to-ext.failed.title": {
+    "defaultMessage": "Error while sending the entity",
+    "srcHash": "IJRcbTwyapx-"
+  },
   "ap.push-to-ext.multipleSyncs.message": {
     "defaultMessage": "Uploading to an external system is not possible for entities linked to more than one external system.",
     "srcHash": "U45Al79I8YeP"
+  },
+  "ap.push-to-ext.needConfirm.confirm": {
+    "defaultMessage": "Send the entity",
+    "srcHash": "TIilaOsTUTJY"
+  },
+  "ap.push-to-ext.needConfirm.intro": {
+    "defaultMessage": "Possible discrepancies were detected while sending the entity. Do you want to send it anyway?",
+    "srcHash": "QBqcW_tP943Q"
+  },
+  "ap.push-to-ext.needConfirm.title": {
+    "defaultMessage": "Warning about possible discrepancies",
+    "srcHash": "jx4lSfdXsJ9C"
+  },
+  "ap.push-to-ext.pending.message": {
+    "defaultMessage": "Waiting to send the entity…",
+    "srcHash": "XPTtN0bj1LMJ"
   },
   "ap.push-to-ext.readOnly.message": {
     "defaultMessage": "The external system linked to the selected entity is read-only.",
@@ -2452,6 +2632,14 @@
   "ap.push-to-ext.selectedExtSystem.message": {
     "defaultMessage": "Do you want to write the entity <b>{0}</b> to the system <b>{1}</b>?",
     "srcHash": "6glC8Qs0MAMl"
+  },
+  "ap.push-to-ext.started.message": {
+    "defaultMessage": "Sending the entity…",
+    "srcHash": "z8HPqtKzN7hZ"
+  },
+  "ap.push-to-ext.title": {
+    "defaultMessage": "Write the entity",
+    "srcHash": "xLORtxlfh3t9"
   },
   "ap.push-to-ext.unsyncedEntities.listTitle": {
     "defaultMessage": "Affected parts of the entity record:",
@@ -2464,6 +2652,42 @@
   "ap.push-to-ext.unsyncedEntities.title": {
     "defaultMessage": "The record being sent refers to other entities that are not written in the target system. ",
     "srcHash": "SO-9drQtZYNs"
+  },
+  "ap.state.title.assignedUser": {
+    "defaultMessage": "Assigned to",
+    "srcHash": "VUvZY2W9VXei"
+  },
+  "ap.state.title.assignedUser.error.toApproveSameUser": {
+    "defaultMessage": "Only a different user can approve the record",
+    "srcHash": "M6qcJtUvixne"
+  },
+  "ap.state.title.comment": {
+    "defaultMessage": "Comment",
+    "srcHash": "_JsgPGrEmY3_"
+  },
+  "ap.state.title.revComment": {
+    "defaultMessage": "Revision comment",
+    "srcHash": "9LThyYOWXSSG"
+  },
+  "ap.state.title.scope": {
+    "defaultMessage": "Scope",
+    "srcHash": "K6XBwbqHYyDh"
+  },
+  "ap.state.title.state": {
+    "defaultMessage": "State",
+    "srcHash": "1sRUDB31F_YQ"
+  },
+  "ap.state.title.type": {
+    "defaultMessage": "Subclass",
+    "srcHash": "_jrDercTzKxJ"
+  },
+  "ap.stateHistory": {
+    "defaultMessage": "State history",
+    "srcHash": "9IF-j_1dSRnB"
+  },
+  "ap.validation.errors": {
+    "defaultMessage": "Validation errors",
+    "srcHash": "sWTnq5N_uxTQ"
   },
   "apField.searchType.PARTY_FULLTEXT": {
     "defaultMessage": "search by person - full text",
@@ -2480,6 +2704,14 @@
   "apField.searchType.USERNAME_AND_PARTY": {
     "defaultMessage": "search by username and by person",
     "srcHash": "lBeiGZsdbGnT"
+  },
+  "apField.searchType.create.FULLTEXT": {
+    "defaultMessage": "full-text search",
+    "srcHash": "BeE4iXCqqMzk"
+  },
+  "apField.searchType.create.RIGHT_LIKE": {
+    "defaultMessage": "prefix search",
+    "srcHash": "5HzI3-OkKkY_"
   },
   "arr.aip.dao.link.delete": {
     "defaultMessage": "Do you really want to delete this link?",
@@ -4009,6 +4241,14 @@
     "defaultMessage": "Export archival fund",
     "srcHash": "OFMDSJIwjHmc"
   },
+  "field.unitdate.convertToEstimate.message": {
+    "defaultMessage": "A date with a wide range was entered, this is probably an estimate. Should the value be marked as an estimate?",
+    "srcHash": "lc3V_zQg1nZA"
+  },
+  "field.unitdate.convertToEstimate.title": {
+    "defaultMessage": "Date confirmation",
+    "srcHash": "Jh05Puxu-VgB"
+  },
   "fund.emptyList.message": {
     "defaultMessage": "There are no archival funds, or you do not have read permission for any of them.",
     "srcHash": "L6z0meLCf5D7"
@@ -4449,6 +4689,10 @@
     "defaultMessage": "Import archival fund",
     "srcHash": "vTH-w6LPMldy"
   },
+  "import.title.registry": {
+    "defaultMessage": "Archival entity import",
+    "srcHash": "30-zQVoP3dMp"
+  },
   "import.toast.batch.cancelled": {
     "defaultMessage": "Import “{name}” was aborted",
     "srcHash": "7DDAl3TLvgNF"
@@ -4761,6 +5005,22 @@
     "defaultMessage": "Validation rules",
     "srcHash": "CJUhnRChHrzm"
   },
+  "party.allApStates": {
+    "defaultMessage": "All states",
+    "srcHash": "NfoTMHKMt6DD"
+  },
+  "party.apState": {
+    "defaultMessage": "State",
+    "srcHash": "1sRUDB31F_YQ"
+  },
+  "party.list.itemsVisibleCountFrom": {
+    "defaultMessage": "Showing {0} of {1}, narrow the search filter",
+    "srcHash": "kRwPAXXVw20s"
+  },
+  "party.recordScope": {
+    "defaultMessage": "Entity scope",
+    "srcHash": "SlY5BtKXdR6t"
+  },
   "permission.ADMIN": {
     "defaultMessage": "Administrator",
     "srcHash": "Y_c_Z-MQpK2B"
@@ -5069,13 +5329,73 @@
     "defaultMessage": "Subclass",
     "srcHash": "_jrDercTzKxJ"
   },
+  "registry.addNewRegistry": {
+    "defaultMessage": "New entity",
+    "srcHash": "qTQgcYkECEPU"
+  },
   "registry.addRegistry": {
     "defaultMessage": "New archival entity",
     "srcHash": "M74gLvBzE7Qt"
   },
+  "registry.all": {
+    "defaultMessage": "All",
+    "srcHash": "5C_lbtoov7Gn"
+  },
+  "registry.allRevisionStates": {
+    "defaultMessage": "All",
+    "srcHash": "5C_lbtoov7Gn"
+  },
+  "registry.batchExport.action": {
+    "defaultMessage": "Export to CSV",
+    "srcHash": "UIqakTgYMuBs"
+  },
+  "registry.changeStateRevision": {
+    "defaultMessage": "Change the revision properties",
+    "srcHash": "QKZcANm0XjdN"
+  },
+  "registry.createRevision": {
+    "defaultMessage": "Create a revision",
+    "srcHash": "y_rgzw_Sskdh"
+  },
+  "registry.createRevisionQuestion": {
+    "defaultMessage": "Do you really want to create a revision of the archival entity?",
+    "srcHash": "yfbQq3bpz67w"
+  },
+  "registry.deleteRegistry": {
+    "defaultMessage": "Delete",
+    "srcHash": "oe4iuqXX4rqm"
+  },
+  "registry.deleteRegistryQuestion": {
+    "defaultMessage": "Do you really want to delete the archival entity?",
+    "srcHash": "EceAZBCj-GeE"
+  },
+  "registry.deleteRevision": {
+    "defaultMessage": "Delete the revision",
+    "srcHash": "LC3gRR3uFRvq"
+  },
+  "registry.deleteRevisionQuestion": {
+    "defaultMessage": "Do you really want to delete the revision of the archival entity?",
+    "srcHash": "gYp1Qmjo2s7R"
+  },
+  "registry.list.noRecord": {
+    "defaultMessage": "No data matches the given filter",
+    "srcHash": "DNfKQ_wB_i_T"
+  },
   "registry.merge": {
     "defaultMessage": "Merge",
     "srcHash": "v7eMZiFp_Leo"
+  },
+  "registry.mergeRevision": {
+    "defaultMessage": "Confirm the revision",
+    "srcHash": "p2TptYTInwPD"
+  },
+  "registry.moreActions.title": {
+    "defaultMessage": "More actions",
+    "srcHash": "Hg8d3pqobENg"
+  },
+  "registry.registryUsage": {
+    "defaultMessage": "Places of use",
+    "srcHash": "QI4KDu7FZtVL"
   },
   "registry.registryUsageCount": {
     "defaultMessage": "Occurrences found",
@@ -5093,6 +5413,10 @@
     "defaultMessage": "Replacing the entity in its occurrences with another entity",
     "srcHash": "sm1Gb_GAIhDq"
   },
+  "registry.restoreEntity": {
+    "defaultMessage": "Restore the entity",
+    "srcHash": "7oXdGAQ7zfky"
+  },
   "registry.revision.state.active": {
     "defaultMessage": "Revision in preparation",
     "srcHash": "6vSffcBpoDZ8"
@@ -5105,6 +5429,10 @@
     "defaultMessage": "Revision awaiting approval",
     "srcHash": "EN4GDVzlKaY0"
   },
+  "registry.revisionState": {
+    "defaultMessage": "Revision state",
+    "srcHash": "Y1It1H93kFD3"
+  },
   "registry.scopeClass": {
     "defaultMessage": "Scope",
     "srcHash": "K6XBwbqHYyDh"
@@ -5116,6 +5444,14 @@
   "registry.usage.tooMany": {
     "defaultMessage": "Too many occurrences were found",
     "srcHash": "fiEzhN3fLJFx"
+  },
+  "registryField.noItemsFound": {
+    "defaultMessage": "No records were found.",
+    "srcHash": "7gZDMBgX75B0"
+  },
+  "registryField.visibleCount": {
+    "defaultMessage": "Showing {0} of {1} records",
+    "srcHash": "MRhe8mD3f3ui"
   },
   "requestQueue.delete.confirm": {
     "defaultMessage": "Do you really want to delete this item from the queue?",
@@ -5257,6 +5593,14 @@
     "defaultMessage": "Archival packages",
     "srcHash": "j-OwZ5UftK-t"
   },
+  "ribbon.action.ap.ext-search": {
+    "defaultMessage": "Import from a system",
+    "srcHash": "AnlD6lFSErzX"
+  },
+  "ribbon.action.ap.ext-syncs": {
+    "defaultMessage": "Synchronisation queue",
+    "srcHash": "ILFNcsVKN1wm"
+  },
   "ribbon.action.arr.ab": {
     "defaultMessage": "Archival packages",
     "srcHash": "j-OwZ5UftK-t"
@@ -5372,6 +5716,14 @@
   "ribbon.action.registry": {
     "defaultMessage": "Archival entities",
     "srcHash": "MgSyrZoDfhbs"
+  },
+  "ribbon.action.registry.import": {
+    "defaultMessage": "Import from a file",
+    "srcHash": "pWM9Z1iGAxH4"
+  },
+  "ribbon.action.registry.scope.manage": {
+    "defaultMessage": "Entity scope management",
+    "srcHash": "4R8IPCBBjQIW"
   },
   "ribbon.saving": {
     "defaultMessage": "Saving",

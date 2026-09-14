@@ -2,7 +2,9 @@ import { useSelector } from "react-redux";
 import { AppState, RegistryDetail } from "typings/store";
 import * as perms from 'actions/user/Permission.jsx';
 import { Button } from "components/ui";
-import { i18n, Icon, Ribbon } from "components";
+import { Icon, Ribbon } from "components";
+import { FormattedMessage } from 'react-intl';
+import { registryMessages } from './messages';
 import { AP_EXT_SYSTEM_TYPE } from "../../constants";
 import { isMenuItemHidden } from "api/settings/utils";
 import { MenuOptions } from "api/settings/MenuOption";
@@ -88,7 +90,7 @@ export function EntityRibbon({
       <Button key="addRegistry" onClick={onAddRegistry}>
         <Icon glyph="fa-plus-circle" />
         <div>
-          <span className="btnText">{i18n('registry.addNewRegistry')}</span>
+          <span className="btnText">{<FormattedMessage {...registryMessages.addNewRegistry} />}</span>
         </div>
       </Button>,
     );
@@ -97,7 +99,7 @@ export function EntityRibbon({
         <Button key="registryImport" onClick={onImportRegistry}>
           <Icon glyph="fa-upload" />
           <div>
-            <span className="btnText">{i18n('ribbon.action.registry.import')}</span>
+            <span className="btnText">{<FormattedMessage {...registryMessages.actionRegistryImport} />}</span>
           </div>
         </Button>,
       );
@@ -107,7 +109,7 @@ export function EntityRibbon({
           <Button key="ap-ext-search" onClick={onApExtSearch}>
             <Icon glyph="fa-cloud-download" />
             <div>
-              <span className="btnText">{i18n('ribbon.action.ap.ext-search')}</span>
+              <span className="btnText">{<FormattedMessage {...registryMessages.actionApExtSearch} />}</span>
             </div>
           </Button>,
         );
@@ -117,7 +119,7 @@ export function EntityRibbon({
           <Button key="ext-syncs" onClick={onExtSyncs}>
             <Icon glyph="fa-gg" />
             <div>
-              <span className="btnText">{i18n('ribbon.action.ap.ext-syncs')}</span>
+              <span className="btnText">{<FormattedMessage {...registryMessages.actionApExtSyncs} />}</span>
             </div>
           </Button>,
         );
@@ -143,7 +145,7 @@ export function EntityRibbon({
         <Button key="scopeManagement" onClick={onScopeManagement}>
           <Icon glyph="fa-wrench" />
           <div>
-            <span className="btnText">{i18n('ribbon.action.registry.scope.manage')}</span>
+            <span className="btnText">{<FormattedMessage {...registryMessages.actionRegistryScopeManage} />}</span>
           </div>
         </Button>,
       );
@@ -159,7 +161,7 @@ export function EntityRibbon({
         <Button disabled={data.invalid} key="registryRemove" onClick={onDeleteRegistry}>
           <Icon glyph="fa-trash" />
           <div>
-            <span className="btnText">{i18n('registry.deleteRegistry')}</span>
+            <span className="btnText">{<FormattedMessage {...registryMessages.deleteRegistry} />}</span>
           </div>
         </Button>,
       );
@@ -181,7 +183,7 @@ export function EntityRibbon({
         <Button key="registryShow" onClick={() => onRegistryShowUsage(registryDetail)}>
           <Icon glyph="fa-search" />
           <div>
-            <span className="btnText">{i18n('registry.registryUsage')}</span>
+            <span className="btnText">{<FormattedMessage {...registryMessages.registryUsage} />}</span>
           </div>
         </Button>,
       );
@@ -199,7 +201,7 @@ export function EntityRibbon({
         <Button key="deleteReplaceAccessPoint" onClick={() => onRemoveDuplicity(registryDetail)}>
           <Icon glyph="fa-ban" />
           <div>
-            <span className="btnText">{i18n('accesspoint.removeDuplicity')}</span>
+            <span className="btnText">{<FormattedMessage {...registryMessages.removeDuplicity} />}</span>
           </div>
         </Button>,
       );
@@ -210,7 +212,7 @@ export function EntityRibbon({
         <Button key="show-state-history" onClick={onShowApHistory}>
           <Icon glyph="fa-clock-o" />
           <div>
-            <span className="btnText">{i18n('ap.stateHistory')}</span>
+            <span className="btnText">{<FormattedMessage {...registryMessages.stateHistory} />}</span>
           </div>
         </Button>,
       );
@@ -223,7 +225,7 @@ export function EntityRibbon({
           <Button key="change-state" onClick={onChangeApState} disabled={hasRevision}>
             <Icon glyph="fa-pencil" />
             <div>
-              <span className="btnText">{i18n('ap.changeState')}</span>
+              <span className="btnText">{<FormattedMessage {...registryMessages.changeState} />}</span>
             </div>
           </Button>,
         );
@@ -234,7 +236,7 @@ export function EntityRibbon({
           <Button key="push-ap-to-ext" onClick={onCopyAp}>
             <Icon glyph="fa-copy" />
             <div>
-              <span className="btnText">{i18n("ap.copy.title")}</span>
+              <span className="btnText">{<FormattedMessage {...registryMessages.copyTitle} />}</span>
             </div>
           </Button>,
         );
@@ -245,7 +247,7 @@ export function EntityRibbon({
           <Button disabled={data.invalid || !revisionActive} key="revisionDelete" onClick={onDeleteRevision}>
             <Icon glyph="fa-undo" />
             <div>
-              <span className="btnText">{i18n('registry.deleteRevision')}</span>
+              <span className="btnText">{<FormattedMessage {...registryMessages.deleteRevision} />}</span>
             </div>
           </Button>,
         );
@@ -253,7 +255,7 @@ export function EntityRibbon({
           <Button disabled={data.invalid || !revisionActive} key="revisionChangeState" onClick={onChangeRevisionState}>
             <Icon glyph="fa-pencil" />
             <div>
-              <span className="btnText">{i18n('registry.changeStateRevision')}</span>
+              <span className="btnText">{<FormattedMessage {...registryMessages.changeStateRevision} />}</span>
             </div>
           </Button>,
         );
@@ -261,7 +263,7 @@ export function EntityRibbon({
           <Button disabled={data.invalid || !revisionActive} key="revisionMerge" onClick={onMergeRevision}>
             <Icon glyph="fa-check" />
             <div>
-              <span className="btnText">{i18n('registry.mergeRevision')}</span>
+              <span className="btnText">{<FormattedMessage {...registryMessages.mergeRevision} />}</span>
             </div>
           </Button>,
         );
@@ -270,7 +272,7 @@ export function EntityRibbon({
           <Button disabled={data.invalid} key="revisionCreate" onClick={onCreateRevision}>
             <Icon glyph="fa-plus" />
             <div>
-              <span className="btnText">{i18n('registry.createRevision')}</span>
+              <span className="btnText">{<FormattedMessage {...registryMessages.createRevision} />}</span>
             </div>
           </Button>,
         );
@@ -280,7 +282,7 @@ export function EntityRibbon({
           <Button key="restoreEntity" onClick={onRestoreEntity}>
             <Icon glyph="fa-undo" />
             <div>
-              <span className="btnText">{i18n('registry.restoreEntity')}</span>
+              <span className="btnText">{<FormattedMessage {...registryMessages.restoreEntity} />}</span>
             </div>
           </Button>,
         );

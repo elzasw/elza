@@ -2,7 +2,13 @@ import { useSelector } from "react-redux";
 import { AppState } from "typings/store";
 import * as perms from 'actions/user/Permission.jsx';
 import { Button } from "components/ui";
-import { i18n, Icon, Ribbon } from "components";
+import { Icon, Ribbon } from "components";
+import { FormattedMessage, defineMessages } from 'react-intl';
+
+// Id je převzaté z legacy katalogu beze změny.
+const messages = defineMessages({
+    addNewRegistry: { id: 'registry.addNewRegistry', defaultMessage: 'Nová entita' },
+});
 import { RibbonGroup } from "components/shared";
 
 interface Props {
@@ -28,7 +34,7 @@ export function EntitySelectRibbon({
       <Button key="addRegistry" onClick={onAddRegistry}>
         <Icon glyph="fa-plus-circle" />
         <div>
-          <span className="btnText">{i18n('registry.addNewRegistry')}</span>
+          <span className="btnText"><FormattedMessage {...messages.addNewRegistry} /></span>
         </div>
       </Button>,
     );

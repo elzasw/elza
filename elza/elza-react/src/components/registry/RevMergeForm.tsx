@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { i18n } from 'components/shared';
+import {} from 'components/shared';
+import { FormattedMessage, defineMessages, useIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { getIntl } from 'components/shared/lang/intlInstance';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    state: { id: 'ap.state.title.state', defaultMessage: 'Stav' },
+    comment: { id: 'ap.state.title.comment', defaultMessage: 'Komentář' },
+});
 import { Form, Modal } from 'react-bootstrap';
 import { Form as FinalForm, Field } from 'react-final-form';
 import { Button } from '../ui';
@@ -33,6 +42,7 @@ export function RevMergeFormFn({
     bindings,
     initialValues
 }: Props) {
+    const intl = useIntl();
 
     const [states, setStates] = useState<ApStateApproval[]>([]);
     const userDetail = useSelector(({ userDetail }: AppState) => userDetail);
@@ -49,7 +59,7 @@ export function RevMergeFormFn({
         const errors: Partial<Record<keyof ApStateUpdate, string>> = {};
 
         if (!values.stateApproval) {
-            errors.stateApproval = i18n('global.validation.required');
+            errors.stateApproval = getIntl().formatMessage(globalMessages.validationRequired);
         }
 
         return errors;
@@ -73,7 +83,7 @@ export function RevMergeFormFn({
                             disabled={submitting}
                             useIdAsValue
                             required
-                            label={i18n('ap.state.title.state')}
+                            label={intl.formatMessage(messages.state)}
                             items={getStateWithAll()}
                             name={'stateApproval'}
                         />
@@ -81,7 +91,7 @@ export function RevMergeFormFn({
                             component={FormInputField}
                             disabled={submitting}
                             type="textarea"
-                            label={i18n('ap.state.title.comment')}
+                            label={intl.formatMessage(messages.comment)}
                             name={'comment'}
                         />
                         {bindings && bindings.length === 1
@@ -97,10 +107,10 @@ export function RevMergeFormFn({
                     </Modal.Body>
                     <Modal.Footer>
                         <Button type="button" onClick={handleSubmit} variant="outline-secondary" disabled={submitting}>
-                            {i18n('global.action.store')}
+                            <FormattedMessage {...globalMessages.save} />
                         </Button>
                         <Button variant="link" onClick={onClose}>
-                            {i18n('global.action.cancel')}
+                            <FormattedMessage {...globalMessages.cancel} />
                         </Button>
                     </Modal.Footer>
                 </Form>

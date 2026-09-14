@@ -1,7 +1,17 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {WebApi} from 'actions/index.jsx';
-import {AbstractReactComponent, Autocomplete, i18n, Icon, TooltipTrigger} from 'components/shared';
+import {AbstractReactComponent, Autocomplete, Icon, TooltipTrigger} from 'components/shared';
+import { FormattedMessage, defineMessages } from 'react-intl';
+import { getIntl } from 'components/shared/lang/intlInstance';
+import { searchTypeMessages } from './searchTypeMessages';
+
+// Id jsou převzatá z legacy katalogu beze změny. Placeholdery {0}/{1} zůstávají:
+// ICU bere jako jméno argumentu i číslo.
+const messages = defineMessages({
+    visibleCount: { id: 'registryField.visibleCount', defaultMessage: 'Zobrazeno {0} z {1} záznamů' },
+    noItemsFound: { id: 'registryField.noItemsFound', defaultMessage: 'Záznamy nebyly nalezeny.' },
+});
 import {connect} from 'react-redux';
 import classNames from 'classnames';
 import {debounce} from 'shared/utils';
@@ -23,13 +33,13 @@ const SEARCH_TYPE = {
     PARTY_FULLTEXT: 'PARTY_FULLTEXT',
 };
 
-const SEARCH_TYPE_LABEL = {
-    [SEARCH_TYPE.CREATE_FULLTEXT]: i18n('apField.searchType.create.FULLTEXT'),
-    [SEARCH_TYPE.CREATE_RIGHT_LIKE]: i18n('apField.searchType.create.RIGHT_LIKE'),
-    [SEARCH_TYPE.USERNAME]: i18n('apField.searchType.USERNAME'),
-    [SEARCH_TYPE.USERNAME_AND_PARTY]: i18n('apField.searchType.USERNAME_AND_PARTY'),
-    [SEARCH_TYPE.PARTY_RIGHT_LIKE]: i18n('apField.searchType.PARTY_RIGHT_LIKE'),
-    [SEARCH_TYPE.PARTY_FULLTEXT]: i18n('apField.searchType.PARTY_FULLTEXT'),
+const SEARCH_TYPE_MESSAGE = {
+    [SEARCH_TYPE.CREATE_FULLTEXT]: searchTypeMessages.createFulltext,
+    [SEARCH_TYPE.CREATE_RIGHT_LIKE]: searchTypeMessages.createRightLike,
+    [SEARCH_TYPE.USERNAME]: searchTypeMessages.username,
+    [SEARCH_TYPE.USERNAME_AND_PARTY]: searchTypeMessages.usernameAndParty,
+    [SEARCH_TYPE.PARTY_RIGHT_LIKE]: searchTypeMessages.partyRightLike,
+    [SEARCH_TYPE.PARTY_FULLTEXT]: searchTypeMessages.partyFulltext,
 };
 
 const SEARCH_TYPES = [
@@ -159,9 +169,9 @@ class ApField extends AbstractReactComponent {
         return hasCount ? (
             <div>
                 {count > AUTOCOMPLETE_REGISTRY_LIST_SIZE && (
-                    <div className="items-count">{i18n('registryField.visibleCount', registryList.length, count)}</div>
+                    <div className="items-count">{getIntl().formatMessage(messages.visibleCount, { 0: registryList.length, 1: count })}</div>
                 )}
-                {count === 0 && <div className="items-count">{i18n('registryField.noItemsFound')}</div>}
+                {count === 0 && <div className="items-count">{getIntl().formatMessage(messages.noItemsFound)}</div>}
             </div>
         ) : null;
     };
@@ -220,12 +230,12 @@ class ApField extends AbstractReactComponent {
                     onSelect={eventKey => this.setState({searchType: eventKey})}
                 >
                     <Dropdown.Toggle variant="outline-secondary" id="dropdown-basic">
-                        {SEARCH_TYPE_LABEL[searchType]}
+                        {SEARCH_TYPE_MESSAGE[searchType]}
                     </Dropdown.Toggle>
                     <Dropdown.Menu>
                         {searchTypes.map(i => (
                             <Dropdown.Item key={i} eventKey={i}>
-                                {SEARCH_TYPE_LABEL[i]}
+                                {SEARCH_TYPE_MESSAGE[i]}
                             </Dropdown.Item>
                         ))}
                     </Dropdown.Menu>

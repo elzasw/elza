@@ -5,7 +5,40 @@ import PropTypes from 'prop-types';
 
 import React from 'react';
 import {connect} from 'react-redux';
-import {AbstractReactComponent, i18n} from 'components/shared';
+import {AbstractReactComponent} from 'components/shared';
+import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { messageFor } from 'components/shared/lang/dynamicMessage';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    date: { id: 'ap.history.title.change.date', defaultMessage: 'Datum' },
+    time: { id: 'ap.history.title.change.time', defaultMessage: 'Čas' },
+    state: { id: 'ap.history.title.change.state', defaultMessage: 'Stav' },
+    operation: { id: 'ap.history.title.change.operace', defaultMessage: 'Operace' },
+    scope: { id: 'ap.history.title.change.scope', defaultMessage: 'Oblast' },
+    type: { id: 'ap.history.title.change.type', defaultMessage: 'Podtřída' },
+    comment: { id: 'ap.history.title.change.comment', defaultMessage: 'Komentář' },
+    user: { id: 'ap.history.title.change.user', defaultMessage: 'Uživatel' },
+});
+
+/** Stav entity v historii; klíč se dřív skládal z hodnoty. */
+const stateMessages = defineMessages({
+    NEW: { id: 'ap.history.title.state.NEW', defaultMessage: 'nová' },
+    TO_APPROVE: { id: 'ap.history.title.state.TO_APPROVE', defaultMessage: 'ke schválení' },
+    APPROVED: { id: 'ap.history.title.state.APPROVED', defaultMessage: 'schválená' },
+    TO_AMEND: { id: 'ap.history.title.state.TO_AMEND', defaultMessage: 'k doplnění' },
+    REV_ACTIVE: { id: 'ap.history.title.state.REV_ACTIVE', defaultMessage: 'revize v přípravě' },
+    REV_TO_APPROVE: { id: 'ap.history.title.state.REV_TO_APPROVE', defaultMessage: 'revize ke schválení' },
+    REV_TO_AMEND: { id: 'ap.history.title.state.REV_TO_AMEND', defaultMessage: 'revize k doplnění' },
+});
+
+/** Provedená operace; klíč se dřív skládal z hodnoty. */
+const operationMessages = defineMessages({
+    AP_CREATE: { id: 'ap.history.title.operation.AP_CREATE', defaultMessage: 'vytváření' },
+    AP_UPDATE: { id: 'ap.history.title.operation.AP_UPDATE', defaultMessage: 'aktualizace' },
+    AP_SYNCH: { id: 'ap.history.title.operation.AP_SYNCH', defaultMessage: 'synchronizace' },
+});
 import {Modal} from 'react-bootstrap';
 import {Button} from '../ui';
 import {dateToString, timeToString} from 'components/Utils.jsx';
@@ -61,11 +94,11 @@ class ApStateHistoryForm extends AbstractReactComponent {
     };
 
     getState = state => {
-        return i18n('ap.history.title.state.' + state);
+        return this.props.intl.formatMessage(messageFor(stateMessages, state, stateMessages.NEW));
     };
 
 	getOperation = op => {
-		return i18n('ap.history.title.operation.' + op);
+		return this.props.intl.formatMessage(messageFor(operationMessages, op, operationMessages.AP_UPDATE));
 	};
 
     renderItem = data => {
@@ -101,14 +134,14 @@ class ApStateHistoryForm extends AbstractReactComponent {
                 <Modal.Body>
                     <div className="changes-listbox-container">
                         <div className="header-container">
-                            <div className="col col1">{i18n('ap.history.title.change.date')}</div>
-                            <div className="col col2">{i18n('ap.history.title.change.time')}</div>
-                            <div className="col col3">{i18n('ap.history.title.change.state')}</div>
-							<div className="col col4">{i18n('ap.history.title.change.operace')}</div>
-                            <div className="col col5">{i18n('ap.history.title.change.scope')}</div>
-                            <div className="col col6">{i18n('ap.history.title.change.type')}</div>
-                            <div className="col col7">{i18n('ap.history.title.change.comment')}</div>
-                            <div className="col col8">{i18n('ap.history.title.change.user')}</div>
+                            <div className="col col1">{<FormattedMessage {...messages.date} />}</div>
+                            <div className="col col2">{<FormattedMessage {...messages.time} />}</div>
+                            <div className="col col3">{<FormattedMessage {...messages.state} />}</div>
+							<div className="col col4">{<FormattedMessage {...messages.operation} />}</div>
+                            <div className="col col5">{<FormattedMessage {...messages.scope} />}</div>
+                            <div className="col col6">{<FormattedMessage {...messages.type} />}</div>
+                            <div className="col col7">{<FormattedMessage {...messages.comment} />}</div>
+                            <div className="col col8">{<FormattedMessage {...messages.user} />}</div>
                             {/*<div className="colScrollbar" style={{width: getScrollbarWidth()}}></div>*/}
                         </div>
                         {fetched ? content : <HorizontalLoader />}
@@ -116,7 +149,7 @@ class ApStateHistoryForm extends AbstractReactComponent {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="link" onClick={onClose}>
-                        {i18n('global.action.close')}
+                        {<FormattedMessage {...globalMessages.close} />}
                     </Button>
                 </Modal.Footer>
             </div>
@@ -124,4 +157,4 @@ class ApStateHistoryForm extends AbstractReactComponent {
     }
 }
 
-export default connect()(ApStateHistoryForm);
+export default injectIntl(connect()(ApStateHistoryForm));

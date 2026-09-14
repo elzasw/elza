@@ -1,6 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { Form as FinalForm, Field } from 'react-final-form';
-import { Icon, i18n } from 'components/shared';
+import { Icon} from 'components/shared';
+import { FormattedMessage, defineMessages, useIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { getIntl } from 'components/shared/lang/intlInstance';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    scope: { id: 'ap.state.title.scope', defaultMessage: 'Oblast' },
+    type: { id: 'ap.state.title.type', defaultMessage: 'Podtřída' },
+    state: { id: 'ap.state.title.state', defaultMessage: 'Stav' },
+    comment: { id: 'ap.state.title.comment', defaultMessage: 'Komentář' },
+    assignedUser: { id: 'ap.state.title.assignedUser', defaultMessage: 'Přiděleno' },
+    toApproveSameUser: {
+        id: 'ap.state.title.assignedUser.error.toApproveSameUser',
+        defaultMessage: 'Záznam může schválit pouze jiný uživatel',
+    },
+    validationErrors: { id: 'ap.validation.errors', defaultMessage: 'Chyby validace' },
+});
 import { Form, Modal } from 'react-bootstrap';
 import { Button } from '../ui';
 import FormInputField from '../../components/shared/form/FormInputField';
@@ -36,6 +53,7 @@ export const RevStateChangeFormFn = ({
     initialValues,
     accessPointId,
 }: Props) => {
+    const intl = useIntl();
 
     const apTypes = useAppSelector(({refTables}) => refTables.apTypes)
     const { data: validationData } = useAppSelector(({app}) => app.apValidation);
@@ -81,14 +99,14 @@ export const RevStateChangeFormFn = ({
         const errors: FormErrors<RevStateFormFields> = {};
 
         if (!values.state) {
-            errors.state = i18n('global.validation.required');
+            errors.state = getIntl().formatMessage(globalMessages.validationRequired);
         }
 
         const isToApproveSameUser =
             values.state === RevStateApproval.TO_APPROVE
             && values.assignedTo === currentUserId;
         if (isToApproveSameUser) {
-            errors.assignedTo = i18n("ap.state.title.assignedUser.error.toApproveSameUser")
+            errors.assignedTo = getIntl().formatMessage(messages.toApproveSameUser)
         }
 
         return errors;
@@ -126,7 +144,7 @@ export const RevStateChangeFormFn = ({
                     <Modal.Body>
                         {!isValid && validationData &&
                             <div className="ap-validation-alert">
-                                <h3>{i18n('ap.validation.errors')}</h3>
+                                <h3>{intl.formatMessage(messages.validationErrors)}</h3>
                                 {renderValidationErrors(validationData)}
                             </div>
                         }
@@ -135,7 +153,7 @@ export const RevStateChangeFormFn = ({
                                 name={'typeId'}
                                 component={FormInputField}
                                 type="autocomplete"
-                                label={i18n('ap.state.title.type')}
+                                label={intl.formatMessage(messages.type)}
                                 items={apTypes.items ? apTypes.items : []}
                                 tree={true}
                                 alwaysExpanded={true}
@@ -148,7 +166,7 @@ export const RevStateChangeFormFn = ({
                             name={'state'}
                             component={FormInputField}
                             type="autocomplete"
-                            label={i18n('ap.state.title.state')}
+                            label={intl.formatMessage(messages.state)}
                             items={stateOptions}
                             useIdAsValue={true}
                             required={true}
@@ -158,7 +176,7 @@ export const RevStateChangeFormFn = ({
                             name={'comment'}
                             component={FormInputField}
                             type="textarea"
-                            label={i18n('ap.state.title.comment')}
+                            label={intl.formatMessage(messages.comment)}
                             disabled={submitting}
                         />
                         <Field<number>
@@ -168,7 +186,7 @@ export const RevStateChangeFormFn = ({
                                 input.onChange(user?.id);
                             }
                             //@ts-expect-error TODO wrong types on FormInputField
-                            return <FormInputField type="static" label={i18n('ap.state.title.assignedUser')}>
+                            return <FormInputField type="static" label={intl.formatMessage(messages.assignedUser)}>
                                 <div style={{display: 'flex'}}>
                                     <UserField
                                     disabled={submitting}
@@ -212,10 +230,10 @@ export const RevStateChangeFormFn = ({
                     </Modal.Body>
                     <Modal.Footer>
                         <Button type="submit" onClick={handleSubmit} variant="outline-secondary" disabled={submitting || !valid}>
-                            {i18n('global.action.store')}
+                            <FormattedMessage {...globalMessages.save} />
                         </Button>
                         <Button variant="link" onClick={onClose}>
-                            {i18n('global.action.cancel')}
+                            <FormattedMessage {...globalMessages.cancel} />
                         </Button>
                     </Modal.Footer>
                 </Form>
