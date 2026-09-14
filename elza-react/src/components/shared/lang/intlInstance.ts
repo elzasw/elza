@@ -42,10 +42,33 @@ let current: IntlShape | undefined;
 export function createAppIntl(
     locale: string,
     messages: Record<string, string>,
-    onError?: OnErrorFn,
+    onError: OnErrorFn = defaultOnError(messages),
 ): IntlShape {
+    // Klíč `onError` sem nesmí přijít jako `undefined`: createIntl konfiguraci
+    // rozkopíruje přes své výchozí hodnoty, takže explicitní undefined přepíše
+    // výchozí handler a první MISSING_TRANSLATION pak spadne na
+    // "onError is not a function". Přesně tak umřela přihlašovací stránka v EN.
     current = createIntl({ locale, defaultLocale: "cs", messages, onError }, cache);
     return current;
+}
+
+/**
+ * Výchozí handler chyb formátování.
+ *
+ * Katalog se stahuje asynchronně, takže první render v jiném jazyce než `cs`
+ * proběhne nad prázdným katalogem a každá zpráva by nahlásila MISSING_TRANSLATION
+ * (pro `cs` formatjs hlášení přeskočí, protože se shoduje s defaultLocale).
+ * V té chvíli je to očekávaný stav a `defaultMessage` je správný fallback -
+ * proto se chybějící překlad mlčky ignoruje **jen dokud je katalog prázdný**.
+ * Jakmile je načtený, chybějící klíč je reálná mezera a hlásí se jako všechno
+ * ostatní.
+ */
+function defaultOnError(messages: Record<string, string>): OnErrorFn {
+    const catalogLoaded = Object.keys(messages).length > 0;
+    return (error) => {
+        if (!catalogLoaded && error.code === "MISSING_TRANSLATION") return;
+        console.error(error);
+    };
 }
 
 /**
