@@ -2,6 +2,8 @@ import { DataType, DataUriRef } from "elza-api";
 import { Link } from "react-router-dom";
 import { urlNode } from "../../../../constants";
 import { DescItemProps } from "./types";
+import { FormattedMessage } from "react-intl";
+import { messages as commonMessages } from "components/arr/item-form/desc-items/commonMessages";
 
 export function DescItemUriRef({ item, nodeId }: DescItemProps) {
   if (item.data?.dataType !== DataType.UriRef) {
@@ -20,7 +22,7 @@ export function DescItemUriRef({ item, nodeId }: DescItemProps) {
       }}
     >
       {item.undefined ? (
-        "Výjimka"
+        <FormattedMessage {...commonMessages.undefined} />
       ) : (
         <>
           {data.nodeId ? (

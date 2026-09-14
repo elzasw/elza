@@ -24,6 +24,8 @@ import {
 } from "../node-view/desc-items";
 import { useVisibleFormItems } from "../node-view/hooks";
 import { useOutputFormData } from "./hooks";
+import { FormattedMessage } from "react-intl";
+import { messages as commonMessages } from "components/arr/item-form/desc-items/commonMessages";
 
 interface Props {
   outputId: number;
@@ -133,7 +135,7 @@ export function OutputView({ outputId }: Props) {
                               onExportCsv={exportCsv}
                             />
                           ) : item.undefined ? (
-                            "Nezjištěno"
+                            <FormattedMessage {...commonMessages.undefined} />
                           ) : (
                             "Not implemented"
                           )}

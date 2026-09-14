@@ -1,6 +1,8 @@
 import { CoordinatesDisplay } from "components/shared/coordinates";
 import { DataCoordinates, DataType } from "elza-api";
 import { DescItemProps } from "./types";
+import { FormattedMessage } from "react-intl";
+import { messages as commonMessages } from "components/arr/item-form/desc-items/commonMessages";
 
 export function DescItemCoordinates({ item, nodeId }: DescItemProps) {
   if (item.data?.dataType !== DataType.Coordinates) {
@@ -14,7 +16,7 @@ export function DescItemCoordinates({ item, nodeId }: DescItemProps) {
   return (
     <div>
       {item.undefined ? (
-        "Výjimka"
+        <FormattedMessage {...commonMessages.undefined} />
       ) : (
         <CoordinatesDisplay
           value={data.value}

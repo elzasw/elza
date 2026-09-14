@@ -21,6 +21,8 @@ import {
 import { Spinner, Tooltip } from "@fluentui/react-components";
 import { useVisibleFormItems } from "../node-view/hooks";
 import { useStructureFormData } from "./hooks";
+import { FormattedMessage } from "react-intl";
+import { messages as commonMessages } from "components/arr/item-form/desc-items/commonMessages";
 
 interface Props {
   fundId: number;
@@ -171,7 +173,7 @@ export function StructureView({ fundId, fundVersionId, structureObjectId, plain 
                               typeForm={typeForm}
                             />
                           ) : item.undefined ? (
-                            "Nezjištěno"
+                            <FormattedMessage {...commonMessages.undefined} />
                           ) : (
                             "Not implemented"
                           )}

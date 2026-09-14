@@ -15,6 +15,7 @@ import { useStrictMode } from "utils/hooks";
 import { findInSources } from "./utils";
 import { RulDescItemSpecExtVO } from "api/RulDescItemSpecExtVO";
 import { useStyles } from "./styles";
+import { messages as commonMessages } from "./commonMessages";
 
 const mandatoryTypeMessages = defineMessages({
   [MandatoryType.Required]: { id: "mandatoryType.required", defaultMessage: "Povinný" },
@@ -231,7 +232,7 @@ export function DescItemSpec({
         size={compact ? "small" : "medium"}
         root={{ ref: comboboxRef }}
         selectedOptions={spec ? [spec.rule.code] : []}
-        value={isUndefined ? "výjimka" : query}
+        value={isUndefined ? formatMessage(commonMessages.undefined) : query}
         title={query}
         disabled={isDisabled}
         onChange={handleQueryChange}

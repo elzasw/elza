@@ -1,6 +1,8 @@
 import { DataType } from "elza-api";
 import { useAppSelector } from "utils/hooks/useAppSelector";
 import { DescItemProps } from "./types";
+import { FormattedMessage } from "react-intl";
+import { messages as commonMessages } from "components/arr/item-form/desc-items/commonMessages";
 
 export function DescItemEnum({ item, nodeId }: DescItemProps) {
   if (item.data?.dataType !== DataType.Enum) {
@@ -22,7 +24,7 @@ export function DescItemEnum({ item, nodeId }: DescItemProps) {
         opacity: isInherited ? 0.5 : undefined,
       }}
     >
-      {item.undefined ? "Výjimka" : spec?.name}
+      {item.undefined ? <FormattedMessage {...commonMessages.undefined} /> : spec?.name}
     </div>
   );
 }

@@ -17,8 +17,9 @@ import {
 } from "@fluentui/react-components";
 import { ArrowDownloadRegular, ArrowSortRegular } from "@fluentui/react-icons";
 import { DataJsonTable, DataType } from "elza-api";
-import { useIntl, defineMessages } from "react-intl";
+import { FormattedMessage, useIntl, defineMessages } from "react-intl";
 import { DescItemProps } from "./types";
+import { messages as commonMessages } from "components/arr/item-form/desc-items/commonMessages";
 
 interface TableColumn {
   code: string;
@@ -127,7 +128,7 @@ export function DescItemJsonTable({ item, nodeId, typeRef, onExportCsv }: DescIt
   const isSorted = sortState.sortColumn != undefined;
 
   if (item.undefined) {
-    return <div>Výjimka</div>;
+    return <div><FormattedMessage {...commonMessages.undefined} /></div>;
   }
 
   if (table.rows.length === 0) {

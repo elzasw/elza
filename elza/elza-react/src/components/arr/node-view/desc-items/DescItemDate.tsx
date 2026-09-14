@@ -1,6 +1,8 @@
 import { DataDate, DataType } from "elza-api";
 import { FormattedDate } from "react-intl";
 import { DescItemProps } from "./types";
+import { FormattedMessage } from "react-intl";
+import { messages as commonMessages } from "components/arr/item-form/desc-items/commonMessages";
 
 export function DescItemDate({ item, nodeId }: DescItemProps) {
   if (item.data?.dataType !== DataType.Date) {
@@ -20,7 +22,7 @@ export function DescItemDate({ item, nodeId }: DescItemProps) {
       }}
     >
       {item.undefined ? (
-        "Výjimka"
+        <FormattedMessage {...commonMessages.undefined} />
       ) : date ? (
         <FormattedDate value={date} day="2-digit" month="2-digit" year="numeric" />
       ) : null}
