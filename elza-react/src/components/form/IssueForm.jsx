@@ -11,6 +11,7 @@ import { getIntl } from 'components/shared/lang/intlInstance';
 // Id jsou převzatá z legacy katalogu beze změny.
 const messages = defineMessages({
     type: { id: 'issue.type', defaultMessage: 'Typ připomínky' },
+    issueList: { id: 'issue.issueList', defaultMessage: 'Protokol' },
     text: { id: 'issue.text', defaultMessage: 'Text připomínky' },
 });
 import * as issueTypesActions from '../../actions/refTables/issueTypes';
@@ -62,7 +63,7 @@ class IssueForm extends AbstractReactComponent {
                         name="issueListId"
                         component={FormInputField}
                         value={issueProtocol.id}
-                        label="Protokol"
+                        label={getIntl().formatMessage(messages.issueList)}
                     >
                         {issueProtocols.fetched && issueProtocols.count === 0 && <option value={''} />}
                         {issueProtocols.fetched && issueProtocols.rows.map(basicOptionMap)}

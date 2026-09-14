@@ -29,6 +29,7 @@ export const apDetailMessages = defineMessages({
     coordinateExportInfo: { id: "ap.coordinate.export.info", defaultMessage: "Zvolte požadovaný formát exportovaných souřadnic:" },
     coordinateFormat: { id: "ap.coordinate.format", defaultMessage: "Formát {0}" },
     coordinateImportSelect: { id: "ap.coordinate.import.select", defaultMessage: "Vyberte soubor" },
+    itemNoSpecification: { id: "ap.detail.item.noSpecification", defaultMessage: "Bez specifikace" },
     detailHistoryTitle: { id: "ap.detail.history.title", defaultMessage: "Historie stavů ({count})" },
     detailHistoryHide: { id: "ap.detail.history.hide", defaultMessage: "Skrýt panel" },
     detailPartPreferredNew: { id: "ap.detail.part.preferred.new", defaultMessage: "Nové preferované" },

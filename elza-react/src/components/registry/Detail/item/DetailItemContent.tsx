@@ -31,6 +31,7 @@ import {RouteComponentProps, withRouter} from "react-router";
 import {Link} from "react-router-dom";
 import {diffChars, diffWords} from "diff";
 import { urlEntity } from '../../../../constants';
+import { FormattedMessage } from 'react-intl';
 
 interface OwnProps extends ReturnType<typeof mapStateToProps> {
     item: ApItemVO;
@@ -199,7 +200,7 @@ const DetailItemContent: FC<Props> = ({
 
     let valueSpecification: React.ReactNode;
     if (!customFieldRender && itemType.useSpecification) {
-        valueSpecification = <i>Bez specifikace</i>;
+        valueSpecification = <i><FormattedMessage {...apDetailMessages.itemNoSpecification} /></i>;
         if (item.specId) {
             const itemSpec = getMapFromList(itemType.descItemSpecs) as Record<number, RulDescItemSpecExtVO>;
             if (itemSpec[item.specId]) {

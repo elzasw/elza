@@ -90,3 +90,18 @@ export const coordinatesNearMessages = defineMessages({
     m50000: { id: "arr.fund.filterSettings.condition.coordinates.near.50000", defaultMessage: "50 km" },
     m100000: { id: "arr.fund.filterSettings.condition.coordinates.near.100000", defaultMessage: "100 km" },
 });
+
+/**
+ * Doplněno ručně, mimo generovaný blok výše - tyto texty byly zapsané přímo
+ * v JSX a v legacy katalogu nikdy nebyly.
+ */
+export const arrExtraMessages = defineMessages({
+    historyGoToDateFormat: {
+        id: 'arr.history.goToDate.format',
+        defaultMessage: 'dd.mm.rrrr[ hh:mm[:ss]]',
+    },
+    fundBulkModificationsSelectOperation: {
+        id: 'arr.fund.bulkModifications.selectOperation',
+        defaultMessage: 'Vyberte operaci…',
+    },
+});

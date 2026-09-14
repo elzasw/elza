@@ -8,7 +8,7 @@ import {} from 'components/shared';
 import { FormattedMessage, useIntl } from 'react-intl';
 import { getIntl } from 'components/shared/lang/intlInstance';
 import { globalMessages } from 'components/shared/lang/messages';
-import { arrMessages } from './messages';
+import { arrExtraMessages, arrMessages } from './messages';
 import { Form, FormGroup, FormLabel, Modal } from 'react-bootstrap';
 import { Field, Form as FinalForm } from 'react-final-form';
 import { objectById } from "stores/app/utils";
@@ -618,9 +618,9 @@ const FundBulkModificationsForm = ({
                                 type={'select'}
                                 component={FormInputField}
                                 disabled={submitting}
-                                placeholder="Vyberte operaci..."
+                                placeholder={intl.formatMessage(arrExtraMessages.fundBulkModificationsSelectOperation)}
                             >
-                                <option value={""} selected={true}>Vyberte operaci...</option>
+                                <option value={""} selected={true}>{intl.formatMessage(arrExtraMessages.fundBulkModificationsSelectOperation)}</option>
                                 {getIsFindAndReplaceSupported() && (
                                     <option key="findAndReplace" value={OperationType.FIND_AND_REPLACE}>
                                         {intl.formatMessage(arrMessages.fundBulkModificationsOperationTypeFindAndReplace)}

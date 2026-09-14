@@ -85,6 +85,7 @@ import { useActiveFund, useActiveParent } from "utils/hooks";
 import { useTemplates } from "./templates/templates";
 import { useUserSettings } from "contexts/user";
 import { useStyles } from "../item-form/styles";
+import { toolbarMessages } from './toolbarMessages';
 
 export const messages = defineMessages({
   toggleCopyFromPrevious: {
@@ -171,6 +172,7 @@ export const NodeToolbar = ({
   onAddDescItem,
   daos = [],
 }: Props) => {
+  const intl = useIntl();
   const descItems = formItems.map(({ item }) => item);
   const styles = useStyles();
 
@@ -639,7 +641,7 @@ export const NodeToolbar = ({
       <div className={styles.toolbarSticky}>
         <div className={styles.toolbarMain}>
         <Overflow padding={20}>
-          <Toolbar aria-label="Overflow" size="small">
+          <Toolbar aria-label={intl.formatMessage(toolbarMessages.mainToolbar)} size="small">
             {/*<Button>test</Button>*/}
             {daoWithScenario?.scenarios && (
               <Menu>
@@ -700,7 +702,7 @@ export const NodeToolbar = ({
           </Toolbar>
         </Overflow>
         </div>
-        <Toolbar aria-label="View settings" size="small" className={styles.toolbarFlexShrink}>
+        <Toolbar aria-label={intl.formatMessage(toolbarMessages.viewSettings)} size="small" className={styles.toolbarFlexShrink}>
           <Menu
             positioning={{ align: "end" }}
             checkedValues={{

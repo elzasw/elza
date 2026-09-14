@@ -14,6 +14,10 @@ import { useAppSelector } from "utils/hooks";
 import { storeFromArea } from "shared/utils";
 import {QueueItemState} from "elza-api";
 
+const messages = defineMessages({
+    filterGroup: { id: 'aip.filter.group.label', defaultMessage: 'Filtry' },
+});
+
 type AipFiltersProps = {
 	filterDisabled: boolean;
 	initialFilters?: AipFilterEntry[];
@@ -28,6 +32,7 @@ const localMessages = defineMessages({
 });
 
 const AipFilters = ({filterDisabled, hiddenValues, filters, createFilter, removeFilter}: AipFiltersProps) => {
+	const intl = useIntl();
 	const {filter} = useAppSelector(state => storeFromArea(state, AREA_AIPS) as Aips);
 	const columnsDef = colDef.filter(col => !hiddenValues?.includes(col.key));
     const dispatch = useThunkDispatch();
@@ -100,7 +105,7 @@ const AipFilters = ({filterDisabled, hiddenValues, filters, createFilter, remove
 				</MenuPopover>
 			</Menu>
 
-			<TagGroup onDismiss={filterDisabled ? undefined : handleRemove} aria-label="Filtry" className="tag-group" >
+			<TagGroup onDismiss={filterDisabled ? undefined : handleRemove} aria-label={intl.formatMessage(messages.filterGroup)} className="tag-group" >
 				{filters.map(filter => (
 					<AipFilterTag key={filter.id} filter={filter} />
 				))}

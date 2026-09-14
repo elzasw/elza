@@ -21,6 +21,8 @@ import type {
   MenuItemProps,
 } from "@fluentui/react-components";
 import { useStyles } from "../item-form/styles";
+import { useIntl } from 'react-intl';
+import { toolbarMessages } from './toolbarMessages';
 
 export interface ToolbarButtonDef {
   id: string;
@@ -84,6 +86,7 @@ interface OverflowMenuProps {
 }
 
 export const OverflowMenu = ({ items }: OverflowMenuProps) => {
+  const intl = useIntl();
   const { ref, isOverflowing } = useOverflowMenu<HTMLButtonElement>();
 
   const hasOverflowOnlyItems = items.some(({ items }) =>
@@ -100,7 +103,7 @@ export const OverflowMenu = ({ items }: OverflowMenuProps) => {
         <Button
           ref={ref}
           icon={<MoreHorizontal20Filled />}
-          aria-label="More items"
+          aria-label={intl.formatMessage(toolbarMessages.moreItems)}
           appearance="subtle"
         />
       </MenuTrigger>

@@ -115,7 +115,7 @@ const RelationPartItemEditModalForm = ({
         <Modal.Body>
             {renderSpecification && <Field
                 name="specId"
-                label="Specifikace vztahu"
+                label={getIntl().formatMessage(registryModalMessages.relationSpecification)}
                 itemTypeId={typeId}
                 itemSpecIds={useItemSpecIds}
                 component={ReduxFormFieldErrorDecorator}
