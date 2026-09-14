@@ -9,6 +9,7 @@ import NodeLabel from './NodeLabel';
 import {AbstractReactComponent, AddRemoveList} from 'components/shared';
 
 import './FundNodesList.scss';
+import { nodeListMessages } from 'components/arr/nodeListMessages';
 
 class FuncNodesList extends AbstractReactComponent {
     static propTypes = {
@@ -40,8 +41,8 @@ class FuncNodesList extends AbstractReactComponent {
                 items={nodes}
                 onAdd={onAddNode}
                 onRemove={this.handleDeleteItem}
-                addTitle="arr.fund.nodes.title.select"
-                removeTitle="arr.fund.nodes.title.remove"
+                addTitle={nodeListMessages.select}
+                removeTitle={nodeListMessages.remove}
                 renderItem={this.handleRenderItem}
                 {...other}
             />

@@ -26,6 +26,14 @@ const messages = defineMessages({
     titleActive: { id: 'admin.user.title.active', defaultMessage: 'Aktivní uživatel' },
     titleNonactive: { id: 'admin.user.title.nonactive', defaultMessage: 'Neaktivní uživatel' },
     titleGroups: { id: 'admin.user.title.groups', defaultMessage: 'Členství ve skupinách' },
+    groupAdd: {
+        id: 'admin.user.group.action.add',
+        defaultMessage: 'Zařadit uživatele do skupin',
+    },
+    groupRemove: {
+        id: 'admin.user.group.action.delete',
+        defaultMessage: 'Odebrat zařazení uživatele do skupiny',
+    },
     titlePermissions: { id: 'admin.user.title.permissions', defaultMessage: 'Oprávnění uživatele' },
 });
 import {getIdsList} from 'stores/app/utils';
@@ -225,8 +233,8 @@ class UserDetail extends AbstractReactComponent {
                                 items={userDetail.groups}
                                 onAdd={this.handleAddGroups}
                                 onRemove={this.handleRemoveGroup}
-                                addTitle="admin.user.group.action.add"
-                                removeTitle="admin.user.group.action.delete"
+                                addTitle={messages.groupAdd}
+                                removeTitle={messages.groupRemove}
                                 renderItem={renderGroupItem}
                                 className="no-hover alternating-rows"
                             />

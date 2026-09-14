@@ -4,7 +4,14 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import Search from '../search/Search';
 import ListBox from './ListBox';
-import i18n from '../../i18n';
+import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    searchPlaceholder: { id: 'search.input.search', defaultMessage: 'Vyhledat...' },
+    selectAll: { id: 'global.title.selectAll', defaultMessage: 'Vybrat vše' },
+    unselectAll: { id: 'global.title.unselectAll', defaultMessage: 'Vymazat' },
+});
 import AbstractReactComponent from '../../AbstractReactComponent';
 import {FormCheck} from 'react-bootstrap';
 import {Button} from '../../ui';
@@ -241,7 +248,7 @@ class FilterableListBox extends AbstractReactComponent {
                         <div className="search-container">
                             {searchable && (
                                 <Search
-                                    placeholder={i18n('search.input.search')}
+                                    placeholder={this.props.intl.formatMessage(messages.searchPlaceholder)}
                                     filterText={filterText}
                                     onChange={this.handleSearchChange}
                                     onSearch={this.handleSearch}
@@ -253,11 +260,11 @@ class FilterableListBox extends AbstractReactComponent {
                     )}
                     <div className="actions-container">
                         <Button variant="link" onClick={this.handleSelectAll}>
-                            {i18n('global.title.selectAll')}
+                            <FormattedMessage {...messages.selectAll} />
                         </Button>
                         /
                         <Button variant="link" onClick={this.handleUnselectAll}>
-                            {i18n('global.title.unselectAll')}
+                            <FormattedMessage {...messages.unselectAll} />
                         </Button>
                     </div>
                 </div>
@@ -277,4 +284,4 @@ class FilterableListBox extends AbstractReactComponent {
     }
 }
 
-export default FilterableListBox;
+export default injectIntl(FilterableListBox);

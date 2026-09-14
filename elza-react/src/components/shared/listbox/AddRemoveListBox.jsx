@@ -5,7 +5,8 @@ import React from 'react';
 import ListBox from './ListBox';
 import AbstractReactComponent from '../../AbstractReactComponent';
 import NoFocusButton from '../button/NoFocusButton';
-import i18n from '../../i18n';
+import { injectIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
 import Icon from '../icon/Icon';
 import './AddRemoveListBox.scss';
 
@@ -19,16 +20,16 @@ class AddRemoveListBox extends AbstractReactComponent {
         onAdd: PropTypes.func.isRequired,
         onRemove: PropTypes.func.isRequired,
         renderItemContent: PropTypes.func,
-        addTitle: PropTypes.string,
-        removeTitle: PropTypes.string,
+        addTitle: PropTypes.object,
+        removeTitle: PropTypes.object,
         readOnly: PropTypes.bool,
         canDeleteItem: PropTypes.func,
     };
 
     static defaultProps = {
         readOnly: false,
-        addTitle: 'global.action.add',
-        removeTitle: 'global.action.remove',
+        addTitle: globalMessages.add,
+        removeTitle: globalMessages.remove,
         renderItemContent: (item, isActive, index, onCheckItem) => {
             return <div>{item.name}</div>;
         },
@@ -72,7 +73,7 @@ class AddRemoveListBox extends AbstractReactComponent {
             return (
                 <div className="arlb-plus-item">
                     {!readOnly && (
-                        <NoFocusButton onClick={onAdd} title={i18n(addTitle)}>
+                        <NoFocusButton onClick={onAdd} title={this.props.intl.formatMessage(addTitle)}>
                             <Icon glyph="fa-plus" />
                         </NoFocusButton>
                     )}
@@ -86,7 +87,7 @@ class AddRemoveListBox extends AbstractReactComponent {
                         <NoFocusButton
                             className="item-action"
                             onClick={() => onRemove(item, index)}
-                            title={i18n(removeTitle)}
+                            title={this.props.intl.formatMessage(removeTitle)}
                         >
                             <Icon glyph="fa-remove" />
                         </NoFocusButton>
@@ -120,4 +121,4 @@ class AddRemoveListBox extends AbstractReactComponent {
     }
 }
 
-export default AddRemoveListBox;
+export default injectIntl(AddRemoveListBox);

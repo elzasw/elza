@@ -44,6 +44,14 @@ export const globalMessages = defineMessages({
     id: "global.action.add",
     defaultMessage: "Přidat",
   },
+  remove: {
+    id: "global.action.remove",
+    defaultMessage: "Odebrat",
+  },
+  replace: {
+    id: "global.action.replace",
+    defaultMessage: "Nahradit",
+  },
   change: {
     id: "global.action.change",
     defaultMessage: "Změnit",

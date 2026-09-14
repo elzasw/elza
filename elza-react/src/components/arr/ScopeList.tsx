@@ -9,6 +9,7 @@ import {AbstractReactComponent, AddRemoveList, Icon, i18n} from 'components/shar
 import './FundNodesList.scss';
 import {ApScopeVO} from '../../typings/Outputs';
 import {Button} from '../ui';
+import { nodeListMessages } from 'components/arr/nodeListMessages';
 
 type Props = {
     scopes: ApScopeVO[];
@@ -50,8 +51,8 @@ export class ScopeList extends AbstractReactComponent<Props> {
                 onAdd={onAdd}
                 addInLabel
                 onRemove={onRemove}
-                addTitle="arr.fund.nodes.title.select"
-                removeTitle="arr.fund.nodes.title.remove"
+                addTitle={nodeListMessages.select}
+                removeTitle={nodeListMessages.remove}
                 renderItem={this.handleRenderItem}
                 {...other}
             />

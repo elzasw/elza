@@ -2,7 +2,13 @@ import './FileListBox.scss';
 import PropTypes from 'prop-types';
 
 import React from 'react';
-import i18n from '../../i18n';
+import { defineMessages, injectIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+
+// Id je převzaté z legacy katalogu beze změny.
+const messages = defineMessages({
+    searchPlaceholder: { id: 'search.input.search', defaultMessage: 'Vyhledat...' },
+});
 import ListBox from './ListBox';
 import Search from '../search/Search';
 import Icon from '../icon/Icon';
@@ -70,31 +76,31 @@ const FileListBox = class FileListBox extends AbstractReactComponent {
                 <div className="actions">
                     {onInfo && <Icon glyph="fa-info-circle" onClick={() => onInfo(item.id)} />}
                     {showEdit && !readMode && (
-                        <Icon title={i18n('global.action.update')} glyph="fa-edit" onClick={() => onEdit(item.id)} />
+                        <Icon title={this.props.intl.formatMessage(globalMessages.edit)} glyph="fa-edit" onClick={() => onEdit(item.id)} />
                     )}
                     {showDownloadPdf && (
                         <Icon
-                            title={i18n('global.action.download')}
+                            title={this.props.intl.formatMessage(globalMessages.download)}
                             glyph="fa-file-pdf-o"
                             onClick={() => onDownloadPdf(item.id)}
                         />
                     )}
                     {onDownload && (
                         <Icon
-                            title={i18n('global.action.download')}
+                            title={this.props.intl.formatMessage(globalMessages.download)}
                             glyph="fa-download"
                             onClick={() => onDownload(item.id)}
                         />
                     )}
                     {onReplace && !readMode && (
                         <Icon
-                            title={i18n('global.action.replace')}
+                            title={this.props.intl.formatMessage(globalMessages.replace)}
                             glyph="fa-exchange"
                             onClick={() => onReplace(item.id)}
                         />
                     )}
                     {onDelete && !readMode && (
-                        <Icon title={i18n('global.action.delete')} glyph="fa-trash" onClick={() => onDelete(item.id)} />
+                        <Icon title={this.props.intl.formatMessage(globalMessages.delete)} glyph="fa-trash" onClick={() => onDelete(item.id)} />
                     )}
                 </div>
             </div>
@@ -147,7 +153,7 @@ const FileListBox = class FileListBox extends AbstractReactComponent {
                 {searchable && (
                     <div className="search-container">
                         <Search
-                            placeholder={i18n('search.input.search')}
+                            placeholder={this.props.intl.formatMessage(messages.searchPlaceholder)}
                             filterText={filterText}
                             onChange={this.handleSearchChange}
                             onSearch={this.handleSearch}
@@ -204,4 +210,4 @@ FileListBox.defaultProps = {
     filterText: '',
 };
 
-export default FileListBox;
+export default injectIntl(FileListBox);
