@@ -2,7 +2,10 @@ import React from 'react';
 import {Button} from '../../ui';
 import {Form, FormCheck, FormGroup, FormLabel, Modal} from 'react-bootstrap';
 
-import {AbstractReactComponent, i18n, Icon} from 'components/shared';
+import {AbstractReactComponent, Icon} from 'components/shared';
+import { FormattedMessage, injectIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { arrPanelMessages } from '../panelMessages';
 
 class CopyConflictForm extends AbstractReactComponent {
     state = {
@@ -35,13 +38,13 @@ class CopyConflictForm extends AbstractReactComponent {
                 <Modal.Body>
                     {scopeError && (
                         <FormLabel>
-                            {i18n('arr.fund.addNode.conflict.scopes', scopeErrors && scopeErrors.join(', '))}
+                            {this.props.intl.formatMessage(arrPanelMessages.fundAddNodeConflictScopes, { 0: scopeErrors ? scopeErrors.join(', ') : '' })}
                         </FormLabel>
                     )}
                     {scopeError && <br />}
                     {fileConflict && (
                         <FormLabel>
-                            {i18n('arr.fund.addNode.conflict.files')}{' '}
+                            {<FormattedMessage {...arrPanelMessages.fundAddNodeConflictFiles} />}{' '}
                             <Icon
                                 style={{cursor: 'pointer'}}
                                 title={fileConflicts && fileConflicts.join(', ')}
@@ -59,7 +62,7 @@ class CopyConflictForm extends AbstractReactComponent {
                                 onChange={e => {
                                     this.setState({filesConflictResolve: 'USE_TARGET'});
                                 }}
-                                label={i18n('arr.fund.addNode.conflict.useTarget')}
+                                label={<FormattedMessage {...arrPanelMessages.fundAddNodeConflictUseTarget} />}
                             />
                             <FormCheck
                                 type={'radio'}
@@ -69,13 +72,13 @@ class CopyConflictForm extends AbstractReactComponent {
                                 onChange={e => {
                                     this.setState({filesConflictResolve: 'COPY_AND_RENAME'});
                                 }}
-                                label={i18n('arr.fund.addNode.conflict.rename')}
+                                label={<FormattedMessage {...arrPanelMessages.fundAddNodeConflictRename} />}
                             />
                         </FormGroup>
                     )}
                     {packetConflict && (
                         <FormLabel>
-                            {i18n('arr.fund.addNode.conflict.structure')}{' '}
+                            {<FormattedMessage {...arrPanelMessages.fundAddNodeConflictStructure} />}{' '}
                             <Icon
                                 style={{cursor: 'pointer'}}
                                 title={packetConflicts && packetConflicts.join(', ')}
@@ -93,7 +96,7 @@ class CopyConflictForm extends AbstractReactComponent {
                                 onChange={e => {
                                     this.setState({structuresConflictResolve: 'USE_TARGET'});
                                 }}
-                                label={i18n('arr.fund.addNode.conflict.useTarget')}
+                                label={<FormattedMessage {...arrPanelMessages.fundAddNodeConflictUseTarget} />}
                             />
                             <FormCheck
                                 type={'radio'}
@@ -103,7 +106,7 @@ class CopyConflictForm extends AbstractReactComponent {
                                 onChange={e => {
                                     this.setState({structuresConflictResolve: 'COPY_AND_RENAME'});
                                 }}
-                                label={i18n('arr.fund.addNode.conflict.rename')}
+                                label={<FormattedMessage {...arrPanelMessages.fundAddNodeConflictRename} />}
                             />
                         </FormGroup>
                     )}
@@ -116,11 +119,11 @@ class CopyConflictForm extends AbstractReactComponent {
                             type="submit"
                             onClick={this.handleFormSubmit}
                         >
-                            {i18n('global.action.store')}
+                            {<FormattedMessage {...globalMessages.save} />}
                         </Button>
                     )}
                     <Button disabled={submitting} variant="link" onClick={onClose}>
-                        {i18n('global.action.cancel')}
+                        {<FormattedMessage {...globalMessages.cancel} />}
                     </Button>
                 </Modal.Footer>
             </Form>
@@ -128,4 +131,4 @@ class CopyConflictForm extends AbstractReactComponent {
     }
 }
 
-export default CopyConflictForm;
+export default injectIntl(CopyConflictForm);

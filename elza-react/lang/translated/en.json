@@ -63,6 +63,10 @@
     "defaultMessage": "Language",
     "srcHash": "ARpdV1qvwAV4"
   },
+  "accesspoint.scope.list": {
+    "defaultMessage": "List of scopes",
+    "srcHash": "dJTOfUOMnktA"
+  },
   "accesspoint.scope.management.title": {
     "defaultMessage": "Archival entity scope management",
     "srcHash": "XwMuVX1OERKu"
@@ -3261,6 +3265,10 @@
     "defaultMessage": "Unassigned entities",
     "srcHash": "2Q_YrQFuOjqc"
   },
+  "arr.functions.computeAndVizualizeEJ": {
+    "defaultMessage": "Calculate and visualise storage units",
+    "srcHash": "UFy-f-euehAC"
+  },
   "arr.functions.computeAndVizualizeEJ.error": {
     "defaultMessage": "Calculating and visualising storage units failed",
     "srcHash": "NfmUhVKrTMDJ"
@@ -3276,6 +3284,10 @@
   "arr.functions.configuration": {
     "defaultMessage": "Configuration",
     "srcHash": "GN9jjDsGebnj"
+  },
+  "arr.functions.persistentSort": {
+    "defaultMessage": "Persistent sorting",
+    "srcHash": "-NFLraDHS4n6"
   },
   "arr.functions.persistentSort.direction.asc": {
     "defaultMessage": "Ascending",
@@ -3341,9 +3353,45 @@
     "defaultMessage": "Add a description unit",
     "srcHash": "7tQjPG9o73mM"
   },
+  "arr.fund.addNode.after": {
+    "defaultMessage": "After",
+    "srcHash": "MbGL33qcqUW3"
+  },
+  "arr.fund.addNode.atEnd": {
+    "defaultMessage": "At the end",
+    "srcHash": "f8IPozlGAfLc"
+  },
+  "arr.fund.addNode.before": {
+    "defaultMessage": "Before",
+    "srcHash": "ssBx5Gwf1fmk"
+  },
+  "arr.fund.addNode.child": {
+    "defaultMessage": "Under",
+    "srcHash": "Cmu4sB3hAVZV"
+  },
   "arr.fund.addNode.conflict": {
     "defaultMessage": "Choose how to resolve the conflicts",
     "srcHash": "0Aq5CwWfw1ue"
+  },
+  "arr.fund.addNode.conflict.files": {
+    "defaultMessage": "Files",
+    "srcHash": "nTEkFmNPvJ6o"
+  },
+  "arr.fund.addNode.conflict.rename": {
+    "defaultMessage": "Rename",
+    "srcHash": "lDdbnIaYNyTV"
+  },
+  "arr.fund.addNode.conflict.scopes": {
+    "defaultMessage": "The target fund does not allow these entity scopes: {0}",
+    "srcHash": "0kPJNnrUSc6F"
+  },
+  "arr.fund.addNode.conflict.structure": {
+    "defaultMessage": "Structured objects",
+    "srcHash": "KmBCgGzUkRG4"
+  },
+  "arr.fund.addNode.conflict.useTarget": {
+    "defaultMessage": "Use the one from the target fund",
+    "srcHash": "y2SXGAvGJ8qN"
   },
   "arr.fund.addTemplate.exists": {
     "defaultMessage": "Replace an existing one",
@@ -3681,6 +3729,22 @@
     "defaultMessage": "Outputs",
     "srcHash": "irSQ8aME65Fz"
   },
+  "arr.fund.panel.allowEdit": {
+    "defaultMessage": "Enable editing",
+    "srcHash": "-_7i6drKJjcr"
+  },
+  "arr.fund.panel.forbidEdit": {
+    "defaultMessage": "Leave edit mode",
+    "srcHash": "JAyICDrTKh6l"
+  },
+  "arr.fund.panel.lockTitle": {
+    "defaultMessage": "in a closed version",
+    "srcHash": "8IRDCiZqoukq"
+  },
+  "arr.fund.panel.readOnly": {
+    "defaultMessage": "You only have read permission",
+    "srcHash": "GU4n-7GtjJAq"
+  },
   "arr.fund.regScope": {
     "defaultMessage": "Entity scope",
     "srcHash": "SlY5BtKXdR6t"
@@ -3688,6 +3752,26 @@
   "arr.fund.ruleSet": {
     "defaultMessage": "Arrangement rules",
     "srcHash": "065mULbosm0j"
+  },
+  "arr.fund.search.fulltext": {
+    "defaultMessage": "Fulltext",
+    "srcHash": "R2cMM9mHCvs4"
+  },
+  "arr.fund.search.id": {
+    "defaultMessage": "ID/UUID",
+    "srcHash": "ZZMYzRxmC7kg"
+  },
+  "arr.fund.search.noFulltext": {
+    "defaultMessage": "Enter a search condition to see results from the archival funds.",
+    "srcHash": "_SZvb9ASU4--"
+  },
+  "arr.fund.search.result.count": {
+    "defaultMessage": "Number of records found: {0}",
+    "srcHash": "3bRpZFMJOofL"
+  },
+  "arr.fund.search.result.displayedCount": {
+    "defaultMessage": "shown: {0}",
+    "srcHash": "ErMknBisOQzw"
   },
   "arr.fund.search.windowTitle": {
     "defaultMessage": "Search in archival funds",
@@ -3740,6 +3824,22 @@
   "arr.fund.settings.title": {
     "defaultMessage": "Archival fund display settings",
     "srcHash": "jQZ0ZNIBIXRD"
+  },
+  "arr.fund.subNodes.next": {
+    "defaultMessage": "Jump one record forward",
+    "srcHash": "ym__Iy3gpufd"
+  },
+  "arr.fund.subNodes.nextPage": {
+    "defaultMessage": "Jump {0} records forward",
+    "srcHash": "lPB5RXeT5yvi"
+  },
+  "arr.fund.subNodes.prev": {
+    "defaultMessage": "Jump one record back",
+    "srcHash": "d-SzZBXxWLvL"
+  },
+  "arr.fund.subNodes.prevPage": {
+    "defaultMessage": "Jump {0} records back",
+    "srcHash": "mQKg5ayPdUm6"
   },
   "arr.fund.template.empty": {
     "defaultMessage": "No templates are defined",
@@ -3804,6 +3904,18 @@
   "arr.fund.version.list": {
     "defaultMessage": "Fund versions",
     "srcHash": "_KU3_T5mA0jk"
+  },
+  "arr.fund.versionValidation.count": {
+    "defaultMessage": "Validation errors were found ({0} in total)",
+    "srcHash": "zraKrc_fSoRi"
+  },
+  "arr.fund.versionValidation.ok": {
+    "defaultMessage": "No validation errors are known",
+    "srcHash": "ZX9w3ZOZXNIS"
+  },
+  "arr.fund.versionValidation.running": {
+    "defaultMessage": "Validation is running",
+    "srcHash": "z-y4i-OIgQoj"
   },
   "arr.fundAction.description": {
     "defaultMessage": "Description",
@@ -4413,9 +4525,21 @@
     "defaultMessage": "Unknown template",
     "srcHash": "_eYll52DiTZN"
   },
+  "arr.output.functions.all": {
+    "defaultMessage": "All functions used",
+    "srcHash": "n7QacdqtI3kX"
+  },
   "arr.output.functions.noPermissions": {
     "defaultMessage": "You do not have permission to run functions.",
     "srcHash": "tw_6IJopDk4F"
+  },
+  "arr.output.functions.notStarted": {
+    "defaultMessage": "Not run",
+    "srcHash": "xnvMwjcWGw13"
+  },
+  "arr.output.functions.recommended": {
+    "defaultMessage": "Recommended",
+    "srcHash": "Eeq0pa2jHnVK"
   },
   "arr.output.internalCode": {
     "defaultMessage": "Output internal code",
@@ -4525,6 +4649,10 @@
     "defaultMessage": "A copy was created",
     "srcHash": "DDI1bqej6YD5"
   },
+  "arr.output.title.complete": {
+    "defaultMessage": "Completed output",
+    "srcHash": "BgI35wrhn3SV"
+  },
   "arr.output.title.deleted": {
     "defaultMessage": "The output was deleted",
     "srcHash": "HSJ3Go1JLHk2"
@@ -4544,6 +4672,14 @@
   "arr.output.usageEnd.confirm": {
     "defaultMessage": "Do you really want to stop using the output?",
     "srcHash": "EpJx-P_GFV2m"
+  },
+  "arr.panel.reset": {
+    "defaultMessage": "Clear the restriction",
+    "srcHash": "wbXb6JXwniLv"
+  },
+  "arr.panel.title": {
+    "defaultMessage": "Only items for the archival fund {0} are shown",
+    "srcHash": "frSLT7uzRW_Z"
   },
   "arr.panel.title.discrepancies": {
     "defaultMessage": "Discrepancies",
@@ -4853,6 +4989,14 @@
     "defaultMessage": "The detail cannot be shown for several items",
     "srcHash": "2iRh--rTYvTa"
   },
+  "arr.structure.modal.settings.extensions": {
+    "defaultMessage": "Extensions",
+    "srcHash": "g1P6Axk7PzUU"
+  },
+  "arr.structure.modal.settings.noResults": {
+    "defaultMessage": "No extensions are available",
+    "srcHash": "uCi1HemnMhdc"
+  },
   "arr.structure.modal.settings.title": {
     "defaultMessage": "Settings — {0}",
     "srcHash": "tKGon3cnNXTF"
@@ -4884,6 +5028,10 @@
   "arr.structure.modal.updateMultiple.unlock": {
     "defaultMessage": "Keep original value",
     "srcHash": "La8cCc4r_IK2"
+  },
+  "arr.syncNodes.childrenNodes": {
+    "defaultMessage": "Including subordinate units",
+    "srcHash": "6Z6cSfIpTJEl"
   },
   "arrDao.action.copyLink": {
     "defaultMessage": "Copy link",
@@ -6073,9 +6221,25 @@
     "defaultMessage": "Open in the current tab",
     "srcHash": "aVnnU1TSMXvq"
   },
+  "fundTree.action.openInDataGrid": {
+    "defaultMessage": "Open in the table",
+    "srcHash": "lAHS6xM0_UiE"
+  },
   "fundTree.action.openInNewTab": {
     "defaultMessage": "Open in a new tab",
     "srcHash": "xoftNDHsY74v"
+  },
+  "fundTree.collapseAll": {
+    "defaultMessage": "Collapse all",
+    "srcHash": "QEHosoZnAkNg"
+  },
+  "fundTree.expandLevel": {
+    "defaultMessage": "Expand",
+    "srcHash": "AM1FCKqXjrBm"
+  },
+  "fundTree.node.name.undefined": {
+    "defaultMessage": "'<'Description unit ID={0}'>'",
+    "srcHash": "iUye3mr0LEpw"
   },
   "fundTreeDaos.action.openInArr": {
     "defaultMessage": "Open in arrangement",
@@ -6192,6 +6356,10 @@
   "global.action.download.file": {
     "defaultMessage": "Download the file “{0}”",
     "srcHash": "S9jZhFWEHqiV"
+  },
+  "global.action.downloadAll": {
+    "defaultMessage": "Download all",
+    "srcHash": "VpVRKrnTESeD"
   },
   "global.action.edit": {
     "defaultMessage": "Edit",
@@ -6588,6 +6756,10 @@
   "issueList.name": {
     "defaultMessage": "Name",
     "srcHash": "EQAs0dy3Z5es"
+  },
+  "issueList.new.unnamed": {
+    "defaultMessage": "Unnamed",
+    "srcHash": "kmAFhA4cFxjv"
   },
   "issueList.open": {
     "defaultMessage": "State",
@@ -7669,6 +7841,50 @@
     "defaultMessage": "No records found",
     "srcHash": "_YTIcNZIg5jH"
   },
+  "search.extended.form.text": {
+    "defaultMessage": "Text",
+    "srcHash": "cZiMTY4IA7pF"
+  },
+  "search.extended.form.unitdate": {
+    "defaultMessage": "Date",
+    "srcHash": "kTWILTI82Dml"
+  },
+  "search.extended.form.unitdate.type.contains": {
+    "defaultMessage": "During",
+    "srcHash": "zs23hWXrBXOi"
+  },
+  "search.extended.form.unitdate.type.ge": {
+    "defaultMessage": "From (incl.)",
+    "srcHash": "MOTUyIl6wa1n"
+  },
+  "search.extended.form.unitdate.type.le": {
+    "defaultMessage": "To (incl.)",
+    "srcHash": "-kn4qWw8--5F"
+  },
+  "search.extended.input.text": {
+    "defaultMessage": "Lucene query",
+    "srcHash": "Z93E71Ec20Eo"
+  },
+  "search.extended.label": {
+    "defaultMessage": "Advanced search",
+    "srcHash": "iZ1waeTc5zgs"
+  },
+  "search.extended.search": {
+    "defaultMessage": "Search",
+    "srcHash": "Vm8ngnO9dDUD"
+  },
+  "search.extended.title": {
+    "defaultMessage": "Advanced search",
+    "srcHash": "iZ1waeTc5zgs"
+  },
+  "search.extended.type.form": {
+    "defaultMessage": "Advanced search",
+    "srcHash": "iZ1waeTc5zgs"
+  },
+  "search.extended.type.text": {
+    "defaultMessage": "Extended query (Lucene)",
+    "srcHash": "8Jx44Pa1vSip"
+  },
   "search.found": {
     "defaultMessage": "({0})",
     "srcHash": "Te0ZgSveYi-t"
@@ -7676,6 +7892,10 @@
   "search.found.more": {
     "defaultMessage": "({0}/{1})",
     "srcHash": "nNN_MATaqm8B"
+  },
+  "search.input.filter": {
+    "defaultMessage": "Filter…",
+    "srcHash": "yPvtdk4iir_7"
   },
   "search.input.search": {
     "defaultMessage": "Search…",

@@ -2,7 +2,9 @@ import { useState, ReactNode } from 'react';
 import { Modal, FormCheck } from 'react-bootstrap';
 import classNames from 'classnames';
 import { createReferenceMark, getNodeIcon } from 'components/arr/ArrUtils.jsx'
-import { i18n, Icon } from 'components/shared';
+import { Icon } from 'components/shared';
+import { FormattedMessage, useIntl } from 'react-intl';
+import { arrPanelMessages } from '../panelMessages';
 import Search from "../../shared/search/Search";
 import HorizontalLoader from "../../shared/loading/HorizontalLoader";
 import './SearchFundsForm.scss';
@@ -22,6 +24,7 @@ interface Props {
 }
 
 export const SelectSearchFundsForm = ({ onSubmit }: Props) => {
+    const intl = useIntl();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [query, setQuery] = useState<string>("");
     const [isIdSearch, setIsIdSearch] = useState<boolean>(false);
@@ -189,14 +192,14 @@ export const SelectSearchFundsForm = ({ onSubmit }: Props) => {
         <Modal.Body>
             <div className="horizontal-radio">
                 <FormCheck
-                    label={i18n("arr.fund.search.fulltext")}
+                    label={<FormattedMessage {...arrPanelMessages.fundSearchFulltext} />}
                     type="radio"
                     name="searchType"
                     onChange={handleRadioChange(false)}
                     checked={!isIdSearch}
                 />
                 <FormCheck
-                    label={i18n("arr.fund.search.id")}
+                    label={<FormattedMessage {...arrPanelMessages.fundSearchId} />}
                     type="radio"
                     name="searchType"
                     onChange={handleRadioChange(true)}
@@ -206,16 +209,15 @@ export const SelectSearchFundsForm = ({ onSubmit }: Props) => {
             <Search
                 onSearch={handleSearch}
                 onClear={handleClearSearch}
-                placeholder={i18n('search.input.search')}
+                placeholder={<FormattedMessage {...arrPanelMessages.searchInputSearch} />}
                 value={query}
             />
             {isFetching && <HorizontalLoader hover showText={false} key="loader" />}
-            {isFetched && i18n('arr.fund.search.result.count', totalCount)}
+            {isFetched && intl.formatMessage(arrPanelMessages.fundSearchResultCount, { 0: totalCount })}
             <div className={`fund-search ${isFetched && totalCount > 0 ? 'result' : 'no-fulltext'}`}>
                 {isFetched
                     ? renderResult()
-                    : i18n('arr.fund.search.noFulltext'
-                    )}
+                    : intl.formatMessage(arrPanelMessages.fundSearchNoFulltext)}
             </div>
         </Modal.Body >
     )

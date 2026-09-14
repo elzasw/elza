@@ -2,7 +2,9 @@ import './VersionValidationState.scss';
 import PropTypes from 'prop-types';
 
 import React from 'react';
-import {AbstractReactComponent, i18n, Icon} from 'components/shared';
+import {AbstractReactComponent, Icon} from 'components/shared';
+import { FormattedMessage, injectIntl } from 'react-intl';
+import { arrPanelMessages } from './panelMessages';
 
 /**
  * Komponenta pro zobrazení stavu verze
@@ -20,21 +22,21 @@ class VersionValidationState extends AbstractReactComponent {
             msg = (
                 <span>
                     <Icon glyph="fa-refresh" />
-                    {i18n('arr.fund.versionValidation.running')}
+                    {<FormattedMessage {...arrPanelMessages.fundVersionValidationRunning} />}
                 </span>
             );
         } else if (this.props.errExist) {
             msg = (
                 <span className="err">
                     <Icon glyph="fa-exclamation-triangle" />
-                    {i18n('arr.fund.versionValidation.count', this.props.count)}
+                    {this.props.intl.formatMessage(arrPanelMessages.fundVersionValidationCount, { 0: this.props.count })}
                 </span>
             );
         } else {
             msg = (
                 <span className="ok">
                     <Icon glyph="fa-check" />
-                    {i18n('arr.fund.versionValidation.ok')}
+                    {<FormattedMessage {...arrPanelMessages.fundVersionValidationOk} />}
                 </span>
             );
         }
@@ -49,4 +51,4 @@ VersionValidationState.propTypes = {
     isFetching: PropTypes.bool.isRequired,
 };
 
-export default VersionValidationState;
+export default injectIntl(VersionValidationState);

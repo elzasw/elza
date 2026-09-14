@@ -1,6 +1,9 @@
 import React from 'react';
 import {Field, FieldArray, reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n} from 'components/shared';
+import {AbstractReactComponent} from 'components/shared';
+import { FormattedMessage, injectIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { arrPanelMessages } from '../panelMessages';
 import {Form, Modal} from 'react-bootstrap';
 import {Button} from '../../ui';
 
@@ -17,14 +20,14 @@ class StructureExtensionsForm extends AbstractReactComponent {
         return (
             <Form className="structure-extensions-form" onSubmit={handleSubmit}>
                 <Modal.Body>
-                    <h5>{i18n('arr.structure.modal.settings.extensions')}</h5>
+                    <h5>{<FormattedMessage {...arrPanelMessages.structureModalSettingsExtensions} />}</h5>
                     <div className="listbox-wrapper">
                         <div className="listbox-container">
                             <FieldArray
                                 name={'extensions'}
                                 component={({fields, meta}) => {
                                     if (fields.length === 0) {
-                                        return i18n('arr.structure.modal.settings.noResults');
+                                        return this.props.intl.formatMessage(arrPanelMessages.structureModalSettingsNoResults);
                                     }
                                     return fields.map((item, index, fields) => {
                                         return (
@@ -46,10 +49,10 @@ class StructureExtensionsForm extends AbstractReactComponent {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button type="submit" variant="outline-secondary" disabled={submitting}>
-                        {i18n('global.action.update')}
+                        {<FormattedMessage {...globalMessages.save} />}
                     </Button>
                     <Button variant="link" disabled={submitting} onClick={onClose}>
-                        {i18n('global.action.cancel')}
+                        {<FormattedMessage {...globalMessages.cancel} />}
                     </Button>
                 </Modal.Footer>
             </Form>
@@ -59,4 +62,4 @@ class StructureExtensionsForm extends AbstractReactComponent {
 
 export default reduxForm({
     form: 'structureExtensions',
-})(StructureExtensionsForm);
+})(injectIntl(StructureExtensionsForm));

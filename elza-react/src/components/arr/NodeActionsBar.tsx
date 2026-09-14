@@ -12,7 +12,9 @@ import {
     fundSubNodesNextPage,
     fundSubNodesPrevPage
 } from 'actions/arr/node.jsx';
-import { i18n, Icon, Search } from 'components/shared';
+import { Icon, Search } from 'components/shared';
+import { FormattedMessage, useIntl } from 'react-intl';
+import { arrPanelMessages } from './panelMessages';
 import React, { useRef } from 'react';
 import { Field, Form as FinalForm } from 'react-final-form';
 import { useThunkDispatch } from 'utils/hooks';
@@ -43,6 +45,7 @@ const NodeNavigation = ({
     onMoveForward,
     simplified,
 }: NodeNavigationProps) => {
+    const intl = useIntl();
     const dispatch = useThunkDispatch();
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -69,7 +72,7 @@ const NodeNavigation = ({
                 className={`btn left`}
                 disabled={node.viewStartIndex === 0 || node.selectedSubNodeId == undefined}
                 onClick={e => onMoveBackward(e)}
-                title={i18n( `arr.fund.subNodes.prevPage`, node.pageSize)}
+                title={intl.formatMessage(arrPanelMessages.fundSubNodesPrevPage, { 0: node.pageSize })}
             >
                 <Icon glyph={'fa-backward'} />
             </button>}
@@ -77,7 +80,7 @@ const NodeNavigation = ({
                 className={`btn left`}
                 disabled={node.nodeIndex === 0}
                 onClick={e => onPrevNode(e)}
-                title={i18n( `arr.fund.subNodes.prev`)}
+                title={intl.formatMessage(arrPanelMessages.fundSubNodesPrev)}
             >
                 <Icon glyph={'fa-caret-left'} />
             </button>
@@ -129,7 +132,7 @@ const NodeNavigation = ({
                 className={`btn right`}
                 disabled={node.nodeIndex + 1 === node.nodeCount}
                 onClick={e => onNextNode(e)}
-                title={i18n( `arr.fund.subNodes.next`)}
+                title={intl.formatMessage(arrPanelMessages.fundSubNodesNext)}
             >
                 <Icon glyph={'fa-caret-right'} />
             </button>
@@ -137,7 +140,7 @@ const NodeNavigation = ({
                 className={`btn right`}
                 disabled={node.viewStartIndex + node.pageSize >= node.nodeCount || node.selectedSubNodeId == undefined}
                 onClick={e => onMoveForward(e)}
-                title={i18n( `arr.fund.subNodes.nextPage`, node.pageSize)}
+                title={intl.formatMessage(arrPanelMessages.fundSubNodesNextPage, { 0: node.pageSize })}
             >
                 <Icon glyph={'fa-forward'} />
             </button>}
@@ -203,7 +206,7 @@ const NodeActionsBar = ({
                             <Search
                                 tabIndex={-1}
                                 className="search-input"
-                                placeholder={i18n('search.input.filter')}
+                                placeholder={<FormattedMessage {...arrPanelMessages.searchInputFilter} />}
                                 value={node.filterText}
                                 onClear={() => {
                                     dispatch(fundNodeSubNodeFulltextSearch(''));

@@ -1,6 +1,9 @@
 import React from 'react';
 import {Field, FieldArray, formValueSelector, reduxForm} from 'redux-form';
-import {AbstractReactComponent, FormInput, i18n, Icon} from 'components/shared';
+import {AbstractReactComponent, FormInput, Icon} from 'components/shared';
+import { FormattedMessage } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { arrPanelMessages } from './panelMessages';
 import DatationField from '../party/DatationField';
 import {Col, Form, Modal, Row} from 'react-bootstrap';
 import {Button} from '../ui';
@@ -82,13 +85,13 @@ class ArrSearchForm extends AbstractReactComponent {
                                 label={false}
                             >
                                 <option value={GE} key={GE}>
-                                    {i18n('search.extended.form.unitdate.type.ge')}
+                                    {<FormattedMessage {...arrPanelMessages.searchExtendedFormUnitdateTypeGe} />}
                                 </option>
                                 <option value={LE} key={LE}>
-                                    {i18n('search.extended.form.unitdate.type.le')}
+                                    {<FormattedMessage {...arrPanelMessages.searchExtendedFormUnitdateTypeLe} />}
                                 </option>
                                 <option value={CONTAINS} key={CONTAINS}>
-                                    {i18n('search.extended.form.unitdate.type.contains')}
+                                    {<FormattedMessage {...arrPanelMessages.searchExtendedFormUnitdateTypeContains} />}
                                 </option>
                             </Field>
                         </div>
@@ -126,14 +129,14 @@ class ArrSearchForm extends AbstractReactComponent {
                         return (
                             <>
                                 <Button variant="outline-secondary"  className="action-button" onClick={() => fields.push({type: TYPE_TEXT})}>
-                                    <Icon glyph="fa-plus" /> {i18n('search.extended.form.text')}
+                                    <Icon glyph="fa-plus" /> {<FormattedMessage {...arrPanelMessages.searchExtendedFormText} />}
                                 </Button>
                                 <Button
                                     variant="outline-secondary"
                                     className="action-button"
                                     onClick={() => fields.push({type: TYPE_UNITDATE, condition: GE})}
                                 >
-                                    <Icon glyph="fa-plus" /> {i18n('search.extended.form.unitdate')}
+                                    <Icon glyph="fa-plus" /> {<FormattedMessage {...arrPanelMessages.searchExtendedFormUnitdate} />}
                                 </Button>
 
                                 <div className="items">
@@ -160,7 +163,7 @@ class ArrSearchForm extends AbstractReactComponent {
                     name="text"
                     type="textarea"
                     component={FormInputField}
-                    label={i18n('search.extended.input.text')}
+                    label={<FormattedMessage {...arrPanelMessages.searchExtendedInputText} />}
                     disabled={submitting}
                 />
             </div>
@@ -174,7 +177,7 @@ class ArrSearchForm extends AbstractReactComponent {
                             <Field
                                 component={FormInputField}
                                 type="radio"
-                                label={i18n('search.extended.type.form')}
+                                label={<FormattedMessage {...arrPanelMessages.searchExtendedTypeForm} />}
                                 name="type"
                                 value={FORM_FORM}
                             />
@@ -183,7 +186,7 @@ class ArrSearchForm extends AbstractReactComponent {
                             <Field
                                 component={FormInputField}
                                 type="radio"
-                                label={i18n('search.extended.type.text')}
+                                label={<FormattedMessage {...arrPanelMessages.searchExtendedTypeText} />}
                                 name="type"
                                 value={FORM_TEXT}
                             />
@@ -194,10 +197,10 @@ class ArrSearchForm extends AbstractReactComponent {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button type="submit" variant="outline-secondary" disabled={submitting}>
-                        {i18n('search.extended.search')}
+                        {<FormattedMessage {...arrPanelMessages.searchExtendedSearch} />}
                     </Button>
                     <Button variant="link" onClick={onClose} disabled={submitting}>
-                        {i18n('global.action.cancel')}
+                        {<FormattedMessage {...globalMessages.cancel} />}
                     </Button>
                 </Modal.Footer>
             </Form>
