@@ -1,6 +1,7 @@
 import classNames from 'classnames';
 import React, { FC } from 'react';
-import i18n from '../../../i18n';
+import { FormattedMessage, useIntl } from 'react-intl';
+import { apDetailMessages } from '../messages';
 import './DetailPart.scss';
 import { SyncState } from 'elza-api';
 import { SyncIcon } from "../sync-icon";
@@ -18,11 +19,12 @@ export const PartName:FC<{
     onClick,
     binding,
 }) => {
+    const intl = useIntl();
 
     // label = label.replace(/^\w/, (c) => c.toUpperCase())
 
     return <div
-        title={collapsed ? i18n("ap.detail.expandInfo") : i18n("ap.detail.collapseInfo")}
+        title={collapsed ? intl.formatMessage(apDetailMessages.detailExpandInfo) : intl.formatMessage(apDetailMessages.detailCollapseInfo)}
         className="detail-part-label"
         onClick={onClick}
     >
@@ -32,7 +34,7 @@ export const PartName:FC<{
                 "opened": !collapsed,
             })}
         >
-            {label || <i>{i18n("ap.detail.info")}</i>}
+            {label || <i>{<FormattedMessage {...apDetailMessages.detailInfo} />}</i>}
         </span>
         <div className="sync-wrapper">
             {(binding != null) && (

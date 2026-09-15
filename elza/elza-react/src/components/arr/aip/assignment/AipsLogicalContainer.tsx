@@ -6,6 +6,7 @@ import Tree from "./Tree";
 import { mapNodesToFlatItemArr } from "./utils";
 import NodeDetail from "./NodeDetail";
 import { useState } from "react";
+import { useNodeName } from "components/aip/explorer/levels";
 
 export type FlatItem = HeadlessFlatTreeItemProps & { content: string };
 
@@ -18,10 +19,11 @@ type AipsLogicalTreeProps = {
 
 const AipsLogicalContainer = ({tree, setSelectedAips, selectedNode}: AipsLogicalTreeProps) => {
     const [node, setNode] = useState<TreeItemValue>(selectedNode);
+    const nodeName = useNodeName();
     if(!tree) {
         return null;
     }
-    const nodes = mapNodesToFlatItemArr(tree);
+    const nodes = mapNodesToFlatItemArr(tree, nodeName);
 
     return (
         <div className="border d-flex flex-column h-100">

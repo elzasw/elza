@@ -7,6 +7,8 @@ import {
     DialogContent,
     DialogSurface,
     DialogTitle,
+    makeStyles,
+    tokens,
 } from '@fluentui/react-components';
 import { defineMessages, useIntl } from 'react-intl';
 import { globalMessages } from 'components/shared/lang/messages';
@@ -19,19 +21,34 @@ const messages = defineMessages({
     },
 });
 
+const useStyles = makeStyles({
+    destructiveConfirm: {
+        backgroundColor: tokens.colorStatusDangerBackground3,
+        ':hover': {
+            backgroundColor: tokens.colorStatusDangerBackground3Hover,
+        },
+        ':active': {
+            backgroundColor: tokens.colorStatusDangerBackground3Pressed,
+        },
+    },
+});
+
 interface ConfirmOptions {
     message: ReactNode;
     title?: string;
     confirmLabel?: string;
     cancelLabel?: string;
+    /** Marks the confirming action as one that destroys data. */
+    destructive?: boolean;
 }
 
 interface Props extends ConfirmOptions {
     onResult: (confirmed: boolean) => void;
 }
 
-function ConfirmDialog({ message, title, confirmLabel, cancelLabel, onResult }: Props) {
+function ConfirmDialog({ message, title, confirmLabel, cancelLabel, destructive, onResult }: Props) {
     const intl = useIntl();
+    const styles = useStyles();
 
     return (
         <Dialog
@@ -49,7 +66,11 @@ function ConfirmDialog({ message, title, confirmLabel, cancelLabel, onResult }: 
                     <DialogTitle>{title ?? intl.formatMessage(messages.title)}</DialogTitle>
                     <DialogContent>{message}</DialogContent>
                     <DialogActions>
-                        <Button appearance="primary" onClick={() => onResult(true)}>
+                        <Button
+                            appearance="primary"
+                            className={destructive ? styles.destructiveConfirm : undefined}
+                            onClick={() => onResult(true)}
+                        >
                             {confirmLabel ?? intl.formatMessage(globalMessages.ok)}
                         </Button>
                         <Button onClick={() => onResult(false)}>
@@ -70,11 +91,22 @@ function ConfirmDialog({ message, title, confirmLabel, cancelLabel, onResult }: 
 export function useConfirmModal() {
     const { showModal } = useContext(FluentDialogContext);
 
-    return function confirm(options: ConfirmOptions): Promise<boolean> {
-        return showModal<boolean, undefined>({
+    return async function confirm(options: ConfirmOptions): Promise<boolean> {
+        // The dialog is opened from code, so nothing marks the element focus should return to.
+        // Left alone, focus lands outside the dialog that asked for the confirmation, and a
+        // surrounding focus trap then fights with whatever grabbed it.
+        const previouslyFocused = document.activeElement;
+
+        const { result } = await showModal<boolean, undefined>({
             createDialog: ({ handleResult }) => (
                 <ConfirmDialog {...options} onResult={(confirmed) => handleResult(confirmed, undefined)} />
             ),
-        }).then(({ result }) => result === true);
+        });
+
+        if (previouslyFocused instanceof HTMLElement && previouslyFocused.isConnected) {
+            requestAnimationFrame(() => previouslyFocused.focus());
+        }
+
+        return result === true;
     };
 }

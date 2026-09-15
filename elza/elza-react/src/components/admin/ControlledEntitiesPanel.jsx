@@ -1,7 +1,17 @@
 // --
 import React from 'react';
 import { connect } from 'react-redux';
-import { AbstractReactComponent, i18n } from 'components/shared';
+import { AbstractReactComponent} from 'components/shared';
+import { defineMessages, injectIntl } from 'react-intl';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    addTitle: { id: 'admin.perm.advanced.control.entity.add.title', defaultMessage: 'Přidání uživatelů a skupin' },
+    entitiesTitle: {
+        id: 'admin.perms.tabs.advanced.controller.entities.title',
+        defaultMessage: 'Spravovaní uživatelé a skupiny',
+    },
+});
 import * as perms from './../../actions/user/Permission.jsx';
 import AddRemoveList from '../shared/list/AddRemoveList';
 import { modalDialogHide, modalDialogShow } from '../../actions/global/modalDialog';
@@ -50,14 +60,6 @@ class ControlledEntitiesPanel extends AbstractReactComponent {
         return permissionsList;
     };
 
-    // renderItem = (item, isActive, index, onCheckItem) => {
-    //     if (item.id === FundsPermissionPanel.ALL_ID) {
-    //         return <div>{i18n('admin.perms.tabs.funds.items.fundAll')}</div>;
-    //     } else {
-    //         return <div>{item.fund.name}</div>;
-    //     }
-    // };
-
     renderItem = props => {
         const { item, isActive } = props;
         if (item.permission === perms.USER_CONTROL_ENTITY) {
@@ -73,7 +75,7 @@ class ControlledEntitiesPanel extends AbstractReactComponent {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('admin.perm.advanced.control.entity.add.title'),
+                this.props.intl.formatMessage(messages.addTitle),
                 <SelectItemsForm
                     onSubmitForm={items => {
                         const { permissions } = this.state;
@@ -134,7 +136,7 @@ class ControlledEntitiesPanel extends AbstractReactComponent {
 
         return (
             <AddRemoveList
-                label={i18n('admin.perms.tabs.advanced.controller.entities.title')}
+                label={this.props.intl.formatMessage(messages.entitiesTitle)}
                 addInLabel
                 className={`no-hover alternating-rows ${className}`}
                 items={permissions}
@@ -146,4 +148,4 @@ class ControlledEntitiesPanel extends AbstractReactComponent {
     }
 }
 
-export default connect()(ControlledEntitiesPanel);
+export default connect()(injectIntl(ControlledEntitiesPanel));

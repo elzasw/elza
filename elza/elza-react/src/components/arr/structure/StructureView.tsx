@@ -1,5 +1,5 @@
 import { DataType } from "elza-api";
-import { useMemo } from "react";
+import { ReactNode, useMemo } from "react";
 import { useAppSelector } from "utils/hooks/useAppSelector";
 import { buildGroupsForm } from "../item-form/utils";
 import {
@@ -18,14 +18,19 @@ import {
   DescItemUnitid,
   DescItemUriRef,
 } from "../node-view/desc-items";
-import { Tooltip } from "@fluentui/react-components";
+import { Spinner, Tooltip } from "@fluentui/react-components";
+import { useVisibleFormItems } from "../node-view/hooks";
 import { useStructureFormData } from "./hooks";
+import { FormattedMessage } from "react-intl";
+import { messages as commonMessages } from "components/arr/item-form/desc-items/commonMessages";
 
 interface Props {
   fundId: number;
   fundVersionId: number;
   structureObjectId: number;
   plain?: boolean;
+  /** Rendered instead of the form once loading finished and the structure has no items. */
+  emptyMessage?: ReactNode;
 }
 
 export type { Props as StructureViewProps };
@@ -47,28 +52,41 @@ const dataTypeMap = {
   [DataType.Bit]: DescItemBit,
 };
 
-export function StructureView({ fundId, fundVersionId, structureObjectId, plain = false }: Props) {
+export function StructureView({ fundId, fundVersionId, structureObjectId, plain = false, emptyMessage }: Props) {
   const itemTypeRefs = useAppSelector(
     ({ refTables }) => refTables.descItemTypes.itemsMap,
   );
   const groupRefs = useAppSelector(({ refTables }) => refTables.groups.data);
 
-  const { itemTypes, formItems } = useStructureFormData(
+  const { itemTypes, formItems, isLoading } = useStructureFormData(
     fundId,
     fundVersionId,
     structureObjectId,
     { skipForcedItems: true },
   );
 
+  const visibleFormItems = useVisibleFormItems(formItems);
+
   const viewDescItemGroups = useMemo(() => {
-    if (formItems && groupRefs) {
-      return buildGroupsForm([...formItems], itemTypes, groupRefs, itemTypeRefs);
+    if (visibleFormItems && groupRefs) {
+      return buildGroupsForm([...visibleFormItems], itemTypes, groupRefs, itemTypeRefs);
     }
     return [];
-  }, [formItems, itemTypes, groupRefs, itemTypeRefs]);
+  }, [visibleFormItems, itemTypes, groupRefs, itemTypeRefs]);
+
+  const isEmpty = viewDescItemGroups.length === 0;
+
+  if (isLoading) {
+    return (
+      <div style={{ padding: "4px" }}>
+        <Spinner size="tiny" />
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: "4px" }}>
+      {isEmpty && emptyMessage}
       {viewDescItemGroups.map(({ group, descItemTypes }, groupIndex) => (
         <div key={groupIndex} style={{ margin: "4px" }}>
           {!plain && (
@@ -155,7 +173,7 @@ export function StructureView({ fundId, fundVersionId, structureObjectId, plain 
                               typeForm={typeForm}
                             />
                           ) : item.undefined ? (
-                            "Nezjištěno"
+                            <FormattedMessage {...commonMessages.undefined} />
                           ) : (
                             "Not implemented"
                           )}

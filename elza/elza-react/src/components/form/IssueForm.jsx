@@ -4,7 +4,16 @@ import {Form, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
 import {AbstractReactComponent} from 'components/shared';
 import {Field, reduxForm} from 'redux-form';
-import i18n from '../i18n';
+import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { getIntl } from 'components/shared/lang/intlInstance';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    type: { id: 'issue.type', defaultMessage: 'Typ připomínky' },
+    issueList: { id: 'issue.issueList', defaultMessage: 'Protokol' },
+    text: { id: 'issue.text', defaultMessage: 'Text připomínky' },
+});
 import * as issueTypesActions from '../../actions/refTables/issueTypes';
 import * as issuesActions from '../../actions/arr/issues';
 import {connect} from "react-redux";
@@ -30,7 +39,7 @@ class IssueForm extends AbstractReactComponent {
     static requireFields = (...names) => data =>
         names.reduce((errors, name) => {
             if (!data[name]) {
-                errors[name] = i18n('global.validation.required');
+                errors[name] = getIntl().formatMessage(globalMessages.validationRequired);
             }
             return errors;
         }, {});
@@ -54,7 +63,7 @@ class IssueForm extends AbstractReactComponent {
                         name="issueListId"
                         component={FormInputField}
                         value={issueProtocol.id}
-                        label="Protokol"
+                        label={getIntl().formatMessage(messages.issueList)}
                     >
                         {issueProtocols.fetched && issueProtocols.count === 0 && <option value={''} />}
                         {issueProtocols.fetched && issueProtocols.rows.map(basicOptionMap)}
@@ -64,20 +73,20 @@ class IssueForm extends AbstractReactComponent {
                         type="select"
                         component={FormInputField}
                         value={issueTypes.data?.[0].id}
-                        label={i18n('issue.type')}>
+                        label={this.props.intl.formatMessage(messages.type)}>
                         {issueTypes.fetched && issueTypes.data.map(basicOptionMap)}
                     </Field>
                     <Field
                         name="description"
                         type="textarea"
                         component={FormInputField}
-                        label={i18n('issue.text')}
+                        label={this.props.intl.formatMessage(messages.text)}
                     />
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button type="submit" variant="outline-secondary">{i18n(update ? 'global.action.update' : 'global.action.add')}</Button>
+                    <Button type="submit" variant="outline-secondary"><FormattedMessage {...(update ? globalMessages.save : globalMessages.add)} /></Button>
                     <Button variant="link" onClick={onClose}>
-                        {i18n('global.action.cancel')}
+                        <FormattedMessage {...globalMessages.cancel} />
                     </Button>
                 </Modal.Footer>
             </Form>
@@ -100,6 +109,6 @@ const form = reduxForm({
     validate: (values, props) => {
         return IssueForm.requireFields('issueTypeId', 'description')(values);
     }
-})(IssueForm);
+})(injectIntl(IssueForm));
 
 export default connect(mapStateToProps)(form);

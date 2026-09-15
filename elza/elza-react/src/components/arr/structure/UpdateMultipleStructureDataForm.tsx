@@ -1,17 +1,13 @@
 import { useRef, useState } from "react";
 import { Modal } from "react-bootstrap";
-import { FormattedMessage, defineMessages } from "react-intl";
+import { FormattedMessage } from "react-intl";
 import { Api } from "api/api";
 import { modalDialogHide } from "actions/global/modalDialog";
 import { structureTypeInvalidate } from "actions/arr/structureType";
 import { useAppThunkDispatch } from "utils/hooks";
 import { Button } from "../../ui";
+import { globalMessages } from "components/shared/lang";
 import { MultiStructureEdit, MultiStructureEditHandle } from "./MultiStructureEdit";
-
-const messages = defineMessages({
-    update: { id: "global.action.update", defaultMessage: "Uložit" },
-    cancel: { id: "global.action.cancel", defaultMessage: "Zrušit" },
-});
 
 interface Props {
     fundId: number;
@@ -62,10 +58,10 @@ export function UpdateMultipleStructureDataForm({
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="outline-secondary" disabled={isSubmitting} onClick={handleSubmit}>
-                    <FormattedMessage {...messages.update} />
+                    <FormattedMessage {...globalMessages.save} />
                 </Button>
                 <Button variant="link" disabled={isSubmitting} onClick={onClose}>
-                    <FormattedMessage {...messages.cancel} />
+                    <FormattedMessage {...globalMessages.cancel} />
                 </Button>
             </Modal.Footer>
         </div>

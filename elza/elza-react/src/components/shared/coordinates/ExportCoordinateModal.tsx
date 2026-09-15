@@ -1,6 +1,17 @@
 import { downloadFileInFrame } from 'actions/global/download';
 import { UrlFactory } from 'actions/WebApi';
-import i18n from 'components/i18n';
+import { FormattedMessage, defineMessages, useIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    exportInfo: {
+        id: 'ap.coordinate.export.info',
+        defaultMessage: 'Zvolte požadovaný formát exportovaných souřadnic:',
+    },
+    format: { id: 'ap.coordinate.format', defaultMessage: 'Formát {0}' },
+    exportAction: { id: 'global.action.export', defaultMessage: 'Exportovat' },
+});
 import React, { ChangeEvent, useState } from 'react';
 import { Button, Col, Form, Modal, Row } from 'react-bootstrap';
 import { useThunkDispatch } from 'utils/hooks';
@@ -15,6 +26,7 @@ type Props = {
 export const ExportCoordinateModal = ({itemId, arrangement, onClose}: Props) => {
     const [format, setFormat] = useState(CoordinateFileType.KML);
     const dispatch = useThunkDispatch();
+    const intl = useIntl();
 
     const handleExport = (itemId: number | undefined, arrangement: boolean, format: CoordinateFileType, onClose: () => void) => {
         dispatch(
@@ -34,7 +46,7 @@ export const ExportCoordinateModal = ({itemId, arrangement, onClose}: Props) => 
         <>
             <Modal.Body>
                 <Row>
-                    <Col>{i18n('ap.coordinate.export.info')}</Col>
+                    <Col><FormattedMessage {...messages.exportInfo} /></Col>
                 </Row>
                 <Row className="pt-2">
                     <Col>
@@ -45,7 +57,7 @@ export const ExportCoordinateModal = ({itemId, arrangement, onClose}: Props) => 
                                 checked={format === x}
                                 value={x}
                                 onChange={onChange}
-                                label={i18n('ap.coordinate.format', x.toUpperCase())}
+                                label={intl.formatMessage(messages.format, { 0: x.toUpperCase() })}
                             />
                         ))}
                     </Col>
@@ -53,10 +65,10 @@ export const ExportCoordinateModal = ({itemId, arrangement, onClose}: Props) => 
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="outline-secondary" onClick={() => handleExport(itemId, arrangement, format, onClose)}>
-                    {i18n('global.action.export')}
+                    <FormattedMessage {...messages.exportAction} />
                 </Button>
                 <Button variant="link" onClick={onClose}>
-                    {i18n('global.action.cancel')}
+                    <FormattedMessage {...globalMessages.cancel} />
                 </Button>
             </Modal.Footer>
         </>

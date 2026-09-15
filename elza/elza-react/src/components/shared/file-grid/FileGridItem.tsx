@@ -1,7 +1,14 @@
 import React, { FC } from "react";
 import { Button } from "../../ui";
 //@ts-ignore
-import { i18n, Icon } from "components/shared";
+import { Icon } from "components/shared";
+import { defineMessages, useIntl } from 'react-intl';
+
+// Id je převzaté z legacy katalogu beze změny; apostrofy kolem placeholderu
+// nahrazeny českými uvozovkami, jinak by ICU hodnotu nedosadilo.
+const messages = defineMessages({
+    downloadFile: { id: 'global.action.download.file', defaultMessage: 'Stáhnout soubor „{0}“' },
+});
 import { File } from "./types";
 
 export const FileGridItem:FC<{
@@ -11,6 +18,7 @@ export const FileGridItem:FC<{
     file,
     onDownload,
 }) => {
+    const intl = useIntl();
 
     const handleDownload = () => {
         onDownload && onDownload(file.id);
@@ -42,7 +50,7 @@ export const FileGridItem:FC<{
                         variant="action" 
                         className="file-action-button" 
                         onClick={handleDownload}
-                        title={i18n("global.action.download.file", file.fileName)}
+                        title={intl.formatMessage(messages.downloadFile, { 0: file.fileName })}
                     >
                         <Icon
                             glyph="fa-download"

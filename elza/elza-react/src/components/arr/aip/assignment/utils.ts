@@ -1,10 +1,16 @@
 import { FlatItem } from "./AipsLogicalContainer";
-export const mapNodesToFlatItemArr = (tree) => {
+import { NamedNode } from "components/aip/explorer/levels";
+
+/**
+ * Virtuální úrovně stromu pojmenovává klient podle jejich typu, proto se název neřeší tady,
+ * ale předává se překladač z komponenty.
+ */
+export const mapNodesToFlatItemArr = (tree, nodeName: (node: NamedNode) => string) => {
     const items = []
         tree.nodes.forEach((node) => {
             const item: FlatItem = {
                 value: node.UUID,
-                content: node.name,
+                content: nodeName(node),
             }
             if (node.parent != null) {
                 item.parentValue = node.parent;

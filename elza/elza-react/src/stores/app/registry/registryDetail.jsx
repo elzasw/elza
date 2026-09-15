@@ -1,6 +1,8 @@
 import DetailReducer from 'shared/detail/DetailReducer';
 import {RESPONSE} from 'shared/detail/DetailActions';
-import {i18n} from 'components/shared';
+import {} from 'components/shared';
+import { getIntl } from 'components/shared/lang/intlInstance';
+import { validationMessages } from 'components/shared/lang/validationMessages';
 
 const intialState = {
     variantRecordInternalId: 0,
@@ -14,7 +16,7 @@ function validateCoordinate(coordinate) {
             let left = newCord.value.indexOf('(') + 1;
             let right = newCord.value.indexOf(')');
             if (right - left === 0) {
-                newCord.error.value = i18n('subNodeForm.validate.value.notEmpty');
+                newCord.error.value = getIntl().formatMessage(validationMessages.valueNotEmpty);
             }
             let data = newCord.value.substr(left, newCord.value.indexOf(')') - left).split(' ');
             if (
@@ -26,13 +28,13 @@ function validateCoordinate(coordinate) {
                 data[1] == null ||
                 data[1] === ''
             ) {
-                newCord.error.value = i18n('subNodeForm.errorPointCoordinates');
+                newCord.error.value = getIntl().formatMessage(validationMessages.pointCoordinates);
             } else {
                 newCord.error.value = null;
             }
         }
     } else {
-        newCord.error.value = i18n('subNodeForm.validate.value.notEmpty');
+        newCord.error.value = getIntl().formatMessage(validationMessages.valueNotEmpty);
     }
     if (newCord.error.value) {
         newCord.hasError = true;

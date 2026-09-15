@@ -6,6 +6,11 @@ import { routerNavigate } from 'actions/router.jsx';
 import Tetris from 'components/game/Tetris.jsx';
 import { AbstractReactComponent, ContextMenu, ModalDialog, Toastr, Utils, WebSocket } from 'components/shared';
 import keymap from 'src/keymap';
+import { FormattedMessage, defineMessages } from 'react-intl';
+
+const messages = defineMessages({
+    buildVersion: { id: 'app.footer.buildVersion', defaultMessage: 'Verze sestavení aplikace: {version}' },
+});
 import {
     AdminExtSystemPage,
     AdminInstitutionPage,
@@ -64,11 +69,14 @@ import {
     URL_COMPONENT
 } from '../constants.tsx';
 import AdminBulkActionPage from './admin/AdminBulkActionPage';
+import { AdminImportPage } from './admin/AdminImportPage';
+import { AdminImportBatchDetailPage } from './admin/AdminImportBatchDetailPage';
 import AppRouter from './AppRouter';
 import './Layout.scss';
 import defaultKeymap from './LayoutKeymap.jsx';
 import { MAP_URL } from './map/MapPage';
 import { WebsocketProvider } from 'components/shared/web-socket/WebsocketProvider';
+import { ImportBatchToaster } from '../components/arr/ImportBatchToaster';
 import ComponentPage from './component/ComponentPage.tsx';
 import { FluentDialogProvider } from 'components/shared/dialog/FluentModalDialog';
 // import FundOpenPage from './fund_open/FundOpenPage';
@@ -209,6 +217,7 @@ class Layout extends AbstractReactComponent {
                 <IntegrationPanel id="integration-header" integrationFunction={window.renderIntegrationHeader}/>
                 <div className={window.versionNumber ? 'root-container with-version' : 'root-container'}>
                     <WebsocketProvider>
+                        {this.props.login.logged && <ImportBatchToaster />}
                         <div
                             onClick={() => {
                                 canStartGame && this.setState({showGame: true});
@@ -230,6 +239,7 @@ class Layout extends AbstractReactComponent {
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${GRID}/:nodeId/:descItemTypeId?`} component={ArrDataGridPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${GRID}`} component={ArrDataGridPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${AIP}/:aipId/explorer`} component={ArrAipExplorerPage} />
+                                            <Route path={`${URL_FUND}/:id/v/:versionId/${AIP}/:aipId`} component={ArrAipPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${AIP}`} component={ArrAipPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${MOVEMENTS}`} component={ArrMovementsPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${OUTPUTS}/:outputId`} component={ArrOutputPage} />
@@ -248,6 +258,7 @@ class Layout extends AbstractReactComponent {
                                             <Route path={`${URL_FUND}/:id/${GRID}/:nodeId/:descItemTypeId?`} component={ArrDataGridPage} />
                                             <Route path={`${URL_FUND}/:id/${GRID}`} component={ArrDataGridPage} />
                                             <Route path={`${URL_FUND}/:id/${AIP}/:aipId/explorer`} component={ArrAipExplorerPage} />
+                                            <Route path={`${URL_FUND}/:id/${AIP}/:aipId`} component={ArrAipPage} />
                                             <Route path={`${URL_FUND}/:id/${AIP}`} component={ArrAipPage} />
                                             <Route path={`${URL_FUND}/:id/${PUBLICATION}`} component={ArrPublicationPage} />
                                             <Route path={`${URL_FUND}/:id/${MOVEMENTS}`} component={ArrMovementsPage} />
@@ -289,6 +300,8 @@ class Layout extends AbstractReactComponent {
                                             <Route path="/admin/institution/:id" component={AdminInstitutionPage} />
                                             <Route path="/admin/institution" component={AdminInstitutionPage} />
                                             <Route path="/admin/logs" component={AdminLogsPage} />
+                                            <Route path="/admin/import/:id" component={AdminImportBatchDetailPage} />
+                                            <Route path="/admin/import" component={AdminImportPage} />
                                             <Route path={'/admin/reports'} component={ReportsPage}/>
                                             <Route component={AdminPage} />
                                         </Switch>
@@ -308,7 +321,11 @@ class Layout extends AbstractReactComponent {
                     </WebsocketProvider>
                 </div>
                 <IntegrationPanel id="integration-footer" integrationFunction={window.renderIntegrationFooter}>
-                    {window.versionNumber && <div className="version-container">Verze sestavení aplikace: {window.versionNumber}</div>}
+                    {window.versionNumber && (
+                        <div className="version-container">
+                            <FormattedMessage {...messages.buildVersion} values={{version: window.versionNumber}} />
+                        </div>
+                    )}
                 </IntegrationPanel>
             </Shortcuts>
         );

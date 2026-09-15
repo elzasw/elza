@@ -1,4 +1,27 @@
-import i18n from "components/i18n";
+import { FormattedMessage, defineMessages } from "react-intl";
+import { DetailRow } from "../../DetailRow";
+import { useNodeName } from "../levels";
+
+// Id aip.explorer.* jsou převzatá z legacy katalogu beze změny. Popisky, které
+// byly v JSX natvrdo česky, dostávají nová id v dot notaci.
+const messages = defineMessages({
+    name: { id: "aip.explorer.detail.name", defaultMessage: "Název" },
+    checksum: { id: "aip.explorer.detail.checksum", defaultMessage: "Kontrolní součet" },
+    format: { id: "aip.explorer.detail.format", defaultMessage: "Formát" },
+    linkedDescription: { id: "aip.explorer.detail.as", defaultMessage: "Napojený archivní popis" },
+    title: { id: "aip.explorer.detail.title", defaultMessage: "Podrobnosti" },
+    parent: { id: "aip.explorer.detail.parent", defaultMessage: "Rodič" },
+    show: { id: "aip.explorer.detail.action.show", defaultMessage: "Zobrazit" },
+    download: { id: "aip.explorer.detail.action.download", defaultMessage: "Stáhnout" },
+    relationsRepresentation: {
+        id: "aip.explorer.detail.relations.representation",
+        defaultMessage: "Vztahy - reprezentace",
+    },
+    relationsLogical: {
+        id: "aip.explorer.detail.relations.logical",
+        defaultMessage: "Vztahy - logická struktura",
+    },
+});
 import { FC, useEffect, useState } from "react";
 import "./ExplorerDetail.scss";
 import { Button,  } from "@fluentui/react-components";
@@ -17,9 +40,11 @@ import {AipsApiAxiosParamCreator, DaoViewRequestVO} from "elza-api";
 import { AREA_AIP_STRUCTURE } from "actions/aip/exp.ts";
 import CrossTabHelper, { CrossTabEventType, getThisLayout } from "../../../CrossTabHelper";
 import {WebApi} from 'actions/WebApi';
+import { explorerMessages } from "../../messages";
 
 const ExplorerDetail: FC<{selected?: string;}> = ({selected}) => {
-    const {selectedItem, setSelectedItem} = useExplorerContext();
+    const {selectedItem, setSelectedItem, hideRoot} = useExplorerContext();
+    const nodeName = useNodeName();
     const aip = useSelector((state: AppState) => storeFromArea(state, AREA_AIP));
     const structure = useSelector((state: AppState) => storeFromArea(state, AREA_AIP_STRUCTURE));
     const dispatch = useThunkDispatch();
@@ -65,18 +90,6 @@ const ExplorerDetail: FC<{selected?: string;}> = ({selected}) => {
     }, [structure.data, selected]);
 
 
-    const DetailRow = ({label, value}: {label: string, value?: any}) => (
-        <div className="item-row">
-            <div className="label col">
-                <b>{label}</b>
-            </div>
-            {value && <div className="value col">
-                {value}
-            </div>
-            }
-        </div>
-    );
-
     const selectFolder = (id: number) => {
         const result = findNodeByUUID(structure.data, id);
         if(result) {
@@ -91,18 +104,24 @@ const ExplorerDetail: FC<{selected?: string;}> = ({selected}) => {
         return value;
     }
 
-    const renderName = () => {
-        return node.label || node.filename;
-    }
+    const renderName = () => nodeName(node);
 
     if(!node) {
-        return <p>Nebyl vybrám žádný objekt</p>
+        return <p><FormattedMessage {...explorerMessages.noSelection} /></p>
+    }
+    // The hidden root has nothing of its own to show; the package as a whole has its own tab.
+    if (hideRoot && node.uuid === structure.data?.uuid) {
+        return (
+            <div className="explorer-detail">
+                <p className="explorer-detail-hint"><FormattedMessage {...explorerMessages.selectPart} /></p>
+            </div>
+        );
     }
     const renderRepresentationParent = () => {
         return (
             <span>
                 <a className="detail-item" onClick={() => selectFolder(node.parentFolder.uuid)}>
-                    {renderValue(node.parentFolder?.label)}
+                    {renderValue(nodeName(node.parentFolder))}
                 </a>
             </span>
         );
@@ -112,7 +131,7 @@ const ExplorerDetail: FC<{selected?: string;}> = ({selected}) => {
         return (
             <span>
                 <a className="detail-item" onClick={() => selectFolder(node.parentFolderLogical.uuid)}>
-                    {renderValue(node.parentFolderLogical?.label)}
+                    {renderValue(nodeName(node.parentFolderLogical))}
                 </a>
             </span>
         );
@@ -157,20 +176,20 @@ const ExplorerDetail: FC<{selected?: string;}> = ({selected}) => {
         return (
             <div className="explorer-detail-body">
                 <DetailRow
-                    label={i18n("aip.explorer.detail.name")}
+                    label={<FormattedMessage {...messages.name} />}
                     value={renderName()}
                 />
                 <DetailRow
-                    label={i18n("aip.explorer.detail.checksum")}
+                    label={<FormattedMessage {...messages.checksum} />}
                     value={renderValue(node.checksumType)}
                 />
                 <DetailRow
-                    label={i18n("aip.explorer.detail.format")}
+                    label={<FormattedMessage {...messages.format} />}
                     value={renderValue(node.mimeType)}
                 />
                 {aip.data?.fund &&
                     <DetailRow
-                    label={i18n("aip.explorer.detail.as")}
+                    label={<FormattedMessage {...messages.linkedDescription} />}
                     // @ts-ignore
                     value={getConnectedToJP(node.linkedNodes, aip.data?.fund.id, handleDeleteLink)}
                     />}
@@ -188,7 +207,7 @@ const ExplorerDetail: FC<{selected?: string;}> = ({selected}) => {
                     size="small"
                     shape="square"
                 >
-                    <span>Zobrazit</span>
+                    <span><FormattedMessage {...messages.show} /></span>
                 </Button>}
                 {node.daoFileId && aip.data?.completeAipLoad && <Button
                     as="a"
@@ -197,22 +216,20 @@ const ExplorerDetail: FC<{selected?: string;}> = ({selected}) => {
                     size="small"
                     shape="square"
                 >
-                    <span>Stáhnout</span>
+                    <span><FormattedMessage {...messages.download} /></span>
                 </Button>}
             </div>
 
-            <h4>{i18n("aip.explorer.detail.title")}</h4>
+            <h4><FormattedMessage {...messages.title} /></h4>
             <div className="explorer-detail-body">
                 {node && renderFileData()}
             </div>
 
             <div>
-                <h4>Vztahy - reprezentace</h4>
-                {/* <p><b>{i18n("aip.explorer.detail.parent")} </b>{renderParent()}</p> */}
-                <p><b>{i18n("aip.explorer.detail.parent")} </b> {node.parentFolder ? renderRepresentationParent() : "-"}</p>
-                {/* <p><b>Potomci </b>{renderChildren()}</p> */}
-                <h4>Vztahy - logická struktura</h4>
-                <p><b>{i18n("aip.explorer.detail.parent")} </b>{ node.parentFolderLogical ? renderLogicalParent() : "-"}</p>
+                <h4><FormattedMessage {...messages.relationsRepresentation} /></h4>
+                <p><b><FormattedMessage {...messages.parent} /> </b> {node.parentFolder ? renderRepresentationParent() : "-"}</p>
+                <h4><FormattedMessage {...messages.relationsLogical} /></h4>
+                <p><b><FormattedMessage {...messages.parent} /> </b>{ node.parentFolderLogical ? renderLogicalParent() : "-"}</p>
             </div>
         </div>
     );

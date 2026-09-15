@@ -9,6 +9,8 @@ import { getRevisionItems, RevisionDisplay, RevisionPart } from '../../revision'
 import './DetailPart.scss';
 import { DetailPartInfo } from './DetailPartInfo';
 import { PartName } from "./PartName";
+import { FormattedMessage } from 'react-intl';
+import { apDetailMessages } from '../messages';
 
 type Props = {
     part: RevisionPart;
@@ -83,11 +85,11 @@ const DetailPart: FC<Props> = ({
 
     const preferredText = () => {
         if (newPreferred) {
-            return 'Nové preferované';
+            return <FormattedMessage {...apDetailMessages.detailPartPreferredNew} />;
         } else if (oldPreferred) {
-            return 'Předchozí preferované';
+            return <FormattedMessage {...apDetailMessages.detailPartPreferredOld} />;
         } else if (preferred) {
-            return 'Preferované';
+            return <FormattedMessage {...apDetailMessages.detailPartPreferred} />;
         }
     };
 

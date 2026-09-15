@@ -1,6 +1,8 @@
 import React, {memo} from 'react';
 import {FieldArray, FormSection, formValueSelector, InjectedFormProps, WrappedFieldArrayProps} from 'redux-form';
-import i18n from "../../../i18n";
+import { FormattedMessage, type MessageDescriptor } from 'react-intl';
+import { getIntl } from 'components/shared/lang/intlInstance';
+import { filterMessages } from './messages';
 import {Button} from "../../../ui";
 import {Icon} from "../../../index";
 import {connect} from "react-redux";
@@ -20,7 +22,8 @@ import {ApAccessPointVO} from "../../../../api/ApAccessPointVO";
 
 type OwnProps = {
     submitting: boolean;
-    name?: string;
+    /** Nadpis sekce; ne název pole formuláře. */
+    sectionTitle?: MessageDescriptor;
     nameFormSection?: string; // název pro FormSection
     relApi?: (itemTypeId: number, itemSpecId: number, filter: any) => Promise<ArchiveEntityResultListVO | FilteredResultVO<ApAccessPointVO>>
     scopeId?: number;
@@ -36,12 +39,12 @@ const RelationsFilterSection = ({
     dispatch,
     relApi,
     nameFormSection = "",
-    name = 'ap.ext-search.section.relations',
+    sectionTitle = filterMessages.sectionRelations,
     scopeId,
     rulSetsIds,
 }: Props) => {
     return <FormSection name={nameFormSection} className="filter-section">
-        <span className="name-section">{i18n(name)}</span>
+        <span className="name-section"><FormattedMessage {...sectionTitle} /></span>
         <FieldArray
             name="relFilters"
             dispatch={dispatch}
@@ -97,13 +100,13 @@ const RelFilters: React.FC<RelFilterFieldProps> = ({
                 dispatch(
                     modalDialogShow(
                         this,
-                        i18n('ap.ext-search.section.relations.title'),
+                        getIntl().formatMessage(filterMessages.sectionRelations),
                         <RelationFilterModal
                             initialValues={{
                                 area: ApSearchArea.AllNames,
                                 onlyMainPart: false,
                                 scopeId,
-                                itemType: {id: null, name: i18n('ap.ext-search.input.select.all')}
+                                itemType: {id: null, name: getIntl().formatMessage(filterMessages.selectAll)}
                             }}
                             relApi={relApi}
                             onSubmit={(data) => {

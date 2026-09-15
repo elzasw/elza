@@ -3,7 +3,31 @@ import PropTypes from 'prop-types';
 
 import React from 'react';
 import {connect} from 'react-redux';
-import {AbstractReactComponent, i18n, Icon, Tabs} from 'components/shared';
+import {AbstractReactComponent, Icon, Tabs} from 'components/shared';
+import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    tabsFunds: { id: 'admin.perms.tabs.funds', defaultMessage: 'Archivní soubory' },
+    tabsScopes: { id: 'admin.perms.tabs.scopes', defaultMessage: 'Oblasti entit' },
+    tabsAdvanced: { id: 'admin.perms.tabs.advanced', defaultMessage: 'Pokročilé' },
+    userAddTitle: { id: 'admin.group.user.add.title', defaultMessage: 'Připojení uživatelů do skupiny' },
+    noSelectionTitle: { id: 'admin.group.noSelection.title', defaultMessage: 'Není vybrána skupina' },
+    noSelectionMessage: {
+        id: 'admin.group.noSelection.message',
+        defaultMessage: 'Prosím vyberte skupinu ze seznamu nebo vytvořte novou',
+    },
+    emptyListTitle: { id: 'admin.group.emptyList.title', defaultMessage: 'Žádné skupiny' },
+    emptyListMessage: {
+        id: 'admin.group.emptyList.message',
+        defaultMessage: 'V systému nejsou zadány žádné skupiny',
+    },
+    title: { id: 'admin.group.title', defaultMessage: 'Skupina' },
+    titleUsers: { id: 'admin.group.title.users', defaultMessage: 'Členové skupiny' },
+    userAdd: { id: 'admin.user.user.action.add', defaultMessage: 'Připojit uživatele do skupiny' },
+    userRemove: { id: 'admin.user.user.action.delete', defaultMessage: 'Odebrat uživatele ze skupiny' },
+    titlePermissions: { id: 'admin.group.title.permissions', defaultMessage: 'Oprávnění skupiny' },
+});
 import {getIdsList} from 'stores/app/utils';
 import {groupsGroupDetailFetchIfNeeded, joinUsers, leaveUser} from 'actions/admin/group';
 import {modalDialogShow} from 'actions/global/modalDialog';
@@ -26,10 +50,11 @@ class GroupDetail extends AbstractReactComponent {
     static TAB_SCOPES = 1;
     static TAB_ADVANCED = 2;
 
-    static tabItems = [
-        {id: GroupDetail.TAB_FUNDS, title: i18n('admin.perms.tabs.funds')},
-        {id: GroupDetail.TAB_SCOPES, title: i18n('admin.perms.tabs.scopes')},
-        {id: GroupDetail.TAB_ADVANCED, title: i18n('admin.perms.tabs.advanced')},
+    /** Skládá se až při renderu, aby popisky reagovaly na přepnutí jazyka. */
+    getTabItems = () => [
+        {id: GroupDetail.TAB_FUNDS, title: this.props.intl.formatMessage(messages.tabsFunds)},
+        {id: GroupDetail.TAB_SCOPES, title: this.props.intl.formatMessage(messages.tabsScopes)},
+        {id: GroupDetail.TAB_ADVANCED, title: this.props.intl.formatMessage(messages.tabsAdvanced)},
     ];
 
     /*
@@ -52,7 +77,7 @@ class GroupDetail extends AbstractReactComponent {
         super(props);
 
         this.state = {
-            selectedTabItem: GroupDetail.tabItems[GroupDetail.TAB_FUNDS],
+            selectedTabItem: {id: GroupDetail.TAB_FUNDS},
         };
     }
 
@@ -83,7 +108,7 @@ class GroupDetail extends AbstractReactComponent {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('admin.group.user.add.title'),
+                this.props.intl.formatMessage(messages.userAddTitle),
                 <SelectItemsForm
                     onSubmitForm={users => {
                         this.props.dispatch(joinUsers(groupDetail.id, getIdsList(users)));
@@ -154,13 +179,13 @@ class GroupDetail extends AbstractReactComponent {
                     <div className="unselected-msg">
                         <div className="title">
                             {groupCount > 0
-                                ? i18n('admin.group.noSelection.title')
-                                : i18n('admin.group.emptyList.title')}
+                                ? <FormattedMessage {...messages.noSelectionTitle} />
+                                : <FormattedMessage {...messages.emptyListTitle} />}
                         </div>
                         <div className="msg-text">
                             {groupCount > 0
-                                ? i18n('admin.group.noSelection.message')
-                                : i18n('admin.group.emptyList.message')}
+                                ? <FormattedMessage {...messages.noSelectionMessage} />
+                                : <FormattedMessage {...messages.emptyListMessage} />}
                         </div>
                     </div>
                 </div>
@@ -177,29 +202,29 @@ class GroupDetail extends AbstractReactComponent {
                                 icon={<Icon glyph="fa-group" />}
                                 title={groupDetail.name}
                                 subtitle={groupDetail.code}
-                                flagLeft={i18n('admin.group.title')}
+                                flagLeft={<FormattedMessage {...messages.title} />}
                             />
                         }
                         left={
                             <AddRemoveList
-                                label={<h4>{i18n('admin.group.title.users')}</h4>}
+                                label={<h4><FormattedMessage {...messages.titleUsers} /></h4>}
                                 addInLabel
                                 items={groupDetail.users}
                                 onAdd={this.handleAddUsers}
                                 onRemove={this.handleRemoveUser}
-                                addTitle="admin.user.user.action.add"
-                                removeTitle="admin.user.user.action.delete"
+                                addTitle={messages.userAdd}
+                                removeTitle={messages.userRemove}
                                 renderItem={renderUserItem}
                                 className="no-hover alternating-rows"
                             />
                         }
                     >
                         <div className="permissions-container">
-                            <h4>{i18n('admin.group.title.permissions')}</h4>
+                            <h4><FormattedMessage {...messages.titlePermissions} /></h4>
                             <Tabs.Container>
                                 <Tabs.Tabs
                                     asTabs
-                                    items={GroupDetail.tabItems}
+                                    items={this.getTabItems()}
                                     activeItem={selectedTabItem}
                                     onSelect={this.handleTabSelect}
                                 />
@@ -222,4 +247,4 @@ function mapStateToProps(state) {
     return {};
 }
 
-export default connect(mapStateToProps)(GroupDetail);
+export default connect(mapStateToProps)(injectIntl(GroupDetail));

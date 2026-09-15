@@ -1,7 +1,16 @@
 // --
 import React, { useState, useEffect } from 'react';
 import { connect, useSelector } from 'react-redux';
-import { AbstractReactComponent, i18n, Icon, Tabs } from 'components/shared';
+import { AbstractReactComponent, Icon, Tabs } from 'components/shared';
+import { defineMessages, useIntl } from 'react-intl';
+import { permissionScopeMessages } from './permissionMessages';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    tabsUsers: { id: 'admin.perms.fund.tabs.users', defaultMessage: 'Uživatelé' },
+    tabsGroups: { id: 'admin.perms.fund.tabs.groups', defaultMessage: 'Skupiny' },
+    fundTitle: { id: 'admin.fund.title', defaultMessage: 'Archivní soubor' },
+});
 import AdminRightsContainer from './AdminRightsContainer';
 import storeFromArea from '../../shared/utils/storeFromArea';
 import * as fundActions from '../../actions/admin/fund';
@@ -13,6 +22,7 @@ import DetailHeader from '../shared/detail/DetailHeader';
 import './FundDetail.scss';
 import { AppState } from 'typings/store';
 import { useThunkDispatch } from 'utils/hooks';
+import { ALL_ID } from 'actions/admin/adminPermissions';
 
 enum FundDetailTabs {
     TAB_USERS = 0,
@@ -24,12 +34,15 @@ interface SelectedItem {
     index: number | null;
 }
 
-const tabItems = [
-    { id: FundDetailTabs.TAB_USERS, title: i18n('admin.perms.fund.tabs.users') },
-    { id: FundDetailTabs.TAB_GROUPS, title: i18n('admin.perms.fund.tabs.groups') },
-];
+
 
 export function FundDetailFn() {
+    const intl = useIntl();
+    // Skládá se při renderu, aby popisky reagovaly na přepnutí jazyka.
+    const tabItems = [
+        { id: FundDetailTabs.TAB_USERS, title: intl.formatMessage(messages.tabsUsers) },
+        { id: FundDetailTabs.TAB_GROUPS, title: intl.formatMessage(messages.tabsGroups) },
+    ];
     const [selectedUser, setSelectedUser] = useState<SelectedItem>();
     const [selectedGroup, setSelectedGroup] = useState<SelectedItem>();
     const [selectedTab, setSelectedTab] = useState(tabItems[FundDetailTabs.TAB_USERS]);
@@ -38,14 +51,14 @@ export function FundDetailFn() {
     const dispatch = useThunkDispatch();
 
     function fetchData() {
-        if (fund.id !== FundsPermissionPanel.ALL_ID) {
+        if (fund.id !== ALL_ID) {
             dispatch(fundActions.fundFetchIfNeeded(fund.id));
         } else {
-            if (!fund.data || fund.data.id !== FundsPermissionPanel.ALL_ID) {
+            if (!fund.data || fund.data.id !== ALL_ID) {
                 dispatch(
                     fundActions.setFund({
-                        id: FundsPermissionPanel.ALL_ID,
-                        name: i18n('admin.perms.tabs.funds.items.fundAll'),
+                        id: ALL_ID,
+                        name: intl.formatMessage(permissionScopeMessages.fundAll),
                     }),
                 );
             }
@@ -103,7 +116,7 @@ export function FundDetailFn() {
                 <DetailHeader
                     icon={<Icon glyph="fa-group" />}
                     title={fund.data.name}
-                    flagLeft={i18n('admin.fund.title')}
+                    flagLeft={intl.formatMessage(messages.fundTitle)}
                     subtitle={fund.data.internalCode}
                 />
             }
@@ -123,150 +136,4 @@ export function FundDetailFn() {
     );
 }
 
-// class FundDetail extends AbstractReactComponent {
-//     static TAB_USERS = 0;
-//     static TAB_GROUPS = 1;
-//
-//     static tabItems = [
-//         { id: FundDetail.TAB_USERS, title: i18n('admin.perms.fund.tabs.users') },
-//         { id: FundDetail.TAB_GROUPS, title: i18n('admin.perms.fund.tabs.groups') },
-//     ];
-//
-//     /*
-//      * Template for selected items
-//      */
-//     defaultSelectedItem = {
-//         id: null,
-//         index: 0,
-//     };
-//     /*
-//      * Last selected fund item.
-//      */
-//     selectedUser = this.defaultSelectedItem;
-//     /*
-//      * Last selected scope item.
-//      */
-//     selectedGroup = this.defaultSelectedItem;
-//
-//     constructor(props) {
-//         super(props);
-//
-//         this.state = {
-//             selectedTabItem: FundDetail.TAB_USERS,
-//         };
-//     }
-//
-//     componentDidMount() {
-//         this.fetchData(this.props);
-//     }
-//
-//     UNSAFE_componentWillReceiveProps(nextProps) {
-//         const fundId = this.props.fund.id;
-//         const nextFundId = nextProps.fund.id;
-//
-//         // Reset selected permissions
-//         if (fundId !== nextFundId) {
-//             this.selectedUser = this.defaultSelectedItem;
-//             this.selectedGroup = this.defaultSelectedItem;
-//         }
-//
-//         this.fetchData(nextProps);
-//     }
-//
-//     fetchData = props => {
-//         const { fund } = props;
-//         if (fund.id !== FundsPermissionPanel.ALL_ID) {
-//             props.dispatch(fundActions.fundFetchIfNeeded(fund.id));
-//         } else {
-//             if (!fund.data || fund.data.id !== FundsPermissionPanel.ALL_ID) {
-//                 props.dispatch(
-//                     fundActions.setFund({
-//                         id: FundsPermissionPanel.ALL_ID,
-//                         name: i18n('admin.perms.tabs.funds.items.fundAll'),
-//                     }),
-//                 );
-//             }
-//         }
-//     };
-//
-//     handleTabSelect = item => {
-//         this.setState({ selectedTabItem: Number(item) });
-//     };
-//
-//     renderTabContent = () => {
-//         const { fund } = this.props;
-//         const { selectedTabItem } = this.state;
-//
-//         console.log(':::selected items', this.selectedUser, this.selectedGroup);
-//         console.log(':::this.state', this.state);
-//
-//         switch (selectedTabItem) {
-//             case FundDetail.TAB_USERS:
-//                 return (
-//                     <FundUsersPanel
-//                         fundId={fund.id}
-//                         onSelectItem={(item, index) => {
-//                             this.selectedUser = { index, id: item.id };
-//                         }}
-//                         selectedPermission={this.selectedUser}
-//                     />
-//                 );
-//             case FundDetail.TAB_GROUPS:
-//                 return (
-//                     <FundGroupsPanel
-//                         fundId={fund?.id}
-//                         onSelectItem={(item, index) => {
-//                             this.selectedGroup = { index, id: item.id };
-//                         }}
-//                         selectedPermission={this.selectedGroup}
-//                     />
-//                 );
-//             default:
-//                 return null;
-//         }
-//     };
-//
-//     render() {
-//         const { fund } = this.props;
-//         const { selectedTabItem } = this.state;
-//
-//         if (!fund.fetched || fund.isFetching) {
-//             return <HorizontalLoader />;
-//         }
-//
-//         return (
-//             <AdminRightsContainer
-//                 className="detail-container"
-//                 header={
-//                     <DetailHeader
-//                         icon={<Icon glyph="fa-group" />}
-//                         title={fund.data.name}
-//                         flagLeft={i18n('admin.fund.title')}
-//                         subtitle={fund.data.internalCode}
-//                     />
-//                 }
-//             >
-//                 <div className="permissions-container">
-//                     <Tabs.Container>
-//                         <Tabs.Tabs
-//                             asTabs
-//                             items={FundDetail.tabItems}
-//                             activeItem={selectedTabItem}
-//                             onSelect={this.handleTabSelect}
-//                         />
-//                         <Tabs.Content>{this.renderTabContent()}</Tabs.Content>
-//                     </Tabs.Container>
-//                 </div>
-//             </AdminRightsContainer>
-//         );
-//     }
-// }
-//
-// function mapStateToProps(state) {
-//     return {
-//         fund: storeFromArea(state, fundActions.AREA_ADMIN_FUND),
-//     };
-// }
-//
-// export default connect(mapStateToProps)(FundDetail);
 export default FundDetailFn;

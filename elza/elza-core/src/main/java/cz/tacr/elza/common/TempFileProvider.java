@@ -39,6 +39,15 @@ public class TempFileProvider {
         this(folderPrefix, SYSTEM_TEMP_DIR_PATH);
     }
 
+    /**
+     * Directory holding all temporary files of this provider.
+     *
+     * Content of the directory is removed by {@link #close()}.
+     */
+    public Path getTempDir() {
+        return tmpDirPath;
+    }
+
     public Path createTempFile() {
         try {
             return Files.createTempFile(tmpDirPath, null, null);

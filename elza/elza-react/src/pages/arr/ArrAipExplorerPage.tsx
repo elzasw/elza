@@ -75,11 +75,7 @@ class ArrAipExplorerPage extends ArrParentPage {
     }
 
     renderCenterPanel(readMode: boolean, closed: boolean) {
-        return (
-            <div className="aip-explorer-tabs-container">
-                <AipExplorerTabs aipId={this.getAipId()}/>
-            </div>
-        );
+        return <AipExplorerTabs aipId={this.getAipId()}/>;
     }
 }
 

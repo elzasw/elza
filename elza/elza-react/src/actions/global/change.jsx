@@ -1,7 +1,45 @@
 import * as types from 'actions/constants/ActionTypes';
 
 import React from 'react';
-import { i18n } from 'components/shared';
+import {} from 'components/shared';
+import { FormattedMessage, defineMessages } from 'react-intl';
+
+// Id jsou převzatá z legacy katalogu beze změny. Placeholdery {0}/{1} zůstávají:
+// ICU bere jako jméno argumentu i číslo.
+//
+// Zprávy s <b> nejsou HTML, ale rich-text značky react-intl: handler se předá
+// ve values. Díky tomu z těchto míst zmizel dangerouslySetInnerHTML.
+const messages = defineMessages({
+    fulltextSuccess: { id: 'admin.fulltext.message.success', defaultMessage: 'Reindexace fulltextu dokončena' },
+    clickToShow: { id: 'change.arr.output.clickToShow', defaultMessage: 'Klikněte zde pro zobrazení' },
+    generatingTitle: { id: 'change.arr.output.generating.title', defaultMessage: 'Generuje se výstup' },
+    outdatedTitle: {
+        id: 'change.arr.output.outdated.title',
+        defaultMessage: 'Výstup byl vygenerován, ale data nejsou aktuální',
+    },
+    outdatedExtended: {
+        id: 'change.arr.output.outdated.extended.title',
+        defaultMessage:
+            'Výstup <b>{0}</b> z archivního souboru <b>{1}</b> byl vygenerován, ale data nejsou aktuální',
+    },
+    finishedTitle: { id: 'change.arr.output.finished.title', defaultMessage: 'Výstup byl vygenerován' },
+    finishedExtended: {
+        id: 'change.arr.output.finished.extended.title',
+        defaultMessage: 'Výstup <b>{0}</b> z archivního souboru <b>{1}</b> byl vygenerován',
+    },
+    errorTitle: { id: 'change.arr.output.error.title', defaultMessage: 'Chyba při generování výstupu' },
+    errorExtended: {
+        id: 'change.arr.output.error.extended.title',
+        defaultMessage: 'Chyba při generování výstupu <b>{0}</b> z archivního souboru <b>{1}</b>',
+    },
+});
+
+/** Hodnoty pro rozšířenou hlášku o výstupu včetně handleru značky <b>. */
+const outputValues = (fund) => ({
+    b: (chunks) => <b>{chunks}</b>,
+    0: fund.fundOutput.fundOutputDetail.name,
+    1: fund.name,
+});
 import { Button } from '../../components/ui';
 import { addToastr, addToastrDanger, addToastrInfo, addToastrSuccess } from 'components/shared/toastr/ToastrActions';
 import { fundOutputSelectOutput } from 'actions/arr/fundOutput';
@@ -66,7 +104,7 @@ export function changeNodeRequests(fundVersionId, nodeIds) {
 }
 
 export function changeIndexingFinished() {
-    addToastrSuccess(i18n('admin.fulltext.message.success'));
+    addToastrSuccess(<FormattedMessage {...messages.fulltextSuccess} />);
 
     return {
         type: types.CHANGE_INDEXING_FINISHED,
@@ -313,7 +351,7 @@ export function fundOutputStateChangeToastr(versionId, entityId, state) {
             if (!isOutputVisible) {
                 showBtn = (
                     <Link to={urlFundOutputs(fund.id, getFundVersion(fund), entityId)}>
-                        {i18n('change.arr.output.clickToShow')}
+                        <FormattedMessage {...messages.clickToShow} />
                     </Link>
                 );
             } else {
@@ -322,28 +360,25 @@ export function fundOutputStateChangeToastr(versionId, entityId, state) {
 
             switch (state) {
                 case 'GENERATING':
-                    return dispatch(addToastrInfo(i18n('change.arr.output.generating.title'), showBtn));
+                    return dispatch(addToastrInfo(<FormattedMessage {...messages.generatingTitle} />, showBtn));
                 case 'OUTDATED':
                     return dispatch(addToastrSuccess(
                         isOutputVisible
-                            ? i18n('change.arr.output.outdated.title')
-                            : <span dangerouslySetInnerHTML={{
-                                __html: i18n('^change.arr.output.outdated.extended.title', fund.fundOutput.fundOutputDetail.name, fund.name)
-                            }} />, showBtn));
+                            ? <FormattedMessage {...messages.outdatedTitle} />
+                            : <FormattedMessage {...messages.outdatedExtended} values={outputValues(fund)} />,
+                        showBtn));
                 case 'FINISHED':
                     return dispatch(addToastrSuccess(
                         isOutputVisible
-                            ? i18n('change.arr.output.finished.title')
-                            : <span dangerouslySetInnerHTML={{
-                                __html: i18n('^change.arr.output.finished.extended.title', fund.fundOutput.fundOutputDetail.name, fund.name)
-                            }} />, showBtn, undefined, isOutputVisible ? undefined : null));
+                            ? <FormattedMessage {...messages.finishedTitle} />
+                            : <FormattedMessage {...messages.finishedExtended} values={outputValues(fund)} />,
+                        showBtn, undefined, isOutputVisible ? undefined : null));
                 case 'ERROR':
                     return dispatch(addToastrDanger(
                         isOutputVisible
-                            ? i18n('change.arr.output.error.title')
-                            : <span dangerouslySetInnerHTML={{
-                                __html: i18n('^change.arr.output.error.extended.title', fund.fundOutput.fundOutputDetail.name, fund.name)
-                            }} />, showBtn));
+                            ? <FormattedMessage {...messages.errorTitle} />
+                            : <FormattedMessage {...messages.errorExtended} values={outputValues(fund)} />,
+                        showBtn));
                 default:
                     return;
             }

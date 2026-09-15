@@ -55,6 +55,18 @@ public record AipProblem(AipProblemType type, String description, @Nullable Stri
     }
 
     /**
+     * The failure of the download of the package - nothing of the package was received, so
+     * unlike {@link #of(Throwable)} it says nothing about the package itself and the next
+     * successful download makes it obsolete.
+     */
+    public static AipProblem downloadFailure(Throwable failure) {
+        return new AipProblem(AipProblemType.DOWNLOAD_ERROR,
+                "Balíček se nepodařilo stáhnout z digitálního archivu: " + reason(failure)
+                        + ". Stažení bude opakováno.",
+                causeChain(failure), null);
+    }
+
+    /**
      * Reason of the failure to be embedded into a message that already names its own context,
      * so it stays a reason and does not repeat that something failed.
      */

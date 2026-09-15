@@ -1,7 +1,11 @@
 import React from 'react';
 import {Field, FieldArray, reduxForm} from 'redux-form';
 import {connect} from 'react-redux';
-import {AbstractReactComponent, i18n, Icon} from 'components/shared';
+import {AbstractReactComponent, Icon} from 'components/shared';
+import { FormattedMessage } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { templateMessages } from './templateMessages';
+import { getIntl } from 'components/shared/lang/intlInstance';
 import {Accordion, Card, Form, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
 import {indexById} from 'stores/app/utils';
@@ -28,7 +32,7 @@ class FundTemplateSettingsForm extends AbstractReactComponent {
         values.templates.forEach(template => {
             const name = template.name.trim().toLowerCase();
             if (names[name]) {
-                errors._error = i18n('arr.fund.template.error.duplicate', template.name);
+                errors._error = getIntl().formatMessage(templateMessages.fundTemplateErrorDuplicate, { 0: template.name });
             } else {
                 names[name] = true;
             }
@@ -101,7 +105,7 @@ class FundTemplateSettingsForm extends AbstractReactComponent {
         }
 
         if (item.undefined) {
-            val = <span className="item-undefined">{i18n('arr.fund.template.undefined')}</span>;
+            val = <span className="item-undefined">{<FormattedMessage {...templateMessages.fundTemplateUndefined} />}</span>;
         }
 
         return (
@@ -129,7 +133,7 @@ class FundTemplateSettingsForm extends AbstractReactComponent {
                         name={'templates'}
                         component={({fields, meta}) => {
                             if (fields.length === 0) {
-                                return <div>{i18n('arr.fund.template.empty')}</div>
+                                return <div>{<FormattedMessage {...templateMessages.fundTemplateEmpty} />}</div>
                             }
 
                             return fields.map((item, index, fields) => {
@@ -212,10 +216,10 @@ class FundTemplateSettingsForm extends AbstractReactComponent {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button type="submit" variant="outline-secondary">
-                        {i18n('visiblePolicy.action.save')}
+                        {<FormattedMessage {...templateMessages.visiblePolicyActionSave} />}
                     </Button>
                     <Button variant="link" onClick={onClose}>
-                        {i18n('global.action.cancel')}
+                        {<FormattedMessage {...globalMessages.cancel} />}
                     </Button>
                 </Modal.Footer>
             </Form>

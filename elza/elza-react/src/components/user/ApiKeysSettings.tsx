@@ -1,16 +1,28 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Col, Row } from 'react-bootstrap';
-import { FormInputField, Icon } from 'components/shared';
+import {
+    Button,
+    Card,
+    CardHeader,
+    Field,
+    Input,
+    Select,
+    Text,
+    Tooltip,
+    makeStyles,
+    tokens,
+} from '@fluentui/react-components';
+import { AddRegular, DeleteRegular } from '@fluentui/react-icons';
 import { MaskedValue } from 'components/shared/MaskedValue';
+import { globalMessages } from 'components/shared/lang';
+import { keyMessages } from './messages';
 import { defineMessages, FormattedMessage, useIntl } from 'react-intl';
-import { Button } from 'components/ui';
-import { Form as FinalForm, Field } from 'react-final-form';
+import { Form as FinalForm, Field as FinalField } from 'react-final-form';
 import { Api } from 'api';
-import { useSelector } from 'react-redux';
-import { AppState, RefExternalSystemSimpleVO } from 'typings/store';
-import { useThunkDispatch } from 'utils/hooks';
+import { RefExternalSystemSimpleVO } from 'typings/store';
+import { useAppThunkDispatch } from 'utils/hooks';
+import { useAppSelector } from 'utils/hooks/useAppSelector';
 import { ExtSystemProperty } from 'elza-api';
-import { showConfirmDialog } from 'components/shared/dialog';
+import { useConfirmModal } from 'components/shared/dialog/useConfirmModal';
 import { refExternalSystemsFetchIfNeeded } from 'actions/refTables/externalSystems';
 import { usePermissions } from 'contexts/user';
 import * as perms from 'actions/user/Permission';
@@ -33,7 +45,20 @@ interface ApiKeyValue {
     apiKeyValue?: ExtSystemProperty;
 }
 
+function isFilledIn({ externalSystemId, apiKeyId, apiKeyValue }: Partial<ApiKeyValueFields>) {
+    return !!externalSystemId && !!apiKeyId?.trim() && !!apiKeyValue?.trim();
+}
+
 const messages = defineMessages({
+    sectionHint: {
+        id: 'userSettings.apiKeys.sectionHint',
+        defaultMessage:
+            'Osobní klíč se použije místo klíče nastaveného pro celou instanci, když ELZA volá daný externí systém za vás.',
+    },
+    apiKeysDelete: {
+        id: 'userSettings.apiKeys.delete',
+        defaultMessage: 'Smazat klíč',
+    },
     apiKeysNoItems: {
         id: 'userSettings.apiKeys.noItems',
         defaultMessage: 'Žádné uložené osobní API klíče',
@@ -68,26 +93,78 @@ const messages = defineMessages({
     },
 });
 
-export default function ApiKeysSettings() {
-    const allExternalSystems = useSelector(
-        (appState: AppState) => appState.refTables.externalSystems.items ?? []
-    );
+const useStyles = makeStyles({
+    root: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: tokens.spacingVerticalM,
+        paddingTop: tokens.spacingVerticalM,
+        paddingBottom: tokens.spacingVerticalM,
+    },
+    hint: {
+        color: tokens.colorNeutralForeground3,
+    },
+    empty: {
+        color: tokens.colorNeutralForeground3,
+        fontStyle: 'italic',
+    },
+    list: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: tokens.spacingVerticalS,
+    },
+    properties: {
+        display: 'grid',
+        gridTemplateColumns: 'auto 1fr',
+        columnGap: tokens.spacingHorizontalM,
+        rowGap: tokens.spacingVerticalXXS,
+        alignItems: 'baseline',
+    },
+    propertyLabel: {
+        color: tokens.colorNeutralForeground3,
+    },
+    propertyValue: {
+        fontFamily: tokens.fontFamilyMonospace,
+        wordBreak: 'break-all',
+    },
+    addButton: {
+        alignSelf: 'flex-start',
+    },
+    formFields: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: tokens.spacingVerticalS,
+    },
+    formActions: {
+        display: 'flex',
+        justifyContent: 'flex-end',
+        gap: tokens.spacingHorizontalS,
+        paddingTop: tokens.spacingVerticalXS,
+    },
+});
+
+export function ApiKeysSettings() {
+    const allExternalSystems = useAppSelector(({ refTables }) => refTables.externalSystems.items ?? []);
     const { hasOne } = usePermissions();
     const canWriteApExtSystems = hasOne(perms.AP_EXTERNAL_WR);
     const externalSystems = useMemo(
-        () => allExternalSystems.filter((system) => {
-            if (!API_KEY_EXT_SYSTEM_CLASSES.includes(system['@class'])) return false;
-            // AP external systems additionally require the ext-system write permission.
-            const isApExtSystem = system['@class'] === '.ApExternalSystemSimpleVO';
-            return !isApExtSystem || canWriteApExtSystems;
-        }),
+        () =>
+            allExternalSystems.filter((system) => {
+                if (!API_KEY_EXT_SYSTEM_CLASSES.includes(system['@class'])) return false;
+                // AP external systems additionally require the ext-system write permission.
+                const isApExtSystem = system['@class'] === '.ApExternalSystemSimpleVO';
+                return !isApExtSystem || canWriteApExtSystems;
+            }),
         [allExternalSystems, canWriteApExtSystems]
     );
-    const { id: userId } = useSelector((appState: AppState) => appState.userDetail);
+    const { id: userId } = useAppSelector(({ userDetail }) => userDetail);
     const [apiKeys, setApiKeys] = useState<ApiKeyValue[]>([]);
     const [availableExternalSystems, setAvailableExternalSystems] = useState<RefExternalSystemSimpleVO[]>([]);
-    const dispatch = useThunkDispatch();
+    const [isAddingKey, setIsAddingKey] = useState(false);
+    const dispatch = useAppThunkDispatch();
+    const confirm = useConfirmModal();
     const { formatMessage } = useIntl();
+    const styles = useStyles();
 
     const loadApiKeys = useCallback(() => {
         (async () => {
@@ -131,31 +208,37 @@ export default function ApiKeysSettings() {
     }, [loadApiKeys]);
 
     const handleSubmit = async ({ externalSystemId, apiKeyId, apiKeyValue }: ApiKeyValueFields) => {
-        if (externalSystemId && parseInt(externalSystemId.toString())) {
-            await Api.externalSystems.externalSystemStoreProperties([
-                {
-                    name: APIKEY_VALUE,
-                    value: apiKeyValue,
-                    userId: userId || undefined,
-                    extSystemId: parseInt(externalSystemId.toString()),
-                },
-                {
-                    name: APIKEY_ID,
-                    value: apiKeyId,
-                    userId: userId || undefined,
-                    extSystemId: parseInt(externalSystemId.toString()),
-                },
-            ]);
-            loadApiKeys();
+        const extSystemId = externalSystemId ? parseInt(externalSystemId.toString()) : NaN;
+        if (!extSystemId) {
+            return;
         }
+
+        await Api.externalSystems.externalSystemStoreProperties([
+            {
+                name: APIKEY_VALUE,
+                value: apiKeyValue,
+                userId: userId || undefined,
+                extSystemId,
+            },
+            {
+                name: APIKEY_ID,
+                value: apiKeyId,
+                userId: userId || undefined,
+                extSystemId,
+            },
+        ]);
+        loadApiKeys();
+        setIsAddingKey(false);
     };
 
     const handleDelete = (extSystemId?: string | number) => {
         return async () => {
             const extSystem = externalSystems.find(({ id }) => extSystemId === id);
-            const result = await dispatch(
-                showConfirmDialog(formatMessage(messages.apiKeysDeleteConfirm, { name: extSystem?.name }))
-            );
+            const result = await confirm({
+                title: formatMessage(messages.apiKeysDelete),
+                message: formatMessage(messages.apiKeysDeleteConfirm, { name: extSystem?.name }),
+                destructive: true,
+            });
             if (!result) {
                 return;
             }
@@ -176,102 +259,135 @@ export default function ApiKeysSettings() {
         };
     };
 
+    const canAddKey = availableExternalSystems.length > 0;
+
     return (
-        <Row>
-            <Col xs={12}>
-                <div style={{ padding: '10px 0' }}>
-                    <div>
-                        {apiKeys.length === 0 && <FormattedMessage {...messages.apiKeysNoItems} />}
-                        {apiKeys.map(({ apiKeyValue, apiKeyId, id }) => {
-                            const externalSystem = externalSystems.find(({ id: _id }) => _id === id);
-                            return (
-                                <div
-                                    key={String(id)}
-                                    style={{
-                                        border: 'var(--primary-border)',
-                                        padding: '10px',
-                                        borderRadius: '10px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        margin: '5px 0',
-                                    }}
-                                >
-                                    <div style={{ flexGrow: 1 }}>
-                                        <div>
-                                            <b>{externalSystem?.name}</b>
-                                        </div>
-                                        <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-                                            <div style={{ marginRight: '10px' }}>
-                                                <b>
-                                                    <FormattedMessage {...messages.apiKeysItemId} />:
-                                                </b>{' '}
-                                                {apiKeyId?.value}
-                                            </div>
-                                            <div>
-                                                <b>
-                                                    <FormattedMessage {...messages.apiKeysItemValue} />:
-                                                </b>{' '}
-                                                <MaskedValue value={apiKeyValue?.value} />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div style={{ padding: '5px' }}>
-                                        <Button onClick={handleDelete(id)}>
-                                            <Icon glyph="fa-trash" />
-                                        </Button>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                    {availableExternalSystems.length > 0 && (
-                        <FinalForm<ApiKeyValueFields>
-                            onSubmit={handleSubmit}
-                            initialValues={{
-                                externalSystemId:
-                                    availableExternalSystems.length === 1 ? availableExternalSystems[0].id : undefined,
-                            }}
-                        >
-                            {({ handleSubmit, submitting }) => (
-                                <>
-                                    <Field
-                                        key={'externalSystemId'}
-                                        name="externalSystemId"
-                                        type={'select'}
-                                        component={FormInputField}
-                                        label={formatMessage(messages.extSystem)}
-                                        disabled={submitting}
-                                    >
-                                        <option />
-                                        {availableExternalSystems.map(({ id, name }) => (
-                                            <option value={id} key={id}>
-                                                {name}
-                                            </option>
-                                        ))}
+        <div className={styles.root}>
+            <Text size={200} className={styles.hint}>
+                {formatMessage(messages.sectionHint)}
+            </Text>
+            {canAddKey && !isAddingKey && (
+                <Button
+                    className={styles.addButton}
+                    appearance="primary"
+                    icon={<AddRegular />}
+                    onClick={() => setIsAddingKey(true)}
+                >
+                    <FormattedMessage {...keyMessages.addKey} />
+                </Button>
+            )}
+            {canAddKey && isAddingKey && (
+                <FinalForm<ApiKeyValueFields>
+                    onSubmit={handleSubmit}
+                    initialValues={{
+                        externalSystemId:
+                            availableExternalSystems.length === 1 ? availableExternalSystems[0].id : undefined,
+                    }}
+                >
+                    {({ handleSubmit, submitting, values }) => (
+                        <Card className={styles.formFields} appearance="outline">
+                            <FinalField
+                                name="externalSystemId"
+                                render={({ input }) => (
+                                    <Field label={formatMessage(messages.extSystem)}>
+                                        <Select
+                                            disabled={submitting}
+                                            value={input.value == undefined ? '' : String(input.value)}
+                                            onChange={(_event, data) => input.onChange(data.value)}
+                                        >
+                                            <option value="" />
+                                            {availableExternalSystems.map(({ id, name }) => (
+                                                <option value={id} key={id}>
+                                                    {name}
+                                                </option>
+                                            ))}
+                                        </Select>
                                     </Field>
-                                    <Field
-                                        key={'apiKeyId'}
-                                        name="apiKeyId"
-                                        component={FormInputField}
-                                        label={formatMessage(messages.apiKeyId)}
-                                    />
-                                    <Field
-                                        key={'apiKeyValue'}
-                                        name="apiKeyValue"
-                                        component={FormInputField}
-                                        label={formatMessage(messages.apiKeyValue)}
-                                    />
-                                    <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '10px 0' }}>
-                                        <Button variant="outline-secondary" onClick={handleSubmit}>
-                                            <FormattedMessage {...messages.apiKeysSave} />
-                                        </Button>
-                                    </div>
-                                </>
-                            )}
-                        </FinalForm>
+                                )}
+                            />
+                            <FinalField
+                                name="apiKeyId"
+                                render={({ input }) => (
+                                    <Field label={formatMessage(messages.apiKeyId)}>
+                                        <Input
+                                            disabled={submitting}
+                                            value={input.value ?? ''}
+                                            onChange={(_event, data) => input.onChange(data.value)}
+                                        />
+                                    </Field>
+                                )}
+                            />
+                            <FinalField
+                                name="apiKeyValue"
+                                render={({ input }) => (
+                                    <Field label={formatMessage(messages.apiKeyValue)}>
+                                        <Input
+                                            disabled={submitting}
+                                            value={input.value ?? ''}
+                                            onChange={(_event, data) => input.onChange(data.value)}
+                                        />
+                                    </Field>
+                                )}
+                            />
+                            <div className={styles.formActions}>
+                                <Button
+                                    appearance="secondary"
+                                    disabled={submitting}
+                                    onClick={() => setIsAddingKey(false)}
+                                >
+                                    <FormattedMessage {...globalMessages.cancel} />
+                                </Button>
+                                <Button
+                                    appearance="primary"
+                                    disabled={submitting || !isFilledIn(values)}
+                                    onClick={handleSubmit}
+                                >
+                                    <FormattedMessage {...messages.apiKeysSave} />
+                                </Button>
+                            </div>
+                        </Card>
                     )}
+                </FinalForm>
+            )}
+            {apiKeys.length === 0 ? (
+                <Text size={200} className={styles.empty}>
+                    <FormattedMessage {...messages.apiKeysNoItems} />
+                </Text>
+            ) : (
+                <div className={styles.list}>
+                    {apiKeys.map(({ apiKeyValue, apiKeyId, id }) => {
+                        const externalSystem = externalSystems.find(({ id: _id }) => _id === id);
+                        return (
+                            <Card key={String(id)} appearance="outline">
+                                <CardHeader
+                                    header={<Text weight="semibold">{externalSystem?.name}</Text>}
+                                    action={
+                                        <Tooltip content={formatMessage(messages.apiKeysDelete)} relationship="label">
+                                            <Button
+                                                appearance="subtle"
+                                                icon={<DeleteRegular />}
+                                                onClick={handleDelete(id)}
+                                            />
+                                        </Tooltip>
+                                    }
+                                />
+                                <div className={styles.properties}>
+                                    <Text size={200} className={styles.propertyLabel}>
+                                        <FormattedMessage {...messages.apiKeysItemId} />
+                                    </Text>
+                                    <Text size={200} className={styles.propertyValue}>
+                                        {apiKeyId?.value}
+                                    </Text>
+                                    <Text size={200} className={styles.propertyLabel}>
+                                        <FormattedMessage {...messages.apiKeysItemValue} />
+                                    </Text>
+                                    <MaskedValue value={apiKeyValue?.value} />
+                                </div>
+                            </Card>
+                        );
+                    })}
                 </div>
-            </Col>
-        </Row>
+            )}
+        </div>
     );
 }

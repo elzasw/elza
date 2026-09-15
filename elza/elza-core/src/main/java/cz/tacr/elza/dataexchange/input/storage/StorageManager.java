@@ -11,6 +11,7 @@ import org.hibernate.Session;
 
 import cz.tacr.elza.dataexchange.input.ApChangeHolder;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointWrapper;
+import cz.tacr.elza.dataexchange.input.aps.context.ApExternalIdWrapper;
 import cz.tacr.elza.dataexchange.input.context.ImportInitHelper;
 
 /**
@@ -88,6 +89,14 @@ public class StorageManager implements StoredEntityCallback {
         }
         EntityStorage<T> storage = new EntityStorage<>(session, this);
         storage.store(ews);
+    }
+
+    public void storeBindingStates(Collection<ApExternalIdWrapper> eidws) {
+        if (eidws.isEmpty()) {
+            return;
+        }
+        ApBindingStateStorage storage = new ApBindingStateStorage(session, this, initHelper);
+        storage.store(eidws);
     }
 
     public void storeAccessPoints(Collection<AccessPointWrapper> apws) {

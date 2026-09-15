@@ -1,6 +1,13 @@
 import * as types from 'actions/constants/ActionTypes';
 import {indexById} from 'stores/app/utils';
-import {i18n} from 'components/shared';
+import {} from 'components/shared';
+import { getIntl } from 'components/shared/lang/intlInstance';
+import { defineMessages } from 'react-intl';
+
+// Id je převzaté z legacy katalogu beze změny.
+const messages = defineMessages({
+    loading: { id: 'global.data.loading', defaultMessage: 'Načítání dat...' },
+});
 import {consolidateState} from 'components/Utils';
 
 const initialState = {
@@ -357,7 +364,7 @@ export default function fundTree(state = initialState, action = {}) {
                         ...state.nodes.slice(0, index + 1),
                         {
                             id: '___' + Math.random(),
-                            name: i18n('global.data.loading'),
+                            name: getIntl().formatMessage(messages.loading),
                             depth: action.node.depth + 1,
                             isFetching: true,
                         },

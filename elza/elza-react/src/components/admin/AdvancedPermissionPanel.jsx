@@ -9,6 +9,7 @@ import PermissionCheckboxsForm from './PermissionCheckboxsForm';
 import AdminRightsContainer from './AdminRightsContainer';
 import ControlledEntitiesPanel from './ControlledEntitiesPanel';
 import './PermissionsPanel.scss';
+import { advancedPermissionMessages } from './permissionMessages';
 
 /**
  * Panel spravující pokročilá oprávnění.
@@ -122,7 +123,7 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
                     <PermissionCheckboxsForm
                         permCodes={AdvancedPermissionPanel.permCodes}
                         onChangePermission={this.changePermission}
-                        labelPrefix="admin.perms.tabs.advanced.perm."
+                        permissionMessages={advancedPermissionMessages}
                         permission={permission}
                         groups={entityPermissions.data.groups}
                     />

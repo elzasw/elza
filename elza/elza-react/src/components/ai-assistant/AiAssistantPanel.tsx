@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button, Textarea, Spinner, ProgressBar, makeStyles, mergeClasses, tokens, Badge, Tooltip, Menu, MenuTrigger, MenuPopover, MenuList, MenuItem, MenuItemCheckbox, MenuItemRadio, MenuDivider } from "@fluentui/react-components";
 import { SendRegular, FolderRegular, DocumentRegular, PersonRegular, AppsRegular, AddRegular, SparkleRegular, HistoryRegular, ChevronLeftRegular, ChevronRightRegular, SettingsRegular, ChevronDownRegular, MoneyRegular } from "@fluentui/react-icons";
 import { useUserSettings } from "contexts/user";
@@ -335,8 +335,20 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
     const currentTaskLabel = currentTask?.name || currentTaskType;
     const { conversations } = useAiConversationList(activeConversationId);
     const [draft, setDraft] = useState("");
-    // null = follow the provider default; user pick overrides it.
-    const [selectedProfile, setSelectedProfile] = useState<string | null>(null);
+    // The pick is remembered per AI external system across restarts (localStorage);
+    // undefined = follow the provider default. A remembered profile the provider no
+    // longer offers falls back to the default instead of being sent as an unknown code.
+    const storedProfile = settings.aiProfiles?.[externalSystemCode];
+    const selectedProfile = profiles.some(profile => profile.code === storedProfile) ? storedProfile : undefined;
+    const selectProfile = useCallback((code: string | null) => {
+        const aiProfiles = { ...settings.aiProfiles };
+        if (code) {
+            aiProfiles[externalSystemCode] = code;
+        } else {
+            delete aiProfiles[externalSystemCode];
+        }
+        update({ aiProfiles });
+    }, [settings.aiProfiles, externalSystemCode, update]);
     const defaultProfile = profiles.find(profile => profile.default) ?? profiles[0];
     const activeProfileCode = selectedProfile ?? defaultProfile?.code;
     const activeProfile = profiles.find(profile => profile.code === activeProfileCode);
@@ -702,7 +714,7 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
                             {profiles.length > 1 && (
                                 <Menu
                                     checkedValues={{ profile: activeProfileCode ? [activeProfileCode] : [] }}
-                                    onCheckedValueChange={(_e, data) => setSelectedProfile(data.checkedItems[0] ?? null)}
+                                    onCheckedValueChange={(_e, data) => selectProfile(data.checkedItems[0] ?? null)}
                                 >
                                     <MenuTrigger disableButtonEnhancement>
                                         <Tooltip content={intl.formatMessage(aiAssistantMessages.profile)} relationship="label">

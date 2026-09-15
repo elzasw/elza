@@ -1,20 +1,18 @@
 import { useIntl } from "react-intl";
 import { tableMessages } from "components/shared/lang/tableMessages";
-import { QueueItemState, SortingOrder } from "elza-api";
-import {FC, useCallback, useEffect, useState, MouseEvent, KeyboardEvent} from 'react';
+import { SortingOrder } from "elza-api";
+import {FC, useCallback, useEffect, useRef, useState, MouseEvent, KeyboardEvent} from 'react';
 import { useAppSelector } from 'utils/hooks';
 import {StoreHorizontalLoader} from 'components/shared';
 import storeFromArea from '../../shared/utils/storeFromArea.jsx';
-import { formatAipSize } from './format';
-import { formatDateCz } from 'utils/date';
-import { dateToDateTimeString } from '../../shared/utils/commons';
+import { formatAipSize, formatUnitDate } from './format';
 import { findColDefByKey } from './columns';
 import './AipTable.scss';
 import { useHistory} from 'react-router';
-import {urlAip, urlEntity} from '../../constants.tsx';
+import {urlAip, urlEntity, urlFundAb} from '../../constants.tsx';
 import { Link } from 'react-router-dom';
 import { useThunkDispatch } from 'utils/hooks';
-import {aipsFetchIfNeeded, aipsFilter, AREA_AIP, AREA_AIPS, setSelectedAips, } from "../../actions/aip/aip.ts";
+import {aipsFetchIfNeeded, aipsFilter, aipsFocus, AREA_AIP, AREA_AIPS, setSelectedAips, } from "../../actions/aip/aip.ts";
 import {
     MenuCheckedValueChangeData,
     MenuCheckedValueChangeEvent,
@@ -37,8 +35,9 @@ import {
 } from '@fluentui/react-components';
 import { Icon } from 'components/shared';
 import { Button } from 'react-bootstrap';
-import { getBoolIcon } from './AipCells';
-import { explorerPageMessages, linkStateMessages, problemMessages, queueStateMessages } from './messages';
+import { QueueStateCell, getBoolIcon } from './AipCells';
+import { explorerPageMessages, linkStateMessages, listMessages, problemMessages } from './messages';
+import { addToastrWarning } from '../shared/toastr/ToastrActions';
 import { colDef } from './columns';
 import { Row } from 'react-bootstrap';
 import AipFilterSection from './filter/AipFilterSection.tsx';
@@ -56,6 +55,8 @@ type AipTableProps = {
     onExplore?: (aipId: number) => void;
     detailOpen?: boolean;
     setDetailOpen?: (open: boolean) => void;
+    /** Balíček, na kterém má seznam začít - místo první stránky se otevře ta, na které leží. */
+    focusAipId?: number;
 }
 
 /**
@@ -78,7 +79,7 @@ const getAipRows = (aips: Aips) => {
     return [];
 };
 
-const AipTable: FC<AipTableProps> = ({onAipSelect, onExplore, filterDisabled, initialFilters, hiddenValues, detailOpen, setDetailOpen}) => {
+const AipTable: FC<AipTableProps> = ({onAipSelect, onExplore, filterDisabled, initialFilters, hiddenValues, detailOpen, setDetailOpen, focusAipId}) => {
     const aips = useAppSelector(state => storeFromArea(state, AREA_AIPS) as Aips);
     const aip = useAppSelector(state => storeFromArea(state, AREA_AIP) as Aip);
     const {from, pageSize} = aips.filter;
@@ -106,35 +107,8 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, onExplore, filterDisabled, in
 
     const [columns, setColumns] = useState<TableColumnDefinition<AipDetailVO>[]>(columnsDef);
 
-    const formatUnitDate = (unitdateFrom: string, unitdateTo: string) => {
-        return formatDateCz(new Date(unitdateFrom)) + " - " + (unitdateTo ? formatDateCz(new Date(unitdateTo)) : "?");
-    }
-
     /** Sloupce maji i skladane klice ("fund.name"), ktere na AipDetailVO primo nejsou. */
     const rawValue = (item: AipDetailVO, key: string): any => (item as Record<string, any>)[key];
-
-    /**
-     * Stav fronty; u chybových stavů s ikonou a důvodem selhání v tooltipu, protože jinak se
-     * uživatel důvod nedozví - zůstal by jen v protokolu serveru.
-     */
-    const queueStateContent = (state?: QueueItemState, message?: string, date?: string) => {
-        if (!state) {
-            return "-";
-        }
-        const label = formatMessage(queueStateMessages[state]);
-        const failed = state === QueueItemState.ImportError || state === QueueItemState.ExportError;
-        const tooltip = [message, date ? dateToDateTimeString(new Date(date)) : null]
-            .filter(Boolean).join("\n") || undefined;
-        if (!failed) {
-            return tooltip ? <span title={tooltip}>{label}</span> : label;
-        }
-        return (
-            <span className="aip-problem" title={tooltip}>
-                <Icon glyph="fa-exclamation-triangle"/>
-                {label}
-            </span>
-        );
-    };
 
     const getContent =(item: AipDetailVO, key: string) => {
         switch(key) {
@@ -151,7 +125,32 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, onExplore, filterDisabled, in
             );
             case "aipSize": return formatAipSize(item[key]);
             case "unitdateFrom":  return item.unitdateFrom ? formatUnitDate(item.unitdateFrom, item.unitdateTo): "-";
-            case "fund.name": return item.fund?.name ?? "-";
+            // Napojený AIP vede na balíčky svého archivního souboru a rovnou se tam vybere;
+            // nedohledaný fond zůstane pomlčkou, není kam odkázat.
+            case "fund.name": return item.fund
+                ? (
+                    <Link to={urlFundAb(item.fund.id, undefined, item.aipId)}
+                          title={item.fund.name}
+                          onClick={e => e.stopPropagation()}>
+                        {item.fund.name}
+                    </Link>
+                )
+                : "-";
+            case "fundCode": {
+                if (!item.fundCode) {
+                    return "-";
+                }
+                // Dohledaný fond se dá otevřít; nedohledaný zůstane jen kódem z balíčku.
+                return item.fund
+                    ? (
+                        <Link to={urlFundAb(item.fund.id, undefined, item.aipId)}
+                              title={item.fund.name}
+                              onClick={e => e.stopPropagation()}>
+                            {item.fundCode}
+                        </Link>
+                    )
+                    : item.fundCode;
+            }
             case "institution.name": return item.institution?.name ?? "-";
             case "institutionCode": {
                 if (!item.institutionCode) {
@@ -171,9 +170,9 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, onExplore, filterDisabled, in
                     : item.institutionCode;
             }
             case "importState":
-                return queueStateContent(item.importState, item.importStateMessage, item.importStateDate);
+                return <QueueStateCell state={item.importState} message={item.importStateMessage} date={item.importStateDate} />;
             case "exportState":
-                return queueStateContent(item.exportState, item.exportStateMessage, item.exportStateDate);
+                return <QueueStateCell state={item.exportState} message={item.exportStateMessage} date={item.exportStateDate} />;
             case "linkState": return item.linkState
                 ? formatMessage(linkStateMessages[item.linkState]) : "-";
             case "problemType": return item.problemType
@@ -192,8 +191,30 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, onExplore, filterDisabled, in
     }
 
 
+    /**
+     * Skok na balíček z adresy. Stránku, na které leží, umí najít jen server, proto se místo
+     * obyčejného načtení první stránky zeptáme na ni - jednou, při otevření seznamu.
+     */
+    const focusPending = useRef(focusAipId != null);
     useEffect(() => {
-        dispatch(aipsFetchIfNeeded());
+        if (focusAipId == null) {
+            return;
+        }
+        dispatch(aipsFocus(focusAipId, initialFilters ?? [], aips.filter.pageSize, aips.filter.sort))
+            .then((found: boolean) => {
+                if (!found) {
+                    dispatch(addToastrWarning(formatMessage(listMessages.focusNotFound)));
+                }
+            })
+            .finally(() => { focusPending.current = false; });
+        // jen při vstupu na seznam; další stránkování už jde obvyklou cestou
+    }, [focusAipId]);
+
+    useEffect(() => {
+        // dokud se hledá stránka s balíčkem, načetla by se zbytečně první stránka
+        if (!focusPending.current) {
+            dispatch(aipsFetchIfNeeded());
+        }
 
         if(hiddenValues) {
             const res = columns.filter(col => !hiddenValues.includes(col.columnId.toString()));
@@ -206,6 +227,12 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, onExplore, filterDisabled, in
         aips.filter.sort,
         dispatch,
     ]);
+
+    /** Vybraný balíček nemusí být na první obrazovce stránky, tak se na něj seznam odroluje. */
+    const focusedRow = useRef<HTMLTableRowElement | null>(null);
+    useEffect(() => {
+        focusedRow.current?.scrollIntoView({block: "center"});
+    }, [items]);
 
     const toggleColumns = (e: MenuCheckedValueChangeEvent, data: MenuCheckedValueChangeData) => {
         setColumns(
@@ -369,6 +396,7 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, onExplore, filterDisabled, in
                                 <TableRow
                                     key={item.code}
                                     className="table-row"
+                                    ref={isDetailShown ? focusedRow : undefined}
                                     style={{backgroundColor: isDetailShown ? "#ddd": undefined}}
                                 >
                                     <TableSelectionCell
@@ -416,7 +444,6 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, onExplore, filterDisabled, in
             <AipDetail
                 open={detailOpen}
                 onClose={() => setDetailOpen(false)}
-                onOpen={() => setDetailOpen(true)}
             />
     </Row>
     );

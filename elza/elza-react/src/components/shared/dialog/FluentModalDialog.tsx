@@ -4,6 +4,12 @@ import { PropsWithChildren, createContext, useCallback, useContext, useEffect, u
 import { DraggableWindow } from "..";
 import SearchFundsForm from "components/arr/search-funds-form/SearchFundsForm";
 import { DraggableWindowContext, DraggableWindowDragger } from "../draggable-window";
+import { defineMessages } from 'react-intl';
+import { getIntl } from 'components/shared/lang/intlInstance';
+
+const searchFundsMessages = defineMessages({
+    windowTitle: { id: 'arr.fund.search.windowTitle', defaultMessage: 'Vyhledávání v archivních souborech' },
+});
 
 function PinBottomButton() {
   const { enablePinBottom, pinnedBottom, togglePinBottom } = useContext(DraggableWindowContext);
@@ -131,7 +137,7 @@ interface SearchFundsWindowProps {
 
 export function SearchFundsWindow({ onResult }: SearchFundsWindowProps) {
   return <CollapsibleDragWindow
-    title="Vyhledavani v arch. souborech"
+    title={getIntl().formatMessage(searchFundsMessages.windowTitle)}
     onClose={onResult}
   >
     <SearchFundsForm />

@@ -9,7 +9,10 @@ import { showConfirmDialog, showInfoDialog } from 'components/shared/dialog';
 import { Action, ActionCreator } from "redux";
 import { ThunkAction } from "redux-thunk";
 import { ApItemVO } from 'api/ApItemVO';
-import { i18n } from 'components/shared';
+import {} from 'components/shared';
+import { FormattedMessage } from 'react-intl';
+import { partEditMessages } from '../messages';
+import { getIntl } from 'components/shared/lang/intlInstance';
 
 export interface AutoItemsModalProps {
     attributes: ApCreateTypeVO[];
@@ -92,8 +95,8 @@ ThunkAction<Promise<AutoValue[]>, AppState, void, Action>
 }:AutoItemsModalProps) => async (dispatch) => {
         if(autoItems.length === 0) {
             await dispatch(showInfoDialog({
-                message: i18n('ap.part.complements.noItems.message'),
-                title: i18n('ap.part.complements.noItems.title')
+                message: getIntl().formatMessage(partEditMessages.partComplementsNoItemsMessage),
+                title: getIntl().formatMessage(partEditMessages.partComplementsNoItemsTitle)
             }))
 
             return []
@@ -109,7 +112,7 @@ ThunkAction<Promise<AutoValue[]>, AppState, void, Action>
             await dispatch(showInfoDialog({
                 message: <>
                     <p>
-                        <i>{i18n('ap.part.complements.noChanges.message')}</i>
+                        <i>{<FormattedMessage {...partEditMessages.partComplementsNoChangesMessage} />}</i>
                     </p>
                     <div><AutoItemsModal
                         attributes={usedAttributes}
@@ -118,7 +121,7 @@ ThunkAction<Promise<AutoValue[]>, AppState, void, Action>
                         />
                     </div>
                     </>,
-                title: i18n('ap.part.complements.noChanges.title')
+                title: getIntl().formatMessage(partEditMessages.partComplementsNoChangesTitle)
             }))
 
             return []

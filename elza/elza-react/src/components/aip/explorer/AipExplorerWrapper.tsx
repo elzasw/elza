@@ -1,4 +1,5 @@
-import i18n from "components/i18n";
+import { FormattedMessage } from "react-intl";
+import { globalMessages } from "components/shared/lang";
 import { Modal, Button } from "react-bootstrap";
 import AipExplorer from "./AipExplorer";
 import { ExplorerMode } from "./ExplorerContext";
@@ -16,10 +17,10 @@ const AipExplorerModalWrapper = ({onOk, mode, selected}: AipExplorerModalWrapper
         </Modal.Body>
         <Modal.Footer>
             <Button onClick={onOk} variant="outline-secondary">
-                OK
+                <FormattedMessage {...globalMessages.ok} />
             </Button>
             <Button onClick={onOk} variant="link">
-                {i18n('global.action.cancel')}
+                <FormattedMessage {...globalMessages.cancel} />
             </Button>
         </Modal.Footer>
     </>

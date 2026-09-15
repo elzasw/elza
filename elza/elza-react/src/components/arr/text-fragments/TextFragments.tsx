@@ -2,7 +2,9 @@ import { userDetailsSaveSettings } from 'actions/user/userDetail.jsx';
 import { getOneSettings, setSettings } from 'components/arr/ArrUtils.jsx';
 import { Icon, NoFocusButton } from 'components/shared';
 import { ChangeEvent, useState } from 'react';
-import { i18n } from '../../../components/shared';
+import {} from '../../../components/shared';
+import { FormattedMessage } from 'react-intl';
+import { daoMessages } from 'components/arr/daoMessages';
 import { DraggableWindow } from "components/shared";
 import "./TextFragments.scss";
 import { useAppThunkDispatch } from 'utils/hooks';
@@ -86,7 +88,7 @@ export function TextFragmentsWindow({ onClose }: { onClose: () => void }) {
             dragWholeWindow={true}
         >
             <div className="actions-container" >
-                <div className="title">{i18n("textFragments.title")}</div>
+                <div className="title">{<FormattedMessage {...daoMessages.textFragmentsTitle} />}</div>
                 <div className="spacer" />
                 <div onMouseDown={(e) => { e.stopPropagation(); e.preventDefault() }}>
                     <NoFocusButton active={editMode} onClick={handleToggleEdit}>

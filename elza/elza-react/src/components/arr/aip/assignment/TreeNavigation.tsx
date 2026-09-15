@@ -27,6 +27,8 @@ import {
 import React from "react";
 import { FlatItem } from "./AipsLogicalContainer";
 import { findNodeByValue } from "./utils";
+import { useIntl } from "react-intl";
+import { explorerMessages } from "components/aip/messages";
 
 type TreeNavigationProps = {
     selectedNode: TreeItemValue;
@@ -133,6 +135,7 @@ type OverflowMenuProps = {
 } & PartitionBreadcrumbItems<FlatItem>
 
 const OverflowMenu = (props: OverflowMenuProps) => {
+    const intl = useIntl();
     const { overflowItems, setSelectedItem } = props;
     const { ref, isOverflowing, overflowCount } =
       useOverflowMenu<HTMLButtonElement>();
@@ -179,7 +182,7 @@ const OverflowMenu = (props: OverflowMenuProps) => {
                 appearance="subtle"
                 ref={ref}
                 icon={<MoreHorizontal />}
-                aria-label={`${overflowItemsCount} dalších složek`}
+                aria-label={intl.formatMessage(explorerMessages.moreFolders, { count: overflowItemsCount })}
                 role="button"
               />
             </Tooltip>

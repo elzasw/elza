@@ -6,7 +6,20 @@ import {Button} from '../ui';
 import {AbstractReactComponent, Icon} from 'components/shared';
 import UserField from '../admin/UserField';
 import FormInput from 'components/shared/form/FormInput';
-import i18n from '../i18n';
+import { defineMessages, injectIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { getIntl } from 'components/shared/lang/intlInstance';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    name: { id: 'issueList.name', defaultMessage: 'Název' },
+    open: { id: 'issueList.open', defaultMessage: 'Stav' },
+    openTrue: { id: 'issueList.open.true', defaultMessage: 'Otevřený' },
+    openFalse: { id: 'issueList.open.false', defaultMessage: 'Zavřený' },
+    permission: { id: 'arr.issuesList.form.permission', defaultMessage: 'Oprávnění' },
+    permissionRead: { id: 'arr.issuesList.form.permission.read', defaultMessage: 'Čtení' },
+    permissionWrite: { id: 'arr.issuesList.form.permission.write', defaultMessage: 'Zápis a změny' },
+});
 import ListBox from '../shared/listbox/ListBox';
 import {formValueSelector, Field, FieldArray, reduxForm} from 'redux-form';
 import {WebApi} from '../../actions';
@@ -23,7 +36,7 @@ class IssueListForm extends AbstractReactComponent {
     static requireFields = (...names) => data =>
         names.reduce((errors, name) => {
             if (data[name] == null) {
-                errors[name] = i18n('global.validation.required');
+                errors[name] = getIntl().formatMessage(globalMessages.validationRequired);
             }
             return errors;
         }, {});
@@ -106,26 +119,26 @@ class IssueListForm extends AbstractReactComponent {
                     type="text"
                     name={'name'}
                     {...customProps}
-                    label={i18n('issueList.name')}
+                    label={this.props.intl.formatMessage(messages.name)}
                 />
                 <Field
                     component={FormInputField}
                     type="select"
                     name={'open'}
                     {...customProps}
-                    label={i18n('issueList.open')}
+                    label={this.props.intl.formatMessage(messages.open)}
                 >
-                    <option value={true}>{i18n('issueList.open.true')}</option>
-                    <option value={false}>{i18n('issueList.open.false')}</option>
+                    <option value={true}>{this.props.intl.formatMessage(messages.openTrue)}</option>
+                    <option value={false}>{this.props.intl.formatMessage(messages.openFalse)}</option>
                 </Field>
-                <label>{i18n('arr.issuesList.form.permission')}</label>
+                <label>{this.props.intl.formatMessage(messages.permission)}</label>
                 <Row>
                     <FieldArray
                         name={'rdUsers'}
                         component={({fields, meta}) => {
                             return (
                                 <Col xs={6}>
-                                    <label>{i18n('arr.issuesList.form.permission.read')}</label>
+                                    <label>{this.props.intl.formatMessage(messages.permissionRead)}</label>
                                     <UserField onChange={this.addUser(fields)} {...customProps} value={null} />
                                     <ListBox items={fields.getAll()} renderItemContent={this.renderUser(fields)} />
                                 </Col>
@@ -137,7 +150,7 @@ class IssueListForm extends AbstractReactComponent {
                         component={({fields, meta}) => {
                             return (
                                 <Col xs={6}>
-                                    <label>{i18n('arr.issuesList.form.permission.write')}</label>
+                                    <label>{this.props.intl.formatMessage(messages.permissionWrite)}</label>
                                     <UserField onChange={this.addUser(fields)} {...customProps} value={null} />
                                     <ListBox items={fields.getAll()} renderItemContent={this.renderUser(fields)} />
                                 </Col>
@@ -185,4 +198,4 @@ export default connect((state, props) => {
         rdUsers: selector(state, 'rdUsers'),
         wrUsers: selector(state, 'wrUsers'),
     };
-})(form);
+})(injectIntl(form));

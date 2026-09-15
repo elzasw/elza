@@ -1,5 +1,7 @@
 import { DataText, DataType } from "elza-api";
 import { DescItemProps } from "./types";
+import { FormattedMessage } from "react-intl";
+import { messages as commonMessages } from "components/arr/item-form/desc-items/commonMessages";
 
 export function DescItemText({ item, nodeId }: DescItemProps) {
   if (item.data?.dataType !== DataType.Text) {
@@ -17,7 +19,7 @@ export function DescItemText({ item, nodeId }: DescItemProps) {
         opacity: isInherited ? 0.5 : undefined,
       }}
     >
-      {item.undefined ? "Výjimka" : data.textValue}
+      {item.undefined ? <FormattedMessage {...commonMessages.undefined} /> : data.textValue}
     </div>
   );
 }

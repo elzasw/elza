@@ -2,7 +2,9 @@
 import PropTypes from 'prop-types';
 
 import React from 'react';
-import {AbstractReactComponent, i18n} from 'components/shared';
+import {AbstractReactComponent} from 'components/shared';
+import { FormattedMessage } from 'react-intl';
+import { globalMessages } from 'components/shared/lang';
 import {Modal} from 'react-bootstrap';
 import {Button} from '../ui';
 import {indexById} from 'stores/app/utils';
@@ -79,10 +81,10 @@ class SelectItemsForm extends AbstractReactComponent {
                             onSubmitForm(items);
                         }}
                     >
-                        {i18n('global.action.add')}
+                        <FormattedMessage {...globalMessages.add} />
                     </Button>
                     <Button variant="link" onClick={onClose}>
-                        {i18n('global.action.cancel')}
+                        <FormattedMessage {...globalMessages.cancel} />
                     </Button>
                 </Modal.Footer>
             </div>

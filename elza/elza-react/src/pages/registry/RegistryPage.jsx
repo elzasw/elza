@@ -1,5 +1,15 @@
 import { connect } from 'react-redux';
-import { AbstractReactComponent, i18n, Utils } from '../../components/shared';
+import { AbstractReactComponent, Utils } from '../../components/shared';
+import { FormattedMessage, defineMessages, injectIntl } from "react-intl";
+import { globalMessages } from "components/shared/lang/messages";
+import { filterMessages } from "components/registry/form/filter/messages";
+import { registryMessages } from "components/registry/messages";
+
+// Hledani je sdilene s dalsimi seznamy; drzime ho lokalne, at se neprenasi
+// zavislost jen kvuli jedne zprave.
+const sharedSearchMessages = defineMessages({
+    searchPlaceholder: { id: "search.input.search", defaultMessage: "Vyhledat..." },
+});
 import { DetailActions } from '../../shared/detail';
 import ImportForm from '../../components/form/ImportForm';
 import RegistryList from '../../components/registry/RegistryList';
@@ -193,7 +203,7 @@ class RegistryPage extends AbstractReactComponent {
         dispatch(
             modalDialogShow(
                 this,
-                i18n('registry.addRegistry'),
+                this.props.intl.formatMessage(registryMessages.addRegistry),
                 <CreateAccessPointModal
                     initialValues={{}}
                     onSubmit={formData => {
@@ -229,14 +239,14 @@ class RegistryPage extends AbstractReactComponent {
 
     handleDeleteRegistry = async () => {
         const { dispatch, registryDetail: { data: { id } } } = this.props;
-        const result = await dispatch(showConfirmDialog(i18n('registry.deleteRegistryQuestion')));
+        const result = await dispatch(showConfirmDialog(this.props.intl.formatMessage(registryMessages.deleteRegistryQuestion)));
         if (result) {
             dispatch(registryDelete(id));
         }
     };
 
     handleRegistryImport = () => {
-        this.props.dispatch(modalDialogShow(this, i18n('import.title.registry'), <ImportForm record />));
+        this.props.dispatch(modalDialogShow(this, this.props.intl.formatMessage(registryMessages.titleRegistry), <ImportForm record />));
     };
 
     handleApExtSearch = () => {
@@ -251,7 +261,7 @@ class RegistryPage extends AbstractReactComponent {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('ap.ext-search.title'),
+                this.props.intl.formatMessage(registryMessages.extSearchTitle),
                 <ApExtSearchModal itemType={TypeModal.SEARCH} initialValues={initialValues} extSystems={extSystems} />,
                 MODAL_DIALOG_SIZE.XL,
             ),
@@ -267,7 +277,7 @@ class RegistryPage extends AbstractReactComponent {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('ap.ext-syncs.title'),
+                this.props.intl.formatMessage(registryMessages.extSyncsTitle),
                 <ExtSyncsModal
                     onNavigateAp={() => {
                         dispatch(modalDialogHide());
@@ -305,7 +315,7 @@ class RegistryPage extends AbstractReactComponent {
         dispatch(
             modalDialogShow(
                 this,
-                i18n('ap.ext-search.title-connect'),
+                this.props.intl.formatMessage(registryMessages.extSearchTitleConnect),
                 <ApExtSearchModal
                     onConnected={() => {
                         dispatch(goToAe(history, id, true, !select));
@@ -328,14 +338,14 @@ class RegistryPage extends AbstractReactComponent {
             revisionActive
         } = this.props;
         const result = item.revStateApproval != null
-            ? await dispatch(showConfirmDialog(i18n('ap.push-to-ext.confirmation')))
+            ? await dispatch(showConfirmDialog(this.props.intl.formatMessage(registryMessages.pushToExtConfirmation)))
             : true;
 
         if (result) {
             dispatch(
                 modalDialogShow(
                     this,
-                    i18n('ap.push-to-ext.title'),
+                    this.props.intl.formatMessage(registryMessages.pushToExtTitle),
                     <ApPushToExt
                         detail={item}
                         onSubmit={async (data) => {
@@ -361,7 +371,7 @@ class RegistryPage extends AbstractReactComponent {
         dispatch(
             modalDialogShow(
                 this,
-                i18n('ap.copy.title'),
+                this.props.intl.formatMessage(registryMessages.copyTitle),
                 <ApCopyModal
                     onSubmit={async (data) => {
                         const id = detail.id;
@@ -386,7 +396,7 @@ class RegistryPage extends AbstractReactComponent {
     }
 
     handleScopeManagement = () => {
-        this.props.dispatch(modalDialogShow(this, i18n('accesspoint.scope.management.title'), <ScopeLists />));
+        this.props.dispatch(modalDialogShow(this, this.props.intl.formatMessage(registryMessages.scopeManagementTitle), <ScopeLists />));
     };
 
     handleShowApHistory = () => {
@@ -398,7 +408,7 @@ class RegistryPage extends AbstractReactComponent {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('ap.history.title'),
+                this.props.intl.formatMessage(registryMessages.historyTitle),
                 <ApStateHistoryForm accessPointId={id} />,
                 MODAL_DIALOG_SIZE.LG,
             ),
@@ -406,18 +416,18 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     handleRegistryShowUsage = data => {
-        this.props.dispatch(modalDialogShow(this, i18n('registry.registryUsage'), <RegistryUsageForm detail={data} />));
+        this.props.dispatch(modalDialogShow(this, this.props.intl.formatMessage(registryMessages.registryUsage), <RegistryUsageForm detail={data} />));
     };
 
     handleDeleteAccessPoint = async (accessPointDetail) => {
         const { dispatch } = this.props;
         const result = accessPointDetail.data.revStateApproval != null
-            ? await dispatch(showConfirmDialog(i18n('accesspoint.removeDuplicity.confirmation')))
+            ? await dispatch(showConfirmDialog(this.props.intl.formatMessage(registryMessages.removeDuplicityConfirmation)))
             : true;
         if (result) {
             dispatch(modalDialogShow(
                 this,
-                i18n('accesspoint.removeDuplicity.title'),
+                this.props.intl.formatMessage(registryMessages.removeDuplicityTitle),
                 <AccessPointDeleteForm
                     detail={accessPointDetail}
                     onSubmitSuccess={() => {
@@ -461,12 +471,12 @@ class RegistryPage extends AbstractReactComponent {
                 }}
             />
         );
-        dispatch(modalDialogShow(this, i18n('ap.changeState'), form));
+        dispatch(modalDialogShow(this, this.props.intl.formatMessage(registryMessages.changeState), form));
     };
 
     handleCreateRevision = async () => {
         const { dispatch, history, select = false, registryDetail: { data: { id } } } = this.props;
-        const result = await dispatch(showConfirmDialog(i18n('registry.createRevisionQuestion')));
+        const result = await dispatch(showConfirmDialog(this.props.intl.formatMessage(registryMessages.createRevisionQuestion)));
         if (result) {
             dispatch(registryCreateRevision(id, history, select));
         }
@@ -474,7 +484,7 @@ class RegistryPage extends AbstractReactComponent {
 
     handleDeleteRevision = async () => {
         const { dispatch, history, select = false, registryDetail: { data: { id } } } = this.props;
-        const result = await dispatch(showConfirmDialog(i18n('registry.deleteRevisionQuestion')));
+        const result = await dispatch(showConfirmDialog(this.props.intl.formatMessage(registryMessages.deleteRevisionQuestion)));
         if (result) {
             dispatch(registryDeleteRevision(id, history, select));
         }
@@ -508,7 +518,7 @@ class RegistryPage extends AbstractReactComponent {
                 }}
             />
         );
-        dispatch(modalDialogShow(this, i18n('registry.changeStateRevision'), form));
+        dispatch(modalDialogShow(this, this.props.intl.formatMessage(registryMessages.changeStateRevision), form));
     };
 
     handleMergeRevision = () => {
@@ -544,7 +554,7 @@ class RegistryPage extends AbstractReactComponent {
                 accessPointId={id}
             />
         );
-        this.props.dispatch(modalDialogShow(this, i18n('registry.mergeRevision'), form));
+        this.props.dispatch(modalDialogShow(this, this.props.intl.formatMessage(registryMessages.mergeRevision), form));
     };
 
     handleRestoreEntity = async () => {
@@ -607,7 +617,7 @@ class RegistryPage extends AbstractReactComponent {
         //         <Button key="addRegistry" onClick={this.handleAddRegistry}>
         //             <Icon glyph="fa-plus-circle" />
         //             <div>
-        //                 <span className="btnText">{i18n('registry.addNewRegistry')}</span>
+        //                 <span className="btnText">{<FormattedMessage {...registryMessages.addNewRegistry} />}</span>
         //             </div>
         //         </Button>,
         //     );
@@ -616,7 +626,7 @@ class RegistryPage extends AbstractReactComponent {
         //             <Button key="registryImport" onClick={this.handleRegistryImport}>
         //                 <Icon glyph="fa-file" />
         //                 <div>
-        //                     <span className="btnText">{i18n('ribbon.action.registry.import')}</span>
+        //                     <span className="btnText">{<FormattedMessage {...registryMessages.actionRegistryImport} />}</span>
         //                 </div>
         //             </Button>,
         //         );
@@ -626,7 +636,7 @@ class RegistryPage extends AbstractReactComponent {
         //                 <Button key="ap-ext-search" onClick={this.handleApExtSearch}>
         //                     <Icon glyph="fa-cloud-download" />
         //                     <div>
-        //                         <span className="btnText">{i18n('ribbon.action.ap.ext-search')}</span>
+        //                         <span className="btnText">{<FormattedMessage {...registryMessages.actionApExtSearch} />}</span>
         //                     </div>
         //                 </Button>,
         //             );
@@ -636,7 +646,7 @@ class RegistryPage extends AbstractReactComponent {
         //                 <Button key="ext-syncs" onClick={this.handleExtSyncs}>
         //                     <Icon glyph="fa-gg" />
         //                     <div>
-        //                         <span className="btnText">{i18n('ribbon.action.ap.ext-syncs')}</span>
+        //                         <span className="btnText">{<FormattedMessage {...registryMessages.actionApExtSyncs} />}</span>
         //                     </div>
         //                 </Button>,
         //             );
@@ -654,7 +664,7 @@ class RegistryPage extends AbstractReactComponent {
         //             <Button key="scopeManagement" onClick={this.handleScopeManagement}>
         //                 <Icon glyph="fa-wrench" />
         //                 <div>
-        //                     <span className="btnText">{i18n('ribbon.action.registry.scope.manage')}</span>
+        //                     <span className="btnText">{<FormattedMessage {...registryMessages.actionRegistryScopeManage} />}</span>
         //                 </div>
         //             </Button>,
         //         );
@@ -670,7 +680,7 @@ class RegistryPage extends AbstractReactComponent {
         //             <Button disabled={data.invalid} key="registryRemove" onClick={this.handleDeleteRegistry}>
         //                 <Icon glyph="fa-trash" />
         //                 <div>
-        //                     <span className="btnText">{i18n('registry.deleteRegistry')}</span>
+        //                     <span className="btnText">{<FormattedMessage {...registryMessages.deleteRegistry} />}</span>
         //                 </div>
         //             </Button>,
         //         );
@@ -692,7 +702,7 @@ class RegistryPage extends AbstractReactComponent {
         //             <Button key="registryShow" onClick={() => this.handleRegistryShowUsage(registryDetail)}>
         //                 <Icon glyph="fa-search" />
         //                 <div>
-        //                     <span className="btnText">{i18n('registry.registryUsage')}</span>
+        //                     <span className="btnText">{<FormattedMessage {...registryMessages.registryUsage} />}</span>
         //                 </div>
         //             </Button>,
         //         );
@@ -710,7 +720,7 @@ class RegistryPage extends AbstractReactComponent {
         //             <Button key="deleteReplaceAccessPoint" onClick={() => this.handleDeleteAccessPoint(registryDetail)}>
         //                 <Icon glyph="fa-ban" />
         //                 <div>
-        //                     <span className="btnText">{i18n('accesspoint.removeDuplicity')}</span>
+        //                     <span className="btnText">{<FormattedMessage {...registryMessages.removeDuplicity} />}</span>
         //                 </div>
         //             </Button>,
         //         );
@@ -721,7 +731,7 @@ class RegistryPage extends AbstractReactComponent {
         //             <Button key="show-state-history" onClick={this.handleShowApHistory}>
         //                 <Icon glyph="fa-clock-o" />
         //                 <div>
-        //                     <span className="btnText">{i18n('ap.stateHistory')}</span>
+        //                     <span className="btnText">{<FormattedMessage {...registryMessages.stateHistory} />}</span>
         //                 </div>
         //             </Button>,
         //         );
@@ -734,7 +744,7 @@ class RegistryPage extends AbstractReactComponent {
         //                 <Button key="change-state" onClick={this.handleChangeApState} disabled={hasRevision}>
         //                     <Icon glyph="fa-pencil" />
         //                     <div>
-        //                         <span className="btnText">{i18n('ap.changeState')}</span>
+        //                         <span className="btnText">{<FormattedMessage {...registryMessages.changeState} />}</span>
         //                     </div>
         //                 </Button>,
         //             );
@@ -748,7 +758,7 @@ class RegistryPage extends AbstractReactComponent {
         //         <Button key="connect-ap" onClick={this.handleConnectAp}>
         //         <Icon glyph="fa-link" />
         //         <div>
-        //         <span className="btnText">{i18n('ap.connect')}</span>
+        //         <span className="btnText">{<FormattedMessage {...registryMessages.connect} />}</span>
         //         </div>
         //         </Button>,
         //         );
@@ -760,7 +770,7 @@ class RegistryPage extends AbstractReactComponent {
         //                 <Button key="push-ap-to-ext" onClick={this.handleApCopy}>
         //                     <Icon glyph="fa-copy" />
         //                     <div>
-        //                         <span className="btnText">{i18n("ap.copy.title")}</span>
+        //                         <span className="btnText">{<FormattedMessage {...registryMessages.copyTitle} />}</span>
         //                     </div>
         //                 </Button>,
         //             );
@@ -771,7 +781,7 @@ class RegistryPage extends AbstractReactComponent {
         //                 <Button disabled={data.invalid || !revisionActive} key="revisionDelete" onClick={this.handleDeleteRevision}>
         //                     <Icon glyph="fa-undo" />
         //                     <div>
-        //                         <span className="btnText">{i18n('registry.deleteRevision')}</span>
+        //                         <span className="btnText">{<FormattedMessage {...registryMessages.deleteRevision} />}</span>
         //                     </div>
         //                 </Button>,
         //             );
@@ -779,7 +789,7 @@ class RegistryPage extends AbstractReactComponent {
         //                 <Button disabled={data.invalid || !revisionActive} key="revisionChangeState" onClick={this.handleChangeStateRevision}>
         //                     <Icon glyph="fa-pencil" />
         //                     <div>
-        //                         <span className="btnText">{i18n('registry.changeStateRevision')}</span>
+        //                         <span className="btnText">{<FormattedMessage {...registryMessages.changeStateRevision} />}</span>
         //                     </div>
         //                 </Button>,
         //             );
@@ -787,7 +797,7 @@ class RegistryPage extends AbstractReactComponent {
         //                 <Button disabled={data.invalid || !revisionActive} key="revisionMerge" onClick={this.handleMergeRevision}>
         //                     <Icon glyph="fa-check" />
         //                     <div>
-        //                         <span className="btnText">{i18n('registry.mergeRevision')}</span>
+        //                         <span className="btnText">{<FormattedMessage {...registryMessages.mergeRevision} />}</span>
         //                     </div>
         //                 </Button>,
         //             );
@@ -796,7 +806,7 @@ class RegistryPage extends AbstractReactComponent {
         //                 <Button disabled={data.invalid} key="revisionCreate" onClick={this.handleCreateRevision}>
         //                     <Icon glyph="fa-plus" />
         //                     <div>
-        //                         <span className="btnText">{i18n('registry.createRevision')}</span>
+        //                         <span className="btnText">{<FormattedMessage {...registryMessages.createRevision} />}</span>
         //                     </div>
         //                 </Button>,
         //             );
@@ -806,7 +816,7 @@ class RegistryPage extends AbstractReactComponent {
         //                 <Button key="restoreEntity" onClick={this.handleRestoreEntity}>
         //                     <Icon glyph="fa-undo" />
         //                     <div>
-        //                         <span className="btnText">{i18n('registry.restoreEntity')}</span>
+        //                         <span className="btnText">{<FormattedMessage {...registryMessages.restoreEntity} />}</span>
         //                     </div>
         //                 </Button>,
         //             );
@@ -934,4 +944,4 @@ export default withRouter(connect(state => {
         focus,
         userDetail,
     };
-})(RegistryPage));
+})(injectIntl(RegistryPage)));

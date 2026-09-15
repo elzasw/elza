@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Button } from 'react-bootstrap';
-import { Tree, TreeItem, TreeItemLayout } from '@fluentui/react-components';
+import { Tree, TreeItem, TreeItemLayout, TreeItemValue, TreeOpenChangeData, TreeOpenChangeEvent } from '@fluentui/react-components';
 import { AddSquare16Regular, SubtractSquare16Regular } from '@fluentui/react-icons';
 import { FormattedMessage, useIntl } from 'react-intl';
 
@@ -20,6 +20,8 @@ type Props = {
     problemDescription?: string;
     /** Soubor balíčku, kterého se problém týká, pokud se týká jednoho. */
     problemFile?: string;
+    /** File to open once the package is listed; ignored when the package does not contain it. */
+    selectPath?: string;
 };
 
 /** Soubory, které lze rozumně zobrazit jako text. */
@@ -28,29 +30,50 @@ const TEXT_SUFFIXES = ['.xml', '.txt', '.json', '.csv', '.md'];
 const isText = (path: string) => TEXT_SUFFIXES.some(suffix => path.toLowerCase().endsWith(suffix));
 
 /**
+ * Balíček uvádí cestu souboru vůči kořeni balíčku, položky ZIPu ji navíc mají pod složkou
+ * pojmenovanou kódem AIPu - hledá se tedy i podle konce cesty.
+ */
+const findEntry = (entries: AipPackageEntry[], file?: string) => file
+    ? entries.find(entry => entry.path === file || entry.path.endsWith(`/${file}`))
+    : undefined;
+
+const toNode = (entry: AipPackageEntry): PackageNode => ({
+    name: entry.path.substring(entry.path.lastIndexOf('/') + 1),
+    path: entry.path,
+    size: entry.size,
+});
+
+/**
  * Prohlížeč staženého balíčku tak, jak přišel z digitálního archivu.
  *
  * Nezávisí na zpracování balíčku, takže je k dispozici i tehdy, když zpracování selhalo -
  * právě to je situace, kdy je potřeba se do balíčku podívat. Popis problému je proto vidět
  * rovnou nad obsahem balíčku a soubor, kterého se týká, otevře kliknutí na jeho cestu.
  */
-export function PackageBrowser({aipId, problemType, problemDescription, problemFile}: Props) {
+export function PackageBrowser({aipId, problemType, problemDescription, problemFile, selectPath}: Props) {
     const intl = useIntl();
     const [entries, setEntries] = useState<AipPackageEntry[] | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [selected, setSelected] = useState<PackageNode | null>(null);
     const [content, setContent] = useState<string | null>(null);
+    const [openItems, setOpenItems] = useState<TreeItemValue[]>([]);
 
     const tree = useMemo(() => entries ? buildPackageTree(entries) : [], [entries]);
     const openFolders = useMemo(() => folderPaths(tree), [tree]);
+
     /**
-     * Balíček uvádí cestu souboru vůči kořeni balíčku, položky ZIPu ji navíc mají pod složkou
-     * pojmenovanou kódem AIPu - hledá se tedy i podle konce cesty. Odkaz vznikne jen na
-     * položku, kterou balíček opravdu obsahuje.
+     * Strom se otevře celý, balíčky jsou mělké; dál si otevřené složky řídí uživatel. Seznam
+     * otevřených položek je řízený, aby ikona složky odpovídala tomu, zda je opravdu otevřená.
      */
-    const problemEntry = useMemo(() => (entries ?? []).find(entry =>
-        problemFile && (entry.path === problemFile || entry.path.endsWith(`/${problemFile}`))),
-        [problemFile, entries]);
+    useEffect(() => setOpenItems(openFolders), [openFolders]);
+
+    const handleOpenChange = (_event: TreeOpenChangeEvent, data: TreeOpenChangeData) =>
+        setOpenItems(current => data.open
+            ? [...current, data.value]
+            : current.filter(value => value !== data.value));
+
+    /** Odkaz vznikne jen na položku, kterou balíček opravdu obsahuje. */
+    const problemEntry = useMemo(() => findEntry(entries ?? [], problemFile), [problemFile, entries]);
 
     useEffect(() => {
         setEntries(null);
@@ -60,6 +83,13 @@ export function PackageBrowser({aipId, problemType, problemDescription, problemF
             .then(response => setEntries(response.data))
             .catch(() => setError(intl.formatMessage(packageMessages.notDownloaded)));
     }, [aipId]);
+
+    useEffect(() => {
+        const entry = findEntry(entries ?? [], selectPath);
+        if (entry) {
+            setSelected(toNode(entry));
+        }
+    }, [entries, selectPath]);
 
     useEffect(() => {
         setContent(null);
@@ -84,11 +114,7 @@ export function PackageBrowser({aipId, problemType, problemDescription, problemF
             {problemEntry && <p className="package-problem-files">
                 <FormattedMessage {...packageMessages.problemHint}/>
                 <button type="button" className="package-problem-file"
-                        onClick={() => setSelected({
-                            name: problemEntry.path.substring(problemEntry.path.lastIndexOf('/') + 1),
-                            path: problemEntry.path,
-                            size: problemEntry.size,
-                        })}>
+                        onClick={() => setSelected(toNode(problemEntry))}>
                     {problemEntry.path}
                 </button>
             </p>}
@@ -99,7 +125,7 @@ export function PackageBrowser({aipId, problemType, problemDescription, problemF
         ? (
             <TreeItem key={node.path} itemType="branch" value={node.path}>
                 <TreeItemLayout
-                    expandIcon={openFolders.includes(node.path)
+                    expandIcon={openItems.includes(node.path)
                         ? <SubtractSquare16Regular color="black"/>
                         : <AddSquare16Regular color="black"/>}
                 >
@@ -151,11 +177,14 @@ export function PackageBrowser({aipId, problemType, problemDescription, problemF
                     left={
                         <div className="package-tree-pane">
                             <div className="package-tree-header">{downloadAll}</div>
-                            <Tree aria-label={intl.formatMessage(packageMessages.treeLabel)}
-                                  defaultOpenItems={openFolders}
-                                  className="package-tree">
-                                {renderNodes(tree)}
-                            </Tree>
+                            <div className="package-tree-scroll">
+                                <Tree aria-label={intl.formatMessage(packageMessages.treeLabel)}
+                                      openItems={openItems}
+                                      onOpenChange={handleOpenChange}
+                                      className="package-tree">
+                                    {renderNodes(tree)}
+                                </Tree>
+                            </div>
                         </div>
                     }
                     center={

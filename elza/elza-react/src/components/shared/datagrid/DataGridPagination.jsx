@@ -10,7 +10,12 @@ import {PropTypes} from 'prop-types';
 import defaultKeymap from './DataGridPaginationKeymap.jsx';
 
 import './DataGridPagination.scss';
-import i18n from '../../i18n';
+import { FormattedMessage, defineMessages } from 'react-intl';
+
+// Id je převzaté z legacy katalogu beze změny.
+const messages = defineMessages({
+    rowsCount: { id: 'fund.grid.rowsCount', defaultMessage: 'Počet záznamů: {0}' },
+});
 import {Button} from '../../ui';
 
 export function getPagesCount(itemsCount, pageSize) {
@@ -209,7 +214,7 @@ class DataGridPagination extends AbstractReactComponent {
                             )}
                         </li>
                         <li key="rowsCount">
-                            <p>{i18n('fund.grid.rowsCount', itemsCount)}</p>
+                            <p><FormattedMessage {...messages.rowsCount} values={{ 0: itemsCount }} /></p>
                         </li>
                     </ul>
                 </nav>

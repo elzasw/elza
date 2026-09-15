@@ -2649,7 +2649,10 @@ public class ArrangementService {
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.IMPORT, null);
         char delimiter = StringUtils.isEmpty(separator) ? DEFAULT_CSV_SEPARATOR : separator.charAt(0);
 
-        CSVFormat csvf = CSVFormat.EXCEL.builder().setDelimiter(delimiter).build();
+        CSVFormat csvf = CSVFormat.EXCEL.builder()
+                .setDelimiter(delimiter)
+                .setIgnoreSurroundingSpaces(true)
+                .build();
         try (InputStreamReader isr = new InputStreamReader(BOMInputStream.builder().setInputStream(is).get(), "UTF-8");
             CSVParser parser = csvf.parse(isr)) {
 
@@ -2717,46 +2720,45 @@ public class ArrangementService {
                     String descr = dataIter.next();
                     dataUriRef.setSchema(ArrDataUriRef.createSchema(url));
                     dataUriRef.setUriRefValue(url);
-                    if(StringUtils.isNotEmpty(descr)) {
+                    if (StringUtils.isNotEmpty(descr)) {
                     	dataUriRef.setDescription(descr);
                     }
                     data = dataUriRef;
                 }
-                    break;
+                break;
                 case STRING: {
                     ArrDataString dataStr = new ArrDataString();
                     String str = dataIter.next();
                     dataStr.setStringValue(str);
                     data = dataStr;
                 }
-                    break;
+                break;
                 case TEXT: {
                     ArrDataText dataText = new ArrDataText();
                     String str = dataIter.next();
                     dataText.setTextValue(str);
                     data = dataText;
                 }
-                    break;
+                break;
                 case INT: {
                     ArrDataInteger dataInt = new ArrDataInteger();
                     String str = dataIter.next();
                     dataInt.setIntegerValue(Integer.parseInt(str));
                     data = dataInt;
-                	
                 }
-                	break;
+                break;
                 case DECIMAL: {
                     ArrDataDecimal dataDecimal = new ArrDataDecimal();
                     String str = dataIter.next();
                     dataDecimal.setValue(new BigDecimal(str));
-                    data = dataDecimal;	                
+                    data = dataDecimal;
                 }
-                	break;
+                break;
                 case RECORD_REF: {
                     ArrDataRecordRef dataRr = new ArrDataRecordRef();
                     String str = dataIter.next();
                     dataRr.setRecord(em.getReference(ApAccessPoint.class, Integer.parseInt(str)));
-                    data = dataRr;                	
+                    data = dataRr;
                 }
                 break;
                 case UNITDATE: {

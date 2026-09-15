@@ -1,6 +1,9 @@
 /** */
 import React, { ChangeEvent } from 'react';
-import { AbstractReactComponent, i18n } from 'components/shared';
+import { AbstractReactComponent} from 'components/shared';
+import { injectIntl } from 'react-intl';
+import { nodeMessages } from 'components/arr/nodeMessages';
+
 import { connect } from 'react-redux';
 import { normalizeString } from 'components/validate.jsx';
 import { decorateValue, inputValue } from './DescItemUtils.jsx';
@@ -64,7 +67,7 @@ class DescItemLink extends AbstractReactComponent {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('arr.fund.title.search'),
+                this.props.intl.formatMessage(nodeMessages.fundTitleSearch),
                 <SelectSearchFundsForm
                     onSubmit={({ node, fund }) => {
                         // TODO new api
@@ -98,7 +101,7 @@ class DescItemLink extends AbstractReactComponent {
         const { descItem, locked, readMode, cal, fundId } = this.props;
 
         let value =
-            cal && descItem.value == null ? i18n('subNodeForm.descItemType.calculable') : inputValue(descItem.value);
+            cal && descItem.value == null ? this.props.intl.formatMessage(nodeMessages.subNodeFormDescItemTypeCalculable) : inputValue(descItem.value);
 
         const hasNodeLink = !!descItem.value;
 
@@ -129,9 +132,9 @@ class DescItemLink extends AbstractReactComponent {
                         ref={ref => (this.focusEl = ref)}
                         type="text"
                         disabled={locked || descItem.undefined}
-                        value={descItem.undefined ? i18n('subNodeForm.descItemType.undefinedValue') : value}
+                        value={descItem.undefined ? this.props.intl.formatMessage(nodeMessages.subNodeFormDescItemTypeUndefinedValue) : value}
                         onChange={this.handleChange}
-                        placeholder={i18n('subNodeForm.descItem.link.uri')}
+                        placeholder={this.props.intl.formatMessage(nodeMessages.subNodeFormDescItemLinkUri)}
                     />
                     <Button onClick={this.search}>
                         <Icon glyph={'fa-search'} />
@@ -148,9 +151,9 @@ class DescItemLink extends AbstractReactComponent {
                         ref={ref => (this.focusEl2 = ref)}
                         type="text"
                         disabled={locked || descItem.undefined}
-                        value={descItem.undefined ? i18n('subNodeForm.descItemType.undefinedValue') : description}
+                        value={descItem.undefined ? this.props.intl.formatMessage(nodeMessages.subNodeFormDescItemTypeUndefinedValue) : description}
                         onChange={this.handleDesc}
-                        placeholder={i18n('subNodeForm.descItem.link.description')}
+                        placeholder={this.props.intl.formatMessage(nodeMessages.subNodeFormDescItemLinkDescription)}
                     />
                 </div>
                 {descItem.nodeId && (
@@ -160,7 +163,7 @@ class DescItemLink extends AbstractReactComponent {
                         disabled={locked || descItem.undefined}
                         fundId={fundId}
                         useIdAsValue={true}
-                        placeholder={i18n('subNodeForm.descItem.link.refTemplate')}
+                        placeholder={this.props.intl.formatMessage(nodeMessages.subNodeFormDescItemLinkRefTemplate)}
                         value={descItem.refTemplateId}
                     />
                 )}
@@ -169,4 +172,4 @@ class DescItemLink extends AbstractReactComponent {
     }
 }
 
-export default connect(null, null, null, { forwardRef: true })(DescItemLink);
+export default connect(null, null, null, { forwardRef: true })(injectIntl(DescItemLink, { forwardRef: true }));

@@ -1,3 +1,5 @@
+import { AipLevelType } from "elza-api";
+
 export const getFileName = (name: string): string => {
     return name ? name.substring(name.lastIndexOf("/") + 1) : "-";
 }
@@ -12,6 +14,8 @@ export const turncate = (str: string ): string => {
 /** Uzel stromu AIP tak, jak ho vraci server; deti jsou v obou seznamech volitelne. */
 export type ExplorerNode = {
     uuid?: string;
+    /** Typ virtualni urovne; realne slozky a soubory ho nemaji. */
+    levelType?: AipLevelType;
     daoFileFolderId?: number;
     parent?: ExplorerNode;
     childFiles?: ExplorerNode[];

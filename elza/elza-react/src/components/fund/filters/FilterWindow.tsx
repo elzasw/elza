@@ -4,6 +4,8 @@ import { OperationCompareType } from "elza-api";
 import { useIntl } from "react-intl";
 import { messages } from "./messages";
 import { PropsWithChildren } from "react";
+import { FormattedMessage } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
 
 export interface Props {
   onClose?: () => void;
@@ -78,7 +80,7 @@ export function FilterWindow({
         </div>
       </div>
       <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "10px" }}>
-        <Button appearance="primary" disabled={!isValid || !isDirty} icon={<CheckmarkRegular />} onClick={onFilterConfirm}>Potvrdit</Button>
+        <Button appearance="primary" disabled={!isValid || !isDirty} icon={<CheckmarkRegular />} onClick={onFilterConfirm}><FormattedMessage {...globalMessages.confirm} /></Button>
         <Button appearance="subtle" icon={<DismissRegular />} onClick={onClose}></Button>
       </div>
     </div>

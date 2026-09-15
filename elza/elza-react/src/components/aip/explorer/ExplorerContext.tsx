@@ -15,6 +15,8 @@ type TExplorerContext = {
     setStructure: (structure: any) => void;
     mode: ExplorerMode;
     setMode: (mode: ExplorerMode) => void;
+    /** The synthetic root of the package is not shown; its sections are the top level. */
+    hideRoot: boolean;
 }
 
 const ExpContext = createContext<TExplorerContext>(null);
@@ -27,11 +29,12 @@ export const isDaoFileFolderVO = (item: DaoFileFolderVO | DaoFileVO): item is Da
 
 type ECProps = {
     mode: ExplorerMode;
+    hideRoot?: boolean;
     children: React.ReactNode;
 }
 
 
-const ExplorerContext = ({mode: modeProp, children}: ECProps) => {
+const ExplorerContext = ({mode: modeProp, hideRoot = false, children}: ECProps) => {
     const [selectedItem, setSelectedItem] = useState<DaoFileFolderVO | DaoFileVO>(null);
     const [mode, setMode] = useState<ExplorerMode>(modeProp);
     const [structure, setStructure] = useState<DaoFileFolderVO>(null);
@@ -43,7 +46,8 @@ const ExplorerContext = ({mode: modeProp, children}: ECProps) => {
             mode,
             setMode,
             structure,
-            setStructure
+            setStructure,
+            hideRoot,
         }}>
             {children}
         </ExpContext.Provider>

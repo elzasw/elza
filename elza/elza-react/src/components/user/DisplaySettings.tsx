@@ -1,4 +1,4 @@
-import { Col, Form, Row } from 'react-bootstrap';
+import { Field, Select, Switch, makeStyles, tokens } from '@fluentui/react-components';
 import { defineMessages, useIntl } from 'react-intl';
 import { Language, useUserSettings } from 'contexts/user';
 
@@ -30,61 +30,62 @@ const messages = defineMessages({
     },
 });
 
-export default function DisplaySettings() {
+const useStyles = makeStyles({
+    root: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: tokens.spacingVerticalS,
+        paddingTop: tokens.spacingVerticalM,
+        paddingBottom: tokens.spacingVerticalM,
+    },
+    languageField: {
+        maxWidth: '260px',
+    },
+});
+
+export function DisplaySettings() {
     const { settings, update } = useUserSettings();
     const { formatMessage } = useIntl();
+    const styles = useStyles();
 
     const experimentalFeaturesEnabled = !!settings.showExperimentalFeatures;
 
     return (
-        <Row>
-            <Col xs={12}>
-                <div style={{ padding: '10px 0' }}>
-                    {experimentalFeaturesEnabled && (
-                        <Form.Group controlId="language" className="mb-3">
-                            <Form.Label>{formatMessage(messages.language)}</Form.Label>
-                            <Form.Select
-                                value={settings.language ?? 'cs'}
-                                onChange={(e) => update({ language: e.target.value as Language })}
-                            >
-                                {languageOptions.map(({ value, nativeName }) => (
-                                    <option key={value} value={value}>
-                                        {nativeName}
-                                    </option>
-                                ))}
-                            </Form.Select>
-                        </Form.Group>
-                    )}
-                    <Form.Check
-                        type="checkbox"
-                        id="darkMode"
-                        label={formatMessage(messages.darkMode)}
-                        checked={!!settings.darkMode}
-                        onChange={(e) => update({ darkMode: e.target.checked })}
-                    />
-                    <Form.Check
-                        type="checkbox"
-                        id="outputColumnLayout"
-                        label={formatMessage(messages.outputColumnLayout)}
-                        checked={!!settings.outputColumnLayout}
-                        onChange={(e) => update({ outputColumnLayout: e.target.checked })}
-                    />
-                    <Form.Check
-                        type="checkbox"
-                        id="showExperimentalFeatures"
-                        label={formatMessage(messages.showExperimentalFeatures)}
-                        checked={!!settings.showExperimentalFeatures}
-                        onChange={(e) => update({ showExperimentalFeatures: e.target.checked })}
-                    />
-                    <Form.Check
-                        type="checkbox"
-                        id="showDebugInfo"
-                        label={formatMessage(messages.showDebugInfo)}
-                        checked={!!settings.showDebugInfo}
-                        onChange={(e) => update({ showDebugInfo: e.target.checked })}
-                    />
-                </div>
-            </Col>
-        </Row>
+        <div className={styles.root}>
+            {experimentalFeaturesEnabled && (
+                <Field label={formatMessage(messages.language)} className={styles.languageField}>
+                    <Select
+                        value={settings.language ?? 'cs'}
+                        onChange={(_event, data) => update({ language: data.value as Language })}
+                    >
+                        {languageOptions.map(({ value, nativeName }) => (
+                            <option key={value} value={value}>
+                                {nativeName}
+                            </option>
+                        ))}
+                    </Select>
+                </Field>
+            )}
+            <Switch
+                label={formatMessage(messages.darkMode)}
+                checked={!!settings.darkMode}
+                onChange={(_event, data) => update({ darkMode: data.checked })}
+            />
+            <Switch
+                label={formatMessage(messages.outputColumnLayout)}
+                checked={!!settings.outputColumnLayout}
+                onChange={(_event, data) => update({ outputColumnLayout: data.checked })}
+            />
+            <Switch
+                label={formatMessage(messages.showExperimentalFeatures)}
+                checked={experimentalFeaturesEnabled}
+                onChange={(_event, data) => update({ showExperimentalFeatures: data.checked })}
+            />
+            <Switch
+                label={formatMessage(messages.showDebugInfo)}
+                checked={!!settings.showDebugInfo}
+                onChange={(_event, data) => update({ showDebugInfo: data.checked })}
+            />
+        </div>
     );
 }

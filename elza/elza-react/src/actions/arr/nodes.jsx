@@ -93,13 +93,23 @@ export function fundCloseNodeTab(versionId, nodeId, routingKey, index) {
 }
 
 /**
- * Funkce přesunu uzlů. Všechny funkce musí vracet Promise.
+ * Funkce přesunu uzlů podle směru. Všechny vracejí Promise.
+ *
+ * WebApi se vyhledává až při volání: vzniká na poslední řádce svého modulu a v kruhu importů, do
+ * kterého tenhle modul patří, ještě nemusí být hotové, když se modul vyhodnocuje.
  */
-const moveFunctions = {
-    BEFORE: WebApi.moveNodesBefore,
-    AFTER: WebApi.moveNodesAfter,
-    UNDER: WebApi.moveNodesUnder,
-};
+function moveFunction(direction) {
+    switch (direction) {
+        case 'BEFORE':
+            return WebApi.moveNodesBefore;
+        case 'AFTER':
+            return WebApi.moveNodesAfter;
+        case 'UNDER':
+            return WebApi.moveNodesUnder;
+        default:
+            throw new Error('Neznámý směr přesunu: ' + direction);
+    }
+}
 
 /**
  * Funkce spouštějící a ukončující operaci přesunu.
@@ -126,7 +136,7 @@ export function moveNodes(direction, versionId, nodes, nodesParent, dest, destPa
         nodesToUpdate.push(nextNodeParent);
         dispatch(increaseMultipleNodesVersions(versionId, nodesToUpdate));
         dispatch(fundMoveStart(versionId));
-        return moveFunctions[direction](versionId, nodes, nodesParent, dest, destParent).then(() => {
+        return moveFunction(direction)(versionId, nodes, nodesParent, dest, destParent).then(() => {
             dispatch(fundMoveFinish(versionId));
             dispatch(fundSelectSubNode(versionId, nodeTab.selectedSubNodeId, nextNodeParent));
         });

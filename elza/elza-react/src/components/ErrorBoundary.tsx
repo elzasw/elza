@@ -1,4 +1,11 @@
 import * as React from "react";
+import { FormattedMessage, defineMessages } from 'react-intl';
+
+const messages = defineMessages({
+    failed: { id: 'app.error.boundary.message', defaultMessage: 'Došlo k chybě. Vymažte mezipaměť a načtěte stránku znovu.' },
+    continueWith: { id: 'app.error.boundary.continue', defaultMessage: 'Pro pokračování: ' },
+    clearAndReload: { id: 'app.error.boundary.reload', defaultMessage: 'Vymazat a načíst znovu' },
+});
 
 const MISSING_ERROR = "Error was swallowed during propagation.";
 
@@ -35,10 +42,10 @@ export class ErrorBoundary extends React.Component<HocProps, HocState> {
 		if (error) {
 			return (
 				<div>
-					<p>Something went wrong! Clear cache and refresh.</p>
-					{`To continue: `}
+					<p><FormattedMessage {...messages.failed} /></p>
+					<FormattedMessage {...messages.continueWith} />
 					<a href="/" onClick={() => window.location.reload()}>
-						Clear & reload
+						<FormattedMessage {...messages.clearAndReload} />
 					</a>
 				</div>
 			);

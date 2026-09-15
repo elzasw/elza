@@ -1,29 +1,32 @@
 import React from 'react';
 import {Field, FormSection} from 'redux-form';
-import i18n from "../../../i18n";
+import { FormattedMessage, useIntl, type MessageDescriptor } from 'react-intl';
+import { filterMessages } from './messages';
 import {FormInputField} from "../../../shared";
 
 type OwnProps = {
     submitting: boolean;
-    name?: string;
+    /** Nadpis sekce; ne název pole formuláře. */
+    sectionTitle?: MessageDescriptor;
     nameFormSection?: string; // název pro FormSection
 }
 
 type Props = {} & OwnProps;
 
-const CreExtFilterSection = ({submitting, nameFormSection = "", name = 'ap.ext-search.section.cre-ext'}: Props) => {
+const CreExtFilterSection = ({submitting, nameFormSection = "", sectionTitle = filterMessages.sectionCreExt}: Props) => {
+    const intl = useIntl();
     return <FormSection name={nameFormSection} className="filter-section">
-        <span className="name-section">{i18n(name)}</span>
+        <span className="name-section"><FormattedMessage {...sectionTitle} /></span>
         <Field name="creation"
                type="text"
                component={FormInputField}
-               label={i18n('ap.ext-search.creation')}
+               label={intl.formatMessage(filterMessages.creation)}
                disabled={submitting}
         />
         <Field name="extinction"
                type="text"
                component={FormInputField}
-               label={i18n('ap.ext-search.extinction')}
+               label={intl.formatMessage(filterMessages.extinction)}
                disabled={submitting}
         />
     </FormSection>

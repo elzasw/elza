@@ -3,7 +3,13 @@ import {DetailActions} from 'shared/detail';
 import {WebApi} from '../WebApi';
 import {addToastrInfo} from '../../components/shared/toastr/ToastrActions';
 import {fundSelectSubNode} from './node';
-import {i18n} from '../../components/shared';
+import {} from '../../components/shared';
+import { FormattedMessage, defineMessages } from 'react-intl';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    notFound: { id: "toast.arr.validation.issues.notFound", defaultMessage: "Nebyla nalezena další připomínka" },
+});
 import {createFundRoot} from '../../components/arr/ArrUtils';
 
 export const AREA_LIST = 'issueList';
@@ -95,7 +101,7 @@ export function nodeWithIssueByFundVersion(fund, nodeId, direction) {
                 }
                 dispatch(fundSelectSubNode(fundVersionId, node.id, node.parentNode));
             } else {
-                dispatch(addToastrInfo(i18n('toast.arr.validation.issues.notFound')));
+                dispatch(addToastrInfo(<FormattedMessage {...messages.notFound} />));
             }
         });
     };

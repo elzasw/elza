@@ -1,7 +1,7 @@
 import React, { PropsWithChildren, ReactElement } from 'react';
 import { render, RenderOptions, RenderResult } from '@testing-library/react';
 import { Provider } from 'react-redux';
-import { IntlProvider } from 'react-intl';
+import { RawIntlProvider } from 'react-intl';
 import { MemoryRouter } from 'react-router-dom';
 import { applyMiddleware, createStore, Store } from 'redux';
 import thunk from 'redux-thunk';
@@ -16,6 +16,7 @@ import thunk from 'redux-thunk';
 import '../stores/AppStore';
 
 import rootReducer from '../stores/reducers';
+import { createAppIntl } from '../components/shared/lang/intlInstance';
 
 export type TestStore = Store;
 
@@ -39,7 +40,7 @@ export type RenderWithProvidersOptions = Omit<RenderOptions, 'wrapper'> & {
  * Testy vykreslují s prázdným katalogem a spoléhají na defaultMessage; hlášení
  * o chybějícím překladu proto není chyba. Ostatní chyby react-intl se hlásí dál.
  */
-const ignoreMissingTranslation = (error: {code?: string}) => {
+export const ignoreMissingTranslation = (error: {code?: string}) => {
     if (error?.code === 'MISSING_TRANSLATION') {
         return;
     }
@@ -58,11 +59,14 @@ export function renderWithProviders(
     }: RenderWithProvidersOptions = {},
 ): RenderResult & { store: TestStore } {
     const resolvedStore = store ?? createTestStore(preloadedState);
+    // Instanci registrujeme přes createAppIntl, aby i kód mimo komponenty
+    // (validátory, akce) formátoval v testu tímtéž katalogem jako strom.
+    const intl = createAppIntl(locale, messages, ignoreMissingTranslation);
     const Wrapper: React.FC<PropsWithChildren> = ({ children }) => (
         <Provider store={resolvedStore}>
-            <IntlProvider locale={locale} messages={messages} onError={ignoreMissingTranslation}>
+            <RawIntlProvider value={intl}>
                 <MemoryRouter initialEntries={[route]}>{children}</MemoryRouter>
-            </IntlProvider>
+            </RawIntlProvider>
         </Provider>
     );
 

@@ -4,7 +4,12 @@ import { modalDialogShow } from 'actions/global/modalDialog.jsx';
 // import AbstractReactComponent from '../../AbstractReactComponent';
 import NoFocusButton from '../button/NoFocusButton';
 import ExceptionDetail from './ExceptionDetail';
-import i18n from '../../i18n';
+import { FormattedMessage, defineMessages } from 'react-intl';
+
+// Id je převzaté z legacy katalogu beze změny.
+const messages = defineMessages({
+    detail: { id: 'global.exception.detail', defaultMessage: 'Detail' },
+});
 import { useThunkDispatch } from 'utils/hooks';
 
 export interface ExceptionData<PropertyType> {
@@ -15,7 +20,7 @@ export interface ExceptionData<PropertyType> {
 }
 
 interface Props<PropertyType extends object> {
-    title?: string;
+    title?: React.ReactNode;
     data?: ExceptionData<PropertyType>;
     textRenderer?: (properties: PropertyType | Record<string, never>, message: string) => string;
 }
@@ -45,7 +50,7 @@ export default function Exception<P extends object>({
     const renderDetail = () => {
         return (
             <div>
-                <NoFocusButton onClick={openDetail}>{i18n('global.exception.detail')}</NoFocusButton>
+                <NoFocusButton onClick={openDetail}><FormattedMessage {...messages.detail} /></NoFocusButton>
             </div>
         );
     };

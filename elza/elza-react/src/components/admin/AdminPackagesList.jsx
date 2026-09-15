@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Icon, i18n } from 'components/shared';
+import { Icon} from 'components/shared';
+import { globalMessages } from 'components/shared/lang';
 
 import { deletePackage, getPackagesFetchIfNeeded } from 'actions/admin/packages.jsx';
 import { downloadFile } from '../../actions/global/download';
@@ -21,7 +22,7 @@ import {
 } from "@fluentui/react-components";
 import { useThunkDispatch } from 'utils/hooks';
 import { useSelector } from 'react-redux';
-import { FormattedMessage, defineMessages } from 'react-intl';
+import { FormattedMessage, defineMessages, useIntl } from 'react-intl';
 
 const headerLabels = defineMessages({
     code: {
@@ -120,6 +121,7 @@ const columns = [
  * Komponenta pro zobrazení naimportovaných balíčků.
  */
 export function AdminPackagesListFn({ getExportUrl }) {
+    const intl = useIntl();
     const dispatch = useThunkDispatch();
     const [columnSizingOptions] = useState({
         code: {
@@ -233,12 +235,12 @@ export function AdminPackagesListFn({ getExportUrl }) {
                                     <TableCellLayout {...columnSizing_unstable.getTableCellProps("action")}>
                                         <FluentButton
                                             icon={<Icon glyph="fa-download" />}
-                                            title={i18n('global.action.download')}
+                                            title={intl.formatMessage(globalMessages.download)}
                                             onClick={() => handleDownload(item.code)}
                                         />
                                         <FluentButton
                                             icon={<Icon glyph="fa-trash" />}
-                                            title={i18n('global.action.delete')}
+                                            title={intl.formatMessage(globalMessages.delete)}
                                             onClick={() => handleDeletePackage(item.code)}
                                         />
                                     </TableCellLayout>

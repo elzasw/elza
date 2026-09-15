@@ -1,5 +1,11 @@
 import { FundScope } from '../../types';
-import { Autocomplete, i18n, Icon } from 'components/shared';
+import { Autocomplete, Icon } from 'components/shared';
+import { FormattedMessage, defineMessages } from 'react-intl';
+
+// Id je převzaté z legacy katalogu beze změny.
+const messages = defineMessages({
+    regScope: { id: 'arr.fund.regScope', defaultMessage: 'Oblast entit' },
+});
 import { Button } from 'components/ui';
 import { Form } from 'react-bootstrap';
 import React, { memo } from 'react';
@@ -7,12 +13,12 @@ import {FieldArrayFieldsProps, WrappedFieldArrayProps} from 'redux-form';
 import objectById from "../../shared/utils/objectById";
 
 interface IScopesFieldProps extends WrappedFieldArrayProps<string> {
-    label?: string;
+    label?: React.ReactNode;
     disabled: boolean;
     scopeList: FundScope[];
 }
 
-export const ScopesField: React.FC<IScopesFieldProps> = memo(({fields, disabled = false, label = i18n('arr.fund.regScope'), meta, ...props}) => (
+export const ScopesField: React.FC<IScopesFieldProps> = memo(({fields, disabled = false, label = <FormattedMessage {...messages.regScope} />, meta, ...props}) => (
     <>
         <Autocomplete
             tags

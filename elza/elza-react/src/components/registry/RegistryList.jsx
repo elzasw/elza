@@ -7,12 +7,19 @@ import { connect } from 'react-redux';
 import {
     AbstractReactComponent,
     Autocomplete,
-    i18n,
     Icon,
     ListBox,
     SearchWithGoto,
     StoreHorizontalLoader,
 } from 'components/shared';
+import { FormattedMessage, defineMessages, injectIntl } from "react-intl";
+import { globalMessages } from "components/shared/lang/messages";
+import { filterMessages } from "./form/filter/messages";
+import { registryMessages } from "./messages";
+
+const sharedSearchMessages = defineMessages({
+    searchPlaceholder: { id: "search.input.search", defaultMessage: "Vyhledat..." },
+});
 import { refRecordTypesFetchIfNeeded } from 'actions/refTables/recordTypes';
 import { indexById } from 'stores/app/utils';
 import {
@@ -267,7 +274,7 @@ class RegistryList extends AbstractReactComponent {
     }
 
     getScopesWithAll(scopes) {
-        const defaultValue = { name: i18n('registry.all') };
+        const defaultValue = { name: this.props.intl.formatMessage(registryMessages.all) };
         if (scopes && scopes.length > 0 && scopes[0] && scopes[0].scopes && scopes[0].scopes.length > 0) {
             return [defaultValue, ...this.filterScopes([...scopes[0].scopes])];
         }
@@ -275,7 +282,7 @@ class RegistryList extends AbstractReactComponent {
     }
 
     getStateWithAll() {
-        const defaultValue = { name: i18n('party.allApStates') };
+        const defaultValue = { name: this.props.intl.formatMessage(registryMessages.allApStates) };
         return [
             defaultValue,
             ...Object.values(StateApproval).map(item => {
@@ -288,7 +295,7 @@ class RegistryList extends AbstractReactComponent {
     }
 
     getRevStateWithAll() {
-        const defaultValue = { name: i18n('registry.allRevisionStates') };
+        const defaultValue = { name: this.props.intl.formatMessage(registryMessages.allRevisionStates) };
         return [
             defaultValue,
             ...Object.values(RevStateApproval).map(item => {
@@ -376,7 +383,7 @@ class RegistryList extends AbstractReactComponent {
         dispatch(
             modalDialogShow(
                 this,
-                i18n('ap.ext-filter.title'),
+                this.props.intl.formatMessage(registryMessages.extFilterTitle),
                 <ExtFilterModal
                     scopeId={registryList.filter.scopeId}
                     initialValues={{
@@ -398,7 +405,7 @@ class RegistryList extends AbstractReactComponent {
     /**
      * Výchozí hodnota/placeholder pro registry type filtr
      */
-    registryTypeDefaultValue = i18n('registry.all');
+    registryTypeDefaultValue = this.props.intl.formatMessage(registryMessages.all);
 
     render() {
         const { registryDetail, registryList, maxSize, registryTypes, scopes, eidTypes, userDetail, settings } = this.props;
@@ -425,7 +432,7 @@ class RegistryList extends AbstractReactComponent {
                     />
                 );
             } else {
-                list = <div className="search-norecord">{i18n('registry.list.noRecord')}</div>;
+                list = <div className="search-norecord">{<FormattedMessage {...registryMessages.listNoRecord} />}</div>;
             }
         }
 
@@ -445,7 +452,7 @@ class RegistryList extends AbstractReactComponent {
             <div className="registry-list">
                 <div className="filter">
                     {visibleScopes.length > 1 && <Autocomplete
-                        placeholder={this.getScopeById(filter.scopeId, scopes) || i18n('party.recordScope')}
+                        placeholder={this.getScopeById(filter.scopeId, scopes) || this.props.intl.formatMessage(registryMessages.recordScope)}
                         items={this.getScopesWithAll(scopes)}
                         onChange={this.handleFilterRegistryScope}
                         value={filter.scopeId}
@@ -453,21 +460,21 @@ class RegistryList extends AbstractReactComponent {
                     />}
 
                     <Autocomplete
-                        placeholder={filter.state ? StateApprovalCaption(filter.state) : i18n('party.apState')}
+                        placeholder={filter.state ? StateApprovalCaption(filter.state) : this.props.intl.formatMessage(registryMessages.apState)}
                         items={this.getStateWithAll()}
                         onChange={this.handleFilterRegistryState}
                         value={filter.state}
                         useIdAsValue
                     />
                     <Autocomplete
-                        placeholder={filter.revState ? RevStateApprovalCaption(filter.revState) : i18n('registry.revisionState')}
+                        placeholder={filter.revState ? RevStateApprovalCaption(filter.revState) : this.props.intl.formatMessage(registryMessages.revisionState)}
                         items={this.getRevStateWithAll()}
                         onChange={this.handleFilterRegistryRevState}
                         value={filter.revState}
                         useIdAsValue
                     />
                     <Autocomplete
-                        placeholder={!filter.registryTypeId ? i18n('registry.type') : ''}
+                        placeholder={!filter.registryTypeId ? this.props.intl.formatMessage(filterMessages.type) : ''}
                         items={apTypesWithAll}
                         disabled={
                             !registryTypes
@@ -488,7 +495,7 @@ class RegistryList extends AbstractReactComponent {
                             <SearchWithGoto
                                 onFulltextSearch={this.handleFilterText}
                                 onClear={this.handleFilterTextClear}
-                                placeholder={i18n('search.input.search')}
+                                placeholder={this.props.intl.formatMessage(sharedSearchMessages.searchPlaceholder)}
                                 filterText={registryList.filter.text}
                                 showFilterResult={true}
                                 type="INFO"
@@ -502,7 +509,7 @@ class RegistryList extends AbstractReactComponent {
                                     variant="link"
                                     size="sm"
                                     id="registry-more-actions"
-                                    title={i18n('registry.moreActions.title')}
+                                    title={this.props.intl.formatMessage(registryMessages.moreActionsTitle)}
                                     bsPrefix="registry-more-actions-toggle"
                                 >
                                     <Icon glyph="fa-ellipsis-h" />
@@ -511,7 +518,7 @@ class RegistryList extends AbstractReactComponent {
                                     <Dropdown.Item onClick={this.handleBatchExport}>
                                         <Icon glyph="fa-download" />
                                         {' '}
-                                        {i18n('registry.batchExport.action')}
+                                        {<FormattedMessage {...registryMessages.batchExportAction} />}
                                     </Dropdown.Item>
                                 </Dropdown.Menu>
                             </Dropdown>
@@ -521,25 +528,25 @@ class RegistryList extends AbstractReactComponent {
                         {!registryList.filter.searchFilter && (
                             <Col style={{display: 'flex'}}>
                                 <Button variant="link" onClick={this.handleExtFilter}>
-                                    {i18n('ap.ext-filter.use')}
+                                    {<FormattedMessage {...registryMessages.extFilterUse} />}
                                 </Button>
                                 <div style={{flexGrow: 1}}></div>
                                 <Button variant="link" onClick={this.handleFilterAssignedToCurrentUser}>
-                                    {i18n('ap.ext-filter.assignedTo.currentUser')}
+                                    {<FormattedMessage {...registryMessages.extFilterAssignedToCurrentUser} />}
                                 </Button>
                             </Col>
                         )}
                         {registryList.filter.searchFilter && (
                             <>
-                                <Col title={i18n('ap.ext-filter.used')} className="align-self-center used">
-                                    {i18n('ap.ext-filter.used')}
+                                <Col title={this.props.intl.formatMessage(registryMessages.extFilterUsed)} className="align-self-center used">
+                                    {<FormattedMessage {...registryMessages.extFilterUsed} />}
                                 </Col>
                                 <Col xs="auto">
                                     <Button variant="link" onClick={this.handleExtFilter}>
-                                        {i18n('global.action.update')}
+                                        {<FormattedMessage {...globalMessages.edit} />}
                                     </Button>
                                     <Button variant="link" onClick={this.handleExtFilterClear}>
-                                        {i18n('global.action.cancel')}
+                                        {<FormattedMessage {...globalMessages.cancel} />}
                                     </Button>
                                 </Col>
                             </>
@@ -550,7 +557,7 @@ class RegistryList extends AbstractReactComponent {
                 {list}
                 {isFetched && registryList.filteredRows.length > maxSize && (
                     <span className="items-count">
-                        {i18n('party.list.itemsVisibleCountFrom', registryList.filteredRows.length, registryList.count)}
+                        {this.props.intl.formatMessage(registryMessages.listItemsVisibleCountFrom, { 0: registryList.filteredRows.length, 1: registryList.count })}
                     </span>
                 )}
                 {(
@@ -590,7 +597,7 @@ const ConnectedRegistryList = withRouter(connect(state => {
         eidTypes: eidTypes.data,
         ruleSet,
     };
-})(RegistryList));
+})(injectIntl(RegistryList)));
 
 export default function RegistryListWithSettings(props) {
     const { settings } = useUserSettings();

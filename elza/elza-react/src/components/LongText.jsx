@@ -7,7 +7,12 @@
 import PropTypes from 'prop-types';
 
 import * as React from 'react';
-import i18n from './i18n';
+import { FormattedMessage, defineMessages } from 'react-intl';
+
+// Id je převzaté z legacy katalogu beze změny.
+const messages = defineMessages({
+    showMore: { id: 'global.action.show.more', defaultMessage: 'Zobrazit více' },
+});
 import {Button} from './ui';
 
 export default class LongText extends React.Component {
@@ -32,7 +37,7 @@ export default class LongText extends React.Component {
                         {' '}
                         (
                         <Button variant="link" onClick={this.handleShowMore}>
-                            {i18n('global.action.show.more')}
+                            {<FormattedMessage {...messages.showMore} />}
                         </Button>
                         )
                     </span>

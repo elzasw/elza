@@ -11,7 +11,8 @@ import Ribbon from '../../components/page/Ribbon';
 import FundTreeDaos from '../../components/arr/FundTreeDaos';
 import { ArrDaos } from '../../components/arr/ArrDaos';
 
-import { i18n, Icon, RibbonGroup, Tabs } from 'components/shared';
+import { Icon, RibbonGroup, Tabs } from 'components/shared';
+import { arrPageMessages } from './messages';
 import * as types from 'actions/constants/ActionTypes';
 import { createFundRoot, getParentNode } from 'components/arr/ArrUtils';
 import { addNodeForm } from 'actions/arr/addNodeForm';
@@ -22,7 +23,7 @@ import { WebApi } from 'actions/index';
 import { urlFundDaos, getFundVersion } from "../../constants";
 import { FileSystemBrowser, extractRepoIdFromFullPath } from 'components/arr/daos';
 import { Api } from "api";
-import { defineMessages, injectIntl } from 'react-intl';
+import { defineMessages, injectIntl, FormattedMessage } from 'react-intl';
 
 const messages = defineMessages({
     multipleLinksNotAllowed: {
@@ -335,7 +336,7 @@ class ArrDaoPage extends ArrParentPage {
                             glyph="fa-thumb-tack"
                         />
                         <div>
-                            {i18n('arr.daos.link')}
+                            {<FormattedMessage {...arrPageMessages.daosLink} />}
                         </div>
                     </Button>
                 </span>
@@ -355,7 +356,7 @@ class ArrDaoPage extends ArrParentPage {
                         glyph="ez-move-under"
                     />
                     <div>
-                        {i18n('arr.daos.createUnderAndLink')}
+                        {<FormattedMessage {...arrPageMessages.daosCreateUnderAndLink} />}
                     </div>
                 </Button>
             );
@@ -371,7 +372,7 @@ class ArrDaoPage extends ArrParentPage {
                         glyph="fa-thumb-tack"
                     />
                     <div>
-                        {i18n('arr.daos.link')}
+                        {<FormattedMessage {...arrPageMessages.daosLink} />}
                     </div>
                 </Button>,
                 <Button
@@ -383,7 +384,7 @@ class ArrDaoPage extends ArrParentPage {
                         glyph="ez-move-under"
                     />
                     <div>
-                        {i18n('arr.daos.createUnderAndLink')}
+                        {<FormattedMessage {...arrPageMessages.daosCreateUnderAndLink} />}
                     </div>
                 </Button>
             ]
@@ -415,16 +416,16 @@ class ArrDaoPage extends ArrParentPage {
 
         let tabs = [{
             id: 'unassignedPackages',
-            title: i18n("arr.daos.tab.unassignedPackages"),
+            title: this.props.intl.formatMessage(arrPageMessages.daosTabUnassignedPackages),
         }, {
             id: 'packages',
-            title: i18n("arr.daos.tab.packages"),
+            title: this.props.intl.formatMessage(arrPageMessages.daosTabPackages),
         }, {
             id: 'leftTree',
-            title: i18n("arr.daos.tab.leftTree"),
+            title: this.props.intl.formatMessage(arrPageMessages.daosTabLeftTree),
         }, {
             id: 'fileSystemTree',
-            title: i18n("arr.daos.tab.fileSystemTree"),
+            title: this.props.intl.formatMessage(arrPageMessages.daosTabFileSystemTree),
         }];
 
         return (

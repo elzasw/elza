@@ -3,7 +3,13 @@
  */
 import React from 'react';
 import {connect} from 'react-redux';
-import {AbstractReactComponent, i18n, ListBox, StoreHorizontalLoader} from 'components/shared';
+import {AbstractReactComponent, ListBox, StoreHorizontalLoader} from 'components/shared';
+import { FormattedMessage, defineMessages } from 'react-intl';
+
+// Id je převzaté z legacy katalogu beze změny.
+const messages = defineMessages({
+    noResult: { id: 'search.action.noResult', defaultMessage: 'Nenalezeny žádné záznamy' },
+});
 import {indexById} from 'stores/app/utils';
 import {
     AREA_EXT_SYSTEM_DETAIL,
@@ -95,7 +101,7 @@ class AdminExtSystemList extends AbstractReactComponent {
             } else {
                 list = (
                     <div className="noResult">
-                        <span>{i18n('search.action.noResult')}</span>
+                        <span><FormattedMessage {...messages.noResult} /></span>
                     </div>
                 );
             }

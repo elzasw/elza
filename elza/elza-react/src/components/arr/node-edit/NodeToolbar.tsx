@@ -42,7 +42,11 @@ import { fundSubNodeDaoChangeScenario } from "actions/arr/subNodeDaos";
 import { modalDialogHide, modalDialogShow } from "actions/global/modalDialog";
 import { routerNavigate } from "actions/router";
 import IssueForm from "components/form/IssueForm";
-import i18n from "components/i18n";
+import { FormattedMessage, defineMessages, useIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { nodeMessages } from 'components/arr/nodeMessages';
+import { daoMessages } from 'components/arr/daoMessages';
+
 import { showConfirmDialog } from "components/shared/dialog";
 import ConfirmForm from "components/shared/form/ConfirmForm";
 import {
@@ -52,10 +56,14 @@ import {
   NodeStatus,
 } from "elza-api";
 import { useState } from "react";
-import { FormattedMessage, defineMessages, useIntl } from "react-intl";
 import { IssueVO } from "types";
 import { ArrDaoVO } from "typings/dao";
 import { DescItemTypeRef } from "typings/store";
+import {
+  addToastrDanger,
+  addToastrInfo,
+} from "components/shared/toastr/ToastrActions";
+import { copyTextToClipboard } from "utils/clipboard";
 import { useAppThunkDispatch } from "utils/hooks";
 import { useAppSelector } from "utils/hooks/useAppSelector";
 import { urlFundNode } from "../../../constants";
@@ -79,6 +87,7 @@ import { useActiveFund, useActiveParent } from "utils/hooks";
 import { useTemplates } from "./templates/templates";
 import { useUserSettings } from "contexts/user";
 import { useStyles } from "../item-form/styles";
+import { toolbarMessages } from './toolbarMessages';
 
 export const messages = defineMessages({
   toggleCopyFromPrevious: {
@@ -165,6 +174,7 @@ export const NodeToolbar = ({
   onAddDescItem,
   daos = [],
 }: Props) => {
+  const intl = useIntl();
   const descItems = formItems.map(({ item }) => item);
   const styles = useStyles();
 
@@ -228,7 +238,7 @@ export const NodeToolbar = ({
     dispatch(
       modalDialogShow(
         this,
-        i18n("arr.history.title"),
+        intl.formatMessage(nodeMessages.historyTitle),
         <ArrHistoryForm
           locked={false}
           versionId={activeFund.versionId}
@@ -244,7 +254,7 @@ export const NodeToolbar = ({
 
   async function handleDeleteNode() {
     const response = await dispatch(
-      showConfirmDialog(i18n("arr.fund.deleteNode.confirm")),
+      showConfirmDialog(intl.formatMessage(nodeMessages.fundDeleteNodeConfirm)),
     );
 
     if (response) {
@@ -289,7 +299,7 @@ export const NodeToolbar = ({
     dispatch(
       modalDialogShow(
         this,
-        i18n("arr.issues.add.node.title"),
+        intl.formatMessage(nodeMessages.issuesAddNodeTitle),
         <IssueForm
           onSubmit={(data: IssueVO) =>
             WebApi.addIssue({
@@ -344,7 +354,7 @@ export const NodeToolbar = ({
     dispatch(
       modalDialogShow(
         this,
-        i18n("arr.request.digitizationRequest.form.title"),
+        intl.formatMessage(nodeMessages.requestDigitizationRequestFormTitle),
         form,
       ),
     );
@@ -356,9 +366,9 @@ export const NodeToolbar = ({
 
     const confirmForm = (
       <ConfirmForm
-        confirmMessage={i18n("arr.daos.node.sync.confirm-message")}
-        submittingMessage={i18n("arr.daos.node.sync.submitting-message")}
-        submitTitle={i18n("global.action.run")}
+        confirmMessage={<FormattedMessage {...nodeMessages.daosNodeSyncConfirmMessage} />}
+        submittingMessage={intl.formatMessage(nodeMessages.daosNodeSyncSubmittingMessage)}
+        submitTitle={<FormattedMessage {...globalMessages.run} />}
         onSubmit={async () => {
           const result = await WebApi.syncDaoLink(versionId, nodeId);
           dispatch(modalDialogHide());
@@ -367,7 +377,7 @@ export const NodeToolbar = ({
       />
     );
     dispatch(
-      modalDialogShow(this, i18n("arr.daos.node.sync.title"), confirmForm),
+      modalDialogShow(this, intl.formatMessage(nodeMessages.daosNodeSyncTitle), confirmForm),
     );
   }
 
@@ -388,7 +398,7 @@ export const NodeToolbar = ({
     dispatch(
       modalDialogShow(
         this,
-        i18n("arr.syncNodes.title"),
+        intl.formatMessage(nodeMessages.syncNodesTitle),
         <SyncNodes
           nodeId={nodeId}
           nodeVersion={nodeVersion}
@@ -399,7 +409,14 @@ export const NodeToolbar = ({
   }
 
   async function handleCopyUuid() {
-    await navigator.clipboard.writeText(parent.uuid);
+    const copied = await copyTextToClipboard(parent?.uuid);
+    dispatch(
+      copied
+        ? addToastrInfo(formatMessage(globalMessages.copyToClipboardFinished))
+        : addToastrDanger(
+            formatMessage(globalMessages.copyToClipboardUnavailable),
+          ),
+    );
   }
 
   function handleToggleCompact() {
@@ -414,7 +431,7 @@ export const NodeToolbar = ({
     dispatch(
       modalDialogShow(
         this,
-        i18n("visiblePolicy.form.title"),
+        intl.formatMessage(nodeMessages.visiblePolicyFormTitle),
         <NodeSettingsModal
           nodeId={nodeData?.id}
           fundVersionId={activeFund.versionId}
@@ -626,18 +643,18 @@ export const NodeToolbar = ({
       <div className={styles.toolbarSticky}>
         <div className={styles.toolbarMain}>
         <Overflow padding={20}>
-          <Toolbar aria-label="Overflow" size="small">
+          <Toolbar aria-label={intl.formatMessage(toolbarMessages.mainToolbar)} size="small">
             {/*<Button>test</Button>*/}
             {daoWithScenario?.scenarios && (
               <Menu>
                 <MenuTrigger disableButtonEnhancement={true}>
                   <MenuButton
                     size="small"
-                    title={i18n("subNodeDao.dao.action.changeScenario")}
+                    title={intl.formatMessage(daoMessages.subNodeDaoDaoActionChangeScenario)}
                     className={styles.toolbarScenarioButton}
                     icon={<LinkMultipleRegular />}
                   >
-                    {/*{i18n("subNodeDao.dao.action.changeScenario")}*/}
+                    {/*{<FormattedMessage {...daoMessages.subNodeDaoDaoActionChangeScenario} />}*/}
                   </MenuButton>
                 </MenuTrigger>
                 <MenuPopover>
@@ -687,7 +704,7 @@ export const NodeToolbar = ({
           </Toolbar>
         </Overflow>
         </div>
-        <Toolbar aria-label="View settings" size="small" className={styles.toolbarFlexShrink}>
+        <Toolbar aria-label={intl.formatMessage(toolbarMessages.viewSettings)} size="small" className={styles.toolbarFlexShrink}>
           <Menu
             positioning={{ align: "end" }}
             checkedValues={{

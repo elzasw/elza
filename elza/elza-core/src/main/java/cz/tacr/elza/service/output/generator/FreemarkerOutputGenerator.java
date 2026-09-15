@@ -33,7 +33,6 @@ import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.DataService;
 import cz.tacr.elza.service.DmsService;
-import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.output.OutputParams;
 import freemarker.cache.FileTemplateLoader;
@@ -65,8 +64,7 @@ public class FreemarkerOutputGenerator extends DmsOutputGenerator {
                           ArrFsLinkRepository fsLinkRepository,
                               ExportConfig exportConfig,
                               StructObjService structObjService,
-                              final DataService dataService,
-                              final AccessPointCacheService apCacheService) {
+                              final DataService dataService) {
         super(em, dmsService);
 
         StructuredObjectRepository structObjRepos = applicationContext.getBean(StructuredObjectRepository.class);
@@ -79,7 +77,7 @@ public class FreemarkerOutputGenerator extends DmsOutputGenerator {
                 bindingRepository, null, structObjRepos, itemRepository,
                 bindingStateRepository, indexRepository,
                 legacyDaoLinkRepository, fsLinkRepository, exportConfig, structObjService, em,
-                dataService, apCacheService);
+                dataService);
     }
 
     @Override

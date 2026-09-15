@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-import { i18n, ModalDialogWrapper } from "components/shared";
+import { ModalDialogWrapper } from "components/shared";
+import { FormattedMessage, defineMessages, useIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
 import { Form, FormGroup, FormLabel, Modal, Button } from "react-bootstrap";
 import { ItemTypeField } from "components/arr/nodeForm/ItemTypeField";
 import { useAppSelector } from "utils/hooks/useAppSelector";
@@ -13,7 +15,6 @@ import ListItem from "components/shared/tree-list/list-item/ListItem.jsx";
 import { resolveAvailableItemTypes, sortTypesByFormOrder } from "./addDescItemType.utils";
 import { getOneSettings } from "../ArrUtils";
 import { useInitialFocus } from "../search-funds-form/filters/utils";
-import { defineMessages, useIntl } from "react-intl";
 
 /**
  * Formulář přidání nové desc item type.
@@ -300,10 +301,10 @@ export function AddDescItemTypeForm({ itemTypes, descItems, onSubmit, onClose }:
             disabled={queuedItemTypes.length === 0}
             type={"submit"}
           >
-            {i18n("global.action.add")}
+            {<FormattedMessage {...globalMessages.add} />}
           </Button>
           <Button variant="link" onClick={onClose}>
-            {i18n("global.action.cancel")}
+            {<FormattedMessage {...globalMessages.cancel} />}
           </Button>
         </Modal.Footer>
       </Form>

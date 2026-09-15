@@ -1,6 +1,10 @@
 import React from 'react';
 import {Field, reduxForm} from 'redux-form';
-import {AbstractReactComponent, i18n} from 'components/shared';
+import {AbstractReactComponent} from 'components/shared';
+import { FormattedMessage } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { getIntl } from 'components/shared/lang/intlInstance';
+import { templateMessages } from './templateMessages';
 import {Form, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
 import {submitForm} from 'components/form/FormUtils.jsx';
@@ -20,7 +24,7 @@ class TemplateUseForm extends AbstractReactComponent {
         const errors = {};
 
         if (!values.name) {
-            errors.name = i18n('global.validation.required');
+            errors.name = getIntl().formatMessage(globalMessages.validationRequired);
         }
 
         return errors;
@@ -44,10 +48,10 @@ class TemplateUseForm extends AbstractReactComponent {
                             name="name"
                             type="select"
                             component={FormInputField}
-                            label={i18n('arr.fund.useTemplate.name')}
+                            label={<FormattedMessage {...templateMessages.fundUseTemplateName} />}
                         >
                             <option value={''} key="no-select">
-                                {i18n('global.action.select')}
+                                {<FormattedMessage {...templateMessages.globalActionSelect} />}
                             </option>
                             {templates.map(template => (
                                 <option value={template} key={template}>
@@ -59,17 +63,17 @@ class TemplateUseForm extends AbstractReactComponent {
                             name="replaceValues"
                             type="checkbox"
                             component={FormInputField}
-                            label={i18n('arr.fund.useTemplate.replaceValues')}
+                            label={<FormattedMessage {...templateMessages.fundUseTemplateReplaceValues} />}
                             inline
                             disabled={submitting}
                         />
                     </Modal.Body>
                     <Modal.Footer>
                         <Button type="submit" variant="outline-secondary">
-                            {i18n('global.action.use')}
+                            {<FormattedMessage {...templateMessages.globalActionUse} />}
                         </Button>
                         <Button variant="link" onClick={onClose}>
-                            {i18n('global.action.cancel')}
+                            {<FormattedMessage {...globalMessages.cancel} />}
                         </Button>
                     </Modal.Footer>
                 </Form>

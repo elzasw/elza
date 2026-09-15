@@ -82,11 +82,16 @@ import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
 import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.security.apikey.ApiKeyAuthenticationEntryPoint;
+import cz.tacr.elza.security.apikey.ApiKeyAuthenticationFilter;
+import cz.tacr.elza.security.apikey.ApiKeyAuthenticationProvider;
+import cz.tacr.elza.security.apikey.ApiKeyProperties;
 import cz.tacr.elza.security.oauth2.OAuth2Properties;
 import cz.tacr.elza.security.ssoheader.SsoHeaderAuthenticationFilter;
 import cz.tacr.elza.security.ssoheader.SsoHeaderAuthenticationProvider;
 import cz.tacr.elza.security.ssoheader.SsoHeaderProperties;
 import cz.tacr.elza.service.AccessPointService;
+import cz.tacr.elza.service.ApiKeyService;
 import cz.tacr.elza.service.UserService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -323,6 +328,38 @@ public class ApplicationSecurity {
             .httpBasic(AbstractHttpConfigurer::disable)
             .formLogin(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        return http.build();
+    }
+
+    /**
+     * Dedicated stateless security chain for requests carrying an {@code X-API-Key} header.
+     *
+     * Ordered above the primary chain so a request with the header is not routed through
+     * the session-based one; a request without the header falls through to the primary chain
+     * unchanged. When {@link ApiKeyProperties#isEnabled()} is false the matcher never accepts
+     * a request, so the feature is off end-to-end.
+     */
+    @Bean
+    @Order(SecurityProperties.BASIC_AUTH_ORDER - 3)
+    public SecurityFilterChain apiKeySecurityFilterChain(HttpSecurity http,
+                                                         ApiKeyProperties apiKeyProperties,
+                                                         ApiKeyAuthenticationEntryPoint apiKeyEntryPoint,
+                                                         ApiKeyService apiKeyService) throws Exception {
+        var provider = new ApiKeyAuthenticationProvider(apiKeyService, userService, txManager, siemAuditLogger);
+        var manager = new ProviderManager(provider);
+        var filter = new ApiKeyAuthenticationFilter(apiKeyProperties, manager, apiKeyEntryPoint);
+
+        http
+            .securityMatcher(request -> apiKeyProperties.isEnabled()
+                                        && request.getHeader(apiKeyProperties.getHeaderName()) != null)
+            .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
+            .csrf(AbstractHttpConfigurer::disable)
+            .httpBasic(AbstractHttpConfigurer::disable)
+            .formLogin(AbstractHttpConfigurer::disable)
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .exceptionHandling(ex -> ex.authenticationEntryPoint(apiKeyEntryPoint))
+            .addFilterBefore(filter, BasicAuthenticationFilter.class);
+
         return http.build();
     }
 

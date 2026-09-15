@@ -235,6 +235,30 @@ actions:
           bulkRangeType: ZP2015_UNIT_DATE_BULK
           outputType: ZP2015_DATE_RANGE
         aggegators:
+           # Ukládací jednotka na JP pod množstevní složkou - zapocte se jako hromadina,
+           # samotna JP se nepocita jako jednotlivina
+           - excludeWhen:
+               someOf:
+                 # Nesmí být nastaven jako připojený záznam
+                 - itemType: ZP2015_CONNECTED_RECORD
+                 # Nesmí být nastaven jako pevné spojení s jinou
+                 - itemType: ZP2015_ITEM_LINK
+                 # Zneplatněný záznam
+                 - itemType: ZP2015_INVALID_RECORD
+             when:
+               ancestor:
+                 itemType: ZP2015_FOLDER_TYPE
+                 itemSpec: ZP2015_FOLDER_UNITS
+             stopLevelProcessing: true
+             # datace JP, ktere samy nejsou EJ, patri do rozsahu UJ, ve ktere jsou ulozeny
+             datesToEnclosingUnit: true
+             objectType: ZP2015_STORAGE_ID
+             objectItemType: ZP2015_PACKET_TYPE
+             objectItemMapping:
+               ZP2015_PACKET_TYPE_KAR: kar
+               ZP2015_PACKET_TYPE_FAS: fas
+               ZP2015_PACKET_TYPE_BAL: bal
+               ZP2015_PACKET_TYPE_POR: por
            # Extra EJ - kdekoliv
            - excludeWhen:
                someOf:
@@ -412,7 +436,7 @@ actions:
              when:
                itemType: ZP2015_FOLDER_TYPE
                itemSpec: ZP2015_FOLDER_UNITS
-             stopProcessing: true
+             stopLevelProcessing: true
              objectType: ZP2015_STORAGE_ID
              objectItemType: ZP2015_PACKET_TYPE
              objectItemMapping:

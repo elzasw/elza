@@ -1,7 +1,18 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {reduxForm, Field} from 'redux-form';
-import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
+import {AbstractReactComponent, FormInput} from 'components/shared';
+import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang';
+import { getIntl } from 'components/shared/lang/intlInstance';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    passNotEqual: { id: 'admin.user.validation.passNotEqual', defaultMessage: 'Zadaná hesla nejsou stejná' },
+    oldPassword: { id: 'admin.user.oldPassword', defaultMessage: 'Staré heslo' },
+    newPassword: { id: 'admin.user.newPassword', defaultMessage: 'Nové heslo' },
+    passwordAgain: { id: 'admin.user.passwordAgain', defaultMessage: 'Opakovat heslo' },
+});
 import {Form, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
 import {submitForm} from 'components/form/FormUtils.jsx';
@@ -18,18 +29,18 @@ class PasswordForm extends AbstractReactComponent {
         const errors = {};
 
         if (!values.password) {
-            errors.password = i18n('global.validation.required');
+            errors.password = getIntl().formatMessage(globalMessages.validationRequired);
         }
 
         if (!props.admin) {
             if (!values.oldPassword) {
-                errors.oldPassword = i18n('global.validation.required');
+                errors.oldPassword = getIntl().formatMessage(globalMessages.validationRequired);
             }
             if (!values.passwordAgain) {
-                errors.passwordAgain = i18n('global.validation.required');
+                errors.passwordAgain = getIntl().formatMessage(globalMessages.validationRequired);
             }
             if (values.password && values.passwordAgain && values.password !== values.passwordAgain) {
-                errors.password = i18n('admin.user.validation.passNotEqual');
+                errors.password = getIntl().formatMessage(messages.passNotEqual);
             }
         }
 
@@ -54,7 +65,7 @@ class PasswordForm extends AbstractReactComponent {
                     {!admin && (
                         <Field
                             component={FormInputField}
-                            label={i18n('admin.user.oldPassword')}
+                            label={this.props.intl.formatMessage(messages.oldPassword)}
                             autoComplete="off"
                             type="password"
                             name={'oldPassword'}
@@ -62,7 +73,7 @@ class PasswordForm extends AbstractReactComponent {
                     )}
                     <Field
                         component={FormInputField}
-                        label={i18n('admin.user.newPassword')}
+                        label={this.props.intl.formatMessage(messages.newPassword)}
                         autoComplete="off"
                         type="password"
                         name={'password'}
@@ -70,7 +81,7 @@ class PasswordForm extends AbstractReactComponent {
                     {!admin && (
                         <Field
                             component={FormInputField}
-                            label={i18n('admin.user.passwordAgain')}
+                            label={this.props.intl.formatMessage(messages.passwordAgain)}
                             autoComplete="off"
                             type="password"
                             name={'passwordAgain'}
@@ -79,10 +90,10 @@ class PasswordForm extends AbstractReactComponent {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button type="submit" variant="outline-secondary" disabled={submitting}>
-                        {i18n('global.action.update')}
+                        <FormattedMessage {...globalMessages.save} />
                     </Button>
                     <Button variant="link" onClick={onClose}>
-                        {i18n('global.action.cancel')}
+                        <FormattedMessage {...globalMessages.cancel} />
                     </Button>
                 </Modal.Footer>
             </Form>
@@ -92,4 +103,4 @@ class PasswordForm extends AbstractReactComponent {
 
 export default reduxForm({
     form: 'passwordForm'
-})(PasswordForm);
+})(injectIntl(PasswordForm));

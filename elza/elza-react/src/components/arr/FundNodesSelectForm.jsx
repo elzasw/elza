@@ -1,6 +1,9 @@
 import React from 'react';
 import {connect} from 'react-redux';
-import {AbstractReactComponent, i18n} from 'components/shared';
+import {AbstractReactComponent} from 'components/shared';
+import { FormattedMessage } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { arrPanelMessages } from './panelMessages';
 import {Modal} from 'react-bootstrap';
 import {Button} from '../ui';
 import FundNodesSelect from './FundNodesSelect';
@@ -82,10 +85,10 @@ class FundNodesSelectForm extends AbstractReactComponent {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button disabled={!someSelected} variant={"outline-secondary"} onClick={this.handleSubmit}>
-                        {i18n('global.action.select')}
+                        {<FormattedMessage {...arrPanelMessages.globalActionSelect} />}
                     </Button>
                     <Button variant="link" onClick={onClose}>
-                        {i18n('global.action.cancel')}
+                        {<FormattedMessage {...globalMessages.cancel} />}
                     </Button>
                 </Modal.Footer>
             </div>

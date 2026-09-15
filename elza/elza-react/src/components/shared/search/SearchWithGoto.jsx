@@ -10,7 +10,16 @@ import AbstractReactComponent from '../../AbstractReactComponent';
 import NoFocusButton from '../button/NoFocusButton';
 import Search from './Search';
 import Icon from '../icon/Icon';
-import i18n from '../../i18n';
+import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
+
+// Id jsou převzatá z legacy katalogu beze změny. Placeholdery {0}/{1} zůstávají:
+// ICU bere jako jméno argumentu i číslo.
+const messages = defineMessages({
+    notFound: { id: 'search.not.found', defaultMessage: 'nenalezeno' },
+    found: { id: 'search.found', defaultMessage: '({0})' },
+    foundMore: { id: 'search.found.more', defaultMessage: '({0}/{1})' },
+    searchPlaceholder: { id: 'search.input.search', defaultMessage: 'Vyhledat...' },
+});
 
 class SearchWithGoto extends AbstractReactComponent {
     static propTypes = {
@@ -146,7 +155,7 @@ class SearchWithGoto extends AbstractReactComponent {
                             </div>
                         );
                     } else {
-                        searchedInfo = <div key="info" className="fa-tree-lazy-search-info">({i18n('search.not.found')})</div>;
+                        searchedInfo = <div key="info" className="fa-tree-lazy-search-info">(<FormattedMessage {...messages.notFound} />)</div>;
                     }
 
                     if (itemsCount > 1) {
@@ -175,18 +184,18 @@ class SearchWithGoto extends AbstractReactComponent {
                     if (filtered) {
                         if (itemsCount > 0) {
                             if (allItemsCount > 0 && itemsCount < allItemsCount) {
-                                searchedText = i18n('search.found.more', itemsCount, allItemsCount);
+                                searchedText = <FormattedMessage {...messages.foundMore} values={{ 0: itemsCount, 1: allItemsCount }} />;
                             } else {
-                                searchedText = i18n('search.found', itemsCount);
+                                searchedText = <FormattedMessage {...messages.found} values={{ 0: itemsCount }} />;
                             }
                         } else {
-                            searchedText = i18n('search.not.found');
+                            searchedText = <FormattedMessage {...messages.notFound} />;
                         }
                     } else {
                         if (allItemsCount > 0 && itemsCount < allItemsCount) {
-                            searchedText = i18n('search.found.more', itemsCount, allItemsCount);
+                            searchedText = <FormattedMessage {...messages.foundMore} values={{ 0: itemsCount, 1: allItemsCount }} />;
                         } else {
-                            searchedText = i18n('search.found', itemsCount);
+                            searchedText = <FormattedMessage {...messages.found} values={{ 0: itemsCount }} />;
                         }
                     }
                     actionAddons.push(<div key="searched" className="fa-tree-lazy-search-info">{searchedText}</div>);
@@ -198,7 +207,7 @@ class SearchWithGoto extends AbstractReactComponent {
 
         return (
             <Search
-                placeholder={placeholder || i18n('search.input.search')}
+                placeholder={placeholder || this.props.intl.formatMessage(messages.searchPlaceholder)}
                 textAreaInput={textAreaInput}
                 filterText={filterText}
                 onChange={e => this.handleFulltextChange(e.target.value)}
@@ -213,4 +222,4 @@ class SearchWithGoto extends AbstractReactComponent {
     }
 }
 
-export default SearchWithGoto;
+export default injectIntl(SearchWithGoto);

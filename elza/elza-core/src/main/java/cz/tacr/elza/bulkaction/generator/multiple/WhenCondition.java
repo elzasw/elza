@@ -31,6 +31,11 @@ public class WhenCondition {
 	 */
 	WhenCondition parentCond;
 
+	/**
+	 * Condition for any ancestor at any depth
+	 */
+	WhenCondition ancestorCond;
+
 	final WhenConditionConfig config;
 
 	public WhenCondition(WhenConditionConfig whenConfig, StaticDataProvider sdp) {
@@ -69,6 +74,12 @@ public class WhenCondition {
 		if (parentCondConfig != null) {
 			parentCond = new WhenCondition(parentCondConfig, sdp);
 		}
+
+		// prepare ancestor condition
+		WhenConditionConfig ancestorCondConfig = config.getAncestor();
+		if (ancestorCondConfig != null) {
+			ancestorCond = new WhenCondition(ancestorCondConfig, sdp);
+		}
 	}
 
 	private void initAll(List<WhenConditionConfig> allConfigs, StaticDataProvider ruleSystem) {
@@ -105,8 +116,28 @@ public class WhenCondition {
         if (!checkParent(level)) {
             return false;
         }
+        if (!checkAncestor(level)) {
+            return false;
+        }
 		return true;
 	}
+
+    /**
+     * Test the condition on ancestors, from the closest parent up to the root.
+     *
+     * @return true if the condition is not set or at least one ancestor matches
+     */
+    private boolean checkAncestor(LevelWithItems level) {
+        if (ancestorCond == null) {
+            return true;
+        }
+        for (LevelWithItems ancestor = level.getParent(); ancestor != null; ancestor = ancestor.getParent()) {
+            if (ancestorCond.isTrue(ancestor)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     private boolean checkParent(LevelWithItems level) {
         // test parent condition

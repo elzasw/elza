@@ -1,5 +1,6 @@
 import { Icon } from "../../../components/shared";
-import i18n from "../../../components/i18n";
+import { FormattedMessage, useIntl } from 'react-intl';
+import { daoMessages } from 'components/arr/daoMessages';
 import { Button } from "../../../components/ui";
 import { AREA_AIPS, AREA_SELECTED_AIPS } from "../../../actions/aip/aip";
 import { useSelector } from "react-redux";
@@ -18,6 +19,7 @@ type ActionsContainerProps = {
 }
 
 const ActionsContainer = ({fund, readMode}: ActionsContainerProps) => {
+    const intl = useIntl();
     const selectedAips = useSelector((state: any) => storeFromArea(state, AREA_SELECTED_AIPS));
     const aips = useSelector((state: any) => storeFromArea(state, AREA_AIPS));
     const aip = useSelector((state: AppState) => storeFromArea(state, aipActions.AREA_AIP))
@@ -32,7 +34,7 @@ const ActionsContainer = ({fund, readMode}: ActionsContainerProps) => {
             dispatch(
                 modalDialogShow(
                     this,
-                    i18n('arr.aip.assignment.individually.title'),
+                    intl.formatMessage(daoMessages.aipAssignmentIndividuallyTitle),
                     <AipIndividualAssignmentModal aipId={aip.id} tree={fund.fundTree}/>,
                     "aip-assignment"
                 ),
@@ -44,7 +46,7 @@ const ActionsContainer = ({fund, readMode}: ActionsContainerProps) => {
         dispatch(
             modalDialogShow(
                 this,
-                i18n('arr.aip.assignment.bulk.title'),
+                intl.formatMessage(daoMessages.aipAssignmentBulkTitle),
                 <AipAssignmentModal aips={selectedAips.count > 0 ? selectedAips.rows : aips.rows} tree={fund.fundTree}/>,
                 "aip-assignment"
             ),
@@ -55,11 +57,11 @@ const ActionsContainer = ({fund, readMode}: ActionsContainerProps) => {
         <div className="aip-actions-container">
             <Button onClick={handleConnectBulk} disabled={readMode}>
                 <Icon glyph="fa-solif fa-link" />
-                <div>{i18n('arr.aip.assignment.bulk')} ({selectedAips.count > 0 ? selectedAips.count : aips.count})</div>
+                <div>{<FormattedMessage {...daoMessages.aipAssignmentBulk} />} ({selectedAips.count > 0 ? selectedAips.count : aips.count})</div>
             </Button>
             <Button onClick={handleConnectIndividually} disabled={readMode}>
                 <Icon glyph="fa-solif fa-link" />
-                <div>{i18n('arr.aip.assignment.individually')}</div>
+                <div>{<FormattedMessage {...daoMessages.aipAssignmentIndividually} />}</div>
             </Button>
         </div>
     );

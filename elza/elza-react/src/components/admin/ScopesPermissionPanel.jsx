@@ -1,7 +1,8 @@
 // --
 import React from 'react';
 import {connect} from 'react-redux';
-import {AbstractReactComponent, i18n} from 'components/shared';
+import {AbstractReactComponent} from 'components/shared';
+import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
 import * as perms from './../../actions/user/Permission.jsx';
 import storeFromArea from '../../shared/utils/storeFromArea';
 import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog';
@@ -15,6 +16,12 @@ import {renderScopeItem} from './adminRenderUtils';
 import ScopeField from './ScopeField';
 import indexById from '../../shared/utils/indexById';
 import {requestScopesIfNeeded} from '../../actions/refTables/scopesData';
+import { scopePermissionMessages, permissionScopeMessages } from './permissionMessages';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    addTitle: { id: 'admin.perms.tabs.scopes.add.title', defaultMessage: 'Přidání oblasti entit' },
+});
 
 /**
  * Panel spravující oprávnění na třídy rejstříků.
@@ -274,7 +281,7 @@ class ScopesPermissionPanel extends AbstractReactComponent {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('admin.perms.tabs.scopes.add.title'),
+                this.props.intl.formatMessage(messages.addTitle),
                 <SelectItemsForm
                     onSubmitForm={scopes => {
                         const {permissions} = this.state;
@@ -326,7 +333,7 @@ class ScopesPermissionPanel extends AbstractReactComponent {
     renderItem = (props, onCheckItem) => {
         const {item} = props;
         if (item.id === ScopesPermissionPanel.ALL_ID) {
-            return <div>{i18n('admin.perms.tabs.scopes.items.scopeAll')}</div>;
+            return <div><FormattedMessage {...permissionScopeMessages.scopeAll} /></div>;
         } else {
             return <div>{item.scope.name}</div>;
         }
@@ -390,11 +397,11 @@ class ScopesPermissionPanel extends AbstractReactComponent {
                     <PermissionCheckboxsForm
                         permCodes={Object.values(ScopesPermissionPanel.permCodesMap)}
                         onChangePermission={this.changePermission}
-                        labelPrefix="admin.perms.tabs.scopes.perm."
+                        permissionMessages={scopePermissionMessages}
                         permission={permission}
                         groups={entityPermissions.data.groups}
                         permissionAll={permission.id !== ScopesPermissionPanel.ALL_ID ? permissionAll : null}
-                        permissionAllTitle="admin.perms.tabs.scopes.items.scopeAll"
+                        permissionAllMessage={permissionScopeMessages.scopeAll}
                     />
                 )}
             </AdminRightsContainer>
@@ -409,4 +416,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps)(ScopesPermissionPanel);
+export default connect(mapStateToProps)(injectIntl(ScopesPermissionPanel));

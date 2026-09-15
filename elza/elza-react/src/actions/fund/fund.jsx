@@ -7,7 +7,7 @@ import { WebApi } from 'actions/index.jsx';
 import { Api } from "../../api";
 
 import { DEFAULT_LIST_SIZE } from '../../constants.tsx';
-import { downloadExportFile } from '../global/downloadExportFile.ts';
+import { downloadExportFile } from '../global/downloadExportFile';
 
 export const DEFAULT_FUND_LIST_MAX_SIZE = DEFAULT_LIST_SIZE;
 

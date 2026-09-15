@@ -5,7 +5,8 @@ import './AddRemoveList.scss';
 import AbstractReactComponent from '../../AbstractReactComponent';
 import NoFocusButton from '../button/NoFocusButton';
 import Icon from '../icon/Icon';
-import i18n from '../../i18n';
+import { injectIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
 
 class AddRemoveList extends AbstractReactComponent {
     static propTypes = {
@@ -15,15 +16,15 @@ class AddRemoveList extends AbstractReactComponent {
         onAdd: PropTypes.func,
         onRemove: PropTypes.func.isRequired,
         renderItem: PropTypes.func.isRequired,
-        addTitle: PropTypes.string,
-        addLabel: PropTypes.string,
-        removeTitle: PropTypes.string,
+        addTitle: PropTypes.object,
+        addLabel: PropTypes.object,
+        removeTitle: PropTypes.object,
         readOnly: PropTypes.bool.isRequired,
     };
 
     static defaultProps = {
-        addTitle: 'global.action.add',
-        removeTitle: 'global.action.remove',
+        addTitle: globalMessages.add,
+        removeTitle: globalMessages.remove,
         readOnly: false,
         renderItem: props => <div key={'rendered-item-' + props.index}>{props.item.name}</div>,
     };
@@ -45,6 +46,7 @@ class AddRemoveList extends AbstractReactComponent {
             addTitle,
             removeTitle,
             addLabel,
+            intl,
         } = this.props;
 
         const groups =
@@ -59,7 +61,7 @@ class AddRemoveList extends AbstractReactComponent {
                                       <NoFocusButton
                                           className="remove"
                                           onClick={this.handleRemove.bind(this, item, index)}
-                                          title={i18n(removeTitle)}
+                                          title={intl.formatMessage(removeTitle)}
                                       >
                                           <Icon glyph="fa-remove" />
                                       </NoFocusButton>
@@ -73,8 +75,8 @@ class AddRemoveList extends AbstractReactComponent {
         if (!readOnly && onAdd) {
             addAction = (
                 <div className="actions-container">
-                    <NoFocusButton onClick={onAdd} title={i18n(addTitle)}>
-                        <Icon glyph="fa-plus" /> {addLabel && i18n(addLabel)}
+                    <NoFocusButton onClick={onAdd} title={intl.formatMessage(addTitle)}>
+                        <Icon glyph="fa-plus" /> {addLabel && intl.formatMessage(addLabel)}
                     </NoFocusButton>
                 </div>
             );
@@ -95,4 +97,4 @@ class AddRemoveList extends AbstractReactComponent {
     }
 }
 
-export default AddRemoveList;
+export default injectIntl(AddRemoveList);

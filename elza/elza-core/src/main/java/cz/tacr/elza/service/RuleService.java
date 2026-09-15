@@ -1172,7 +1172,8 @@ public class RuleService {
      *            seznam položek strukturovaného datového typu
      * @return seznam typu atributů
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR,
+                              UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
     public List<RulItemTypeExt> getStructureItemTypes(final Integer structTypeId,
                                                       @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
                                                       final List<ArrStructuredItem> structureItems) {

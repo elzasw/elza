@@ -8,7 +8,8 @@ import {renderUserOrGroupItem} from './adminRenderUtils.jsx';
 import {RowsResponse, UsrGroupVO} from '../../types';
 import {ApSearchType} from '../../typings/globals';
 import {DEFAULT_LIST_SIZE} from '../../constants';
-import i18n from '../i18n';
+import { FormattedMessage, type MessageDescriptor } from 'react-intl';
+import { searchTypeMessages } from 'components/registry/searchTypeMessages';
 import {Dropdown} from 'react-bootstrap';
 
 import './UserAndGroupField.scss';
@@ -25,7 +26,8 @@ type Props = {
         searchTypeName?: ApSearchType,
         searchTypeUsername?: ApSearchType,
     ) => Promise<RowsResponse<UsrUserVO>>;
-    findGroupApi: (fulltext: string) => Promise<RowsResponse<UsrGroupVO>>;
+    /** Vrací {groups, groupsCount}, ne RowsResponse - viz WebApi.findGroup. */
+    findGroupApi: (fulltext: string) => Promise<{groups: UsrGroupVO[]; groupsCount: number}>;
 };
 
 enum SEARCH_TYPE {
@@ -42,13 +44,16 @@ type State = {
     searchType: SEARCH_TYPE;
 };
 
-const SEARCH_TYPE_LABEL = {
-    [SEARCH_TYPE.USERNAME]: i18n('apField.searchType.USERNAME'),
-    [SEARCH_TYPE.USERNAME_AND_PARTY]: i18n('apField.searchType.USERNAME_AND_PARTY'),
-    [SEARCH_TYPE.PARTY_RIGHT_LIKE]: i18n('apField.searchType.PARTY_RIGHT_LIKE'),
-    [SEARCH_TYPE.PARTY_FULLTEXT]: i18n('apField.searchType.PARTY_FULLTEXT'),
-    [SEARCH_TYPE.GROUP]: i18n('userAndGroupField.searchType.GROUP'),
-    [SEARCH_TYPE.USERNAME_AND_GROUPS]: i18n('userAndGroupField.searchType.USERNAME_AND_GROUPS'),
+// Mapa se dřív skládala z naformátovaných řetězců při načtení modulu, tedy
+// dávno před tím, než je znám jazyk. Nově drží deskriptory a formátuje se
+// až při renderu.
+const SEARCH_TYPE_MESSAGE: Record<SEARCH_TYPE, MessageDescriptor> = {
+    [SEARCH_TYPE.USERNAME]: searchTypeMessages.username,
+    [SEARCH_TYPE.USERNAME_AND_PARTY]: searchTypeMessages.usernameAndParty,
+    [SEARCH_TYPE.PARTY_RIGHT_LIKE]: searchTypeMessages.partyRightLike,
+    [SEARCH_TYPE.PARTY_FULLTEXT]: searchTypeMessages.partyFulltext,
+    [SEARCH_TYPE.GROUP]: searchTypeMessages.group,
+    [SEARCH_TYPE.USERNAME_AND_GROUPS]: searchTypeMessages.usernameAndGroups,
 };
 
 type AutocompleteItem = {id: string; user?: UsrUserVO; group?: UsrGroupVO};
@@ -58,10 +63,14 @@ type AutocompleteItem = {id: string; user?: UsrUserVO; group?: UsrGroupVO};
  */
 class UserAndGroupField extends React.Component<Props, State> {
     autocompleteRef: React.ElementRef<typeof Autocomplete>;
-    static defaultProps = {
+    // Typ z Props: parametry lambd se odvodí a signatury zůstávají na jednom místě.
+    static defaultProps: Props = {
         tags: false,
-        findUserApi: WebApi.findUser,
-        findGroupApi: WebApi.findGroup,
+        // WebApi se vyhledává až při volání, ne při definici třídy - vzniká na poslední řádce
+        // svého modulu a v kruhu importů ještě nemusí existovat.
+        findUserApi: (fullText, active, disabled, max, groupId, searchTypeName, searchTypeUsername) =>
+            WebApi.findUser(fullText, active, disabled, max, groupId, searchTypeName, searchTypeUsername),
+        findGroupApi: (fulltext) => WebApi.findGroup(fulltext),
     };
 
     static propTypes = {
@@ -162,12 +171,12 @@ class UserAndGroupField extends React.Component<Props, State> {
                     onSelect={eventKey => this.setState({searchType: eventKey as SEARCH_TYPE})}
                 >
                     <Dropdown.Toggle variant="outline-secondary" id="dropdown-basic">
-                        {SEARCH_TYPE_LABEL[searchType]}
+                        <FormattedMessage {...SEARCH_TYPE_MESSAGE[searchType]} />
                     </Dropdown.Toggle>
                     <Dropdown.Menu>
                         {Object.values(SEARCH_TYPE).map(i => (
                             <Dropdown.Item key={i} eventKey={i}>
-                                {SEARCH_TYPE_LABEL[i]}
+                                <FormattedMessage {...SEARCH_TYPE_MESSAGE[i]} />
                             </Dropdown.Item>
                         ))}
                     </Dropdown.Menu>

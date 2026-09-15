@@ -165,17 +165,14 @@ abstract public class BulkActionDFS implements BulkAction {
 
 		logger.debug("Updating {} levels...", levelIds.size());
 
-		// processing received records in batches
-		do {
-			int indexTo = levelIds.size() > batchSize ? batchSize : levelIds.size();
-			List<Integer> ids = levelIds.subList(0, indexTo);
+		// processing received records in batches, the list of ids is only read
+		for (int from = 0; from < levelIds.size(); from += batchSize) {
+			List<Integer> ids = levelIds.subList(from, Math.min(from + batchSize, levelIds.size()));
 	        new TransactionTemplate(tm).executeWithoutResult(status -> {
 	        	this.arrInternalService.getFundVersionById(this.runContext.getFundVersionId());
-	        	
-				List<ArrLevel> levels = levelRepository.findAllById(ids);
-				Map<Integer, ArrLevel> levelMap = levels.stream().collect(Collectors.toMap(ArrLevel::getLevelId, lvl -> lvl));
-				ids.forEach(id -> update(levelMap.get(id)));
-				
+
+	        	updateLevels(ids);
+
 				// flush all changes inside transaction
 		        if (multipleItemChangeContext != null) {
 		           	multipleItemChangeContext.flush();
@@ -184,10 +181,31 @@ abstract public class BulkActionDFS implements BulkAction {
 			if (interrupt) {
 				throw new InterruptedException("The action was interrupted");
 			}
-	        levelIds.removeAll(ids);
-		} while (levelIds.size() > 0);
+		}
 
         logger.debug("All levels updated.");
+	}
+
+	/**
+	 * Update single batch of levels.
+	 *
+	 * Level ids are read before the batch transactions start, so a level can be deleted while
+	 * the action is running. Such level would be silently skipped, therefore the action fails.
+	 */
+	private void updateLevels(List<Integer> ids) {
+		List<ArrLevel> levels = levelRepository.findAllById(ids);
+		Map<Integer, ArrLevel> levelMap = levels.stream().collect(Collectors.toMap(ArrLevel::getLevelId, lvl -> lvl));
+
+		if (levelMap.size() != ids.size()) {
+			List<Integer> missingIds = ids.stream().filter(id -> !levelMap.containsKey(id)).toList();
+			if (!missingIds.isEmpty()) {
+				throw new SystemException("Levels to be updated no longer exist",
+						BulkActionCode.LEVELS_NOT_FOUND)
+					.set("levelIds", missingIds);
+			}
+		}
+
+		ids.forEach(id -> update(levelMap.get(id)));
 	}
 
 	/**

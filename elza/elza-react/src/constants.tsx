@@ -211,6 +211,7 @@ export const URL_ADMIN_USER = `${URL_ADMIN}/user`;
 export const URL_ADMIN_GROUP = `${URL_ADMIN}/group`;
 export const URL_ADMIN_FUND = `${URL_ADMIN}/fund`;
 export const URL_ADMIN_INSTITUTION = `${URL_ADMIN}/institution`;
+export const URL_ADMIN_IMPORT = `${URL_ADMIN}/import`;
 
 export const URL_AIP = '/aip';
 export const URL_COMPONENT = '/component';
@@ -274,8 +275,9 @@ export const urlFundGrid = (fundId: number, versionId?: number, filter?: string,
     return `${fundSub(fundId, versionId, sub)}${filter ? "?filter=" + filter : ""}`;
 }
 
-export const urlFundAb = (fundId: number, versionId?: number) => {
-    return fundSub(fundId, versionId, AIP);
+/** Seznam archivních balíčků fondu; s aipId se v seznamu rovnou vybere jeden balíček. */
+export const urlFundAb = (fundId: number, versionId?: number, aipId?: number) => {
+    return fundSub(fundId, versionId, AIP, aipId);
 }
 
 export const urlFundAipExplorer = (fundId: number, aipId: number, versionId?: number) => {
@@ -322,6 +324,9 @@ export const urlAdminFund = (fundId: number) => {
     return `${URL_ADMIN_FUND}/${fundId}`;
 }
 
+export const urlAdminImport = (batchId?: number) => {
+    return batchId == null ? URL_ADMIN_IMPORT : `${URL_ADMIN_IMPORT}/${batchId}`;
+};
 export const urlAdminInstitution = (institutionId?: number) => {
     return institutionId == null ? URL_ADMIN_INSTITUTION : `${URL_ADMIN_INSTITUTION}/${institutionId}`;
 }

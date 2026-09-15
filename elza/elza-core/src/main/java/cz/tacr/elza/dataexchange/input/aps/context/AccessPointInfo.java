@@ -52,6 +52,14 @@ public class AccessPointInfo implements EntityIdHolder<ApAccessPoint> {
         return entityId;
     }
 
+    /**
+     * Access point already has an id, i.e. it is stored or it was paired with an
+     * existing access point.
+     */
+    public boolean hasEntityId() {
+        return entityId != null;
+    }
+
     void setEntityId(Integer entityId) {
         this.entityId = entityId;
     }

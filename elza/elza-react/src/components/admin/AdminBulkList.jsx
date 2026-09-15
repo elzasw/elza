@@ -8,7 +8,20 @@ import AdminBulkHeader from "./AdminBulkHeader";
 import AdminBulkBody from "./AdminBulkBody";
 
 import './AdminBulkList.scss';
-import i18n from "../i18n";
+import { FormattedMessage, defineMessages } from "react-intl";
+import { messageFor } from "components/shared/lang/dynamicMessage";
+
+// Klíč se skládal z typu fronty, což statický extraktor nevidí. Množina typů je
+// uzavřená (odpovídá typům front na serveru), takže stačí ji vypsat a vybírat.
+const queueTypeMessages = defineMessages({
+    NODE: { id: 'admin.bulk.header.title.NODE', defaultMessage: 'Validace JP' },
+    BULK: { id: 'admin.bulk.header.title.BULK', defaultMessage: 'Hromadné akce' },
+    OUTPUT: { id: 'admin.bulk.header.title.OUTPUT', defaultMessage: 'Výstupy' },
+    AP: { id: 'admin.bulk.header.title.AP', defaultMessage: 'Validace AE' },
+    EXPORT: { id: 'admin.bulk.header.title.EXPORT', defaultMessage: 'Publikace' },
+    AIP: { id: 'admin.bulk.header.title.AIP', defaultMessage: 'Archivní balíčky' },
+    BATCH_IMPORT: { id: 'admin.bulk.header.title.BATCH_IMPORT', defaultMessage: 'Dávkový import' },
+});
 import Loading from "../shared/loading/Loading";
 
 class AdminBulkList extends AbstractReactComponent {
@@ -42,7 +55,7 @@ class AdminBulkList extends AbstractReactComponent {
         return <div>
             {asyncRequest.map((request, index) => {
                 const type = request.type;
-                return <CollapsablePanel tabIndex={index} eventKey={index} header={<AdminBulkHeader name={i18n('admin.bulk.header.title.' + type)} data={request} />}>
+                return <CollapsablePanel tabIndex={index} eventKey={index} header={<AdminBulkHeader name={<FormattedMessage {...messageFor(queueTypeMessages, type, queueTypeMessages.BULK)} />} data={request} />}>
                     <AdminBulkBody type={type}/>
                 </CollapsablePanel>
             })}

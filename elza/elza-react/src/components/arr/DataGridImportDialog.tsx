@@ -3,15 +3,17 @@ import { useEffect, useState } from 'react';
 import { Modal } from 'react-bootstrap';
 import { Field, Form } from 'react-final-form';
 import { FormErrors } from 'redux-form';
-import { defineMessages, useIntl } from 'react-intl';
+import { FormattedMessage, defineMessages, useIntl } from 'react-intl';
 import { useThunkDispatch } from 'utils/hooks';
-import i18n from '../i18n';
+import { globalMessages } from 'components/shared/lang/messages';
+import { fundFormMessages } from './fundFormMessages';
 import FileInput from '../shared/form/FileInput';
 import Icon from '../shared/icon/Icon';
 import { Button } from '../ui';
 import { fundDataGridImport } from 'actions/arr/fundDataGrid';
 import { modalDialogHide } from 'actions/global/modalDialog';
 import { addToastrSuccess } from 'components/shared/toastr/ToastrActions';
+import { getIntl } from 'components/shared/lang/intlInstance';
 
 const DEFAULT_SEPARATOR = ';';
 const DEFAULT_ENCODING = 'windows-1250';
@@ -58,10 +60,10 @@ const messages = defineMessages({
 });
 
 const ENCODING_OPTIONS = [
-    { value: 'windows-1250', label: 'Windows-1250 (středoevropské)' },
+    { value: 'windows-1250', label: getIntl().formatMessage(globalMessages.encodingCentralEuropean) },
     { value: 'utf-8', label: 'UTF-8' },
     { value: 'iso-8859-2', label: 'ISO-8859-2 (Latin-2)' },
-    { value: 'windows-1252', label: 'Windows-1252 (západoevropské)' },
+    { value: 'windows-1252', label: getIntl().formatMessage(globalMessages.encodingWesternEuropean) },
 ];
 
 interface ImportFormFields {
@@ -78,11 +80,24 @@ interface IImportFormProps {
 
 const DataGridImportHint = () => {
     return <div style={{ border: "var(--primary-border)", padding: "8px", maxHeight: "140px", overflowY: "auto" }}>
-        <p dangerouslySetInnerHTML={{ __html: i18n("^dataGrid.import.format.hint") }} />
+        <p><FormattedMessage {...fundFormMessages.importHintIntro} /></p>
+        <p>
+            {'{'}<b style={{ color: 'var(--color-red)' }}><FormattedMessage {...fundFormMessages.importHintTokenUuid} /></b>{'},{'}
+            <b style={{ color: 'var(--color-blue)' }}><FormattedMessage {...fundFormMessages.importHintTokenItemCode} /></b>{'},{'}
+            <b style={{ color: 'var(--color-orange)' }}><FormattedMessage {...fundFormMessages.importHintTokenSpecCode} /></b>{'},{'}
+            <b style={{ color: 'var(--color-green)' }}><FormattedMessage {...fundFormMessages.importHintTokenValue} /></b>{'},{'}
+            <b style={{ color: 'var(--color-blue)' }}><FormattedMessage {...fundFormMessages.importHintTokenItemCode} /></b>{'},{'}
+            <b style={{ color: 'var(--color-green)' }}><FormattedMessage {...fundFormMessages.importHintTokenValue} /></b>{'}…'}
+        </p>
+        <p><FormattedMessage {...fundFormMessages.importHintNote} /></p>
         <h4>
-            {i18n("dataGrid.import.format.example.title")}
+            {<FormattedMessage {...fundFormMessages.dataGridImportFormatExampleTitle} />}
         </h4>
-        <p dangerouslySetInnerHTML={{ __html: i18n("dataGrid.import.format.example.message") }} />
+        <ul>
+            <li><FormattedMessage {...fundFormMessages.importExampleFormalTitle} /></li>
+            <li><FormattedMessage {...fundFormMessages.importExampleOtherId} /></li>
+            <li><FormattedMessage {...fundFormMessages.importExampleUnitType} /></li>
+        </ul>
         <div>
             <div style={{ lineBreak: "anywhere", border: "var(--primary-border)", padding: "8px" }}>069f2e12-b808-4b3f-af48-35c372ae0818,ZP2015_FORMAL_TITLE,Divá Bára,ZP2015_OTHER_ID,ZP2015_OTHERID_SIG,1234/75,ZP2015_UNIT_TYPE,ZP2015_UNIT_TYPE_RKP</div>
         </div>
@@ -201,7 +216,7 @@ export const DataGridImportDialog = ({ onClose, versionId, fundId }: IImportForm
         const errors: FormErrors<ImportFormFields> = {};
 
         if (!values.csvFile || values.csvFile == null) {
-            errors.csvFile = i18n('global.validation.required');
+            errors.csvFile = intl.formatMessage(globalMessages.validationRequired);
         }
         return errors;
     };
@@ -216,7 +231,7 @@ export const DataGridImportDialog = ({ onClose, versionId, fundId }: IImportForm
             const utf8File = await toUtf8File(csvFile, encoding || DEFAULT_ENCODING);
             await dispatch(fundDataGridImport(versionId, fundId, utf8File, separator || DEFAULT_SEPARATOR));
             dispatch(modalDialogHide());
-            dispatch(addToastrSuccess(i18n("ribbon.action.arr.dataGrid.import.started")));
+            dispatch(addToastrSuccess(intl.formatMessage(fundFormMessages.ribbonActionArrDataGridImportStarted)));
         }
         catch (error) {
             // error is shown in toaster
@@ -240,7 +255,7 @@ export const DataGridImportDialog = ({ onClose, versionId, fundId }: IImportForm
                                                 <FileInput
                                                     {...input}
                                                     {...meta}
-                                                    label={i18n('import.file')}
+                                                    label={<FormattedMessage {...fundFormMessages.importFile} />}
                                                     type="file"
                                                 />
                                             )}
@@ -295,10 +310,10 @@ export const DataGridImportDialog = ({ onClose, versionId, fundId }: IImportForm
                                             type="submit"
                                             onClick={handleSubmit}
                                         >
-                                            {i18n('global.action.import')}
+                                            {<FormattedMessage {...fundFormMessages.globalActionImport} />}
                                         </Button>
                                         <Button variant="link" onClick={onClose}>
-                                            {i18n('global.action.cancel')}
+                                            {<FormattedMessage {...globalMessages.cancel} />}
                                         </Button>
                                     </Modal.Footer>
                                 </>
@@ -310,7 +325,7 @@ export const DataGridImportDialog = ({ onClose, versionId, fundId }: IImportForm
             {isRunning && (
                 <div>
                     <Modal.Body>
-                        <Icon className="fa-spin" glyph="fa-refresh" /> {i18n('import.running')}
+                        <Icon className="fa-spin" glyph="fa-refresh" /> {<FormattedMessage {...fundFormMessages.importRunning} />}
                     </Modal.Body>
                 </div>
             )}

@@ -14,7 +14,19 @@ import { Link } from "react-router-dom";
 import { Action } from "redux";
 import { ThunkDispatch } from "redux-thunk";
 import { Button } from "../../ui";
-import i18n from "../../i18n";
+import { FormattedMessage, defineMessages, useIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { getIntl } from 'components/shared/lang/intlInstance';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    date: { id: 'ap.ext-syncs.date', defaultMessage: 'Poslední změna' },
+    scope: { id: 'ap.ext-syncs.scope', defaultMessage: 'Oblast' },
+    state: { id: 'ap.ext-syncs.state', defaultMessage: 'Stav' },
+    extSystem: { id: 'ap.ext-syncs.ext-system', defaultMessage: 'Externí systém' },
+    noEntities: { id: 'ap.ext-syncs.label.no-entities', defaultMessage: 'Nebyly dohledány žádné požadavky' },
+    params: { id: 'ap.ext-syncs.label.params', defaultMessage: 'Zvolte parametry hledání' },
+});
 import './ExtSyncsModal.scss';
 import { ArchiveEntityVO } from "../../../api/ArchiveEntityVO";
 import { getMapFromList, indexById } from "../../../shared/utils";
@@ -38,7 +50,7 @@ type FormProps = {}
 const validate = (values) => {
     const errors: any = {};
     if (!values.extSystem) {
-        errors.extSystem = i18n('global.validation.required');
+        errors.extSystem = getIntl().formatMessage(globalMessages.validationRequired);
     }
     return errors;
 };
@@ -107,6 +119,7 @@ const ExtSyncsModal: FC<Props> = ({
     reset,
     onNavigateAp
 }) => {
+    const intl = useIntl();
     const [data, setData] = useState<Data>({
         isFetching: false,
         fetched: false,
@@ -194,19 +207,19 @@ const ExtSyncsModal: FC<Props> = ({
                 <Row className={exception ? "font-red" : undefined}>
                     <Col xs={4}>
                         <span className="label">
-                            {i18n('ap.ext-syncs.date')}
+                            {intl.formatMessage(messages.date)}
                         </span>
                         {date ? dateToDateTimeString(date) : '-'}
                     </Col>
                     <Col xs={3}>
                         <span className="label">
-                            {i18n('ap.ext-syncs.scope')}
+                            {intl.formatMessage(messages.scope)}
                         </span>
                         {scopesMap[item.scopeId].name}
                     </Col>
                     <Col xs={5}>
                         <span className="label">
-                            {i18n('ap.ext-syncs.state')}
+                            {intl.formatMessage(messages.state)}
                         </span>
                         {ExtStateInfo.getName(item.state)}
                         {item.stateMessage &&
@@ -237,7 +250,7 @@ const ExtSyncsModal: FC<Props> = ({
                 <Col className="search-panel" xs={3}>
                     <div className="search-fields">
                         <Field name="extSystem"
-                            label={i18n('ap.ext-syncs.ext-system')}
+                            label={intl.formatMessage(messages.extSystem)}
                             type="autocomplete"
                             component={FormInputField}
                             getItemId={item => item && item.code}
@@ -248,33 +261,33 @@ const ExtSyncsModal: FC<Props> = ({
                         <FieldArray
                             name="states"
                             component={ExtStatesField}
-                            label={i18n('ap.ext-syncs.state')}
+                            label={intl.formatMessage(messages.state)}
                             disabled={submitting}
                         />
                         <FieldArray
                             name="scopes"
                             component={ScopesField}
-                            label={i18n('ap.ext-syncs.scope')}
+                            label={intl.formatMessage(messages.scope)}
                             disabled={submitting}
                             scopeList={scopes as FundScope[]}
                         />
                     </div>
                     <div className="search-controller">
-                        <Button disabled={submitting} type="submit" variant="outline-secondary">{i18n('global.action.search')}</Button>
-                        <Button disabled={submitting} type="button" onClick={reset} variant="link">{i18n('global.action.filter.clean')}</Button>
+                        <Button disabled={submitting} type="submit" variant="outline-secondary">{<FormattedMessage {...globalMessages.search} />}</Button>
+                        <Button disabled={submitting} type="button" onClick={reset} variant="link">{<FormattedMessage {...globalMessages.filterClean} />}</Button>
                     </div>
                 </Col>
                 <Col id="ListScrollableLayout" className="results" xs={9}>
                     {data.isFetching && <HorizontalLoader hover />}
-                    {data.fetched && !data.isFetching && data.data.length === 0 && <div className="text-center mt-5"><h2>{i18n('ap.ext-syncs.label.no-entities')}</h2></div>}
+                    {data.fetched && !data.isFetching && data.data.length === 0 && <div className="text-center mt-5"><h2>{<FormattedMessage {...messages.noEntities} />}</h2></div>}
                     {data.fetched && data.data.length > 0 && renderResults(data)}
-                    {!data.fetched && <div className="text-center mt-5"><h2>{i18n('ap.ext-syncs.label.params')}</h2></div>}
+                    {!data.fetched && <div className="text-center mt-5"><h2>{<FormattedMessage {...messages.params} />}</h2></div>}
                 </Col>
             </Row>
         </Modal.Body>
         <Modal.Footer>
             <Button variant="link" onClick={onClose} disabled={submitting}>
-                {i18n('global.action.close')}
+                {<FormattedMessage {...globalMessages.close} />}
             </Button>
         </Modal.Footer>
     </ReduxForm>;

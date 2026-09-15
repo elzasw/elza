@@ -1,7 +1,7 @@
 import { Api } from 'api';
-import { i18n } from 'components';
+import { FormattedMessage, defineMessages } from 'react-intl';
 import { AdminInfo, LoggedUser } from 'elza-api';
-import React, { useEffect, useState } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { urlAdminUser } from '../../../../src/constants';
 import './Statistics.scss';
@@ -11,31 +11,69 @@ import * as perms from 'actions/user/Permission.jsx';
 
 type LoggedUserWithCount = LoggedUser & { count: number };
 
-const getHorizontalListItems = <T extends Object>(
-    selectedStats: (keyof T)[],
+/**
+ * Popisky dlaždic. Id jsou převzatá z legacy katalogu beze změny.
+ *
+ * Klíč se dřív skládal za běhu (`stats.${stat}.title`), což statický extraktor
+ * nevidí - klíče by se do katalogu vůbec nedostaly. Množina je uzavřená, takže
+ * stačí ji vypsat a indexovat přímo.
+ */
+const statMessages = defineMessages({
+    funds: {
+        id: 'stats.funds.title',
+        defaultMessage: 'Počet AS',
+    },
+    levels: {
+        id: 'stats.levels.title',
+        defaultMessage: 'Počet JP',
+    },
+    accessPoints: {
+        id: 'stats.accessPoints.title',
+        defaultMessage: 'Počet arch. entit',
+    },
+    users: {
+        id: 'stats.users.title',
+        defaultMessage: 'Počet uživatelů',
+    },
+    loggedUsers: {
+        id: 'stats.loggedUsers.title',
+        defaultMessage: 'Počet aktivních relací',
+    },
+});
+
+const messages = defineMessages({
+    loggedUsersTitle: {
+        id: 'loggedUsers.title',
+        defaultMessage: 'Přihlášení uživatelé',
+    },
+});
+
+/** Statistika, pro kterou existuje popisek. */
+type StatKey = keyof typeof statMessages;
+
+/**
+ * `keyof T & StatKey` dělá z chybějícího popisku chybu překladu: přibude-li do
+ * AdminInfo další údaj, nejde ho sem předat, dokud nemá deskriptor.
+ */
+const getHorizontalListItems = <T extends object>(
+    selectedStats: (keyof T & StatKey)[],
     data: T,
-    getValue: (value: T[keyof T]) => string = (value) => {
+    getValue: (value: T[keyof T]) => string | null = (value) => {
         if (typeof value !== "string" && typeof value !== "number") {
             console.warn("Value is not string or number.")
             return null;
         }
         return value.toString();
     },
-): HorizontalListItem[] => {
-    const listItems = selectedStats
-        .map(stat => {
+): HorizontalListItem[] =>
+    selectedStats
+        .map((stat): HorizontalListItem | null => {
             const value = getValue(data[stat]);
-            if (value != undefined) {
-                return {
-                    title: i18n(`stats.${stat.toString()}.title`),
-                    value,
-                } as HorizontalListItem;
-            }
-            return null;
+            return value == undefined
+                ? null
+                : { title: <FormattedMessage {...statMessages[stat]} />, value };
         })
-        .filter(item => item !== null);
-    return listItems;
-};
+        .filter((item): item is HorizontalListItem => item !== null);
 
 export const StatsHome = () => {
     const [stats, setStats] = useState<HorizontalListItem[]>([]);
@@ -93,7 +131,8 @@ export const StatsAdmin = () => {
 };
 
 interface HorizontalListItem {
-    title: string;
+    /** Uzel, ne řetězec: popisek je <FormattedMessage>, aby se přepnul s jazykem. */
+    title: ReactNode;
     value: number | string;
 }
 
@@ -140,7 +179,7 @@ export const LoggedUsersList = ({ users }: LoggedUsersListProps) => {
     return (
         <div className="stats-box" style={{ paddingTop: 0 }}>
             <div>
-                <h6>{i18n('loggedUsers.title')}</h6>
+                <h6><FormattedMessage {...messages.loggedUsersTitle} /></h6>
                 <div className="users">
                     {uniqueUsers.map((user, index) =>
                         user?.userId != undefined ? (

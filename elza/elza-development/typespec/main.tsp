@@ -384,6 +384,8 @@ model ExplorerTreeNode {
     parentFolderLogical: ExplorerTreeNode;
     /** Seznam připojených nodů */
     linkedNodes: LinkedNodeVO[];
+    /** Typ virtuální úrovně; reálné složky a soubory ho nemají */
+    levelType?: AipLevelType;
 }
 
 /** Model ExplorerTreeNodeFile */
@@ -618,6 +620,7 @@ model DataRecordRef extends ItemData {
     @invisible(Lifecycle)
     dataType: DataType.RECORD_REF;
     value: integer;
+    name?: string;
 }
 
 model DataString extends ItemData {
@@ -630,6 +633,8 @@ model DataStructureRef extends ItemData {
     @invisible(Lifecycle)
     dataType: DataType.STRUCTURED;
     structuredObjectId: integer;
+    value?: string;
+    complement?: string;
 }
 
 model DataText extends ItemData {
@@ -735,16 +740,6 @@ enum UpdateOp {
     CREATE,
     UPDATE,
     DELETE
-}
-
-/**
- * Náhrada za třídu `ArrUpdateItemVO`
- */
-model NodeUpdateItem {
-    /** operation */
-    updateOp: UpdateOp;
-    /** item to update */
-    item: NodeItem;
 }
 
 model BaseItem {
@@ -928,7 +923,11 @@ model TreeNodeCustomGen {
     /**
      * Unikátení identifikátor rodičovského uzlu
      */
-    parent: string
+    parent: string;
+    /**
+     * Typ virtuální úrovně; uzly konkrétních AIPů ho nemají
+     */
+    levelType?: AipLevelType
 }
 
 /**
@@ -1050,6 +1049,15 @@ model AipDetailFilteredResult {
      * Seznam objektů
      */
     rows: AipDetailVO[];
+    /**
+     * Pořadí prvního vráceného výsledku; při zadaném focusAipId se liší od požadovaného offsetu,
+     * protože se vrací stránka s hledaným balíčkem
+     */
+    offset: integer;
+    /**
+     * Zda byl hledaný balíček (focusAipId) ve výsledku nalezen; bez focusAipId není vyplněno
+     */
+    focusFound?: boolean;
 }
 
 /**
@@ -1265,12 +1273,20 @@ model LinkedNodeVO {
      * Jméno node
      */
     name: string;
+    /**
+     * Typ napojení - celý balíček, část, nebo komponenta
+     */
+    linkType?: LinkType;
 }
 
 /**
  * Problém, který brání zpracování AIPu nebo jeho navázání na archivní popis
  */
 enum AipProblemType {
+    /**
+     * Balíček se nepodařilo stáhnout z digitálního archivu, stažení se opakuje
+     */
+    DOWNLOAD_ERROR,
     /**
      * Metadatový balíček se nepodařilo zpracovat
      */
@@ -1533,6 +1549,18 @@ enum LinkType {
 }
 
 /**
+ * Typ virtuální úrovně stromu AIPu. Tyto úrovně nejsou daty balíčku, ale pevně danými
+ * pojmy (E-ARK / OAIS), takže jejich název si překládá klient.
+ */
+enum AipLevelType {
+    PACKAGE,
+    REPRESENTATIONS,
+    LOGICAL_STRUCTURE,
+    METADATA,
+    WITHOUT_LOGICAL_STRUCTURE;
+}
+
+/**
  * AIP update type
  */
 enum AipUpdateType {
@@ -1588,19 +1616,9 @@ model InvalidatedEntities {
 /**
  * Data for create/update a part (external)
  */
+@extension("format", "partform")
 model ApPartFormVO {
     /** this is an external class */
-}
-
-/**
- * Skupina zapouzdrující typy hodnot atributů pro UI
- *
- * Náhrada `ItemTypeGroupVO`
- */
-model ItemTypeGroup {
-    code: string;
-    name: string;
-    types?: FormItemType[];
 }
 
 /**
@@ -2430,40 +2448,6 @@ model ExtItemBinding {
     sync: boolean;
 }
 
-/**
- * One binding of an access point to an external system. Represents the
- * entity's identity in that system together with sync/state metadata and
- * (since CAMv2) per-revision metadata and issue summary.
- */
-model ExtEntityBinding {
-    id: integer;
-    externalSystemId: integer;
-    /**
-     * Code of the external system. Marked deprecated on the Java VO, but
-     * still load-bearing for several action calls — kept until the callers
-     * migrate to externalSystemId.
-     */
-    externalSystemCode: string;
-    /** Identifier of the entity in the external system. */
-    value: string;
-    extState?: string;
-    extRevision?: string;
-    extUser?: string;
-    extReplacedBy?: string;
-    detailUrlExtReplacedBy?: string;
-    syncState?: SyncState;
-    syncProgress?: SyncProgress;
-    bindingItemList?: ExtItemBinding[];
-
-    // CAMv2 additions
-    extMetadataRevision?: string;
-    extPrevRevision?: string;
-    /** Creation time of this revision in the external system. */
-    extCreatedAt?: utcDateTime;
-    /** Pre-computed badge for the warning icon. Absent = no issues. */
-    issueSummary?: ExtIssueSummary;
-}
-
 /** Severity of a CAM-side issue attached to an entity binding. */
 enum ExtIssueSeverity {
     WARNING,
@@ -2587,6 +2571,343 @@ model ExtHistory {
 }
 
 /**
+ * State of an import batch.
+ */
+enum BatchState {
+    PREPARATION,
+    IN_PROGRESS,
+    TEST_IN_PROGRESS,
+    TEST_FINISHED,
+    PAUSED,
+    FAILED,
+    FINISHED,
+    CANCELLED,
+}
+
+/**
+ * State of an import batch item.
+ */
+enum ItemState {
+    READY,
+    TEST_RUN_FINISHED,
+    RUNNING,
+    FINISHED,
+    ERROR,
+}
+
+/**
+ * Kind of import; also acts as the ORM discriminator of the batch subtype.
+ */
+enum BatchImportType {
+    EDX2,
+    ADD_DESC_ITEMS_CSV,
+}
+
+/**
+ * How an EDX2 import handles fund records (create, pair, or both).
+ */
+enum FundImportStrategy {
+    ALWAYS_NEW,
+    ALWAYS_PAIR,
+    PAIR_AND_CREATE,
+}
+
+/**
+ * Key by which an existing fund is looked up during pairing.
+ */
+enum FundPairKey {
+    INSTITUTION_AND_FUND_NUMBER,
+}
+
+/**
+ * Kind of recorded outcome of an import item.
+ */
+enum ImpResultType {
+    ARR_CHANGE,
+    AP_CHANGE,
+}
+
+/**
+ * Import batch - common part; concrete parameters live in the subtypes.
+ */
+model ImportBatch {
+    /** Batch identifier */
+    batchId: integer;
+    /** Kind of import (subtype discriminator) */
+    importType: BatchImportType;
+    /** User-supplied batch name */
+    name: string;
+    /** Creation time */
+    createdAt: offsetDateTime;
+    /** User who created the batch */
+    createdByUserId: integer;
+    /** Time the batch was last started */
+    executedAt?: offsetDateTime;
+    /** User who last started the batch */
+    executedByUserId?: integer;
+    /** Current state */
+    state: BatchState;
+    /** Time of the last state change */
+    lastStateChangeAt: offsetDateTime;
+    /** Continue after an item-level error */
+    skipError: boolean;
+    /** Keep the input files (disables the automatic cleanup) */
+    keepFiles: boolean;
+    /** When the input files were removed, if they already were */
+    filesDeletedAt?: offsetDateTime;
+}
+
+/**
+ * EDX2 import batch.
+ */
+model ImportBatchEdx extends ImportBatch {
+    @invisible(Lifecycle)
+    importType: BatchImportType.EDX2;
+    /** How fund records are imported */
+    fundImportStrategy: FundImportStrategy;
+    /** Pairing key for existing funds */
+    fundPairKey?: FundPairKey;
+    /** Ignore the root levels of the payload */
+    ignoreRootNodes: boolean;
+    /** Scope into which archival entities are imported */
+    scopeId?: integer;
+}
+
+/**
+ * CSV import batch that adds description items into existing nodes. The target fund is
+ * resolved per row from each node UUID at import time - the batch itself carries no fund
+ * reference.
+ */
+model ImportBatchDescCsv extends ImportBatch {
+    @invisible(Lifecycle)
+    importType: BatchImportType.ADD_DESC_ITEMS_CSV;
+    /** Column separator */
+    separator?: string;
+    /** File encoding */
+    encoding?: string;
+}
+
+/**
+ * One item of an import batch - normally one input file.
+ */
+model ImportItem {
+    /** Item identifier */
+    itemId: integer;
+    /** Parent batch identifier */
+    batchId: integer;
+    /** Reference to the stored source file in DMS, if present */
+    dmsFileId?: integer;
+    /** Display name, normally the file name */
+    itemName?: string;
+    /** Current state */
+    state: ItemState;
+    /** Run order within the batch */
+    execOrder: integer;
+    /** Time added to the batch */
+    createdAt: offsetDateTime;
+    /** User who added the item */
+    createdByUserId: integer;
+    /** Time processing started */
+    executedAt?: offsetDateTime;
+    /** User who started processing */
+    executedByUserId?: integer;
+    /** Time processing finished or failed */
+    finishedAt?: offsetDateTime;
+    /** Short failure message, if any */
+    error?: string;
+    /** Fund the content was (or is being) imported into, once pairing settled */
+    fundId?: integer;
+    /**
+     * All archival files this item's results changed - a single CSV item can touch
+     * several funds when node UUIDs across the file belong to different funds.
+     */
+    resultFundIds?: integer[];
+    /** Number of created description units */
+    nodesCreated: int32;
+    /** Number of updated description units */
+    nodesUpdated: int32;
+    /** Number of created access points */
+    apsCreated: int32;
+    /** Number of paired access points */
+    apsPaired: int32;
+}
+
+/**
+ * Full failure detail of an item (loaded on demand, separate call).
+ */
+model ImportItemError {
+    /** Short failure message */
+    error: string;
+    /** Full description (stack trace and the like) */
+    errorDetail: string;
+}
+
+/**
+ * One recorded outcome of a successful item.
+ */
+model ImportItemResult {
+    /** Result identifier */
+    itemResultId: integer;
+    /** Kind of outcome */
+    resultType: ImpResultType;
+    /** Fund the result touches */
+    fundId?: integer;
+    /** Fund description change (arr_change), if any */
+    fundChangeId?: integer;
+    /** Access-point change (ap_change), if any */
+    apChangeId?: integer;
+}
+
+/**
+ * One page of the batches listing.
+ */
+model ImportBatchPage {
+    /** The batches on this page */
+    items: ImportBatch[];
+    /** Total number of batches matching the filter */
+    totalCount: integer;
+}
+
+/**
+ * Parameters for creating an EDX2 batch.
+ */
+model CreateBatchEdx {
+    @invisible(Lifecycle)
+    importType: BatchImportType.EDX2;
+    /** User-supplied name */
+    name: string;
+    fundImportStrategy: FundImportStrategy;
+    fundPairKey?: FundPairKey;
+    ignoreRootNodes: boolean;
+    scopeId?: integer;
+    skipError: boolean;
+    keepFiles: boolean;
+}
+
+/**
+ * Parameters for creating a CSV batch.
+ */
+model CreateBatchDescCsv {
+    @invisible(Lifecycle)
+    importType: BatchImportType.ADD_DESC_ITEMS_CSV;
+    name: string;
+    separator?: string;
+    encoding?: string;
+    skipError: boolean;
+    keepFiles: boolean;
+}
+
+/**
+ * Multipart body for uploading one source file into a batch.
+ */
+model UploadFileBody {
+    file: HttpPart<bytes>;
+}
+
+/**
+ * Multipart body for uploading a ZIP container of source files.
+ */
+model UploadZipBody {
+    file: HttpPart<bytes>;
+}
+
+/**
+ * Parameters for importing from a folder on the server.
+ */
+model ImportFromFolder {
+    /** Path relative to the configured base directory */
+    path: string;
+
+    /**
+     * Optional list of file names to import from the folder. If empty or omitted,
+     * every regular file directly in the folder is added to the batch.
+     */
+    files?: string[];
+}
+
+/**
+ * A single entry (file or subdirectory) inside the server-side import folder.
+ */
+model ImportServerFolderEntry {
+    name: string;
+    directory: boolean;
+    size?: int64;
+}
+
+/** Stav API klíče. */
+enum ApiKeyState {
+    ACTIVE,
+    EXPIRED,
+    REVOKED,
+}
+
+/** Metadata jednoho API klíče, bez tajné části. */
+model ApiKeyInfo {
+    /** Interní ID záznamu. */
+    id: integer;
+    /** Uživatelské pojmenování. */
+    name: string;
+    /** Veřejný identifikátor ve tvaru zobrazovaném v UI (elza_<keyId>). */
+    keyId: string;
+    createDate: offsetDateTime;
+    expireDate: offsetDateTime;
+    /** Poslední úspěšné použití; nikdy = null. */
+    lastUsedDate?: offsetDateTime;
+    /** Vyplněno u zrušeného klíče. */
+    revokedDate?: offsetDateTime;
+    state: ApiKeyState;
+}
+
+/** Požadavek na vytvoření klíče. */
+model ApiKeyCreateRequest {
+    /** Uživatelské pojmenování, max 250 znaků. */
+    name: string;
+    /**
+     * Konec platnosti; není-li uvedeno, použije se konfigurační default.
+     * Nesmí překročit konfigurační maximum, jinak 400.
+     */
+    expireDate?: offsetDateTime;
+}
+
+/**
+ * Odpověď na vytvoření klíče. Pole `token` obsahuje plnou hodnotu ve tvaru
+ * elza_<keyId>_<secret> a je jediné místo, kde se objeví — po odpovědi je
+ * již není možné znovu získat.
+ */
+model ApiKeyCreated {
+    apiKey: ApiKeyInfo;
+    token: string;
+}
+
+/**
+ * Správa vlastních API klíčů přihlášeného uživatele.
+ *
+ * Volání těchto operací API klíčem samotným server odmítne (403); slouží
+ * pro přihlášení sezením / heslem přes UI nebo skript.
+ */
+@tag("user")
+@route("/user/my/api-keys")
+namespace ElzaAPI.User.ApiKeys {
+    /** Seznam vlastních klíčů, nejnovější první. Ve výchozím stavu jen aktivní. */
+    @get op list(
+        /** Zahrnout i expirované a zrušené klíče. */
+        @query includeInactive?: boolean,
+    ): ApiKeyInfo[];
+
+    /**
+     * Vytvoří nový klíč. Plná hodnota tokenu je v odpovědi vrácena pouze
+     * jednou; server ji dál nikde neukládá.
+     */
+    @post op create(@body body: ApiKeyCreateRequest): ApiKeyCreated;
+
+    /** Zruší klíč (nastaví revoked_date). Opakované zrušení je bez efektu. */
+    @route("/{id}")
+    @delete op revoke(@path id: integer): {
+        @Http.statusCode statusCode: 200;
+    };
+}
+
+/**
  * Administrativní funkce
  */
 @tag("admin")
@@ -2639,6 +2960,334 @@ namespace ElzaAPI.Admin {
     /** Return list of logged users */
     @route("info/logged-users")
     op loggedUsers(): LoggedUsers;
+
+    /** Seznam API klíčů daného uživatele (bez tajné hodnoty). Ve výchozím stavu jen aktivní. */
+    @route("user/{userId}/api-keys")
+    @get op listUserApiKeys(
+        @path userId: integer,
+        /** Zahrnout i expirované a zrušené klíče. */
+        @query includeInactive?: boolean,
+    ): ApiKeyInfo[];
+
+    /** Zruší API klíč libovolného uživatele. */
+    @route("user/{userId}/api-keys/{id}")
+    @delete op revokeUserApiKey(
+        @path userId: integer,
+        @path id: integer,
+    ): {
+        @Http.statusCode statusCode: 200;
+    };
+}
+
+/**
+ * Import batches - administrator module for controlled data import.
+ */
+@tag("import-batches")
+@route("/admin/import")
+namespace ElzaAPI.ImportBatch {
+    /**
+     * Paged listing of import batches, newest first by creation time.
+     * @param from index of the first returned item (zero-based offset)
+     * @param count number of returned items
+     */
+    @get op list(
+        @query from?: integer = 0,
+        @query count?: integer = 10,
+    ): ImportBatchPage;
+
+    /**
+     * Creates a new EDX2 batch in the PREPARATION state.
+     */
+    @route("/edx")
+    @post op createEdx(
+        @body params: CreateBatchEdx,
+    ): {
+        @Http.statusCode statusCode: 201;
+        @body batch: ImportBatchEdx;
+    };
+
+    /**
+     * Creates a new CSV batch (ADD_DESC_ITEMS_CSV) in the PREPARATION state.
+     */
+    @route("/csv")
+    @post op createCsv(
+        @body params: CreateBatchDescCsv,
+    ): {
+        @Http.statusCode statusCode: 201;
+        @body batch: ImportBatchDescCsv;
+    };
+
+    /**
+     * Batch detail. The concrete subtype returned depends on importType.
+     */
+    @route("/{id}")
+    @get op get(
+        @path id: integer,
+    ): ImportBatch | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Updates the settings of an EDX2 batch. Allowed only in PREPARATION;
+     * in TEST_FINISHED the batch is walked back to PREPARATION automatically.
+     */
+    @route("/{id}/edx")
+    @put op updateEdx(
+        @path id: integer,
+        @body params: CreateBatchEdx,
+    ): ImportBatchEdx | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        /** Batch state does not permit editing its settings. */
+        @Http.statusCode statusCode: 409;
+        @body error: BaseException;
+    };
+
+    /**
+     * Updates the settings of a CSV batch. Allowed only in PREPARATION;
+     * in TEST_FINISHED the batch is walked back to PREPARATION automatically.
+     */
+    @route("/{id}/csv")
+    @put op updateCsv(
+        @path id: integer,
+        @body params: CreateBatchDescCsv,
+    ): ImportBatchDescCsv | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        @Http.statusCode statusCode: 409;
+        @body error: BaseException;
+    };
+
+    /**
+     * Starts the import: moves the batch to IN_PROGRESS and puts it on the
+     * asynchronous queue. Requires PREPARATION, TEST_FINISHED, PAUSED or FAILED.
+     */
+    @route("/{id}/start")
+    @post op start(
+        @path id: integer,
+    ): {
+        @Http.statusCode statusCode: 202;
+    } | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        @Http.statusCode statusCode: 409;
+        @body error: BaseException;
+    };
+
+    /**
+     * Starts a dry run. The batch moves to TEST_IN_PROGRESS, a successful
+     * verification lands in TEST_FINISHED.
+     */
+    @route("/{id}/dry-run")
+    @post op dryRun(
+        @path id: integer,
+    ): {
+        @Http.statusCode statusCode: 202;
+    } | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        @Http.statusCode statusCode: 409;
+        @body error: BaseException;
+    };
+
+    /**
+     * Pauses a running batch (IN_PROGRESS -> PAUSED). The stop takes effect
+     * between items; the item in flight is allowed to finish.
+     */
+    @route("/{id}/pause")
+    @post op pause(
+        @path id: integer,
+    ): {
+        @Http.statusCode statusCode: 200;
+    } | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        @Http.statusCode statusCode: 409;
+        @body error: BaseException;
+    };
+
+    /**
+     * Manual cancellation - the batch moves to the terminal CANCELLED state.
+     */
+    @route("/{id}/cancel")
+    @post op cancel(
+        @path id: integer,
+    ): {
+        @Http.statusCode statusCode: 200;
+    } | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        @Http.statusCode statusCode: 409;
+        @body error: BaseException;
+    };
+
+    /**
+     * Deletes a batch. Allowed only for batches in PREPARATION or in a
+     * terminal state (FINISHED / CANCELLED).
+     */
+    @route("/{id}")
+    @delete op remove(
+        @path id: integer,
+    ): {
+        @Http.statusCode statusCode: 204;
+    } | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        @Http.statusCode statusCode: 409;
+        @body error: BaseException;
+    };
+
+    /**
+     * Items of the batch, ordered by exec order.
+     */
+    @route("/{id}/items")
+    @get op listItems(
+        @path id: integer,
+    ): ImportItem[] | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Uploads one source file into the batch. Also the entry point for a
+     * multi-file selection in the UI - the client calls this once per file.
+     */
+    @route("/{id}/items/upload")
+    @post op uploadItem(
+        @path id: integer,
+        @multipartBody body: UploadFileBody,
+        @header contentType: "multipart/form-data",
+    ): {
+        @Http.statusCode statusCode: 201;
+        @body item: ImportItem;
+    } | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        @Http.statusCode statusCode: 409;
+        @body error: BaseException;
+    };
+
+    /**
+     * Unpacks a ZIP container - each contained file becomes its own item.
+     * Nested directories are not walked as a tree; their files are stored
+     * flat (name without path).
+     */
+    @route("/{id}/items/upload-zip")
+    @post op uploadZip(
+        @path id: integer,
+        @multipartBody body: UploadZipBody,
+        @header contentType: "multipart/form-data",
+    ): {
+        @Http.statusCode statusCode: 201;
+        @body items: ImportItem[];
+    } | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        @Http.statusCode statusCode: 409;
+        @body error: BaseException;
+    };
+
+    /**
+     * Adds regular files from the given server-side folder to the batch. The path
+     * is interpreted relative to the configured base directory
+     * (elza.import.batchInputDir); a path that would escape it is rejected. If
+     * params.files is empty or omitted, every file in the folder is added.
+     */
+    @route("/{id}/items/import-folder")
+    @post op importFolder(
+        @path id: integer,
+        @body params: ImportFromFolder,
+    ): {
+        @Http.statusCode statusCode: 201;
+        @body items: ImportItem[];
+    } | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        @Http.statusCode statusCode: 409;
+        @body error: BaseException;
+    };
+
+    /**
+     * Lists direct children (subfolders and files) of a folder inside the
+     * configured base directory. Used by the folder picker in the UI.
+     */
+    @route("/server-folder")
+    @get op listServerFolder(
+        @query path?: string,
+    ): {
+        @Http.statusCode statusCode: 200;
+        @body entries: ImportServerFolderEntry[];
+    } | {
+        @Http.statusCode statusCode: 409;
+        @body error: BaseException;
+    };
+
+    /**
+     * Removes an item from its batch. Allowed only while the batch is in
+     * PREPARATION and only for items that were not already imported.
+     */
+    @route("/items/{itemId}")
+    @delete op removeItem(
+        @path itemId: integer,
+    ): {
+        @Http.statusCode statusCode: 204;
+    } | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        @Http.statusCode statusCode: 409;
+        @body error: BaseException;
+    };
+
+    /**
+     * Downloads the original source file of the item. If the file is no
+     * longer in DMS (for example after the retention window closed), 404.
+     */
+    @route("/items/{itemId}/download")
+    @get op downloadItem(
+        @path itemId: integer,
+    ): {
+        @Http.statusCode statusCode: 200;
+        @header contentDisposition: string;
+        @body file: bytes;
+    } | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Full failure detail of an item (long stack trace and the like).
+     * Returned only for items in the ERROR state.
+     */
+    @route("/items/{itemId}/error")
+    @get op itemError(
+        @path itemId: integer,
+    ): ImportItemError | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Recorded outcomes of a successful item (the imp_item_result rows).
+     */
+    @route("/items/{itemId}/results")
+    @get op itemResults(
+        @path itemId: integer,
+    ): ImportItemResult[] | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
 }
 
 @tag("daos")
@@ -3052,17 +3701,36 @@ model AiRequestActivity {
     /** Stable id of the step within the exchange (the provider's tool-call id). */
     id: string;
 
-    /** TOOL_CALL (open set). */
+    /** TOOL_CALL | PREPARATION (open set). */
     kind: string;
 
-    /** Tool name for TOOL_CALL: `searchNodes`, `getItemTypes`, … */
+    /**
+     * Tool name for TOOL_CALL: a client tool Elza executed (`searchNodes`,
+     * `getItemTypes`, …) or a provider-internal one (`search_knowledge`, …);
+     * an unknown name renders as a generic step.
+     */
     tool?: string;
+
+    /**
+     * Localized, display-ready name of a provider-internal step (from the
+     * task-event stream); render in place of `tool`. Absent for a client tool
+     * Elza executed itself — the client renders those from `tool`.
+     */
+    label?: string;
 
     /** RUNNING | DONE | ERROR (open set). */
     state: string;
 
     /** Data-like input summary: the fulltext query / the rule-set code. */
     query?: string;
+
+    /**
+     * Localized, display-ready one-line detail of a provider-internal step: the
+     * call's key arguments, or a short result summary once DONE. Secondary text
+     * next to `label`; for a client tool the client shows `query`/`resultCount`
+     * instead.
+     */
+    summary?: string;
 
     /** Result size once DONE: search hits, dictionary entries. */
     resultCount?: int64;
@@ -3094,6 +3762,12 @@ model AiActivityLink {
  * set (`queued`, `running`, `awaiting_tools`, `done`, `error`, `cancelled`);
  * a client MUST treat an unknown state as "in progress". `blocks` is present
  * when `done` (see AiDisplayBlock for the rendering contract).
+ *
+ * Live updates: while an exchange runs, the server pushes this object to the
+ * conversation owner's per-user WebSocket topic `/topic/user/{userId}` as
+ * `{eventType: "AI_REQUEST_UPDATE", conversationId, request}`. Each message is
+ * a complete snapshot — the client replaces the request by `id` (delivery is
+ * best effort; the client refetches the conversation on reconnect).
  */
 model AiRequest {
     id: integer;
@@ -3111,7 +3785,15 @@ model AiRequest {
     @minValue(0)
     @maxValue(100)
     progressPercent?: float32;
-    /** User-visible steps of the exchange (tool executions), oldest first. */
+    /**
+     * Accumulated streamed answer text of a running request (provider protocol
+     * 0.8+, `answer_delta` events). Provisional: it may still be superseded by
+     * the provider — the authoritative answer arrives in `blocks` when state =
+     * done. Absent once terminal, when the provider streams nothing, or after a
+     * server restart mid-exchange.
+     */
+    partialAnswer?: string;
+    /** User-visible steps of the exchange (tool executions, preparation steps), oldest first. */
     activities?: AiRequestActivity[];
     promptVersion?: string;
     /** Profile/model used for this exchange (an `AiProfile.code`); absent = provider default. */
@@ -3154,7 +3836,12 @@ model AiContextFund extends AiContextObject {
 model AiContextNode extends AiContextObject {
     @invisible(Lifecycle)
     type: AiContextType.NODE;
-    fundId: int32;
+    /**
+     * `ArrFund.fundId`. Present for a UI-context node or a search hit; absent
+     * on a link built from a bare object reference (a tool event's `refs`),
+     * where only the node id is known and the fund is not needed to navigate.
+     */
+    fundId?: int32;
     fundVersionId?: int32;
     nodeId: int32;
 }
@@ -3225,9 +3912,17 @@ model AiRequestCreate {
 /** One step of an exchange's log — the transparency view ("what was sent/received"). */
 model AiRequestEvent {
     id: integer;
-    /** SUBMIT | TOOL_CALLS | TOOL_RESULTS | OUTPUT | ERROR | CANCEL (open set). */
+    /**
+     * SUBMIT | TOOL_CALLS | TOOL_RESULTS | OUTPUT | ERROR | CANCEL (open set).
+     * Lowercase codes (`phase`, `tool_call`, `tool_result`, `model_round`, …)
+     * are events observed from the provider's task-event stream (protocol
+     * 0.8+), stored as received.
+     */
     eventType: string;
-    /** Event payload (JSON string); shape depends on eventType. */
+    /**
+     * Event payload (JSON string); shape depends on eventType. For provider
+     * wire codes this is the received `TaskEvent` object.
+     */
     data?: string;
     createDate: utcDateTime;
 }
@@ -5931,6 +6626,11 @@ namespace ElzaAPI.Aip {
       */
      @route("/find/filter")
      @post op findByFilter(
+        /**
+         * AIP the client wants to see; the page holding it is returned instead of the
+         * requested offset, in the sorting and filtering of the request
+         */
+        @query focusAipId?: integer;
         /** search parameters - filters, paging and sorting */
         @body params: SearchParams;
      ) : {
@@ -7152,6 +7852,7 @@ namespace ElzaAPI.Tasks {
     version: "1.0.0",
 })
 @tagMetadata("admin", #{description: "Administrativní funkce"})
+@tagMetadata("user", #{description: "Nastavení přihlášeného uživatele"})
 @tagMetadata("daos", #{description: "Digitální archivní objekty"})
 @tagMetadata("externalsystems", #{description: "Externí systémy"})
 @tagMetadata("aiprovider", #{description: "Externí AI systémy (poskytovatelé AI služeb)"})
@@ -7171,13 +7872,65 @@ namespace ElzaAPI.Tasks {
 @tagMetadata("rules", #{description: "Pravidla popisu archiválií (typy atributů, datové typy, …)"})
 @tagMetadata("output", #{description: "Výstupy archivních souborů"})
 @tagMetadata("institution", #{description: "Správa institucí"})
+@tagMetadata("import-batches", #{description: "Import batches (administration)"})
+@server("http://localhost:8080", "Devel server")
+@server("http://localhost", "Výchozí server")
+
+// Modely, které nejsou přímo referencované z žádného operation,
+// ale musí být v OpenAPI kvůli generovanému klientu.
 namespace ElzaAPI {
-    // add models not used in operations
-    union __Types {
-        a: NodeUpdateItem,
-        b: ItemTypeGroup,
-        c: ExtEntityBinding
+    /**
+     * Náhrada za třídu `ArrUpdateItemVO`
+     */
+    model NodeUpdateItem {
+        /** operation */
+        updateOp: UpdateOp;
+        /** item to update */
+        item: NodeItem;
     }
-    @route("/__types") @get
-    op __typeRegistry(): __Types;
+
+    /**
+     * Skupina zapouzdrující typy hodnot atributů pro UI
+     *
+     * Náhrada za třídu `ItemTypeGroupVO`
+     */
+    model ItemTypeGroup {
+        code: string;
+        name: string;
+        types?: FormItemType[];
+    }
+
+    /**
+     * One binding of an access point to an external system. Represents the
+     * entity's identity in that system together with sync/state metadata and
+     * (since CAMv2) per-revision metadata and issue summary.
+     */
+    model ExtEntityBinding {
+        id: integer;
+        externalSystemId: integer;
+        /**
+         * Code of the external system. Marked deprecated on the Java VO, but
+         * still load-bearing for several action calls — kept until the callers
+         * migrate to externalSystemId.
+         */
+        externalSystemCode: string;
+        /** Identifier of the entity in the external system. */
+        value: string;
+        extState?: string;
+        extRevision?: string;
+        extUser?: string;
+        extReplacedBy?: string;
+        detailUrlExtReplacedBy?: string;
+        syncState?: SyncState;
+        syncProgress?: SyncProgress;
+        bindingItemList?: ExtItemBinding[];
+
+        // CAMv2 additions
+        extMetadataRevision?: string;
+        extPrevRevision?: string;
+        /** Creation time of this revision in the external system. */
+        extCreatedAt?: utcDateTime;
+        /** Pre-computed badge for the warning icon. Absent = no issues. */
+        issueSummary?: ExtIssueSummary;
+    }
 }

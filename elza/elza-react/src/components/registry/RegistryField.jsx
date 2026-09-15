@@ -1,7 +1,18 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {WebApi} from 'actions/index.jsx';
-import {AbstractReactComponent, Autocomplete, i18n, Icon, TooltipTrigger} from 'components/shared';
+import {AbstractReactComponent, Autocomplete, Icon, TooltipTrigger} from 'components/shared';
+import { defineMessages } from 'react-intl';
+import { getIntl } from 'components/shared/lang/intlInstance';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    addNewRegistry: { id: 'registry.addNewRegistry', defaultMessage: 'Nová entita' },
+    visibleCount: { id: 'registryField.visibleCount', defaultMessage: 'Zobrazeno {0} z {1} záznamů' },
+    noItemsFound: { id: 'registryField.noItemsFound', defaultMessage: 'Záznamy nebyly nalezeny.' },
+    undefinedValue: { id: 'subNodeForm.descItemType.undefinedValue', defaultMessage: 'výjimka' },
+    emptyOption: { id: 'registryField.emptyOption', defaultMessage: 'Prázdný' },
+});
 
 import {Button} from '../ui';
 import {connect} from 'react-redux';
@@ -140,14 +151,14 @@ class RegistryField extends AbstractReactComponent {
                     <div className="create-record">
                         <Button onClick={this.handleCreateRecord} type="button">
                             <Icon glyph="fa-plus" />
-                            {i18n('registry.addNewRegistry')}
+                            {getIntl().formatMessage(messages.addNewRegistry)}
                         </Button>
                     </div>
                 )}
                 {count > AUTOCOMPLETE_REGISTRY_LIST_SIZE && (
-                    <div className="items-count">{i18n('registryField.visibleCount', registryList.length, count)}</div>
+                    <div className="items-count">{getIntl().formatMessage(messages.visibleCount, { 0: registryList.length, 1: count })}</div>
                 )}
-                {count === 0 && <div className="items-count">{i18n('registryField.noItemsFound')}</div>}
+                {count === 0 && <div className="items-count">{getIntl().formatMessage(messages.noItemsFound)}</div>}
             </div>
         ) : null;
     };
@@ -216,12 +227,12 @@ class RegistryField extends AbstractReactComponent {
 
         let tmpVal = '';
         if (this.props.undefined) {
-            tmpVal = i18n('subNodeForm.descItemType.undefinedValue');
+            tmpVal = getIntl().formatMessage(messages.undefinedValue);
         }
 
         let items = this.state.registryList;
         if (addEmpty) {
-            items = [{id: -1, name: 'Prázdný'}, ...items];
+            items = [{id: -1, name: getIntl().formatMessage(messages.emptyOption)}, ...items];
         }
 
         return (

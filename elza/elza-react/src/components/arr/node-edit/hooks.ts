@@ -13,7 +13,12 @@ import { EventType } from "typings/websocket";
 import { AnyMessage } from "typings/websocket/Message";
 import { useAppSelector } from "utils/hooks/useAppSelector";
 import { FormItem, getForcedItemTypes, useKeyGen } from "../item-form/formItems";
-import { createEmptyDescItem } from "../item-form/desc-items/utils";
+import {
+  clearLocalStorageItemValues,
+  clearStaleNewItemValues,
+  createEmptyDescItem,
+  moveLocalStorageItemValues,
+} from "../item-form/desc-items/utils";
 import { consumePendingTemplateCallback } from "./pendingTemplateItems";
 
 function useWSNodeChanges(nodeId: number, callback: (version: number) => void) {
@@ -184,40 +189,51 @@ export function useNodeFormData(
       });
       setArrPerm(data.formData.arrPerm);
       setNodeData(data.node);
-      setAddedFormItems((prevAddedFormItems) => {
-        const survivingItems = prevAddedFormItems.filter(({ localId }) => {
-          return !markedForClean.find(
-            ({ localId: _localId }) => localId === _localId,
-          );
-        });
-
-        // Recompute the position of each locally added empty item so it sits after
-        // the items currently known to the server (and any forced items) of the same
-        // type. Their stored position can otherwise go stale when background changes
-        // (copy from sibling, another user's edits) introduce new server items.
-        const otherItems = [
-          ...(data.formData.descItems || []),
-          ..._forcedDescItems,
-        ];
-        const maxPositionByType = new Map<number, number>();
-        for (const otherItem of otherItems) {
-          const currentMax = maxPositionByType.get(otherItem.itemTypeId) ?? 0;
-          maxPositionByType.set(
-            otherItem.itemTypeId,
-            Math.max(currentMax, otherItem.position),
-          );
-        }
-
-        return survivingItems.map((formItem) => {
-          const nextPosition =
-            (maxPositionByType.get(formItem.item.itemTypeId) ?? 0) + 1;
-          maxPositionByType.set(formItem.item.itemTypeId, nextPosition);
-          return {
-            ...formItem,
-            item: { ...formItem.item, position: nextPosition },
-          };
-        });
+      const survivingItems = addedFormItems.filter(({ localId }) => {
+        return !markedForClean.find(
+          ({ localId: _localId }) => localId === _localId,
+        );
       });
+
+      // Recompute the position of each locally added empty item so it sits after
+      // the items currently known to the server (and any forced items) of the same
+      // type. Their stored position can otherwise go stale when background changes
+      // (copy from sibling, another user's edits) introduce new server items.
+      const otherItems = [
+        ...(data.formData.descItems || []),
+        ..._forcedDescItems,
+      ];
+      const maxPositionByType = new Map<number, number>();
+      for (const otherItem of otherItems) {
+        const currentMax = maxPositionByType.get(otherItem.itemTypeId) ?? 0;
+        maxPositionByType.set(
+          otherItem.itemTypeId,
+          Math.max(currentMax, otherItem.position),
+        );
+      }
+
+      const repositionedItems = survivingItems.map((formItem) => {
+        const nextPosition =
+          (maxPositionByType.get(formItem.item.itemTypeId) ?? 0) + 1;
+        maxPositionByType.set(formItem.item.itemTypeId, nextPosition);
+        return { ...formItem, item: { ...formItem.item, position: nextPosition } };
+      });
+
+      // The position is part of the storage key of an unsaved item, so the pending values have
+      // to follow the items to their new keys.
+      moveLocalStorageItemValues(
+        survivingItems.map(({ item }, index) => ({
+          fromItem: item,
+          toItem: repositionedItems[index].item,
+        })),
+      );
+
+      clearStaleNewItemValues(nodeId, [
+        ..._forcedDescItems,
+        ...repositionedItems.map(({ item }) => item),
+      ]);
+
+      setAddedFormItems(repositionedItems);
     },
     [
       addedFormItems,
@@ -335,6 +351,7 @@ export function useNodeFormData(
     // Item has data, delete from server
     if (item.data?.dataId != undefined || item.undefined) {
       await Api.descItems.descItemDeleteDescItem(fondsVersionId, {...item, data: undefined});
+      clearLocalStorageItemValues(item);
       return;
     }
 
@@ -347,6 +364,7 @@ export function useNodeFormData(
       const _descItems = [...addedFormItems];
       _descItems.splice(index, 1);
       setAddedFormItems(_descItems);
+      clearLocalStorageItemValues(item);
       return;
     }
     // If the item is not found in the added items, check the forced items
@@ -366,6 +384,7 @@ export function useNodeFormData(
       );
       _descItems.splice(index, 1, { localId, item: emptyDescItem });
       setForcedFormItems(_descItems);
+      clearLocalStorageItemValues(_descItem);
     }
     return;
   }
@@ -389,6 +408,10 @@ export function useNodeFormData(
       setIsSaving(false);
     }
     if (_data) {
+      // Drop the pending value by the item that was sent, not by the one that came back: the
+      // key of an unsaved item holds its position and the server can create it on another.
+      clearLocalStorageItemValues(item);
+
       setMarkedForClean([
         ...markedForClean,
         { localId, id: _data.item.itemObjectId },

@@ -3,7 +3,10 @@ import {InjectedFormProps, reduxForm, FormErrors, Form as RForm, Field, Decorate
 import {ArrRefTemplateVO} from '../../types';
 import {Form, Modal, Button} from 'react-bootstrap';
 import FormInputField from '../shared/form/FormInputField';
-import i18n from '../i18n';
+import { FormattedMessage } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { getIntl } from 'components/shared/lang/intlInstance';
+import { templateMessages } from './templateMessages';
 import DescItemTypeField from './DescItemTypeField';
 import FF from '../shared/form/FF';
 
@@ -20,18 +23,18 @@ class ArrRefTemplateForm extends React.Component<Props> {
                         name="name"
                         type="text"
                         component={FormInputField}
-                        label={i18n('arr.refTemplates.detail.name')}
+                        label={<FormattedMessage {...templateMessages.refTemplatesDetailName} />}
                     />
                     <FF
                         name="itemTypeId"
                         field={DescItemTypeField}
-                        label={i18n('arr.refTemplates.detail.itemTypeId')}
+                        label={<FormattedMessage {...templateMessages.refTemplatesDetailItemTypeId} />}
                         useIdAsValue
                     />
                 </Modal.Body>
                 <Modal.Footer>
                     <Button type="submit" variant="outline-secondary" disabled={pristine || submitting}>
-                        {i18n('global.action.update')}
+                        {<FormattedMessage {...globalMessages.save} />}
                     </Button>
                 </Modal.Footer>
             </Form>
@@ -45,13 +48,13 @@ export default reduxForm<ArrRefTemplateVO, OwnProps, FormErrors<ArrRefTemplateVO
         values: ArrRefTemplateVO,
         props: DecoratedFormProps<ArrRefTemplateVO, OwnProps, FormErrors<ArrRefTemplateVO>>,
     ): FormErrors<ArrRefTemplateVO, FormErrors<ArrRefTemplateVO>> {
-        const errors: FormErrors<ArrRefTemplateVO, FormErrors<ArrRefTemplateVO>> = {};
+        const errors: Record<string, string> = {};
         if (!values.name) {
-            errors.name = i18n('global.validation.required');
+            errors.name = getIntl().formatMessage(globalMessages.validationRequired);
         }
         if (!values.itemTypeId) {
-            errors.itemTypeId = i18n('global.validation.required');
+            errors.itemTypeId = getIntl().formatMessage(globalMessages.validationRequired);
         }
-        return errors;
+        return errors as FormErrors<ArrRefTemplateVO, FormErrors<ArrRefTemplateVO>>;
     },
 })(ArrRefTemplateForm);

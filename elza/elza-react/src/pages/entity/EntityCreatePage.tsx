@@ -13,7 +13,13 @@ import { useLocation } from "react-router-dom";
 import { WebApi } from '../../actions';
 import { modalDialogShow } from '../../actions/global/modalDialog.jsx';
 import CreateAccessPointModal, { CreateAccessPointModalFields } from '../../components/registry/modal/CreateAccessPointModal';
-import { i18n } from '../../components/shared';
+import {} from '../../components/shared';
+import { defineMessages, useIntl } from 'react-intl';
+
+// Id je převzaté z legacy katalogu beze změny.
+const messages = defineMessages({
+    addRegistry: { id: 'registry.addRegistry', defaultMessage: 'Nová archivní entita' },
+});
 import { AP_VIEW_SETTINGS } from '../../constants';
 import { DetailActions } from '../../shared/detail';
 import PageLayout from "../shared/layout/PageLayout";
@@ -43,6 +49,7 @@ const replaceStrings = (
 }
 
 export const EntityCreatePage:FC = () => {
+    const intl = useIntl();
     const dispatch = useThunkDispatch();
     const query = useQuery();
     const responseUrl = query.get("response");
@@ -95,7 +102,7 @@ export const EntityCreatePage:FC = () => {
         dispatch(
             modalDialogShow(
                 this,
-                i18n('registry.addRegistry'),
+                intl.formatMessage(messages.addRegistry),
                 <CreateAccessPointModal
                     initialValues={{}}
                     onSubmit={handleSubmit}

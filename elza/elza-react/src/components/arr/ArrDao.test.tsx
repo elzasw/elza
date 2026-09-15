@@ -7,6 +7,7 @@ import { server } from 'test/mocks/server';
 import { FluentDialogProvider } from 'components/shared/dialog/FluentModalDialog';
 import { ArrDaoFileVO, ArrDaoVO } from 'typings/dao';
 import { Fund } from 'typings/store';
+import { globalMessages } from 'components/shared/lang';
 import { ArrDao } from './ArrDao';
 
 /**
@@ -78,13 +79,17 @@ describe('ArrDao', () => {
         await vi.waitFor(() => expect(onUnlink).toHaveBeenCalledTimes(1));
     });
 
-    it('storno v potvrzení nechá vazbu být', async () => {
+    it('zrušení v potvrzení nechá vazbu být', async () => {
         const onUnlink = vi.fn();
 
         renderInProvider(<ArrDao dao={dao} fund={fund} readMode={false} onUnlink={onUnlink} />);
 
         fireEvent.click(document.querySelector('.dao-actions .right button') as HTMLElement);
-        fireEvent.click(await screen.findByRole('button', { name: 'Storno' }));
+        // Popisek bereme ze sdíleného deskriptoru, ne jako literál: test pak
+        // ověřuje chování, ne aktuální znění slova.
+        fireEvent.click(
+            await screen.findByRole('button', { name: globalMessages.cancel.defaultMessage as string }),
+        );
 
         await vi.waitFor(() => expect(screen.queryByText(UNLINK_CONFIRM)).not.toBeInTheDocument());
         expect(onUnlink).not.toHaveBeenCalled();

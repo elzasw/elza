@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns2:edx xmlns:ns2="http://elza.tacr.cz/schema/v2">
+  <aps>
+    <ap>
+      <ape id="ap-eid-1" t="PUBLIC_ADMINISTRATION">
+        <eid>
+          <t>TSTEID</t>
+          <v>1001</v>
+        </eid>
+      </ape>
+      <frgs>
+        <frg fid="ap-eid-1-name" t="PT_NAME">
+          <ds t="NM_MAIN">
+            <v>Entita s externím identifikátorem 1</v>
+          </ds>
+          <de t="NM_LANG" s="LNG_cze"/>
+        </frg>
+      </frgs>
+    </ap>
+    <ap>
+      <ape id="ap-eid-2" t="PUBLIC_ADMINISTRATION">
+        <eid>
+          <t>TSTEID</t>
+          <v>1002</v>
+        </eid>
+      </ape>
+      <frgs>
+        <frg fid="ap-eid-2-name" t="PT_NAME">
+          <ds t="NM_MAIN">
+            <v>Entita s externím identifikátorem 2</v>
+          </ds>
+          <de t="NM_LANG" s="LNG_cze"/>
+        </frg>
+      </frgs>
+    </ap>
+  </aps>
+</ns2:edx>

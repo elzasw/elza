@@ -318,4 +318,286 @@
         </sql>
     </changeSet>
 
+    <changeSet id="20260903130000" author="ppy">
+        <!-- Retry of a failed package download. A download failure means nothing of the package
+             arrived, so the item stays pending and is tried again on a later processor cycle;
+             attempt_count says how many times it failed so far. The queue is read in the order
+             of the count, so every failure sends the item behind its peers and a repeatedly
+             failing download can never starve the fresh items behind it. -->
+        <addColumn tableName="da_sync_queue_item">
+            <column name="attempt_count" type="int" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260904100000" author="ppy">
+        <!-- metadata_load and complete_aip_load describe the package stored in the local cache and
+             are written when the package is stored. Rows written earlier say what was requested
+             rather than what arrived; they are recomputed from the cache of the AIP: a metadata
+             or complete package means the metadata are present, a complete package means the
+             complete AIP is present. -->
+        <update tableName="da_aip_state">
+            <column name="metadata_load" valueBoolean="true"/>
+            <where>delete_change_id IS NULL AND EXISTS (
+                SELECT 1 FROM da_local_cache c
+                  JOIN da_aip_state cs ON cs.aip_state_id = c.aip_state_id
+                  JOIN da_sync_queue_item q ON q.sync_queue_item_id = c.sync_queue_item_id
+                 WHERE cs.aip_id = da_aip_state.aip_id
+                   AND c.aip_type IN ('METADATA_BASE', 'AIP_BASE')
+                   AND q.state IN ('UPDATE', 'IMPORT_NEW', 'IMPORT_OK', 'IMPORT_ERROR'))</where>
+        </update>
+        <update tableName="da_aip_state">
+            <column name="metadata_load" valueBoolean="false"/>
+            <where>delete_change_id IS NULL AND NOT EXISTS (
+                SELECT 1 FROM da_local_cache c
+                  JOIN da_aip_state cs ON cs.aip_state_id = c.aip_state_id
+                  JOIN da_sync_queue_item q ON q.sync_queue_item_id = c.sync_queue_item_id
+                 WHERE cs.aip_id = da_aip_state.aip_id
+                   AND c.aip_type IN ('METADATA_BASE', 'AIP_BASE')
+                   AND q.state IN ('UPDATE', 'IMPORT_NEW', 'IMPORT_OK', 'IMPORT_ERROR'))</where>
+        </update>
+        <update tableName="da_aip_state">
+            <column name="complete_aip_load" valueBoolean="true"/>
+            <where>delete_change_id IS NULL AND EXISTS (
+                SELECT 1 FROM da_local_cache c
+                  JOIN da_aip_state cs ON cs.aip_state_id = c.aip_state_id
+                  JOIN da_sync_queue_item q ON q.sync_queue_item_id = c.sync_queue_item_id
+                 WHERE cs.aip_id = da_aip_state.aip_id
+                   AND c.aip_type = 'AIP_BASE'
+                   AND q.state IN ('UPDATE', 'IMPORT_NEW', 'IMPORT_OK', 'IMPORT_ERROR'))</where>
+        </update>
+        <update tableName="da_aip_state">
+            <column name="complete_aip_load" valueBoolean="false"/>
+            <where>delete_change_id IS NULL AND NOT EXISTS (
+                SELECT 1 FROM da_local_cache c
+                  JOIN da_aip_state cs ON cs.aip_state_id = c.aip_state_id
+                  JOIN da_sync_queue_item q ON q.sync_queue_item_id = c.sync_queue_item_id
+                 WHERE cs.aip_id = da_aip_state.aip_id
+                   AND c.aip_type = 'AIP_BASE'
+                   AND q.state IN ('UPDATE', 'IMPORT_NEW', 'IMPORT_OK', 'IMPORT_ERROR'))</where>
+        </update>
+    </changeSet>
+
+    <changeSet id="20260907141500" author="sergey.iryupin">
+        <!-- Import batch: a user-configured plan for bringing external data in. The abstract row
+             lives here; the concrete parameters live in the imp_batch_<kind> subtype tables.
+             The kind (import_type) doubles as the JPA discriminator. -->
+        <createTable tableName="imp_batch">
+            <column name="batch_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_imp_batch" nullable="false"/>
+            </column>
+            <column name="import_type" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="nvarchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="int">
+                <constraints foreignKeyName="fk_imp_batch_created_by" referencedTableName="usr_user" referencedColumnNames="user_id" nullable="true"/>
+            </column>
+            <column name="executed_at" type="timestamp with time zone"/>
+            <column name="executed_by_user_id" type="int">
+                <constraints foreignKeyName="fk_imp_batch_executed_by" referencedTableName="usr_user" referencedColumnNames="user_id" nullable="true"/>
+            </column>
+            <column name="state" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_state_change_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="skip_error" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="keep_files" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="files_deleted_at" type="timestamp with time zone"/>
+        </createTable>
+
+        <!-- EDX2 subtype: how funds are matched (or created) when the payload is parsed. -->
+        <createTable tableName="imp_batch_edx">
+            <column name="batch_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_imp_batch_edx" nullable="false"
+                             foreignKeyName="fk_imp_batch_edx_batch" referencedTableName="imp_batch" referencedColumnNames="batch_id" deleteCascade="true"/>
+            </column>
+            <column name="fund_import_strategy" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fund_pair_key" type="nvarchar(50)"/>
+            <column name="ignore_root_nodes" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="scope_id" type="int">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+
+        <!-- CSV subtype: adds description items into existing nodes; the target fund is
+             resolved from each row's node UUID at import time, so no fund reference is stored
+             on the batch itself. -->
+        <createTable tableName="imp_batch_desc_csv">
+            <column name="batch_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_imp_batch_desc_csv" nullable="false"
+                             foreignKeyName="fk_imp_batch_desc_csv_batch" referencedTableName="imp_batch" referencedColumnNames="batch_id" deleteCascade="true"/>
+            </column>
+            <column name="separator" type="nvarchar(50)"/>
+            <column name="encoding" type="nvarchar(50)"/>
+        </createTable>
+
+        <!-- One step of an import batch, normally one input file. -->
+        <createTable tableName="imp_item">
+            <column name="item_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_imp_item" nullable="false"/>
+            </column>
+            <column name="batch_id" type="int">
+                <constraints foreignKeyName="fk_imp_item_batch" referencedTableName="imp_batch" referencedColumnNames="batch_id" nullable="false" deleteCascade="true"/>
+            </column>
+            <column name="dms_id" type="int">
+                <constraints foreignKeyName="fk_imp_item_dms" referencedTableName="dms_file" referencedColumnNames="file_id" nullable="true"/>
+            </column>
+            <column name="item_name" type="nvarchar(250)"/>
+            <column name="state" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="exec_order" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="int">
+                <constraints foreignKeyName="fk_imp_item_created_by" referencedTableName="usr_user" referencedColumnNames="user_id" nullable="true"/>
+            </column>
+            <column name="executed_at" type="timestamp with time zone"/>
+            <column name="executed_by_user_id" type="int">
+                <constraints foreignKeyName="fk_imp_item_executed_by" referencedTableName="usr_user" referencedColumnNames="user_id" nullable="true"/>
+            </column>
+            <column name="finished_at" type="timestamp with time zone"/>
+            <column name="error" type="${type.text}"/>
+            <column name="error_detail" type="${type.text}"/>
+            <column name="fund_id" type="int">
+                <constraints nullable="true"/>
+            </column>
+            <column name="nodes_created" type="int" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="nodes_updated" type="int" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="aps_created" type="int" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="aps_paired" type="int" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex tableName="imp_item" indexName="ix_imp_item_batch">
+            <column name="batch_id"/>
+        </createIndex>
+
+        <!-- One recorded outcome of an imp_item; several rows per item are possible. -->
+        <createTable tableName="imp_item_result">
+            <column name="item_result_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_imp_item_result" nullable="false"/>
+            </column>
+            <column name="item_id" type="int">
+                <constraints foreignKeyName="fk_imp_item_result_item" referencedTableName="imp_item" referencedColumnNames="item_id" nullable="false" deleteCascade="true"/>
+            </column>
+            <column name="result_type" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fund_id" type="int">
+                <constraints foreignKeyName="fk_imp_item_result_fund" referencedTableName="arr_fund" referencedColumnNames="fund_id" nullable="true" deleteCascade="true"/>
+            </column>
+            <column name="fund_change_id" type="int">
+                <constraints foreignKeyName="fk_imp_item_result_fund_change" referencedTableName="arr_change" referencedColumnNames="change_id" nullable="true" deleteCascade="true"/>
+            </column>
+            <column name="ap_change_id" type="int">
+                <constraints foreignKeyName="fk_imp_item_result_ap_change" referencedTableName="ap_change" referencedColumnNames="change_id" nullable="true" deleteCascade="true"/>
+            </column>
+        </createTable>
+        <createIndex tableName="imp_item_result" indexName="ix_imp_item_result_item">
+            <column name="item_id"/>
+        </createIndex>
+
+        <!-- Import batches run off the request thread, one item per transaction, and are picked
+             up the same way as the other kinds of async work. Widen `type` from ten characters
+             to the standard fifty, so the new BATCH_IMPORT value fits, and add the batch link
+             that carries the request. -->
+        <modifyDataType tableName="arr_async_request" columnName="type" newDataType="nvarchar(50)"/>
+        <addColumn tableName="arr_async_request">
+            <column name="batch_id" type="int">
+                <constraints foreignKeyName="fk_arr_async_request_batch"
+                             referencedTableName="imp_batch" referencedColumnNames="batch_id"/>
+            </column>
+        </addColumn>
+
+        <!-- Removing an archival file leaves items in place with fund_id cleared; removing a
+             scope leaves EDX2 batches usable but without a scope. Both are per the specification
+             of the import module. -->
+        <addForeignKeyConstraint constraintName="fk_imp_batch_edx_scope"
+                                 baseTableName="imp_batch_edx" baseColumnNames="scope_id"
+                                 referencedTableName="ap_scope" referencedColumnNames="scope_id"
+                                 onDelete="SET NULL"/>
+        <addForeignKeyConstraint constraintName="fk_imp_item_fund"
+                                 baseTableName="imp_item" baseColumnNames="fund_id"
+                                 referencedTableName="arr_fund" referencedColumnNames="fund_id"
+                                 onDelete="SET NULL"/>
+    </changeSet>
+
+    <changeSet id="20260910120000" author="sergey.iryupin">
+        <!-- Personal API keys: alternative authentication for machine clients. One row per key,
+             a user may have many. Only the SHA-256 hash of the secret is stored; the full token
+             is shown to the user once, when the key is created, and cannot be retrieved after. -->
+        <createTable tableName="usr_api_key">
+            <column name="api_key_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_usr_api_key" nullable="false"/>
+            </column>
+            <column name="user_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_usr_api_key_usr_user"
+                             referencedTableName="usr_user"
+                             referencedColumnNames="user_id"/>
+            </column>
+            <!-- User-facing name of the key, e.g. "Publikace PROD" -->
+            <column name="name" type="nvarchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <!-- Public identifier (12 chars base62). Used to look the row up before the secret
+                 is verified, and shown in UI and audit log as elza_<key_id>. -->
+            <column name="key_id" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <!-- SHA-256 of the secret part, hex-encoded (64 chars). -->
+            <column name="secret_hash" type="nvarchar(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="create_date" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="expire_date" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <!-- Last successful authentication with this key. Updated at most once per minute. -->
+            <column name="last_used_date" type="timestamp with time zone"/>
+            <column name="revoked_date" type="timestamp with time zone"/>
+            <column name="revoked_by_user_id" type="int">
+                <constraints foreignKeyName="fk_usr_api_key_revoked_by"
+                             referencedTableName="usr_user"
+                             referencedColumnNames="user_id"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="usr_api_key" indexName="ux_usr_api_key_key_id" unique="true">
+            <column name="key_id"/>
+        </createIndex>
+        <createIndex tableName="usr_api_key" indexName="ix_usr_api_key_user">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

@@ -1,7 +1,27 @@
 import React, { FC, useEffect, useState } from 'react';
 import UsageFormUntyped from './UsageForm';
 import * as types from 'actions/constants/ActionTypes';
-import {i18n} from 'components/shared';
+import {} from 'components/shared';
+import { FormattedMessage, defineMessages, useIntl } from 'react-intl';
+
+// Id jsou převzatá z legacy katalogu beze změny; "rejstříkové heslo" sjednoceno
+// na "archivní entita", jak se ta věc jmenuje ve zbytku aplikace.
+const messages = defineMessages({
+    replaceSuccess: { id: 'registry.replaceSuccess', defaultMessage: 'Archivní entita byla úspěšně nahrazena' },
+    inProgress: {
+        id: 'accesspoint.removeDuplicity.inProgress',
+        defaultMessage: 'Probíhá odstranění duplicity...',
+    },
+    resolve: { id: 'accesspoint.removeDuplicity.resolve', defaultMessage: 'Vyřešit duplicitu' },
+    replacingAccesspoint: {
+        id: 'accesspoint.removeDuplicity.replacingAccesspoint',
+        defaultMessage: 'Nahrazující přístupový bod',
+    },
+    replacedAccesspoint: {
+        id: 'accesspoint.removeDuplicity.replacedAccesspoint',
+        defaultMessage: 'K nahrazení',
+    },
+});
 import {WebApi} from '../../actions/WebApi';
 import HorizontalLoader from '../shared/loading/HorizontalLoader';
 import {addToastrSuccess} from '../shared/toastr/ToastrActions';
@@ -45,6 +65,7 @@ export const AccessPointDeleteForm:FC<{
     detail,
     onSubmitSuccess = () => {}
 }) => {
+    const intl = useIntl();
     const [data, setData] = useState<RegistryUsage | null>(null)
     const [inProgress, setInProgress] = useState(false);
     const dispatch = useDispatch();
@@ -58,7 +79,7 @@ export const AccessPointDeleteForm:FC<{
                 replaceType,
             }).then(() => {
                     onSubmitSuccess();
-                    dispatch(addToastrSuccess(i18n('registry.replaceSuccess')));
+                    dispatch(addToastrSuccess(intl.formatMessage(messages.replaceSuccess)));
                     dispatch(modalDialogHide());
                     setInProgress(false);
                 }).catch(() => {
@@ -86,7 +107,7 @@ export const AccessPointDeleteForm:FC<{
     if(inProgress){ return <div className="in-progress">
         <Icon glyph="fa-refresh" className="fa-spin"/>
         &nbsp;
-        {i18n('accesspoint.removeDuplicity.inProgress')}
+        {intl.formatMessage(messages.inProgress)}
     </div>}
 
     return <UsageForm
@@ -95,10 +116,10 @@ export const AccessPointDeleteForm:FC<{
         onReplace={handleReplace}
         onMerge={handleMerge}
         type="registry"
-        //replaceButtonText={`${i18n('accesspoint.removeDuplicity.resolve')}`}
-        replaceText={`${i18n('accesspoint.removeDuplicity.replacingAccesspoint')}:`}
+        //replaceButtonText={`${intl.formatMessage(messages.resolve)}`}
+        replaceText={`${intl.formatMessage(messages.replacingAccesspoint)}:`}
         replaceType="delete"
-        nameLabel={`${i18n('accesspoint.removeDuplicity.replacedAccesspoint')}:`}
+        nameLabel={`${intl.formatMessage(messages.replacedAccesspoint)}:`}
         data={data}
         />
 }

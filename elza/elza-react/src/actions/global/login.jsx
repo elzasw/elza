@@ -9,6 +9,9 @@ import { routerNavigate } from 'actions/router.jsx';
  * If yes, saves the returned detail to store.
  * If not, resets store to default.
  */
+/**
+ * @param {(logged: boolean) => void} callback dostane true, když je uživatel přihlášený
+ */
 export function checkUserLogged(callback = () => { }) {
     return (dispatch, getState) => {
         const state = getState();

@@ -3,7 +3,9 @@ import {InjectedFormProps, reduxForm, FormErrors, Field, DecoratedFormProps} fro
 import {ArrRefTemplateVO} from '../../types';
 import {Form, Modal, Button, Col} from 'react-bootstrap';
 import FormInputField from '../shared/form/FormInputField';
-import i18n from '../i18n';
+import { FormattedMessage } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { arrPanelMessages } from './panelMessages';
 import RefTemplateField from './RefTemplateField';
 import FF from '../shared/form/FF';
 import {WebApi} from '../../actions/WebApi';
@@ -31,13 +33,13 @@ class SyncNodes extends React.Component<Props> {
                         name="childrenNodes"
                         type="checkbox"
                         component={FormInputField}
-                        label={i18n('arr.syncNodes.childrenNodes')}
+                        label={<FormattedMessage {...arrPanelMessages.syncNodesChildrenNodes} />}
                         disabled={submitting}
                     />
                 </Modal.Body>
                 <Modal.Footer>
                     <Button type="submit" variant="outline-secondary" disabled={submitting}>
-                        {i18n('global.action.run')}
+                        {<FormattedMessage {...globalMessages.run} />}
                     </Button>
                 </Modal.Footer>
             </Form>

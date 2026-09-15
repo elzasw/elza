@@ -5,7 +5,9 @@ import {ApCreateTypeVO} from "../../../api/ApCreateTypeVO";
 import {RulDescItemTypeExtVO} from "../../../api/RulDescItemTypeExtVO";
 import {Col, Form, Modal, Row} from "react-bootstrap";
 import {Button} from "../../ui";
-import i18n from "../../i18n";
+import { FormattedMessage, useIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { filterMessages } from '../form/filter/messages';
 import ReduxFormFieldErrorDecorator from "../../shared/form/ReduxFormFieldErrorDecorator";
 import SpecificationField from "../field/SpecificationField";
 import {computeAllowedItemSpecIds, findViewItemType} from "../../../utils/ItemInfo";
@@ -18,6 +20,8 @@ import {ApViewSettings} from "../../../api/ApViewSettings";
 import {objectById} from "../../../shared/utils";
 import {RulPartTypeVO} from "../../../api/RulPartTypeVO";
 import { ApSearchArea } from 'elza-api';
+import { getIntl } from 'components/shared/lang/intlInstance';
+import { registryModalMessages } from './messages';
 
 const FORM_NAME = "relationPartItemEditModalForm";
 
@@ -26,7 +30,7 @@ function validate(values, props): any {
     const errors = {} as any;
 
     if (!values.codeObj || values.codeObj.id == null) {
-        errors.codeObj = "Návazná archivní entita je povinná";
+        errors.codeObj = getIntl().formatMessage(registryModalMessages.relatedEntityRequired);
     }
 
     return errors;
@@ -65,6 +69,7 @@ const RelationPartItemEditModalForm = ({
                                            apTypeId,
                                            geoSpecId
                                        }: Props) => {
+    const intl = useIntl();
     if (!refTables) {
         return <div/>;
     }
@@ -110,7 +115,7 @@ const RelationPartItemEditModalForm = ({
         <Modal.Body>
             {renderSpecification && <Field
                 name="specId"
-                label="Specifikace vztahu"
+                label={getIntl().formatMessage(registryModalMessages.relationSpecification)}
                 itemTypeId={typeId}
                 itemSpecIds={useItemSpecIds}
                 component={ReduxFormFieldErrorDecorator}
@@ -119,7 +124,7 @@ const RelationPartItemEditModalForm = ({
             <Row /*gutter={[8, 0]}*/ className={renderSpecification ? "pt-2" : ""}>
                 <Col xs={6}>
                     <Form.Label>
-                        Oblast hledání
+                        <FormattedMessage {...registryModalMessages.searchArea} />
                     </Form.Label>
                     <Field
                         name={'area'}
@@ -137,7 +142,7 @@ const RelationPartItemEditModalForm = ({
                 <Col xs={6}>
                     {area !== ApSearchArea.AllParts && <>
                         <Form.Label>
-                            {i18n('ap.ext-search.section.relations.only-main-part')}
+                            {intl.formatMessage(filterMessages.relationsOnlyMainPart)}
                         </Form.Label>
                         <Field
                         name="onlyMainPart"
@@ -153,7 +158,7 @@ const RelationPartItemEditModalForm = ({
                 <Col xs={12}>
                     <ArchiveEntityRel
                         name={'codeObj'}
-                        label={i18n('ap.ext-search.section.relations.obj')}
+                        label={intl.formatMessage(filterMessages.relationsObj)}
                         onlyMainPart={area !== ApSearchArea.AllParts && onlyMainPart}
                         area={area}
                         scopeId={scopeId}
@@ -181,11 +186,11 @@ const RelationPartItemEditModalForm = ({
         </Modal.Body>
         <Modal.Footer>
             <Button type={'submit'} variant={'outline-secondary'} onClick={handleSubmit} disabled={submitting}>
-                {i18n('global.action.store')}
+                {<FormattedMessage {...globalMessages.save} />}
             </Button>
 
             <Button variant={'link'} onClick={onClose} disabled={submitting}>
-                {i18n('global.action.cancel')}
+                {<FormattedMessage {...globalMessages.cancel} />}
             </Button>
         </Modal.Footer>
     </Form>;

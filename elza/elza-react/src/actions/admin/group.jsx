@@ -4,7 +4,13 @@
 
 import * as types from 'actions/constants/ActionTypes';
 import {WebApi} from 'actions/index.jsx';
-import {i18n} from 'components/shared';
+import {} from 'components/shared';
+import { FormattedMessage, defineMessages } from 'react-intl';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    addSuccess: { id: "admin.group.add.success", defaultMessage: "Skupina byla vytvořena" },
+});
 import {savingApiWrapper} from 'actions/global/status.jsx';
 import {modalDialogHide} from 'actions/global/modalDialog.jsx';
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
@@ -165,7 +171,7 @@ export function groupUpdate(groupId, name, description) {
 export function groupCreate(name, code, description) {
     return dispatch => {
         return savingApiWrapper(dispatch, WebApi.createGroup(name, code, description)).then(response => {
-            dispatch(addToastrSuccess(i18n('admin.group.add.success')));
+            dispatch(addToastrSuccess(<FormattedMessage {...messages.addSuccess} />));
             dispatch(groupsSelectGroup(response.id));
         });
     };

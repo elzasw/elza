@@ -1,4 +1,5 @@
-import i18n from 'components/i18n';
+import { FormattedMessage, useIntl } from 'react-intl';
+import { apDetailMessages } from '../messages';
 import { SmallButton } from 'components/shared/button/small-button';
 import ValidationResultIcon from 'components/ValidationResultIcon';
 import React, { FC } from 'react';
@@ -46,6 +47,7 @@ const DetailBodySection: FC<Props> = ({
     revision,
     select,
 }) => {
+    const intl = useIntl();
     if (!editMode && !part) {
         return null;
     }
@@ -77,7 +79,7 @@ const DetailBodySection: FC<Props> = ({
             {editMode && !isDeleted &&
                 <>
                     <SmallButton 
-                        title={i18n("ap.detail.edit", partType.name)}
+                        title={intl.formatMessage(apDetailMessages.detailEdit, { 0: partType.name })}
                         onClick={()=> {
                             // if(part.length === 0) return onAdd()
                             if(part) return onEdit(part)
@@ -85,13 +87,13 @@ const DetailBodySection: FC<Props> = ({
                     >
                         <Icon glyph={'fa-pencil'} />
                     </SmallButton>
-                    <SmallButton title={i18n("ap.detail.delete")} onClick={()=> onDelete(part)}>
+                    <SmallButton title={intl.formatMessage(apDetailMessages.detailDelete)} onClick={()=> onDelete(part)}>
                         <Icon glyph="fa-trash"/>
                     </SmallButton>
                 </>
             }
             {isDeleted &&
-                <SmallButton title={i18n("ap.detail.revert")} onClick={()=> onRevert(part)}>
+                <SmallButton title={intl.formatMessage(apDetailMessages.detailRevert)} onClick={()=> onRevert(part)}>
                     <Icon glyph="fa-undo" />
                 </SmallButton>
             }
@@ -111,7 +113,7 @@ const DetailBodySection: FC<Props> = ({
             </div>
 
             <div className={`parts single-part`}>
-                {!hasInfo(part) ? <span className="no-info-msg">{i18n("ap.detail.noInfo")}</span> :
+                {!hasInfo(part) ? <span className="no-info-msg">{<FormattedMessage {...apDetailMessages.detailNoInfo} />}</span> :
                 <div className={`part`}>
                     <DetailPartInfo
                         select={select}

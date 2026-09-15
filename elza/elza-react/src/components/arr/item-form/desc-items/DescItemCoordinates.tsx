@@ -12,15 +12,17 @@ import { useValueManager } from "./utils";
 import { EditStateDisplay } from "./EditStateDisplay";
 import { ConflictValue } from "./ConflictValue";
 import { useAppThunkDispatch } from "utils/hooks";
-import { globalMessages } from "components/shared/lang";
 import {
   addToastrDanger,
   addToastrInfo,
 } from "components/shared/toastr/ToastrActions";
-import { FormattedMessage, defineMessages, useIntl } from "react-intl";
+import { FormattedMessage, defineMessages, useIntl } from 'react-intl';
 import { messages as commonMessages } from "./commonMessages";
 import { modalDialogHide, modalDialogShow } from "actions/global/modalDialog";
-import { i18n } from "components";
+import {} from "components";
+import { globalMessages } from 'components/shared/lang/messages';
+import { nodeMessages } from 'components/arr/nodeMessages';
+
 import { ExportCoordinateModal } from "components/shared/coordinates";
 import ImportCoordinateModal from "components/registry/Detail/coordinate/ImportCoordinateModal";
 import { WebApi } from "actions";
@@ -28,6 +30,7 @@ import { useRef } from "react";
 import { useStyles } from "./styles";
 import { objectFromWKT, wktFromTypeAndData } from "components/Utils";
 import { parseCoordinateSummary } from "components/shared/coordinates/utils";
+import { copyTextToClipboard } from "utils/clipboard";
 
 const COORDINATE_CROP_LENGTH = 100;
 
@@ -57,6 +60,7 @@ export function DescItemCoordinates({
   isDisabled: _isDisabled,
   compact,
 }: Props) {
+  const intl = useIntl();
   if (
     item.data &&
     item.data.dataType !== DataType.Coordinates &&
@@ -92,9 +96,9 @@ export function DescItemCoordinates({
     }
     const { geometryType, objectCount, coordinateCount } = summary;
     if (objectCount <= 1) {
-      return `${geometryType} ( ${i18n("global.geometry.label.points")}: ${coordinateCount} )`;
+      return `${geometryType} ( ${<FormattedMessage {...nodeMessages.globalGeometryLabelPoints} />}: ${coordinateCount} )`;
     }
-    return `${geometryType} ( ${i18n("global.geometry.label.objects")}: ${objectCount} ${i18n("global.geometry.label.points")}: ${coordinateCount} )`;
+    return `${geometryType} ( ${<FormattedMessage {...nodeMessages.globalGeometryLabelObjects} />}: ${objectCount} ${<FormattedMessage {...nodeMessages.globalGeometryLabelPoints} />}: ${coordinateCount} )`;
   }
 
   const displayValue = item.undefined
@@ -146,28 +150,24 @@ export function DescItemCoordinates({
     resetConflict();
   }
 
-  const handleCopyToClipboard = () => {
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(value);
-      dispatch(
-        addToastrInfo(
-          formatMessage({ ...globalMessages.copyToClipboardFinished }),
-        ),
-      );
-    } else {
-      dispatch(
-        addToastrDanger(
-          formatMessage({ ...globalMessages.copyToClipboardUnavailable }),
-        ),
-      );
-    }
+  const handleCopyToClipboard = async () => {
+    const copied = await copyTextToClipboard(value);
+    dispatch(
+      copied
+        ? addToastrInfo(
+            formatMessage({ ...globalMessages.copyToClipboardFinished }),
+          )
+        : addToastrDanger(
+            formatMessage({ ...globalMessages.copyToClipboardUnavailable }),
+          ),
+    );
   };
 
   const handleExport = () =>
     dispatch(
       modalDialogShow(
         undefined,
-        i18n("ap.coordinate.export.title"),
+        intl.formatMessage(nodeMessages.apCoordinateExportTitle),
         <ExportCoordinateModal
           onClose={() => dispatch(modalDialogHide())}
           itemId={item.id}
@@ -180,7 +180,7 @@ export function DescItemCoordinates({
     dispatch(
       modalDialogShow(
         undefined,
-        i18n("ap.coordinate.import.title"),
+        intl.formatMessage(nodeMessages.apCoordinateImportTitle),
         <ImportCoordinateModal
           onSubmit={async (formData) => {
             try {

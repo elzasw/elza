@@ -32,7 +32,7 @@ public class ArrAsyncRequest {
     private Long asyncRequestId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name="type", length = StringLength.LENGTH_10)
+    @Column(name="type", length = StringLength.LENGTH_ENUM)
     private AsyncTypeEnum type;
 
     @Basic
@@ -76,6 +76,10 @@ public class ArrAsyncRequest {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "aip_action_item_id")
     private DaAipActionItem aipActionItem;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "batch_id")
+    private ImpBatch batch;
 
     @Column(name="user_id")
     private Integer userId;
@@ -134,6 +138,14 @@ public class ArrAsyncRequest {
         Objects.requireNonNull(accessPoint);
         Objects.requireNonNull(priority);
         return new ArrAsyncRequest(accessPoint, priority);
+    }
+
+    public static ArrAsyncRequest create(final ImpBatch batch,
+                                         final Integer priority,
+                                         final Integer userId) {
+        Objects.requireNonNull(batch);
+        Objects.requireNonNull(priority);
+        return new ArrAsyncRequest(batch, priority, userId);
     }
 
     protected ArrAsyncRequest(final ArrFundVersion fundVersion,
@@ -198,6 +210,19 @@ public class ArrAsyncRequest {
         this.type = AsyncTypeEnum.AIP;
         this.priority = priority;
         this.aipActionItem = aipActionItem;
+        this.userId = userId;
+    }
+
+    /**
+     * Import batch waiting in the asynchronous queue. It carries no fund version - a batch may
+     * touch several funds, or none until the payload is parsed.
+     */
+    protected ArrAsyncRequest(final ImpBatch batch,
+                              final Integer priority,
+                              final Integer userId) {
+        this.type = AsyncTypeEnum.BATCH_IMPORT;
+        this.priority = priority;
+        this.batch = batch;
         this.userId = userId;
     }
 
@@ -310,4 +335,12 @@ public class ArrAsyncRequest {
 	public void setExport(ArrExport export) {
 		this.export = export;
 	}
+
+    public ImpBatch getBatch() {
+        return batch;
+    }
+
+    public void setBatch(ImpBatch batch) {
+        this.batch = batch;
+    }
 }

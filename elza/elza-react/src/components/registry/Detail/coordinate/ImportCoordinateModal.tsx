@@ -3,7 +3,9 @@ import {Button, Col, Form, Modal, Row} from 'react-bootstrap';
 import {connect} from 'react-redux';
 import {ConfigProps, InjectedFormProps, reduxForm, Form as ReduxForm, SubmitHandler, Field} from 'redux-form';
 import {CoordinateFileType} from '../../../../constants';
-import i18n from '../../../i18n';
+import { FormattedMessage, useIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { apDetailMessages } from '../messages';
 import FF from '../../../shared/form/FF';
 import FileInput from '../../../shared/form/FileInput';
 import FormInputField from '../../../shared/form/FormInputField';
@@ -23,12 +25,13 @@ type Props = {
 } & InjectedFormProps;
 
 const ImportCoordinateModal = ({handleSubmit, onClose, submitting}: Props) => {
+    const intl = useIntl();
     return (
         <ReduxForm onSubmit={handleSubmit}>
             <Modal.Body>
                 <Row>
                     <Col>
-                        <FF field={FileInput} label={i18n('ap.coordinate.import.select')} name={'file'} />
+                        <FF field={FileInput} label={<FormattedMessage {...apDetailMessages.coordinateImportSelect} />} name={'file'} />
                     </Col>
                 </Row>
                 <Row className="pt-2">
@@ -39,7 +42,7 @@ const ImportCoordinateModal = ({handleSubmit, onClose, submitting}: Props) => {
                                 type="radio"
                                 name="format"
                                 value={x}
-                                label={i18n('ap.coordinate.format', x.toUpperCase())}
+                                label={intl.formatMessage(apDetailMessages.coordinateFormat, { 0: x.toUpperCase() })}
                             />
                         ))}
                     </Col>
@@ -47,11 +50,11 @@ const ImportCoordinateModal = ({handleSubmit, onClose, submitting}: Props) => {
             </Modal.Body>
             <Modal.Footer>
                 <Button type="submit" variant="outline-secondary" disabled={submitting}>
-                    {i18n('global.action.store')}
+                    {<FormattedMessage {...globalMessages.save} />}
                 </Button>
 
                 <Button variant="link" onClick={onClose} disabled={submitting}>
-                    {i18n('global.action.cancel')}
+                    {<FormattedMessage {...globalMessages.cancel} />}
                 </Button>
             </Modal.Footer>
         </ReduxForm>

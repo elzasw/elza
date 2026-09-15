@@ -6,7 +6,27 @@ import PropTypes from 'prop-types';
 
 import React from 'react';
 import {Field, formValueSelector, reduxForm} from 'redux-form';
-import {AbstractReactComponent, FormInputField, i18n} from 'components/shared';
+import {AbstractReactComponent, FormInputField} from 'components/shared';
+import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang';
+import { getIntl } from 'components/shared/lang/intlInstance';
+
+// Id jsou převzatá z legacy katalogu beze změny; nové id dostal jen nadpis
+// "Způsob přihlášení", který byl v JSX natvrdo česky.
+const messages = defineMessages({
+    passNotEqual: { id: 'admin.user.validation.passNotEqual', defaultMessage: 'Zadaná hesla nejsou stejná' },
+    party: { id: 'admin.user.add.party', defaultMessage: 'Osoba' },
+    username: { id: 'admin.user.add.username', defaultMessage: 'Uživatelské jméno' },
+    loginMethod: { id: 'admin.user.add.loginMethod', defaultMessage: 'Způsob přihlášení' },
+    passwordCheckbox: { id: 'admin.user.add.password.checkbox', defaultMessage: 'Jméno a heslo' },
+    password: { id: 'admin.user.password', defaultMessage: 'Heslo' },
+    newPassword: { id: 'admin.user.newPassword', defaultMessage: 'Nové heslo' },
+    passwordAgain: { id: 'admin.user.passwordAgain', defaultMessage: 'Opakovat heslo' },
+    passwordMessage: { id: 'admin.user.add.password.message', defaultMessage: 'Heslo je nastaveno.' },
+    shibbolethCheckbox: { id: 'admin.user.add.shibboleth.checkbox', defaultMessage: 'SAML2' },
+    shibboleth: { id: 'admin.user.add.shibboleth', defaultMessage: 'Ověřovací token' },
+    shibbolethMessage: { id: 'admin.user.add.shibboleth.message', defaultMessage: 'Ověřovací token je nastaven.' },
+});
 import {Col, Form, Modal, Row} from 'react-bootstrap';
 import {Button} from '../ui';
 import {submitForm} from 'components/form/FormUtils.jsx';
@@ -45,24 +65,24 @@ class AddUserForm extends AbstractReactComponent {
 
         for (let field of fields) {
             if (!values[field]) {
-                errors[field] = i18n('global.validation.required');
+                errors[field] = getIntl().formatMessage(globalMessages.validationRequired);
             }
         }
 
         if (values.passwordCheckbox && values.password !== values.passwordAgain) {
-            errors.password = i18n('admin.user.validation.passNotEqual');
-            errors.passwordAgain = i18n('admin.user.validation.passNotEqual');
+            errors.password = getIntl().formatMessage(messages.passNotEqual);
+            errors.passwordAgain = getIntl().formatMessage(messages.passNotEqual);
         } else {
             if (values.passwordCheckbox && !values.password && (create || setPassword)) {
-                errors.password = i18n('global.validation.required');
+                errors.password = getIntl().formatMessage(globalMessages.validationRequired);
             }
             if (values.passwordCheckbox && !values.passwordAgain && (create || setPassword)) {
-                errors.passwordAgain = i18n('global.validation.required');
+                errors.passwordAgain = getIntl().formatMessage(globalMessages.validationRequired);
             }
         }
 
         if (values.shibbolethCheckbox && !values.shibboleth && (create || setShibboleth)) {
-            errors.shibboleth = i18n('global.validation.required');
+            errors.shibboleth = getIntl().formatMessage(globalMessages.validationRequired);
         }
 
         return errors;
@@ -103,7 +123,7 @@ class AddUserForm extends AbstractReactComponent {
                                 passOnly={true}
                                 renderComponent={ApField}
                                 disabled={submitting}
-                                label={i18n('admin.user.add.party')}
+                                label={this.props.intl.formatMessage(messages.party)}
                                 detail={false}
                                 name={"accessPointId"}
                                 initData={this.props.accessPoint ? [this.props.accessPoint] : null}
@@ -118,21 +138,21 @@ class AddUserForm extends AbstractReactComponent {
                                 name="username"
                                 type="text"
                                 component={FormInputField}
-                                label={i18n('admin.user.add.username')}
+                                label={this.props.intl.formatMessage(messages.username)}
                                 disabled={submitting}
                             />
                         </Col>
                     </Row>
                     <Row className="type-row-group">
                         <Col xs={12}>
-                            <span className="type">Způsob přihlášení</span>
+                            <span className="type"><FormattedMessage {...messages.loginMethod} /></span>
                         </Col>
                     </Row>
                     <Field
                         name="passwordCheckbox"
                         type="checkbox"
                         component={FormInputField}
-                        label={i18n('admin.user.add.password.checkbox')}
+                        label={this.props.intl.formatMessage(messages.passwordCheckbox)}
                         disabled={submitting}
                     />
                     {this.props.passwordCheckbox && (create || setPassword) && (
@@ -142,7 +162,7 @@ class AddUserForm extends AbstractReactComponent {
                                     name="password"
                                     type="password"
                                     component={FormInputField}
-                                    label={i18n(create ? 'admin.user.password' : 'admin.user.newPassword')}
+                                    label={this.props.intl.formatMessage(create ? messages.password : messages.newPassword)}
                                     disabled={submitting}
                                     autoComplete="off"
                                 />
@@ -152,7 +172,7 @@ class AddUserForm extends AbstractReactComponent {
                                     name="passwordAgain"
                                     type="password"
                                     component={FormInputField}
-                                    label={i18n('admin.user.passwordAgain')}
+                                    label={this.props.intl.formatMessage(messages.passwordAgain)}
                                     disabled={submitting}
                                     autoComplete="off"
                                 />
@@ -162,7 +182,7 @@ class AddUserForm extends AbstractReactComponent {
                     {this.props.passwordCheckbox && !create && !setPassword && (
                         <Row className="type-row">
                             <Col xs={6} className="message">
-                                {i18n('admin.user.add.password.message')}
+                                <FormattedMessage {...messages.passwordMessage} />
                             </Col>
                             <Col xs={6}>
                                 <Button
@@ -170,7 +190,7 @@ class AddUserForm extends AbstractReactComponent {
                                     variant="outline-secondary"
                                     onClick={() => this.setState({setPassword: true})}
                                 >
-                                    {i18n('global.action.change')}
+                                    <FormattedMessage {...globalMessages.change} />
                                 </Button>
                             </Col>
                         </Row>
@@ -179,7 +199,7 @@ class AddUserForm extends AbstractReactComponent {
                         name="shibbolethCheckbox"
                         type="checkbox"
                         component={FormInputField}
-                        label={i18n('admin.user.add.shibboleth.checkbox')}
+                        label={this.props.intl.formatMessage(messages.shibbolethCheckbox)}
                         disabled={submitting}
                     />
                     {this.props.shibbolethCheckbox && (create || setShibboleth) && (
@@ -189,7 +209,7 @@ class AddUserForm extends AbstractReactComponent {
                                     name="shibboleth"
                                     type="text"
                                     component={FormInputField}
-                                    label={i18n('admin.user.add.shibboleth')}
+                                    label={this.props.intl.formatMessage(messages.shibboleth)}
                                     disabled={submitting}
                                     autoComplete="off"
                                 />
@@ -199,7 +219,7 @@ class AddUserForm extends AbstractReactComponent {
                     {this.props.shibbolethCheckbox && !create && !setShibboleth && (
                         <Row className="type-row">
                             <Col xs={6} className="message">
-                                {i18n('admin.user.add.shibboleth.message')}
+                                <FormattedMessage {...messages.shibbolethMessage} />
                             </Col>
                             <Col xs={6}>
                                 <Button
@@ -207,7 +227,7 @@ class AddUserForm extends AbstractReactComponent {
                                     variant="outline-secondary"
                                     onClick={() => this.setState({setShibboleth: true})}
                                 >
-                                    {i18n('global.action.change')}
+                                    <FormattedMessage {...globalMessages.change} />
                                 </Button>
                             </Col>
                         </Row>
@@ -215,10 +235,10 @@ class AddUserForm extends AbstractReactComponent {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button type="submit" variant="outline-secondary" disabled={submitting}>
-                        {i18n(create ? 'global.action.create' : 'global.action.update')}
+                        <FormattedMessage {...(create ? globalMessages.create : globalMessages.save)} />
                     </Button>
                     <Button variant="link" onClick={onClose}>
-                        {i18n('global.action.cancel')}
+                        <FormattedMessage {...globalMessages.cancel} />
                     </Button>
                 </Modal.Footer>
             </Form>
@@ -244,4 +264,4 @@ const connector = connect(mapState);
 
 export default reduxForm({
     form: 'addUserForm',
-})(connector(AddUserForm));
+})(connector(injectIntl(AddUserForm)));

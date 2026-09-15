@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { urlEntity } from "../../../../constants";
 import { DescItemProps } from "./types";
+import { FormattedMessage } from "react-intl";
+import { messages as commonMessages } from "components/arr/item-form/desc-items/commonMessages";
 
 export function DescItemRecordRef({ item, nodeId }: DescItemProps) {
   if (item.data?.dataType !== DataType.RecordRef) {
@@ -34,7 +36,7 @@ export function DescItemRecordRef({ item, nodeId }: DescItemProps) {
       }}
     >
       {item.undefined ? (
-        "Výjimka"
+        <FormattedMessage {...commonMessages.undefined} />
       ) : (
         <Link to={urlEntity(data.value)}>
           {accessPoint?.name || data.value}

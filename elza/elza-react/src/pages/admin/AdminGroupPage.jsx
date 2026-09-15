@@ -10,13 +10,24 @@ import {AddGroupForm, GroupDetail, Ribbon} from 'components/index';
 import { AdminLayout } from '../shared/layout/AdminLayout';
 import {
     AbstractReactComponent,
-    i18n,
     Icon,
     ListBox,
     RibbonGroup,
     Search,
     StoreHorizontalLoader,
 } from 'components/shared';
+import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    ribbonAdd: { id: 'ribbon.action.admin.group.add', defaultMessage: 'Přidat skupinu' },
+    ribbonDelete: { id: 'ribbon.action.admin.group.delete', defaultMessage: 'Vymazat skupinu' },
+    ribbonEdit: { id: 'ribbon.action.admin.group.edit', defaultMessage: 'Upravit skupinu' },
+    deleteSuccess: { id: 'admin.group.delete.success', defaultMessage: 'Skupina byla smazána' },
+    addTitle: { id: 'admin.group.add.title', defaultMessage: 'Vytvořit skupinu' },
+    editTitle: { id: 'admin.group.edit.title', defaultMessage: 'Upravení skupiny' },
+    searchPlaceholder: { id: 'search.input.search', defaultMessage: 'Vyhledat...' },
+});
 import {
     groupCreate,
     groupDelete,
@@ -118,7 +129,7 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
             <Button variant={'default'} key="add-group" onClick={this.handleCreateGroupForm}>
                 <Icon glyph="fa-plus-circle" />
                 <div>
-                    <span className="btnText">{i18n('ribbon.action.admin.group.add')}</span>
+                    <span className="btnText"><FormattedMessage {...messages.ribbonAdd} /></span>
                 </div>
             </Button>,
         );
@@ -128,7 +139,7 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
                 <Button variant={'default'} key="delete-group" onClick={this.handleDeleteGroup}>
                     <Icon glyph="fa-trash" />
                     <div>
-                        <span className="btnText">{i18n('ribbon.action.admin.group.delete')}</span>
+                        <span className="btnText"><FormattedMessage {...messages.ribbonDelete} /></span>
                     </div>
                 </Button>,
             );
@@ -136,7 +147,7 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
                 <Button variant={'default'} key="edit-group" onClick={this.handleEditGroupForm}>
                     <Icon glyph="fa-edit" />
                     <div>
-                        <span className="btnText">{i18n('ribbon.action.admin.group.edit')}</span>
+                        <span className="btnText"><FormattedMessage {...messages.ribbonEdit} /></span>
                     </div>
                 </Button>,
             );
@@ -169,7 +180,7 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
             },
         } = this.props;
         this.props.dispatch(groupDelete(id)).then(response => {
-            this.props.dispatch(addToastrSuccess(i18n('admin.group.delete.success')));
+            this.props.dispatch(addToastrSuccess(this.props.intl.formatMessage(messages.deleteSuccess)));
         });
     }
 
@@ -178,7 +189,7 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
         dispatch(
             modalDialogShow(
                 this,
-                i18n('admin.group.add.title'),
+                this.props.intl.formatMessage(messages.addTitle),
                 <AddGroupForm
                     create={true}
                     onSubmit={({name, code, description}) => {
@@ -194,7 +205,7 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
         dispatch(
             modalDialogShow(
                 this,
-                i18n('admin.group.edit.title'),
+                this.props.intl.formatMessage(messages.editTitle),
                 <AddGroupForm
                     initialValues={group.groupDetail}
                     onSubmit={({name, description}) => {
@@ -219,7 +230,7 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
                 <Search
                     onSearch={this.handleSearch}
                     onClear={this.handleSearchClear}
-                    placeholder={i18n('search.input.search')}
+                    placeholder={this.props.intl.formatMessage(messages.searchPlaceholder)}
                     value={group.filterText || ''}
                 />
                 <StoreHorizontalLoader store={group} />
@@ -263,4 +274,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps)(AdminGroupPage);
+export default connect(mapStateToProps)(injectIntl(AdminGroupPage));

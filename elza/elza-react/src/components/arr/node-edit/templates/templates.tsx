@@ -2,7 +2,7 @@ import { WebApi } from 'actions';
 import { modalDialogHide, modalDialogShow } from 'actions/global/modalDialog';
 import { userDetailsSaveSettings } from 'actions/user/userDetail';
 import TemplateUseForm from 'components/arr/TemplateUseForm';
-import i18n from 'components/i18n';
+import { daoMessages } from 'components/arr/daoMessages';
 import { NodeItem } from 'elza-api';
 import { indexById } from 'shared/utils';
 import { useAppThunkDispatch } from 'utils/hooks';
@@ -15,6 +15,7 @@ import { convertToNewTemplate, convertToOldDescItem } from './conversionUtils';
 import { hasValue, isValueEqual } from './utils';
 import { ActionTypes } from 'actions/constants/ActionTypes';
 import { isDataEnum } from './types';
+import { getIntl } from 'components/shared/lang/intlInstance';
 
 enum TemplateAddType {
     NEW_TEMPLATE = new_template,
@@ -89,7 +90,7 @@ export function useTemplates({ descItems, nodeId, nodeVersion, fondsVersionId, o
         dispatch(
             modalDialogShow(
                 this,
-                i18n('arr.fund.addTemplate.create'),
+                getIntl().formatMessage(daoMessages.fundAddTemplateCreate),
                 <TemplateForm
                     initialValues={initialValues}
                     //@ts-expect-error TODO add templates to props/convert to final form and tsx
@@ -160,7 +161,7 @@ export function useTemplates({ descItems, nodeId, nodeVersion, fondsVersionId, o
         dispatch(
             modalDialogShow(
                 this,
-                i18n('arr.fund.useTemplate.title'),
+                getIntl().formatMessage(daoMessages.fundUseTemplateTitle),
                 <TemplateUseForm
                     initialValues={initialValues}
                     // @ts-expect-error TODO add templates to props/convert to final form and tsx

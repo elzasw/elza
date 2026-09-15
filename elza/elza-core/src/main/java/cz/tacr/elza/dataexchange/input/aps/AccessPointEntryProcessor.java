@@ -175,16 +175,14 @@ public class AccessPointEntryProcessor implements ItemProcessor {
                 throw new DEImportException("Part type not found, fragmentId=" + fragment.getFid() + ", " + fragment.getT());
             }
             //create Ap Part
-            ApPart partEntity = createPart(partType, apInfo);
+            ApPart partEntity = createPart(partType);
             List<ItemWrapper> itemWrapperList = processItems(partEntity, fragment.getDdOrDoOrDp(), fragment.getFid());
-            PartInfo partInfo = new PartInfo(fragment.getFid(), apInfo, partType, partsContext);
+            // AP info is not known yet, it is set for all parts in AccessPointsContext.addAccessPoint
+            PartInfo partInfo = new PartInfo(fragment.getFid(), null, partType, partsContext);
+            //parent part is resolved among the parts of the same access point
+            partInfo.setParentImportId(fragment.getPid());
+
             PartWrapper partWrapper = new PartWrapper(partEntity, partInfo, itemWrapperList);
-
-            //parent part
-            if(fragment.getPid() != null) {
-                context.addToParentPartIdMap(partWrapper, fragment.getPid());
-            }
-
             wrapperParts.add(partWrapper);
 
         }
@@ -222,7 +220,7 @@ public class AccessPointEntryProcessor implements ItemProcessor {
         return itemWrapperList;
     }
 
-    protected ApPart createPart(RulPartType type, AccessPointInfo apInfo) {
+    protected ApPart createPart(RulPartType type) {
         ApPart entity;
         try {
             entity = new ApPart();

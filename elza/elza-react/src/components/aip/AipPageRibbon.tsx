@@ -1,7 +1,7 @@
 import {aipFetchIfNeeded, aipsFetchIfNeeded, AREA_AIP, AREA_SELECTED_AIPS} from "actions/aip/aip";
 import { AipDetailVO } from "elza-api";
 import { Ribbon } from "components";
-import { Icon, RibbonGroup, i18n } from "components/shared";
+import { Icon, RibbonGroup } from "components/shared";
 import React, { FC } from "react";
 import { Button } from "react-bootstrap";
 import { useSelector } from "react-redux";
@@ -12,18 +12,31 @@ import {useThunkDispatch} from "../../utils/hooks";
 import {modalDialogShow} from "../../actions/global/modalDialog";
 import AipUpdateTypeForm from "./AipUpdateTypeForm.tsx";
 import { runAipAction } from "./AipActionRunner";
-import { useIntl } from "react-intl";
+import { FormattedMessage, defineMessages, useIntl } from "react-intl";
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    metadata: { id: "aip.actions.metadata", defaultMessage: "Načtení metadat" },
+    deleteMetadata: { id: "aip.actions.deleteMetadata", defaultMessage: "Smazání metadat" },
+    loadAips: { id: "aip.actions.loadAips", defaultMessage: "Načtení úplných AIP" },
+    deleteAips: { id: "aip.actions.deleteAips", defaultMessage: "Smazání úplných AIP" },
+    updateAips: { id: "aip.actions.updateAips", defaultMessage: "Aktualizace a oprava AIP" },
+    exportAips: { id: "aip.actions.exportAips", defaultMessage: "Generování změnových AIP" },
+    updateTitle: { id: "aip.form.update.title", defaultMessage: "Aktualizace a oprava AIP" },
+});
+import { useWebsocket } from "components/shared/web-socket/WebsocketProvider";
 
 const AipPageRibbon: FC = () => {
     const selectedAips = useSelector((state: AppState) => storeFromArea(state, AREA_SELECTED_AIPS));
     const aip =  useSelector((state: AppState) => storeFromArea(state, AREA_AIP));
     const dispatch = useThunkDispatch();
     const intl = useIntl();
+    const websocket = useWebsocket();
 
     /** Akce mění i AIP otevřený v detailu, panel se proto načte znovu spolu se seznamem. */
     /** Akce běží na pozadí; dialog ukáže její průběh a po dokončení se seznam načte znovu. */
     const run = (title: string, request: () => Promise<{ data: import("elza-api").DaAipActionVO }>) =>
-        runAipAction(dispatch, intl, title, request as never, reload);
+        runAipAction(dispatch, intl, websocket, title, request as never, reload);
 
     const reload = () => {
         dispatch(aipsFetchIfNeeded(true));
@@ -51,44 +64,44 @@ const AipPageRibbon: FC = () => {
 
     return [
         <Button key={`${keyPrefix}-metadata`} disabled={!canLoadMetadata}
-                onClick={() => run(i18n("aip.actions.metadata"), () => Api.aips.aipCreateDaoStructure(aipIds))}>
+                onClick={() => run(intl.formatMessage(messages.metadata), () => Api.aips.aipCreateDaoStructure(aipIds))}>
             <Icon glyph="fa-download" />
             <div>
-                <span className="btnText">{i18n("aip.actions.metadata")}</span>
+                <span className="btnText">{<FormattedMessage {...messages.metadata} />}</span>
             </div>
         </Button>,
         <Button key={`${keyPrefix}-deleteMetadata`} disabled={!canDeleteMetadata}
-                onClick={() => run(i18n("aip.actions.deleteMetadata"), () => Api.aips.aipDeleteDaoStructure(aipIds))}>
+                onClick={() => run(intl.formatMessage(messages.deleteMetadata), () => Api.aips.aipDeleteDaoStructure(aipIds))}>
             <Icon glyph="fa-trash" />
             <div>
-                <span className="btnText">{i18n("aip.actions.deleteMetadata")}</span>
+                <span className="btnText">{<FormattedMessage {...messages.deleteMetadata} />}</span>
             </div>
         </Button>,
         <Button key={`${keyPrefix}-loadAips`} disabled={!canLoadCompleteAip}
-                onClick={() => run(i18n("aip.actions.loadAips"), () => Api.aips.aipDownloadCompleteAip(aipIds))}>
+                onClick={() => run(intl.formatMessage(messages.loadAips), () => Api.aips.aipDownloadCompleteAip(aipIds))}>
             <Icon glyph="fa-cloud-download " />
             <div>
-                <span className="btnText">{i18n("aip.actions.loadAips")}</span>
+                <span className="btnText">{<FormattedMessage {...messages.loadAips} />}</span>
             </div>
         </Button>,
         <Button key={`${keyPrefix}-deleteAips`} disabled={!canDeleteCompleteAip}
-                onClick={() => run(i18n("aip.actions.deleteAips"), () => Api.aips.aipDeleteCompleteAip(aipIds))}>
+                onClick={() => run(intl.formatMessage(messages.deleteAips), () => Api.aips.aipDeleteCompleteAip(aipIds))}>
             <Icon glyph="fa-trash" />
             <div>
-                <span className="btnText">{i18n("aip.actions.deleteAips")}</span>
+                <span className="btnText">{<FormattedMessage {...messages.deleteAips} />}</span>
             </div>
         </Button>,
         <Button key={`${keyPrefix}-updateAips`} onClick={() => handleUpdateAips(aips)}>
             <Icon glyph="fa-refresh" />
             <div>
-                <span className="btnText">{i18n("aip.actions.updateAips")}</span>
+                <span className="btnText">{<FormattedMessage {...messages.updateAips} />}</span>
             </div>
         </Button>,
         <Button key={`${keyPrefix}-exportAips`} disabled={!canExport}
-                onClick={() => run(i18n("aip.actions.exportAips"), () => Api.aips.aipExportAip(aipIds))}>
+                onClick={() => run(intl.formatMessage(messages.exportAips), () => Api.aips.aipExportAip(aipIds))}>
             <Icon glyph="fa-cloud-upload" />
             <div>
-                <span className="btnText">{i18n("aip.actions.exportAips")}</span>
+                <span className="btnText">{<FormattedMessage {...messages.exportAips} />}</span>
             </div>
         </Button>,
     ];
@@ -98,11 +111,11 @@ const AipPageRibbon: FC = () => {
         dispatch(
             modalDialogShow(
                 this,
-                i18n('aip.form.update.title'),
+                intl.formatMessage(messages.updateTitle),
                 <AipUpdateTypeForm
                     aips={aips}
                     onSubmit={({type}) => {
-                        run(i18n("aip.form.update.title"), () => Api.aips.aipUpdateAip(type, aips.map(a => a.aipId)));
+                        run(intl.formatMessage(messages.updateTitle), () => Api.aips.aipUpdateAip(type, aips.map(a => a.aipId)));
                     }}
                 />,
             ),

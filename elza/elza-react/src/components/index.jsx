@@ -3,7 +3,6 @@
 import * as FormUtils from 'components/form/FormUtils';
 
 export {default as AbstractReactComponent} from './AbstractReactComponent';
-export {default as i18n} from './i18n';
 export {default as Icon} from './shared/icon/Icon';
 
 export {FormUtils};

@@ -143,6 +143,8 @@ export interface UserSettingsData {
     showDebugInfo?: boolean;
     showExperimentalFeatures?: boolean;
     aiFullWidth?: boolean;
+    /** Last AI profile (model) picked in the assistant, keyed by AI external system code. */
+    aiProfiles?: Record<string, string>;
     outputColumnLayout?: boolean;
     institutionViewMode?: 'grid' | 'list';
     institutionSortField?: 'name' | 'internalCode';

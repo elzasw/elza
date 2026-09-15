@@ -1,17 +1,17 @@
 import { defineMessages } from "react-intl";
-import { AipLinkState, AipProblemType, AipUpdateType, DaAipActionItemState, QueueItemState } from "elza-api";
+import { AipLevelType, AipLinkState, AipProblemType, AipUpdateType, DaAipActionItemState, DaDaoType, QueueItemState } from "elza-api";
 
 export const messages = defineMessages({
     aipId:            { id: "aip.col.aipId",            defaultMessage: "ID" },
     code:             { id: "aip.col.code",             defaultMessage: "AIP ID" },
-    aipVersion:       { id: "aip.col.aipVersion",       defaultMessage: "Verze Aipu" },
+    aipVersion:       { id: "aip.col.aipVersion",       defaultMessage: "Verze AIPu" },
     fund:             { id: "aip.col.fund",             defaultMessage: "Archivní soubor" },
     fundCode:         { id: "aip.col.fundCode",         defaultMessage: "Kód archivního souboru" },
     institution:      { id: "aip.col.institution",      defaultMessage: "Instituce" },
     institutionCode:  { id: "aip.col.institutionCode",  defaultMessage: "Kód instituce" },
     unitdate:         { id: "aip.col.unitdate",         defaultMessage: "Datace od-do" },
     originator:       { id: "aip.col.originator",       defaultMessage: "Původce" },
-    ingestionCode:    { id: "aip.col.ingestionCode",    defaultMessage: "Číslo příjemky" },
+    ingestionCode:    { id: "aip.col.ingestionCode",    defaultMessage: "Číslo přejímky" },
     referenceNumber:  { id: "aip.col.referenceNumber",  defaultMessage: "Číslo jednací" },
     nadChangeCode:    { id: "aip.col.nadChangeCode",    defaultMessage: "Vnější změna" },
     aipSize:          { id: "aip.col.aipSize",          defaultMessage: "Velikost" },
@@ -76,11 +76,47 @@ export const updateTypeDescriptions = defineMessages({
 /**
  * Samostatná stránka průzkumníka AIPu.
  */
+/**
+ * Seznam balíčků.
+ */
+export const listMessages = defineMessages({
+    focusNotFound: {
+        id: "aip.list.focusNotFound",
+        defaultMessage: "Hledaný balíček neodpovídá nastavenému filtru, seznam proto začíná od začátku.",
+    },
+});
+
+/**
+ * Průzkumník obsahu AIP - strom, tabulka a navigace.
+ */
+export const explorerMessages = defineMessages({
+    treeLabel:       { id: "aip.explorer.tree.label",       defaultMessage: "Průzkumník" },
+    title:           { id: "aip.explorer.title",            defaultMessage: "AIP Průzkumník" },
+    colName:         { id: "aip.explorer.col.name",         defaultMessage: "Název" },
+    colSize:         { id: "aip.explorer.col.size",         defaultMessage: "Velikost" },
+    colFormat:       { id: "aip.explorer.col.format",       defaultMessage: "Formát" },
+    selectAll:       { id: "aip.explorer.selectAll",        defaultMessage: "Vybrat vše" },
+    noSelection:     { id: "aip.explorer.noSelection",      defaultMessage: "Nebyl vybrán žádný objekt" },
+    moreFolders:     { id: "aip.explorer.moreFolders",      defaultMessage: "{count, plural, one {# další složka} few {# další složky} other {# dalších složek}}" },
+    selectPart:      { id: "aip.explorer.detail.selectPart", defaultMessage: "Vyberte část balíčku" },
+});
+
+/**
+ * Napojení jednotky popisu na digitální objekty.
+ */
+export const daoLinkMessages = defineMessages({
+    title:        { id: "aip.daoLink.title",        defaultMessage: "Napojení" },
+    showMore:     { id: "aip.daoLink.showMore",     defaultMessage: "a {count, plural, one {# další} few {# další} other {# dalších}}…" },
+    hide:         { id: "aip.daoLink.hide",         defaultMessage: "Skrýt" },
+    showInExplorer: { id: "aip.daoLink.showInExplorer", defaultMessage: "Zobrazit vše v průzkumníku…" },
+});
+
 export const explorerPageMessages = defineMessages({
     back:          { id: "aip.explorer.back",          defaultMessage: "Zpět na seznam" },
     open:          { id: "aip.explorer.open",          defaultMessage: "Otevřít průzkumník" },
     packageTab:    { id: "aip.explorer.tab.package",   defaultMessage: "Balíček" },
     structureTab:  { id: "aip.explorer.tab.structure", defaultMessage: "Struktura" },
+    filesTab:      { id: "aip.explorer.tab.files",     defaultMessage: "Soubory" },
 });
 
 /**
@@ -117,13 +153,24 @@ export const updateTypeUnavailable = defineMessages({
  * Popisky akcí v detailu AIPu.
  */
 export const detailMessages = defineMessages({
-    downloadPackage: { id: "aip.detail.downloadPackage", defaultMessage: "Stáhnout balíček" },
+    title:              { id: "aip.detail.title",              defaultMessage: "Detail AIP" },
+    loading:            { id: "aip.detail.loading",            defaultMessage: "Načítání…" },
+    explorerOpen:       { id: "aip.detail.explorer.open",      defaultMessage: "Otevřít průzkumník" },
+    downloadPackage:    { id: "aip.detail.downloadPackage",    defaultMessage: "Stáhnout balíček" },
+    aipVersionMetadata: { id: "aip.detail.aipVersionMetadata", defaultMessage: "Verze s načtenými metadaty" },
+    linkedNodes:        { id: "aip.detail.linkedNode",         defaultMessage: "Napojené jednotky popisu" },
+    partLinks:          { id: "aip.detail.partLinks",          defaultMessage: "Napojené části" },
+    partLinksCount:     { id: "aip.detail.partLinksCount",     defaultMessage: "{count, plural, one {# část} few {# části} other {# částí}}" },
 });
 
 /**
  * Popis problémů, které brání zpracování AIPu nebo jeho navázání na archivní popis.
  */
 export const problemMessages = defineMessages({
+    [AipProblemType.DownloadError]: {
+        id: "aip.problem.DOWNLOAD_ERROR",
+        defaultMessage: "Chyba stažení balíčku",
+    },
     [AipProblemType.MetadataError]: {
         id: "aip.problem.METADATA_ERROR",
         defaultMessage: "Chyba při zpracování metadat",
@@ -136,6 +183,30 @@ export const problemMessages = defineMessages({
         id: "aip.problem.UNKNOWN_INSTITUTION",
         defaultMessage: "Nenalezena instituce",
     },
+});
+
+/**
+ * Virtuální úrovně stromu AIPu. Nejsou daty balíčku, ale pevně danými pojmy (E-ARK / OAIS),
+ * takže jejich název i ikona patří klientovi - server posílá jen typ úrovně.
+ */
+export const levelMessages = defineMessages({
+    [AipLevelType.Package]:                 { id: "aip.level.PACKAGE",                   defaultMessage: "Balíček" },
+    [AipLevelType.Representations]:         { id: "aip.level.REPRESENTATIONS",           defaultMessage: "Reprezentace" },
+    [AipLevelType.LogicalStructure]:        { id: "aip.level.LOGICAL_STRUCTURE",         defaultMessage: "Logická struktura" },
+    [AipLevelType.Metadata]:                { id: "aip.level.METADATA",                  defaultMessage: "Metadata" },
+    [AipLevelType.WithoutLogicalStructure]: { id: "aip.level.WITHOUT_LOGICAL_STRUCTURE", defaultMessage: "Bez logické struktury" },
+});
+
+/**
+ * Typ digitálního objektu balíčku.
+ */
+export const daoTypeMessages = defineMessages({
+    [DaDaoType.Logical]:           { id: "aip.daoType.LOGICAL",           defaultMessage: "Úroveň inherentního popisu" },
+    [DaDaoType.Representation]:    { id: "aip.daoType.REPRESENTATION",    defaultMessage: "Reprezentace" },
+    [DaDaoType.File]:              { id: "aip.daoType.FILE",              defaultMessage: "Komponenta" },
+    [DaDaoType.Metaamd]:           { id: "aip.daoType.METAAMD",           defaultMessage: "Administrativní metadata" },
+    [DaDaoType.Metadmdinherent]:   { id: "aip.daoType.METADMDINHERENT",   defaultMessage: "Inherentní archivní popis" },
+    [DaDaoType.Metadmdcontextual]: { id: "aip.daoType.METADMDCONTEXTUAL", defaultMessage: "Kontextuální archivní popis" },
 });
 
 export const queueStateMessages = defineMessages({
@@ -205,11 +276,19 @@ export const actionMessages = defineMessages({
     stateColumn: { id: "aip.action.col.state",   defaultMessage: "Výsledek" },
     summary: {
         id: "aip.action.summary",
-        defaultMessage: "Hotovo {done} z {total}{errors, plural, =0 {} one { · # chyba} few { · # chyby} other { · # chyb}}",
+        defaultMessage: "Hotovo {done} z {total}"
+            + "{errors, plural, =0 {} one { · # chyba} few { · # chyby} other { · # chyb}}"
+            + "{skipped, plural, =0 {} one { · # přeskočen} few { · # přeskočeny} other { · # přeskočeno}}",
     },
     toastFinished: {
         id: "aip.action.toast.finished",
-        defaultMessage: "{count, plural, one {Akce dokončena u # AIPu} few {Akce dokončena u # AIPů} other {Akce dokončena u # AIPů}}",
+        defaultMessage: "{count, plural, one {Akce dokončena u # AIPu} few {Akce dokončena u # AIPů} other {Akce dokončena u # AIPů}}"
+            + "{skipped, plural, =0 {} one { · # přeskočen} few { · # přeskočeny} other { · # přeskočeno}}",
+    },
+    toastSkipped: {
+        id: "aip.action.toast.skipped",
+        defaultMessage: "Akce nebyla u žádného AIPu provedena"
+            + "{count, plural, =0 {} one { · # přeskočen} few { · # přeskočeny} other { · # přeskočeno}}",
     },
     toastErrors: {
         id: "aip.action.toast.errors",

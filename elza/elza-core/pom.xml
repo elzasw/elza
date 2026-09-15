@@ -437,6 +437,12 @@
                 <directory>${basedir}/../rules-simple-dev/src</directory>
                 <targetPath>${basedir}/target/test-classes/rules-simple-dev</targetPath>
             </testResource>
+            <!-- ZP2015 is not loaded by the shared test setup; it is on the classpath so that the
+                 tests of the Czech arrangement rules can import it once per class. -->
+            <testResource>
+                <directory>${basedir}/../rules-cz-zp2015/src</directory>
+                <targetPath>${basedir}/target/test-classes/rules-cz-zp2015</targetPath>
+            </testResource>
         </testResources>
         <plugins>
             <plugin>

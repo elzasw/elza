@@ -2,8 +2,9 @@ import { Fragment, useState, useEffect, useMemo, forwardRef, useImperativeHandle
 import { Api } from 'api';
 import classNames from 'classnames';
 import { FsRepo, FsItem, FsItemType } from 'elza-api';
-import { defineMessages, useIntl } from 'react-intl';
-import { i18n, Icon } from 'components/shared';
+import { FormattedMessage, defineMessages, useIntl } from 'react-intl';
+import { Icon } from 'components/shared';
+import { daoMessages } from 'components/arr/daoMessages';
 import "./FileSystemBrowser.scss"
 import {
     RenderItem,
@@ -293,7 +294,7 @@ export const Tree = forwardRef<TreeExposedFunctions, TreeProps>(({
                     </span>
                 </span>
                 <span className="item-part">
-                    {i18n("arr.daos.fileSystem.loadMore")}
+                    {<FormattedMessage {...daoMessages.daosFileSystemLoadMore} />}
                 </span>
             </div>;
         }

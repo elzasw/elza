@@ -59,6 +59,13 @@ export function DescItemTypeHeader({
   extraActions,
 }: Props) {
   const styles = useStyles();
+  const widthClasses = [
+    styles.gridItem_0,
+    styles.gridItem_1,
+    styles.gridItem_2,
+    styles.gridItem_3,
+    styles.gridItem_4,
+  ];
   const isCopied = nodeSettings?.descItemTypeCopyIds.includes(typeRef.id);
   const { settings } = useUserSettings();
   const compact = settings.compact;
@@ -85,7 +92,7 @@ export function DescItemTypeHeader({
       }}
       className={mergeClasses(
         compact ? styles.gridItemCompact : styles.gridItem,
-        styles[`gridItem_${typeWidth}`],
+        widthClasses[typeWidth],
         styles.descItemTypeTitle,
       )}
       onMouseEnter={({ currentTarget }) => {

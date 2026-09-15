@@ -4,7 +4,14 @@
 
 import React from 'react';
 import {connect} from 'react-redux';
-import {AbstractReactComponent, i18n} from 'components/shared';
+import {AbstractReactComponent} from 'components/shared';
+import { FormattedMessage, defineMessages } from 'react-intl';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    openInNewTab: { id: 'fundTree.action.openInNewTab', defaultMessage: 'Otevřít v nové záložce' },
+    open: { id: 'fundTree.action.open', defaultMessage: 'Otevřít v aktuální záložce' },
+});
 import * as types from 'actions/constants/ActionTypes';
 import {Dropdown} from 'react-bootstrap';
 import {
@@ -91,10 +98,10 @@ class FundDetailTree extends React.Component {
         var menu = (
             <ul className="dropdown-menu">
                 <Dropdown.Item onClick={this.handleSelectInNewTab.bind(this, node)}>
-                    {i18n('fundTree.action.openInNewTab')}
+                    <FormattedMessage {...messages.openInNewTab} />
                 </Dropdown.Item>
                 <Dropdown.Item onClick={this.handleSelectInTab.bind(this, node)}>
-                    {i18n('fundTree.action.open')}
+                    <FormattedMessage {...messages.open} />
                 </Dropdown.Item>
             </ul>
         );
