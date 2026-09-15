@@ -1,23 +1,15 @@
 import React from 'react';
 import { addToastr } from 'components/shared/toastr/ToastrActions.jsx';
 import LongText from './LongText';
-import i18n from './i18n';
+import { FormattedMessage } from 'react-intl';
+import { getIntl } from './shared/lang/intlInstance';
+import { exceptionMessages, permissionNameMessages } from './exception/messages';
+import { ExceptionTitle } from './exception/ExceptionTitle';
+import { TYPE2GROUP } from './exception/exceptionKey';
 import Exception from './shared/exception/Exception';
 import { urlEntity } from '../constants';
 import { Link } from 'react-router-dom';
 
-const TYPE2GROUP = {
-    ArrangementCode: 'arr',
-    BaseCode: 'base',
-    BulkActionCode: 'ba',
-    DigitizationCode: 'dig',
-    ExternalCode: 'ext',
-    OutputCode: 'out',
-    PackageCode: 'pkg',
-    RegistryCode: 'reg',
-    StructObjCode: 'sobj',
-    UserCode: 'usr',
-};
 
 /**
  * Sestavení výjimky.
@@ -60,22 +52,28 @@ export function createException(data) {
 function resolveBase(data) {
     switch (data.code) {
         case 'INSUFFICIENT_PERMISSIONS': {
-            return createToaster(i18n('exception.base.INSUFFICIENT_PERMISSIONS'), data, p => {
+            return createToaster(<FormattedMessage {...exceptionMessages["exception.base.INSUFFICIENT_PERMISSIONS"]} />, data, p => {
                 return (
                     <small>
-                        <b>{i18n('exception.base.INSUFFICIENT_PERMISSIONS.detail')}:</b>{' '}
-                        {p.permission && p.permission.map(item => i18n('permission.' + item)).join(', ')}
+                        <b>{<FormattedMessage {...exceptionMessages["exception.base.INSUFFICIENT_PERMISSIONS.detail"]} />}:</b>{' '}
+                        {p.permission &&
+                            p.permission
+                                .map(item => {
+                                    const message = permissionNameMessages['permission.' + item];
+                                    return message ? getIntl().formatMessage(message) : item;
+                                })
+                                .join(', ')}
                     </small>
                 );
             });
         }
         case 'OPTIMISTIC_LOCKING_ERROR': {
-            return createToaster(i18n('global.exception.permission.need'), data, (p, m) => {
+            return createToaster(<FormattedMessage {...exceptionMessages["exception.base.OPTIMISTIC_LOCKING_ERROR"]} />, data, (p, m) => {
                 return <LongText text={m} />;
             });
         }
         case 'GENERATING_EXPORT_FAILED': {
-            return createToaster(i18n('exception.base.GENERATING_EXPORT_FAILED'), data, (p, m) => {
+            return createToaster(<FormattedMessage {...exceptionMessages["exception.base.GENERATING_EXPORT_FAILED"]} />, data, (p, m) => {
                 return <LongText text={m} />;
             });
         }
@@ -97,10 +95,10 @@ function resolveRegistry(data) {
                     <span>{id}</span>
                 </Link>
             );
-            return createToaster(i18n('exception.base.EXPORT_FAILED_DELETED_AP'), data, p => {
+            return createToaster(<FormattedMessage {...exceptionMessages["exception.base.EXPORT_FAILED_DELETED_AP"]} />, data, p => {
                 return (
                     <>
-                        <b>{i18n('exception.base.EXPORT_FAILED_DELETED_AP.detail')}:</b>
+                        <b>{<FormattedMessage {...exceptionMessages["exception.base.EXPORT_FAILED_DELETED_AP.detail"]} />}:</b>
                         <ul>
                             {p.accessPointId && p.accessPointId.map((item) => <li key={item}>{entityBtn(item)}</li>)}
                         </ul>
@@ -120,30 +118,6 @@ function resolveRegistry(data) {
  */
 function resolveArrangement(data) {
     console.error("Arrangement error", data);
-    /*
-    switch (
-        data.code
-       Legacy code - jen pro ukázku jak to udělat
-        case 'X_DELETE_ERROR': {
-            return createToaster(i18n('exception.arr.X_DELETE_ERROR'), data, (p) => {
-                if (p.x) {
-                    return <LongText text={i18n('exception.arr.X_DELETE_ERROR.detail', p.x.map((item)=>item).join(", "))}/>
-                }
-            });
-        }
-    ) {
-    }
-    */
-}
-
-/**
- * Existuje překladový text?
- *
- * @param key hledaný klíč
- * @return {boolean} existuje?
- */
-function existsI18n(key) {
-    return i18n('^' + key) !== null;
 }
 
 function resolveDefault(data) {
@@ -163,13 +137,9 @@ function resolveDefault(data) {
         });
     }
 
-    const key = 'exception.' + TYPE2GROUP[data.type] + '.' + data.code;
-
-    if (!existsI18n(key)) {
-        console.warn("i18n('" + key + "') not found, please add to translate file");
-    }
-
-    return createToaster(i18n(key, data.properties), data);
+    // Titulek se formátuje až při renderu (ExceptionTitle), takže se přepíše
+    // i při přepnutí jazyka; chybějící hlášku ohlásí do konzole sám.
+    return createToaster(<ExceptionTitle data={data} />, data);
 }
 
 /**

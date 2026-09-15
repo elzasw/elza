@@ -6,8 +6,9 @@ import { globalMessages } from 'components/shared/lang/messages';
 import { humanFileSize } from 'components/Utils.jsx';
 import { FluentDialogContext } from 'components/shared/dialog/FluentModalDialog';
 import { useConfirmModal } from 'components/shared/dialog/useConfirmModal';
-import { addToastrInfo } from 'components/shared/toastr/ToastrActions';
+import { addToastrDanger, addToastrInfo } from 'components/shared/toastr/ToastrActions';
 import { WebApi } from 'actions/index.jsx';
+import { copyTextToClipboard } from 'utils/clipboard';
 import { useAppThunkDispatch } from 'utils/hooks';
 import { ArrDaoFileVO, ArrDaoVO } from 'typings/dao';
 import { Fund } from 'typings/store';
@@ -227,8 +228,12 @@ export function ArrDao({ dao, fund, readMode, daoFile, onSelectFile, onUnlink }:
     const copyToClipboard = async (url: string) => {
         // ponechej adresu zacinajici na http(s), jinak dopln hosta pred url + osetreni lomitka na zacatku
         const fullPath = /^https?:\/\//.test(url) ? url : `${location.host}/${url.replace(/^\//, '')}`;
-        await navigator.clipboard.writeText(fullPath);
-        dispatch(addToastrInfo(intl.formatMessage(globalMessages.copyToClipboardFinished)));
+        const copied = await copyTextToClipboard(fullPath);
+        dispatch(
+            copied
+                ? addToastrInfo(intl.formatMessage(globalMessages.copyToClipboardFinished))
+                : addToastrDanger(intl.formatMessage(globalMessages.copyToClipboardUnavailable)),
+        );
     };
 
     const formatUnit = (unit?: string) => (unit && unitMessages[unit] ? intl.formatMessage(unitMessages[unit]) : '');

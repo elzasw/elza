@@ -1,5 +1,8 @@
 import React from 'react';
-import {AbstractReactComponent, i18n} from 'components/shared';
+import {AbstractReactComponent} from 'components/shared';
+import { injectIntl } from 'react-intl';
+import { nodeMessages } from 'components/arr/nodeMessages';
+
 import {decorateValue} from './DescItemUtils';
 import DescItemLabel from './DescItemLabel';
 
@@ -29,7 +32,7 @@ class DescItemUnitdate extends AbstractReactComponent {
     render() {
         const {descItem, locked, readMode, cal} = this.props;
 
-        let value = cal && descItem.value == null ? i18n('subNodeForm.descItemType.calculable') : descItem.value;
+        let value = cal && descItem.value == null ? this.props.intl.formatMessage(nodeMessages.subNodeFormDescItemTypeCalculable) : descItem.value;
 
         if (readMode) {
             return <DescItemLabel
@@ -56,7 +59,7 @@ class DescItemUnitdate extends AbstractReactComponent {
                     )}
                     ref={ref => (this.focusEl = ref)}
                     type="text"
-                    value={descItem.undefined ? i18n('subNodeForm.descItemType.undefinedValue') : value || ''}
+                    value={descItem.undefined ? this.props.intl.formatMessage(nodeMessages.subNodeFormDescItemTypeUndefinedValue) : value || ''}
                     onChange={this.handleValueChange}
                 />
             </div>
@@ -64,4 +67,4 @@ class DescItemUnitdate extends AbstractReactComponent {
     }
 }
 
-export default DescItemUnitdate;
+export default injectIntl(DescItemUnitdate);

@@ -86,6 +86,7 @@ See `.claude/rules/i18n.md` for the full i18n rules (string definitions, build p
 ## Testing & types
 
 - Avoid `any`. Prefer `unknown` + narrowing, or a precise type. The existing codebase has `as any` casts in legacy code — don't add new ones.
+- CI runs `npm run ts:strict-check` — `tsc` under `tsconfig.strict.json`, failing on any strict error not in `ts-strict-baseline.json`. The build's own `tsc` is loose (`strict: false`), so a clean `tsc --noEmit` says nothing about this gate; run it before pushing. Test files are checked too: an untyped fixture with `childFiles: []` is an implicit `any[]` and fails the build. Type fixtures (or build them through a typed helper) rather than adding to the baseline, which may only shrink.
 - Don't suppress with `// @ts-ignore` / `// @ts-expect-error` without a comment explaining why.
 - No `console.log` in committed code. `console.warn` / `console.error` are acceptable for genuine warnings (the existing `onClose` fallbacks are an example).
 

@@ -7,7 +7,9 @@ import {connect} from 'react-redux';
 import {refRuleSetFetchIfNeeded} from 'actions/refTables/ruleSet.jsx';
 
 import ArrParentPage from './ArrParentPage.jsx';
-import {i18n, Icon, RibbonGroup, StoreHorizontalLoader} from 'components/shared';
+import { Icon, RibbonGroup, StoreHorizontalLoader} from 'components/shared';
+import { FormattedMessage, injectIntl } from 'react-intl';
+import { arrPageMessages } from './messages';
 import {FundDataGrid, Ribbon} from 'components/index.jsx';
 import {Button} from '../../components/ui';
 import {modalDialogShow} from 'actions/global/modalDialog.jsx';
@@ -62,7 +64,7 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
             >
                 <Icon glyph="fa-download" />
                 <div>
-                    <span className="btnText">{i18n('ribbon.action.arr.dataGrid.export')}</span>
+                    <span className="btnText">{<FormattedMessage {...arrPageMessages.ribbonActionArrDataGridExport} />}</span>
                 </div>
             </Button>,
         );
@@ -76,7 +78,7 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
                 >
                     <Icon glyph="fa-upload" />
                     <div>
-                        <span className="btnText">{i18n('ribbon.action.arr.dataGrid.import')}</span>
+                        <span className="btnText">{<FormattedMessage {...arrPageMessages.ribbonActionArrDataGridImport} />}</span>
                     </div>
                 </Button>,
             );
@@ -117,7 +119,7 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('dataGrid.export.title'),
+                this.props.intl.formatMessage(arrPageMessages.dataGridExportTitle),
                 <DataGridExportDialog versionId={versionId} fundDataGrid={fund.fundDataGrid} />,
             ),
         );
@@ -128,7 +130,7 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('dataGrid.import.title'),
+                this.props.intl.formatMessage(arrPageMessages.dataGridImportTitle),
                 <DataGridImportDialog versionId={versionId} fundId={fund.id} fundDataGrid={fund.fundDataGrid} />,
                 MODAL_DIALOG_SIZE.LG,
             ),
@@ -203,4 +205,4 @@ ArrDataGridPage.propTypes = {
     ruleSet: PropTypes.object.isRequired,
 };
 
-export default connect(mapStateToProps)(ArrDataGridPage);
+export default connect(mapStateToProps)(injectIntl(ArrDataGridPage));

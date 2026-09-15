@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
+import cz.tacr.elza.service.da.DaAipActionService;
 import cz.tacr.elza.service.da.DaExportExtSyncsProcessor;
 import cz.tacr.elza.service.da.DaImportExtSyncsProcessor;
 import cz.tacr.elza.service.da.DaScheduler;
@@ -111,6 +112,8 @@ public class StartupService implements SmartLifecycle {
 
     private final DaScheduler daScheduler;
 
+    private final DaAipActionService daAipActionService;
+
     private boolean running;
 
     public static boolean fullTextReindex = false;
@@ -161,7 +164,8 @@ public class StartupService implements SmartLifecycle {
                           final AccessPointCacheService accessPointCacheService,
                           final CamScheduler camScheduler,
                           final UserService userService,
-                          final DaScheduler daScheduler) {
+                          final DaScheduler daScheduler,
+                          final DaAipActionService daAipActionService) {
         this.nodeRepository = nodeRepository;
         this.arrangementService = arrangementService;
         this.bulkActionRunRepository = bulkActionRunRepository;
@@ -186,6 +190,7 @@ public class StartupService implements SmartLifecycle {
         this.camScheduler = camScheduler;
         this.userService = userService;
         this.daScheduler = daScheduler;
+        this.daAipActionService = daAipActionService;
     }
 
     @Autowired
@@ -261,6 +266,10 @@ public class StartupService implements SmartLifecycle {
         camScheduler.start();
         // enable indexing after all caches are loaded and packages are in place
         OutboxPollingConfigurer.setIndexingEnabled(true);
+
+        // Akce nad AIPy, které restart připravil o to, co je mělo provést; ve frontách po nich nic
+        // nezbylo, takže je nikdo neukončí.
+        tt.executeWithoutResult(r -> daAipActionService.abandonItemsWithoutCarrier());
 
         daScheduler.start();
         if (fullTextReindex) {

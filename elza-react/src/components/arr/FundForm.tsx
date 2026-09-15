@@ -11,7 +11,10 @@ import { renderUserOrGroupLabel } from '../admin/adminRenderUtils';
 import UserAndGroupField from '../admin/UserAndGroupField';
 import { submitForm } from '../form/FormUtils.jsx';
 import { validateFundForm } from './fundFormValidation';
-import { FormInputField, i18n } from '../shared';
+import { FormInputField} from '../shared';
+import { FormattedMessage } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { fundFormMessages } from './fundFormMessages';
 import TagsField from '../TagsField';
 import { Button } from '../ui';
 
@@ -67,12 +70,12 @@ const FundForm: React.FC<IFundForm & InjectedFormProps<object, IFundForm>> = mem
     if (approve) {
         if (isBulkActionRunning()) {
             approveButton = (
-                <span className="text-danger">{i18n('arr.fund.approveVersion.runningBulkAction')}</span>
+                <span className="text-danger">{<FormattedMessage {...fundFormMessages.fundApproveVersionRunningBulkAction} />}</span>
             );
         } else {
             approveButton = (
                 <Button type="submit" variant="outline-secondary" disabled={submitting}>
-                    {i18n('arr.fund.approveVersion.approve')}
+                    {<FormattedMessage {...fundFormMessages.fundApproveVersionApprove} />}
                 </Button>
             );
         }
@@ -88,7 +91,7 @@ const FundForm: React.FC<IFundForm & InjectedFormProps<object, IFundForm>> = mem
                         name="name"
                         type="text"
                         component={FormInputField}
-                        label={i18n('arr.fund.name')}
+                        label={<FormattedMessage {...fundFormMessages.fundName} />}
                     />
                 )}
 
@@ -97,7 +100,7 @@ const FundForm: React.FC<IFundForm & InjectedFormProps<object, IFundForm>> = mem
                         name="internalCode"
                         type="text"
                         component={FormInputField}
-                        label={i18n('arr.fund.internalCode')}
+                        label={<FormattedMessage {...fundFormMessages.fundInternalCode} />}
                     />
                 )}
 
@@ -106,7 +109,7 @@ const FundForm: React.FC<IFundForm & InjectedFormProps<object, IFundForm>> = mem
                         name="institutionIdentifier"
                         type="select"
                         component={FormInputField}
-                        label={i18n('arr.fund.institution')}
+                        label={<FormattedMessage {...fundFormMessages.fundInstitution} />}
                     >
                         <option key="-institutionId"/>
                         {institutions.map(i => {
@@ -120,7 +123,7 @@ const FundForm: React.FC<IFundForm & InjectedFormProps<object, IFundForm>> = mem
                         name="ruleSetCode"
                         type="select"
                         component={FormInputField}
-                        label={i18n('arr.fund.ruleSet')}
+                        label={<FormattedMessage {...fundFormMessages.fundRuleSet} />}
                     >
                         <option key="-ruleSetCode"/>
                         {ruleSets.filter(rs => rs.ruleType === 'ARRANGEMENT').map(i => {
@@ -130,14 +133,14 @@ const FundForm: React.FC<IFundForm & InjectedFormProps<object, IFundForm>> = mem
                 )}
 
                 {approve && (
-                    <span className="h4">{i18n('arr.fund.approveVersion.confirm')}</span>
+                    <span className="h4">{<FormattedMessage {...fundFormMessages.fundApproveVersionConfirm} />}</span>
                 )}
 
                 {(create || update) && (
                     <FieldArray
                         name="scopes"
                         component={ScopesField}
-                        label={i18n('arr.fund.regScope')}
+                        label={<FormattedMessage {...fundFormMessages.fundRegScope} />}
                         scopeList={props.scopeList}
                         disabled={submitting}
                     />
@@ -147,7 +150,7 @@ const FundForm: React.FC<IFundForm & InjectedFormProps<object, IFundForm>> = mem
                     <Field
                         name="fundAdmins"
                         component={FormInputField}
-                        label={i18n('arr.fund.fundAdmins')}
+                        label={<FormattedMessage {...fundFormMessages.fundFundAdmins} />}
                         as={TagsField}
                         renderTagItem={renderUserOrGroupLabel}
                         fieldComponent={UserAndGroupField}
@@ -157,24 +160,24 @@ const FundForm: React.FC<IFundForm & InjectedFormProps<object, IFundForm>> = mem
                         }}
                     />
                 )}
-                {(create || update) && <Field name={"fundNumber"} component={FormInputField} label={i18n('arr.fund.number')} type={"number"} />}
-                {(create || update) && <Field name={"unitdate"} component={FormInputField} label={i18n('arr.fund.unitdate')} />}
-                {(create || update) && <Field name={"mark"} component={FormInputField} label={i18n('arr.fund.mark')} />}
+                {(create || update) && <Field name={"fundNumber"} component={FormInputField} label={<FormattedMessage {...fundFormMessages.fundNumber} />} type={"number"} />}
+                {(create || update) && <Field name={"unitdate"} component={FormInputField} label={<FormattedMessage {...fundFormMessages.fundUnitdate} />} />}
+                {(create || update) && <Field name={"mark"} component={FormInputField} label={<FormattedMessage {...fundFormMessages.fundMark} />} />}
             </Modal.Body>
             <Modal.Footer>
                 {create && (
                     <Button type="submit" variant="outline-secondary" disabled={pristine || submitting}>
-                        {i18n('global.action.create')}
+                        {<FormattedMessage {...globalMessages.create} />}
                     </Button>
                 )}
                 {approve && approveButton}
                 {(update || ruleSet) && (
                     <Button type="submit" variant="outline-secondary" disabled={pristine || submitting}>
-                        {i18n('global.action.update')}
+                        {<FormattedMessage {...globalMessages.save} />}
                     </Button>
                 )}
                 <Button variant="link" onClick={onClose}>
-                    {i18n('global.action.cancel')}
+                    {<FormattedMessage {...globalMessages.cancel} />}
                 </Button>
             </Modal.Footer>
         </Form>

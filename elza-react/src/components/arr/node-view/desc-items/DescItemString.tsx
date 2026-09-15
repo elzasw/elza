@@ -1,6 +1,8 @@
 import { DataString, DataType } from "elza-api";
 import { DescItemProps } from "./types";
 import { isMaskViewDefinition, maskString } from "components/arr/item-form/desc-items/maskUtils";
+import { FormattedMessage } from "react-intl";
+import { messages as commonMessages } from "components/arr/item-form/desc-items/commonMessages";
 
 export function DescItemString({ item, nodeId, typeRef }: DescItemProps) {
   if (item.data?.dataType !== DataType.String) {
@@ -21,7 +23,7 @@ export function DescItemString({ item, nodeId, typeRef }: DescItemProps) {
         opacity: isInherited ? 0.5 : undefined,
       }}
     >
-      {item.undefined ? "Výjimka" : value}
+      {item.undefined ? <FormattedMessage {...commonMessages.undefined} /> : value}
     </div>
   );
 }

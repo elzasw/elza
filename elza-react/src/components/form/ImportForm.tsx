@@ -9,7 +9,16 @@ import { FormErrors } from 'redux-form';
 import { AppState, Scope } from 'typings/store';
 import { useThunkDispatch } from 'utils/hooks';
 import * as perms from '../../actions/user/Permission.jsx';
-import i18n from '../i18n';
+import { FormattedMessage, defineMessages, useIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    registryScope: { id: 'import.registryScope', defaultMessage: 'Oblast entit' },
+    file: { id: 'import.file', defaultMessage: 'Soubor' },
+    running: { id: 'import.running', defaultMessage: 'Import probíhá' },
+    importAction: { id: 'global.action.import', defaultMessage: 'Importovat' },
+});
 import Autocomplete from '../shared/autocomplete/Autocomplete';
 import FileInput from '../shared/form/FileInput';
 import Icon from '../shared/icon/Icon';
@@ -31,6 +40,7 @@ interface IImportFormProps {
     onClose: () => void;
 }
 export const ImportForm = ({ record, fund, onClose }: IImportFormProps) => {
+    const intl = useIntl();
     const [scopes, setScopes] = useState<Scope[]>([]);
     const [isRunning, setIsRunning] = useState<boolean>(false);
     const dispatch = useThunkDispatch();
@@ -42,10 +52,10 @@ export const ImportForm = ({ record, fund, onClose }: IImportFormProps) => {
         const errors: FormErrors<ImportFormFields> = {};
 
         if (!values.recordScope || !values.recordScope.id) {
-            errors.recordScope = i18n('global.validation.required');
+            errors.recordScope = intl.formatMessage(globalMessages.validationRequired);
         }
         if (!values.xmlFile || values.xmlFile == null) {
-            errors.xmlFile = i18n('global.validation.required');
+            errors.xmlFile = intl.formatMessage(globalMessages.validationRequired);
         }
         return errors;
     };
@@ -98,7 +108,7 @@ export const ImportForm = ({ record, fund, onClose }: IImportFormProps) => {
                                                 <Autocomplete
                                                     {...input}
                                                     {...meta}
-                                                    label={i18n('import.registryScope')}
+                                                    label={intl.formatMessage(messages.registryScope)}
                                                     items={scopes}
                                                     getItemId={(item: Scope) => (item ? item.id : null)}
                                                     getItemName={(item: Scope) => (item ? item.name : '')}
@@ -110,7 +120,7 @@ export const ImportForm = ({ record, fund, onClose }: IImportFormProps) => {
                                                 <FileInput
                                                     {...input}
                                                     {...meta}
-                                                    label={i18n('import.file')}
+                                                    label={intl.formatMessage(messages.file)}
                                                     type="file"
                                                 />
                                             )}
@@ -123,10 +133,10 @@ export const ImportForm = ({ record, fund, onClose }: IImportFormProps) => {
                                             type="submit"
                                             onClick={handleSubmit}
                                         >
-                                            {i18n('global.action.import')}
+                                            <FormattedMessage {...messages.importAction} />
                                         </Button>
                                         <Button variant="link" onClick={onClose}>
-                                            {i18n('global.action.cancel')}
+                                            <FormattedMessage {...globalMessages.cancel} />
                                         </Button>
                                     </Modal.Footer>
                                 </>
@@ -138,7 +148,7 @@ export const ImportForm = ({ record, fund, onClose }: IImportFormProps) => {
             {isRunning && (
                 <div>
                     <Modal.Body>
-                        <Icon className="fa-spin" glyph="fa-refresh" /> {i18n('import.running')}
+                        <Icon className="fa-spin" glyph="fa-refresh" /> <FormattedMessage {...messages.running} />
                     </Modal.Body>
                 </div>
             )}

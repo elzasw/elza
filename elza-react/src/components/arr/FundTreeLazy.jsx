@@ -2,7 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {
     AbstractReactComponent,
-    i18n,
     Icon,
     SearchWithGoto,
     StoreHorizontalLoader,
@@ -10,6 +9,8 @@ import {
     VirtualList,
     TooltipTrigger,
 } from 'components/shared';
+import { FormattedMessage, injectIntl } from 'react-intl';
+import { arrPanelMessages } from './panelMessages';
 import {Button} from '../ui';
 import classNames from 'classnames';
 import {propsEquals} from 'components/Utils';
@@ -278,7 +279,7 @@ class FundTreeLazy extends AbstractReactComponent {
             {style:{width: `${separatorWidth}px`}}
         );
 
-        let name = node.name ? node.name : i18n('fundTree.node.name.undefined', node.id);
+        let name = node.name ? node.name : this.props.intl.formatMessage(arrPanelMessages.fundTreeNodeNameUndefined, { 0: node.id });
         const title = name;
         if (this.props.cutLongLabels) {
             if (name.length > TREE_NAME_MAX_CHARS) {
@@ -421,14 +422,14 @@ class FundTreeLazy extends AbstractReactComponent {
                 >
                     <div className="fa-tree-lazy-actions">
                         {onExpand && (
-                            <TooltipTrigger content={i18n('fundTree.expandLevel')} placement="top">
+                            <TooltipTrigger content={<FormattedMessage {...arrPanelMessages.fundTreeExpandLevel} />} placement="top">
                                 <Button disabled={selectedNode && !selectedNode.hasChildren} className="tree-button" onClick={this.handleExpand}>
                                     <Icon glyph="fa-plus-square" />
                                 </Button>
                             </TooltipTrigger>
                         )}
                         {showCollapseAll && (
-                            <TooltipTrigger content={i18n('fundTree.collapseAll')} placement="top">
+                            <TooltipTrigger content={<FormattedMessage {...arrPanelMessages.fundTreeCollapseAll} />} placement="top">
                                 <Button className="tree-button" onClick={this.props.onCollapse}>
                                     <Icon glyph="fa-minus-square" />
                                 </Button>
@@ -460,4 +461,4 @@ class FundTreeLazy extends AbstractReactComponent {
     }
 }
 
-export default FundTreeLazy;
+export default injectIntl(FundTreeLazy, { forwardRef: true });

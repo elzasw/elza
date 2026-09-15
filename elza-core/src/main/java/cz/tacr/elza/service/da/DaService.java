@@ -15,6 +15,7 @@ import cz.tacr.da.controller.vo.RequestState;
 import cz.tacr.da.controller.vo.UpdatedAips;
 import cz.tacr.da.controller.vo.UpdatedInfo;
 import cz.tacr.elza.api.AipType;
+import cz.tacr.elza.api.DaAipActionItemState;
 import cz.tacr.elza.api.DaAipActionType;
 import cz.tacr.elza.common.XmlUtils;
 import cz.tacr.elza.connector.DaConnector;
@@ -119,6 +120,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.archivists.ead3.schema.Ead;
 import org.glassfish.jaxb.runtime.marshaller.NamespacePrefixMapper;
 import org.jetbrains.annotations.NotNull;
@@ -127,6 +129,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.ClassPathResource;
@@ -490,6 +493,16 @@ public class DaService {
         }
     }
 
+    /**
+     * @return the first file of the given name anywhere in the unpacked package
+     * @throws AipProblemException when the package has no such file
+     */
+    private static Path findPackageFile(Path packageDir, String fileName) throws IOException {
+        try (Stream<Path> str = Files.walk(packageDir).filter(path -> path.toString().endsWith(fileName))) {
+            return str.findFirst().orElseThrow(() -> AipProblemException.metadata("Balíček neobsahuje soubor " + fileName));
+        }
+    }
+
     private PremisComplexType readPremis(Path tempDir) throws Exception {
         try (Stream<Path> str = Files.walk(tempDir).filter(path -> path.toString().endsWith("PREMIS.xml"))) {
             Path premis = str.findFirst().orElseThrow(() -> AipProblemException.metadata("Balíček neobsahuje soubor PREMIS.xml"));
@@ -524,13 +537,37 @@ public class DaService {
 
     /**
      * Requests the metadata of the given AIPs, as an action of the current user.
-     *
-     * Not transactional on purpose - see {@link #aipUpdateAip}.
      */
+    @Transactional
     public DaAipAction requestMetadata(List<Integer> aipIds) {
         DaAipAction action = actionService.start(DaAipActionType.LOAD_METADATA, aipRepository.findAllById(aipIds));
         createDaoStructure(aipIds, actionService.sinkFor(action));
         return action;
+    }
+
+    /**
+     * Whether a download that would deliver at least the requested form of the package is already
+     * waiting in the queue. The load flags say what is on disk and the queue says what was asked
+     * for; asking again would only replace the pending item with an identical one.
+     */
+    private boolean isDownloadPending(DaAip aip, AipType requested) {
+        DaSyncQueueItem pending = syncQueueItemRepository.findByAipAndStateInAndActiveIsTrue(aip,
+                List.of(DaSyncQueueItem.QueueItemState.IMPORT_NEW, DaSyncQueueItem.QueueItemState.UPDATE));
+        return pending != null && pending.getAipType() != null && rank(pending.getAipType()) >= rank(requested);
+    }
+
+    /**
+     * Order of the package forms by content: each form contains everything the forms below it do
+     * (see the DA API for dipType). The native form is the whole package, so it ranks with the
+     * complete one.
+     */
+    private static int rank(AipType type) {
+        return switch (type) {
+            case PACKAGE_INFO -> 0;
+            case ARCHDESC -> 1;
+            case METADATA_BASE -> 2;
+            case AIP_BASE, AIP_RAW -> 3;
+        };
     }
 
     @Transactional
@@ -544,28 +581,28 @@ public class DaService {
         Map<DaAip, DaAipState> stateMap = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList).stream()
                 .collect(Collectors.toMap(DaAipState::getDaAip, Function.identity()));
 
-        List<DaAipState> stateList = new ArrayList<>();
+        List<DaAipState> resolvedStates = new ArrayList<>();
 
         for (DaAip aip : aipList) {
             DaAipState aipState = stateMap.get(aip);
             if (aipState.getFund() == null) {
                 referenceResolver.resolveReferences(aipState);
+                resolvedStates.add(aipState);
             }
-            if (BooleanUtils.isNotTrue(aipState.getMetadataLoad()) && BooleanUtils.isNotTrue(aipState.getCompleteAipLoad()) && aipState.getFund() != null) {
-                aipState.setMetadataLoad(true);
-                stateList.add(aipState);
-
+            if (aipState.getFund() == null) {
+                sink.skipped(aip.getAipId(), "AIP není navázaný na archivní soubor, není ke kterému fondu metadata stahovat.");
+            } else if (BooleanUtils.isTrue(aipState.getMetadataLoad()) || BooleanUtils.isTrue(aipState.getCompleteAipLoad())) {
+                sink.skipped(aip.getAipId(), "Metadata AIPu už jsou stažená.");
+            } else if (isDownloadPending(aip, AipType.METADATA_BASE)) {
+                sink.skipped(aip.getAipId(), "Stažení metadat AIPu už je ve frontě.");
+            } else {
                 DaSyncQueueItem queueItem = createSyncQueueItem(aip.getCode(), aip, aip.getDigitalRepository(),
                         DaSyncQueueItem.QueueItemState.UPDATE, aipState.getAipVersion(), AipType.METADATA_BASE, true);
                 sink.enqueued(aip.getAipId(), queueItem);
-            } else if (aipState.getFund() == null) {
-                sink.skipped(aip.getAipId(), "AIP není navázaný na archivní soubor, není ke kterému fondu metadata stahovat.");
-            } else {
-                sink.skipped(aip.getAipId(), "Metadata AIPu už jsou stažená.");
             }
         }
 
-        aipStateRepository.saveAll(stateList);
+        aipStateRepository.saveAll(resolvedStates);
     }
 
     /**
@@ -712,25 +749,21 @@ public class DaService {
         Map<DaAip, DaAipState> stateMap = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList).stream()
                 .collect(Collectors.toMap(DaAipState::getDaAip, Function.identity()));
 
-        List<DaAipState> stateList = new ArrayList<>();
-
         for (DaAip aip : aipList) {
             DaAipState aipState = stateMap.get(aip);
-            if (BooleanUtils.isTrue(aipState.getMetadataLoad()) && BooleanUtils.isNotTrue(aipState.getCompleteAipLoad())) {
-                aipState.setCompleteAipLoad(true);
-                stateList.add(aipState);
-
+            if (BooleanUtils.isTrue(aipState.getCompleteAipLoad())) {
+                sink.skipped(aip.getAipId(), "Kompletní AIP je už stažený.");
+            } else if (BooleanUtils.isNotTrue(aipState.getMetadataLoad())) {
+                sink.skipped(aip.getAipId(), "AIP nemá stažená metadata; nejprve je nutné stáhnout ta.");
+            } else if (isDownloadPending(aip, AipType.AIP_BASE)) {
+                sink.skipped(aip.getAipId(), "Stažení kompletního AIPu už je ve frontě.");
+            } else {
                 DaSyncQueueItem queueItem = createSyncQueueItem(aip.getCode(), aip, aip.getDigitalRepository(),
                         DaSyncQueueItem.QueueItemState.UPDATE, aipState.getAipVersion(), AipType.AIP_BASE, true);
                 sink.enqueued(aip.getAipId(), queueItem);
-            } else {
-                sink.skipped(aip.getAipId(), BooleanUtils.isTrue(aipState.getCompleteAipLoad())
-                        ? "Kompletní AIP je už stažený."
-                        : "AIP nemá stažená metadata; nejprve je nutné stáhnout ta.");
             }
         }
 
-        aipStateRepository.saveAll(stateList);
         return action;
     }
 
@@ -742,23 +775,22 @@ public class DaService {
         Map<DaAip, DaAipState> stateMap = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList).stream()
                 .collect(Collectors.toMap(DaAipState::getDaAip, Function.identity()));
 
-        List<DaAipState> stateList = new ArrayList<>();
-
+        // The complete package is replaced by the metadata package when that one arrives, and the
+        // flags follow the package on disk - so nothing is cleared here, the pending downgrade
+        // shows as the queue item of the AIP.
         for (DaAip aip : aipList) {
             DaAipState aipState = stateMap.get(aip);
-            if (BooleanUtils.isTrue(aipState.getCompleteAipLoad())) {
-                aipState.setCompleteAipLoad(false);
-                stateList.add(aipState);
-
+            if (BooleanUtils.isNotTrue(aipState.getCompleteAipLoad())) {
+                sink.skipped(aip.getAipId(), "AIP nemá stažený kompletní balíček, není co mazat.");
+            } else if (isDownloadPending(aip, AipType.METADATA_BASE)) {
+                sink.skipped(aip.getAipId(), "Nahrazení kompletního balíčku metadaty už je ve frontě.");
+            } else {
                 DaSyncQueueItem queueItem = createSyncQueueItem(aip.getCode(), aip, aip.getDigitalRepository(),
                         DaSyncQueueItem.QueueItemState.UPDATE, aipState.getAipVersion(), AipType.METADATA_BASE, true);
                 sink.enqueued(aip.getAipId(), queueItem);
-            } else {
-                sink.skipped(aip.getAipId(), "AIP nemá stažený kompletní balíček, není co mazat.");
             }
         }
 
-        aipStateRepository.saveAll(stateList);
         return action;
     }
 
@@ -1302,19 +1334,94 @@ public class DaService {
     }
 
     /**
-     * Sets the state of the given queue items, each described by its own message. Used where the
-     * items of one batch fail for different reasons and a shared description would lose them.
+     * Records a failed download of the package of the given queue items. Nothing of the package
+     * arrived, so unlike a failure of the processing the items are not closed: they stay in
+     * their pending state, sent behind their peers by the raised attempt count, and are retried
+     * once the fresher items are served - nothing gives a download up, the DA holds the package
+     * and every retry may succeed. The failure is described on each item and as a problem of
+     * its AIP - an AIP the DA announced but ELZA could never download is created from what the
+     * change carries, so the user finds it in the AIP list instead of only in the queue.
      */
     @Transactional
-    public void failQueueItems(Map<DaSyncQueueItem, String> messageByItem, DaSyncQueueItem.QueueItemState state) {
-        if (MapUtils.isNotEmpty(messageByItem)) {
+    public void recordDownloadFailure(List<DaSyncQueueItem> syncQueueItemList, Exception failure) {
+        AipProblem problem = AipProblem.downloadFailure(failure);
+        OffsetDateTime now = OffsetDateTime.now();
+        for (DaSyncQueueItem syncQueueItem : syncQueueItemList) {
+            int attempts = (syncQueueItem.getAttemptCount() == null ? 0 : syncQueueItem.getAttemptCount()) + 1;
+            syncQueueItem.setAttemptCount(attempts);
+            syncQueueItem.setDate(now);
+            syncQueueItem.setStateMessage(StringUtils.abbreviate(
+                    problem.description() + " (pokusů: " + attempts + ")", STATE_MESSAGE_MAX_LENGTH));
+            recordAipProblem(syncQueueItem, problem);
+        }
+        syncQueueItemRepository.saveAll(syncQueueItemList);
+    }
+
+    /**
+     * Describes the problem on the AIP of the queue item, whatever kind of problem it is - the
+     * download that never delivered the package as well as the processing of a package that
+     * arrived. An AIP unknown to ELZA is created first, with the code and version the change
+     * carries as all that is known about it, so that the user finds the failure in the AIP list
+     * and not only in the queue; the next successfully processed package replaces this state,
+     * which clears the problem the same way it is cleared for an AIP that already existed.
+     */
+    private void recordAipProblem(DaSyncQueueItem syncQueueItem, AipProblem problem) {
+        DaAip aip = syncQueueItem.getAip() != null
+                ? syncQueueItem.getAip()
+                : aipRepository.findByCode(syncQueueItem.getCode());
+        DaAipState aipState;
+        if (aip == null) {
+            aip = new DaAip();
+            aip.setCode(syncQueueItem.getCode());
+            aip.setDigitalRepository(syncQueueItem.getDigitalRepository());
+            aipRepository.save(aip);
+
+            DaChange change = new DaChange();
+            change.setType(DaChangeType.AIP_CREATE);
+            change.setChangeDate(LocalDateTime.now());
+            change.setDaAip(aip);
+            changeRepository.save(change);
+
+            aipState = new DaAipState();
+            aipState.setDaAip(aip);
+            aipState.setCreateChange(change);
+            aipState.setAipVersion(StringUtils.defaultString(syncQueueItem.getAipVersion()));
+        } else {
+            aipState = aipStateRepository.findByDaAipAndDeleteChangeIsNull(aip);
+            if (aipState == null) {
+                return;
+            }
+        }
+        syncQueueItem.setAip(aip);
+        referenceResolver.recordProblem(aipState, problem);
+        aipStateRepository.save(aipState);
+    }
+
+    /**
+     * Closes the given queue items in the state their own problem ended them in. Used where the
+     * items of one batch fail for different reasons and a shared description would lose them.
+     *
+     * The problem is written on the AIP as well, so a package that arrived and could not be
+     * processed is as visible as one that could not be downloaded - the failure is terminal,
+     * nothing retries it, and the queue alone is not where the user looks for it.
+     *
+     * The action item the queue item was carrying out is finished here too: these items are
+     * taken out of the batch, so the caller closes the batch without them and an action item
+     * nobody finishes leaves the request the user is watching running forever.
+     */
+    @Transactional
+    public void failQueueItems(Map<DaSyncQueueItem, AipProblem> problemByItem, DaSyncQueueItem.QueueItemState state) {
+        if (MapUtils.isNotEmpty(problemByItem)) {
             OffsetDateTime now = OffsetDateTime.now();
-            messageByItem.forEach((syncQueueItem, message) -> {
+            problemByItem.forEach((syncQueueItem, problem) -> {
                 syncQueueItem.setState(state);
-                syncQueueItem.setStateMessage(StringUtils.abbreviate(message, STATE_MESSAGE_MAX_LENGTH));
+                syncQueueItem.setStateMessage(StringUtils.abbreviate(problem.description(), STATE_MESSAGE_MAX_LENGTH));
                 syncQueueItem.setDate(now);
+                recordAipProblem(syncQueueItem, problem);
+                actionService.completeFromQueue(List.of(syncQueueItem), DaAipActionItemState.ERROR,
+                                                problem.description());
             });
-            syncQueueItemRepository.saveAll(messageByItem.keySet());
+            syncQueueItemRepository.saveAll(problemByItem.keySet());
         }
     }
 
@@ -1332,6 +1439,10 @@ public class DaService {
         try (ZipInputStream zipInputStream = new ZipInputStream((tempZipInputStream))) {
             ZipEntry entry;
             while ((entry = zipInputStream.getNextEntry()) != null) {
+                // A package that does not have the expected layout is reported by the file that
+                // is missing from it, which says nothing about what the DA did send instead -
+                // the names of the received entries are the only account of that.
+                logger.debug("Balíček dávky obsahuje položku {}", entry.getName());
                 Path filePath = tempDir.resolve(entry.getName());
                 if (entry.isDirectory()) {
                     Files.createDirectories(filePath);
@@ -1355,19 +1466,27 @@ public class DaService {
             // The directory of the package is named by the code of the AIP, which is the code
             // of its queue item - a package that fails is reported on its own item, so one bad
             // package neither hides itself nor takes the rest of the batch down with it.
-            Map<DaSyncQueueItem, String> failedItems = new LinkedHashMap<>();
+            Map<DaSyncQueueItem, AipProblem> failedItems = new LinkedHashMap<>();
 
             for (File aipDir : aipDirSet) {
                 DaAipState aipState;
-                try (Stream<Path> str = Files.walk(aipDir.toPath()).filter(path -> path.toString().endsWith("PACKAGE-INFO.xml"))) {
-                    Path packageInfo = str.findFirst().orElseThrow(() -> AipProblemException.metadata("Balíček neobsahuje soubor PACKAGE-INFO.xml"));
+                try {
+                    Path packageInfo = findPackageFile(aipDir.toPath(), "PACKAGE-INFO.xml");
                     aipState = packageInfoService.processPackageInfo(digitalRepository, packageInfo.toFile());
+                    // The load flags of the AIP are set by storing the package, so a package is
+                    // stored only when it is what its type claims: a DA that answers a metadata
+                    // request with less would otherwise be recorded as having delivered the
+                    // metadata, and the AIP could never be asked for them again.
+                    if (aipType != AipType.PACKAGE_INFO) {
+                        findPackageFile(aipDir.toPath(), "METS.xml");
+                        findPackageFile(aipDir.toPath(), "PREMIS.xml");
+                    }
                 } catch (Exception e) {
-                    String description = AipProblem.of(e).description();
-                    logger.error("Balíček {} se nepodařilo načíst: {}", aipDir.getName(), description, e);
+                    AipProblem problem = AipProblem.of(e);
+                    logger.error("Balíček {} se nepodařilo načíst: {}", aipDir.getName(), problem.description(), e);
                     DaSyncQueueItem failedItem = syncQueueItemMap.getOrDefault(aipDir.getName(), null);
                     if (failedItem != null) {
-                        failedItems.put(failedItem, description);
+                        failedItems.put(failedItem, problem);
                     }
                     continue;
                 }
@@ -1495,6 +1614,14 @@ public class DaService {
         localCache.setSyncQueueItem(syncQueueItem);
         localCache.setAipState(aipState);
         daLocalCacheRepository.save(localCache);
+
+        // The load flags describe the package on disk, so they are written here, where it is
+        // stored, and nowhere else: a complete package carries the metadata too, and a metadata
+        // package arriving later replaces a complete one.
+        DaAipState storedState = aipStateRepository.findById(aipState.getAipStateId()).orElse(aipState);
+        storedState.setMetadataLoad(aipType == AipType.METADATA_BASE || aipType == AipType.AIP_BASE);
+        storedState.setCompleteAipLoad(aipType == AipType.AIP_BASE);
+        aipStateRepository.save(storedState);
     }
 
     @Transactional
@@ -1507,10 +1634,25 @@ public class DaService {
         daLocalCacheRepository.save(localCache);
     }
 
-    @Transactional
+    /**
+     * The caller supplies the transaction: every call is internal to this class, so a
+     * {@code @Transactional} here would be bypassed together with the proxy.
+     */
     public DaSyncQueueItem createSyncQueueItem(String code, DaAip aip, ArrDigitalRepository digitalRepository,
                                                DaSyncQueueItem.QueueItemState queueItemState, String aipVersion, AipType aipType, boolean active) {
+        Validate.isTrue(TransactionSynchronizationManager.isActualTransactionActive(),
+                        "Zařazení do fronty vyžaduje otevřenou transakci");
+
         List<DaSyncQueueItem.QueueItemState> queueItemStates = getQueueItemStates(queueItemState);
+
+        // The request being queued replaces the ones already waiting for the same AIP. Their action
+        // items are closed here, where they lose their queue item - the processors read active items
+        // only, so nothing else would ever report on them again.
+        for (Integer superseded : syncQueueItemRepository.findActionItemIdsToSupersede(code, digitalRepository, queueItemStates)) {
+            actionService.recordOutcome(superseded, DaAipActionItemState.SKIPPED,
+                                        "Požadavek nahradil novější požadavek na tentýž AIP.");
+        }
+
         syncQueueItemRepository.updateActiveByCodeAndDigitalRepositoryAndStateInAndActiveIsTrue(code, digitalRepository, queueItemStates);
 
         DaSyncQueueItem syncQueueItem = new DaSyncQueueItem();

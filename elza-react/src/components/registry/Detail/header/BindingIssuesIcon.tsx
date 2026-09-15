@@ -3,7 +3,8 @@ import { ErrorCircleFilled, WarningFilled } from '@fluentui/react-icons';
 import { useState } from 'react';
 import { ExtEntityBinding, ExtIssue, ExtIssueIconState } from 'elza-api';
 import { Api } from 'api/api';
-import i18n from 'components/i18n';
+import { FormattedMessage } from 'react-intl';
+import { apDetailMessages } from '../messages';
 
 const useStyles = makeStyles({
     iconNew: {
@@ -97,7 +98,7 @@ export function BindingIssuesIcon({ binding, testIssues }: Props) {
             </PopoverTrigger>
             <PopoverSurface className={classes.popover}>
                 {loading && <Spinner size="tiny" />}
-                {issues?.length === 0 && <span>{i18n('ap.binding.issues.none')}</span>}
+                {issues?.length === 0 && <span><FormattedMessage {...apDetailMessages.bindingIssuesNone} /></span>}
                 {issues?.map((issue) => {
                     const extra = (
                         [

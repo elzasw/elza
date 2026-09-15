@@ -1,7 +1,10 @@
 import { TreeItemValue } from "@fluentui/react-components";
 import { Modal, Button, Col, Row } from "react-bootstrap";
 import "./AipAssignmentModal.scss";
-import { Icon, i18n } from "components/shared";
+import { Icon} from "components/shared";
+import { FormattedMessage, useIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { daoMessages } from 'components/arr/daoMessages';
 import { useEffect, useState } from "react";
 import FundTree from "./FundTree";
 import AipExplorer from "../../../aip/explorer/AipExplorer.tsx";
@@ -23,6 +26,7 @@ type AipAssignmentModalProps = {
 }
 
 const AipIndividualAssignmentModal = ({aipId, tree}: AipAssignmentModalProps) =>  {
+    const intl = useIntl();
     const [rightSelectedNode, setRightSelectedNode] = useState<TreeItemValue>(tree.nodes[0].id);
     const [leftSelectedNode, setLeftSelectedNode] = useState<number>(null);
     const aip = useSelector((state: AppState) => storeFromArea(state, AREA_AIP))
@@ -59,9 +63,9 @@ const AipIndividualAssignmentModal = ({aipId, tree}: AipAssignmentModalProps) =>
         const confirmForm = (
             <ConfirmForm
                 //@ts-ignore
-                confirmMessage={i18n('arr.aip.assignment.part.confirm-first') + i18n('arr.aip.assignment.part.confirm-last')}
-                submittingMessage={i18n('arr.aip.assignment.part.confirm-first') + i18n('arr.aip.assignment.part.confirm-last')}
-                submitTitle={i18n('global.action.run')}
+                confirmMessage={intl.formatMessage(daoMessages.aipAssignmentPartConfirm)}
+                submittingMessage={intl.formatMessage(daoMessages.aipAssignmentPartConfirm)}
+                submitTitle={<FormattedMessage {...globalMessages.run} />}
                 onSubmit={() => {
                     let daoListIds = selectedDaoIds.rows;
                     if (selectedDaoIds.count === 0) {
@@ -85,9 +89,9 @@ const AipIndividualAssignmentModal = ({aipId, tree}: AipAssignmentModalProps) =>
         const confirmForm = (
             <ConfirmForm
                 //@ts-ignore
-                confirmMessage={i18n('arr.aip.assignment.part.confirm-first') + i18n('arr.aip.assignment.part.confirm-last')}
-                submittingMessage={i18n('arr.aip.assignment.part.confirm-first') + i18n('arr.aip.assignment.part.confirm-last')}
-                submitTitle={i18n('global.action.run')}
+                confirmMessage={intl.formatMessage(daoMessages.aipAssignmentPartConfirm)}
+                submittingMessage={intl.formatMessage(daoMessages.aipAssignmentPartConfirm)}
+                submitTitle={<FormattedMessage {...globalMessages.run} />}
                 onSubmit={() => {
                     let daoListIds = selectedDaoIds.rows;
                     if (selectedDaoIds.count === 0) {
@@ -116,20 +120,20 @@ const AipIndividualAssignmentModal = ({aipId, tree}: AipAssignmentModalProps) =>
                     <div className="aip-actions-container">
                         <Button onClick={handleConnectToJP}>
                             <Icon glyph="fa-solid fa-link" />
-                            <div>{i18n('arr.aip.assignment.link')}</div>
+                            <div>{<FormattedMessage {...daoMessages.aipAssignmentLink} />}</div>
                         </Button>
                         <Button onClick={handleCreateFromSelected} disabled={!leftSelectedNode}>
                             <Icon glyph="fa-solid fa-plus" />
-                            <div>{i18n('arr.aip.assignment.create')}</div>
+                            <div>{<FormattedMessage {...daoMessages.aipAssignmentCreate} />}</div>
                         </Button>
                         {leftSelectedNode && <>
                             <Button onClick={handleSelectAndConnectToJP}>
                                 <Icon glyph="fa-solid fa-link" />
-                                <div>{i18n('arr.aip.assignment.select-and-create')}</div>
+                                <div>{<FormattedMessage {...daoMessages.aipAssignmentSelectAndCreate} />}</div>
                             </Button>
                             <Button onClick={handleCreateAndLinkFromSelected}>
                                 <Icon glyph="fa-solid fa-plus" />
-                                <div>{i18n('arr.aip.assignment.create-and-link')}</div>
+                                <div>{<FormattedMessage {...daoMessages.aipAssignmentCreateAndLink} />}</div>
                             </Button>
                         </>}
                     </div>

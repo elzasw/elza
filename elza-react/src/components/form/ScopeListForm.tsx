@@ -4,7 +4,18 @@ import {connect} from 'react-redux';
 import {Col, Form, Row} from 'react-bootstrap';
 import {Button} from '../ui';
 import {AbstractReactComponent, Icon} from 'components/shared';
-import i18n from '../i18n';
+import { defineMessages, injectIntl, type WrappedComponentProps } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { getIntl } from 'components/shared/lang/intlInstance';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    code: { id: 'accesspoint.scope.code', defaultMessage: 'Kód' },
+    language: { id: 'accesspoint.scope.language', defaultMessage: 'Jazyk' },
+    name: { id: 'accesspoint.scope.name', defaultMessage: 'Jméno' },
+    ruleSetCode: { id: 'accesspoint.scope.ruleSetCode', defaultMessage: 'Pravidla popisu' },
+    relatedScopes: { id: 'accesspoint.scope.relatedScopes', defaultMessage: 'Návazné oblasti' },
+});
 import ListBox from '../shared/listbox/ListBox';
 import {Field, FieldArray, FormErrors, formValueSelector, InjectedFormProps, reduxForm} from 'redux-form';
 import {WebApi} from '../../actions';
@@ -24,7 +35,8 @@ import {RuleType, RulRuleSetVO} from '../../typings/RulRuleSetVO';
 type OwnProps = {id: number; onCreate: Function; onSave: Function};
 type Props = OwnProps &
     InjectedFormProps<ArrRefTemplateVO, OwnProps, FormErrors<ArrRefTemplateVO>> &
-    ReturnType<typeof mapStateToProps>;
+    ReturnType<typeof mapStateToProps> &
+    WrappedComponentProps;
 
 const toOptions = (i: {code: string; name: string}) => (
     <option value={i.code} key={i.code}>
@@ -44,7 +56,7 @@ class ScopeListForm extends AbstractReactComponent<Props> {
     static requireFields = (...names) => data =>
         names.reduce((errors, name) => {
             if (data[name] == null || !data[name]) {
-                errors[name] = i18n('global.validation.required');
+                errors[name] = getIntl().formatMessage(globalMessages.validationRequired);
             }
             return errors;
         }, {});
@@ -149,7 +161,7 @@ class ScopeListForm extends AbstractReactComponent<Props> {
                             type="text"
                             name={'code'}
                             {...customProps}
-                            label={i18n('accesspoint.scope.code')}
+                            label={this.props.intl.formatMessage(messages.code)}
                         />
                     </Col>
                     <Col xs={6}>
@@ -159,7 +171,7 @@ class ScopeListForm extends AbstractReactComponent<Props> {
                             type="select"
                             name={'language'}
                             {...customProps}
-                            label={i18n('accesspoint.scope.language')}
+                            label={this.props.intl.formatMessage(messages.language)}
                         >
                             <option key={0} value={undefined} />
                             {languagesOptions}
@@ -171,18 +183,18 @@ class ScopeListForm extends AbstractReactComponent<Props> {
                     type="text"
                     name={'name'}
                     {...customProps}
-                    label={i18n('accesspoint.scope.name')}
+                    label={this.props.intl.formatMessage(messages.name)}
                 />
                 <Field
                     component={FormInputField}
                     type="select"
                     name={'ruleSetCode'}
                     {...customProps}
-                    label={i18n('accesspoint.scope.ruleSetCode')}
+                    label={this.props.intl.formatMessage(messages.ruleSetCode)}
                 >
                     {ruleSetItems.map(toOptions)}
                 </Field>
-                <label>{i18n('accesspoint.scope.relatedScopes')}</label>
+                <label>{this.props.intl.formatMessage(messages.relatedScopes)}</label>
                 <FieldArray
                     name={'connectedScopes'}
                     component={({fields, meta}) => {
@@ -244,4 +256,4 @@ function mapStateToProps(
     };
 }
 
-export default connect(mapStateToProps)(form);
+export default connect(mapStateToProps)(injectIntl(form));

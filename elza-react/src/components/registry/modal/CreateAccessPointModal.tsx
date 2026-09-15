@@ -3,7 +3,19 @@ import { ApPartFormVO } from 'api/ApPartFormVO';
 import { ApTypeVO } from 'api/ApTypeVO';
 import { ApViewSettings } from 'api/ApViewSettings';
 import { RulPartTypeVO } from 'api/RulPartTypeVO';
-import i18n from 'components/i18n';
+import { FormattedMessage, defineMessages, useIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    titleMessage: {
+        id: 'accesspoint.create.titleMessage',
+        defaultMessage:
+            'Nejprve vyberte podtřídu a oblast nové archivní entity. Dle vybrané podtřídy se zobrazí příslušné atributy. Po vyplnění hlavní části jména je možné archivní entitu založit.',
+    },
+    addType: { id: 'registry.add.type', defaultMessage: 'Podtřída' },
+    scopeClass: { id: 'registry.scopeClass', defaultMessage: 'Oblast' },
+});
 import { Loading } from 'components/shared';
 import { Button } from 'components/ui';
 import arrayMutators from 'final-form-arrays';
@@ -43,6 +55,7 @@ const CreateAccessPointModal: FC<CreateAccessPointModalProps> = ({
     apTypeFilter,
     onSubmit,
 }) => {
+    const intl = useIntl();
     const partTypeCode = "PT_NAME";
     const apViewSettings = useSelector((state: AppState) => storeFromArea(state, AP_VIEW_SETTINGS) as DetailStoreState<ApViewSettings>);
     const refTables = useSelector((state: AppState) => state.refTables);
@@ -109,11 +122,11 @@ const CreateAccessPointModal: FC<CreateAccessPointModalProps> = ({
                 return <>
                     <Modal.Body>
                         <p>
-                            {i18n('accesspoint.create.titleMessage')}
+                            {<FormattedMessage {...messages.titleMessage} />}
                         </p>
                         <FormAutocomplete
                             name={'apType'}
-                            label={i18n('registry.add.type')}
+                            label={intl.formatMessage(messages.addType)}
                             disabled={submitting || apTypeId != null}
                             items={apTypes}
                             tree
@@ -125,7 +138,7 @@ const CreateAccessPointModal: FC<CreateAccessPointModalProps> = ({
                             <FormScope
                                 name={'scopeId'}
                                 disabled={submitting}
-                                label={i18n('registry.scopeClass')}
+                                label={intl.formatMessage(messages.scopeClass)}
                                 items={scopes}
                             />
                         }
@@ -151,11 +164,11 @@ const CreateAccessPointModal: FC<CreateAccessPointModalProps> = ({
                     </Modal.Body>
                     <Modal.Footer>
                         <Button type="submit" variant="outline-secondary" onClick={handleSubmit} disabled={submitting}>
-                            {i18n('global.action.store')}
+                            {<FormattedMessage {...globalMessages.save} />}
                         </Button>
 
                         <Button variant="link" onClick={onClose} disabled={submitting}>
-                            {i18n('global.action.cancel')}
+                            {<FormattedMessage {...globalMessages.cancel} />}
                         </Button>
                     </Modal.Footer>
                 </>

@@ -1,7 +1,9 @@
 import {useCallback, useEffect} from 'react';
 import {mergeClasses, makeStyles} from '@fluentui/react-components';
 import {outputTypesFetchIfNeeded} from 'actions/refTables/outputTypes.jsx';
-import {HorizontalLoader, i18n} from 'components/shared';
+import {HorizontalLoader} from 'components/shared';
+import { FormattedMessage, useIntl } from 'react-intl';
+import { requestMessages } from './requestMessages';
 import {
     fundOutputAddNodes,
     fundOutputDetailFetchIfNeeded,
@@ -75,6 +77,7 @@ export function ArrOutputDetail({
     fundOutputDetail,
 }: Props) {
     const dispatch = useAppThunkDispatch();
+    const intl = useIntl();
     const styles = useStyles();
     const {settings} = useUserSettings();
     const [containerRef, containerWidth] = useContainerWidth<HTMLDivElement>();
@@ -102,7 +105,7 @@ export function ArrOutputDetail({
 
     const handleRemoveNode = useCallback(
         async (node: any) => {
-            const response = (await dispatch(showConfirmDialog(i18n('arr.fund.nodes.deleteNode')))) as any;
+            const response = (await dispatch(showConfirmDialog(intl.formatMessage(requestMessages.fundNodesDeleteNode)))) as any;
             if (response) {
                 dispatch(fundOutputRemoveNodes(fund.versionId, fundOutputDetail.id, [node.id]));
             }
@@ -112,7 +115,7 @@ export function ArrOutputDetail({
 
     const handleRemoveScope = useCallback(
         async (scope: ApScopeVO) => {
-            const response = (await dispatch(showConfirmDialog(i18n('arr.fund.nodes.deleteNode')))) as any;
+            const response = (await dispatch(showConfirmDialog(intl.formatMessage(requestMessages.fundNodesDeleteNode)))) as any;
             if (response) {
                 WebApi.deleteRestrictedScope(fundOutputDetail.id, scope.id);
             }
@@ -132,7 +135,7 @@ export function ArrOutputDetail({
         dispatch(
             modalDialogShow(
                 null,
-                i18n('arr.fund.nodes.title.select'),
+                intl.formatMessage(requestMessages.fundNodesTitleSelect),
                 <FundNodesSelectForm
                     // @ts-ignore
                     onSubmitForm={(ids, nodes) => {
@@ -161,8 +164,8 @@ export function ArrOutputDetail({
         return (
             <div className="arr-output-detail-container">
                 <div className="unselected-msg">
-                    <div className="title">{i18n('arr.output.noSelection.title')}</div>
-                    <div className="msg-text">{i18n('arr.output.noSelection.message')}</div>
+                    <div className="title">{<FormattedMessage {...requestMessages.outputNoSelectionTitle} />}</div>
+                    <div className="msg-text">{<FormattedMessage {...requestMessages.outputNoSelectionMessage} />}</div>
                 </div>
             </div>
         );

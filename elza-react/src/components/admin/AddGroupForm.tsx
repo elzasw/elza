@@ -1,5 +1,14 @@
 import React from 'react';
-import { FormInputField, i18n } from 'components/shared';
+import { FormInputField } from 'components/shared';
+import { defineMessages, useIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    name: { id: 'admin.group.title.name', defaultMessage: 'Název' },
+    code: { id: 'admin.group.title.code', defaultMessage: 'Kód' },
+    description: { id: 'admin.group.title.description', defaultMessage: 'Popis' },
+});
 import { Form, Modal } from 'react-bootstrap';
 import { Button } from '../ui';
 import { Form as FinalForm, Field } from 'react-final-form';
@@ -23,15 +32,17 @@ export function AddGroupForm({
     onSubmit,
     onClose
 }: Props) {
+    const intl = useIntl();
+
 
     function validate(values: FormFields) {
         const errors: Partial<Record<keyof FormFields, string>> = {};
 
         if (!values.name && create) {
-            errors.name = i18n('global.validation.required');
+            errors.name = intl.formatMessage(globalMessages.validationRequired);
         }
         if (!values.code && create) {
-            errors.code = i18n('global.validation.required');
+            errors.code = intl.formatMessage(globalMessages.validationRequired);
         }
 
         return errors;
@@ -54,28 +65,28 @@ export function AddGroupForm({
                         name="name"
                         type="text"
                         component={FormInputField}
-                        label={i18n('admin.group.title.name')}
+                        label={intl.formatMessage(messages.name)}
                     />
                     <Field
                         name="code"
                         type="text"
                         component={FormInputField}
-                        label={i18n('admin.group.title.code')}
+                        label={intl.formatMessage(messages.code)}
                         disabled={!create}
                     />
                     <Field
                         name="description"
                         type="textarea"
                         component={FormInputField}
-                        label={i18n('admin.group.title.description')}
+                        label={intl.formatMessage(messages.description)}
                     />
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={handleSubmit} variant="outline-secondary" disabled={submitting}>
-                        {i18n(create ? 'global.action.create' : 'global.action.update')}
+                        {intl.formatMessage(create ? globalMessages.create : globalMessages.save)}
                     </Button>
                     <Button onClick={onClose} variant="link">
-                        {i18n('global.action.cancel')}
+                        {intl.formatMessage(globalMessages.cancel)}
                     </Button>
                 </Modal.Footer>
             </Form>

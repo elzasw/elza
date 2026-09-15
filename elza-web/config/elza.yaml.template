@@ -15,7 +15,7 @@ elza:
         type: WMS
         initial: false
         layer: GR_ORTFOTORGB
-  security:
+  #security:
   #  sso-header:
   #    user-header: X-SSO-User
   #    allowDefaultUser: false
@@ -24,6 +24,15 @@ elza:
   #    keytab-location: C:/Users/siryupin/krb5cc_siryupin
   #    kerberos-client-debug: false
   #    ticket-validator-debug: false
+  #
+  #  # Osobní API klíče uživatelů (hlavička X-API-Key).
+  #  # Funkce je zapnutá s výchozími hodnotami; enabled=false hlavičku ignoruje.
+  #  api-keys:
+  #    enabled: true
+  #    header-name: X-API-Key
+  #    default-validity-days: 365
+  #    max-validity-days: 730
+  #
   #workingDir: C:/Elza/work
 
   # Nastavení času spuštění pro reindexaci:
@@ -51,12 +60,17 @@ elza:
   #reindex:
   #  cron: 0 0 4 ? * SAT
 
-  # Nastavení času spuštění mazání nevázaných ArrData:
+  # Nastavení mazání nevázaných ArrData (viz service/ScheduledCleanupWorker.java):
   #
-  # Výchozí nastavení – každý den ve 3:00
-  #  
-  #reindex:
+  # cron – kdy se má úklid spouštět; formát cron viz sekci reindex výše.
+  #   Výchozí každý den ve 03:00.
+  # maxBatch – maximální velikost stránky, ve které se mažou nepoužité ArrData
+  #   v jedné pod-transakci. Výchozí 150000; snižte, pokud potřebujete kratší
+  #   transakce (např. kvůli zamykání) na úkor delšího celkového běhu.
+  #
+  #cleanup:
   #  cron: 0 0 3 * * *
+  #  maxBatch: 150000
 
   #attachment:
   #  mimeDefs:
@@ -71,6 +85,19 @@ elza:
   #        - outputMimeType: application/pdf
   #          command: "\"c:\\Program Files (x86)\\LibreOffice 5\\program\\soffice.exe\" --headless --convert-to pdf {2}"
   #          outputFileName: "{0}.pdf"
+
+  # Nastavení importního modulu (Importní nástroj):
+  #
+  # batchInputDir – kořenový adresář na serveru, do kterého operátor ukládá
+  #   soubory pro import "ze složky na serveru". UI dovoluje procházet pouze
+  #   podadresáře této cesty; pokus o cestu mimo tento kořen je odmítnut.
+  #   Když je hodnota prázdná nebo neuvedená, je tento způsob importu vypnutý.
+  #
+  # Poznámka: retenční doba (30 dní) je hardcodovaná v ImpBatchService.
+  # Úklid starých souborů dávek běží v rámci elza.cleanup.cron (viz výše).
+  #
+  #import:
+  #  batchInputDir: C:/data/elza-import
 
   # Task scheduler observability (the elza.scheduler.* and elza.cam.pending_* metrics).
   # The values below are the built-in defaults, already applied in code — with no

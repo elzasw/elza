@@ -12,7 +12,9 @@ import {
 import {ArrRefTemplateMapSpecVO, ArrRefTemplateMapTypeVO} from '../../types';
 import {Button, Form, Modal, Row, Col} from 'react-bootstrap';
 import FormInputField from '../shared/form/FormInputField';
-import i18n from '../i18n';
+import { FormattedMessage, injectIntl, WrappedComponentProps } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { templateMessages } from './templateMessages';
 import Icon from '../shared/icon/Icon';
 import FF from '../shared/form/FF';
 import DescItemTypeField from './DescItemTypeField';
@@ -34,7 +36,7 @@ const MapTypesField = ({
 }: WrappedFieldArrayProps<ArrRefTemplateMapSpecVO> & {fromItemTypeId: number; toItemTypeId: number}) => (
     <>
         <h3>
-            {i18n('arr.refTemplates.mapping.specMapping')}{' '}
+            {<FormattedMessage {...templateMessages.refTemplatesMappingSpecMapping} />}{' '}
             <Button variant={'action' as any} onClick={() => fields.push({} as any)}>
                 <Icon glyph={'fa-plus'} />
             </Button>
@@ -48,7 +50,7 @@ const MapTypesField = ({
                             <FF
                                 name={`${name}.fromItemSpecId`}
                                 field={ItemSpecField}
-                                label={i18n('arr.refTemplates.mapping.fromItemSpecId')}
+                                label={<FormattedMessage {...templateMessages.refTemplatesMappingFromItemSpecId} />}
                                 itemTypeId={fromItemTypeId}
                                 useIdAsValue
                             />
@@ -57,7 +59,7 @@ const MapTypesField = ({
                             <FF
                                 name={`${name}.toItemSpecId`}
                                 field={ItemSpecField}
-                                label={i18n('arr.refTemplates.mapping.toItemSpecId')}
+                                label={<FormattedMessage {...templateMessages.refTemplatesMappingToItemSpecId} />}
                                 itemTypeId={toItemTypeId}
                                 useIdAsValue
                             />
@@ -74,7 +76,7 @@ const MapTypesField = ({
     </>
 );
 
-class ArrRefMappingTypeForm extends React.Component<Props> {
+class ArrRefMappingTypeForm extends React.Component<Props & WrappedComponentProps> {
     render() {
         const {handleSubmit, pristine, submitting, create, fromItemTypeId, toItemTypeId, valid} = this.props;
         return (
@@ -85,7 +87,7 @@ class ArrRefMappingTypeForm extends React.Component<Props> {
                             <FF
                                 name="fromItemTypeId"
                                 field={DescItemTypeField}
-                                label={i18n('arr.refTemplates.mapping.fromItemTypeId')}
+                                label={<FormattedMessage {...templateMessages.refTemplatesMappingFromItemTypeId} />}
                                 useIdAsValue
                             />
 
@@ -93,7 +95,7 @@ class ArrRefMappingTypeForm extends React.Component<Props> {
                                 name="fromParentLevel"
                                 type="checkbox"
                                 component={FormInputField}
-                                label={i18n('arr.refTemplates.mapping.fromParentLevel')}
+                                label={<FormattedMessage {...templateMessages.refTemplatesMappingFromParentLevel} />}
                                 disabled={submitting}
                             />
                         </Col>
@@ -101,14 +103,14 @@ class ArrRefMappingTypeForm extends React.Component<Props> {
                             <FF
                                 name="toItemTypeId"
                                 field={DescItemTypeField}
-                                label={i18n('arr.refTemplates.mapping.toItemTypeId')}
+                                label={<FormattedMessage {...templateMessages.refTemplatesMappingToItemTypeId} />}
                                 useIdAsValue
                             />
                             <Field
                                 name="mapAllSpec"
                                 type="checkbox"
                                 component={FormInputField}
-                                label={i18n('arr.refTemplates.mapping.mapAllSpec')}
+                                label={<FormattedMessage {...templateMessages.refTemplatesMappingMapAllSpec} />}
                                 disabled={submitting}
                             />
                         </Col>
@@ -122,7 +124,7 @@ class ArrRefMappingTypeForm extends React.Component<Props> {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button type="submit" variant="outline-secondary" disabled={pristine || submitting || !valid}>
-                        {create ? i18n('global.action.create') : i18n('global.action.update')}
+                        {create ? this.props.intl.formatMessage(globalMessages.create) : this.props.intl.formatMessage(globalMessages.save)}
                     </Button>
                 </Modal.Footer>
             </Form>
@@ -166,5 +168,5 @@ export default connect(mapStateToProps)(
             console.log('ddd', errors);
             return errors;
         },
-    })(ArrRefMappingTypeForm),
+    })(injectIntl(ArrRefMappingTypeForm)),
 );

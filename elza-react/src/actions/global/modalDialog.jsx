@@ -5,7 +5,12 @@ import React from 'react';
 import { connect } from 'react-redux';
 import * as types from 'actions/constants/ActionTypes';
 import { Modal } from 'react-bootstrap';
-import i18n from '../../components/i18n';
+import { FormattedMessage, defineMessages } from 'react-intl';
+
+// Id je převzaté z legacy katalogu beze změny.
+const messages = defineMessages({
+    loading: { id: 'global.data.loading', defaultMessage: 'Načítání dat...' },
+});
 
 const AsyncWaitingDialog = connect()(
     class extends React.Component {
@@ -61,7 +66,7 @@ const AsyncWaitingDialog = connect()(
  * @return {function(*, *)}
  */
 export function showAsyncWaiting(title, message, callAsync, resultCallback, errorCallback = null) {
-    const messageText = message || i18n('global.data.loading');
+    const messageText = message || <FormattedMessage {...messages.loading} />;
     return (dispatch, getState) => {
         dispatch(
             modalDialogShow(

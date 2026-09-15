@@ -4,7 +4,9 @@
 import PropTypes from 'prop-types';
 
 import React from 'react';
-import {AbstractReactComponent, i18n, Icon} from 'components/shared';
+import {AbstractReactComponent, Icon} from 'components/shared';
+import { injectIntl } from 'react-intl';
+import { arrPanelMessages } from 'components/arr/panelMessages';
 import {createReferenceMarkString, getGlyph} from 'components/arr/ArrUtils.jsx';
 
 import './NodeLabel.scss';
@@ -37,7 +39,7 @@ class NodeLabel extends AbstractReactComponent {
 
         const refMark = <div className="reference-mark">{createReferenceMarkString(node)}</div>;
 
-        var name = node.name ? node.name : <i>{i18n('fundTree.node.name.undefined', node.id)}</i>;
+        var name = node.name ? node.name : <i>{this.props.intl.formatMessage(arrPanelMessages.fundTreeNodeNameUndefined, { 0: node.id })}</i>;
         if (name.length > nameMaxChars) {
             name = name.substring(0, nameMaxChars - 3) + '...';
         }
@@ -61,4 +63,4 @@ class NodeLabel extends AbstractReactComponent {
     }
 }
 
-export default NodeLabel;
+export default injectIntl(NodeLabel);

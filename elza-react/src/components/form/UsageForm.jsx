@@ -13,7 +13,40 @@ import { modalDialogHide } from '../../actions/global/modalDialog';
 import { AREA_REGISTRY_LIST } from '../../actions/registry/registry';
 import * as perms from '../../actions/user/Permission';
 import FundTreeUsage from '../arr/FundTreeUsage';
-import i18n from '../i18n';
+import { FormattedMessage, defineMessages } from 'react-intl';
+import { getIntl } from 'components/shared/lang/intlInstance';
+import { messageFor } from 'components/shared/lang/dynamicMessage';
+
+// Id jsou převzatá z legacy katalogu beze změny; opraven překlep "ruzná" -> "různá".
+const messages = defineMessages({
+    replaceText: { id: 'registry.replaceText', defaultMessage: 'Nahrazení entity ve výskytech za entitu' },
+    replace: { id: 'registry.replace', defaultMessage: 'Nahradit' },
+    merge: { id: 'registry.merge', defaultMessage: 'Sloučit' },
+    tooMany: { id: 'registry.usage.tooMany', defaultMessage: 'Počet nalezených výskytů je příliš velký' },
+    usageCount: { id: 'registry.registryUsageCount', defaultMessage: 'Počet nalezených výskytů' },
+    nonEqualNames: {
+        id: 'accesspoint.removeDuplicity.confirm.nonEqualNames',
+        defaultMessage: 'Entity mají různá označení',
+    },
+});
+
+// Klíč potvrzení se skládal z akce, což statický extraktor nevidí. Množina je
+// uzavřená - replace / merge.
+const confirmFirstMessages = defineMessages({
+    replace: {
+        id: 'accesspoint.removeDuplicity.confirm.replace.a',
+        defaultMessage: 'Opravdu si přejete nahradit entitu',
+    },
+    merge: {
+        id: 'accesspoint.removeDuplicity.confirm.merge.a',
+        defaultMessage: 'Opravdu si přejete zneplatnit a sloučit entitu',
+    },
+});
+
+const confirmSecondMessages = defineMessages({
+    replace: { id: 'accesspoint.removeDuplicity.confirm.replace.b', defaultMessage: 'entitou' },
+    merge: { id: 'accesspoint.removeDuplicity.confirm.merge.b', defaultMessage: 's nahrazující entitou' },
+});
 import RegistryField from '../registry/RegistryField';
 import ToggleContent from '../shared/toggle-content/ToggleContent';
 import { Button } from '../ui';
@@ -50,23 +83,23 @@ const EntityDisplay = ({
 class RegistryUsageForm extends React.Component {
     static propTypes = {
         detail: PropTypes.object,
-        replaceText: PropTypes.string,
-        replaceButtonText: PropTypes.string,
-        mergeButtonText: PropTypes.string,
+        replaceText: PropTypes.node,
+        replaceButtonText: PropTypes.node,
+        mergeButtonText: PropTypes.node,
         replaceType: PropTypes.string,
         nameLabel: PropTypes.string,
     };
 
     static defaultProps = {
-        replaceText: i18n("registry.replaceText"),
-        replaceButtonText: i18n('registry.replace'),
-        mergeButtonText: i18n('registry.merge'),
+        replaceText: <FormattedMessage {...messages.replaceText} />,
+        replaceButtonText: <FormattedMessage {...messages.replace} />,
+        mergeButtonText: <FormattedMessage {...messages.merge} />,
         replaceType: "replace",
     }
 
     rootFundIdfOffset = 0.1;
     manyItemsIdOffset = 0.4;
-    manyItemsLabel = i18n('registry.usage.tooMany');
+    manyItemsLabel = getIntl().formatMessage(messages.tooMany);
     expandFundThreshold = 500;
 
     state = {
@@ -267,14 +300,14 @@ class RegistryUsageForm extends React.Component {
 
         console.log(detail, selectedReplacementNode);
         const response = await dispatch(showConfirmDialog(<div className="confirmation">
-            <div>{i18n(`accesspoint.removeDuplicity.confirm.${action}.a`)}</div>
+            <div><FormattedMessage {...messageFor(confirmFirstMessages, action, confirmFirstMessages.replace)} /></div>
             <EntityDisplay 
                 title={detail?.data?.name}
                 id={detail?.data?.id}
                 uuid={detail?.data?.uuid}
                 scope={scope.name}
                 />
-            <div>{i18n(`accesspoint.removeDuplicity.confirm.${action}.b`)}</div>
+            <div><FormattedMessage {...messageFor(confirmSecondMessages, action, confirmSecondMessages.replace)} /></div>
             <EntityDisplay 
                 title={selectedReplacementNode.name}
                 id={selectedReplacementNode.id}
@@ -282,7 +315,7 @@ class RegistryUsageForm extends React.Component {
                 scope={replacementScope?.name}
                 />
             {detail?.data?.name !== selectedReplacementNode.name && <div className="error">
-                <Icon glyph="fa-exclamation-circle"/>&nbsp;{i18n("accesspoint.removeDuplicity.confirm.nonEqualNames")}
+                <Icon glyph="fa-exclamation-circle"/>&nbsp;<FormattedMessage {...messages.nonEqualNames} />
             </div>}
         </div>));
 
@@ -333,7 +366,7 @@ class RegistryUsageForm extends React.Component {
                 <ToggleContent 
                     withText 
                     opened={!canDelete}
-                    text={`${i18n('registry.registryUsageCount')} ${this.state.usageCount}`}
+                    text={`${getIntl().formatMessage(messages.usageCount)} ${this.state.usageCount}`}
                 >
                     {fundTreeUsage && (
                         <FundTreeUsage

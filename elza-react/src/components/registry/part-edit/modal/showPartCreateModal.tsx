@@ -1,6 +1,5 @@
 import React from 'react';
 import { ApPartFormVO } from "../../../../api/ApPartFormVO";
-// import i18n from "../../../i18n";
 import { RulPartTypeVO } from '../../../../api/RulPartTypeVO';
 import { modalDialogShow } from '../../../../actions/global/modalDialog';
 import * as PartTypeInfo from '../../../../api/old/PartTypeInfo';

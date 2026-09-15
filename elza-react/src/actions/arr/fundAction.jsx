@@ -6,24 +6,36 @@ import * as types from 'actions/constants/ActionTypes';
 import {WebApi} from 'actions/index';
 import {indexById} from 'stores/app/utils';
 import {ActionState} from '../../constants';
-import i18n from '../../components/i18n';
+import { defineMessages } from 'react-intl';
+import { getIntl } from 'components/shared/lang/intlInstance';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    running: { id: 'arr.fundAction.state.running', defaultMessage: 'Běžící' },
+    waiting: { id: 'arr.fundAction.state.waiting', defaultMessage: 'Čekající' },
+    finished: { id: 'arr.fundAction.state.finished', defaultMessage: 'Dokončeno' },
+    error: { id: 'arr.fundAction.state.error', defaultMessage: 'Chyba' },
+    planned: { id: 'arr.fundAction.state.planned', defaultMessage: 'Naplánováno' },
+    interrupted: { id: 'arr.fundAction.state.interrupted', defaultMessage: 'Přerušeno' },
+    outdated: { id: 'arr.fundAction.state.outdated', defaultMessage: 'Dokončeno (neplatný)' },
+});
 
 export function actionStateTranslation(state) {
     switch (state) {
         case ActionState.RUNNING:
-            return i18n('arr.fundAction.state.running');
+            return getIntl().formatMessage(messages.running);
         case ActionState.WAITING:
-            return i18n('arr.fundAction.state.waiting');
+            return getIntl().formatMessage(messages.waiting);
         case ActionState.FINISHED:
-            return i18n('arr.fundAction.state.finished');
+            return getIntl().formatMessage(messages.finished);
         case ActionState.ERROR:
-            return i18n('arr.fundAction.state.error');
+            return getIntl().formatMessage(messages.error);
         case ActionState.PLANNED:
-            return i18n('arr.fundAction.state.planned');
+            return getIntl().formatMessage(messages.planned);
         case ActionState.INTERRUPTED:
-            return i18n('arr.fundAction.state.interrupted');
+            return getIntl().formatMessage(messages.interrupted);
         case ActionState.OUTDATED:
-            return i18n('arr.fundAction.state.outdated');
+            return getIntl().formatMessage(messages.outdated);
         default:
             return null;
     }

@@ -7,10 +7,11 @@ import { RulDataTypeCodeEnum } from 'api/RulDataTypeCodeEnum';
 import { RulDataTypeVO } from 'api/RulDataTypeVO';
 import { RulDescItemTypeExtVO } from 'api/RulDescItemTypeExtVO';
 import { SyncState } from 'elza-api';
-import i18n from 'components/i18n';
+import { defineMessages, FormattedMessage, MessageDescriptor, useIntl } from 'react-intl';
+import { messageFor } from 'components/shared/lang/dynamicMessage';
+import { apDetailMessages, extStateMessages } from '../messages';
 import { Icon, TooltipTrigger } from 'components/shared';
 import { FC, useCallback, useState } from 'react';
-import { defineMessages, FormattedMessage } from 'react-intl';
 import { Dropdown, DropdownButton } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import { AnyAction } from 'redux';
@@ -47,8 +48,8 @@ const hasUnimportedEntity = (accessPoint: ApAccessPointVO, refTables: RefTablesS
     return !!externalEntity;
 }
 
-const getProcessingMessage = (key: string) => {
-    return <h4 className="processing">{i18n(key)}</h4>;
+const getProcessingMessage = (descriptor: MessageDescriptor) => {
+    return <h4 className="processing"><FormattedMessage {...descriptor} /></h4>;
 };
 
 export const EntityBindings: FC<{
@@ -60,6 +61,7 @@ export const EntityBindings: FC<{
     onInvalidateDetail,
     onPushApToExt,
 }) => {
+        const intl = useIntl();
         const dispatch = useThunkDispatch()
         const userDetail = useSelector((state: AppState) => state.userDetail)
         const externalSystems = useSelector((state: AppState) => state.app.apExtSystemList.rows)
@@ -94,7 +96,7 @@ export const EntityBindings: FC<{
                             renderButton={() => <>
                                 {scopeBoundExternalSystem && isBoundExternalSystemComplete ? <Button
                                     className="button save-button"
-                                    title={i18n('ap.push-to-ext')}
+                                    title={<FormattedMessage {...apDetailMessages.pushToExt} />}
                                     onClick={handlePushApToExt}
                                 >
                                     <Icon glyph="fa-save" />
@@ -102,7 +104,7 @@ export const EntityBindings: FC<{
                                     <Button
                                         className="button"
                                         onClick={handlePushApToExt}
-                                        title={i18n('ap.push-to-ext')}
+                                        title={<FormattedMessage {...apDetailMessages.pushToExt} />}
                                     >
                                         <Icon glyph="fa-cloud-upload" />
                                     </Button>
@@ -114,7 +116,7 @@ export const EntityBindings: FC<{
                                     && isBoundExternalSystemComplete
                                     && <span className="system">{scopeBoundExternalSystem.name}</span>
                                 }
-                                <span>{i18n('ap.not-in-ext')}</span>
+                                <span>{<FormattedMessage {...apDetailMessages.notInExt} />}</span>
                             </div>
                         </DetailDescriptionsItemWithButton>
 
@@ -124,12 +126,12 @@ export const EntityBindings: FC<{
         }
 
         const handleSynchronize = async (binding: ExtEntityBinding) => {
-            const result = await dispatch(showConfirmDialog(i18n("ap.binding.action.synchronize.confirmation")));
+            const result = await dispatch(showConfirmDialog(intl.formatMessage(apDetailMessages.bindingActionSynchronizeConfirmation)));
             if (result) {
                 dispatch(
                     showAsyncWaiting(
                         null,
-                        getProcessingMessage('ap.binding.processing.synchronize'),
+                        getProcessingMessage(apDetailMessages.bindingProcessingSynchronize),
                         WebApi.synchronizeAccessPoint(item.id!, binding.externalSystemCode),
                         () => {
                             onInvalidateDetail && onInvalidateDetail();
@@ -145,7 +147,7 @@ export const EntityBindings: FC<{
             dispatch(
                 modalDialogShow(
                     this,
-                    i18n('ap.push-to-ext.title'),
+                    intl.formatMessage(apDetailMessages.pushToExtTitle),
                     <ApPushToExt
                         detail={item}
                         onSubmit={async () => {
@@ -170,7 +172,7 @@ export const EntityBindings: FC<{
             dispatch(
                 showAsyncWaiting(
                     null,
-                    getProcessingMessage('ap.binding.processing.take-rel-entities'),
+                    getProcessingMessage(apDetailMessages.bindingProcessingTakeRelEntities),
                     WebApi.takeRelArchiveEntities(item.id!, binding.externalSystemCode),
                     () => {
                         onInvalidateDetail && onInvalidateDetail();
@@ -198,13 +200,13 @@ export const EntityBindings: FC<{
                 {item.bindings.map(binding => {
                     const externalSystem = externalSystems.find((externalSystem) => binding.externalSystemCode === externalSystem.code);
                     const tooltip = ('id: ' + binding.value) + (binding.extRevision ? (', uuid: ' + binding.extRevision) : '')
-                        + (binding.extUser ? (', ' + i18n('ap.binding.user') + ': ' + binding.extUser) : '');
+                        + (binding.extUser ? (', ' + intl.formatMessage(apDetailMessages.bindingUser) + ': ' + binding.extUser) : '');
 
                     const renderTooltip = () =>
                         <div style={{ textAlign: "left", padding: "4px" }}>
                             <div>id: {binding.value}</div>
                             {binding.extRevision && <div>rev_id: {binding.extRevision}</div>}
-                            {binding.extUser && <div>{`${i18n('ap.binding.user')}: ${binding.extUser}`}</div>}
+                            {binding.extUser && <div>{`${<FormattedMessage {...apDetailMessages.bindingUser} />}: ${binding.extUser}`}</div>}
                         </div>
 
                     return (
@@ -220,14 +222,14 @@ export const EntityBindings: FC<{
                                     >
                                         {hasState(item.stateApproval, ["NEW", "TO_AMEND", "APPROVED"]) &&
                                             <Dropdown.Item key="synchronize" onClick={() => handleSynchronize(binding)}>
-                                                {i18n('ap.binding.action.synchronize')}
+                                                {<FormattedMessage {...apDetailMessages.bindingActionSynchronize} />}
                                             </Dropdown.Item>}
                                         {hasUnimportedEntity(item, refTables) &&
                                             <Dropdown.Item
                                                 key="take-rel-entities"
                                                 onClick={() => handleTakeRelEntities(binding)}
                                             >
-                                                {i18n('ap.binding.action.take-rel-entities')}
+                                                {<FormattedMessage {...apDetailMessages.bindingActionTakeRelEntities} />}
                                             </Dropdown.Item>
                                         }
                                         <Dropdown.Item key="history" onClick={() => setHistoryBindingId(binding.id)}>
@@ -239,7 +241,7 @@ export const EntityBindings: FC<{
                                         && (
                                             <Button
                                                 className="button save-button"
-                                                title={i18n('ap.binding.action.update')}
+                                                title={<FormattedMessage {...apDetailMessages.bindingActionUpdate} />}
                                                 onClick={() => handleUpdate(binding)}
                                             >
                                                 <Icon glyph="fa-save" />
@@ -249,10 +251,10 @@ export const EntityBindings: FC<{
                             >
                                 <TooltipTrigger content={renderTooltip()}>
                                     <div className="info">
-                                        {/* {i18n('ap.binding.source')}{': '} */}
+                                        {/* {<FormattedMessage {...apDetailMessages.bindingSource} />}{': '} */}
                                         <span className="system">{externalSystem?.name}</span>
                                         <span className="binding-id">id: <span className="binding-value">{binding.value}</span></span>
-                                        <span>{i18n('ap.binding.extState.' + binding.extState)}</span>
+                                        <span><FormattedMessage {...messageFor(extStateMessages, binding.extState ?? "", apDetailMessages.bindingExtStateERS_NEW)} /></span>
                                         {binding.extReplacedBy && (
                                             <span className="link">
                                                 {' '}

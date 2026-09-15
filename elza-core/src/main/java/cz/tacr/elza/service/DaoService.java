@@ -16,6 +16,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.AipLevelType;
 import cz.tacr.elza.controller.vo.DaoViewRequestVO;
 import cz.tacr.elza.controller.vo.ExplorerTreeNode;
 import cz.tacr.elza.controller.vo.ExplorerTreeNodeFile;
@@ -1029,15 +1030,18 @@ public class DaoService {
         ExplorerTreeNode representation = createExplorerTreeNode(
                 -1,
                 "Reprezentace",
+                AipLevelType.REPRESENTATIONS,
                 representationMap.values().stream().toList()
         );
         ExplorerTreeNode logical = createExplorerTreeNode(
                 -2,
                 "Logická struktura",
+                AipLevelType.LOGICAL_STRUCTURE,
                 logicalRoot != null ?  Collections.singletonList(logicalRoot) : null
         );
 
-        ExplorerTreeNode root = createExplorerTreeNode(-3, "Balíček", Arrays.asList(representation, logical, metadata));
+        ExplorerTreeNode root = createExplorerTreeNode(-3, "Balíček", AipLevelType.PACKAGE,
+                Arrays.asList(representation, logical, metadata));
         root.setLinkedNodes(clientFactoryVO.createLinkedNodes(aipLinkList, treeNodeMap));
         return root;
     }
@@ -1176,10 +1180,7 @@ public class DaoService {
                 .map(m -> clientFactoryVO.createExplorerTreeNodeFile(m, daoLinkMap.getOrDefault(m.getDao().getDaoId(), new ArrayList<>()), treeNodeMap))
                 .toList();
 
-        ExplorerTreeNode metadata = new ExplorerTreeNode();
-        metadata.setDaoId(-4);
-        metadata.setLabel("Metadata");
-        metadata.setUuid(UUID.nameUUIDFromBytes(metadata.getLabel().getBytes()).toString());
+        ExplorerTreeNode metadata = createExplorerTreeNode(-4, "Metadata", AipLevelType.METADATA, null);
         metadata.setChildFiles(metadataFiles);
 
         return metadata;
@@ -1194,8 +1195,15 @@ public class DaoService {
         return node;
     }
 
-    private ExplorerTreeNode createExplorerTreeNode(Integer id, String label, List<ExplorerTreeNode> children) {
+    /**
+     * Virtual level of the tree - not data of the package, but a fixed concept (E-ARK / OAIS).
+     * The type is what identifies it; the label is only a fallback for a client that does not
+     * know the type, so the identity of the node must not depend on it.
+     */
+    private ExplorerTreeNode createExplorerTreeNode(Integer id, String label, AipLevelType levelType,
+                                                    List<ExplorerTreeNode> children) {
         ExplorerTreeNode vo = createExplorerTreeNodeWithNodes(UUID.nameUUIDFromBytes(id.toString().getBytes()).toString(), id, label, null);
+        vo.setLevelType(levelType);
         if(children != null && !children.isEmpty()) {
             vo.setChildFolders(children);
         }

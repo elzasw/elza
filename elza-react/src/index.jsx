@@ -22,7 +22,15 @@ import EventEmitter from 'events';
 import './websocketActions.jsx';
 import { storeRestoreFromStorage } from 'actions/store/store.jsx';
 import { storeSave } from 'actions/store/storeEx.jsx';
-import { Exception, i18n } from 'components/shared';
+import { Exception} from 'components/shared';
+import { defineMessages } from 'react-intl';
+import { getIntl } from 'components/shared/lang/intlInstance';
+
+// Id je převzaté z legacy katalogu beze změny. Text jde do payloadu výjimky,
+// odkud ho detail chyby vypisuje do textarey - tedy řetězec.
+const messages = defineMessages({
+    client: { id: 'exception.client', defaultMessage: 'Chyba v klientské aplikaci' },
+});
 
 import { addToastr } from 'components/shared/toastr/ToastrActions.jsx';
 
@@ -116,11 +124,11 @@ function globalErrorHandler(message, url, line, column, error) {
 
     store.dispatch(
         addToastr(
-            i18n('exception.client'),
+            getIntl().formatMessage(messages.client),
             [
                 <Exception
                     key="exception-key-onerror"
-                    title={i18n('exception.client')}
+                    title={getIntl().formatMessage(messages.client)}
                     data={{
                         message,
                         stackTrace: stackTrace,

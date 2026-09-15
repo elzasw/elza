@@ -14,6 +14,9 @@ public class PartInfo implements EntityIdHolder<ApPart> {
 
     private final String importId;
 
+    /** Import id of the parent part, null for a part without a parent. */
+    private String parentImportId;
+
     private final RulPartType rulPartType;
 
     private final PartsContext context;
@@ -31,6 +34,14 @@ public class PartInfo implements EntityIdHolder<ApPart> {
         this.apInfo = apInfo;
         this.rulPartType = structuredType;
         this.context = context;
+    }
+
+    public String getParentImportId() {
+        return parentImportId;
+    }
+
+    public void setParentImportId(String parentImportId) {
+        this.parentImportId = parentImportId;
     }
 
     public AccessPointInfo getApInfo() {

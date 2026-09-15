@@ -8,7 +8,12 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { connect } from 'react-redux';
 import { withRouter } from "react-router";
-import { AbstractReactComponent, HorizontalLoader, i18n, Icon, ListBox, TooltipTrigger, Utils } from 'components/shared';
+import { AbstractReactComponent, HorizontalLoader, Icon, ListBox, TooltipTrigger, Utils } from 'components/shared';
+import { FormattedMessage, injectIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { nodeMessages } from 'components/arr/nodeMessages';
+import { arrPanelMessages } from 'components/arr/panelMessages';
+
 import { SubNodeDao } from './sub-node-dao';
 import NodeActionsBar from './NodeActionsBar';
 import { Button } from '../ui';
@@ -373,7 +378,7 @@ class NodePanel extends AbstractReactComponent {
                 onSubmitSuccess={(result, dispatch) => dispatch(modalDialogHide())}
             />
         );
-        this.props.dispatch(modalDialogShow(this, i18n('arr.request.digitizationRequest.form.title'), form));
+        this.props.dispatch(modalDialogShow(this, this.props.intl.formatMessage(nodeMessages.requestDigitizationRequestFormTitle), form));
     };
 
     /**
@@ -385,9 +390,9 @@ class NodePanel extends AbstractReactComponent {
 
         const confirmForm = (
             <ConfirmForm
-                confirmMessage={i18n('arr.daos.node.sync.confirm-message')}
-                submittingMessage={i18n('arr.daos.node.sync.submitting-message')}
-                submitTitle={i18n('global.action.run')}
+                confirmMessage={<FormattedMessage {...nodeMessages.daosNodeSyncConfirmMessage} />}
+                submittingMessage={<FormattedMessage {...nodeMessages.daosNodeSyncSubmittingMessage} />}
+                submitTitle={<FormattedMessage {...globalMessages.run} />}
                 onSubmit={() => {
                     return WebApi.syncDaoLink(versionId, nodeId);
                 }}
@@ -396,7 +401,7 @@ class NodePanel extends AbstractReactComponent {
                 }}
             />
         );
-        this.props.dispatch(modalDialogShow(this, i18n('arr.daos.node.sync.title'), confirmForm));
+        this.props.dispatch(modalDialogShow(this, this.props.intl.formatMessage(nodeMessages.daosNodeSyncTitle), confirmForm));
     };
 
     handleRefSync = () => {
@@ -416,7 +421,7 @@ class NodePanel extends AbstractReactComponent {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('arr.syncNodes.title'),
+                this.props.intl.formatMessage(nodeMessages.syncNodesTitle),
                 <SyncNodes nodeId={nodeId} nodeVersion={nodeVersion} fundId={fundId} />,
             ),
         );
@@ -425,7 +430,7 @@ class NodePanel extends AbstractReactComponent {
     handleVisiblePolicy() {
         const { dispatch, node, versionId } = this.props;
 
-        dispatch(modalDialogShow(this, i18n('visiblePolicy.form.title'), (
+        dispatch(modalDialogShow(this, this.props.intl.formatMessage(nodeMessages.visiblePolicyFormTitle), (
             <NodeSettingsModal
                 nodeId={node.selectedSubNodeId}
                 fundVersionId={versionId}
@@ -560,7 +565,7 @@ class NodePanel extends AbstractReactComponent {
         } else {
             children = (
                 <div key="children" className="children">
-                    <HorizontalLoader text={i18n('global.data.loading.node.children')} />
+                    <HorizontalLoader text={<FormattedMessage {...nodeMessages.globalDataLoadingNodeChildren} />} />
                 </div>
             );
         }
@@ -582,7 +587,7 @@ class NodePanel extends AbstractReactComponent {
             usedItems = [
                 ...usedItems.slice(0, PARENT_CHILD_MAX_LENGTH),
                 {
-                    name: i18n('global.title.moreRows', items.length - PARENT_CHILD_MAX_LENGTH),
+                    name: this.props.intl.formatMessage(nodeMessages.globalTitleMoreRows, { 0: items.length - PARENT_CHILD_MAX_LENGTH }),
                 },
             ];
         }
@@ -610,7 +615,7 @@ class NodePanel extends AbstractReactComponent {
         var refmark = createReferenceMarkString(item);
         var levels = '';
         if (refmark != '') levels = <span className="reference-mark">{refmark}</span>;
-        var name = item.name ? item.name : <i>{i18n('fundTree.node.name.undefined', item.id)}</i>;
+        var name = item.name ? item.name : <i>{this.props.intl.formatMessage(arrPanelMessages.fundTreeNodeNameUndefined, { 0: item.id })}</i>;
         name = (
             <span title={name} className="name">
                 <span>{name}</span>
@@ -696,7 +701,7 @@ class NodePanel extends AbstractReactComponent {
             if (errors && errors.length > 0) {
                 messages.push(
                     <div key="errors" className="error">
-                        {i18n('arr.node.status.err.errors')}
+                        {<FormattedMessage {...nodeMessages.nodeStatusErrErrors} />}
                     </div>,
                 );
                 errors.forEach(error => {
@@ -720,7 +725,7 @@ class NodePanel extends AbstractReactComponent {
             if (missings && missings.length > 0) {
                 messages.push(
                     <div key="missings" className="missing">
-                        {i18n('arr.node.status.err.missing')}
+                        {<FormattedMessage {...nodeMessages.nodeStatusErrMissing} />}
                     </div>,
                 );
                 missings.forEach(missing => {
@@ -742,7 +747,7 @@ class NodePanel extends AbstractReactComponent {
 
             if (item.nodeConformity.state === 'OK') {
                 icon = <Icon glyph="fa-check" />;
-                tooltip = <div>{i18n('arr.node.status.ok')}</div>;
+                tooltip = <div>{<FormattedMessage {...nodeMessages.nodeStatusOk} />}</div>;
             } else {
                 if (
                     (missings == null || missingsHide == missings.length) &&
@@ -751,7 +756,7 @@ class NodePanel extends AbstractReactComponent {
                     icon = <Icon glyph="fa-check-circle" />;
                     tooltip = (
                         <div>
-                            {i18n('arr.node.status.okx')} {messages}
+                            {<FormattedMessage {...nodeMessages.nodeStatusOkx} />} {messages}
                         </div>
                     );
                 } else {
@@ -765,7 +770,7 @@ class NodePanel extends AbstractReactComponent {
             }
         } else {
             icon = <Icon glyph="fa-exclamation-triangle" />;
-            tooltip = <div>{i18n('arr.node.status.undefined')}</div>;
+            tooltip = <div>{<FormattedMessage {...nodeMessages.nodeStatusUndefined} />}</div>;
         }
 
         return (
@@ -826,7 +831,7 @@ class NodePanel extends AbstractReactComponent {
             if (!node.selectedSubNodeId) {
                 console.warn('Není vybraná JP!', node);
             } else {
-                rows.push(<HorizontalLoader key="loading" text={i18n('global.data.loading.node')} />);
+                rows.push(<HorizontalLoader key="loading" text={<FormattedMessage {...nodeMessages.globalDataLoadingNode} />} />);
             }
         } else {
             if (node.viewStartIndex > 0 && displayAccordion) {
@@ -836,7 +841,7 @@ class NodePanel extends AbstractReactComponent {
                         onClick={() => this.props.dispatch(fundSubNodesPrev(versionId, node.id, node.routingKey))}
                     >
                         <Icon glyph="fa-chevron-left" />
-                        {i18n('arr.fund.prev')}
+                        {<FormattedMessage {...nodeMessages.fundPrev} />}
                     </Button>,
                 );
             }
@@ -847,7 +852,7 @@ class NodePanel extends AbstractReactComponent {
                 const issues = this.renderIssues(item);
                 const accordionLeft = item.accordionLeft
                     ? item.accordionLeft
-                    : i18n('accordion.title.left.name.undefined', item.id);
+                    : this.props.intl.formatMessage(nodeMessages.accordionTitleLeftNameUndefined, { 0: item.id });
                 const accordionRight = item.accordionRight ? item.accordionRight : '';
                 const referenceMark = <span className="reference-mark">{createReferenceMarkString(item)}</span>;
                 const focused = a === this.state.focusItemIndex;
@@ -988,7 +993,7 @@ class NodePanel extends AbstractReactComponent {
                         onClick={() => this.props.dispatch(fundSubNodesNext(versionId, node.id, node.routingKey))}
                     >
                         <Icon glyph="fa-chevron-right" />
-                        {i18n('arr.fund.next')}
+                        {<FormattedMessage {...nodeMessages.fundNext} />}
                     </Button>,
                 );
             }
@@ -1087,4 +1092,4 @@ function mapState(state) {
     };
 }
 
-export default withRouter(connect(mapState)(NodePanel));
+export default withRouter(connect(mapState)(injectIntl(NodePanel)));

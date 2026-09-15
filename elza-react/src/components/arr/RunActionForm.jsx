@@ -7,7 +7,10 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {connect} from 'react-redux';
 import {reduxForm} from 'redux-form';
-import {AbstractReactComponent, FormInput, i18n} from 'components/shared';
+import {AbstractReactComponent, FormInput} from 'components/shared';
+import { FormattedMessage, injectIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { fundFormMessages } from './fundFormMessages';
 import {Form, Modal} from 'react-bootstrap';
 import {Button} from '../ui';
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx';
@@ -18,7 +21,7 @@ const validate = (values, props) => {
     const errors = {};
 
     if (!values.code) {
-        errors.code = i18n('global.validation.required');
+        errors.code = this.props.intl.formatMessage(globalMessages.validationRequired);
     }
 
     return errors;
@@ -52,7 +55,7 @@ class RunActionForm extends AbstractReactComponent {
             <div className="run-action-form-container">
                 <Form onSubmit={handleSubmit(this.submitReduxForm)}>
                     <Modal.Body>
-                        <FF name="code" type="select" label={i18n('arr.fundAction.form.type')}>
+                        <FF name="code" type="select" label={<FormattedMessage {...fundFormMessages.fundActionFormType} />}>
                             <option key="novalue" value={null} />
                             {actionConfig.map(item => (
                                 <option key={item.code} value={item.code}>
@@ -63,10 +66,10 @@ class RunActionForm extends AbstractReactComponent {
                     </Modal.Body>
                     <Modal.Footer>
                         <Button type="submit" variant="outline-secondary" disabled={submitting}>
-                            {i18n('global.action.run')}
+                            {<FormattedMessage {...globalMessages.run} />}
                         </Button>
                         <Button variant="link" onClick={onClose}>
-                            {i18n('global.action.cancel')}
+                            {<FormattedMessage {...globalMessages.cancel} />}
                         </Button>
                     </Modal.Footer>
                 </Form>
@@ -78,7 +81,7 @@ class RunActionForm extends AbstractReactComponent {
 const form = reduxForm({
     form: 'RunActionForm',
     validate,
-})(RunActionForm);
+})(injectIntl(RunActionForm));
 
 export default connect((state, props) => {
     const {

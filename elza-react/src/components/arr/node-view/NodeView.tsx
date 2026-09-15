@@ -21,6 +21,9 @@ import {
   DescItemUriRef,
 } from "./desc-items";
 import { Tooltip } from "@fluentui/react-components";
+import { useVisibleFormItems } from "./hooks";
+import { FormattedMessage } from "react-intl";
+import { messages as commonMessages } from "components/arr/item-form/desc-items/commonMessages";
 
 interface Props {
   fondsVersionId: number;
@@ -71,18 +74,20 @@ export function NodeView({ fondsVersionId, nodeId, nodeVersionId, seedFromParent
     },
   );
 
+  const visibleFormItems = useVisibleFormItems(formItems);
+
   // build display groups only after groups refs and form data are both loaded
   const viewDescItemGroups = useMemo(() => {
-    if (formItems && groupRefs) {
+    if (visibleFormItems && groupRefs) {
       return buildGroupsForm(
-        [...formItems],
+        [...visibleFormItems],
         itemTypes,
         groupRefs,
         itemTypeRefs,
       );
     }
     return [];
-  }, [formItems, itemTypes, groupRefs, itemTypeRefs]);
+  }, [visibleFormItems, itemTypes, groupRefs, itemTypeRefs]);
 
   return (
     <div style={{ padding: "8px" /* , display: "flex", flexWrap: "wrap" */ }}>
@@ -176,7 +181,7 @@ export function NodeView({ fondsVersionId, nodeId, nodeVersionId, seedFromParent
                                   typeForm={typeForm}
                                 />
                               ) : item.undefined ? (
-                                "Nezjištěno"
+                                <FormattedMessage {...commonMessages.undefined} />
                               ) : (
                                 "Not implemented"
                               )}

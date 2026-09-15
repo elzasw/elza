@@ -14,6 +14,11 @@ public class WhenConditionConfig {
 	 */
 	WhenConditionConfig parent;
 
+	/**
+	 * Condition for any ancestor at any depth
+	 */
+	WhenConditionConfig ancestor;
+
 	public List<WhenConditionConfig> getAll() {
 		return all;
 	}
@@ -52,5 +57,13 @@ public class WhenConditionConfig {
 
 	public void setParent(WhenConditionConfig parent) {
 		this.parent = parent;
+	}
+
+	public WhenConditionConfig getAncestor() {
+		return ancestor;
+	}
+
+	public void setAncestor(WhenConditionConfig ancestor) {
+		this.ancestor = ancestor;
 	}
 }

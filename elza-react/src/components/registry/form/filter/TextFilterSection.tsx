@@ -1,40 +1,43 @@
 import React from 'react';
 import {Field, FormSection} from 'redux-form';
-import i18n from "../../../i18n";
+import { FormattedMessage, useIntl, type MessageDescriptor } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { filterMessages } from './messages';
 import {FormInputField} from "../../../shared";
 import * as FieldUtils from "../../../../utils/FieldUtils";
 import * as AreaInfo from "./AreaInfo";
 
 type OwnProps = {
     submitting: boolean;
-    name?: string;
+    /** Nadpis sekce; ne název pole formuláře. */
+    sectionTitle?: MessageDescriptor;
     nameFormSection?: string; // název pro FormSection
 }
 
 type Props = {} & OwnProps;
 
 const areaItems = FieldUtils.createItems(AreaInfo.getValues, AreaInfo.getName);
-const onlyMainPartItems = [{
-    id: "true",
-    name: i18n('global.title.yes')
-}, {
-    id: "false",
-    name: i18n('global.title.no')
-}];
 
-const TextFilterSection = ({submitting, nameFormSection = "", name = 'ap.ext-search.section.text'}: Props) => {
+
+const TextFilterSection = ({submitting, nameFormSection = "", sectionTitle = filterMessages.sectionText}: Props) => {
+    const intl = useIntl();
+    // Skládá se při renderu, aby popisky reagovaly na přepnutí jazyka.
+    const onlyMainPartItems = [
+        { id: "true", name: intl.formatMessage(globalMessages.yes) },
+        { id: "false", name: intl.formatMessage(globalMessages.no) },
+    ];
     return <FormSection name={nameFormSection} className="filter-section">
-        <span className="name-section">{i18n(name)}</span>
+        <span className="name-section"><FormattedMessage {...sectionTitle} /></span>
         <Field name="search"
                type="text"
                component={FormInputField}
-               label={i18n('ap.ext-search.search')}
+               label={intl.formatMessage(filterMessages.search)}
                disabled={submitting}
         />
         <Field name="area"
                type="autocomplete"
                component={FormInputField}
-               label={i18n('ap.ext-search.area')}
+               label={intl.formatMessage(filterMessages.area)}
                useIdAsValue
                items={areaItems}
                disabled={submitting}
@@ -42,7 +45,7 @@ const TextFilterSection = ({submitting, nameFormSection = "", name = 'ap.ext-sea
         <Field name="onlyMainPart"
                type="autocomplete"
                component={FormInputField}
-               label={i18n('ap.ext-search.only-main-part')}
+               label={intl.formatMessage(filterMessages.onlyMainPart)}
                useIdAsValue
                items={onlyMainPartItems}
                disabled={submitting}

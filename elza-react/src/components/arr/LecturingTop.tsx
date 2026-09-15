@@ -16,7 +16,8 @@ import objectById from '../../shared/utils/objectById';
 import storeFromArea from '../../shared/utils/storeFromArea';
 import {IssueStateVO, IssueVO} from '../../types';
 import IssueForm from '../form/IssueForm';
-import i18n from '../i18n';
+import { FormattedMessage, injectIntl } from 'react-intl';
+import { daoMessages } from 'components/arr/daoMessages';
 import Icon from '../shared/icon/Icon';
 import ListBox from '../shared/listbox/ListBox';
 import TooltipTrigger from '../shared/tooltip/TooltipTrigger';
@@ -82,7 +83,7 @@ class LecturingTop extends React.Component<any> {
 
     settings = () => {
         this.props.dispatch(
-            modalDialogShow(this, i18n('arr.issues.settings.title'), <IssueLists fundId={this.props.fund.id} />),
+            modalDialogShow(this, this.props.intl.formatMessage(daoMessages.issuesSettingsTitle), <IssueLists fundId={this.props.fund.id} />),
         );
     };
 
@@ -95,7 +96,7 @@ class LecturingTop extends React.Component<any> {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                nodeId != null ? i18n('arr.issues.add.node.title') : i18n('arr.issues.add.arr.title'),
+                nodeId != null ? this.props.intl.formatMessage(daoMessages.issuesAddNodeTitle) : this.props.intl.formatMessage(daoMessages.issuesAddArrTitle),
                 <IssueForm
                     initialValues={{
                         issueListId: this.state.issueListId,
@@ -176,14 +177,14 @@ class LecturingTop extends React.Component<any> {
                             title={((<Icon glyph="fa-plus-circle" />) as any) as string}
                         >
                             <Dropdown.Item eventKey="1" onClick={this.createArrIssue}>
-                                {i18n('arr.issues.add.arr')}
+                                {<FormattedMessage {...daoMessages.issuesAddArr} />}
                             </Dropdown.Item>
                             <Dropdown.Item
                                 eventKey="2"
                                 disabled={!this.props.node || !this.props.node.selectedSubNodeId}
                                 onClick={this.createNodeIssue}
                             >
-                                {i18n('arr.issues.add.node')}
+                                {<FormattedMessage {...daoMessages.issuesAddNode} />}
                             </Dropdown.Item>
                         </DropdownButton>
                         {hasAdmin && (
@@ -221,7 +222,7 @@ class LecturingTop extends React.Component<any> {
                             value={issueList.filter.state}
                             className="form-select"
                         >
-                            <option value={''}>{i18n('global.all')}</option>
+                            <option value={''}>{<FormattedMessage {...daoMessages.globalAll} />}</option>
                             {issueStates.fetched && issueStates.data.map(basicOptionMap)}
                         </FormControl>
                     </Col>
@@ -234,7 +235,7 @@ class LecturingTop extends React.Component<any> {
                             value={issueList.filter.type}
                             className="form-select"
                         >
-                            <option value={''}>{i18n('global.all')}</option>
+                            <option value={''}>{<FormattedMessage {...daoMessages.globalAll} />}</option>
                             {issueTypes.fetched && issueTypes.data.map(basicOptionMap)}
                         </FormControl>
                     </Col>
@@ -285,7 +286,7 @@ class LecturingTop extends React.Component<any> {
                                             </span>
                                         </div>
                                         <div className="reference-mark">
-                                            {levelDeleted && '[' + i18n('arr.issues.add.deletedLevel') + ']'}{referenceMark && referenceMark.join(' ')}
+                                            {levelDeleted && '[' + this.props.intl.formatMessage(daoMessages.issuesAddDeletedLevel) + ']'}{referenceMark && referenceMark.join(' ')}
                                         </div>
                                     </div>
                                     {canWrite && (
@@ -302,7 +303,7 @@ class LecturingTop extends React.Component<any> {
                                                         disabled={i.id === issueTypeId}
                                                         onClick={this.updateIssueType.bind(this, id, i.id)}
                                                     >
-                                                        {i18n('arr.issues.type.change', i.name)}
+                                                        {this.props.intl.formatMessage(daoMessages.issuesTypeChange, { 0: i.name })}
                                                     </Dropdown.Item>
                                                 ))}
                                             </DropdownButton>
@@ -329,4 +330,4 @@ export default (connect((state: any) => {
         issueDetail: storeFromArea(state, issuesActions.AREA_DETAIL),
         userDetail: state.userDetail,
     };
-})(LecturingTop));
+})(injectIntl(LecturingTop)));

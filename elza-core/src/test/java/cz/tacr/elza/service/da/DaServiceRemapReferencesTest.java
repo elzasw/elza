@@ -2,7 +2,6 @@ package cz.tacr.elza.service.da;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.mock;
@@ -12,9 +11,11 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import cz.tacr.elza.api.AipType;
 import cz.tacr.elza.api.DaOnReceivedAction;
@@ -83,6 +84,14 @@ public class DaServiceRemapReferencesTest {
         setField(service, "aipStateRepository", aipStateRepository);
         setField(service, "syncQueueItemRepository", syncQueueItemRepository);
         setField(service, "referenceResolver", referenceResolver);
+
+        // The service expects the caller to hold a transaction; here the test stands in for one.
+        TransactionSynchronizationManager.setActualTransactionActive(true);
+    }
+
+    @AfterEach
+    void clearTransaction() {
+        TransactionSynchronizationManager.setActualTransactionActive(false);
     }
 
     /** The resolver reports success and fills the fund in, as it does against a real database. */
@@ -104,7 +113,8 @@ public class DaServiceRemapReferencesTest {
         assertEquals(AipType.METADATA_BASE, item.getValue().getAipType());
         assertEquals(DaSyncQueueItem.QueueItemState.UPDATE, item.getValue().getState());
         assertEquals("aip-code", item.getValue().getCode());
-        assertTrue(aipState.getMetadataLoad());
+        // The flag says what is on disk; it is set when the package arrives, not when it is asked for
+        assertNull(aipState.getMetadataLoad());
     }
 
     @Test

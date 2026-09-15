@@ -2,7 +2,25 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {connect} from 'react-redux';
 import {Button} from '../ui';
-import {AbstractReactComponent, FormInput, i18n, Icon, TooltipTrigger} from 'components/shared';
+import {AbstractReactComponent, FormInput, Icon, TooltipTrigger} from 'components/shared';
+import { defineMessages } from 'react-intl';
+import { getIntl } from 'components/shared/lang/intlInstance';
+import { DatationFormatHelp } from './DatationFormatHelp';
+
+// Id jsou převzatá z legacy katalogu beze změny. Hlášky vznikají uvnitř
+// vyhazované výjimky mimo render, takže musí být řetězec.
+const messages = defineMessages({
+    invalidFormat: { id: 'global.validation.datation.invalidFormat', defaultMessage: 'Neplatný formát {0}' },
+    invalidInterval: {
+        id: 'global.validation.datation.invalidInterval',
+        defaultMessage: 'Neplatný interval ISO datumů: od > do',
+    },
+    invalidISODateLength: {
+        id: 'global.validation.datation.invalidISODateLength',
+        defaultMessage: 'Neplatná délka ISO datumů',
+    },
+    invalid: { id: 'global.validation.datation.invalid', defaultMessage: 'Vstupní řetězec není validní.' },
+});
 
 import './DatationField.scss';
 
@@ -70,8 +88,7 @@ class DatationField extends AbstractReactComponent {
         const {label, labelTextual, labelNote, fields} = this.props;
         const {allowedText, allowedNote, calendars} = this.state;
 
-        const tooltipText = i18n('^dataType.unitdate.format');
-        const tooltip = tooltipText ? <div dangerouslySetInnerHTML={{__html: tooltipText}}></div> : null;
+        const tooltip = <DatationFormatHelp />;
 
         return (
             <div className="datation-field">
@@ -251,7 +268,7 @@ class DT {
                 break;
             }
             default: {
-                throw new Exception(i18n('global.validation.datation.invalidFormat', format), true);
+                throw new Exception(getIntl().formatMessage(messages.invalidFormat, { 0: format }), true);
             }
         }
         if (isNaN(Date.parse(dateString))) {
@@ -463,7 +480,7 @@ class UnitDateConvertor {
                 }
 
                 if (from != null && to != null && from.isAfter(to)) {
-                    throw new Exception(i18n('global.validation.datation.invalidInterval'));
+                    throw new Exception(getIntl().formatMessage(messages.invalidInterval));
                 }
             } else {
                 const token = UnitDateConvertor.parseToken(normalizedInput, unitdate);
@@ -476,21 +493,21 @@ class UnitDateConvertor {
             if (unitdate.valueFrom != null) {
                 const valueFrom = unitdate.valueFrom.toISO8601();
                 if (valueFrom.length != 19) {
-                    throw new Exception(i18n('global.validation.datation.invalidISODateLength'));
+                    throw new Exception(getIntl().formatMessage(messages.invalidISODateLength));
                 }
             }
 
             if (unitdate.valueTo != null) {
                 const valueTo = unitdate.valueTo.toISO8601();
                 if (valueTo.length != 19) {
-                    throw new Exception(i18n('global.validation.datation.invalidISODateLength'));
+                    throw new Exception(getIntl().formatMessage(messages.invalidISODateLength));
                 }
             }
         } catch (e) {
             unitdate.format = '';
             console.log(e);
             throw new Exception(
-                e && e.message && e.hasUserMessage ? e.message : i18n('global.validation.datation.invalid'),
+                e && e.message && e.hasUserMessage ? e.message : getIntl().formatMessage(messages.invalid),
             );
         }
 

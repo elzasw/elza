@@ -1,7 +1,10 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {connect} from 'react-redux';
-import {AbstractReactComponent, FileListBox, i18n, Icon, StoreHorizontalLoader} from 'components/shared';
+import {AbstractReactComponent, FileListBox, Icon, StoreHorizontalLoader} from 'components/shared';
+import { FormattedMessage, injectIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { arrPanelMessages } from './panelMessages';
 import {Button} from '../ui';
 import {fetchFundOutputFilesIfNeeded, fundOutputFilesFilterByText} from 'actions/arr/fundOutputFiles.jsx';
 import {UrlFactory} from 'actions/index.jsx';
@@ -70,7 +73,7 @@ class FundOutputFiles extends AbstractReactComponent {
             <div className="fund-files fund-output-files">
                 <div className={'fund-files-header'}>
                     <div className="fund-files-title">
-                        {i18n('arr.output.title.complete')}
+                        {<FormattedMessage {...arrPanelMessages.outputTitleComplete} />}
                     </div>
                     <Button 
                         variant="action" 
@@ -79,10 +82,10 @@ class FundOutputFiles extends AbstractReactComponent {
                     >
                         <Icon
                             className={'fund-files-download-icon'}
-                            title={i18n('global.action.download')}
+                            title={this.props.intl.formatMessage(globalMessages.download)}
                             glyph="fa-download"
                         />
-                        {i18n('global.action.downloadAll')}
+                        {<FormattedMessage {...arrPanelMessages.globalActionDownloadAll} />}
                     </Button>
                 </div>
 
@@ -99,4 +102,4 @@ class FundOutputFiles extends AbstractReactComponent {
     }
 }
 
-export default connect()(FundOutputFiles);
+export default connect()(injectIntl(FundOutputFiles));

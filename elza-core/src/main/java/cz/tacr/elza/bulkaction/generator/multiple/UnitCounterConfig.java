@@ -12,6 +12,22 @@ public class UnitCounterConfig {
 
 	boolean stopProcessing;
 
+	/**
+	 * Stop the remaining aggregators on the current level only.
+	 *
+	 * Unlike stopProcessing the subtree of the level is still processed. Ignored when
+	 * stopProcessing is set.
+	 */
+	boolean stopLevelProcessing;
+
+	/**
+	 * Add dates of a level that forms no evidence unit into the date range of the closest
+	 * enclosing counted structured object, i.e. of the unit the level is stored in.
+	 *
+	 * Affects date ranges only, never the counts.
+	 */
+	boolean datesToEnclosingUnit;
+
 	String itemType;
 
 	Map<String, String> itemSpecMapping;
@@ -89,6 +105,22 @@ public class UnitCounterConfig {
 
 	public void setStopProcessing(boolean stopProcessing) {
 		this.stopProcessing = stopProcessing;
+	}
+
+	public boolean isStopLevelProcessing() {
+		return stopLevelProcessing;
+	}
+
+	public void setStopLevelProcessing(boolean stopLevelProcessing) {
+		this.stopLevelProcessing = stopLevelProcessing;
+	}
+
+	public boolean isDatesToEnclosingUnit() {
+		return datesToEnclosingUnit;
+	}
+
+	public void setDatesToEnclosingUnit(boolean datesToEnclosingUnit) {
+		this.datesToEnclosingUnit = datesToEnclosingUnit;
 	}
 
 	public String getItemType() {

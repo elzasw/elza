@@ -1,4 +1,7 @@
-import { Autocomplete, i18n } from 'components/shared';
+import { Autocomplete} from 'components/shared';
+import { FormattedMessage } from 'react-intl';
+import { nodeMessages } from 'components/arr/nodeMessages';
+
 import { forwardRef } from 'react';
 // import { FieldArrayFieldsProps } from 'redux-form';
 import { DescItemTypeRef } from 'typings/store';
@@ -13,7 +16,7 @@ export const ItemTypeField = forwardRef<Autocomplete, Props>(({descItemTypes, ..
             ref={ref}
             tree={true}
             alwaysExpanded={true}
-            label={i18n('subNodeForm.descItemType.all')}
+            label={<FormattedMessage {...nodeMessages.subNodeFormDescItemTypeAll} />}
             items={descItemTypes}
             // getItemRenderClass={item => (item.groupItem ? null : ' type-' + item.type.toLowerCase())}
             // allowSelectItem={item => !item.groupItem}

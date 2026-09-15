@@ -5,7 +5,9 @@ import {AbstractReactComponent, Icon} from 'components/shared';
 import {connect} from 'react-redux';
 import storeFromArea from '../../shared/utils/storeFromArea';
 import * as scopeActions from '../../actions/scopes/scopes';
-import i18n from '../i18n';
+import { FormattedMessage } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { arrPanelMessages } from './panelMessages';
 import ListBox from '../shared/listbox/ListBox';
 import indexById from '../../shared/utils/indexById';
 import Loading from '../shared/loading/Loading';
@@ -91,7 +93,7 @@ class ScopeLists extends AbstractReactComponent {
                     <Row className="flex">
                         <Col xs={6} sm={4} className="flex flex-column">
                             <div className="flex" style={{alignItems: 'baseline'}}>
-                                <FormLabel>{i18n('accesspoint.scope.list')}</FormLabel>
+                                <FormLabel>{<FormattedMessage {...arrPanelMessages.accesspointScopeList} />}</FormLabel>
                                 <Button variant={'action'} onClick={this.create}>
                                     <Icon glyph="fa-plus" />
                                 </Button>
@@ -124,7 +126,7 @@ class ScopeLists extends AbstractReactComponent {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="link" onClick={onClose}>
-                        {i18n('global.action.close')}
+                        {<FormattedMessage {...globalMessages.close} />}
                     </Button>
                 </Modal.Footer>
             </div>

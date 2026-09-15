@@ -1,6 +1,7 @@
-import FundsPermissionPanel from '../../admin/FundsPermissionPanel';
-import { i18n } from 'components/shared';
+import { getIntl } from 'components/shared/lang/intlInstance';
+import { permissionScopeMessages } from '../permissionMessages';
 import { AdminFunds } from 'typings/store';
+import { ALL_ID } from 'actions/admin/adminPermissions';
 
 export const getFundRows = (funds: AdminFunds) => {
     if(funds.fetched && funds.rows){
@@ -13,8 +14,8 @@ export const getFundRows = (funds: AdminFunds) => {
         }
         return [
             {
-                id: FundsPermissionPanel.ALL_ID, 
-                name: i18n('admin.perms.tabs.funds.items.fundAll')
+                id: ALL_ID, 
+                name: getIntl().formatMessage(permissionScopeMessages.fundAll)
             },
             ...funds.rows,
         ];

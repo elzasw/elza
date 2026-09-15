@@ -3,7 +3,13 @@ import PropTypes from 'prop-types';
 
 import React from 'react';
 import classNames from 'classnames';
-import i18n from '../../i18n';
+import { defineMessages } from 'react-intl';
+import { getIntl } from 'components/shared/lang/intlInstance';
+
+// Id je převzaté z legacy katalogu beze změny.
+const messages = defineMessages({
+    loading: { id: 'global.data.loading', defaultMessage: 'Načítání dat...' },
+});
 import './HorizontalLoader.scss';
 
 /**
@@ -30,7 +36,7 @@ export default class HorizontalLoader extends React.Component {
     render() {
         const {rerenderProgress, showText, hover, text, className, fetched, ...other} = this.props;
 
-        let useText = text || i18n('global.data.loading');
+        let useText = text || getIntl().formatMessage(messages.loading);
 
         const clsCont = classNames('loaderInf-container', className, {});
         const wrapperCls = classNames('loaderInf-container-wrapper', {

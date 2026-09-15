@@ -30,5 +30,16 @@ public enum BulkActionCode
      * - itemSpec: code of the specification without prefix mapping (optional)
      * - count: number of found source items (optional)
      */
-    PREFIX_VALUE_NOT_FOUND
+    PREFIX_VALUE_NOT_FOUND,
+
+    /**
+     * Some levels to be processed no longer exist
+     *
+     * Level ids are read before the batch transactions start, so a level can be deleted
+     * while the action is running.
+     *
+     * Parameters:
+     * - levelIds: ids of the levels which were not found
+     */
+    LEVELS_NOT_FOUND
 }

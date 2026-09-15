@@ -1,7 +1,8 @@
 import { serverContextPath } from "api";
 import { useUserSettings } from "contexts/user";
-import { PropsWithChildren, useEffect, useState } from "react";
-import { IntlProvider } from "react-intl";
+import { PropsWithChildren, useEffect, useMemo, useState } from "react";
+import { RawIntlProvider } from "react-intl";
+import { createAppIntl } from "./intlInstance";
 
 export function LangProvider({ children }: PropsWithChildren) {
   const { settings } = useUserSettings();
@@ -24,9 +25,10 @@ export function LangProvider({ children }: PropsWithChildren) {
     };
   }, [locale]);
 
-  return (
-    <IntlProvider messages={messages} defaultLocale="cs" locale={locale}>
-      {children}
-    </IntlProvider>
-  );
+  // Instanci vyrábíme sami (místo <IntlProvider>), aby ji `createAppIntl` mohl
+  // zpřístupnit i kódu mimo React - viz intlInstance.ts. Strom a non-React
+  // volající tak sdílejí jeden objekt a nemůže vzniknout druhá konfigurace.
+  const intl = useMemo(() => createAppIntl(locale, messages), [locale, messages]);
+
+  return <RawIntlProvider value={intl}>{children}</RawIntlProvider>;
 }

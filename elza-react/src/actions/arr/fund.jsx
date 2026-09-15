@@ -4,7 +4,14 @@
 
 import {WebApi} from 'actions/index.jsx';
 import {Api} from "../../api";
-import {i18n} from 'components/shared';
+import {} from 'components/shared';
+import { FormattedMessage, defineMessages } from 'react-intl';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    added: { id: "arr.fund.title.added", defaultMessage: "AS byl vytvořen" },
+    approved: { id: "arr.fund.title.approved", defaultMessage: "AS byl uzavřen" },
+});
 import * as types from 'actions/constants/ActionTypes';
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
 import {nodesReceive, nodesRequest} from 'actions/arr/node.jsx';
@@ -105,7 +112,7 @@ export function createFund(data) {
 
     return dispatch => {
         return savingApiWrapper(dispatch, Api.funds.fundCreateFund(formData)).then(response => {
-            dispatch(addToastrSuccess(i18n('arr.fund.title.added')));
+            dispatch(addToastrSuccess(<FormattedMessage {...messages.added} />));
             dispatch(fundsSelectFund(response.data.id));
         });
     };
@@ -124,7 +131,7 @@ export function updateFund(id, data) {
 export function approveFund(versionId) {
     return dispatch => {
         return savingApiWrapper(dispatch, WebApi.approveVersion(versionId)).then(json => {
-            dispatch(addToastrSuccess(i18n('arr.fund.title.approved')));
+            dispatch(addToastrSuccess(<FormattedMessage {...messages.approved} />));
             dispatch(approveFundResult(versionId, json));
         });
     };

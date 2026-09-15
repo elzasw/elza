@@ -5,11 +5,12 @@ import {
     AbstractReactComponent,
     FormInput,
     HorizontalLoader,
-    i18n,
     Icon,
     ListBox,
     StoreHorizontalLoader,
 } from 'components/shared';
+import { FormattedMessage, injectIntl } from 'react-intl';
+import { arrPanelMessages } from './panelMessages';
 import {
     fetchFundOutputFunctionsIfNeeded,
     fundOutputActionInterrupt,
@@ -90,7 +91,7 @@ class FundOutputFunctions extends AbstractReactComponent {
 
     getActionState = item => {
         const state = actionStateTranslation(item.state);
-        let stateString = i18n('arr.output.functions.notStarted');
+        let stateString = this.props.intl.formatMessage(arrPanelMessages.outputFunctionsNotStarted);
         const actionDate = item.dateFinished || item.dateStarted || item.datePlanned;
         const formattedDate = dateTimeToString(new Date(actionDate));
 
@@ -152,10 +153,10 @@ class FundOutputFunctions extends AbstractReactComponent {
                     className="form-select"
                 >
                     <option value={true} key="recommended-filter">
-                        {i18n('arr.output.functions.recommended')}
+                        {<FormattedMessage {...arrPanelMessages.outputFunctionsRecommended} />}
                     </option>
                     <option value={false} key="no-filter">
-                        {i18n('arr.output.functions.all')}
+                        {<FormattedMessage {...arrPanelMessages.outputFunctionsAll} />}
                     </option>
                 </FormInput>
 
@@ -209,4 +210,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps, null, null, {forwardRef: true})(FundOutputFunctions);
+export default connect(mapStateToProps, null, null, {forwardRef: true})(injectIntl(FundOutputFunctions, { forwardRef: true }));

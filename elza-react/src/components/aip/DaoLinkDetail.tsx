@@ -6,23 +6,33 @@ import { AppState } from "typings/store";
 import {useEffect, useState} from "react";
 import {useThunkDispatch} from "../../utils/hooks";
 import {Button, Row} from "react-bootstrap";
-import {i18n, Icon} from "../shared";
+import { Icon } from "../shared";
+import { FormattedMessage, defineMessages, useIntl } from "react-intl";
+import { globalMessages } from "components/shared/lang";
+
+// Id je převzaté z legacy katalogu beze změny. ConfirmForm chce řetězce,
+// proto formatMessage a ne FormattedMessage.
+const messages = defineMessages({
+    deleteLink: { id: "arr.aip.dao.link.delete", defaultMessage: "Opravdu chcete smazat napojení?" },
+});
 import {Api} from "../../api";
 import {modalDialogHide, modalDialogShow} from "../../actions/global/modalDialog";
 import AipExplorerModalWrapper from "./explorer/AipExplorerWrapper.tsx";
 import {ExplorerMode} from "./explorer/ExplorerContext.tsx";
 import * as aipActions from "../../actions/aip/aip.ts";
-import {DaDaoTypeCaption} from "../../api/DaDaoType.ts";
-import {DaDaoType, DaoLink, DaoViewRequestVO} from "elza-api";
+import { daoTypeMessages, levelMessages } from "./messages";
+import {AipLevelType, DaDaoType, DaoLink, DaoViewRequestVO} from "elza-api";
 import CrossTabHelper, {CrossTabEventType, getThisLayout} from "../CrossTabHelper.tsx";
 import {WebApi} from "../../actions";
 import ConfirmForm from "../shared/form/ConfirmForm";
+import { daoLinkMessages, explorerMessages } from "./messages";
 
 type DaoLinkDetailProps = {
     nodeId: number;
 }
 
 const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
+    const intl = useIntl();
     const daoLinks = useSelector((state: AppState) => storeFromArea(state, AREA_DAO_LINKS));
     const dispatch = useThunkDispatch();
     const [collapsed, setCollapsed] = useState<boolean>(false);
@@ -40,9 +50,9 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
         const confirmForm = (
             <ConfirmForm
                 //@ts-ignore
-                confirmMessage={i18n('arr.aip.dao.link.delete')}
-                submittingMessage={i18n('arr.aip.dao.link.delete')}
-                submitTitle={i18n('global.action.delete')}
+                confirmMessage={intl.formatMessage(messages.deleteLink)}
+                submittingMessage={intl.formatMessage(messages.deleteLink)}
+                submitTitle={intl.formatMessage(globalMessages.delete)}
                 onSubmit={() => {
                     return Api.aips.aipDeleteDaoLink(linkId)
                 }}
@@ -60,7 +70,7 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
         dispatch(
             modalDialogShow(
                 this,
-                "AIP Průzkumník",
+                intl.formatMessage(explorerMessages.title),
                 <AipExplorerModalWrapper
                     //@ts-ignore
                     onOk={() => dispatch(modalDialogHide())}
@@ -117,7 +127,9 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
         const openItem = openItems.includes(item.daoLinkUuid);
 
         return (<p>
-            {item.path ? item.path + " " : DaDaoTypeCaption(item.daoType) + ": "}
+            {/* Napojení bez typu zůstává u původního znění - popisuje celý balíček. */}
+            {item.path ? item.path + " "
+                : intl.formatMessage((item.daoType && daoTypeMessages[item.daoType]) || levelMessages[AipLevelType.Package]) + ": "}
             <Button key="explorerLink" variant="link" onClick={() => handleOpenExplorer(item.aipId, item.daoCode)}>
                 {item.name}
             </Button>
@@ -153,7 +165,7 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
                             <Row className="napojeni-row" key={'dao-link-row' + item.daoLinkUuid + "dalsi"}>
                                 <p>
                                     <Button key="showAll" variant="link" onClick={() => setShowAllMainLinks(!showAllMainLinks)}>
-                                        a {items.length - maxCount} dalších...
+                                        <FormattedMessage {...daoLinkMessages.showMore} values={{ count: items.length - maxCount }} />
                                     </Button>
                                 </p>
                             </Row>
@@ -168,7 +180,7 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
                         <Row className="napojeni-row" key={'dao-link-row' + item.daoLinkUuid + "skryt"}>
                             <p>
                                 <Button key="hideAll" variant="link" onClick={() => setShowAllMainLinks(!showAllMainLinks)}>
-                                    Skrýt
+                                    <FormattedMessage {...daoLinkMessages.hide} />
                                 </Button>
                             </p>
                         </Row>
@@ -202,7 +214,7 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
                         <Row className="napojeni-row-child" key={'dao-link-row' + item.daoLinkUuid + "zobrazit-vse"}>
                             <p>
                                 <Button key="hideAll" variant="link" onClick={() => handleOpenExplorer(item.aipId, null)}>
-                                    Zobrazit vše v průzkumníku...
+                                    <FormattedMessage {...daoLinkMessages.showInExplorer} />
                                 </Button>
                             </p>
                         </Row>
@@ -227,7 +239,7 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
     return (
         <div className="napojeni">
             <p>
-                <b>Napojení</b>
+                <b><FormattedMessage {...daoLinkMessages.title} /></b>
                 <Button key="expand" variant="action" onClick={() => setCollapsed(!collapsed)}>
                     {collapsed && <Icon glyph="fa fa-chevron-down"/>}
                     {!collapsed && <Icon glyph="fa fa-chevron-up"/>}

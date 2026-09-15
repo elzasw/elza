@@ -1,13 +1,11 @@
-import { i18n, Icon } from 'components/shared';
+import { Icon } from 'components/shared';
+import { FormattedMessage, useIntl } from 'react-intl';
+import { daoMessages } from 'components/arr/daoMessages';
 import React, { FC } from 'react';
 import { ArrDaoVO } from "typings/dao";
 import { Button } from '../../ui';
 import { ScenarioDropdown } from './ScenarioDropdown';
 import './SubNodeDao.scss';
-
-const getPlurality = (count: number) => {
-    return count === 1 ? "one" : count > 1 && count < 5? "few" : "more";
-}
 
 export const SubNodeDaoItem:FC<{
     dao: ArrDaoVO;
@@ -24,6 +22,7 @@ export const SubNodeDaoItem:FC<{
     nodeId,
     readMode = true,
 }) => {
+    const intl = useIntl();
     const handleShowDetail = () => onShowDetail(dao.id);
 
     return (
@@ -31,12 +30,18 @@ export const SubNodeDaoItem:FC<{
             <div className="link" key={'link'}>
                 {dao.url ?
                         <a target="_blank" rel="noopener noreferrer" href={dao.url}
-                           title={dao.truncated ? i18n('subNodeDao.dao.files.truncated') : undefined}>
-                            {dao.label} - {dao.fileCount}{dao.truncated ? '+' : ''} {i18n(`subNodeDao.dao.files.${getPlurality(dao.fileCount)}`)}
+                           title={dao.truncated ? intl.formatMessage(daoMessages.subNodeDaoDaoFilesTruncated) : undefined}>
+                            {dao.label} - <FormattedMessage
+                                {...(dao.truncated ? daoMessages.daoFileCountTruncated : daoMessages.daoFileCount)}
+                                values={{ count: dao.fileCount }}
+                            />
                         </a>
                     :
-                        <span title={dao.truncated ? i18n('subNodeDao.dao.files.truncated') : undefined}>
-                            {dao.label} - {dao.fileCount}{dao.truncated ? '+' : ''} {i18n(`subNodeDao.dao.files.${getPlurality(dao.fileCount)}`)}
+                        <span title={dao.truncated ? intl.formatMessage(daoMessages.subNodeDaoDaoFilesTruncated) : undefined}>
+                            {dao.label} - <FormattedMessage
+                                {...(dao.truncated ? daoMessages.daoFileCountTruncated : daoMessages.daoFileCount)}
+                                values={{ count: dao.fileCount }}
+                            />
                         </span>
                 }
             </div>
@@ -49,7 +54,7 @@ export const SubNodeDaoItem:FC<{
                 <Button
                     key={'show'}
                     onClick={handleShowDetail}
-                    title={i18n('subNodeDao.dao.action.showDetailOne')}
+                    title={<FormattedMessage {...daoMessages.subNodeDaoDaoActionShowDetailOne} />}
                 >
                     <Icon glyph="fa-eye" />
                 </Button>

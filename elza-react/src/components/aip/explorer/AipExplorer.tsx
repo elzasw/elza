@@ -11,22 +11,29 @@ import { AREA_AIP } from "actions/aip/aip";
 import { useSelector } from "react-redux";
 import { storeFromArea } from "shared/utils";
 import { AppState } from "typings/store";
-import {i18n} from 'components/shared'
+import { FormattedMessage, defineMessages } from 'react-intl';
+
+// Id je převzaté z legacy katalogu beze změny.
+const messages = defineMessages({
+    notSelected: { id: 'aip.detail.notSelected', defaultMessage: 'Nebyl vybrán žádný AIP' },
+});
 
 type AipExplorerProps = {
     mode: ExplorerMode;
     onSelect?: (node: ExplorerNode) => void;
     selected?: string;
+    /** Hide the synthetic root; the sections of the package become the top level. */
+    hideRoot?: boolean;
 }
 
-const AipExplorer = ({mode, onSelect, selected}: AipExplorerProps) => {
+const AipExplorer = ({mode, onSelect, selected, hideRoot}: AipExplorerProps) => {
     const aip = useSelector((state: AppState) => storeFromArea(state, AREA_AIP));
 
     return (
-        <ExplorerContext mode={mode}>
+        <ExplorerContext mode={mode} hideRoot={hideRoot}>
             <div className="aip-explorer">
                 {!aip.id && <div className="not-selected">
-                        <p>{i18n("aip.detail.notSelected")}</p>
+                        <p><FormattedMessage {...messages.notSelected} /></p>
                     </div>
                 }
                 {aip.id && <>

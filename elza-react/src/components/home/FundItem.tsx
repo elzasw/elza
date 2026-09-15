@@ -5,6 +5,11 @@ import { Button } from "components/ui"
 import { Icon } from "components/shared"
 import { FundDetail } from 'elza-api';
 import { ActiveVersion } from 'typings/store';
+import { FormattedDate, FormattedMessage, FormattedTime, defineMessages } from 'react-intl';
+
+const messages = defineMessages({
+    lockedVersion: { id: 'home.fund.lockedVersion', defaultMessage: 'Verze {date}' },
+});
 
 export interface Props {
   fundDetail: FundDetail;
@@ -32,7 +37,16 @@ export function FundItem({ fundDetail, version }) {
               </div>}
               <div className="fund-desc-item version" >
                 {version.lockDate && <>
-                  <Icon glyph={'fa-lock'} /> Verze {new Date(version.lockDate).toLocaleString()}
+                  <Icon glyph={'fa-lock'} />{' '}
+                  <FormattedMessage
+                    {...messages.lockedVersion}
+                    values={{
+                      date: <>
+                        <FormattedDate value={version.lockDate} />{' '}
+                        <FormattedTime value={version.lockDate} />
+                      </>,
+                    }}
+                  />
                 </>}
               </div>
             </div>

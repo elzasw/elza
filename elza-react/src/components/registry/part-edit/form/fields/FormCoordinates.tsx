@@ -2,7 +2,8 @@ import { modalDialogHide, modalDialogShow } from 'actions/global/modalDialog';
 import { WebApi } from 'actions/WebApi';
 import classNames from 'classnames';
 import { Icon } from 'components';
-import i18n from 'components/i18n';
+import { FormattedMessage, useIntl } from 'react-intl';
+import { partEditMessages } from '../../messages';
 import FormInput from 'components/shared/form/FormInput';
 import ReduxFormFieldErrorDecorator from 'components/shared/form/ReduxFormFieldErrorDecorator';
 import React, { FC, useEffect } from 'react';
@@ -21,6 +22,7 @@ import { wktFromTypeAndData } from 'components/Utils';
 import { MapEditor } from './coordinates/MapEditor';
 import { GisSystemType } from '../../../../../constants';
 import { kmlExtSystemListFetchIfNeeded } from 'actions/admin/kmlExtSystemList';
+import { getIntl } from 'components/shared/lang/intlInstance';
 
 type ThunkAction<R> = (dispatch: ThunkDispatch<AppState, void, AnyAction>, getState: () => AppState) => Promise<R>;
 const useThunkDispatch = <State,>():ThunkDispatch<State, void, AnyAction> => useDispatch()
@@ -33,6 +35,7 @@ export const FormCoordinates:FC<CommonFieldProps<ApItemCoordinatesVO> & {additio
     onDelete = () => {console.warn("'onDelete' not defined")},
     additionalTitle,
 }) => {
+    const intl = useIntl();
     const fieldName = `${name}.updatedItem.value`;
     const dispatch = useThunkDispatch<AppState>()
     const form = useForm();
@@ -189,7 +192,7 @@ export const FormCoordinates:FC<CommonFieldProps<ApItemCoordinatesVO> & {additio
                             {geoEditExternalSystems.length === 1 && <Button
                                 variant={'action' as any}
                                 className={classNames('side-container-button', 'm-1')}
-                                title={i18n('ap.coordinate.edit-in-map')}
+                                title={intl.formatMessage(partEditMessages.coordinateEditInMap)}
                                 onClick={handleEditInMap}
                             >
                                 <Icon glyph={'fa-map'} />
@@ -222,7 +225,7 @@ export const editInMapEditor = (geometry: string, extSystem: ExternalSystem, all
                     extSystem={extSystem}
                     onChange={handleEditorChange}
                     allowedGeometryTypes={allowedGeometryTypes}
-                    title={`${i18n('ap.coordinate.map-editor.title')}${additionalTitle ? ` - ${additionalTitle}` : ""}`}
+                    title={`${<FormattedMessage {...partEditMessages.coordinateMapEditorTitle} />}${additionalTitle ? ` - ${additionalTitle}` : ""}`}
                 />
             }
         ))
@@ -233,7 +236,7 @@ const importCoordinateFile = (): ThunkAction<any> =>
         dispatch(
             modalDialogShow(
                 this,
-                i18n('ap.coordinate.import.title'),
+                getIntl().formatMessage(partEditMessages.coordinateImportTitle),
                 <ImportCoordinateModal
                     onSubmit={async (formData) => {
                         try {

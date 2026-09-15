@@ -7,7 +7,8 @@ import { removeToastr } from './ToastrActions.jsx';
 import './Toastr.scss';
 import AbstractReactComponent from '../../AbstractReactComponent';
 import Icon from '../icon/Icon';
-import i18n from '../../i18n';
+import { FormattedMessage } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
 
 /**
  *  Toastr.
@@ -76,7 +77,7 @@ class Toastr extends AbstractReactComponent {
                     key={'toast-' + toast.key}
                     variant={toast.style}
                     className={toast.visible && 'fade'}
-                    closeLabel={i18n('global.action.close')}
+                    closeLabel={<FormattedMessage {...globalMessages.close} />}
                     onClose={() => this.handleDismiss(toast.key)}
                     dismissible
                 >

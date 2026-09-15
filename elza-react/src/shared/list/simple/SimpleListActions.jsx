@@ -137,7 +137,12 @@ function request(area, dataKey) {
     };
 }
 
-export function setData(area, parent, data) {
+/**
+ * Uložení dat seznamu bez dotazu na server.
+ *
+ * @param count celkový počet záznamů; u stránky seznamu je jiný než počet předaných řádků
+ */
+export function setData(area, parent, data, count = data.length) {
     return (dispatch, getState) => {
         // Načtení aktuálního store
         let store = storeFromArea(getState(), area);
@@ -154,7 +159,7 @@ export function setData(area, parent, data) {
         dispatch(request(area, dataKey));
 
         // Response dat
-        dispatch(response(area, data, data.length));
+        dispatch(response(area, data, count));
     };
 }
 

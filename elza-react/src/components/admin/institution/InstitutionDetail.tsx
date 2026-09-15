@@ -15,6 +15,7 @@ import { Institution, InstitutionType } from 'elza-api';
 import { Field, Form } from 'react-final-form';
 import { FormattedMessage, defineMessages, useIntl } from 'react-intl';
 import { AccessPointPicker } from 'components/registry';
+import { WebApi } from 'actions/WebApi';
 
 const messages = defineMessages({
     createTitle: {
@@ -212,7 +213,7 @@ export function InstitutionDetail({ institution, types, canEdit, onSubmit, onDel
                 </div>
             </Toolbar>
             <Form<FormValues> onSubmit={handleSubmit} validate={validate} initialValues={initialValues}>
-                {({ handleSubmit, submitting, pristine, invalid }) => (
+                {({ handleSubmit, submitting, pristine, invalid, form, values }) => (
                     <form className={styles.form} onSubmit={handleSubmit}>
                         <Field<string> name="name">
                             {({ input }) => (
@@ -252,7 +253,19 @@ export function InstitutionDetail({ institution, types, canEdit, onSubmit, onDel
                                 <FluentField label={formatMessage(messages.accessPoint)} required>
                                     <AccessPointPicker
                                         value={input.value}
-                                        onChange={input.onChange}
+                                        onChange={async apId => {
+                                            input.onChange(apId);
+                                            if (apId == null) return;
+                                            try {
+                                                const ap = await WebApi.getAccessPoint(apId);
+                                                if (ap?.name) {
+                                                    if (!values.name?.trim()) form.change('name', ap.name);
+                                                    if (!values.shortName?.trim()) form.change('shortName', ap.name);
+                                                }
+                                            } catch {
+                                                // ignore fetch errors – user can fill fields manually
+                                            }
+                                        }}
                                         disabled={!canEdit}
                                     />
                                 </FluentField>

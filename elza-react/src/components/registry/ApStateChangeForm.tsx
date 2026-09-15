@@ -1,5 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { Icon, i18n } from 'components/shared';
+import { Icon} from 'components/shared';
+import { FormattedMessage, defineMessages, useIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { getIntl } from 'components/shared/lang/intlInstance';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    scope: { id: 'ap.state.title.scope', defaultMessage: 'Oblast' },
+    type: { id: 'ap.state.title.type', defaultMessage: 'Podtřída' },
+    state: { id: 'ap.state.title.state', defaultMessage: 'Stav' },
+    comment: { id: 'ap.state.title.comment', defaultMessage: 'Komentář' },
+    assignedUser: { id: 'ap.state.title.assignedUser', defaultMessage: 'Přiděleno' },
+    toApproveSameUser: {
+        id: 'ap.state.title.assignedUser.error.toApproveSameUser',
+        defaultMessage: 'Záznam může schválit pouze jiný uživatel',
+    },
+    validationErrors: { id: 'ap.validation.errors', defaultMessage: 'Chyby validace' },
+});
 import { Form, Modal } from 'react-bootstrap';
 import { Form as FinalForm, Field } from 'react-final-form';
 import { Button } from '../ui';
@@ -48,6 +65,7 @@ export const ApStateChangeForm = ({
     onSubmit,
     initialValues,
 }: Props) => {
+    const intl = useIntl();
     const scopesData = useSelector((appState: AppState) => appState.refTables.scopesData);
     const apTypes = useSelector((appState: AppState) => appState.refTables.apTypes)
     const {id: currentUserId} = useAppSelector(({ userDetail }) => userDetail);
@@ -102,7 +120,7 @@ export const ApStateChangeForm = ({
             && values.assignedTo === currentUserId
             && (assignedToChanged || stateChanged);
         if (isToApproveSameUser) {
-            errors.assignedTo = i18n("ap.state.title.assignedUser.error.toApproveSameUser")
+            errors.assignedTo = getIntl().formatMessage(messages.toApproveSameUser)
         }
         return errors;
     }
@@ -125,7 +143,7 @@ export const ApStateChangeForm = ({
                                     {...input}
                                     disabled={submitting}
                                     versionId={versionId}
-                                    label={i18n('ap.state.title.scope')}
+                                    label={intl.formatMessage(messages.scope)}
                                 />
                             }}
                         </Field>
@@ -133,7 +151,7 @@ export const ApStateChangeForm = ({
                             <Field
                                 component={FormInputField}
                                 type="autocomplete"
-                                label={i18n('ap.state.title.type')}
+                                label={intl.formatMessage(messages.type)}
                                 items={apTypes.items ? apTypes.items : []}
                                 tree={true}
                                 alwaysExpanded={true}
@@ -149,7 +167,7 @@ export const ApStateChangeForm = ({
                             disabled={submitting || stateOptions.length <= 1}
                             useIdAsValue
                             required
-                            label={i18n('ap.state.title.state')}
+                            label={intl.formatMessage(messages.state)}
                             items={stateOptions}
                             name={'state'}
                             placeholder={initialValues?.state && (StateApprovalCaption(initialValues.state) || "")}
@@ -158,7 +176,7 @@ export const ApStateChangeForm = ({
                             component={FormInputField}
                             disabled={submitting}
                             type="textarea"
-                            label={i18n('ap.state.title.comment')}
+                            label={intl.formatMessage(messages.comment)}
                             name={'comment'}
                         />
                         {!isApproved && <>
@@ -169,7 +187,7 @@ export const ApStateChangeForm = ({
                                     input.onChange(user?.id);
                                 }
                                 //@ts-expect-error TODO wrong types on FormInputField
-                                return <FormInputField {...meta} type="static" label={i18n('ap.state.title.assignedUser')}>
+                                return <FormInputField {...meta} type="static" label={intl.formatMessage(messages.assignedUser)}>
                                     <div style={{display: 'flex'}}>
                                         <UserField
                                         disabled={submitting}
@@ -214,10 +232,10 @@ export const ApStateChangeForm = ({
                     </Modal.Body>
                     <Modal.Footer>
                         <Button type="submit" variant="outline-secondary" disabled={submitting || !valid || pristine} onClick={handleSubmit}>
-                            {i18n('global.action.store')}
+                            <FormattedMessage {...globalMessages.save} />
                         </Button>
                         <Button variant="link" onClick={onClose}>
-                            {i18n('global.action.cancel')}
+                            <FormattedMessage {...globalMessages.cancel} />
                         </Button>
                     </Modal.Footer>
                 </Form>

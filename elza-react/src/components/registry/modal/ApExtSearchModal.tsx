@@ -16,7 +16,18 @@ import { AppState } from 'typings/store';
 import * as perms from '../../../actions/user/Permission.jsx';
 import {ThunkDispatch} from "redux-thunk";
 import {Button} from "../../ui";
-import i18n from "../../i18n";
+import { FormattedMessage, defineMessages, useIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { filterMessages } from '../form/filter/messages';
+import { getIntl } from 'components/shared/lang/intlInstance';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    labelAction: { id: 'ap.ext-search.label.action', defaultMessage: 'Propojit' },
+    takeToScope: { id: 'ap.ext-search.label.take-to-scope', defaultMessage: 'Převzít do oblasti' },
+    noEntities: { id: 'ap.ext-search.label.no-entities', defaultMessage: 'Nebyly dohledány žádné entity' },
+    params: { id: 'ap.ext-search.label.params', defaultMessage: 'Zvolte parametry hledání' },
+});
 import './ApExtSearchModal.scss';
 import ExtSystemFilterSection from '../form/filter/ExtSystemFilterSection';
 import TextFilterSection from "../form/filter/TextFilterSection";
@@ -36,7 +47,7 @@ type FormProps = {}
 const validate = (values) => {
     const errors: any = {};
     if (!values.extSystem) {
-        errors.extSystem = i18n('global.validation.required');
+        errors.extSystem = getIntl().formatMessage(globalMessages.validationRequired);
     }
     return errors;
 };
@@ -86,6 +97,7 @@ const createFilter = (values): ApAdvanceSearchFilter => {
 }
 
 const ApExtSearchModal = ({handleSubmit, onClose, onConnected, submitting, extSystems, refTables, scopes, reset, itemType, accessPointId}: Props) => {
+    const intl = useIntl();
     const [data, setData] = useState<Data>({
         isFetching: false,
         fetched: false,
@@ -194,9 +206,9 @@ const ApExtSearchModal = ({handleSubmit, onClose, onConnected, submitting, extSy
             case TypeModal.CONNECT:
                 return <>
                     {taked.indexOf(data.externalSystemCode + item.id) === -1 &&
-                    <DropdownButton disabled={calling} variant="default" id={"b" + index} title={i18n('ap.ext-search.label.action')}>
-                        <Dropdown.Item onClick={() => handleItemConnect(item, false)}>{i18n('global.action.merge')}</Dropdown.Item>
-                        <Dropdown.Item onClick={() => handleItemConnect(item, true)}>{i18n('global.action.replace')}</Dropdown.Item>
+                    <DropdownButton disabled={calling} variant="default" id={"b" + index} title={intl.formatMessage(messages.labelAction)}>
+                        <Dropdown.Item onClick={() => handleItemConnect(item, false)}>{intl.formatMessage(globalMessages.merge)}</Dropdown.Item>
+                        <Dropdown.Item onClick={() => handleItemConnect(item, true)}>{intl.formatMessage(globalMessages.replace)}</Dropdown.Item>
                     </DropdownButton>}
                 </>
             case TypeModal.SEARCH:
@@ -206,7 +218,7 @@ const ApExtSearchModal = ({handleSubmit, onClose, onConnected, submitting, extSy
                             disabled={calling}
                             variant="default"
                             id={'b' + index}
-                            title={i18n('ap.ext-search.label.take-to-scope')}
+                            title={intl.formatMessage(messages.takeToScope)}
                         >
                             {availableScopes.map((scope, index) => (
                                 <Dropdown.Item key={index} onClick={() => handleItemTake(item, scope.id)}>
@@ -247,38 +259,38 @@ const ApExtSearchModal = ({handleSubmit, onClose, onConnected, submitting, extSy
                         <ExtSystemFilterSection submitting={submitting} extSystems={extSystems}/>
                         <TextFilterSection submitting={submitting}/>
                         <FormSection name="" className="filter-section">
-                            <span className="name-section">{i18n('ap.ext-search.section.base')}</span>
+                            <span className="name-section">{intl.formatMessage(filterMessages.sectionBase)}</span>
                             <FieldArray
                                 name="types"
                                 component={TypesField}
-                                label={i18n('registry.type')}
+                                label={intl.formatMessage(filterMessages.type)}
                                 disabled={submitting}
                                 items={apTypes.items}
                             />
                             <Field name="id"
                                    type="text"
                                    component={FormInputField}
-                                   label={i18n('ap.ext-search.id')}
+                                   label={intl.formatMessage(filterMessages.id)}
                                    disabled={submitting}
                             />
                         </FormSection>
                     </div>
                     <div className="search-controller">
-                        <Button disabled={submitting} type="submit" variant="outline-secondary">{i18n('global.action.search')}</Button>
-                        <Button disabled={submitting} type="button" onClick={reset} variant="link">{i18n('global.action.filter.clean')}</Button>
+                        <Button disabled={submitting} type="submit" variant="outline-secondary">{<FormattedMessage {...globalMessages.search} />}</Button>
+                        <Button disabled={submitting} type="button" onClick={reset} variant="link">{<FormattedMessage {...globalMessages.filterClean} />}</Button>
                     </div>
                 </Col>
                 <Col id="ListScrollableLayout" className="results" xs={9}>
                     {data.isFetching && <HorizontalLoader hover/>}
-                    {data.fetched && !data.isFetching && data.data.length === 0 && <div className="text-center mt-5"><h2>{i18n('ap.ext-search.label.no-entities')}</h2></div>}
+                    {data.fetched && !data.isFetching && data.data.length === 0 && <div className="text-center mt-5"><h2>{<FormattedMessage {...messages.noEntities} />}</h2></div>}
                     {data.fetched && data.data.length > 0 && renderResults(data)}
-                    {!data.fetched && <div className="text-center mt-5"><h2>{i18n('ap.ext-search.label.params')}</h2></div>}
+                    {!data.fetched && <div className="text-center mt-5"><h2>{<FormattedMessage {...messages.params} />}</h2></div>}
                 </Col>
             </Row>
         </Modal.Body>
         <Modal.Footer>
             <Button variant="link" onClick={onClose} disabled={submitting}>
-                {i18n('global.action.close')}
+                {<FormattedMessage {...globalMessages.close} />}
             </Button>
         </Modal.Footer>
     </ReduxForm>;

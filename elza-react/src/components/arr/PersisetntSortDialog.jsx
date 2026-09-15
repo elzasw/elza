@@ -1,5 +1,8 @@
 import React from 'react';
-import {AbstractReactComponent, i18n} from 'components/shared';
+import {AbstractReactComponent} from 'components/shared';
+import { FormattedMessage, injectIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { fundFormMessages } from './fundFormMessages';
 import {Modal} from 'react-bootstrap';
 import {Button} from '../ui';
 import PersistentSortForm from './PersistentSortForm';
@@ -21,17 +24,17 @@ class PersistentSortDialog extends AbstractReactComponent {
             <div>
                 <Modal.Body>
                     <span>
-                        <label>{i18n('arr.history.title.nodeChanges') + ':'} &nbsp;</label>
+                        <label>{this.props.intl.formatMessage(fundFormMessages.historyTitleNodeChanges) + ':'} &nbsp;</label>
                         {node.name}
                     </span>
                     <PersistentSortForm fund={fund} versionId={versionId} node={node} />
                 </Modal.Body>
                 <Modal.Footer>
                     <Button type="submit" variant="outline-secondary" onClick={this.handleSubmit}>
-                        {i18n('global.action.run')}
+                        {<FormattedMessage {...globalMessages.run} />}
                     </Button>
                     <Button variant="link" onClick={onClose}>
-                        {i18n('global.action.cancel')}
+                        {<FormattedMessage {...globalMessages.cancel} />}
                     </Button>
                 </Modal.Footer>
             </div>
@@ -39,4 +42,4 @@ class PersistentSortDialog extends AbstractReactComponent {
     }
 }
 
-export default connect()(PersistentSortDialog);
+export default connect()(injectIntl(PersistentSortDialog));

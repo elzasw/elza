@@ -6,7 +6,8 @@
  */
 import React from 'react';
 import {connect} from 'react-redux';
-import {i18n, Icon, RibbonGroup} from 'components/shared';
+import {Icon, RibbonGroup} from 'components/shared';
+import {FormattedMessage, defineMessages, injectIntl} from 'react-intl';
 import {Button} from '../../components/ui';
 import {developerSet} from 'actions/global/developer.jsx';
 import {resetLocalStorage} from 'actions/store/storeEx.jsx';
@@ -21,6 +22,51 @@ import Ribbon from '../../components/page/Ribbon';
 import { AdminLayout } from '../shared/layout/AdminLayout';
 import { showConfirmDialog } from 'components/shared/dialog';
 import { StatsAdmin } from 'components/shared/stats';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    reindexing: {
+        id: 'admin.fulltext.message.reindexing',
+        defaultMessage: 'Probíhá reindexace...',
+    },
+    processAction: {
+        id: 'global.title.processAction',
+        defaultMessage: 'Opravdu chcete provést vybranou akci?',
+    },
+    resetServerCacheSuccess: {
+        id: 'admin.resetServerCache.success',
+        defaultMessage: 'Serverové cache byly resetovány',
+    },
+    developer: {
+        id: 'ribbon.action.admin.developer',
+        defaultMessage: 'Developer mode',
+    },
+    reindex: {
+        id: 'ribbon.action.admin.reindex',
+        defaultMessage: 'Přepočítat indexy',
+    },
+    reindexTitle: {
+        id: 'ribbon.action.admin.reindex.title',
+        defaultMessage: 'Přepočítat indexy',
+    },
+    resetLocalStorage: {
+        id: 'ribbon.action.admin.resetLocalStorage',
+        defaultMessage: 'Smazat lokální cache',
+    },
+    resetLocalStorageTitle: {
+        id: 'ribbon.action.admin.resetLocalStorage.title',
+        defaultMessage:
+            'Smaže historii posledně otevřených položek a uvede zobrazení aplikace do výchozího stavu',
+    },
+    resetServerCache: {
+        id: 'ribbon.action.admin.resetServerCache',
+        defaultMessage: 'Smazat serverovou cache',
+    },
+    resetServerCacheTitle: {
+        id: 'ribbon.action.admin.resetServerCache.title',
+        defaultMessage: 'Smaže všechny cache na serveru',
+    },
+});
 
 class AdminPage extends AbstractReactComponent {
     UNSAFE_componentWillReceiveProps = nextProps => {
@@ -42,7 +88,11 @@ class AdminPage extends AbstractReactComponent {
     };
 
     renderReindexing = () => {
-        return <div>{i18n('admin.fulltext.message.reindexing')}</div>;
+        return (
+            <div>
+                <FormattedMessage {...messages.reindexing} />
+            </div>
+        );
     };
 
     startReindexing = () => {
@@ -55,7 +105,9 @@ class AdminPage extends AbstractReactComponent {
 
     handleResetLocalStorage = async () => {
         const {dispatch} = this.props;
-        const response = await dispatch(showConfirmDialog(i18n('global.title.processAction')))
+        const response = await dispatch(
+            showConfirmDialog(this.props.intl.formatMessage(messages.processAction)),
+        );
         if (response) {
             resetLocalStorage();
         }
@@ -63,10 +115,14 @@ class AdminPage extends AbstractReactComponent {
 
     handleResetServerCache = async () => {
         const {dispatch} = this.props;
-        const response = await dispatch(showConfirmDialog(i18n('global.title.processAction')))
+        const response = await dispatch(
+            showConfirmDialog(this.props.intl.formatMessage(messages.processAction)),
+        );
         if (response) {
             WebApi.resetServerCache().then(() => {
-                this.props.dispatch(addToastrSuccess(i18n('admin.resetServerCache.success')));
+                this.props.dispatch(
+                    addToastrSuccess(this.props.intl.formatMessage(messages.resetServerCacheSuccess)),
+                );
             });
         }
     };
@@ -89,7 +145,9 @@ class AdminPage extends AbstractReactComponent {
                 >
                     <Icon glyph="fa-cogs" />
                     <div>
-                        <span className="btnText">{i18n('ribbon.action.admin.developer')}</span>
+                        <span className="btnText">
+                            <FormattedMessage {...messages.developer} />
+                        </span>
                     </div>
                 </Button>,
             );
@@ -101,13 +159,13 @@ class AdminPage extends AbstractReactComponent {
                     key="reindex"
                     onClick={this.startReindexing}
                     disabled={indexing}
-                    title={i18n('ribbon.action.admin.reindex.title')}
+                    title={this.props.intl.formatMessage(messages.reindexTitle)}
                     variant={'default'}
                 >
                     <Icon glyph="fa-search" />
                     <div>
                         <span className="btnText">
-                            {indexing ? i18n('admin.fulltext.message.reindexing') : i18n('ribbon.action.admin.reindex')}
+                            <FormattedMessage {...(indexing ? messages.reindexing : messages.reindex)} />
                         </span>
                     </div>
                 </Button>,
@@ -116,12 +174,14 @@ class AdminPage extends AbstractReactComponent {
                 <Button
                     key="resetLocalStorage"
                     onClick={this.handleResetLocalStorage}
-                    title={i18n('ribbon.action.admin.resetLocalStorage.title')}
+                    title={this.props.intl.formatMessage(messages.resetLocalStorageTitle)}
                     variant={'default'}
                 >
                     <Icon glyph="fa-times" />
                     <div>
-                        <span className="btnText">{i18n('ribbon.action.admin.resetLocalStorage')}</span>
+                        <span className="btnText">
+                            <FormattedMessage {...messages.resetLocalStorage} />
+                        </span>
                     </div>
                 </Button>,
             );
@@ -129,12 +189,14 @@ class AdminPage extends AbstractReactComponent {
                 <Button
                     key="resetServerCache"
                     onClick={this.handleResetServerCache}
-                    title={i18n('ribbon.action.admin.resetServerCache.title')}
+                    title={this.props.intl.formatMessage(messages.resetServerCacheTitle)}
                     variant={'default'}
                 >
                     <Icon glyph="fa-times" />
                     <div>
-                        <span className="btnText">{i18n('ribbon.action.admin.resetServerCache')}</span>
+                        <span className="btnText">
+                            <FormattedMessage {...messages.resetServerCache} />
+                        </span>
                     </div>
                 </Button>,
             );
@@ -178,4 +240,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps)(AdminPage);
+export default connect(mapStateToProps)(injectIntl(AdminPage));

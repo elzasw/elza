@@ -1,7 +1,8 @@
 import React from 'react';
 
 import {connect} from 'react-redux';
-import {i18n, Icon, RibbonGroup, Utils} from 'components/shared';
+import { Icon, RibbonGroup, Utils} from 'components/shared';
+import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
 import {AdminExtSystemDetail, AdminExtSystemList, Ribbon, ExtSystemForm} from 'components/index.jsx';
 import { AdminLayout } from '../shared/layout/AdminLayout';
 import {Shortcuts} from 'react-shortcuts';
@@ -19,6 +20,22 @@ var keyModifier = Utils.getKeyModifier();
 var defaultKeymap = {
     AdminExtSystemPage: {},
 };
+
+// Id jsou převzatá z legacy katalogu beze změny. Tooltipy tlačítek dřív
+// ukazovaly klíče ribbon.action.admin.extSystem.*.title, které v katalogu
+// nikdy nebyly - vypisovalo se tedy '[klíč]'. Tooltip nese stejný text jako
+// popisek akce.
+const messages = defineMessages({
+    addTitle: { id: 'admin.extSystem.add.title', defaultMessage: 'Vytvoření externího systému' },
+    editTitle: { id: 'admin.extSystem.edit.title', defaultMessage: 'Upravení externího systému' },
+    deleteConfirm: {
+        id: 'admin.extSystem.delete.confirm',
+        defaultMessage: 'Opravdu chcete externí systém odstranit?',
+    },
+    ribbonAdd: { id: 'ribbon.action.admin.extSystem.add', defaultMessage: 'Přidat systém' },
+    ribbonEdit: { id: 'ribbon.action.admin.extSystem.edit', defaultMessage: 'Editovat systém' },
+    ribbonDelete: { id: 'ribbon.action.admin.extSystem.delete', defaultMessage: 'Smazat systém' },
+});
 
 class AdminExtSystemPage extends AbstractReactComponent {
     static contextTypes = {shortcuts: PropTypes.object};
@@ -42,7 +59,7 @@ class AdminExtSystemPage extends AbstractReactComponent {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('admin.extSystem.add.title'),
+                this.props.intl.formatMessage(messages.addTitle),
                 <ExtSystemForm
                     initialValues={{ multipleLinks: false }}
                     onSubmitForm={data => {
@@ -63,7 +80,7 @@ class AdminExtSystemPage extends AbstractReactComponent {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('admin.extSystem.edit.title'),
+                this.props.intl.formatMessage(messages.editTitle),
                 <ExtSystemForm
                     initialValues={data}
                     onSubmitForm={data => {
@@ -81,7 +98,7 @@ class AdminExtSystemPage extends AbstractReactComponent {
      */
     handleDeleteExtSystem = async () => {
         const {dispatch} = this.props;
-        const response = await dispatch(showConfirmDialog(i18n('admin.extSystem.delete.confirm')))
+        const response = await dispatch(showConfirmDialog(this.props.intl.formatMessage(messages.deleteConfirm)))
         response
             && this.props.dispatch(extSystemDelete(this.props.extSystemDetail.data.id));
     };
@@ -103,12 +120,12 @@ class AdminExtSystemPage extends AbstractReactComponent {
             <Button
                 key="add-ext-system"
                 onClick={this.handleAddExtSystem}
-                title={i18n('ribbon.action.admin.extSystem.add.title')}
+                title={this.props.intl.formatMessage(messages.ribbonAdd)}
                 variant={'default'}
             >
                 <Icon glyph="fa-plus-circle" />
                 <div>
-                    <span className="btnText">{i18n('ribbon.action.admin.extSystem.add')}</span>
+                    <span className="btnText"><FormattedMessage {...messages.ribbonAdd} /></span>
                 </div>
             </Button>,
         );
@@ -117,12 +134,12 @@ class AdminExtSystemPage extends AbstractReactComponent {
                 <Button
                     key="edit-ext-system"
                     onClick={this.handleEditExtSystem}
-                    title={i18n('ribbon.action.admin.extSystem.edit.title')}
+                    title={this.props.intl.formatMessage(messages.ribbonEdit)}
                     variant={'default'}
                 >
                     <Icon glyph="fa-pencil" />
                     <div>
-                        <span className="btnText">{i18n('ribbon.action.admin.extSystem.edit')}</span>
+                        <span className="btnText"><FormattedMessage {...messages.ribbonEdit} /></span>
                     </div>
                 </Button>,
             );
@@ -131,12 +148,12 @@ class AdminExtSystemPage extends AbstractReactComponent {
                 <Button
                     key="delete-ext-system"
                     onClick={this.handleDeleteExtSystem}
-                    title={i18n('ribbon.action.admin.extSystem.delete.title')}
+                    title={this.props.intl.formatMessage(messages.ribbonDelete)}
                     variant={'default'}
                 >
                     <Icon glyph="fa-minus-circle" />
                     <div>
-                        <span className="btnText">{i18n('ribbon.action.admin.extSystem.delete')}</span>
+                        <span className="btnText"><FormattedMessage {...messages.ribbonDelete} /></span>
                     </div>
                 </Button>,
             );
@@ -198,4 +215,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps)(AdminExtSystemPage);
+export default connect(mapStateToProps)(injectIntl(AdminExtSystemPage));

@@ -8,8 +8,8 @@ import ExtSystemForm, { EXT_SYSTEM_CLASS } from './ExtSystemForm';
  * Formulář externího systému: nastavení stahování AIP (způsob stahování, akce po
  * přijetí) se nabízí jen pro úložiště typu Digitální archiv.
  *
- * Legacy texty (i18n) nejsou v testu načtené a vrací '[klíč]'; react-intl texty se vykreslí
- * jako české defaultMessage. Pole se hledají podle atributu name.
+ * Texty jsou na react-intl, takže se vykreslí jako české defaultMessage.
+ * Pole se hledají podle atributu name.
  */
 
 vi.mock('actions/index.jsx', () => ({
@@ -75,7 +75,7 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
         );
 
         fireEvent.change(select(container, 'downloadMethod')!, { target: { value: DaDownloadMethod.FileTransfer } });
-        fireEvent.click(screen.getByRole('button', { name: '[admin.extSystem.submit.edit]' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Upravit' }));
 
         await vi.waitFor(() => expect(onSubmitForm).toHaveBeenCalledTimes(1));
     });
@@ -98,7 +98,7 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
         fireEvent.change(select(container, 'downloadMethod')!, { target: { value: DaDownloadMethod.FileTransfer } });
         fireEvent.change(select(container, 'onReceived')!, { target: { value: DaOnReceivedAction.DownloadMetadata } });
         fireEvent.change(input(container, 'syncDelay')!, { target: { value: '3600' } });
-        fireEvent.click(screen.getByRole('button', { name: '[admin.extSystem.submit.edit]' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Upravit' }));
 
         await vi.waitFor(() => expect(onSubmitForm).toHaveBeenCalledTimes(1));
         expect(onSubmitForm.mock.calls[0][0]).toMatchObject({

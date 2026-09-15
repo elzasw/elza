@@ -18,9 +18,21 @@ import {
     OutputApi,
     PublicationInternalApi,
     InstitutionApi,
+    ImportBatchesApi,
+    UserApi,
 } from 'elza-api';
 import globalAxios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
-import i18n from '../components/i18n';
+import { defineMessages } from "react-intl";
+import { getIntl } from "components/shared/lang/intlInstance";
+
+// Id je převzaté z legacy katalogu beze změny. Text jde do data.message
+// výjimky, odkud ho detail chyby vypisuje do textarey - tedy řetězec.
+const messages = defineMessages({
+    badRequestTech: {
+        id: "global.exception.bad.request.tech",
+        defaultMessage: "Syntaxe požadavku odeslaného na server je chybná",
+    },
+});
 import { createException } from 'components/ExceptionUtils.jsx';
 import { logout } from 'actions/global/login';
 import { store } from 'stores/index.jsx';
@@ -117,7 +129,7 @@ function resolveException(error: AxiosError<Error>) {
                 type: 'BaseCode',
                 code: 'BAD_REQUEST',
                 level: 'danger',
-                message: i18n('global.exception.bad.request.tech'),
+                message: getIntl().formatMessage(messages.badRequestTech),
                 status: status,
                 statusText: statusText,
             };
@@ -223,6 +235,8 @@ export const Api: {
     output: OutputApi;
     publication: PublicationInternalApi;
     institution: InstitutionApi;
+    importBatches: ImportBatchesApi;
+    user: UserApi;
 } = {
     accesspoints: new AccesspointsApi(undefined, basePath, axios),
     accesspointInternal: new AccesspointInternalApi(undefined, basePath, axios),
@@ -243,4 +257,6 @@ export const Api: {
     output: new OutputApi(undefined, basePath, axios),
     publication: new PublicationInternalApi(undefined, basePath, axios),
     institution: new InstitutionApi(undefined, basePath, axios),
+    importBatches: new ImportBatchesApi(undefined, basePath, axios),
+    user: new UserApi(undefined, basePath, axios),
 };

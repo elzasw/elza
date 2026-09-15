@@ -1,12 +1,24 @@
 import React from 'react';
-import { webSocketConnect, webSocketDisconnect } from 'actions/global/webSocket.jsx';
 import { onReceivedNodeChange } from 'src/websocketController';
 import * as arrRequestActions from 'actions/arr/arrRequestActions';
 import * as daoActions from 'actions/arr/daoActions';
 import { store } from 'stores/index.jsx';
 import { addToastrDanger, addToastrSuccess } from 'components/shared/toastr/ToastrActions.jsx';
-import { i18n } from 'components/shared';
-import { checkUserLogged } from 'actions/global/login.jsx';
+import {} from 'components/shared';
+import { FormattedMessage, defineMessages } from "react-intl";
+
+// Id jsou převzatá z legacy katalogu beze změny; sortFailed v katalogu chyběl,
+// takže se v toastru vypisovalo "[klíč]".
+const messages = defineMessages({
+    importSuccess: { id: "ribbon.action.arr.dataGrid.import.success", defaultMessage: "Import byl dokončen" },
+    importFailed: { id: "ribbon.action.arr.dataGrid.import.failed", defaultMessage: "Import selhal" },
+    sortSuccess: { id: "arr.functions.persistentSort.sortSuccess", defaultMessage: "Seřazení proběhlo úspěšně" },
+    sortInterrupted: { id: "arr.functions.persistentSort.sortInterrupted", defaultMessage: "Seřazení bylo přerušeno" },
+    sortFailed: { id: "arr.functions.persistentSort.sortFailed", defaultMessage: "Seřazení selhalo" },
+    ejSuccess: { id: "arr.functions.computeAndVizualizeEJ.success", defaultMessage: "Výpočet a vizualizace EJ proběhlo úspěšně" },
+    ejInterrupted: { id: "arr.functions.computeAndVizualizeEJ.interrupted", defaultMessage: "Výpočet a vizualizace EJ bylo přerušeno" },
+    ejError: { id: "arr.functions.computeAndVizualizeEJ.error", defaultMessage: "Výpočet a vizualizace EJ selhalo" },
+});
 
 import {
     changeAccessPoint,
@@ -47,11 +59,6 @@ import {
     userChange,
 } from 'actions/global/change.jsx';
 
-// import { Stomp } from 'stompjs';
-import { Client } from '@stomp/stompjs';
-
-import URLParse from 'url-parse';
-
 import { reloadUserDetail } from 'actions/user/userDetail';
 import { fundVersionApproved } from 'actions/arr/fund.jsx';
 import { fundDataGridRefreshRows } from 'actions/arr/fundDataGrid';
@@ -61,7 +68,16 @@ import * as types from 'actions/constants/ActionTypes';
 import { fundNodeSubNodeFulltextSearch } from 'actions/arr/node';
 import { PERSISTENT_SORT_CODE, ZP2015_INTRO_VYPOCET_EJ } from './constants.tsx';
 import * as issuesActions from 'actions/arr/issues';
-import { createException } from 'components/ExceptionUtils.jsx';
+import URLParse from 'url-parse';
+
+import { WebsocketClient } from './websocket/WebsocketClient';
+
+
+/**
+ * Zpracování eventů.
+ *
+ * @param values {array} seznam příchozí eventů
+ */
 
 const serverContextPath = window.serverContextPath;
 
@@ -70,220 +86,7 @@ const url = new URLParse(serverContextPath + '/stomp');
 const wsProtocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
 
 export const wsUrl = wsProtocol + '//' + url.host + url.pathname;
-console.log('Websocekt URL', wsUrl);
-
-export class websocket {
-    listeners = [];
-
-    constructor(url, eventMap) {
-        this.nextReceiptId = 0;
-        this.pendingRequests = {};
-        this.stompClient = null;
-        this.url = url;
-        this.eventMap = eventMap;
-        this.isPageVisible = true;
-
-        document.addEventListener("visibilitychange", () => {
-            if (document.visibilityState === "visible") {
-                console.log("#ws page is visible")
-                this.isPageVisible = true;
-
-                this.reconnect();
-            } else {
-                console.log("#ws page is not visible")
-                this.isPageVisible = false;
-            }
-        })
-    }
-
-    connect = (heartbeatOut = 20000, heartbeatIn = 45000) => {
-        if (!Client) {
-            throw Error("STOMP client missing.")
-        }
-
-        this.forcedDisconnect = false;
-        this.stompClient = new Client({
-            brokerURL: wsUrl,
-            onConnect: this.onConnect,
-            onUnhandledReceipt: this.onReceipt,
-            onStompError: this.onStompError,
-            onWebSocketError: this.onWebsocketError,
-            onWebSocketClose: this.onWebsocketClose,
-            heartbeatOutgoing: heartbeatOut,
-            heartbeatIncoming: heartbeatIn,
-            debug: (message) => { return; },
-        });
-
-        console.info('#ws Websocket connecting to ' + wsUrl);
-        this.stompClient.activate();
-        console.log("#ws activated")
-    };
-
-    disconnect = (error = false, force = false) => {
-        if (this.stompClient) {
-            // When ready state is not CLOSING(2) or CLOSED(3) and stompClient exists
-            console.log('#ws Websocket disconnected');
-            this.stompClient.deactivate();
-            this.stompClient = null;
-            // Notify components about disconnected websocket
-            store.dispatch(webSocketDisconnect(error));
-        }
-        if (force) { this.forcedDisconnect = true }
-    };
-
-    reconnect = () => {
-        store.dispatch(checkUserLogged((logged) => {
-            if (logged) {
-                // reconnect logged in user when stompClient is not active
-                if (!this.stompClient?.active) {
-                    console.log("#ws reconnect after disconnect", logged);
-                    this.connect();
-                }
-            } else {
-                // disconnect user when not logged in
-                this.disconnect();
-            }
-        }))
-    };
-
-    send = (url, data, onSuccess, onError) => {
-        const headers = {};
-
-        if (onSuccess || onError) {
-            headers.receipt = this.nextReceiptId;
-
-            let nextRequest = {
-                url: url,
-                headers: headers,
-                data: data,
-                onSuccess: onSuccess,
-                onError: onError,
-            };
-
-            this.pendingRequests[this.nextReceiptId] = nextRequest;
-            this.nextReceiptId++;
-        }
-        console.log("#ws Websocket send", url, headers, data)
-
-        // this.stompClient.publish(url, headers, data);
-        this.stompClient.publish({
-            destination: url,
-            headers,
-            body: data,
-        });
-        return headers.receipt;
-    };
-
-    addListener = (listener) => {
-        this.listeners.push(listener);
-        return listener;
-    }
-
-    removeListener = (listener) => {
-        const listenerIndex = this.listeners.findIndex((_listener) => _listener === listener);
-        this.listeners.splice(listenerIndex, 1);
-    }
-
-    onConnect = (frame) => {
-        console.info('#ws Websocket connected');
-        store.dispatch(webSocketConnect());
-        this.stompClient.subscribe('/topic/api/changes', this.onMessage);
-        // Per-user channel: messages addressed to the logged user only (AI request
-        // updates today, other user-targeted events later), routed by eventType
-        // like the broadcast above. The server rejects a subscription to anyone
-        // else's topic (see UserTopicSubscriptionInterceptor).
-        const userId = store.getState().userDetail?.id;
-        // Bootstrap admin has no persisted id and subscribes to the shared "admin"
-        // segment — the server-side interceptor allows it only for id-less users.
-        const userTopic = userId != null ? String(userId) : 'admin';
-        this.stompClient.subscribe('/topic/user/' + userTopic, this.onMessage);
-    };
-
-    // Handles websocket disconnects
-    onWebsocketClose = (error) => {
-        // Prevent reconnect after intentional disconnect
-        if (this.forcedDisconnect) {
-            // stompClient is already null
-            return;
-        }
-
-        console.log("#ws websocket close", error);
-        if (!this.isPageVisible) {
-            console.log("#ws disconnect not visible", error);
-            this.disconnect();
-        } else {
-            this.reconnect();
-        }
-    }
-
-    // Handles websocket connection errors (e.g. unintentional disconnects)
-    onWebsocketError = (error) => {
-        console.warn("#ws websocket error", error);
-
-        this.reconnect();
-    }
-
-    // Handles error message received through STOMP
-    onStompError = (error) => {
-        console.error("#ws stomp error", error);
-
-        this.handleError(error);
-    };
-
-    handleError = (error) => {
-        const { body, command, headers } = error;
-
-        const data = body ? JSON.parse(body) : {};
-        // display error when page is visible or exception is well structured
-        // e.g. "Session closed." will not be displayed
-        if (this.isPageVisible || data.type) {
-            store.dispatch(createException(data.type ? data : { body, command, headers }));
-        }
-        this.reconnect();
-    }
-
-    onMessage = frame => {
-        var body = JSON.parse(frame.body);
-        const eventType = body.eventType;
-        console.info('#ws WEBSOCKET MESSAGE:', body);
-
-        this.listeners.forEach((listener) => {
-            listener(body);
-        })
-
-        if (this.eventMap[eventType]) {
-            this.eventMap[eventType](body);
-        } else {
-            console.warn("#ws Unknown event type '" + eventType + "'", body);
-        }
-    };
-
-    onReceipt = frame => {
-        let { body, headers } = frame;
-        const receiptId = headers['receipt-id'];
-        console.info('#ws WEBSOCKET RECEIPT:', frame, '| Remaining requests:', this.pendingRequests);
-
-        let request = receiptId && this.pendingRequests[receiptId];
-
-        if (request) {
-            const bodyObj = JSON.parse(body);
-            if (bodyObj && !bodyObj.errorMessage) {
-                request.onSuccess(bodyObj);
-            } else {
-                request.onError(bodyObj);
-            }
-            delete this.pendingRequests[receiptId];
-        } else {
-            console.warn('#ws Unknown request - id:', receiptId);
-        }
-    };
-}
-
-/**
- * Zpracování eventů.
- *
- * @param values {array} seznam příchozí eventů
- */
+console.log('#ws Websocket URL', wsUrl);
 
 let eventMap = {
     DAO_LINK_CREATE: daoLink,
@@ -350,18 +153,18 @@ let eventMap = {
 };
 
 function importFundCompleted(value) {
-    store.dispatch(addToastrSuccess(i18n('ribbon.action.arr.dataGrid.import.success')));
+    store.dispatch(addToastrSuccess(<FormattedMessage {...messages.importSuccess} />));
     if (value?.versionId) {
         store.dispatch(fundDataGridRefreshRows(value.versionId));
     }
 }
 
 function importFundFailed(value) {
-    store.dispatch(addToastrDanger(i18n('ribbon.action.arr.dataGrid.import.failed'), value?.message || ''));
+    store.dispatch(addToastrDanger(<FormattedMessage {...messages.importFailed} />, value?.message || ''));
 }
 
 if (!window.ws) {
-    window.ws = new websocket(wsUrl, eventMap);
+    window.ws = new WebsocketClient(wsUrl, eventMap);
     //window.ws.connect();
 }
 
@@ -567,11 +370,11 @@ function processPersistentSort(value) {
             //Přenačtení nodeForm
             store.dispatch(fundNodeSubNodeFulltextSearch(undefined));
         }
-        store.dispatch(addToastrSuccess(i18n('arr.functions.persistentSort.sortSuccess')));
+        store.dispatch(addToastrSuccess(<FormattedMessage {...messages.sortSuccess} />));
     } else if (value.state === 'INTERRUPTED') {
-        store.dispatch(addToastrDanger(i18n('arr.functions.persistentSort.sortInterrupted')));
+        store.dispatch(addToastrDanger(<FormattedMessage {...messages.sortInterrupted} />));
     } else if (value.state === 'FAILED') {
-        store.dispatch(addToastrDanger(i18n('arr.functions.persistentSort.sortFailed')));
+        store.dispatch(addToastrDanger(<FormattedMessage {...messages.sortFailed} />));
     }
 }
 
@@ -583,11 +386,11 @@ function processVisualizeEJ(value) {
             //Přenačtení nodeForm
             store.dispatch(fundNodeSubNodeFulltextSearch(undefined));
         }
-        store.dispatch(addToastrSuccess(i18n('arr.functions.computeAndVizualizeEJ.success')));
+        store.dispatch(addToastrSuccess(<FormattedMessage {...messages.ejSuccess} />));
     } else if (value.state === 'INTERRUPTED') {
-        store.dispatch(addToastrDanger(i18n('arr.functions.computeAndVizualizeEJ.interrupted')));
+        store.dispatch(addToastrDanger(<FormattedMessage {...messages.ejInterrupted} />));
     } else if (value.state === 'FAILED') {
-        store.dispatch(addToastrDanger(i18n('arr.functions.computeAndVizualizeEJ.error')));
+        store.dispatch(addToastrDanger(<FormattedMessage {...messages.ejError} />));
     }
 }
 

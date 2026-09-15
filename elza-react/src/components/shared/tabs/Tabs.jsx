@@ -15,7 +15,13 @@ import defaultKeymap from './TabsKeymap.jsx';
 import './Tabs.scss';
 import Icon from '../icon/Icon';
 import NoFocusButton from '../button/NoFocusButton';
-import i18n from '../../i18n';
+import { defineMessages } from 'react-intl';
+import { getIntl } from 'components/shared/lang/intlInstance';
+
+// Id je převzaté z legacy katalogu beze změny. Text jde do title=, tedy řetězec.
+const messages = defineMessages({
+    closeTab: { id: 'tabs.action.closeTab', defaultMessage: 'Zavřít záložku' },
+});
 
 /**
  *  Obalovací komponenta pro záložky a jejich obsah
@@ -166,7 +172,7 @@ export const Tabs = class Tabs extends React.Component {
      **/
     render() {
         let tabs = this.props.items.map((item, i) => {
-            let closeTitle = i18n('tabs.action.closeTab');
+            let closeTitle = getIntl().formatMessage(messages.closeTab);
             let closeAction;
             if (this.props.closable) {
                 closeAction = (

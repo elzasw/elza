@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns2:edx xmlns:ns2="http://elza.tacr.cz/schema/v2">
+  <aps>
+    <ap>
+      <ape id="ap-parts-1" t="PUBLIC_ADMINISTRATION" uuid="8f1d9b3a-0000-4000-8000-00000000a001"/>
+      <frgs>
+        <frg fid="ap-parts-1-name" t="PT_NAME">
+          <ds t="NM_MAIN">
+            <v>Nadřazená korporace</v>
+          </ds>
+        </frg>
+      </frgs>
+    </ap>
+    <ap>
+      <ape id="ap-parts-2" t="PUBLIC_ADMINISTRATION" uuid="8f1d9b3a-0000-4000-8000-00000000a002"/>
+      <frgs>
+        <frg fid="ap-parts-2-name" t="PT_NAME">
+          <ds t="NM_MAIN">
+            <v>Korporace s událostmi a vztahy</v>
+          </ds>
+        </frg>
+        <frg fid="ap-parts-2-event-1" t="PT_EVENT">
+          <de t="EV_TYPE" s="ET_MEMBERSHIP"/>
+        </frg>
+        <frg fid="ap-parts-2-rel-1" pid="ap-parts-2-event-1" t="PT_REL">
+          <da t="REL_ENTITY" s="RT_ISMEMBER" apid="ap-parts-1"/>
+        </frg>
+        <frg fid="ap-parts-2-rel-2" pid="ap-parts-2-event-1" t="PT_REL">
+          <da t="REL_ENTITY" s="RT_REPRESENT" apid="ap-parts-1"/>
+        </frg>
+        <frg fid="ap-parts-2-event-2" t="PT_EVENT">
+          <de t="EV_TYPE" s="ET_MEMBERSHIP"/>
+        </frg>
+        <frg fid="ap-parts-2-rel-3" pid="ap-parts-2-event-2" t="PT_REL">
+          <da t="REL_ENTITY" s="RT_ISMEMBER" apid="ap-parts-1"/>
+        </frg>
+      </frgs>
+    </ap>
+  </aps>
+</ns2:edx>

@@ -2,7 +2,13 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {connect} from 'react-redux';
 import classNames from 'classnames';
-import {i18n, Icon, RibbonGroup, RibbonSplit} from 'components/shared';
+import { Icon, RibbonGroup, RibbonSplit} from 'components/shared';
+import { FormattedMessage, defineMessages } from 'react-intl';
+
+// Id je převzaté z legacy katalogu beze změny.
+const messages = defineMessages({
+    registry: { id: 'ribbon.action.registry', defaultMessage: 'Archivní entity' },
+});
 import {Button} from '../../components/ui';
 import {AREA_REGISTRY_DETAIL} from 'actions/registry/registry.jsx';
 import {storeFromArea} from 'shared/utils';
@@ -46,7 +52,7 @@ class RegistrySelectPage extends SelectPage {
             >
                 <Icon glyph="fa-th-list"/>
                 <div>
-                    <span className="btnText">{i18n('ribbon.action.registry')}</span>
+                    <span className="btnText">{<FormattedMessage {...messages.registry} />}</span>
                 </div>
             </Button>,
         );

@@ -2,7 +2,10 @@ import PropTypes from 'prop-types';
 import React from 'react';
 
 import {WebApi} from 'actions/index.jsx';
-import {AbstractReactComponent, i18n} from 'components/shared';
+import {AbstractReactComponent} from 'components/shared';
+import { injectIntl } from 'react-intl';
+import { nodeMessages } from 'components/arr/nodeMessages';
+
 import {connect} from 'react-redux';
 import {decorateAutocompleteValue} from './DescItemUtils.jsx';
 import {DescItemLabel} from './DescItemLabel';
@@ -113,7 +116,7 @@ class DescItemRecordRef extends AbstractReactComponent {
             } else {
                 return (
                     <DescItemLabel
-                        value={cal ? i18n('subNodeForm.descItemType.calculable') : ''}
+                        value={cal ? this.props.intl.formatMessage(nodeMessages.subNodeFormDescItemTypeCalculable) : ''}
                         cal={cal}
                         isValueUndefined={descItem.undefined}
                     />
@@ -181,4 +184,4 @@ export default withRouter(connect(
     null,
     null,
     {forwardRef: true},
-)(DescItemRecordRef));
+)(injectIntl(DescItemRecordRef, { forwardRef: true })));

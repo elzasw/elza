@@ -7,20 +7,18 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { connect } from 'react-redux';
 import { IndexLinkContainer, LinkContainer } from 'react-router-bootstrap';
-import { AbstractReactComponent, i18n, Icon, RibbonGroup, RibbonMenu, RibbonSplit } from 'components/shared';
+import { AbstractReactComponent, Icon, RibbonGroup, RibbonMenu, RibbonSplit } from 'components/shared';
 import { Dropdown, Button as BootstrapButton } from 'react-bootstrap';
-import { FormattedMessage, defineMessages } from 'react-intl';
+import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
 import { Button } from '../ui';
 import { canSetFocus, focusWasSet, isFocusFor } from 'actions/global/focus.jsx';
 import { logout } from 'actions/global/login.jsx';
-import * as perms from 'actions/user/Permission.jsx';
 
 import { modalDialogShow } from 'actions/global/modalDialog.jsx';
 import { userPasswordChange } from 'actions/admin/user.jsx';
 import { routerNavigate } from 'actions/router.jsx';
 import PasswordForm from '../admin/PasswordForm';
 import {
-    URL_ENTITY,
     URL_FUND,
     URL_NODE,
     JAVA_ATTR_CLASS,
@@ -28,22 +26,57 @@ import {
     urlFundGrid,
     urlFundAb,
     urlFundMovements,
-    urlFundOutputs, urlFundRequests, urlFundTree, urlFund, URL_FUND_GRID_PATH, GRID, URL_AIP, urlFundPublication, PUBLICATION,
+    urlFundOutputs, urlFundRequests, urlFundTree, urlFund, URL_FUND_GRID_PATH, GRID, urlFundPublication, PUBLICATION,
     AIP
 } from "../../constants";
 import { extSystemListFetchIfNeeded } from 'actions/admin/extSystem.jsx';
 import { EXT_SYSTEM_CLASS } from 'components/admin/extSystem/ExtSystemForm';
-import UserSettingsModal from 'components/user/UserSettingsModal';
+import { UserSettingsModal } from 'components/user/UserSettingsModal';
 import { AiAssistantRibbonButton } from 'components/ai-assistant/AiAssistantRibbonButton';
 import { ExperimentalFeature } from 'components/shared/ExperimentalFeature';
+import { MainNavigation } from './MainNavigation';
 
 // Nacteni globalni promenne ze <script> v <head>
 const displayUserInfo = window.displayUserInfo !== undefined ? window.displayUserInfo : true;
 
+// Ids jsou převzaty z legacy katalogu beze změny - přejmenování id při migraci
+// zahodí jeho překlady při dalším locale:merge.
 const messages = defineMessages({
     publication: {
         id: 'ribbon.action.publication',
         defaultMessage: 'Publikace',
+    },
+    back: {
+        id: 'ribbon.action.back',
+        defaultMessage: 'Zpět',
+    },
+    passwordChange: {
+        id: 'ribbon.action.admin.user.passwordChange',
+        defaultMessage: 'Změnit heslo',
+    },
+    passwordChangeTitle: {
+        id: 'admin.user.passwordChange.title',
+        defaultMessage: 'Změna hesla',
+    },
+    userSettings: {
+        id: 'userSettings.button.title',
+        defaultMessage: 'Nastavení',
+    },
+    logout: {
+        id: 'ribbon.action.logout',
+        defaultMessage: 'Odhlásit',
+    },
+    arrArr: { id: 'ribbon.action.arr.arr', defaultMessage: 'Pořádání' },
+    arrDataGrid: { id: 'ribbon.action.arr.dataGrid', defaultMessage: 'Tabulkové zobrazení' },
+    arrAb: { id: 'ribbon.action.arr.ab', defaultMessage: 'Archivní balíčky' },
+    arrMovements: { id: 'ribbon.action.arr.movements', defaultMessage: 'Přesuny' },
+    arrOutput: { id: 'ribbon.action.arr.output', defaultMessage: 'Výstupy' },
+    arrBulkActions: { id: 'ribbon.action.arr.fund.bulkActions', defaultMessage: 'Funkce' },
+    arrRequests: { id: 'ribbon.action.arr.fund.requests', defaultMessage: 'Požadavky' },
+    arrDaos: { id: 'ribbon.action.arr.fund.daos', defaultMessage: 'Digitální entity' },
+    saving: {
+        id: 'ribbon.saving',
+        defaultMessage: 'Ukládání',
     },
 });
 
@@ -115,7 +148,7 @@ class Ribbon extends AbstractReactComponent {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('admin.user.passwordChange.title'),
+                this.props.intl.formatMessage(messages.passwordChangeTitle),
                 <PasswordForm onSubmitForm={this.handlePasswordChange} />,
             ),
         );
@@ -127,11 +160,11 @@ class Ribbon extends AbstractReactComponent {
 
     handleUserSettings = () => {
         const { dispatch } = this.props;
+        // Fluent dialog nese vlastní titulek i obal, proto se vkládá jako obsah bez wrapperu.
         dispatch(modalDialogShow(
             this,
-            i18n('userSettings.title'),
-            <UserSettingsModal />,
-            null,
+            undefined,
+            ({ key, visible, onClose }) => <UserSettingsModal key={key} open={visible} onClose={onClose} />,
         ))
     }
 
@@ -160,7 +193,7 @@ class Ribbon extends AbstractReactComponent {
                     <IndexLinkContainer key="ribbon-btn-arr-index" to={urlFundTree(fundId, versionId)}>
                         <BootstrapButton ref={this.ribbonDefaultFocusRef} variant={'default'} className={window.location.pathname.startsWith(URL_NODE) ? "active" : ""}>
                             <Icon glyph="fa-sitemap" />
-                            <span className="btnText">{i18n('ribbon.action.arr.arr')}</span>
+                            <span className="btnText"><FormattedMessage {...messages.arrArr} /></span>
                         </BootstrapButton>
                     </IndexLinkContainer>,
                 );
@@ -169,7 +202,7 @@ class Ribbon extends AbstractReactComponent {
                     <LinkContainer key="ribbon-btn-arr-dataGrid" to={urlFundGrid(fundId, versionId, this.props.serializedFilter)}>
                         <Button variant={'default'} className={window.location.pathname.includes(GRID) ? "active" : ""}>
                             <Icon glyph="fa-table" />
-                            <span className="btnText">{i18n('ribbon.action.arr.dataGrid')}</span>
+                            <span className="btnText"><FormattedMessage {...messages.arrDataGrid} /></span>
                         </Button>
                     </LinkContainer>,
                 );
@@ -177,7 +210,7 @@ class Ribbon extends AbstractReactComponent {
                     <LinkContainer key="ribbon-btn-arr-ab" to={urlFundAb(fundId, versionId)}>
                         <Button variant='default' className={window.location.pathname.includes(AIP) ? "active" : ""}>
                             <Icon glyph="fa-archive" />
-                            <span className="btnText">{i18n('ribbon.action.arr.ab')}</span>
+                            <span className="btnText"><FormattedMessage {...messages.arrAb} /></span>
                         </Button>
                     </LinkContainer>,
                 );
@@ -188,7 +221,7 @@ class Ribbon extends AbstractReactComponent {
                     <LinkContainer key="ribbon-btn-arr-movements" to={urlFundMovements(fundId, versionId)}>
                         <Button variant={'default'}>
                             <Icon glyph="fa-exchange" />
-                            <span className="btnText">{i18n('ribbon.action.arr.movements')}</span>
+                            <span className="btnText"><FormattedMessage {...messages.arrMovements} /></span>
                         </Button>
                     </LinkContainer>,
                 );
@@ -200,7 +233,7 @@ class Ribbon extends AbstractReactComponent {
                     <LinkContainer key="ribbon-btn-arr-output" to={urlFundOutputs(fundId, versionId)}>
                         <Button variant={'default'}>
                             <Icon glyph="fa-print" />
-                            <span className="btnText">{i18n('ribbon.action.arr.output')}</span>
+                            <span className="btnText"><FormattedMessage {...messages.arrOutput} /></span>
                         </Button>
                     </LinkContainer>,
                 );
@@ -222,7 +255,7 @@ class Ribbon extends AbstractReactComponent {
                     <LinkContainer key="ribbon-btn-arr-actions" to={urlFundActions(fundId, versionId)}>
                         <Button variant={'default'}>
                             <Icon glyph="fa-calculator" />
-                            <span className="btnText">{i18n('ribbon.action.arr.fund.bulkActions')}</span>
+                            <span className="btnText"><FormattedMessage {...messages.arrBulkActions} /></span>
                         </Button>
                     </LinkContainer>,
                 );
@@ -238,7 +271,7 @@ class Ribbon extends AbstractReactComponent {
                         <LinkContainer key="ribbon-btn-arr-requests" to={urlFundRequests(fundId, versionId)}>
                             <Button variant={'default'}>
                                 <Icon glyph="fa-shopping-basket" />
-                                <span className="btnText">{i18n('ribbon.action.arr.fund.requests')}</span>
+                                <span className="btnText"><FormattedMessage {...messages.arrRequests} /></span>
                             </Button>
                         </LinkContainer>,
                     );
@@ -253,7 +286,7 @@ class Ribbon extends AbstractReactComponent {
                         <LinkContainer key="ribbon-btn-arr-daos" to={urlFundDaos(fundId, versionId)}>
                             <Button variant={'default'}>
                                 <Icon glyph="fa-camera" />
-                                <span className="btnText">{i18n('ribbon.action.arr.fund.daos')}</span>
+                                <span className="btnText"><FormattedMessage {...messages.arrDaos} /></span>
                             </Button>
                         </LinkContainer>,
                     );
@@ -276,7 +309,7 @@ class Ribbon extends AbstractReactComponent {
                         <Button
                             variant={'default'}
                             className="large"
-                            title={i18n('ribbon.action.back')}
+                            title={this.props.intl.formatMessage(messages.back)}
                         >
                             <Icon glyph="fa-arrow-circle-o-left" />
                         </Button>
@@ -287,52 +320,8 @@ class Ribbon extends AbstractReactComponent {
             section = primarySection;
         } else {
             // standardní menu s hlavním rozcestníkem
-            parts.push(
-                <RibbonGroup key="ribbon-group-main" className="large">
-                    <IndexLinkContainer key="ribbon-btn-home" to="/">
-                        <BootstrapButton ref={this.ribbonDefaultFocusRef} variant={'default'}>
-                            <Icon glyph="fa-home" />
-                            <span className="btnText">{i18n('ribbon.action.home')}</span>
-                        </BootstrapButton>
-                    </IndexLinkContainer>
-                    {userDetail.hasOne(perms.FUND_RD_ALL, perms.FUND_RD) &&
-                        <LinkContainer key="ribbon-btn-fund" to="/fund">
-                            <Button variant={'default'}>
-                                <Icon glyph="fa-database" />
-                                <span className="btnText">{i18n('ribbon.action.fund')}</span>
-                            </Button>
-                        </LinkContainer>
-                    }
-                    <LinkContainer key="ribbon-btn-aip" to={URL_AIP}>
-                        <Button variant={'default'}>
-                            <Icon glyph="fa-archive" />
-                            <span className="btnText">{i18n('ribbon.action.aip')}</span>
-                        </Button>
-                    </LinkContainer>
-                    <LinkContainer key="ribbon-btn-registry" to={URL_ENTITY}>
-                        <Button variant={'default'}>
-                            <Icon glyph="fa-th-list" />
-                            <span className="btnText">{i18n('ribbon.action.registry')}</span>
-                        </Button>
-                    </LinkContainer>
-                    {userDetail.hasOne(
-                        perms.ADMIN,
-                        perms.USR_PERM,
-                        perms.USER_CONTROL_ENTITY,
-                        perms.GROUP_CONTROL_ENTITY,
-                        perms.REPORT_ALL,
-                    ) && (
-                            <LinkContainer key="ribbon-btn-admin" to="/admin">
-                                <Button variant={'default'}>
-                                    <Icon glyph="fa-cog" />
-                                    <span className="btnText">{i18n('ribbon.action.admin')}</span>
-                                </Button>
-                            </LinkContainer>
-                        )}
-                </RibbonGroup>,
-            );
+            parts.push(<MainNavigation key="ribbon-group-main" ref={this.ribbonDefaultFocusRef} />);
         }
-        // <LinkContainer key="ribbon-btn-arr" to="/arr"><Button><Icon glyph="fa-file-text" /><div><span className="btnText">{i18n('ribbon.action.arr')}</span></div></Button></LinkContainer>
 
         section && parts.push(section);
         altSection && parts.push(altSection);
@@ -368,20 +357,20 @@ class Ribbon extends AbstractReactComponent {
                                         eventKey="1"
                                         onClick={this.handlePasswordChangeForm}
                                     >
-                                        {i18n('ribbon.action.admin.user.passwordChange')}
+                                        <FormattedMessage {...messages.passwordChange} />
                                     </Dropdown.Item>,
                                     <Dropdown.Divider key="divired" />,
                                 ]}
                                 {
                                     <>
                                         <Dropdown.Item eventKey="4" onClick={this.handleUserSettings}>
-                                            {i18n("userSettings.button.title")}
+                                            <FormattedMessage {...messages.userSettings} />
                                         </Dropdown.Item>
                                         <Dropdown.Divider key="divider" />
                                     </>
                                 }
                                 <Dropdown.Item eventKey="2" onClick={this.handleLogout}>
-                                    {i18n('ribbon.action.logout')}
+                                    <FormattedMessage {...messages.logout} />
                                 </Dropdown.Item>
                             </Dropdown.Menu>
                         </Dropdown>
@@ -390,7 +379,7 @@ class Ribbon extends AbstractReactComponent {
                             <div className="save-msg-container">
                                 <span className="save-msg">
                                     <Icon glyph="fa-spinner fa-spin" />
-                                    {i18n('ribbon.saving')}
+                                    <FormattedMessage {...messages.saving} />
                                 </span>
                             </div>
                         )}
@@ -413,4 +402,8 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps, null, null, { forwardRef: true })(Ribbon);
+// forwardRef zůstává zachován i přes injectIntl, aby se nezměnila stávající
+// sémantika connect({ forwardRef: true }).
+export default connect(mapStateToProps, null, null, { forwardRef: true })(
+    injectIntl(Ribbon, { forwardRef: true }),
+);

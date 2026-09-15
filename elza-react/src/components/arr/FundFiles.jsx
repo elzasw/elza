@@ -1,7 +1,9 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {connect} from 'react-redux';
-import {AbstractReactComponent, FileListBox, FormInput, i18n, Icon, StoreHorizontalLoader} from 'components/shared';
+import {AbstractReactComponent, FileListBox, FormInput, Icon, StoreHorizontalLoader} from 'components/shared';
+import { FormattedMessage, injectIntl } from 'react-intl';
+import { fundFormMessages } from './fundFormMessages';
 import AddFileForm from './AddFileForm';
 import {Dropdown, DropdownButton} from 'react-bootstrap';
 import {
@@ -88,7 +90,7 @@ class FundFiles extends AbstractReactComponent {
                         onSubmitForm={data => this.handleEditEditableSubmit(id, data)}
                     />
                 );
-                this.props.dispatch(modalDialogShow(this, i18n('dms.file.title.editable.edit'), form));
+                this.props.dispatch(modalDialogShow(this, this.props.intl.formatMessage(fundFormMessages.dmsFileTitleEditableEdit), form));
             }),
         );
     };
@@ -108,7 +110,7 @@ class FundFiles extends AbstractReactComponent {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('dms.file.title.file.add'),
+                this.props.intl.formatMessage(fundFormMessages.dmsFileTitleFileAdd),
                 <AddFileForm onSubmitForm={this.handleCreateFromFileSubmit} />,
             ),
         );
@@ -119,7 +121,7 @@ class FundFiles extends AbstractReactComponent {
             this.props.dispatch(
                 modalDialogShow(
                     this,
-                    i18n('dms.file.title.editable.add'),
+                    this.props.intl.formatMessage(fundFormMessages.dmsFileTitleEditableAdd),
                     <EditableFileForm create onSubmitForm={this.handleCreateEditableSubmit} />,
                 ),
             );
@@ -197,7 +199,7 @@ class FundFiles extends AbstractReactComponent {
                                 title={<Icon glyph="fa-plus-circle" />}
                             >
                                 <Dropdown.Item onClick={this.handleCreateFromFile}>
-                                    {i18n('arr.fund.files.action.add.fromFile')}
+                                    {<FormattedMessage {...fundFormMessages.fundFilesActionAddFromFile} />}
                                 </Dropdown.Item>
                                 <Dropdown.Item disabled={!this.hasMimeTypes()} onClick={this.handleCreateEditable}>
                                     {!this.hasMimeTypes() ? (
@@ -205,17 +207,17 @@ class FundFiles extends AbstractReactComponent {
                                             key="info"
                                             content={
                                                 <div style={{maxWidth: '300px'}}>
-                                                    {i18n('arr.fund.files.noMimetypeConfig')}
+                                                    {<FormattedMessage {...fundFormMessages.fundFilesNoMimetypeConfig} />}
                                                 </div>
                                             }
                                             placement="left"
                                             showDelay={1}
                                             holdOnHover
                                         >
-                                            {i18n('arr.fund.files.action.add.editable')}
+                                            {<FormattedMessage {...fundFormMessages.fundFilesActionAddEditable} />}
                                         </TooltipTrigger>
                                     ) : (
-                                        i18n('arr.fund.files.action.add.editable')
+                                        this.props.intl.formatMessage(fundFormMessages.fundFilesActionAddEditable)
                                     )}
                                 </Dropdown.Item>
                             </DropdownButton>
@@ -268,4 +270,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps, null, null, {forwardRef: true})(FundFiles);
+export default connect(mapStateToProps, null, null, {forwardRef: true})(injectIntl(FundFiles, { forwardRef: true }));

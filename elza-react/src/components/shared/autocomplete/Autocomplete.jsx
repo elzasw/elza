@@ -15,7 +15,15 @@ import List from 'components/shared/tree-list/TreeList.jsx';
 import flattenItems, {cleanItem, filterItems} from 'components/shared/utils/itemFilter.jsx';
 import FloatingMenu from 'components/shared/floating-menu/FloatingMenu.jsx';
 import classNames from 'classnames';
-import i18n from 'components/i18n.jsx';
+import { defineMessages } from 'react-intl';
+import { getIntl } from 'components/shared/lang/intlInstance';
+
+// Id jsou převzatá z legacy katalogu beze změny. Nadpisy skupin se skládají
+// mimo render do datové struktury seznamu, proto řetězec.
+const messages = defineMessages({
+    favoriteItems: { id: 'autocomplete.list.favoriteItems', defaultMessage: 'Oblíbené' },
+    allItems: { id: 'autocomplete.list.allItems', defaultMessage: 'Všechny položky' },
+});
 
 let _debugStates = false;
 
@@ -513,7 +521,7 @@ export default class Autocomplete extends AbstractReactComponent {
             otherProps.groups = [
                 {
                     name: 'fav',
-                    title: i18n('autocomplete.list.favoriteItems'),
+                    title: getIntl().formatMessage(messages.favoriteItems),
                     hideWhenEmpty: true,
                     hideTitle: false,
                     ignoreDepth: true,
@@ -521,7 +529,7 @@ export default class Autocomplete extends AbstractReactComponent {
                 },
                 {
                     name: 'all',
-                    title: i18n('autocomplete.list.allItems'),
+                    title: getIntl().formatMessage(messages.allItems),
                     hideTitle: false,
                     priority: 1,
                 },

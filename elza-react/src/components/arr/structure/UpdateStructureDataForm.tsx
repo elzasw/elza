@@ -1,12 +1,9 @@
 import { Modal } from "react-bootstrap";
-import { FormattedMessage, defineMessages } from "react-intl";
+import { FormattedMessage } from "react-intl";
 import { Button } from "../../ui";
+import { globalMessages } from "components/shared/lang";
 import { StructureEdit } from "./StructureEdit";
 import { StructureView } from "./StructureView";
-
-const messages = defineMessages({
-    close: { id: "global.action.close", defaultMessage: "Zavřít" },
-});
 
 interface Props {
     fundVersionId: number;
@@ -46,7 +43,7 @@ export function UpdateStructureDataForm({
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="link" onClick={onClose}>
-                    <FormattedMessage {...messages.close} />
+                    <FormattedMessage {...globalMessages.close} />
                 </Button>
             </Modal.Footer>
         </div>

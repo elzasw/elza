@@ -22,7 +22,13 @@ import ActionsContainer from 'components/arr/aip/ActionsContainer';
 const AREA = "AIP"
 
 /**
- * Conditions the screen applies itself: this fund, with metadata loaded and no load error.
+ * Conditions the screen applies itself: this fund, and packages whose metadata processing did
+ * not fail.
+ *
+ * Deliberately not filtered by metadataLoad: the tab used to hide packages without loaded
+ * metadata, so a just-paired package was not visible and the ribbon could not offer to load its
+ * metadata - AipPageRibbon offers that action only for a selected AIP with metadataLoad !== true.
+ * The state is readable from the "Načtená metadata" column instead.
  */
 const initialFilters = (fundId: number): AipFilterEntry[] => [
     {
@@ -48,6 +54,8 @@ type ArrAipPageProps = {
     dispatch: (action: unknown) => unknown;
     userDetail: UserDetail;
     arrRegion: { activeIndex: number | null; funds: Fund[] };
+    /** Adresa může nést i konkrétní balíček - /fund/{id}/aip/{aipId}. */
+    match: { params: { id: string; versionId?: string; aipId?: string } };
 };
 
 class ArrAipPage extends ArrParentPage {
@@ -60,6 +68,24 @@ class ArrAipPage extends ArrParentPage {
     componentDidMount() {
         super.componentDidMount()
         this.resolveUrls()
+        this.selectAipFromUrl()
+    }
+
+    /** Balíček, na který vede odkaz ze seznamu AIP - /fund/{id}/aip/{aipId}. */
+    focusAipId(): number | undefined {
+        const {aipId} = this.props.match.params;
+        return aipId ? Number(aipId) : undefined;
+    }
+
+    /**
+     * Balíček z adresy se v seznamu rovnou vybere, aby bylo poznat, o který šlo; na kterou
+     * stránku seznamu patří, řeší samotný seznam (focusAipId).
+     */
+    selectAipFromUrl() {
+        const aipId = this.focusAipId();
+        if (aipId != null) {
+            this.props.dispatch(selectAip(aipId));
+        }
     }
 
     UNSAFE_componentWillReceiveProps(nextProps: ArrAipPageProps) {
@@ -133,6 +159,7 @@ class ArrAipPage extends ArrParentPage {
                         urlFundAipExplorer(activeFund.id, id, getFundVersion(activeFund)))}
                     initialFilters={initialFilters(activeFund.id)}
                     hiddenValues={["fund.name", "fundCode", "institution.name", "institutionCode"]}
+                    focusAipId={this.focusAipId()}
                 />
                 <ActionsContainer fund={activeFund} readMode={readMode}/>
             </div>

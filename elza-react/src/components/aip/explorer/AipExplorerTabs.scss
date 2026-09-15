@@ -8,13 +8,18 @@
         flex: none;
     }
 
-    .tab-content {
+    /** Jen aktivní panel; vlastní posouvání si řeší obsah každé záložky. */
+    .aip-explorer-tabs-panel {
         flex: 1 1 auto;
         min-height: 0;
         overflow: hidden;
+
+        > * {
+            height: 100%;
+        }
     }
 
-    .tab-pane.active {
-        height: 100%;
+    .aip-explorer-tabs-loading {
+        padding: 1rem;
     }
 }

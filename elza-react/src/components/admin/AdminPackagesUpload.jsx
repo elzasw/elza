@@ -3,7 +3,13 @@
  */
 import React from 'react';
 import { connect } from 'react-redux';
-import { AbstractReactComponent, FormInput, i18n } from 'components/shared';
+import { AbstractReactComponent, FormInput} from 'components/shared';
+import { FormattedMessage, defineMessages } from 'react-intl';
+
+// Id je převzaté z legacy katalogu beze změny.
+const messages = defineMessages({
+    import: { id: 'admin.packages.action.import', defaultMessage: 'Importovat' },
+});
 import {
     Button as FluentButton,
     tokens,
@@ -36,7 +42,7 @@ class AdminPackagesUpload extends AbstractReactComponent {
             <div style={{ padding: tokens.spacingHorizontalM, display: "flex", columnGap: tokens.spacingHorizontalS }} >
                 <FormInput onChange={this.handleChangeFile} ref={this.fileInput} name="file" type="file" />
                 <FluentButton disabled={this.state.disabled} onClick={this.handleUpload}>
-                    {i18n('admin.packages.action.import')}
+                    <FormattedMessage {...messages.import} />
                 </FluentButton>
             </div>
         );

@@ -5,7 +5,16 @@
  * @since 22.12.2015
  */
 import {WebApi} from 'actions/index.jsx';
-import {i18n} from 'components/shared';
+import {} from 'components/shared';
+import { FormattedMessage, defineMessages } from 'react-intl';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    deleteTitle: { id: "admin.packages.message.delete.title", defaultMessage: "Smazání balíčku" },
+    deleteMessage: { id: "admin.packages.message.delete.message", defaultMessage: "Balíček {0} byl úspěšně smazán" },
+    importTitle: { id: "admin.packages.message.import.title", defaultMessage: "Import balíčku" },
+    importMessage: { id: "admin.packages.message.import.message", defaultMessage: "Balíček byl úspěšně nahrán" },
+});
 import * as types from 'actions/constants/ActionTypes';
 import * as outputFilters from '../refTables/outputFilters';
 import * as exportFilters from '../refTables/exportFilters';
@@ -55,8 +64,8 @@ export function deletePackage(code) {
             .then(json => {
                 dispatch(
                     addToastrSuccess(
-                        i18n('admin.packages.message.delete.title'),
-                        i18n('admin.packages.message.delete.message', code),
+                        <FormattedMessage {...messages.deleteTitle} />,
+                        <FormattedMessage {...messages.deleteMessage} values={{ 0: code }} />,
                     ),
                 );
             });
@@ -78,8 +87,8 @@ export function importPackage(data) {
                 dispatch(exportFilters.invalidate());
                 dispatch(
                     addToastrSuccess(
-                        i18n('admin.packages.message.import.title'),
-                        i18n('admin.packages.message.import.message'),
+                        <FormattedMessage {...messages.importTitle} />,
+                        <FormattedMessage {...messages.importMessage} />,
                     ),
                 );
             });

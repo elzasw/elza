@@ -2,7 +2,9 @@ import './ArrFundPanel.scss';
 
 import React from 'react';
 import {connect} from 'react-redux';
-import {AbstractReactComponent, i18n, Icon} from 'components/shared';
+import {AbstractReactComponent, Icon} from 'components/shared';
+import { FormattedMessage } from 'react-intl';
+import { arrPanelMessages } from './panelMessages';
 import {Button} from '../ui';
 import {dateToString} from 'components/Utils.jsx';
 import {userDetailsSaveSettings} from 'actions/user/userDetail.jsx';
@@ -55,7 +57,7 @@ class ArrFundPanel extends AbstractReactComponent {
             readMode = true;
             action = (
                 <div className="action">
-                    <span>{i18n('arr.fund.panel.readOnly')}</span>
+                    <span>{<FormattedMessage {...arrPanelMessages.fundPanelReadOnly} />}</span>
                 </div>
             );
         } else {
@@ -63,7 +65,7 @@ class ArrFundPanel extends AbstractReactComponent {
                 action = (
                     <div className="action">
                         <Button variant="outline-secondary" onClick={this.setReadMode.bind(this, false)}>
-                            {i18n('arr.fund.panel.allowEdit')}
+                            {<FormattedMessage {...arrPanelMessages.fundPanelAllowEdit} />}
                         </Button>
                     </div>
                 );
@@ -71,7 +73,7 @@ class ArrFundPanel extends AbstractReactComponent {
                 action = (
                     <div className="action">
                         <Button variant="outline-secondary" onClick={this.setReadMode.bind(this, true)}>
-                            {i18n('arr.fund.panel.forbidEdit')}
+                            {<FormattedMessage {...arrPanelMessages.fundPanelForbidEdit} />}
                         </Button>
                     </div>
                 );
@@ -86,7 +88,7 @@ class ArrFundPanel extends AbstractReactComponent {
         const version =
             fund.lockDate != null ? (
                 <span className="lock">
-                    <span className="lockTitle">{i18n('arr.fund.panel.lockTitle')}</span>
+                    <span className="lockTitle">{<FormattedMessage {...arrPanelMessages.fundPanelLockTitle} />}</span>
                     {dateToString(new Date(fund.lockDate))}
                 </span>
             ) : null;

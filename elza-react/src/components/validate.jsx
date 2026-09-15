@@ -15,7 +15,8 @@
  * @since 17.2.2016
  **/
 
-import i18n from './i18n';
+import { getIntl } from 'components/shared/lang/intlInstance';
+import { validationMessages } from 'components/shared/lang/validationMessages';
 import WKT from 'ol/format/WKT';
 
 /**
@@ -26,14 +27,14 @@ var MIN_INTEGER = -Math.pow(2, 31);
 var MAX_INTEGER = Math.pow(2, 31) - 1;
 
 export function validateInt(number) {
-    if (number % 1 !== 0) return i18n('validate.validateInt.notInt');
-    if (number < MIN_INTEGER || number > MAX_INTEGER) return i18n('validate.validateInt.outOfRange');
+    if (number % 1 !== 0) return getIntl().formatMessage(validationMessages.intNotInt);
+    if (number < MIN_INTEGER || number > MAX_INTEGER) return getIntl().formatMessage(validationMessages.intOutOfRange);
     return null;
 }
 
 export function validateDuration(duration) {
     const number = fromDuration(duration);
-    if (number < 0 || number > MAX_INTEGER) return i18n('validate.validateDuration.outOfRange');
+    if (number < 0 || number > MAX_INTEGER) return getIntl().formatMessage(validationMessages.durationOutOfRange);
     return null;
 }
 
@@ -97,7 +98,7 @@ function validateListOfPoints(points) {
  */
 export function validateCoordinatePoint(value) {
     if(!value){
-        return i18n('subNodeForm.validate.value.notEmpty');
+        return getIntl().formatMessage(validationMessages.valueNotEmpty);
     }
 
     const wkt = new WKT();
@@ -106,17 +107,17 @@ export function validateCoordinatePoint(value) {
         const features = wkt.readFeatures(value);
         return null;
     } catch (error) {
-        return i18n('subNodeForm.errorPointCoordinates');
+        return getIntl().formatMessage(validationMessages.pointCoordinates);
     }
     // if (value.indexOf('POINT') === 0) {
     //     let left = value.indexOf('(');
     //     let right = value.indexOf(')');
     //     if (left<0 || left > right) {
-    //         return i18n('subNodeForm.validate.value.notEmpty');
+    //         return getIntl().formatMessage(validationMessages.valueNotEmpty);
     //     }
     //     let data = value.substring(left + 1, right);
     //     if(!validateSinglePoint(data)) {
-    //         return i18n('subNodeForm.errorPointCoordinates');
+    //         return getIntl().formatMessage(validationMessages.pointCoordinates);
     //     } else {
     //         return null;
     //     }
@@ -124,18 +125,18 @@ export function validateCoordinatePoint(value) {
     //     let left = value.indexOf('(');
     //     let right = value.indexOf(')');
     //     if (left<0 || left > right) {
-    //         return i18n('subNodeForm.validate.value.notEmpty');
+    //         return getIntl().formatMessage(validationMessages.valueNotEmpty);
     //     }
     //     let data = value.substring(left + 1, right);
     //     if (!validateListOfPoints(data)) {
-    //         return i18n('subNodeForm.errorPointCoordinates');
+    //         return getIntl().formatMessage(validationMessages.pointCoordinates);
     //     }
     //     return null;
     // } else if(value.indexOf('POLYGON') === 0) {
     //     let left = value.indexOf('(');
     //     let right = value.lastIndexOf(')');
     //     if (left<0 || left > right) {
-    //         return i18n('subNodeForm.validate.value.notEmpty');
+    //         return getIntl().formatMessage(validationMessages.valueNotEmpty);
     //     }
     //     let data = value.substring(left + 1, right);
     //     // check lines
@@ -144,22 +145,22 @@ export function validateCoordinatePoint(value) {
     //     while(left>=0) {
     //         right = data.indexOf(')');
     //         if(right<left) {
-    //             return i18n('subNodeForm.validate.value.notEmpty');
+    //             return getIntl().formatMessage(validationMessages.valueNotEmpty);
     //         }
     //         let points = data.substring(left + 1, right);
     //         if (!validateListOfPoints(points)) {
-    //             return i18n('subNodeForm.errorPointCoordinates');
+    //             return getIntl().formatMessage(validationMessages.pointCoordinates);
     //         }
     //         data = data.substring(right+1);
     //         left = data.indexOf('(');
     //         count++;
     //     }
     //     if(count==0) {
-    //         return i18n('subNodeForm.validate.value.notEmpty');
+    //         return getIntl().formatMessage(validationMessages.valueNotEmpty);
     //     }
     //     return null;
     // }
-    // return i18n('subNodeForm.errorPointCoordinates');
+    // return getIntl().formatMessage(validationMessages.pointCoordinates);
 }
 
 /**
@@ -172,7 +173,7 @@ export function validateDouble(doubleNumber) {
         stringNumber.replace(',', '').length > 18 ||
         (stringNumber.indexOf(',') !== -1 && stringNumber.substr(stringNumber.indexOf(',') + 1).length > 6)
     )
-        return i18n('validate.validateDouble.outOfRange');
+        return getIntl().formatMessage(validationMessages.doubleOutOfRange);
     return null;
 }
 

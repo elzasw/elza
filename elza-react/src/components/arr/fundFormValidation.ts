@@ -1,6 +1,7 @@
 import { FormErrors } from 'redux-form';
 
-import i18n from 'components/i18n';
+import { getIntl } from 'components/shared/lang/intlInstance';
+import { globalMessages } from 'components/shared/lang/messages';
 import { IFundFormData } from '../../types';
 
 export type FundFormValidationProps = {
@@ -25,23 +26,23 @@ export const validateFundForm = (
     const errors: FormErrors<IFundFormData> = {};
 
     if ((props.create || props.update) && !values.name) {
-        errors.name = i18n('global.validation.required');
+        errors.name = getIntl().formatMessage(globalMessages.validationRequired);
     }
     if (props.ruleSet && !values.ruleSetId) {
-        errors.ruleSetId = i18n('global.validation.required');
+        errors.ruleSetId = getIntl().formatMessage(globalMessages.validationRequired);
     }
     if ((props.create || props.ruleSet) && !values.ruleSetCode) {
-        errors.ruleSetCode = i18n('global.validation.required');
+        errors.ruleSetCode = getIntl().formatMessage(globalMessages.validationRequired);
     }
     if ((props.create || props.update) && !values.institutionIdentifier) {
-        errors.institutionIdentifier = i18n('global.validation.required');
+        errors.institutionIdentifier = getIntl().formatMessage(globalMessages.validationRequired);
     }
     if (props.create && (!values.scopes || values.scopes.length === 0)) {
         // Typy redux-form konvenci `_error` neznají, i když ji knihovna vyžaduje.
-        (errors as Record<string, unknown>).scopes = {_error: i18n('global.validation.required')};
+        (errors as Record<string, unknown>).scopes = {_error: getIntl().formatMessage(globalMessages.validationRequired)};
     }
     if (props.create && !admin && (!values.fundAdmins || values.fundAdmins.length === 0)) {
-        errors.fundAdmins = i18n('global.validation.required');
+        errors.fundAdmins = getIntl().formatMessage(globalMessages.validationRequired);
     }
 
     return errors;

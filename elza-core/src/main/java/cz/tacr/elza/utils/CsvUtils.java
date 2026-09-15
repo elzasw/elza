@@ -11,10 +11,14 @@ public class CsvUtils {
 	
     /**
      * CSV konfigurace pro CZ Excel
+     *
+     * MS Excel přidává mezery na konec řádků, proto se okolní mezery při čtení ignorují.
+     * Bez toho selže i dohledání sloupce podle hlavičky (viz ArrIOService.csvImport).
      */
     public static final CSVFormat CSV_EXCEL_FORMAT = CSVFormat.EXCEL.builder()
     		.setDelimiter(';')
             .setQuote('"')
+            .setIgnoreSurroundingSpaces(true)
             .build();
 
     /**

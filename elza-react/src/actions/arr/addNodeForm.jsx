@@ -8,7 +8,14 @@
 import React from 'react';
 import {addNode, fundSelectSubNode} from 'actions/arr/node.jsx';
 import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx';
-import {i18n} from 'components/shared';
+import {} from 'components/shared';
+import { FormattedMessage, defineMessages } from 'react-intl';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    addNode: { id: "arr.fund.addNode", defaultMessage: "Přidat jednotku popisu" },
+    conflict: { id: "arr.fund.addNode.conflict", defaultMessage: "Vyberte způsob vyřešení konfliktů" },
+});
 import AddNodeForm from '../../components/arr/nodeForm/AddNodeForm';
 import CopyConflictForm from '../../components/arr/nodeForm/CopyConflictForm';
 
@@ -109,7 +116,7 @@ export function addNodeForm(
         dispatch(
             modalDialogShow(
                 this,
-                i18n('arr.fund.addNode'),
+                <FormattedMessage {...messages.addNode} />,
                 <AddNodeForm
                     initDirection={direction}
                     node={node}
@@ -140,7 +147,7 @@ function handleSubmitOther(data, cb) {
                     dispatch(
                         modalDialogShow(
                             this,
-                            i18n('arr.fund.addNode.conflict'),
+                            <FormattedMessage {...messages.conflict} />,
                             <CopyConflictForm
                                 {...json}
                                 onSubmit={(filesConflictResolve, structuresConflictResolve, cb) =>

@@ -10,7 +10,9 @@ import {moveNodes} from '../../actions/arr/nodes';
 
 import ArrParentPage from './ArrParentPage';
 
-import {i18n, Icon, RibbonGroup} from '../../components/shared';
+import { Icon, RibbonGroup} from '../../components/shared';
+import { FormattedMessage } from 'react-intl';
+import { arrPageMessages } from './messages';
 import {FundTreeMovementsLeft, FundTreeMovementsRight, Ribbon} from '../../components/index';
 import {Button} from '../../components/ui';
 import {urlFundMovements, getFundVersion} from "../../constants";
@@ -208,7 +210,7 @@ const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
             <div className="movements-content-container">
                 <div className={fund.moving ? 'moving-overlay visible' : 'moving-overlay'}>
                     <Icon glyph="fa-cog fa-spin" />
-                    <div>Probíhá přesun</div>
+                    <div><FormattedMessage {...arrPageMessages.movementsInProgress} /></div>
                 </div>
                 <div key={1} className="tree-left-container">
                     <FundTreeMovementsLeft fund={fund} versionId={fund.versionId} {...fund.fundTreeMovementsLeft} />
@@ -216,15 +218,15 @@ const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
                 <div key={2} className="tree-actions-container">
                     <Button onClick={this.handleMoveBefore} disabled={!moveBeforeAfter}>
                         <Icon glyph="ez-move-before2" />
-                        <div>{i18n('arr.movements.move.before')}</div>
+                        <div>{<FormattedMessage {...arrPageMessages.movementsMoveBefore} />}</div>
                     </Button>
                     <Button onClick={this.handleMoveUnder} disabled={!moveUnder}>
                         <Icon glyph="ez-move-under" />
-                        <div>{i18n('arr.movements.move.under')}</div>
+                        <div>{<FormattedMessage {...arrPageMessages.movementsMoveUnder} />}</div>
                     </Button>
                     <Button onClick={this.handleMoveAfter} disabled={!moveBeforeAfter}>
                         <Icon glyph="ez-move-after2" />
-                        <div>{i18n('arr.movements.move.after')}</div>
+                        <div>{<FormattedMessage {...arrPageMessages.movementsMoveAfter} />}</div>
                     </Button>
                 </div>
                 <div key={3} className="tree-right-container">

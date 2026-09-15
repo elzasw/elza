@@ -2,6 +2,7 @@ package cz.tacr.elza.service.da;
 
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -176,6 +177,38 @@ public class DaAipActionService {
         }
         finishById(item.getAipActionItemId(), DaAipActionItemState.ERROR, "Byl proveden restart serveru");
         return true;
+    }
+
+    /**
+     * Gives up on items that a restart left with nothing to carry them out.
+     *
+     * An action is carried out either through the queue of the digital archive or through the
+     * asynchronous queue, and both survive a restart: a pending queue item is picked up again by
+     * the processor, and an interrupted request is abandoned by {@link #abandonInterruptedStep}.
+     * An item with neither is one whose carrier never reached the database, and nothing will ever
+     * report on it - it is closed here so the user sees a failed action instead of one that waits
+     * for ever.
+     *
+     * Called at startup, where a carrier cannot merely be on its way: whatever was in flight when
+     * the server stopped was rolled back with it.
+     *
+     * @return how many items were given up on
+     */
+    @Transactional
+    public int abandonItemsWithoutCarrier() {
+        List<DaAipActionItem> orphaned = actionItemRepository.findWithoutCarrier(
+                EnumSet.of(DaAipActionItemState.WAITING, DaAipActionItemState.RUNNING),
+                EnumSet.of(DaSyncQueueItem.QueueItemState.UPDATE,
+                           DaSyncQueueItem.QueueItemState.IMPORT_NEW,
+                           DaSyncQueueItem.QueueItemState.EXPORT_NEW));
+        if (orphaned.isEmpty()) {
+            return 0;
+        }
+        logger.info("Akce nad AIPy: {} položek nemá čím být provedeno, budou ukončeny", orphaned.size());
+        for (DaAipActionItem item : orphaned) {
+            finishById(item.getAipActionItemId(), DaAipActionItemState.ERROR, "Byl proveden restart serveru");
+        }
+        return orphaned.size();
     }
 
     /**

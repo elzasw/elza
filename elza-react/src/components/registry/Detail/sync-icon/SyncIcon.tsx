@@ -1,6 +1,8 @@
 import React, { FC } from "react";
 import { SyncState } from 'elza-api';
-import i18n from '../../../i18n';
+import { useIntl } from 'react-intl';
+import { messageFor } from 'components/shared/lang/dynamicMessage';
+import { apDetailMessages, syncStateMessages } from '../messages';
 import { Icon } from '../../../index';
 import "./SyncIcon.scss";
 import classnames from "classnames";
@@ -15,6 +17,7 @@ export const SyncIcon:FC<{
 }> = ({
     syncState = SyncState.SyncOk
 }) => {
+    const intl = useIntl();
     const classname = classnames("sync", {
         "not-synced": syncState === SyncState.NotSynced,
         "sync-ok": syncState === SyncState.SyncOk,
@@ -23,7 +26,7 @@ export const SyncIcon:FC<{
     return <div className="sync-icon">
         <Icon
             glyph={getIconForState(syncState)}
-            title={i18n('ap.binding.syncState.' + syncState)}
+            title={intl.formatMessage(messageFor(syncStateMessages, syncState, apDetailMessages.bindingSyncStateSYNC_OK))}
             className={classname}
             />
     </div>

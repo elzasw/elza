@@ -17,7 +17,9 @@ import { RulDescItemSpecExtVO } from '../../../../api/RulDescItemSpecExtVO';
 import { RulDescItemTypeExtVO } from '../../../../api/RulDescItemTypeExtVO';
 import { getMapFromList, objectById } from '../../../../shared/utils';
 import { Bindings } from '../../../../types';
-import i18n from '../../../i18n';
+import { useIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { apDetailMessages } from '../messages';
 import Icon from '../../../shared/icon/Icon';
 import { Button } from '../../../ui';
 import { formatDateIso } from '../../../validate';
@@ -29,6 +31,7 @@ import {RouteComponentProps, withRouter} from "react-router";
 import {Link} from "react-router-dom";
 import {diffChars, diffWords} from "diff";
 import { urlEntity } from '../../../../constants';
+import { FormattedMessage } from 'react-intl';
 
 interface OwnProps extends ReturnType<typeof mapStateToProps> {
     item: ApItemVO;
@@ -54,6 +57,7 @@ const DetailItemContent: FC<Props> = ({
     selectAp,
     revision
 }) => {
+    const intl = useIntl();
     const itemType = descItemTypes.itemsMap[item.typeId];
     const dataType: RulDataTypeVO = rulDataTypes.itemsMap[itemType.dataTypeId];
 
@@ -111,7 +115,7 @@ const DetailItemContent: FC<Props> = ({
 
         case RulDataTypeCodeEnum.BIT:
             let bitItem = item as ApItemBitVO;
-            valueField = bitItem.value ? i18n('global.title.yes') : i18n('global.title.no');
+            valueField = bitItem.value ? intl.formatMessage(globalMessages.yes) : intl.formatMessage(globalMessages.no);
             break;
 
         case RulDataTypeCodeEnum.COORDINATES:
@@ -128,7 +132,7 @@ const DetailItemContent: FC<Props> = ({
             if (recordRefItem.value && recordRefItem.accessPoint) {
                 textValue = recordRefItem.accessPoint.name;
             } else if (recordRefItem.externalName) {
-                textValue = i18n('ap.form.ref.value', recordRefItem.externalName);
+                textValue = intl.formatMessage(apDetailMessages.formRefValue, { 0: recordRefItem.externalName });
             }
             if (itemType.useSpecification) {
                 const specs = descItemTypes.itemsMap[recordRefItem.typeId].descItemSpecs;
@@ -196,7 +200,7 @@ const DetailItemContent: FC<Props> = ({
 
     let valueSpecification: React.ReactNode;
     if (!customFieldRender && itemType.useSpecification) {
-        valueSpecification = <i>Bez specifikace</i>;
+        valueSpecification = <i><FormattedMessage {...apDetailMessages.itemNoSpecification} /></i>;
         if (item.specId) {
             const itemSpec = getMapFromList(itemType.descItemSpecs) as Record<number, RulDescItemSpecExtVO>;
             if (itemSpec[item.specId]) {

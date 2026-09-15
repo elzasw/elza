@@ -54,7 +54,6 @@ import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.DataService;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.StructObjService;
-import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.output.OutputParams;
 import cz.tacr.elza.service.output.generator.PdfAttProvider.Attachments;
@@ -62,10 +61,14 @@ import jakarta.persistence.EntityManager;
 import net.sf.jasperreports.engine.DefaultJasperReportsContext;
 import net.sf.jasperreports.engine.JREmptyDataSource;
 import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JRParameter;
+import net.sf.jasperreports.engine.JRVirtualizer;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.fill.JRSwapFileVirtualizer;
+import net.sf.jasperreports.engine.util.JRSwapFile;
 import net.sf.jasperreports.engine.export.JRRtfExporter;
 import net.sf.jasperreports.engine.export.oasis.JROdtExporter;
 import net.sf.jasperreports.engine.export.ooxml.JRDocxExporter;
@@ -86,6 +89,8 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
 
     private final JasperFormat outputFormat;
 
+    private final ExportConfig exportConfig;
+
     SimplePdfReportConfiguration pdfExpConfig = new SimplePdfReportConfiguration();
     private PdfAttProvider pdfAttProvider;
 
@@ -105,10 +110,10 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
                           ArrLegacyDaoLinkRepository legacyDaoLinkRepository,
                           ArrFsLinkRepository fsLinkRepository,
                           ExportConfig exportConfig,
-                          StructObjService structObjService, DataService dataService,
-                          final AccessPointCacheService apCacheService) {
+                          StructObjService structObjService, DataService dataService) {
         super(em, dmsService);
 
+        this.exportConfig = exportConfig;
         this.outputFormat = exportConfig.getJasperFormat() != null
                 ? exportConfig.getJasperFormat()
                 : JasperFormat.PDF;
@@ -124,8 +129,7 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
                 apStateRepository, bindingRepository,
                 pdfAttProvider, structObjRepos, itemRepository, bindingStateRepository,
                 indexRepository, legacyDaoLinkRepository, fsLinkRepository, exportConfig, structObjService, em,
-                dataService,
-                apCacheService);
+                dataService);
         pdfAttProvider.setOutput(outputModel);
     }
 
@@ -170,18 +174,57 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
 
         prepareSubreports(parameters);
 
-        JasperPrint jasperPrint = fillReport(report, parameters);
-
-        if (outputFormat == JasperFormat.PDF) {
-            Path partialResult = exportPdfToFile(jasperPrint);
-            mergePDFAndAttachments(partialResult, os);
-        } else {
-            if (pdfAttProvider.getTotalPageCnt() > 0) {
-                logger.warn("Output format {} does not support PDF attachments;"
-                        + " attachment placeholders will remain in the document.", outputFormat);
+        // Pages of the filled document are swapped to disk, so that memory consumption
+        // does not grow with the length of the output. The virtualizer has to stay alive
+        // until the export is finished - exporters read the swapped pages back.
+        JRVirtualizer virtualizer = createVirtualizer();
+        try {
+            if (virtualizer != null) {
+                parameters.put(JRParameter.REPORT_VIRTUALIZER, virtualizer);
             }
-            exportToStream(jasperPrint, os);
+
+            JasperPrint jasperPrint = fillReport(report, parameters);
+
+            if (outputFormat == JasperFormat.PDF) {
+                Path partialResult = exportPdfToFile(jasperPrint);
+                mergePDFAndAttachments(partialResult, os);
+            } else {
+                if (pdfAttProvider.getTotalPageCnt() > 0) {
+                    logger.warn("Output format {} does not support PDF attachments;"
+                            + " attachment placeholders will remain in the document.", outputFormat);
+                }
+                exportToStream(jasperPrint, os);
+            }
+        } finally {
+            if (virtualizer != null) {
+                virtualizer.cleanup();
+            }
         }
+    }
+
+    /**
+     * Create virtualizer swapping filled pages to a temporary file.
+     *
+     * @return virtualizer or null when virtualization is disabled by configuration
+     */
+    private JRVirtualizer createVirtualizer() {
+        int pageCacheSize = exportConfig.getJasperPageCacheSize();
+        if (pageCacheSize <= 0) {
+            logger.warn("Jasper page virtualization is disabled (elza.export.jasperPageCacheSize={}),"
+                    + " whole document is kept in memory, outputId: {}", pageCacheSize, params.getOutputId());
+            return null;
+        }
+
+        // swap file is created inside generator temp dir, it is removed by virtualizer cleanup
+        Path swapDir = tempFileProvider.getTempDir();
+        JRSwapFile swapFile = new JRSwapFile(swapDir.toString(),
+                exportConfig.getJasperSwapBlockSizeKb(),
+                exportConfig.getJasperSwapMinGrowCount());
+
+        logger.debug("Using Jasper swap file virtualizer, outputId: {}, pageCacheSize: {}, swapDir: {}",
+                params.getOutputId(), pageCacheSize, swapDir);
+
+        return new JRSwapFileVirtualizer(pageCacheSize, swapFile, true);
     }
 
     @Override

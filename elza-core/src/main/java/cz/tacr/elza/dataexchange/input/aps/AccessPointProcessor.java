@@ -1,10 +1,6 @@
 package cz.tacr.elza.dataexchange.input.aps;
 
-import cz.tacr.elza.dataexchange.input.aps.context.AccessPointInfo;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
-import cz.tacr.elza.domain.ApPart;
-import cz.tacr.elza.domain.ApStateEnum;
-import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.schema.v2.AccessPoint;
 
 /**
@@ -23,14 +19,5 @@ public class AccessPointProcessor extends AccessPointEntryProcessor {
         if (apInfo != null) {
             apInfo.onProcessed();
         }
-    }
-
-    protected ApPart createPart(RulPartType type, AccessPointInfo apInfo) {
-        ApPart entity = new ApPart();
-        entity.setPartType(type);
-        entity.setCreateChange(context.getCreateChange());
-        entity.setLastChange(context.getCreateChange());
-        entity.setState(ApStateEnum.OK);
-        return entity;
     }
 }

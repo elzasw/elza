@@ -1,7 +1,8 @@
 // --
 import React from 'react';
 import {connect} from 'react-redux';
-import {AbstractReactComponent, HorizontalLoader, i18n} from 'components/shared';
+import {AbstractReactComponent, HorizontalLoader} from 'components/shared';
+import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
 import * as adminPermissions from '../../actions/admin/adminPermissions';
 import storeFromArea from '../../shared/utils/storeFromArea';
 import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog';
@@ -13,6 +14,11 @@ import {WebApi} from '../../actions/WebApi';
 import SelectItemsForm from './SelectItemsForm';
 import getMapFromList from '../../shared/utils/getMapFromList';
 import GroupField from './GroupField';
+
+// Id jsou převzatá z legacy katalogu beze změny.
+const messages = defineMessages({
+    addTitle: { id: 'admin.perms.fund.tabs.groups.add.title', defaultMessage: 'Přidat skupiny' },
+});
 
 class FundGroupsPanel extends AbstractReactComponent {
     constructor(props) {
@@ -137,7 +143,7 @@ class FundGroupsPanel extends AbstractReactComponent {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('admin.perms.fund.tabs.groups.add.title'),
+                this.props.intl.formatMessage(messages.addTitle),
                 <SelectItemsForm
                     onSubmitForm={groups => {
                         const {permissions} = this.state;
@@ -244,4 +250,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps)(FundGroupsPanel);
+export default connect(mapStateToProps)(injectIntl(FundGroupsPanel));

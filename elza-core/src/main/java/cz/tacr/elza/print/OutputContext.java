@@ -19,6 +19,7 @@ import cz.tacr.elza.service.AccessPointDataService;
 import cz.tacr.elza.service.DataService;
 import cz.tacr.elza.service.GroovyService;
 import cz.tacr.elza.service.UserService;
+import cz.tacr.elza.service.cache.AccessPointCacheProvider;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cache.NodeCacheService;
@@ -76,6 +77,14 @@ public class OutputContext {
 
     private ExportInitHelper exportInitHelper;
 
+    /**
+     * Bounded cache of access points shared by the whole output.
+     *
+     * The bean is prototype scoped and one instance serves a single output generation
+     * on a single thread, which is the usage the provider is written for.
+     */
+    private AccessPointCacheProvider apCacheProvider;
+
     public OutputContext() {
     }
 
@@ -99,8 +108,19 @@ public class OutputContext {
         return apDataService;
     }
 
+    /**
+     * Shared access point provider for the whole output - keeps referenced entities cached
+     * across nodes so they are not reloaded and deserialized for every reference.
+     */
+    public AccessPointCacheProvider getApCacheProvider() {
+        if (apCacheProvider == null) {
+            apCacheProvider = new AccessPointCacheProvider(accessPointCacheService);
+        }
+        return apCacheProvider;
+    }
+
     public CachedAccessPoint findCachedAccessPoint(Integer accessPointId) {
-        return accessPointCacheService.findCachedAccessPoint(accessPointId);
+        return getApCacheProvider().get(accessPointId);
     }
 
     public ExportInitHelper getExportInitHelper() {

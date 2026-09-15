@@ -87,6 +87,7 @@ import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.repository.WfIssueListRepository;
 import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.security.Sha256Support;
+import cz.tacr.elza.security.AuthenticationMethod;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.security.UserPermission;
 import cz.tacr.elza.service.eventnotification.events.EventId;
@@ -1501,6 +1502,21 @@ public class UserService {
 			}
 		}
 		return details;
+    }
+
+    /**
+     * Rejects the current request when it was authenticated by an API key. Used by operations
+     * that must never be reachable through a machine credential — password change, API-key
+     * management. The check has no effect when the caller is not logged in (that is caught by
+     * standard authorization).
+     */
+    public void requireInteractiveAuth() {
+        UserDetail detail = getLoggedUserDetail();
+        if (detail != null && detail.getAuthenticationMethod() == AuthenticationMethod.API_KEY) {
+            throw new AccessDeniedException(
+                    "Tato operace není přípustná při přihlášení API klíčem",
+                    Collections.emptyList());
+        }
     }
 
     /**

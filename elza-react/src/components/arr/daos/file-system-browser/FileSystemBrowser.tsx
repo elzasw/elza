@@ -9,8 +9,9 @@ import { useDebouncedEffect } from 'utils/hooks/hooks';
 import { useAppThunkDispatch } from 'utils/hooks';
 import { routerNavigate } from 'actions/router.jsx';
 import { urlFundNode } from '../../../../constants';
-import { defineMessages, useIntl } from 'react-intl';
-import { i18n, Icon, Splitter } from 'components/shared';
+import { FormattedMessage, defineMessages, useIntl } from 'react-intl';
+import { Icon, Splitter } from 'components/shared';
+import { daoMessages } from 'components/arr/daoMessages';
 import { humanFileSize } from 'components/Utils.jsx';
 import "./FileSystemBrowser.scss"
 import { Tree, TreeExposedFunctions } from './Tree';
@@ -272,8 +273,8 @@ export const FileSystemBrowser = ({
                     loadMoreListItems(item.parentFullPath || "", item.data.lastKey, index, item.depth)
                 }}
             >
-                <span className="item-part left" title={i18n("arr.daos.fileSystem.loadMore")}>
-                    {i18n("arr.daos.fileSystem.loadMore")}
+                <span className="item-part left" title={intl.formatMessage(daoMessages.daosFileSystemLoadMore)}>
+                    {<FormattedMessage {...daoMessages.daosFileSystemLoadMore} />}
                 </span>
             </div>
         }
@@ -563,8 +564,8 @@ export const FileSystemBrowser = ({
                         size="small"
                         icon={<ArrowUpRegular />}
                         onClick={handleSelectParent}
-                        title={i18n("arr.daos.fileSystem.selectParent")}
-                        aria-label={i18n("arr.daos.fileSystem.selectParent")}
+                        title={intl.formatMessage(daoMessages.daosFileSystemSelectParent)}
+                        aria-label={intl.formatMessage(daoMessages.daosFileSystemSelectParent)}
                     />
                 </div>
                 {generateBreadcrumbs()}

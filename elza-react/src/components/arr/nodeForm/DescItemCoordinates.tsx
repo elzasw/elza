@@ -1,7 +1,12 @@
-import { AbstractReactComponent, FormInput, i18n, Icon, NoFocusButton, TooltipTrigger } from 'components/shared';
+import { AbstractReactComponent, FormInput, Icon, NoFocusButton, TooltipTrigger } from 'components/shared';
+import { FormattedMessage, WrappedComponentProps, injectIntl } from 'react-intl';
+import { globalMessages } from 'components/shared/lang/messages';
+import { nodeMessages } from 'components/arr/nodeMessages';
+
 import { CoordinatesDisplay } from 'components/shared/coordinates/CoordinatesDisplay';
 import { addToastr } from 'components/shared/toastr/ToastrActions.jsx';
 import { objectFromWKT, wktFromTypeAndData } from 'components/Utils.jsx';
+import { copyTextToClipboard } from 'utils/clipboard';
 import PropTypes from 'prop-types';
 import * as React from 'react';
 import { connect } from "react-redux";
@@ -21,9 +26,10 @@ import { GisSystemType } from '../../../constants';
 import { kmlExtSystemListFetchIfNeeded } from 'actions/admin/kmlExtSystemList';
 import { ThunkDispatch } from 'redux-thunk';
 import { editInMapEditor } from 'components/registry/part-edit/form/fields/FormCoordinates';
+import { getIntl } from 'components/shared/lang/intlInstance';
 
 
-type Props = DescItemComponentProps<string> & {onUpload: Function; onDownload: Function; coordinatesUpload: null | string; itemId: number | undefined;} & ReturnType<typeof mapDispatchToProps>;
+type Props = DescItemComponentProps<string> & {onUpload: Function; onDownload: Function; coordinatesUpload: null | string; itemId: number | undefined;} & ReturnType<typeof mapDispatchToProps> & WrappedComponentProps;
 type State = {type: null | string; data: null | string};
 
 /**
@@ -111,7 +117,7 @@ class DescItemCoordinates extends AbstractReactComponent<Props, State> {
     render() {
         const {descItem, locked, repeatable, onUpload, readMode, cal, coordinatesUpload, copyValueToClipboard} = this.props;
         const {type, data} = this.state;
-        let value = cal && descItem.value == null ? i18n('subNodeForm.descItemType.calculable') : descItem.value;
+        let value = cal && descItem.value == null ? this.props.intl.formatMessage(nodeMessages.subNodeFormDescItemTypeCalculable) : descItem.value;
 
         if (readMode) {
             if(descItem.undefined){
@@ -146,14 +152,14 @@ class DescItemCoordinates extends AbstractReactComponent<Props, State> {
                             ref={this.focusEl}
                             disabled={locked || descItem.undefined}
                             onChange={this.handleChangeData}
-                            value={descItem.undefined ? i18n('subNodeForm.descItemType.undefinedValue') : data}
+                            value={descItem.undefined ? this.props.intl.formatMessage(nodeMessages.subNodeFormDescItemTypeUndefinedValue) : data}
                             />
                     </ItemTooltipWrapper>
                     {!descItem.undefined && descItem.descItemObjectId && (
                         <>
                             <TooltipTrigger
                                 className="desc-item-coordinates-action"
-                                content={i18n('global.action.copyToClipboard')}
+                                content={<FormattedMessage {...globalMessages.copyToClipboard} />}
                                 style={{width: "auto"}}
                                 placement="vertical"
                             >
@@ -167,7 +173,7 @@ class DescItemCoordinates extends AbstractReactComponent<Props, State> {
                             </TooltipTrigger>
                             <TooltipTrigger
                                 className="desc-item-coordinates-action"
-                                content={i18n('global.action.export')}
+                                content={<FormattedMessage {...globalMessages.export} />}
                                 style={{width: "auto"}}
                                 placement="vertical"
                             >
@@ -182,7 +188,7 @@ class DescItemCoordinates extends AbstractReactComponent<Props, State> {
                     <div className="desc-item-coordinates-action" key="cord-actions">
                         <NoFocusButton
                             onClick={this.handleUploadClick}
-                            title={i18n('subNodeForm.descItem.coordinates.action.add')}
+                            title={<FormattedMessage {...nodeMessages.subNodeFormDescItemCoordinatesActionAdd} />}
                         >
                             <Icon glyph="fa-upload" />
                         </NoFocusButton>
@@ -207,14 +213,16 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, void, Action>) => 
         dispatch(
             modalDialogShow(
                 this,
-                i18n('ap.coordinate.export.title'),
+                getIntl().formatMessage(nodeMessages.apCoordinateExportTitle),
                 <ExportCoordinateModal onClose={() => dispatch(modalDialogHide())} itemId={itemId} arrangement={true} />,
             ),
         ),
-    copyValueToClipboard: (value: string) => {
-        dispatch(addToastr(i18n('global.action.copyToClipboard.finished'), undefined, undefined, "md", 3000));
-        navigator.clipboard.writeText(value);
+    // Při nedostupné schránce se záměrně nic nezobrazuje, jen se neukáže potvrzení.
+    copyValueToClipboard: async (value: string) => {
+        if (await copyTextToClipboard(value)) {
+            dispatch(addToastr(getIntl().formatMessage(nodeMessages.globalActionCopyToClipboardFinished), undefined, undefined, "md", 3000));
+        }
     }
 });
 
-export default connect(undefined, mapDispatchToProps)(DescItemCoordinates as any);
+export default connect(undefined, mapDispatchToProps)(injectIntl(DescItemCoordinates) as any);

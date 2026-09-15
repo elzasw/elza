@@ -4,7 +4,9 @@
 
 import React from 'react';
 import {connect} from 'react-redux';
-import {AbstractReactComponent, i18n} from 'components/shared';
+import {AbstractReactComponent} from 'components/shared';
+import { FormattedMessage, injectIntl } from 'react-intl';
+import { arrPanelMessages } from './panelMessages';
 import FundTreeLazy from './FundTreeLazy';
 import ArrSearchForm from './ArrSearchForm';
 import * as types from 'actions/constants/ActionTypes';
@@ -32,7 +34,6 @@ import {WebApi} from '../../actions/WebApi';
 import {getFundVersion, JAVA_ATTR_CLASS, urlFundGrid} from '../../constants';
 import {Link} from 'react-router-dom';
 import { showQuoteModal, messages as quoteMessages } from './quote';
-import { FormattedMessage } from 'react-intl';
 
 class FundTreeMain extends React.Component {
     refTree = null;
@@ -105,22 +106,22 @@ class FundTreeMain extends React.Component {
         const menu = (
             <ul className="dropdown-menu">
                 <Dropdown.Item onClick={this.handleSelectInNewTab.bind(this, node)}>
-                    {i18n('fundTree.action.openInNewTab')}
+                    {<FormattedMessage {...arrPanelMessages.fundTreeActionOpenInNewTab} />}
                 </Dropdown.Item>
                 <Dropdown.Item as={Link} to={dataGridUrl} onClick={() => this.props.dispatch(contextMenuHide())}>
-                    {i18n('fundTree.action.openInDataGrid')}
+                    {<FormattedMessage {...arrPanelMessages.fundTreeActionOpenInDataGrid} />}
                 </Dropdown.Item>
                 <Dropdown.Item onClick={this.handleQuote(node)}>
                     <FormattedMessage {...quoteMessages.quoteTitle}/>
                 </Dropdown.Item>
                 {!readMode && (
                     <Dropdown.Item onClick={() => this.handleOpenPersistentSortDialog(node)}>
-                        {i18n('arr.functions.persistentSort')}
+                        {<FormattedMessage {...arrPanelMessages.functionsPersistentSort} />}
                     </Dropdown.Item>
                 )}
                 {!readMode && (
                     <Dropdown.Item onClick={() => this.computeAndVizualizeEJ(node)}>
-                        {i18n('arr.functions.computeAndVizualizeEJ')}
+                        {<FormattedMessage {...arrPanelMessages.functionsComputeAndVizualizeEJ} />}
                     </Dropdown.Item>
                 )}
             </ul>
@@ -147,7 +148,7 @@ class FundTreeMain extends React.Component {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('arr.functions.persistentSort'),
+                this.props.intl.formatMessage(arrPanelMessages.functionsPersistentSort),
                 <PersistentSortDialog versionId={fund.versionId} fund={fund} node={node} />,
             ),
         );
@@ -239,7 +240,7 @@ class FundTreeMain extends React.Component {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('search.extended.title'),
+                this.props.intl.formatMessage(arrPanelMessages.searchExtendedTitle),
                 <ArrSearchForm
                     onSubmitForm={this.handleExtendedSearchData}
                     initialValues={fund.fundTree.searchFormData ? fund.fundTree.searchFormData : {type: 'FORM'}}
@@ -315,7 +316,7 @@ class FundTreeMain extends React.Component {
                 onCollapse={this.handleCollapse}
                 onExpand={this.handleExpand}
                 extendedSearch
-                filterText={fund.fundTree.luceneQuery ? i18n('search.extended.label') : searchText}
+                filterText={fund.fundTree.luceneQuery ? this.props.intl.formatMessage(arrPanelMessages.searchExtendedLabel) : searchText}
                 extendedReadOnly={fund.fundTree.luceneQuery}
                 onClickExtendedSearch={this.handleExtendedSearch}
                 showEditPermissions={showEditPermissions}
@@ -324,4 +325,4 @@ class FundTreeMain extends React.Component {
     }
 }
 
-export default connect(null, null, null, {forwardRef: true})(FundTreeMain);
+export default connect(null, null, null, {forwardRef: true})(injectIntl(FundTreeMain, { forwardRef: true }));

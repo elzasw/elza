@@ -4,7 +4,7 @@ import { Button } from "../../../ui";
 import "./MultiButtonDialog.scss";
 
 export interface ButtonDefinition<T> {
-    label: string;
+    label: React.ReactNode;
     variant: "outline-secondary" | "link";
     value: T;
 }
