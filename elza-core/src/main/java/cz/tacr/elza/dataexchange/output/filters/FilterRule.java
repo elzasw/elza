@@ -38,6 +38,7 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.converter.UnitDateConverter;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import jakarta.annotation.Nullable;
 
 public class FilterRule {
 
@@ -575,7 +576,14 @@ public class FilterRule {
      */
     private void addItem(AddItem action, Map<ItemType, List<ArrItem>> itemsByType,
                          ApplyFilter filter,
-                         FilterRuleContext filterRuleContext, Locale locale) {    	    	
+                         FilterRuleContext filterRuleContext, Locale locale) {
+        // item with constant value - no source item is needed
+        if (action.getValueFrom() == null && action.getValueFromItem() == null
+                && !action.isValueFromSourceItem()) {
+            addItem(null, action, filter, filterRuleContext, locale);
+            return;
+        }
+
         // get source value
     	List<? extends ArrItem> sourceValueItems = filterRuleContext.getItems(action.getValueFrom(), null);
 
@@ -604,16 +612,24 @@ public class FilterRule {
                 
     }
 
-    private void addItem(ArrItem sourceValueItem, AddItem action, ApplyFilter filter, FilterRuleContext filterRuleContext,
+    /**
+     * Add single item
+     *
+     * @param sourceValueItem
+     *            Item providing the value, null for items with constant value
+     */
+    private void addItem(@Nullable ArrItem sourceValueItem, AddItem action, ApplyFilter filter, FilterRuleContext filterRuleContext,
 			Locale locale) {
-    	ArrData srcValue = sourceValueItem.getData();
-    	if(srcValue==null) {
-    		return;
+    	ArrData srcValue = null;
+    	if (sourceValueItem != null) {
+    		srcValue = sourceValueItem.getData();
+    		if(srcValue==null) {
+    			return;
+    		}
+        	// unproxy value - will be used by instanceof
+    		srcValue = HibernateUtils.unproxy(srcValue);
     	}
-		
-    	// unproxy value - will be used by instanceof
-		srcValue = HibernateUtils.unproxy(srcValue);
-		
+
         ArrDescItem descItem = null;
         ArrItem existingItem = filter.getAddedItem(action.getTrgItemType().getEntity(), action.getTrgItemSpec());
         if (action.getTrgItemType().getDataType() == DataType.ENUM) {
@@ -700,7 +716,7 @@ public class FilterRule {
             }
         } else if(action.getTrgItemType().getDataType() == DataType.STRING) {
         	descItem = addStringItem(action, sourceValueItem, srcValue, filterRuleContext, existingItem, locale);
-            if(action.isHideSourceItem()) {
+            if(action.isHideSourceItem() && sourceValueItem != null) {
             	filter.addHideItem(sourceValueItem);
     		}
         } else
