@@ -94,7 +94,7 @@ when
   $itemType: RulItemTypeExt(code in ("ZP2015_SIZE_UNITS") )
   $activeLevel: ActiveLevel( )
   exists (DescItem(type in ("ZP2015_SIZE_WIDTH", "ZP2015_SIZE_HEIGHT", "ZP2015_SIZE_DEPTH", "ZP2015_SIZE_OTHER")                                      
-                                      ) from $activeLevel.descItems
+                                      ) from $activeLevel.ownDescItems
                                       )
 then
   $itemType.setType(RulItemType.Type.REQUIRED);
