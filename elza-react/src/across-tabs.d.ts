@@ -36,6 +36,8 @@ declare module "across-tabs" {
             config: ChildConfig;
             /** Id timeoutu hlidajiciho handshake s rodicem; po vyprseni uz neexistuje. */
             timeout?: ReturnType<typeof window.setTimeout>;
+            /** Obsluha zprav od rodice; knihovna ji vola z posluchace na okne. */
+            onCommunication(message: MessageEvent): void;
             sendMessageToParent(message: unknown): void;
             getTabInfo(): Tab;
         }
@@ -43,7 +45,7 @@ declare module "across-tabs" {
         class Parent {
             constructor(config?: ParentConfig);
             /** Knihovna umoznuje callbacky nastavit i dodatecne na instanci. */
-            onHandshakeCallback: (...args: any[]) => void;
+            onHandshakeCallback: (tab: Tab) => void;
             openNewTab(config: {url: string; windowName?: string; windowFeatures?: string}): Tab;
             getOpenedTabs(): Tab[];
             getAllTabs(): Tab[];

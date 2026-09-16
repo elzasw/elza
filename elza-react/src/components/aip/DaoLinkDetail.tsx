@@ -22,7 +22,7 @@ import {ExplorerMode} from "./explorer/ExplorerContext.tsx";
 import * as aipActions from "../../actions/aip/aip.ts";
 import { daoTypeMessages, levelMessages } from "./messages";
 import {AipLevelType, DaDaoType, DaoLink, DaoViewRequestVO} from "elza-api";
-import CrossTabHelper, {CrossTabEventType, getThisLayout} from "../CrossTabHelper.tsx";
+import CrossTabHelper, {CrossTabEventType, getThisLayout} from "../CrossTabHelper";
 import {WebApi} from "../../actions";
 import ConfirmForm from "../shared/form/ConfirmForm";
 import { daoLinkMessages, explorerMessages } from "./messages";
