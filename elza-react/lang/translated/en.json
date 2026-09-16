@@ -1925,13 +1925,41 @@
     "defaultMessage": "Show list",
     "srcHash": "MYJ1K8DLdJht"
   },
+  "aip.daoLink.collapseItem": {
+    "defaultMessage": "Hide components",
+    "srcHash": "ECVo4qF6KRh6"
+  },
+  "aip.daoLink.components": {
+    "defaultMessage": "{count, plural, one {# component} other {# components}}",
+    "srcHash": "vV0kawjYmm8y"
+  },
+  "aip.daoLink.expandItem": {
+    "defaultMessage": "Show components",
+    "srcHash": "Uv6uz3NbLHpy"
+  },
   "aip.daoLink.hide": {
     "defaultMessage": "Hide",
     "srcHash": "DHMh5qFxi1zF"
   },
+  "aip.daoLink.hideLinks": {
+    "defaultMessage": "Hide links",
+    "srcHash": "9O4L7Cv_u_6C"
+  },
+  "aip.daoLink.openInExplorer": {
+    "defaultMessage": "Open in the package explorer",
+    "srcHash": "JYAnrSJfcE83"
+  },
+  "aip.daoLink.showComponent": {
+    "defaultMessage": "Show component",
+    "srcHash": "ULsajiU6lTGl"
+  },
   "aip.daoLink.showInExplorer": {
     "defaultMessage": "Show everything in the explorer…",
     "srcHash": "pBHKRz6nIY2e"
+  },
+  "aip.daoLink.showLinks": {
+    "defaultMessage": "Show links",
+    "srcHash": "H1QyT6rP9xxN"
   },
   "aip.daoLink.showMore": {
     "defaultMessage": "and {count, plural, one {# more} other {# more}}…",

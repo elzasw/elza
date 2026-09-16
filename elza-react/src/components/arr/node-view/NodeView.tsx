@@ -24,6 +24,7 @@ import { Tooltip } from "@fluentui/react-components";
 import { useVisibleFormItems } from "./hooks";
 import { FormattedMessage } from "react-intl";
 import { messages as commonMessages } from "components/arr/item-form/desc-items/commonMessages";
+import DaoLinkDetail from "components/aip/DaoLinkDetail";
 
 interface Props {
   fondsVersionId: number;
@@ -90,7 +91,11 @@ export function NodeView({ fondsVersionId, nodeId, nodeVersionId, seedFromParent
   }, [visibleFormItems, itemTypes, groupRefs, itemTypeRefs]);
 
   return (
-    <div style={{ padding: "8px" /* , display: "flex", flexWrap: "wrap" */ }}>
+    <div>
+      {/* Napojení na digitální objekty patří k jednotce stejně jako popis - v uzavřené verzi
+          se z něj vypouštějí jen akce, které by data měnily. */}
+      <DaoLinkDetail nodeId={nodeId} readOnly />
+      <div style={{ padding: "8px" /* , display: "flex", flexWrap: "wrap" */ }}>
       {viewDescItemGroups.map(({ group, descItemTypes }, groupIndex) => {
         return (
           <div key={groupIndex} style={{ margin: "4px" }}>
@@ -209,6 +214,7 @@ export function NodeView({ fondsVersionId, nodeId, nodeVersionId, seedFromParent
       {/*     {DataTypeComponent ? <DataTypeComponent item={item} /> : "Not implemented"} */}
       {/*   </div> */}
       {/* })} */}
+      </div>
     </div>
   );
 }
