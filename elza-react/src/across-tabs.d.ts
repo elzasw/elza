@@ -32,6 +32,10 @@ declare module "across-tabs" {
             constructor(config?: ChildConfig);
             /** Knihovna umoznuje callbacky nastavit i dodatecne na instanci. */
             onParentDisconnect: () => void;
+            /** Konfigurace, ze ktere knihovna cte callbacky pri kazde prijate zprave. */
+            config: ChildConfig;
+            /** Id timeoutu hlidajiciho handshake s rodicem; po vyprseni uz neexistuje. */
+            timeout?: ReturnType<typeof window.setTimeout>;
             sendMessageToParent(message: unknown): void;
             getTabInfo(): Tab;
         }
