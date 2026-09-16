@@ -105,10 +105,17 @@ export const explorerMessages = defineMessages({
  * Napojení jednotky popisu na digitální objekty.
  */
 export const daoLinkMessages = defineMessages({
-    title:        { id: "aip.daoLink.title",        defaultMessage: "Napojení" },
-    showMore:     { id: "aip.daoLink.showMore",     defaultMessage: "a {count, plural, one {# další} few {# další} other {# dalších}}…" },
-    hide:         { id: "aip.daoLink.hide",         defaultMessage: "Skrýt" },
+    title:          { id: "aip.daoLink.title",          defaultMessage: "Napojení" },
+    showMore:       { id: "aip.daoLink.showMore",       defaultMessage: "a {count, plural, one {# další} few {# další} other {# dalších}}…" },
+    hide:           { id: "aip.daoLink.hide",           defaultMessage: "Skrýt" },
     showInExplorer: { id: "aip.daoLink.showInExplorer", defaultMessage: "Zobrazit vše v průzkumníku…" },
+    components:     { id: "aip.daoLink.components",     defaultMessage: "{count, plural, one {# komponenta} few {# komponenty} other {# komponent}}" },
+    openInExplorer: { id: "aip.daoLink.openInExplorer", defaultMessage: "Otevřít v průzkumníku balíčku" },
+    showComponent:  { id: "aip.daoLink.showComponent",  defaultMessage: "Zobrazit komponentu" },
+    expandItem:     { id: "aip.daoLink.expandItem",     defaultMessage: "Zobrazit komponenty" },
+    collapseItem:   { id: "aip.daoLink.collapseItem",   defaultMessage: "Skrýt komponenty" },
+    showLinks:      { id: "aip.daoLink.showLinks",      defaultMessage: "Zobrazit napojení" },
+    hideLinks:      { id: "aip.daoLink.hideLinks",      defaultMessage: "Skrýt napojení" },
 });
 
 export const explorerPageMessages = defineMessages({
