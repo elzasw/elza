@@ -52,7 +52,9 @@ class CrossTabHelper {
             };
 
             const onDisconnect = () => {
-                that.child = undefined;
+                // Nestaci zapomenout referenci - bez ni uz nema kdo umlcet
+                // posluchace, ktery si knihovna nechala na okne.
+                CrossTabHelper.disconnectChild(that);
                 reject(NO_PARENT_EX);
             };
             const onInit = () => {
@@ -72,6 +74,10 @@ class CrossTabHelper {
             };
 
             try {
+                // Predchozi spojeni je treba zrusit, jinak po sobe kazdy pokus
+                // necha zivy timeout a posluchac, ktery uz nema komu predat
+                // prijatou zpravu.
+                CrossTabHelper.disconnectChild(that);
                 that.child = new AcrossTabs.Child(config);
             } catch (e) {
                 reject(e);
@@ -79,15 +85,40 @@ class CrossTabHelper {
         });
     }
 
-    static onUnmount(that: CrossTabUserClassInstance) {
-        try {
-            if (that.child !== null) {
-                that.child.onParentDisconnect();
-            }
-        } catch (e) {
-            console.warn('CrossTabEvent', 'problem in disconnect', e);
-            // ignore
+    /**
+     * Zahodi spojeni navazane v tryInitChild.
+     *
+     * `that.child` je undefined, dokud se navazani nepovede, a znovu potom, co
+     * spojeni zanikne (odpojeny rodic nebo vyprseny handshake) - drivejsi test
+     * na `null` tedy neplatil a volani padalo na TypeError, ktery se jen
+     * zalogoval jako varovani.
+     *
+     * Posluchac `message` si across-tabs pri inicializaci vyrabi jako novou
+     * arrow funkci, takze ho vlastnim removeEventListener nikdy neodebere.
+     * Zbyle zpravy proto umlcujeme vynulovanim callbacku v `child.config`,
+     * odkud si je `onCommunication` bere.
+     */
+    static disconnectChild(that: CrossTabUserClassInstance) {
+        const child = that.child;
+        that.child = undefined;
+
+        if (!child) {
+            return;
         }
+
+        // Cekajici handshake by jinak po odpojeni zavolal onHandShakeExpiry.
+        window.clearTimeout(child.timeout);
+
+        if (child.config) {
+            child.config.onParentCommunication = undefined;
+            child.config.onParentDisconnect = undefined;
+            child.config.onInitialize = undefined;
+            child.config.onHandShakeExpiry = undefined;
+        }
+    }
+
+    static onUnmount(that: CrossTabUserClassInstance) {
+        CrossTabHelper.disconnectChild(that);
     }
 
     static generateRandomString = function() {
@@ -118,6 +149,10 @@ class CrossTabHelper {
 
     static sendEvent(that: CrossTabUserClassInstance, event: CrossTabEvent) {
         CrossTabHelper.tryInitChild(that, 300).then(() => {
+            // Spojeni mohlo mezitim zaniknout (odhlaseni komponenty, novy pokus).
+            if (!that.child) {
+                throw NO_PARENT_EX;
+            }
             console.log('CrossTabEvent', 'sending to parent window', event);
             that.child.sendMessageToParent(event);
         }).catch(() => CrossTabHelper.sendEventByParent(that, event));
