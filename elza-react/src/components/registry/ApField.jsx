@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {WebApi} from 'actions/index.jsx';
 import {AbstractReactComponent, Autocomplete, Icon, TooltipTrigger} from 'components/shared';
-import { defineMessages } from 'react-intl';
+import { FormattedMessage, defineMessages } from 'react-intl';
 import { getIntl } from 'components/shared/lang/intlInstance';
 import { searchTypeMessages } from './searchTypeMessages';
 
@@ -230,12 +230,12 @@ class ApField extends AbstractReactComponent {
                     onSelect={eventKey => this.setState({searchType: eventKey})}
                 >
                     <Dropdown.Toggle variant="outline-secondary" id="dropdown-basic">
-                        {SEARCH_TYPE_MESSAGE[searchType]}
+                        <FormattedMessage {...SEARCH_TYPE_MESSAGE[searchType]} />
                     </Dropdown.Toggle>
                     <Dropdown.Menu>
                         {searchTypes.map(i => (
                             <Dropdown.Item key={i} eventKey={i}>
-                                {SEARCH_TYPE_MESSAGE[i]}
+                                <FormattedMessage {...SEARCH_TYPE_MESSAGE[i]} />
                             </Dropdown.Item>
                         ))}
                     </Dropdown.Menu>
