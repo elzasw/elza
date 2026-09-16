@@ -100,7 +100,7 @@ const RelFilters: React.FC<RelFilterFieldProps> = ({
                 dispatch(
                     modalDialogShow(
                         this,
-                        getIntl().formatMessage(filterMessages.sectionRelations),
+                        getIntl().formatMessage(filterMessages.addRelationsFilter),
                         <RelationFilterModal
                             initialValues={{
                                 area: ApSearchArea.AllNames,

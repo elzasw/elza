@@ -15,11 +15,14 @@ export const filterMessages = defineMessages({
     sectionCreExt: { id: "ap.ext-search.section.cre-ext", defaultMessage: "Vznik/Zánik" },
     sectionText: { id: "ap.ext-search.section.text", defaultMessage: "Textové vyhledávání" },
     sectionExtSystems: { id: "ap.ext-search.section.ext-systems", defaultMessage: "Externí systémy" },
-    sectionExtends: {
+    sectionExtends: { id: "ap.ext-search.section.extends", defaultMessage: "Prvky popisu" },
+    sectionRelations: { id: "ap.ext-search.section.relations", defaultMessage: "Vztahy" },
+    // Nadpis modalu, kterým se filtr přidává; není to nadpis sekce nad seznamem.
+    addExtendsFilter: {
         id: "ap.ext-search.section.extends.title",
         defaultMessage: "Přidat rozšířený filtr",
     },
-    sectionRelations: {
+    addRelationsFilter: {
         id: "ap.ext-search.section.relations.title",
         defaultMessage: "Přidat filtr vztahů",
     },
