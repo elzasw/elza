@@ -68,9 +68,13 @@ export function DescItemStructured({
   const data = item.data as DataStructureRef;
   const [structure, setStructure] = useState<any>();
   const [structures, setStructures] = useState<any[]>([]);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(data?.value || "");
   const [isLoading, setIsLoading] = useState(false);
   const styles = useStyles();
+
+  // the locally selected or polled object fills in until the item data carries the value
+  const structureValue = data?.value ?? structure?.value;
+  const structureComplement = data?.value != null ? data.complement : structure?.complement;
 
   const structureType = useMemo(() => {
     if (typeRef?.structureTypeId != undefined) {
@@ -81,6 +85,14 @@ export function DescItemStructured({
 
   useEffect(() => {
     if (!data.structuredObjectId || structureType?.anonymous) return;
+
+    const hasServerValue = data.value != null;
+    if (hasServerValue) {
+      setStructure(undefined);
+      setQuery(data.value);
+      setIsLoading(false);
+      return;
+    }
 
     let cancelled = false;
 
@@ -108,7 +120,7 @@ export function DescItemStructured({
     })();
 
     return () => { cancelled = true; setIsLoading(false); };
-  }, [fundId, fundVersionId, data.structuredObjectId, structureType?.anonymous]);
+  }, [fundId, fundVersionId, data.structuredObjectId, data.value, structureType?.anonymous]);
 
   const loadStructures = useCallback(
     async (_query: string) => {
@@ -116,7 +128,7 @@ export function DescItemStructured({
         const { data: _structures } = await Api.structure.sdoFindStructObj(
           fundId,
           structureType.code,
-          _query === structure?.value ? "" : _query,
+          _query === structureValue ? "" : _query,
           true,
           undefined,
           undefined,
@@ -130,7 +142,7 @@ export function DescItemStructured({
       fundVersionId,
       structureType?.code,
       structureType?.anonymous,
-      structure?.value,
+      structureValue,
     ],
   );
 
@@ -225,7 +237,7 @@ export function DescItemStructured({
         <>
           <Combobox
             size={compact ? "small" : "medium"}
-            title={`${query}${structure ? " " + structure?.complement : ""}`}
+            title={`${query}${structureComplement ? " " + structureComplement : ""}`}
             value={`${query}`}
             onChange={handleQueryChange}
             onOptionSelect={handleSelect}
@@ -302,7 +314,7 @@ export function DescItemStructured({
           >
               <div className={styles.structureQueryHidden}>{query}</div>
               <div className={styles.structureComplement}>
-                  {structure?.complement}
+                  {structureComplement}
               </div>
           </div>
           <div className={styles.comboboxActionButton}>
