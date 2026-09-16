@@ -21,6 +21,7 @@ const messages = defineMessages({
         id: 'ribbon.action.arr.output.generate.continue',
         defaultMessage: '{0}, chcete i přesto pokračovat?',
     },
+    generating: { id: 'change.arr.output.generating.title', defaultMessage: 'Generuje se výstup' },
     sendConfirm: { id: 'ribbon.action.arr.output.send.confirm', defaultMessage: 'Provést odeslání výstupu?' },
     sendSuccess: { id: 'ribbon.action.arr.output.send.success', defaultMessage: 'Výstup odeslán' },
 });
@@ -40,7 +41,7 @@ const generateReasonMessages = defineMessages({
 import {indexById} from '../../stores/app/utils';
 import {isFundOutputFilesAction} from './fundOutputFiles';
 import {isFundOutputFunctionsAction} from './fundOutputFunctions';
-import {addToastrSuccess} from '../../components/shared/toastr/ToastrActions';
+import {addToastrInfo, addToastrSuccess} from '../../components/shared/toastr/ToastrActions';
 import {modalDialogHide} from '../../actions/global/modalDialog';
 import {savingApiWrapper} from '../../actions/global/status';
 import { showConfirmDialog } from 'components/shared/dialog';
@@ -284,27 +285,33 @@ export function fundOutputDetailClear(versionId) {
 }
 
 export function fundOutputGenerate(outputId) {
-    return (dispatch, getState) => {
-        WebApi.outputGenerate(outputId).then(async (data) => {
-            if (data && data.status !== 'OK') {
-                const reason = generateReasonMessages[data.status];
-                if (!reason) {
-                    console.warn('Neznámý stav generování výstupu:', data.status);
-                    return;
-                }
-                const response = await dispatch(
-                    showConfirmDialog(
-                        <FormattedMessage
-                            {...messages.generateContinue}
-                            values={{ 0: getIntl().formatMessage(reason) }}
-                        />,
-                    ),
-                );
-                if (response) {
-                    WebApi.outputGenerate(outputId, true);
-                }
-            }
-        });
+    return async (dispatch) => {
+        const data = await WebApi.outputGenerate(outputId);
+
+        const isAccepted = !data || data.status === 'OK';
+        if (isAccepted) {
+            dispatch(addToastrInfo(<FormattedMessage {...messages.generating} />));
+            return;
+        }
+
+        const reason = generateReasonMessages[data.status];
+        if (!reason) {
+            console.warn('Neznámý stav generování výstupu:', data.status);
+            return;
+        }
+
+        const response = await dispatch(
+            showConfirmDialog(
+                <FormattedMessage
+                    {...messages.generateContinue}
+                    values={{ 0: getIntl().formatMessage(reason) }}
+                />,
+            ),
+        );
+        if (response) {
+            await WebApi.outputGenerate(outputId, true);
+            dispatch(addToastrInfo(<FormattedMessage {...messages.generating} />));
+        }
     };
 }
 

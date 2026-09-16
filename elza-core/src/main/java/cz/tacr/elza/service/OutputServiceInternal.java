@@ -355,6 +355,7 @@ public class OutputServiceInternal {
 
         // save generating state only when caller transaction is committed
         output.setState(OutputState.GENERATING);
+        publishOutputStateChanged(output, fundVersion.getFundVersionId());
 
         asyncRequestService.enqueue(fundVersion, output, userId);
 
