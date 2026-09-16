@@ -8,7 +8,7 @@ import { Api } from '../../api';
 import { aipFetchIfNeeded } from '../../actions/aip/aip.ts';
 import { urlEntity, urlFundAb } from '../../constants';
 import { DetailRow } from './DetailRow';
-import { QueueStateCell, getBoolIcon, getConnectedToJP } from './AipCells';
+import { LinkedNodeLink, QueueStateCell, getBoolIcon, getConnectedToJP } from './AipCells';
 import { formatAipSize, formatUnitDate } from './format';
 import { detailMessages, linkStateMessages, messages, packageMessages, problemMessages } from './messages';
 import './AipDetailBody.scss';
@@ -40,10 +40,13 @@ export function AipDetailBody({ detail, onOpenProblemFile }: Props) {
         });
     };
 
-    // Links of the whole package are shown by name; links of its parts only counted - the parts
-    // are browsed in the structure of the package, not here.
+    // Links of the whole package are shown by name; links of its parts are counted and named by
+    // the units they reach - several parts of one package often hang on the same unit, so the
+    // count and the list answer two different questions.
     const packageLinks = (detail.linkedNodes ?? []).filter(isPackageLink);
-    const partLinkCount = (detail.linkedNodes ?? []).length - packageLinks.length;
+    const partLinks = (detail.linkedNodes ?? []).filter(link => !isPackageLink(link));
+    const partLinkNodes = partLinks.filter(
+        (link, index) => partLinks.findIndex(other => other.nodeId === link.nodeId) === index);
 
     return (
         <>
@@ -118,10 +121,18 @@ export function AipDetailBody({ detail, onOpenProblemFile }: Props) {
                            value={formatMessage(linkStateMessages[detail.linkState])} />}
             {detail.fund &&
                 <DetailRow label={formatMessage(detailMessages.linkedNodes)}
-                           value={getConnectedToJP(packageLinks, detail.fund.id, handleDeleteLink)} />}
-            {partLinkCount > 0 &&
-                <DetailRow label={formatMessage(detailMessages.partLinks)}
-                           value={formatMessage(detailMessages.partLinksCount, { count: partLinkCount })} />}
+                           value={getConnectedToJP(packageLinks, detail.fund.id, handleDeleteLink,
+                                                   partLinks.length > 0)} />}
+            {partLinks.length > 0 &&
+                <DetailRow label={formatMessage(detailMessages.partLinks)} value={
+                    <>
+                        <div>{formatMessage(detailMessages.partLinksCount, { count: partLinks.length })}</div>
+                        {detail.fund && partLinkNodes.map(link =>
+                            <div key={link.nodeId}>
+                                <LinkedNodeLink fundId={detail.fund.id} link={link} />
+                            </div>)}
+                    </>
+                } />}
         </>
     );
 }
