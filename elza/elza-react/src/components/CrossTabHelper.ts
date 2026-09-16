@@ -46,7 +46,13 @@ function createWithOwnedListeners<T extends object>(create: () => T): T {
     const addEventListener = window.addEventListener;
     const beforeUnloadBefore = window.onbeforeunload;
 
-    window.addEventListener = function (type, listener, options) {
+    // Parametry pisem rucne: pretypovani cele funkce je az nad nimi, takze by
+    // se jinak odvodily jako implicitni any (ts:strict-check).
+    window.addEventListener = function (
+        type: string,
+        listener: EventListenerOrEventListenerObject,
+        options?: boolean | AddEventListenerOptions,
+    ) {
         if (listener) {
             captured.push([type, listener]);
         }
