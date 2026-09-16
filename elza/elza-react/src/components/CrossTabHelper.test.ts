@@ -122,4 +122,40 @@ describe('CrossTabHelper.onUnmount', () => {
 
         expect(processCrossTabEvent).toHaveBeenCalledTimes(1);
     });
+
+    it('posluchače odebere, neumlčí je jen vynulováním callbacků', () => {
+        const { that } = openLayout();
+        const onCommunication = vi.spyOn(that.child, 'onCommunication');
+
+        CrossTabHelper.onUnmount(that);
+        sendParentMessage();
+
+        expect(onCommunication).not.toHaveBeenCalled();
+    });
+
+    it('vrátí window.onbeforeunload, který across-tabs přepsal', () => {
+        const original = vi.fn();
+        window.onbeforeunload = original;
+        try {
+            const { that } = openLayout();
+            expect(window.onbeforeunload).not.toBe(original);
+
+            CrossTabHelper.onUnmount(that);
+
+            expect(window.onbeforeunload).toBe(original);
+        } finally {
+            window.onbeforeunload = null;
+        }
+    });
+
+    it('odpojí i rodičovskou část', () => {
+        const { that } = createLayout();
+        layouts.push(that);
+        CrossTabHelper.initParent(that);
+        expect(that.parent).toBeDefined();
+
+        CrossTabHelper.onUnmount(that);
+
+        expect(that.parent).toBeUndefined();
+    });
 });
