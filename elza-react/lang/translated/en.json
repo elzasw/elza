@@ -2753,6 +2753,10 @@
     "defaultMessage": "External systems",
     "srcHash": "oU8i4V-8EbbO"
   },
+  "ap.ext-search.section.extends": {
+    "defaultMessage": "Description elements",
+    "srcHash": "yiaywtS88CUt"
+  },
   "ap.ext-search.section.extends.part": {
     "defaultMessage": "Description part",
     "srcHash": "gaPafU3S0zUp"
@@ -2772,6 +2776,10 @@
   "ap.ext-search.section.extends.value": {
     "defaultMessage": "Value",
     "srcHash": "2al7WSQS6DjX"
+  },
+  "ap.ext-search.section.relations": {
+    "defaultMessage": "Relations",
+    "srcHash": "3UmY-bTDcCXS"
   },
   "ap.ext-search.section.relations.area": {
     "defaultMessage": "Search area",
