@@ -6742,6 +6742,7 @@ components:
           TABLE: '#/components/schemas/AiTableBlock'
           DOC_CITATIONS: '#/components/schemas/AiDocCitationsBlock'
           NODE_UPDATE_PROPOSALS: '#/components/schemas/AiNodeUpdateProposalsBlock'
+          RECORD_CITATIONS: '#/components/schemas/AiRecordCitationsBlock'
       description: |-
         One display block of an AI response — THE RENDERING CONTRACT between the
         server and the client. The server (per task type) transforms the provider's
@@ -6762,6 +6763,7 @@ components:
         - TABLE
         - DOC_CITATIONS
         - NODE_UPDATE_PROPOSALS
+        - RECORD_CITATIONS
       description: |-
         Display block type — the discriminator of `AiDisplayBlock`. The client renders
         each block by this code, reading the fields of the matching subtype. Additive:
@@ -6974,6 +6976,42 @@ components:
         `/info` catalog. Drives the panel: which tasks to offer and, per task, which
         typed parameters to gather. Grows additively (new task types, new object
         types); a client tolerates unknown parameter/result `type` codes.
+    AiRecordCitation:
+      type: object
+      required:
+        - target
+      properties:
+        label:
+          type: string
+          description: |-
+            Display label — the record's name or title as the answer linked it. Absent when
+            the link carried no text; the client then shows a generic "open" label.
+        target:
+          allOf:
+            - $ref: '#/components/schemas/AiContextObject'
+          description: Navigation target — reuses the UI-context vocabulary (`AiContextType` codes).
+      description: |-
+        One archival record of the user's own archive an answer linked to (a record link
+        `[label](ap:…|node:…|fund:…)` in the answer's markdown), renderable as a
+        navigation link. Carries only data — the client owns the heading and any
+        fallback label.
+    AiRecordCitationsBlock:
+      type: object
+      required:
+        - records
+      properties:
+        records:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiRecordCitation'
+          description: The linked records, in first-referenced order, de-duplicated.
+      allOf:
+        - $ref: '#/components/schemas/AiDisplayBlock'
+      description: |-
+        The archival records the answer linked to — derived by the server from the record
+        links of the answer's markdown (the provider protocol's way of citing a record of
+        the client's archive). The server emits no label text; the client renders a
+        "Records" list and supplies the heading itself, in the user's language.
     AiRequest:
       type: object
       required:

@@ -117,6 +117,10 @@ export const aiAssistantMessages = defineMessages({
         id: "aiAssistant.block.citations",
         defaultMessage: "Zdroje",
     },
+    recordCitations: {
+        id: "aiAssistant.block.recordCitations",
+        defaultMessage: "Záznamy",
+    },
     errorPrefix: {
         id: "aiAssistant.state.errorPrefix",
         defaultMessage: "Chyba",
