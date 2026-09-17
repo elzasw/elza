@@ -26,6 +26,10 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import cz.tacr.elza.aiprovider.client.ElzaAiApi;
+import cz.tacr.elza.aiprovider.client.vo.MarkdownObject;
+import cz.tacr.elza.aiprovider.client.vo.Task;
+import cz.tacr.elza.aiprovider.client.vo.TaskState;
 import cz.tacr.elza.domain.AiConversation;
 import cz.tacr.elza.domain.AiExternalSystem;
 import cz.tacr.elza.domain.AiRequest;
@@ -33,6 +37,7 @@ import cz.tacr.elza.repository.AiConversationRepository;
 import cz.tacr.elza.repository.AiExternalSystemRepository;
 import cz.tacr.elza.repository.AiRequestEventRepository;
 import cz.tacr.elza.repository.AiRequestRepository;
+import cz.tacr.elza.service.AiProviderService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.websocket.UserEventPushService;
 
@@ -100,6 +105,16 @@ class AiRequestPollerTest {
         return conversation;
     }
 
+    /**
+     * Stubs both loads of a request: the plain read (poll snapshot, pushed view)
+     * and the locked read every read-modify-write goes through.
+     */
+    private void stubLoad(final AiRequest request) {
+        when(requestRepository.findById(request.getAiRequestId())).thenReturn(Optional.of(request));
+        when(requestRepository.findForUpdateByAiRequestId(request.getAiRequestId()))
+                .thenReturn(Optional.of(request));
+    }
+
     @Test
     void settlesUnresumableRequestsAndLeavesResumableOnes() {
         AiRequest neverSubmitted = request(1, null, "queued", 10);
@@ -115,9 +130,9 @@ class AiRequestPollerTest {
 
         when(requestRepository.findByStateNotIn(any()))
                 .thenReturn(List.of(neverSubmitted, missingConversation, missingProvider, resumable));
-        when(requestRepository.findById(1)).thenReturn(Optional.of(neverSubmitted));
-        when(requestRepository.findById(2)).thenReturn(Optional.of(missingConversation));
-        when(requestRepository.findById(3)).thenReturn(Optional.of(missingProvider));
+        stubLoad(neverSubmitted);
+        stubLoad(missingConversation);
+        stubLoad(missingProvider);
         // A resumed request must be handed to the poll, never marked terminal.
         when(requestRepository.findByStateNotInAndTaskUidIsNotNull(any())).thenReturn(List.of());
 
@@ -160,7 +175,7 @@ class AiRequestPollerTest {
         // the exchange with a TIMEOUT code through the same helper.
         AiRequest request = request(7, "t7", "running", 70);
         AiConversation conversation = conversation(700, 7000);
-        when(requestRepository.findById(7)).thenReturn(Optional.of(request));
+        stubLoad(request);
         when(conversationRepository.findById(70)).thenReturn(Optional.of(conversation));
 
         Boolean marked = ReflectionTestUtils.invokeMethod(poller, "failRequest", 7, "TIMEOUT",
@@ -182,7 +197,7 @@ class AiRequestPollerTest {
         AiRequest request = request(8, "t8", "running", 80);
         request.setCreateDate(new Date(System.currentTimeMillis() - 60_000));
         AiConversation conversation = conversation(800, 8000);
-        when(requestRepository.findById(8)).thenReturn(Optional.of(request));
+        stubLoad(request);
         when(conversationRepository.findById(80)).thenReturn(Optional.of(conversation));
         when(externalSystemRepository.findById(8000)).thenReturn(Optional.of(mock(AiExternalSystem.class)));
 
@@ -206,7 +221,7 @@ class AiRequestPollerTest {
         AiRequest request = request(9, "t9", "running", 90);
         request.setCreateDate(new Date());
         AiConversation conversation = conversation(900, 9000);
-        when(requestRepository.findById(9)).thenReturn(Optional.of(request));
+        stubLoad(request);
         when(conversationRepository.findById(90))
                 .thenThrow(new IllegalStateException("conversation lookup exploded"))
                 // the failRequest path re-reads it while settling
@@ -235,7 +250,7 @@ class AiRequestPollerTest {
     void theSnapshotIsRenderedAsTheOwnerAndTheThreadIsLeftClean() {
         AiRequest request = request(11, "t11", "running", 110);
         AiConversation conversation = conversation(1100, 11000);
-        when(requestRepository.findById(11)).thenReturn(Optional.of(request));
+        stubLoad(request);
         when(conversationRepository.findById(110)).thenReturn(Optional.of(conversation));
 
         SecurityContext ownerContext = SecurityContextHolder.createEmptyContext();
@@ -276,7 +291,7 @@ class AiRequestPollerTest {
     void aBrokenViewMapperDoesNotLoseTheSettledResult() {
         AiRequest request = request(10, "t10", "running", 100);
         AiConversation conversation = conversation(1000, 10000);
-        when(requestRepository.findById(10)).thenReturn(Optional.of(request));
+        stubLoad(request);
         when(conversationRepository.findById(100)).thenReturn(Optional.of(conversation));
         when(viewMapper.buildUpdateMessage(any()))
                 .thenThrow(new IllegalStateException("proposal block mapper exploded"));
@@ -290,5 +305,43 @@ class AiRequestPollerTest {
         assertThat(request.getErrorCode()).isEqualTo("TIMEOUT");
         // …and nothing half-rendered was pushed to the client.
         verify(pushService, never()).push((Integer) any(), any());
+    }
+
+    /**
+     * Two threads save the same {@code ai_request} row — this poll (state,
+     * output) and the event poll (cursor, progress) — and the provider releases
+     * both long polls at the instant the task finishes. Loaded with a plain
+     * read, the event poll's copy could predate this poll's commit, and its
+     * full-entity save then put {@code running} and no output back over the
+     * stored result: the exchange stayed "running" for good with its answer
+     * already in the OUTPUT event, and with both loops legitimately finished
+     * nobody was left to notice (2026-09-17). The outcome must therefore be
+     * written through the locked read, never the plain one.
+     */
+    @Test
+    void aFinishedTaskIsPersistedThroughTheLockedRead() {
+        ReflectionTestUtils.setField(poller, "requestLifetimeTimeoutSeconds", 1800L);
+        AiRequest request = request(12, "t12", "running", 120);
+        request.setCreateDate(new Date());
+        AiConversation conversation = conversation(1200, 12000);
+        stubLoad(request);
+        when(conversationRepository.findById(120)).thenReturn(Optional.of(conversation));
+        when(externalSystemRepository.findById(12000)).thenReturn(Optional.of(mock(AiExternalSystem.class)));
+
+        AiProviderService providerService = mock(AiProviderService.class);
+        ElzaAiApi api = mock(ElzaAiApi.class);
+        when(providerService.createApi(any(), any())).thenReturn(api);
+        when(api.getTask(any(), eq("t12"), any()))
+                .thenReturn(new Task().state(TaskState.DONE).output(List.of(new MarkdownObject())));
+        ReflectionTestUtils.setField(poller, "aiProviderService", providerService);
+
+        ReflectionTestUtils.invokeMethod(poller, "pollLoop", 12);
+
+        assertThat(request.getState()).isEqualTo("done");
+        assertThat(request.getOutput()).isNotNull();
+        assertThat(request.getFinishDate()).isNotNull();
+        assertThat(request.getProgressMessage()).isNull();
+        verify(requestRepository).findForUpdateByAiRequestId(12);
+        verify(answerBuffer).clear(12);
     }
 }

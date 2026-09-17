@@ -52,6 +52,11 @@ import cz.tacr.elza.service.AiProviderService;
  * advisory activity (tool-by-tool events, streamed answer) is consumed
  * separately by {@link AiEventPoller}; a provider that emits no events still
  * works fully through this loop.
+ *
+ * <p>Both pollers save the same {@code ai_request} row from their own threads,
+ * so every read-modify-write here loads it under its row lock
+ * ({@link AiRequestRepository#findForUpdateByAiRequestId}); see
+ * {@link #applyChange} for the incident behind that.
  */
 @Component
 public class AiRequestPoller {
@@ -215,16 +220,17 @@ public class AiRequestPoller {
     /**
      * Marks a request terminally failed ({@code error} with the given code and
      * message), records the ERROR transparency event, clears the partial-answer
-     * buffer and notifies the owner. Re-reads the row in its own transaction and
-     * skips a request that has meanwhile become terminal, so it never races an
-     * in-flight poll. Returns whether the request was actually settled.
+     * buffer and notifies the owner. Re-reads the row under its lock in its own
+     * transaction and skips a request that has meanwhile become terminal, so it
+     * never races an in-flight poll or the event stream. Returns whether the
+     * request was actually settled.
      */
     private boolean failRequest(final Integer aiRequestId, final String errorCode, final String message) {
         Integer[] owner = new Integer[1];
         // Settle first, render after (see applyChange): a request must never
         // stay open because drawing its error card failed.
         Boolean settled = transactionTemplate.execute(status -> {
-            AiRequest request = aiRequestRepository.findById(aiRequestId).orElse(null);
+            AiRequest request = aiRequestRepository.findForUpdateByAiRequestId(aiRequestId).orElse(null);
             if (request == null || TERMINAL_STATES.contains(request.getState())) {
                 return Boolean.FALSE;
             }
@@ -392,7 +398,16 @@ public class AiRequestPoller {
             return; // long poll expired without a change
         }
         transactionTemplate.execute(status -> {
-            AiRequest request = aiRequestRepository.findById(aiRequestId).orElse(null);
+            // Locked read (SELECT … FOR UPDATE): the event poll saves this same
+            // row from its own thread, and the provider releases both long polls
+            // at the instant the task finishes. Loaded plainly, the event poll's
+            // copy could predate this commit, and its save — every column,
+            // Hibernate's default — put state=running and output=null back over
+            // the stored result. Both loops had legitimately finished by then, so
+            // the exchange stayed "running" for good with its answer already in
+            // the OUTPUT event (2026-09-17). Under the lock the later loader waits
+            // for the earlier commit and reads it.
+            AiRequest request = aiRequestRepository.findForUpdateByAiRequestId(aiRequestId).orElse(null);
             if (request == null || TERMINAL_STATES.contains(request.getState())) {
                 return null;
             }
