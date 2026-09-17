@@ -1,13 +1,47 @@
-import { Fragment } from "react";
-import { Button, makeStyles, tokens, Table, TableBody, TableCell, TableHeader, TableHeaderCell, TableRow } from "@fluentui/react-components";
-import { FormattedMessage } from "react-intl";
-import ReactMarkdown from "react-markdown";
+import { Fragment, MouseEvent, ComponentPropsWithoutRef } from "react";
+import { Button, Link, makeStyles, tokens, Table, TableBody, TableCell, TableHeader, TableHeaderCell, TableRow } from "@fluentui/react-components";
+import { FormattedMessage, useIntl } from "react-intl";
+import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
 import rehypeSanitize from "rehype-sanitize";
-import { AiDisplayBlock, AiDisplayBlockType, AiFollowUpAction, AiMarkdownBlock, AiTextBlock, AiTableBlock as AiTableBlockVO, AiDocCitationsBlock, AiNodeUpdateProposalsBlock as AiNodeUpdateProposalsBlockVO, AiRequest } from "elza-api";
+import { AiDisplayBlock, AiDisplayBlockType, AiFollowUpAction, AiMarkdownBlock, AiTextBlock, AiTableBlock as AiTableBlockVO, AiDocCitationsBlock, AiNodeUpdateProposalsBlock as AiNodeUpdateProposalsBlockVO, AiRecordCitationsBlock as AiRecordCitationsBlockVO, AiRequest } from "elza-api";
+import { useAppThunkDispatch } from "utils/hooks";
+import { routerNavigate } from "actions/router";
 import { AiNodeUpdateProposalsBlock } from "./AiNodeUpdateProposalsBlock";
+import { linkPath } from "./AiRequestActivities";
+import { rehypeRecordLinks } from "./recordLinks";
 import { aiAssistantMessages } from "./messages";
+
+/**
+ * Link renderer for answer markdown: an in-app path (a record link resolved by
+ * `rehypeRecordLinks`) navigates through the router without a page reload — a
+ * modifier click still opens it in a new tab via the real href — while a web
+ * link (a cited source) opens in a new tab. Only the anchor's own attributes are
+ * forwarded; the renderer's `node` prop is not.
+ */
+function AiMarkdownLink({ href, title, children }: ComponentPropsWithoutRef<"a"> & { node?: unknown }) {
+    const dispatch = useAppThunkDispatch();
+    if (href && href.startsWith("/")) {
+        const navigate = (event: MouseEvent<HTMLAnchorElement>) => {
+            if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+            event.preventDefault();
+            dispatch(routerNavigate(href));
+        };
+        return (
+            <a href={href} title={title} onClick={navigate}>
+                {children}
+            </a>
+        );
+    }
+    return (
+        <a href={href} title={title} target="_blank" rel="noreferrer">
+            {children}
+        </a>
+    );
+}
+
+const markdownComponents: Components = { a: AiMarkdownLink };
 
 const useStyles = makeStyles({
     text: {
@@ -102,7 +136,11 @@ export function AiDisplayBlocks({ blocks, requestId, onRequestUpdate, onClarify,
             case AiDisplayBlockType.Markdown:
                 return (
                     <div className={styles.markdown}>
-                        <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]} rehypePlugins={[rehypeSanitize]}>
+                        <ReactMarkdown
+                            remarkPlugins={[remarkGfm, remarkBreaks]}
+                            rehypePlugins={[rehypeRecordLinks, rehypeSanitize]}
+                            components={markdownComponents}
+                        >
                             {(block as AiMarkdownBlock).content}
                         </ReactMarkdown>
                     </div>
@@ -111,6 +149,8 @@ export function AiDisplayBlocks({ blocks, requestId, onRequestUpdate, onClarify,
                 return <AiTableBlock block={block as AiTableBlockVO} captionClassName={styles.caption} />;
             case AiDisplayBlockType.DocCitations:
                 return <AiCitationsBlock block={block as AiDocCitationsBlock} styles={styles} />;
+            case AiDisplayBlockType.RecordCitations:
+                return <AiRecordCitationsBlock block={block as AiRecordCitationsBlockVO} styles={styles} />;
             case AiDisplayBlockType.NodeUpdateProposals:
                 return (
                     <AiNodeUpdateProposalsBlock
@@ -218,6 +258,47 @@ function AiTableBlock({ block, captionClassName }: TableBlockProps) {
                     ))}
                 </TableBody>
             </Table>
+        </div>
+    );
+}
+
+interface RecordCitationsBlockProps {
+    block: AiRecordCitationsBlockVO;
+    styles: ReturnType<typeof useStyles>;
+}
+
+/**
+ * The archival records the answer linked to (derived server-side from the
+ * answer's record links), listed under the answer like the sources: each a
+ * navigation link into the record, labelled as the answer named it, with the
+ * generic "open" label when the link carried no text.
+ */
+function AiRecordCitationsBlock({ block, styles }: RecordCitationsBlockProps) {
+    const intl = useIntl();
+    const dispatch = useAppThunkDispatch();
+    const records = block.records ?? [];
+    if (records.length === 0) return null;
+
+    return (
+        <div className={styles.citations}>
+            <div className={styles.citationsTitle}>
+                <FormattedMessage {...aiAssistantMessages.recordCitations} />
+            </div>
+            {records.map((record, index) => {
+                const path = linkPath(record.target);
+                const label = record.label ?? intl.formatMessage(aiAssistantMessages.activityLinkOpen);
+                return (
+                    <div key={index} className={styles.citation}>
+                        {path ? (
+                            <Link title={label} onClick={() => dispatch(routerNavigate(path))}>
+                                {label}
+                            </Link>
+                        ) : (
+                            <span>{label}</span>
+                        )}
+                    </div>
+                );
+            })}
         </div>
     );
 }

@@ -1597,6 +1597,9 @@
     "defaultMessage": "Sources",
     "srcHash": "BO_uQxVmyBkf"
   },
+  "aiAssistant.block.recordCitations": {
+    "defaultMessage": "Records"
+  },
   "aiAssistant.block.unsupported": {
     "defaultMessage": "Unsupported content type.",
     "srcHash": "kqb8iHc_uQ8i"

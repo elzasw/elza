@@ -76,7 +76,7 @@ using TypeSpec.OpenAPI;
  * `GET /ping`. See `SignatureAuth` and the companion `security.md`.
  */
 @service(#{ title: "Elza AI Provider API" })
-@info(#{ version: "0.14.0" })
+@info(#{ version: "0.15.0" })
 @server(
   "{endpoint}",
   "Provider-assigned base endpoint, e.g. https://ai.example.com/elza",
@@ -166,8 +166,8 @@ model SignedRequest {
  * - `elza.docCitations` — the knowledge/documentation sources an answer relied on
  *   (payload `DocCitationsPayload`): each cited section as a stable citation id and,
  *   when the provider can resolve one, a full web URL. Returned alongside the text
- *   answer of an assistant-style task. Distinct from citing an archival record,
- *   which will get its own object type.
+ *   answer of an assistant-style task. Archival records are cited differently:
+ *   as record links inside the `elza.markdown` text (see `MarkdownPayload`).
  * - `elza.nodeUpdateProposals` — proposed changes to the description items of
  *   arrangement levels (payload `NodeUpdateProposals`): machine-applicable item
  *   operations grouped into user-reviewable changes; the result of
@@ -236,9 +236,25 @@ model TextObject extends AiObject {
   data: TextPayload;
 }
 
-/** Payload of `elza.markdown`. */
+/**
+ * Payload of `elza.markdown`.
+ *
+ * **Record links.** The text may link to archival records of the client's own
+ * archive by *reference* rather than by URL — the provider does not know the
+ * client installation's addresses, and the protocol stays vendor-neutral. A
+ * record link is an ordinary Markdown link whose target is `ap:<accessPointId>`
+ * (an archival entity / access point), `node:<nodeId>` (a description level) or
+ * `fund:<fundId>` (a fund), e.g. `[Jaroslav Klokan](ap:1234)`. The client
+ * resolves the target onto its own route for that record and lists the linked
+ * records alongside the answer; a client that does not implement record links
+ * renders the link text. A provider emits a record link only for a record the
+ * task actually received or retrieved (context, tool results) — never an
+ * invented id — so the client may trust the reference. Introduced in 0.15.0;
+ * this is how archival records are cited (document sources use
+ * `elza.docCitations`).
+ */
 model MarkdownPayload {
-  /** Formatted text as CommonMark + GFM (no raw HTML); the client renders it. */
+  /** Formatted text as CommonMark + GFM (no raw HTML), possibly with record links (see above); the client renders it. */
   markdown: string;
 }
 
@@ -923,7 +939,8 @@ model RevisionFindingsObject extends AiObject {
 /**
  * One document citation: a knowledge/documentation section an answer relied on,
  * carrying a resolvable web URL when the provider knows one. Distinct from a
- * citation of an archival record (a future object type).
+ * citation of an archival record, which travels as a record link inside the
+ * `elza.markdown` text (see `MarkdownPayload`).
  */
 model DocCitation {
   /**
