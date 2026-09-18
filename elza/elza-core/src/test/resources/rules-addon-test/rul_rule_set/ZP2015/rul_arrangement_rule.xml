@@ -1,0 +1,10 @@
+<arrangement-rules>
+    <arrangement-rule filename="ADT_AvailableItems.drl">
+        <rule-type>ATTRIBUTE_TYPES</rule-type>
+        <priority>200</priority>
+    </arrangement-rule>
+    <arrangement-rule filename="ADT_Validation.drl">
+        <rule-type>CONFORMITY_INFO</rule-type>
+        <priority>200</priority>
+    </arrangement-rule>
+</arrangement-rules>
