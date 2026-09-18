@@ -1,4 +1,19 @@
-import { FsRepo, FsItem } from 'elza-api';
+import { FsRepo, FsItem, FsItemFilterByLinked, FsItemSortType } from 'elza-api';
+
+/**
+ * Everything the browser shows that is worth keeping across a reload. The owner holds it
+ * (the DAO page keeps it in the url) and feeds it back through props.
+ */
+export interface FileSystemBrowserState {
+    repoId?: number;
+    /** Directory shown in the file list, relative to the repository root. */
+    path?: string;
+    /** Name of the selected row; always a direct child of `path`. */
+    item?: string;
+    sort: FsItemSortType;
+    linked: FsItemFilterByLinked;
+    filter: string;
+}
 
 export enum RenderItemType {
     Item,

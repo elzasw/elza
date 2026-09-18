@@ -246,7 +246,7 @@ class Layout extends AbstractReactComponent {
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${OUTPUTS}`} component={ArrOutputPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${ACTIONS}/:actionId`} component={FundActionPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${ACTIONS}`} component={FundActionPage} />
-                                            <Route path={`${URL_FUND}/:id/v/:versionId/${DAOS}`} component={ArrDaoPage} />
+                                            <Route path={`${URL_FUND}/:id/v/:versionId/${DAOS}/:tab?/:repoId?`} component={ArrDaoPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${REQUESTS}`} component={ArrRequestPage} />
                                             <Route component={ArrPage} />
                                         </Switch>
@@ -266,7 +266,7 @@ class Layout extends AbstractReactComponent {
                                             <Route path={`${URL_FUND}/:id/${OUTPUTS}`} component={ArrOutputPage} />
                                             <Route path={`${URL_FUND}/:id/${ACTIONS}/:actionId`} component={FundActionPage} />
                                             <Route path={`${URL_FUND}/:id/${ACTIONS}`} component={FundActionPage} />
-                                            <Route path={`${URL_FUND}/:id/${DAOS}`} component={ArrDaoPage} />
+                                            <Route path={`${URL_FUND}/:id/${DAOS}/:tab?/:repoId?`} component={ArrDaoPage} />
                                             <Route path={`${URL_FUND}/:id/${REQUESTS}`} component={ArrRequestPage} />
                                             <Route component={FundPage} />
                                         </Switch>

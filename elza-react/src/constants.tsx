@@ -308,8 +308,8 @@ export const urlFundRequests = (fundId: number, versionId?: number, requestId?: 
     return fundSub(fundId, versionId, REQUESTS, requestId);
 }
 
-export const urlFundDaos = (fundId: number, versionId?: number, daoId?: number) => {
-    return fundSub(fundId, versionId, DAOS, daoId);
+export const urlFundDaos = (fundId: number, versionId?: number, tab?: string, repoId?: number) => {
+    return fundSub(fundId, versionId, tab == null ? DAOS : `${DAOS}/${tab}`, repoId);
 }
 
 export const urlAdminUser = (userId: number) => {
