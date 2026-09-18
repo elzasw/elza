@@ -1,0 +1,10 @@
+<item-types>
+    <item-type code="ADT_STAGE" data-type="STRING">
+        <name>Addon stage</name>
+        <shortcut>Stage</shortcut>
+        <description>Item type contributed by the addon package; offered on ZP2015 folders by ADT_AvailableItems.drl</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+</item-types>
