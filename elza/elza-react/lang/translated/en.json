@@ -1598,7 +1598,8 @@
     "srcHash": "BO_uQxVmyBkf"
   },
   "aiAssistant.block.recordCitations": {
-    "defaultMessage": "Records"
+    "defaultMessage": "Records",
+    "srcHash": "JpyFQX3pltZK"
   },
   "aiAssistant.block.unsupported": {
     "defaultMessage": "Unsupported content type.",
