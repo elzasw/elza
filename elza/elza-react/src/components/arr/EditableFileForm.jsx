@@ -12,6 +12,7 @@ import {connect} from 'react-redux';
 import * as dms from '../../actions/global/dms';
 import storeFromArea from '../../shared/utils/storeFromArea';
 import FormInputField from "../shared/form/FormInputField";
+import { getIntl } from 'components/shared/lang/intlInstance';
 
 /**
  * Formulář editace souboru s editovatelným typem.
@@ -27,16 +28,16 @@ class EditableFileForm extends AbstractReactComponent {
         const errors = {};
 
         if (!values.name) {
-            errors.name = this.props.intl.formatMessage(globalMessages.validationRequired);
+            errors.name = getIntl().formatMessage(globalMessages.validationRequired);
         }
         if (!values.mimeType) {
-            errors.mimeType = this.props.intl.formatMessage(globalMessages.validationRequired);
+            errors.mimeType = getIntl().formatMessage(globalMessages.validationRequired);
         }
         if (!values.fileName) {
-            errors.fileName = this.props.intl.formatMessage(globalMessages.validationRequired);
+            errors.fileName = getIntl().formatMessage(globalMessages.validationRequired);
         }
         if (!values.content) {
-            errors.content = this.props.intl.formatMessage(globalMessages.validationRequired);
+            errors.content = getIntl().formatMessage(globalMessages.validationRequired);
         }
 
         return errors;
