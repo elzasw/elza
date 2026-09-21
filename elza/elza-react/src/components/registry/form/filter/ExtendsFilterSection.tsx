@@ -104,7 +104,7 @@ const ExtFilters: React.FC<ExtFilterFieldProps> = memo(({
             dispatch(
                 modalDialogShow(
                     this,
-                    getIntl().formatMessage(filterMessages.sectionExtends),
+                    getIntl().formatMessage(filterMessages.addExtendsFilter),
                     <ExtendsFilterModal
                         initialValues={{
                             onlyMainPart: true,

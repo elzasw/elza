@@ -12,6 +12,7 @@ import {decorateFormField, submitForm} from '../form/FormUtils';
 import {outputTypesFetchIfNeeded} from '../../actions/refTables/outputTypes';
 import {templatesFetchIfNeeded} from '../../actions/refTables/templates';
 import {indexById} from '../../stores/app/utils';
+import { getIntl } from 'components/shared/lang/intlInstance';
 
 /**
  * Formulář přidání výstupu.
@@ -37,10 +38,10 @@ class AddOutputForm extends AbstractReactComponent {
         const errors = {};
 
         if (!values.name) {
-            errors.name = this.props.intl.formatMessage(globalMessages.validationRequired);
+            errors.name = getIntl().formatMessage(globalMessages.validationRequired);
         }
         if (props.create && !values.outputTypeId) {
-            errors.outputTypeId = this.props.intl.formatMessage(globalMessages.validationRequired);
+            errors.outputTypeId = getIntl().formatMessage(globalMessages.validationRequired);
         }
 
         return errors;

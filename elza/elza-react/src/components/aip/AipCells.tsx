@@ -1,8 +1,9 @@
 import { useIntl } from 'react-intl';
+import { Link } from 'react-router-dom';
 import { Icon } from 'components/shared';
 import { LinkedNodeVO, QueueItemState } from 'elza-api';
 import { Button } from "react-bootstrap";
-import { serverContextPath } from "../../api";
+import { urlFundNode } from '../../constants';
 import { dateToDateTimeString } from '../../shared/utils/commons';
 import { queueStateMessages } from './messages';
 
@@ -10,25 +11,41 @@ export const getBoolIcon = (value?: boolean) => {
     return value ? <Icon glyph="fa-check"/> : <Icon glyph="fa-close"/>;
 }
 
+interface LinkedNodeLinkProps {
+    fundId: number;
+    link: LinkedNodeVO;
+}
+
+/**
+ * The description unit a link leads to, named and reachable - reading which unit the AIP hangs
+ * on is only half the answer, the user goes there from here.
+ */
+export function LinkedNodeLink({ fundId, link }: LinkedNodeLinkProps) {
+    return <Link to={urlFundNode(fundId, undefined, link.nodeId)}>{link.name}</Link>;
+}
+
+/**
+ * Whether the AIP hangs on the archival description, followed by the units it is attached to.
+ * Links of the parts of a package are listed in a row of their own, so they are not named here -
+ * but they do attach the package, which is what `linkedByParts` says: without it the flag would
+ * deny a link the detail shows one line below.
+ */
 export const getConnectedToJP = (
     linkedNodes: Array<LinkedNodeVO> | null | undefined,
     fundId: number,
     handleDeleteLink: (linkId: number) => void,
+    linkedByParts = false,
 ) => {
-    let iconString = "fa-close";
-    let nodes;
+    const links = linkedNodes ?? [];
+    const iconString = links.length > 0 || linkedByParts ? "fa-check" : "fa-close";
 
-    if (linkedNodes && linkedNodes.length > 0) {
-        iconString = "fa-check";
-
-        nodes = linkedNodes.map(item =>
-            <div key={item.id}>
-                <a href={`${serverContextPath}/fund/${fundId}/node/${item.nodeId}`}>{item.name}</a>
-                <Button key="deleteLink" variant="action" onClick={() => handleDeleteLink(item.id)}>
-                    <Icon glyph="fa fa-close" />
-                </Button>
-            </div>)
-    }
+    const nodes = links.map(item =>
+        <div key={item.id}>
+            <LinkedNodeLink fundId={fundId} link={item} />
+            <Button key="deleteLink" variant="action" onClick={() => handleDeleteLink(item.id)}>
+                <Icon glyph="fa fa-close" />
+            </Button>
+        </div>);
 
     return <div><Icon glyph={iconString}/> {nodes}</div>;
 }
@@ -64,4 +81,4 @@ export function QueueStateCell({ state, message, date }: QueueStateCellProps) {
     );
 }
 
-export type { QueueStateCellProps };
+export type { LinkedNodeLinkProps, QueueStateCellProps };

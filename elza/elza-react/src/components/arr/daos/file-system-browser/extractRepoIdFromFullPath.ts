@@ -6,6 +6,10 @@
  *
  * The repoId is parsed as a number to match the elza-api endpoint signatures.
  */
+export const buildFullPath = (repoId: number, path?: string): string => {
+    return path ? `${repoId}/${path}` : `${repoId}`;
+}
+
 export const extractRepoIdFromFullPath = (fullPath: string): [number, string | undefined] => {
     const firstSlashIndex = fullPath.indexOf("/");
     const repoIdStr = firstSlashIndex !== -1 ? fullPath.substring(0, firstSlashIndex) : fullPath;

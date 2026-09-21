@@ -10,6 +10,7 @@ import {Button} from '../ui';
 import {submitForm} from 'components/form/FormUtils.jsx';
 import FileInput from '../shared/form/FileInput';
 import FF from '../shared/form/FF';
+import { getIntl } from 'components/shared/lang/intlInstance';
 
 /**
  * Formulář přidání souboru.
@@ -22,10 +23,10 @@ class AddFileForm extends AbstractReactComponent {
         const errors = {};
 
         if (!values.name) {
-            errors.name = this.props.intl.formatMessage(globalMessages.validationRequired);
+            errors.name = getIntl().formatMessage(globalMessages.validationRequired);
         }
         if (!values.file) {
-            errors.file = this.props.intl.formatMessage(globalMessages.validationRequired);
+            errors.file = getIntl().formatMessage(globalMessages.validationRequired);
         }
 
         return errors;

@@ -81,17 +81,17 @@ export function DescItemRecordRef({
   const activeFund = useActiveFund();
   const styles = useStyles();
 
+  const data = item.data as DataRecordRef;
+  const accessPointName = data?.name;
+
   const [query, setQuery] = useState<string>(
-    item.undefined ? formatMessage(commonMessages.undefined) : "",
+    item.undefined ? formatMessage(commonMessages.undefined) : accessPointName ?? "",
   );
   const [accessPoints, setAccessPoints] = useState<ApAccessPointVO[]>([]);
-  const [accessPoint, setAccessPoint] = useState<ApAccessPointVO>();
   const [isFocused, setIsFocused] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const fieldRef = useRef<HTMLInputElement>(null);
-
-  const data = item.data as DataRecordRef;
 
   const handleAccessPointSelect = (
     _e: SelectionEvents,
@@ -104,30 +104,25 @@ export function DescItemRecordRef({
       data: {
         ...item.data,
         value: parseInt(data.optionValue),
+        name: data.optionText,
       },
     });
   };
 
   function handleBlur() {
     setIsFocused(false);
-    if (accessPoint?.name) {
-      setQuery(accessPoint.name);
+    if (accessPointName) {
+      setQuery(accessPointName);
     }
   }
 
   useEffect(() => {
-    if (data?.value) {
-      (async () => {
-        const _accessPoint = await WebApi.getAccessPoint(data?.value);
-        setAccessPoint(_accessPoint);
-        setQuery(_accessPoint.name);
-      })();
-    } else if (item.undefined) {
+    if (item.undefined) {
       setQuery(formatMessage(commonMessages.undefined));
     } else {
-      setQuery("");
+      setQuery(accessPointName ?? "");
     }
-  }, [data?.value, item.undefined]);
+  }, [data?.value, accessPointName, item.undefined]);
 
   useDebouncedEffect(() => {
     const hasEnoughCharacters = (query?.length ?? 0) >= 1;
@@ -197,10 +192,8 @@ export function DescItemRecordRef({
     );
 
     // preselect entity, when value exists
-    if (accessPoint?.id != undefined) {
-      dispatch(
-        goToAe(history, accessPoint ? accessPoint.id : null, false, false),
-      );
+    if (data?.value != undefined) {
+      dispatch(goToAe(history, data.value, false, false));
     }
 
     dispatch(
@@ -223,6 +216,7 @@ export function DescItemRecordRef({
               data: {
                 ...item.data,
                 value: data.id,
+                name: data.name,
               },
             });
             dispatch(registryListFilter({ ...oldFilter }));

@@ -25,6 +25,7 @@ import cz.tacr.elza.controller.vo.DaoLink;
 import cz.tacr.elza.controller.vo.DaoLinksResult;
 import cz.tacr.elza.controller.vo.UserInfoVO;
 import cz.tacr.elza.core.ResourcePathResolver;
+import cz.tacr.elza.core.security.Authorization;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDaLink;
 import cz.tacr.elza.domain.ArrDaoLink;
@@ -51,6 +52,7 @@ import cz.tacr.elza.domain.DaRemoteRepositorySync;
 import cz.tacr.elza.domain.DaSyncQueueItem;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.AipRepository;
@@ -73,6 +75,7 @@ import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.ArrangementService;
@@ -1811,9 +1814,26 @@ public class DaService {
 
 
 
+    /**
+     * Linking an AIP to a unit of description changes the archival description of the fund, so it
+     * takes the same permission as arranging it. The check cannot be left to {@link Authorization}:
+     * the fund is only known once the node is read, and an @AuthParam of type NODE resolves no fund
+     * id, so a FUND_ARR check made from it would deny everyone.
+     */
+    private void checkArrPermission(ArrNode node) {
+        UserDetail userDetail = userService.getLoggedUserDetail();
+        AuthorizationRequest request = AuthorizationRequest.hasPermission(Permission.ADMIN)
+                .or(Permission.FUND_ARR_ALL)
+                .or(Permission.FUND_ARR, node.getFundId());
+        if (userDetail == null || !request.matches(userDetail)) {
+            throw Authorization.createAccessDeniedException(request.getPermissions());
+        }
+    }
+
     @Transactional
     public void createDaoLink(Integer aipId, Integer daoId, Integer nodeId, ArrDaoLink.LinkType linkType) {
         ArrNode node = nodeRepository.getOneCheckExist(nodeId);
+        checkArrPermission(node);
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, node);
         DaAip aip = findAipById(aipId);
         DaDao daDao = null;
@@ -2174,6 +2194,7 @@ public class DaService {
     @Transactional
     public void deleteDaoLink(Integer daoLinkId) {
         ArrDaoLink arrDaoLink = daoLinkRepository.getOneCheckExist(daoLinkId);
+        checkArrPermission(arrDaoLink.getNode());
 
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.DELETE_DAO_LINK, arrDaoLink.getNode());
         arrDaoLink.setDeleteChange(change);

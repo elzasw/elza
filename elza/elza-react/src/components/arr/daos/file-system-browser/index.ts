@@ -1,2 +1,4 @@
 export { FileSystemBrowser } from './FileSystemBrowser';
-export { extractRepoIdFromFullPath } from './extractRepoIdFromFullPath';
+export type { FileSystemBrowserProps } from './FileSystemBrowser';
+export type { FileSystemBrowserState } from './types';
+export { extractRepoIdFromFullPath, buildFullPath } from './extractRepoIdFromFullPath';

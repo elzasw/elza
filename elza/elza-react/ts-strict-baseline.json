@@ -262,11 +262,6 @@
     "error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'AbstractReactComponent<P, S, SS>'.",
     "error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'AbstractReactComponent<P, S, SS>'."
   ],
-  "src/components/CrossTabHelper.tsx": [
-    "error TS7006: Parameter 'tab' implicitly has an 'any' type.",
-    "error TS7019: Rest parameter 'data' implicitly has an 'any[]' type.",
-    "error TS7019: Rest parameter 'e' implicitly has an 'any[]' type."
-  ],
   "src/components/admin/ScopesField.tsx": [
     "error TS7006: Parameter 'item' implicitly has an 'any' type.",
     "error TS7006: Parameter 'item' implicitly has an 'any' type."

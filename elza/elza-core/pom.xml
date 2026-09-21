@@ -755,6 +755,8 @@
                                 <modelNameMapping>AiMarkdownBlock=AiMarkdownBlockVO</modelNameMapping>
                                 <modelNameMapping>AiTableBlock=AiTableBlockVO</modelNameMapping>
                                 <modelNameMapping>AiDocCitationsBlock=AiDocCitationsBlockVO</modelNameMapping>
+                                <modelNameMapping>AiRecordCitationsBlock=AiRecordCitationsBlockVO</modelNameMapping>
+                                <modelNameMapping>AiRecordCitation=AiRecordCitationVO</modelNameMapping>
                                 <modelNameMapping>AiTableColumn=AiTableColumnVO</modelNameMapping>
                                 <modelNameMapping>AiNodeUpdateProposalsBlock=AiNodeUpdateProposalsBlockVO</modelNameMapping>
                                 <modelNameMapping>AiProposalNode=AiProposalNodeVO</modelNameMapping>

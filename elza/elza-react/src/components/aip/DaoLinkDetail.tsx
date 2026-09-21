@@ -1,11 +1,11 @@
 import "./DaoLinkDetail.scss";
-import {AREA_DAO_LINKS, daoLinksFetchIfNeeded} from "actions/aip/aip";
+import { AREA_DAO_LINKS, daoLinksFetchIfNeeded } from "actions/aip/aip";
 import { useSelector } from "react-redux";
 import { storeFromArea } from "shared/utils";
 import { AppState } from "typings/store";
-import {useEffect, useState} from "react";
-import {useThunkDispatch} from "../../utils/hooks";
-import {Button, Row} from "react-bootstrap";
+import { useEffect, useState } from "react";
+import { useThunkDispatch } from "../../utils/hooks";
+import { Button } from "react-bootstrap";
 import { Icon } from "../shared";
 import { FormattedMessage, defineMessages, useIntl } from "react-intl";
 import { globalMessages } from "components/shared/lang";
@@ -15,23 +15,31 @@ import { globalMessages } from "components/shared/lang";
 const messages = defineMessages({
     deleteLink: { id: "arr.aip.dao.link.delete", defaultMessage: "Opravdu chcete smazat napojení?" },
 });
-import {Api} from "../../api";
-import {modalDialogHide, modalDialogShow} from "../../actions/global/modalDialog";
+import { Api } from "../../api";
+import { modalDialogHide, modalDialogShow } from "../../actions/global/modalDialog";
 import AipExplorerModalWrapper from "./explorer/AipExplorerWrapper.tsx";
-import {ExplorerMode} from "./explorer/ExplorerContext.tsx";
+import { ExplorerMode } from "./explorer/ExplorerContext.tsx";
 import * as aipActions from "../../actions/aip/aip.ts";
 import { daoTypeMessages, levelMessages } from "./messages";
-import {AipLevelType, DaDaoType, DaoLink, DaoViewRequestVO} from "elza-api";
-import CrossTabHelper, {CrossTabEventType, getThisLayout} from "../CrossTabHelper.tsx";
-import {WebApi} from "../../actions";
+import { AipLevelType, DaDaoType, DaoLink, DaoViewRequestVO } from "elza-api";
+import CrossTabHelper, { CrossTabEventType, getThisLayout } from "../CrossTabHelper";
+import { WebApi } from "../../actions";
 import ConfirmForm from "../shared/form/ConfirmForm";
 import { daoLinkMessages, explorerMessages } from "./messages";
 
+/** Kolik napojení se vypíše, než se zbytek schová za "a N dalších…". */
+const MAX_VISIBLE_LINKS = 5;
+
 type DaoLinkDetailProps = {
     nodeId: number;
+    /**
+     * In a closed version nothing can be unlinked - but what the unit hangs on is worth reading
+     * there just as much, so the block only drops the actions that would change the data.
+     */
+    readOnly?: boolean;
 }
 
-const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
+const DaoLinkDetail = ({nodeId, readOnly = false}: DaoLinkDetailProps) => {
     const intl = useIntl();
     const daoLinks = useSelector((state: AppState) => storeFromArea(state, AREA_DAO_LINKS));
     const dispatch = useThunkDispatch();
@@ -83,15 +91,8 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
     }
 
     const handleOpenChange = (value: string, close: boolean) => {
-        const opened = [...openItems];
-        if (close) {
-            setOpenItems(prev => prev.filter(item => item !== value))
-        } else {
-            if (!opened.includes(value)) {
-                opened.push(value)
-            }
-            setOpenItems(opened);
-        }
+        setOpenItems(prev => close ? prev.filter(item => item !== value)
+                                   : prev.includes(value) ? prev : [...prev, value]);
     }
 
     const handleOpenComponent = (daoId: number) => {
@@ -117,135 +118,106 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
     }
 
     if(daoLinks.isFetching || !daoLinks.data?.data.items || daoLinks.data.data.items.length === 0) {
+        return null;
+    }
+
+    /**
+     * One link on one line: what it attaches, the name it attaches, how much hangs below it and
+     * the actions - in that order and in one row, so a list of links reads as a column.
+     */
+    const renderLink = (item: DaoLink, canDelete: boolean) => {
+        const openItem = openItems.includes(item.daoLinkUuid);
+        const hasChildren = item.childrenCount != null && item.childrenCount > 0;
+        // Napojení bez typu zůstává u původního znění - popisuje celý balíček.
+        const label = item.path
+            ?? intl.formatMessage((item.daoType && daoTypeMessages[item.daoType])
+                                  || levelMessages[AipLevelType.Package]) + ":";
+
         return (
-            <div>
+            <div className="dao-link">
+                <span className="dao-link-label" title={label}>{label}</span>
+                <Button variant="link" className="dao-link-name"
+                        title={intl.formatMessage(daoLinkMessages.openInExplorer)}
+                        onClick={() => handleOpenExplorer(item.aipId, item.daoCode)}>
+                    {item.name}
+                </Button>
+                {hasChildren &&
+                    <span className="dao-link-count">
+                        <FormattedMessage {...daoLinkMessages.components}
+                                          values={{ count: item.childrenCount }} />
+                    </span>}
+                <span className="dao-link-actions">
+                    {item.daoType === DaDaoType.File &&
+                        <Button variant="action" title={intl.formatMessage(daoLinkMessages.showComponent)}
+                                onClick={() => handleOpenComponent(item.daoId)}>
+                            <Icon glyph="fa-eye"/>
+                        </Button>}
+                    {canDelete && item.daoLinkId &&
+                        <Button variant="action" title={intl.formatMessage(globalMessages.delete)}
+                                onClick={() => handleDeleteLink(item.daoLinkId)}>
+                            <Icon glyph="fa fa-close"/>
+                        </Button>}
+                    {hasChildren &&
+                        <Button variant="action"
+                                title={intl.formatMessage(openItem ? daoLinkMessages.collapseItem
+                                                                   : daoLinkMessages.expandItem)}
+                                onClick={() => handleOpenChange(item.daoLinkUuid, openItem)}>
+                            <Icon glyph={openItem ? "fa fa-chevron-up" : "fa fa-chevron-down"}/>
+                        </Button>}
+                </span>
             </div>
         );
     }
 
-    const renderLinkDetail = (item: DaoLink, deleteLink: boolean) => {
-        const openItem = openItems.includes(item.daoLinkUuid);
+    const renderLinkTree = (item: DaoLink, canDelete: boolean) => (
+        <div key={item.daoLinkUuid}>
+            {renderLink(item, canDelete)}
+            {item.children && openItems.includes(item.daoLinkUuid) && renderChildrenLinks(item)}
+        </div>
+    );
 
-        return (<p>
-            {/* Napojení bez typu zůstává u původního znění - popisuje celý balíček. */}
-            {item.path ? item.path + " "
-                : intl.formatMessage((item.daoType && daoTypeMessages[item.daoType]) || levelMessages[AipLevelType.Package]) + ": "}
-            <Button key="explorerLink" variant="link" onClick={() => handleOpenExplorer(item.aipId, item.daoCode)}>
-                {item.name}
-            </Button>
-            {item.childrenCount != null && item.childrenCount > 0 && " komponenty: " + item.childrenCount}
-            {item.daoType === DaDaoType.File && <Button key="detail" variant="action" onClick={() => handleOpenComponent(item.daoId)}>
-                <Icon glyph="fa-eye"/>
-            </Button>}
-            {deleteLink && item.daoLinkId && <Button key="deleteLink" variant="action" onClick={() => handleDeleteLink(item.daoLinkId)}>
-                <Icon glyph="fa fa-close"/>
-            </Button>}
-            {item.childrenCount != null && item.childrenCount > 0 && <Button key="expand" variant="action" onClick={() => handleOpenChange(item.daoLinkUuid, openItem)}>
-                {openItem && <Icon glyph="fa fa-chevron-up"/>}
-                {!openItem && <Icon glyph="fa fa-chevron-down"/>}
-            </Button>}
-        </p>);
-    }
+    /**
+     * Components of one link. The server sends only a page of them, so a link whose components do
+     * not all fit offers the explorer, which is where the rest of the package is browsed.
+     */
+    const renderChildrenLinks = (item: DaoLink) => (
+        <div className="dao-link-children">
+            {item.children.map(child => renderLinkTree(child, false))}
+            {item.children.length < item.childrenCount &&
+                <div className="dao-link-more">
+                    <Button variant="link" onClick={() => handleOpenExplorer(item.aipId)}>
+                        <FormattedMessage {...daoLinkMessages.showInExplorer} />
+                    </Button>
+                </div>}
+        </div>
+    );
 
-    const renderMainLinks = (items: Array<DaoLink>) => {
-        let count = -1;
-        const maxCount = 5;
-
-        return (items.map(item => {
-            const openItem = openItems.includes(item.daoLinkUuid);
-            count = count + 1;
-            let skryt;
-
-            if (!showAllMainLinks) {
-                if (count > maxCount) {
-                    return;
-                } else if (count === maxCount && items.length > maxCount) {
-                    return (
-                        <div key={'dao-link-div' + item.daoLinkUuid + "dalsi"}>
-                            <Row className="napojeni-row" key={'dao-link-row' + item.daoLinkUuid + "dalsi"}>
-                                <p>
-                                    <Button key="showAll" variant="link" onClick={() => setShowAllMainLinks(!showAllMainLinks)}>
-                                        <FormattedMessage {...daoLinkMessages.showMore} values={{ count: items.length - maxCount }} />
-                                    </Button>
-                                </p>
-                            </Row>
-                        </div>
-                    );
-                }
-            }
-
-            if (showAllMainLinks && items.length > maxCount && items.length === (count + 1)) {
-                skryt = (
-                    <div key={'dao-link-div' + item.daoLinkUuid + "skryt"}>
-                        <Row className="napojeni-row" key={'dao-link-row' + item.daoLinkUuid + "skryt"}>
-                            <p>
-                                <Button key="hideAll" variant="link" onClick={() => setShowAllMainLinks(!showAllMainLinks)}>
-                                    <FormattedMessage {...daoLinkMessages.hide} />
-                                </Button>
-                            </p>
-                        </Row>
-                    </div>
-                )
-            }
-
-            return (
-                <div key={'dao-link-div' + item.daoLinkUuid}>
-                    <Row className="napojeni-row" key={'dao-link-row' + item.daoLinkUuid}>
-                        {renderLinkDetail(item, true)}
-                    </Row>
-                    {item.children && openItem && renderChildrenLinks(item)}
-                    {skryt}
-                </div>
-            );
-        }));
-    }
-
-    const renderChildrenLinks = (item: DaoLink) => {
-        let count = -1;
-
-        return (item.children.map(child => {
-            const openItem = openItems.includes(child.daoLinkUuid);
-            count = count + 1;
-            let zobrazitVse;
-
-            if (item.children.length < item.childrenCount && item.children.length === (count + 1)) {
-                zobrazitVse = (
-                    <div key={'dao-link-div' + item.daoLinkUuid + "zobrazit-vse"}>
-                        <Row className="napojeni-row-child" key={'dao-link-row' + item.daoLinkUuid + "zobrazit-vse"}>
-                            <p>
-                                <Button key="hideAll" variant="link" onClick={() => handleOpenExplorer(item.aipId, null)}>
-                                    <FormattedMessage {...daoLinkMessages.showInExplorer} />
-                                </Button>
-                            </p>
-                        </Row>
-                    </div>
-                )
-            }
-
-            return (
-                <div className="napojeni-div-child" key={'dao-link-div' + child.daoLinkUuid}>
-                    <Row className="napojeni-row-child" key={'dao-link-row' + child.daoLinkUuid}>
-                        {renderLinkDetail(child, false)}
-                    </Row>
-                    {child.children && openItem && renderChildrenLinks(child)}
-                    {zobrazitVse}
-                </div>
-            );
-        }));
-    }
-
-    const centerPanel = renderMainLinks(daoLinks.data.data.items);
+    const items: Array<DaoLink> = daoLinks.data.data.items;
+    const visibleItems = showAllMainLinks ? items : items.slice(0, MAX_VISIBLE_LINKS);
 
     return (
-        <div className="napojeni">
-            <p>
-                <b><FormattedMessage {...daoLinkMessages.title} /></b>
-                <Button key="expand" variant="action" onClick={() => setCollapsed(!collapsed)}>
-                    {collapsed && <Icon glyph="fa fa-chevron-down"/>}
-                    {!collapsed && <Icon glyph="fa fa-chevron-up"/>}
-                </Button>
-            </p>
-            {!collapsed && centerPanel}
+        <div className="dao-links">
+            <button type="button" className="dao-links-header"
+                    aria-expanded={!collapsed}
+                    title={intl.formatMessage(collapsed ? daoLinkMessages.showLinks
+                                                        : daoLinkMessages.hideLinks)}
+                    onClick={() => setCollapsed(!collapsed)}>
+                <Icon glyph={collapsed ? "fa fa-chevron-down" : "fa fa-chevron-up"}/>
+                <FormattedMessage {...daoLinkMessages.title} />
+            </button>
+            {!collapsed &&
+                <div className="dao-links-list">
+                    {visibleItems.map(item => renderLinkTree(item, !readOnly))}
+                    {items.length > MAX_VISIBLE_LINKS &&
+                        <div className="dao-link-more">
+                            <Button variant="link" onClick={() => setShowAllMainLinks(!showAllMainLinks)}>
+                                {showAllMainLinks
+                                    ? <FormattedMessage {...daoLinkMessages.hide} />
+                                    : <FormattedMessage {...daoLinkMessages.showMore}
+                                                        values={{ count: items.length - MAX_VISIBLE_LINKS }} />}
+                            </Button>
+                        </div>}
+                </div>}
         </div>
     );
 }

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 
-import { render } from 'test/test-utils';
+import { renderWithProviders } from 'test/test-utils';
 import { getConnectedToJP } from './AipCells';
 
 /**
@@ -12,24 +12,30 @@ const icon = (container: HTMLElement) => container.querySelector('span.icon')?.c
 
 describe('getConnectedToJP', () => {
     it('prázdný seznam vazeb není napojení', () => {
-        const { container } = render(<>{getConnectedToJP([], 1, vi.fn())}</>);
+        const { container } = renderWithProviders(<>{getConnectedToJP([], 1, vi.fn())}</>);
 
         expect(icon(container)).toContain('fa-close');
         expect(icon(container)).not.toContain('fa-check');
     });
 
     it('chybějící seznam vazeb není napojení', () => {
-        const { container } = render(<>{getConnectedToJP(undefined, 1, vi.fn())}</>);
+        const { container } = renderWithProviders(<>{getConnectedToJP(undefined, 1, vi.fn())}</>);
 
         expect(icon(container)).toContain('fa-close');
     });
 
-    it('napojený AIP vypíše jednotky popisu', () => {
-        const { container, getByText } = render(
+    it('napojený AIP vypíše jednotky popisu odkazem na ně', () => {
+        const { container, getByText } = renderWithProviders(
             <>{getConnectedToJP([{id: 3, nodeId: 7, name: 'Složka A'}], 1, vi.fn())}</>,
         );
 
         expect(icon(container)).toContain('fa-check');
-        expect(getByText('Složka A')).toBeInTheDocument();
+        expect(getByText('Složka A')).toHaveAttribute('href', '/fund/1/node/7');
+    });
+
+    it('napojení jen přes části balíčku je také napojení', () => {
+        const { container } = renderWithProviders(<>{getConnectedToJP([], 1, vi.fn(), true)}</>);
+
+        expect(icon(container)).toContain('fa-check');
     });
 });

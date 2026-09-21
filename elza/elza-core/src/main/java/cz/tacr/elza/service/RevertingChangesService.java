@@ -6,6 +6,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -32,8 +33,10 @@ import jakarta.validation.constraints.NotNull;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.hibernate.Session;
 import org.hibernate.cfg.ImprovedNamingStrategy;
 import org.hibernate.cfg.NamingStrategy;
+import org.hibernate.query.NativeQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1588,33 +1591,116 @@ public class RevertingChangesService {
     }
 
     /**
-     * Vyhledání změn na AS.
+     * Zjištění, zda na AS (případně na JP) existuje změna od zadané změny dál.
      *
-     * @param fundId identifikátor AS
-     * @param nodeId identifikátor JP
-     * @param changeId identifikátor změny, od které provádíme vyhledávání (včetně).
-     * @return seznam ID změn
+     * Oproti sestavení seznamu všech změn se podmínka na change_id zatlačí přímo do
+     * každé větve UNION a dotaz se ukončí první nalezenou změnou. Neprochází se tedy
+     * celá historie AS, ale pouze její konec - u velkých AS je to rozdíl mezi
+     * desítkami milisekund a dotazem, který nedoběhne.
+     *
+     * Vazba na arr_change není potřeba, sloupce se změnami jsou cizí klíče do arr_change,
+     * takže odkazovaná změna vždy existuje. NULL (nesmazané záznamy) vypadne na porovnání.
+     *
+     * @param fundId           identifikátor AS
+     * @param nodeId           identifikátor JP, {@code null} pro celý AS
+     * @param changeId         identifikátor změny, od které provádíme vyhledávání (včetně)
+     * @param ignoredChangeIds změny, které se nemají brát v úvahu, může být prázdné
+     * @return true, pokud existuje alespoň jedna změna, která není mezi ignorovanými
      */
-    public List<Integer> findChangesAfter(@NotNull Integer fundId, @Nullable Integer nodeId, @Nullable Integer changeId) {
+    public boolean existsChangeAfter(@NotNull Integer fundId,
+                                     @Nullable Integer nodeId,
+                                     @NotNull Integer changeId,
+                                     @Nullable Collection<Integer> ignoredChangeIds) {
 
-        String selectParams = "ch.change_id";
-        String querySpecification = "";
+        Validate.notNull(fundId, "Identifikátor AS musí být vyplněn");
+        Validate.notNull(changeId, "Identifikátor změny musí být vyplněn");
 
-        if (changeId != null) {
-            querySpecification = "WHERE ch.change_id >= :changeId " + querySpecification;
+        boolean ignoreChanges = CollectionUtils.isNotEmpty(ignoredChangeIds);
+
+        StringBuilder nodeSubquery = new StringBuilder(256);
+        nodeSubquery.append("SELECT node_id FROM arr_node WHERE fund_id = :fundId");
+        if (nodeId != null) {
+            nodeSubquery.append(" AND node_id = :nodeId");
+        }
+        String inNodes = "node_id IN (" + nodeSubquery + ")";
+        // arr_desc_item se joinuje s arr_item, node_id je proto nutné kvalifikovat
+        String inNodesDescItem = "di.node_id IN (" + nodeSubquery + ")";
+
+        // stejné zdroje změn jako v createFindChangeQuery, jen bez vah a bez agregace
+        List<String> branches = new ArrayList<>();
+        branches.add(existsChangeBranch("arr_level", "create_change_id", inNodes, ignoreChanges));
+        branches.add(existsChangeBranch("arr_level", "delete_change_id", inNodes, ignoreChanges));
+
+        String descItems = "arr_desc_item di JOIN arr_item i ON i.item_id = di.item_id";
+        branches.add(existsChangeBranch(descItems, "i.create_change_id", inNodesDescItem, ignoreChanges));
+        branches.add(existsChangeBranch(descItems, "i.delete_change_id", inNodesDescItem, ignoreChanges));
+
+        branches.add(existsChangeBranch("arr_node_extension", "create_change_id", inNodes, ignoreChanges));
+        branches.add(existsChangeBranch("arr_node_extension", "delete_change_id", inNodes, ignoreChanges));
+        branches.add(existsChangeBranch("arr_node_output", "create_change_id", inNodes, ignoreChanges));
+        branches.add(existsChangeBranch("arr_node_output", "delete_change_id", inNodes, ignoreChanges));
+        branches.add(existsChangeBranch("arr_dao_link", "create_change_id", inNodes, ignoreChanges));
+        branches.add(existsChangeBranch("arr_dao_link", "delete_change_id", inNodes, ignoreChanges));
+
+        if (nodeId == null) {
+            String structItems = "arr_structured_item si"
+                    + " JOIN arr_item i ON i.item_id = si.item_id"
+                    + " JOIN arr_structured_object so ON so.structured_object_id = si.structured_object_id";
+            branches.add(existsChangeBranch(structItems, "i.create_change_id", "so.fund_id = :fundId", ignoreChanges));
+            branches.add(existsChangeBranch(structItems, "i.delete_change_id", "so.fund_id = :fundId", ignoreChanges));
+
+            branches.add(existsChangeBranch("arr_file af", "af.create_change_id", "af.fund_id = :fundId", ignoreChanges));
+            branches.add(existsChangeBranch("arr_file af", "af.delete_change_id", "af.fund_id = :fundId", ignoreChanges));
+
+            String structObjects = "so.fund_id = :fundId AND so.state <> '" + ArrStructuredObject.State.TEMP.name() + "'";
+            branches.add(existsChangeBranch("arr_structured_object so", "so.create_change_id", structObjects, ignoreChanges));
+            branches.add(existsChangeBranch("arr_structured_object so", "so.delete_change_id", structObjects, ignoreChanges));
         }
 
-        Query query = createFindChangeQuery(selectParams, fundId, nodeId, querySpecification);
+        branches.add(existsChangeBranch(
+                "arr_bulk_action_run r JOIN arr_fund_version v ON r.fund_version_id = v.fund_version_id",
+                "r.change_id",
+                "v.fund_id = :fundId AND r.state = '" + ArrBulkActionRun.State.FINISHED + "'",
+                ignoreChanges));
 
+        Session session = entityManager.unwrap(Session.class);
+        NativeQuery<Integer> query = session.createNativeQuery(String.join("\nUNION ALL\n", branches),
+                                                               Integer.class);
         query.setParameter("fundId", fundId);
+        query.setParameter("changeId", changeId);
         if (nodeId != null) {
             query.setParameter("nodeId", nodeId);
         }
-        if (changeId != null) {
-            query.setParameter("changeId", changeId);
+        if (ignoreChanges) {
+            query.setParameterList("ignoredChangeIds", ignoredChangeIds);
         }
+        // stačí první nalezená změna, zbytek větví se už nevyhodnocuje
+        query.setMaxResults(1);
 
-        return ((List<? extends Number>) query.getResultList()).stream().map(Number::intValue).collect(Collectors.toList());
+        return !query.getResultList().isEmpty();
+    }
+
+    /**
+     * Sestavení jedné větve dotazu na existenci změny.
+     *
+     * @param fromClause    zdroj dat včetně případných JOINů
+     * @param changeColumn  sloupec nesoucí identifikátor změny
+     * @param condition     omezení na AS nebo JP
+     * @param ignoreChanges zda se má doplnit podmínka na ignorované změny
+     * @return SQL řetězec
+     */
+    private String existsChangeBranch(final String fromClause,
+                                      final String changeColumn,
+                                      final String condition,
+                                      final boolean ignoreChanges) {
+        StringBuilder sb = new StringBuilder(256);
+        sb.append("SELECT 1 FROM ").append(fromClause)
+                .append(" WHERE ").append(condition)
+                .append(" AND ").append(changeColumn).append(" >= :changeId");
+        if (ignoreChanges) {
+            sb.append(" AND ").append(changeColumn).append(" NOT IN (:ignoredChangeIds)");
+        }
+        return sb.toString();
     }
 
     /**

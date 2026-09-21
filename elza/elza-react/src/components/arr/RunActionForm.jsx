@@ -16,12 +16,13 @@ import {Button} from '../ui';
 import {decorateFormField, submitForm} from 'components/form/FormUtils.jsx';
 import {fundActionFetchConfigIfNeeded} from 'actions/arr/fundAction.jsx';
 import FF from '../shared/form/FF';
+import { getIntl } from 'components/shared/lang/intlInstance';
 
 const validate = (values, props) => {
     const errors = {};
 
     if (!values.code) {
-        errors.code = this.props.intl.formatMessage(globalMessages.validationRequired);
+        errors.code = getIntl().formatMessage(globalMessages.validationRequired);
     }
 
     return errors;

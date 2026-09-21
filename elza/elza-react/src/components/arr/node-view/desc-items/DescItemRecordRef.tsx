@@ -1,7 +1,4 @@
-import { WebApi } from "actions";
-import { ApAccessPointVO } from "api";
 import { DataRecordRef, DataType } from "elza-api";
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { urlEntity } from "../../../../constants";
 import { DescItemProps } from "./types";
@@ -15,18 +12,7 @@ export function DescItemRecordRef({ item, nodeId }: DescItemProps) {
 
   const isInherited = item.nodeId !== nodeId;
 
-  const [accessPoint, setAccessPoint] = useState<ApAccessPointVO>();
-
   const data = item.data as DataRecordRef;
-
-  useEffect(() => {
-    if (data?.value) {
-      (async () => {
-        const _accessPoint = await WebApi.getAccessPoint(data.value);
-        setAccessPoint(_accessPoint);
-      })();
-    }
-  }, [data.value]);
 
   return (
     <div
@@ -39,7 +25,7 @@ export function DescItemRecordRef({ item, nodeId }: DescItemProps) {
         <FormattedMessage {...commonMessages.undefined} />
       ) : (
         <Link to={urlEntity(data.value)}>
-          {accessPoint?.name || data.value}
+          {data.name || data.value}
         </Link>
       )}
     </div>

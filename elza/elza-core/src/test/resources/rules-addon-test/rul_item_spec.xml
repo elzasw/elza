@@ -1,0 +1,8 @@
+<item-specs>
+    <item-spec code="ADT_OTHERID_TEST">
+        <name>Addon identifier</name>
+        <description>Specification attached by the addon package to the ZP2015 item type ZP2015_OTHER_ID</description>
+        <shortcut>addon id</shortcut>
+        <item-type-assign code="ZP2015_OTHER_ID"/>
+    </item-spec>
+</item-specs>
