@@ -1963,7 +1963,7 @@ when $activeLevel: ActiveLevel( )
           from $level.descItems )    
     $itemType: RulItemTypeExt( code in (
         // 4.3.4 Tematický popis jednotky popisu
-        "ZP2015_UNIT_CONTENT"
+        "ZP2015_CONTENT"
         ) )
 then
     $itemType.setType(RulItemType.Type.RECOMMENDED);
