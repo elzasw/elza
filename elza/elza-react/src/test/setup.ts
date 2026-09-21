@@ -17,6 +17,18 @@ import { afterAll, afterEach, beforeAll, beforeEach, vi } from 'vitest';
 // import time).
 (globalThis as unknown as { serverContextPath: string }).serverContextPath = '';
 
+// jsdom has no ResizeObserver. Fluent UI components that adapt to their own
+// size (MessageBar, resizable table columns) construct one while mounting and
+// would otherwise throw. Observing nothing is enough: jsdom reports every
+// element as zero-sized, so no callback would carry information anyway.
+if (!('ResizeObserver' in globalThis)) {
+    (globalThis as unknown as { ResizeObserver: unknown }).ResizeObserver = class {
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+    };
+}
+
 // Replace `@stomp/stompjs` with the fake. `vi.mock` is hoisted above imports,
 // and the async factory resolves when the module is first requested, so tests
 // and code under test all receive FakeStompClient as `Client`.
