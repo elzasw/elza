@@ -68,7 +68,7 @@ import {
     PUBLICATION,
     URL_COMPONENT
 } from '../constants.tsx';
-import AdminBulkActionPage from './admin/AdminBulkActionPage';
+import AdminBackgroundProcessesPage from './admin/AdminBackgroundProcessesPage';
 import { AdminImportPage } from './admin/AdminImportPage';
 import { AdminImportBatchDetailPage } from './admin/AdminImportBatchDetailPage';
 import AppRouter from './AppRouter';
@@ -294,7 +294,7 @@ class Layout extends AbstractReactComponent {
                                             <Route path="/admin/fund/:id" component={AdminFundPage} />
                                             <Route path="/admin/fund" component={AdminFundPage} />
                                             <Route path="/admin/packages" component={AdminPackagesPage} />
-                                            <Route path="/admin/backgroundProcesses" component={AdminBulkActionPage} />
+                                            <Route path="/admin/backgroundProcesses" component={AdminBackgroundProcessesPage} />
                                             <Route path="/admin/requestsQueue" component={AdminRequestsQueuePage} />
                                             <Route path="/admin/extSystem" component={AdminExtSystemPage} />
                                             <Route path="/admin/institution/:id" component={AdminInstitutionPage} />

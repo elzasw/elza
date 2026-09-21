@@ -95,9 +95,17 @@
     "defaultMessage": "Add description element",
     "srcHash": "ckU6Xf-Ze6l2"
   },
+  "admin.bulk.action.refresh": {
+    "defaultMessage": "Refresh",
+    "srcHash": "YsuU5HF0yj5p"
+  },
   "admin.bulk.detail.queue.empty": {
     "defaultMessage": "There are no requests in the queue",
     "srcHash": "kPYFYo8RPkiI"
+  },
+  "admin.bulk.detail.queue.title": {
+    "defaultMessage": "Queue contents",
+    "srcHash": "FIEuwXuiFoAH"
   },
   "admin.bulk.header.title.AIP": {
     "defaultMessage": "Archival packages",
@@ -126,6 +134,14 @@
   "admin.bulk.header.title.OUTPUT": {
     "defaultMessage": "Outputs",
     "srcHash": "irSQ8aME65Fz"
+  },
+  "admin.bulk.loadFailed": {
+    "defaultMessage": "Queue state could not be loaded",
+    "srcHash": "h_uG2Ccs_MGR"
+  },
+  "admin.bulk.noQueues": {
+    "defaultMessage": "The server reports no queues",
+    "srcHash": "Eauiss2Owp81"
   },
   "admin.bulk.title.beginTime": {
     "defaultMessage": "Running since {0}",
