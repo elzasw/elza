@@ -7185,6 +7185,10 @@
     "defaultMessage": "Sign in with Windows authentication (Kerberos)",
     "srcHash": "vaynD4nF5qXo"
   },
+  "login.action.ssoKerberosTitle": {
+    "defaultMessage": "Windows authentication",
+    "srcHash": "n3ECth3Ar65s"
+  },
   "login.defaultUserEnabled": {
     "defaultMessage": "The default user is enabled. Create your own user with administrator permissions and disable the default user.",
     "srcHash": "5GQb-lCsvEuv"
