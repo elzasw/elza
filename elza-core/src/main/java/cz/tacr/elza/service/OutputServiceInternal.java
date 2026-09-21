@@ -533,15 +533,16 @@ public class OutputServiceInternal {
         }
 
         if (fromChange != null) {
-            List<Integer> changeIdList = revertingChangesService.findChangesAfter(fundVersion.getFundId(), null, fromChange.getChangeId());
-            HashSet<Integer> changeIdSet = new HashSet<>(changeIdList);
+            // změny, které samotný výstup nezneaktuálňují - běhy doporučených akcí a předchozí generování
+            Set<Integer> ignoredChangeIds = new HashSet<>();
             for (ArrBulkActionRun finishedAction : finishedActions) {
-                changeIdSet.remove(finishedAction.getChange().getChangeId());
+                ignoredChangeIds.add(finishedAction.getChange().getChangeId());
             }
             for (ArrOutputResult outputResult : outputResultRepository.findByOutput(output)) {
-                changeIdSet.remove(outputResult.getChange().getChangeId());
+                ignoredChangeIds.add(outputResult.getChange().getChangeId());
             }
-            if (!changeIdSet.isEmpty()) {
+            if (revertingChangesService.existsChangeAfter(fundVersion.getFundId(), null,
+                                                          fromChange.getChangeId(), ignoredChangeIds)) {
                 return OutputRequestStatus.DETECT_CHANGE;
             }
         }
