@@ -21,6 +21,13 @@ import { fundTreeSelectNode } from 'actions/arr/fundTree';
 import { Button } from '../../components/ui';
 import { WebApi } from 'actions/index';
 import { urlFundDaos, getFundVersion } from "../../constants";
+import {
+    DEFAULT_DAO_PAGE_URL_STATE,
+    FILE_SYSTEM_DAO_TAB,
+    buildDaoPageUrl,
+    parseDaoPageUrl,
+} from './daoPageUrl';
+import { loadDaoPageState, saveDaoPageState } from './daoPageStorage';
 import { FileSystemBrowser, extractRepoIdFromFullPath } from 'components/arr/daos';
 import { Api } from "api";
 import { defineMessages, injectIntl, FormattedMessage } from 'react-intl';
@@ -46,7 +53,6 @@ class ArrDaoPage extends ArrParentPage {
     }
 
     state = {
-        selectedTab: 'unassignedPackages',
         selectedUnassignedPackage: null,
         selectedPackage: null,
         selectedDaoLeft: null, // vybrané dao v levé části
@@ -72,6 +78,7 @@ class ArrDaoPage extends ArrParentPage {
     componentDidMount() {
         super.componentDidMount()
         this.resolveUrls();
+        this.restoreStoredUrlState();
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) { }
@@ -89,6 +96,46 @@ class ArrDaoPage extends ArrParentPage {
     getPageUrl(fund) {
         return urlFundDaos(fund.id, getFundVersion(fund));
     }
+
+    /** Page state that lives in the url: the open tab and, under it, the file system browser. */
+    getUrlState() {
+        const { match, location } = this.props;
+        return parseDaoPageUrl(match.params, location.search);
+    }
+
+    navigateToUrlState = (nextState) => {
+        const { history, location, match } = this.props;
+        const { id, versionId } = match.params;
+        saveDaoPageState(Number(id), nextState);
+        const url = buildDaoPageUrl(Number(id), versionId == undefined ? undefined : Number(versionId), nextState);
+        if (url !== location.pathname + location.search) {
+            history.replace(url);
+        }
+    };
+
+    /**
+     * Open the tab and directory this fund was last left on. An address that says something
+     * on its own — a link to a directory, a bookmark — wins over the stored state.
+     */
+    restoreStoredUrlState() {
+        const { match, location } = this.props;
+        const isUrlExplicit = match.params.tab != undefined || location.search !== '';
+        if (isUrlExplicit) {
+            return;
+        }
+        const stored = loadDaoPageState(Number(match.params.id));
+        if (stored) {
+            this.navigateToUrlState(stored);
+        }
+    }
+
+    handleUrlStateChange = (changes) => {
+        this.navigateToUrlState({ ...this.getUrlState(), ...changes });
+    };
+
+    handleFileSystemSelect = (item, fullPath, repo) => {
+        this.setState({ selectedFilePath: fullPath, selectedFileItem: item, selectedFileRepo: repo });
+    };
 
     handleCreateUnderAndLink = () => {
         const fund = this.getActiveFund(this.props);
@@ -135,12 +182,11 @@ class ArrDaoPage extends ArrParentPage {
         });
     };
 
-    handleTabSelect = (item, ...other) => {
-        console.log(item, other);
+    handleTabSelect = (item) => {
+        this.navigateToUrlState({ ...DEFAULT_DAO_PAGE_URL_STATE, tab: item.id });
         this.setState(({ fsRefreshCounter }) => ({
-            selectedTab: item.id,
             selectedDaoLeft: null,
-            fsRefreshCounter: item.id === 'fileSystemTree'
+            fsRefreshCounter: item.id === FILE_SYSTEM_DAO_TAB
                 ? fsRefreshCounter + 1
                 : fsRefreshCounter,
         }));
@@ -273,17 +319,16 @@ class ArrDaoPage extends ArrParentPage {
     };
 
     renderFileSystemTree = (readMode) => {
-        const selectFileSystePath = (item, fullPath, repo) => {
-            this.setState({ selectedFilePath: fullPath, selectedFileItem: item, selectedFileRepo: repo });
-        }
         const fund = this.getActiveFund(this.props);
 
         return (
             <div className="tree-left-container">
                 <FileSystemBrowser
                     fundId={fund.id}
-                    onSelect={selectFileSystePath}
+                    onSelect={this.handleFileSystemSelect}
                     refreshCounter={this.state.fsRefreshCounter}
+                    state={this.getUrlState()}
+                    onStateChange={this.handleUrlStateChange}
                 />
             </div>
         )
@@ -304,10 +349,10 @@ class ArrDaoPage extends ArrParentPage {
     }
 
     renderCenterButtons = (readMode) => {
-        const { selectedDaoLeft, selectedFilePath, selectedFileItem, selectedFileRepo, selectedTab } = this.state;
+        const { selectedDaoLeft, selectedFilePath, selectedFileItem, selectedFileRepo } = this.state;
         const fund = this.getActiveFund(this.props);
 
-        if (selectedTab === "fileSystemTree") {
+        if (this.getUrlState().tab === FILE_SYSTEM_DAO_TAB) {
             // Repozitář bez povolených více vazeb odmítne druhé napojení téže položky,
             // proto se akce nabízí jen pro položku, která ještě není nikam připojena.
             const alreadyLinked = selectedFileItem != null
@@ -392,8 +437,7 @@ class ArrDaoPage extends ArrParentPage {
     }
 
     renderSelectedTab = (readMode) => {
-        const { selectedTab } = this.state;
-        switch (selectedTab) {
+        switch (this.getUrlState().tab) {
             case 'unassignedPackages':
                 return this.renderUnassignedPackages(readMode);
             case 'packages':
@@ -408,7 +452,7 @@ class ArrDaoPage extends ArrParentPage {
     }
 
     renderCenterPanel = (readMode, closed) => {
-        const { selectedTab } = this.state;
+        const { tab: selectedTab } = this.getUrlState();
         const fund = this.getActiveFund(this.props);
 
         let rightHasSelection = fund.fundTreeDaosRight.selectedId != null;

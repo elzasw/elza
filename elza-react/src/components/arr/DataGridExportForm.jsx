@@ -16,6 +16,7 @@ import {modalDialogHide} from '../../actions/global/modalDialog';
 import {downloadFile} from '../../actions/global/download';
 import FormInputField from "../shared/form/FormInputField";
 import {FORM_DATA_GRID_EXPORT} from "../../constants";
+import { getIntl } from 'components/shared/lang/intlInstance';
 
 const transformSubmitData = values => {
     return {
@@ -102,7 +103,7 @@ export default connect((state, props) => {
 const validate = values => {
     const errors = {};
     if (!values.exportType) {
-        errors.itemType = this.props.intl.formatMessage(fundFormMessages.dataGridExportExportTypeNoSelectionItem);
+        errors.itemType = getIntl().formatMessage(fundFormMessages.dataGridExportExportTypeNoSelectionItem);
     }
 
     return errors;

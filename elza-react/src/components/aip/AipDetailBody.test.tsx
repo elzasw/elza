@@ -73,8 +73,14 @@ describe('AipDetailBody', () => {
 
     const fund = { id: 106, name: 'Fond A' } as AipDetailVO['fund'];
 
-    it('napojení celého balíčku vypíše jménem, napojené části jen spočítá', () => {
-        renderWithProviders(<AipDetailBody detail={detail({
+    /** Příznak napojení z řádku "Napojené jednotky popisu" - první ikona jeho hodnoty. */
+    const linkFlag = (container: HTMLElement) => Array.from(
+        container.querySelectorAll('.aip-detail-item-row'))
+        .find(row => row.querySelector('.label')?.textContent === 'Napojené jednotky popisu')
+        ?.querySelector('.value .icon')?.className ?? '';
+
+    it('napojení celého balíčku i napojení jeho částí vede na jednotku popisu', () => {
+        const { container } = renderWithProviders(<AipDetailBody detail={detail({
             fund,
             linkedNodes: [
                 { id: 1, nodeId: 10, name: 'Celý balíček', linkType: LinkType.Aip },
@@ -83,11 +89,28 @@ describe('AipDetailBody', () => {
             ],
         })} />);
 
-        expect(screen.getByText('Celý balíček')).toBeInTheDocument();
-        expect(screen.queryByText('Část A')).toBeNull();
-        expect(screen.queryByText('Komponenta B')).toBeNull();
+        expect(screen.getByText('Celý balíček')).toHaveAttribute('href', '/fund/106/node/10');
         expect(screen.getByText('Napojené části')).toBeInTheDocument();
         expect(screen.getByText(/\b2\b/)).toBeInTheDocument();
+        expect(screen.getByText('Část A')).toHaveAttribute('href', '/fund/106/node/11');
+        expect(screen.getByText('Komponenta B')).toHaveAttribute('href', '/fund/106/node/12');
+        expect(linkFlag(container)).toContain('fa-check');
+    });
+
+    it('napojený jen částmi balíček neoznačí za nenapojený a na jednotku odkáže jednou', () => {
+        const { container } = renderWithProviders(<AipDetailBody detail={detail({
+            fund,
+            linkedNodes: [
+                { id: 2, nodeId: 11, name: 'Kniha A', linkType: LinkType.PartAip },
+                { id: 3, nodeId: 11, name: 'Kniha A', linkType: LinkType.ComponentAip },
+            ],
+        })} />);
+
+        // dvě části, obě na téže jednotce popisu - počet mluví o částech, odkaz o jednotce
+        expect(screen.getByText(/\b2\b/)).toBeInTheDocument();
+        expect(screen.getAllByText('Kniha A')).toHaveLength(1);
+        expect(linkFlag(container)).toContain('fa-check');
+        expect(linkFlag(container)).not.toContain('fa-close');
     });
 
     it('napojení bez typu bere jako napojení celého balíčku', () => {

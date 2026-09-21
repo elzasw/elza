@@ -12,7 +12,6 @@ import { FormattedMessage, defineMessages } from 'react-intl';
 const messages = defineMessages({
     fulltextSuccess: { id: 'admin.fulltext.message.success', defaultMessage: 'Reindexace fulltextu dokončena' },
     clickToShow: { id: 'change.arr.output.clickToShow', defaultMessage: 'Klikněte zde pro zobrazení' },
-    generatingTitle: { id: 'change.arr.output.generating.title', defaultMessage: 'Generuje se výstup' },
     outdatedTitle: {
         id: 'change.arr.output.outdated.title',
         defaultMessage: 'Výstup byl vygenerován, ale data nejsou aktuální',
@@ -41,7 +40,7 @@ const outputValues = (fund) => ({
     1: fund.name,
 });
 import { Button } from '../../components/ui';
-import { addToastr, addToastrDanger, addToastrInfo, addToastrSuccess } from 'components/shared/toastr/ToastrActions';
+import { addToastr, addToastrDanger, addToastrSuccess } from 'components/shared/toastr/ToastrActions';
 import { fundOutputSelectOutput } from 'actions/arr/fundOutput';
 import { routerNavigate } from 'actions/router';
 import { indexById } from 'stores/app/utils';
@@ -359,8 +358,7 @@ export function fundOutputStateChangeToastr(versionId, entityId, state) {
             }
 
             switch (state) {
-                case 'GENERATING':
-                    return dispatch(addToastrInfo(<FormattedMessage {...messages.generatingTitle} />, showBtn));
+                // GENERATING se hlásí jen tomu, kdo generování spustil - viz fundOutputGenerate.
                 case 'OUTDATED':
                     return dispatch(addToastrSuccess(
                         isOutputVisible

@@ -52,7 +52,9 @@ import cz.tacr.elza.service.AiProviderService;
  * may emit no events at all — so nothing here participates in the request's
  * state machine. Providers below protocol 0.8 are skipped. The cursor advances
  * with each batch in the same transaction, so a restart resumes without
- * duplicating rows (the provider stream is replayable).
+ * duplicating rows (the provider stream is replayable). The row is nevertheless
+ * saved whole — Hibernate writes every column — so it is loaded under its row
+ * lock; see {@link #applyBatch}.
  */
 @Component
 public class AiEventPoller {
@@ -247,6 +249,18 @@ public class AiEventPoller {
      * snapshot push happens <b>after</b> this transaction commits, through
      * {@link AiRequestPushService}: rendering in here would tie the cursor's
      * fate to a derived view.
+     *
+     * <p>The row is loaded under its lock
+     * ({@link AiRequestRepository#findForUpdateByAiRequestId}): the task poll
+     * saves the same row from its own thread, and the provider releases both
+     * long polls at the instant the task finishes. Loaded plainly, this copy
+     * could predate that commit, and saving it — every column, Hibernate's
+     * default — put {@code running} and no output back over the stored result;
+     * the exchange then stayed "running" for good, its answer already in the
+     * OUTPUT event and both loops legitimately finished (2026-09-17). The same
+     * race the other way round regressed the cursor and stored events twice.
+     * Under the lock the later loader waits for the earlier commit and reads it,
+     * so {@code terminal} below is the task poll's committed outcome.
      */
     private boolean applyBatch(final Integer aiRequestId, final TaskEvents batch) {
         List<TaskEvent> events = batch.getEvents();
@@ -254,7 +268,7 @@ public class AiEventPoller {
             return false;
         }
         return Boolean.TRUE.equals(transactionTemplate.execute(status -> {
-            AiRequest request = aiRequestRepository.findById(aiRequestId).orElse(null);
+            AiRequest request = aiRequestRepository.findForUpdateByAiRequestId(aiRequestId).orElse(null);
             if (request == null) {
                 return Boolean.FALSE;
             }

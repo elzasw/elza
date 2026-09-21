@@ -18,6 +18,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -2569,6 +2570,17 @@ public class PackageService {
 
         packageActionsRepository.findByRulPackage(rulPackage).forEach(this::deleteActionLink);
 
+        // An addon package stores its rules, actions and filters under rule sets owned by other
+        // packages, so the file cleanup has to visit every rule set the package contributed to.
+        // Only the rule sets the package owns carry an item-type filter of its own.
+        Set<Integer> ownedRuleSetIds = ruleSets.stream().map(RulRuleSet::getRuleSetId).collect(Collectors.toSet());
+        Map<Integer, RulRuleSet> ruleSetsToClean = new LinkedHashMap<>();
+        ruleSets.forEach(rs -> ruleSetsToClean.put(rs.getRuleSetId(), rs));
+        arrangementRules.forEach(r -> ruleSetsToClean.putIfAbsent(r.getRuleSetId(), r.getRuleSet()));
+        outputTypes.forEach(o -> ruleSetsToClean.putIfAbsent(o.getRuleSet().getRuleSetId(), o.getRuleSet()));
+        actions.forEach(a -> ruleSetsToClean.putIfAbsent(a.getRuleSet().getRuleSetId(), a.getRuleSet()));
+        outputFilters.forEach(f -> ruleSetsToClean.putIfAbsent(f.getRuleSet().getRuleSetId(), f.getRuleSet()));
+        exportFilters.forEach(f -> ruleSetsToClean.putIfAbsent(f.getRuleSet().getRuleSetId(), f.getRuleSet()));
 
         for (RulItemType rulDescItemType : rulDescItemTypes) {
             itemAptypeRepository.deleteByItemType(rulDescItemType);
@@ -2600,7 +2612,7 @@ public class PackageService {
 
         entityManager.flush();
 
-        for (RulRuleSet ruleSet : ruleSets) {
+        for (RulRuleSet ruleSet : ruleSetsToClean.values()) {
             File dirGroovies = resourcePathResolver.getGroovyDir(rulPackage.getPackageId(), ruleSet.getRuleSetId())
                     .toFile();
             File dirActions = resourcePathResolver.getFunctionsDir(rulPackage.getPackageId(), ruleSet.getRuleSetId()).toFile();
@@ -2610,7 +2622,7 @@ public class PackageService {
 
             try {
 
-                if (ruleSet.getItemTypeComponent() != null) {
+                if (ownedRuleSetIds.contains(ruleSet.getRuleSetId()) && ruleSet.getItemTypeComponent() != null) {
                     deleteFile(dirRules, ruleSet.getItemTypeComponent().getFilename());
                     componentRepository.delete(ruleSet.getItemTypeComponent());
                 }
@@ -2680,6 +2692,18 @@ public class PackageService {
                 throw new SystemException("Nastala chyba během obnovy souborů po selhání importu balíčku", e);
             }
         }
+
+        // The removed definitions must leave the static data and client caches as well,
+        // the same way a package import publishes its changes.
+        entityManager.flush();
+        staticDataService.reloadOnCommit();
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                staticDataService.refreshForCurrentThread();
+                cacheService.resetCache(CacheInvalidateEvent.Type.ALL);
+            }
+        });
     }
 
     /**

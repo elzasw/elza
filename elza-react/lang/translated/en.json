@@ -95,9 +95,17 @@
     "defaultMessage": "Add description element",
     "srcHash": "ckU6Xf-Ze6l2"
   },
+  "admin.bulk.action.refresh": {
+    "defaultMessage": "Refresh",
+    "srcHash": "YsuU5HF0yj5p"
+  },
   "admin.bulk.detail.queue.empty": {
     "defaultMessage": "There are no requests in the queue",
     "srcHash": "kPYFYo8RPkiI"
+  },
+  "admin.bulk.detail.queue.title": {
+    "defaultMessage": "Queue contents",
+    "srcHash": "FIEuwXuiFoAH"
   },
   "admin.bulk.header.title.AIP": {
     "defaultMessage": "Archival packages",
@@ -126,6 +134,14 @@
   "admin.bulk.header.title.OUTPUT": {
     "defaultMessage": "Outputs",
     "srcHash": "irSQ8aME65Fz"
+  },
+  "admin.bulk.loadFailed": {
+    "defaultMessage": "Queue state could not be loaded",
+    "srcHash": "h_uG2Ccs_MGR"
+  },
+  "admin.bulk.noQueues": {
+    "defaultMessage": "The server reports no queues",
+    "srcHash": "Eauiss2Owp81"
   },
   "admin.bulk.title.beginTime": {
     "defaultMessage": "Running since {0}",
@@ -1597,6 +1613,10 @@
     "defaultMessage": "Sources",
     "srcHash": "BO_uQxVmyBkf"
   },
+  "aiAssistant.block.recordCitations": {
+    "defaultMessage": "Records",
+    "srcHash": "JpyFQX3pltZK"
+  },
   "aiAssistant.block.unsupported": {
     "defaultMessage": "Unsupported content type.",
     "srcHash": "kqb8iHc_uQ8i"
@@ -1925,13 +1945,41 @@
     "defaultMessage": "Show list",
     "srcHash": "MYJ1K8DLdJht"
   },
+  "aip.daoLink.collapseItem": {
+    "defaultMessage": "Hide components",
+    "srcHash": "ECVo4qF6KRh6"
+  },
+  "aip.daoLink.components": {
+    "defaultMessage": "{count, plural, one {# component} other {# components}}",
+    "srcHash": "vV0kawjYmm8y"
+  },
+  "aip.daoLink.expandItem": {
+    "defaultMessage": "Show components",
+    "srcHash": "Uv6uz3NbLHpy"
+  },
   "aip.daoLink.hide": {
     "defaultMessage": "Hide",
     "srcHash": "DHMh5qFxi1zF"
   },
+  "aip.daoLink.hideLinks": {
+    "defaultMessage": "Hide links",
+    "srcHash": "9O4L7Cv_u_6C"
+  },
+  "aip.daoLink.openInExplorer": {
+    "defaultMessage": "Open in the package explorer",
+    "srcHash": "JYAnrSJfcE83"
+  },
+  "aip.daoLink.showComponent": {
+    "defaultMessage": "Show component",
+    "srcHash": "ULsajiU6lTGl"
+  },
   "aip.daoLink.showInExplorer": {
     "defaultMessage": "Show everything in the explorer…",
     "srcHash": "pBHKRz6nIY2e"
+  },
+  "aip.daoLink.showLinks": {
+    "defaultMessage": "Show links",
+    "srcHash": "H1QyT6rP9xxN"
   },
   "aip.daoLink.showMore": {
     "defaultMessage": "and {count, plural, one {# more} other {# more}}…",
@@ -2753,6 +2801,10 @@
     "defaultMessage": "External systems",
     "srcHash": "oU8i4V-8EbbO"
   },
+  "ap.ext-search.section.extends": {
+    "defaultMessage": "Description elements",
+    "srcHash": "yiaywtS88CUt"
+  },
   "ap.ext-search.section.extends.part": {
     "defaultMessage": "Description part",
     "srcHash": "gaPafU3S0zUp"
@@ -2772,6 +2824,10 @@
   "ap.ext-search.section.extends.value": {
     "defaultMessage": "Value",
     "srcHash": "2al7WSQS6DjX"
+  },
+  "ap.ext-search.section.relations": {
+    "defaultMessage": "Relations",
+    "srcHash": "3UmY-bTDcCXS"
   },
   "ap.ext-search.section.relations.area": {
     "defaultMessage": "Search area",
@@ -7144,6 +7200,10 @@
   "login.action.ssoKerberos": {
     "defaultMessage": "Sign in with Windows authentication (Kerberos)",
     "srcHash": "vaynD4nF5qXo"
+  },
+  "login.action.ssoKerberosTitle": {
+    "defaultMessage": "Windows authentication",
+    "srcHash": "n3ECth3Ar65s"
   },
   "login.defaultUserEnabled": {
     "defaultMessage": "The default user is enabled. Create your own user with administrator permissions and disable the default user.",

@@ -17,6 +17,7 @@ import {PERSISTENT_SORT_CODE} from '../../constants.tsx';
 import {modalDialogHide} from '../../actions/global/modalDialog';
 import {refRulDataTypesFetchIfNeeded} from '../../actions/refTables/rulDataTypes';
 import FormInputField from '../shared/form/FormInputField';
+import { getIntl } from 'components/shared/lang/intlInstance';
 
 const transformSubmitData = values => {
     return {
@@ -197,11 +198,11 @@ export default connect(
 const validate = values => {
     const errors = {};
     if (!values.itemType) {
-        errors.itemType = this.props.intl.formatMessage(fundFormMessages.functionsPersistentSortNoSelectionItem);
+        errors.itemType = getIntl().formatMessage(fundFormMessages.functionsPersistentSortNoSelectionItem);
     }
 
     if (values.itemType && values.itemType.useSpecification && !values.itemSpec) {
-        errors.itemSpec = this.props.intl.formatMessage(fundFormMessages.functionsPersistentSortNoSelectionSpec);
+        errors.itemSpec = getIntl().formatMessage(fundFormMessages.functionsPersistentSortNoSelectionSpec);
     }
 
     return errors;

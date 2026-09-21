@@ -15,8 +15,8 @@ import { daoMessages } from 'components/arr/daoMessages';
 import { humanFileSize } from 'components/Utils.jsx';
 import "./FileSystemBrowser.scss"
 import { Tree, TreeExposedFunctions } from './Tree';
-import { RenderItem, RenderItemType, isListItem, isLastKeyItem } from './types';
-import { extractRepoIdFromFullPath } from './extractRepoIdFromFullPath';
+import { FileSystemBrowserState, RenderItem, RenderItemType, isListItem, isLastKeyItem } from './types';
+import { buildFullPath, extractRepoIdFromFullPath } from './extractRepoIdFromFullPath';
 
 const messages = defineMessages({
     sortLabel: {
@@ -125,19 +125,26 @@ interface Props {
     fundId: number;
     onSelect?: (item?: FsItem, fullPath?: string, repo?: FsRepo) => void;
     refreshCounter?: number;
+    state: FileSystemBrowserState;
+    onStateChange: (changes: Partial<FileSystemBrowserState>) => void;
 }
+
+export type FileSystemBrowserProps = Props;
 
 export const FileSystemBrowser = ({
     fundId,
     onSelect = () => { return; },
     refreshCounter,
+    state,
+    onStateChange,
 }: Props) => {
     const treeRef = useRef<TreeExposedFunctions>(null);
     const breadcrumbsRef = useRef<HTMLDivElement>(null);
 
+    const { sort: sortType, linked: filterByLink, filter: committedFilter } = state;
+
     const [levelList, setLevelList] = useState<RenderItem[]>([]);
-    const [selectedTreeItemPath, setSelectedTreeItem] = useState<string>();
-    const [selectedListItem, setSelectedListItem] = useState<string>();
+    const [loadedPath, setLoadedPath] = useState<string>();
     const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
     const [childrenMap, setChildrenMap] = useState<Record<string, boolean>>({});
     const [repos, setRepos] = useState<FsRepo[]>([]);
@@ -145,21 +152,24 @@ export const FileSystemBrowser = ({
     const intl = useIntl();
     const dispatch = useAppThunkDispatch();
 
-    const [sortType, setSortType] = useState<FsItemSortType>(FsItemSortType.NameAsc);
-    const [filterByLink, setFilterByLink] = useState<FsItemFilterByLinked>(FsItemFilterByLinked.All);
-    const [filterInput, setFilterInput] = useState('');
+    const [filterInput, setFilterInput] = useState(committedFilter);
     const [treeSize, setTreeSize] = useState<number>(100);
-    const [debouncedFilter, setDebouncedFilter] = useState('');
     const [localRefreshTick, setLocalRefreshTick] = useState(0);
     const [reposError, setReposError] = useState<boolean>(false);
     const [itemsError, setItemsError] = useState<boolean>(false);
     const [itemsLoading, setItemsLoading] = useState<boolean>(false);
 
-    // On refresh, collapse every previously expanded node so the "[-]" icon
-    // and the visible content stay in sync while the Tree wipes its cache.
-    useEffect(() => {
-        setExpandedItems({});
-    }, [refreshCounter, localRefreshTick]);
+    const selectedTreeItemPath = state.repoId != undefined
+        ? buildFullPath(state.repoId, state.path)
+        : undefined;
+    const selectedListItem = state.item != undefined && selectedTreeItemPath != undefined
+        ? `${selectedTreeItemPath}/${state.item}`
+        : undefined;
+
+    const selectTreeItem = (fullPath: string) => {
+        const [repoId, path] = extractRepoIdFromFullPath(fullPath);
+        onStateChange({ repoId, path, item: undefined });
+    };
 
     // Number of middle path segments currently collapsed into the "…" separator.
     // The first segment and the last segment (when depth > 1) always stay visible;
@@ -200,20 +210,43 @@ export const FileSystemBrowser = ({
         }
     }, [selectedTreeItemPath, hiddenMiddleCount, repos]);
 
+    // Only the settled filter is published, so typing does not rewrite the url per keystroke.
     useDebouncedEffect(() => {
-        setDebouncedFilter(filterInput);
+        if (filterInput !== committedFilter) {
+            onStateChange({ filter: filterInput });
+        }
     }, 300, [filterInput]);
+
+    // The owner can change the filter on its own (a restored url, browser back).
+    useEffect(() => {
+        setFilterInput(committedFilter);
+    }, [committedFilter]);
+
+    // Keep the branch leading to the shown directory open, so a directory restored from
+    // the url is revealed in the tree instead of hiding behind collapsed ancestors.
+    useEffect(() => {
+        if (!selectedTreeItemPath) {
+            return;
+        }
+        const segments = selectedTreeItemPath.split("/");
+        const ancestors = segments.slice(0, -1).map((_segment, index) => segments.slice(0, index + 1).join("/"));
+        setExpandedItems((prev) => {
+            const missing = ancestors.filter((ancestor) => !prev[ancestor]);
+            if (missing.length === 0) {
+                return prev;
+            }
+            return { ...prev, ...Object.fromEntries(missing.map((ancestor) => [ancestor, true])) };
+        });
+    }, [selectedTreeItemPath]);
 
     // Repository of the selected tree item; unavailable ones cannot be browsed and
     // the file list is replaced by an explanation instead.
-    const selectedRepo = selectedTreeItemPath
-        ? repos.find((repo) => repo.fsRepoId === extractRepoIdFromFullPath(selectedTreeItemPath)[0])
-        : undefined;
+    const selectedRepo = repos.find((repo) => repo.fsRepoId === state.repoId);
     const isSelectedRepoUnavailable = selectedRepo != undefined && !selectedRepo.available;
 
     const loadLevel = async (fullPath: string, lastKey: string | undefined, depth: number = 0, filter?: FsItemType) => {
         const [repoId, path] = extractRepoIdFromFullPath(fullPath)
-        const { data: items } = await Api.funds.fundFsRepoItems(fundId, repoId, filter, path, lastKey, filterByLink, sortType, debouncedFilter || undefined);
+        const { data: items } = await Api.funds.fundFsRepoItems(fundId, repoId, filter, path, lastKey, filterByLink, sortType, committedFilter || undefined);
         const itemLevel: RenderItem[] = items.items.map((item) => {
             const extendedItemBase: FsItem = {
                 ...item,
@@ -293,11 +326,11 @@ export const FileSystemBrowser = ({
                     e.preventDefault();
                     if (item.data.itemType == FsItemType.Folder && item.parentFullPath) {
                         if (treeRef.current) { treeRef.current.toggleExpand(item.parentFullPath, true) }
-                        setSelectedTreeItem(item.fullPath);
+                        selectTreeItem(item.fullPath);
                     }
                 }}
                 onClick={() => {
-                    setSelectedListItem(item.fullPath);
+                    onStateChange({ item: item.data.name });
                     onSelect(item.data, item.fullPath, selectedRepo);
                 }}
             >
@@ -400,30 +433,14 @@ export const FileSystemBrowser = ({
         }
     }
 
-    // A reload replaces every FsItem instance, so the copy handed to the parent — its
-    // list of links above all — would go stale. Re-emit the selected item from the fresh
-    // list, or drop the selection when the item is no longer listed.
-    const resyncSelection = (items: RenderItem[]) => {
-        if (!selectedListItem) {
-            return;
-        }
-        const refreshed = items.find((item) => isListItem(item) && item.fullPath === selectedListItem);
-        if (refreshed && isListItem(refreshed)) {
-            onSelect(refreshed.data, refreshed.fullPath, selectedRepo);
-        } else {
-            setSelectedListItem(undefined);
-            onSelect(undefined, undefined, undefined);
-        }
-    };
-
     useEffect(() => {
         let cancelled = false;
         (async () => {
             if (isSelectedRepoUnavailable) {
                 setLevelList([]);
+                setLoadedPath(selectedTreeItemPath);
                 setItemsError(false);
                 setItemsLoading(false);
-                resyncSelection([]);
                 return;
             }
             if (selectedTreeItemPath) {
@@ -432,15 +449,15 @@ export const FileSystemBrowser = ({
                     const itemsEx = await loadLevel(selectedTreeItemPath, undefined, 0);
                     if (!cancelled) {
                         setLevelList(itemsEx);
+                        setLoadedPath(selectedTreeItemPath);
                         setItemsError(false);
-                        resyncSelection(itemsEx);
                     }
                 } catch (e) {
                     console.error('Failed to load fs items', e);
                     if (!cancelled) {
                         setLevelList([]);
+                        setLoadedPath(selectedTreeItemPath);
                         setItemsError(true);
-                        resyncSelection([]);
                     }
                 } finally {
                     if (!cancelled) setItemsLoading(false);
@@ -448,7 +465,25 @@ export const FileSystemBrowser = ({
             }
         })();
         return () => { cancelled = true; };
-    }, [selectedTreeItemPath, isSelectedRepoUnavailable, sortType, filterByLink, debouncedFilter, refreshCounter, localRefreshTick])
+    }, [selectedTreeItemPath, isSelectedRepoUnavailable, sortType, filterByLink, committedFilter, refreshCounter, localRefreshTick])
+
+    // Each load replaces every FsItem instance, so the copy handed to the parent — its
+    // list of links above all — would go stale. Re-emit the selected item from the fresh
+    // list, or drop the selection when the item is no longer listed. Waits for a load of
+    // the current directory, otherwise a selection restored from the url would be dropped
+    // against the empty initial list.
+    useEffect(() => {
+        if (!selectedListItem || loadedPath !== selectedTreeItemPath) {
+            return;
+        }
+        const refreshed = levelList.find((item) => isListItem(item) && item.fullPath === selectedListItem);
+        if (refreshed && isListItem(refreshed)) {
+            onSelect(refreshed.data, refreshed.fullPath, selectedRepo);
+        } else {
+            onStateChange({ item: undefined });
+            onSelect(undefined, undefined, undefined);
+        }
+    }, [levelList, loadedPath, selectedTreeItemPath, selectedListItem, selectedRepo, onSelect, onStateChange])
 
     useEffect(() => {
         return () => {
@@ -473,11 +508,17 @@ export const FileSystemBrowser = ({
         return () => { cancelled = true; };
     }, [fundId, refreshCounter, localRefreshTick])
 
+    // Fall back to the first repository when none is chosen, and also when the url names
+    // one this fund does not have.
     useEffect(() => {
-        if (repos.length > 0 && !selectedTreeItemPath) {
-            setSelectedTreeItem(repos[0].fsRepoId.toString());
+        if (repos.length === 0) {
+            return;
         }
-    }, [repos, selectedTreeItemPath])
+        const isKnownRepo = repos.some((repo) => repo.fsRepoId === state.repoId);
+        if (!isKnownRepo) {
+            onStateChange({ repoId: repos[0].fsRepoId, path: undefined, item: undefined });
+        }
+    }, [repos, state.repoId, onStateChange])
 
 
     // const getImageUrl = () => {
@@ -534,7 +575,7 @@ export const FileSystemBrowser = ({
 
                 const parts = breadcrumb.split("/")
                 return <Fragment key={breadcrumb}>
-                    <div className="btn" title={breadcrumb} onClick={() => { setSelectedTreeItem(breadcrumb) }}>
+                    <div className="btn" title={breadcrumb} onClick={() => { selectTreeItem(breadcrumb) }}>
                         {index === 0 ? repoName : parts[parts.length - 1]}
                     </div>
                     {!isLast
@@ -551,7 +592,7 @@ export const FileSystemBrowser = ({
         const pathParts = selectedTreeItemPath?.split("/");
         if (pathParts?.length && pathParts.length > 1) {
             pathParts?.pop();
-            setSelectedTreeItem(pathParts?.join("/"));
+            selectTreeItem(pathParts?.join("/"));
         }
     }
 
@@ -578,7 +619,7 @@ export const FileSystemBrowser = ({
                         className="sort-select"
                         aria-label={intl.formatMessage(messages.filterByLinkLabel)}
                         value={filterByLink}
-                        onChange={(e) => setFilterByLink(e.target.value as FsItemFilterByLinked)}
+                        onChange={(e) => onStateChange({ linked: e.target.value as FsItemFilterByLinked })}
                     >
                         <option value={FsItemFilterByLinked.All}>{intl.formatMessage(messages.filterByLinkAll)}</option>
                         <option value={FsItemFilterByLinked.Linked}>{intl.formatMessage(messages.filterByLinkLinked)}</option>
@@ -598,7 +639,7 @@ export const FileSystemBrowser = ({
                             icon={<DeleteRegular />}
                             onClick={() => {
                                 setFilterInput('');
-                                setDebouncedFilter('');
+                                onStateChange({ filter: '' });
                             }}
                             title={intl.formatMessage(messages.filterClear)}
                             aria-label={intl.formatMessage(messages.filterClear)}
@@ -613,7 +654,7 @@ export const FileSystemBrowser = ({
                         className="sort-select"
                         aria-label={intl.formatMessage(messages.sortLabel)}
                         value={sortType}
-                        onChange={(e) => setSortType(e.target.value as FsItemSortType)}
+                        onChange={(e) => onStateChange({ sort: e.target.value as FsItemSortType })}
                     >
                         <option value={FsItemSortType.NameAsc}>{intl.formatMessage(messages.sortNameAsc)}</option>
                         <option value={FsItemSortType.NameDesc}>{intl.formatMessage(messages.sortNameDesc)}</option>
@@ -654,7 +695,7 @@ export const FileSystemBrowser = ({
                                 ref={treeRef}
                                 fundId={fundId}
                                 selectedItemPath={selectedTreeItemPath}
-                                onSelect={(item) => { setSelectedTreeItem(item.fullPath) }}
+                                onSelect={(item) => { selectTreeItem(item.fullPath) }}
                                 expandedItems={expandedItems}
                                 onExpandChange={(itemFullPath, expanded) =>
                                     setExpandedItems((prev) => ({ ...prev, [itemFullPath]: expanded }))

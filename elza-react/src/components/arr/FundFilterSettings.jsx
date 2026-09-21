@@ -32,7 +32,7 @@ import {validateUnitDate} from '../registry/field/UnitdateField';
 /**
  * Pole pro výběr entity (archivní entita) - používá se pro podmínku CONTAIN_ENTITY.
  */
-class EntityField extends React.Component {
+class EntityFieldBase extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -125,6 +125,8 @@ class EntityField extends React.Component {
     }
 }
 
+const EntityField = injectIntl(EntityFieldBase);
+
 /**
  * Formulář nastavení filtru na sloupečku.
  */
@@ -176,7 +178,7 @@ const renderDateFields = fields => {
     });
 };
 
-const renderCoordinatesFields = fields => {
+const renderCoordinatesFields = (fields, intl) => {
     let descItem;
     switch (fields.length) {
         case 0:
@@ -232,7 +234,7 @@ const renderCoordinatesFields = fields => {
                         {[100, 500, 1000, 10000, 20000, 50000, 100000].map(l => {
                             return (
                                 <option key={l} value={l}>
-                                    {this.props.intl.formatMessage(messageFor(coordinatesNearMessages, 'm' + l, coordinatesNearMessages.m1000))}
+                                    {intl.formatMessage(messageFor(coordinatesNearMessages, 'm' + l, coordinatesNearMessages.m1000))}
                                 </option>
                             );
                         })}
@@ -680,7 +682,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                     ];
                     break;
                 case 'COORDINATES':
-                    renderFields = renderCoordinatesFields;
+                    renderFields = fields => renderCoordinatesFields(fields, this.props.intl);
                     validateField = (code, valuesCount, value, index) => {
                         return validateCoordinatePoint(value);
                     };
@@ -969,4 +971,4 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
     }
 };
 
-export default FundFilterSettings;
+export default injectIntl(FundFilterSettings);

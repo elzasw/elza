@@ -3416,6 +3416,8 @@ enum AiDisplayBlockType {
     DOC_CITATIONS,
     /** Proposed description changes for user review (apply / reject / refine). */
     NODE_UPDATE_PROPOSALS,
+    /** The archival records of the user's own archive the answer linked to. */
+    RECORD_CITATIONS,
 }
 
 /**
@@ -3502,6 +3504,36 @@ model AiDocCitationsBlock extends AiDisplayBlock {
     type: AiDisplayBlockType.DOC_CITATIONS;
     /** The cited sources, in first-referenced order. */
     citations: AiCitation[];
+}
+
+/**
+ * The archival records the answer linked to — derived by the server from the
+ * record links of the answer's markdown (the provider protocol's way of citing a
+ * record of the client's archive: `[label](ap:…|node:…|fund:…)`). The server
+ * emits no label text; the client renders a "Records" list and supplies the
+ * heading itself, in the user's language.
+ */
+model AiRecordCitationsBlock extends AiDisplayBlock {
+    @invisible(Lifecycle)
+    type: AiDisplayBlockType.RECORD_CITATIONS;
+    /** The linked records, in first-referenced order, de-duplicated. */
+    records: AiRecordCitation[];
+}
+
+/**
+ * One archival record of the user's own archive an answer linked to, renderable
+ * as a navigation link. Carries only data — the client owns the heading and any
+ * fallback label.
+ */
+model AiRecordCitation {
+    /**
+     * Display label — the record's name or title as the answer linked it. Absent
+     * when the link carried no text; the client then shows a generic "open" label.
+     */
+    label?: string;
+
+    /** Navigation target — reuses the UI-context vocabulary (`AiContextType` codes). */
+    target: AiContextObject;
 }
 
 model AiTableColumn {

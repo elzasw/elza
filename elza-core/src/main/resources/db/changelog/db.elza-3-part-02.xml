@@ -77,6 +77,18 @@
     </changeSet>
 
     <changeSet id="20240425135500" author="fantis">
+        <validCheckSum>ANY</validCheckSum>
+        <!-- The type of an existing repository is decided by the file:// prefix of its URL -
+             the same discriminator the code applies (FileSystemRepoService.isFileSystemRepository)
+             and the only property of a repository that tells the two apart without guessing.
+             The view URLs do not: a WSDL repository fills all three of them, so they cannot
+             carry the distinction.
+
+             Everything without that prefix is a WSDL repository. DA repositories cannot exist
+             at this point - da_remote_repository is created by the changeset that follows -
+             and the storage/digital_archive subtype tables dropped here and below never held a
+             row in a released version. Assigning every row a type also keeps the NOT NULL
+             constraint satisfiable for a repository that carries no view URL at all. -->
         <dropAllForeignKeyConstraints baseTableName="storage_external_system"/>
         <dropTable tableName="storage_external_system"/>
 
@@ -84,8 +96,10 @@
             <column name="digital_repository_type" type="nvarchar(50)"/>
         </addColumn>
 
-        <sql>UPDATE arr_digital_repository adr SET digital_repository_type = 'WSDL' WHERE adr.view_dao_url is not null</sql>
-        <sql>UPDATE arr_digital_repository adr SET digital_repository_type = 'FILESYSTEM' WHERE adr.view_file_url is not null</sql>
+        <sql>UPDATE arr_digital_repository SET digital_repository_type = 'WSDL'</sql>
+        <sql>UPDATE arr_digital_repository SET digital_repository_type = 'FILESYSTEM'
+             WHERE external_system_id IN (SELECT external_system_id FROM sys_external_system
+                                           WHERE url LIKE 'file://%')</sql>
 
         <addNotNullConstraint tableName="arr_digital_repository" columnName="digital_repository_type"/>
     </changeSet>

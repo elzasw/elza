@@ -68,7 +68,7 @@ import {
     PUBLICATION,
     URL_COMPONENT
 } from '../constants.tsx';
-import AdminBulkActionPage from './admin/AdminBulkActionPage';
+import AdminBackgroundProcessesPage from './admin/AdminBackgroundProcessesPage';
 import { AdminImportPage } from './admin/AdminImportPage';
 import { AdminImportBatchDetailPage } from './admin/AdminImportBatchDetailPage';
 import AppRouter from './AppRouter';
@@ -246,7 +246,7 @@ class Layout extends AbstractReactComponent {
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${OUTPUTS}`} component={ArrOutputPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${ACTIONS}/:actionId`} component={FundActionPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${ACTIONS}`} component={FundActionPage} />
-                                            <Route path={`${URL_FUND}/:id/v/:versionId/${DAOS}`} component={ArrDaoPage} />
+                                            <Route path={`${URL_FUND}/:id/v/:versionId/${DAOS}/:tab?/:repoId?`} component={ArrDaoPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${REQUESTS}`} component={ArrRequestPage} />
                                             <Route component={ArrPage} />
                                         </Switch>
@@ -266,7 +266,7 @@ class Layout extends AbstractReactComponent {
                                             <Route path={`${URL_FUND}/:id/${OUTPUTS}`} component={ArrOutputPage} />
                                             <Route path={`${URL_FUND}/:id/${ACTIONS}/:actionId`} component={FundActionPage} />
                                             <Route path={`${URL_FUND}/:id/${ACTIONS}`} component={FundActionPage} />
-                                            <Route path={`${URL_FUND}/:id/${DAOS}`} component={ArrDaoPage} />
+                                            <Route path={`${URL_FUND}/:id/${DAOS}/:tab?/:repoId?`} component={ArrDaoPage} />
                                             <Route path={`${URL_FUND}/:id/${REQUESTS}`} component={ArrRequestPage} />
                                             <Route component={FundPage} />
                                         </Switch>
@@ -294,7 +294,7 @@ class Layout extends AbstractReactComponent {
                                             <Route path="/admin/fund/:id" component={AdminFundPage} />
                                             <Route path="/admin/fund" component={AdminFundPage} />
                                             <Route path="/admin/packages" component={AdminPackagesPage} />
-                                            <Route path="/admin/backgroundProcesses" component={AdminBulkActionPage} />
+                                            <Route path="/admin/backgroundProcesses" component={AdminBackgroundProcessesPage} />
                                             <Route path="/admin/requestsQueue" component={AdminRequestsQueuePage} />
                                             <Route path="/admin/extSystem" component={AdminExtSystemPage} />
                                             <Route path="/admin/institution/:id" component={AdminInstitutionPage} />

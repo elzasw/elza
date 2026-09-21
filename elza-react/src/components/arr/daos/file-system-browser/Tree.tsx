@@ -1,4 +1,4 @@
-import { Fragment, useState, useEffect, useMemo, forwardRef, useImperativeHandle } from 'react';
+import { Fragment, useState, useEffect, useCallback, useMemo, forwardRef, useImperativeHandle } from 'react';
 import { Api } from 'api';
 import classNames from 'classnames';
 import { FsRepo, FsItem, FsItemType } from 'elza-api';
@@ -79,7 +79,7 @@ export const Tree = forwardRef<TreeExposedFunctions, TreeProps>(({
         setSelectedItemPath(_selectedItemPath);
     }, [_selectedItemPath]);
 
-    const loadLevel = async (fullPath: string, lastKey: string | undefined, depth: number, filter?: FsItemType): Promise<RenderItem[]> => {
+    const loadLevel = useCallback(async (fullPath: string, lastKey: string | undefined, depth: number, filter?: FsItemType): Promise<RenderItem[]> => {
         const [repoId, path] = extractRepoIdFromFullPath(fullPath);
         const { data: items } = await Api.funds.fundFsRepoItems(fundId, repoId, filter, path, lastKey);
 
@@ -106,9 +106,9 @@ export const Tree = forwardRef<TreeExposedFunctions, TreeProps>(({
             });
         }
         return itemLevel;
-    };
+    }, [fundId]);
 
-    const fetchChildren = async (parentPath: string, childDepth: number) => {
+    const fetchChildren = useCallback(async (parentPath: string, childDepth: number) => {
         setChildrenCache((prev) => ({ ...prev, [parentPath]: 'loading' }));
         try {
             const items = await loadLevel(parentPath, undefined, childDepth, FsItemType.Folder);
@@ -117,7 +117,20 @@ export const Tree = forwardRef<TreeExposedFunctions, TreeProps>(({
             console.error('Failed to load tree level', e);
             setChildrenCache((prev) => ({ ...prev, [parentPath]: { error: true } }));
         }
-    };
+    }, [loadLevel]);
+
+    // Every expanded node must have its children in the cache. They can be missing without
+    // anyone having clicked the node: a refresh wipes the cache, and the browser marks the
+    // ancestors of a restored directory expanded before they were ever loaded. Waits for the
+    // repositories, whose arrival wipes the cache and would discard anything fetched earlier.
+    useEffect(() => {
+        if (repos.length === 0) {
+            return;
+        }
+        Object.keys(expandedItems)
+            .filter((fullPath) => expandedItems[fullPath] && childrenCache[fullPath] === undefined)
+            .forEach((fullPath) => fetchChildren(fullPath, fullPath.split('/').length));
+    }, [repos, expandedItems, childrenCache, fetchChildren]);
 
     const expandItem = async (item: RenderItem) => {
         if (!isListItem(item) && !isRepoItem(item)) return;
@@ -302,6 +315,15 @@ export const Tree = forwardRef<TreeExposedFunctions, TreeProps>(({
             const isExpanded = expandedItems[item.fullPath];
             const isSelected = item.fullPath === selectedItemPath;
             const isUnavailable = isRepoItem(item) && !item.data.available;
+            // Once this node's children have been fetched the cache is the authority; until
+            // then fall back to what the file list has seen. A repository row has no
+            // hasChildren of its own, so without the cache it would offer no expander at all
+            // until the file list happened to load that repository's root.
+            const cachedChildren = childrenCache[item.fullPath];
+            const hasChildren = Array.isArray(cachedChildren)
+                ? cachedChildren.length > 0
+                : childrenMap[item.fullPath] || (isListItem(item) && item.data.hasChildren);
+            const canExpand = Boolean(hasChildren) && !isUnavailable;
             const unavailableTitle = isUnavailable
                 ? intl.formatMessage(messages.repoUnavailable, { path: item.data.path })
                 : undefined;
@@ -322,13 +344,13 @@ export const Tree = forwardRef<TreeExposedFunctions, TreeProps>(({
                 <span className="item-part no-shrink">
                     <span
                         style={{
-                            visibility: (childrenMap[item.fullPath] || (isListItem(item) && item.data.hasChildren)) && !isUnavailable ? "visible" : "hidden",
+                            visibility: canExpand ? "visible" : "hidden",
                             width: `${(item.depth + 1) * TREE_INDENT_PX}px`,
                             display: "inline-flex",
                             justifyContent: "flex-end",
                         }}
                         onClick={(e) => {
-                            if ((childrenMap[item.fullPath] || (isListItem(item) && item.data.hasChildren)) && !isUnavailable) {
+                            if (canExpand) {
                                 e.stopPropagation();
                                 toggleItem(item);
                             }

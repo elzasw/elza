@@ -1,37 +1,110 @@
 @import "../../variables.scss";
 
-
-.napojeni {
-    border-style: solid;
-    border-color: #bfbfbf;
-    border-width: 1px;
-    margin: 10px;
-    background-color: #e3e3e3;
-    padding: 10px;
+/**
+ * Napojení jednotky popisu na digitální objekty. Blok stojí nad formulářem popisu, takže si drží
+ * jeho odsazení a nepřebíjí ho barvou - odliší se rámečkem a podkladem o odstín jinde.
+ *
+ * Ztlumený text se dělá průhledností nad $fg-color, ne odstínem ze škály: $shade-6 je v obou
+ * motivech jen jemně odlišený od podkladu (#bbb na bílé, #4d4d4d na černé), takže by popisek
+ * nešel přečíst. Stejně to dělá i NodeView u názvů skupin.
+ */
+.dao-links {
+    margin: 8px;
+    padding: 4px 8px 6px;
+    border: 1px solid $border-color;
+    border-radius: 4px;
+    background-color: $shade-1;
     max-height: 500px;
-    overflow-y: scroll;
-    overflow-x: hidden;
+    overflow: auto;
 
-    > p {
-        margin-bottom: 0;
+    .dao-links-header {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        width: 100%;
+        padding: 2px 0;
+        border: none;
+        background: none;
+        font-weight: bold;
+        text-align: left;
+        color: inherit;
+
+        .icon {
+            font-size: 0.75em;
+            opacity: 0.7;
+        }
+    }
+
+    .dao-links-list {
+        margin-top: 2px;
     }
 }
 
-.napojeni-row {
+/**
+ * Jedno napojení na jednom řádku. Popisek, jméno i počet komponent sedí na společné účaří a akce
+ * drží u pravého okraje, aby byly ve sloupci napojení pod sebou a daly se trefit.
+ */
+.dao-link {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 2px 6px;
+    padding: 1px 0;
+    min-height: 24px;
 
-    > p {
-        margin-bottom: 0;
+    .dao-link-label {
+        opacity: 0.7;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 40%;
+    }
+
+    .dao-link-name {
+        padding: 0;
+        border: none;
+        text-align: left;
+        overflow-wrap: anywhere;
+    }
+
+    .dao-link-count {
+        opacity: 0.7;
+        white-space: nowrap;
+    }
+
+    .dao-link-actions {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        margin-left: auto;
+        flex-shrink: 0;
+
+        // variant="action" nemá v aplikaci žádné pravidlo, takže by zůstalo na výchozím
+        // odsazení .btn - z ikon by byla nezarovnaná řada s mezerami přes půl centimetru.
+        .btn {
+            padding: 2px 5px;
+            line-height: 1;
+            border: none;
+            background: none;
+            opacity: 0.7;
+
+            &:hover, &:focus-visible {
+                opacity: 1;
+                background-color: $shade-3;
+                border-radius: 3px;
+            }
+        }
     }
 }
 
-.napojeni-row-child {
-
-    > p {
-        margin-bottom: 0;
-    }
+/** Komponenty napojení - odsazené pod svým napojením, aby byl vidět strom. */
+.dao-link-children {
+    margin-left: 16px;
+    border-left: 1px solid $border-color;
+    padding-left: 8px;
 }
 
-.napojeni-div-child {
-    margin-left: 15px;
+.dao-link-more > .btn-link {
+    padding: 0;
+    border: none;
 }
-
