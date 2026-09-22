@@ -422,14 +422,32 @@ class ArrStructurePanel extends AbstractReactComponent {
         );
     };
 
-    renderErrorContent = error => {
+    renderItemTypeList = (itemTypeIds, message, key) => {
         const {descItemTypes} = this.props;
+        const items = itemTypeIds.map((id, index) => {
+            const descItem = objectById(descItemTypes, id);
+
+            if (!descItem) {
+                console.error(`Nenalezen prvek popisu s id: ${id}`);
+            }
+
+            return <li key={index}>{descItem?.name || id}</li>;
+        });
+        return (
+            <div key={key} className="error-list error-item">
+                <div>{<FormattedMessage {...message} />}</div>
+                <ul>{items}</ul>
+            </div>
+        );
+    };
+
+    renderErrorContent = error => {
         /*
         const exampleError = {
             emptyValue: true,
             duplicateValue: true,
-            impossibleItemTypeIds: ["25", "2", "3"],
-            requiredItemTypeIds: ["1"]
+            impossibleItemTypeIds: [25, 2, 3],
+            requiredItemTypeIds: [1]
         };
         */
         let parts = [];
@@ -448,35 +466,22 @@ class ArrStructurePanel extends AbstractReactComponent {
                 </div>,
             );
         }
-        if (error.impossibleItemTypeIds.length > 0) {
-            const items = [];
-            error.impossibleItemTypeIds.forEach((id, index) => {
-                const descItem = objectById(descItemTypes, id);
-                items.push(<li key={index}>{descItem.name}</li>);
-            });
+        if (error.impossibleItemTypeIds?.length > 0) {
             parts.push(
-                <div key="items" className="error-list error-item">
-                    <div>{<FormattedMessage {...templateMessages.structureItemErrorImpossibleItemTypes} />}</div>
-                    <ul>{items}</ul>
-                </div>,
+                this.renderItemTypeList(
+                    error.impossibleItemTypeIds,
+                    templateMessages.structureItemErrorImpossibleItemTypes,
+                    'items',
+                ),
             );
         }
-        if (error.requiredItemTypeIds.length > 0) {
-            const items = [];
-            error.requiredItemTypeIds.forEach(id => {
-                const descItem = objectById(descItemTypes, id);
-
-                if(!descItem){
-                    console.error(`Nenalezen prvek popisu s id: ${id}`)
-                }
-
-                items.push(<li>{descItem?.name || id}</li>);
-            });
+        if (error.requiredItemTypeIds?.length > 0) {
             parts.push(
-                <div className="error-list error-item">
-                    <div>{<FormattedMessage {...templateMessages.structureItemErrorRequiredItemTypes} />}</div>
-                    <ul>{items}</ul>
-                </div>,
+                this.renderItemTypeList(
+                    error.requiredItemTypeIds,
+                    templateMessages.structureItemErrorRequiredItemTypes,
+                    'required',
+                ),
             );
         }
         return <div>{parts}</div>;
