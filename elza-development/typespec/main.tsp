@@ -2908,6 +2908,72 @@ namespace ElzaAPI.User.ApiKeys {
 }
 
 /**
+ * Type of asynchronous request queue.
+ * Mirrors server AsyncTypeEnum.
+ */
+enum AsyncType {
+    NODE,
+    BULK,
+    OUTPUT,
+    AP,
+    EXPORT,
+    AIP,
+    BATCH_IMPORT,
+}
+
+/** One worker thread of an asynchronous queue. */
+model AsyncWorker {
+    /** Fund version processed by the thread, `null` when the thread is idle. */
+    fundVersionId: int32 | null;
+    /** ID of the request the thread is running, `null` when the thread is idle. */
+    requestId: int64 | null;
+    /** Time the current request started. Server LocalDateTime (no zone), e.g. `2026-09-21T08:15:30`. */
+    beginTime: string | null;
+    /** Running time of the current request in milliseconds, `null` when the thread is idle. */
+    runningTime: int64 | null;
+    /** Business ID of the entity being processed (node, output, …), `null` when the thread is idle. */
+    currentId: int32 | null;
+}
+
+/**
+ * State of a single asynchronous request queue.
+ */
+model AsyncRequestInfo {
+    /** Queue type. */
+    type: AsyncType;
+    /** Share of the capacity in use, 0..1. */
+    load: float64;
+    /** Requests processed in the last hour. */
+    requestPerHour: int32;
+    /** Number of requests waiting for a free worker. */
+    waitingRequests: int32;
+    /** Number of workers currently running a request. */
+    runningThreadCount: int32;
+    /** Total number of worker threads in the queue. */
+    totalThreadCount: int32;
+    /** Snapshot of the worker threads. */
+    currentThreads: AsyncWorker[];
+}
+
+/** Minimal fund identification used by FundStatistics. */
+model FundStatisticsFund {
+    id: int32;
+    name: string;
+}
+
+/**
+ * Number of requests waiting in a single queue, grouped by fund.
+ */
+model FundStatistics {
+    /** Fund the requests belong to. */
+    fund: FundStatisticsFund | null;
+    /** Fund version the requests target. */
+    fundVersionId: int32 | null;
+    /** Number of waiting requests. */
+    requestCount: int32;
+}
+
+/**
  * Administrativní funkce
  */
 @tag("admin")
@@ -2977,6 +3043,21 @@ namespace ElzaAPI.Admin {
     ): {
         @Http.statusCode statusCode: 200;
     };
+
+    /**
+     * Return current state of asynchronous request queues.
+     */
+    @route("async-requests")
+    @get op asyncRequests(): AsyncRequestInfo[];
+
+    /**
+     * Return per-fund statistics of waiting requests for one queue.
+     * @param requestType queue whose waiting requests to break down by fund
+     */
+    @route("async-requests/{requestType}")
+    @get op asyncRequestDetail(
+        @path requestType: AsyncType,
+    ): FundStatistics[];
 }
 
 /**
