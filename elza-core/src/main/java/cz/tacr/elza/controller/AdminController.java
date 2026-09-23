@@ -24,10 +24,14 @@ import org.springframework.web.socket.WebSocketSession;
 import cz.tacr.elza.controller.vo.AdminCopyPermissionParams;
 import cz.tacr.elza.controller.vo.AdminInfo;
 import cz.tacr.elza.controller.vo.ApiKeyInfo;
+import cz.tacr.elza.controller.vo.AsyncRequestInfo;
+import cz.tacr.elza.controller.vo.AsyncType;
+import cz.tacr.elza.controller.vo.FundStatistics;
 import cz.tacr.elza.controller.vo.LoggedUser;
 import cz.tacr.elza.controller.vo.LoggedUsers;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
+import cz.tacr.elza.domain.AsyncTypeEnum;
 import cz.tacr.elza.domain.UsrApiKey;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
@@ -44,6 +48,7 @@ import cz.tacr.elza.service.AccessPointService.AccessPointStats;
 import cz.tacr.elza.service.ApiKeyService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.ArrangementService.ArrangementStats;
+import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.UserService.UserStats;
 import cz.tacr.elza.service.cache.NodeCacheService;
@@ -75,6 +80,9 @@ public class AdminController implements AdminApi {
 
     @Autowired
     private SiemAuditLogger siemAuditLogger;
+
+    @Autowired
+    private AsyncRequestService asyncRequestService;
 
     @Override
     @Transactional
@@ -201,6 +209,25 @@ public class AdminController implements AdminApi {
     public ResponseEntity<Integer> adminDeleteInvalidInhibitedItems() {
         int count = arrangementService.cleanupOrphanedInhibitedItems();
         return ResponseEntity.ok(count);
+    }
+
+    /**
+     * Current state of asynchronous request queues
+     */
+    @Override
+    @AuthMethod(permission = { UsrPermission.Permission.ADMIN })
+    public ResponseEntity<List<AsyncRequestInfo>> adminAsyncRequests() {
+        return ResponseEntity.ok(asyncRequestService.dispatcherInfo());
+    }
+
+    /**
+     * Per-fund statistics of waiting requests for one queue
+     */
+    @Override
+    @Transactional
+    @AuthMethod(permission = { UsrPermission.Permission.ADMIN })
+    public ResponseEntity<List<FundStatistics>> adminAsyncRequestDetail(AsyncType requestType) {
+        return ResponseEntity.ok(asyncRequestService.getFundStatistics(AsyncTypeEnum.valueOf(requestType.getValue())));
     }
 
     @Override

@@ -53,7 +53,7 @@ function renderPage() {
 
 describe('AdminBackgroundProcessesPage', () => {
     it('lists the queues in a fixed order, whatever order the server sends', async () => {
-        server.use(http.get('/api/admin/asyncRequests', () => HttpResponse.json(QUEUES)));
+        server.use(http.get('/api/v1/admin/async-requests', () => HttpResponse.json(QUEUES)));
 
         renderPage();
 
@@ -69,8 +69,8 @@ describe('AdminBackgroundProcessesPage', () => {
     it('loads the queue contents only once its panel is expanded', async () => {
         let detailCalls = 0;
         server.use(
-            http.get('/api/admin/asyncRequests', () => HttpResponse.json(QUEUES)),
-            http.get('/api/admin/asyncRequests/NODE', () => {
+            http.get('/api/v1/admin/async-requests', () => HttpResponse.json(QUEUES)),
+            http.get('/api/v1/admin/async-requests/NODE', () => {
                 detailCalls++;
                 return HttpResponse.json([{fund: {id: 3, name: 'Testovací AS'}, fundVersionId: 7, requestCount: 12}]);
             }),
@@ -90,7 +90,7 @@ describe('AdminBackgroundProcessesPage', () => {
     });
 
     it('reports a failed load and keeps the page usable', async () => {
-        server.use(http.get('/api/admin/asyncRequests', () => new HttpResponse(null, {status: 500})));
+        server.use(http.get('/api/v1/admin/async-requests', () => new HttpResponse(null, {status: 500})));
 
         renderPage();
 

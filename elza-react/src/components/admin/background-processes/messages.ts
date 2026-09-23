@@ -1,4 +1,5 @@
-import {defineMessages} from 'react-intl';
+import {AsyncType} from 'elza-api';
+import {MessageDescriptor, defineMessages} from 'react-intl';
 
 // Klíč se skládal z typu fronty, což statický extraktor nevidí. Množina typů je
 // uzavřená (odpovídá typům front na serveru), takže stačí ji vypsat a vybírat.
@@ -10,7 +11,7 @@ export const queueTypeMessages = defineMessages({
     EXPORT: {id: 'admin.bulk.header.title.EXPORT', defaultMessage: 'Publikace'},
     AIP: {id: 'admin.bulk.header.title.AIP', defaultMessage: 'Archivní balíčky'},
     BATCH_IMPORT: {id: 'admin.bulk.header.title.BATCH_IMPORT', defaultMessage: 'Dávkový import'},
-});
+}) satisfies Record<AsyncType, MessageDescriptor>;
 
 // Ids jsou převzatá z legacy katalogu beze změny - přejmenování id při migraci
 // zahodí jeho překlady při dalším locale:merge. Placeholder {0} zůstává:
