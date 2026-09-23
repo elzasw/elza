@@ -2,16 +2,17 @@ package cz.tacr.elza.service;
 
 import static cz.tacr.elza.repository.ExceptionThrow.bulkAction;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.Nullable;
@@ -38,7 +39,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import cz.tacr.elza.asynchactions.AsyncExecutor;
 import cz.tacr.elza.asynchactions.AsyncRequest;
 import cz.tacr.elza.asynchactions.AsyncRequestEvent;
-import cz.tacr.elza.asynchactions.AsyncWorkerVO;
 import cz.tacr.elza.asynchactions.IAsyncRequest;
 import cz.tacr.elza.asynchactions.IAsyncWorker;
 import cz.tacr.elza.asynchactions.RequestQueue;
@@ -49,9 +49,11 @@ import cz.tacr.elza.service.da.DaAipActionService;
 import cz.tacr.elza.asynchactions.nodevalid.AsyncNodeExecutor;
 import cz.tacr.elza.bulkaction.AsyncBulkActionWorker;
 import cz.tacr.elza.bulkaction.BulkActionHelperService;
-import cz.tacr.elza.controller.vo.ArrAsyncRequestVO;
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.FundStatisticsVO;
+import cz.tacr.elza.controller.vo.AsyncRequestInfo;
+import cz.tacr.elza.controller.vo.AsyncType;
+import cz.tacr.elza.controller.vo.AsyncWorker;
+import cz.tacr.elza.controller.vo.FundStatistics;
+import cz.tacr.elza.controller.vo.FundStatisticsFund;
 import cz.tacr.elza.domain.ArrAsyncRequest;
 import cz.tacr.elza.domain.DaAipActionItem;
 import cz.tacr.elza.domain.ImpBatch;
@@ -386,15 +388,13 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     }
 
     /**
-     * Vytvoření statistické třídy pro AS, pokud neexistuje
+     * Identifikace AS pro statistiku požadavků
      */
-    private FundStatisticsVO createFundStatisticsVO(int fundVersionId) {
+    private FundStatisticsFund createFundStatisticsFund(int fundVersionId) {
         ArrFundVersion version = fundVersionRepository.findByIdWithFetchFund(fundVersionId);
-        ArrFundVO statFund = new ArrFundVO();
-        statFund.setName(version.getFund().getName());
-        statFund.setId(version.getFund().getFundId());
-        statFund.setInstitutionId(version.getFund().getInstitution().getInstitutionId());
-        return new FundStatisticsVO(fundVersionId, statFund);
+        return new FundStatisticsFund()
+                .id(version.getFund().getFundId())
+                .name(version.getFund().getName());
     }
 
     /**
@@ -493,58 +493,61 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     /**
      * Vrácení detailních statistik podle jednotlivých typů požadavků.
      */
-    public List<FundStatisticsVO> getFundStatistics(final AsyncTypeEnum type) {
-        Map<Integer, FundStatisticsVO> map = new HashMap<>();
+    public List<FundStatistics> getFundStatistics(final AsyncTypeEnum type) {
+        Map<Integer, Integer> counts = new HashMap<>();
         AsyncExecutor asyncExecutor = getExecutor(type);
         asyncExecutor.doLockQueue(() -> {
             for (final IAsyncRequest request : asyncExecutor.getCurrentRequests()) {
                 Integer fundVersionId = request.getFundVersionId();
                 if (fundVersionId != null) {
-                    FundStatisticsVO fundStatistics = map.get(fundVersionId);
-                    if (fundStatistics == null) {
-                        fundStatistics = createFundStatisticsVO(fundVersionId);
-                        map.put(fundVersionId, fundStatistics);
-                    }
-                    fundStatistics.addCount();
+                    counts.merge(fundVersionId, 1, Integer::sum);
                 }
             }
         });
-        List<FundStatisticsVO> statistics = new ArrayList<>(map.values());
-        statistics.sort(Collections.reverseOrder());
-        return statistics.subList(0, Math.min(statistics.size(), 100));
+        return counts.entrySet().stream()
+                .sorted(Map.Entry.<Integer, Integer>comparingByValue().reversed())
+                .limit(100)
+                .map(e -> new FundStatistics()
+                        .fund(createFundStatisticsFund(e.getKey()))
+                        .fundVersionId(e.getKey())
+                        .requestCount(e.getValue()))
+                .toList();
     }
 
-    private List<AsyncWorkerVO> convertWorkerList(Collection<IAsyncWorker> workers) {
-        List<AsyncWorkerVO> runningVOList = new ArrayList<>();
+    private List<AsyncWorker> convertWorkerList(Collection<IAsyncWorker> workers) {
+        List<AsyncWorker> result = new ArrayList<>();
         for (IAsyncWorker worker : workers) {
             IAsyncRequest request = worker.getRequest();
-            AsyncWorkerVO workerVO = new AsyncWorkerVO(request.getFundVersionId(), request.getRequestId(), worker.getBeginTime(), worker.getRunningTime(), request.getCurrentId());
-            runningVOList.add(workerVO);
+            Long beginTime = worker.getBeginTime();
+            result.add(new AsyncWorker()
+                    .fundVersionId(request.getFundVersionId())
+                    .requestId(request.getRequestId())
+                    .beginTime(beginTime == null ? null
+                            : Instant.ofEpochMilli(beginTime).atZone(ZoneId.systemDefault()).toLocalDateTime()
+                                    .format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
+                    .runningTime(worker.getRunningTime())
+                    .currentId(request.getCurrentId()));
         }
-        return runningVOList;
+        return result;
     }
 
     /**
      * Obecné informace o zpracování požadavků.
      */
-    public List<ArrAsyncRequestVO> dispatcherInfo() {
-        List<ArrAsyncRequestVO> infoList = new ArrayList<>();
+    public List<AsyncRequestInfo> dispatcherInfo() {
+        List<AsyncRequestInfo> infoList = new ArrayList<>();
 
         asyncExecutors.values().forEach(asyncExecutor -> {
-            AtomicReference<List<AsyncWorkerVO>> workers = new AtomicReference<>();
-            AtomicReference<Integer> waiting = new AtomicReference<>();
-            AtomicReference<Integer> running = new AtomicReference<>();
-            AtomicReference<Integer> requestCount = new AtomicReference<>();
-            AtomicReference<Double> load = new AtomicReference<>();
-            asyncExecutor.doLockQueue(() -> {
-                load.set(asyncExecutor.getCurrentLoad());
-                workers.set(convertWorkerList(asyncExecutor.getProcessing()));
-                waiting.set(asyncExecutor.getQueueSize());
-                running.set(asyncExecutor.getProcessingSize());
-                requestCount.set(asyncExecutor.getLastHourRequests());
-            });
-            infoList.add(new ArrAsyncRequestVO(asyncExecutor.getType(), load.get(), requestCount.get(),
-                    waiting.get(), running.get(), asyncExecutor.getWorkers(), workers.get()));
+            AsyncRequestInfo info = new AsyncRequestInfo()
+                    .type(AsyncType.fromValue(asyncExecutor.getType().name()))
+                    .totalThreadCount(asyncExecutor.getWorkers());
+            asyncExecutor.doLockQueue(() -> info
+                    .load(asyncExecutor.getCurrentLoad())
+                    .currentThreads(convertWorkerList(asyncExecutor.getProcessing()))
+                    .waitingRequests(asyncExecutor.getQueueSize())
+                    .runningThreadCount(asyncExecutor.getProcessingSize())
+                    .requestPerHour(asyncExecutor.getLastHourRequests()));
+            infoList.add(info);
         });
 
         return infoList;

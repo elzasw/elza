@@ -11,12 +11,13 @@ import {
     tokens,
 } from '@fluentui/react-components';
 import {ArrowClockwiseRegular} from '@fluentui/react-icons';
-import {WebApi} from 'actions/index.jsx';
+import {Api} from 'api';
+import {AsyncRequestInfo} from 'elza-api';
 import {FormattedMessage} from 'react-intl';
 import {messages} from './messages';
 import {QueueDetail} from './QueueDetail';
 import {QueueStats} from './QueueStats';
-import {QueueInfo, compareQueueType} from './types';
+import {compareQueueType} from './types';
 import {usePolledData} from './usePolledData';
 
 /** How often the state of all queues is reloaded. */
@@ -55,8 +56,8 @@ const useStyles = makeStyles({
     },
 });
 
-function fetchQueues(): Promise<QueueInfo[]> {
-    return WebApi.getAsyncRequestInfo();
+function fetchQueues(): Promise<AsyncRequestInfo[]> {
+    return Api.admin.adminAsyncRequests().then(({data}) => data);
 }
 
 /**

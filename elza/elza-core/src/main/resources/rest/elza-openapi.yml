@@ -919,6 +919,44 @@ paths:
           description: The request has succeeded.
       tags:
         - admin
+  /admin/async-requests:
+    get:
+      operationId: Admin_asyncRequests
+      description: Return current state of asynchronous request queues.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AsyncRequestInfo'
+      tags:
+        - admin
+  /admin/async-requests/{requestType}:
+    get:
+      operationId: Admin_asyncRequestDetail
+      description: Return per-fund statistics of waiting requests for one queue.
+      parameters:
+        - name: requestType
+          in: path
+          required: true
+          description: queue whose waiting requests to break down by fund
+          schema:
+            $ref: '#/components/schemas/AsyncType'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FundStatistics'
+      tags:
+        - admin
   /admin/import:
     get:
       operationId: ImportBatch_list
@@ -6741,8 +6779,8 @@ components:
           MARKDOWN: '#/components/schemas/AiMarkdownBlock'
           TABLE: '#/components/schemas/AiTableBlock'
           DOC_CITATIONS: '#/components/schemas/AiDocCitationsBlock'
-          NODE_UPDATE_PROPOSALS: '#/components/schemas/AiNodeUpdateProposalsBlock'
           RECORD_CITATIONS: '#/components/schemas/AiRecordCitationsBlock'
+          NODE_UPDATE_PROPOSALS: '#/components/schemas/AiNodeUpdateProposalsBlock'
       description: |-
         One display block of an AI response — THE RENDERING CONTRACT between the
         server and the client. The server (per task type) transforms the provider's
@@ -6984,16 +7022,15 @@ components:
         label:
           type: string
           description: |-
-            Display label — the record's name or title as the answer linked it. Absent when
-            the link carried no text; the client then shows a generic "open" label.
+            Display label — the record's name or title as the answer linked it. Absent
+            when the link carried no text; the client then shows a generic "open" label.
         target:
           allOf:
             - $ref: '#/components/schemas/AiContextObject'
           description: Navigation target — reuses the UI-context vocabulary (`AiContextType` codes).
       description: |-
-        One archival record of the user's own archive an answer linked to (a record link
-        `[label](ap:…|node:…|fund:…)` in the answer's markdown), renderable as a
-        navigation link. Carries only data — the client owns the heading and any
+        One archival record of the user's own archive an answer linked to, renderable
+        as a navigation link. Carries only data — the client owns the heading and any
         fallback label.
     AiRecordCitationsBlock:
       type: object
@@ -7008,10 +7045,11 @@ components:
       allOf:
         - $ref: '#/components/schemas/AiDisplayBlock'
       description: |-
-        The archival records the answer linked to — derived by the server from the record
-        links of the answer's markdown (the provider protocol's way of citing a record of
-        the client's archive). The server emits no label text; the client renders a
-        "Records" list and supplies the heading itself, in the user's language.
+        The archival records the answer linked to — derived by the server from the
+        record links of the answer's markdown (the provider protocol's way of citing a
+        record of the client's archive: `[label](ap:…|node:…|fund:…)`). The server
+        emits no label text; the client renders a "Records" list and supplies the
+        heading itself, in the user's language.
     AiRequest:
       type: object
       required:
@@ -7865,6 +7903,94 @@ components:
           type: string
           description: Unitdate
       description: Archivní soubor
+    AsyncRequestInfo:
+      type: object
+      required:
+        - type
+        - load
+        - requestPerHour
+        - waitingRequests
+        - runningThreadCount
+        - totalThreadCount
+        - currentThreads
+      properties:
+        type:
+          allOf:
+            - $ref: '#/components/schemas/AsyncType'
+          description: Queue type.
+        load:
+          type: number
+          format: double
+          description: Share of the capacity in use, 0..1.
+        requestPerHour:
+          type: integer
+          format: int32
+          description: Requests processed in the last hour.
+        waitingRequests:
+          type: integer
+          format: int32
+          description: Number of requests waiting for a free worker.
+        runningThreadCount:
+          type: integer
+          format: int32
+          description: Number of workers currently running a request.
+        totalThreadCount:
+          type: integer
+          format: int32
+          description: Total number of worker threads in the queue.
+        currentThreads:
+          type: array
+          items:
+            $ref: '#/components/schemas/AsyncWorker'
+          description: Snapshot of the worker threads.
+      description: State of a single asynchronous request queue.
+    AsyncType:
+      type: string
+      enum:
+        - NODE
+        - BULK
+        - OUTPUT
+        - AP
+        - EXPORT
+        - AIP
+        - BATCH_IMPORT
+      description: |-
+        Type of asynchronous request queue.
+        Mirrors server AsyncTypeEnum.
+    AsyncWorker:
+      type: object
+      required:
+        - fundVersionId
+        - requestId
+        - beginTime
+        - runningTime
+        - currentId
+      properties:
+        fundVersionId:
+          type: integer
+          format: int32
+          nullable: true
+          description: Fund version processed by the thread, `null` when the thread is idle.
+        requestId:
+          type: integer
+          format: int64
+          nullable: true
+          description: ID of the request the thread is running, `null` when the thread is idle.
+        beginTime:
+          type: string
+          nullable: true
+          description: Time the current request started. Server LocalDateTime (no zone), e.g. `2026-09-21T08:15:30`.
+        runningTime:
+          type: integer
+          format: int64
+          nullable: true
+          description: Running time of the current request in milliseconds, `null` when the thread is idle.
+        currentId:
+          type: integer
+          format: int32
+          nullable: true
+          description: Business ID of the entity being processed (node, output, …), `null` when the thread is idle.
+      description: One worker thread of an asynchronous queue.
     AutoValue:
       type: object
       properties:
@@ -9588,6 +9714,41 @@ components:
           items:
             type: integer
       description: Specifies multiple sections for fund version
+    FundStatistics:
+      type: object
+      required:
+        - fund
+        - fundVersionId
+        - requestCount
+      properties:
+        fund:
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/FundStatisticsFund'
+          nullable: true
+          description: Fund the requests belong to.
+        fundVersionId:
+          type: integer
+          format: int32
+          nullable: true
+          description: Fund version the requests target.
+        requestCount:
+          type: integer
+          format: int32
+          description: Number of waiting requests.
+      description: Number of requests waiting in a single queue, grouped by fund.
+    FundStatisticsFund:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          format: int32
+        name:
+          type: string
+      description: Minimal fund identification used by FundStatistics.
     FundsActionGroup:
       type: object
       required:
