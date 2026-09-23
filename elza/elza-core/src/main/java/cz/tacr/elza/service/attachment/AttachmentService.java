@@ -17,7 +17,7 @@ import cz.tacr.elza.domain.DmsFile;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.service.DmsService;
+import cz.tacr.elza.service.dms.DmsService;
 import cz.tacr.elza.service.ProcessService;
 import cz.tacr.elza.utils.TempDirectory;
 

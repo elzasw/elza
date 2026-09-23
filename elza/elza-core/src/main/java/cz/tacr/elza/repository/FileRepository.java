@@ -1,7 +1,8 @@
 package cz.tacr.elza.repository;
 
-import cz.tacr.elza.domain.DmsFile;
 import org.springframework.stereotype.Repository;
+
+import cz.tacr.elza.domain.DmsFile;
 
 
 /**

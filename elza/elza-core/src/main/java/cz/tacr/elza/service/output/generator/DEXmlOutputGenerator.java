@@ -13,7 +13,7 @@ import cz.tacr.elza.dataexchange.output.DEExportService;
 import cz.tacr.elza.dataexchange.output.sections.RootLevelDecorator;
 import cz.tacr.elza.dataexchange.output.writer.ExportBuilder;
 import cz.tacr.elza.dataexchange.output.writer.xml.XmlExportBuilder;
-import cz.tacr.elza.service.DmsService;
+import cz.tacr.elza.service.dms.DmsService;
 
 public class DEXmlOutputGenerator extends DmsOutputGenerator {
 

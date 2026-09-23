@@ -22,6 +22,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.socket.WebSocketSession;
 
 import cz.tacr.elza.controller.vo.AdminCopyPermissionParams;
+import cz.tacr.elza.controller.vo.AdminDmsConsistencyEntry;
+import cz.tacr.elza.controller.vo.AdminDmsConsistencyReport;
 import cz.tacr.elza.controller.vo.AdminInfo;
 import cz.tacr.elza.controller.vo.ApiKeyInfo;
 import cz.tacr.elza.controller.vo.AsyncRequestInfo;
@@ -49,6 +51,8 @@ import cz.tacr.elza.service.ApiKeyService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.ArrangementService.ArrangementStats;
 import cz.tacr.elza.service.AsyncRequestService;
+import cz.tacr.elza.service.dms.DmsConsistencyReport;
+import cz.tacr.elza.service.dms.DmsConsistencyService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.UserService.UserStats;
 import cz.tacr.elza.service.cache.NodeCacheService;
@@ -80,6 +84,9 @@ public class AdminController implements AdminApi {
 
     @Autowired
     private SiemAuditLogger siemAuditLogger;
+
+    @Autowired
+    private DmsConsistencyService dmsConsistencyService;
 
     @Autowired
     private AsyncRequestService asyncRequestService;
@@ -268,6 +275,41 @@ public class AdminController implements AdminApi {
             siemAuditLogger.apiKeyRevoked(actorName, key.getUser().getUsername(), key.getKeyId());
         }
         return ResponseEntity.ok().build();
+    }
+
+    /**
+     * POST /admin/dms/consistency-check
+     * Run a DMS consistency check.  Compares &#x60;dms_file&#x60; against the on-disk tree under &#x60;${workDir}/dms/&#x60;, categorises every discrepancy, and optionally moves orphans and stale temporary files to the trash. Requires the ADMIN permission.
+     *
+     * @param verifyChecksums re-compute SHA-256 for every checked file; when false, only size is compared. Also drives the checksum backfill for legacy rows. (optional, default to false)
+     * @param moveOrphansToTrash actually move orphan / stale-tmp files to &#x60;_trash/&lt;today&gt;/&#x60;. When false, the check is read-only and merely reports. (optional, default to false)
+     * @return The request has succeeded. (status code 200)
+     */
+    @Override
+    @AuthMethod(permission = Permission.ADMIN)
+    public ResponseEntity<AdminDmsConsistencyReport> adminDmsConsistencyCheck(
+            Boolean verifyChecksums, Boolean moveOrphansToTrash) {
+        boolean vc = Boolean.TRUE.equals(verifyChecksums);
+        boolean mt = Boolean.TRUE.equals(moveOrphansToTrash);
+        return ResponseEntity.ok(toApi(dmsConsistencyService.check(vc, mt)));
+    }
+
+    private static AdminDmsConsistencyReport toApi(DmsConsistencyReport report) {
+        AdminDmsConsistencyReport api = new AdminDmsConsistencyReport();
+        api.setMissing(toApiEntry(report.missing));
+        api.setOrphans(toApiEntry(report.orphans));
+        api.setSizeMismatch(toApiEntry(report.sizeMismatch));
+        api.setCorrupted(toApiEntry(report.corrupted));
+        api.setNotMigrated(toApiEntry(report.notMigrated));
+        api.setStaleTmp(toApiEntry(report.staleTmp));
+        api.setForeign(toApiEntry(report.foreign));
+        api.setTrashDirUsed(report.trashDirUsed);
+        api.setDurationMillis(Math.toIntExact(report.durationMillis));
+        return api;
+    }
+
+    private static AdminDmsConsistencyEntry toApiEntry(DmsConsistencyReport.Entry entry) {
+        return new AdminDmsConsistencyEntry(entry.count, entry.sample);
     }
 
 }

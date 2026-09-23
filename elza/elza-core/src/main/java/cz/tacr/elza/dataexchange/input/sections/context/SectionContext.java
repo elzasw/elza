@@ -25,7 +25,7 @@ import cz.tacr.elza.domain.ArrStructuredObject.State;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.service.ArrangementService;
-import cz.tacr.elza.service.DmsService;
+import cz.tacr.elza.service.dms.DmsService;
 import cz.tacr.elza.service.StructObjValueService;
 
 /**

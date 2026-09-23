@@ -20,7 +20,7 @@ import cz.tacr.elza.repository.ArrLegacyDaoLinkRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.service.DataService;
-import cz.tacr.elza.service.DmsService;
+import cz.tacr.elza.service.dms.DmsService;
 import cz.tacr.elza.service.StructObjService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import jakarta.persistence.EntityManager;
