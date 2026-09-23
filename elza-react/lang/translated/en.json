@@ -4497,6 +4497,10 @@
     "defaultMessage": "description unit synchronised",
     "srcHash": "ThBWrM25nlBX"
   },
+  "arr.history.change.title.UPDATE_ATTACHMENT": {
+    "defaultMessage": "file replaced",
+    "srcHash": "e1DHTPkTn3oS"
+  },
   "arr.history.change.title.UPDATE_DESC_ITEM": {
     "defaultMessage": "attribute changed",
     "srcHash": "O31CHv0m-8iM"

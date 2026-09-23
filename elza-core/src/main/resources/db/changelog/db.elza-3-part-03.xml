@@ -600,4 +600,87 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="20260918120000" author="sergey.iryupin" runInTransaction="false">
+        <!-- DMS rework #10028: dms_file gains three columns.
+             created_at is the source of the yyyy/MM segment in the on-disk
+             path; storage_path is the authoritative relative path under dms/
+             (NULL means the row still lives at the legacy flat location
+             dms/<file_id> and will be moved by the startup migration);
+             checksum holds the SHA-256 hex of the content, written on every
+             new file and backfilled for legacy content by the consistency
+             check. created_at is populated from the existing back-references
+             (arr_file.create_change_id -> arr_change; arr_output_file via
+             arr_output_result; MIN over arr_export copies; MIN over imp_item)
+             with CURRENT_TIMESTAMP as a last-resort fallback so the NOT NULL
+             promotion is trivial. storage_path and checksum stay nullable
+             deliberately. No index on storage_path: lookups are by file_id
+             and MSSQL rejects multiple NULLs under a plain unique index. -->
+
+        <addColumn tableName="dms_file">
+            <column name="created_at" type="timestamp with time zone"/>
+            <column name="storage_path" type="nvarchar(255)"/>
+            <column name="checksum" type="nvarchar(64)"/>
+        </addColumn>
+
+        <!-- 1) Attachments -->
+        <sql>
+            UPDATE dms_file
+               SET created_at = (
+                   SELECT c.change_date
+                     FROM arr_file f
+                     JOIN arr_change c ON c.change_id = f.create_change_id
+                    WHERE f.file_id = dms_file.file_id)
+             WHERE created_at IS NULL
+               AND EXISTS (SELECT 1 FROM arr_file f WHERE f.file_id = dms_file.file_id)
+        </sql>
+
+        <!-- 2) Output files -->
+        <sql>
+            UPDATE dms_file
+               SET created_at = (
+                   SELECT c.change_date
+                     FROM arr_output_file ofile
+                     JOIN arr_output_result ores ON ores.output_result_id = ofile.output_result_id
+                     JOIN arr_change c ON c.change_id = ores.change_id
+                    WHERE ofile.file_id = dms_file.file_id)
+             WHERE created_at IS NULL
+               AND EXISTS (SELECT 1 FROM arr_output_file ofile WHERE ofile.file_id = dms_file.file_id)
+        </sql>
+
+        <!-- 3) Publication exports (one dms_file may back several arr_export rows) -->
+        <sql>
+            UPDATE dms_file
+               SET created_at = (
+                   SELECT MIN(e.created_at)
+                     FROM arr_export e
+                    WHERE e.file_id = dms_file.file_id)
+             WHERE created_at IS NULL
+               AND EXISTS (SELECT 1 FROM arr_export e WHERE e.file_id = dms_file.file_id)
+        </sql>
+
+        <!-- 4) Import sources -->
+        <sql>
+            UPDATE dms_file
+               SET created_at = (
+                   SELECT MIN(i.created_at)
+                     FROM imp_item i
+                    WHERE i.dms_id = dms_file.file_id)
+             WHERE created_at IS NULL
+               AND EXISTS (SELECT 1 FROM imp_item i WHERE i.dms_id = dms_file.file_id)
+        </sql>
+
+        <!-- 5) Fallback for rows with no back-reference at all -->
+        <sql>
+            UPDATE dms_file
+               SET created_at = CURRENT_TIMESTAMP
+             WHERE created_at IS NULL
+        </sql>
+
+        <addNotNullConstraint tableName="dms_file"
+                              columnName="created_at"
+                              columnDataType="timestamp with time zone"/>
+
+        <customChange class="cz.tacr.elza.dbchangelog.DbChangeset20260918120000"/>
+    </changeSet>
+
 </databaseChangeLog>

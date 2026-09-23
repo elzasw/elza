@@ -34,7 +34,7 @@ import cz.tacr.elza.exception.ExceptionResponse;
 import cz.tacr.elza.exception.ExceptionResponseBuilder;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.service.DmsService;
+import cz.tacr.elza.service.dms.DmsService;
 import cz.tacr.elza.service.PublicationService;
 import cz.tacr.elza.service.UserService;
 import jakarta.persistence.EntityManager;

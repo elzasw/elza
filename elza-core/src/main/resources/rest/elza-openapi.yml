@@ -1,4 +1,4 @@
-openapi: 3.0.2
+openapi: 3.0.0
 info:
   title: ELZA API
   version: 1.0.0
@@ -955,6 +955,47 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/FundStatistics'
+      tags:
+        - admin
+  /admin/dms/consistency-check:
+    post:
+      operationId: Admin_dmsConsistencyCheck
+      description: |-
+        Run a DMS consistency check.
+
+        Compares `dms_file` against the on-disk tree under `${workDir}/dms/`,
+        categorises every discrepancy, and optionally moves orphans and stale
+        temporary files to the trash. Requires the ADMIN permission.
+      parameters:
+        - name: verifyChecksums
+          in: query
+          required: false
+          description: |-
+            re-compute SHA-256 for every checked file; when
+            false, only size is compared. Also drives the checksum backfill
+            for legacy rows.
+          schema:
+            type: boolean
+            default: false
+          explode: false
+        - name: moveOrphansToTrash
+          in: query
+          required: false
+          description: |-
+            actually move orphan / stale-tmp files to
+            `_trash/<today>/`. When false, the check is read-only and
+            merely reports.
+          schema:
+            type: boolean
+            default: false
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Admin.DmsConsistencyReport'
       tags:
         - admin
   /admin/import:
@@ -6458,6 +6499,72 @@ components:
       properties:
         fromUserId:
           type: integer
+    Admin.DmsConsistencyEntry:
+      type: object
+      required:
+        - count
+        - sample
+      properties:
+        count:
+          type: integer
+          description: Total number of items in this category.
+        sample:
+          type: array
+          items:
+            type: string
+          description: |-
+            At most the first 500 items in this category. `id` for row-anchored
+            categories (missing, notMigrated), path relative to `dms/` otherwise.
+      description: One category of the {
+    Admin.DmsConsistencyReport:
+      type: object
+      required:
+        - missing
+        - orphans
+        - sizeMismatch
+        - corrupted
+        - notMigrated
+        - staleTmp
+        - foreign
+        - durationMillis
+      properties:
+        missing:
+          allOf:
+            - $ref: '#/components/schemas/Admin.DmsConsistencyEntry'
+          description: Rows whose file could not be located on disk.
+        orphans:
+          allOf:
+            - $ref: '#/components/schemas/Admin.DmsConsistencyEntry'
+          description: Files on disk that no row claims.
+        sizeMismatch:
+          allOf:
+            - $ref: '#/components/schemas/Admin.DmsConsistencyEntry'
+          description: Rows whose file exists but with a different size.
+        corrupted:
+          allOf:
+            - $ref: '#/components/schemas/Admin.DmsConsistencyEntry'
+          description: Rows whose file exists but whose SHA-256 does not match `dms_file.checksum`.
+        notMigrated:
+          allOf:
+            - $ref: '#/components/schemas/Admin.DmsConsistencyEntry'
+          description: Rows still on the legacy flat path (`storage_path IS NULL`).
+        staleTmp:
+          allOf:
+            - $ref: '#/components/schemas/Admin.DmsConsistencyEntry'
+          description: Abandoned `<target>.tmp` files older than `orphanMinAgeMinutes`.
+        foreign:
+          allOf:
+            - $ref: '#/components/schemas/Admin.DmsConsistencyEntry'
+          description: Files under `dms/` that no rule created; reported only, never touched.
+        trashDirUsed:
+          type: string
+          description: '`_trash/<yyyy-MM-dd>` used if `moveOrphansToTrash` was true and moves happened.'
+        durationMillis:
+          type: integer
+          description: Wall-clock duration of the check.
+      description: |-
+        Result of one DMS consistency check run. Every count is the true total;
+        each list holds at most the first 500 entries in that category.
     AdminInfo:
       type: object
       required:

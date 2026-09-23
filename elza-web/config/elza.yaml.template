@@ -72,6 +72,31 @@ elza:
   #  cron: 0 0 3 * * *
   #  maxBatch: 150000
 
+  # Nastavení úložiště DMS (viz service/DmsService.java, DmsTrashService.java,
+  # DmsConsistencyService.java):
+  #
+  # trashRetentionDays – po kolika dnech se adresář _trash/<datum>/ ve
+  #   work/dms/ fyzicky smaže. Do koše se přesouvá každý mazaný obsah
+  #   DMS (retence publikací a importů, smazání příloh, přegenerování
+  #   výstupu, nálezy kontroly konzistence). V průběhu retenční lhůty
+  #   je každé smazání vratné. Výchozí 30 dní.
+  #
+  # orphanMinAgeMinutes – minimální stáří souboru v DMS, aby ho
+  #   kontrola konzistence mohla považovat za osiřelý nebo za
+  #   zapomenutý *.tmp. Ochrana proti tomu, aby check smazal soubor
+  #   právě dokončované operace, jejíž řádek se ještě neobjevil ve
+  #   snímku. Výchozí 60 minut.
+  #
+  # check.cron – kdy se má kontrola konzistence spustit; formát cron
+  #   viz sekci reindex výše. Výchozí každou neděli ve 03:30. Pro
+  #   vypnutí nastavte hodnotu -.
+  #
+  #dms:
+  #  trashRetentionDays: 30
+  #  orphanMinAgeMinutes: 60
+  #  check:
+  #    cron: 0 30 3 ? * SUN
+
   #attachment:
   #  mimeDefs:
   #    - mimeType: application/msword

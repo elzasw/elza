@@ -80,6 +80,7 @@ import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.cache.NodeCacheService;
+import cz.tacr.elza.service.dms.DmsService;
 import cz.tacr.elza.service.eventnotification.events.EventFunds;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventStructureDataChange;
@@ -418,9 +419,9 @@ public class RevertingChangesService {
         sw.start("delete from arr_file");
         if (nodeId == null) {
 
-            List<Integer> ids = arrFileRepository.findIdByFundAndGreaterOrEqualCreateChange(fund, toChange);
-            if (!CollectionUtils.isEmpty(ids)) {
-                dmsService.deleteFilesAfterCommitByIds(ids);
+            List<ArrFile> arrFiles = arrFileRepository.findByFundAndGreaterOrEqualCreateChange(fund, toChange);
+            if (!CollectionUtils.isEmpty(arrFiles)) {
+                dmsService.deleteFilesAfterCommit(arrFiles, "revert-attachment");
             }
 
             arrFileDeleteChangeUndo(fund, toChange);

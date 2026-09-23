@@ -52,6 +52,7 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.OutputCode;
 import cz.tacr.elza.repository.OutputTemplateRepository;
 import cz.tacr.elza.service.ArrangementInternalService;
+import cz.tacr.elza.service.dms.DmsService;
 import cz.tacr.elza.service.FundLevelServiceInternal;
 import cz.tacr.elza.service.OutputServiceInternal;
 import cz.tacr.elza.service.UserService;
@@ -77,6 +78,9 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
 
     @Autowired
     private ResourcePathResolver resourcePathResolver;
+
+    @Autowired
+    private DmsService dmsService;
 
     @Autowired
     private FundLevelServiceInternal fundLevelServiceInternal;
@@ -219,7 +223,7 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
     private void validate(String validationSchema, ArrOutputResult result) {
         if (!CollectionUtils.isEmpty(result.getOutputFiles())) {
             for (ArrOutputFile file : result.getOutputFiles()) {
-                Path dmsFilePath = resourcePathResolver.getDmsFile(String.valueOf(file.getFileId()));
+                Path dmsFilePath = dmsService.getFilePath(file);
                 logger.debug("Validating file: {}", dmsFilePath);
                 try (FileInputStream fis = new FileInputStream(dmsFilePath.toString())) {
                     Schema schema = schemaManager.getSchema(validationSchema);

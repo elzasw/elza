@@ -27,7 +27,7 @@ import cz.tacr.elza.print.File;
 import cz.tacr.elza.print.Output;
 import cz.tacr.elza.print.item.Item;
 import cz.tacr.elza.print.item.ItemFileRef;
-import cz.tacr.elza.service.DmsService;
+import cz.tacr.elza.service.dms.DmsService;
 import cz.tacr.elza.service.attachment.AttachmentService;
 
 /**

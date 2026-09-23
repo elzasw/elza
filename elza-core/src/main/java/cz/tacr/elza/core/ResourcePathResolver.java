@@ -86,15 +86,6 @@ public class ResourcePathResolver {
     }
 
     /**
-     * @return Path to file in data management system (DMS) directory (may not exist).
-     */
-    public Path getDmsFile(String fileName) {
-        Path path = Paths.get(workDir, DMS_DIR).resolve(fileName);
-
-        return path;
-    }
-
-    /**
      * @return Path to groovy script directory (may not exist).
      */
     public Path getGroovyDir() {

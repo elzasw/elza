@@ -5,7 +5,7 @@ import java.net.URL;
 
 import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.DescriptionItemService;
-import cz.tacr.elza.service.DmsService;
+import cz.tacr.elza.service.dms.DmsService;
 import jakarta.persistence.EntityManager;
 
 import org.junit.jupiter.api.AfterEach;
