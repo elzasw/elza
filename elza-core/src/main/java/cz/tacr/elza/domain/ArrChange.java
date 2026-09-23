@@ -332,6 +332,14 @@ public class ArrChange {
         DELETE_ATTACHMENT,
 
         /**
+         * Nahrazení obsahu souboru ArrFile — starý řádek dostane
+         * delete_change_id, nový řádek dostane create_change_id;
+         * fyzický soubor starého řádku zůstává na disku (reverzibilní
+         * operace přes RevertingChangesService).
+         */
+        UPDATE_ATTACHMENT,
+
+        /**
          * Přidání potlačení dědičnosti.
          */
         ADD_INHIBITED_ITEM,

@@ -22,6 +22,7 @@ import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.vo.DataIdTypeId;
+import cz.tacr.elza.service.dms.DmsTrashService;
 
 /**
  * Delete data that are not related to any table
@@ -43,6 +44,12 @@ public class ScheduledCleanupWorker {
 
     @Autowired
     private ImpBatchService impBatchService;
+
+    @Autowired
+    private DmsTrashService dmsTrashService;
+
+    @Value("${elza.dms.trashRetentionDays:30}")
+    private int trashRetentionDays;
 
     /**
      * Delete all arr_data that are not related to tables:
@@ -86,6 +93,13 @@ public class ScheduledCleanupWorker {
     		impBatchService.cleanupOldFiles();
     	} catch (Exception e) {
     		log.error("Error cleaning up import batch files. ", e);
+    	}
+
+    	// deleting expired DMS trash directories
+    	try {
+    		dmsTrashService.purgeExpired(trashRetentionDays);
+    	} catch (Exception e) {
+    		log.error("Error purging DMS trash. ", e);
     	}
 	}
 }

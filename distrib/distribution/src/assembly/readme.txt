@@ -38,6 +38,11 @@ Aplikace Elza vyžaduje instalační a pracovní adresář.
 Příklad cílového rozložení na disku:
 ..../elza/server - adresář s nainstalovanou aplikací (JAR + konfigurační soubor)
 ..../elza/work - pracovní adresář
+..../elza/work/dms - úložiště binárních souborů (přílohy, výstupy, publikace,
+                     zdroje importů); má vlastní vnitřní strukturu popsanou
+                     v souboru work/dms/README.txt, který Elza sama založí
+                     a udržuje. Ručně tento adresář neupravujte. Zálohuje
+                     se společně s databází.
 
 1) Vytvořte uživatele v Postgres pro přístup k databází. Například: 'elza'
 

@@ -51,7 +51,7 @@ import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.service.ArrangementInternalService;
-import cz.tacr.elza.service.DmsService;
+import cz.tacr.elza.service.dms.DmsService;
 import cz.tacr.elza.service.attachment.AttachmentService;
 
 /**
@@ -117,9 +117,23 @@ public class DmsController {
     // kvůli IE nelze použít PUT protože nemůžeme uploadovat soubor
     @RequestMapping(value = "/api/dms/fund/{fileId}", method = RequestMethod.POST)
     public void updateFile(@PathVariable(value = "fileId") Integer fileId, final ArrFileVO object) throws IOException {
-        ArrFile arrFile = dmsService.getArrFile(fileId);
-        dmsService.checkFundWritePermission(arrFile.getFund().getFundId());
-        update(fileId, object, (fileVO) -> object.createEntity(fundRepository, null));
+        ArrFile oldArrFile = dmsService.getArrFile(fileId);
+        dmsService.checkFundWritePermission(oldArrFile.getFund().getFundId());
+
+        FileInfo fileInfo = getFileInfo(object);
+        if (fileInfo != null) {
+            // Content replacement — reversible: creates a new arr_file row
+            // + new dms_file row, marks the old arr_file as deleted via
+            // arr_change of type UPDATE_ATTACHMENT. The old physical file
+            // is preserved on disk for reversibility.
+            updateDmsFile(object, fileInfo);
+            ArrFile newArrFile = object.createEntity(fundRepository, null);
+            newArrFile.setFileId(null); // force insert of a new row
+            dmsService.replaceArrFileContent(oldArrFile, newArrFile, fileInfo.getInputStream());
+        } else {
+            // Metadata-only update — same row.
+            update(fileId, object, (fileVO) -> object.createEntity(fundRepository, null));
+        }
     }
 
     /**
@@ -130,21 +144,13 @@ public class DmsController {
      * @throws IOException
      */
     private <T extends DmsFile> T update(final Integer fileId, final DmsFileVO dmsFileVO,
-                                         final Function<DmsFileVO, T> factory) throws IOException {
+                                         final Function<DmsFileVO, T> factory) {
         Validate.notNull(fileId, "Identifikátor souboru musí být vyplněn");
         Validate.notNull(dmsFileVO, "Soubor musí být vyplněn");
         Validate.isTrue(fileId.equals(dmsFileVO.getId()), "Id v URL neodpovídá ID objektu");
 
-        final FileInfo fileInfo = getFileInfo(dmsFileVO);
-        if (fileInfo != null) {
-            updateDmsFile(dmsFileVO, fileInfo);
-        }
-
         T objDO = factory.apply(dmsFileVO);
-        final InputStream inputStream = fileInfo != null ? fileInfo.getInputStream() : null;
-
-        dmsService.updateFile(objDO, inputStream);
-
+        dmsService.updateFile(objDO);
         return objDO;
     }
 

@@ -3045,6 +3045,73 @@ namespace ElzaAPI.Admin {
     };
 
     /**
+     * One category of the {@link DmsConsistencyReport}: a true total and a truncated sample.
+     */
+    model DmsConsistencyEntry {
+        /** Total number of items in this category. */
+        count: integer;
+
+        /**
+         * At most the first 500 items in this category. `id` for row-anchored
+         * categories (missing, notMigrated), path relative to `dms/` otherwise.
+         */
+        sample: string[];
+    }
+
+    /**
+     * Result of one DMS consistency check run. Every count is the true total;
+     * each list holds at most the first 500 entries in that category.
+     */
+    model DmsConsistencyReport {
+        /** Rows whose file could not be located on disk. */
+        missing: DmsConsistencyEntry;
+
+        /** Files on disk that no row claims. */
+        orphans: DmsConsistencyEntry;
+
+        /** Rows whose file exists but with a different size. */
+        sizeMismatch: DmsConsistencyEntry;
+
+        /** Rows whose file exists but whose SHA-256 does not match `dms_file.checksum`. */
+        corrupted: DmsConsistencyEntry;
+
+        /** Rows still on the legacy flat path (`storage_path IS NULL`). */
+        notMigrated: DmsConsistencyEntry;
+
+        /** Abandoned `<target>.tmp` files older than `orphanMinAgeMinutes`. */
+        staleTmp: DmsConsistencyEntry;
+
+        /** Files under `dms/` that no rule created; reported only, never touched. */
+        foreign: DmsConsistencyEntry;
+
+        /** `_trash/<yyyy-MM-dd>` used if `moveOrphansToTrash` was true and moves happened. */
+        trashDirUsed?: string;
+
+        /** Wall-clock duration of the check. */
+        durationMillis: integer;
+    }
+
+    /**
+     * Run a DMS consistency check.
+     *
+     * Compares `dms_file` against the on-disk tree under `${workDir}/dms/`,
+     * categorises every discrepancy, and optionally moves orphans and stale
+     * temporary files to the trash. Requires the ADMIN permission.
+     *
+     * @param verifyChecksums re-compute SHA-256 for every checked file; when
+     *        false, only size is compared. Also drives the checksum backfill
+     *        for legacy rows.
+     * @param moveOrphansToTrash actually move orphan / stale-tmp files to
+     *        `_trash/<today>/`. When false, the check is read-only and
+     *        merely reports.
+     */
+    @route("dms/consistency-check")
+    @post op dmsConsistencyCheck(
+        @query verifyChecksums?: boolean = false,
+        @query moveOrphansToTrash?: boolean = false,
+    ): DmsConsistencyReport;
+
+    /**
      * Return current state of asynchronous request queues.
      */
     @route("async-requests")

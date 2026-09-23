@@ -497,15 +497,6 @@ public class PublicationPublicApiTest extends AbstractControllerTest {
      * {@code arr_export.user_id} from being filled in by {@link #prepareExport}.
      */
     private TestContext setupUserAndFund() {
-        // clean work/dms folder
-        try {
-            java.io.File dmsDir = resourcePathResolver.getDmsDir().toFile();
-            if (dmsDir.exists()) {
-                FileUtils.cleanDirectory(dmsDir);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to clean DMS dir", e);
-        }
         ApAccessPointVO ap = findRecord(null, null, null, null, null).get(0);
         UsrUserVO user = createUser(ap.getId(), "publication-user", "publication-pass");
         UsrPermissionVO faPermission = new UsrPermissionVO();

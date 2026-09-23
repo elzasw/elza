@@ -142,6 +142,24 @@ elza:
     workingDir: C:\Elza\work
 ```
 
+Pod pracovním adresářem vzniká podadresář `dms/`, do kterého Elza ukládá
+všechny binární soubory: přílohy archivních souborů, vygenerované výstupy,
+publikační exporty a zdrojové soubory importních dávek. Struktura je
+`dms/<rok>/<měsíc>/<blok>/<id>.<přípona>` a nesmí se ručně upravovat —
+autoritativní cestu drží sloupec `dms_file.storage_path` a jakákoli změna
+mimo aplikaci se projeví buď jako osiřelý soubor, nebo jako chybějící obsah
+u existujícího řádku. Adresář `dms/_trash/<datum>/` obsahuje soubory
+čekající na fyzické smazání (viz `elza.dms.trashRetentionDays`); dokud
+jsou v koši, je smazání vratné.
+
+Databáze a `${elza.workingDir}/dms` tvoří jeden celek a musí se zálohovat i
+obnovovat společně. Doporučený postup je zálohovat nejdřív databázi
+(`pg_dump`), pak `dms/`, nebo obojí se zastavenou aplikací. Před každou
+aktualizací pořiďte zálohu obojího z jednoho okamžiku — návrat na starší
+verzi po proběhlé migraci úložiště (viz [`elza/dms-storage.md`](elza/dms-storage.md))
+vyžaduje obnovu obou z doby *před* aktualizací; starší verze by soubory
+uspořádané v novém stromě nenašla.
+
 ### Databázový server
 Je vyžadován PostgreSQL s rozšířením [PostGIS](http://postgis.net/).
 Po instalaci je nutné rozšíření zprovoznit přes ```psql``` nebo PgAdmin.
