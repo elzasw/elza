@@ -6,6 +6,7 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.*;
+import cz.tacr.elza.service.dms.DmsService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -344,8 +345,11 @@ public class DeleteFundAction {
     }
 
     private void dropOutputs() {
-        // drop outputs
-        // TODO: select changeIds and dataIds
+        // schedule physical file cleanup before the row bulk-delete —
+        // once deleteByOutputResultOutputFund runs, the entities are unreachable
+        List<ArrOutputFile> outputFiles = outputFileRepository.findByOutputResultOutputFund(fund);
+        dmsService.deleteFilesAfterCommit(outputFiles, "fund-delete-output");
+
         outputFileRepository.deleteByOutputResultOutputFund(fund);
         outputResultRepository.deleteByOutputFund(fund);
         itemSettingsRepository.deleteByOutputFund(fund);

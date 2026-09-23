@@ -4,23 +4,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.RulTemplateVO;
 import cz.tacr.elza.controller.vo.TreeData;
-import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.service.output.OutputRequestStatus;
 import cz.tacr.elza.test.controller.vo.Fund;
 import cz.tacr.elza.test.controller.vo.NodeBase;
@@ -37,33 +29,6 @@ public class OutputGenerationTest extends AbstractControllerTest {
 
     private static final String GENERATE_OUTPUT = ARRANGEMENT_CONTROLLER_URL + "/output/generate/{outputId}";
     private static final String OUTPUT_RESULTS_DOWNLOAD = "/api/outputResults/{outputId}";
-
-    @Autowired
-    private ResourcePathResolver resourcePathResolver;
-
-    @Override
-    @BeforeEach
-    public void setUp() throws Exception {
-        super.setUp();
-        // Vyčištění DMS adresáře - deleteTables() nemaže fyzické soubory
-        cleanDmsDirectory();
-    }
-
-    /**
-     * Smazání obsahu DMS adresáře pro zajištění opakovatelnosti testu.
-     */
-    private void cleanDmsDirectory() throws IOException {
-        Path dmsDir = resourcePathResolver.getDmsDir();
-        if (Files.exists(dmsDir)) {
-            Files.walkFileTree(dmsDir, new SimpleFileVisitor<>() {
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    Files.delete(file);
-                    return FileVisitResult.CONTINUE;
-                }
-            });
-        }
-    }
 
     @Test
     public void generateOutputTest() {

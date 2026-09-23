@@ -25,6 +25,8 @@ public interface OutputFileRepository extends ElzaJpaRepository<ArrOutputFile, I
 
     void deleteByOutputResultOutputFund(ArrFund fund);
 
+    List<ArrOutputFile> findByOutputResultOutputFund(ArrFund fund);
+
 	List<ArrOutputFile> findByOutputResultOutput(ArrOutput output);
 
     @Modifying

@@ -13,6 +13,7 @@ import java.util.zip.ZipOutputStream;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 
+import org.apache.commons.io.FileUtils;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.search.mapper.orm.Search;
@@ -25,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.packageimport.PackageService;
@@ -273,6 +275,9 @@ public class HelperTestService {
     private PackageService packageService;
 
     @Autowired
+    private ResourcePathResolver resourcePathResolver;
+
+    @Autowired
     private StaticDataService staticDataService;
 
     @Autowired
@@ -313,6 +318,15 @@ public class HelperTestService {
         // Direct workspace purge is synchronous and instant.        
         Search.session(em).workspace().purge();
         logger.debug("Lucene indexes purged.");
+
+        File dmsDir = resourcePathResolver.getDmsDir().toFile();
+        if (dmsDir.exists()) {
+            try {
+                FileUtils.cleanDirectory(dmsDir);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to clean DMS dir", e);
+            }
+        }
 
         if (stopTasks) {
             packageService.startAsyncTasks();

@@ -9,7 +9,7 @@ import com.lightcomp.ft.core.send.items.SourceItem;
 import com.lightcomp.ft.core.send.items.SourceItemReader;
 
 import cz.tacr.elza.domain.ArrOutputFile;
-import cz.tacr.elza.service.DmsService;
+import cz.tacr.elza.service.dms.DmsService;
 
 public class OutputFilesReader implements SourceItemReader {
 
