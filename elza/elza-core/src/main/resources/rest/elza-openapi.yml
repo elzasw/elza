@@ -1817,6 +1817,49 @@ paths:
                 $ref: '#/components/schemas/BaseException'
       tags:
         - aips
+  /aip/bulk-import-description:
+    post:
+      operationId: Aip_bulkImportDescription
+      description: Převzetí popisu z balíčků do archivního popisu pod zvolenou jednotku popisu
+      parameters:
+        - name: arrNodeId
+          in: query
+          required: true
+          description: ArrNode ID - jednotka popisu, pod kterou se popis převezme
+          schema:
+            type: integer
+          explode: false
+        - name: daAipIdList
+          in: query
+          required: true
+          description: DaAip ID list
+          schema:
+            type: array
+            items:
+              type: integer
+          explode: false
+        - name: fileplanAsRoot
+          in: query
+          required: false
+          description: Převzít spisový plán jako kořenovou sérii; ve výchozím stavu se vynechá
+          schema:
+            type: boolean
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaAipActionVO'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aips
   /aip/bulk-create-from-selected:
     post:
       operationId: Aip_bulkCreateFromSelected
@@ -8539,6 +8582,7 @@ components:
         - CONNECT_LOGICAL_STRUCTURE
         - CREATE_NODES
         - CREATE_NODES_AND_CONNECT
+        - IMPORT_DESCRIPTION
       description: Typ akce vyžádané nad AIPy
     DaAipActionVO:
       type: object

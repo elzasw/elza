@@ -31,6 +31,9 @@ public class DaAipStepService {
     private DaAipActionService actionService;
 
     @Autowired
+    private DaImportService daImportService;
+
+    @Autowired
     private DaAipActionItemRepository actionItemRepository;
 
     /**
@@ -79,6 +82,7 @@ public class DaAipStepService {
             case REMAP_REFERENCES -> daService.remapReferences(oneAip, sink);
             case CONNECT_TO_NODE, CREATE_NODES, CONNECT_LOGICAL_STRUCTURE, CREATE_NODES_AND_CONNECT ->
                     connectOneAip(actionItemId, input);
+            case IMPORT_DESCRIPTION -> importOneAip(actionItemId, input);
             default -> {
                 // Only the work ELZA does on its own is carried out here; the rest is waiting for
                 // the digital archive and is finished by the synchronization queue.
@@ -105,6 +109,36 @@ public class DaAipStepService {
             return;
         }
         actionService.recordOutcome(actionItemId, DaAipActionItemState.FINISHED, null);
+    }
+
+    /**
+     * Imports the description of one AIP and records what it did - what was created, what was
+     * found already described, and the values that differ from the description already there.
+     * A package that cannot be imported is refused with the words of the rule; a package that
+     * cannot be read fails, and the failure is recorded by the caller.
+     */
+    private void importOneAip(Integer actionItemId, StepInput input) {
+        DaService.ConnectParams params = daService.readConnectParams(input.params());
+        DaImportBuilder.Outcome outcome;
+        try {
+            outcome = daImportService.importPackage(input.aipId(), params.nodeId(),
+                                                    Boolean.TRUE.equals(params.fileplanAsRoot()));
+        } catch (BusinessException e) {
+            actionService.recordOutcome(actionItemId, DaAipActionItemState.ERROR, e.getMessage());
+            return;
+        }
+        actionService.recordOutcome(actionItemId, DaAipActionItemState.FINISHED, describe(outcome));
+    }
+
+    static String describe(DaImportBuilder.Outcome outcome) {
+        StringBuilder sb = new StringBuilder()
+                .append("Vytvořeno úrovní: ").append(outcome.created())
+                .append(", nalezeno existujících: ").append(outcome.matched())
+                .append(", připojeno částí AIP: ").append(outcome.attached()).append('.');
+        for (String conflict : outcome.conflicts()) {
+            sb.append('\n').append(conflict);
+        }
+        return sb.toString();
     }
 
     /**

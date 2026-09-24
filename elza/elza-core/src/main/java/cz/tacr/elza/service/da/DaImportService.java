@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.EnumSet;
 import java.util.Optional;
+import java.util.function.BiFunction;
 
 import javax.annotation.Nullable;
 
@@ -17,10 +18,14 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.DaAip;
 import cz.tacr.elza.domain.DaAipState;
 import cz.tacr.elza.domain.DaLocalCache;
+import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.AipStateRepository;
+import cz.tacr.elza.repository.ArrDaLinkRepository;
 import cz.tacr.elza.repository.DaLocalCacheRepository;
+import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.ArrangementInternalService;
 import gov.loc.mets.v1_11.schema.MdSecType;
 import gov.loc.mets.v1_11.schema.MetsType;
@@ -43,16 +48,21 @@ public class DaImportService {
     private final AipStateRepository aipStateRepository;
     private final DaLocalCacheRepository localCacheRepository;
     private final ArrangementInternalService arrangementInternalService;
+    private final NodeRepository nodeRepository;
+    private final ArrDaLinkRepository daLinkRepository;
 
     public DaImportService(DaService daService, DaImportPlanner planner, DaImportBuilder builder,
                            AipStateRepository aipStateRepository, DaLocalCacheRepository localCacheRepository,
-                           ArrangementInternalService arrangementInternalService) {
+                           ArrangementInternalService arrangementInternalService, NodeRepository nodeRepository,
+                           ArrDaLinkRepository daLinkRepository) {
         this.daService = daService;
         this.planner = planner;
         this.builder = builder;
         this.aipStateRepository = aipStateRepository;
         this.localCacheRepository = localCacheRepository;
         this.arrangementInternalService = arrangementInternalService;
+        this.nodeRepository = nodeRepository;
+        this.daLinkRepository = daLinkRepository;
     }
 
     /**
@@ -69,6 +79,49 @@ public class DaImportService {
     @Transactional(Transactional.TxType.MANDATORY)
     public Optional<DaImportBuilder.Outcome> importBelow(DaAip aip, ArrNode node, String divUuid,
                                                          boolean fileplanAsRoot) {
+        return withPackage(aip, node, fileplanAsRoot, (pkg, ruleSetId) ->
+                planner.planBelow(pkg.mets(), pkg.ead(), pkg.eadHref(), ruleSetId, pkg.importPackage(), divUuid))
+                .map(plan -> builder.build(aip, node, plan));
+    }
+
+    /**
+     * Imports the description the package carries - its whole logical structural map - below the
+     * given unit of description, as asked for by a user
+     * ({@link cz.tacr.elza.api.DaAipActionType#IMPORT_DESCRIPTION}).
+     *
+     * @throws BusinessException when the package cannot be imported there: it belongs to another
+     *             fund, it is attached already, or the rules of the fund cannot import packages
+     * @throws AipProblemException when the package cannot be read or its EAD is not written the
+     *             way it can be read
+     */
+    @Transactional
+    public DaImportBuilder.Outcome importPackage(Integer aipId, Integer nodeId, boolean fileplanAsRoot) {
+        DaAip aip = daService.findAipById(aipId);
+        ArrNode node = nodeRepository.getOneCheckExist(nodeId);
+        DaAipState aipState = aipStateRepository.findByDaAipAndDeleteChangeIsNull(aip);
+        if (aipState == null || aipState.getFund() == null
+                || !aipState.getFund().getFundId().equals(node.getFundId())) {
+            throw new BusinessException("AIP " + aip.getCode() + " nepatří k archivnímu souboru, do kterého se má popis převzít.",
+                                        BaseCode.INVALID_STATE);
+        }
+        if (!daLinkRepository.findByAipIdAndDeleteChangeIsNull(aipId).isEmpty()) {
+            throw new BusinessException("AIP " + aip.getCode() + " je již připojen k archivnímu popisu; popis z něj se znovu nepřebírá.",
+                                        ArrangementCode.DAO_ALREADY_LINKED);
+        }
+        return withPackage(aip, node, fileplanAsRoot, (pkg, ruleSetId) ->
+                planner.plan(pkg.mets(), pkg.ead(), pkg.eadHref(), ruleSetId, pkg.importPackage()))
+                .map(plan -> builder.build(aip, node, plan))
+                .orElseThrow(() -> new BusinessException("Pravidla archivního souboru převzetí popisu z balíčku neumožňují.",
+                                                         BaseCode.INVALID_STATE));
+    }
+
+    /** What the planning needs of a stored metadata package. */
+    private record OpenPackage(MetsType mets, @Nullable Ead ead, @Nullable String eadHref,
+                               DaImportPackage importPackage) {
+    }
+
+    private Optional<DaImportPlan> withPackage(DaAip aip, ArrNode node, boolean fileplanAsRoot,
+                                               BiFunction<OpenPackage, Integer, Optional<DaImportPlan>> planning) {
         DaAipState aipState = aipStateRepository.findByDaAipAndDeleteChangeIsNull(aip);
         ArrFundVersion version = arrangementInternalService.getOpenVersionByFund(node.getFund());
         DaImportPackage importPackage = new DaImportPackage(aipState.getContentType(), aipState.getProfile(),
@@ -79,8 +132,7 @@ public class DaImportService {
             MetsType mets = readMets(dir);
             String eadHref = inherentDescriptionHref(mets);
             Ead ead = eadHref == null ? null : readEad(dir, eadHref);
-            return planner.planBelow(mets, ead, eadHref, version.getRuleSetId(), importPackage, divUuid)
-                    .map(plan -> builder.build(aip, node, plan));
+            return planning.apply(new OpenPackage(mets, ead, eadHref, importPackage), version.getRuleSetId());
         } finally {
             DaService.deleteTempDirectory(dir);
         }

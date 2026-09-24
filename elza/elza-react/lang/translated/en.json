@@ -3281,6 +3281,14 @@
     "defaultMessage": "Create description units with a link",
     "srcHash": "rcMZ18W8oSsR"
   },
+  "arr.aip.assignment.import": {
+    "defaultMessage": "Import description from packages",
+    "srcHash": "mtCXWIuOaRqC"
+  },
+  "arr.aip.assignment.import.fileplanAsRoot": {
+    "defaultMessage": "File plan as the root series",
+    "srcHash": "gaQcl8F7wtYN"
+  },
   "arr.aip.assignment.individually": {
     "defaultMessage": "Link individually",
     "srcHash": "5747DsAcQWRE"

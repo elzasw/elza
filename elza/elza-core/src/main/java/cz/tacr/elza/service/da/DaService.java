@@ -1974,8 +1974,15 @@ public class DaService {
      *                    made one
      * @param levelViewId the level view whose digital entities are attached, for the actions that
      *                    build a logical structure
+     * @param fileplanAsRoot for the import of the description: whether the file plan becomes the
+     *                    root series; null (in actions submitted earlier) is false
      */
-    public record ConnectParams(Integer nodeId, @Nullable Integer changeId, @Nullable Integer levelViewId) {
+    public record ConnectParams(Integer nodeId, @Nullable Integer changeId, @Nullable Integer levelViewId,
+                                @Nullable Boolean fileplanAsRoot) {
+
+        public ConnectParams(Integer nodeId, @Nullable Integer changeId, @Nullable Integer levelViewId) {
+            this(nodeId, changeId, levelViewId, null);
+        }
     }
 
 
@@ -2070,6 +2077,24 @@ public class DaService {
         });
         return inTransaction(() -> submitConnect(DaAipActionType.CONNECT_TO_NODE, aipIds,
                                                  new ConnectParams(nodeId, null, null)));
+    }
+
+    /**
+     * Imports the description the packages carry into the archival description below a unit of
+     * description, one package after another - a later package finds the levels an earlier one
+     * created, so the packages of one file plan share its groups.
+     *
+     * The packages are imported in the background, where nobody is logged in, so the permission
+     * to arrange the fund is checked here. Whether a package can be imported is decided for each
+     * package when it is imported, so one that cannot does not stop the others.
+     */
+    public DaAipAction submitImportDescription(Integer nodeId, List<Integer> aipIds, boolean fileplanAsRoot) {
+        inTransaction(() -> {
+            checkArrPermission(nodeRepository.getOneCheckExist(nodeId));
+            return null;
+        });
+        return inTransaction(() -> submitConnect(DaAipActionType.IMPORT_DESCRIPTION, aipIds,
+                                                 new ConnectParams(nodeId, null, null, fileplanAsRoot)));
     }
 
     /** Creates a unit of description per package and attaches the package there. */

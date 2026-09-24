@@ -1138,7 +1138,8 @@ enum DaAipActionType {
     CONNECT_TO_NODE,
     CONNECT_LOGICAL_STRUCTURE,
     CREATE_NODES,
-    CREATE_NODES_AND_CONNECT
+    CREATE_NODES_AND_CONNECT,
+    IMPORT_DESCRIPTION
 }
 
 /**
@@ -6622,6 +6623,27 @@ namespace ElzaAPI.Aip {
           @body data: DaAipActionVO;
         } | {
           /** Failed to create dao link */
+          @Http.statusCode statusCode: 500;
+          @body data: BaseException;
+        };
+
+     /**
+      * Převzetí popisu z balíčků do archivního popisu pod zvolenou jednotku popisu
+      */
+      @route("/bulk-import-description")
+      @post op bulkImportDescription(
+         /** ArrNode ID - jednotka popisu, pod kterou se popis převezme */
+         @query arrNodeId: integer;
+         /** DaAip ID list */
+         @query daAipIdList: integer[];
+         /** Převzít spisový plán jako kořenovou sérii; ve výchozím stavu se vynechá */
+         @query fileplanAsRoot?: boolean;
+      ) : {
+          /** Akce zahájena */
+          @Http.statusCode statusCode: 200;
+          @body data: DaAipActionVO;
+        } | {
+          /** Akci nelze zahájit */
           @Http.statusCode statusCode: 500;
           @body data: BaseException;
         };
