@@ -407,10 +407,13 @@ public class DaService {
             Path unpacked = tempDir;
             return inTransaction(() -> storeDaoStructure(input, metsType, premisComplexType, unpacked, forceUpdate, sink));
         } catch (Exception e) {
-            logger.error("Došlo k chybě při zpracování metadat pro AIP={}", aipId, e);
+            AipProblem problem = AipProblem.of(e);
+            logger.error("Došlo k chybě při zpracování metadat pro AIP={} ({}), balíček {}{}: {}", aipId,
+                    input.aip().getCode(), input.zip(),
+                    problem.file() != null ? ", soubor " + problem.file() : "",
+                    problem.description(), e);
             // The transaction the rebuild ran in is gone; the problem has to be written in one of
             // its own or it would be rolled back together with the work that failed.
-            AipProblem problem = AipProblem.of(e);
             inTransaction(() -> {
                 DaAipState aipState = aipStateRepository.findById(input.aipStateId()).orElse(null);
                 if (aipState != null) {
