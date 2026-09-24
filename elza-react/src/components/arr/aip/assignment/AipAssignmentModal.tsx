@@ -1,4 +1,4 @@
-import { TreeItemValue } from "@fluentui/react-components";
+import { Checkbox, TreeItemValue } from "@fluentui/react-components";
 import { Modal, Button, Col, Row } from "react-bootstrap";
 import "./AipAssignmentModal.scss";
 import { Icon} from "components/shared";
@@ -34,6 +34,7 @@ const AipAssignmentModal = ({aips, tree}: AipAssignmentModalProps) =>  {
     const websocket = useWebsocket();
     const intl = useIntl();
     const [blocked, setBlocked] = useState<AipConnectBlockedVO[]>([]);
+    const [fileplanAsRoot, setFileplanAsRoot] = useState(false);
 
     /** Napojení už napojený AIP odmítne; uživatel to má vědět dřív, než potvrdí. */
     useEffect(() => {
@@ -79,6 +80,17 @@ const AipAssignmentModal = ({aips, tree}: AipAssignmentModalProps) =>  {
             : Api.aips.aipBulkCreateFromSelected(selectedArrNodeId as number, selectedAips.aipIds), reloadAips);
     }
 
+    /**
+     * Převezme popis celých balíčků pod vybranou JP - úrovně z logické strukturální mapy, prvky
+     * popisu z EAD a připojené soubory. Balíčky se převezmou postupně, takže sdílejí úrovně
+     * spisového plánu.
+     */
+    const handleImportDescription = () => {
+        const title = intl.formatMessage(daoMessages.aipAssignmentImport);
+        runAipAction(dispatch, intl, websocket, title, () => Api.aips.aipBulkImportDescription(
+            selectedArrNodeId as number, aips.map(aip => aip.aipId), fileplanAsRoot), reloadAips);
+    }
+
     return (
         <Modal.Body>
             <AipConnectBlockedPanel blocked={blocked}/>
@@ -98,6 +110,13 @@ const AipAssignmentModal = ({aips, tree}: AipAssignmentModalProps) =>  {
                             <Icon glyph="fa-solid fa-plus" />
                             <div>{<FormattedMessage {...daoMessages.aipAssignmentCreate} />}</div>
                         </Button>
+                        <Button onClick={handleImportDescription} disabled={blocked.length > 0}>
+                            <Icon glyph="fa-solid fa-file-import" />
+                            <div>{<FormattedMessage {...daoMessages.aipAssignmentImport} />}</div>
+                        </Button>
+                        <Checkbox checked={fileplanAsRoot}
+                                  onChange={(_, data) => setFileplanAsRoot(data.checked === true)}
+                                  label={intl.formatMessage(daoMessages.aipAssignmentImportFileplanAsRoot)} />
                     </div>
                 </Col>
                 <Col xs={4}>

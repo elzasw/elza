@@ -3,6 +3,7 @@ package cz.tacr.elza.rules.zp2015;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
@@ -65,6 +66,7 @@ import cz.tacr.elza.domain.DaChangeType;
 import cz.tacr.elza.domain.DaDao;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.other.HelperTestService;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.repository.AipRepository;
@@ -89,6 +91,7 @@ import cz.tacr.elza.service.da.AipNodeUuids;
 import cz.tacr.elza.service.da.DaAipAutoLinkService;
 import cz.tacr.elza.service.da.DaImportBuilder;
 import cz.tacr.elza.service.da.DaImportPackage;
+import cz.tacr.elza.service.da.DaImportService;
 import cz.tacr.elza.service.da.DaImportPlan;
 import cz.tacr.elza.service.da.DaImportPlanner;
 import cz.tacr.elza.service.da.DaService;
@@ -169,10 +172,13 @@ public class Zp2015DaImportBuildTest {
     private DaSyncQueueItemRepository syncQueueItemRepository;
     @Autowired
     private DaAipAutoLinkService autoLinkService;
+    @Autowired
+    private DaImportService daImportService;
 
     private Integer ruleSetId;
     private Integer rootNodeId;
     private Integer firstAipId;
+    private Integer manuallyImportedAipId;
 
     @BeforeAll
     void createFund() throws Exception {
@@ -293,27 +299,7 @@ public class Zp2015DaImportBuildTest {
         String document = newId();
         String metsXml = resource("METS.xml").replace(GROUP_44_4, subgroup).replace(DOCUMENT, document);
         String eadXml = resource("pruvodka.xml").replace(GROUP_44_4, subgroup).replace(DOCUMENT, document);
-        Path zip = zip(Map.of("aip-third/METS.xml", metsXml, "aip-third/metadata/descriptive/pruvodka.xml", eadXml));
-
-        Integer aipId = tx().execute(status -> {
-            MetsType mets;
-            try (InputStream is = new java.io.ByteArrayInputStream(metsXml.getBytes(StandardCharsets.UTF_8))) {
-                mets = MetsReaderWriter.unmarshal(is);
-            } catch (Exception e) {
-                throw new IllegalStateException(e);
-            }
-            DaAip aip = createAip("uuid-" + UUID.randomUUID(), mets);
-            DaAipState state = new DaAipState();
-            state.setDaAip(aip);
-            state.setCreateChange(daChangeRepository.findAll().stream()
-                    .filter(c -> c.getDaAip().getAipId().equals(aip.getAipId())).findFirst().orElseThrow());
-            state.setAipVersion("1");
-            state.setFund(nodeRepository.findById(rootNodeId).orElseThrow().getFund());
-            state.setContentType("NSESSS");
-            aipStateRepository.save(state);
-            daService.createImportLocalCache(state, aip.getDigitalRepository(), AipType.METADATA_BASE, zip, null);
-            return aip.getAipId();
-        });
+        Integer aipId = storedAip(metsXml, eadXml);
         String packageUuid = tx().execute(status -> AipNodeUuids.normalize(aipRepository.findById(aipId).orElseThrow().getCode()));
         List<String> uuids = List.of(packageUuid, uuid("uuid-82f42018-e998-4878-bc48-c951251cf454"), uuid(GROUP_44),
                                      uuid(subgroup), uuid(document));
@@ -332,6 +318,70 @@ public class Zp2015DaImportBuildTest {
             assertEquals(2, links.size());
             assertTrue(links.stream().allMatch(l -> l.getNodeId().equals(created.getNodeId())
                     && l.getDaDao() != null), "the components are attached to the new document, not the whole AIP");
+        });
+    }
+
+    @Test
+    @Order(5)
+    void manualImport_withTheFileplanAsRoot_createsTheRootSeries() throws Exception {
+        Map<String, String> ids = Map.of(GROUP_44, newId(), GROUP_44_4, newId(), DOCUMENT, newId());
+        String metsXml = replaceAll(resource("METS.xml"), ids);
+        String eadXml = replaceAll(resource("pruvodka.xml"), ids);
+        Integer aipId = storedAip(metsXml, eadXml);
+        manuallyImportedAipId = aipId;
+
+        DaImportBuilder.Outcome outcome = daImportService.importPackage(aipId, rootNodeId, true);
+
+        assertEquals(4, outcome.created(), "file plan, two groups and the document");
+        assertEquals(2, outcome.attached());
+        tx().executeWithoutResult(status -> {
+            List<ArrNode> roots = children(rootNodeId);
+            assertEquals(2, roots.size(), "the file plan is a new root series next to the group imported before");
+            assertEquals("Spisový plán_název", name(roots.get(1)));
+            assertEquals("Název věcné skupiny 44 - např. HOSPODÁŘSKÉ PROVOZY, SLUŽBY",
+                         name(onlyChild(roots.get(1).getNodeId())));
+        });
+    }
+
+    @Test
+    @Order(6)
+    void manualImport_ofAnAttachedAip_isRefused() {
+        Integer attachedAipId = manuallyImportedAipId;
+
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> daImportService.importPackage(attachedAipId, rootNodeId, false));
+        assertTrue(e.getMessage().contains("již připojen"), e.getMessage());
+    }
+
+    /** Gives the divs and units of the package new ids, as another package would have. */
+    private static String replaceAll(String xml, Map<String, String> ids) {
+        for (Map.Entry<String, String> id : ids.entrySet()) {
+            xml = xml.replace(id.getKey(), id.getValue());
+        }
+        return xml;
+    }
+
+    /** An AIP with its metadata package stored in ELZA, as downloading it leaves it. */
+    private Integer storedAip(String metsXml, String eadXml) throws IOException {
+        Path zip = zip(Map.of("aip/METS.xml", metsXml, "aip/metadata/descriptive/pruvodka.xml", eadXml));
+        return tx().execute(status -> {
+            MetsType mets;
+            try (InputStream is = new java.io.ByteArrayInputStream(metsXml.getBytes(StandardCharsets.UTF_8))) {
+                mets = MetsReaderWriter.unmarshal(is);
+            } catch (Exception e) {
+                throw new IllegalStateException(e);
+            }
+            DaAip aip = createAip("uuid-" + UUID.randomUUID(), mets);
+            DaAipState state = new DaAipState();
+            state.setDaAip(aip);
+            state.setCreateChange(daChangeRepository.findAll().stream()
+                    .filter(c -> c.getDaAip().getAipId().equals(aip.getAipId())).findFirst().orElseThrow());
+            state.setAipVersion("1");
+            state.setFund(nodeRepository.findById(rootNodeId).orElseThrow().getFund());
+            state.setContentType("NSESSS");
+            aipStateRepository.save(state);
+            daService.createImportLocalCache(state, aip.getDigitalRepository(), AipType.METADATA_BASE, zip, null);
+            return aip.getAipId();
         });
     }
 

@@ -182,6 +182,13 @@ public class AipController implements AipsApi {
     }
 
     @Override
+    public ResponseEntity<DaAipActionVO> aipBulkImportDescription(Integer arrNodeId, List<Integer> daAipIdList,
+                                                                 Boolean fileplanAsRoot) {
+        return ResponseEntity.ok(clientFactoryVO.createAipAction(
+                daService.submitImportDescription(arrNodeId, daAipIdList, Boolean.TRUE.equals(fileplanAsRoot))));
+    }
+
+    @Override
     public ResponseEntity<DaAipActionVO> aipBulkCreateFromSelected(Integer arrNodeId, List<Integer> daAipIdList) {
         return ResponseEntity.ok(clientFactoryVO.createAipAction(
                 daService.submitBulkCreateFromSelected(arrNodeId, daAipIdList)));
