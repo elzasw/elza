@@ -2,7 +2,6 @@ package cz.tacr.elza.service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +44,11 @@ public class AccessPointGeneratorService {
     public void processRequest(final Integer accessPointId) {
         logger.info("Asynchronní zpracování AP={}", accessPointId);
         CachedAccessPoint cap = accessPointCacheService.findCachedAccessPoint(accessPointId);
-        Objects.requireNonNull(cap);
+        if (cap == null) {
+            // deleted access point has no cache and is not revalidated
+            logger.info("Asynchronní zpracování AP={} přeskočeno, entita nemá cache (zneplatněná)", accessPointId);
+            return;
+        }
         generateAndSetResult(cap);
         logger.info("Asynchronní zpracování AP={} - END", accessPointId);
     }

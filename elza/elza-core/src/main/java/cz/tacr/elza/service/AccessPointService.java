@@ -863,6 +863,9 @@ public class AccessPointService {
         accessPoint = saveWithLock(accessPoint);
         publishAccessPointDeleteEvent(accessPoint);
         //reindexDescItem(accessPoint);
+
+        // there may be tens of thousands of dependent entities, so they are revalidated asynchronously
+        partService.checkReferredRecords(accessPoint);
     }
 
     /**

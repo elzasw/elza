@@ -482,7 +482,11 @@ public class PartService {
         return success;
     }
 
-    private void checkReferredRecords(ApAccessPoint accessPoint) {
+    /**
+     * Enqueues access points referring to the given access point
+     * for asynchronous index regeneration and validation.
+     */
+    public void checkReferredRecords(ApAccessPoint accessPoint) {
         List<Integer> dataIdsList = dataRecordRefRepository.findIdsByRecord(accessPoint);
 
         if (CollectionUtils.isNotEmpty(dataIdsList)) {
