@@ -5943,7 +5943,6 @@
   },
   "dms.file.title.rename": {
     "defaultMessage": "Rename the attachment",
-    "translated": false,
     "srcHash": "8AMKi7SZne0J"
   },
   "download.allreadyDownloading": {
@@ -6784,7 +6783,6 @@
   },
   "global.action.rename": {
     "defaultMessage": "Rename",
-    "translated": false,
     "srcHash": "lDdbnIaYNyTV"
   },
   "global.action.replace": {
