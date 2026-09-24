@@ -1,7 +1,6 @@
 package cz.tacr.elza.rules.zp2015;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.InputStream;
@@ -113,7 +112,8 @@ public class Zp2015DaImportPlanTest {
         assertEquals(DaImportResult.Decision.LEVEL, group.getDecision());
         assertEquals("ZP2015_LEVEL_SERIES", spec(group, "ZP2015_LEVEL_TYPE"));
         assertEquals("Název věcné skupiny 44 - např. HOSPODÁŘSKÉ PROVOZY, SLUŽBY", string(group, "ZP2015_NAME"));
-        assertEquals(group.getLabel(), group.getMatchKey(), "a group of the file plan is recognized by its name");
+        assertEquals(List.of("ZP2015_LEVEL_TYPE", "ZP2015_NAME"), matchBy(group),
+                     "a group of the file plan is recognized by its name");
         assertEquals(List.of("ZP2015_OTHERID_STORAGE_ID:44", "ZP2015_OTHERID_SOURCEID:ERMS:identifikátor_vecna_skupina_44"),
                      otherIds(group));
     }
@@ -127,7 +127,7 @@ public class Zp2015DaImportPlanTest {
         assertEquals("uuid-082a283c-0731-4160-9490-32921f2f88d2", document.getDivId());
         assertEquals("ZP2015_LEVEL_ITEM", spec(document, "ZP2015_LEVEL_TYPE"));
         assertEquals("Název dokumentu, věc-doručený dokument", string(document, "ZP2015_NAME"));
-        assertNull(document.getMatchKey(), "a document is never shared by packages");
+        assertTrue(document.getMatchBy().isEmpty(), "a document is never shared by packages");
         // PORADOVE_CISLO_PUVODNI has no counterpart in ZP2015 and is not taken over
         assertEquals(List.of("ZP2015_OTHERID_CJ:č.j.DDFN-101/2009"), otherIds(document));
 
@@ -150,7 +150,7 @@ public class Zp2015DaImportPlanTest {
         assertEquals("uuid-82f42018-e998-4878-bc48-c951251cf454", fileplan.getDivId());
         assertEquals("ZP2015_LEVEL_SERIES", spec(fileplan, "ZP2015_LEVEL_TYPE"));
         assertEquals("Spisový plán_název", string(fileplan, "ZP2015_NAME"));
-        assertEquals("Spisový plán_název", fileplan.getMatchKey());
+        assertEquals(List.of("ZP2015_LEVEL_TYPE", "ZP2015_NAME"), matchBy(fileplan));
         assertEquals("uuid-ac73f202-a2a0-4309-9ce7-6c1e426be654", fileplan.getChildren().get(0).getDivId());
     }
 
@@ -167,6 +167,10 @@ public class Zp2015DaImportPlanTest {
 
     private static String string(DaImportPlan.Node node, String itemTypeCode) {
         return ((ArrDataString) item(node, itemTypeCode).data()).getStringValue();
+    }
+
+    private static List<String> matchBy(DaImportPlan.Node node) {
+        return node.getMatchBy().stream().map(t -> t.getCode()).collect(Collectors.toList());
     }
 
     private static List<String> otherIds(DaImportPlan.Node node) {

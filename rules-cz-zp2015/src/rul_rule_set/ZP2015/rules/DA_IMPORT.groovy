@@ -109,7 +109,7 @@ static void decide(DaImportPackage pkg, DaImportLevel level, DaImportResult resu
             result.level()
                   .item(LEVEL_TYPE, "ZP2015_LEVEL_SERIES")
                   .item("ZP2015_NAME", null, level.label)
-                  .matchKey(level.label)
+                  .matchBy(LEVEL_TYPE, "ZP2015_NAME")
         } else {
             result.skip()
         }
@@ -136,7 +136,7 @@ static void decide(DaImportPackage pkg, DaImportLevel level, DaImportResult resu
     }
     // groups of the file plan are shared by the packages coming from it - recognized by name
     if (levelType == "ZP2015_LEVEL_SERIES") {
-        result.matchKey(level.label)
+        result.matchBy(LEVEL_TYPE, "ZP2015_NAME")
     }
 }
 
