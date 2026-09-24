@@ -1,15 +1,12 @@
 package cz.tacr.elza.service.da;
 
 import cz.tacr.elza.core.ResourcePathResolver;
-import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.data.StructType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDaLink;
 import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataString;
-import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.DaAip;
 import cz.tacr.elza.domain.DaChange;
 import cz.tacr.elza.domain.DaChangeType;
@@ -19,10 +16,10 @@ import cz.tacr.elza.domain.DaDaoFileFolder;
 import cz.tacr.elza.domain.DaDaoItem;
 import cz.tacr.elza.domain.DaDaoRelation;
 import cz.tacr.elza.domain.RulComponent;
+import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulStructureDefinition;
-import cz.tacr.elza.domain.converter.UnitDateConverter;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DaDaoFileFolderRepository;
@@ -47,15 +44,11 @@ import gov.loc.premis.v3.ObjectComplexType;
 import gov.loc.premis.v3.ObjectIdentifierComplexType;
 import gov.loc.premis.v3.PremisComplexType;
 import org.apache.commons.collections4.CollectionUtils;
-import org.archivists.ead3.schema.Abstract;
 import org.archivists.ead3.schema.Archdesc;
 import org.archivists.ead3.schema.C;
-import org.archivists.ead3.schema.Daterange;
 import org.archivists.ead3.schema.Did;
 import org.archivists.ead3.schema.Dsc;
 import org.archivists.ead3.schema.Ead;
-import org.archivists.ead3.schema.Unitdatestructured;
-import org.archivists.ead3.schema.Unittitle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,21 +56,20 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
-import java.io.Serializable;
 import java.math.BigInteger;
 import java.nio.file.Path;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashSet;
 
 @Component
@@ -85,7 +77,6 @@ import java.util.LinkedHashSet;
 public class DaoProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(DaoProcessor.class);
-    private static final DateTimeFormatter FORMATTER_DATE = DateTimeFormatter.ofPattern(UnitDateConverter.FORMAT_DATE);
 
     @Autowired
     private DaService daService;
@@ -146,6 +137,9 @@ public class DaoProcessor {
     private final Map<String, DaDao> representations = new HashMap<>();
 
     private final Map<Integer, List<DaDaoFileFolder>> newDaDaoFileFolderMap = new HashMap<>();
+
+    /** What the IMPORT_DA script maps the {@code <did>} elements to; empty when not taken over. */
+    private final Map<MappingKey, Optional<DidElementConverters.Mapping>> mappings = new HashMap<>();
 
     /** Codes of the levels of the logical structural map, in document order. */
     private final Set<String> levelUuids = new LinkedHashSet<>();
@@ -668,58 +662,102 @@ public class DaoProcessor {
         }
     }
 
-    private void createDaoItemsFromDid(Did did, String id, DaChange change) {
-        DaDao daDao = logicalDaoMap.getOrDefault(id, null);
-
-        if (daDao != null) {
-            for (Object o : did.getMDid()) {
-                String itemTypeCode = groovyScriptService.process(o.getClass().getSimpleName(), getGroovyFilePath());
-                if (itemTypeCode != null) {
-                    RulItemType itemType = staticDataService.getData().getItemType(itemTypeCode);
-                    ArrData data = null;
-                    if (o instanceof Abstract abs) {
-                        String stringValue = null;
-                        for (Serializable s : abs.getContent()) {
-                            if (s instanceof String sValue) {
-                                stringValue = sValue;
-                            }
-                        }
-                        data = new ArrDataString(stringValue);
-                        data.setDataType(DataType.STRING.getEntity());
-                    } else if (o instanceof Unittitle unittitle) {
-                        String stringValue = null;
-                        for (Serializable s : unittitle.getContent()) {
-                            if (s instanceof String sValue) {
-                                stringValue = sValue;
-                            }
-                        }
-                        data = new ArrDataString(stringValue);
-                        data.setDataType(DataType.STRING.getEntity());
-                    } else if (o instanceof Unitdatestructured uds) {
-                        Daterange daterange = uds.getDaterange();
-
-                        String date = "";
-                        if (daterange.getFromdate() != null) {
-                            LocalDate fromDate = LocalDate.parse(daterange.getFromdate().getStandarddate());
-                            date += fromDate.format(FORMATTER_DATE);
-                        }
-                        date += "-";
-                        if (daterange.getTodate() != null) {
-                            LocalDate toDate = LocalDate.parse(daterange.getTodate().getStandarddate());
-                            date += toDate.format(FORMATTER_DATE);
-                        }
-
-                        data = UnitDateConverter.convertToUnitDate(date, new ArrDataUnitdate());
-                        data.setDataType(DataType.UNITDATE.getEntity());
-                    }
-
-                    if (data != null) {
-                        dataRepository.save(data);
-                        daService.createDaDaoItem(daDao, change, itemType, null, data);
-                    }
-                }
+    /**
+     * Takes over the elements of {@code <did>} of the unit of description the component of the
+     * given code stands for. The IMPORT_DA script of the rules decides the item type and the
+     * specification of each element, {@link DidElementConverters} its value. Inherited values
+     * are not taken over - the component of the level they are inherited from has them.
+     *
+     * @throws AipProblemException when an element is not written the way it can be read; the
+     *             problem names the file, the unit of description and the element
+     */
+    private void createDaoItemsFromDid(@Nullable Did did, String id, DaChange change) {
+        DaDao daDao = logicalDaoMap.get(id);
+        if (daDao == null || did == null) {
+            return;
+        }
+        for (Object element : did.getMDid()) {
+            if (!DidElementConverters.isSupported(element) || DidElementConverters.isInherited(element)) {
+                continue;
+            }
+            DidElementConverters.Mapping mapping = findMapping(element);
+            if (mapping == null) {
+                continue;
+            }
+            ArrData data;
+            try {
+                data = DidElementConverters.convert(element, mapping);
+            } catch (EadContentException e) {
+                throw AipProblemException.metadata("Inherentní archivní popis v souboru '" + eadHref
+                        + "' obsahuje u jednotky popisu '" + id + "' element <" + elementName(element)
+                        + ">, který nelze převzít: " + e.getMessage() + ".", eadHref, e);
+            }
+            if (data != null) {
+                dataRepository.save(data);
+                daService.createDaDaoItem(daDao, change, mapping.itemType(), mapping.itemSpec(), data);
             }
         }
+    }
+
+    /** What the script is asked about: the class of the element and its local type. */
+    private record MappingKey(Class<?> elementClass, @Nullable String localType) {
+    }
+
+    /**
+     * @return the item type and specification the rules map the supported element to; null
+     *         when the element is not taken over
+     */
+    @Nullable
+    private DidElementConverters.Mapping findMapping(Object element) {
+        MappingKey key = new MappingKey(element.getClass(), DidElementConverters.localType(element));
+        return mappings.computeIfAbsent(key, k -> Optional.ofNullable(resolveMapping(k))).orElse(null);
+    }
+
+    @Nullable
+    private DidElementConverters.Mapping resolveMapping(MappingKey key) {
+        String className = key.elementClass().getSimpleName();
+        Object result = groovyScriptService.processImportDa(className, key.localType(), getGroovyFilePath());
+
+        String itemTypeCode;
+        String itemSpecCode = null;
+        if (result == null) {
+            if (key.localType() != null) {
+                logger.warn("Element <{}> s localtype={} pravidla nepřebírají, AIP={}", elementName(className),
+                            key.localType(), aip.getCode());
+            }
+            return null;
+        } else if (result instanceof String code) {
+            itemTypeCode = code;
+        } else if (result instanceof Map<?, ?> map) {
+            itemTypeCode = Objects.toString(map.get("itemType"), null);
+            itemSpecCode = Objects.toString(map.get("itemSpec"), null);
+        } else {
+            throw new SystemException("Skript IMPORT_DA vrátil pro element " + className
+                    + " nepodporovaný výsledek: " + result, BaseCode.INVALID_STATE);
+        }
+
+        StaticDataProvider sdp = staticDataService.getData();
+        RulItemType itemType = sdp.getItemType(itemTypeCode);
+        RulItemSpec itemSpec = null;
+        if (itemSpecCode != null) {
+            itemSpec = sdp.getItemTypeByCode(itemTypeCode).getItemSpecByCode(itemSpecCode);
+            if (itemSpec == null) {
+                throw new SystemException("Skript IMPORT_DA přiřazuje elementu " + className + " specifikaci "
+                        + itemSpecCode + ", která nepatří k prvku popisu " + itemTypeCode, BaseCode.INVALID_STATE);
+            }
+        } else if (Boolean.TRUE.equals(itemType.getUseSpecification())) {
+            throw new SystemException("Skript IMPORT_DA přiřazuje elementu " + className + " prvek popisu "
+                    + itemTypeCode + " bez specifikace, kterou prvek vyžaduje", BaseCode.INVALID_STATE);
+        }
+        return new DidElementConverters.Mapping(itemType, itemSpec);
+    }
+
+    private static String elementName(String className) {
+        return className.toLowerCase(Locale.ROOT);
+    }
+
+    private static String elementName(Object element) {
+        return elementName(element.getClass().getSimpleName());
     }
 
     /**
