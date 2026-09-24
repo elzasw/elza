@@ -13,7 +13,7 @@ notes that outlive the delivery (§2), the reasoning behind the central architec
 later and §6 how it is verified.
 
 **Scope:** `FileSystemRepoService`, `FileSystemRepoBrowser` and the filesystem-repository browser.
-**Related:** `elza/da-migration.md` — its Phase 3 was revised to match §3.3 of this document and is
+**Related:** `da-migration.md` — its Phase 3 was revised to match §3.3 of this document and is
 fully implemented (steps 3a + 3b); remaining DA-side work (Phases 4–5) is tracked there.
 
 *The delivery history is not repeated here. The resolved correctness defects (A1–A9), the deleted
@@ -21,7 +21,7 @@ image cache, the resolved structural items (C1–C7, C9), the findings (N1, N3, 
 frontend items (D1–D7) with the `VirtualList` replacement, and the design iterations behind the
 link model all live in this file's git history, in the changesets, and in `da-migration.md`.
 Finding ids are never reused or renumbered, so a reference from a commit message or from the other
-document keeps resolving — `git log -p -- elza/fs-repo-analysis.md` is the way to read one back.*
+document keeps resolving — `git log -p --follow -- elza/docs/fs-repo-analysis.md` is the way to read one back.*
 
 ---
 
