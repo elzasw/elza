@@ -1877,6 +1877,10 @@
     "defaultMessage": "Complete AIP loaded",
     "srcHash": "fagm5bQf_w7v"
   },
+  "aip.col.contentType": {
+    "defaultMessage": "Content type",
+    "srcHash": "6zvdoABI4nl8"
+  },
   "aip.col.exportState": {
     "defaultMessage": "Export state",
     "srcHash": "Z6AadsdMdPep"
@@ -1924,6 +1928,10 @@
   "aip.col.problemType": {
     "defaultMessage": "Problem",
     "srcHash": "WdRzqC9KeHRa"
+  },
+  "aip.col.profile": {
+    "defaultMessage": "Profile",
+    "srcHash": "4mfTQ4IfJk5h"
   },
   "aip.col.referenceNumber": {
     "defaultMessage": "Reference number",

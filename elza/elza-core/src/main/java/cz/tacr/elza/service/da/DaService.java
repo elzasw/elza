@@ -393,13 +393,17 @@ public class DaService {
         }
 
         Path tempDir = null;
+        AipPackageType packageType = null;
         try {
             tempDir = unpack(input.zip());
             MetsType metsType = readMets(tempDir);
+            packageType = AipPackageType.of(metsType);
             PremisComplexType premisComplexType = readPremis(tempDir);
 
             Path unpacked = tempDir;
-            return inTransaction(() -> storeDaoStructure(input, metsType, premisComplexType, unpacked, forceUpdate, sink));
+            AipPackageType type = packageType;
+            return inTransaction(() -> storeDaoStructure(input, metsType, type, premisComplexType, unpacked,
+                                                         forceUpdate, sink));
         } catch (Exception e) {
             AipProblem problem = AipProblem.of(e);
             logger.error("Došlo k chybě při zpracování metadat pro AIP={} ({}), balíček {}{}: {}", aipId,
@@ -407,10 +411,16 @@ public class DaService {
                     problem.file() != null ? ", soubor " + problem.file() : "",
                     problem.description(), e);
             // The transaction the rebuild ran in is gone; the problem has to be written in one of
-            // its own or it would be rolled back together with the work that failed.
+            // its own or it would be rolled back together with the work that failed. What kind of
+            // package it is stays known when its METS could be read - it helps to tell which
+            // packages fail.
+            AipPackageType typeRead = packageType;
             inTransaction(() -> {
                 DaAipState aipState = aipStateRepository.findById(input.aipStateId()).orElse(null);
                 if (aipState != null) {
+                    if (typeRead != null) {
+                        typeRead.applyTo(aipState);
+                    }
                     referenceResolver.recordProblem(aipState, problem);
                     aipStateRepository.save(aipState);
                 }
@@ -446,8 +456,9 @@ public class DaService {
                                 Paths.get(localCache.getFilePath()));
     }
 
-    private List<String> storeDaoStructure(RebuildInput input, MetsType metsType, PremisComplexType premisComplexType,
-                                           Path tempDir, boolean forceUpdate, AipOutcomeSink sink) {
+    private List<String> storeDaoStructure(RebuildInput input, MetsType metsType, AipPackageType packageType,
+                                           PremisComplexType premisComplexType, Path tempDir, boolean forceUpdate,
+                                           AipOutcomeSink sink) {
         List<String> nodeUuids = createDaoStructure(input.aip(), metsType, premisComplexType, tempDir, forceUpdate);
 
         DaLocalCache localCache = daLocalCacheRepository.findById(input.localCacheId()).orElseThrow();
@@ -460,6 +471,7 @@ public class DaService {
 
         DaAipState aipState = aipStateRepository.findById(input.aipStateId()).orElseThrow();
         aipState.setAipVersionMetadata(aipState.getAipVersion());
+        packageType.applyTo(aipState);
         referenceResolver.clearProblem(aipState);
         // Rebuilding the package can add files to it, so how much of it is attached changes even
         // though no link was touched.

@@ -7593,6 +7593,12 @@ components:
         nadChangeCode:
           type: string
           description: Identifikátor vnější změny NAD v PEvA
+        contentType:
+          type: string
+          description: Typ obsahu balíčku (csip:CONTENTINFORMATIONTYPE, u hodnoty OTHER csip:OTHERCONTENTINFORMATIONTYPE)
+        profile:
+          type: string
+          description: Profil balíčku (METS PROFILE)
         aipSize:
           type: integer
           format: int64
@@ -7675,6 +7681,8 @@ components:
         - ingestionCode
         - referenceNumber
         - nadChangeCode
+        - contentType
+        - profile
         - aipSize
         - metadataLoad
         - completeAipLoad

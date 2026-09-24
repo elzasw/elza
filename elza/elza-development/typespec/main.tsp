@@ -1402,6 +1402,14 @@ model AipDetailVO {
      */
     nadChangeCode?: string;
     /**
+     * Typ obsahu balíčku (csip:CONTENTINFORMATIONTYPE, u hodnoty OTHER csip:OTHERCONTENTINFORMATIONTYPE)
+     */
+    contentType?: string;
+    /**
+     * Profil balíčku (METS PROFILE)
+     */
+    profile?: string;
+    /**
      * Velikost AIPu v bytech
      */
     aipSize?: int64;
@@ -2186,6 +2194,8 @@ enum AipFieldName {
     ingestionCode,
     referenceNumber,
     nadChangeCode,
+    contentType,
+    profile,
     aipSize,
     metadataLoad,
     completeAipLoad,
