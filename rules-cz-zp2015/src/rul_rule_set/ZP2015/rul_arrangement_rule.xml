@@ -19,4 +19,9 @@
         <rule-type>PLAIN_TEXT_GENERATOR</rule-type>
         <priority>100</priority>
     </arrangement-rule>
+    <!-- Import balíčku digitálního archivu do archivního popisu -->
+    <arrangement-rule filename="DA_IMPORT.groovy">
+        <rule-type>DA_IMPORT</rule-type>
+        <priority>100</priority>
+    </arrangement-rule>
 </arrangement-rules>

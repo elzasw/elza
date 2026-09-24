@@ -11,6 +11,7 @@ import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.archivists.ead3.schema.Abstract;
 import org.archivists.ead3.schema.Unitdatestructured;
+import org.archivists.ead3.schema.Unitid;
 import org.archivists.ead3.schema.Unittitle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,14 +27,14 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 
 /**
- * Converts the elements of {@code <did>} of the inherent archival description to the values of
- * the items of the digital entities.
+ * Converts the elements of {@code <did>} of the inherent archival description of a package to
+ * the values of items of the archival description.
  *
- * Which item type and specification an element becomes is decided by the IMPORT_DA script of
- * the rules, from the class of the element and its local type; how its content becomes a value
- * is decided here, by the converter registered for the class of the element. An element without
- * a converter is not taken over. Taking over a new element is a new {@link #register} call - and
- * a new branch of the script, which names its item type.
+ * Which item type and specification an element becomes is decided by the DA_IMPORT script of
+ * the rules ({@link DaImportPlanner}); how its content becomes a value is decided here, by the
+ * converter registered for the class of the element. An element without a converter is not
+ * offered to the script. Taking over a new element is a new {@link #register} call - and a new
+ * branch of the script, which names its item type.
  */
 final class DidElementConverters {
 
@@ -80,6 +81,9 @@ final class DidElementConverters {
                  (unittitle, mapping) -> textValue(unittitle.getContent(), mapping.itemType()));
         register(Abstract.class, Abstract::getLocaltype, Abstract::getAltrender,
                  (abs, mapping) -> textValue(abs.getContent(), mapping.itemType()));
+        // The kind of identifier (filing code, reference number, ...) is its local type.
+        register(Unitid.class, Unitid::getLocaltype, Unitid::getAltrender,
+                 (unitid, mapping) -> textValue(unitid.getContent(), mapping.itemType()));
         // The kind of date (date of origin, date of content, ...) is the local type of <daterange>.
         register(Unitdatestructured.class,
                  unitdate -> unitdate.getDaterange() != null ? unitdate.getDaterange().getLocaltype() : null,
@@ -199,7 +203,7 @@ final class DidElementConverters {
             }
         }
         throw new SystemException("Prvek popisu " + itemType.getCode() + " má datový typ " + dataType
-                + ", do kterého nelze převzít hodnotu z EAD; skript IMPORT_DA jej přiřazuje nesprávně",
+                + ", do kterého nelze převzít hodnotu z EAD; skript DA_IMPORT jej přiřazuje nesprávně",
                 BaseCode.INVALID_STATE);
     }
 }
