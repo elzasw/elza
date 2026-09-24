@@ -44,7 +44,6 @@ import cz.tacr.elza.domain.DaChangeType;
 import cz.tacr.elza.domain.DaDao;
 import cz.tacr.elza.domain.DaDaoFile;
 import cz.tacr.elza.domain.DaDaoFileFolder;
-import cz.tacr.elza.domain.DaDaoItem;
 import cz.tacr.elza.domain.DaDaoRelation;
 import cz.tacr.elza.domain.DaLevelView;
 import cz.tacr.elza.domain.DaLocalCache;
@@ -61,7 +60,6 @@ import cz.tacr.elza.repository.ArrDaLinkRepository;
 import cz.tacr.elza.repository.DaChangeRepository;
 import cz.tacr.elza.repository.DaDaoFileFolderRepository;
 import cz.tacr.elza.repository.DaDaoFileRepository;
-import cz.tacr.elza.repository.DaDaoItemRepository;
 import cz.tacr.elza.repository.DaDaoRelationRepository;
 import cz.tacr.elza.repository.DaDaoRepository;
 import cz.tacr.elza.repository.DaLevelViewRepository;
@@ -238,8 +236,6 @@ public class DaService {
     @Autowired
     private NodeRepository nodeRepository;
     @Autowired
-    private DaDaoItemRepository daoItemRepository;
-    @Autowired
     private ExternalSystemService externalSystemService;
     @Autowired
     private LevelRepository levelRepository;
@@ -255,8 +251,6 @@ public class DaService {
     private NodeCacheService nodeCacheService;
     @Autowired
     private FundRepository fundRepository;
-    @Autowired
-    private DaDaoItemRepository daDaoItemRepository;
     @Autowired
     private DataStringRepository dataStringRepository;
     @Autowired
@@ -659,7 +653,6 @@ public class DaService {
         List<DaDaoRelation> daDaoRelationList = daoRelationRepository.findByDaoInAndDeleteChangeIsNull(daDaoList);
         List<DaDaoFileFolder> daDaoFileFolderList = daoFileFolderRepository.findByRepresentationDaoInAndDeleteChangeIsNull(daDaoList);
         List<DaDaoFile> daDaoFileList = daoFileRepository.findByDaoInAndDeleteChangeIsNull(daDaoList);
-        List<DaDaoItem> daDaoItemList = daoItemRepository.findByDaoInAndDeleteChangeIsNull(daDaoList);
 
         DaChange change = createDaChange(null, DaChangeType.AIP_UPDATE);
 
@@ -668,14 +661,12 @@ public class DaService {
         daDaoRelationList.forEach(r -> r.setDeleteChange(change));
         daDaoFileFolderList.forEach(f -> f.setDeleteChange(change));
         daDaoFileList.forEach(f -> f.setDeleteChange(change));
-        daDaoItemList.forEach(i -> i.setDeleteChange(change));
 
         aipStateRepository.saveAll(stateList);
         daoRepository.saveAll(daDaoList);
         daoRelationRepository.saveAll(daDaoRelationList);
         daoFileFolderRepository.saveAll(daDaoFileFolderList);
         daoFileRepository.saveAll(daDaoFileList);
-        daoItemRepository.saveAll(daDaoItemList);
 
         levelViewService.deleteDisconnectedLevelViews(change);
 
@@ -1265,16 +1256,6 @@ public class DaService {
         daoFile.setDescription(description);
         daoFile.setFileName(fileName);
         return daoFileRepository.save(daoFile);
-    }
-
-    public DaDaoItem createDaDaoItem(DaDao dao, DaChange change, RulItemType itemType, RulItemSpec itemSpec, ArrData data) {
-        DaDaoItem daoItem = new DaDaoItem();
-        daoItem.setCreateChange(change);
-        daoItem.setDao(dao);
-        daoItem.setItemType(itemType);
-        daoItem.setItemSpec(itemSpec);
-        daoItem.setData(data);
-        return daoItemRepository.save(daoItem);
     }
 
     @Transactional

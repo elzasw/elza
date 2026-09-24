@@ -683,4 +683,47 @@
         <customChange class="cz.tacr.elza.dbchangelog.DbChangeset20260918120000"/>
     </changeSet>
 
+    <changeSet id="20260924100000" author="ppy">
+        <!-- The items read from the EAD of an AIP were stored in da_dao_item, but nothing ever read
+             them: the archival description is filled by the import from a package, which reads
+             the EAD itself, and change packages are generated from the archival description.
+             Every item had its own arr_data row (string or unitdate; text from an unreleased
+             version), used by nothing else; those rows go with the table. A row referenced by an
+             item of the description or of an entity is kept, however it came to be shared. -->
+        <sql>
+            DELETE FROM arr_data_string WHERE data_id IN (
+                SELECT d.data_id FROM da_dao_item d
+                 WHERE d.data_id IS NOT NULL
+                   AND NOT EXISTS (SELECT 1 FROM arr_item i WHERE i.data_id = d.data_id)
+                   AND NOT EXISTS (SELECT 1 FROM ap_item a WHERE a.data_id = d.data_id)
+                   AND NOT EXISTS (SELECT 1 FROM ap_rev_item r WHERE r.data_id = d.data_id))
+        </sql>
+        <sql>
+            DELETE FROM arr_data_text WHERE data_id IN (
+                SELECT d.data_id FROM da_dao_item d
+                 WHERE d.data_id IS NOT NULL
+                   AND NOT EXISTS (SELECT 1 FROM arr_item i WHERE i.data_id = d.data_id)
+                   AND NOT EXISTS (SELECT 1 FROM ap_item a WHERE a.data_id = d.data_id)
+                   AND NOT EXISTS (SELECT 1 FROM ap_rev_item r WHERE r.data_id = d.data_id))
+        </sql>
+        <sql>
+            DELETE FROM arr_data_unitdate WHERE data_id IN (
+                SELECT d.data_id FROM da_dao_item d
+                 WHERE d.data_id IS NOT NULL
+                   AND NOT EXISTS (SELECT 1 FROM arr_item i WHERE i.data_id = d.data_id)
+                   AND NOT EXISTS (SELECT 1 FROM ap_item a WHERE a.data_id = d.data_id)
+                   AND NOT EXISTS (SELECT 1 FROM ap_rev_item r WHERE r.data_id = d.data_id))
+        </sql>
+        <dropForeignKeyConstraint baseTableName="da_dao_item" constraintName="fk_da_dao_item_arr_data"/>
+        <sql>
+            DELETE FROM arr_data WHERE data_id IN (
+                SELECT d.data_id FROM da_dao_item d
+                 WHERE d.data_id IS NOT NULL
+                   AND NOT EXISTS (SELECT 1 FROM arr_item i WHERE i.data_id = d.data_id)
+                   AND NOT EXISTS (SELECT 1 FROM ap_item a WHERE a.data_id = d.data_id)
+                   AND NOT EXISTS (SELECT 1 FROM ap_rev_item r WHERE r.data_id = d.data_id))
+        </sql>
+        <dropTable tableName="da_dao_item"/>
+    </changeSet>
+
 </databaseChangeLog>
