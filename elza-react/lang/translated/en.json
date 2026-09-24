@@ -5942,7 +5942,9 @@
     "srcHash": "scUtfdhTFl6E"
   },
   "dms.file.title.rename": {
-    "defaultMessage": "Rename the attachment"
+    "defaultMessage": "Rename the attachment",
+    "translated": false,
+    "srcHash": "8AMKi7SZne0J"
   },
   "download.allreadyDownloading": {
     "defaultMessage": "The file download request has already been sent",
@@ -6781,7 +6783,9 @@
     "srcHash": "Ofs6avvgqpQw"
   },
   "global.action.rename": {
-    "defaultMessage": "Rename"
+    "defaultMessage": "Rename",
+    "translated": false,
+    "srcHash": "lDdbnIaYNyTV"
   },
   "global.action.replace": {
     "defaultMessage": "Replace",
