@@ -481,7 +481,7 @@ public class DaService {
         return nodeUuids;
     }
 
-    private Path unpack(Path zip) throws IOException {
+    Path unpack(Path zip) throws IOException {
         Path tempDir = Files.createTempDirectory("unzipped");
         try (ZipInputStream zipInputStream = new ZipInputStream((Files.newInputStream(zip)))) {
             ZipEntry entry;
@@ -498,7 +498,7 @@ public class DaService {
         return tempDir;
     }
 
-    private MetsType readMets(Path tempDir) throws Exception {
+    MetsType readMets(Path tempDir) throws Exception {
         try (Stream<Path> str = Files.walk(tempDir).filter(path -> path.toString().endsWith("METS.xml"))) {
             Path mets = str.findFirst().orElseThrow(() -> AipProblemException.metadata("Balíček neobsahuje soubor METS.xml"));
             return MetsReaderWriter.unmarshal(mets);
@@ -1507,7 +1507,7 @@ public class DaService {
         }
     }
 
-    private static void deleteTempDirectory(Path tempDir) {
+    static void deleteTempDirectory(Path tempDir) {
         if (tempDir == null) {
             return;
         }

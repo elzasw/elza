@@ -10,12 +10,17 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.archivists.ead3.schema.C;
 import org.archivists.ead3.schema.Dsc;
@@ -41,6 +46,7 @@ import com.lightcomp.kads.mets.MetsReaderWriter;
 
 import cz.tacr.elza.AbstractTest;
 import cz.tacr.elza.ElzaCoreMain;
+import cz.tacr.elza.api.AipType;
 import cz.tacr.elza.api.DigitalRepositoryType;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.dataexchange.input.DEImportParams;
@@ -53,6 +59,7 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.DaAip;
+import cz.tacr.elza.domain.DaAipState;
 import cz.tacr.elza.domain.DaChange;
 import cz.tacr.elza.domain.DaChangeType;
 import cz.tacr.elza.domain.DaDao;
@@ -61,9 +68,12 @@ import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.other.HelperTestService;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.repository.AipRepository;
+import cz.tacr.elza.repository.AipStateRepository;
 import cz.tacr.elza.repository.ArrDaLinkRepository;
 import cz.tacr.elza.repository.DaChangeRepository;
 import cz.tacr.elza.repository.DaDaoRepository;
+import cz.tacr.elza.repository.DaLocalCacheRepository;
+import cz.tacr.elza.repository.DaSyncQueueItemRepository;
 import cz.tacr.elza.repository.DigitalRepositoryRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.LevelRepository;
@@ -75,6 +85,8 @@ import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.StartupService;
 import cz.tacr.elza.service.UserService;
+import cz.tacr.elza.service.da.AipNodeUuids;
+import cz.tacr.elza.service.da.DaAipAutoLinkService;
 import cz.tacr.elza.service.da.DaImportBuilder;
 import cz.tacr.elza.service.da.DaImportPackage;
 import cz.tacr.elza.service.da.DaImportPlan;
@@ -149,6 +161,14 @@ public class Zp2015DaImportBuildTest {
     private ArrDaLinkRepository daLinkRepository;
     @Autowired
     private DaDaoRepository daoRepository;
+    @Autowired
+    private AipStateRepository aipStateRepository;
+    @Autowired
+    private DaLocalCacheRepository localCacheRepository;
+    @Autowired
+    private DaSyncQueueItemRepository syncQueueItemRepository;
+    @Autowired
+    private DaAipAutoLinkService autoLinkService;
 
     private Integer ruleSetId;
     private Integer rootNodeId;
@@ -179,6 +199,9 @@ public class Zp2015DaImportBuildTest {
             // the shared helper does not know the tables of the digital archive
             tx().executeWithoutResult(status -> {
                 daLinkRepository.deleteAll();
+                localCacheRepository.deleteAll();
+                syncQueueItemRepository.deleteAll();
+                aipStateRepository.deleteAll();
                 daoRepository.deleteAll();
                 daChangeRepository.deleteAll();
                 aipRepository.deleteAll();
@@ -259,6 +282,76 @@ public class Zp2015DaImportBuildTest {
             assertEquals(2, documents.size());
             assertEquals(uuid(ids.get(DOCUMENT)), documents.get(1).getUuid());
         });
+    }
+
+    @Test
+    @Order(4)
+    void automaticProcessing_matchesAGroupByUuid_andImportsTheLevelsBelowIt() throws Exception {
+        // a package whose group 44 is the group created by the first import; below it, a subgroup of
+        // the same name under another UUID and a new document
+        String subgroup = newId();
+        String document = newId();
+        String metsXml = resource("METS.xml").replace(GROUP_44_4, subgroup).replace(DOCUMENT, document);
+        String eadXml = resource("pruvodka.xml").replace(GROUP_44_4, subgroup).replace(DOCUMENT, document);
+        Path zip = zip(Map.of("aip-third/METS.xml", metsXml, "aip-third/metadata/descriptive/pruvodka.xml", eadXml));
+
+        Integer aipId = tx().execute(status -> {
+            MetsType mets;
+            try (InputStream is = new java.io.ByteArrayInputStream(metsXml.getBytes(StandardCharsets.UTF_8))) {
+                mets = MetsReaderWriter.unmarshal(is);
+            } catch (Exception e) {
+                throw new IllegalStateException(e);
+            }
+            DaAip aip = createAip("uuid-" + UUID.randomUUID(), mets);
+            DaAipState state = new DaAipState();
+            state.setDaAip(aip);
+            state.setCreateChange(daChangeRepository.findAll().stream()
+                    .filter(c -> c.getDaAip().getAipId().equals(aip.getAipId())).findFirst().orElseThrow());
+            state.setAipVersion("1");
+            state.setFund(nodeRepository.findById(rootNodeId).orElseThrow().getFund());
+            state.setContentType("NSESSS");
+            aipStateRepository.save(state);
+            daService.createImportLocalCache(state, aip.getDigitalRepository(), AipType.METADATA_BASE, zip, null);
+            return aip.getAipId();
+        });
+        String packageUuid = tx().execute(status -> AipNodeUuids.normalize(aipRepository.findById(aipId).orElseThrow().getCode()));
+        List<String> uuids = List.of(packageUuid, uuid("uuid-82f42018-e998-4878-bc48-c951251cf454"), uuid(GROUP_44),
+                                     uuid(subgroup), uuid(document));
+
+        assertEquals(1, autoLinkService.linkReceivedAips(Map.of(aipId, uuids)));
+
+        tx().executeWithoutResult(status -> {
+            ArrNode group = onlyChild(rootNodeId);
+            ArrNode sharedSubgroup = onlyChild(group.getNodeId());
+            List<ArrNode> documents = children(sharedSubgroup.getNodeId());
+            assertEquals(3, documents.size(), "the document of the third package is added to the shared subgroup");
+            ArrNode created = documents.get(2);
+            assertEquals(uuid(document), created.getUuid());
+
+            List<ArrDaLink> links = daLinkRepository.findByAipIdAndDeleteChangeIsNull(aipId);
+            assertEquals(2, links.size());
+            assertTrue(links.stream().allMatch(l -> l.getNodeId().equals(created.getNodeId())
+                    && l.getDaDao() != null), "the components are attached to the new document, not the whole AIP");
+        });
+    }
+
+    private String resource(String name) throws IOException {
+        try (InputStream is = getClass().getResourceAsStream(DIR + name)) {
+            return new String(is.readAllBytes(), StandardCharsets.UTF_8);
+        }
+    }
+
+    private static Path zip(Map<String, String> entries) throws IOException {
+        Path zip = Files.createTempFile("da-import", ".zip");
+        zip.toFile().deleteOnExit();
+        try (ZipOutputStream zos = new ZipOutputStream(Files.newOutputStream(zip))) {
+            for (Map.Entry<String, String> entry : entries.entrySet()) {
+                zos.putNextEntry(new ZipEntry(entry.getKey()));
+                zos.write(entry.getValue().getBytes(StandardCharsets.UTF_8));
+                zos.closeEntry();
+            }
+        }
+        return zip;
     }
 
     private DaImportBuilder.Outcome importPackage(String aipCode, MetsType mets, Ead ead) {

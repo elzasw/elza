@@ -85,6 +85,36 @@ public class DaImportPlanner {
         return Optional.of(plan);
     }
 
+    /**
+     * Plans what lies below one div - the div that is described already, e.g. matched onto a
+     * unit of description by its UUID. The div itself is not planned; the divs below it are the
+     * roots of the plan.
+     *
+     * @param startUuid UUID of the div, as {@link AipNodeUuids#normalize(String)} gives it
+     * @return the plan; empty when the rule set has no DA_IMPORT script, or when no div of the
+     *         logical structural map has the UUID - it belongs to another part of the package
+     * @see #plan(MetsType, Ead, String, Integer, DaImportPackage)
+     */
+    @Transactional(Transactional.TxType.MANDATORY)
+    public Optional<DaImportPlan> planBelow(MetsType mets, @Nullable Ead ead, @Nullable String eadHref,
+                                            Integer ruleSetId, DaImportPackage importPackage, String startUuid) {
+        StaticDataProvider sdp = staticDataService.getData();
+        String scriptPath = findScript(sdp.getRuleSetById(ruleSetId));
+        if (scriptPath == null) {
+            return Optional.empty();
+        }
+        Walk walk = new Walk(sdp, scriptPath, importPackage, ead, eadHref);
+        for (StructMapType structMap : mets.getStructMap()) {
+            if (LOGICAL.equals(structMap.getTYPE()) && structMap.getDiv() != null) {
+                Optional<DaImportPlan> plan = walk.below(structMap.getDiv(), null, startUuid);
+                if (plan.isPresent()) {
+                    return plan;
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
     @Nullable
     private String findScript(RuleSet ruleSet) {
         List<RulArrangementRule> rules = ruleSet.getRulesByType(RulArrangementRule.RuleType.DA_IMPORT);
@@ -135,6 +165,28 @@ public class DaImportPlanner {
                     index(child);
                 }
             }
+        }
+
+        /**
+         * Finds the div of the UUID and plans the divs below it; the divs on the way to it are
+         * not planned.
+         */
+        Optional<DaImportPlan> below(DivType div, @Nullable DaImportLevel parentLevel, String startUuid) {
+            DaImportLevel level = level(div, parentLevel);
+            if (startUuid.equals(AipNodeUuids.normalize(div.getID()))) {
+                DaImportPlan plan = new DaImportPlan();
+                for (DivType child : div.getDiv()) {
+                    div(child, level, plan, null, false);
+                }
+                return Optional.of(plan);
+            }
+            for (DivType child : div.getDiv()) {
+                Optional<DaImportPlan> plan = below(child, level, startUuid);
+                if (plan.isPresent()) {
+                    return plan;
+                }
+            }
+            return Optional.empty();
         }
 
         /**
