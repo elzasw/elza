@@ -9,7 +9,7 @@ Czech archival management system with Java/Spring Boot backend and React/TypeScr
 ├── elza-react/         # Frontend: React/TypeScript/Redux (~480 TSX files)
 ├── elza-web/           # Spring Boot entry point (thin wrapper around elza-core)
 ├── elza-ws-api/        # WSDL/SOAP Web Services API definitions
-├── elza-doc/           # Documentation module
+├── docs/               # Documentation (design notes, plans)
 ├── package-cz-base/    # Czech base data package (institutions, etc.)
 ├── rules-cz-zp2015/    # Czech archival rules (ZP2015)
 ├── rules-simple-dev/   # Simple dev rules

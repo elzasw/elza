@@ -156,7 +156,7 @@ Databáze a `${elza.workingDir}/dms` tvoří jeden celek a musí se zálohovat i
 obnovovat společně. Doporučený postup je zálohovat nejdřív databázi
 (`pg_dump`), pak `dms/`, nebo obojí se zastavenou aplikací. Před každou
 aktualizací pořiďte zálohu obojího z jednoho okamžiku — návrat na starší
-verzi po proběhlé migraci úložiště (viz [`elza/dms-storage.md`](elza/dms-storage.md))
+verzi po proběhlé migraci úložiště (viz [`docs/dms-storage.md`](docs/dms-storage.md))
 vyžaduje obnovu obou z doby *před* aktualizací; starší verze by soubory
 uspořádané v novém stromě nenašla.
 
