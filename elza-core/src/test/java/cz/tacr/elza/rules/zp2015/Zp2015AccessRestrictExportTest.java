@@ -116,6 +116,8 @@ public class Zp2015AccessRestrictExportTest {
         authorizeAsAdmin();
         importXml("institution-import.xml");
         importXml(FUND_XML);
+        // the import queues validation of the new nodes; let it finish before the tests run
+        helperTestService.waitForWorkers();
 
         ArrFund fund = fundRepository.findAll().stream()
                 .filter(f -> FUND_NAME.equals(f.getName()))
@@ -128,13 +130,21 @@ public class Zp2015AccessRestrictExportTest {
 
     /**
      * Removes the imported fund and ZP2015 again, see {@link Zp2015EjCountTest#unloadRules()}.
+     *
+     * <p>Pending node validation would write conformity rows referring to ZP2015 item types and
+     * block the package removal, so the workers are drained first. The startup service is stopped
+     * even when the cleanup fails, otherwise the next class cannot start it.
      */
     @AfterAll
     void unloadRules() {
-        helperTestService.deleteTables(false);
-        packageService.deletePackage("ZP2015");
-        staticDataService.refreshForCurrentThread();
-        startupService.stop();
+        try {
+            helperTestService.waitForWorkers();
+            helperTestService.deleteTables(false);
+            packageService.deletePackage("ZP2015");
+            staticDataService.refreshForCurrentThread();
+        } finally {
+            startupService.stop();
+        }
     }
 
     static Stream<Arguments> appliedRestrictions() {
