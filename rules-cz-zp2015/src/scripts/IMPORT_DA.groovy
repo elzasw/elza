@@ -49,8 +49,12 @@ return generate(CLASS_NAME, binding.hasVariable("LOCAL_TYPE") ? LOCAL_TYPE : nul
 static Object generate(final String className, final String localType) {
     switch (className) {
         case "Abstract":
-        case "Unittitle":
             return "ZP2015_CONTENT"
+        case "Unittitle":
+            if (localType == "FORMAL_TITLE") {
+                return "ZP2015_FORMAL_TITLE"
+            }
+            return localType == null ? "ZP2015_CONTENT" : null
         case "Unitdatestructured":
             if (localType == null) {
                 return "ZP2015_UNIT_DATE"
