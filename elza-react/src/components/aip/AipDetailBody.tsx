@@ -100,6 +100,10 @@ export function AipDetailBody({ detail, onOpenProblemFile }: Props) {
                 <DetailRow label={formatMessage(messages.referenceNumber)} value={detail.referenceNumber} />}
             {detail.nadChangeCode &&
                 <DetailRow label={formatMessage(messages.nadChangeCode)} value={detail.nadChangeCode} />}
+            {detail.contentType &&
+                <DetailRow label={formatMessage(messages.contentType)} value={detail.contentType} />}
+            {detail.profile &&
+                <DetailRow label={formatMessage(messages.profile)} value={detail.profile} />}
             {detail.aipSize != null && detail.aipSize > -1 &&
                 <DetailRow label={formatMessage(messages.aipSize)} value={formatAipSize(detail.aipSize)} />}
             <DetailRow label={formatMessage(messages.metadataLoad)} value={getBoolIcon(detail.metadataLoad)} />

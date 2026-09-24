@@ -129,6 +129,9 @@ public class PackageInfoService {
         if (oldAipState != null) {
             aipState.setMetadataLoad(oldAipState.getMetadataLoad());
             aipState.setCompleteAipLoad(oldAipState.getCompleteAipLoad());
+            // describe the stored metadata package, which the new version does not replace
+            aipState.setContentType(oldAipState.getContentType());
+            aipState.setProfile(oldAipState.getProfile());
 
             oldAipState.setDeleteChange(daChange);
             aipStateRepository.save(oldAipState);

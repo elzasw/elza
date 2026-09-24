@@ -39,6 +39,8 @@ public enum AipFieldMapping {
     INGESTION_CODE   (AipJoin.STATE,           "ingestionCode",   TEXT),
     REFERENCE_NUMBER (AipJoin.STATE,           "referenceNumber", TEXT),
     NAD_CHANGE_CODE  (AipJoin.STATE,           "nadChangeCode",   TEXT),
+    CONTENT_TYPE     (AipJoin.STATE,           "contentType",     TEXT),
+    PROFILE          (AipJoin.STATE,           "profile",         TEXT),
     AIP_SIZE         (AipJoin.STATE,           "aipSize",         NUMBER),
     METADATA_LOAD    (AipJoin.STATE,           "metadataLoad",    BOOLEAN),
     COMPLETE_AIP_LOAD(AipJoin.STATE,           "completeAipLoad", BOOLEAN),

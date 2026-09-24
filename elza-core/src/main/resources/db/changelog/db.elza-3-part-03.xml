@@ -726,4 +726,15 @@
         <dropTable tableName="da_dao_item"/>
     </changeSet>
 
+    <changeSet id="20260924140000" author="ppy">
+        <!-- Type of the AIP as the METS of its metadata declares it: content_type is
+             csip:CONTENTINFORMATIONTYPE, or csip:OTHERCONTENTINFORMATIONTYPE when the former is
+             OTHER (e.g. NSESSS); profile is the METS PROFILE. Both are filled when the metadata
+             are processed, so AIPs processed earlier have them empty until their next rebuild. -->
+        <addColumn tableName="da_aip_state">
+            <column name="content_type" type="nvarchar(250)"/>
+            <column name="profile" type="nvarchar(250)"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>
