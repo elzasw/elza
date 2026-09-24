@@ -14,8 +14,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.Validate;
 import org.codehaus.groovy.runtime.InvokerHelper;
@@ -46,6 +44,9 @@ import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
 import cz.tacr.elza.ws.types.v1.Did;
+import cz.tacr.elza.service.da.DaImportLevel;
+import cz.tacr.elza.service.da.DaImportPackage;
+import cz.tacr.elza.service.da.DaImportResult;
 import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyCodeSource;
@@ -70,8 +71,9 @@ public class GroovyScriptService {
     private static final String ENTITA = "AE";
     private static final String PART = "PART";
     private static final String ITEMS = "ITEMS";
-    private static final String CLASS_NAME = "CLASS_NAME";
-    private static final String LOCAL_TYPE = "LOCAL_TYPE";
+    private static final String PACKAGE = "PACKAGE";
+    private static final String LEVEL = "LEVEL";
+    private static final String RESULT = "RESULT";
     private static final String GENERATOR_CONTEXT = "GENERATOR_CONTEXT";
     // Used for StaticDataProvider
     private static final String DATA_PROVIDER = "DATA_PROVIDER";
@@ -174,22 +176,19 @@ public class GroovyScriptService {
     }
 
     /**
-     * Runs the IMPORT_DA script, which maps an element of the inherent archival description of
-     * a package to an item type.
-     *
-     * @param className simple name of the class of the element, e.g. Unitdatestructured
-     * @param localType local type of the element, e.g. CONTENT; null when it has none
-     * @return null when the element is not taken over; the code of the item type; or a map with
-     *         the code of the item type under "itemType" and of its specification under "itemSpec"
+     * Runs the DA_IMPORT script for one div of the logical structural map of a package; the
+     * script writes its decision into the result.
      */
-    public Object processImportDa(String className, @Nullable String localType, String groovyFilePath) {
+    public void processDaImport(DaImportPackage importPackage, DaImportLevel level, DaImportResult result,
+                                String groovyFilePath) {
         GroovyScriptFile groovyScriptFile = getGroovyScriptFile(groovyFilePath);
 
         Map<String, Object> input = new HashMap<>();
-        input.put(CLASS_NAME, className);
-        input.put(LOCAL_TYPE, localType);
+        input.put(PACKAGE, importPackage);
+        input.put(LEVEL, level);
+        input.put(RESULT, result);
 
-        return groovyScriptFile.evaluate(input);
+        groovyScriptFile.evaluate(input);
     }
 
     /**
