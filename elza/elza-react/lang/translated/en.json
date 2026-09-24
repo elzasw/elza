@@ -5941,6 +5941,9 @@
     "defaultMessage": "Add an attachment from a file",
     "srcHash": "scUtfdhTFl6E"
   },
+  "dms.file.title.rename": {
+    "defaultMessage": "Rename the attachment"
+  },
   "download.allreadyDownloading": {
     "defaultMessage": "The file download request has already been sent",
     "srcHash": "e_KcjxEyNdJR"
@@ -6776,6 +6779,9 @@
   "global.action.remove": {
     "defaultMessage": "Remove",
     "srcHash": "Ofs6avvgqpQw"
+  },
+  "global.action.rename": {
+    "defaultMessage": "Rename"
   },
   "global.action.replace": {
     "defaultMessage": "Replace",

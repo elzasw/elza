@@ -52,6 +52,10 @@ export const globalMessages = defineMessages({
     id: "global.action.replace",
     defaultMessage: "Nahradit",
   },
+  rename: {
+    id: "global.action.rename",
+    defaultMessage: "Přejmenovat",
+  },
   change: {
     id: "global.action.change",
     defaultMessage: "Změnit",
