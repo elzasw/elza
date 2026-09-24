@@ -1786,7 +1786,7 @@ public class DaService {
      *
      * @return the link, existing when the object already hangs on this unit of description
      */
-    private ArrDaLink linkToNode(DaAip daAip, @Nullable DaDao daDao, ArrNode arrNode,
+    ArrDaLink linkToNode(DaAip daAip, @Nullable DaDao daDao, ArrNode arrNode,
                                  ArrDaoLink.LinkType linkType, ArrChange change) {
         List<ArrDaLink> liveLinks = daDao == null
                 ? daLinkRepository.findByAip_AipIdAndDaDaoIsNullAndDeleteChangeIsNull(daAip.getAipId())
@@ -1928,7 +1928,12 @@ public class DaService {
      * @return the newly created child node
      */
     private ArrNode createChildNode(ArrNode parentNode, ArrChange change, int position) {
-        ArrNode newNode = arrangementService.createNode(parentNode.getFund(), generateUuid(), change);
+        return createChildNode(parentNode, change, position, generateUuid());
+    }
+
+    /** See {@link #createChildNode(ArrNode, ArrChange, int)}; the new node gets the given UUID. */
+    ArrNode createChildNode(ArrNode parentNode, ArrChange change, int position, String uuid) {
+        ArrNode newNode = arrangementService.createNode(parentNode.getFund(), uuid, change);
 
         ArrLevel arrLevel = new ArrLevel();
         arrLevel.setNodeParent(parentNode);

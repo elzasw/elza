@@ -197,7 +197,7 @@ public class DaImportPlanner {
         }
 
         private DaImportPlan.Node node(DaImportLevel level, DaImportResult result) {
-            return new DaImportPlan.Node(level.getId(), level.getLabel(), result.getDecision(), result.getMatchKey(),
+            return new DaImportPlan.Node(level.getId(), level.getLabel(), result.getDecision(), result.getMatchBy(),
                     result.getItems());
         }
 

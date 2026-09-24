@@ -49,7 +49,7 @@ public class DaImportResult {
     private final String eadHref;
 
     private Decision decision;
-    private String matchKey;
+    private final List<RulItemType> matchBy = new ArrayList<>();
     private final List<Item> items = new ArrayList<>();
 
     DaImportResult(StaticDataProvider sdp, DaImportLevel level, @Nullable String eadHref) {
@@ -77,12 +77,16 @@ public class DaImportResult {
     }
 
     /**
-     * Text by which the level is recognized as the same level as one imported from another
-     * package - e.g. the name of a group of the file plan. Null (the default) for a level that is
-     * never shared, such as a document.
+     * Items by which the level is recognized as a level that exists already - imported from
+     * another package, or described by hand: a level below the same parent with the same values
+     * of all these items is that level. E.g. the level type and the name of a group of the file
+     * plan. None (the default) for a level that is never shared, such as a document; such a level
+     * is recognized only by its UUID.
      */
-    public DaImportResult matchKey(@Nullable String matchKey) {
-        this.matchKey = StringUtils.trimToNull(matchKey);
+    public DaImportResult matchBy(String... itemTypeCodes) {
+        for (String itemTypeCode : itemTypeCodes) {
+            matchBy.add(resolveType(itemTypeCode));
+        }
         return this;
     }
 
@@ -192,9 +196,8 @@ public class DaImportResult {
         return decision;
     }
 
-    @Nullable
-    String getMatchKey() {
-        return matchKey;
+    List<RulItemType> getMatchBy() {
+        return matchBy;
     }
 
     List<Item> getItems() {
