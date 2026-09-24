@@ -1,0 +1,122 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<ns2:edx xmlns:ns2="http://elza.tacr.cz/schema/v2">
+    <fs>
+        <s rule="ZP2015">
+            <fi ic="in1" n="LC-TEST-omezeni_pristupnosti"/>
+            <sts>
+                <st c="ZP2015_ACCESS_COND_TYPE">
+                    <sos>
+                        <so asgn="true" cmpl="os. údaje nepř. DAO" id="18542" uuid="b7bdacea-fb9c-41c2-86ca-82c14a533f32" v="nepřístupný DAO">
+                            <ds id="1046930" t="ZP2015_RESTRICTION_ACCESS_NAME">
+                                <v>nepřístupný DAO</v>
+                            </ds>
+                            <de id="1046931" s="ZP2015_ACCESS_PERSONAL_DATA" t="ZP2015_RESTRICTED_ACCESS_REASON"/>
+                            <de id="1046932" s="ZP2015_RESTRICTION_DAO" t="ZP2015_RESTRICTED_ACCESS_TYPE"/>
+                        </so>
+                        <so asgn="true" cmpl="sml. omezení DAO jen v badatelně" id="18543" uuid="d1e9b970-bdf9-41d6-a55d-0e8bec2e672c" v="DAO přístupný jen v badatelně">
+                            <ds id="1046936" t="ZP2015_RESTRICTION_ACCESS_NAME">
+                                <v>DAO přístupný jen v badatelně</v>
+                            </ds>
+                            <de id="1046937" s="ZP2015_ACCESS_AGREEMENT" t="ZP2015_RESTRICTED_ACCESS_REASON"/>
+                            <de id="1046939" s="ZP2015_RESTRICTION_DAO_INPERS_ONLY" t="ZP2015_RESTRICTED_ACCESS_TYPE"/>
+                        </so>
+                        <so asgn="true" cmpl="ex. kopie arch. nepř. orig. anal. arch." id="18544" uuid="f4ae09f4-b4e4-48db-babe-8905a13b9794" v="Nepřístupný originál analogové archiválie">
+                            <ds id="1046945" t="ZP2015_RESTRICTION_ACCESS_NAME">
+                                <v>Nepřístupný originál analogové archiválie</v>
+                            </ds>
+                            <de id="1046946" s="ZP2015_ACCESS_COPY_EXISTANCE" t="ZP2015_RESTRICTED_ACCESS_REASON"/>
+                            <de id="1046947" s="ZP2015_RESTRICTION_ARCHMAT" t="ZP2015_RESTRICTED_ACCESS_TYPE"/>
+                        </so>
+                        <so asgn="true" cmpl="os. údaje nepř. anal. arch. a kopie" id="18545" uuid="9d17b794-1ddc-46c3-9a82-2784f5a65b43" v="Nepřístupná analogová archiválie a její analogová kopie">
+                            <ds id="1046952" t="ZP2015_RESTRICTION_ACCESS_NAME">
+                                <v>Nepřístupná analogová archiválie a její analogová kopie</v>
+                            </ds>
+                            <de id="1046953" s="ZP2015_ACCESS_PERSONAL_DATA" t="ZP2015_RESTRICTED_ACCESS_REASON"/>
+                            <de id="1046954" s="ZP2015_RESTRICTION_ARCHMAT2" t="ZP2015_RESTRICTED_ACCESS_TYPE"/>
+                        </so>
+                        <so asgn="true" cmpl="os. údaje nepř. prvky název a obsah" id="18546" uuid="0686c2d6-7888-44aa-aaa8-aa64929f56bd" v="Nepřístupné prvky název a obsah">
+                            <ds id="1046959" t="ZP2015_RESTRICTION_ACCESS_NAME">
+                                <v>Nepřístupné prvky název a obsah</v>
+                            </ds>
+                            <de id="1046960" s="ZP2015_ACCESS_PERSONAL_DATA" t="ZP2015_RESTRICTED_ACCESS_REASON"/>
+                            <de id="1046961" s="ZP2015_RESTRICTION_ABSTRACT" t="ZP2015_RESTRICTED_ACCESS_TYPE"/>
+                        </so>
+                        <so asgn="true" cmpl="os. údaje použ. prvků s omez." id="18548" uuid="0ad9064d-bfa6-430b-b358-1bb8a4d131d7" v="Použití prvků s omezením">
+                            <ds id="1046971" t="ZP2015_RESTRICTION_ACCESS_NAME">
+                                <v>Použití prvků s omezením</v>
+                            </ds>
+                            <de id="1046972" s="ZP2015_ACCESS_PERSONAL_DATA" t="ZP2015_RESTRICTED_ACCESS_REASON"/>
+                            <de id="1046973" s="ZP2015_RESTRICTION_LIMITED" t="ZP2015_RESTRICTED_ACCESS_TYPE"/>
+                        </so>
+                    </sos>
+                </st>
+            </sts>
+            <lvls>
+                <lvl id="234603">
+                    <de id="1046924" s="ZP2015_ARRANGEMENT_MAN" t="ZP2015_ARRANGEMENT_TYPE"/>
+                    <de id="1046923" s="ZP2015_LEVEL_ROOT" t="ZP2015_LEVEL_TYPE"/>
+                </lvl>
+                <lvl id="234604" pid="234603">
+                    <de id="1046925" s="ZP2015_LEVEL_SERIES" t="ZP2015_LEVEL_TYPE"/>
+                    <ds id="1046926" t="ZP2015_NAME">
+                        <v>Omezení přístupnosti TEST ELZA</v>
+                    </ds>
+                </lvl>
+                <lvl id="234605" pid="234604">
+                    <de id="1046927" s="ZP2015_LEVEL_FOLDER" t="ZP2015_LEVEL_TYPE"/>
+                    <de id="1046928" s="ZP2015_FOLDER_UNITS" t="ZP2015_FOLDER_TYPE"/>
+                    <ds id="1046929" t="ZP2015_NAME">
+                        <v>nepřístupný DAO</v>
+                    </ds>
+                    <do soid="18542" id="1046941" t="ZP2015_RESTRICTION_ACCESS_SHARED"/>
+                </lvl>
+                <lvl id="234606" pid="234604">
+                    <de id="1046933" s="ZP2015_LEVEL_FOLDER" t="ZP2015_LEVEL_TYPE"/>
+                    <de id="1046934" s="ZP2015_FOLDER_UNITS" t="ZP2015_FOLDER_TYPE"/>
+                    <ds id="1046935" t="ZP2015_NAME">
+                        <v>DAO přístupný jen v badatelně</v>
+                    </ds>
+                    <do soid="18543" id="1046940" t="ZP2015_RESTRICTION_ACCESS_SHARED"/>
+                </lvl>
+                <lvl id="234607" pid="234604">
+                    <de id="1046942" s="ZP2015_LEVEL_FOLDER" t="ZP2015_LEVEL_TYPE"/>
+                    <de id="1046943" s="ZP2015_FOLDER_UNITS" t="ZP2015_FOLDER_TYPE"/>
+                    <ds id="1046944" t="ZP2015_NAME">
+                        <v>Nepřístupný originál analogové archiválie</v>
+                    </ds>
+                    <do soid="18544" id="1046948" t="ZP2015_RESTRICTION_ACCESS_SHARED"/>
+                </lvl>
+                <lvl id="234608" pid="234604">
+                    <de id="1046949" s="ZP2015_LEVEL_FOLDER" t="ZP2015_LEVEL_TYPE"/>
+                    <de id="1046950" s="ZP2015_FOLDER_UNITS" t="ZP2015_FOLDER_TYPE"/>
+                    <ds id="1046951" t="ZP2015_NAME">
+                        <v>Nepřístupná analogová archiválie a její analogová kopie</v>
+                    </ds>
+                    <do soid="18545" id="1046955" t="ZP2015_RESTRICTION_ACCESS_SHARED"/>
+                </lvl>
+                <lvl id="234609" pid="234604">
+                    <de id="1046956" s="ZP2015_LEVEL_FOLDER" t="ZP2015_LEVEL_TYPE"/>
+                    <de id="1046957" s="ZP2015_FOLDER_UNITS" t="ZP2015_FOLDER_TYPE"/>
+                    <do soid="18546" id="1046970" t="ZP2015_RESTRICTION_ACCESS_SHARED"/>
+                    <ds id="1046963" t="ZP2015_NAME">
+                        <v>Nepřístupné prvky název a obsah - S OMEZENÍM</v>
+                    </ds>
+                    <ds id="1046964" t="ZP2015_CONTENT">
+                        <v>Nepřístupné prvky název a obsah - S OMEZENÍM</v>
+                    </ds>
+                </lvl>
+                <lvl id="234611" pid="234604">
+                    <de id="1046977" s="ZP2015_LEVEL_FOLDER" t="ZP2015_LEVEL_TYPE"/>
+                    <de id="1046975" s="ZP2015_FOLDER_UNITS" t="ZP2015_FOLDER_TYPE"/>
+                    <do soid="18548" id="1046981" t="ZP2015_RESTRICTION_ACCESS_SHARED"/>
+                    <ds id="1046978" t="ZP2015_NAME">
+                        <v>Použití prvků s omezením - S OMEZENÍM</v>
+                    </ds>
+                    <ds id="1046979" t="ZP2015_CONTENT">
+                        <v>Použití prvků s omezením - S OMEZENÍM</v>
+                    </ds>
+                </lvl>
+            </lvls>
+        </s>
+    </fs>
+</ns2:edx>
