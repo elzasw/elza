@@ -88,8 +88,9 @@ export const setSelectedAipDaos = (daDaoIds: number[]) => {
     return SimpleListActions.setData(AREA_SELECTED_AIP_DAOS, daDaoIds, daDaoIds);
 }
 
-export const fetchAipLogicalTreeIfNeeded = (ids: number[]) => {
-    return DetailActions.fetchIfNeeded(AIP_LOGICAL_TREE, ids, () => WebApi.getAipsLogicalTree(ids))
+/** @param force načíst znovu i stejné AIPy - po akci se jejich struktura a napojení mohly změnit */
+export const fetchAipLogicalTreeIfNeeded = (ids: number[], force = false) => {
+    return DetailActions.fetchIfNeeded(AIP_LOGICAL_TREE, ids, () => WebApi.getAipsLogicalTree(ids), force)
 }
 
 export const daoLinksFetchIfNeeded = (nodeId: number, forceFetch = false) => {

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { AipLevelType } from 'elza-api';
+import { AipLevelType, AipLinkState } from 'elza-api';
 
 import { renderWithProviders, screen, fireEvent, createTestStore, act } from 'test/test-utils';
 import AipAssignmentModal from './AipAssignmentModal';
@@ -119,6 +119,17 @@ describe('AipAssignmentModal', () => {
         connect();
 
         expect(api.aipBulkCreateSublevels).toHaveBeenCalledWith(10, [1, 2], 55);
+    });
+
+    it('leaves out packages that are fully linked already', async () => {
+        const linked = [...aips.slice(0, 2), { aipId: 3, code: 'aip-3', linkState: AipLinkState.FullyLinked }];
+        renderWithProviders(<AipAssignmentModal aips={linked as never} tree={fundTree} />, { preloadedState: state() });
+        await act(async () => { await Promise.resolve(); });
+
+        expect(screen.getByText('Vybrány 2 balíčky')).toBeInTheDocument();
+        connect();
+
+        expect(api.aipBulkConnectToJp).toHaveBeenCalledWith(10, [1, 2]);
     });
 
     it('imports the structure of whole packages when the root is selected, with the file plan option', async () => {

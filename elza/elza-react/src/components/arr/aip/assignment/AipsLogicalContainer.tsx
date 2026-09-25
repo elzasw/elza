@@ -37,6 +37,9 @@ function AipsLogicalContainer({ tree, selectedNode, onSelect }: Props) {
         const selected = tree?.nodes.find(n => n.UUID == node);
         if (selected) {
             onSelect(selected);
+        } else if (tree?.nodes.length) {
+            // po načtení znovu vybraná úroveň zmizela (její balíčky jsou napojené) - vybere se kořen
+            setNode(tree.nodes[0].UUID);
         }
     }, [node, tree]);
 

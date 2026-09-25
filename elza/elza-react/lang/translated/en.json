@@ -3289,6 +3289,10 @@
     "defaultMessage": "Nothing is selected - connect the packages shown on this page of the list",
     "srcHash": "l_RhTHm9LhGd"
   },
+  "arr.aip.assignment.allLinked": {
+    "defaultMessage": "All packages are fully connected.",
+    "srcHash": "dDky3iC0O52C"
+  },
   "arr.aip.assignment.bulk": {
     "defaultMessage": "Link in bulk",
     "srcHash": "ZuJohRiCpnY6"
