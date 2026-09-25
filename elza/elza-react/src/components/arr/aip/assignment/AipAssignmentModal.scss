@@ -69,6 +69,12 @@
         }
     }
 
+    .aip-assignment-tree-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
     .aip-assignment-option {
         margin-left: 28px;
     }

@@ -3357,6 +3357,10 @@
     "defaultMessage": "Do you really want to delete this link?",
     "srcHash": "swdNg_7H1jt3"
   },
+  "arr.aip.parts.files": {
+    "defaultMessage": "{count, plural, one {# file} other {# files}}",
+    "srcHash": "Kh_ocu4Is_VP"
+  },
   "arr.aip.parts.linkedTo": {
     "defaultMessage": "Connected to: {nodes}",
     "srcHash": "JhggxWUJDck9"
@@ -3404,6 +3408,10 @@
   "arr.aip.single.selected": {
     "defaultMessage": "{count, plural, =0 {nothing selected} one {# part selected} other {# parts selected}}",
     "srcHash": "Oyukfa8Y3t0F"
+  },
+  "arr.aip.single.showFiles": {
+    "defaultMessage": "Show files",
+    "srcHash": "VaAdkP9YQMeL"
   },
   "arr.aip.single.source": {
     "defaultMessage": "Source - package structure",
