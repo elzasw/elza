@@ -20,7 +20,7 @@ extensions = [
 ]
 
 language = 'en'
-exclude_patterns = ['_build', 'README.md']
+exclude_patterns = []
 
 # Stubs carry the scope of unfinished chapters as todo notes.
 # Switch off for published builds once the chapters are written.

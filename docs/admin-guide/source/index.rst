@@ -15,15 +15,15 @@ published separately in Czech.
    :numbered:
    :caption: Contents
 
-   overview
-   installation
-   upgrade
-   configuration
-   security
-   reverse-proxy
-   integrations
-   monitoring
-   backup
-   troubleshooting
-   legacy-upgrades
-   release-notes
+   01-overview
+   02-installation
+   03-upgrade
+   04-configuration
+   05-security
+   06-reverse-proxy
+   07-integrations
+   08-monitoring
+   09-backup
+   10-troubleshooting
+   11-legacy-upgrades
+   12-release-notes

@@ -107,7 +107,7 @@ entered; create the ELZA users with the same names as in the domain. When
 the domain rejects the password, the internal password is tried.
 
 With Active Directory configured, the health check (see
-:doc:`monitoring`) also checks the connection to the domain controller.
+:doc:`08-monitoring`) also checks the connection to the domain controller.
 
 Kerberos (SPNEGO)
 =================
@@ -216,7 +216,8 @@ Integrations call the REST API with a personal API key instead of a
 user's password. A key belongs to a user and acts with that user's
 permissions; create a dedicated user for each integration.
 
-Users create and revoke their own keys in their user settings. The full
+Users create and revoke their own keys in their user settings (category
+*Elza*). The full
 key is shown only once, when it is created; ELZA stores only its hash.
 Administrators can list and revoke the keys of other users. Keys can be
 created and revoked only after an interactive login, not with another
@@ -255,7 +256,7 @@ A rejected key is answered with HTTP 401 and a JSON body with the reason
 Security audit log
 ==================
 
-With ``elza.siemLogFile`` set (see :doc:`configuration`), ELZA writes
+With ``elza.siemLogFile`` set (see :doc:`04-configuration`), ELZA writes
 authentication events to a separate log in JSON, one event per line,
 suitable for a SIEM system:
 
@@ -282,7 +283,7 @@ Other settings
    * - ``elza.security.acceptForwardedHeaders``
      - ``false``
      - Accept ``X-Forwarded-*`` headers from a reverse proxy; required
-       when ELZA runs under a path (see :doc:`reverse-proxy`).
+       when ELZA runs under a path (see :doc:`06-reverse-proxy`).
    * - ``elza.security.logoutUrl``
      - (none)
      - Address the browser opens after logging out, for example the
@@ -297,4 +298,4 @@ minutes of inactivity), which can be changed with
 sessions at a time; logging in an eleventh time ends the oldest one.
 
 The monitoring endpoints do not require authentication and must stay
-reachable only locally (see :doc:`monitoring`).
+reachable only locally (see :doc:`08-monitoring`).

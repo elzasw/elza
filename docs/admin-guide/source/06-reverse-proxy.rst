@@ -5,7 +5,7 @@ Running Behind a Reverse Proxy
 In production, ELZA runs behind a web server acting as a reverse proxy
 (Apache HTTPD or NGINX). The web server terminates HTTPS and forwards the
 requests to ELZA's HTTP port (8080 by default, see ``server.port`` in
-:doc:`configuration`).
+:doc:`04-configuration`).
 
 The proxy must also forward WebSocket connections: the client receives
 notifications over the path ``/stomp``. Without it the application loads,

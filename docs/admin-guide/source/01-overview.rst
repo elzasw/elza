@@ -22,7 +22,7 @@ ELZA is a web application with a layered architecture:
 ELZA can be integrated with other systems, in particular with the Central
 Archival Module (CAM) of the National Archival Portal for archival
 entities, with digital archives and digital object repositories, and with
-publication systems. See :doc:`integrations`.
+publication systems. See :doc:`07-integrations`.
 
 Typical deployment
 ------------------
@@ -38,7 +38,7 @@ never needs to be reachable from outside the server.
                           reverse proxy)                     +--HTTPS--> CAM, digital archive, ...
 
 The web server can run on the same host or on a separate one. See
-:doc:`reverse-proxy`.
+:doc:`06-reverse-proxy`.
 
 Server requirements
 ===================

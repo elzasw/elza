@@ -34,8 +34,8 @@ Changes take effect after a restart.
 
 Settings of external systems (CAM, digital repositories, map servers, AI
 providers) are not part of the file; they are managed in the
-administration (see :doc:`integrations`). Authentication is described in
-:doc:`security`.
+administration (see :doc:`07-integrations`). Authentication is described in
+:doc:`05-security`.
 
 Scheduled jobs are configured with cron expressions with six fields:
 ``<second> <minute> <hour> <day-of-month> <month> <day-of-week>``, for
@@ -110,7 +110,7 @@ Web server and uploads
    * - ``elza.integrationScriptUrl``
      - (none)
      - URL of an integration script that adds a custom header and footer
-       (see :doc:`integrations`).
+       (see :doc:`07-integrations`).
 
 Use exactly the keys ``elza.upload.*`` with underscores; the standard
 ``spring.servlet.multipart.*`` keys and the old ``multipart.maxFileSize``
@@ -177,7 +177,7 @@ Logging
      - Path of the security audit log (authentication events in JSON),
        for example ``${elza.workingDir}/log/siem.log``. Rotated daily,
        kept for 90 days. Without the setting, no audit log is written.
-       See :doc:`security`.
+       See :doc:`05-security`.
 
 Log levels are set with the standard ``logging.level.*`` keys, for
 example ``logging.level.cz.tacr.elza: debug``.
@@ -485,7 +485,7 @@ Monitoring
 ==========
 
 ``management.*`` (the management port) and ``elza.monitoring.scheduler.*``
-are described in :doc:`monitoring`.
+are described in :doc:`08-monitoring`.
 
 Diagnostics
 ===========

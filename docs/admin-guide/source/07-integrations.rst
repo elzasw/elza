@@ -16,7 +16,7 @@ classes are:
 - **AI providers** - the service behind the AI assistant.
 
 Publication systems, which receive published archival description, are
-managed separately in *Administration* > *Publication systems*.
+managed in the *Archival funds* module (*Publication systems management*).
 
 .. todo::
 
@@ -65,7 +65,7 @@ CAM. The former setting in :file:`elza.yaml`
 the external systems during the upgrade to 3.4.
 
 The state of the synchronisation queue can be monitored with the metrics
-described in :doc:`monitoring`.
+described in :doc:`08-monitoring`.
 
 Changing CAM to CAM complete
 ----------------------------
@@ -126,7 +126,7 @@ API key   optional, as provided by the map server
 ========= =============================================
 
 Map layers offered in the coordinate editor are configured in
-``elza.map.layers`` (see :doc:`configuration`). Map data from mapy.cz are
+``elza.map.layers`` (see :doc:`04-configuration`). Map data from mapy.cz are
 available only as a separate service, for licensing reasons.
 
 REST API
@@ -137,7 +137,7 @@ definition can be browsed in Swagger UI at ``<ELZA_URL>/swagger``.
 
 Integrations should authenticate with a personal API key sent in the
 ``X-API-Key`` header rather than with a user's password (see
-:doc:`security`).
+:doc:`05-security`).
 
 SOAP web services
 =================
@@ -160,12 +160,12 @@ it relates to the description:
    The object is attached to an existing description unit.
 ``level``
    The object is a description unit itself. Attaching it to another unit
-   creates a new child unit, which may carry description items sent with
+   creates a new child unit, which may carry description elements sent with
    the object.
 
 When the ``FundService`` updates a fund, the supplied fund
 administrators are added to the existing ones
-(``elza.webservice.fonds.adminPermissionMode``, see :doc:`configuration`).
+(``elza.webservice.fonds.adminPermissionMode``, see :doc:`04-configuration`).
 
 Entry URLs
 ==========

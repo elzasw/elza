@@ -5,14 +5,14 @@ Troubleshooting
 Log files
 =========
 
-The log files are set in :file:`elza.yaml` (see :doc:`configuration`);
+The log files are set in :file:`elza.yaml` (see :doc:`04-configuration`);
 usually they are in the :file:`log` directory of the working directory:
 
 - :file:`elza.log` - the application log (``elza.logFile``),
 - :file:`siem.log` - the security audit log (``elza.siemLogFile``, see
-  :doc:`security`),
+  :doc:`05-security`),
 - :file:`access_log.<date>.log` - HTTP requests, when the access log is
-  enabled (see :doc:`configuration`).
+  enabled (see :doc:`04-configuration`).
 
 When the application does not start, look for the first ``ERROR`` in
 :file:`elza.log`; with systemd, also check ``journalctl -u elza``.
@@ -56,10 +56,10 @@ WebSocket does not work
 The application loads, but changes made by other users or the progress
 of background tasks do not appear until the page is reloaded. The
 reverse proxy does not forward WebSocket connections on ``/stomp``. See
-:doc:`reverse-proxy`.
+:doc:`06-reverse-proxy`.
 
 Data fixes for old versions
 ===========================
 
 Errors when upgrading old 2.x installations are described in
-:doc:`legacy-upgrades`.
+:doc:`11-legacy-upgrades`.
