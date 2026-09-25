@@ -304,6 +304,21 @@ describe('processNodeNavigation', () => {
         );
     });
 
+    it('selects the direct parent of a deeper node - the parents come from the direct parent to the root', async () => {
+        mockNodeGetNodeData.mockResolvedValue({ data: { parents: [{ id: 6425 }, { id: 6422 }, { id: 6400 }] } });
+        const { dispatch, getState } = createStore({
+            id: 42,
+            versionId: 462,
+            activeVersion: { id: 462, lockDate: null },
+            fundTree: { fetched: true },
+        });
+
+        await processNodeNavigation(TARGET_NODE_INFO)(dispatch, getState);
+
+        await vi.waitFor(() => expect(mockFundSelectSubNode).toHaveBeenCalled());
+        expect(mockFundSelectSubNode.mock.calls[0][2]).toEqual({ id: 6425 });
+    });
+
     it('selects the fund root as parent when the node has no parents', async () => {
         mockNodeGetNodeData.mockResolvedValue({ data: { parents: [] } });
         const { dispatch, getState } = createStore(OTHER_FUND_TAB);
