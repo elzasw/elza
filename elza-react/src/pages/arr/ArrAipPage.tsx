@@ -13,7 +13,7 @@ import type { AppState, Fund, UserDetail } from 'typings/store';
 import { AipFieldName, AipLinkState, AipProblemType } from 'elza-api';
 import { buildFilter } from 'components/aip/filter/aipFilterModel';
 import { AipFilterEntry } from 'typings/store';
-import ActionsContainer from 'components/arr/aip/ActionsContainer';
+import { AipFundActions } from 'components/arr/aip/AipFundActions';
 
 /**
  * Stránka archivních balíčků
@@ -146,8 +146,8 @@ class ArrAipPage extends ArrParentPage {
     }
 
     /**
-     * Průzkumník je samostatná stránka, seznam proto zabírá celou šířku; obě akce
-     * připojení pracují s výběrem v seznamu, ne s tím, co je v průzkumníku vidět.
+     * Průzkumník je samostatná stránka, seznam proto zabírá celou šířku. Akce připojení stojí
+     * v liště nad seznamem a pracují s výběrem v seznamu, ne s tím, co je v průzkumníku vidět.
      */
     renderCenterPanel(readMode: boolean, closed: boolean) {
         const activeFund = this.getActiveFund(this.props);
@@ -160,8 +160,8 @@ class ArrAipPage extends ArrParentPage {
                     initialFilters={initialFilters(activeFund.id)}
                     hiddenValues={["fund.name", "fundCode", "institution.name", "institutionCode"]}
                     focusAipId={this.focusAipId()}
+                    toolbarActions={<AipFundActions fund={activeFund} readMode={readMode}/>}
                 />
-                <ActionsContainer fund={activeFund} readMode={readMode}/>
             </div>
         );
     }

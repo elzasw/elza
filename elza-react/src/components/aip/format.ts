@@ -17,6 +17,14 @@ export const formatAipSize = (bytes: number | null | undefined): string => {
     return `${size} ${sizes[i]}`;
 }
 
+/**
+ * Velikost celého balíčku. Balíček nemůže mít nulovou velikost - nula znamená, že ji digitální
+ * archiv neuvedl, proto se zobrazí jako neznámá. (Soubor v balíčku prázdný být může, pro ten je
+ * formatAipSize.)
+ */
+export const formatPackageSize = (bytes: number | null | undefined): string =>
+    bytes === 0 ? '-' : formatAipSize(bytes);
+
 /** Date range of the AIP; an open end reads as a question mark, not as an invalid date. */
 export const formatUnitDate = (unitdateFrom: string, unitdateTo?: string): string =>
     formatDateCz(new Date(unitdateFrom)) + ' - ' + (unitdateTo ? formatDateCz(new Date(unitdateTo)) : '?');

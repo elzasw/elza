@@ -7,6 +7,15 @@
     padding: 5px 20px;
     align-items: center;
 
+    /* Akce stránky stojí vpravo, těsně před výběrem sloupců. */
+    .aip-filter-actions {
+        margin-left: auto;
+
+        + .last-item {
+            margin-left: 0;
+        }
+    }
+
     .form-check {
         display: flex;
         align-items: center;
