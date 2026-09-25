@@ -10,6 +10,8 @@ public enum AdminPermissionUpdateMode {
      * Supplied users/groups are added and any existing administrator permissions
      * not present in the supplied list are removed, so the resulting permissions
      * exactly match the supplied list.
+     * <p>
+     * Obsolete, will be removed. The web service default is {@link #ADD_ONLY}.
      */
     FULL_SYNC,
 
