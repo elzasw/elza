@@ -123,7 +123,8 @@ public class DaAipStepService {
         DaImportBuilder.Outcome outcome;
         try {
             outcome = daImportService.importDescription(input.aipId(), params.nodeId(), params.levelViewId(),
-                                                        Boolean.TRUE.equals(params.fileplanAsRoot()), firstLevelOnly);
+                                                        params.daoId(), Boolean.TRUE.equals(params.fileplanAsRoot()),
+                                                        firstLevelOnly);
         } catch (BusinessException e) {
             actionService.recordOutcome(actionItemId, DaAipActionItemState.ERROR, e.getMessage());
             return;

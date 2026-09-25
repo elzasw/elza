@@ -1976,12 +1976,20 @@ public class DaService {
      *                    build a logical structure
      * @param fileplanAsRoot for the import of the description: whether the file plan becomes the
      *                    root series; null (in actions submitted earlier) is false
+     * @param daoId       for the import of the description of one package: the level of its logical
+     *                    structure below which the description is taken; null for the level view or
+     *                    the whole package
      */
     public record ConnectParams(Integer nodeId, @Nullable Integer changeId, @Nullable Integer levelViewId,
-                                @Nullable Boolean fileplanAsRoot) {
+                                @Nullable Boolean fileplanAsRoot, @Nullable Integer daoId) {
 
         public ConnectParams(Integer nodeId, @Nullable Integer changeId, @Nullable Integer levelViewId) {
-            this(nodeId, changeId, levelViewId, null);
+            this(nodeId, changeId, levelViewId, null, null);
+        }
+
+        public ConnectParams(Integer nodeId, @Nullable Integer changeId, @Nullable Integer levelViewId,
+                             @Nullable Boolean fileplanAsRoot) {
+            this(nodeId, changeId, levelViewId, fileplanAsRoot, null);
         }
     }
 
@@ -2089,8 +2097,8 @@ public class DaService {
      * package when it is imported, so one that cannot does not stop the others.
      */
     public DaAipAction submitImportDescription(Integer nodeId, List<Integer> aipIds, @Nullable Integer levelViewId,
-                                               boolean fileplanAsRoot) {
-        return submitImport(DaAipActionType.IMPORT_DESCRIPTION, nodeId, aipIds, levelViewId, fileplanAsRoot);
+                                               @Nullable Integer daoId, boolean fileplanAsRoot) {
+        return submitImport(DaAipActionType.IMPORT_DESCRIPTION, nodeId, aipIds, levelViewId, daoId, fileplanAsRoot);
     }
 
     /**
@@ -2099,18 +2107,19 @@ public class DaService {
      * packages. With the rules of the fund the levels get their items from the EAD; without them
      * they carry only the attached parts.
      */
-    public DaAipAction submitCreateSublevels(Integer nodeId, List<Integer> aipIds, @Nullable Integer levelViewId) {
-        return submitImport(DaAipActionType.CREATE_SUBLEVELS, nodeId, aipIds, levelViewId, false);
+    public DaAipAction submitCreateSublevels(Integer nodeId, List<Integer> aipIds, @Nullable Integer levelViewId,
+                                             @Nullable Integer daoId) {
+        return submitImport(DaAipActionType.CREATE_SUBLEVELS, nodeId, aipIds, levelViewId, daoId, false);
     }
 
     private DaAipAction submitImport(DaAipActionType actionType, Integer nodeId, List<Integer> aipIds,
-                                     @Nullable Integer levelViewId, boolean fileplanAsRoot) {
+                                     @Nullable Integer levelViewId, @Nullable Integer daoId, boolean fileplanAsRoot) {
         inTransaction(() -> {
             checkArrPermission(nodeRepository.getOneCheckExist(nodeId));
             return null;
         });
         return inTransaction(() -> submitConnect(actionType, aipIds,
-                                                 new ConnectParams(nodeId, null, levelViewId, fileplanAsRoot)));
+                                                 new ConnectParams(nodeId, null, levelViewId, fileplanAsRoot, daoId)));
     }
 
     /** Creates a unit of description per package and attaches the package there. */

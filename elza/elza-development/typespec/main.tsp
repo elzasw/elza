@@ -6641,6 +6641,8 @@ namespace ElzaAPI.Aip {
          @query fileplanAsRoot?: boolean;
          /** Úroveň logické struktury (level view), pod kterou se popis převezme; bez ní celý balíček */
          @query daLevelViewId?: integer;
+         /** Úroveň logické struktury jednoho balíčku (DaDao), pod kterou se popis převezme */
+         @query daDaoId?: integer;
       ) : {
           /** Akce zahájena */
           @Http.statusCode statusCode: 200;
@@ -6663,6 +6665,8 @@ namespace ElzaAPI.Aip {
          @query daAipIdList: integer[];
          /** Úroveň logické struktury (level view); bez ní nejvyšší úrovně balíčku */
          @query daLevelViewId?: integer;
+         /** Úroveň logické struktury jednoho balíčku (DaDao) */
+         @query daDaoId?: integer;
       ) : {
           /** Akce zahájena */
           @Http.statusCode statusCode: 200;

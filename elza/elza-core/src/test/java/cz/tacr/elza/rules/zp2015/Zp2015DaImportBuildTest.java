@@ -387,7 +387,7 @@ public class Zp2015DaImportBuildTest {
         Integer levelViewId = levelView(aipId, GROUP_44, "Název věcné skupiny 44 - např. HOSPODÁŘSKÉ PROVOZY, SLUŽBY");
         Integer target = tx().execute(status -> createTarget());
 
-        DaImportBuilder.Outcome outcome = daImportService.importDescription(aipId, target, levelViewId, false, true);
+        DaImportBuilder.Outcome outcome = daImportService.importDescription(aipId, target, levelViewId, null, false, true);
 
         assertEquals(1, outcome.created(), "one sublevel: the group 44.4 below the selected group 44");
         assertEquals(1, outcome.attached(), "the sublevel has its part of the package attached");
@@ -409,7 +409,7 @@ public class Zp2015DaImportBuildTest {
         Integer levelViewId = levelView(aipId, GROUP_44, "Název věcné skupiny 44 - např. HOSPODÁŘSKÉ PROVOZY, SLUŽBY");
 
         DaImportBuilder.Outcome outcome = daImportService.importDescription(aipId, sublevelTargetId, levelViewId,
-                                                                            false, false);
+                                                                            null, false, false);
 
         assertEquals(1, outcome.created(), "the document - the sublevel created before is shared by name");
         assertEquals(1, outcome.matched());
@@ -451,7 +451,7 @@ public class Zp2015DaImportBuildTest {
         Integer aipId = storedAip(metsXml, replaceAll(resource("pruvodka.xml"), ids));
         Integer target = tx().execute(status -> createTarget());
 
-        DaImportBuilder.Outcome outcome = daImportService.importDescription(aipId, target, null, false, false);
+        DaImportBuilder.Outcome outcome = daImportService.importDescription(aipId, target, null, null, false, false);
 
         assertEquals(2, outcome.attached(), "the file of group 44.4 and the part of the document");
         tx().executeWithoutResult(status -> {
@@ -464,6 +464,42 @@ public class Zp2015DaImportBuildTest {
             assertEquals(AipLinkState.FULLY_LINKED,
                          linkStateResolver.computeLinkState(aipRepository.findById(aipId).orElseThrow()));
         });
+    }
+
+    @Test
+    @Order(11)
+    void singlePackage_structureBelowItsSelectedLevel() throws Exception {
+        Integer aipId = anotherPackage();
+        Integer groupDaoId = daoId(aipId, lastIds.get(GROUP_44));
+        Integer target = tx().execute(status -> createTarget());
+
+        DaImportBuilder.Outcome outcome = daImportService.importDescription(aipId, target, null, groupDaoId,
+                                                                            false, false);
+
+        assertEquals(2, outcome.created(), "group 44.4 and the document below the selected group 44");
+        tx().executeWithoutResult(status -> {
+            ArrNode subgroup = onlyChild(target);
+            assertTrue(name(subgroup).startsWith("Název věcné skupiny 44_4"), name(subgroup));
+            assertEquals("Název dokumentu, věc-doručený dokument", name(onlyChild(subgroup.getNodeId())));
+        });
+    }
+
+    @Test
+    @Order(12)
+    void singlePackage_selectedPartMustBeALogicalLevel() throws Exception {
+        Integer aipId = anotherPackage();
+        Integer fileDaoId = daoId(aipId, "uuid-440a295f-c1ed-4d85-a737-57f1042d5a37");
+        Integer target = tx().execute(status -> createTarget());
+
+        BusinessException e = assertThrows(BusinessException.class,
+                () -> daImportService.importDescription(aipId, target, null, fileDaoId, false, false));
+        assertTrue(e.getMessage().contains("není úrovní logické struktury"), e.getMessage());
+    }
+
+    private Integer daoId(Integer aipId, String code) {
+        return tx().execute(status -> daoRepository.findByAipAndDeleteChangeIsNull(
+                aipRepository.findById(aipId).orElseThrow()).stream()
+                .filter(d -> d.getCode().equals(code)).findFirst().orElseThrow().getDaoId());
     }
 
     /** A stored package from the same file plan, with its own UUIDs. */
