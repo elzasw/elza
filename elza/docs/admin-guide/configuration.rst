@@ -458,9 +458,8 @@ Web services
    * - ``elza.webservice.fonds.adminPermissionMode``
      - ``ADD_ONLY``
      - How the ``FundService`` updates fund administrators: ``ADD_ONLY``
-       adds the supplied users and groups and keeps the others.
-       ``FULL_SYNC`` also removes administrators missing from the
-       request; it is obsolete and will be removed.
+       adds the supplied users and groups and keeps the others;
+       ``NO_SYNC`` ignores the administrators in the request.
 
 AI assistant
 ============

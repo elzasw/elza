@@ -24,13 +24,13 @@ Unreleased
   from the same moment. Returning to an older version after the migration
   requires restoring both, because an older version does not find files
   in the new layout. See :doc:`backup`.
-- **Changed** - **config**, **api** - The SOAP fund service only adds fund
-  administrators by default (``ADD_ONLY``); administrators missing from
-  the request are no longer removed. The distribution no longer sets
-  ``elza.webservice.fonds.adminPermissionMode``, so the built-in default
-  applies. ``FULL_SYNC`` is obsolete and will be removed; an installation
-  that relies on it has to set it explicitly in :file:`elza.yaml` until
-  then.
+- **Removed** - **config**, **api**, **upgrade** - The SOAP fund service
+  only adds fund administrators (``ADD_ONLY``); administrators missing
+  from the request are no longer removed. The value ``FULL_SYNC`` of
+  ``elza.webservice.fonds.adminPermissionMode`` was removed, and the
+  application does not start with it: remove the key from
+  :file:`elza.yaml` or set ``ADD_ONLY``. ``NO_SYNC`` ignores the
+  administrators in the request.
 - **Changed** - **api** - The administrative endpoints for asynchronous
   requests moved from ``/api/admin/asyncRequests`` and
   ``/api/admin/asyncRequests/{requestType}`` to
@@ -132,7 +132,7 @@ No changes that require the administrator's attention.
   controls how the SOAP fund service updates fund administrators:
   ``FULL_SYNC`` makes them match the supplied list (administrators not in
   the request are removed), ``ADD_ONLY`` only adds them. The distribution
-  sets ``FULL_SYNC`` (changed to ``ADD_ONLY`` after 3.4.7, see above).
+  sets ``FULL_SYNC`` (removed after 3.4.7, see above).
 - **New** - Integration with a digital archive: a new external system type
   (digital repository), overview of AIPs and linking AIPs to the
   description. See :doc:`integrations`.
