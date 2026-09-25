@@ -3265,6 +3265,30 @@
     "defaultMessage": "Application build version: {version}",
     "srcHash": "OeYvnUZYVjUy"
   },
+  "arr.aip.actions.connectOne.disabled": {
+    "defaultMessage": "Select exactly one package in the list",
+    "srcHash": "jYdeBN6Nv8Iv"
+  },
+  "arr.aip.actions.connectOne.hint": {
+    "defaultMessage": "Connect one package or its selected parts",
+    "srcHash": "GdCMTsxo4cG-"
+  },
+  "arr.aip.actions.connectSelected": {
+    "defaultMessage": "Connect selected ({count})",
+    "srcHash": "8jnptXHSdKI5"
+  },
+  "arr.aip.actions.connectSelected.hint": {
+    "defaultMessage": "Connect the selected packages to the archival description or import their description",
+    "srcHash": "YsfLnxj7mpXj"
+  },
+  "arr.aip.actions.connectShown": {
+    "defaultMessage": "Connect shown ({count})",
+    "srcHash": "jIqR_a-_6-x2"
+  },
+  "arr.aip.actions.connectShown.hint": {
+    "defaultMessage": "Nothing is selected - connect the packages shown on this page of the list",
+    "srcHash": "l_RhTHm9LhGd"
+  },
   "arr.aip.assignment.bulk": {
     "defaultMessage": "Link in bulk",
     "srcHash": "ZuJohRiCpnY6"
