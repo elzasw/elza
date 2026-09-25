@@ -60,7 +60,7 @@ import cz.tacr.elza.service.arrangement.MultipleItemChangeContext;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
 import cz.tacr.elza.service.vo.UpdateDescItemsParam;
-import cz.tacr.elza.websocket.service.WebSoсketStompService;
+import cz.tacr.elza.websocket.service.WebSocketStompService;
 
 /**
  * Service to handle form related requests
@@ -88,7 +88,7 @@ public class ArrangementFormService {
 
 	private final ClientFactoryVO factoryVo;
 
-	private final WebSoсketStompService wsStompService;
+	private final WebSocketStompService wsStompService;
 
 	private final NodeCacheService nodeCacheService;
 
@@ -104,7 +104,7 @@ public class ArrangementFormService {
 								  LevelTreeCacheService levelTreeCache,
 								  UserService userService,
 								  RuleService ruleService,
-								  WebSoсketStompService wsStompService,
+								  WebSocketStompService wsStompService,
 								  ClientFactoryVO factoryVo,
 								  ClientFactoryDO factoryDo,
 								  NodeCacheService nodeCache,
