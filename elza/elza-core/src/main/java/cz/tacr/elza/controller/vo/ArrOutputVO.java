@@ -62,8 +62,6 @@ public class ArrOutputVO {
 
     private List<ApScopeVO> scopes;
 
-    private ApAccessPointVO anonymizedAp;
-
     private Integer outputFilterId;
     
     public ArrOutputVO() {
@@ -210,14 +208,6 @@ public class ArrOutputVO {
 
     public void setScopes(List<ApScopeVO> scopes) {
         this.scopes = scopes;
-    }
-
-    public ApAccessPointVO getAnonymizedAp() {
-        return anonymizedAp;
-    }
-
-    public void setAnonymizedAp(ApAccessPointVO anonymizedAp) {
-        this.anonymizedAp = anonymizedAp;
     }
 
     public Integer getOutputFilterId() {

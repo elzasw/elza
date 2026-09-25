@@ -1817,99 +1817,6 @@ paths:
                 $ref: '#/components/schemas/BaseException'
       tags:
         - aips
-  /aip/bulk-import-description:
-    post:
-      operationId: Aip_bulkImportDescription
-      description: Převzetí popisu z balíčků do archivního popisu pod zvolenou jednotku popisu
-      parameters:
-        - name: arrNodeId
-          in: query
-          required: true
-          description: ArrNode ID - jednotka popisu, pod kterou se popis převezme
-          schema:
-            type: integer
-          explode: false
-        - name: daAipIdList
-          in: query
-          required: true
-          description: DaAip ID list
-          schema:
-            type: array
-            items:
-              type: integer
-          explode: false
-        - name: fileplanAsRoot
-          in: query
-          required: false
-          description: Převzít spisový plán jako kořenovou sérii; ve výchozím stavu se vynechá
-          schema:
-            type: boolean
-          explode: false
-        - name: daLevelViewId
-          in: query
-          required: false
-          description: Úroveň logické struktury (level view), pod kterou se popis převezme; bez ní celý balíček
-          schema:
-            type: integer
-          explode: false
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DaAipActionVO'
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BaseException'
-      tags:
-        - aips
-  /aip/bulk-create-sublevels:
-    post:
-      operationId: Aip_bulkCreateSublevels
-      description: Vytvoření úrovní pod jednotkou popisu - jedna za každou úroveň logické struktury přímo pod vybranou úrovní, s připojenou částí balíčku
-      parameters:
-        - name: arrNodeId
-          in: query
-          required: true
-          description: ArrNode ID - jednotka popisu, pod kterou se úrovně vytvoří
-          schema:
-            type: integer
-          explode: false
-        - name: daAipIdList
-          in: query
-          required: true
-          description: DaAip ID list
-          schema:
-            type: array
-            items:
-              type: integer
-          explode: false
-        - name: daLevelViewId
-          in: query
-          required: false
-          description: Úroveň logické struktury (level view); bez ní nejvyšší úrovně balíčku
-          schema:
-            type: integer
-          explode: false
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DaAipActionVO'
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BaseException'
-      tags:
-        - aips
   /aip/bulk-create-from-selected:
     post:
       operationId: Aip_bulkCreateFromSelected
@@ -1971,6 +1878,101 @@ paths:
           in: query
           required: true
           description: DaLevelView ID
+          schema:
+            type: integer
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaAipActionVO'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aips
+  /aip/bulk-create-sublevels:
+    post:
+      operationId: Aip_bulkCreateSublevels
+      description: |-
+        Vytvoření úrovní pod jednotkou popisu - jedna za každou úroveň logické struktury přímo pod
+        vybranou úrovní, s připojenou částí balíčku
+      parameters:
+        - name: arrNodeId
+          in: query
+          required: true
+          description: ArrNode ID - jednotka popisu, pod kterou se úrovně vytvoří
+          schema:
+            type: integer
+          explode: false
+        - name: daAipIdList
+          in: query
+          required: true
+          description: DaAip ID list
+          schema:
+            type: array
+            items:
+              type: integer
+          explode: false
+        - name: daLevelViewId
+          in: query
+          required: false
+          description: Úroveň logické struktury (level view); bez ní nejvyšší úrovně balíčku
+          schema:
+            type: integer
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaAipActionVO'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aips
+  /aip/bulk-import-description:
+    post:
+      operationId: Aip_bulkImportDescription
+      description: Převzetí popisu z balíčků do archivního popisu pod zvolenou jednotku popisu
+      parameters:
+        - name: arrNodeId
+          in: query
+          required: true
+          description: ArrNode ID - jednotka popisu, pod kterou se popis převezme
+          schema:
+            type: integer
+          explode: false
+        - name: daAipIdList
+          in: query
+          required: true
+          description: DaAip ID list
+          schema:
+            type: array
+            items:
+              type: integer
+          explode: false
+        - name: fileplanAsRoot
+          in: query
+          required: false
+          description: Převzít spisový plán jako kořenovou sérii; ve výchozím stavu se vynechá
+          schema:
+            type: boolean
+          explode: false
+        - name: daLevelViewId
+          in: query
+          required: false
+          description: Úroveň logické struktury (level view), pod kterou se popis převezme; bez ní celý balíček
           schema:
             type: integer
           explode: false
@@ -11407,8 +11409,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Scope'
-        anonymizedAp:
-          $ref: '#/components/schemas/ApAccessPointVO'
         outputFilterId:
           type: integer
       description: Náhrada za `ArrOutputVO`
@@ -11486,8 +11486,6 @@ components:
           items:
             type: integer
           description: List of templates
-        anonymizedAp:
-          $ref: '#/components/schemas/ApAccessPointVO'
         outputFilterId:
           type: integer
       description: Náhrada za `OutputNameParam`

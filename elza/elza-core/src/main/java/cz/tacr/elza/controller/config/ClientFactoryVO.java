@@ -1753,10 +1753,6 @@ public class ClientFactoryVO {
         List<Integer> nodeIds = nodes.stream().map(ArrNodeOutput::getNodeId).collect(Collectors.toList());
         outputExt.setNodes(levelTreeCacheService.getNodesByIds(nodeIds, fundVersion));
         outputExt.setScopes(outputServiceInternal.getRestrictedScopeVOs(output));
-        ApAccessPoint anonymizedAp = output.getAnonymizedAp();
-        if (anonymizedAp != null) {
-            outputExt.setAnonymizedAp(apFactory.createVO(anonymizedAp));
-        }
         return outputExt;
     }
 

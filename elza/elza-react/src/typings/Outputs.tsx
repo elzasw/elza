@@ -1,4 +1,3 @@
-import { ApAccessPointVO } from "api";
 
 export interface ArrOutputVO {
     id: number;
@@ -16,7 +15,6 @@ export interface ArrOutputVO {
     createDate: string;
     deleteDate: string;
     scopes: ApScopeVO[];
-    anonymizedAp: ApAccessPointVO;
     outputFilterId: number;
 }
 
