@@ -20,6 +20,10 @@ import "./Tree.scss";
 const messages = defineMessages({
     linkedTo: { id: "arr.aip.parts.linkedTo", defaultMessage: "Připojeno k: {nodes}" },
     treeLabel: { id: "arr.aip.parts.tree", defaultMessage: "Struktura balíčku" },
+    files: {
+        id: "arr.aip.parts.files",
+        defaultMessage: "{count, plural, one {# soubor} few {# soubory} other {# souborů}}",
+    },
 });
 
 /** Druh části balíčku, kterou lze připojit. */
@@ -39,79 +43,142 @@ interface PartItem {
     label: string;
     /** Jen skutečné části balíčku - úrovně, reprezentace a soubory; složka reprezentace ne. */
     part?: SelectedPart;
+    /** Velikost souboru, u složky souhrn skrytých i zobrazených souborů pod ní. */
     size?: number;
+    /** Počet souborů pod složkou; u souboru chybí. */
+    fileCount?: number;
     linkedNodes: LinkedNodeVO[];
     branch: boolean;
+    /** Otevřená při prvním zobrazení - úrovně logické struktury ano, reprezentace ne. */
+    openByDefault: boolean;
 }
 
 interface Props {
     structure: ExplorerTreeNode;
     selected: SelectedPart[];
     onChange: (selected: SelectedPart[]) => void;
+    /** Zobrazit i soubory a komponenty; jinak jen úrovně a reprezentace se souhrnem souborů. */
+    showFiles: boolean;
 }
 
 export type AipPartTreeProps = Props;
 
 type AnyNode = ExplorerTreeNode | ExplorerTreeNodeFile;
 
+/** Soubory pod složkou, každý jednou (týž soubor může viset na více místech). */
+function collectFiles(folder: ExplorerTreeNode, into = new Map<number, number>()): Map<number, number> {
+    folder.childFiles?.forEach(f => into.set(f.daoId, f.size ?? 0));
+    folder.childFolders?.forEach(child => collectFiles(child, into));
+    return into;
+}
+
+/**
+ * Komponenta - úroveň logické struktury, která leží pod jinou úrovní a nese už jen soubory.
+ * Rozpoznává se podle tvaru, ne podle typu úrovně: typy se liší podle profilu balíčku.
+ */
+const isComponent = (folder: ExplorerTreeNode, depth: number) =>
+    depth > 0 && (folder.childFolders?.length ?? 0) === 0;
+
 /**
  * Sestaví řádky stromu ze struktury balíčku. Metadata se nenabízejí - popisují balíček, nejsou
  * tím, co se pořádá. Složky uvnitř reprezentace nejsou samostatnými částmi balíčku (nesou
  * digitální entitu celé reprezentace), proto je nelze vybrat; vybrat lze reprezentaci, úroveň
  * logické struktury a soubor.
+ *
+ * Bez souborů zůstanou jen úrovně (bez komponent) a reprezentace, každá s počtem a velikostí
+ * souborů pod ní. Se soubory se komponenta s jediným souborem zobrazí jako ten soubor, aby
+ * stejná věc nebyla ve stromu dvakrát pod sebou.
  */
-function buildItems(structure: ExplorerTreeNode, nodeName: (node: never) => string): PartItem[] {
+export function buildItems(structure: ExplorerTreeNode, nodeName: (node: never) => string,
+                           showFiles: boolean): PartItem[] {
     const items: PartItem[] = [];
 
-    const add = (node: AnyNode, parentValue: string | undefined, kind: PartKind | undefined, isFile: boolean) => {
-        const value = `${parentValue ?? ""}/${node.uuid ?? node.daoId}`;
-        const folder = node as ExplorerTreeNode;
-        const file = node as ExplorerTreeNodeFile;
-        const hasChildren = !isFile && ((folder.childFolders?.length ?? 0) + (folder.childFiles?.length ?? 0)) > 0;
+    const add = (node: AnyNode, parentValue: string | undefined, kind: PartKind | undefined,
+                 extra: Partial<PartItem>, key = node.uuid ?? node.daoId) => {
+        const value = `${parentValue ?? ""}/${key}`;
         const label = nodeName(node as never);
         items.push({
             value,
             parentValue,
             label,
             part: kind != null && node.daoId != null ? { daoId: node.daoId, kind, label } : undefined,
-            size: isFile ? file.size : undefined,
             linkedNodes: node.linkedNodes ?? [],
-            branch: hasChildren,
+            branch: false,
+            openByDefault: false,
+            ...extra,
         });
-        return value;
+        return items[items.length - 1];
     };
 
-    const walkFolder = (folder: ExplorerTreeNode, parentValue: string, section: AipLevelType, depth: number) => {
+    const summary = (folder: ExplorerTreeNode): Partial<PartItem> => {
+        const files = collectFiles(folder);
+        let size = 0;
+        files.forEach(s => size += s);
+        return files.size > 0 ? { fileCount: files.size, size } : {};
+    };
+
+    const addFile = (file: ExplorerTreeNodeFile, parentValue: string) =>
+        add(file, parentValue, "file", { size: file.size });
+
+    const walkFolder = (folder: ExplorerTreeNode, parent: PartItem, section: AipLevelType, depth: number) => {
+        const logical = section === AipLevelType.LogicalStructure;
+        if (logical && isComponent(folder, depth)) {
+            if (!showFiles) {
+                return;
+            }
+            const only = folder.childFiles?.length === 1 ? folder.childFiles[0] : undefined;
+            if (only) {
+                // komponenta a její soubor jako jeden řádek; značka připojení platí pro obojí
+                parent.branch = true;
+                const row = addFile(only, parent.value);
+                row.linkedNodes = [...(folder.linkedNodes ?? []), ...(only.linkedNodes ?? [])];
+                return;
+            }
+        }
         // v reprezentacích je části balíčku jen reprezentace sama (první úroveň) a soubory
-        const kind: PartKind | undefined = section === AipLevelType.LogicalStructure ? "level"
-            : depth === 0 ? "representation" : undefined;
-        const value = add(folder, parentValue, kind, false);
-        folder.childFolders?.forEach(child => walkFolder(child, value, section, depth + 1));
-        folder.childFiles?.forEach(file => add(file, value, "file", true));
+        const kind: PartKind | undefined = logical ? "level" : depth === 0 ? "representation" : undefined;
+        if (!showFiles && !logical && depth > 0) {
+            return;
+        }
+        parent.branch = true;
+        const item = add(folder, parent.value, kind, { ...summary(folder), openByDefault: logical });
+        folder.childFolders?.forEach(child => walkFolder(child, item, section, depth + 1));
+        if (showFiles) {
+            folder.childFiles?.forEach(file => { item.branch = true; addFile(file, item.value); });
+        }
     };
 
     for (const section of structure.childFolders ?? []) {
         if (section.levelType === AipLevelType.Metadata) {
             continue;
         }
-        const sectionValue = add(section, undefined, undefined, false);
-        section.childFolders?.forEach(folder => walkFolder(folder, sectionValue, section.levelType!, 0));
-        section.childFiles?.forEach(file => add(file, sectionValue, "file", true));
+        const logical = section.levelType === AipLevelType.LogicalStructure;
+        const sectionItem = add(section, undefined, undefined, { openByDefault: logical });
+        section.childFolders?.forEach(folder => walkFolder(folder, sectionItem, section.levelType!, 0));
+        if (showFiles) {
+            section.childFiles?.forEach(file => { sectionItem.branch = true; addFile(file, sectionItem.value); });
+        }
     }
     return items;
 }
 
+/** Identifikátory částí, které lze ve stromu vybrat při daném zobrazení. */
+export function selectableDaoIds(structure: ExplorerTreeNode, showFiles: boolean): Set<number> {
+    return new Set(buildItems(structure, () => "", showFiles).flatMap(i => i.part ? [i.part.daoId] : []));
+}
+
 /**
- * Struktura jednoho balíčku - úrovně logické struktury, reprezentace a jejich soubory. Části,
- * které lze připojit, mají zaškrtávátko; už připojené části nesou značku s tím, kam jsou
+ * Struktura jednoho balíčku - úrovně logické struktury, reprezentace a případně jejich soubory.
+ * Části, které lze připojit, mají zaškrtávátko; už připojené části nesou značku s tím, kam jsou
  * připojeny.
  */
-export function AipPartTree({ structure, selected, onChange }: Props) {
+export function AipPartTree({ structure, selected, onChange, showFiles }: Props) {
     const intl = useIntl();
     const nodeName = useNodeName();
-    const items = useMemo(() => buildItems(structure, nodeName as never), [structure, nodeName]);
-    const [openItems, setOpenItems] = useState<Set<TreeItemValue>>(
-        () => new Set(items.filter(i => i.branch).map(i => i.value)));
+    const items = useMemo(() => buildItems(structure, nodeName as never, showFiles), [structure, nodeName, showFiles]);
+    // výchozí otevření podle úplného stromu, aby se po zapnutí souborů neměnilo, co je otevřené
+    const [openItems, setOpenItems] = useState<Set<TreeItemValue>>(() => new Set(
+        buildItems(structure, nodeName as never, true).filter(i => i.branch && i.openByDefault).map(i => i.value)));
 
     const headlessItems: HeadlessFlatTreeItemProps[] = useMemo(() => items.map(({ value, parentValue, branch }) =>
         ({ value, parentValue, itemType: branch ? "branch" : "leaf" })), [items]);
@@ -130,11 +197,15 @@ export function AipPartTree({ structure, selected, onChange }: Props) {
     };
 
     return (
-        <FlatTree {...flatTree.getTreeProps()} aria-label={intl.formatMessage(messages.treeLabel)} className="tree">
+        <FlatTree {...flatTree.getTreeProps()} aria-label={intl.formatMessage(messages.treeLabel)}
+                  className="tree aip-part-tree" size="small">
             {Array.from(flatTree.items(), flatItem => {
                 const item = byValue.get(flatItem.value as string)!;
                 const treeItemProps = flatItem.getTreeItemProps();
                 const linkedTo = item.linkedNodes.map(n => n.name).join(", ");
+                const sizeText = item.fileCount != null
+                    ? `${intl.formatMessage(messages.files, { count: item.fileCount })} · ${formatAipSize(item.size ?? 0)}`
+                    : item.size != null ? formatAipSize(item.size) : undefined;
                 return (
                     <FlatTreeItem {...treeItemProps} key={item.value}>
                         <TreeItemLayout
@@ -143,7 +214,7 @@ export function AipPartTree({ structure, selected, onChange }: Props) {
                                 : undefined}
 
                             aside={<>
-                                {item.size != null && <Text size={200}>{formatAipSize(item.size)}</Text>}
+                                {sizeText && <Text size={200} className="size">{sizeText}</Text>}
                                 {item.linkedNodes.length > 0 &&
                                     <Tooltip content={intl.formatMessage(messages.linkedTo, { nodes: linkedTo })}
                                              relationship="description">
@@ -153,7 +224,7 @@ export function AipPartTree({ structure, selected, onChange }: Props) {
                         >
                             {/* the checkbox is part of the content: iconBefore is hidden from assistive technologies */}
                             {item.part
-                                ? <Checkbox checked={isSelected(item.part)} label={item.label}
+                                ? <Checkbox checked={isSelected(item.part)} label={item.label} size="medium"
                                             onClick={e => e.stopPropagation()}
                                             onChange={(_, data) => toggle(item.part!, data.checked === true)} />
                                 : item.label}

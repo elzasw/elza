@@ -4,6 +4,7 @@ import {
     Label,
     Radio,
     RadioGroup,
+    Switch,
     Text,
     TreeItemValue,
 } from "@fluentui/react-components";
@@ -14,7 +15,7 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { AipDetailVO, DaAipActionVO, ExplorerTreeNode } from "elza-api";
 import FundTree from "./FundTree";
-import { AipPartTree, SelectedPart } from "./AipPartTree";
+import { AipPartTree, SelectedPart, selectableDaoIds } from "./AipPartTree";
 import { WebApi } from "../../../../actions";
 import { Api } from "../../../../api";
 import { AREA_AIP, aipFetchIfNeeded, aipsFetchIfNeeded } from "actions/aip/aip";
@@ -31,6 +32,7 @@ import { addToastrSuccess } from "components/shared/toastr/ToastrActions";
 
 const messages = defineMessages({
     source: { id: "arr.aip.single.source", defaultMessage: "Zdroj - struktura balíčku" },
+    showFiles: { id: "arr.aip.single.showFiles", defaultMessage: "Zobrazit soubory" },
     target: { id: "arr.aip.assignment.target", defaultMessage: "Cíl - archivní soubor" },
     what: { id: "arr.aip.assignment.what", defaultMessage: "Co připojit" },
     selected: {
@@ -103,6 +105,7 @@ function AipIndividualAssignmentModal({ aipId, tree: initialTree }: Props) {
     const [mode, setMode] = useState<Mode>("whole");
     const [withoutLower, setWithoutLower] = useState(false);
     const [fileplanAsRoot, setFileplanAsRoot] = useState(false);
+    const [showFiles, setShowFiles] = useState(false);
 
     const aip = useSelector((state: AppState) => storeFromArea(state, AREA_AIP))?.data as AipDetailVO | undefined;
     const structure = useSelector((state: AppState) => storeFromArea(state, AREA_AIP_STRUCTURE))?.data as
@@ -115,6 +118,15 @@ function AipIndividualAssignmentModal({ aipId, tree: initialTree }: Props) {
         dispatch(aipFetchIfNeeded(aipId));
         dispatch(fetchAipStructureIfNeeded(aipId, true));
     }, [aipId]);
+
+    /** Po skrytí souborů nezůstane vybráno nic, co není vidět. */
+    const toggleShowFiles = (show: boolean) => {
+        setShowFiles(show);
+        if (!show && structure) {
+            const visible = selectableDaoIds(structure, false);
+            setSelected(sel => sel.filter(s => visible.has(s.daoId)));
+        }
+    };
 
     const daoIds = selected.map(s => s.daoId);
     // úroveň, pod kterou se úrovně vytvoří nebo převezme popis; nic vybráno = celý balíček
@@ -187,9 +199,14 @@ function AipIndividualAssignmentModal({ aipId, tree: initialTree }: Props) {
             </div>
             <Row className="aip-assignment-trees">
                 <Col xs={6} className="d-flex flex-column">
-                    <Label weight="semibold">{intl.formatMessage(messages.source)}</Label>
+                    <div className="aip-assignment-tree-header">
+                        <Label weight="semibold">{intl.formatMessage(messages.source)}</Label>
+                        <Switch checked={showFiles} label={intl.formatMessage(messages.showFiles)}
+                                onChange={(_, data) => toggleShowFiles(data.checked)} />
+                    </div>
                     <div className="border flex-grow-1 overflow-auto">
-                        {structure && <AipPartTree structure={structure} selected={selected} onChange={setSelected} />}
+                        {structure && <AipPartTree structure={structure} selected={selected} onChange={setSelected}
+                                                   showFiles={showFiles} />}
                     </div>
                 </Col>
                 <Col xs={6} className="d-flex flex-column">

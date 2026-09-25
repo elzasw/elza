@@ -99,6 +99,9 @@ const render = async () => {
 
 const check = (label: string, index = 0) => fireEvent.click(screen.getAllByRole('checkbox', { name: label })[index]);
 const choose = (name: RegExp) => fireEvent.click(screen.getByRole('radio', { name }));
+/** Reprezentace jsou na začátku sbalené. */
+const expandRepresentations = () => fireEvent.click(screen.getByText('Reprezentace'));
+const showFiles = () => fireEvent.click(screen.getByRole('switch', { name: 'Zobrazit soubory' }));
 /** Připojí a dočká se dokončení - po přímém připojení se dialog načte znovu. */
 const connect = async () => {
     fireEvent.click(screen.getByRole('button', { name: 'Připojit' }));
@@ -111,15 +114,56 @@ describe('AipIndividualAssignmentModal', () => {
         Object.values(webApi).forEach(fn => fn.mockResolvedValue(undefined));
     });
 
-    it('offers the real parts of the package, not its metadata nor the folders of a representation', async () => {
+    it('shows levels and representations with a file summary, files only on request', async () => {
         await render();
 
         expect(screen.getByText('aip-5')).toBeInTheDocument();
+        expect(screen.queryByRole('checkbox', { name: 'submission' })).toBeNull();
+        expandRepresentations();
         expect(screen.getByRole('checkbox', { name: 'submission' })).toBeInTheDocument();
         expect(screen.getByRole('checkbox', { name: 'Organizace' })).toBeInTheDocument();
-        expect(screen.getAllByRole('checkbox', { name: 'test.docx' }).length).toBe(2);
+        expect(screen.queryByRole('checkbox', { name: 'test.docx' })).toBeNull();
+        expect(screen.getAllByText('1 soubor · 2.0 kB').length).toBe(2);
+        expect(screen.queryByText('METS.xml')).toBeNull();
+
+        showFiles();
+        expect(screen.getAllByRole('checkbox', { name: 'test.docx' }).length).toBeGreaterThanOrEqual(1);
         expect(screen.queryByRole('checkbox', { name: 'komponenty' })).toBeNull();
         expect(screen.queryByText('METS.xml')).toBeNull();
+    });
+
+    it('drops the selected files when the files are hidden again', async () => {
+        await render();
+        showFiles();
+        check('test.docx');
+        check('Organizace');
+        expect(screen.getByText('vybrány 2 části')).toBeInTheDocument();
+
+        showFiles();
+
+        expect(screen.getByText('vybrána 1 část')).toBeInTheDocument();
+    });
+
+    it('shows a component holding one file as that file', async () => {
+        const component: FolderNode = { uuid: 'comp', daoId: 210, label: 'komponenta:test.docx', childFolders: [], childFiles: [file], linkedNodes: [] };
+        const doc: FolderNode = { uuid: 'doc', daoId: 201, label: 'dokument', childFolders: [component], childFiles: [], linkedNodes: [] };
+        const logical: FolderNode = { ...structure.childFolders[1], childFolders: [{ ...structure.childFolders[1].childFolders[0], childFiles: [], childFolders: [doc] }] };
+        const withComponent = { ...structure, childFolders: [structure.childFolders[0], logical] };
+        const base = state();
+        renderWithProviders(<AipIndividualAssignmentModal aipId={5} tree={fundTree} />, {
+            preloadedState: { ...base, app: { ...base.app, aipStructure: { ...base.app.aipStructure, data: withComponent } } },
+        });
+        await act(async () => { await Promise.resolve(); });
+
+        expect(screen.getByRole('checkbox', { name: 'dokument' })).toBeInTheDocument();
+        expect(screen.queryByText('komponenta:test.docx')).toBeNull();
+
+        showFiles();
+        expect(screen.queryByText('komponenta:test.docx')).toBeNull();
+        check('test.docx');
+        choose(/Vybrané části \(1\)/);
+        await connect();
+        expect(webApi.connectAipPartToJp).toHaveBeenCalledWith(10, 5, [101]);
     });
 
     it('links the whole package', async () => {
@@ -132,6 +176,7 @@ describe('AipIndividualAssignmentModal', () => {
 
     it('links the selected parts, with or without their lower parts', async () => {
         await render();
+        showFiles();
         check('test.docx');
         check('Organizace');
         choose(/Vybrané části \(2\)/);
@@ -149,6 +194,7 @@ describe('AipIndividualAssignmentModal', () => {
 
     it('creates a new level for each selected part', async () => {
         await render();
+        expandRepresentations();
         check('submission');
         choose(/každou do nové JP/);
 
@@ -171,6 +217,7 @@ describe('AipIndividualAssignmentModal', () => {
 
     it('offers the level modes only for a single level or nothing selected', async () => {
         await render();
+        showFiles();
         check('test.docx');
 
         expect(screen.getByRole('radio', { name: /Úrovně pod vybranou úrovní/ })).toBeDisabled();
