@@ -7458,7 +7458,6 @@ namespace ElzaAPI.Output {
         createDate: offsetDateTime;
         deleteDate?: offsetDateTime;
         scopes?: Scope[]; // ?
-        anonymizedAp?: ApAccessPointVO; // ?
         outputFilterId?: integer;
     }
 
@@ -7531,7 +7530,6 @@ namespace ElzaAPI.Output {
          * List of templates
          */
         templateIds?: integer[];
-        anonymizedAp?: ApAccessPointVO;
         outputFilterId?: integer;
     }
 

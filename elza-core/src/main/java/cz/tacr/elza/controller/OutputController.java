@@ -586,7 +586,7 @@ public class OutputController implements OutputApi {
         Assert.notNull(param, "Vstupní data musí být vyplněny");
         ArrOutput output = outputService.getOutput(outputId);
         ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(output.getFundId());
-        outputService.updateNamedOutput(fundVersion, output, param.getName(), param.getInternalCode(), param.getTemplateId(), param.getAnonymizedAp(), param.getOutputFilterId());
+        outputService.updateNamedOutput(fundVersion, output, param.getName(), param.getInternalCode(), param.getTemplateId(), param.getOutputFilterId());
 
         return ResponseEntity.ok().build();
 	}
