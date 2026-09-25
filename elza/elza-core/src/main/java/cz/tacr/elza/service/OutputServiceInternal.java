@@ -594,12 +594,7 @@ public class OutputServiceInternal {
                                     .set("accessPointId", accessPoint.getAccessPointId());
                         }
                         ApScope scope = state.getScope();
-                        if (isScopeRestricted(scope, restrictedScopes)) {
-                            if (output.getAnonymizedAp() != null) {
-                                dataRecordRef.setRecord(output.getAnonymizedAp());
-                                restrictedOutputItems.add(outputItem);
-                            }
-                        } else {
+                        if (!isScopeRestricted(scope, restrictedScopes)) {
                             restrictedOutputItems.add(outputItem);
                         }
                     }
