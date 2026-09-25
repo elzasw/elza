@@ -31,7 +31,6 @@ import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItem;
@@ -66,12 +65,9 @@ public class OutputFactory {
     @Autowired
     private LevelTreeCacheService levelTreeCacheService;
 
-    @Autowired
-    private ApFactory apFactory;
-
     /**
      * Extended ArrOutput -> OutputDef. Fills additional fields (templateIds, nodes,
-     * scopes, anonymizedAp) beyond {@link #createDef(ArrOutput)}.
+     * scopes) beyond {@link #createDef(ArrOutput)}.
      */
     public OutputDef createDefExt(final ArrOutput output, final ArrFundVersion fundVersion) {
         OutputDef def = createDef(output);
@@ -90,11 +86,6 @@ public class OutputFactory {
         def.setNodes(mapNodes(levelTreeCacheService.getNodesByIds(nodeIds, fundVersion)));
 
         def.setScopes(mapScopes(outputServiceInternal.getRestrictedScopeVOs(output)));
-
-        ApAccessPoint anonymizedAp = output.getAnonymizedAp();
-        if (anonymizedAp != null) {
-            def.setAnonymizedAp(apFactory.createVO(anonymizedAp));
-        }
         return def;
     }
 

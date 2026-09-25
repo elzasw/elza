@@ -737,4 +737,11 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="20260925142500" author="sergey.iryupin">
+        <!-- Anonymized access point of an output is no longer supported -->
+        <dropForeignKeyConstraint baseTableName="arr_output"
+                                  constraintName="fk_arr_output_anonymized_ap_access_point"/>
+        <dropColumn tableName="arr_output" columnName="anonymized_ap_id"/>
+    </changeSet>
+
 </databaseChangeLog>
