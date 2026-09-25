@@ -19,20 +19,35 @@ import cz.tacr.elza.service.da.DaImportResult
 @groovy.transform.Field
 static final String LEVEL_TYPE = "ZP2015_LEVEL_TYPE"
 
-/** Level types by the TYPE of the div, for the kinds of packages that name their levels (NSESSS). */
+/*
+ * Kinds of the levels of the NSESSS packages. The level is recognized by the TYPE of the div of
+ * the logical structural map (METS) - the package itself says what its parts are; the TYPE is
+ * accepted as a code (vecnaskp) or a readable name ("věcná skupina"). The inherent archival
+ * description (EAD, its otherlevel) comes from the originator and is only supporting evidence,
+ * used when the div says nothing or something unknown.
+ */
+
+/** Kinds of level that stand for the file plan the package comes from. */
 @groovy.transform.Field
-static final Map<String, String> LEVEL_BY_DIV_TYPE = [
-        "vecnaskp" : "ZP2015_LEVEL_SERIES",
-        "spis"     : "ZP2015_LEVEL_FOLDER",
-        "dil"      : "ZP2015_LEVEL_FOLDER",
-        "dokument" : "ZP2015_LEVEL_ITEM"
+static final Set<String> FILEPLAN_KINDS = ["spisplan", "spisový plán"] as Set
+
+/** Kinds of level that are not levels but files attached to the level above them. */
+@groovy.transform.Field
+static final Set<String> ATTACHED_KINDS = ["komponenta"] as Set
+
+/** Level types by the kind of level - the EAD otherlevel code or the TYPE of the div. */
+@groovy.transform.Field
+static final Map<String, String> LEVEL_BY_KIND = [
+        "vecnaskp"     : "ZP2015_LEVEL_SERIES",
+        "věcná skupina": "ZP2015_LEVEL_SERIES",
+        "spis"         : "ZP2015_LEVEL_FOLDER",
+        "dil"          : "ZP2015_LEVEL_FOLDER",
+        "díl"          : "ZP2015_LEVEL_FOLDER",
+        "díl spisu"    : "ZP2015_LEVEL_FOLDER",
+        "dokument"     : "ZP2015_LEVEL_ITEM"
 ]
 
-/** TYPE of the divs that are not levels but files attached to the level above them. */
-@groovy.transform.Field
-static final Set<String> ATTACHED_DIV_TYPES = ["komponenta"] as Set
-
-/** Level types by the level of the EAD unit. */
+/** Level types by the standard level of the EAD unit. */
 @groovy.transform.Field
 static final Map<String, String> LEVEL_BY_EAD_LEVEL = [
         "subfonds" : "ZP2015_LEVEL_SECTION",
@@ -102,9 +117,13 @@ static final Map<String, String> DATE_OTHER_SPECS = [
 decide(PACKAGE, LEVEL, RESULT)
 
 static void decide(DaImportPackage pkg, DaImportLevel level, DaImportResult result) {
+    String eadKind = eadLevel(level)
+    String divKind = level.divType?.trim()?.toLowerCase()
+
     // The file plan changes in some offices so often that it cannot identify anything; unless
-    // asked for, only the hierarchy below it is imported.
-    if (level.fileplan) {
+    // asked for, only the hierarchy below it is imported. It is recognized by the kind of its
+    // div, or by the id of its <fileplan> in the EAD.
+    if (divKind in FILEPLAN_KINDS || level.fileplan || (!isKnown(divKind) && eadKind in FILEPLAN_KINDS)) {
         if (pkg.fileplanAsRoot) {
             result.level()
                   .item(LEVEL_TYPE, "ZP2015_LEVEL_SERIES")
@@ -115,12 +134,12 @@ static void decide(DaImportPackage pkg, DaImportLevel level, DaImportResult resu
         }
         return
     }
-    if (level.divType in ATTACHED_DIV_TYPES) {
+    if (divKind in ATTACHED_KINDS || (!isKnown(divKind) && eadKind in ATTACHED_KINDS)) {
         result.attach()
         return
     }
 
-    String levelType = LEVEL_BY_DIV_TYPE[level.divType] ?: LEVEL_BY_EAD_LEVEL[eadLevel(level)]
+    String levelType = LEVEL_BY_KIND[divKind] ?: LEVEL_BY_KIND[eadKind] ?: LEVEL_BY_EAD_LEVEL[eadKind]
     if (levelType == null) {
         throw new IllegalStateException("Nelze určit úroveň popisu pro " + level
                 + " (level=" + level.eadLevel + ", otherlevel=" + level.eadOtherLevel + ")")
@@ -138,6 +157,11 @@ static void decide(DaImportPackage pkg, DaImportLevel level, DaImportResult resu
     if (levelType == "ZP2015_LEVEL_SERIES") {
         result.matchBy(LEVEL_TYPE, "ZP2015_NAME")
     }
+}
+
+/** Whether the kind of level names something this script knows. */
+static boolean isKnown(String kind) {
+    return kind in FILEPLAN_KINDS || kind in ATTACHED_KINDS || LEVEL_BY_KIND.containsKey(kind)
 }
 
 static String eadLevel(DaImportLevel level) {
