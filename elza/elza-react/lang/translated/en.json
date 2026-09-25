@@ -3297,6 +3297,10 @@
     "defaultMessage": "Bulk linking of a package to the archival description",
     "srcHash": "c4kvrLqKymwy"
   },
+  "arr.aip.assignment.connect": {
+    "defaultMessage": "Connect",
+    "srcHash": "8xxt79Dio94K"
+  },
   "arr.aip.assignment.create": {
     "defaultMessage": "Create description units from the selected ones",
     "srcHash": "gp63O4KTbclU"
@@ -3305,13 +3309,13 @@
     "defaultMessage": "Create description units with a link",
     "srcHash": "rcMZ18W8oSsR"
   },
-  "arr.aip.assignment.import": {
-    "defaultMessage": "Import description from packages",
-    "srcHash": "mtCXWIuOaRqC"
-  },
-  "arr.aip.assignment.import.fileplanAsRoot": {
+  "arr.aip.assignment.fileplanAsRoot": {
     "defaultMessage": "File plan as the root series",
     "srcHash": "gaQcl8F7wtYN"
+  },
+  "arr.aip.assignment.hidePackages": {
+    "defaultMessage": "Hide packages",
+    "srcHash": "K04kAx_YFQZO"
   },
   "arr.aip.assignment.individually": {
     "defaultMessage": "Link individually",
@@ -3325,6 +3329,38 @@
     "defaultMessage": "Link to a description unit",
     "srcHash": "NYGXBdMDTXi-"
   },
+  "arr.aip.assignment.mode.level": {
+    "defaultMessage": "The selected level “{level}”",
+    "srcHash": "UdAc4MSQKixk"
+  },
+  "arr.aip.assignment.mode.level.hint": {
+    "defaultMessage": "Connects the selected level of the packages to the selected unit of description; the lower levels are connected with it.",
+    "srcHash": "dR8X0Ui2uHno"
+  },
+  "arr.aip.assignment.mode.structure": {
+    "defaultMessage": "Import structure and description",
+    "srcHash": "4mpvga0lWKcj"
+  },
+  "arr.aip.assignment.mode.structure.hint": {
+    "defaultMessage": "Creates the levels below the selected level down to the documents, with description items from the packages, and attaches the files to them.",
+    "srcHash": "Wt-mTKSjai3r"
+  },
+  "arr.aip.assignment.mode.sublevels": {
+    "defaultMessage": "Levels below the selected level",
+    "srcHash": "ZVTDOiwglhMZ"
+  },
+  "arr.aip.assignment.mode.sublevels.hint": {
+    "defaultMessage": "For each level directly below the selected level creates a sublevel under the selected unit of description and attaches its part of the packages to it.",
+    "srcHash": "ll_V7y-srDS7"
+  },
+  "arr.aip.assignment.mode.whole": {
+    "defaultMessage": "Whole packages ({count})",
+    "srcHash": "KcZL0MwPJh-S"
+  },
+  "arr.aip.assignment.mode.whole.hint": {
+    "defaultMessage": "Connects the whole packages to the selected unit of description, regardless of their structure.",
+    "srcHash": "UEiLclgbmjGb"
+  },
   "arr.aip.assignment.part.confirm": {
     "defaultMessage": "Do you really want to link only the selected part? With this option the related parts of the package will not be linked.",
     "srcHash": "E1EktVUIcpnH"
@@ -3332,6 +3368,30 @@
   "arr.aip.assignment.select-and-create": {
     "defaultMessage": "Selective linking with a description unit",
     "srcHash": "-Ejl0u_vM2bg"
+  },
+  "arr.aip.assignment.selectedCount": {
+    "defaultMessage": "{count, plural, one {# package selected} other {# packages selected}}",
+    "srcHash": "7er4i4NHhkjP"
+  },
+  "arr.aip.assignment.showPackages": {
+    "defaultMessage": "Show packages of the selected level",
+    "srcHash": "5Mod0QCV9q_l"
+  },
+  "arr.aip.assignment.source": {
+    "defaultMessage": "Source - logical structure of the packages",
+    "srcHash": "A-PVCvILVEr-"
+  },
+  "arr.aip.assignment.summary": {
+    "defaultMessage": "{count, plural, one {# package} other {# packages}} → “{target}”",
+    "srcHash": "ci3RH8VrsVzM"
+  },
+  "arr.aip.assignment.target": {
+    "defaultMessage": "Target - archival fund",
+    "srcHash": "0i4WzlWXG1ng"
+  },
+  "arr.aip.assignment.what": {
+    "defaultMessage": "What to connect",
+    "srcHash": "strvxu5kogE4"
   },
   "arr.aip.dao.link.delete": {
     "defaultMessage": "Do you really want to delete this link?",

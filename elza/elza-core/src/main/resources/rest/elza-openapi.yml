@@ -1845,6 +1845,56 @@ paths:
           schema:
             type: boolean
           explode: false
+        - name: daLevelViewId
+          in: query
+          required: false
+          description: Úroveň logické struktury (level view), pod kterou se popis převezme; bez ní celý balíček
+          schema:
+            type: integer
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaAipActionVO'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aips
+  /aip/bulk-create-sublevels:
+    post:
+      operationId: Aip_bulkCreateSublevels
+      description: Vytvoření úrovní pod jednotkou popisu - jedna za každou úroveň logické struktury přímo pod vybranou úrovní, s připojenou částí balíčku
+      parameters:
+        - name: arrNodeId
+          in: query
+          required: true
+          description: ArrNode ID - jednotka popisu, pod kterou se úrovně vytvoří
+          schema:
+            type: integer
+          explode: false
+        - name: daAipIdList
+          in: query
+          required: true
+          description: DaAip ID list
+          schema:
+            type: array
+            items:
+              type: integer
+          explode: false
+        - name: daLevelViewId
+          in: query
+          required: false
+          description: Úroveň logické struktury (level view); bez ní nejvyšší úrovně balíčku
+          schema:
+            type: integer
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -8583,6 +8633,7 @@ components:
         - CREATE_NODES
         - CREATE_NODES_AND_CONNECT
         - IMPORT_DESCRIPTION
+        - CREATE_SUBLEVELS
       description: Typ akce vyžádané nad AIPy
     DaAipActionVO:
       type: object

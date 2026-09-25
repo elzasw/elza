@@ -14,3 +14,69 @@
         flex: 1;
     }
 }  
+/* Hromadné připojení: zdroj a cíl vedle sebe, pod nimi volba způsobu a tlačítko. */
+.aip-assignment-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    height: 100%;
+
+    .aip-assignment-selection {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .aip-assignment-packages {
+        max-height: 20vh;
+        overflow: auto;
+        margin: 0;
+        padding: 4px 8px;
+        list-style: none;
+        border: 1px solid $color-grey;
+
+        li {
+            display: flex;
+            gap: 12px;
+        }
+
+        .code {
+            font-family: monospace;
+        }
+
+        .content-type {
+            color: $fg-color;
+            opacity: 0.7;
+        }
+    }
+
+    .aip-assignment-trees {
+        flex: 1 1 auto;
+        min-height: 0;
+
+        > div {
+            min-height: 0;
+            gap: 4px;
+        }
+    }
+
+    .aip-assignment-mode-label {
+        display: flex;
+        flex-direction: column;
+
+        .hint {
+            opacity: 0.75;
+        }
+    }
+
+    .aip-assignment-option {
+        margin-left: 28px;
+    }
+
+    .aip-assignment-footer {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 16px;
+    }
+}

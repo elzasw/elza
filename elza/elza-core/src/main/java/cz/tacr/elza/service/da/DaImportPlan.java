@@ -26,15 +26,30 @@ public class DaImportPlan {
         private final DaImportResult.Decision decision;
         private final List<RulItemType> matchBy;
         private final List<DaImportResult.Item> items;
+        private final boolean attachOwnEntity;
         private final List<Node> children = new ArrayList<>();
 
         Node(String divId, @Nullable String label, DaImportResult.Decision decision, List<RulItemType> matchBy,
              List<DaImportResult.Item> items) {
+            this(divId, label, decision, matchBy, items, false);
+        }
+
+        Node(String divId, @Nullable String label, DaImportResult.Decision decision, List<RulItemType> matchBy,
+             List<DaImportResult.Item> items, boolean attachOwnEntity) {
             this.divId = divId;
             this.label = label;
             this.decision = decision;
             this.matchBy = List.copyOf(matchBy);
             this.items = List.copyOf(items);
+            this.attachOwnEntity = attachOwnEntity;
+        }
+
+        /**
+         * Whether the part of the package the div stands for is attached to the level itself -
+         * with everything below it, which is attached with it.
+         */
+        public boolean isAttachOwnEntity() {
+            return attachOwnEntity;
         }
 
         /** ID of the div - the code of its logical digital entity. */
@@ -80,5 +95,21 @@ public class DaImportPlan {
 
     void addRoot(Node node) {
         roots.add(node);
+    }
+
+    /**
+     * The first level of the plan only: its levels without what is below them, each with its own
+     * part of the package attached - the levels below are attached with it, without being
+     * described. Attachments of the first level stay as they are.
+     */
+    public DaImportPlan firstLevel() {
+        DaImportPlan result = new DaImportPlan();
+        for (Node root : roots) {
+            result.addRoot(root.getDecision() == DaImportResult.Decision.LEVEL
+                    ? new Node(root.getDivId(), root.getLabel(), root.getDecision(), root.getMatchBy(),
+                               root.getItems(), true)
+                    : root);
+        }
+        return result;
     }
 }

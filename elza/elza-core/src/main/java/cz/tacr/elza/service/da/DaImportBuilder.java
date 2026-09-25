@@ -146,6 +146,9 @@ public class DaImportBuilder {
                 return;
             }
             ArrNode level = findOrCreate(node, parent);
+            if (node.isAttachOwnEntity()) {
+                attach(node, level);
+            }
             for (DaImportPlan.Node child : node.getChildren()) {
                 place(child, level);
             }

@@ -2088,13 +2088,29 @@ public class DaService {
      * to arrange the fund is checked here. Whether a package can be imported is decided for each
      * package when it is imported, so one that cannot does not stop the others.
      */
-    public DaAipAction submitImportDescription(Integer nodeId, List<Integer> aipIds, boolean fileplanAsRoot) {
+    public DaAipAction submitImportDescription(Integer nodeId, List<Integer> aipIds, @Nullable Integer levelViewId,
+                                               boolean fileplanAsRoot) {
+        return submitImport(DaAipActionType.IMPORT_DESCRIPTION, nodeId, aipIds, levelViewId, fileplanAsRoot);
+    }
+
+    /**
+     * Creates, below a unit of description, a level for each level of the logical structure
+     * directly below the given one (or the top of the packages) and attaches to it its part of the
+     * packages. With the rules of the fund the levels get their items from the EAD; without them
+     * they carry only the attached parts.
+     */
+    public DaAipAction submitCreateSublevels(Integer nodeId, List<Integer> aipIds, @Nullable Integer levelViewId) {
+        return submitImport(DaAipActionType.CREATE_SUBLEVELS, nodeId, aipIds, levelViewId, false);
+    }
+
+    private DaAipAction submitImport(DaAipActionType actionType, Integer nodeId, List<Integer> aipIds,
+                                     @Nullable Integer levelViewId, boolean fileplanAsRoot) {
         inTransaction(() -> {
             checkArrPermission(nodeRepository.getOneCheckExist(nodeId));
             return null;
         });
-        return inTransaction(() -> submitConnect(DaAipActionType.IMPORT_DESCRIPTION, aipIds,
-                                                 new ConnectParams(nodeId, null, null, fileplanAsRoot)));
+        return inTransaction(() -> submitConnect(actionType, aipIds,
+                                                 new ConnectParams(nodeId, null, levelViewId, fileplanAsRoot)));
     }
 
     /** Creates a unit of description per package and attaches the package there. */
@@ -2108,9 +2124,20 @@ public class DaService {
                                                  new ConnectParams(nodeId, null, null)));
     }
 
-    /** Builds the logical structure under an existing unit of description and attaches the packages. */
+    /**
+     * Attaches one level of the logical structure of the packages to an existing unit of
+     * description; the levels below it are attached with it. Nothing is created.
+     */
     public DaAipAction submitBulkConnectLogicalStructure(Integer nodeId, List<Integer> aipIds, Integer levelViewId) {
-        return submitLogicalStructure(DaAipActionType.CONNECT_LOGICAL_STRUCTURE, nodeId, aipIds, levelViewId, false);
+        inTransaction(() -> {
+            checkArrPermission(nodeRepository.getOneCheckExist(nodeId));
+            daLevelViewRepository.findById(levelViewId).orElseThrow(
+                    () -> new ObjectNotFoundException("Nebylo nalezeno level view s předaným ID. ID=" + levelViewId,
+                                                      BaseCode.ID_NOT_EXIST));
+            return null;
+        });
+        return inTransaction(() -> submitConnect(DaAipActionType.CONNECT_LOGICAL_STRUCTURE, aipIds,
+                                                 new ConnectParams(nodeId, null, levelViewId)));
     }
 
     /** Creates a unit of description, builds the logical structure under it and attaches the packages. */
@@ -2182,7 +2209,10 @@ public class DaService {
         }
     }
 
-    /** Attaches the logical entities of one AIP that belong to the level view of the action. */
+    /**
+     * Attaches the level of the logical structure of one AIP that belongs to the level view of the
+     * action. The levels below it are attached with it.
+     */
     private void connectLogicalDaos(DaAip daAip, ArrNode nodeToConnect, ConnectParams params) {
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, nodeToConnect);
         DaLevelView levelViewToConnect = daLevelViewRepository.findById(params.levelViewId()).orElseThrow(
@@ -2191,13 +2221,16 @@ public class DaService {
 
         List<DaDao> daoList = daoRepository.findAllByLevelViewInAndDeleteChangeIsNull(
                 Collections.singletonList(levelViewToConnect));
+        boolean linked = false;
         for (DaDao daDao : daoList) {
-            for (DaDaoRelation relation : daoRelationRepository.findByParentDaoAndDeleteChangeIsNull(daDao)) {
-                DaDao dao = relation.getDao();
-                if (dao.getType().equals(DaDao.DaoType.LOGICAL) && dao.getAip().equals(daAip)) {
-                    linkToNode(daAip, dao, nodeToConnect, ArrDaoLink.LinkType.PART_AIP, change);
-                }
+            if (daDao.getType() == DaDao.DaoType.LOGICAL && daDao.getAip().equals(daAip)) {
+                linkToNode(daAip, daDao, nodeToConnect, ArrDaoLink.LinkType.PART_AIP, change);
+                linked = true;
             }
+        }
+        if (!linked) {
+            throw new BusinessException("AIP " + daAip.getCode() + " vybranou úroveň logické struktury neobsahuje.",
+                                        BaseCode.INVALID_STATE);
         }
     }
     private ArrNode createNextLevel(ArrNode arrNode, ArrChange change, int position, DaLevelView levelView) {

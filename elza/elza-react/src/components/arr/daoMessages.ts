@@ -19,8 +19,6 @@ export const daoMessages = defineMessages({
     aipAssignmentBulkTitle: { id: "arr.aip.assignment.bulk.title", defaultMessage: "Hromadné připojení balíčku s archivním popisem" },
     aipAssignmentCreate: { id: "arr.aip.assignment.create", defaultMessage: "Vytvořit JP z vybraných" },
     aipAssignmentCreateAndLink: { id: "arr.aip.assignment.create-and-link", defaultMessage: "Vytvořit JP s propojením" },
-    aipAssignmentImport: { id: "arr.aip.assignment.import", defaultMessage: "Převzít popis z balíčků" },
-    aipAssignmentImportFileplanAsRoot: { id: "arr.aip.assignment.import.fileplanAsRoot", defaultMessage: "Spisový plán jako kořenová série" },
     aipAssignmentIndividually: { id: "arr.aip.assignment.individually", defaultMessage: "Připojit jednotlivě" },
     aipAssignmentIndividuallyTitle: { id: "arr.aip.assignment.individually.title", defaultMessage: "Připojení balíčku s archivním popisem" },
     aipAssignmentLink: { id: "arr.aip.assignment.link", defaultMessage: "Připojit k JP" },

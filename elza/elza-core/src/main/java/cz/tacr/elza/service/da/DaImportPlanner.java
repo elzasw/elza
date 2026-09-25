@@ -115,6 +115,42 @@ public class DaImportPlanner {
         return Optional.empty();
     }
 
+    /**
+     * The divs directly below a div as levels without items - for funds whose rules cannot
+     * import packages. Without rules nothing can be read from the EAD; the levels only carry the
+     * parts of the package attached to them.
+     *
+     * @param startUuid UUID of the div; null for the top of the logical structural map
+     */
+    public DaImportPlan planDivsBelow(MetsType mets, @Nullable String startUuid) {
+        DaImportPlan plan = new DaImportPlan();
+        for (StructMapType structMap : mets.getStructMap()) {
+            if (!LOGICAL.equals(structMap.getTYPE()) || structMap.getDiv() == null) {
+                continue;
+            }
+            List<DivType> divs = startUuid == null ? List.of(structMap.getDiv())
+                    : childrenOf(structMap.getDiv(), startUuid);
+            for (DivType div : divs) {
+                plan.addRoot(new DaImportPlan.Node(div.getID(), StringUtils.trimToNull(div.getLABEL()),
+                        DaImportResult.Decision.LEVEL, List.of(), List.of()));
+            }
+        }
+        return plan;
+    }
+
+    private static List<DivType> childrenOf(DivType div, String uuid) {
+        if (uuid.equals(AipNodeUuids.normalize(div.getID()))) {
+            return div.getDiv();
+        }
+        for (DivType child : div.getDiv()) {
+            List<DivType> found = childrenOf(child, uuid);
+            if (!found.isEmpty()) {
+                return found;
+            }
+        }
+        return List.of();
+    }
+
     @Nullable
     private String findScript(RuleSet ruleSet) {
         List<RulArrangementRule> rules = ruleSet.getRulesByType(RulArrangementRule.RuleType.DA_IMPORT);
