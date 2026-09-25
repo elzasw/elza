@@ -16,15 +16,17 @@ import FundTree from "./FundTree";
 import { useSelector } from "react-redux";
 import { storeFromArea } from "shared/utils";
 import { AppState } from "typings/store";
-import { AIP_LOGICAL_TREE, fetchAipLogicalTreeIfNeeded } from "actions/aip/aip";
+import { AIP_LOGICAL_TREE, AREA_AIPS, fetchAipLogicalTreeIfNeeded } from "actions/aip/aip";
 import { useThunkDispatch } from "utils/hooks";
 import { useWebsocket } from "components/shared/web-socket/WebsocketProvider";
-import { AipConnectBlockedVO, AipDetailVO, DaAipActionVO } from "elza-api";
+import { AipConnectBlockedVO, AipDetailVO, AipLinkState, DaAipActionVO } from "elza-api";
 import { Api } from "../../../../api";
 import AipConnectBlockedPanel from "../../../aip/AipConnectBlockedPanel";
 import { runAipAction } from "../../../aip/AipActionRunner";
 import { aipsFetchIfNeeded } from "actions/aip/aip";
 import { useNodeName } from "components/aip/explorer/levels";
+import { fundTreeFetch } from "actions/arr/fundTree";
+import { FUND_TREE_AREA_MAIN } from "actions/constants/ActionTypes";
 
 const messages = defineMessages({
     selectedCount: {
@@ -62,14 +64,18 @@ const messages = defineMessages({
         defaultMessage: "{count, plural, one {# balíček} few {# balíčky} other {# balíčků}} → „{target}“",
     },
     connect: { id: "arr.aip.assignment.connect", defaultMessage: "Připojit" },
+    allLinked: { id: "arr.aip.assignment.allLinked", defaultMessage: "Všechny balíčky jsou plně připojeny." },
 });
 
 /** Způsob připojení, který uživatel zvolil. */
 type Mode = "whole" | "level" | "sublevels" | "structure";
 
+type FundTreeData = { nodes: { id: TreeItemValue; name: string }[]; expandedIds?: Set<TreeItemValue> };
+
 interface Props {
     aips: AipDetailVO[];
-    tree: { nodes: { id: TreeItemValue; name: string }[]; expandedIds?: Set<TreeItemValue> };
+    /** Strom archivního souboru při otevření dialogu; po akci se čte aktuální ze store. */
+    tree: FundTreeData;
 }
 
 export type AipAssignmentModalProps = Props;
@@ -80,11 +86,14 @@ export type AipAssignmentModalProps = Props;
  *
  * Celé balíčky se připojují všechny, které dialog dostal; ostatní způsoby pracují s balíčky
  * vybrané úrovně. Vybraný kořen struktury znamená vrchol balíčků - celé balíčky.
+ *
+ * Po každé akci se dialog načte znovu: plně napojené balíčky z něj zmizí a ve stromu archivního
+ * souboru jsou vidět nově vytvořené úrovně.
  */
-function AipAssignmentModal({ aips, tree }: Props) {
+function AipAssignmentModal({ aips: initialAips, tree: initialTree }: Props) {
     const [logicalTree, setLogicalTree] = useState<{ nodes: LogicalTreeNode[] } | null>(null);
     const [level, setLevel] = useState<LogicalTreeNode | null>(null);
-    const [targetNodeId, setTargetNodeId] = useState<TreeItemValue>(tree.nodes[0].id);
+    const [targetNodeId, setTargetNodeId] = useState<TreeItemValue>(initialTree.nodes[0].id);
     const [mode, setMode] = useState<Mode>("whole");
     const [fileplanAsRoot, setFileplanAsRoot] = useState(false);
     const [packagesShown, setPackagesShown] = useState(false);
@@ -95,21 +104,35 @@ function AipAssignmentModal({ aips, tree }: Props) {
     const intl = useIntl();
     const nodeName = useNodeName();
 
+    // aktuální stav balíčků ze seznamu - po akci se seznam načte znovu
+    const listRows = useSelector((state: AppState) => storeFromArea(state, AREA_AIPS)?.rows) as AipDetailVO[] | undefined;
+    const aips = initialAips
+        .map(a => listRows?.find(r => r.aipId === a.aipId) ?? a)
+        .filter(a => a.linkState !== AipLinkState.FullyLinked);
+    // aktuální strom archivního souboru ze store; mimo pořádání (testy) ten, se kterým se dialog otevřel
+    const activeFund = useSelector((state: AppState) => state.arrRegion?.funds?.[state.arrRegion.activeIndex ?? -1]);
+    const tree = (activeFund?.fundTree?.nodes ? activeFund.fundTree : initialTree) as FundTreeData;
+
     const allAipIds = aips.map(a => a.aipId);
+    const aipKey = allAipIds.join(",");
     const levelAipIds: number[] = level?.value ?? allAipIds;
     const levelViewId = level?.daLeveViewId;
     const aipIds = mode === "whole" ? allAipIds : levelAipIds;
     const targetName = tree.nodes.find(n => n.id == targetNodeId)?.name ?? "";
 
     useEffect(() => {
-        dispatch(fetchAipLogicalTreeIfNeeded(allAipIds));
-    }, []);
+        if (allAipIds.length > 0) {
+            dispatch(fetchAipLogicalTreeIfNeeded(allAipIds, true));
+        }
+    }, [aipKey]);
 
     useEffect(() => {
-        if (structure.data) {
+        if (allAipIds.length === 0) {
+            setLogicalTree(null);
+        } else if (structure.data) {
             setLogicalTree(structure.data);
         }
-    }, [structure]);
+    }, [structure, aipKey]);
 
     /** Připojení už napojený AIP odmítne; uživatel to má vědět dřív, než potvrdí. */
     useEffect(() => {
@@ -120,9 +143,16 @@ function AipAssignmentModal({ aips, tree }: Props) {
         Api.aips.aipConnectCheck(targetNodeId as number, allAipIds)
             .then(response => setBlocked(response.data.blocked ?? []))
             .catch(() => setBlocked([]));
-    }, [targetNodeId, aips]);
+    }, [targetNodeId, aipKey]);
 
-    const reloadAips = () => dispatch(aipsFetchIfNeeded(true));
+    /** Po akci: seznam balíčků (a s ním stav napojení) a strom archivního souboru s cílovou úrovní rozbalenou. */
+    const reloadAfterAction = () => {
+        dispatch(aipsFetchIfNeeded(true));
+        if (activeFund?.versionId != null) {
+            const expandedIds = { ...(activeFund.fundTree?.expandedIds ?? {}), [targetNodeId as number]: true };
+            dispatch(fundTreeFetch(FUND_TREE_AREA_MAIN, activeFund.versionId, null, expandedIds) as never);
+        }
+    };
 
     const request = (): Promise<{ data: DaAipActionVO }> => {
         const target = targetNodeId as number;
@@ -143,7 +173,7 @@ function AipAssignmentModal({ aips, tree }: Props) {
     };
 
     const handleConnect = () => {
-        runAipAction(dispatch, intl, websocket, intl.formatMessage(messages.connect), request as never, reloadAips);
+        runAipAction(dispatch, intl, websocket, intl.formatMessage(messages.connect), request as never, reloadAfterAction);
     };
 
     // napojené AIPy odmítne jen připojení, které se týká celého balíčku nebo úrovně
@@ -155,7 +185,11 @@ function AipAssignmentModal({ aips, tree }: Props) {
         <Modal.Body className="aip-assignment-body">
             <AipConnectBlockedPanel blocked={blocked} />
             <div className="aip-assignment-selection">
-                <Text weight="semibold">{intl.formatMessage(messages.selectedCount, { count: aips.length })}</Text>
+                <Text weight="semibold">
+                    {aips.length > 0
+                        ? intl.formatMessage(messages.selectedCount, { count: aips.length })
+                        : intl.formatMessage(messages.allLinked)}
+                </Text>
                 <Button appearance="subtle" size="small" onClick={() => setPackagesShown(!packagesShown)}>
                     {intl.formatMessage(packagesShown ? messages.hidePackages : messages.showPackages)}
                 </Button>

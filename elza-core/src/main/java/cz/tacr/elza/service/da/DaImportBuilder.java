@@ -25,10 +25,12 @@ import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.DaAip;
 import cz.tacr.elza.domain.DaDao;
+import cz.tacr.elza.domain.DaDaoRelation;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.DaDaoRelationRepository;
 import cz.tacr.elza.repository.DaDaoRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
@@ -54,6 +56,11 @@ import jakarta.transaction.Transactional;
  * package is matched to it - unless that UUID is taken elsewhere in the fund.</li>
  * </ol>
  *
+ * What is attached: the lowest level (a document with its components) gets its own part of the
+ * package, which covers its files and everything below it; an upper level gets only the files
+ * lying directly on it, so the parts attached below it are not repeated on it. A package imported
+ * as a whole is thus attached completely, each file once.
+ *
  * Permissions are not checked here: the automatic processing has no user, and the import
  * started by a user checks the permission to the fund before it gets here.
  */
@@ -70,19 +77,22 @@ public class DaImportBuilder {
     private final LevelRepository levelRepository;
     private final NodeRepository nodeRepository;
     private final DaDaoRepository daoRepository;
+    private final DaDaoRelationRepository daoRelationRepository;
     private final FundVersionRepository fundVersionRepository;
     private final DescriptionItemService descriptionItemService;
     private final ArrangementInternalService arrangementInternalService;
     private final RuleService ruleService;
 
     public DaImportBuilder(DaService daService, LevelRepository levelRepository, NodeRepository nodeRepository,
-                           DaDaoRepository daoRepository, FundVersionRepository fundVersionRepository,
+                           DaDaoRepository daoRepository, DaDaoRelationRepository daoRelationRepository,
+                           FundVersionRepository fundVersionRepository,
                            DescriptionItemService descriptionItemService,
                            ArrangementInternalService arrangementInternalService, RuleService ruleService) {
         this.daService = daService;
         this.levelRepository = levelRepository;
         this.nodeRepository = nodeRepository;
         this.daoRepository = daoRepository;
+        this.daoRelationRepository = daoRelationRepository;
         this.fundVersionRepository = fundVersionRepository;
         this.descriptionItemService = descriptionItemService;
         this.arrangementInternalService = arrangementInternalService;
@@ -103,7 +113,14 @@ public class DaImportBuilder {
                 .findByAipAndTypeAndDeleteChangeIsNull(aip, DaDao.DaoType.LOGICAL).stream()
                 .collect(Collectors.toMap(DaDao::getCode, Function.identity(), (a, b) -> a));
 
-        Run run = new Run(aip, version, change, logicalDaos);
+        // files of each part of the package: the file entities are children of the div they sit on
+        Map<Integer, List<DaDao>> filesByParent = daoRelationRepository.findByAipsAndDeleteChangeIsNull(List.of(aip))
+                .stream()
+                .filter(r -> r.getDao().getType() == DaDao.DaoType.FILE)
+                .collect(Collectors.groupingBy(r -> r.getParentDao().getDaoId(),
+                                               Collectors.mapping(DaDaoRelation::getDao, Collectors.toList())));
+
+        Run run = new Run(aip, version, change, logicalDaos, filesByParent);
         for (DaImportPlan.Node node : plan.getRoots()) {
             run.place(node, target);
         }
@@ -122,6 +139,7 @@ public class DaImportBuilder {
         private final ArrFundVersion version;
         private final ArrChange change;
         private final Map<String, DaDao> logicalDaos;
+        private final Map<Integer, List<DaDao>> filesByParent;
         private final MultipleItemChangeContext changeContext;
 
         /** Children of the levels looked into, by node id; the created ones are added. */
@@ -132,11 +150,13 @@ public class DaImportBuilder {
         private int matched;
         private int attached;
 
-        Run(DaAip aip, ArrFundVersion version, ArrChange change, Map<String, DaDao> logicalDaos) {
+        Run(DaAip aip, ArrFundVersion version, ArrChange change, Map<String, DaDao> logicalDaos,
+            Map<Integer, List<DaDao>> filesByParent) {
             this.aip = aip;
             this.version = version;
             this.change = change;
             this.logicalDaos = logicalDaos;
+            this.filesByParent = filesByParent;
             this.changeContext = descriptionItemService.createChangeContext(version.getFundVersionId());
         }
 
@@ -146,12 +166,31 @@ public class DaImportBuilder {
                 return;
             }
             ArrNode level = findOrCreate(node, parent);
-            if (node.isAttachOwnEntity()) {
-                attach(node, level);
+            boolean hasLevelsBelow = node.getChildren().stream()
+                    .anyMatch(child -> child.getDecision() == DaImportResult.Decision.LEVEL);
+            if (node.isAttachOwnEntity() || !hasLevelsBelow) {
+                // The lowest level (a document with its components): its own part is attached, with
+                // its files and everything below it - the components need no links of their own.
+                if (node.isAttachOwnEntity() || !node.getChildren().isEmpty() || !ownFiles(node).isEmpty()) {
+                    attach(node, level);
+                }
+                return;
+            }
+            // An upper level: only its own files are attached, so that the levels below it, which
+            // get their own parts attached, are not repeated on it.
+            for (DaDao file : ownFiles(node)) {
+                daService.linkToNode(aip, file, level, ArrDaoLink.LinkType.PART_AIP, change);
+                attached++;
             }
             for (DaImportPlan.Node child : node.getChildren()) {
                 place(child, level);
             }
+        }
+
+        /** Files lying directly on the div, not on the divs below it. */
+        private List<DaDao> ownFiles(DaImportPlan.Node node) {
+            DaDao dao = logicalDaos.get(node.getDivId());
+            return dao == null ? List.of() : filesByParent.getOrDefault(dao.getDaoId(), List.of());
         }
 
         private void attach(DaImportPlan.Node node, ArrNode parent) {

@@ -47,6 +47,7 @@ import com.lightcomp.kads.mets.MetsReaderWriter;
 
 import cz.tacr.elza.AbstractTest;
 import cz.tacr.elza.ElzaCoreMain;
+import cz.tacr.elza.api.AipLinkState;
 import cz.tacr.elza.api.AipType;
 import cz.tacr.elza.api.DaAipActionType;
 import cz.tacr.elza.api.DigitalRepositoryType;
@@ -75,6 +76,7 @@ import cz.tacr.elza.repository.AipRepository;
 import cz.tacr.elza.repository.AipStateRepository;
 import cz.tacr.elza.repository.ArrDaLinkRepository;
 import cz.tacr.elza.repository.DaChangeRepository;
+import cz.tacr.elza.repository.DaDaoRelationRepository;
 import cz.tacr.elza.repository.DaDaoRepository;
 import cz.tacr.elza.repository.DaLevelViewRepository;
 import cz.tacr.elza.repository.DaLocalCacheRepository;
@@ -95,6 +97,7 @@ import cz.tacr.elza.service.StartupService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.da.AipNodeUuids;
 import cz.tacr.elza.service.da.DaAipAutoLinkService;
+import cz.tacr.elza.service.da.DaAipLinkStateResolver;
 import cz.tacr.elza.service.da.DaImportBuilder;
 import cz.tacr.elza.service.da.DaImportPackage;
 import cz.tacr.elza.service.da.DaImportService;
@@ -183,6 +186,10 @@ public class Zp2015DaImportBuildTest {
     @Autowired
     private DaLevelViewRepository levelViewRepository;
     @Autowired
+    private DaDaoRelationRepository daoRelationRepository;
+    @Autowired
+    private DaAipLinkStateResolver linkStateResolver;
+    @Autowired
     private ArrangementInternalService arrangementInternalService;
     @Autowired
     private FundLevelService fundLevelService;
@@ -222,6 +229,7 @@ public class Zp2015DaImportBuildTest {
                 localCacheRepository.deleteAll();
                 syncQueueItemRepository.deleteAll();
                 aipStateRepository.deleteAll();
+                daoRelationRepository.deleteAll();
                 daoRepository.deleteAll();
                 levelViewRepository.deleteAll();
                 daChangeRepository.deleteAll();
@@ -244,7 +252,7 @@ public class Zp2015DaImportBuildTest {
         firstAipId = aipRepository.findByCode("aip-first").getAipId();
 
         assertEquals(3, outcome.created());
-        assertEquals(2, outcome.attached());
+        assertEquals(1, outcome.attached(), "the document's own part, with its file and its components");
         tx().executeWithoutResult(status -> {
             ArrNode group = onlyChild(rootNodeId);
             assertEquals(uuid(GROUP_44), group.getUuid(), "a created level takes the UUID of its div");
@@ -255,9 +263,12 @@ public class Zp2015DaImportBuildTest {
             assertEquals("Název dokumentu, věc-doručený dokument", name(document));
 
             List<ArrDaLink> links = daLinkRepository.findByAipIdAndDeleteChangeIsNull(firstAipId);
-            assertEquals(2, links.size());
-            assertTrue(links.stream().allMatch(l -> l.getNodeId().equals(document.getNodeId())),
-                       "the components are attached to the document");
+            assertEquals(1, links.size(), "one link covers the document with its components");
+            assertEquals(document.getNodeId(), links.get(0).getNodeId());
+            assertEquals(DOCUMENT, links.get(0).getDaDao().getCode());
+            assertEquals(AipLinkState.FULLY_LINKED,
+                         linkStateResolver.computeLinkState(aipRepository.findById(firstAipId).orElseThrow()),
+                         "the document's own file is attached too - the package is linked completely");
         });
     }
 
@@ -273,7 +284,7 @@ public class Zp2015DaImportBuildTest {
         assertEquals(0, outcome.created());
         assertEquals(3, outcome.matched());
         assertTrue(outcome.conflicts().isEmpty(), outcome.conflicts().toString());
-        tx().executeWithoutResult(status -> assertEquals(2,
+        tx().executeWithoutResult(status -> assertEquals(1,
                 daLinkRepository.findByAipIdAndDeleteChangeIsNull(firstAipId).size(), "links are not duplicated"));
     }
 
@@ -330,9 +341,10 @@ public class Zp2015DaImportBuildTest {
             assertEquals(uuid(document), created.getUuid());
 
             List<ArrDaLink> links = daLinkRepository.findByAipIdAndDeleteChangeIsNull(aipId);
-            assertEquals(2, links.size());
-            assertTrue(links.stream().allMatch(l -> l.getNodeId().equals(created.getNodeId())
-                    && l.getDaDao() != null), "the components are attached to the new document, not the whole AIP");
+            assertEquals(1, links.size());
+            assertEquals(created.getNodeId(), links.get(0).getNodeId());
+            assertEquals(document, links.get(0).getDaDao().getCode(),
+                         "the part of the new document is attached, not the whole AIP");
         });
     }
 
@@ -348,7 +360,7 @@ public class Zp2015DaImportBuildTest {
         DaImportBuilder.Outcome outcome = daImportService.importPackage(aipId, rootNodeId, true);
 
         assertEquals(4, outcome.created(), "file plan, two groups and the document");
-        assertEquals(2, outcome.attached());
+        assertEquals(1, outcome.attached());
         tx().executeWithoutResult(status -> {
             List<ArrNode> roots = children(rootNodeId);
             assertEquals(2, roots.size(), "the file plan is a new root series next to the group imported before");
@@ -401,7 +413,7 @@ public class Zp2015DaImportBuildTest {
 
         assertEquals(1, outcome.created(), "the document - the sublevel created before is shared by name");
         assertEquals(1, outcome.matched());
-        assertEquals(2, outcome.attached());
+        assertEquals(1, outcome.attached());
         tx().executeWithoutResult(status -> {
             ArrNode sublevel = onlyChild(sublevelTargetId);
             assertEquals("Název dokumentu, věc-doručený dokument", name(onlyChild(sublevel.getNodeId())));
@@ -425,6 +437,32 @@ public class Zp2015DaImportBuildTest {
             assertEquals(target, links.get(0).getNodeId());
             assertEquals(levelViewId, links.get(0).getDaDao().getLevelView().getLevelViewId(),
                          "the selected level itself is linked, not the levels below it");
+        });
+    }
+
+    @Test
+    @Order(10)
+    void upperLevelWithAFileOfItsOwn_getsOnlyThatFile() throws Exception {
+        Map<String, String> ids = Map.of(GROUP_44, newId(), GROUP_44_4, newId(), DOCUMENT, newId());
+        // group 44.4 carries a file of its own
+        String metsXml = replaceAll(resource("METS.xml"), ids).replaceFirst(
+                "(<div ID=\"" + ids.get(GROUP_44_4) + "\"[^>]*>)",
+                "$1<fptr FILEID=\"uuid-205a2ae4-c616-4fc9-9a82-d5faa759d06e\"/>");
+        Integer aipId = storedAip(metsXml, replaceAll(resource("pruvodka.xml"), ids));
+        Integer target = tx().execute(status -> createTarget());
+
+        DaImportBuilder.Outcome outcome = daImportService.importDescription(aipId, target, null, false, false);
+
+        assertEquals(2, outcome.attached(), "the file of group 44.4 and the part of the document");
+        tx().executeWithoutResult(status -> {
+            ArrNode subgroup = onlyChild(onlyChild(target).getNodeId());
+            List<ArrDaLink> links = daLinkRepository.findByAipIdAndDeleteChangeIsNull(aipId);
+            ArrDaLink subgroupLink = links.stream().filter(l -> l.getNodeId().equals(subgroup.getNodeId()))
+                    .findFirst().orElseThrow();
+            assertEquals(DaDao.DaoType.FILE, subgroupLink.getDaDao().getType(),
+                         "only its own file - the document below it is not repeated on it");
+            assertEquals(AipLinkState.FULLY_LINKED,
+                         linkStateResolver.computeLinkState(aipRepository.findById(aipId).orElseThrow()));
         });
     }
 
@@ -525,7 +563,10 @@ public class Zp2015DaImportBuildTest {
                 new DaImportPackage("NSESSS", "https://stands.nacr.cz/da/2023/aip.xml", false)).orElseThrow());
     }
 
-    /** The AIP with a logical digital entity for every div, as processing its metadata creates them. */
+    /**
+     * The AIP with a logical digital entity for every div and a file entity for every file a div
+     * points to, related as processing the metadata relates them.
+     */
     private DaAip createAip(String code, MetsType mets) {
         ArrDigitalRepository repository = digitalRepositoryRepository.findAll().stream().findFirst().orElseGet(() -> {
             ArrDigitalRepository r = new ArrDigitalRepository();
@@ -545,8 +586,29 @@ public class Zp2015DaImportBuildTest {
         change.setDaAip(aip);
         change.setType(DaChangeType.AIP_CREATE);
         daChangeRepository.save(change);
-        forEachDiv(mets, div -> daService.createDaDao(aip, change, div.getID(), div.getLABEL(), DaDao.DaoType.LOGICAL));
+        Map<String, DaDao> files = new java.util.HashMap<>();
+        for (StructMapType structMap : mets.getStructMap()) {
+            if ("LOGICAL".equals(structMap.getTYPE())) {
+                createDaos(aip, change, structMap.getDiv(), null, files);
+            }
+        }
         return aip;
+    }
+
+    private void createDaos(DaAip aip, DaChange change, DivType div, DaDao parent, Map<String, DaDao> files) {
+        DaDao dao = daService.createDaDao(aip, change, div.getID(), div.getLABEL(), DaDao.DaoType.LOGICAL);
+        if (parent != null) {
+            daService.createDaDaoRelation(dao, parent, change);
+        }
+        for (DivType.Fptr fptr : div.getFptr()) {
+            String fileId = ((gov.loc.mets.v1_11.schema.FileType) fptr.getFILEID()).getID();
+            DaDao file = files.computeIfAbsent(fileId,
+                    id -> daService.createDaDao(aip, change, id, id, DaDao.DaoType.FILE));
+            daService.createDaDaoRelation(file, dao, change);
+        }
+        for (DivType child : div.getDiv()) {
+            createDaos(aip, change, child, dao, files);
+        }
     }
 
     private MetsType mets(Consumer<DivType> adjust) throws Exception {
