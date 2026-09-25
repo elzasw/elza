@@ -2,9 +2,10 @@
 Upgrading
 =========
 
-Before every upgrade, read the :doc:`release-notes` of all versions
-between the installed and the new one. Entries marked **upgrade** or
-**config** may require an action before or after the upgrade.
+Before every upgrade, read the :doc:`12-release-notes` of all builds
+between the installed and the new one. Entries that name a configuration
+key or an upgrade step may require an action before or after the
+upgrade.
 
 The database schema and the data are migrated automatically at the first
 start of the new version. A migration cannot be undone: returning to the
@@ -23,14 +24,14 @@ upgrades unattended outside working hours. See
 https://get.lightcomp.com/elza/.
 
 The script backs up the database only; back up the :file:`dms` directory
-as well (see :doc:`backup`).
+as well (see :doc:`09-backup`).
 
 Manually
 --------
 
 #. Back up the database and the :file:`dms` directory of the working
    directory from the same moment, ideally with the application stopped.
-   See :doc:`backup`.
+   See :doc:`09-backup`.
 #. Stop the application.
 #. Replace the JAR file (on Linux, point the symbolic link to the new
    file).
@@ -50,7 +51,7 @@ An installation of version 2.x can be upgraded directly to the current
 version. Before the upgrade, check that:
 
 - Java 17 is installed,
-- the database server meets the :doc:`requirements <overview>`.
+- the database server meets the :doc:`requirements <01-overview>`.
 
 Changes in the configuration:
 
@@ -61,18 +62,18 @@ Changes in the configuration:
 
 After the first start:
 
-#. Check in *Administration* > *Packages* that the ZP2015 rules package
+#. Check in *Administration* > *Package management* that the ZP2015 rules package
    has a version higher than 300.
 #. Rebuild the search index with *Rebuild indexes* in the administration.
 
 Older 2.x installations may need data fixes before the upgrade; see
-:doc:`legacy-upgrades`.
+:doc:`11-legacy-upgrades`.
 
 Upgrading from 1.x and 0.x
 ==========================
 
 Versions 1.x ran as a WAR file in a separate Tomcat. Install the current
-version as described in :doc:`installation`, reuse the database and the
+version as described in :doc:`02-installation`, reuse the database and the
 working directory, and move the old configuration file
 :file:`elza-ui.yaml` to :file:`config/elza.yaml`, removing the settings
 listed above for 2.x. Upgrading from versions older than 0.17.1 is not

@@ -1,8 +1,18 @@
 # ELZA Administration Guide
 
-English administration guide, Sphinx sources. Replaces the Czech
-"Administrátorská příručka" in elza-doc.git, which is reduced to a short
-quick-install overview pointing here and to https://get.lightcomp.com/elza.
+English administration guide, Sphinx sources. This is the source version
+of the guide. The Czech documentation (elza-doc.git, `source/admin`)
+keeps a Czech translation of it; each Czech chapter starts with a comment
+naming its source file here and the elza commit it was synchronised
+with, for example:
+
+```
+.. Zdroj: elza/docs/admin-guide/source/04-configuration.rst, elza 743f2a76be
+```
+
+Changes still to be translated are listed by
+`git log --follow <commit>..HEAD -- docs/admin-guide/source/<file>`; after translating,
+update the commit in the comment.
 
 ## Build
 
@@ -19,16 +29,29 @@ pipeline uses) and falls back to the public `sphinxdoc/sphinx` image.
 Warnings are errors (`-W`): a broken reference or a page missing from a
 toctree fails the build.
 
+The list of changes is one list in two languages: the Czech
+`source/whatsnew/changelog.rst` in elza-doc.git and `source/release-notes/<line>.rst`
+here. Both carry the same builds and entries for users and administrators;
+only the Czech list has the sections of the Czech rules and code list
+packages (ZP2015, CZ_BASE). Both are updated in the same release step, and
+an entry requiring an administrator's action names the configuration key.
+
 ## Writing rules
 
-- Write in English directly. Do not translate the Czech admin chapters
-  one to one: verify every statement against the current code and
-  configuration (`elza-core/src/main/resources/elza.yaml`,
+- Write here first, in English; the Czech copy follows. Verify every
+  statement against the current code and configuration
+  (`elza-core/src/main/resources/elza.yaml`,
   `elza-web/config/elza.yaml.template`, `@Value` / `@ConfigurationProperties`).
 - UI names (menus, buttons, archival terms) must match the English UI
-  catalog `elza-react/lang/translated/en.json`.
+  catalog `elza-react/lang/translated/en.json`; the Czech copy uses the
+  Czech texts of the same catalog keys.
 - Do not duplicate the install scripts documentation; link to
   https://get.lightcomp.com/elza instead.
 - A change of a configuration key, default or behaviour described here
   updates this guide in the same commit.
 - Chapters still to be written carry their scope as `.. todo::` notes.
+- Chapter files are named by their order, `NN-name.rst`, matching the
+  chapter numbers of the output; the Czech copy uses the same numbers.
+  Moving or inserting a chapter renames the files (and changes their
+  URLs) in both languages. The changes of each version line are in
+  `source/release-notes/<line>.rst`.

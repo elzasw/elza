@@ -27,5 +27,5 @@ echo SPHINXDOC_IMAGE not set - using the public sphinxdoc/sphinx image...
 docker run --rm -v "%cd%":/data -w /data -e ELZA_DOC_VERSION sphinxdoc/sphinx:latest sh -c "pip install --quiet sphinx-rtd-theme && make clean html SPHINXOPTS='-W --keep-going'"
 
 :end
-echo Output: _build\html\index.html
+echo Output: build\html\index.html
 popd

@@ -15,7 +15,7 @@ The migration fails with::
      Reason: liquibase.exception.DatabaseException: ERROR: could not create unique index "arr_item_object_pidx"
      Detail: Key (desc_item_object_id)=(45647) is duplicated.
 
-Older versions could leave duplicate description items. Assess the
+Older versions could leave duplicate description elements. Assess the
 extent of the inconsistency first. The duplicates are removed by these
 three statements:
 
@@ -75,7 +75,7 @@ Fix:
 Language of the fund root (2.8.5 and later)
 ===========================================
 
-Version 2.8.5 introduced the description item *Language of the archival
+Version 2.8.5 introduced the description element *Language of the archival
 fund* (``ZP2015_MAJOR_LANG``). Before, the root of a fund usually carried
 the item *Language* (``ZP2015_LANGUAGE``) in this meaning. The following
 script moves it to the new item type:
@@ -104,7 +104,7 @@ script moves it to the new item type:
 Numerical scale (2.8.16 and later)
 ==================================
 
-Version 2.8.16 allowed the description item *Scale* to be entered in a
+Version 2.8.16 allowed the description element *Scale* to be entered in a
 numerical form (``ZP2015_SCALE_NUMERICAL``); before, only the text form
 (``ZP2015_SCALE``) existed. The following script converts text values in
 the form ``1:n`` to the numerical form; other values stay unchanged.

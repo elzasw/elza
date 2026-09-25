@@ -46,7 +46,7 @@ The scripts provide these commands:
 
 The database still has to be prepared as described in
 :ref:`install-database`. The configuration of ELZA itself
-(:file:`elza.yaml`) is described in :doc:`configuration`.
+(:file:`elza.yaml`) is described in :doc:`04-configuration`.
 
 Manual installation
 ===================
@@ -60,7 +60,7 @@ The binary distribution is a ZIP file containing:
   embedded web server,
 - :file:`server/config/elza.yaml` - a sample configuration,
 - :file:`server/config/csc-metrics.json` - the list of metrics reported
-  to a supervision service (see :doc:`monitoring`),
+  to a supervision service (see :doc:`08-monitoring`),
 - :file:`packages/` - the base packages: ``package-cz-base`` (code
   lists) and ``rules-cz-zp2015`` (description rules ZP2015),
 - :file:`data/all-institutions-import.xml` - the list of accredited
@@ -119,7 +119,7 @@ The working directory contains:
 - :file:`dms/` - binary files (attachments, outputs, publications,
   import batches). Its structure is managed by ELZA and must not be
   modified by hand; it is backed up together with the database (see
-  :doc:`backup`).
+  :doc:`09-backup`).
 - :file:`dpkg/` - packages loaded at startup (see :ref:`install-packages`).
 - :file:`log/` - log files, when configured as in the sample
   configuration.
@@ -146,7 +146,7 @@ the JAR file and set at least:
      logFile: ${elza.workingDir}/log/elza.log
      siemLogFile: ${elza.workingDir}/log/siem.log
 
-All other settings are described in :doc:`configuration`.
+All other settings are described in :doc:`04-configuration`.
 
 Running as a service
 --------------------
@@ -199,7 +199,7 @@ A new installation can be accessed with the built-in default user
 (``admin`` with the password ``admin``), which has administrator rights.
 Use it only to create the administrator accounts, then disable it with
 ``elza.security.allowDefaultUser: false`` and restart the application.
-See :doc:`security`.
+See :doc:`05-security`.
 
 .. _install-packages:
 
@@ -218,7 +218,7 @@ together with the JAR.
    If :file:`dpkg/` contains an older version of a package than the one
    already imported, the application does not start. Remove the old file.
 
-Packages can also be imported in *Administration* > *Packages*.
+Packages can also be imported in *Administration* > *Package management*.
 
 Importing institutions
 ----------------------
@@ -230,7 +230,7 @@ in the *Archival entities* module.
 Next steps
 ----------
 
-- Set up the reverse proxy and HTTPS: :doc:`reverse-proxy`.
-- Set up backups: :doc:`backup`.
-- Connect the monitoring: :doc:`monitoring`.
-- Configure authentication (LDAP, Kerberos, ...): :doc:`security`.
+- Set up the reverse proxy and HTTPS: :doc:`06-reverse-proxy`.
+- Set up backups: :doc:`09-backup`.
+- Connect the monitoring: :doc:`08-monitoring`.
+- Configure authentication (LDAP, Kerberos, ...): :doc:`05-security`.
