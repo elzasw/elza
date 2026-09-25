@@ -1139,7 +1139,8 @@ enum DaAipActionType {
     CONNECT_LOGICAL_STRUCTURE,
     CREATE_NODES,
     CREATE_NODES_AND_CONNECT,
-    IMPORT_DESCRIPTION
+    IMPORT_DESCRIPTION,
+    CREATE_SUBLEVELS
 }
 
 /**
@@ -6638,6 +6639,30 @@ namespace ElzaAPI.Aip {
          @query daAipIdList: integer[];
          /** Převzít spisový plán jako kořenovou sérii; ve výchozím stavu se vynechá */
          @query fileplanAsRoot?: boolean;
+         /** Úroveň logické struktury (level view), pod kterou se popis převezme; bez ní celý balíček */
+         @query daLevelViewId?: integer;
+      ) : {
+          /** Akce zahájena */
+          @Http.statusCode statusCode: 200;
+          @body data: DaAipActionVO;
+        } | {
+          /** Akci nelze zahájit */
+          @Http.statusCode statusCode: 500;
+          @body data: BaseException;
+        };
+
+     /**
+      * Vytvoření úrovní pod jednotkou popisu - jedna za každou úroveň logické struktury přímo pod
+      * vybranou úrovní, s připojenou částí balíčku
+      */
+      @route("/bulk-create-sublevels")
+      @post op bulkCreateSublevels(
+         /** ArrNode ID - jednotka popisu, pod kterou se úrovně vytvoří */
+         @query arrNodeId: integer;
+         /** DaAip ID list */
+         @query daAipIdList: integer[];
+         /** Úroveň logické struktury (level view); bez ní nejvyšší úrovně balíčku */
+         @query daLevelViewId?: integer;
       ) : {
           /** Akce zahájena */
           @Http.statusCode statusCode: 200;

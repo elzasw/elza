@@ -11,6 +11,8 @@ export const mapNodesToFlatItemArr = (tree, nodeName: (node: NamedNode) => strin
             const item: FlatItem = {
                 value: node.UUID,
                 content: nodeName(node),
+                // kolik balíčků úroveň zastupuje
+                count: node.value?.length ?? 0,
             }
             if (node.parent != null) {
                 item.parentValue = node.parent;

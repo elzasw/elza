@@ -24,7 +24,7 @@ const state = (shown: unknown[], selected: unknown[], openAipId?: number) => {
     };
 };
 
-const fund = { fundTree: { nodes: [{ id: 1 }] } };
+const fund = { fundTree: { nodes: [{ id: 1, name: 'Fond' }] } };
 
 const button = (name: RegExp) => screen.getByRole('button', { name });
 

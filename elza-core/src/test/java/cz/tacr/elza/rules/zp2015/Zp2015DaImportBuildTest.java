@@ -48,6 +48,7 @@ import com.lightcomp.kads.mets.MetsReaderWriter;
 import cz.tacr.elza.AbstractTest;
 import cz.tacr.elza.ElzaCoreMain;
 import cz.tacr.elza.api.AipType;
+import cz.tacr.elza.api.DaAipActionType;
 import cz.tacr.elza.api.DigitalRepositoryType;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.dataexchange.input.DEImportParams;
@@ -64,6 +65,7 @@ import cz.tacr.elza.domain.DaAipState;
 import cz.tacr.elza.domain.DaChange;
 import cz.tacr.elza.domain.DaChangeType;
 import cz.tacr.elza.domain.DaDao;
+import cz.tacr.elza.domain.DaLevelView;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.exception.BusinessException;
@@ -74,6 +76,7 @@ import cz.tacr.elza.repository.AipStateRepository;
 import cz.tacr.elza.repository.ArrDaLinkRepository;
 import cz.tacr.elza.repository.DaChangeRepository;
 import cz.tacr.elza.repository.DaDaoRepository;
+import cz.tacr.elza.repository.DaLevelViewRepository;
 import cz.tacr.elza.repository.DaLocalCacheRepository;
 import cz.tacr.elza.repository.DaSyncQueueItemRepository;
 import cz.tacr.elza.repository.DigitalRepositoryRepository;
@@ -83,6 +86,9 @@ import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.AccessPointService;
+import cz.tacr.elza.service.ArrangementInternalService;
+import cz.tacr.elza.service.FundLevelService;
+import cz.tacr.elza.service.FundLevelService.AddLevelDirection;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.StartupService;
@@ -174,11 +180,19 @@ public class Zp2015DaImportBuildTest {
     private DaAipAutoLinkService autoLinkService;
     @Autowired
     private DaImportService daImportService;
+    @Autowired
+    private DaLevelViewRepository levelViewRepository;
+    @Autowired
+    private ArrangementInternalService arrangementInternalService;
+    @Autowired
+    private FundLevelService fundLevelService;
 
     private Integer ruleSetId;
     private Integer rootNodeId;
     private Integer firstAipId;
     private Integer manuallyImportedAipId;
+    private Integer sublevelTargetId;
+    private Map<String, String> lastIds = Map.of();
 
     @BeforeAll
     void createFund() throws Exception {
@@ -209,6 +223,7 @@ public class Zp2015DaImportBuildTest {
                 syncQueueItemRepository.deleteAll();
                 aipStateRepository.deleteAll();
                 daoRepository.deleteAll();
+                levelViewRepository.deleteAll();
                 daChangeRepository.deleteAll();
                 aipRepository.deleteAll();
                 digitalRepositoryRepository.deleteAll();
@@ -351,6 +366,99 @@ public class Zp2015DaImportBuildTest {
         BusinessException e = assertThrows(BusinessException.class,
                 () -> daImportService.importPackage(attachedAipId, rootNodeId, false));
         assertTrue(e.getMessage().contains("již připojen"), e.getMessage());
+    }
+
+    @Test
+    @Order(7)
+    void sublevels_belowTheSelectedLevel_areCreatedWithTheirPartAttached() throws Exception {
+        Integer aipId = anotherPackage();
+        Integer levelViewId = levelView(aipId, GROUP_44, "Název věcné skupiny 44 - např. HOSPODÁŘSKÉ PROVOZY, SLUŽBY");
+        Integer target = tx().execute(status -> createTarget());
+
+        DaImportBuilder.Outcome outcome = daImportService.importDescription(aipId, target, levelViewId, false, true);
+
+        assertEquals(1, outcome.created(), "one sublevel: the group 44.4 below the selected group 44");
+        assertEquals(1, outcome.attached(), "the sublevel has its part of the package attached");
+        tx().executeWithoutResult(status -> {
+            ArrNode sublevel = onlyChild(target);
+            assertTrue(name(sublevel).startsWith("Název věcné skupiny 44_4"), name(sublevel));
+            assertTrue(children(sublevel.getNodeId()).isEmpty(), "nothing is created below the sublevel");
+            List<ArrDaLink> links = daLinkRepository.findByAipIdAndDeleteChangeIsNull(aipId);
+            assertEquals(1, links.size());
+            assertEquals(sublevel.getNodeId(), links.get(0).getNodeId());
+        });
+        sublevelTargetId = target;
+    }
+
+    @Test
+    @Order(8)
+    void structure_belowTheSelectedLevel_sharesTheSublevelAndCreatesTheDocument() throws Exception {
+        Integer aipId = anotherPackage();
+        Integer levelViewId = levelView(aipId, GROUP_44, "Název věcné skupiny 44 - např. HOSPODÁŘSKÉ PROVOZY, SLUŽBY");
+
+        DaImportBuilder.Outcome outcome = daImportService.importDescription(aipId, sublevelTargetId, levelViewId,
+                                                                            false, false);
+
+        assertEquals(1, outcome.created(), "the document - the sublevel created before is shared by name");
+        assertEquals(1, outcome.matched());
+        assertEquals(2, outcome.attached());
+        tx().executeWithoutResult(status -> {
+            ArrNode sublevel = onlyChild(sublevelTargetId);
+            assertEquals("Název dokumentu, věc-doručený dokument", name(onlyChild(sublevel.getNodeId())));
+        });
+    }
+
+    @Test
+    @Order(9)
+    void level_isLinkedItself_withoutCreatingLevels() throws Exception {
+        Integer aipId = anotherPackage();
+        Integer levelViewId = levelView(aipId, GROUP_44, "Název věcné skupiny 44 - např. HOSPODÁŘSKÉ PROVOZY, SLUŽBY");
+        Integer target = tx().execute(status -> createTarget());
+
+        tx().executeWithoutResult(status -> daService.connectOneAip(DaAipActionType.CONNECT_LOGICAL_STRUCTURE, aipId,
+                new DaService.ConnectParams(target, null, levelViewId)));
+
+        tx().executeWithoutResult(status -> {
+            assertTrue(children(target).isEmpty(), "linking a level creates nothing");
+            List<ArrDaLink> links = daLinkRepository.findByAipIdAndDeleteChangeIsNull(aipId);
+            assertEquals(1, links.size());
+            assertEquals(target, links.get(0).getNodeId());
+            assertEquals(levelViewId, links.get(0).getDaDao().getLevelView().getLevelViewId(),
+                         "the selected level itself is linked, not the levels below it");
+        });
+    }
+
+    /** A stored package from the same file plan, with its own UUIDs. */
+    private Integer anotherPackage() throws IOException {
+        Map<String, String> ids = Map.of(GROUP_44, newId(), GROUP_44_4, newId(), DOCUMENT, newId());
+        lastIds = ids;
+        return storedAip(replaceAll(resource("METS.xml"), ids), replaceAll(resource("pruvodka.xml"), ids));
+    }
+
+    /** The level view of a level of the last package, as processing its metadata creates it. */
+    private Integer levelView(Integer aipId, String originalDivId, String label) {
+        String divId = lastIds.getOrDefault(originalDivId, originalDivId);
+        return tx().execute(status -> {
+            DaAip aip = aipRepository.findById(aipId).orElseThrow();
+            DaDao dao = daoRepository.findByAipAndTypeAndDeleteChangeIsNull(aip, DaDao.DaoType.LOGICAL).stream()
+                    .filter(d -> d.getCode().equals(divId)).findFirst().orElseThrow();
+            DaLevelView view = new DaLevelView();
+            view.setLabel(label);
+            view.setFund(nodeRepository.findById(rootNodeId).orElseThrow().getFund());
+            view.setCreateChange(dao.getCreateChange());
+            levelViewRepository.save(view);
+            dao.setLevelView(view);
+            daoRepository.save(dao);
+            return view.getLevelViewId();
+        });
+    }
+
+    /** An empty level below the root to import into. */
+    private Integer createTarget() {
+        ArrNode root = nodeRepository.findById(rootNodeId).orElseThrow();
+        ArrFundVersion version = arrangementInternalService.getOpenVersionByFund(root.getFund());
+        return fundLevelService.addNewLevel(version, root, root, AddLevelDirection.CHILD, null, null, null, null, null)
+                .get(0).getNodeId();
     }
 
     /** Gives the divs and units of the package new ids, as another package would have. */

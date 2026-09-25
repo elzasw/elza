@@ -9,7 +9,7 @@ import { storeFromArea } from "shared/utils";
 import { useThunkDispatch } from "utils/hooks";
 import { AipDetailVO } from "elza-api";
 import { AppState } from "typings/store";
-import AipAssignmentModal from "./assignment/AipAssignmentModal";
+import AipAssignmentModal, { AipAssignmentModalProps } from "./assignment/AipAssignmentModal";
 import AipIndividualAssignmentModal from "./assignment/AipIndividualAssignmentModal";
 
 const messages = defineMessages({
@@ -35,7 +35,7 @@ const messages = defineMessages({
 
 interface Props {
     /** Archivní soubor stránky; jeho strom se nabízí jako cíl připojení. */
-    fund: { fundTree: unknown };
+    fund: { fundTree: AipAssignmentModalProps["tree"] };
     readMode: boolean;
 }
 

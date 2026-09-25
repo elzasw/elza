@@ -4,6 +4,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.EnumSet;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 
@@ -17,6 +18,7 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.DaAip;
 import cz.tacr.elza.domain.DaAipState;
+import cz.tacr.elza.domain.DaDao;
 import cz.tacr.elza.domain.DaLocalCache;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
@@ -24,6 +26,7 @@ import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.AipStateRepository;
 import cz.tacr.elza.repository.ArrDaLinkRepository;
+import cz.tacr.elza.repository.DaDaoRepository;
 import cz.tacr.elza.repository.DaLocalCacheRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.ArrangementInternalService;
@@ -50,11 +53,12 @@ public class DaImportService {
     private final ArrangementInternalService arrangementInternalService;
     private final NodeRepository nodeRepository;
     private final ArrDaLinkRepository daLinkRepository;
+    private final DaDaoRepository daoRepository;
 
     public DaImportService(DaService daService, DaImportPlanner planner, DaImportBuilder builder,
                            AipStateRepository aipStateRepository, DaLocalCacheRepository localCacheRepository,
                            ArrangementInternalService arrangementInternalService, NodeRepository nodeRepository,
-                           ArrDaLinkRepository daLinkRepository) {
+                           ArrDaLinkRepository daLinkRepository, DaDaoRepository daoRepository) {
         this.daService = daService;
         this.planner = planner;
         this.builder = builder;
@@ -63,6 +67,7 @@ public class DaImportService {
         this.arrangementInternalService = arrangementInternalService;
         this.nodeRepository = nodeRepository;
         this.daLinkRepository = daLinkRepository;
+        this.daoRepository = daoRepository;
     }
 
     /**
@@ -96,6 +101,29 @@ public class DaImportService {
      */
     @Transactional
     public DaImportBuilder.Outcome importPackage(Integer aipId, Integer nodeId, boolean fileplanAsRoot) {
+        return importDescription(aipId, nodeId, null, fileplanAsRoot, false);
+    }
+
+    /**
+     * Imports what lies below a level of the logical structure of the package into the archival
+     * description below the given unit of description, as asked for by a user.
+     *
+     * @param levelViewId the level (level view) below which the description is taken; null for
+     *            the top of the package - the whole package
+     * @param firstLevelOnly only the levels directly below the level are created, each with its
+     *            part of the package attached ({@link cz.tacr.elza.api.DaAipActionType#CREATE_SUBLEVELS});
+     *            otherwise the whole structure below it, with the items from the EAD
+     *            ({@link cz.tacr.elza.api.DaAipActionType#IMPORT_DESCRIPTION})
+     * @throws BusinessException when the package cannot be imported there: it belongs to another
+     *             fund, it does not have the level, the whole package is attached already, or the
+     *             rules of the fund cannot import packages (the first level can be created
+     *             without them, the levels then carry no items)
+     * @throws AipProblemException when the package cannot be read or its EAD is not written the
+     *             way it can be read
+     */
+    @Transactional
+    public DaImportBuilder.Outcome importDescription(Integer aipId, Integer nodeId, @Nullable Integer levelViewId,
+                                                     boolean fileplanAsRoot, boolean firstLevelOnly) {
         DaAip aip = daService.findAipById(aipId);
         ArrNode node = nodeRepository.getOneCheckExist(nodeId);
         DaAipState aipState = aipStateRepository.findByDaAipAndDeleteChangeIsNull(aip);
@@ -104,14 +132,36 @@ public class DaImportService {
             throw new BusinessException("AIP " + aip.getCode() + " nepatří k archivnímu souboru, do kterého se má popis převzít.",
                                         BaseCode.INVALID_STATE);
         }
-        if (!daLinkRepository.findByAipIdAndDeleteChangeIsNull(aipId).isEmpty()) {
+        String startUuid = levelViewId == null ? null : levelUuid(aip, levelViewId);
+        if (startUuid == null && !firstLevelOnly
+                && !daLinkRepository.findByAipIdAndDeleteChangeIsNull(aipId).isEmpty()) {
             throw new BusinessException("AIP " + aip.getCode() + " je již připojen k archivnímu popisu; popis z něj se znovu nepřebírá.",
                                         ArrangementCode.DAO_ALREADY_LINKED);
         }
-        return withPackage(aip, node, fileplanAsRoot, (pkg, ruleSetId) ->
-                planner.plan(pkg.mets(), pkg.ead(), pkg.eadHref(), ruleSetId, pkg.importPackage()))
+        return withPackage(aip, node, fileplanAsRoot, (pkg, ruleSetId) -> {
+                    Optional<DaImportPlan> plan = startUuid == null
+                            ? planner.plan(pkg.mets(), pkg.ead(), pkg.eadHref(), ruleSetId, pkg.importPackage())
+                            : planner.planBelow(pkg.mets(), pkg.ead(), pkg.eadHref(), ruleSetId, pkg.importPackage(),
+                                                startUuid);
+                    if (plan.isEmpty() && firstLevelOnly) {
+                        // without rules the levels are created without items
+                        plan = Optional.of(planner.planDivsBelow(pkg.mets(), startUuid));
+                    }
+                    return firstLevelOnly ? plan.map(DaImportPlan::firstLevel) : plan;
+                })
                 .map(plan -> builder.build(aip, node, plan))
                 .orElseThrow(() -> new BusinessException("Pravidla archivního souboru převzetí popisu z balíčku neumožňují.",
+                                                         BaseCode.INVALID_STATE));
+    }
+
+    /** UUID of the div of the package that stands for the level (level view). */
+    private String levelUuid(DaAip aip, Integer levelViewId) {
+        return daoRepository.findByAipAndTypeAndDeleteChangeIsNull(aip, DaDao.DaoType.LOGICAL).stream()
+                .filter(dao -> dao.getLevelView() != null && levelViewId.equals(dao.getLevelView().getLevelViewId()))
+                .map(dao -> AipNodeUuids.normalize(dao.getCode()))
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElseThrow(() -> new BusinessException("AIP " + aip.getCode() + " vybranou úroveň logické struktury neobsahuje.",
                                                          BaseCode.INVALID_STATE));
     }
 
