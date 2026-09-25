@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AipLevelType } from 'elza-api';
 
-import { renderWithProviders, screen, fireEvent, createTestStore } from 'test/test-utils';
+import { renderWithProviders, screen, fireEvent, createTestStore, act } from 'test/test-utils';
 import AipAssignmentModal from './AipAssignmentModal';
 
 /**
@@ -58,8 +58,13 @@ const state = () => {
     };
 };
 
-const render = () => renderWithProviders(<AipAssignmentModal aips={aips as never} tree={fundTree} />,
-    { preloadedState: state() });
+/** Vykreslí dialog a dočká se odpovědi na kontrolu připojení, kterou si dialog při otevření vyžádá. */
+const render = async () => {
+    const result = renderWithProviders(<AipAssignmentModal aips={aips as never} tree={fundTree} />,
+        { preloadedState: state() });
+    await act(async () => { await Promise.resolve(); });
+    return result;
+};
 
 const selectLevel = (name: string) => fireEvent.click(screen.getAllByText(name)[0]);
 
@@ -71,8 +76,8 @@ describe('AipAssignmentModal', () => {
         api.aipConnectCheck.mockResolvedValue({ data: { blocked: [] } });
     });
 
-    it('says how many packages are selected and lists them on request', () => {
-        render();
+    it('says how many packages are selected and lists them on request', async () => {
+        await render();
 
         expect(screen.getByText('Vybrány 3 balíčky')).toBeInTheDocument();
         fireEvent.click(screen.getByRole('button', { name: 'Zobrazit balíčky vybrané úrovně' }));
@@ -80,15 +85,15 @@ describe('AipAssignmentModal', () => {
         expect(screen.getByText('aip-3')).toBeInTheDocument();
     });
 
-    it('shows how many packages each level of the structure stands for', () => {
-        render();
+    it('shows how many packages each level of the structure stands for', async () => {
+        await render();
 
         expect(screen.getByText('Organizace')).toBeInTheDocument();
         expect(screen.getAllByText('2').length).toBeGreaterThan(0);
     });
 
-    it('links whole packages - all of the dialog, whatever level is selected', () => {
-        render();
+    it('links whole packages - all of the dialog, whatever level is selected', async () => {
+        await render();
         selectLevel('Organizace');
 
         connect();
@@ -96,8 +101,8 @@ describe('AipAssignmentModal', () => {
         expect(api.aipBulkConnectToJp).toHaveBeenCalledWith(10, [1, 2, 3]);
     });
 
-    it('links the selected level of its packages', () => {
-        render();
+    it('links the selected level of its packages', async () => {
+        await render();
         selectLevel('Organizace');
         fireEvent.click(screen.getByRole('radio', { name: /Vybranou úroveň/ }));
 
@@ -106,8 +111,8 @@ describe('AipAssignmentModal', () => {
         expect(api.aipBulkConnectLogicToJp).toHaveBeenCalledWith(10, [1, 2], 55);
     });
 
-    it('creates the levels below the selected level', () => {
-        render();
+    it('creates the levels below the selected level', async () => {
+        await render();
         selectLevel('Organizace');
         fireEvent.click(screen.getByRole('radio', { name: /Úrovně pod vybranou úrovní/ }));
 
@@ -116,8 +121,8 @@ describe('AipAssignmentModal', () => {
         expect(api.aipBulkCreateSublevels).toHaveBeenCalledWith(10, [1, 2], 55);
     });
 
-    it('imports the structure of whole packages when the root is selected, with the file plan option', () => {
-        render();
+    it('imports the structure of whole packages when the root is selected, with the file plan option', async () => {
+        await render();
         fireEvent.click(screen.getByRole('radio', { name: /Převzít strukturu a popis/ }));
         fireEvent.click(screen.getByRole('checkbox', { name: 'Spisový plán jako kořenová série' }));
 

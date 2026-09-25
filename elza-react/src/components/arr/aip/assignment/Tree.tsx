@@ -14,9 +14,10 @@ import {
 } from "@fluentui/react-icons";
 import { useEffect, useState } from "react";
 import "./Tree.scss";
+import type { FlatItem } from "./AipsLogicalContainer";
   
   type FundTreeProps = {
-      nodes: any;
+      nodes: FlatItem[];
       expandedIds?: Set<TreeItemValue>;
       selectedNode: TreeItemValue;
       setSelectedNode: (item: TreeItemValue) => void;
