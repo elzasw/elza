@@ -101,15 +101,18 @@ public class DaImportService {
      */
     @Transactional
     public DaImportBuilder.Outcome importPackage(Integer aipId, Integer nodeId, boolean fileplanAsRoot) {
-        return importDescription(aipId, nodeId, null, fileplanAsRoot, false);
+        return importDescription(aipId, nodeId, null, null, fileplanAsRoot, false);
     }
 
     /**
      * Imports what lies below a level of the logical structure of the package into the archival
      * description below the given unit of description, as asked for by a user.
      *
-     * @param levelViewId the level (level view) below which the description is taken; null for
-     *            the top of the package - the whole package
+     * @param levelViewId the level (level view, shared by packages) below which the description
+     *            is taken
+     * @param daoId the level of the logical structure of this package below which the description
+     *            is taken - used when a single package is imported; with neither of the two, the top
+     *            of the package - the whole package
      * @param firstLevelOnly only the levels directly below the level are created, each with its
      *            part of the package attached ({@link cz.tacr.elza.api.DaAipActionType#CREATE_SUBLEVELS});
      *            otherwise the whole structure below it, with the items from the EAD
@@ -123,7 +126,8 @@ public class DaImportService {
      */
     @Transactional
     public DaImportBuilder.Outcome importDescription(Integer aipId, Integer nodeId, @Nullable Integer levelViewId,
-                                                     boolean fileplanAsRoot, boolean firstLevelOnly) {
+                                                     @Nullable Integer daoId, boolean fileplanAsRoot,
+                                                     boolean firstLevelOnly) {
         DaAip aip = daService.findAipById(aipId);
         ArrNode node = nodeRepository.getOneCheckExist(nodeId);
         DaAipState aipState = aipStateRepository.findByDaAipAndDeleteChangeIsNull(aip);
@@ -132,7 +136,8 @@ public class DaImportService {
             throw new BusinessException("AIP " + aip.getCode() + " nepatří k archivnímu souboru, do kterého se má popis převzít.",
                                         BaseCode.INVALID_STATE);
         }
-        String startUuid = levelViewId == null ? null : levelUuid(aip, levelViewId);
+        String startUuid = daoId != null ? daoUuid(aip, daoId)
+                : levelViewId != null ? levelUuid(aip, levelViewId) : null;
         if (startUuid == null && !firstLevelOnly
                 && !daLinkRepository.findByAipIdAndDeleteChangeIsNull(aipId).isEmpty()) {
             throw new BusinessException("AIP " + aip.getCode() + " je již připojen k archivnímu popisu; popis z něj se znovu nepřebírá.",
@@ -163,6 +168,18 @@ public class DaImportService {
                 .findFirst()
                 .orElseThrow(() -> new BusinessException("AIP " + aip.getCode() + " vybranou úroveň logické struktury neobsahuje.",
                                                          BaseCode.INVALID_STATE));
+    }
+
+    /** UUID of the div of the package that the logical part stands for. */
+    private String daoUuid(DaAip aip, Integer daoId) {
+        DaDao dao = daoRepository.findById(daoId).orElse(null);
+        String uuid = dao == null ? null : AipNodeUuids.normalize(dao.getCode());
+        if (dao == null || uuid == null || dao.getType() != DaDao.DaoType.LOGICAL
+                || !dao.getAip().getAipId().equals(aip.getAipId())) {
+            throw new BusinessException("Vybraná část není úrovní logické struktury AIP " + aip.getCode() + ".",
+                                        BaseCode.INVALID_STATE);
+        }
+        return uuid;
     }
 
     /** What the planning needs of a stored metadata package. */
