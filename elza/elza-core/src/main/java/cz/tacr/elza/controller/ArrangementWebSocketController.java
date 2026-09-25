@@ -45,7 +45,7 @@ import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.websocket.WebSocketAwareController;
-import cz.tacr.elza.websocket.service.WebSoсketStompService;
+import cz.tacr.elza.websocket.service.WebSocketStompService;
 import jakarta.transaction.Transactional;
 
 /**
@@ -76,7 +76,7 @@ public class ArrangementWebSocketController {
 	private ArrangementService arrangementService;
 
     @Autowired
-    private WebSoсketStompService webSoсketStompService;
+    private WebSocketStompService webSocketStompService;
 
     @Autowired
     private FundVersionRepository fundVersionRepository;
@@ -185,7 +185,7 @@ public class ArrangementWebSocketController {
         final ArrangementController.NodesWithParent result = new ArrangementController.NodesWithParent(nodes, nodeClients.iterator().next());
 
         // Odeslání dat zpět
-        webSoсketStompService.sendReceiptAfterCommit(result, requestHeaders);
+        webSocketStompService.sendReceiptAfterCommit(result, requestHeaders);
     }
 
     /**
@@ -216,7 +216,7 @@ public class ArrangementWebSocketController {
         final ArrangementController.NodeWithParent result = new ArrangementController.NodeWithParent(NodeBaseMapper.valueOf(deleteLevel.getNode()), nodeClients.iterator().next());
 
         // odeslání dat zpět
-		webSoсketStompService.sendReceiptAfterCommit(result, requestHeaders);
+		webSocketStompService.sendReceiptAfterCommit(result, requestHeaders);
     }
 
     /**
@@ -236,7 +236,7 @@ public class ArrangementWebSocketController {
         ArrNode node = arrangementService.getNode(arrInhibitedItem.getNodeId());
 
         Integer inhibitItemId = arrangementService.inhibitItem(node, arrInhibitedItem.getDescItemObjectId());
-		webSoсketStompService.sendReceiptAfterCommit(inhibitItemId, requestHeaders);
+		webSocketStompService.sendReceiptAfterCommit(inhibitItemId, requestHeaders);
     }
 
     /**
@@ -255,6 +255,6 @@ public class ArrangementWebSocketController {
         ArrInhibitedItem inhibitedItem = arrangementService.getInhibitedItem(arrInhibitedItem.getNodeId(), arrInhibitedItem.getDescItemObjectId());
 
         Integer resultItemId = arrangementService.allowItem(inhibitedItem.getNode(), inhibitedItem);
-		webSoсketStompService.sendReceiptAfterCommit(resultItemId, requestHeaders);
+		webSocketStompService.sendReceiptAfterCommit(resultItemId, requestHeaders);
     }
 }

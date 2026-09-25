@@ -22,9 +22,9 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * tímto callbackem poslána založená data atp. Jedná se o obdobu návratové hodnoty v kontroleru.
  */
 @Service
-public class WebSoсketStompService {
+public class WebSocketStompService {
 
-    private static Logger log = LoggerFactory.getLogger(WebSoсketStompService.class);
+    private static Logger log = LoggerFactory.getLogger(WebSocketStompService.class);
 
 //    private static final byte[] EMPTY_PAYLOAD = new byte[0];
 
