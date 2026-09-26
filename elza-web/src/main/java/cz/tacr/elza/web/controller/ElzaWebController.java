@@ -17,8 +17,11 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.security.ApplicationSecurity;
+import cz.tacr.elza.security.kerberos.KerberosSsoError;
+import cz.tacr.elza.security.kerberos.KerberosSsoFailureHandler;
 import cz.tacr.elza.service.AccessPointService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * Kontroler pro ELZA UI - React stránky.
@@ -114,6 +117,23 @@ public class ElzaWebController {
 	public String getSsoKerberosUrl() {
     	return applicationSecurity.isKerberosEnabled() ? ApplicationSecurity.AUTHENTICATE_SSO : null;
 	}
+
+    /**
+     * Reason of the last failed Windows (Kerberos) sign-in. It is removed from
+     * the session, so the login dialog displays it only once.
+     */
+    @ModelAttribute("ssoError")
+    public KerberosSsoError getSsoError(final HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            return null;
+        }
+        var ssoError = (KerberosSsoError) session.getAttribute(KerberosSsoFailureHandler.SESSION_ATTR_SSO_ERROR);
+        if (ssoError != null) {
+            session.removeAttribute(KerberosSsoFailureHandler.SESSION_ATTR_SSO_ERROR);
+        }
+        return ssoError;
+    }
 
     @Value("${elza.integrationScriptUrl:}")
     private String integrationScriptUrl;

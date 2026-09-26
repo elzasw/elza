@@ -7345,6 +7345,18 @@
     "defaultMessage": "The default user is enabled. Create your own user with administrator permissions and disable the default user.",
     "srcHash": "5GQb-lCsvEuv"
   },
+  "login.error.ssoFailed": {
+    "defaultMessage": "Sign-in with Windows authentication failed. Contact your administrator.",
+    "srcHash": "xO_L5DMfukIp"
+  },
+  "login.error.ssoUserInactive": {
+    "defaultMessage": "Windows authentication succeeded, but your ELZA user is not active. Contact your administrator.",
+    "srcHash": "JxtlSzaj7yV8"
+  },
+  "login.error.ssoUserNotFound": {
+    "defaultMessage": "Windows authentication succeeded, but user \"{username}\" does not exist in ELZA. Ask your administrator to create the user.",
+    "srcHash": "y7xxq-4hilXV"
+  },
   "login.error.unknown": {
     "defaultMessage": "Unknown sign-in error",
     "srcHash": "jKOti0dKdTuK"

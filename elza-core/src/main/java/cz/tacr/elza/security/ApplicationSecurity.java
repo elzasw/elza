@@ -23,6 +23,7 @@ import com.nimbusds.jose.util.ResourceRetriever;
 
 import cz.tacr.elza.security.kerberos.KerberosPassAuthProvider;
 import cz.tacr.elza.security.kerberos.KerberosProperties;
+import cz.tacr.elza.security.kerberos.KerberosSsoFailureHandler;
 import cz.tacr.elza.security.kerberos.KerberosTokenAuthProvider;
 import cz.tacr.elza.security.ldap.ActiveDirectoryUserDetailProvider;
 import cz.tacr.elza.security.ldap.LdapProperties;
@@ -474,7 +475,7 @@ public class ApplicationSecurity {
                 
         filter.setAuthenticationManager(authenticationManagerBean());
         filter.setSuccessHandler( kerberosSuccessHandler() );
-        filter.setFailureHandler(authenticationFailureHandler);
+        filter.setFailureHandler(new KerberosSsoFailureHandler(AUTHENTICATE_SSO, authenticationFailureHandler));
         
         http
            //	.authenticationProvider(kerberosServiceAuthenticationProvider())
