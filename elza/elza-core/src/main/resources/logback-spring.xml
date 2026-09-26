@@ -56,6 +56,12 @@
         <appender-ref ref="CONSOLE"/>
     </root>
 
+    <!-- The SPNEGO filter logs every rejected Windows sign-in at WARN as "Negotiate Header was invalid",
+         including the whole header (the Kerberos service ticket). The real reason is logged by
+         KerberosTokenAuthProvider instead. Can be re-enabled with logging.level in elza.yaml. -->
+    <logger name="org.springframework.security.kerberos.web.authentication.SpnegoAuthenticationProcessingFilter"
+            level="ERROR"/>
+
 <if condition='isDefined("SIEM_LOG_FILE") &amp;&amp; !property("SIEM_LOG_FILE").isEmpty()'>
     <then>
     <!-- ========================= -->

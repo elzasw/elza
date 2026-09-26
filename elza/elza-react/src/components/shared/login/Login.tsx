@@ -39,6 +39,20 @@ const messages = defineMessages({
         defaultMessage:
             'Je povolen výchozí uživatel. Vytvořte si vlastního uživatele s oprávněním administrátora a výchozího uživatele vypněte.',
     },
+    ssoErrorUserNotFound: {
+        id: 'login.error.ssoUserNotFound',
+        defaultMessage:
+            'Windows autentizace proběhla úspěšně, ale uživatel „{username}“ v aplikaci ELZA neexistuje. Požádejte administrátora o založení uživatele.',
+    },
+    ssoErrorUserInactive: {
+        id: 'login.error.ssoUserInactive',
+        defaultMessage:
+            'Windows autentizace proběhla úspěšně, ale váš uživatel v aplikaci ELZA není aktivní. Obraťte se na administrátora.',
+    },
+    ssoErrorFailed: {
+        id: 'login.error.ssoFailed',
+        defaultMessage: 'Přihlášení pomocí Windows autentizace se nezdařilo. Obraťte se na administrátora.',
+    },
     username: { id: 'login.field.username', defaultMessage: 'Uživatelské jméno' },
     password: { id: 'login.field.password', defaultMessage: 'Heslo' },
     login: { id: 'login.action.login', defaultMessage: 'Přihlásit' },
@@ -48,6 +62,13 @@ interface WindowEx extends Window {
     defaultUserEnabled?: boolean;
     serverContextPath?: string;
     ssoKerberosUrl?: string;
+    /** Reason of the failed Windows sign-in, set by the server after a redirect from the SSO endpoint */
+    ssoError?: SsoError | null;
+}
+
+interface SsoError {
+    code: 'USER_NOT_FOUND' | 'USER_INACTIVE' | 'FAILED';
+    username?: string | null;
 }
 
 const windowEx = window as WindowEx;
@@ -108,14 +129,32 @@ export const Login = () => {
     const [credentials, setCredentials] = useState(getDefaultCredentials);
     const [error, setError] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState(false);
+    const [ssoError, setSsoError] = useState(() => windowEx.ssoError ?? null);
 
     useEffect(() => {
         dispatch(checkUserLogged());
     }, [dispatch]);
 
+    useEffect(() => {
+        // show the SSO error only once, not again after a later logout
+        windowEx.ssoError = null;
+    }, []);
+
+    const formatSsoError = (value: SsoError) => {
+        switch (value.code) {
+            case 'USER_NOT_FOUND':
+                return intl.formatMessage(messages.ssoErrorUserNotFound, { username: value.username ?? '' });
+            case 'USER_INACTIVE':
+                return intl.formatMessage(messages.ssoErrorUserInactive);
+            default:
+                return intl.formatMessage(messages.ssoErrorFailed);
+        }
+    };
+
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setSubmitting(true);
+        setSsoError(null);
         try {
             await dispatch(login(credentials.username, credentials.password));
             setCredentials(getDefaultCredentials());
@@ -147,6 +186,11 @@ export const Login = () => {
                                     <MessageBarBody>
                                         <FormattedMessage {...messages.defaultUserEnabled} />
                                     </MessageBarBody>
+                                </MessageBar>
+                            )}
+                            {ssoError && (
+                                <MessageBar intent="error">
+                                    <MessageBarBody>{formatSsoError(ssoError)}</MessageBarBody>
                                 </MessageBar>
                             )}
                             <div className={styles.columns}>

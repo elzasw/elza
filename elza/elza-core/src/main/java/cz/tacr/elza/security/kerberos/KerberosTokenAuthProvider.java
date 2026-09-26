@@ -3,6 +3,7 @@ package cz.tacr.elza.security.kerberos;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -68,7 +69,16 @@ public class KerberosTokenAuthProvider implements AuthenticationProvider {
 			siemAuditLogger.loginSuccess(username, sourceIp, AuthenticationType.KERBEROS);
 			return ret;
 		} catch (UsernameNotFoundException e) {
+			// The ticket itself is valid - the account is missing on the ELZA side.
+			// Log it explicitly, the Spring SPNEGO filter reports it only as an invalid Negotiate header.
+			LOG.warn("Kerberos ticket of principal '{}' is valid, but ELZA has no user '{}'. "
+					+ "Create the user in ELZA to allow Windows (Kerberos) sign-in.",
+					username, username.split("@")[0]);
 			siemAuditLogger.loginFailed(username, sourceIp, "INVALID_USERNAME");
+			throw e;
+		} catch (LockedException e) {
+			LOG.warn("Kerberos ticket of principal '{}' is valid, but the ELZA user is not active.", username);
+			siemAuditLogger.loginFailed(username, sourceIp, "INACTIVE_USER");
 			throw e;
 		}
 	}
@@ -81,7 +91,7 @@ public class KerberosTokenAuthProvider implements AuthenticationProvider {
 		var ret = new TransactionTemplate(txManager).execute(r -> {
 			UsrUser user = userService.findByUsername(usernameFirstPart);
 			if (user == null) {
-				throw new UsernameNotFoundException("Neplatné uživatelské jméno: " + usernameFirstPart);
+				throw new KerberosUserNotFoundException(usernameFirstPart);
 			}
 
 			KerberosServiceRequestToken responseAuth = new KerberosServiceRequestToken(
