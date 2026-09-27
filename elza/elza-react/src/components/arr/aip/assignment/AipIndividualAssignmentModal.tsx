@@ -11,11 +11,11 @@ import {
 import { Modal, Col, Row } from "react-bootstrap";
 import "./AipAssignmentModal.scss";
 import { defineMessages, useIntl } from "react-intl";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { AipDetailVO, DaAipActionVO, ExplorerTreeNode } from "elza-api";
 import FundTree from "./FundTree";
-import { AipPartTree, SelectedPart, selectableDaoIds } from "./AipPartTree";
+import { AipPartTree, SelectedPart, linkedFiles, packageFiles, selectableDaoIds } from "./AipPartTree";
 import { WebApi } from "../../../../actions";
 import { Api } from "../../../../api";
 import { AREA_AIP, aipFetchIfNeeded, aipsFetchIfNeeded } from "actions/aip/aip";
@@ -32,6 +32,10 @@ import { addToastrSuccess } from "components/shared/toastr/ToastrActions";
 
 const messages = defineMessages({
     source: { id: "arr.aip.single.source", defaultMessage: "Zdroj - struktura balíčku" },
+    linkedFiles: {
+        id: "arr.aip.single.linkedFiles",
+        defaultMessage: "připojeno {linked} z {count, plural, one {# souboru} other {# souborů}}",
+    },
     showFiles: { id: "arr.aip.single.showFiles", defaultMessage: "Zobrazit soubory" },
     target: { id: "arr.aip.assignment.target", defaultMessage: "Cíl - archivní soubor" },
     what: { id: "arr.aip.assignment.what", defaultMessage: "Co připojit" },
@@ -129,6 +133,14 @@ function AipIndividualAssignmentModal({ aipId, tree: initialTree }: Props) {
     };
 
     const daoIds = selected.map(s => s.daoId);
+    const fileCounts = useMemo(() => {
+        if (!structure) {
+            return undefined;
+        }
+        const linked = linkedFiles(structure);
+        const files = Array.from(packageFiles(structure).keys());
+        return { count: files.length, linked: files.filter(id => linked.has(id)).length };
+    }, [structure]);
     // úroveň, pod kterou se úrovně vytvoří nebo převezme popis; nic vybráno = celý balíček
     const level = selected.length === 1 && selected[0].kind === "level" ? selected[0] : undefined;
     const levelModeAllowed = selected.length === 0 || level != null;
@@ -195,6 +207,8 @@ function AipIndividualAssignmentModal({ aipId, tree: initialTree }: Props) {
                 <Text weight="semibold">{aip?.code}</Text>
                 {aip?.contentType && <Text>{aip.contentType}</Text>}
                 {aip?.linkState && <Text>{intl.formatMessage(linkStateMessages[aip.linkState])}</Text>}
+                {fileCounts && fileCounts.linked > 0 && fileCounts.linked < fileCounts.count &&
+                    <Text>({intl.formatMessage(messages.linkedFiles, fileCounts)})</Text>}
                 <Text>{intl.formatMessage(messages.selected, { count: selected.length })}</Text>
             </div>
             <Row className="aip-assignment-trees">
