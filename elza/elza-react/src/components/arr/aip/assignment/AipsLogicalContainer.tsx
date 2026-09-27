@@ -19,7 +19,8 @@ export interface LogicalTreeNode {
 
 interface Props {
     tree: { nodes: LogicalTreeNode[] };
-    selectedNode: TreeItemValue;
+    /** Úroveň vybraná na začátku; dál si výběr drží komponenta sama. */
+    initialNode: TreeItemValue;
     onSelect: (node: LogicalTreeNode) => void;
 }
 
@@ -29,8 +30,8 @@ export type AipsLogicalContainerProps = Props;
  * Logická struktura vybraných balíčků - úrovně sloučené napříč balíčky, u každé počet balíčků,
  * které zastupuje.
  */
-function AipsLogicalContainer({ tree, selectedNode, onSelect }: Props) {
-    const [node, setNode] = useState<TreeItemValue>(selectedNode);
+function AipsLogicalContainer({ tree, initialNode, onSelect }: Props) {
+    const [node, setNode] = useState<TreeItemValue>(initialNode);
     const nodeName = useNodeName();
 
     useEffect(() => {

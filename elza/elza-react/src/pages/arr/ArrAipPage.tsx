@@ -160,7 +160,7 @@ class ArrAipPage extends ArrParentPage {
                     initialFilters={initialFilters(activeFund.id)}
                     hiddenValues={["fund.name", "fundCode", "institution.name", "institutionCode"]}
                     focusAipId={this.focusAipId()}
-                    toolbarActions={<AipFundActions fund={activeFund} readMode={readMode}/>}
+                    toolbarActions={<AipFundActions fund={activeFund} readMode={readMode || closed}/>}
                 />
             </div>
         );

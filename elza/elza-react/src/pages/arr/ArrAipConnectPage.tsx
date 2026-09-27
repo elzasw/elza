@@ -12,12 +12,6 @@ import { explorerPageMessages } from '../../components/aip/messages';
 import { FormattedMessage } from 'react-intl';
 import type { AppState, Fund, UserDetail } from 'typings/store';
 
-/**
- * Hromadné připojení archivních balíčků k popisu archivního souboru.
- *
- * Balíčky nese adresa (?aips=1,2,3), takže stránka přežije znovunačtení a lze se na ni vrátit
- * zpět v prohlížeči; seznam balíčků ji otevírá s vybranými, případně zobrazenými balíčky.
- */
 const AREA = "AIP";
 
 /**
@@ -38,6 +32,12 @@ export const parseAipIds = (search: string): number[] =>
         .map(Number)
         .filter(id => Number.isInteger(id) && id > 0);
 
+/**
+ * Hromadné připojení archivních balíčků k popisu archivního souboru.
+ *
+ * Balíčky nese adresa (?aips=1,2,3), takže stránka přežije znovunačtení a lze se na ni vrátit
+ * zpět v prohlížeči; seznam balíčků ji otevírá s vybranými, případně zobrazenými balíčky.
+ */
 class ArrAipConnectPage extends ArrParentPage {
     area = AREA
 

@@ -3265,6 +3265,22 @@
     "defaultMessage": "Nothing is selected - connect the packages shown on this page of the list",
     "srcHash": "l_RhTHm9LhGd"
   },
+  "arr.aip.actions.connectWhole": {
+    "defaultMessage": "Connect whole to unit…",
+    "srcHash": "lLnzla7GomVv"
+  },
+  "arr.aip.actions.connectWhole.hint": {
+    "defaultMessage": "Quickly connect {count, plural, one {# package} other {# packages}} whole to the unit of description chosen in a dialog - without browsing their structure",
+    "srcHash": "Hxw7rMhGwNBK"
+  },
+  "arr.aip.actions.connectWhole.skipped": {
+    "defaultMessage": "{count, plural, one {# package is already connected and is skipped} other {# packages are already connected and are skipped}}",
+    "srcHash": "13Imzik6LNIv"
+  },
+  "arr.aip.actions.connectWhole.title": {
+    "defaultMessage": "Connect {count, plural, one {# package} other {# packages}} whole to a unit of description",
+    "srcHash": "BvNBJAeQFjfq"
+  },
   "arr.aip.assignment.allLinked": {
     "defaultMessage": "All packages are fully connected.",
     "srcHash": "dDky3iC0O52C"
@@ -3272,6 +3288,10 @@
   "arr.aip.assignment.bulk": {
     "defaultMessage": "Link in bulk",
     "srcHash": "ZuJohRiCpnY6"
+  },
+  "arr.aip.assignment.chooseMode": {
+    "defaultMessage": "Choose what to connect.",
+    "srcHash": "AyRX9WhWLKQc"
   },
   "arr.aip.assignment.connect": {
     "defaultMessage": "Connect",
@@ -3324,6 +3344,18 @@
   "arr.aip.assignment.mode.whole.hint": {
     "defaultMessage": "Connects the whole packages to the selected unit of description, regardless of their structure.",
     "srcHash": "UEiLclgbmjGb"
+  },
+  "arr.aip.assignment.needsLevel": {
+    "defaultMessage": "Select a level below the root in the structure - the root means the whole packages.",
+    "srcHash": "V50aKG2mzOGM"
+  },
+  "arr.aip.assignment.noPackages": {
+    "defaultMessage": "None of the requested packages was found.",
+    "srcHash": "he4hUb0YbnEg"
+  },
+  "arr.aip.assignment.readOnly": {
+    "defaultMessage": "The fund is read-only (read mode or a closed version) - nothing can be connected.",
+    "srcHash": "uF8UHbfei85x"
   },
   "arr.aip.assignment.selectedCount": {
     "defaultMessage": "{count, plural, one {# package selected} other {# packages selected}}",

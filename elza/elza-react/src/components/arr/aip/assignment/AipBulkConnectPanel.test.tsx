@@ -75,7 +75,7 @@ const state = () => {
             ...base.arrRegion, activeIndex: 0,
             funds: [{ id: 1, versionId: 3, fundTreeAip: { nodes: fundNodes, selectedId: 10, expandedIds: {} } }],
         },
-        app: { ...base.app, aipLogicalTree: { ...base.app.aipLogicalTree, fetched: true, data: logicalTree } },
+        app: { ...base.app, aipLogicalTree: { ...base.app.aipLogicalTree, id: [1, 2, 3], fetched: true, data: logicalTree } },
     };
 };
 
@@ -126,6 +126,14 @@ describe('AipBulkConnectPanel', () => {
         await connect();
 
         expect(api.aipBulkConnectToJp).toHaveBeenCalledWith(10, [1, 2, 3]);
+    });
+
+    it('offers the level mode only for a level below the root - the root is the whole packages', async () => {
+        await render();
+
+        expect(screen.getByRole('radio', { name: /Vybranou úroveň/ })).toBeDisabled();
+        selectLevel('Organizace');
+        expect(screen.getByRole('radio', { name: /Vybranou úroveň/ })).toBeEnabled();
     });
 
     it('links the selected level of its packages', async () => {
