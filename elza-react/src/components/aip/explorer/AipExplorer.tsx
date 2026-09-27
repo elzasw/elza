@@ -37,13 +37,16 @@ type AipExplorerProps = {
 /** Reports the selection of the explorer out of its context; renders nothing. */
 function SelectionReporter({onChange}: {onChange: (uuid: string | undefined) => void}): null {
     const {selectedItem} = useExplorerContext();
+    const aip = useSelector((state: AppState) => storeFromArea(state, AREA_AIP));
     const structure = useSelector((state: AppState) => storeFromArea(state, AREA_AIP_STRUCTURE));
     const uuid: string | undefined = selectedItem?.uuid;
     const rootUuid: string | undefined = structure?.data?.uuid;
+    // the structure store is shared - a selection made in the previous package is not this one's
+    const structureOfThis = structure?.id === aip?.id && structure?.data != null;
 
     useEffect(() => {
         // nothing is selected until the structure loads - that is not a change to report
-        if (selectedItem) {
+        if (selectedItem && structureOfThis) {
             onChange(uuid === rootUuid ? undefined : uuid);
         }
     }, [uuid]);

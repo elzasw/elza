@@ -32,18 +32,21 @@ export const expandTarget = (node: TargetNode) => fundTreeNodeExpand(FUND_TREE_A
 
 /**
  * Strom archivního souboru jako cíl připojení balíčků: líné načítání, hledání a kontextové menu
- * s otevřením v pořádání. Na začátku je vybrán kořen - nejčastěji se připojuje k němu.
+ * s otevřením v pořádání. Když není vybráno nic, vybere se kořen - nejčastěji se připojuje k němu.
+ * Výběr je společný celému fondu: karta připojení i stránka hromadného připojení začínají
+ * u naposledy zvoleného cíle.
  */
 export function AipTargetTree() {
     const dispatch = useThunkDispatch();
     const { fund, tree } = useAipTarget();
 
+    // výběr může zmizet i později (sbalení stromu, smazání vybrané JP) - cíl se pak vrátí na kořen
     const root = tree?.nodes[0];
     useEffect(() => {
         if (fund && root && tree?.selectedId == null) {
             dispatch(fundTreeSelectNode(FUND_TREE_AREA_AIP, fund.versionId, root.id, false, false) as never);
         }
-    }, [root?.id]);
+    }, [root?.id, tree?.selectedId]);
 
     return fund && tree
         ? <FundTreeDaos fund={fund} versionId={fund.versionId} area={FUND_TREE_AREA_AIP} {...tree} />

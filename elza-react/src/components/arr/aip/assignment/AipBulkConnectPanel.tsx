@@ -13,17 +13,17 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { storeFromArea } from "shared/utils";
 import { AppState } from "typings/store";
-import { AIP_LOGICAL_TREE, fetchAipLogicalTreeIfNeeded } from "actions/aip/aip";
+import { AIP_LOGICAL_TREE, aipsFetchIfNeeded, fetchAipLogicalTreeIfNeeded } from "actions/aip/aip";
 import { useThunkDispatch } from "utils/hooks";
 import { useWebsocket } from "components/shared/web-socket/WebsocketProvider";
-import { AipConnectBlockedVO, AipDetailVO, AipLinkState, DaAipActionVO } from "elza-api";
+import { AipDetailVO, AipLinkState, DaAipActionVO } from "elza-api";
 import { Api } from "../../../../api";
 import { WebApi } from "../../../../actions";
 import AipConnectBlockedPanel from "../../../aip/AipConnectBlockedPanel";
 import { runAipAction } from "../../../aip/AipActionRunner";
-import { aipsFetchIfNeeded } from "actions/aip/aip";
 import { useNodeName } from "components/aip/explorer/levels";
 import { AipTargetTree, TargetNode, expandTarget, useAipTarget } from "./AipTargetTree";
+import { ModeLabel, connectMessages, useConnectCheck } from "./connectShared";
 
 const messages = defineMessages({
     selectedCount: {
@@ -33,9 +33,6 @@ const messages = defineMessages({
     showPackages: { id: "arr.aip.assignment.showPackages", defaultMessage: "Zobrazit balíčky vybrané úrovně" },
     hidePackages: { id: "arr.aip.assignment.hidePackages", defaultMessage: "Skrýt balíčky" },
     source: { id: "arr.aip.assignment.source", defaultMessage: "Zdroj - logická struktura balíčků" },
-    target: { id: "arr.aip.assignment.target", defaultMessage: "Cíl - archivní soubor" },
-    noTarget: { id: "arr.aip.single.noTarget", defaultMessage: "Vyberte ve stromu jednotku popisu, ke které se připojí." },
-    what: { id: "arr.aip.assignment.what", defaultMessage: "Co připojit" },
     modeWhole: { id: "arr.aip.assignment.mode.whole", defaultMessage: "Celé balíčky ({count})" },
     modeWholeHint: {
         id: "arr.aip.assignment.mode.whole.hint",
@@ -46,23 +43,16 @@ const messages = defineMessages({
         id: "arr.aip.assignment.mode.level.hint",
         defaultMessage: "Připojí vybranou úroveň balíčků k vybrané jednotce popisu; nižší úrovně jsou připojeny s ní.",
     },
-    modeSublevels: { id: "arr.aip.assignment.mode.sublevels", defaultMessage: "Úrovně pod vybranou úrovní" },
-    modeSublevelsHint: {
-        id: "arr.aip.assignment.mode.sublevels.hint",
-        defaultMessage: "Pro každou úroveň přímo pod vybranou úrovní vytvoří pod vybranou jednotkou popisu podúroveň a připojí k ní její část balíčků.",
+    needsLevel: {
+        id: "arr.aip.assignment.needsLevel",
+        defaultMessage: "Vyberte ve struktuře úroveň pod kořenem - kořen jsou celé balíčky.",
     },
-    modeStructure: { id: "arr.aip.assignment.mode.structure", defaultMessage: "Převzít strukturu a popis" },
-    modeStructureHint: {
-        id: "arr.aip.assignment.mode.structure.hint",
-        defaultMessage: "Vytvoří úrovně pod vybranou úrovní až po dokumenty, s prvky popisu z balíčků, a připojí k nim soubory.",
-    },
-    fileplanAsRoot: { id: "arr.aip.assignment.fileplanAsRoot", defaultMessage: "Spisový plán jako kořenová série" },
     summary: {
         id: "arr.aip.assignment.summary",
         defaultMessage: "{count, plural, one {# balíček} few {# balíčky} other {# balíčků}} → „{target}“",
     },
-    connect: { id: "arr.aip.assignment.connect", defaultMessage: "Připojit" },
     allLinked: { id: "arr.aip.assignment.allLinked", defaultMessage: "Všechny balíčky jsou plně připojeny." },
+    noPackages: { id: "arr.aip.assignment.noPackages", defaultMessage: "Žádný z požadovaných balíčků nebyl nalezen." },
     loading: { id: "arr.aip.assignment.loading", defaultMessage: "Načítání balíčků…" },
 });
 
@@ -86,18 +76,18 @@ export type AipBulkConnectPanelProps = Props;
  * Celé balíčky se připojují všechny, které stránka dostala; ostatní způsoby pracují s balíčky
  * vybrané úrovně. Vybraný kořen struktury znamená vrchol balíčků - celé balíčky.
  *
- * Po každé akci se balíčky načtou znovu: plně napojené ze stránky zmizí a ve stromu archivního
- * souboru jsou vidět nově vytvořené úrovně.
+ * Po každé akci se balíčky načtou znovu (plně napojené ze stránky zmizí, ve stromu archivního
+ * souboru jsou vidět nově vytvořené úrovně) a způsob připojení se zruší - další akce je nová volba.
  */
 function AipBulkConnectPanel({ aipIds: requestedIds, readOnly = false }: Props) {
     const [details, setDetails] = useState<AipDetailVO[] | null>(null);
     const [reloads, setReloads] = useState(0);
     const [logicalTree, setLogicalTree] = useState<{ nodes: LogicalTreeNode[] } | null>(null);
     const [level, setLevel] = useState<LogicalTreeNode | null>(null);
-    const [mode, setMode] = useState<Mode>("whole");
+    const [mode, setMode] = useState<Mode | null>("whole");
     const [fileplanAsRoot, setFileplanAsRoot] = useState(false);
     const [packagesShown, setPackagesShown] = useState(false);
-    const [blocked, setBlocked] = useState<AipConnectBlockedVO[]>([]);
+    const [busy, setBusy] = useState(false);
     const structure = useSelector((state: AppState) => storeFromArea(state, AIP_LOGICAL_TREE));
     const { target } = useAipTarget();
     const dispatch = useThunkDispatch();
@@ -117,9 +107,11 @@ function AipBulkConnectPanel({ aipIds: requestedIds, readOnly = false }: Props) 
     const aips = (details ?? []).filter(a => a.linkState !== AipLinkState.FullyLinked);
     const allAipIds = aips.map(a => a.aipId);
     const aipKey = allAipIds.join(",");
-    const levelAipIds: number[] = level?.value ?? allAipIds;
+    // úroveň zastupuje balíčky, které mezitím mohly zmizet (plně napojené) - počítá se jen se zbylými
+    const levelAipIds: number[] = level ? level.value.filter(id => allAipIds.includes(id)) : allAipIds;
     const levelViewId = level?.daLeveViewId;
     const aipIds = mode === "whole" ? allAipIds : levelAipIds;
+    const blocked = useConnectCheck(target?.id, allAipIds, details);
 
     useEffect(() => {
         if (allAipIds.length > 0) {
@@ -128,35 +120,39 @@ function AipBulkConnectPanel({ aipIds: requestedIds, readOnly = false }: Props) 
     }, [aipKey]);
 
     useEffect(() => {
+        // struktura jiné sady balíčků (před znovunačtením) se nepoužije
+        const forThese = (structure.id as number[] | undefined)?.join(",") === aipKey;
         if (allAipIds.length === 0) {
             setLogicalTree(null);
-        } else if (structure.data) {
+            setLevel(null);
+        } else if (structure.data && forThese) {
             setLogicalTree(structure.data);
         }
     }, [structure, aipKey]);
 
-    /** Připojení už napojený AIP odmítne; uživatel to má vědět dřív, než potvrdí. */
-    useEffect(() => {
-        if (target == null || allAipIds.length === 0) {
-            setBlocked([]);
-            return;
-        }
-        Api.aips.aipConnectCheck(target.id, allAipIds)
-            .then(response => setBlocked(response.data.blocked ?? []))
-            .catch(() => setBlocked([]));
-    }, [target?.id, aipKey]);
-
     /** Po akci: balíčky (a s nimi stav napojení), seznam balíčků a cíl rozbalený na nové úrovně. */
     const reloadAfterAction = (targetNode: TargetNode, createsLevels: boolean) => {
         setReloads(r => r + 1);
+        setMode(null);
         dispatch(aipsFetchIfNeeded(true));
         if (createsLevels) {
             dispatch(expandTarget(targetNode) as never);
         }
     };
 
+    const allowed: Record<Mode, boolean> = {
+        whole: true,
+        level: levelViewId != null,
+        sublevels: true,
+        structure: true,
+    };
+    // napojené AIPy odmítne jen připojení, které se týká celého balíčku nebo úrovně - a jen ty, které jdou do akce
+    const refused = (mode === "whole" || mode === "level") && blocked.some(b => aipIds.includes(b.aipId));
+    const canConnect = !readOnly && !busy && !refused && mode != null && allowed[mode]
+        && aipIds.length > 0 && target != null;
+
     const handleConnect = () => {
-        if (!target) {
+        if (!target || mode == null || !canConnect) {
             return;
         }
         const targetNode = target;
@@ -166,10 +162,7 @@ function AipBulkConnectPanel({ aipIds: requestedIds, readOnly = false }: Props) 
                 case "whole":
                     return Api.aips.aipBulkConnectToJp(nodeId, aipIds);
                 case "level":
-                    // kořen struktury je vrchol balíčků - připojí se celé
-                    return levelViewId != null
-                        ? Api.aips.aipBulkConnectLogicToJp(nodeId, aipIds, levelViewId)
-                        : Api.aips.aipBulkConnectToJp(nodeId, aipIds);
+                    return Api.aips.aipBulkConnectLogicToJp(nodeId, aipIds, levelViewId!);
                 case "sublevels":
                     return Api.aips.aipBulkCreateSublevels(nodeId, aipIds, levelViewId);
                 case "structure":
@@ -178,14 +171,19 @@ function AipBulkConnectPanel({ aipIds: requestedIds, readOnly = false }: Props) 
             }
         };
         const createsLevels = mode === "sublevels" || mode === "structure";
-        runAipAction(dispatch, intl, websocket, intl.formatMessage(messages.connect), request as never,
-                     () => reloadAfterAction(targetNode, createsLevels));
+        setBusy(true);
+        runAipAction(dispatch, intl, websocket, intl.formatMessage(connectMessages.connect), request as never,
+                     () => reloadAfterAction(targetNode, createsLevels))
+            .catch(() => undefined)
+            .finally(() => setBusy(false));
     };
 
-    // napojené AIPy odmítne jen připojení, které se týká celého balíčku nebo úrovně
-    const refused = blocked.length > 0 && (mode === "whole" || mode === "level");
     const levelLabel = level ? nodeName(level as never) : "";
     const shownPackages = aips.filter(a => levelAipIds.includes(a.aipId));
+    const footer = readOnly ? intl.formatMessage(connectMessages.readOnly)
+        : !target ? intl.formatMessage(connectMessages.noTarget)
+        : mode == null ? intl.formatMessage(connectMessages.chooseMode)
+        : intl.formatMessage(messages.summary, { count: aipIds.length, target: target.name });
 
     return (
         <div className="aip-connect">
@@ -196,6 +194,7 @@ function AipBulkConnectPanel({ aipIds: requestedIds, readOnly = false }: Props) 
                 <div className="aip-connect-state">
                     <Text weight="semibold">
                         {details == null ? intl.formatMessage(messages.loading)
+                            : details.length === 0 ? intl.formatMessage(messages.noPackages)
                             : aips.length > 0 ? intl.formatMessage(messages.selectedCount, { count: aips.length })
                             : intl.formatMessage(messages.allLinked)}
                     </Text>
@@ -216,15 +215,15 @@ function AipBulkConnectPanel({ aipIds: requestedIds, readOnly = false }: Props) 
                     </ul>
                 )}
                 <div className="aip-connect-scroll">
-                    {logicalTree && (
+                    {logicalTree && logicalTree.nodes.length > 0 && (
                         <AipsLogicalContainer tree={logicalTree} onSelect={setLevel}
-                                              selectedNode={logicalTree.nodes[0].UUID} />
+                                              initialNode={logicalTree.nodes[0].UUID} />
                     )}
                 </div>
             </div>
             <div className="aip-connect-column">
                 <div className="aip-connect-header">
-                    <Label weight="semibold">{intl.formatMessage(messages.target)}</Label>
+                    <Label weight="semibold">{intl.formatMessage(connectMessages.target)}</Label>
                 </div>
                 <div className="aip-connect-tree">
                     <AipTargetTree />
@@ -232,43 +231,32 @@ function AipBulkConnectPanel({ aipIds: requestedIds, readOnly = false }: Props) 
             </div>
             <div className="aip-connect-column aip-connect-options">
                 <AipConnectBlockedPanel blocked={blocked} />
-                <Label weight="semibold">{intl.formatMessage(messages.what)}</Label>
-                <RadioGroup value={mode} onChange={(_, data) => setMode(data.value as Mode)}>
+                <Label weight="semibold">{intl.formatMessage(connectMessages.what)}</Label>
+                <RadioGroup value={mode ?? ""} onChange={(_, data) => setMode(data.value as Mode)}>
                     <Radio value="whole" label={<ModeLabel text={intl.formatMessage(messages.modeWhole, { count: aips.length })}
                                                            hint={intl.formatMessage(messages.modeWholeHint)} />} />
-                    <Radio value="level" label={<ModeLabel text={intl.formatMessage(messages.modeLevel, { level: levelLabel })}
-                                                           hint={intl.formatMessage(messages.modeLevelHint)} />} />
-                    <Radio value="sublevels" label={<ModeLabel text={intl.formatMessage(messages.modeSublevels)}
-                                                               hint={intl.formatMessage(messages.modeSublevelsHint)} />} />
-                    <Radio value="structure" label={<ModeLabel text={intl.formatMessage(messages.modeStructure)}
-                                                               hint={intl.formatMessage(messages.modeStructureHint)} />} />
+                    <Radio value="level" disabled={!allowed.level}
+                           label={<ModeLabel text={intl.formatMessage(messages.modeLevel, { level: levelLabel })}
+                                             hint={intl.formatMessage(allowed.level ? messages.modeLevelHint
+                                                                                    : messages.needsLevel)} />} />
+                    <Radio value="sublevels" label={<ModeLabel text={intl.formatMessage(connectMessages.modeSublevels)}
+                                                               hint={intl.formatMessage(connectMessages.modeSublevelsHint)} />} />
+                    <Radio value="structure" label={<ModeLabel text={intl.formatMessage(connectMessages.modeStructure)}
+                                                               hint={intl.formatMessage(connectMessages.modeStructureHint)} />} />
                 </RadioGroup>
                 {mode === "structure" && levelViewId == null && (
                     <Checkbox className="aip-connect-option" checked={fileplanAsRoot}
                               onChange={(_, data) => setFileplanAsRoot(data.checked === true)}
-                              label={intl.formatMessage(messages.fileplanAsRoot)} />
+                              label={intl.formatMessage(connectMessages.fileplanAsRoot)} />
                 )}
                 <div className="aip-connect-footer">
-                    <Text>{target
-                        ? intl.formatMessage(messages.summary, { count: aipIds.length, target: target.name })
-                        : intl.formatMessage(messages.noTarget)}</Text>
-                    <Button appearance="primary" disabled={readOnly || refused || aipIds.length === 0 || !target}
-                            onClick={handleConnect}>
-                        {intl.formatMessage(messages.connect)}
+                    <Text>{footer}</Text>
+                    <Button appearance="primary" disabled={!canConnect} onClick={handleConnect}>
+                        {intl.formatMessage(connectMessages.connect)}
                     </Button>
                 </div>
             </div>
         </div>
-    );
-}
-
-/** Název způsobu připojení a jednou větou, co udělá. */
-function ModeLabel({ text, hint }: { text: string; hint: string }) {
-    return (
-        <span className="aip-connect-mode-label">
-            <span>{text}</span>
-            <Text size={200} className="hint">{hint}</Text>
-        </span>
     );
 }
 

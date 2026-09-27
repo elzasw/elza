@@ -14,6 +14,7 @@ import { useSelector } from "react-redux";
 import { AipDetailVO, DaAipActionVO, ExplorerTreeNode } from "elza-api";
 import { AipTargetTree, TargetNode, expandTarget, useAipTarget } from "./AipTargetTree";
 import { AipPartTree, SelectedPart, linkedFiles, packageFiles, selectableDaoIds } from "./AipPartTree";
+import { ModeLabel, connectMessages, useConnectCheck } from "./connectShared";
 import { WebApi } from "../../../../actions";
 import { Api } from "../../../../api";
 import { AREA_AIP, aipFetchIfNeeded, aipsFetchIfNeeded } from "actions/aip/aip";
@@ -22,6 +23,7 @@ import { storeFromArea } from "shared/utils";
 import { AppState } from "typings/store";
 import { useThunkDispatch } from "utils/hooks";
 import { useWebsocket } from "components/shared/web-socket/WebsocketProvider";
+import AipConnectBlockedPanel from "../../../aip/AipConnectBlockedPanel";
 import { runAipAction } from "../../../aip/AipActionRunner";
 import { linkStateMessages } from "../../../aip/messages";
 import { addToastrSuccess } from "components/shared/toastr/ToastrActions";
@@ -33,9 +35,6 @@ const messages = defineMessages({
         defaultMessage: "připojeno {linked} z {count, plural, one {# souboru} other {# souborů}}",
     },
     showFiles: { id: "arr.aip.single.showFiles", defaultMessage: "Zobrazit soubory" },
-    target: { id: "arr.aip.assignment.target", defaultMessage: "Cíl - archivní soubor" },
-    noTarget: { id: "arr.aip.single.noTarget", defaultMessage: "Vyberte ve stromu jednotku popisu, ke které se připojí." },
-    what: { id: "arr.aip.assignment.what", defaultMessage: "Co připojit" },
     selected: {
         id: "arr.aip.single.selected",
         defaultMessage: "{count, plural, =0 {nic nevybráno} one {vybrána # část} few {vybrány # části} other {vybráno # částí}}",
@@ -56,23 +55,11 @@ const messages = defineMessages({
         id: "arr.aip.single.mode.newLevels.hint",
         defaultMessage: "Pro každou vybranou část vytvoří pod vybranou jednotkou popisu novou JP a připojí k ní tuto část.",
     },
-    modeSublevels: { id: "arr.aip.assignment.mode.sublevels", defaultMessage: "Úrovně pod vybranou úrovní" },
-    modeSublevelsHint: {
-        id: "arr.aip.assignment.mode.sublevels.hint",
-        defaultMessage: "Pro každou úroveň přímo pod vybranou úrovní vytvoří pod vybranou jednotkou popisu podúroveň a připojí k ní její část balíčků.",
-    },
-    modeStructure: { id: "arr.aip.assignment.mode.structure", defaultMessage: "Převzít strukturu a popis" },
-    modeStructureHint: {
-        id: "arr.aip.assignment.mode.structure.hint",
-        defaultMessage: "Vytvoří úrovně pod vybranou úrovní až po dokumenty, s prvky popisu z balíčků, a připojí k nim soubory.",
-    },
     needsParts: { id: "arr.aip.single.needsParts", defaultMessage: "Vyberte ve struktuře balíčku jednu nebo více částí." },
     needsLevel: {
         id: "arr.aip.single.needsLevel",
         defaultMessage: "Vyberte jednu úroveň logické struktury, nebo nic - pak se použije celý balíček.",
     },
-    fileplanAsRoot: { id: "arr.aip.assignment.fileplanAsRoot", defaultMessage: "Spisový plán jako kořenová série" },
-    connect: { id: "arr.aip.assignment.connect", defaultMessage: "Připojit" },
     connected: { id: "arr.aip.single.connected", defaultMessage: "Připojeno" },
 });
 
@@ -92,21 +79,29 @@ export type AipConnectPanelProps = Props;
  *
  * Lze připojit libovolné části balíčku - úrovně, reprezentace i soubory - a každou z nich
  * případně do nové JP. Způsoby, které výběr nedovoluje, jsou nedostupné a řeknou proč.
+ *
+ * Po akci se způsob připojení zruší: výběr částí se vyprázdní, a kdyby způsob zůstal, další
+ * stisk tlačítka by tentýž způsob použil na celý balíček.
  */
 function AipConnectPanel({ aipId }: Props) {
     const intl = useIntl();
     const dispatch = useThunkDispatch();
     const websocket = useWebsocket();
     const [selected, setSelected] = useState<SelectedPart[]>([]);
-    const [mode, setMode] = useState<Mode>("whole");
+    const [mode, setMode] = useState<Mode | null>("whole");
     const [withoutLower, setWithoutLower] = useState(false);
     const [fileplanAsRoot, setFileplanAsRoot] = useState(false);
     const [showFiles, setShowFiles] = useState(false);
+    const [busy, setBusy] = useState(false);
+    const [reloads, setReloads] = useState(0);
 
-    const aip = useSelector((state: AppState) => storeFromArea(state, AREA_AIP))?.data as AipDetailVO | undefined;
-    const structure = useSelector((state: AppState) => storeFromArea(state, AREA_AIP_STRUCTURE))?.data as
-        ExplorerTreeNode | undefined;
+    // store balíčku i jeho struktury je společný - dokud se nenačte tento balíček, drží předchozí
+    const aipStore = useSelector((state: AppState) => storeFromArea(state, AREA_AIP));
+    const structureStore = useSelector((state: AppState) => storeFromArea(state, AREA_AIP_STRUCTURE));
+    const aip = aipStore?.id === aipId ? aipStore.data as AipDetailVO | undefined : undefined;
+    const structure = structureStore?.id === aipId ? structureStore.data as ExplorerTreeNode | undefined : undefined;
     const { target } = useAipTarget();
+    const blocked = useConnectCheck(target?.id, [aipId], reloads);
 
     useEffect(() => {
         dispatch(aipFetchIfNeeded(aipId));
@@ -143,7 +138,9 @@ function AipConnectPanel({ aipId }: Props) {
         sublevels: levelModeAllowed,
         structure: levelModeAllowed,
     };
-    const effectiveMode: Mode = allowed[mode] ? mode : "whole";
+    // napojený balíček server celý znovu nepřipojí
+    const refused = blocked.length > 0 && mode === "whole";
+    const canConnect = mode != null && allowed[mode] && !refused && !busy && target != null && aip != null;
 
     /**
      * Po akci: struktura balíčku (značky připojení), balíček a seznam balíčků. Stromy archivního
@@ -157,19 +154,20 @@ function AipConnectPanel({ aipId }: Props) {
             dispatch(expandTarget(targetNode) as never);
         }
         setSelected([]);
+        setMode(null);
+        setReloads(r => r + 1);
     };
 
     const handleConnect = () => {
-        if (!target) {
+        if (!target || mode == null || !canConnect) {
             return;
         }
         const targetNode = target;
-        const createsLevels = effectiveMode === "newLevels" || effectiveMode === "sublevels"
-            || effectiveMode === "structure";
+        const createsLevels = mode === "newLevels" || mode === "sublevels" || mode === "structure";
 
         /** Připojení na pozadí jako akce nad AIPy - s dialogem průběhu. */
         const runAction = (request: () => Promise<{ data: DaAipActionVO }>) =>
-            runAipAction(dispatch, intl, websocket, intl.formatMessage(messages.connect), request as never,
+            runAipAction(dispatch, intl, websocket, intl.formatMessage(connectMessages.connect), request as never,
                          () => reloadAfterAction(targetNode, createsLevels));
 
         /** Přímé připojení částí - hned hotové. */
@@ -180,21 +178,26 @@ function AipConnectPanel({ aipId }: Props) {
             });
 
         const nodeId = targetNode.id;
-        switch (effectiveMode) {
-            case "whole":
-                return runAction(() => Api.aips.aipBulkConnectToJp(nodeId, [aipId]));
-            case "parts":
-                return runDirect(() => withoutLower
-                    ? WebApi.connectSelectedToJp(nodeId, aipId, daoIds)
-                    : WebApi.connectAipPartToJp(nodeId, aipId, daoIds));
-            case "newLevels":
-                return runDirect(() => WebApi.createJpFromSelectedAip(nodeId, aipId, daoIds));
-            case "sublevels":
-                return runAction(() => Api.aips.aipBulkCreateSublevels(nodeId, [aipId], undefined, level?.daoId));
-            case "structure":
-                return runAction(() => Api.aips.aipBulkImportDescription(nodeId, [aipId],
-                    level == null && fileplanAsRoot, undefined, level?.daoId));
-        }
+        const run = (): Promise<unknown> => {
+            switch (mode) {
+                case "whole":
+                    return runAction(() => Api.aips.aipBulkConnectToJp(nodeId, [aipId]));
+                case "parts":
+                    return runDirect(() => withoutLower
+                        ? WebApi.connectSelectedToJp(nodeId, aipId, daoIds)
+                        : WebApi.connectAipPartToJp(nodeId, aipId, daoIds));
+                case "newLevels":
+                    return runDirect(() => WebApi.createJpFromSelectedAip(nodeId, aipId, daoIds));
+                case "sublevels":
+                    return runAction(() => Api.aips.aipBulkCreateSublevels(nodeId, [aipId], undefined, level?.daoId));
+                case "structure":
+                    return runAction(() => Api.aips.aipBulkImportDescription(nodeId, [aipId],
+                        level == null && fileplanAsRoot, undefined, level?.daoId));
+            }
+        };
+        // dvojí stisk by např. vytvořil JP dvakrát; chybu ohlásí společné zpracování chyb volání
+        setBusy(true);
+        run().catch(() => undefined).finally(() => setBusy(false));
     };
 
     const hintFor = (m: Mode, hint: string) => allowed[m] ? hint
@@ -209,6 +212,7 @@ function AipConnectPanel({ aipId }: Props) {
                             onChange={(_, data) => toggleShowFiles(data.checked)} />
                 </div>
                 <div className="aip-connect-state">
+                    {aip?.code && <Text className="code">{aip.code}</Text>}
                     {aip?.linkState && <Text>{intl.formatMessage(linkStateMessages[aip.linkState])}</Text>}
                     {fileCounts && fileCounts.linked > 0 && fileCounts.linked < fileCounts.count &&
                         <Text>({intl.formatMessage(messages.linkedFiles, fileCounts)})</Text>}
@@ -221,21 +225,22 @@ function AipConnectPanel({ aipId }: Props) {
             </div>
             <div className="aip-connect-column">
                 <div className="aip-connect-header">
-                    <Label weight="semibold">{intl.formatMessage(messages.target)}</Label>
+                    <Label weight="semibold">{intl.formatMessage(connectMessages.target)}</Label>
                 </div>
                 <div className="aip-connect-tree">
                     <AipTargetTree />
                 </div>
             </div>
             <div className="aip-connect-column aip-connect-options">
-                <Label weight="semibold">{intl.formatMessage(messages.what)}</Label>
-                <RadioGroup value={effectiveMode} onChange={(_, data) => setMode(data.value as Mode)}>
+                <AipConnectBlockedPanel blocked={blocked} />
+                <Label weight="semibold">{intl.formatMessage(connectMessages.what)}</Label>
+                <RadioGroup value={mode ?? ""} onChange={(_, data) => setMode(data.value as Mode)}>
                     <Radio value="whole" label={<ModeLabel text={intl.formatMessage(messages.modeWhole)}
                                                            hint={intl.formatMessage(messages.modeWholeHint)} />} />
                     <Radio value="parts" disabled={!allowed.parts}
                            label={<ModeLabel text={intl.formatMessage(messages.modeParts, { count: selected.length })}
                                              hint={hintFor("parts", intl.formatMessage(messages.modePartsHint))} />} />
-                    {effectiveMode === "parts" && (
+                    {mode === "parts" && (
                         <Checkbox className="aip-connect-option" checked={withoutLower}
                                   onChange={(_, data) => setWithoutLower(data.checked === true)}
                                   label={intl.formatMessage(messages.withoutLower)} />
@@ -244,35 +249,27 @@ function AipConnectPanel({ aipId }: Props) {
                            label={<ModeLabel text={intl.formatMessage(messages.modeNewLevels)}
                                              hint={hintFor("newLevels", intl.formatMessage(messages.modeNewLevelsHint))} />} />
                     <Radio value="sublevels" disabled={!allowed.sublevels}
-                           label={<ModeLabel text={intl.formatMessage(messages.modeSublevels)}
-                                             hint={hintFor("sublevels", intl.formatMessage(messages.modeSublevelsHint))} />} />
+                           label={<ModeLabel text={intl.formatMessage(connectMessages.modeSublevels)}
+                                             hint={hintFor("sublevels", intl.formatMessage(connectMessages.modeSublevelsHint))} />} />
                     <Radio value="structure" disabled={!allowed.structure}
-                           label={<ModeLabel text={intl.formatMessage(messages.modeStructure)}
-                                             hint={hintFor("structure", intl.formatMessage(messages.modeStructureHint))} />} />
+                           label={<ModeLabel text={intl.formatMessage(connectMessages.modeStructure)}
+                                             hint={hintFor("structure", intl.formatMessage(connectMessages.modeStructureHint))} />} />
                 </RadioGroup>
-                {effectiveMode === "structure" && level == null && (
+                {mode === "structure" && level == null && (
                     <Checkbox className="aip-connect-option" checked={fileplanAsRoot}
                               onChange={(_, data) => setFileplanAsRoot(data.checked === true)}
-                              label={intl.formatMessage(messages.fileplanAsRoot)} />
+                              label={intl.formatMessage(connectMessages.fileplanAsRoot)} />
                 )}
                 <div className="aip-connect-footer">
-                    <Text>{target ? `„${target.name}“` : intl.formatMessage(messages.noTarget)}</Text>
-                    <Button appearance="primary" disabled={!target} onClick={handleConnect}>
-                        {intl.formatMessage(messages.connect)}
+                    <Text>{!target ? intl.formatMessage(connectMessages.noTarget)
+                        : mode == null ? intl.formatMessage(connectMessages.chooseMode)
+                        : `${aip?.code ?? ""} → „${target.name}“`}</Text>
+                    <Button appearance="primary" disabled={!canConnect} onClick={handleConnect}>
+                        {intl.formatMessage(connectMessages.connect)}
                     </Button>
                 </div>
             </div>
         </div>
-    );
-}
-
-/** Název způsobu připojení a jednou větou, co udělá (nebo proč teď nejde). */
-function ModeLabel({ text, hint }: { text: string; hint: string }) {
-    return (
-        <span className="aip-connect-mode-label">
-            <span>{text}</span>
-            <Text size={200} className="hint">{hint}</Text>
-        </span>
     );
 }
 

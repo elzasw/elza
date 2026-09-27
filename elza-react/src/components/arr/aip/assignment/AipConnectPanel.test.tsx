@@ -14,6 +14,7 @@ const api = vi.hoisted(() => ({
     aipBulkConnectToJp: vi.fn(),
     aipBulkCreateSublevels: vi.fn(),
     aipBulkImportDescription: vi.fn(),
+    aipConnectCheck: vi.fn(),
 }));
 const webApi = vi.hoisted(() => ({
     connectAipPartToJp: vi.fn(),
@@ -128,6 +129,7 @@ describe('AipConnectPanel', () => {
         [...Object.values(api), ...Object.values(webApi), ...Object.values(treeActions)].forEach(fn => fn.mockReset());
         Object.values(treeActions).forEach(fn => fn.mockReturnValue({ type: 'test/noop' }));
         Object.values(webApi).forEach(fn => fn.mockResolvedValue(undefined));
+        api.aipConnectCheck.mockResolvedValue({ data: { blocked: [] } });
     });
 
     it('shows levels and representations with a file summary, files only on request', async () => {
@@ -231,6 +233,28 @@ describe('AipConnectPanel', () => {
         await connect();
 
         expect(api.aipBulkConnectToJp).toHaveBeenCalledWith(10, [5]);
+    });
+
+    it('asks for a new choice after an action instead of reusing it on the whole package', async () => {
+        await render();
+        check('Organizace');
+        choose(/Úrovně pod vybranou úrovní/);
+        await connect();
+
+        // the selection is gone - the same mode would now mean the whole package
+        expect(screen.getByText('Zvolte, co připojit.')).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Připojit' })).toBeDisabled();
+    });
+
+    it('does not offer to connect a package whole that the server would refuse', async () => {
+        api.aipConnectCheck.mockResolvedValue({ data: { blocked: [{ aipId: 5, reason: 'už napojen' }] } });
+        await render();
+
+        expect(screen.getByRole('button', { name: 'Připojit' })).toBeDisabled();
+        // its parts can still be connected
+        check('Organizace');
+        choose(/Vybrané části \(1\)/);
+        expect(screen.getByRole('button', { name: 'Připojit' })).toBeEnabled();
     });
 
     it('links the selected parts, with or without their lower parts', async () => {
