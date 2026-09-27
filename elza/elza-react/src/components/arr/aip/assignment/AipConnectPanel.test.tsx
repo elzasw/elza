@@ -138,7 +138,7 @@ describe('AipConnectPanel', () => {
         expect(screen.getByRole('checkbox', { name: 'submission' })).toBeInTheDocument();
         expect(screen.getByRole('checkbox', { name: 'Organizace' })).toBeInTheDocument();
         expect(screen.queryByRole('checkbox', { name: 'test.docx' })).toBeNull();
-        expect(screen.getAllByText('1 soubor · 2.0 kB').length).toBe(2);
+        expect(screen.getAllByText('1 soubor').length).toBe(2);
         expect(screen.queryByText('METS.xml')).toBeNull();
 
         showFiles();
@@ -201,7 +201,7 @@ describe('AipConnectPanel', () => {
         // test.docx is connected with its level "Organizace", other.pdf is not
         expect(screen.getByText('(připojeno 1 z 2 souborů)')).toBeInTheDocument();
         expandRepresentations();
-        expect(screen.getByText('připojeno 1')).toBeInTheDocument();
+        expect(screen.getByText('· připojeno 1')).toBeInTheDocument();
 
         showFiles();
         // the level itself and its file, connected with it

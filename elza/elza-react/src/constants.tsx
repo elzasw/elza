@@ -285,6 +285,11 @@ export const urlFundAipExplorer = (fundId: number, aipId: number, versionId?: nu
     return `${fundSub(fundId, versionId, AIP)}/${aipId}/explorer${tab ? "?tab=" + tab : ""}`;
 }
 
+/** Hromadné připojení balíčků k popisu fondu; balíčky nese adresa, aby stránka přežila znovunačtení. */
+export const urlFundAipConnect = (fundId: number, aipIds: number[], versionId?: number) => {
+    return `${fundSub(fundId, versionId, AIP)}/connect?aips=${aipIds.join(",")}`;
+}
+
 export const urlFundPublication = (fundId: number, versionId?: number) => {
     return fundSub(fundId, versionId, PUBLICATION);
 }

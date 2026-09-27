@@ -24,6 +24,7 @@ import {
     AipPage,
     AipExplorerPage,
     ArrAipExplorerPage,
+    ArrAipConnectPage,
     ArrDaoPage,
     ArrDataGridPage,
     ArrMovementsPage,
@@ -238,6 +239,7 @@ class Layout extends AbstractReactComponent {
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${NODE}/:nodeId`} component={ArrPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${GRID}/:nodeId/:descItemTypeId?`} component={ArrDataGridPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${GRID}`} component={ArrDataGridPage} />
+                                            <Route path={`${URL_FUND}/:id/v/:versionId/${AIP}/connect`} component={ArrAipConnectPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${AIP}/:aipId/explorer`} component={ArrAipExplorerPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${AIP}/:aipId`} component={ArrAipPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${AIP}`} component={ArrAipPage} />
@@ -257,6 +259,7 @@ class Layout extends AbstractReactComponent {
                                             <Route path={`${URL_FUND}/:id/${NODE}/:nodeId`} component={ArrPage} />
                                             <Route path={`${URL_FUND}/:id/${GRID}/:nodeId/:descItemTypeId?`} component={ArrDataGridPage} />
                                             <Route path={`${URL_FUND}/:id/${GRID}`} component={ArrDataGridPage} />
+                                            <Route path={`${URL_FUND}/:id/${AIP}/connect`} component={ArrAipConnectPage} />
                                             <Route path={`${URL_FUND}/:id/${AIP}/:aipId/explorer`} component={ArrAipExplorerPage} />
                                             <Route path={`${URL_FUND}/:id/${AIP}/:aipId`} component={ArrAipPage} />
                                             <Route path={`${URL_FUND}/:id/${AIP}`} component={ArrAipPage} />
