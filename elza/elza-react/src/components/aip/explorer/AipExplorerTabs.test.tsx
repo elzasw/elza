@@ -124,7 +124,7 @@ describe('AipExplorerTabs', () => {
         expect(screen.queryByRole('treeitem', {name: /Balíček/})).toBeNull();
     });
 
-    it('název úrovně je na jednom řádku a celý v nápovědě', async () => {
+    it('název úrovně je celý na jednom řádku a i v nápovědě', async () => {
         renderWithProviders(<AipExplorerTabs aipId={11}/>);
 
         fireEvent.click(await screen.findByRole('tab', {name: 'Struktura'}));
