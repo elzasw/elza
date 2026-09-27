@@ -6,28 +6,47 @@
     /* Detail je součástí rozvržení, ne překryv - zmenší se tabulka, nic se nezakryje. */
     flex-wrap: nowrap;
     align-items: stretch;
+    height: 100%;
+    min-height: 0;
 
     .aip-table-main {
         flex: 1 1 auto;
         min-width: 0;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
     }
 
-    /* The table keeps the configured column widths, so it may be wider than the page;
-       it scrolls inside this container and the filter and pagination stay put. */
+    /* The table keeps the configured column widths, so it may be wider than the page, and it
+       may be longer than the window: it scrolls both ways inside this container, with the
+       column header kept in sight, while the filter and the pagination stay put. */
     .aip-table-scroll {
+        flex: 1 1 auto;
+        min-height: 0;
         width: 100%;
-        overflow-x: auto;
+        overflow: auto;
     }
 
     .aip-table-body {
 
+        thead th {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
         .header {
-           background-color: #b3b3b3ff;
+           background-color: $shade-3;
            padding: 5px;
         }
 
         .table-row:nth-child(even){
            background-color: $shade-1;
+        }
+
+        /* the package open in the detail */
+        .table-row.detail-shown {
+           background-color: $shade-2;
         }
 
         .aip-action-header {
@@ -68,9 +87,7 @@
       }
       
       .last-item {
-        margin-left: auto; 
-        background-color: #e3e3e3ff;
-        padding: 0 10px;
+        margin-left: auto;
         min-width: max-content;
       }
 }

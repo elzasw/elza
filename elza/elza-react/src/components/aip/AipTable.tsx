@@ -398,9 +398,8 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, onExplore, filterDisabled, in
                                 return (
                                 <TableRow
                                     key={item.code}
-                                    className="table-row"
+                                    className={isDetailShown ? "table-row detail-shown" : "table-row"}
                                     ref={isDetailShown ? focusedRow : undefined}
-                                    style={{backgroundColor: isDetailShown ? "#ddd": undefined}}
                                 >
                                     <TableSelectionCell
                                         checked={selected}
