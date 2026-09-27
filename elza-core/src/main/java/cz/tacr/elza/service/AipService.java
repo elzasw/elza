@@ -82,12 +82,15 @@ public class AipService {
     public TreeDataCustomGen getAipsLogicalTree(List<Integer> aipIds) {
         TreeDataCustomGen result = new TreeDataCustomGen();
         List<DaDao> daoList = daoService.getDaosByTypeAndAipIn(aipIds, DaDao.DaoType.LOGICAL);
+        // a logical part outside the level views (e.g. the root of the structure) has no place in the tree
         Map<Integer, List<DaDao>> levelViewIdToDaosMap = daoList.stream()
+                .filter(dao -> dao.getLevelView() != null)
                 .collect(Collectors.groupingBy(
                         dao -> dao.getLevelView().getLevelViewId()
                 ));
         Set<DaLevelView> allLevelViews = daoList.stream()
                 .map(DaDao::getLevelView)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
         Set<DaLevelView> rootLevelViews = allLevelViews.stream()
                 .filter(levelView -> levelView.getParentLevelView() == null)
@@ -151,6 +154,11 @@ public class AipService {
             List<Integer> aipIds
     ) {
         List<DaDao> daos = levelViewIdToDaosMap.get(levelView.getLevelViewId());
+        if (daos == null) {
+            // level views are shared by the packages of the fund: this one (and all below it) is
+            // of other packages than the selected ones
+            return;
+        }
         List<DaLevelView> children = levelView.getChildren();
         List<Integer> relatedAipsIds = daos
                 .stream()
