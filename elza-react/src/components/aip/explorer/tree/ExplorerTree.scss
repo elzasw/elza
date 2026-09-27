@@ -4,17 +4,18 @@
     max-height: 80vh;
     overflow: auto;
 
-    /* one line per node - the explorer otherwise breaks long words; the whole name is in the tooltip */
-    .fui-TreeItemLayout__main {
-        min-width: 0;
-        overflow: hidden;
+    /*
+     * One line per node, whole: a row is as wide as its name (at least as the tree), so a long
+     * or deeply nested name scrolls the tree sideways instead of being cut off. The explorer
+     * otherwise breaks long words; the name is also in the tooltip.
+     */
+    .fui-TreeItemLayout {
+        width: max-content;
+        min-width: 100%;
     }
 
     .explorer-tree-label {
-        display: block;
         white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
         word-wrap: normal;
     }
 }
