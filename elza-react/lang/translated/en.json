@@ -3277,10 +3277,6 @@
     "defaultMessage": "Link in bulk",
     "srcHash": "ZuJohRiCpnY6"
   },
-  "arr.aip.assignment.bulk.title": {
-    "defaultMessage": "Bulk linking of a package to the archival description",
-    "srcHash": "c4kvrLqKymwy"
-  },
   "arr.aip.assignment.connect": {
     "defaultMessage": "Connect",
     "srcHash": "8xxt79Dio94K"
@@ -3296,6 +3292,10 @@
   "arr.aip.assignment.individually": {
     "defaultMessage": "Link individually",
     "srcHash": "5747DsAcQWRE"
+  },
+  "arr.aip.assignment.loading": {
+    "defaultMessage": "Loading packages…",
+    "srcHash": "4w39zPvO4Rf6"
   },
   "arr.aip.assignment.mode.level": {
     "defaultMessage": "The selected level “{level}”",

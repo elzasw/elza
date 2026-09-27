@@ -12,14 +12,12 @@ import { defineMessages, useIntl } from "react-intl";
 import { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { AipDetailVO, DaAipActionVO, ExplorerTreeNode } from "elza-api";
-import FundTreeDaos from "../../FundTreeDaos";
+import { AipTargetTree, TargetNode, expandTarget, useAipTarget } from "./AipTargetTree";
 import { AipPartTree, SelectedPart, linkedFiles, packageFiles, selectableDaoIds } from "./AipPartTree";
 import { WebApi } from "../../../../actions";
 import { Api } from "../../../../api";
 import { AREA_AIP, aipFetchIfNeeded, aipsFetchIfNeeded } from "actions/aip/aip";
 import { AREA_AIP_STRUCTURE, fetchAipStructureIfNeeded } from "actions/aip/exp";
-import { fundTreeNodeExpand, fundTreeSelectNode } from "actions/arr/fundTree";
-import { FUND_TREE_AREA_AIP } from "actions/constants/ActionTypes";
 import { storeFromArea } from "shared/utils";
 import { AppState } from "typings/store";
 import { useThunkDispatch } from "utils/hooks";
@@ -81,15 +79,6 @@ const messages = defineMessages({
 /** Způsob připojení, který uživatel zvolil. */
 type Mode = "whole" | "parts" | "newLevels" | "sublevels" | "structure";
 
-/** Uzel stromu archivního souboru - jen to, co panel čte. */
-type TreeNode = { id: number; name: string };
-
-/** Strom archivního souboru v oblasti připojování balíčků, jak ho drží store. */
-type AipFundTree = { nodes: TreeNode[]; selectedId: number | null; expandedIds: Record<number, boolean> };
-
-/** Aktivní archivní soubor - jen to, co panel čte. */
-type ActiveFund = { id: number; versionId: number; fundTreeAip: AipFundTree };
-
 interface Props {
     aipId: number;
 }
@@ -102,8 +91,7 @@ export type AipConnectPanelProps = Props;
  * a jedno tlačítko Připojit.
  *
  * Lze připojit libovolné části balíčku - úrovně, reprezentace i soubory - a každou z nich
- * případně do nové JP. Způsoby, které výběr nedovoluje, jsou nedostupné a řeknou proč. Strom
- * archivního souboru má vlastní oblast, takže výběr v něm neovlivní strom pořádání.
+ * případně do nové JP. Způsoby, které výběr nedovoluje, jsou nedostupné a řeknou proč.
  */
 function AipConnectPanel({ aipId }: Props) {
     const intl = useIntl();
@@ -118,23 +106,12 @@ function AipConnectPanel({ aipId }: Props) {
     const aip = useSelector((state: AppState) => storeFromArea(state, AREA_AIP))?.data as AipDetailVO | undefined;
     const structure = useSelector((state: AppState) => storeFromArea(state, AREA_AIP_STRUCTURE))?.data as
         ExplorerTreeNode | undefined;
-    const fund = useSelector((state: AppState) =>
-        state.arrRegion?.funds?.[state.arrRegion.activeIndex ?? -1]) as unknown as ActiveFund | undefined;
-    const tree = fund?.fundTreeAip;
-    const target = tree?.nodes.find(n => n.id === tree.selectedId);
+    const { target } = useAipTarget();
 
     useEffect(() => {
         dispatch(aipFetchIfNeeded(aipId));
         dispatch(fetchAipStructureIfNeeded(aipId, true));
     }, [aipId]);
-
-    // cíl je na začátku kořen archivního souboru - nejčastěji se připojuje celý balíček k němu
-    const root = tree?.nodes[0];
-    useEffect(() => {
-        if (fund && root && tree?.selectedId == null) {
-            dispatch(fundTreeSelectNode(FUND_TREE_AREA_AIP, fund.versionId, root.id, false, false) as never);
-        }
-    }, [root?.id]);
 
     /** Po skrytí souborů nezůstane vybráno nic, co není vidět. */
     const toggleShowFiles = (show: boolean) => {
@@ -172,12 +149,12 @@ function AipConnectPanel({ aipId }: Props) {
      * Po akci: struktura balíčku (značky připojení), balíček a seznam balíčků. Stromy archivního
      * souboru obnoví události ze serveru; cíl se rozbalí, aby byly vidět nově vytvořené JP.
      */
-    const reloadAfterAction = (targetNode: TreeNode, createsLevels: boolean) => {
+    const reloadAfterAction = (targetNode: TargetNode, createsLevels: boolean) => {
         dispatch(fetchAipStructureIfNeeded(aipId, true));
         dispatch(aipFetchIfNeeded(aipId, true));
         dispatch(aipsFetchIfNeeded(true));
         if (createsLevels) {
-            dispatch(fundTreeNodeExpand(FUND_TREE_AREA_AIP, targetNode) as never);
+            dispatch(expandTarget(targetNode) as never);
         }
         setSelected([]);
     };
@@ -247,8 +224,7 @@ function AipConnectPanel({ aipId }: Props) {
                     <Label weight="semibold">{intl.formatMessage(messages.target)}</Label>
                 </div>
                 <div className="aip-connect-tree">
-                    {fund && tree && <FundTreeDaos fund={fund} versionId={fund.versionId} area={FUND_TREE_AREA_AIP}
-                                                   {...tree} />}
+                    <AipTargetTree />
                 </div>
             </div>
             <div className="aip-connect-column aip-connect-options">

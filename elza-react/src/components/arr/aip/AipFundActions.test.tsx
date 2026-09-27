@@ -59,6 +59,17 @@ describe('AipFundActions', () => {
         expect(button(/Připojit jednotlivě/)).not.toHaveAttribute('aria-disabled', 'true');
     });
 
+    it('opens the bulk connection page with the packages it acts on', () => {
+        renderWithProviders(<>
+            <AipFundActions fund={fund} readMode={false} />
+            <Route path="*" render={({ location }) => <output>{location.pathname + location.search}</output>} />
+        </>, { preloadedState: state([aip(1), aip(2), aip(3)], [aip(1), aip(3)]) });
+
+        fireEvent.click(button(/Připojit vybrané \(2\)/));
+
+        expect(screen.getByRole('status').textContent).toMatch(/\/5\/aip\/connect\?aips=1,3$/);
+    });
+
     it('opens the connection in the explorer of the package', () => {
         renderWithProviders(<>
             <AipFundActions fund={fund} readMode={false} />

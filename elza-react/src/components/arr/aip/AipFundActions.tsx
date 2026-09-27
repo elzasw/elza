@@ -2,16 +2,13 @@ import { Toolbar, ToolbarButton, Tooltip } from "@fluentui/react-components";
 import { LinkMultipleRegular, LinkRegular } from "@fluentui/react-icons";
 import { defineMessages, useIntl } from "react-intl";
 import { useSelector } from "react-redux";
-import { useHistory } from "react-router-dom";
 import { daoMessages } from "components/arr/daoMessages";
-import { modalDialogShow } from "actions/global/modalDialog";
+import { useHistory } from "react-router-dom";
 import { AREA_AIP, AREA_AIPS, AREA_SELECTED_AIPS } from "actions/aip/aip";
 import { storeFromArea } from "shared/utils";
-import { useThunkDispatch } from "utils/hooks";
 import { AipDetailVO } from "elza-api";
 import { AppState } from "typings/store";
-import AipAssignmentModal, { AipAssignmentModalProps } from "./assignment/AipAssignmentModal";
-import { getFundVersion, urlFundAipExplorer } from "../../../constants";
+import { getFundVersion, urlFundAipConnect, urlFundAipExplorer } from "../../../constants";
 import type { Fund } from "typings/store";
 
 const messages = defineMessages({
@@ -36,8 +33,8 @@ const messages = defineMessages({
 });
 
 interface Props {
-    /** Archivní soubor stránky; jeho strom se nabízí jako cíl připojení. */
-    fund: { id: number; fundTree: AipAssignmentModalProps["tree"] };
+    /** Archivní soubor stránky - připojuje se k jeho popisu. */
+    fund: { id: number };
     readMode: boolean;
 }
 
@@ -47,13 +44,12 @@ export type AipFundActionsProps = Props;
  * Akce nad seznamem balíčků archivního souboru, zobrazené v liště nad seznamem.
  *
  * Hromadné připojení pracuje s vybranými balíčky, a když není nic vybráno, s balíčky zobrazenými
- * na stránce seznamu - popisek říká, o které jde a kolik jich je. Připojení jednotlivě pracuje
+ * na stránce seznamu - popisek říká, o které jde a kolik jich je; otevře stránku připojení. Připojení jednotlivě pracuje
  * s jedním balíčkem: jediným vybraným, jinak s tím, který je otevřený v detailu - otevře jeho
  * průzkumník na kartě připojení.
  */
 export function AipFundActions({ fund, readMode }: Props) {
     const intl = useIntl();
-    const dispatch = useThunkDispatch();
     const history = useHistory();
     const selectedAips = useSelector((state: AppState) => storeFromArea(state, AREA_SELECTED_AIPS));
     const aips = useSelector((state: AppState) => storeFromArea(state, AREA_AIPS));
@@ -66,18 +62,17 @@ export function AipFundActions({ fund, readMode }: Props) {
         ? selected[0].aipId
         : selected.length === 0 ? openAip?.id : undefined;
 
+    const version = getFundVersion(fund as unknown as Fund);
+
     const handleConnectBulk = () => {
-        dispatch(modalDialogShow(null,
-            intl.formatMessage(daoMessages.aipAssignmentBulkTitle),
-            <AipAssignmentModal aips={bulkTargets} tree={fund.fundTree} />,
-            "aip-assignment"));
+        history.push(urlFundAipConnect(fund.id, bulkTargets.map(a => a.aipId), version));
     };
 
     const handleConnectOne = () => {
         if (singleAipId == null) {
             return;
         }
-        history.push(urlFundAipExplorer(fund.id, singleAipId, getFundVersion(fund as unknown as Fund), "connect"));
+        history.push(urlFundAipExplorer(fund.id, singleAipId, version, "connect"));
     };
 
     const bulkLabel = selected.length > 0

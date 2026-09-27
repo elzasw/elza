@@ -44,7 +44,7 @@ interface PartItem {
     label: string;
     /** Jen skutečné části balíčku - úrovně, reprezentace a soubory; složka reprezentace ne. */
     part?: SelectedPart;
-    /** Velikost souboru, u složky souhrn skrytých i zobrazených souborů pod ní. */
+    /** Velikost souboru; u složky se neuvádí - o důležitosti souborů velikost nevypovídá. */
     size?: number;
     /** Počet souborů pod složkou; u souboru chybí. */
     fileCount?: number;
@@ -155,11 +155,9 @@ export function buildItems(structure: ExplorerTreeNode, nodeName: (node: never) 
 
     const summary = (folder: ExplorerTreeNode): Partial<PartItem> => {
         const files = collectFiles(folder);
-        let size = 0;
         const nodes: LinkedNodeVO[] = [];
         let linkedFileCount = 0;
-        files.forEach((s, daoId) => {
-            size += s;
+        files.forEach((_size, daoId) => {
             const fileLinks = linked.get(daoId);
             if (fileLinks) {
                 linkedFileCount++;
@@ -167,7 +165,7 @@ export function buildItems(structure: ExplorerTreeNode, nodeName: (node: never) 
             }
         });
         return files.size > 0
-            ? { fileCount: files.size, size, linkedFileCount, linkedFileNodes: uniqueNodes(nodes) }
+            ? { fileCount: files.size, linkedFileCount, linkedFileNodes: uniqueNodes(nodes) }
             : {};
     };
 
@@ -258,7 +256,7 @@ export function AipPartTree({ structure, selected, onChange, showFiles }: Props)
                 const linkedTo = item.linkedNodes.map(n => n.name).join(", ");
                 const filesLinkedTo = (item.linkedFileNodes ?? []).map(n => n.name).join(", ");
                 const sizeText = item.fileCount != null
-                    ? `${intl.formatMessage(messages.files, { count: item.fileCount })} · ${formatAipSize(item.size ?? 0)}`
+                    ? intl.formatMessage(messages.files, { count: item.fileCount })
                     : item.size != null ? formatAipSize(item.size) : undefined;
                 return (
                     <FlatTreeItem {...treeItemProps} key={item.value}>
@@ -273,7 +271,7 @@ export function AipPartTree({ structure, selected, onChange, showFiles }: Props)
                                     <Tooltip content={intl.formatMessage(messages.linkedTo, { nodes: filesLinkedTo })}
                                              relationship="description">
                                         <Text size={200} className="linked-files">
-                                            {intl.formatMessage(messages.linkedFiles, { count: item.linkedFileCount })}
+                                            {sizeText ? "· " : ""}{intl.formatMessage(messages.linkedFiles, { count: item.linkedFileCount })}
                                         </Text>
                                     </Tooltip>}
                                 {item.linkedNodes.length > 0 &&

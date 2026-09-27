@@ -10,7 +10,6 @@ import { defineMessages } from "react-intl";
  */
 export const daoMessages = defineMessages({
     aipAssignmentBulk: { id: "arr.aip.assignment.bulk", defaultMessage: "Připojit hromadně" },
-    aipAssignmentBulkTitle: { id: "arr.aip.assignment.bulk.title", defaultMessage: "Hromadné připojení balíčku s archivním popisem" },
     aipAssignmentIndividually: { id: "arr.aip.assignment.individually", defaultMessage: "Připojit jednotlivě" },
     daosFileSystemLoadMore: { id: "arr.daos.fileSystem.loadMore", defaultMessage: "Načíst další..." },
     daosFileSystemSelectParent: { id: "arr.daos.fileSystem.selectParent", defaultMessage: "Přejít o úroveň výš" },
