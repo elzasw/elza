@@ -55,7 +55,13 @@ public interface DaSyncQueueItemRepository extends JpaRepository<DaSyncQueueItem
                                                                          @Param("digitalRepository") ArrDigitalRepository digitalRepository,
                                                                          @Param("states") Collection<DaSyncQueueItem.QueueItemState> states);
 
-    DaSyncQueueItem findByAipAndStateInAndActiveIsTrue(DaAip aip, Collection<DaSyncQueueItem.QueueItemState> states);
+    /**
+     * The active request of the AIP among the given states - the newest one. There should be one at
+     * most, but a race used to leave two active (see {@link AipRepository#lockByIds}); reading the
+     * newest keeps such data readable instead of failing every list of AIPs.
+     */
+    DaSyncQueueItem findFirstByAipAndStateInAndActiveIsTrueOrderBySyncQueueItemIdDesc(DaAip aip,
+                                                                                   Collection<DaSyncQueueItem.QueueItemState> states);
 
     /**
      * Pairs (aipId, actionItemId) of the action items the given queue items are carrying out.

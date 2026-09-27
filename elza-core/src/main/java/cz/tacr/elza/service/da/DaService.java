@@ -563,7 +563,7 @@ public class DaService {
      * for; asking again would only replace the pending item with an identical one.
      */
     private boolean isDownloadPending(DaAip aip, AipType requested) {
-        DaSyncQueueItem pending = syncQueueItemRepository.findByAipAndStateInAndActiveIsTrue(aip,
+        DaSyncQueueItem pending = syncQueueItemRepository.findFirstByAipAndStateInAndActiveIsTrueOrderBySyncQueueItemIdDesc(aip,
                 List.of(DaSyncQueueItem.QueueItemState.IMPORT_NEW, DaSyncQueueItem.QueueItemState.UPDATE));
         return pending != null && pending.getAipType() != null && rank(pending.getAipType()) >= rank(requested);
     }
@@ -865,6 +865,11 @@ public class DaService {
         // Only an AIP attached to a unit of description can be exported; the query filters the
         // rest out, and without saying so the action would report success and send nothing.
         Set<Integer> exportable = aipList.stream().map(DaAip::getAipId).collect(Collectors.toSet());
+        // an export submitted twice at once waits here for the first one, then supersedes its items -
+        // otherwise both build the packages and both queue them as active (seen after a double click)
+        if (!exportable.isEmpty()) {
+            aipRepository.lockByIds(exportable);
+        }
         aipIds.stream().filter(id -> !exportable.contains(id)).forEach(id ->
                 sink.skipped(id, "AIP není napojený na jednotku popisu, není co exportovat."));
         Map<DaAip, DaAipState> stateMap = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList).stream()
@@ -1643,6 +1648,11 @@ public class DaService {
                         "Zařazení do fronty vyžaduje otevřenou transakci");
 
         List<DaSyncQueueItem.QueueItemState> queueItemStates = getQueueItemStates(queueItemState);
+
+        // One request of an AIP at a time: the pending one is superseded only if it is seen committed
+        if (aip != null && aip.getAipId() != null) {
+            aipRepository.lockByIds(List.of(aip.getAipId()));
+        }
 
         // The request being queued replaces the ones already waiting for the same AIP. Their action
         // items are closed here, where they lose their queue item - the processors read active items

@@ -2656,14 +2656,14 @@ public class ClientFactoryVO {
             }
         }
 
-        DaSyncQueueItem importSyncQueueItem = daSyncQueueItemRepository.findByAipAndStateInAndActiveIsTrue(src, DaService.getQueueImportStates());
+        DaSyncQueueItem importSyncQueueItem = daSyncQueueItemRepository.findFirstByAipAndStateInAndActiveIsTrueOrderBySyncQueueItemIdDesc(src, DaService.getQueueImportStates());
         if (importSyncQueueItem != null) {
             vo.setImportState(mapQueueItemState(importSyncQueueItem.getState()));
             vo.setImportStateMessage(importSyncQueueItem.getStateMessage());
             vo.setImportStateDate(importSyncQueueItem.getDate());
         }
 
-        DaSyncQueueItem exportSyncQueueItem = daSyncQueueItemRepository.findByAipAndStateInAndActiveIsTrue(src, DaService.getQueueExportStates());
+        DaSyncQueueItem exportSyncQueueItem = daSyncQueueItemRepository.findFirstByAipAndStateInAndActiveIsTrueOrderBySyncQueueItemIdDesc(src, DaService.getQueueExportStates());
         if (exportSyncQueueItem != null) {
             vo.setExportState(mapQueueItemState(exportSyncQueueItem.getState()));
             vo.setExportStateMessage(exportSyncQueueItem.getStateMessage());
