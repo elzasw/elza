@@ -17,6 +17,11 @@ vi.mock('./PackageBrowser', () => ({
         <div data-testid="package-browser">{`${aipId}:${selectPath ?? ''}`}</div>,
 }));
 
+// The connection has its own tests; here only whether and when it is offered.
+vi.mock('components/arr/aip/assignment/AipConnectPanel', () => ({
+    default: ({aipId}: {aipId: number}) => <div data-testid="connect-panel">{aipId}</div>,
+}));
+
 const detail = {
     aipId: 11,
     code: '04ccc520-c5a9-4c9f-a83f-28d91fd37aa7',
@@ -51,6 +56,19 @@ beforeEach(() => {
 });
 
 describe('AipExplorerTabs', () => {
+    it('nabídne připojení k popisu jen v archivním souboru, do kterého lze zapisovat', async () => {
+        const {rerender} = renderWithProviders(<AipExplorerTabs aipId={11} initialTab="connect"/>);
+
+        // not connectable (e.g. the fund is still loading): the package is shown instead
+        expect(screen.queryByRole('tab', {name: 'Připojení k popisu'})).toBeNull();
+        expect(screen.getByRole('tab', {name: 'Balíček'})).toHaveAttribute('aria-selected', 'true');
+
+        rerender(<AipExplorerTabs aipId={11} initialTab="connect" connectable/>);
+
+        expect(screen.getByRole('tab', {name: 'Připojení k popisu'})).toHaveAttribute('aria-selected', 'true');
+        expect(await screen.findByTestId('connect-panel')).toHaveTextContent('11');
+    });
+
     it('otevře se na balíčku, záložky jsou Balíček, Struktura a Soubory', async () => {
         renderWithProviders(<AipExplorerTabs aipId={11}/>);
 

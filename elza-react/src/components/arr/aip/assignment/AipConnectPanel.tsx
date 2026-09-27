@@ -6,22 +6,20 @@ import {
     RadioGroup,
     Switch,
     Text,
-    TreeItemValue,
 } from "@fluentui/react-components";
-import { Modal, Col, Row } from "react-bootstrap";
-import "./AipAssignmentModal.scss";
+import "./AipConnectPanel.scss";
 import { defineMessages, useIntl } from "react-intl";
 import { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { AipDetailVO, DaAipActionVO, ExplorerTreeNode } from "elza-api";
-import FundTree from "./FundTree";
+import FundTreeDaos from "../../FundTreeDaos";
 import { AipPartTree, SelectedPart, linkedFiles, packageFiles, selectableDaoIds } from "./AipPartTree";
 import { WebApi } from "../../../../actions";
 import { Api } from "../../../../api";
 import { AREA_AIP, aipFetchIfNeeded, aipsFetchIfNeeded } from "actions/aip/aip";
 import { AREA_AIP_STRUCTURE, fetchAipStructureIfNeeded } from "actions/aip/exp";
-import { fundTreeFetch } from "actions/arr/fundTree";
-import { FUND_TREE_AREA_MAIN } from "actions/constants/ActionTypes";
+import { fundTreeNodeExpand, fundTreeSelectNode } from "actions/arr/fundTree";
+import { FUND_TREE_AREA_AIP } from "actions/constants/ActionTypes";
 import { storeFromArea } from "shared/utils";
 import { AppState } from "typings/store";
 import { useThunkDispatch } from "utils/hooks";
@@ -38,6 +36,7 @@ const messages = defineMessages({
     },
     showFiles: { id: "arr.aip.single.showFiles", defaultMessage: "Zobrazit soubory" },
     target: { id: "arr.aip.assignment.target", defaultMessage: "Cíl - archivní soubor" },
+    noTarget: { id: "arr.aip.single.noTarget", defaultMessage: "Vyberte ve stromu jednotku popisu, ke které se připojí." },
     what: { id: "arr.aip.assignment.what", defaultMessage: "Co připojit" },
     selected: {
         id: "arr.aip.single.selected",
@@ -82,29 +81,34 @@ const messages = defineMessages({
 /** Způsob připojení, který uživatel zvolil. */
 type Mode = "whole" | "parts" | "newLevels" | "sublevels" | "structure";
 
-type FundTreeData = { nodes: { id: TreeItemValue; name: string }[]; expandedIds?: Set<TreeItemValue> };
+/** Uzel stromu archivního souboru - jen to, co panel čte. */
+type TreeNode = { id: number; name: string };
+
+/** Strom archivního souboru v oblasti připojování balíčků, jak ho drží store. */
+type AipFundTree = { nodes: TreeNode[]; selectedId: number | null; expandedIds: Record<number, boolean> };
+
+/** Aktivní archivní soubor - jen to, co panel čte. */
+type ActiveFund = { id: number; versionId: number; fundTreeAip: AipFundTree };
 
 interface Props {
     aipId: number;
-    /** Strom archivního souboru při otevření dialogu; po akci se čte aktuální ze store. */
-    tree: FundTreeData;
 }
 
-export type AipIndividualAssignmentModalProps = Props;
+export type AipConnectPanelProps = Props;
 
 /**
- * Připojení jednoho balíčku k archivnímu popisu: vlevo struktura balíčku (zdroj), vpravo
- * archivní soubor (cíl), dole volba, co se připojí, a jedno tlačítko Připojit.
+ * Připojení jednoho balíčku k archivnímu popisu jako karta průzkumníku balíčku: vlevo struktura
+ * balíčku (zdroj), uprostřed strom archivního souboru (cíl), vpravo volba, co se připojí,
+ * a jedno tlačítko Připojit.
  *
- * Proti hromadnému připojení lze připojit libovolné části balíčku - úrovně, reprezentace
- * i soubory - a každou z nich případně do nové JP. Způsoby, které výběr nedovoluje, jsou
- * nedostupné a řeknou proč. Po každé akci se dialog načte znovu.
+ * Lze připojit libovolné části balíčku - úrovně, reprezentace i soubory - a každou z nich
+ * případně do nové JP. Způsoby, které výběr nedovoluje, jsou nedostupné a řeknou proč. Strom
+ * archivního souboru má vlastní oblast, takže výběr v něm neovlivní strom pořádání.
  */
-function AipIndividualAssignmentModal({ aipId, tree: initialTree }: Props) {
+function AipConnectPanel({ aipId }: Props) {
     const intl = useIntl();
     const dispatch = useThunkDispatch();
     const websocket = useWebsocket();
-    const [targetNodeId, setTargetNodeId] = useState<TreeItemValue>(initialTree.nodes[0].id);
     const [selected, setSelected] = useState<SelectedPart[]>([]);
     const [mode, setMode] = useState<Mode>("whole");
     const [withoutLower, setWithoutLower] = useState(false);
@@ -114,14 +118,23 @@ function AipIndividualAssignmentModal({ aipId, tree: initialTree }: Props) {
     const aip = useSelector((state: AppState) => storeFromArea(state, AREA_AIP))?.data as AipDetailVO | undefined;
     const structure = useSelector((state: AppState) => storeFromArea(state, AREA_AIP_STRUCTURE))?.data as
         ExplorerTreeNode | undefined;
-    const activeFund = useSelector((state: AppState) => state.arrRegion?.funds?.[state.arrRegion.activeIndex ?? -1]);
-    const tree = (activeFund?.fundTree?.nodes ? activeFund.fundTree : initialTree) as FundTreeData;
-    const targetName = tree.nodes.find(n => n.id == targetNodeId)?.name ?? "";
+    const fund = useSelector((state: AppState) =>
+        state.arrRegion?.funds?.[state.arrRegion.activeIndex ?? -1]) as unknown as ActiveFund | undefined;
+    const tree = fund?.fundTreeAip;
+    const target = tree?.nodes.find(n => n.id === tree.selectedId);
 
     useEffect(() => {
         dispatch(aipFetchIfNeeded(aipId));
         dispatch(fetchAipStructureIfNeeded(aipId, true));
     }, [aipId]);
+
+    // cíl je na začátku kořen archivního souboru - nejčastěji se připojuje celý balíček k němu
+    const root = tree?.nodes[0];
+    useEffect(() => {
+        if (fund && root && tree?.selectedId == null) {
+            dispatch(fundTreeSelectNode(FUND_TREE_AREA_AIP, fund.versionId, root.id, false, false) as never);
+        }
+    }, [root?.id]);
 
     /** Po skrytí souborů nezůstane vybráno nic, co není vidět. */
     const toggleShowFiles = (show: boolean) => {
@@ -155,45 +168,54 @@ function AipIndividualAssignmentModal({ aipId, tree: initialTree }: Props) {
     };
     const effectiveMode: Mode = allowed[mode] ? mode : "whole";
 
-    /** Po akci: struktura balíčku (značky připojení), seznam AIP a strom archivního souboru. */
-    const reloadAfterAction = () => {
+    /**
+     * Po akci: struktura balíčku (značky připojení), balíček a seznam balíčků. Stromy archivního
+     * souboru obnoví události ze serveru; cíl se rozbalí, aby byly vidět nově vytvořené JP.
+     */
+    const reloadAfterAction = (targetNode: TreeNode, createsLevels: boolean) => {
         dispatch(fetchAipStructureIfNeeded(aipId, true));
         dispatch(aipFetchIfNeeded(aipId, true));
         dispatch(aipsFetchIfNeeded(true));
-        if (activeFund?.versionId != null) {
-            const expandedIds = { ...(activeFund.fundTree?.expandedIds ?? {}), [targetNodeId as number]: true };
-            dispatch(fundTreeFetch(FUND_TREE_AREA_MAIN, activeFund.versionId, null, expandedIds) as never);
+        if (createsLevels) {
+            dispatch(fundTreeNodeExpand(FUND_TREE_AREA_AIP, targetNode) as never);
         }
         setSelected([]);
     };
 
-    /** Připojení na pozadí jako akce nad AIPy - s dialogem průběhu. */
-    const runAction = (request: () => Promise<{ data: DaAipActionVO }>) =>
-        runAipAction(dispatch, intl, websocket, intl.formatMessage(messages.connect), request as never,
-                     reloadAfterAction);
-
-    /** Přímé připojení částí - hned hotové. */
-    const runDirect = (request: () => Promise<unknown>) =>
-        request().then(() => {
-            dispatch(addToastrSuccess(intl.formatMessage(messages.connected)));
-            reloadAfterAction();
-        });
-
     const handleConnect = () => {
-        const target = targetNodeId as number;
+        if (!target) {
+            return;
+        }
+        const targetNode = target;
+        const createsLevels = effectiveMode === "newLevels" || effectiveMode === "sublevels"
+            || effectiveMode === "structure";
+
+        /** Připojení na pozadí jako akce nad AIPy - s dialogem průběhu. */
+        const runAction = (request: () => Promise<{ data: DaAipActionVO }>) =>
+            runAipAction(dispatch, intl, websocket, intl.formatMessage(messages.connect), request as never,
+                         () => reloadAfterAction(targetNode, createsLevels));
+
+        /** Přímé připojení částí - hned hotové. */
+        const runDirect = (request: () => Promise<unknown>) =>
+            request().then(() => {
+                dispatch(addToastrSuccess(intl.formatMessage(messages.connected)));
+                reloadAfterAction(targetNode, createsLevels);
+            });
+
+        const nodeId = targetNode.id;
         switch (effectiveMode) {
             case "whole":
-                return runAction(() => Api.aips.aipBulkConnectToJp(target, [aipId]));
+                return runAction(() => Api.aips.aipBulkConnectToJp(nodeId, [aipId]));
             case "parts":
                 return runDirect(() => withoutLower
-                    ? WebApi.connectSelectedToJp(target, aipId, daoIds)
-                    : WebApi.connectAipPartToJp(target, aipId, daoIds));
+                    ? WebApi.connectSelectedToJp(nodeId, aipId, daoIds)
+                    : WebApi.connectAipPartToJp(nodeId, aipId, daoIds));
             case "newLevels":
-                return runDirect(() => WebApi.createJpFromSelectedAip(target, aipId, daoIds));
+                return runDirect(() => WebApi.createJpFromSelectedAip(nodeId, aipId, daoIds));
             case "sublevels":
-                return runAction(() => Api.aips.aipBulkCreateSublevels(target, [aipId], undefined, level?.daoId));
+                return runAction(() => Api.aips.aipBulkCreateSublevels(nodeId, [aipId], undefined, level?.daoId));
             case "structure":
-                return runAction(() => Api.aips.aipBulkImportDescription(target, [aipId],
+                return runAction(() => Api.aips.aipBulkImportDescription(nodeId, [aipId],
                     level == null && fileplanAsRoot, undefined, level?.daoId));
         }
     };
@@ -202,36 +224,34 @@ function AipIndividualAssignmentModal({ aipId, tree: initialTree }: Props) {
         : intl.formatMessage(m === "parts" || m === "newLevels" ? messages.needsParts : messages.needsLevel);
 
     return (
-        <Modal.Body className="aip-assignment-body">
-            <div className="aip-assignment-selection">
-                <Text weight="semibold">{aip?.code}</Text>
-                {aip?.contentType && <Text>{aip.contentType}</Text>}
-                {aip?.linkState && <Text>{intl.formatMessage(linkStateMessages[aip.linkState])}</Text>}
-                {fileCounts && fileCounts.linked > 0 && fileCounts.linked < fileCounts.count &&
-                    <Text>({intl.formatMessage(messages.linkedFiles, fileCounts)})</Text>}
-                <Text>{intl.formatMessage(messages.selected, { count: selected.length })}</Text>
+        <div className="aip-connect">
+            <div className="aip-connect-column">
+                <div className="aip-connect-header">
+                    <Label weight="semibold">{intl.formatMessage(messages.source)}</Label>
+                    <Switch checked={showFiles} label={intl.formatMessage(messages.showFiles)}
+                            onChange={(_, data) => toggleShowFiles(data.checked)} />
+                </div>
+                <div className="aip-connect-state">
+                    {aip?.linkState && <Text>{intl.formatMessage(linkStateMessages[aip.linkState])}</Text>}
+                    {fileCounts && fileCounts.linked > 0 && fileCounts.linked < fileCounts.count &&
+                        <Text>({intl.formatMessage(messages.linkedFiles, fileCounts)})</Text>}
+                    <Text>· {intl.formatMessage(messages.selected, { count: selected.length })}</Text>
+                </div>
+                <div className="aip-connect-scroll border">
+                    {structure && <AipPartTree structure={structure} selected={selected} onChange={setSelected}
+                                               showFiles={showFiles} />}
+                </div>
             </div>
-            <Row className="aip-assignment-trees">
-                <Col xs={6} className="d-flex flex-column">
-                    <div className="aip-assignment-tree-header">
-                        <Label weight="semibold">{intl.formatMessage(messages.source)}</Label>
-                        <Switch checked={showFiles} label={intl.formatMessage(messages.showFiles)}
-                                onChange={(_, data) => toggleShowFiles(data.checked)} />
-                    </div>
-                    <div className="border flex-grow-1 overflow-auto">
-                        {structure && <AipPartTree structure={structure} selected={selected} onChange={setSelected}
-                                                   showFiles={showFiles} />}
-                    </div>
-                </Col>
-                <Col xs={6} className="d-flex flex-column">
+            <div className="aip-connect-column">
+                <div className="aip-connect-header">
                     <Label weight="semibold">{intl.formatMessage(messages.target)}</Label>
-                    <div className="border flex-grow-1 overflow-auto">
-                        <FundTree tree={tree} expandedIds={tree.expandedIds} selectedNode={targetNodeId}
-                                  setSelectedNode={setTargetNodeId} />
-                    </div>
-                </Col>
-            </Row>
-            <div className="aip-assignment-mode">
+                </div>
+                <div className="aip-connect-tree">
+                    {fund && tree && <FundTreeDaos fund={fund} versionId={fund.versionId} area={FUND_TREE_AREA_AIP}
+                                                   {...tree} />}
+                </div>
+            </div>
+            <div className="aip-connect-column aip-connect-options">
                 <Label weight="semibold">{intl.formatMessage(messages.what)}</Label>
                 <RadioGroup value={effectiveMode} onChange={(_, data) => setMode(data.value as Mode)}>
                     <Radio value="whole" label={<ModeLabel text={intl.formatMessage(messages.modeWhole)}
@@ -240,7 +260,7 @@ function AipIndividualAssignmentModal({ aipId, tree: initialTree }: Props) {
                            label={<ModeLabel text={intl.formatMessage(messages.modeParts, { count: selected.length })}
                                              hint={hintFor("parts", intl.formatMessage(messages.modePartsHint))} />} />
                     {effectiveMode === "parts" && (
-                        <Checkbox className="aip-assignment-option" checked={withoutLower}
+                        <Checkbox className="aip-connect-option" checked={withoutLower}
                                   onChange={(_, data) => setWithoutLower(data.checked === true)}
                                   label={intl.formatMessage(messages.withoutLower)} />
                     )}
@@ -255,29 +275,29 @@ function AipIndividualAssignmentModal({ aipId, tree: initialTree }: Props) {
                                              hint={hintFor("structure", intl.formatMessage(messages.modeStructureHint))} />} />
                 </RadioGroup>
                 {effectiveMode === "structure" && level == null && (
-                    <Checkbox className="aip-assignment-option" checked={fileplanAsRoot}
+                    <Checkbox className="aip-connect-option" checked={fileplanAsRoot}
                               onChange={(_, data) => setFileplanAsRoot(data.checked === true)}
                               label={intl.formatMessage(messages.fileplanAsRoot)} />
                 )}
+                <div className="aip-connect-footer">
+                    <Text>{target ? `„${target.name}“` : intl.formatMessage(messages.noTarget)}</Text>
+                    <Button appearance="primary" disabled={!target} onClick={handleConnect}>
+                        {intl.formatMessage(messages.connect)}
+                    </Button>
+                </div>
             </div>
-            <div className="aip-assignment-footer">
-                <Text>„{targetName}“</Text>
-                <Button appearance="primary" disabled={targetNodeId == null} onClick={handleConnect}>
-                    {intl.formatMessage(messages.connect)}
-                </Button>
-            </div>
-        </Modal.Body>
+        </div>
     );
 }
 
 /** Název způsobu připojení a jednou větou, co udělá (nebo proč teď nejde). */
 function ModeLabel({ text, hint }: { text: string; hint: string }) {
     return (
-        <span className="aip-assignment-mode-label">
+        <span className="aip-connect-mode-label">
             <span>{text}</span>
             <Text size={200} className="hint">{hint}</Text>
         </span>
     );
 }
 
-export default AipIndividualAssignmentModal;
+export default AipConnectPanel;

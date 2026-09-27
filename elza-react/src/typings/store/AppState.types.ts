@@ -252,6 +252,7 @@ export interface Fund {
     fundTree: FundTree;
     fundTreeDaosLeft: unknown;
     fundTreeDaosRight: unknown;
+    fundTreeAip: unknown;
     fundTreeMovementsLeft: unknown;
     fundTreeMovementsRight: unknown;
     fundTreeNodes: unknown;
@@ -468,6 +469,7 @@ export interface ArrRegionFrontFund {
     fundTree: unknown;
     fundTreeDaosLeft: unknown;
     fundTreeDaosRight: unknown;
+    fundTreeAip: unknown;
     fundTreeMovementsLeft: unknown;
     fundTreeMovementsRight: unknown;
     nodes: unknown;

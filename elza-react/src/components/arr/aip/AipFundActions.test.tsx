@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
+import { Route } from 'react-router-dom';
 
-import { renderWithProviders, screen, createTestStore } from 'test/test-utils';
+import { renderWithProviders, screen, createTestStore, fireEvent } from 'test/test-utils';
 import { AipFundActions } from './AipFundActions';
 
 /**
@@ -24,7 +25,7 @@ const state = (shown: unknown[], selected: unknown[], openAipId?: number) => {
     };
 };
 
-const fund = { fundTree: { nodes: [{ id: 1, name: 'Fond' }] } };
+const fund = { id: 5, fundTree: { nodes: [{ id: 1, name: 'Fond' }] } };
 
 const button = (name: RegExp) => screen.getByRole('button', { name });
 
@@ -56,6 +57,17 @@ describe('AipFundActions', () => {
             { preloadedState: state([aip(1), aip(2)], [aip(2)]) });
 
         expect(button(/Připojit jednotlivě/)).not.toHaveAttribute('aria-disabled', 'true');
+    });
+
+    it('opens the connection in the explorer of the package', () => {
+        renderWithProviders(<>
+            <AipFundActions fund={fund} readMode={false} />
+            <Route path="*" render={({ location }) => <output>{location.pathname + location.search}</output>} />
+        </>, { preloadedState: state([aip(1), aip(2)], [aip(2)]) });
+
+        fireEvent.click(button(/Připojit jednotlivě/));
+
+        expect(screen.getByRole('status').textContent).toMatch(/\/5\/aip\/2\/explorer\?tab=connect$/);
     });
 
     it('connects individually the package open in the detail when nothing is selected', () => {
