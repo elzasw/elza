@@ -24,6 +24,7 @@ const messages = defineMessages({
         id: "arr.aip.parts.files",
         defaultMessage: "{count, plural, one {# soubor} few {# soubory} other {# souborů}}",
     },
+    linkedFiles: { id: "arr.aip.parts.linkedFiles", defaultMessage: "připojeno {count}" },
 });
 
 /** Druh části balíčku, kterou lze připojit. */
@@ -47,6 +48,11 @@ interface PartItem {
     size?: number;
     /** Počet souborů pod složkou; u souboru chybí. */
     fileCount?: number;
+    /** Kolik ze souborů pod složkou je připojeno (samo nebo s některou nadřízenou částí). */
+    linkedFileCount?: number;
+    /** Kam jsou soubory pod složkou připojeny. */
+    linkedFileNodes?: LinkedNodeVO[];
+    /** Kam je část připojena; u souboru i s nadřízenou částí, která ho zahrnuje. */
     linkedNodes: LinkedNodeVO[];
     branch: boolean;
     /** Otevřená při prvním zobrazení - úrovně logické struktury ano, reprezentace ne. */
@@ -72,6 +78,42 @@ function collectFiles(folder: ExplorerTreeNode, into = new Map<number, number>()
     return into;
 }
 
+/** Připojené uzly bez opakování - týž uzel může přijít z více míst. */
+const uniqueNodes = (nodes: LinkedNodeVO[]) =>
+    nodes.filter((n, i) => nodes.findIndex(o => o.nodeId === n.nodeId) === i);
+
+/**
+ * Připojené soubory balíčku a kam jsou připojeny. Soubor je připojený, je-li připojen sám nebo
+ * některá část, pod kterou leží - připojená úroveň nebo reprezentace zahrnuje vše pod sebou.
+ * Týž soubor leží v reprezentaci i v logické struktuře; připojení kterékoli cesty platí pro obě.
+ */
+export function linkedFiles(structure: ExplorerTreeNode): Map<number, LinkedNodeVO[]> {
+    const result = new Map<number, LinkedNodeVO[]>();
+    const walk = (folder: ExplorerTreeNode, inherited: LinkedNodeVO[]) => {
+        if (folder.levelType === AipLevelType.Metadata) {
+            return;
+        }
+        const links = [...inherited, ...(folder.linkedNodes ?? [])];
+        folder.childFiles?.forEach(file => {
+            const fileLinks = [...(result.get(file.daoId) ?? []), ...links, ...(file.linkedNodes ?? [])];
+            if (fileLinks.length > 0) {
+                result.set(file.daoId, uniqueNodes(fileLinks));
+            }
+        });
+        folder.childFolders?.forEach(child => walk(child, links));
+    };
+    walk(structure, []);
+    return result;
+}
+
+/** Soubory balíčku bez metadat, každý jednou. */
+export function packageFiles(structure: ExplorerTreeNode): Map<number, number> {
+    const files = new Map<number, number>();
+    structure.childFolders?.filter(s => s.levelType !== AipLevelType.Metadata).forEach(s => collectFiles(s, files));
+    structure.childFiles?.forEach(f => files.set(f.daoId, f.size ?? 0));
+    return files;
+}
+
 /**
  * Komponenta - úroveň logické struktury, která leží pod jinou úrovní a nese už jen soubory.
  * Rozpoznává se podle tvaru, ne podle typu úrovně: typy se liší podle profilu balíčku.
@@ -92,6 +134,7 @@ const isComponent = (folder: ExplorerTreeNode, depth: number) =>
 export function buildItems(structure: ExplorerTreeNode, nodeName: (node: never) => string,
                            showFiles: boolean): PartItem[] {
     const items: PartItem[] = [];
+    const linked = linkedFiles(structure);
 
     const add = (node: AnyNode, parentValue: string | undefined, kind: PartKind | undefined,
                  extra: Partial<PartItem>, key = node.uuid ?? node.daoId) => {
@@ -113,12 +156,23 @@ export function buildItems(structure: ExplorerTreeNode, nodeName: (node: never) 
     const summary = (folder: ExplorerTreeNode): Partial<PartItem> => {
         const files = collectFiles(folder);
         let size = 0;
-        files.forEach(s => size += s);
-        return files.size > 0 ? { fileCount: files.size, size } : {};
+        const nodes: LinkedNodeVO[] = [];
+        let linkedFileCount = 0;
+        files.forEach((s, daoId) => {
+            size += s;
+            const fileLinks = linked.get(daoId);
+            if (fileLinks) {
+                linkedFileCount++;
+                nodes.push(...fileLinks);
+            }
+        });
+        return files.size > 0
+            ? { fileCount: files.size, size, linkedFileCount, linkedFileNodes: uniqueNodes(nodes) }
+            : {};
     };
 
     const addFile = (file: ExplorerTreeNodeFile, parentValue: string) =>
-        add(file, parentValue, "file", { size: file.size });
+        add(file, parentValue, "file", { size: file.size, linkedNodes: linked.get(file.daoId) ?? [] });
 
     const walkFolder = (folder: ExplorerTreeNode, parent: PartItem, section: AipLevelType, depth: number) => {
         const logical = section === AipLevelType.LogicalStructure;
@@ -130,8 +184,7 @@ export function buildItems(structure: ExplorerTreeNode, nodeName: (node: never) 
             if (only) {
                 // komponenta a její soubor jako jeden řádek; značka připojení platí pro obojí
                 parent.branch = true;
-                const row = addFile(only, parent.value);
-                row.linkedNodes = [...(folder.linkedNodes ?? []), ...(only.linkedNodes ?? [])];
+                addFile(only, parent.value);
                 return;
             }
         }
@@ -203,6 +256,7 @@ export function AipPartTree({ structure, selected, onChange, showFiles }: Props)
                 const item = byValue.get(flatItem.value as string)!;
                 const treeItemProps = flatItem.getTreeItemProps();
                 const linkedTo = item.linkedNodes.map(n => n.name).join(", ");
+                const filesLinkedTo = (item.linkedFileNodes ?? []).map(n => n.name).join(", ");
                 const sizeText = item.fileCount != null
                     ? `${intl.formatMessage(messages.files, { count: item.fileCount })} · ${formatAipSize(item.size ?? 0)}`
                     : item.size != null ? formatAipSize(item.size) : undefined;
@@ -215,6 +269,13 @@ export function AipPartTree({ structure, selected, onChange, showFiles }: Props)
 
                             aside={<>
                                 {sizeText && <Text size={200} className="size">{sizeText}</Text>}
+                                {!item.linkedNodes.length && (item.linkedFileCount ?? 0) > 0 &&
+                                    <Tooltip content={intl.formatMessage(messages.linkedTo, { nodes: filesLinkedTo })}
+                                             relationship="description">
+                                        <Text size={200} className="linked-files">
+                                            {intl.formatMessage(messages.linkedFiles, { count: item.linkedFileCount })}
+                                        </Text>
+                                    </Tooltip>}
                                 {item.linkedNodes.length > 0 &&
                                     <Tooltip content={intl.formatMessage(messages.linkedTo, { nodes: linkedTo })}
                                              relationship="description">

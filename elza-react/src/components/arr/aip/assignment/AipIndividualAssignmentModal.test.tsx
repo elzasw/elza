@@ -166,6 +166,33 @@ describe('AipIndividualAssignmentModal', () => {
         expect(webApi.connectAipPartToJp).toHaveBeenCalledWith(10, 5, [101]);
     });
 
+    it('tells which files are already connected, also through a higher part', async () => {
+        const other: FileNode = { uuid: 'f2', daoId: 102, filename: 'other.pdf', label: 'other.pdf', size: 1024, linkedNodes: [] };
+        const reps = structure.childFolders[0];
+        const rep = reps.childFolders[0];
+        const partial: FolderNode = {
+            ...structure,
+            childFolders: [
+                { ...reps, childFolders: [{ ...rep, childFolders: [{ ...rep.childFolders[0], childFiles: [file, other] }] }] },
+                ...structure.childFolders.slice(1),
+            ],
+        };
+        const base = state();
+        renderWithProviders(<AipIndividualAssignmentModal aipId={5} tree={fundTree} />, {
+            preloadedState: { ...base, app: { ...base.app, aipStructure: { ...base.app.aipStructure, data: partial } } },
+        });
+        await act(async () => { await Promise.resolve(); });
+
+        // test.docx is connected with its level "Organizace", other.pdf is not
+        expect(screen.getByText('(připojeno 1 z 2 souborů)')).toBeInTheDocument();
+        expandRepresentations();
+        expect(screen.getByText('připojeno 1')).toBeInTheDocument();
+
+        showFiles();
+        // the level itself and its file, connected with it
+        expect(screen.getAllByLabelText('Připojeno k: Balíčky test').length).toBe(2);
+    });
+
     it('links the whole package', async () => {
         await render();
 

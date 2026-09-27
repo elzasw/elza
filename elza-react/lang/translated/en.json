@@ -3361,6 +3361,10 @@
     "defaultMessage": "{count, plural, one {# file} other {# files}}",
     "srcHash": "Kh_ocu4Is_VP"
   },
+  "arr.aip.parts.linkedFiles": {
+    "defaultMessage": "{count} connected",
+    "srcHash": "VDQv_1JCuimS"
+  },
   "arr.aip.parts.linkedTo": {
     "defaultMessage": "Connected to: {nodes}",
     "srcHash": "JhggxWUJDck9"
@@ -3372,6 +3376,10 @@
   "arr.aip.single.connected": {
     "defaultMessage": "Connected",
     "srcHash": "YFN9pQfS-Fvk"
+  },
+  "arr.aip.single.linkedFiles": {
+    "defaultMessage": "{linked} of {count, plural, one {# file} other {# files}} connected",
+    "srcHash": "LdPIt3yWCCta"
   },
   "arr.aip.single.mode.newLevels": {
     "defaultMessage": "Selected parts, each into a new unit",
