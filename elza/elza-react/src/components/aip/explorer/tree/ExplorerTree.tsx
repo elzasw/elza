@@ -19,6 +19,7 @@ import { findNodeByUUID } from "../utils";
 import { levelIcon, useNodeName } from "../levels";
 import { useIntl } from "react-intl";
 import { explorerMessages } from "../../messages";
+import TreeLabel from "./TreeLabel";
 
 
 const AipTree: FC<{onSelect?: (node: ExplorerNode) => void}> = ({onSelect}) => {
@@ -121,7 +122,7 @@ const AipTree: FC<{onSelect?: (node: ExplorerNode) => void}> = ({onSelect}) => {
                     }
                     iconBefore={levelIcon(structure.levelType)}
                 >
-                    {nodeName(structure)}
+                    <TreeLabel text={nodeName(structure)}/>
                 </TreeItemLayout>
                 <Tree>{sections}</Tree>
             </TreeItem>
