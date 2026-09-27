@@ -3,4 +3,18 @@
 .explorer-tree {
     max-height: 80vh;
     overflow: auto;
+
+    /* one line per node - the explorer otherwise breaks long words; the whole name is in the tooltip */
+    .fui-TreeItemLayout__main {
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    .explorer-tree-label {
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        word-wrap: normal;
+    }
 }

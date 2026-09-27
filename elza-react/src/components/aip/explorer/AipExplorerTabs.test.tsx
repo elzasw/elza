@@ -124,6 +124,14 @@ describe('AipExplorerTabs', () => {
         expect(screen.queryByRole('treeitem', {name: /Balíček/})).toBeNull();
     });
 
+    it('název úrovně je na jednom řádku a celý v nápovědě', async () => {
+        renderWithProviders(<AipExplorerTabs aipId={11}/>);
+
+        fireEvent.click(await screen.findByRole('tab', {name: 'Struktura'}));
+
+        expect(await screen.findByTitle('Logická struktura')).toHaveClass('explorer-tree-label');
+    });
+
     it('úroveň bez typu se pojmenuje popiskem ze serveru', async () => {
         // starší server typy úrovní neposílá - strom pak stojí jen na popisku
         vi.spyOn(WebApi, 'getDaDaoListByAipId').mockResolvedValue(
