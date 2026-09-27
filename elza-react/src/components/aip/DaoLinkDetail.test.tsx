@@ -41,6 +41,19 @@ describe('DaoLinkDetail', () => {
         expect(screen.queryByTitle('Odstranit')).toBeNull();
     });
 
+    it('název otevře průzkumník balíčku ve fondu s napojenou částí vybranou - jako odkaz, ne dialog', () => {
+        renderWithProviders(<DaoLinkDetail nodeId={234324} readOnly />, {
+            preloadedState: {
+                ...stateWith([link({ daoCode: 'c0ffee00-0000-0000-0000-000000000002' })]),
+                arrRegion: { activeIndex: 0, funds: [{ id: 2062 }] },
+            },
+        });
+
+        const name = screen.getByRole('link', { name: 'dokument:test digitálního dokumentu' });
+        expect(name.getAttribute('href'))
+            .toMatch(/\/2062\/aip\/11\/explorer\?tab=structure&select=c0ffee00-0000-0000-0000-000000000002$/);
+    });
+
     it('v režimu úprav lze napojení odpojit', () => {
         renderWithProviders(<DaoLinkDetail nodeId={234324} />,
             { preloadedState: stateWith([link()]) });

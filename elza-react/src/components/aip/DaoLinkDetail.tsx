@@ -6,6 +6,7 @@ import { AppState } from "typings/store";
 import { useEffect, useState } from "react";
 import { useThunkDispatch } from "../../utils/hooks";
 import { Button } from "react-bootstrap";
+import { Link } from "react-router-dom";
 import { Icon } from "../shared";
 import { FormattedMessage, defineMessages, useIntl } from "react-intl";
 import { globalMessages } from "components/shared/lang";
@@ -17,15 +18,14 @@ const messages = defineMessages({
 });
 import { Api } from "../../api";
 import { modalDialogHide, modalDialogShow } from "../../actions/global/modalDialog";
-import AipExplorerModalWrapper from "./explorer/AipExplorerWrapper.tsx";
-import { ExplorerMode } from "./explorer/ExplorerContext.tsx";
-import * as aipActions from "../../actions/aip/aip.ts";
+import { getFundVersion, urlAipExplorer, urlFundAipExplorer } from "../../constants";
+import type { Fund } from "typings/store";
 import { daoTypeMessages, levelMessages } from "./messages";
 import { AipLevelType, DaDaoType, DaoLink, DaoViewRequestVO } from "elza-api";
 import CrossTabHelper, { CrossTabEventType, getThisLayout } from "../CrossTabHelper";
 import { WebApi } from "../../actions";
 import ConfirmForm from "../shared/form/ConfirmForm";
-import { daoLinkMessages, explorerMessages } from "./messages";
+import { daoLinkMessages } from "./messages";
 
 /** Kolik napojení se vypíše, než se zbytek schová za "a N dalších…". */
 const MAX_VISIBLE_LINKS = 5;
@@ -46,6 +46,8 @@ const DaoLinkDetail = ({nodeId, readOnly = false}: DaoLinkDetailProps) => {
     const [collapsed, setCollapsed] = useState<boolean>(false);
     const [openItems, setOpenItems] = useState<string[]>([]);
     const [showAllMainLinks, setShowAllMainLinks] = useState<boolean>();
+    const fund = useSelector((state: AppState) =>
+        state.arrRegion?.funds?.[state.arrRegion.activeIndex ?? -1]) as Fund | undefined;
 
     useEffect(() => {
         dispatch(daoLinksFetchIfNeeded(nodeId, true));
@@ -73,22 +75,13 @@ const DaoLinkDetail = ({nodeId, readOnly = false}: DaoLinkDetailProps) => {
         dispatch(modalDialogShow(this, null, confirmForm));
     }
 
-    const handleOpenExplorer = (aipId: number, daoCode?: string) => {
-        dispatch(aipActions.selectAip(aipId));
-        dispatch(
-            modalDialogShow(
-                this,
-                intl.formatMessage(explorerMessages.title),
-                <AipExplorerModalWrapper
-                    //@ts-ignore
-                    onOk={() => dispatch(modalDialogHide())}
-                    mode={ExplorerMode.VIEW}
-                    selected={daoCode}
-                />,
-                "aip-explorer"
-            ),
-        );
-    }
+    /**
+     * Průzkumník balíčku jako stránka archivního souboru, na kartě struktury s napojenou částí
+     * vybranou. Je to odkaz, takže jde otevřít i v nové záložce prohlížeče.
+     */
+    const explorerUrl = (aipId: number, daoCode?: string) => fund
+        ? urlFundAipExplorer(fund.id, aipId, getFundVersion(fund), "structure", daoCode)
+        : urlAipExplorer(aipId);
 
     const handleOpenChange = (value: string, close: boolean) => {
         setOpenItems(prev => close ? prev.filter(item => item !== value)
@@ -136,11 +129,10 @@ const DaoLinkDetail = ({nodeId, readOnly = false}: DaoLinkDetailProps) => {
         return (
             <div className="dao-link">
                 <span className="dao-link-label" title={label}>{label}</span>
-                <Button variant="link" className="dao-link-name"
-                        title={intl.formatMessage(daoLinkMessages.openInExplorer)}
-                        onClick={() => handleOpenExplorer(item.aipId, item.daoCode)}>
+                <Link className="btn btn-link dao-link-name" to={explorerUrl(item.aipId, item.daoCode)}
+                      title={intl.formatMessage(daoLinkMessages.openInExplorer)}>
                     {item.name}
-                </Button>
+                </Link>
                 {hasChildren &&
                     <span className="dao-link-count">
                         <FormattedMessage {...daoLinkMessages.components}
@@ -185,9 +177,9 @@ const DaoLinkDetail = ({nodeId, readOnly = false}: DaoLinkDetailProps) => {
             {item.children.map(child => renderLinkTree(child, false))}
             {item.children.length < item.childrenCount &&
                 <div className="dao-link-more">
-                    <Button variant="link" onClick={() => handleOpenExplorer(item.aipId)}>
+                    <Link className="btn btn-link" to={explorerUrl(item.aipId, item.daoCode)}>
                         <FormattedMessage {...daoLinkMessages.showInExplorer} />
-                    </Button>
+                    </Link>
                 </div>}
         </div>
     );

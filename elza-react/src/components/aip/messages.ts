@@ -93,7 +93,6 @@ export const listMessages = defineMessages({
  */
 export const explorerMessages = defineMessages({
     treeLabel:       { id: "aip.explorer.tree.label",       defaultMessage: "Průzkumník" },
-    title:           { id: "aip.explorer.title",            defaultMessage: "AIP Průzkumník" },
     colName:         { id: "aip.explorer.col.name",         defaultMessage: "Název" },
     colSize:         { id: "aip.explorer.col.size",         defaultMessage: "Velikost" },
     colFormat:       { id: "aip.explorer.col.format",       defaultMessage: "Formát" },

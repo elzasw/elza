@@ -4,6 +4,7 @@ import { AipDetailVO, AipLevelType, AipProblemType } from 'elza-api';
 import { WebApi } from 'actions/WebApi';
 import { DaoFileFolderVO } from 'api/DaoFileFolderVO';
 import { fireEvent, renderWithProviders, screen } from 'test/test-utils';
+import { Route } from 'react-router-dom';
 import { AipExplorerTabs } from './AipExplorerTabs';
 
 /**
@@ -57,16 +58,40 @@ beforeEach(() => {
 
 describe('AipExplorerTabs', () => {
     it('nabídne připojení k popisu jen v archivním souboru, do kterého lze zapisovat', async () => {
-        const {rerender} = renderWithProviders(<AipExplorerTabs aipId={11} initialTab="connect"/>);
+        const {rerender} = renderWithProviders(<AipExplorerTabs aipId={11}/>, {route: '/aip/11/explorer?tab=connect'});
 
         // not connectable (e.g. the fund is still loading): the package is shown instead
         expect(screen.queryByRole('tab', {name: 'Připojení k popisu'})).toBeNull();
         expect(screen.getByRole('tab', {name: 'Balíček'})).toHaveAttribute('aria-selected', 'true');
 
-        rerender(<AipExplorerTabs aipId={11} initialTab="connect" connectable/>);
+        rerender(<AipExplorerTabs aipId={11} connectable/>);
 
         expect(screen.getByRole('tab', {name: 'Připojení k popisu'})).toHaveAttribute('aria-selected', 'true');
         expect(await screen.findByTestId('connect-panel')).toHaveTextContent('11');
+    });
+
+    it('otevřená karta a vybraná část jsou v adrese - na vnitřek balíčku lze odkázat', async () => {
+        renderWithProviders(<>
+            <AipExplorerTabs aipId={11}/>
+            <Route path="*" render={({location}) => <output>{location.search}</output>}/>
+        </>, {route: '/aip/11/explorer'});
+
+        fireEvent.click(await screen.findByRole('tab', {name: 'Struktura'}));
+        expect(screen.getByRole('status')).toHaveTextContent('?tab=structure');
+
+        fireEvent.click(await screen.findByRole('treeitem', {name: /Logická struktura/}));
+        expect(screen.getByRole('status')).toHaveTextContent('?tab=structure&select=log');
+    });
+
+    it('adresa s vybranou částí ji otevře a nepřepíše ji kořenem', async () => {
+        renderWithProviders(<>
+            <AipExplorerTabs aipId={11}/>
+            <Route path="*" render={({location}) => <output>{location.search}</output>}/>
+        </>, {route: '/aip/11/explorer?tab=structure&select=log'});
+
+        expect(await screen.findByRole('treeitem', {name: /Logická struktura/})).toBeInTheDocument();
+        expect(screen.getByRole('tab', {name: 'Struktura'})).toHaveAttribute('aria-selected', 'true');
+        expect(screen.getByRole('status')).toHaveTextContent('?tab=structure&select=log');
     });
 
     it('otevře se na balíčku, záložky jsou Balíček, Struktura a Soubory', async () => {
