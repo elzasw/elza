@@ -144,6 +144,12 @@ public class DaImportService {
                                         ArrangementCode.DAO_ALREADY_LINKED);
         }
         return withPackage(aip, node, fileplanAsRoot, (pkg, ruleSetId) -> {
+                    // levels only (without items) need no rules; the description does
+                    if (!firstLevelOnly && !planner.canImport(ruleSetId)) {
+                        throw new BusinessException("Pravidla archivního souboru (" + planner.ruleSetLabel(ruleSetId)
+                                + ") převzetí popisu z balíčku nepodporují - chybí v nich pravidlo DA_IMPORT.",
+                                BaseCode.INVALID_STATE);
+                    }
                     Optional<DaImportPlan> plan = startUuid == null
                             ? planner.plan(pkg.mets(), pkg.ead(), pkg.eadHref(), ruleSetId, pkg.importPackage())
                             : planner.planBelow(pkg.mets(), pkg.ead(), pkg.eadHref(), ruleSetId, pkg.importPackage(),
@@ -155,8 +161,9 @@ public class DaImportService {
                     return firstLevelOnly ? plan.map(DaImportPlan::firstLevel) : plan;
                 })
                 .map(plan -> builder.build(aip, node, plan))
-                .orElseThrow(() -> new BusinessException("Pravidla archivního souboru převzetí popisu z balíčku neumožňují.",
-                                                         BaseCode.INVALID_STATE));
+                // with rules, only the start div can be missing: the part is not in the logical structural map
+                .orElseThrow(() -> new BusinessException("Vybraná úroveň (" + startUuid + ") v logické struktuře METS balíčku "
+                                                         + aip.getCode() + " není.", BaseCode.INVALID_STATE));
     }
 
     /** UUID of the div of the package that stands for the level (level view). */
