@@ -23,6 +23,8 @@ import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.RulArrangementRule;
+import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.service.GroovyScriptService;
@@ -152,6 +154,23 @@ public class DaImportPlanner {
     }
 
     @Nullable
+    /** Whether the rule set can import packages at all - it has a DA_IMPORT script. */
+    public boolean canImport(Integer ruleSetId) {
+        return !staticDataService.getData().getRuleSetById(ruleSetId)
+                .getRulesByType(RulArrangementRule.RuleType.DA_IMPORT).isEmpty();
+    }
+
+    /**
+     * The rule set and the rules package it comes from, e.g. "ZP2015, balíček ZP2015 verze 347" -
+     * for messages; an old package is the usual reason why a rule is missing.
+     */
+    public String ruleSetLabel(Integer ruleSetId) {
+        RulRuleSet ruleSet = staticDataService.getData().getRuleSetById(ruleSetId).getEntity();
+        RulPackage rulPackage = ruleSet.getPackage();
+        return rulPackage == null ? ruleSet.getCode()
+                : ruleSet.getCode() + ", balíček " + rulPackage.getCode() + " verze " + rulPackage.getVersion();
+    }
+
     private String findScript(RuleSet ruleSet) {
         List<RulArrangementRule> rules = ruleSet.getRulesByType(RulArrangementRule.RuleType.DA_IMPORT);
         if (rules.isEmpty()) {

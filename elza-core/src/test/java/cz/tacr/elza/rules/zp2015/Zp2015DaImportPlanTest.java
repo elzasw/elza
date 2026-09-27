@@ -106,6 +106,14 @@ public class Zp2015DaImportPlanTest {
     }
 
     @Test
+    void rulesThatCanImport_areNamedWithTheirPackageVersion() {
+        assertTrue(planner.canImport(ruleSetId));
+        // an old rules package is the usual reason the rule is missing - the message names it
+        String label = planner.ruleSetLabel(ruleSetId);
+        assertTrue(label.startsWith("ZP2015, balíček ZP2015 verze "), label);
+    }
+
+    @Test
     void fileplanIsSkipped_groupsBelowItTakeItsPlace() {
         DaImportPlan plan = plan(false);
 
