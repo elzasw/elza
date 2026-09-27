@@ -320,17 +320,18 @@ public class DaImportBuilder {
         }
 
         void finish() {
+            // flushing the context already queues validation of every node that got items - created
+            // and enriched alike - with the items themselves; queuing the enriched nodes once more
+            // only made two validations of one node collide on arr_node_conformity
             changeContext.flush();
+            // a new level may change the state of its neighbours (as the rules decide) - that is
+            // what the flush does not cover
             if (!created.isEmpty()) {
                 ruleService.conformityInfo(version.getFundVersionId(), created, NodeTypeOperation.CREATE_NODE,
                                            null, null, null);
             }
-            if (!enriched.isEmpty()) {
-                ruleService.conformityInfo(version.getFundVersionId(), enriched, NodeTypeOperation.SAVE_DESC_ITEM,
-                                           null, null, null);
-            }
-            logger.info("Import AIP {}: vytvořeno úrovní {}, nalezeno existujících {}, připojeno příloh {}, rozporů {}",
-                        aip.getCode(), created.size(), matched, attached, conflicts.size());
+            logger.info("Import AIP {}: vytvořeno úrovní {}, nalezeno existujících {} (doplněno {}), připojeno příloh {}, rozporů {}",
+                        aip.getCode(), created.size(), matched, enriched.size(), attached, conflicts.size());
         }
     }
 
