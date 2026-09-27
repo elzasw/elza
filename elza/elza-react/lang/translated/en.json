@@ -2133,6 +2133,10 @@
     "defaultMessage": "Select all",
     "srcHash": "tzdoYdlGzv8D"
   },
+  "aip.explorer.tab.connect": {
+    "defaultMessage": "Connect to description",
+    "srcHash": "TBMX7pEzsvq5"
+  },
   "aip.explorer.tab.files": {
     "defaultMessage": "Files",
     "srcHash": "nTEkFmNPvJ6o"
@@ -3293,10 +3297,6 @@
     "defaultMessage": "Link individually",
     "srcHash": "5747DsAcQWRE"
   },
-  "arr.aip.assignment.individually.title": {
-    "defaultMessage": "Linking a package to the archival description",
-    "srcHash": "Vb22Cg92eMNb"
-  },
   "arr.aip.assignment.mode.level": {
     "defaultMessage": "The selected level “{level}”",
     "srcHash": "UdAc4MSQKixk"
@@ -3412,6 +3412,10 @@
   "arr.aip.single.needsParts": {
     "defaultMessage": "Select one or more parts in the package structure.",
     "srcHash": "LM-Fe6zaxVKJ"
+  },
+  "arr.aip.single.noTarget": {
+    "defaultMessage": "Select the unit of description in the tree to connect to.",
+    "srcHash": "78WgTenaMaUQ"
   },
   "arr.aip.single.selected": {
     "defaultMessage": "{count, plural, =0 {nothing selected} one {# part selected} other {# parts selected}}",

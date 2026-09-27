@@ -10,24 +10,32 @@ import AipExplorer from './AipExplorer';
 import { AipOverview } from './AipOverview';
 import { ExplorerMode } from './ExplorerContext';
 import PackageBrowser from './PackageBrowser';
+import AipConnectPanel from 'components/arr/aip/assignment/AipConnectPanel';
 import { detailMessages, explorerPageMessages } from '../messages';
 import './AipExplorerTabs.scss';
 
+export type TabKey = 'package' | 'structure' | 'files' | 'connect';
+
 interface Props {
     aipId: number;
+    /** Nabídnout kartu připojení k popisu - jen v archivním souboru, do kterého uživatel smí zapisovat. */
+    connectable?: boolean;
+    /** Karta otevřená při zobrazení; karta připojení jen když ji lze nabídnout. */
+    initialTab?: TabKey;
 }
-
-type TabKey = 'package' | 'structure' | 'files';
 
 /**
  * The AIP explorer: the package as a whole first, then the structure ELZA made of it
  * (representations, logical structure, metadata), then the files as they arrived from the
  * digital archive - the last one works even when processing failed, which is when it is needed.
+ * Inside a fund the user may also connect the package, or its parts, to the archival description.
  */
-export function AipExplorerTabs({aipId}: Props) {
+export function AipExplorerTabs({aipId, connectable = false, initialTab = 'package'}: Props) {
     const dispatch = useThunkDispatch();
     const aip = useAppSelector((state: AppState) => storeFromArea(state, AREA_AIP));
-    const [tab, setTab] = useState<TabKey>('package');
+    const [chosenTab, setTab] = useState<TabKey>(initialTab);
+    // the fund is reported closed while it loads, so the connect tab may become available later
+    const tab: TabKey = chosenTab === 'connect' && !connectable ? 'package' : chosenTab;
     const [fileToOpen, setFileToOpen] = useState<string | undefined>();
 
     useEffect(() => {
@@ -50,6 +58,7 @@ export function AipExplorerTabs({aipId}: Props) {
                 <Tab value="package"><FormattedMessage {...explorerPageMessages.packageTab}/></Tab>
                 <Tab value="structure"><FormattedMessage {...explorerPageMessages.structureTab}/></Tab>
                 <Tab value="files"><FormattedMessage {...explorerPageMessages.filesTab}/></Tab>
+                {connectable && <Tab value="connect"><FormattedMessage {...explorerPageMessages.connectTab}/></Tab>}
             </TabList>
             <div className="aip-explorer-tabs-panel">
                 {tab === 'package' && (aip.data
@@ -61,6 +70,7 @@ export function AipExplorerTabs({aipId}: Props) {
                                                     problemDescription={aip.data?.problemDescription}
                                                     problemFile={aip.data?.problemFile}
                                                     selectPath={fileToOpen}/>}
+                {tab === 'connect' && <AipConnectPanel aipId={aipId}/>}
             </div>
         </div>
     );

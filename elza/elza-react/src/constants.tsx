@@ -280,8 +280,9 @@ export const urlFundAb = (fundId: number, versionId?: number, aipId?: number) =>
     return fundSub(fundId, versionId, AIP, aipId);
 }
 
-export const urlFundAipExplorer = (fundId: number, aipId: number, versionId?: number) => {
-    return `${fundSub(fundId, versionId, AIP)}/${aipId}/explorer`;
+/** Průzkumník balíčku ve fondu; s tab rovnou na dané kartě (např. "connect" - připojení k popisu). */
+export const urlFundAipExplorer = (fundId: number, aipId: number, versionId?: number, tab?: string) => {
+    return `${fundSub(fundId, versionId, AIP)}/${aipId}/explorer${tab ? "?tab=" + tab : ""}`;
 }
 
 export const urlFundPublication = (fundId: number, versionId?: number) => {

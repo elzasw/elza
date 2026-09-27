@@ -216,6 +216,7 @@ function changeCurrentIndex(dispatch, area, fund, versionId, fundTree, newIndex)
                 dispatch(fundTreeSelectNode(area, versionId, nodeId, false, false, newIndex, true));
                 break;
             case types.FUND_TREE_AREA_DAOS_RIGHT:
+            case types.FUND_TREE_AREA_AIP:
                 dispatch(fundTreeSelectNode(area, versionId, nodeId, false, false, newIndex, true));
                 break;
             default:
@@ -485,6 +486,8 @@ function getFundTree(fund, area) {
             return fund.fundTreeDaosLeft;
         case types.FUND_TREE_AREA_DAOS_RIGHT:
             return fund.fundTreeDaosRight;
+        case types.FUND_TREE_AREA_AIP:
+            return fund.fundTreeAip;
         default:
             break;
     }

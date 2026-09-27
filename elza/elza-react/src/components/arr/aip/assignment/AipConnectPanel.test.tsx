@@ -2,10 +2,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AipLevelType, AipLinkState, LinkedNodeVO } from 'elza-api';
 
 import { renderWithProviders, screen, fireEvent, createTestStore, act } from 'test/test-utils';
-import AipIndividualAssignmentModal from './AipIndividualAssignmentModal';
+import AipConnectPanel from './AipConnectPanel';
 
 /**
- * Připojení jednoho balíčku: ve struktuře balíčku lze vybrat skutečné části (úrovně,
+ * Připojení jednoho balíčku (karta průzkumníku): ve struktuře balíčku lze vybrat skutečné části (úrovně,
  * reprezentace, soubory), metadata se nenabízejí, a zvolený způsob připojení vede na
  * odpovídající volání. Způsoby, které výběr nedovoluje, jsou nedostupné.
  */
@@ -25,10 +25,20 @@ vi.mock('../../../../api', () => ({ Api: { aips: api } }));
 vi.mock('../../../../actions', () => ({ WebApi: webApi }));
 
 vi.mock('../../../aip/AipActionRunner', () => ({
-    runAipAction: (_d: unknown, _i: unknown, _w: unknown, _t: unknown, request: () => unknown) => request(),
+    runAipAction: async (_d: unknown, _i: unknown, _w: unknown, _t: unknown, request: () => unknown, onDone?: () => void) => {
+        await request();
+        onDone?.();
+    },
 }));
 
 vi.mock('components/shared/web-socket/WebsocketProvider', () => ({ useWebsocket: () => ({}) }));
+
+// the fund tree is the legacy lazy tree; the panel only reads its selection from the store
+vi.mock('../../FundTreeDaos', () => ({ default: (): null => null }));
+
+const treeActions = vi.hoisted(() => ({ fundTreeNodeExpand: vi.fn(), fundTreeSelectNode: vi.fn() }));
+vi.mock('actions/arr/fundTree', async (importOriginal) =>
+    ({ ...await importOriginal<typeof import('actions/arr/fundTree')>(), ...treeActions }));
 
 vi.mock('actions/aip/aip', async (importOriginal) => {
     const actual = await importOriginal<typeof import('actions/aip/aip')>();
@@ -77,12 +87,17 @@ const structure: FolderNode = {
     ],
 };
 
-const fundTree = { nodes: [{ id: 10, name: 'Balíčky test' }] };
+const fundNodes = [{ id: 10, name: 'Balíčky test' }];
 
-const state = () => {
-    const base = createTestStore().getState() as { app: Record<string, object> };
+/** Stav s balíčkem, jeho strukturou a stromem archivního souboru; selectedId = cíl připojení. */
+const state = (selectedId: number | null = 10) => {
+    const base = createTestStore().getState() as { app: Record<string, object>; arrRegion: object };
     return {
         ...base,
+        arrRegion: {
+            ...base.arrRegion, activeIndex: 0,
+            funds: [{ id: 1, versionId: 3, fundTreeAip: { nodes: fundNodes, selectedId, expandedIds: {} } }],
+        },
         app: {
             ...base.app,
             aip: { ...base.app.aip, id: 5, fetched: true,
@@ -92,8 +107,8 @@ const state = () => {
     };
 };
 
-const render = async () => {
-    renderWithProviders(<AipIndividualAssignmentModal aipId={5} tree={fundTree} />, { preloadedState: state() });
+const render = async (selectedId: number | null = 10) => {
+    renderWithProviders(<AipConnectPanel aipId={5} />, { preloadedState: state(selectedId) });
     await act(async () => { await Promise.resolve(); });
 };
 
@@ -108,16 +123,16 @@ const connect = async () => {
     await act(async () => { await Promise.resolve(); });
 };
 
-describe('AipIndividualAssignmentModal', () => {
+describe('AipConnectPanel', () => {
     beforeEach(() => {
-        [...Object.values(api), ...Object.values(webApi)].forEach(fn => fn.mockReset());
+        [...Object.values(api), ...Object.values(webApi), ...Object.values(treeActions)].forEach(fn => fn.mockReset());
+        Object.values(treeActions).forEach(fn => fn.mockReturnValue({ type: 'test/noop' }));
         Object.values(webApi).forEach(fn => fn.mockResolvedValue(undefined));
     });
 
     it('shows levels and representations with a file summary, files only on request', async () => {
         await render();
 
-        expect(screen.getByText('aip-5')).toBeInTheDocument();
         expect(screen.queryByRole('checkbox', { name: 'submission' })).toBeNull();
         expandRepresentations();
         expect(screen.getByRole('checkbox', { name: 'submission' })).toBeInTheDocument();
@@ -137,11 +152,11 @@ describe('AipIndividualAssignmentModal', () => {
         showFiles();
         check('test.docx');
         check('Organizace');
-        expect(screen.getByText('vybrány 2 části')).toBeInTheDocument();
+        expect(screen.getByText(/vybrány 2 části/)).toBeInTheDocument();
 
         showFiles();
 
-        expect(screen.getByText('vybrána 1 část')).toBeInTheDocument();
+        expect(screen.getByText(/vybrána 1 část/)).toBeInTheDocument();
     });
 
     it('shows a component holding one file as that file', async () => {
@@ -150,7 +165,7 @@ describe('AipIndividualAssignmentModal', () => {
         const logical: FolderNode = { ...structure.childFolders[1], childFolders: [{ ...structure.childFolders[1].childFolders[0], childFiles: [], childFolders: [doc] }] };
         const withComponent = { ...structure, childFolders: [structure.childFolders[0], logical] };
         const base = state();
-        renderWithProviders(<AipIndividualAssignmentModal aipId={5} tree={fundTree} />, {
+        renderWithProviders(<AipConnectPanel aipId={5} />, {
             preloadedState: { ...base, app: { ...base.app, aipStructure: { ...base.app.aipStructure, data: withComponent } } },
         });
         await act(async () => { await Promise.resolve(); });
@@ -178,7 +193,7 @@ describe('AipIndividualAssignmentModal', () => {
             ],
         };
         const base = state();
-        renderWithProviders(<AipIndividualAssignmentModal aipId={5} tree={fundTree} />, {
+        renderWithProviders(<AipConnectPanel aipId={5} />, {
             preloadedState: { ...base, app: { ...base.app, aipStructure: { ...base.app.aipStructure, data: partial } } },
         });
         await act(async () => { await Promise.resolve(); });
@@ -191,6 +206,23 @@ describe('AipIndividualAssignmentModal', () => {
         showFiles();
         // the level itself and its file, connected with it
         expect(screen.getAllByLabelText('Připojeno k: Balíčky test').length).toBe(2);
+    });
+
+    it('asks for a target before connecting', async () => {
+        await render(null);
+
+        expect(screen.getByText('Vyberte ve stromu jednotku popisu, ke které se připojí.')).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Připojit' })).toBeDisabled();
+    });
+
+    it('opens the target after creating levels under it, so the new ones are seen', async () => {
+        await render();
+        check('Organizace');
+        choose(/Úrovně pod vybranou úrovní/);
+
+        await connect();
+
+        expect(treeActions.fundTreeNodeExpand).toHaveBeenCalledWith('FUND_TREE_AREA_AIP', fundNodes[0]);
     });
 
     it('links the whole package', async () => {
@@ -237,6 +269,8 @@ describe('AipIndividualAssignmentModal', () => {
         await connect();
         expect(api.aipBulkCreateSublevels).toHaveBeenCalledWith(10, [5], undefined, 200);
 
+        // the selection is cleared after an action
+        check('Organizace');
         choose(/Převzít strukturu a popis/);
         await connect();
         expect(api.aipBulkImportDescription).toHaveBeenCalledWith(10, [5], false, undefined, 200);

@@ -49,6 +49,7 @@ export function fundInitState(fundWithVersion) {
         moving: false,
         fundTreeDaosLeft: fundTree(),
         fundTreeDaosRight: fundTree(),
+        fundTreeAip: fundTree(),
         fundTreeNodes: fundTree(undefined, {type: ''}),
         nodes: nodes(undefined, {type: ''}),
         fundNodesPolicy: fundNodesPolicy(),
@@ -103,6 +104,9 @@ function updateFundTree(state, action) {
         case types.FUND_TREE_AREA_DAOS_RIGHT:
             state.fundTreeDaosRight = fundTree(state.fundTreeDaosRight, action);
             break;
+        case types.FUND_TREE_AREA_AIP:
+            state.fundTreeAip = fundTree(state.fundTreeAip, action);
+            break;
         case types.FUND_TREE_AREA_ALL:
             state.fundTree = fundTree(state.fundTree, action);
             state.fundTreeMovementsLeft = fundTree(state.fundTreeMovementsLeft, action);
@@ -110,6 +114,7 @@ function updateFundTree(state, action) {
             state.fundTreeNodes = fundTree(state.fundTreeNodes, action);
             state.fundTreeDaosLeft = fundTree(state.fundTreeDaosLeft, action);
             state.fundTreeDaosRight = fundTree(state.fundTreeDaosRight, action);
+            state.fundTreeAip = fundTree(state.fundTreeAip, action);
             break;
         default:
             break;
@@ -212,6 +217,7 @@ export function fund(state, action) {
                 moving: false,
                 fundTreeDaosLeft: fundTree(state.fundTreeDaosLeft, action),
                 fundTreeDaosRight: fundTree(state.fundTreeDaosRight, action),
+                fundTreeAip: fundTree(state.fundTreeAip, action),
                 fundTreeNodes: initFundTreeNodes(fundTree()),
                 nodes: nodes(state.nodes, action),
                 fundOutput: fundOutput(state.fundOutput, action),
@@ -246,6 +252,7 @@ export function fund(state, action) {
                 fundTreeMovementsRight: fundTree(state.fundTreeMovementsRight, action),
                 fundTreeDaosLeft: fundTree(state.fundTreeDaosLeft, action),
                 fundTreeDaosRight: fundTree(state.fundTreeDaosRight, action),
+                fundTreeAip: fundTree(state.fundTreeAip, action),
                 nodes: nodes(state.nodes, action),
                 fundOutput: fundOutput(state.fundOutput, action),
                 fundDataGrid: fundDataGrid(state.fundDataGrid, action),
@@ -350,6 +357,7 @@ export function fund(state, action) {
                 fundTreeMovementsRight: fundTree(state.fundTreeMovementsRight, action),
                 fundTreeDaosLeft: fundTree(state.fundTreeDaosLeft, action),
                 fundTreeDaosRight: fundTree(state.fundTreeDaosRight, action),
+                fundTreeAip: fundTree(state.fundTreeAip, action),
                 fundTreeNodes: fundTree(state.fundTreeNodes, action),
                 fundDataGrid: fundDataGrid(state.fundDataGrid, action),
             };

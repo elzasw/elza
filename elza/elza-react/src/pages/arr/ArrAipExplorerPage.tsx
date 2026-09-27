@@ -7,7 +7,7 @@ import { Ribbon } from '../../components/index';
 import { RibbonGroup, Icon } from '../../components/shared';
 import { Button } from '../../components/ui';
 import { getFundVersion, urlFundAb, urlFundAipExplorer } from '../../constants';
-import AipExplorerTabs from '../../components/aip/explorer/AipExplorerTabs';
+import AipExplorerTabs, { TabKey } from '../../components/aip/explorer/AipExplorerTabs';
 import { explorerPageMessages } from '../../components/aip/messages';
 import { FormattedMessage } from 'react-intl';
 import type { AppState, Fund, UserDetail } from 'typings/store';
@@ -16,7 +16,8 @@ import type { AppState, Fund, UserDetail } from 'typings/store';
  * Průzkumník archivního balíčku v kontextu archivního souboru.
  *
  * Je to běžná stránka archivního souboru, takže nese jeho pás karet; seznam balíčků
- * zůstává na samostatné stránce a slouží k výběru a připojování.
+ * zůstává na samostatné stránce a slouží k výběru a hromadnému připojování. Jeden balíček
+ * se připojuje zde, na kartě připojení (?tab=connect ji rovnou otevře).
  */
 const AREA = "AIP";
 
@@ -29,6 +30,7 @@ type ArrAipExplorerPageProps = {
     userDetail: UserDetail;
     arrRegion: { activeIndex: number | null; funds: Fund[] };
     match: { params: { aipId: string } };
+    location: { search: string };
 };
 
 class ArrAipExplorerPage extends ArrParentPage {
@@ -75,7 +77,9 @@ class ArrAipExplorerPage extends ArrParentPage {
     }
 
     renderCenterPanel(readMode: boolean, closed: boolean) {
-        return <AipExplorerTabs aipId={this.getAipId()}/>;
+        const tab = new URLSearchParams(this.props.location?.search ?? '').get('tab') as TabKey | null;
+        return <AipExplorerTabs key={this.getAipId()} aipId={this.getAipId()} connectable={!readMode && !closed}
+                                initialTab={tab ?? undefined}/>;
     }
 }
 

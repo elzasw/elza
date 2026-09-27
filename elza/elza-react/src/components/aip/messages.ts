@@ -126,6 +126,7 @@ export const explorerPageMessages = defineMessages({
     packageTab:    { id: "aip.explorer.tab.package",   defaultMessage: "Balíček" },
     structureTab:  { id: "aip.explorer.tab.structure", defaultMessage: "Struktura" },
     filesTab:      { id: "aip.explorer.tab.files",     defaultMessage: "Soubory" },
+    connectTab:    { id: "aip.explorer.tab.connect",   defaultMessage: "Připojení k popisu" },
 });
 
 /**
