@@ -113,6 +113,13 @@ public class ApplicationSecurity {
     public static final String AUTHENTICATE_SSO = "/authenticate/sso";
 
     /**
+     * SSO endpoint for in-page sign-in. The handshake is the same, but the result is a status
+     * code and a JSON error instead of a redirect, so the application can run it from a fetch
+     * call without losing its state. {@link #AUTHENTICATE_SSO} keeps the redirect behaviour.
+     */
+    public static final String AUTHENTICATE_SSO_JSON = "/authenticate/sso/json";
+
+    /**
      * These patterns need to be allowed to access without authorization
      * to make it possible to navigate from the browser address bar for unauthorized users
      * @see cz.tacr.elza.web.controller.ElzaWebController (elza-web)
@@ -378,7 +385,8 @@ public class ApplicationSecurity {
     		.authorizeHttpRequests(auth -> auth
     				.requestMatchers(PERMIT_ALL_PATTERNS).permitAll()
     				// Explicitly require auth for SSO
-    			    .requestMatchers(AntPathRequestMatcher.antMatcher(AUTHENTICATE_SSO)).authenticated() 
+    			    .requestMatchers(AntPathRequestMatcher.antMatcher(AUTHENTICATE_SSO)).authenticated()
+    			    .requestMatchers(AntPathRequestMatcher.antMatcher(AUTHENTICATE_SSO_JSON)).authenticated()
     				.anyRequest().authenticated())
     		.httpBasic(Customizer.withDefaults())
     		// .requestCache(cache -> cache.requestCache(requestCache()))
@@ -415,9 +423,11 @@ public class ApplicationSecurity {
     	// Create a map of specific matchers to specific entry points
     	LinkedHashMap<RequestMatcher, AuthenticationEntryPoint> entryPoints = new LinkedHashMap<>();
         
-        // Add SPNEGO for the SSO endpoint
+        // Add SPNEGO for the SSO endpoints. Both need the Negotiate challenge; they differ only
+        // in what the success and failure handlers write back.
         if (isKerberosEnabled()) {
-            log.debug("Mapping SpnegoEntryPoint to {}", AUTHENTICATE_SSO);
+            log.debug("Mapping SpnegoEntryPoint to {} and {}", AUTHENTICATE_SSO, AUTHENTICATE_SSO_JSON);
+            entryPoints.put(new AntPathRequestMatcher(AUTHENTICATE_SSO_JSON), spnegoEntryPoint());
             entryPoints.put(new AntPathRequestMatcher(AUTHENTICATE_SSO), spnegoEntryPoint());
         }
 
@@ -475,7 +485,8 @@ public class ApplicationSecurity {
                 
         filter.setAuthenticationManager(authenticationManagerBean());
         filter.setSuccessHandler( kerberosSuccessHandler() );
-        filter.setFailureHandler(new KerberosSsoFailureHandler(AUTHENTICATE_SSO, authenticationFailureHandler));
+        filter.setFailureHandler(new KerberosSsoFailureHandler(AUTHENTICATE_SSO, AUTHENTICATE_SSO_JSON,
+                authenticationFailureHandler));
         
         http
            //	.authenticationProvider(kerberosServiceAuthenticationProvider())
@@ -489,11 +500,19 @@ public class ApplicationSecurity {
 	 * Success handler specifically for Kerberos browser-based SSO.
 	 */
 	private AuthenticationSuccessHandler kerberosSuccessHandler() {
+	    RequestMatcher jsonRequestMatcher = new AntPathRequestMatcher(AUTHENTICATE_SSO_JSON);
 	    SavedRequestAwareAuthenticationSuccessHandler handler = new SavedRequestAwareAuthenticationSuccessHandler() {
 	        @Override
-	        public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, 
+	        public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
 	                                            Authentication authentication) throws IOException, ServletException {
-	            
+
+	            // The JSON endpoint is called from the page itself, which has no navigation to
+	            // follow - the session cookie on this response is the whole result.
+	            if (jsonRequestMatcher.matches(request)) {
+	                response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+	                return;
+	            }
+
 	            SavedRequest savedRequest = (SavedRequest) request.getSession()
 	                    .getAttribute("SPRING_SECURITY_SAVED_REQUEST");
 
