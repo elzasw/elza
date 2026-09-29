@@ -507,9 +507,12 @@ public class ApplicationSecurity {
 	                                            Authentication authentication) throws IOException, ServletException {
 
 	            // The JSON endpoint is called from the page itself, which has no navigation to
-	            // follow - the session cookie on this response is the whole result.
+	            // follow - the session cookie on this response is the whole result. The response
+	            // has to be committed here: the SPNEGO filter carries on down the chain, and no
+	            // handler is mapped to this path, so an uncommitted status would become a 404.
 	            if (jsonRequestMatcher.matches(request)) {
 	                response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+	                response.flushBuffer();
 	                return;
 	            }
 
