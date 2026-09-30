@@ -101,5 +101,8 @@
     "typescript": "^5.0.2",
     "vite": "^4.4.5",
     "vitest": "^1.6.0"
+  },
+  "optionalDependencies": {
+    "kerberos": "^7.0.0"
   }
 }

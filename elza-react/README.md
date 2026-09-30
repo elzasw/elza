@@ -28,3 +28,51 @@ Testy jsou umístěny vedle zdrojových souborů jako `*.test.ts(x)` / `*.spec.t
 Příklady: [src/stores/app/status.test.ts](src/stores/app/status.test.ts) (reducer) a [src/test/mocks/stomp.test.ts](src/test/mocks/stomp.test.ts) (STOMP mock).
 
 Detailní plán rozvoje testů a návod „jak napsat test" je v [refactoring.md](refactoring.md).
+
+## Kerberos (SSO) ve vývoji
+
+Proxy ve [vite.config.ts](vite.config.ts) přidává tiket z lokální cache k požadavkům na backend. Díky tomu jde SSO vyzkoušet i ve vývoji. Je to volitelné. Bez toho se přihlašuje heslem.
+
+Aplikace běží na `localhost` jako obvykle. O tiket se stará proxy, ne prohlížeč.
+
+Balíček `kerberos` je v `optionalDependencies`. Jeho nativní část se překládá ze zdrojů a potřebuje:
+
+* **Linux** — hlavičky MIT Kerberos (`krb5` / `libkrb5-dev`), `gcc`, `make`, Python 3
+* **macOS** — Xcode Command Line Tools
+* **Windows** — Visual Studio Build Tools + Windows SDK (použije se SSPI, MIT Kerberos netřeba)
+
+npm od verze 12 nespouští install skripty. Balíček se proto nainstaluje, ale nesestaví. Je potřeba to udělat ručně, a to znovu po každém `npm ci`:
+
+```bash
+cd node_modules/kerberos && npx node-gyp rebuild
+```
+
+Zapnutí v `.env`:
+
+```
+KERBEROS=true                               # bez toho se proxy vůbec nezapojí
+                                            # na ENDPOINT s IP adresou se SSO nepoužije
+# KERBEROS_SERVICE=HTTP/backend.priklad.cz  # SSPI na Windows chce tvar HTTP/host
+```
+
+### Tiket na Linuxu a macOS
+
+Potřeba nakonfigurovaný `/etc/krb5.conf`.
+
+Pořízení tiketu:
+
+```bash
+kinit uzivatel@PRIKLAD.CZ
+```
+
+### Tiket na Windows
+
+Nenastavuje se nic. Stroj připojený do domény už má tiket z přihlášení.
+
+### Kontrola platnosti
+
+Tikety a jejich expiraci vypíše `klist`. Funguje na Linuxu, macOS i Windows.
+
+### Po vypršení tiketu
+
+Proxy zaloguje `[spnego] no token for ...`. Požadavky pak jdou na backend nepřihlášené. Stejné chování pokud balíček chybí nebo je `KERBEROS` vypnuté.
