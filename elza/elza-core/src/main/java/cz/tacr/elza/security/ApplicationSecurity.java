@@ -511,6 +511,9 @@ public class ApplicationSecurity {
 	            // has to be committed here: the SPNEGO filter carries on down the chain, and no
 	            // handler is mapped to this path, so an uncommitted status would become a 404.
 	            if (jsonRequestMatcher.matches(request)) {
+	                // The session is the whole result, so it has to exist before the response is
+	                // committed - afterwards its cookie can no longer be sent.
+	                request.getSession(true);
 	                response.setStatus(HttpServletResponse.SC_NO_CONTENT);
 	                response.flushBuffer();
 	                return;
