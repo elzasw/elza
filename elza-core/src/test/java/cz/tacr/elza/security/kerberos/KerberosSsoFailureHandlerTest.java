@@ -3,7 +3,10 @@ package cz.tacr.elza.security.kerberos;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -15,8 +18,14 @@ import jakarta.servlet.http.HttpServletResponse;
 class KerberosSsoFailureHandlerTest {
 
 	private static final String SSO_URL = "/authenticate/sso";
+	private static final String SSO_JSON_URL = "/authenticate/sso/json";
+
+	private final ObjectMapper objectMapper = new ObjectMapper();
 
 	private final KerberosSsoFailureHandler handler = new KerberosSsoFailureHandler(SSO_URL,
+			(request, response, exception) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED));
+
+	private final KerberosSsoFailureHandler jsonHandler = new KerberosSsoFailureHandler(SSO_URL, SSO_JSON_URL,
 			(request, response, exception) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED));
 
 	private MockHttpServletRequest request(String servletPath) {
@@ -54,6 +63,46 @@ class KerberosSsoFailureHandlerTest {
 		var ssoError = handleSso(new BadCredentialsException("invalid ticket"), new MockHttpServletResponse());
 
 		assertEquals(new KerberosSsoError(KerberosSsoError.FAILED, null), ssoError);
+	}
+
+	@Test
+	void unknownUserOnJsonEndpointAnswersWithBody() throws Exception {
+		var request = request(SSO_JSON_URL);
+		var response = new MockHttpServletResponse();
+		jsonHandler.onAuthenticationFailure(request, response, new KerberosUserNotFoundException("pyta"));
+
+		assertEquals(HttpServletResponse.SC_UNAUTHORIZED, response.getStatus());
+		assertEquals(MediaType.APPLICATION_JSON_VALUE, response.getContentType());
+		assertNull(response.getRedirectedUrl());
+		// The caller reads the reason from the body, so nothing is left in the session for it.
+		assertNull(request.getSession(false));
+
+		var body = objectMapper.readTree(response.getContentAsString());
+		assertEquals(KerberosSsoError.USER_NOT_FOUND, body.get("code").asText());
+		assertEquals("pyta", body.get("username").asText());
+	}
+
+	@Test
+	void inactiveUserOnJsonEndpointAnswersWithBody() throws Exception {
+		var response = new MockHttpServletResponse();
+		jsonHandler.onAuthenticationFailure(request(SSO_JSON_URL), response, new LockedException("User is not active"));
+
+		assertEquals(HttpServletResponse.SC_UNAUTHORIZED, response.getStatus());
+
+		var body = objectMapper.readTree(response.getContentAsString());
+		assertEquals(KerberosSsoError.USER_INACTIVE, body.get("code").asText());
+		assertNull(body.get("username").textValue());
+	}
+
+	@Test
+	void redirectEndpointKeepsRedirectingWhenJsonEndpointIsConfigured() throws Exception {
+		var request = request(SSO_URL);
+		var response = new MockHttpServletResponse();
+		jsonHandler.onAuthenticationFailure(request, response, new KerberosUserNotFoundException("pyta"));
+
+		assertEquals("/elza/", response.getRedirectedUrl());
+		assertEquals(new KerberosSsoError(KerberosSsoError.USER_NOT_FOUND, "pyta"),
+				request.getSession().getAttribute(KerberosSsoFailureHandler.SESSION_ATTR_SSO_ERROR));
 	}
 
 	@Test
