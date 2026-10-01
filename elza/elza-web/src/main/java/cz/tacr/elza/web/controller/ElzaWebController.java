@@ -118,6 +118,19 @@ public class ElzaWebController {
     	return applicationSecurity.isKerberosEnabled() ? ApplicationSecurity.AUTHENTICATE_SSO : null;
 	}
 
+    @Value("${elza.security.autoSsoLogin:false}")
+    private boolean autoSsoLogin;
+
+    /**
+     * Whether the login dialog starts the Windows sign-in on its own instead of waiting for the
+     * button. Only meaningful where Kerberos is configured; a deployment whose SSO endpoint does
+     * not sign the user in would otherwise leave them looking at a spinner.
+     */
+    @ModelAttribute("autoSsoLogin")
+    public boolean isAutoSsoLogin() {
+        return autoSsoLogin && applicationSecurity.isKerberosEnabled();
+    }
+
     /**
      * Reason of the last failed Windows (Kerberos) sign-in. It is removed from
      * the session, so the login dialog displays it only once.
