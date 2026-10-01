@@ -85,6 +85,129 @@ Do not change it: users whose password has not been converted yet could
 no longer log in, and an administrator would have to reset their
 passwords.
 
+Users who still have a password in the old format (they have not logged
+in with the password since the upgrade) are listed by:
+
+.. code-block:: sql
+
+   SELECT u.username FROM usr_user u
+   JOIN usr_authentication a ON a.user_id = u.user_id
+   WHERE a.auth_type = 'PASSWORD' AND a.auth_value NOT LIKE '{%';
+
+Password rules
+--------------
+
+The rules for internal passwords are set in *Administration* > *Users* >
+*Password rules*; the button requires the permission *User and permission
+management* (or the administrator permission). The rules apply to the
+whole instance:
+
+*Password validity (days)*
+   How long a password is valid after it was set.
+*Minimum password length*
+   The minimum number of characters.
+*Minimum number of character groups*
+   From how many of the four groups - lowercase letters, uppercase
+   letters, digits, other characters - the password must contain at least
+   one character (1-4).
+
+An empty value or 0 turns the rule off; a new installation has all rules
+off. An empty password is never accepted.
+
+The length and character groups are checked whenever a password is set:
+when a user changes their own password, when an administrator sets a
+password of a user, and when a user is created or edited with a new
+password. Administrators are not exempt; a weak temporary password is not
+accepted either. Existing passwords are not checked until they are
+changed.
+
+The validity is counted from the moment the password was last set. The
+conversion of an old SHA-256 hash at login does not change the password
+and does not restart the period.
+
+.. warning::
+
+   Passwords set before the upgrade to the version with password rules
+   count as set on 1 January 2016. Turning the validity on therefore makes
+   every password not changed since the upgrade expired at once: each such
+   user has to change the password at the next login.
+
+Expired and required password change
+------------------------------------
+
+When an administrator sets a password of a user (*Administration* >
+*Users* > *Change password*), two options are available:
+
+*Require a password change at next login*
+   Typical for a temporary password handed over to the user.
+*Password never expires*
+   Exempts the account from the validity, for example a technical
+   account.
+
+After a login with an internal password that has expired or whose change
+is required, the login succeeds and the application opens a dialog that
+cannot be closed until the user sets a new password. The new password
+must meet the rules. After the change, the requirement is cleared and the
+validity period starts again.
+
+The password change is enforced by the web client only. Requests to the
+REST API made in such a session are not blocked.
+
+The validity and the required change apply only to logins with the
+internal password. Users logged in through Active Directory, Kerberos,
+the SSO header, OAuth2 or an API key are never asked to change their
+password; with Active Directory or Kerberos verifying passwords, the
+internal password is used only when the domain rejects the password. The
+default user is never asked either: its password is set in the
+configuration only (``elza.security.defaultPassword``) and cannot be
+changed in the application.
+
+Recovering access to an account
+-------------------------------
+
+When an administrator has forgotten their password and no other
+administrator can set a new one, a temporary recovery password can be set
+in the configuration:
+
+.. code-block:: yaml
+
+   elza:
+     security:
+       recovery:
+         username: jan.novak
+         password: a-temporary-password
+
+.. list-table::
+   :header-rows: 1
+   :widths: 36 18 46
+
+   * - Key
+     - Default
+     - Meaning
+   * - ``elza.security.recovery.username``
+     - (none)
+     - The user who may log in with the recovery password.
+   * - ``elza.security.recovery.password``
+     - (none)
+     - The recovery password, as plain text. Recovery is active only when
+       both keys are set.
+
+Procedure:
+
+1. Set both keys in :file:`elza.yaml` and restart ELZA.
+2. Log in as the user with the recovery password. The application asks
+   for a new password at once.
+3. Enter the recovery password as the old password and set a new
+   password.
+4. Remove both keys from :file:`elza.yaml` and restart ELZA.
+
+While recovery is active, ELZA logs a warning at startup and at each login
+with the recovery password, and the user's own password keeps working as
+well. Recovery works only for users who have an internal password; it
+does not apply to the default user, whose password is changed in the
+configuration (``elza.security.defaultPassword``). Never leave recovery
+configured longer than needed.
+
 Active Directory
 ================
 

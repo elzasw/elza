@@ -1,5 +1,6 @@
 import * as permissions from 'actions/user/Permission';
 import { UISettingsVO } from 'api/UISettingsVO';
+import { PasswordPolicy } from 'elza-api';
 export enum AuthType {
     PASSWORD = "PASSWORD"
 }
@@ -91,6 +92,8 @@ export interface UserDetail {
     hasRdPage: () => unknown;
     id: number | null;
     isAdmin: () => unknown;
+    needChangePassword: boolean;
+    passwordPolicy?: PasswordPolicy;
     permissions: unknown | null;
     permissionsMap: Record<PermissionType, Permission>;
     settings: UISettingsVO[] | null;
