@@ -28,4 +28,10 @@ export interface UsrUserVO {
     groups: UsrGroupVO[];
 
     authTypes: AuthType[];
+
+    /** Password change required at next login (password authentication only). */
+    passwordChangeRequired?: boolean;
+
+    /** Password exempt from expiry (password authentication only). */
+    passwordNeverExpire?: boolean;
 }

@@ -574,6 +574,7 @@ public class CamServiceExportTest extends AbstractControllerTest {
             UsrUser editor = new UsrUser();
             editor.setUsername("participant-editor-" + UUID.randomUUID());
             editor.setActive(true);
+            editor.setCreatedAt(OffsetDateTime.now());
             editor.setAccessPoint(reloaded);
             editor = userRepository.save(editor);
 
@@ -644,6 +645,7 @@ public class CamServiceExportTest extends AbstractControllerTest {
             UsrUser editor = new UsrUser();
             editor.setUsername(editorUsername);
             editor.setActive(true);
+            editor.setCreatedAt(OffsetDateTime.now());
             editor.setAccessPoint(reloaded);
             editor = userRepository.save(editor);
 

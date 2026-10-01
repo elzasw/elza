@@ -1664,8 +1664,12 @@ export class WebApiCls {
         return AjaxUtils.ajaxPut(WebApiCls.userUrl + '/password', null, { oldPassword, newPassword });
     }
 
-    changePassword(userId: number, newPassword: string) {
-        return AjaxUtils.ajaxPut(WebApiCls.userUrl + '/' + userId + '/password', null, { newPassword });
+    changePassword(userId: number, newPassword: string, changeRequired?: boolean, neverExpire?: boolean) {
+        return AjaxUtils.ajaxPut(WebApiCls.userUrl + '/' + userId + '/password', null, {
+            newPassword,
+            changeRequired,
+            neverExpire,
+        });
     }
 
     changeActive(userId: number, active: boolean) {

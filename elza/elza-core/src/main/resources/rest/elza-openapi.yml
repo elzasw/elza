@@ -1637,6 +1637,39 @@ paths:
                 $ref: '#/components/schemas/LoggedUsers'
       tags:
         - admin
+  /admin/password-policy:
+    get:
+      operationId: Admin_getPasswordPolicy
+      description: Return the password policy. Requires the USR_PERM permission.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordPolicy'
+      tags:
+        - admin
+    put:
+      operationId: Admin_updatePasswordPolicy
+      description: Update the password policy. Requires the USR_PERM permission.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordPolicy'
+      tags:
+        - admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordPolicy'
   /admin/user/{userId}/api-keys:
     get:
       operationId: Admin_listUserApiKeys
@@ -11660,6 +11693,22 @@ components:
       allOf:
         - $ref: '#/components/schemas/UserRef'
       description: Entity processor (user)
+    PasswordPolicy:
+      type: object
+      properties:
+        expiryDays:
+          type: integer
+          format: int32
+          description: Password validity in days
+        minLength:
+          type: integer
+          format: int32
+          description: Minimal password length
+        minCharGroups:
+          type: integer
+          format: int32
+          description: Minimal number of character groups (lowercase, uppercase, digits, other), 1–4
+      description: Password policy. For each rule, null or a value <= 0 means the rule is off.
     PublicationDetail:
       type: object
       required:

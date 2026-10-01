@@ -150,8 +150,9 @@ function globalErrorHandler(message, url, line, column, error) {
 window.addEventListener('unhandledrejection', ({ reason }) => {
     console.error('Unhandled Promise rejection:', reason);
 
-    // Ignore already processed exceptions
-    if (reason.processed) {
+    // Ignore already processed exceptions; an empty reason comes from a rejected form
+    // submission whose error has already been reported
+    if (reason == null || reason.processed) {
         return;
     }
 

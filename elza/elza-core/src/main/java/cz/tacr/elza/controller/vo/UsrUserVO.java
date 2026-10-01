@@ -31,6 +31,12 @@ public class UsrUserVO {
 
     private List<UsrAuthentication.AuthType> authTypes;
 
+    /** Password change required at next login (password authentication only). */
+    private Boolean passwordChangeRequired;
+
+    /** Password exempt from expiry (password authentication only). */
+    private Boolean passwordNeverExpire;
+
 	/**
 	 * Empty constructor
 	 */
@@ -104,6 +110,22 @@ public class UsrUserVO {
 
     public void setAuthTypes(final List<UsrAuthentication.AuthType> authTypes) {
         this.authTypes = authTypes;
+    }
+
+    public Boolean getPasswordChangeRequired() {
+        return passwordChangeRequired;
+    }
+
+    public void setPasswordChangeRequired(final Boolean passwordChangeRequired) {
+        this.passwordChangeRequired = passwordChangeRequired;
+    }
+
+    public Boolean getPasswordNeverExpire() {
+        return passwordNeverExpire;
+    }
+
+    public void setPasswordNeverExpire(final Boolean passwordNeverExpire) {
+        this.passwordNeverExpire = passwordNeverExpire;
     }
 
     public List<UsrGroupVO> getGroups() {

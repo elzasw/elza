@@ -31,12 +31,14 @@ import cz.tacr.elza.controller.vo.AsyncType;
 import cz.tacr.elza.controller.vo.FundStatistics;
 import cz.tacr.elza.controller.vo.LoggedUser;
 import cz.tacr.elza.controller.vo.LoggedUsers;
+import cz.tacr.elza.controller.vo.PasswordPolicyVO;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.AsyncTypeEnum;
 import cz.tacr.elza.domain.UsrApiKey;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
+import cz.tacr.elza.domain.UsrPolicy;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
@@ -51,6 +53,7 @@ import cz.tacr.elza.service.ApiKeyService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.ArrangementService.ArrangementStats;
 import cz.tacr.elza.service.AsyncRequestService;
+import cz.tacr.elza.service.PasswordPolicyService;
 import cz.tacr.elza.service.dms.DmsConsistencyReport;
 import cz.tacr.elza.service.dms.DmsConsistencyService;
 import cz.tacr.elza.service.UserService;
@@ -90,6 +93,9 @@ public class AdminController implements AdminApi {
 
     @Autowired
     private AsyncRequestService asyncRequestService;
+
+    @Autowired
+    private PasswordPolicyService passwordPolicyService;
 
     @Override
     @Transactional
@@ -235,6 +241,24 @@ public class AdminController implements AdminApi {
     @AuthMethod(permission = { UsrPermission.Permission.ADMIN })
     public ResponseEntity<List<FundStatistics>> adminAsyncRequestDetail(AsyncType requestType) {
         return ResponseEntity.ok(asyncRequestService.getFundStatistics(AsyncTypeEnum.valueOf(requestType.getValue())));
+    }
+
+    @Override
+    @Transactional
+    @AuthMethod(permission = { UsrPermission.Permission.USR_PERM })
+    public ResponseEntity<PasswordPolicyVO> adminGetPasswordPolicy() {
+        return ResponseEntity.ok(PasswordPolicyService.toVO(passwordPolicyService.getPolicy()));
+    }
+
+    @Override
+    @Transactional
+    @AuthMethod(permission = { UsrPermission.Permission.USR_PERM })
+    public ResponseEntity<PasswordPolicyVO> adminUpdatePasswordPolicy(PasswordPolicyVO policy) {
+        userService.requireInteractiveAuth();
+        UsrPolicy result = passwordPolicyService.updatePolicy(policy.getExpiryDays(),
+                                                              policy.getMinLength(),
+                                                              policy.getMinCharGroups());
+        return ResponseEntity.ok(PasswordPolicyService.toVO(result));
     }
 
     @Override
