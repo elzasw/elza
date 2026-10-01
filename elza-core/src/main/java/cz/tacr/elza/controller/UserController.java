@@ -39,12 +39,14 @@ import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.UserCode;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundRepository;
+import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.UserService.ChangedPermissionResult;
@@ -174,7 +176,8 @@ public class UserController {
             throw new ObjectNotFoundException("Uživatel neexistuje", UserCode.USER_NOT_FOUND).set("id", userId);
         }
 
-        user = userService.changePassword(user, params.getNewPassword());
+        user = userService.changePassword(user, params.getNewPassword(),
+                                          params.getChangeRequired(), params.getNeverExpire());
         return factoryVO.createUser(user, true, true);
     }
 
@@ -192,6 +195,11 @@ public class UserController {
         UsrUser user = userService.getLoggedUser();
 
         if (user == null) {
+            UserDetail userDetail = userService.getLoggedUserDetail();
+            if (userDetail != null && userDetail.getId() == null) {
+                throw new BusinessException("Heslo výchozího uživatele je definováno v konfiguraci", BaseCode.INVALID_STATE)
+                        .level(Level.WARNING);
+            }
             throw new SystemException("Uživatel není přihlášen", UserCode.USER_NOT_LOGGED);
         }
 
@@ -204,6 +212,7 @@ public class UserController {
         }
 
         user = userService.changePassword(user, params.getOldPassword(), params.getNewPassword());
+        userService.getLoggedUserDetail().setNeedChangePassword(false);
         return factoryVO.createUser(user, true, true);
     }
 
@@ -474,6 +483,32 @@ public class UserController {
          * Nové heslo
          */
         private String newPassword;
+
+        /**
+         * Require a password change at next login (admin change only).
+         */
+        private Boolean changeRequired;
+
+        /**
+         * Password exempt from expiry (admin change only); null keeps the current value.
+         */
+        private Boolean neverExpire;
+
+        public Boolean getChangeRequired() {
+            return changeRequired;
+        }
+
+        public void setChangeRequired(final Boolean changeRequired) {
+            this.changeRequired = changeRequired;
+        }
+
+        public Boolean getNeverExpire() {
+            return neverExpire;
+        }
+
+        public void setNeverExpire(final Boolean neverExpire) {
+            this.neverExpire = neverExpire;
+        }
 
         public String getOldPassword() {
             return oldPassword;

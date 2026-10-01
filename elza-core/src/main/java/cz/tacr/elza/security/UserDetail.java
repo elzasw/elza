@@ -42,6 +42,12 @@ public class UserDetail {
 
     private AuthenticationMethod authenticationMethod = AuthenticationMethod.SESSION;
 
+    /**
+     * The user logged in with a password that must be changed (expired, required by
+     * the administrator, or a recovery login).
+     */
+    private boolean needChangePassword;
+
     public UserDetail(final UsrUser user, final Collection<UserPermission> userPermission, final NodePermissionChecker nodePermChecker,
 					  final List<UsrAuthentication.AuthType> authTypes) {
         this.id = user.getUserId();
@@ -193,6 +199,14 @@ public class UserDetail {
 
     public void setAuthenticationMethod(AuthenticationMethod authenticationMethod) {
         this.authenticationMethod = authenticationMethod;
+    }
+
+    public boolean isNeedChangePassword() {
+        return needChangePassword;
+    }
+
+    public void setNeedChangePassword(final boolean needChangePassword) {
+        this.needChangePassword = needChangePassword;
     }
 
     @Override

@@ -61,9 +61,16 @@ public class PasswordAutheticationProvider implements AuthenticationProvider {
 					throw new UsernameNotFoundException("Neplatné uživatelské jméno nebo heslo");
 				}
 
-				userService.upgradePasswordEncodingIfNeeded(usrAuthentication, password);
+				// the recovery password is not the user's password - it must not be stored
+				boolean recovery = userService.isRecoveryPassword(username, password);
+				if (!recovery) {
+					userService.upgradePasswordEncodingIfNeeded(usrAuthentication, password);
+				}
 
-				return userService.createAuthentication(user);
+				var result = userService.createAuthentication(user);
+				((UserDetail) result.getDetails())
+						.setNeedChangePassword(recovery || userService.needsPasswordChange(usrAuthentication));
+				return result;
 			});
 			
 			siemAuditLogger.loginSuccess(username, sourceIp, AuthenticationType.PASSWORD);

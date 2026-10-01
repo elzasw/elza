@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain;
 
+import java.time.OffsetDateTime;
+
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.Column;
@@ -45,11 +47,32 @@ public class UsrAuthentication {
     @Column(length = StringLength.LENGTH_250, nullable = false)
     private String authValue;
 
+    /**
+     * Moment the current auth value was established.
+     */
+    @Column(nullable = false)
+    private OffsetDateTime validFrom;
+
+    /**
+     * The administrator requires a password change at next login.
+     */
+    @Column(nullable = false)
+    private Boolean changeRequired = false;
+
+    /**
+     * The password is exempt from expiry.
+     */
+    @Column(nullable = false)
+    private Boolean neverExpire = false;
+
     /* Konstanty pro vazby a fieldy. */
     public static final String FIELD_AUTHENTICATION_ID = "authenticationId";
     public static final String FIELD_USER = "user";
     public static final String FIELD_AUTH_TYPE = "authType";
     public static final String FIELD_AUTH_VALUE = "authValue";
+    public static final String FIELD_VALID_FROM = "validFrom";
+    public static final String FIELD_CHANGE_REQUIRED = "changeRequired";
+    public static final String FIELD_NEVER_EXPIRE = "neverExpire";
 
     public Integer getAuthenticationId() {
         return authenticationId;
@@ -81,6 +104,30 @@ public class UsrAuthentication {
 
     public void setAuthValue(String authValue) {
         this.authValue = authValue;
+    }
+
+    public OffsetDateTime getValidFrom() {
+        return validFrom;
+    }
+
+    public void setValidFrom(final OffsetDateTime validFrom) {
+        this.validFrom = validFrom;
+    }
+
+    public Boolean getChangeRequired() {
+        return changeRequired;
+    }
+
+    public void setChangeRequired(final Boolean changeRequired) {
+        this.changeRequired = changeRequired;
+    }
+
+    public Boolean getNeverExpire() {
+        return neverExpire;
+    }
+
+    public void setNeverExpire(final Boolean neverExpire) {
+        this.neverExpire = neverExpire;
     }
 
     /**

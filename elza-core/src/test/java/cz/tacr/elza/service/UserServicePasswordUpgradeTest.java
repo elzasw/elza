@@ -5,6 +5,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import java.time.OffsetDateTime;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -52,11 +54,15 @@ class UserServicePasswordUpgradeTest {
     void legacyHashIsUpgraded() {
         String legacyHash = Sha256Support.encodePassword(PASSWORD, USERNAME + SALT);
         UsrAuthentication authentication = createAuthentication(1, legacyHash);
+        OffsetDateTime validFrom = OffsetDateTime.parse("2016-01-01T00:00:00+01:00");
+        authentication.setValidFrom(validFrom);
         assertThat(userService.matchesPassword(PASSWORD, authentication.getAuthValue(), USERNAME)).isTrue();
 
         userService.upgradePasswordEncodingIfNeeded(authentication, PASSWORD);
 
         assertThat(authentication.getAuthValue()).startsWith("{bcrypt}");
+        // only the encoding changed, not the password - the expiry clock keeps running
+        assertThat(authentication.getValidFrom()).isEqualTo(validFrom);
         assertThat(userService.matchesPassword(PASSWORD, authentication.getAuthValue(), USERNAME)).isTrue();
         verify(authenticationRepository).save(authentication);
     }

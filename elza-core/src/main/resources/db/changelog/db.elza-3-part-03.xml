@@ -744,4 +744,38 @@
         <dropColumn tableName="arr_output" columnName="anonymized_ap_id"/>
     </changeSet>
 
+    <changeSet id="20260930100000" author="sergey.iryupin">
+        <!-- Password age, forced change and per-account expiry exemption; existing rows get 2016-01-01 -->
+        <addColumn tableName="usr_authentication">
+            <column name="valid_from" type="timestamp with time zone" defaultValueDate="2016-01-01T00:00:00">
+                <constraints nullable="false"/>
+            </column>
+            <column name="change_required" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="never_expire" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <dropDefaultValue tableName="usr_authentication" columnName="valid_from"/>
+        <addColumn tableName="usr_user">
+            <column name="created_at" type="timestamp with time zone" defaultValueDate="2016-01-01T00:00:00">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <dropDefaultValue tableName="usr_user" columnName="created_at"/>
+        <!-- Single-row password policy, everything off -->
+        <createTable tableName="usr_policy">
+            <column name="policy_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_usr_policy" nullable="false"/>
+            </column>
+            <column name="password_expiry_days" type="int"/>
+            <column name="password_min_length" type="int"/>
+            <column name="password_min_char_groups" type="int"/>
+        </createTable>
+        <insert tableName="usr_policy">
+            <column name="policy_id" valueNumeric="1"/>
+        </insert>
+    </changeSet>
+
 </databaseChangeLog>

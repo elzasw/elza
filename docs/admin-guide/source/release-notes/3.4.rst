@@ -20,6 +20,13 @@ Upcoming version
   elements, attachments); automatic linking creates levels under the
   matching level; content type and profile of the AIP from METS; dates
   and formal titles taken over from EAD
+* New: 9963 - Password rules (minimum length, character groups,
+  validity), a required password change at the next login, accounts
+  whose password never expires, and recovering access to an account with
+  ``elza.security.recovery.username`` and
+  ``elza.security.recovery.password``. All rules are off after the
+  upgrade. **Turning the validity on makes every password not changed
+  since the upgrade expired at once**; see :doc:`/05-security`.
 * New: 7843 - Revalidation of dependent entities when a related entity is
   invalidated
 * New: 7453 - Renaming of attachments
