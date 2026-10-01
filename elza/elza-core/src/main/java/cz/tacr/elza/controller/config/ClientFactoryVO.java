@@ -1793,7 +1793,15 @@ public class ClientFactoryVO {
             }
         }
         UsrUserVO result = new UsrUserVO(user, accessPointVO);
-        result.setAuthTypes(authenticationRepository.findByUser(user).stream().map(UsrAuthentication::getAuthType).collect(Collectors.toList()));
+        List<UsrAuthentication> authentications = authenticationRepository.findByUser(user);
+        result.setAuthTypes(authentications.stream().map(UsrAuthentication::getAuthType).collect(Collectors.toList()));
+        authentications.stream()
+                .filter(a -> a.getAuthType() == UsrAuthentication.AuthType.PASSWORD)
+                .findFirst()
+                .ifPresent(a -> {
+                    result.setPasswordChangeRequired(a.getChangeRequired());
+                    result.setPasswordNeverExpire(a.getNeverExpire());
+                });
         // Načtení oprávnění
         if (initPermissions) {
             List<UsrPermission> permissions = new ArrayList<>(permissionRepository.findByUser(user));

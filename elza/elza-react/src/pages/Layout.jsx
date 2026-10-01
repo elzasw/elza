@@ -48,6 +48,7 @@ import { Route, Switch } from 'react-router-dom';
 import { Shortcuts } from 'react-shortcuts';
 import CrossTabHelper, { CrossTabEventType } from "../components/CrossTabHelper";
 import Login from '../components/shared/login/Login';
+import { ForcedPasswordChange } from '../components/shared/login/ForcedPasswordChange';
 import {
     ACTIONS,
     DAOS,
@@ -320,6 +321,7 @@ class Layout extends AbstractReactComponent {
                         <ModalDialog />
                         <WebSocket />
                         <Login />
+                        <ForcedPasswordChange />
                         <AppRouter />
                     </WebsocketProvider>
                 </div>

@@ -774,6 +774,7 @@
                                 <modelNameMapping>AiTaskType=AiTaskTypeVO</modelNameMapping>
                                 <modelNameMapping>AiTaskParameter=AiTaskParameterVO</modelNameMapping>
                                 <modelNameMapping>AiProfile=AiProfileVO</modelNameMapping>
+                                <modelNameMapping>PasswordPolicy=PasswordPolicyVO</modelNameMapping>
                             </modelNameMappings>
                             <typeMappings>
                                 <typeMapping>object+partform=ApPartFormVO</typeMapping>

@@ -7,6 +7,7 @@ import {WebApi} from 'actions/index.jsx';
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions.jsx';
 import {savingApiWrapper} from 'actions/global/status.jsx';
 import {modalDialogHide} from 'actions/global/modalDialog.jsx';
+import {reloadUserDetail} from 'actions/user/userDetail.jsx';
 import { FormattedMessage, defineMessages } from 'react-intl';
 
 // Id jsou převzatá z legacy katalogu beze změny.
@@ -190,13 +191,18 @@ export function userPasswordChange(oldPass, newPass) {
     return (dispatch, getState) => {
         return savingApiWrapper(dispatch, WebApi.changePasswordUser(oldPass, newPass)).then(response => {
             dispatch(addToastrSuccess(<FormattedMessage {...messages.passwordChangeSuccess} />));
+            // clears needChangePassword even when the websocket event is late
+            dispatch(reloadUserDetail([getState().userDetail.id]));
         });
     };
 }
 
-export function adminPasswordChange(userId, newPassword) {
+export function adminPasswordChange(userId, newPassword, changeRequired, neverExpire) {
     return (dispatch, getState) => {
-        return savingApiWrapper(dispatch, WebApi.changePassword(userId, newPassword)).then(response => {
+        return savingApiWrapper(
+            dispatch,
+            WebApi.changePassword(userId, newPassword, changeRequired, neverExpire),
+        ).then(response => {
             dispatch(addToastrSuccess(<FormattedMessage {...messages.passwordChangeSuccess} />));
         });
     };

@@ -2948,6 +2948,18 @@ model AsyncWorker {
 }
 
 /**
+ * Password policy. For each rule, null or a value <= 0 means the rule is off.
+ */
+model PasswordPolicy {
+    /** Password validity in days */
+    expiryDays?: int32;
+    /** Minimal password length */
+    minLength?: int32;
+    /** Minimal number of character groups (lowercase, uppercase, digits, other), 1–4 */
+    minCharGroups?: int32;
+}
+
+/**
  * State of a single asynchronous request queue.
  */
 model AsyncRequestInfo {
@@ -3137,6 +3149,18 @@ namespace ElzaAPI.Admin {
     @get op asyncRequestDetail(
         @path requestType: AsyncType,
     ): FundStatistics[];
+
+    /**
+     * Return the password policy. Requires the USR_PERM permission.
+     */
+    @route("password-policy")
+    @get op getPasswordPolicy(): PasswordPolicy;
+
+    /**
+     * Update the password policy. Requires the USR_PERM permission.
+     */
+    @route("password-policy")
+    @put op updatePasswordPolicy(@body policy: PasswordPolicy): PasswordPolicy;
 }
 
 /**

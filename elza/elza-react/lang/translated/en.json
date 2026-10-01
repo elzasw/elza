@@ -935,6 +935,42 @@
     "defaultMessage": "Package import",
     "srcHash": "VEr6BP5UcCdM"
   },
+  "admin.passwordPolicy.expiryDays": {
+    "defaultMessage": "Password validity (days)",
+    "srcHash": "lpf-RxKuEEl1"
+  },
+  "admin.passwordPolicy.expiryDaysHint": {
+    "defaultMessage": "Once validity is turned on, all users who have not changed their password for longer than the set period will have to change it.",
+    "srcHash": "YgGPloRUWEFP"
+  },
+  "admin.passwordPolicy.info": {
+    "defaultMessage": "An empty value or 0 means no limit.",
+    "srcHash": "DaftcWuE7VHH"
+  },
+  "admin.passwordPolicy.invalidNumber": {
+    "defaultMessage": "Enter a whole number from 0 to {max}.",
+    "srcHash": "2dFa73JaO3g6"
+  },
+  "admin.passwordPolicy.minCharGroups": {
+    "defaultMessage": "Minimum number of character groups (0–{max})",
+    "srcHash": "vbHC3vmzEgVn"
+  },
+  "admin.passwordPolicy.minCharGroupsHint": {
+    "defaultMessage": "Groups: lowercase letters, uppercase letters, digits, other characters.",
+    "srcHash": "SNZWZIrfbXSw"
+  },
+  "admin.passwordPolicy.minLength": {
+    "defaultMessage": "Minimum password length",
+    "srcHash": "KT07PUQEx352"
+  },
+  "admin.passwordPolicy.saved": {
+    "defaultMessage": "Password rules have been saved",
+    "srcHash": "PXtlHYcYVr91"
+  },
+  "admin.passwordPolicy.title": {
+    "defaultMessage": "Password rules",
+    "srcHash": "aVJftnn0ByBq"
+  },
   "admin.perm.advanced.control.entity.add.title": {
     "defaultMessage": "Add users and groups",
     "srcHash": "SX5QLFdMFRM1"
@@ -1222,6 +1258,18 @@
   "admin.user.password": {
     "defaultMessage": "Password",
     "srcHash": "pSKy5YhV1Jvy"
+  },
+  "admin.user.password.changeRequired": {
+    "defaultMessage": "Require a password change at next login",
+    "srcHash": "wLprZ87CtHAh"
+  },
+  "admin.user.password.forcedInfo": {
+    "defaultMessage": "Your password has expired. Set a new password to continue.",
+    "srcHash": "obGljoeTXNG_"
+  },
+  "admin.user.password.neverExpire": {
+    "defaultMessage": "Password never expires",
+    "srcHash": "FSUFGSoQqaXv"
   },
   "admin.user.passwordAgain": {
     "defaultMessage": "Repeat password",
@@ -6625,6 +6673,10 @@
     "defaultMessage": "The original password does not match",
     "srcHash": "nD5ehB9gcYOn"
   },
+  "exception.usr.PASSWORD_POLICY_VIOLATION": {
+    "defaultMessage": "{rule, select, minLength {The password must be at least {minLength, plural, one {# character} other {# characters}} long.} other {The password must contain characters from at least {minCharGroups, plural, one {# group} other {# groups}}: lowercase letters, uppercase letters, digits, other characters.}}",
+    "srcHash": "KzcHAkxsQZfv"
+  },
   "exception.usr.PERM_ILLEGAL_INPUT": {
     "defaultMessage": "Invalid permission input: {type}",
     "srcHash": "iSigoQmgIJ2n"
@@ -8168,6 +8220,10 @@
   "ribbon.action.admin.user.passwordChange": {
     "defaultMessage": "Change password",
     "srcHash": "0iNPH3nqvHU4"
+  },
+  "ribbon.action.admin.user.passwordPolicy": {
+    "defaultMessage": "Password rules",
+    "srcHash": "cmLdNbmpOQeB"
   },
   "ribbon.action.aip": {
     "defaultMessage": "Archival packages",

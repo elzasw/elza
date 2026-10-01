@@ -351,7 +351,7 @@ class Ribbon extends AbstractReactComponent {
                             </Dropdown.Toggle>
 
                             <Dropdown.Menu popperConfig={{ strategy: 'fixed' }}>
-                                {userDetail.authTypes.indexOf('PASSWORD') >= 0 && [
+                                {userDetail.id != null && userDetail.authTypes.indexOf('PASSWORD') >= 0 && [
                                     <Dropdown.Item
                                         key="pass-change"
                                         eventKey="1"

@@ -31,6 +31,7 @@ const messages = defineMessages({
     ribbonActivate: { id: 'ribbon.action.admin.user.activate', defaultMessage: 'Aktivovat' },
     ribbonPasswordChange: { id: 'ribbon.action.admin.user.passwordChange', defaultMessage: 'Změnit heslo' },
     ribbonEdit: { id: 'ribbon.action.admin.user.edit', defaultMessage: 'Upravit' },
+    ribbonPasswordPolicy: { id: 'ribbon.action.admin.user.passwordPolicy', defaultMessage: 'Pravidla hesel' },
     searchPlaceholder: { id: 'search.input.search', defaultMessage: 'Vyhledat...' },
     filterAll: { id: 'admin.user.filter.all', defaultMessage: 'Všichni uživatelé' },
     filterOnlyActive: { id: 'admin.user.filter.onlyActive', defaultMessage: 'Aktivní uživatelé' },
@@ -49,6 +50,8 @@ import {modalDialogShow} from '../../actions/global/modalDialog';
 import {requestScopesIfNeeded} from '../../actions/refTables/scopesData';
 import {renderUserItem} from '../../components/admin/adminRenderUtils';
 import PasswordForm from '../../components/admin/PasswordForm';
+import { PasswordPolicyForm } from '../../components/admin/PasswordPolicyForm';
+import * as perms from '../../actions/user/Permission';
 import { showConfirmDialog } from 'components/shared/dialog';
 import { urlAdminUser } from '../../constants';
 
@@ -71,6 +74,7 @@ class AdminUserPage extends AbstractReactComponent {
             'handleChangeUserActive',
             'handleChangeUserPasswordForm',
             'handleChangeUserPassword',
+            'handlePasswordPolicyForm',
             'handleChangeUsernameForm',
             'handleUpdateUser',
         );
@@ -145,11 +149,16 @@ class AdminUserPage extends AbstractReactComponent {
     }
 
     handleChangeUserPasswordForm() {
+        const {userDetail} = this.props.user;
+        const initialValues = {
+            changeRequired: !!userDetail.passwordChangeRequired,
+            neverExpire: !!userDetail.passwordNeverExpire,
+        };
         this.props.dispatch(
             modalDialogShow(
                 this,
                 this.props.intl.formatMessage(messages.passwordChangeTitle),
-                <PasswordForm admin={true} onSubmitForm={this.handleChangeUserPassword} />,
+                <PasswordForm admin={true} initialValues={initialValues} onSubmitForm={this.handleChangeUserPassword} />,
             ),
         );
     }
@@ -160,7 +169,18 @@ class AdminUserPage extends AbstractReactComponent {
                 userDetail: {id},
             },
         } = this.props;
-        return this.props.dispatch(adminPasswordChange(id, data.password));
+        return this.props.dispatch(adminPasswordChange(id, data.password, !!data.changeRequired, !!data.neverExpire));
+    }
+
+    handlePasswordPolicyForm() {
+        // the Fluent dialog renders its own title and surface, so it goes in without the wrapper
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                undefined,
+                ({key, visible, onClose}) => <PasswordPolicyForm key={key} open={visible} onClose={onClose} />,
+            ),
+        );
     }
 
     handleUpdateUser(data) {
@@ -216,6 +236,16 @@ class AdminUserPage extends AbstractReactComponent {
                 </div>
             </Button>,
         );
+        if (this.props.loggedUser.hasOne(perms.USR_PERM)) {
+            altActions.push(
+                <Button key="password-policy" onClick={this.handlePasswordPolicyForm}>
+                    <Icon glyph="fa-shield" />
+                    <div>
+                        <span className="btnText"><FormattedMessage {...messages.ribbonPasswordPolicy} /></span>
+                    </div>
+                </Button>,
+            );
+        }
 
         const userDetail = user.userDetail;
 
@@ -332,10 +362,11 @@ class AdminUserPage extends AbstractReactComponent {
  * Namapování state do properties.
  */
 function mapStateToProps(state) {
-    const {adminRegion} = state;
+    const {adminRegion, userDetail} = state;
 
     return {
         user: adminRegion.user,
+        loggedUser: userDetail,
     };
 }
 
