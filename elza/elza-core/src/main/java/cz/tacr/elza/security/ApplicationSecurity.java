@@ -66,10 +66,15 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.authentication.DelegatingAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
+import org.springframework.security.web.authentication.session.ChangeSessionIdAuthenticationStrategy;
+import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
@@ -501,19 +506,22 @@ public class ApplicationSecurity {
 	 */
 	private AuthenticationSuccessHandler kerberosSuccessHandler() {
 	    RequestMatcher jsonRequestMatcher = new AntPathRequestMatcher(AUTHENTICATE_SSO_JSON);
+	    SecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
+	    SessionAuthenticationStrategy sessionStrategy = new ChangeSessionIdAuthenticationStrategy();
 	    SavedRequestAwareAuthenticationSuccessHandler handler = new SavedRequestAwareAuthenticationSuccessHandler() {
 	        @Override
 	        public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
 	                                            Authentication authentication) throws IOException, ServletException {
 
-	            // The JSON endpoint is called from the page itself, which has no navigation to
-	            // follow - the session cookie on this response is the whole result. The response
-	            // has to be committed here: the SPNEGO filter carries on down the chain, and no
-	            // handler is mapped to this path, so an uncommitted status would become a 404.
+	            // Called from the page itself, so the session cookie is the whole result. The
+	            // response has to be committed here - the SPNEGO filter carries on down the
+	            // chain and nothing is mapped to this path, so a 204 left open becomes a 404.
 	            if (jsonRequestMatcher.matches(request)) {
-	                // The session is the whole result, so it has to exist before the response is
-	                // committed - afterwards its cookie can no longer be sent.
-	                request.getSession(true);
+	                // Same order as a form login, all of it before the commit, while the response
+	                // can still carry the new cookie. Storing the context also keeps the rest of
+	                // the chain from replacing the session.
+	                sessionStrategy.onAuthentication(authentication, request, response);
+	                securityContextRepository.saveContext(SecurityContextHolder.getContext(), request, response);
 	                response.setStatus(HttpServletResponse.SC_NO_CONTENT);
 	                response.flushBuffer();
 	                return;
