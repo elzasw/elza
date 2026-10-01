@@ -7465,6 +7465,10 @@
     "defaultMessage": "User sign-in",
     "srcHash": "5n0yZfWzxL0-"
   },
+  "login.state.signingIn": {
+    "defaultMessage": "Signing in…",
+    "srcHash": "A6o042dKzGEK"
+  },
   "mandatoryType.impossible": {
     "defaultMessage": "Impossible",
     "srcHash": "tF8XT_kWW1X_"

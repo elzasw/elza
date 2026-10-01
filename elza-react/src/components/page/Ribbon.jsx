@@ -13,6 +13,7 @@ import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
 import { Button } from '../ui';
 import { canSetFocus, focusWasSet, isFocusFor } from 'actions/global/focus.jsx';
 import { logout } from 'actions/global/login.jsx';
+import { suppressAutoSsoLogin } from 'utils/loginMethod';
 
 import { modalDialogShow } from 'actions/global/modalDialog.jsx';
 import { userPasswordChange } from 'actions/admin/user.jsx';
@@ -136,6 +137,8 @@ class Ribbon extends AbstractReactComponent {
     };
 
     handleLogout = () => {
+        // Logging out on purpose must not be undone by the automatic Kerberos redirect.
+        suppressAutoSsoLogin();
         this.props.dispatch(logout(true)).then(() => {
             const logoutUrl = window.logoutUrl;
             if (logoutUrl) {

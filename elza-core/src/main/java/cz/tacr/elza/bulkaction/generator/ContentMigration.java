@@ -105,9 +105,14 @@ public class ContentMigration extends BulkActionDFS {
     }
 
     private boolean applyRule(ArrNode node, ResolvedRule rule) {
-        // implicit guard: never merge into / overwrite an occupied target
-        if (!loadItems(node, rule.target).isEmpty()) {
-            return false;
+        // implicit guard: never merge into / overwrite an occupied target;
+        // blank values (stored before 2022) do not occupy the target and are replaced
+        List<ArrDescItem> blankTargets = new ArrayList<>();
+        for (ArrDescItem target : loadItems(node, rule.target)) {
+            if (normalize(readValue(target)) != null) {
+                return false;
+            }
+            blankTargets.add(target);
         }
         List<ArrDescItem> sources = loadItems(node, rule.source);
         if (sources.isEmpty()) {
@@ -121,7 +126,8 @@ public class ContentMigration extends BulkActionDFS {
 
         boolean moved = false;
         for (ArrDescItem source : sources) {
-            String value = readValue(source);
+            // blank values (stored before 2022) are not moved, the validator would reject them
+            String value = normalize(readValue(source));
             if (value == null) {
                 continue;
             }
@@ -131,7 +137,12 @@ public class ContentMigration extends BulkActionDFS {
             }
             // remove double spaces in STRING type
             if (rule.targetDataType == DataType.STRING) {
-                value = value.trim().replaceAll("\\s{2,}", " ");
+                value = value.replaceAll("\\s{2,}", " ");
+            }
+            if (!moved) {
+                for (ArrDescItem blankTarget : blankTargets) {
+                    deleteDescItem(getFondsVersion(), blankTarget);
+                }
             }
             createItem(node, rule.target, rule.targetDataType, value);
             deleteDescItem(getFondsVersion(), source);
@@ -188,6 +199,17 @@ public class ContentMigration extends BulkActionDFS {
             return string.getStringValue();
         }
         return null;
+    }
+
+    /**
+     * Trims the value; blank value (possible in data stored before 2022) is returned as null.
+     */
+    private static String normalize(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 
     private static boolean isSingleLine(String value) {
