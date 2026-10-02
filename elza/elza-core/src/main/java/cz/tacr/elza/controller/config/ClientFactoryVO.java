@@ -850,6 +850,12 @@ public class ClientFactoryVO {
             Function<ArrData, ItemData> dataConvertor = dataConvertors.get(dataType);
             Objects.requireNonNull(dataConvertor);
             ItemData data = dataConvertor.apply(arrData);
+            if (data instanceof DataRecordRef recordRefData) {
+                ApAccessPoint record = ((ArrDataRecordRef) arrData).getRecord();
+                if (record != null) {
+                    recordRefData.setName(accessPointService.findPreferredPartDisplayName(record));
+                }
+            }
             soItem.setData(data);
         }
 
