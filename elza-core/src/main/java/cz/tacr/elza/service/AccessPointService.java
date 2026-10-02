@@ -746,6 +746,9 @@ public class AccessPointService {
         publishAccessPointRestoreEvent(accessPoint);
         //reindexDescItem(accessPoint);
 
+        // dependent entities referring to the restored entity are revalidated asynchronously
+        partService.checkReferredRecords(accessPoint);
+
         // if exists replacedById - regeneration cached AP by id
         if (apState.getReplacedById() != null) {
             accessPointCacheService.createApCachedAccessPoint(apState.getReplacedById());
@@ -2548,6 +2551,8 @@ public class AccessPointService {
             replace(state, trgState, null, macc, false);
             state.setReplacedBy(trgState.getAccessPoint());
             invalidateAccessPoint(state, srcAccessPoint, change);
+            // dependent entities still referring to the invalidated entity are revalidated asynchronously
+            partService.checkReferredRecords(srcAccessPoint);
         }
         
         // TODO: replace next calls with updatePartsIndexesAndValidate
