@@ -11,9 +11,10 @@ import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 import cz.tacr.elza.api.DigitalRepositoryType;
 import cz.tacr.elza.domain.ArrDigitalRepository;
@@ -61,7 +62,11 @@ public class DaScheduler {
      * On create/update/delete of a digital repository, drop the running trigger for it (if any) and
      * re-read from DB. Handles: hot delay change, re-enable after 0, new repository added, deletion.
      */
-    @EventListener
+    // AFTER_COMMIT: the scheduler thread must see the committed row and the reloaded static
+    // data (StaticDataService switches providers on commit). Run synchronously in the
+    // publishing transaction, the first (immediate) run and the next-run check both read
+    // the not-yet-committed state, so a newly created system was never scheduled.
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
     public synchronized void onDigitalRepositoryChanged(ArrDigitalRepositoryEvent event) {
         if (!enabled) {
             return;
