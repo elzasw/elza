@@ -409,6 +409,15 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     }
 
     /**
+     * Zastavení a odstranění požadavků na přípravu publikací podle verze AS.
+     *
+     * @param fundVersionId id verze archivní pomůcky
+     */
+    public void terminateExports(final Integer fundVersionId) {
+        getExecutor(AsyncTypeEnum.EXPORT).terminateFund(fundVersionId);
+    }
+
+    /**
      * Přeruší hromadnou akci pokud je ve stavu - čeká | plánování | běh
      *
      * @param bulkActionId Id hromadné akce
