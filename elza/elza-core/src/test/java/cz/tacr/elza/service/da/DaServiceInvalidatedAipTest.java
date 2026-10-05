@@ -7,6 +7,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -38,6 +41,7 @@ import cz.tacr.elza.repository.DaAipActionItemRepository;
 import cz.tacr.elza.repository.DaAipActionRepository;
 import cz.tacr.elza.repository.DaChangeRepository;
 import cz.tacr.elza.repository.DaDaoRepository;
+import cz.tacr.elza.repository.DaLocalCacheRepository;
 import cz.tacr.elza.repository.DaSyncQueueItemRepository;
 import cz.tacr.elza.repository.DigitalRepositoryRepository;
 import cz.tacr.elza.service.AipService;
@@ -73,6 +77,8 @@ public class DaServiceInvalidatedAipTest extends AbstractServiceTest {
     private DaAipActionItemRepository actionItemRepository;
     @Autowired
     private DigitalRepositoryRepository digitalRepositoryRepository;
+    @Autowired
+    private DaLocalCacheRepository localCacheRepository;
 
     private TransactionTemplate tx() {
         return new TransactionTemplate(txManager);
@@ -81,6 +87,7 @@ public class DaServiceInvalidatedAipTest extends AbstractServiceTest {
     @AfterEach
     public void deleteCreatedRows() {
         tx().executeWithoutResult(t -> {
+            localCacheRepository.deleteAll();
             syncQueueItemRepository.deleteAll();
             actionItemRepository.deleteAll();
             actionRepository.deleteAll();
@@ -177,6 +184,29 @@ public class DaServiceInvalidatedAipTest extends AbstractServiceTest {
         assertEquals(0, aipService.findAipDetailsByFilter(new SearchParams()).getTotalCount(),
                      "the AIP is not listed");
         assertThrows(ObjectNotFoundException.class, () -> aipService.getAip(aipId));
+    }
+
+    /** An export waiting to be sent is dropped together with the package prepared for it. */
+    @Test
+    public void pendingExportIsDropped() throws IOException {
+        Integer repositoryId = tx().execute(t -> createRepository().getExternalSystemId());
+        Integer aipId = tx().execute(t -> createAip(digitalRepositoryRepository.findById(repositoryId).orElseThrow()));
+        Path exportZip = Files.createTempFile("da-export", ".zip");
+        tx().executeWithoutResult(t -> {
+            DaAip aip = aipRepository.findById(aipId).orElseThrow();
+            DaSyncQueueItem item = daService.createSyncQueueItem(CODE, aip, aip.getDigitalRepository(),
+                    DaSyncQueueItem.QueueItemState.EXPORT_NEW, "1", AipType.PACKAGE_INFO, true);
+            daService.createExportLocalCache(aipStateRepository.findByDaAipAndDeleteChangeIsNull(aip),
+                    AipType.PACKAGE_INFO, exportZip, item);
+        });
+
+        sync(repositoryId, update("2", true));
+
+        tx().executeWithoutResult(t -> {
+            assertTrue(activeQueueItems().isEmpty(), "the waiting export is withdrawn");
+            assertTrue(localCacheRepository.findAll().isEmpty(), "the prepared package is forgotten");
+        });
+        assertFalse(Files.exists(exportZip), "the prepared package is deleted");
     }
 
     @Test
