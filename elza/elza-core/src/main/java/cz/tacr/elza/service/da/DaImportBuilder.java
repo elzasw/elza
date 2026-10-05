@@ -55,6 +55,8 @@ import jakarta.transaction.Transactional;
  * <li>otherwise a new last child, with the UUID of the div - so that the next version of the
  * package is matched to it - unless that UUID is taken elsewhere in the fund.</li>
  * </ol>
+ * A level of the chain a received package is placed under stands for no div: it is found by its
+ * match key, or created with a new UUID; the whole package is linked to it when the plan says so.
  *
  * What is attached: the lowest level (a document with its components) gets its own part of the
  * package, which covers its files and everything below it; an upper level gets only the files
@@ -166,6 +168,17 @@ public class DaImportBuilder {
                 return;
             }
             ArrNode level = findOrCreate(node, parent);
+            if (node.isChainLevel()) {
+                // a level the package is placed under - no part of the package lies on it
+                if (node.isAttachWholeAip()) {
+                    daService.linkToNode(aip, null, level, ArrDaoLink.LinkType.AIP, change);
+                    attached++;
+                }
+                for (DaImportPlan.Node child : node.getChildren()) {
+                    place(child, level);
+                }
+                return;
+            }
             boolean hasLevelsBelow = node.getChildren().stream()
                     .anyMatch(child -> child.getDecision() == DaImportResult.Decision.LEVEL);
             if (node.isAttachOwnEntity() || !hasLevelsBelow) {

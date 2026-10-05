@@ -13,6 +13,9 @@ import javax.annotation.Nullable;
  *
  * Skipped divs are not in the plan; what was below them hangs on their nearest planned ancestor,
  * or on the root of the plan.
+ *
+ * A plan placing a received package ({@link #placement}) starts with the chain of levels the
+ * DA_MATCH script decided on; those levels stand for no div.
  */
 public class DaImportPlan {
 
@@ -25,6 +28,7 @@ public class DaImportPlan {
         private final List<DaLevelItems.MatchKey> matchBy;
         private final List<DaLevelItems.Item> items;
         private final boolean attachOwnEntity;
+        private final boolean attachWholeAip;
         private final List<Node> children = new ArrayList<>();
 
         Node(String divId, @Nullable String label, DaImportResult.Decision decision,
@@ -36,12 +40,39 @@ public class DaImportPlan {
         Node(String divId, @Nullable String label, DaImportResult.Decision decision,
              List<DaLevelItems.MatchKey> matchBy,
              List<DaLevelItems.Item> items, boolean attachOwnEntity) {
+            this(divId, label, decision, matchBy, items, attachOwnEntity, false);
+        }
+
+        private Node(@Nullable String divId, @Nullable String label, DaImportResult.Decision decision,
+                     List<DaLevelItems.MatchKey> matchBy, List<DaLevelItems.Item> items, boolean attachOwnEntity,
+                     boolean attachWholeAip) {
             this.divId = divId;
             this.label = label;
             this.decision = decision;
             this.matchBy = List.copyOf(matchBy);
             this.items = List.copyOf(items);
             this.attachOwnEntity = attachOwnEntity;
+            this.attachWholeAip = attachWholeAip;
+        }
+
+        /**
+         * A level of the chain a received package is placed under; it stands for no div.
+         *
+         * @param attachWholeAip whether the whole package is linked to the level
+         */
+        static Node chainLevel(String label, List<DaLevelItems.MatchKey> matchBy, List<DaLevelItems.Item> items,
+                               boolean attachWholeAip) {
+            return new Node(null, label, DaImportResult.Decision.LEVEL, matchBy, items, false, attachWholeAip);
+        }
+
+        /** Whether the level is a level of the chain a package is placed under, standing for no div. */
+        public boolean isChainLevel() {
+            return divId == null;
+        }
+
+        /** Whether the whole package is linked to the level. */
+        public boolean isAttachWholeAip() {
+            return attachWholeAip;
         }
 
         /**
@@ -52,7 +83,8 @@ public class DaImportPlan {
             return attachOwnEntity;
         }
 
-        /** ID of the div - the code of its logical digital entity. */
+        /** ID of the div - the code of its logical digital entity; null for a level of the chain. */
+        @Nullable
         public String getDivId() {
             return divId;
         }
@@ -95,6 +127,36 @@ public class DaImportPlan {
 
     void addRoot(Node node) {
         roots.add(node);
+    }
+
+    /**
+     * The plan placing a received package: the levels of the chain, each below the previous one,
+     * and the plan of the package below the last of them.
+     *
+     * @param chain levels of the chain, top-down
+     * @param below the plan of the package; null when the package is only linked
+     */
+    static DaImportPlan placement(List<Node> chain, @Nullable DaImportPlan below) {
+        DaImportPlan plan = new DaImportPlan();
+        Node last = null;
+        for (Node level : chain) {
+            if (last == null) {
+                plan.addRoot(level);
+            } else {
+                last.addChild(level);
+            }
+            last = level;
+        }
+        if (below != null) {
+            for (Node root : below.getRoots()) {
+                if (last == null) {
+                    plan.addRoot(root);
+                } else {
+                    last.addChild(root);
+                }
+            }
+        }
+        return plan;
     }
 
     /**

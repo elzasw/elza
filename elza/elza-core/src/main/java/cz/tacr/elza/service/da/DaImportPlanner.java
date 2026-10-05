@@ -1,5 +1,6 @@
 package cz.tacr.elza.service.da;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -66,17 +67,84 @@ public class DaImportPlanner {
     public Optional<DaImportPlan> plan(MetsType mets, @Nullable Ead ead, @Nullable String eadHref,
                                        Integer ruleSetId, DaImportPackage importPackage) {
         StaticDataProvider sdp = staticDataService.getData();
-        String scriptPath = findScript(sdp.getRuleSetById(ruleSetId));
+        String scriptPath = findScript(sdp.getRuleSetById(ruleSetId), RulArrangementRule.RuleType.DA_IMPORT);
         if (scriptPath == null) {
             return Optional.empty();
         }
-        DaImportTree tree = new DaImportTree(mets, ead);
+        return Optional.of(planTree(sdp, scriptPath, importPackage, new DaImportTree(mets, ead), eadHref));
+    }
+
+    private DaImportPlan planTree(StaticDataProvider sdp, String scriptPath, DaImportPackage importPackage,
+                                  DaImportTree tree, @Nullable String eadHref) {
         Walk walk = new Walk(sdp, scriptPath, importPackage, tree, eadHref);
         DaImportPlan plan = new DaImportPlan();
         for (DivType root : tree.getRootDivs()) {
             walk.div(root, plan, null, false);
         }
-        return Optional.of(plan);
+        return plan;
+    }
+
+    /**
+     * Plans where a received package that matches no unit of description by UUID is placed. The
+     * DA_MATCH script of the rule set - an arrangement rule of type
+     * {@link RulArrangementRule.RuleType#DA_MATCH}, of several the one of the highest priority -
+     * decides it once for the package, with {@code PACKAGE} ({@link DaImportPackage}),
+     * {@code ROOT} (the top {@link DaImportLevel} with the levels below it) and {@code MATCH}
+     * ({@link DaMatchResult}): a chain of levels below the root of the fund, and whether the
+     * package is imported below the last of them (as the DA_IMPORT script plans it) or only linked
+     * to it. A package whose plan attaches nothing is linked to the last level as a whole.
+     *
+     * @return the plan to carry out below the root of the fund; empty when the rule set has no
+     *         DA_MATCH script, or the script leaves the package to a user
+     * @throws AipProblemException when the EAD is not written the way it can be read
+     * @throws SystemException when a script decides wrongly, or the package is to be imported and
+     *             the rule set has no DA_IMPORT script
+     */
+    @Transactional(Transactional.TxType.MANDATORY)
+    public Optional<DaImportPlan> planPlacement(MetsType mets, @Nullable Ead ead, @Nullable String eadHref,
+                                                Integer ruleSetId, DaImportPackage importPackage) {
+        StaticDataProvider sdp = staticDataService.getData();
+        RuleSet ruleSet = sdp.getRuleSetById(ruleSetId);
+        String matchScript = findScript(ruleSet, RulArrangementRule.RuleType.DA_MATCH);
+        if (matchScript == null) {
+            return Optional.empty();
+        }
+        DaImportTree tree = new DaImportTree(mets, ead);
+        List<DaImportLevel> roots = tree.getRoots();
+        DaMatchResult match = new DaMatchResult(sdp, eadHref);
+        groovyScriptService.processDaMatch(importPackage, roots.isEmpty() ? null : roots.get(0), match, matchScript);
+        match.validate();
+
+        DaImportPlan below = null;
+        switch (match.getEnding()) {
+        case NONE -> {
+            return Optional.empty();
+        }
+        case IMPORT_HERE -> {
+            String importScript = findScript(ruleSet, RulArrangementRule.RuleType.DA_IMPORT);
+            if (importScript == null) {
+                throw new SystemException("Skript DA_MATCH zařazuje balíček i s popisem (importHere), ale pravidla "
+                        + ruleSetLabel(ruleSetId) + " nemají skript DA_IMPORT", BaseCode.INVALID_STATE);
+            }
+            below = planTree(sdp, importScript, importPackage, tree, eadHref);
+        }
+        case LINK_HERE -> {
+            // the whole package is linked to the last level
+        }
+        }
+        boolean linkWhole = below == null || below.getRoots().isEmpty();
+        List<DaMatchLevel> levels = match.getLevels();
+        if (linkWhole && levels.isEmpty()) {
+            // an empty plan below the root of the fund - nothing to place the package by
+            return Optional.empty();
+        }
+        List<DaImportPlan.Node> chain = new ArrayList<>(levels.size());
+        for (int i = 0; i < levels.size(); i++) {
+            DaMatchLevel level = levels.get(i);
+            chain.add(DaImportPlan.Node.chainLevel(level.label(), level.getMatchBy(), level.getItems(),
+                                                   linkWhole && i == levels.size() - 1));
+        }
+        return Optional.of(DaImportPlan.placement(chain, below));
     }
 
     /**
@@ -93,7 +161,7 @@ public class DaImportPlanner {
     public Optional<DaImportPlan> planBelow(MetsType mets, @Nullable Ead ead, @Nullable String eadHref,
                                             Integer ruleSetId, DaImportPackage importPackage, String startUuid) {
         StaticDataProvider sdp = staticDataService.getData();
-        String scriptPath = findScript(sdp.getRuleSetById(ruleSetId));
+        String scriptPath = findScript(sdp.getRuleSetById(ruleSetId), RulArrangementRule.RuleType.DA_IMPORT);
         if (scriptPath == null) {
             return Optional.empty();
         }
@@ -144,7 +212,6 @@ public class DaImportPlanner {
         return List.of();
     }
 
-    @Nullable
     /** Whether the rule set can import packages at all - it has a DA_IMPORT script. */
     public boolean canImport(Integer ruleSetId) {
         return !staticDataService.getData().getRuleSetById(ruleSetId)
@@ -162,8 +229,9 @@ public class DaImportPlanner {
                 : ruleSet.getCode() + ", balíček " + rulPackage.getCode() + " verze " + rulPackage.getVersion();
     }
 
-    private String findScript(RuleSet ruleSet) {
-        List<RulArrangementRule> rules = ruleSet.getRulesByType(RulArrangementRule.RuleType.DA_IMPORT);
+    @Nullable
+    private String findScript(RuleSet ruleSet, RulArrangementRule.RuleType ruleType) {
+        List<RulArrangementRule> rules = ruleSet.getRulesByType(ruleType);
         if (rules.isEmpty()) {
             return null;
         }

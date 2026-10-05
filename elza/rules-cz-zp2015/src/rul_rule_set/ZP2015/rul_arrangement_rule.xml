@@ -24,4 +24,9 @@
         <rule-type>DA_IMPORT</rule-type>
         <priority>100</priority>
     </arrangement-rule>
+    <!-- Zařazení přijatého balíčku digitálního archivu, který se neshoduje s žádnou JP podle UUID -->
+    <arrangement-rule filename="DA_MATCH.groovy">
+        <rule-type>DA_MATCH</rule-type>
+        <priority>100</priority>
+    </arrangement-rule>
 </arrangement-rules>
