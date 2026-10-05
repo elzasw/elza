@@ -10,6 +10,7 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.archivists.ead3.schema.Abstract;
+import org.archivists.ead3.schema.Container;
 import org.archivists.ead3.schema.Unitdatestructured;
 import org.archivists.ead3.schema.Unitid;
 import org.archivists.ead3.schema.Unittitle;
@@ -71,23 +72,26 @@ final class DidElementConverters {
      * @param altrender the attribute that marks an inherited value
      */
     private record ElementType<T>(Function<T, String> localType, Function<T, String> altrender,
-                                  Converter<T> converter) {
+                                  @Nullable Function<T, List<Serializable>> content, Converter<T> converter) {
     }
 
     private static final Map<Class<?>, ElementType<?>> ELEMENT_TYPES = new HashMap<>();
 
     static {
-        register(Unittitle.class, Unittitle::getLocaltype, Unittitle::getAltrender,
+        register(Unittitle.class, Unittitle::getLocaltype, Unittitle::getAltrender, Unittitle::getContent,
                  (unittitle, mapping) -> textValue(unittitle.getContent(), mapping.itemType()));
-        register(Abstract.class, Abstract::getLocaltype, Abstract::getAltrender,
+        register(Abstract.class, Abstract::getLocaltype, Abstract::getAltrender, Abstract::getContent,
                  (abs, mapping) -> textValue(abs.getContent(), mapping.itemType()));
         // The kind of identifier (filing code, reference number, ...) is its local type.
-        register(Unitid.class, Unitid::getLocaltype, Unitid::getAltrender,
+        register(Unitid.class, Unitid::getLocaltype, Unitid::getAltrender, Unitid::getContent,
                  (unitid, mapping) -> textValue(unitid.getContent(), mapping.itemType()));
+        // The storage unit the unit of description lies in, e.g. "samostatně 1".
+        register(Container.class, Container::getLocaltype, Container::getAltrender, Container::getContent,
+                 (container, mapping) -> textValue(container.getContent(), mapping.itemType()));
         // The kind of date (date of origin, date of content, ...) is the local type of <daterange>.
         register(Unitdatestructured.class,
                  unitdate -> unitdate.getDaterange() != null ? unitdate.getDaterange().getLocaltype() : null,
-                 Unitdatestructured::getAltrender,
+                 Unitdatestructured::getAltrender, null,
                  DidElementConverters::unitdateValue);
     }
 
@@ -95,8 +99,9 @@ final class DidElementConverters {
     }
 
     private static <T> void register(Class<T> elementClass, Function<T, String> localType,
-                                     Function<T, String> altrender, Converter<T> converter) {
-        ELEMENT_TYPES.put(elementClass, new ElementType<>(localType, altrender, converter));
+                                     Function<T, String> altrender,
+                                     @Nullable Function<T, List<Serializable>> content, Converter<T> converter) {
+        ELEMENT_TYPES.put(elementClass, new ElementType<>(localType, altrender, content, converter));
     }
 
     @SuppressWarnings("unchecked")
@@ -131,6 +136,19 @@ final class DidElementConverters {
     static String localType(Object element) {
         ElementType<Object> type = elementType(element);
         return type == null ? null : StringUtils.trimToNull(type.localType().apply(element));
+    }
+
+    /**
+     * @return own text of the supported element, white space normalized; null when it has no
+     *         text content or none at all
+     */
+    @Nullable
+    static String text(Object element) {
+        ElementType<Object> type = elementType(element);
+        if (type == null || type.content() == null) {
+            return null;
+        }
+        return StringUtils.trimToNull(StringUtils.normalizeSpace(ownText(type.content().apply(element))));
     }
 
     /**
@@ -173,26 +191,32 @@ final class DidElementConverters {
      */
     @Nullable
     private static ArrData textValue(List<Serializable> content, RulItemType itemType) {
+        String own = ownText(content);
+        if (StringUtils.isBlank(own)) {
+            return null;
+        }
+        DataType dataType = requireDataType(itemType, DataType.STRING, DataType.TEXT);
+        if (dataType == DataType.TEXT) {
+            return new ArrDataText(own.strip());
+        }
+        // A string is a single line; its line breaks and indentation are those of the XML.
+        String text = StringUtils.normalizeSpace(own);
+        if (text.length() > StringLength.LENGTH_1000) {
+            throw new EadContentException("text je delší než " + StringLength.LENGTH_1000
+                    + " znaků, které pojme prvek popisu " + itemType.getCode());
+        }
+        return new ArrDataString(text);
+    }
+
+    /** The text parts of mixed content; text inside nested formatting elements is not read. */
+    private static String ownText(List<Serializable> content) {
         StringBuilder sb = new StringBuilder();
         for (Serializable part : content) {
             if (part instanceof String s) {
                 sb.append(s);
             }
         }
-        if (StringUtils.isBlank(sb)) {
-            return null;
-        }
-        DataType dataType = requireDataType(itemType, DataType.STRING, DataType.TEXT);
-        if (dataType == DataType.TEXT) {
-            return new ArrDataText(sb.toString().strip());
-        }
-        // A string is a single line; its line breaks and indentation are those of the XML.
-        String text = StringUtils.normalizeSpace(sb.toString());
-        if (text.length() > StringLength.LENGTH_1000) {
-            throw new EadContentException("text je delší než " + StringLength.LENGTH_1000
-                    + " znaků, které pojme prvek popisu " + itemType.getCode());
-        }
-        return new ArrDataString(text);
+        return sb.toString();
     }
 
     private static DataType requireDataType(RulItemType itemType, DataType... allowed) {

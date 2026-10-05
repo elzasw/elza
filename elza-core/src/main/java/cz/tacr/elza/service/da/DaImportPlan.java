@@ -6,8 +6,6 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import cz.tacr.elza.domain.RulItemType;
-
 /**
  * What importing a package would create below the node it is imported to: the levels and
  * attachments decided by the DA_IMPORT script for the divs of the logical structural map.
@@ -24,18 +22,20 @@ public class DaImportPlan {
         private final String divId;
         private final String label;
         private final DaImportResult.Decision decision;
-        private final List<RulItemType> matchBy;
-        private final List<DaImportResult.Item> items;
+        private final List<DaLevelItems.MatchKey> matchBy;
+        private final List<DaLevelItems.Item> items;
         private final boolean attachOwnEntity;
         private final List<Node> children = new ArrayList<>();
 
-        Node(String divId, @Nullable String label, DaImportResult.Decision decision, List<RulItemType> matchBy,
-             List<DaImportResult.Item> items) {
+        Node(String divId, @Nullable String label, DaImportResult.Decision decision,
+             List<DaLevelItems.MatchKey> matchBy,
+             List<DaLevelItems.Item> items) {
             this(divId, label, decision, matchBy, items, false);
         }
 
-        Node(String divId, @Nullable String label, DaImportResult.Decision decision, List<RulItemType> matchBy,
-             List<DaImportResult.Item> items, boolean attachOwnEntity) {
+        Node(String divId, @Nullable String label, DaImportResult.Decision decision,
+             List<DaLevelItems.MatchKey> matchBy,
+             List<DaLevelItems.Item> items, boolean attachOwnEntity) {
             this.divId = divId;
             this.label = label;
             this.decision = decision;
@@ -67,13 +67,13 @@ public class DaImportPlan {
             return decision;
         }
 
-        /** @see DaImportResult#matchBy(String...) */
-        public List<RulItemType> getMatchBy() {
+        /** @see DaLevelItems#matchBy(String...) */
+        public List<DaLevelItems.MatchKey> getMatchBy() {
             return matchBy;
         }
 
         /** Items of the level; empty for an attachment. */
-        public List<DaImportResult.Item> getItems() {
+        public List<DaLevelItems.Item> getItems() {
             return items;
         }
 

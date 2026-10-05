@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<mets xmlns="http://www.loc.gov/METS/" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:csip="https://DILCIS.eu/XML/METS/CSIPExtensionMETS" OBJID="9f38e61d-3761-4ab2-925e-ba3042751564" TYPE="Other" PROFILE="https://stands.nacr.cz/da/2023/aip.xml" csip:CONTENTINFORMATIONTYPE="OTHER" csip:OTHERCONTENTINFORMATIONTYPE="Volné soubory" xsi:schemaLocation="http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd http://www.w3.org/1999/xlink http://www.loc.gov/standards/mets/xlink.xsd https://DILCIS.eu/XML/METS/CSIPExtensionMETS https://earkcsip.dilcis.eu/schema/DILCISExtensionMETS.xsd">
+    <metsHdr CREATEDATE="2026-09-14T07:05:36.418+02:00" csip:OAISPACKAGETYPE="AIP">
+        <agent ROLE="CREATOR" TYPE="OTHER" OTHERTYPE="SOFTWARE">
+            <name>damo-tas-aip-service</name>
+            <note csip:NOTETYPE="SOFTWARE VERSION">3.3</note>
+        </agent>
+    </metsHdr>
+    <dmdSec ID="uuid-e47763bf-b241-4d36-9281-c8be8a0d31d5" GROUPID="INHERENT" CREATED="2026-09-14T07:05:36.418+02:00" STATUS="CURRENT">
+        <mdRef xlink:type="simple" xlink:href="metadata/descriptive/DOK_9f38e61d-3761-4ab2-925e-ba3042751564.xml" MDTYPE="EAD" LOCTYPE="URL" MIMETYPE="application/xml" SIZE="2583" CREATED="2026-09-14T07:05:36.418+02:00" CHECKSUM="944D37D072DBA70D3B0B7159774FE37740894CE0F9A7AB645C2164BED28DE5252FAAA45C732C2D56A22A57D457B16DF085E095826E2F7B513BD3B301FCF0DA3D" CHECKSUMTYPE="SHA-512"/>
+    </dmdSec>
+    <amdSec>
+        <digiprovMD ID="uuid-317647f5-cd20-4f50-a3cd-2a3d4746bd61" GROUPID="PRESERVATION" STATUS="CURRENT">
+            <mdRef xlink:type="simple" xlink:href="metadata/preservation/PACKAGE-INFO.xml" MDTYPE="PREMIS" LOCTYPE="URL" MIMETYPE="application/xml" SIZE="6438" CREATED="2026-09-14T07:05:36.418+02:00" CHECKSUM="00A3810EF501103A826DDC4639699DB0AC8FC7B8C06060039AE4FC72FA240D74C4E04F96AAEE564516A8A819EAF8BCC5154C1F8D080073AE19ED8768B54F8037" CHECKSUMTYPE="SHA-512"/>
+        </digiprovMD>
+        <digiprovMD ID="uuid-51b66440-91ef-48c1-b419-a38f9240a815" GROUPID="PRESERVATION" STATUS="CURRENT">
+            <mdRef xlink:type="simple" xlink:href="metadata/preservation/PREMIS.xml" MDTYPE="PREMIS" LOCTYPE="URL" MIMETYPE="application/xml" SIZE="3191" CREATED="2026-09-14T07:05:36.418+02:00" CHECKSUM="3CFFABD8A5A4EC22B78B94F3102378F845E24C3C5D8E27070C068A3951F20351AF7A56BB5F51FC462B8C7C2014AF6C8BED2FFA9751F16D2B18D4B9C26CB1A5ED" CHECKSUMTYPE="SHA-512"/>
+        </digiprovMD>
+    </amdSec>
+    <fileSec ID="uuid-592500a9-3c22-41f4-a1f6-a5e14ad93ee7">
+        <fileGrp ID="uuid-b16f7071-8271-4b1e-a100-b1f444e44626" USE="Representations/submission">
+            <file ID="uuid-74bf6908-d617-402f-a2e8-99035ba8a846" MIMETYPE="image/tiff" SIZE="2928" CREATED="2026-09-14T07:05:14.452+02:00" CHECKSUM="80082A6845CEDFCE2D05D6F5EF608C249C5E63DC64DF04956633C2B1DFB15C28156EA8ADC94F209833F38A00AE9FA2A3557A844218D8D2073B6B8B001DCAF7B0" CHECKSUMTYPE="SHA-512">
+                <FLocat LOCTYPE="URL" xlink:type="simple" xlink:href="representations/submission/data/komponenty/KOM_00001_9f38e61d-3761-4ab2-925e-ba3042751564.tif"/>
+            </file>
+        </fileGrp>
+    </fileSec>
+    <structMap ID="uuid-4960e424-24e5-44c9-a18e-c10e29101acc" TYPE="PHYSICAL" LABEL="CSIP">
+        <div ID="uuid-c8911522-47c2-46e2-980d-0e4f6e9913f2">
+            <div ID="uuid-3454eda2-bd43-4af7-9355-5362a5e07faa" DMDID="uuid-e47763bf-b241-4d36-9281-c8be8a0d31d5" ADMID="uuid-317647f5-cd20-4f50-a3cd-2a3d4746bd61 uuid-51b66440-91ef-48c1-b419-a38f9240a815" LABEL="Metadata"/>
+            <div ID="uuid-7a3695e2-5ce2-4483-8928-996df70e1889" LABEL="Representations">
+                <fptr FILEID="uuid-b16f7071-8271-4b1e-a100-b1f444e44626"/>
+            </div>
+        </div>
+    </structMap>
+    <structMap ID="uuid-b5cb91f0-d8fe-44b5-8f4f-82ed0fc7ef52" TYPE="LOGICAL" LABEL="CZDAX-LOGICAL-STRUCTURE">
+        <div ID="uuid-9f38e61d-3761-4ab2-925e-ba3042751564" TYPE="balicek" LABEL="Balíček s digitalizátem">
+            <div ID="uuid-f793d499-430b-4342-b5b6-139343262bf8" TYPE="slozka" LABEL="Posudek vojáka; 1938; 5030">
+                <div ID="uuid-0975b315-0363-43bb-acb2-25d9c331c65e" TYPE="komponenta" LABEL="KOM_00001_9f38e61d-3761-4ab2-925e-ba3042751564.tif">
+                    <fptr FILEID="uuid-74bf6908-d617-402f-a2e8-99035ba8a846"/>
+                </div>
+            </div>
+        </div>
+    </structMap>
+</mets>

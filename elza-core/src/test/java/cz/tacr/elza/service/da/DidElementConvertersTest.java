@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.archivists.ead3.schema.Container;
+import org.archivists.ead3.schema.Dao;
 import org.archivists.ead3.schema.Daterange;
 import org.archivists.ead3.schema.Unitdatestructured;
 import org.archivists.ead3.schema.Unittitle;
@@ -40,11 +41,22 @@ public class DidElementConvertersTest {
 
     @Test
     void unsupportedElement() {
-        Container container = new Container();
+        Dao dao = new Dao();
 
-        assertFalse(DidElementConverters.isSupported(container));
-        assertFalse(DidElementConverters.isInherited(container));
-        assertNull(DidElementConverters.localType(container));
+        assertFalse(DidElementConverters.isSupported(dao));
+        assertFalse(DidElementConverters.isInherited(dao));
+        assertNull(DidElementConverters.localType(dao));
+        assertNull(DidElementConverters.text(dao));
+    }
+
+    @Test
+    void containerText_isNormalized() {
+        Container container = new Container();
+        container.getContent().add("\n   samostatně\n   1 ");
+
+        assertTrue(DidElementConverters.isSupported(container));
+        assertEquals("samostatně 1", DidElementConverters.text(container));
+        assertNull(DidElementConverters.text(new Unitdatestructured()), "a structured date has no text");
     }
 
     private static Unitdatestructured unitdate(String localType) {

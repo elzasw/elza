@@ -1,19 +1,12 @@
 package cz.tacr.elza.service.da;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
-import org.archivists.ead3.schema.Archdesc;
-import org.archivists.ead3.schema.C;
-import org.archivists.ead3.schema.Dsc;
 import org.archivists.ead3.schema.Ead;
-import org.archivists.ead3.schema.Fileplan;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
@@ -77,12 +70,11 @@ public class DaImportPlanner {
         if (scriptPath == null) {
             return Optional.empty();
         }
-        Walk walk = new Walk(sdp, scriptPath, importPackage, ead, eadHref);
+        DaImportTree tree = new DaImportTree(mets, ead);
+        Walk walk = new Walk(sdp, scriptPath, importPackage, tree, eadHref);
         DaImportPlan plan = new DaImportPlan();
-        for (StructMapType structMap : mets.getStructMap()) {
-            if (LOGICAL.equals(structMap.getTYPE()) && structMap.getDiv() != null) {
-                walk.div(structMap.getDiv(), null, plan, null, false);
-            }
+        for (DivType root : tree.getRootDivs()) {
+            walk.div(root, plan, null, false);
         }
         return Optional.of(plan);
     }
@@ -105,13 +97,12 @@ public class DaImportPlanner {
         if (scriptPath == null) {
             return Optional.empty();
         }
-        Walk walk = new Walk(sdp, scriptPath, importPackage, ead, eadHref);
-        for (StructMapType structMap : mets.getStructMap()) {
-            if (LOGICAL.equals(structMap.getTYPE()) && structMap.getDiv() != null) {
-                Optional<DaImportPlan> plan = walk.below(structMap.getDiv(), null, startUuid);
-                if (plan.isPresent()) {
-                    return plan;
-                }
+        DaImportTree tree = new DaImportTree(mets, ead);
+        Walk walk = new Walk(sdp, scriptPath, importPackage, tree, eadHref);
+        for (DivType root : tree.getRootDivs()) {
+            Optional<DaImportPlan> plan = walk.below(root, startUuid);
+            if (plan.isPresent()) {
+                return plan;
             }
         }
         return Optional.empty();
@@ -186,57 +177,32 @@ public class DaImportPlanner {
         private final StaticDataProvider sdp;
         private final String scriptPath;
         private final DaImportPackage importPackage;
+        private final DaImportTree tree;
         private final String eadHref;
-        private final Map<String, C> units = new HashMap<>();
-        private final Map<String, Fileplan> fileplans = new HashMap<>();
 
-        Walk(StaticDataProvider sdp, String scriptPath, DaImportPackage importPackage, @Nullable Ead ead,
+        Walk(StaticDataProvider sdp, String scriptPath, DaImportPackage importPackage, DaImportTree tree,
              @Nullable String eadHref) {
             this.sdp = sdp;
             this.scriptPath = scriptPath;
             this.importPackage = importPackage;
+            this.tree = tree;
             this.eadHref = eadHref;
-            if (ead != null && ead.getArchdesc() != null) {
-                index(ead.getArchdesc());
-            }
-        }
-
-        private void index(Archdesc archdesc) {
-            for (Object o : archdesc.getAccessrestrictOrAccrualsOrAcqinfo()) {
-                if (o instanceof Dsc dsc) {
-                    dsc.getC().forEach(this::index);
-                } else if (o instanceof Fileplan fileplan && fileplan.getId() != null) {
-                    fileplans.put(fileplan.getId(), fileplan);
-                }
-            }
-        }
-
-        private void index(C c) {
-            if (c.getId() != null) {
-                units.put(c.getId(), c);
-            }
-            for (Object o : c.getTheadAndC()) {
-                if (o instanceof C child) {
-                    index(child);
-                }
-            }
         }
 
         /**
          * Finds the div of the UUID and plans the divs below it; the divs on the way to it are
          * not planned.
          */
-        Optional<DaImportPlan> below(DivType div, @Nullable DaImportLevel parentLevel, String startUuid) {
-            DaImportLevel level = level(div, parentLevel);
+        Optional<DaImportPlan> below(DivType div, String startUuid) {
             if (startUuid.equals(AipNodeUuids.normalize(div.getID()))) {
                 DaImportPlan plan = new DaImportPlan();
                 for (DivType child : div.getDiv()) {
-                    div(child, level, plan, null, false);
+                    div(child, plan, null, false);
                 }
                 return Optional.of(plan);
             }
             for (DivType child : div.getDiv()) {
-                Optional<DaImportPlan> plan = below(child, level, startUuid);
+                Optional<DaImportPlan> plan = below(child, startUuid);
                 if (plan.isPresent()) {
                     return plan;
                 }
@@ -249,9 +215,8 @@ public class DaImportPlanner {
          * @param underAttachment whether an ancestor of the div is an attachment - nothing below an
          *            attachment can be a level
          */
-        void div(DivType div, @Nullable DaImportLevel parentLevel, DaImportPlan plan,
-                 @Nullable DaImportPlan.Node parentNode, boolean underAttachment) {
-            DaImportLevel level = level(div, parentLevel);
+        void div(DivType div, DaImportPlan plan, @Nullable DaImportPlan.Node parentNode, boolean underAttachment) {
+            DaImportLevel level = tree.level(div);
             DaImportResult result = new DaImportResult(sdp, level, eadHref);
             groovyScriptService.processDaImport(importPackage, level, result, scriptPath);
 
@@ -283,24 +248,8 @@ public class DaImportPlanner {
             }
             }
             for (DivType child : div.getDiv()) {
-                div(child, level, plan, childParent, childUnderAttachment);
+                div(child, plan, childParent, childUnderAttachment);
             }
-        }
-
-        private DaImportLevel level(DivType div, @Nullable DaImportLevel parentLevel) {
-            String id = div.getID();
-            C unit = units.get(id);
-            List<DaImportElement> elements = new ArrayList<>();
-            if (unit != null && unit.getDid() != null) {
-                for (Object element : unit.getDid().getMDid()) {
-                    if (DidElementConverters.isSupported(element) && !DidElementConverters.isInherited(element)) {
-                        elements.add(new DaImportElement(element));
-                    }
-                }
-            }
-            return new DaImportLevel(id, StringUtils.trimToNull(div.getTYPE()), StringUtils.trimToNull(div.getLABEL()),
-                    parentLevel, fileplans.containsKey(id),
-                    unit != null ? unit.getLevel() : null, unit != null ? unit.getOtherlevel() : null, elements);
         }
 
         private DaImportPlan.Node node(DaImportLevel level, DaImportResult result) {

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ead xmlns="http://ead3.archivists.org/schema/" xmlns:cam="http://cam.tacr.cz/2019">
+    <control>
+        <recordid>a13bf8aa-d8fb-4938-a276-242e21b38cc2</recordid>
+        <filedesc encodinganalog="1">
+            <titlestmt>
+                <titleproper>1. rychlá divize</titleproper>
+            </titlestmt>
+        </filedesc>
+        <maintenancestatus value="derived"/>
+        <maintenanceagency countrycode="CZ">
+            <agencycode localtype="CZ_MVCR_INSTITUTION_ID">610000040</agencycode>
+            <agencyname>Archiv Ministerstva obrany České republiky</agencyname>
+        </maintenanceagency>
+        <localcontrol localtype="RULES">
+            <term identifier="CZ_ZP2013">základní pravidla od roku 2013</term>
+        </localcontrol>
+        <localcontrol localtype="CZ_FINDING_AID_EAD_PROFILE">
+            <term identifier="CZ_EAD3_PROFILE_20260501">profil platný od května 2026</term>
+        </localcontrol>
+        <maintenancehistory>
+            <maintenanceevent>
+                <eventtype value="created"/>
+                <eventdatetime standarddatetime="2026-09-14T07:05:36+02:00"/>
+                <agenttype value="machine"/>
+                <agent>DA MO</agent>
+            </maintenanceevent>
+        </maintenancehistory>
+    </control>
+    <archdesc id="uuid-a13bf8aa-d8fb-4938-a276-242e21b38cc2" otherlevel="balicek" level="otherlevel">
+        <did>
+            <unitid localtype="ID" label="identifikátor jednotky popisu">uuid-a13bf8aa-d8fb-4938-a276-242e21b38cc2</unitid>
+        </did>
+        <dsc>
+            <c level="otherlevel" otherlevel="slozka" id="uuid-f793d499-430b-4342-b5b6-139343262bf8">
+                <did>
+                    <unittitle>Posudek vojáka; 1938; 5030</unittitle>
+                    <unitid localtype="SIGNATURA_ZPRACOVANI" label="signatura přidělená při zpracování archiválie">sig</unitid>
+                    <container>samostatně 1</container>
+                </did>
+                <acqinfo>
+                    <p>digit</p>
+                </acqinfo>
+                <c level="otherlevel" otherlevel="komponenta" id="uuid-74bf6908-d617-402f-a2e8-99035ba8a846">
+                    <did>
+                        <unitid localtype="PUVODNI_NAZEV" label="původní název">page-01.tif</unitid>
+                        <dao identifier="uuid-74bf6908-d617-402f-a2e8-99035ba8a846" daotype="derived" coverage="whole"/>
+                    </did>
+                </c>
+            </c>
+        </dsc>
+    </archdesc>
+</ead>

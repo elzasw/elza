@@ -1,15 +1,20 @@
 package cz.tacr.elza.service.da;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
 /**
  * One {@code <div>} of the logical structural map of the package, with the unit of description
- * of the EAD it stands for, as the DA_IMPORT script sees it (variable {@code LEVEL}).
+ * of the EAD it stands for, as the scripts see it: the DA_IMPORT script gets one level at a time
+ * (variable {@code LEVEL}), the DA_MATCH script the top one with the whole tree below it
+ * (variable {@code ROOT}).
  *
  * The div and the unit are paired by id: the {@code ID} of the div is the {@code id} of the
- * {@code <c>}, or of the {@code <fileplan>} for the file plan the package comes from.
+ * {@code <c>} or of the {@code <archdesc>} (a package describing itself as one unit), or of the
+ * {@code <fileplan>} for the file plan the package comes from.
  */
 public class DaImportLevel {
 
@@ -21,6 +26,7 @@ public class DaImportLevel {
     private final String eadLevel;
     private final String eadOtherLevel;
     private final List<DaImportElement> elements;
+    private final List<DaImportLevel> children = new ArrayList<>();
 
     DaImportLevel(String id, @Nullable String divType, @Nullable String label, @Nullable DaImportLevel parent,
                   boolean fileplan, @Nullable String eadLevel, @Nullable String eadOtherLevel,
@@ -58,6 +64,15 @@ public class DaImportLevel {
         return parent;
     }
 
+    /** The divs nested in this one, in the order of the map. */
+    public List<DaImportLevel> getChildren() {
+        return Collections.unmodifiableList(children);
+    }
+
+    void addChild(DaImportLevel child) {
+        children.add(child);
+    }
+
     /** 1 for a top div of the map. */
     public int getDepth() {
         return parent == null ? 1 : parent.getDepth() + 1;
@@ -68,13 +83,13 @@ public class DaImportLevel {
         return fileplan;
     }
 
-    /** {@code level} of the {@code <c>}, e.g. series, file, item, otherlevel; null without a unit. */
+    /** {@code level} of the unit, e.g. series, file, item, otherlevel; null without a unit. */
     @Nullable
     public String getEadLevel() {
         return eadLevel;
     }
 
-    /** {@code otherlevel} of the {@code <c>}, e.g. vecnaskp, dokument; null when it has none. */
+    /** {@code otherlevel} of the unit, e.g. vecnaskp, dokument, balicek; null when it has none. */
     @Nullable
     public String getEadOtherLevel() {
         return eadOtherLevel;
