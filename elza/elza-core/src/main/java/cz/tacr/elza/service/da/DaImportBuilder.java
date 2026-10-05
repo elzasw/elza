@@ -239,7 +239,7 @@ public class DaImportBuilder {
             ArrNode level = daService.createChildNode(parent, change, maxPosition == null ? 1 : maxPosition + 1, uuid);
 
             List<ArrDescItem> items = new ArrayList<>(node.getItems().size());
-            for (DaImportResult.Item item : node.getItems()) {
+            for (DaLevelItems.Item item : node.getItems()) {
                 items.add(createItem(level, item));
             }
             siblings.add(new Child(level, items));
@@ -256,13 +256,13 @@ public class DaImportBuilder {
         private void enrich(DaImportPlan.Node node, Child sibling) {
             Map<Integer, List<ArrDescItem>> existing = sibling.items().stream()
                     .collect(Collectors.groupingBy(ArrDescItem::getItemTypeId));
-            Map<Integer, List<DaImportResult.Item>> planned = node.getItems().stream()
+            Map<Integer, List<DaLevelItems.Item>> planned = node.getItems().stream()
                     .collect(Collectors.groupingBy(i -> i.itemType().getItemTypeId()));
             boolean added = false;
-            for (Map.Entry<Integer, List<DaImportResult.Item>> entry : planned.entrySet()) {
+            for (Map.Entry<Integer, List<DaLevelItems.Item>> entry : planned.entrySet()) {
                 List<ArrDescItem> present = existing.get(entry.getKey());
                 if (CollectionUtils.isEmpty(present)) {
-                    for (DaImportResult.Item item : entry.getValue()) {
+                    for (DaLevelItems.Item item : entry.getValue()) {
                         sibling.items().add(createItem(sibling.node(), item));
                     }
                     added = true;
@@ -278,7 +278,7 @@ public class DaImportBuilder {
             }
         }
 
-        private ArrDescItem createItem(ArrNode node, DaImportResult.Item item) {
+        private ArrDescItem createItem(ArrNode node, DaLevelItems.Item item) {
             ArrDescItem descItem = new ArrDescItem();
             descItem.setItemType(item.itemType());
             descItem.setItemSpec(item.itemSpec());
@@ -287,12 +287,13 @@ public class DaImportBuilder {
         }
 
         private boolean sameValues(DaImportPlan.Node node, Child sibling) {
-            for (RulItemType itemType : node.getMatchBy()) {
+            for (DaLevelItems.MatchKey key : node.getMatchBy()) {
                 List<String> planned = plannedValues(node.getItems().stream()
-                        .filter(i -> i.itemType().getItemTypeId().equals(itemType.getItemTypeId()))
+                        .filter(i -> key.covers(i.itemType().getItemTypeId(),
+                                                i.itemSpec() == null ? null : i.itemSpec().getItemSpecId()))
                         .collect(Collectors.toList()));
                 List<String> present = values(sibling.items().stream()
-                        .filter(i -> i.getItemTypeId().equals(itemType.getItemTypeId()))
+                        .filter(i -> key.covers(i.getItemTypeId(), i.getItemSpecId()))
                         .collect(Collectors.toList()));
                 if (planned.isEmpty() || !planned.equals(present)) {
                     return false;
@@ -340,7 +341,7 @@ public class DaImportBuilder {
         return items.stream().map(i -> value(i.getItemSpecId(), i.getData())).sorted().toList();
     }
 
-    private static List<String> plannedValues(List<DaImportResult.Item> items) {
+    private static List<String> plannedValues(List<DaLevelItems.Item> items) {
         return items.stream()
                 .map(i -> value(i.itemSpec() == null ? null : i.itemSpec().getItemSpecId(), i.data()))
                 .sorted().toList();

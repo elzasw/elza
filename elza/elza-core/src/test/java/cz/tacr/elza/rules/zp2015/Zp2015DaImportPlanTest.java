@@ -250,7 +250,7 @@ public class Zp2015DaImportPlanTest {
     }
 
     private static List<String> matchBy(DaImportPlan.Node node) {
-        return node.getMatchBy().stream().map(t -> t.getCode()).collect(Collectors.toList());
+        return node.getMatchBy().stream().map(Object::toString).collect(Collectors.toList());
     }
 
     private static List<String> otherIds(DaImportPlan.Node node) {

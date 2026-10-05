@@ -114,9 +114,20 @@ static final Map<String, String> DATE_OTHER_SPECS = [
         "CLOSING"               : "ZP2015_DATE_CLOSING"
 ]
 
+/**
+ * Content type of the packages of loose files: no file plan, the package is one unit of
+ * description (or a wrapper of one), see decideLooseFiles.
+ */
+@groovy.transform.Field
+static final String LOOSE_FILES = "Volné soubory"
+
 decide(PACKAGE, LEVEL, RESULT)
 
 static void decide(DaImportPackage pkg, DaImportLevel level, DaImportResult result) {
+    if (pkg.contentType == LOOSE_FILES) {
+        decideLooseFiles(level, result)
+        return
+    }
     String eadKind = eadLevel(level)
     String divKind = level.divType?.trim()?.toLowerCase()
 
@@ -156,6 +167,44 @@ static void decide(DaImportPackage pkg, DaImportLevel level, DaImportResult resu
     // groups of the file plan are shared by the packages coming from it - recognized by name
     if (levelType == "ZP2015_LEVEL_SERIES") {
         result.matchBy(LEVEL_TYPE, "ZP2015_NAME")
+    }
+}
+
+/*
+ * A package of loose files describes one unit: either the package itself (the top div is the
+ * <archdesc> with the title and the identifiers), or a single div below it (e.g. a "slozka")
+ * when the top div is only a wrapper without a description of its own. The unit is an item;
+ * the components are attached to it.
+ */
+static void decideLooseFiles(DaImportLevel level, DaImportResult result) {
+    String kind = level.divType?.trim()?.toLowerCase() ?: eadLevel(level)
+    if (kind in ATTACHED_KINDS) {
+        result.attach()
+        return
+    }
+    if (kind == "balicek" && !describes(level)) {
+        result.skip()
+        return
+    }
+    result.level().item(LEVEL_TYPE, "ZP2015_LEVEL_ITEM")
+    boolean named = false
+    for (DaImportElement element : level.elements) {
+        named |= addItem(result, element)
+    }
+    if (!named) {
+        result.item("ZP2015_NAME", null, level.label)
+    }
+    // the same unit coming again (a new version of the package) is recognized by its id in the
+    // source system - the divs of these packages need not carry UUIDs
+    if (level.elements.any { it.name == "unitid" && it.localType == "ZDROJ_ID" }) {
+        result.matchBySpec("ZP2015_OTHER_ID", OTHER_ID_SPECS["ZDROJ_ID"])
+    }
+}
+
+/** Whether the unit has a description of its own - something taken over as an item. */
+static boolean describes(DaImportLevel level) {
+    return level.elements.any {
+        it.name in ["unittitle", "abstract", "unitdatestructured"] || (it.name == "unitid" && OTHER_ID_SPECS[it.localType] != null)
     }
 }
 

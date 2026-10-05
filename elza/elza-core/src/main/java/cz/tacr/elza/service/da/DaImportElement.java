@@ -7,15 +7,17 @@ import javax.annotation.Nullable;
 /**
  * An element of {@code <did>} of a unit of description, as the DA_IMPORT script sees it. The
  * script reads what it needs to choose the item type and hands the element back to
- * {@link DaImportResult#item(String, String, DaImportElement)}, which reads its value - the
+ * {@link DaLevelItems#item(String, String, DaImportElement)}, which reads its value - the
  * script never parses EAD itself.
  */
 public class DaImportElement {
 
     private final Object source;
+    private final String unitId;
 
-    DaImportElement(Object source) {
+    DaImportElement(Object source, @Nullable String unitId) {
         this.source = source;
+        this.unitId = unitId;
     }
 
     /** Name of the element in EAD, e.g. unitdatestructured, unitid. */
@@ -30,6 +32,22 @@ public class DaImportElement {
     @Nullable
     public String getLocalType() {
         return DidElementConverters.localType(source);
+    }
+
+    /**
+     * Own text of the element, with white space normalized - e.g. the name of a storage unit
+     * ({@code <container>}) a script names a level by; null for an element without text, such as
+     * a structured date.
+     */
+    @Nullable
+    public String getText() {
+        return DidElementConverters.text(source);
+    }
+
+    /** id of the unit of description the element belongs to - for the messages. */
+    @Nullable
+    String getUnitId() {
+        return unitId;
     }
 
     Object getSource() {

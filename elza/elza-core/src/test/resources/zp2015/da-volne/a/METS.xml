@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<mets xmlns="http://www.loc.gov/METS/" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:csip="https://DILCIS.eu/XML/METS/CSIPExtensionMETS" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" OBJID="0ea6e9ad-424f-44dc-9413-373678fccf71" TYPE="Other" PROFILE="https://stands.nacr.cz/da/2023/aip.xml" csip:CONTENTINFORMATIONTYPE="OTHER" csip:OTHERCONTENTINFORMATIONTYPE="Volné soubory" xsi:schemaLocation="http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd http://www.w3.org/1999/xlink http://www.loc.gov/standards/mets/xlink.xsd https://DILCIS.eu/XML/METS/CSIPExtensionMETS https://earkcsip.dilcis.eu/schema/DILCISExtensionMETS.xsd">
+    <metsHdr CREATEDATE="2026-10-05T06:38:19.588+02:00" csip:OAISPACKAGETYPE="AIP">
+        <agent ROLE="CREATOR" TYPE="OTHER" OTHERTYPE="SOFTWARE">
+            <name>AIS eARK Convert</name>
+            <note csip:NOTETYPE="SOFTWARE VERSION">1.0.1-SNAPSHOT</note>
+        </agent>
+    </metsHdr>
+    <dmdSec ID="d39c947a-7870-4c00-aa6b-aff7f4c9e01d" GROUPID="INHERENT" CREATED="2026-10-05T06:38:19.770+02:00" STATUS="CURRENT">
+        <mdRef LOCTYPE="URL" MDTYPE="EAD" xlink:type="simple" xlink:href="metadata/descriptive/EAD-INHERENT.xml" MIMETYPE="application/xml" SIZE="2404" CREATED="2026-10-05T06:38:19.770+02:00" CHECKSUM="a64715dc1e63f5fe4cc7a2612cc2f8602847fe61aae71f20ce7471eec6792c1c97594900564321b6f3d945658a5f3a2957b2df2eefaa8839105f101fe4e779f6" CHECKSUMTYPE="SHA-512"/>
+    </dmdSec>
+    <amdSec>
+        <digiprovMD ID="uuid-29f605c2-6f89-40cb-a3c7-79ff02b56ad6" GROUPID="PRESERVATION" CREATED="2026-10-05T06:38:19.809+02:00" STATUS="CURRENT">
+            <mdRef LOCTYPE="URL" MDTYPE="PREMIS" xlink:type="simple" xlink:href="metadata/preservation/PACKAGE-INFO.xml" MIMETYPE="application/xml" SIZE="6915" CREATED="2026-10-05T06:38:19.809+02:00" CHECKSUM="de22d0946cdfb2b5f9c9446610bfacb453a7bab3ef57bc3ce3e35ce49baa1f57bfb2240f1b6e218f6e026b054c018ad6dfe26f700e97accabd0496344cc418ae" CHECKSUMTYPE="SHA-512"/>
+        </digiprovMD>
+        <digiprovMD ID="uuid-3de453ce-4013-43d4-9f37-2b5b6ad0a955" GROUPID="PRESERVATION" CREATED="2026-10-05T06:38:19.815+02:00" STATUS="CURRENT">
+            <mdRef LOCTYPE="URL" MDTYPE="PREMIS" xlink:type="simple" xlink:href="metadata/preservation/RETENTION-METADATA.xml" MIMETYPE="application/xml" SIZE="10595" CREATED="2026-10-05T06:38:19.815+02:00" CHECKSUM="6427460bb78570cbdc02e5a1117a4034432a79b96d492d329882e649dd356100074e8a6370e964537dc1ebc35ba9dd275249c0c89ef93e60b9a5ca1c0343e566" CHECKSUMTYPE="SHA-512"/>
+        </digiprovMD>
+    </amdSec>
+    <fileSec ID="uuid-5841b7a6-2967-4277-8028-6cf89d8a0bcc">
+        <fileGrp ID="submission" USE="Representations/submission">
+            <file ID="a_00404832_sip_v00001" MIMETYPE="application/xml" SIZE="3661" CREATED="2024-11-11T09:52:14.905399Z" CHECKSUM="0a15626ae76f008f66c5305c31d2e6eeb9f4b19566e9c4226a1f50f05ae13a6bf6ba476f7e1b58e04de7959b2e2e7e1e255c32e73b5670e0d02a133f8bc52657" CHECKSUMTYPE="SHA-512">
+                <FLocat LOCTYPE="URL" xlink:type="simple" xlink:href="representations/submission/data/a_00404832_sip_v00001.xml"/>
+            </file>
+            <file ID="a_00404832_dok00001_f001_v00001" MIMETYPE="image/jpeg" SIZE="286" CREATED="2024-11-11T09:52:14.905399Z" CHECKSUM="717cb9666d554ef7861d3ea040f9082060a01180c2f7ea5fb1456fcadbf55a59e926dc184192b13656cd2f6309f989ea011b5bc413c853518b12677568368532" CHECKSUMTYPE="SHA-512">
+                <FLocat LOCTYPE="URL" xlink:type="simple" xlink:href="representations/submission/data/a_00404832_dok00001_f001_v00001.jpg"/>
+            </file>
+        </fileGrp>
+        <fileGrp ID="capture-LTP_COPY-f002" USE="Representations/capture-LTP_COPY-f002">
+            <file ID="a_00404832_dok00001_f002_v00001" MIMETYPE="image/jpeg" SIZE="286" CREATED="2024-11-11T10:08:46.325411Z" CHECKSUM="717cb9666d554ef7861d3ea040f9082060a01180c2f7ea5fb1456fcadbf55a59e926dc184192b13656cd2f6309f989ea011b5bc413c853518b12677568368532" CHECKSUMTYPE="SHA-512">
+                <FLocat LOCTYPE="URL" xlink:type="simple" xlink:href="representations/capture-LTP_COPY-f002/data/a_00404832_dok00001_f002_v00001.jpg"/>
+            </file>
+        </fileGrp>
+    </fileSec>
+    <structMap ID="uuid-e12d3cf4-bc36-466c-bd45-99ff0bbc178e" TYPE="PHYSICAL" LABEL="CSIP">
+        <div ID="uuid-b724c28d-659a-452b-beb5-d985c4d8f504">
+            <div ID="uuid-0fef5e15-b391-44f3-a107-27b72737aa75" DMDID="d39c947a-7870-4c00-aa6b-aff7f4c9e01d" ADMID="uuid-29f605c2-6f89-40cb-a3c7-79ff02b56ad6 uuid-3de453ce-4013-43d4-9f37-2b5b6ad0a955" LABEL="Metadata"/>
+            <div ID="uuid-2e4ee61f-5616-4937-aff1-13288faf4b75" LABEL="Representations">
+                <fptr FILEID="submission"/>
+                <fptr FILEID="capture-LTP_COPY-f002"/>
+            </div>
+        </div>
+    </structMap>
+    <structMap ID="uuid-7831ef4e-789d-4164-96c6-bbfc7e9e71ff" TYPE="LOGICAL" LABEL="CZDAX-LOGICAL-STRUCTURE">
+        <div ID="ds_1" TYPE="balicek" LABEL="Digitální fotografie 3">
+            <fptr FILEID="a_00404832_sip_v00001"/>
+            <div ID="k_2" TYPE="komponenta" LABEL="3.jpg">
+                <fptr FILEID="a_00404832_dok00001_f001_v00001"/>
+            </div>
+            <div ID="uuid-a4e47c74-3a76-498b-80ea-bee8de147a79" TYPE="komponenta" LABEL="33.jpg">
+                <fptr FILEID="a_00404832_dok00001_f002_v00001"/>
+            </div>
+        </div>
+    </structMap>
+</mets>
