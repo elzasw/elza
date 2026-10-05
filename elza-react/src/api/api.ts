@@ -19,6 +19,7 @@ import {
     PublicationInternalApi,
     InstitutionApi,
     ImportBatchesApi,
+    SetupApi,
     UserApi,
 } from 'elza-api';
 import globalAxios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
@@ -237,6 +238,7 @@ export const Api: {
     publication: PublicationInternalApi;
     institution: InstitutionApi;
     importBatches: ImportBatchesApi;
+    setup: SetupApi;
     user: UserApi;
 } = {
     accesspoints: new AccesspointsApi(undefined, basePath, axios),
@@ -259,5 +261,6 @@ export const Api: {
     publication: new PublicationInternalApi(undefined, basePath, axios),
     institution: new InstitutionApi(undefined, basePath, axios),
     importBatches: new ImportBatchesApi(undefined, basePath, axios),
+    setup: new SetupApi(undefined, basePath, axios),
     user: new UserApi(undefined, basePath, axios),
 };

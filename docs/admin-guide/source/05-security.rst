@@ -29,6 +29,27 @@ must already exist in ELZA** with the same user name, and must be active.
 Users are not created automatically, and groups or roles from the
 directory are not used; permissions are always assigned in ELZA.
 
+The first administrator
+=======================
+
+While the database contains no user, the application offers the
+*Initial setup*, which creates the first administrator; see
+:ref:`install-first-admin`. Its endpoints (``/api/v1/setup``) are
+available without login and create a user only while no user exists.
+Until then, anyone who can reach the application can create the first
+administrator, so create it before the application is made available on
+the network. Once any user exists, the setup is closed for good.
+
+An administrator can also be set in the configuration with
+``elza.security.admin.username`` and ``elza.security.admin.password``;
+see :ref:`install-admin-from-config`. They are applied at every startup:
+a missing user is created as an administrator, an existing user gets the
+configured password and is activated if deactivated (its permissions do
+not change). The password is in plain text, and while the keys are set, a
+password changed in the application returns to the configured one and a
+deactivated account is activated again at the next restart; remove the
+keys once they are no longer needed.
+
 The default user
 ================
 
@@ -79,6 +100,12 @@ Internal accounts and passwords
 Users are created in *Administration* > *Users*. Passwords are stored as
 bcrypt hashes. Passwords from old versions stored with SHA-256 are
 converted to bcrypt at the user's next login with the password.
+
+When a deactivated user logs in with the correct password, the login form
+says that the account is deactivated. With a wrong password, the form
+shows the same message as for an unknown user ("Invalid user name or
+password"), so it does not reveal whether an account exists or is
+deactivated.
 
 ``elza.security.salt`` is used only to verify these old SHA-256 hashes.
 Do not change it: users whose password has not been converted yet could
@@ -207,6 +234,13 @@ well. Recovery works only for users who have an internal password; it
 does not apply to the default user, whose password is changed in the
 configuration (``elza.security.defaultPassword``). Never leave recovery
 configured longer than needed.
+
+Access can also be recovered with ``elza.security.admin.username`` and
+``elza.security.admin.password`` (see :ref:`install-admin-from-config`).
+The difference: recovery only allows a temporary login and makes the
+user set a new password, while ``elza.security.admin.*`` sets the
+configured password itself - and creates the user as an administrator if
+it does not exist.
 
 Active Directory
 ================
@@ -380,7 +414,7 @@ Security audit log
 ==================
 
 With ``elza.siemLogFile`` set (see :doc:`04-configuration`), ELZA writes
-authentication events to a separate log in JSON, one event per line,
+authentication and account events to a separate log in JSON, one event per line,
 suitable for a SIEM system:
 
 - ``login_success`` - the user, the method (``PASSWORD``,
@@ -388,7 +422,13 @@ suitable for a SIEM system:
   ``API_KEY``) and the source address,
 - ``login_failed`` - the user name, the source address and the reason,
 - ``api_key_created`` and ``api_key_revoked`` - who created or revoked
-  which key of which user.
+  which key of which user,
+- ``config_admin_user_created``, ``config_admin_password_set`` and
+  ``config_admin_user_activated`` - the user created, its password set or
+  its account activated at startup from ``elza.security.admin.*`` (the
+  actor is ``configuration``),
+- ``config_admin_failed`` - ``elza.security.admin.*`` could not be
+  applied, with the user and the reason.
 
 The log is rotated daily and kept for 90 days. Behind a reverse proxy,
 the source address is the address of the proxy.

@@ -6777,6 +6777,10 @@
     "defaultMessage": "The permission does not exist",
     "srcHash": "XO3WO2FurdpF"
   },
+  "exception.usr.SETUP_NOT_AVAILABLE": {
+    "defaultMessage": "The initial setup has already been completed. Please log in.",
+    "srcHash": "GybOLpnMD_FQ"
+  },
   "exception.usr.USERNAME_EXISTS": {
     "defaultMessage": "The username already exists",
     "srcHash": "I9GQiwki-Hmi"
@@ -7529,6 +7533,14 @@
     "defaultMessage": "The default user is enabled. Create your own user with administrator permissions and disable the default user.",
     "srcHash": "5GQb-lCsvEuv"
   },
+  "login.error.badCredentials": {
+    "defaultMessage": "Invalid user name or password.",
+    "srcHash": "lr8jIRdyw17u"
+  },
+  "login.error.setupLoginFailed": {
+    "defaultMessage": "The administrator has been created, but the login failed. Log in with the administrator's name and password.",
+    "srcHash": "WAg107eDLn_G"
+  },
   "login.error.ssoFailed": {
     "defaultMessage": "Sign-in with Windows authentication failed. Contact your administrator.",
     "srcHash": "xO_L5DMfukIp"
@@ -7552,6 +7564,10 @@
   "login.error.unknown": {
     "defaultMessage": "Unknown sign-in error",
     "srcHash": "jKOti0dKdTuK"
+  },
+  "login.error.userInactive": {
+    "defaultMessage": "The user is deactivated. Contact the administrator.",
+    "srcHash": "ZiC1LCzWSbXu"
   },
   "login.field.password": {
     "defaultMessage": "Password",
@@ -8672,6 +8688,34 @@
   "search_funds_form_uuid": {
     "defaultMessage": "UUID",
     "srcHash": "KomLyYqvbJby"
+  },
+  "setup.wizard.create": {
+    "defaultMessage": "Create administrator",
+    "srcHash": "AvVkXy-v6QQN"
+  },
+  "setup.wizard.createFailed": {
+    "defaultMessage": "The administrator could not be created.",
+    "srcHash": "p1JTzQ2FgfDm"
+  },
+  "setup.wizard.hidePassword": {
+    "defaultMessage": "Hide password",
+    "srcHash": "86hQhgacUGGF"
+  },
+  "setup.wizard.intro": {
+    "defaultMessage": "The application has no user yet. Create the first administrator.",
+    "srcHash": "biqgG_mBrN_q"
+  },
+  "setup.wizard.showPassword": {
+    "defaultMessage": "Show password",
+    "srcHash": "pT-IPVYdHvBJ"
+  },
+  "setup.wizard.title": {
+    "defaultMessage": "Initial setup",
+    "srcHash": "SYa_AgqFglj-"
+  },
+  "setup.wizard.username": {
+    "defaultMessage": "Administrator user name",
+    "srcHash": "oex4zHFJtjSY"
   },
   "shared.maskedValue.hide": {
     "defaultMessage": "Hide",

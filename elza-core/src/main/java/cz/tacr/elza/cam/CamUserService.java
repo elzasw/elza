@@ -65,6 +65,10 @@ public class CamUserService {
             userId = "0";
             prefName = "Admin";
             shortName = prefName;
+        } else if (user.getAccessPointId() == null) {
+            // a user without a person (the first administrator) is named by the username
+            prefName = shortName = userName = user.getUsername();
+            userId = Integer.toString(user.getUserId());
         } else {
             prefName = shortName = userName = user.getUsername();
             userId = Integer.toString(user.getUserId());

@@ -132,6 +132,8 @@ public class ApplicationSecurity {
     public static final String[] PERMIT_ALL_PATTERNS = {"/", "/res/**", "/static/**", 
     		"/fund/**", "/node/**", "/entity/**", "/admin/**", "/aip/**", "/h2-console/**" };
 
+    public static final String SETUP_PATTERN = "/api/v1/setup/**";
+
     @Autowired
     private ApplicationContext applicationContext;
 
@@ -389,6 +391,8 @@ public class ApplicationSecurity {
         	 */
     		.authorizeHttpRequests(auth -> auth
     				.requestMatchers(PERMIT_ALL_PATTERNS).permitAll()
+    				// first-run setup, open only while no user exists (SetupService)
+    				.requestMatchers(AntPathRequestMatcher.antMatcher(SETUP_PATTERN)).permitAll()
     				// Explicitly require auth for SSO
     			    .requestMatchers(AntPathRequestMatcher.antMatcher(AUTHENTICATE_SSO)).authenticated()
     			    .requestMatchers(AntPathRequestMatcher.antMatcher(AUTHENTICATE_SSO_JSON)).authenticated()

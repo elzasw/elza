@@ -54,12 +54,13 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
         Path<String> userName = null;
 
         if (searchTypeName == ApSearchType.FULLTEXT || searchTypeName == ApSearchType.RIGHT_SIDE_LIKE) {
-            Join<UsrUser, ApAccessPoint> apJoin = user.join(UsrUser.FIELD_ACCESS_POINT, JoinType.INNER);
+            // left joins: a user without a person is still found by the username
+            Join<UsrUser, ApAccessPoint> apJoin = user.join(UsrUser.FIELD_ACCESS_POINT, JoinType.LEFT);
             Predicate apFkCond = builder.equal(user.get(UsrUser.FIELD_ACCESS_POINT_ID), apJoin.get(ApAccessPoint.FIELD_ACCESS_POINT_ID));
-            Join<ApAccessPoint, ApPart> nameJoin = apJoin.join(ApAccessPoint.FIELD_PREFFERED_PART, JoinType.INNER);
+            Join<ApAccessPoint, ApPart> nameJoin = apJoin.join(ApAccessPoint.FIELD_PREFFERED_PART, JoinType.LEFT);
             Predicate nameFkCond = builder.equal(apJoin.get(ApAccessPoint.FIELD_PREFFERED_PART_ID), nameJoin.get(ApPart.PART_ID));
             nameJoin.on(nameFkCond);
-            Join<ApIndex, ApPart> indexJoin = nameJoin.join(ApPart.INDICES, JoinType.INNER);
+            Join<ApIndex, ApPart> indexJoin = nameJoin.join(ApPart.INDICES, JoinType.LEFT);
             indexJoin.on(builder.equal(indexJoin.get(ApIndex.INDEX_TYPE), DISPLAY_NAME_LOWER));
             accessPointName = indexJoin.get(ApIndex.VALUE);
         }
@@ -214,12 +215,13 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
         Path<String> userName = null;
 
         if (searchTypeName == ApSearchType.FULLTEXT || searchTypeName == ApSearchType.RIGHT_SIDE_LIKE) {
-            Join<UsrUser, ApAccessPoint> apJoin = user.join(UsrUser.FIELD_ACCESS_POINT, JoinType.INNER);
-            Join<ApAccessPoint, ApPart> nameJoin = apJoin.join(ApAccessPoint.FIELD_PREFFERED_PART, JoinType.INNER);
+            // left joins: a user without a person is still found by the username
+            Join<UsrUser, ApAccessPoint> apJoin = user.join(UsrUser.FIELD_ACCESS_POINT, JoinType.LEFT);
+            Join<ApAccessPoint, ApPart> nameJoin = apJoin.join(ApAccessPoint.FIELD_PREFFERED_PART, JoinType.LEFT);
             Predicate nameFkCond = builder.equal(apJoin.get(ApAccessPoint.FIELD_PREFFERED_PART_ID),
                     nameJoin.get(ApPart.PART_ID));
             nameJoin.on(nameFkCond);
-            Join<ApIndex, ApPart> indexJoin = nameJoin.join(ApPart.INDICES, JoinType.INNER);
+            Join<ApIndex, ApPart> indexJoin = nameJoin.join(ApPart.INDICES, JoinType.LEFT);
             indexJoin.on(builder.equal(indexJoin.get(ApIndex.INDEX_TYPE), DISPLAY_NAME_LOWER));
             accessPointName = indexJoin.get(ApIndex.VALUE);
         }
