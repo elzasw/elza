@@ -25,6 +25,11 @@ elza:
   #    kerberos-client-debug: false
   #    ticket-validator-debug: false
   #
+  #  # Přihlásí uživatele hned po otevření stránky, bez kliknutí na tlačítko.
+  #  # Uplatní se jen když je nastavený Kerberos výše.
+  #  # Název klíče je camelCase, čte se přes @Value a jiný tvar se nenačte.
+  #  autoSsoLogin: true
+  #
   #  # Osobní API klíče uživatelů (hlavička X-API-Key).
   #  # Funkce je zapnutá s výchozími hodnotami; enabled=false hlavičku ignoruje.
   #  api-keys:
