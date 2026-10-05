@@ -1,6 +1,6 @@
 import * as types from 'actions/constants/ActionTypes';
-import {applyMiddleware, compose, createStore, Middleware} from 'redux';
-import thunkMiddleware from 'redux-thunk';
+import {AnyAction, applyMiddleware, compose, createStore, Middleware} from 'redux';
+import thunkMiddleware, {ThunkDispatch} from 'redux-thunk';
 import {createLogger} from 'redux-logger';
 import {lenToBytesStr, roughSizeOfObject} from 'components/Utils.jsx';
 import {composeWithDevTools} from 'redux-devtools-extension';
@@ -17,6 +17,7 @@ import fundRegion from './app/fund/fundRegion';
 import splitter from './app/global/splitter.jsx';
 import adminRegion from './app/admin/adminRegion.jsx';
 import {AppWindow} from '../typings/globals';
+import type {AppState} from '../typings/store';
 import {FormErrors} from 'redux-form';
 
 // Nastavení úrovně logování
@@ -518,7 +519,7 @@ if (appWindow.__DEV__) {
 }
 
 const initialState = {};
-export const store = (function configureStore(initialState) {
+const configuredStore = (function configureStore(initialState) {
     const state = createStoreWithMiddleware(rootReducer, initialState);
     // if (module.hot) {
     //     // Enable Webpack hot module replacement for reducers
@@ -530,6 +531,12 @@ export const store = (function configureStore(initialState) {
     // }
     return state;
 })(initialState);
+
+// The store always runs the thunk middleware, but the middleware list and compose() lose its
+// dispatch extension; add it back so thunks can be dispatched without a cast.
+export const store = configuredStore as typeof configuredStore & {
+    dispatch: ThunkDispatch<AppState, void, AnyAction>;
+};
 
 /*
   const finalCreateStore = compose(

@@ -245,9 +245,6 @@
   "src/actions/registry/batchExportAccessPoints.ts": [
     "error TS7006: Parameter 'dispatch' implicitly has an 'any' type."
   ],
-  "src/api/api.ts": [
-    "error TS2345: Argument of type 'void | { type: string; title: any; extended: boolean; message: any; style: string; size: string; time: any; visible: boolean; }' is not assignable to parameter of type 'AnyAction'."
-  ],
   "src/api/old/ApPartInfo.tsx": [
     "error TS7053: Element implicitly has an 'any' type because expression of type '\"@class\"' can't be used to index type 'ApPartVO'.",
     "error TS7053: Element implicitly has an 'any' type because expression of type '\"@class\"' can't be used to index type 'ApPartVO'."
@@ -375,9 +372,6 @@
     "error TS7006: Parameter 'toChangeId' implicitly has an 'any' type.",
     "error TS7031: Binding element 'id' implicitly has an 'any' type.",
     "error TS7031: Binding element 'onClose' implicitly has an 'any' type."
-  ],
-  "src/components/arr/node-edit/templates/utils.ts": [
-    "error TS7018: Object literal's property 'value' implicitly has an 'any' type."
   ],
   "src/components/arr/node-settings-form/NodeSettingsModal.tsx": [
     "error TS7015: Element implicitly has an 'any' type because index expression is not of type 'number'."
