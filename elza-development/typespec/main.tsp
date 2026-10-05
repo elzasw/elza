@@ -2998,6 +2998,44 @@ model FundStatistics {
 }
 
 /**
+ * State of the first-run setup.
+ */
+model SetupStatus {
+    /** No user exists yet - the first administrator has to be created */
+    setupRequired: boolean;
+}
+
+/**
+ * First administrator created by the first-run setup.
+ */
+model SetupAdmin {
+    /** Username of the administrator */
+    username: string;
+    /** Password of the administrator */
+    password: string;
+}
+
+/**
+ * First-run setup; available without login while no user exists.
+ */
+@tag("setup")
+@route("/setup")
+namespace ElzaAPI.Setup {
+    /**
+     * Return whether the first administrator has to be created.
+     */
+    @get op getSetupStatus(): SetupStatus;
+
+    /**
+     * Create the first administrator. Allowed only while no user exists.
+     */
+    @route("admin")
+    @post op createSetupAdmin(@body params: SetupAdmin): {
+        @Http.statusCode statusCode: 204;
+    };
+}
+
+/**
  * Administrativní funkce
  */
 @tag("admin")

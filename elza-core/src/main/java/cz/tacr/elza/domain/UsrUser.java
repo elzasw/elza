@@ -32,11 +32,14 @@ public class UsrUser {
     @Access(AccessType.PROPERTY) // required to read id without fetch from db
     private Integer userId;
 
+    /**
+     * Person of the user; null for the first administrator created by the first-run setup.
+     */
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApAccessPoint.class)
-    @JoinColumn(name = "accessPointId", nullable = false)
+    @JoinColumn(name = "accessPointId")
     private ApAccessPoint accessPoint;
 
-    @Column(nullable = false, updatable = false, insertable = false)
+    @Column(updatable = false, insertable = false)
     private Integer accessPointId;
 
     @Column(length = 250, nullable = false, unique = true)

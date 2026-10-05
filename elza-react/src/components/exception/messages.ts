@@ -139,6 +139,7 @@ export const exceptionMessages = defineMessages({
     "exception.usr.NOT_IN_GROUP": { id: "exception.usr.NOT_IN_GROUP", defaultMessage: "Uživatel {user} není členem skupiny {group}" },
     "exception.usr.PASSWORD_NOT_MATCH": { id: "exception.usr.PASSWORD_NOT_MATCH", defaultMessage: "Původní heslo se neshoduje" },
     "exception.usr.PASSWORD_POLICY_VIOLATION": { id: "exception.usr.PASSWORD_POLICY_VIOLATION", defaultMessage: "{rule, select, minLength {Heslo musí mít alespoň {minLength, plural, one {# znak} few {# znaky} other {# znaků}}.} other {Heslo musí obsahovat znaky alespoň z {minCharGroups, plural, one {# skupiny} other {# skupin}}: malá písmena, velká písmena, číslice, ostatní znaky.}}" },
+    "exception.usr.SETUP_NOT_AVAILABLE": { id: "exception.usr.SETUP_NOT_AVAILABLE", defaultMessage: "Úvodní nastavení již bylo dokončeno. Přihlaste se." },
     "exception.usr.PERM_ILLEGAL_INPUT": { id: "exception.usr.PERM_ILLEGAL_INPUT", defaultMessage: "Neplatný vstup oprávnění: {type}" },
     "exception.usr.PERM_NOT_EXIST": { id: "exception.usr.PERM_NOT_EXIST", defaultMessage: "Oprávnění neexistuje" },
     "exception.usr.USERNAME_EXISTS": { id: "exception.usr.USERNAME_EXISTS", defaultMessage: "Uživatelské jméno již existuje" },

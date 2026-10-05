@@ -67,6 +67,11 @@ public enum UserCode implements ErrorCode {
      * The password does not meet the password policy: {rule} is minLength or minCharGroups,
      * with the limit in the property of the same name.
      */
-    PASSWORD_POLICY_VIOLATION
+    PASSWORD_POLICY_VIOLATION,
+
+    /**
+     * The first-run setup is not available: a user already exists.
+     */
+    SETUP_NOT_AVAILABLE
 
 }

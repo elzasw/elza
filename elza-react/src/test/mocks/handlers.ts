@@ -13,4 +13,6 @@ export const handlers = [
     // Ribbon fires this on mount (extSystemListFetchIfNeeded). Default to empty
     // so rendering the page frame doesn't crash in smoke tests.
     http.get('/api/admin/externalSystems', () => HttpResponse.json([])),
+    // Login asks whether the first-run setup is needed whenever nobody is logged in.
+    http.get('/api/v1/setup', () => HttpResponse.json({ setupRequired: false })),
 ];

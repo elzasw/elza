@@ -24,11 +24,18 @@ import { FormattedMessage, defineMessages, useIntl } from 'react-intl';
 import { AppState } from 'typings/store';
 import { useAppSelector, useAppThunkDispatch } from 'utils/hooks';
 import { isAutoSsoLoginSuppressed, suppressAutoSsoLogin } from 'utils/loginMethod';
+import { Api } from 'api';
+import { SetupWizard } from './SetupWizard';
 
 // Id převzatých hlášek jsou z legacy katalogu beze změny.
 const messages = defineMessages({
     signingIn: { id: 'login.state.signingIn', defaultMessage: 'Přihlašování…' },
     errorUnknown: { id: 'login.error.unknown', defaultMessage: 'Neznámá chyba přihlášení' },
+    errorUserInactive: {
+        id: 'login.error.userInactive',
+        defaultMessage: 'Uživatel je deaktivován. Obraťte se na administrátora.',
+    },
+    errorBadCredentials: { id: 'login.error.badCredentials', defaultMessage: 'Neplatné uživatelské jméno nebo heslo.' },
     formTitle: { id: 'login.form.title', defaultMessage: 'Přihlášení uživatele' },
     ssoKerberos: {
         id: 'login.action.ssoKerberos',
@@ -70,6 +77,10 @@ const messages = defineMessages({
     username: { id: 'login.field.username', defaultMessage: 'Uživatelské jméno' },
     password: { id: 'login.field.password', defaultMessage: 'Heslo' },
     login: { id: 'login.action.login', defaultMessage: 'Přihlásit' },
+    setupLoginFailed: {
+        id: 'login.error.setupLoginFailed',
+        defaultMessage: 'Administrátor byl vytvořen, ale přihlášení se nezdařilo. Přihlaste se jeho jménem a heslem.',
+    },
 });
 
 interface WindowEx extends Window {
@@ -89,6 +100,12 @@ interface SsoError {
      */
     code: 'USER_NOT_FOUND' | 'USER_INACTIVE' | 'FAILED' | 'NO_TICKET' | 'SESSION_NOT_CREATED';
     username?: string | null;
+}
+
+/** Body of a failed password login (ApiAuthenticationFailureHandler) */
+interface LoginErrorData {
+    code?: string;
+    message?: string;
 }
 
 const windowEx = window as WindowEx;
@@ -257,6 +274,9 @@ export const Login = () => {
     // would follow every step on the way there: open on the user detail, close on the sign-in,
     // open again on the sign-out.
     const [isPasswordLoginHandled, setIsPasswordLoginHandled] = useState(!isPasswordLoginRequested);
+    // null until the server answers; while no user exists, the first-run setup replaces the login
+    const [isSetupRequired, setIsSetupRequired] = useState<boolean | null>(null);
+    const [isSetupSkipped, setIsSetupSkipped] = useState(false);
 
     const ssoKerberosUrl = windowEx.ssoKerberosUrl;
     const isSsoAvailable = !!ssoKerberosUrl;
@@ -271,7 +291,9 @@ export const Login = () => {
         !ssoError;
     // Waiting for the user detail keeps the dialog from flashing on a page reload.
     const isUserLoggedOut = !logged && userDetailFetched && isPasswordLoginHandled;
-    const isAutoSsoLoginPending = isUserLoggedOut && isAutoSsoLoginEnabled && ssoStatus !== 'finished';
+    const isSetupShown = isUserLoggedOut && isSetupRequired === true && !isSetupSkipped;
+    const isLoginShown = isUserLoggedOut && isSetupRequired !== null && !isSetupShown;
+    const isAutoSsoLoginPending = isLoginShown && isAutoSsoLoginEnabled && ssoStatus !== 'finished';
 
     const startSsoLogin = async () => {
         if (!ssoKerberosUrl) {
@@ -358,6 +380,38 @@ export const Login = () => {
         }
     }, [logged]);
 
+    useEffect(() => {
+        if (!isUserLoggedOut) {
+            return;
+        }
+        let active = true;
+        Api.setup
+            .setupGetSetupStatus({ overrideErrorHandler: true })
+            .then(({ data }) => active && setIsSetupRequired(data.setupRequired))
+            // a server that does not answer offers the usual login
+            .catch(() => active && setIsSetupRequired(false));
+        return () => {
+            active = false;
+        };
+    }, [isUserLoggedOut]);
+
+    const handleSetupLoginFailed = () => {
+        setIsSetupRequired(false);
+        setCredentials({ username: '', password: '' });
+        setError(intl.formatMessage(messages.setupLoginFailed));
+    };
+
+    const formatLoginError = (data?: LoginErrorData) => {
+        switch (data?.code) {
+            case 'USER_INACTIVE':
+                return intl.formatMessage(messages.errorUserInactive);
+            case 'BAD_CREDENTIALS':
+                return intl.formatMessage(messages.errorBadCredentials);
+            default:
+                return data?.message ?? intl.formatMessage(messages.errorUnknown);
+        }
+    };
+
     const formatSsoError = (value: SsoError) => {
         switch (value.code) {
             case 'USER_NOT_FOUND':
@@ -382,8 +436,7 @@ export const Login = () => {
             setCredentials(getDefaultCredentials());
             setError(null);
         } catch (loginError) {
-            const message = (loginError as { data?: { message?: string } })?.data?.message;
-            setError(message ?? intl.formatMessage(messages.errorUnknown));
+            setError(formatLoginError((loginError as { data?: LoginErrorData } | undefined)?.data));
         } finally {
             setSubmitting(false);
         }
@@ -391,8 +444,17 @@ export const Login = () => {
 
     const isAwaitingLogin = submitting || ssoStatus === 'running' || isAutoSsoLoginPending;
 
+    if (isSetupShown) {
+        return (
+            <SetupWizard
+                onUseDefaultUser={isDefaultUserEnabled ? () => setIsSetupSkipped(true) : undefined}
+                onLoginFailed={handleSetupLoginFailed}
+            />
+        );
+    }
+
     return (
-        <Dialog open={isUserLoggedOut} modalType="alert">
+        <Dialog open={isLoginShown} modalType="alert">
             <DialogSurface className={styles.surface}>
                 <form onSubmit={handleSubmit}>
                     <DialogBody>
