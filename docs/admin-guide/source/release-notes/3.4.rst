@@ -20,6 +20,12 @@ Upcoming version
   elements, attachments); automatic linking creates levels under the
   matching level; content type and profile of the AIP from METS; dates
   and formal titles taken over from EAD
+* New: ELZA DA - automatic placement of received AIPs that match no
+  description unit by UUID: the rules of the fund (rule type
+  ``DA_MATCH``) decide by the type and content of the package whether
+  and under which levels it is placed; the levels are found or created
+  and the package is imported below them. A match by UUID always takes
+  precedence. Applies to repositories with automatic metadata download
 * New: 9963 - Password rules (minimum length, character groups,
   validity), a required password change at the next login, accounts
   whose password never expires, and recovering access to an account with
