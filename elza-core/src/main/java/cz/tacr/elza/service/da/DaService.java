@@ -267,6 +267,8 @@ public class DaService {
     private DaoLinkPolicy daoLinkPolicy;
     @Autowired
     private DaAipLinkStateResolver linkStateResolver;
+    @Autowired
+    private DaCommunicationLock communicationLock;
 
     /** Reads and writes what an action was asked to do; see {@link ConnectParams}. */
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -279,7 +281,13 @@ public class DaService {
     public void synchronizeDaRepository(String code) {
         logger.debug("Spuštěna synchronizace s DA pro externí systém CODE={}", code);
         ArrDigitalRepository arrDigitalRepository = externalSystemService.findDigitalRepositoryByCode(code);
-        applicationContext.getBean(DaService.class).synchronizeDA(arrDigitalRepository);
+        // held over the commit, so the processors see the withdrawn requests as withdrawn
+        communicationLock.lock();
+        try {
+            applicationContext.getBean(DaService.class).synchronizeDA(arrDigitalRepository);
+        } finally {
+            communicationLock.unlock();
+        }
         logger.debug("Dokončena synchronizace s DA pro externí systém CODE={}", code);
     }
 
@@ -353,15 +361,18 @@ public class DaService {
      * state are closed by a change instead of being deleted. The downloaded packages are removed -
      * they are of a package that no longer exists.
      *
-     * Requests still waiting for the AIP are withdrawn as well, whether ELZA knows the AIP or not: they
-     * would download the package again, or retry forever once the archive stops delivering it.
+     * Requests still waiting for the AIP are withdrawn as well, whether ELZA knows the AIP or not: a
+     * download would fetch the package again, or retry forever once the archive stops delivering it,
+     * and an export would send a change of a package that no longer exists. None of them is being
+     * carried out - the synchronization holds {@link DaCommunicationLock}, so a batch in flight was
+     * finished before it started.
      *
      * @param aip      null when ELZA does not know the AIP
      * @param aipState null when ELZA does not know the AIP or it is invalidated already
      */
     private void invalidateAip(String code, @Nullable DaAip aip, @Nullable DaAipState aipState,
                                ArrDigitalRepository digitalRepository) {
-        deactivateQueueItems(code, aip, digitalRepository, getQueueImportStates(), AIP_INVALIDATED);
+        deactivateQueueItems(code, aip, digitalRepository, getQueueAllStates(), AIP_INVALIDATED);
         if (aipState == null) {
             logger.info("AIP {} byl v DA CODE={} zneplatněn, v ELZA není aktivní, není co stahovat",
                         code, digitalRepository.getCode());
@@ -373,7 +384,7 @@ public class DaService {
 
         List<DaAip> aips = List.of(aip);
         deleteDaoEntities(aips, change);
-        deleteLocalCaches(aips);
+        deleteLocalCaches(aips, getQueueAllStates());
 
         aipState.setDeleteChange(change);
         aipStateRepository.save(aipState);
@@ -544,6 +555,14 @@ public class DaService {
     private List<String> storeDaoStructure(RebuildInput input, MetsType metsType, AipPackageType packageType,
                                            PremisComplexType premisComplexType, Path tempDir, boolean forceUpdate,
                                            AipOutcomeSink sink) {
+        // The package was read in an earlier transaction; the AIP may have been invalidated since.
+        // The invalidation holds the lock until it commits, so it is either seen here or waits for
+        // the entities built below and closes them too.
+        aipRepository.lockByIds(List.of(input.aip().getAipId()));
+        if (aipStateRepository.findByDaAipAndDeleteChangeIsNull(input.aip()) == null) {
+            sink.skipped(input.aip().getAipId(), AIP_INVALIDATED);
+            return null;
+        }
         List<String> nodeUuids = createDaoStructure(input.aip(), metsType, premisComplexType, tempDir, forceUpdate);
 
         DaLocalCache localCache = daLocalCacheRepository.findById(input.localCacheId()).orElseThrow();
@@ -758,7 +777,7 @@ public class DaService {
         aipStateRepository.saveAll(stateList);
 
         deleteDaoEntities(deletedAipList, change);
-        deleteLocalCaches(deletedAipList);
+        deleteLocalCaches(deletedAipList, getQueueImportStates());
     }
 
     /**
@@ -784,9 +803,13 @@ public class DaService {
         levelViewService.deleteDisconnectedLevelViews(change);
     }
 
-    /** Deletes the downloaded packages of the AIPs, the files together with their records. */
-    private void deleteLocalCaches(List<DaAip> aips) {
-        List<DaLocalCache> localCacheList = daLocalCacheRepository.findByAipInAndQueueItemStatesIn(aips, getQueueImportStates());
+    /**
+     * Deletes the packages of the AIPs stored for queue items in the given states - downloaded ones
+     * for the import states, prepared exports for the export states - the files together with their
+     * records.
+     */
+    private void deleteLocalCaches(List<DaAip> aips, Collection<DaSyncQueueItem.QueueItemState> queueItemStates) {
+        List<DaLocalCache> localCacheList = daLocalCacheRepository.findByAipInAndQueueItemStatesIn(aips, queueItemStates);
         for (DaLocalCache localCache : localCacheList) {
             if (localCache.getFilePath() != null) {
                 if (localCache.getFilePathMetadata() != null && !localCache.getFilePath().equals(localCache.getFilePathMetadata())) {
@@ -1830,6 +1853,12 @@ public class DaService {
         return states;
     }
 
+    private static Collection<DaSyncQueueItem.QueueItemState> getQueueAllStates() {
+        List<DaSyncQueueItem.QueueItemState> states = new ArrayList<>(getQueueImportStates());
+        states.addAll(getQueueExportStates());
+        return states;
+    }
+
     public static Collection<DaSyncQueueItem.QueueItemState> getQueueExportStates() {
         List<DaSyncQueueItem.QueueItemState> states = new ArrayList<>();
         states.add(DaSyncQueueItem.QueueItemState.EXPORT_NEW);
@@ -1925,6 +1954,9 @@ public class DaService {
      */
     ArrDaLink linkToNode(DaAip daAip, @Nullable DaDao daDao, ArrNode arrNode,
                                  ArrDaoLink.LinkType linkType, ArrChange change) {
+        // The invalidation holds the lock until it commits, so the state is read either before it
+        // started or after it closed the links - a link cannot be created in between.
+        aipRepository.lockByIds(List.of(daAip.getAipId()));
         if (aipStateRepository.findByDaAipAndDeleteChangeIsNull(daAip) == null) {
             throw new BusinessException("AIP " + daAip.getCode() + " byl v digitálním archivu zneplatněn, nelze jej připojit.",
                                         BaseCode.INVALID_STATE);

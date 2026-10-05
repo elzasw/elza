@@ -39,6 +39,8 @@ public class DaImportExtSyncsProcessor implements Runnable {
     private DaAipAutoLinkService aipAutoLinkService;
     @Autowired
     private DaAipActionService actionService;
+    @Autowired
+    private DaCommunicationLock communicationLock;
 
     private volatile Thread asyncThread = null;
 
@@ -164,6 +166,8 @@ public class DaImportExtSyncsProcessor implements Runnable {
                     // pokud true - pauza po ukončení práce procesoru
                     boolean wait = true;
                     List<DaSyncQueueItem> syncQueueItemList = null;
+                    // the batch is one exchange with the DA, from reading the queue to closing its items
+                    communicationLock.lock();
                     try {
                         syncQueueItemList = daService.getNextItems(importListSize, DaSyncQueueItem.QueueItemState.UPDATE, DaSyncQueueItem.QueueItemState.IMPORT_NEW);
                         if (CollectionUtils.isNotEmpty(syncQueueItemList)) {
@@ -221,6 +225,8 @@ public class DaImportExtSyncsProcessor implements Runnable {
                         logger.error("Failed to process item. ", ex);
                         // v případě chyby číst po 1 záznamu
                         importListSize = 1;
+                    } finally {
+                        communicationLock.unlock();
                     }
                     if (wait) {
                         try {
