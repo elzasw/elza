@@ -12,6 +12,11 @@ import { NodeToolbar } from "./NodeToolbar";
 import { ItemFormBody } from "../item-form/ItemFormBody";
 import { useNodeFormData } from "./hooks";
 import { NodeFormContext } from "./NodeFormContext";
+import { useItemClipboard } from "./clipboard/itemClipboard";
+import { useCopyItems } from "./clipboard/useCopyItems";
+import { usePasteItems } from "./clipboard/usePasteItems";
+import { getPastableTypeIds } from "./clipboard/preparePaste";
+import { useItemTypeInfo } from "./clipboard/useItemTypeInfo";
 import { TextFragmentsProvider } from "../text-fragments";
 import { useUserSettings } from "contexts/user";
 import { useStyles } from "../item-form/styles";
@@ -38,6 +43,10 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId, seedFromParent
   const styles = useStyles();
 
   const [daos, setDaos] = useState<ArrDaoVO[]>();
+  const copyItems = useCopyItems();
+  const pasteItems = usePasteItems();
+  const clipboard = useItemClipboard();
+  const getItemTypeInfo = useItemTypeInfo();
 
   const nodeSetting = useAppSelector(({ arrRegion }) =>
     arrRegion.nodeSettings.nodes.find(({ id }) => id === activeParent?.id),
@@ -62,6 +71,26 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId, seedFromParent
     updateDescItem,
     parent,
   } = nodeFormData;
+
+  const clipboardItems = clipboard?.items ?? [];
+  const storedTypeIds = clipboardItems
+    .map(({ itemTypeId }) => itemTypeId)
+    .filter((itemTypeId): itemTypeId is number => itemTypeId != undefined);
+  const formTypeIds = itemTypes.map(({ itemTypeId }) => itemTypeId);
+  // Same rules as the paste itself: a type that would not receive any value gets no paste button.
+  const pastableTypeIds =
+    clipboard && formData
+      ? getPastableTypeIds({
+          candidateTypeIds: Array.from(new Set([...storedTypeIds, ...formTypeIds])),
+          clipboardItems,
+          sourceFundId: clipboard.fundId,
+          descItems: formData.descItems,
+          itemTypes: formData.itemTypes,
+          nodeId,
+          targetFundId: activeFund.id,
+          getItemTypeInfo,
+        })
+      : [];
 
   function exportCsv(item: NodeItem) {
     dispatch(
@@ -124,6 +153,31 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId, seedFromParent
     }
   }
 
+  function handleCopyValues(descItemTypeId: number, append: boolean) {
+    copyItems({
+      descItems: formData?.descItems ?? [],
+      nodeId,
+      fundId: activeFund.id,
+      fundVersionId: fondsVersionId,
+      itemTypeId: descItemTypeId,
+      append,
+    });
+  }
+
+  async function handlePasteValues(descItemTypeId: number) {
+    if (!formData) {
+      return;
+    }
+    await pasteItems({
+      formData,
+      nodeId,
+      nodeVersion: nodeData?.version ?? nodeVersionId,
+      fundId: activeFund.id,
+      fundVersionId: fondsVersionId,
+      itemTypeId: descItemTypeId,
+    });
+  }
+
   function getOpenInDataGridHref(descItemTypeId: number) {
     return urlFundGrid(activeFund.id, getFundVersion(activeFund), undefined, nodeId, descItemTypeId);
   }
@@ -174,6 +228,9 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId, seedFromParent
           isFirstNode={isFirstNode}
           handleCopyFromPrev={handleCopyFromPrev}
           handleCopyToggle={handleCopyToggle}
+          handleCopyValues={handleCopyValues}
+          handlePasteValues={handlePasteValues}
+          pastableTypeIds={pastableTypeIds}
           getOpenInDataGridHref={getOpenInDataGridHref}
           onOpenInDataGrid={handleOpenInDataGrid}
           addEmptyDescItem={addEmptyDescItem}

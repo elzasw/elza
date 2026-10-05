@@ -30,6 +30,9 @@ interface Props {
     isAnonymousStructured?: boolean;
     handleCopyFromPrev: (descItemTypeId: number) => void;
     handleCopyToggle: (descItemTypeId: number) => void;
+    handleCopyValues?: (descItemTypeId: number, append: boolean) => void;
+    handlePasteValues?: (descItemTypeId: number) => void;
+    pastableTypeIds?: number[];
     getOpenInDataGridHref?: (descItemTypeId: number) => string;
     onOpenInDataGrid?: (descItemTypeId: number) => void;
     addEmptyDescItem: (typeId: number, specId?: number, position?: number) => string | void;
@@ -58,6 +61,9 @@ export function DescItemTypeFields({
     isAnonymousStructured = false,
     handleCopyFromPrev,
     handleCopyToggle,
+    handleCopyValues,
+    handlePasteValues,
+    pastableTypeIds,
     getOpenInDataGridHref,
     onOpenInDataGrid,
     addEmptyDescItem,
@@ -138,6 +144,12 @@ export function DescItemTypeFields({
     const showAddButton =
         !isCalculatedAutomatically && (repeatableWithoutEmptyItem || anonymousStructuredNeedsButton);
 
+    // Saved own items only: inherited values are never copied, empty placeholders have nothing to copy.
+    const hasOwnValue = descItems.some(
+        ({ item }) => item.nodeId == nodeId && (item.data?.dataId != undefined || item.undefined),
+    );
+    const canPasteValues = pastableTypeIds?.includes(typeRef.id) ?? false;
+
     const lastEditableLocalId = [...sortedDescItems].reverse().find(
         ({ item, forcedDisplayString }) =>
             !item.undefined && !item.inhibited && item.nodeId == nodeId && forcedDisplayString == undefined,
@@ -178,6 +190,10 @@ export function DescItemTypeFields({
             nodeSettings={nodeSetting}
             handleCopyFromPrev={handleCopyFromPrev}
             handleCopyToggle={handleCopyToggle}
+            handleCopyValues={handleCopyValues}
+            canCopyValues={hasOwnValue}
+            handlePasteValues={handlePasteValues}
+            canPasteValues={canPasteValues}
             getOpenInDataGridHref={getOpenInDataGridHref}
             onOpenInDataGrid={onOpenInDataGrid}
             canCopyFromPrev={!isFirstNode}
