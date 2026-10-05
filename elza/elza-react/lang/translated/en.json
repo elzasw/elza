@@ -7441,6 +7441,14 @@
     "defaultMessage": "Sign-in with Windows authentication failed. Contact your administrator.",
     "srcHash": "xO_L5DMfukIp"
   },
+  "login.error.ssoNoTicket": {
+    "defaultMessage": "Windows authentication did not take place. The usual reasons: the domain sign-in has expired, the computer is not in the domain, or the browser does not allow Windows authentication for this server.",
+    "srcHash": "zD6B8c7qPgzQ"
+  },
+  "login.error.ssoSessionNotCreated": {
+    "defaultMessage": "Windows authentication succeeded, but the sign-in could not be completed. Try again, or sign in with a username and password.",
+    "srcHash": "2Qb_5AsUztZf"
+  },
   "login.error.ssoUserInactive": {
     "defaultMessage": "Windows authentication succeeded, but your ELZA user is not active. Contact your administrator.",
     "srcHash": "JxtlSzaj7yV8"

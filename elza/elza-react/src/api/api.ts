@@ -34,7 +34,7 @@ const messages = defineMessages({
     },
 });
 import { createException } from 'components/ExceptionUtils.jsx';
-import { logout } from 'actions/global/login';
+import { clearSession } from 'actions/global/login';
 import { store } from 'stores/index.jsx';
 
 interface WindowEx extends Window {
@@ -170,7 +170,7 @@ function resolveException(error: AxiosError<Error>) {
         }
 
         if (result.unauthorized) {
-            store.dispatch(logout());
+            store.dispatch(clearSession());
         }
     }
 
