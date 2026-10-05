@@ -192,14 +192,103 @@ WinSW or NSSM, running the same ``java -jar`` command. See also the
 First start
 ===========
 
+.. _install-first-admin:
+
+First administrator
+-------------------
+
+While the database contains no user, the application shows the
+*Initial setup* dialog instead of the login. It creates the first
+administrator: a user with a password and the administrator permission.
+
+.. warning::
+
+   Until the first administrator exists, anyone who opens the application
+   can create it. Create the administrator right after the first start,
+   before the application is made available on the network, or set it in
+   the configuration (see :ref:`install-admin-from-config`).
+
+After *Create administrator*, the application logs in as the new
+administrator. The password must meet the password rules (see
+:doc:`05-security`); after the installation, all rules are off.
+
+The first administrator has no person (archival entity) assigned, because
+the archival entities need the packages loaded first. The person can be
+assigned later in *Administration* > *Users* > *Edit*. Other users are
+created as usual, with a person.
+
+.. _install-admin-from-config:
+
+Administrator from the configuration
+------------------------------------
+
+An administrator can also be set in the configuration. When both keys
+below are set, ELZA applies them at every startup, whether or not the
+database contains users:
+
+- If no user of this name exists, it is created as an administrator: a
+  user without a person, with the password and the administrator
+  permission. On an empty database, the *Initial setup* dialog is then
+  not shown.
+- If the user exists, it gets the configured password, and a deactivated
+  user is activated. Its permissions do not change; a user without a
+  password login gets one. When the user already has this password,
+  nothing is written, so the validity of the password does not restart
+  at every startup.
+
+.. code-block:: yaml
+
+   elza:
+     security:
+       admin:
+         username: jan.novak
+         password: a-password
+
+.. list-table::
+   :header-rows: 1
+   :widths: 36 18 46
+
+   * - Key
+     - Default
+     - Meaning
+   * - ``elza.security.admin.username``
+     - (none)
+     - User name of the administrator.
+   * - ``elza.security.admin.password``
+     - (none)
+     - Password of the administrator, as plain text. It must meet the
+       password rules.
+
+Every startup with the keys set writes its outcome to the application
+log (the password itself is never logged): the user created, the
+password set, the account activated, or that the user already matches
+the configuration. Only one of the two keys set is logged as a warning
+and nothing is applied. If the keys cannot be applied (for example the
+password does not meet the rules, or the name is the name of the default
+user while the default user is enabled), ELZA logs an error and starts
+anyway. With ``elza.siemLogFile`` set, the changes and the failure are
+also written to the security audit log (see :doc:`05-security`).
+
+A database user named like the default user gets the password, but it
+has no effect while the default user is enabled.
+
+.. warning::
+
+   The password is stored in plain text. While the keys are set, a
+   password changed in the application returns to the configured one at
+   the next restart, and a deactivated account is activated again. Remove both keys from :file:`elza.yaml` once they are
+   no longer needed, for example after the first start.
+
 Default user
 ------------
 
-A new installation can be accessed with the built-in default user
-(``admin`` with the password ``admin``), which has administrator rights.
+A new installation can also be accessed with the built-in default user
+(``admin`` with the password ``admin``), which has administrator rights;
+the *Sign in* button of the *Initial setup* dialog opens the login form for it.
 Use it only to create the administrator accounts, then disable it with
 ``elza.security.allowDefaultUser: false`` and restart the application.
-See :doc:`05-security`.
+While the default user is enabled, the first administrator cannot be
+named ``admin``. See :doc:`05-security`.
 
 .. _install-packages:
 
