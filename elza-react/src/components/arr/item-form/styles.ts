@@ -134,6 +134,10 @@ export const useStyles = makeStyles({
     flexShrink: 0,
     whiteSpace: "nowrap",
   },
+  // Icon plus a short counter: drop Fluent's min-width for buttons with text content.
+  toolbarCounterButton: {
+    minWidth: "auto",
+  },
   toolbarOverflowInner: {
     display: "flex",
     flex: 0,

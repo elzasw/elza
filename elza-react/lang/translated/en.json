@@ -4865,6 +4865,78 @@
     "defaultMessage": "Move under",
     "srcHash": "paht2ztI_r9g"
   },
+  "arr.node.clipboard.clear": {
+    "defaultMessage": "Clear all",
+    "srcHash": "Vl9AQsGr0D2L"
+  },
+  "arr.node.clipboard.copied": {
+    "defaultMessage": "{count, plural, one {# value copied} other {# values copied}}",
+    "srcHash": "W9XL2DTF_AnA"
+  },
+  "arr.node.clipboard.copyFailed": {
+    "defaultMessage": "The values could not be copied",
+    "srcHash": "dnvUJejOXt_B"
+  },
+  "arr.node.clipboard.duplicates": {
+    "defaultMessage": "{count, plural, one {# value is already in the description unit} other {# values are already in the description unit}}",
+    "srcHash": "6BEoENASj0I5"
+  },
+  "arr.node.clipboard.pasteFailed": {
+    "defaultMessage": "The values could not be pasted",
+    "srcHash": "lWA0_H9Za6dK"
+  },
+  "arr.node.clipboard.pasted": {
+    "defaultMessage": "{count, plural, one {# value pasted} other {# values pasted}}",
+    "srcHash": "tlIHW7BcRKtq"
+  },
+  "arr.node.clipboard.removeItem": {
+    "defaultMessage": "Remove from the copied values",
+    "srcHash": "7Rv_kNuDnFad"
+  },
+  "arr.node.clipboard.reportLine": {
+    "defaultMessage": "{label}: {reason}",
+    "srcHash": "8pn83_RU0qx0"
+  },
+  "arr.node.clipboard.skip.calculated": {
+    "defaultMessage": "not pasted, the element is calculated automatically",
+    "srcHash": "xIQ9jpXUvgIB"
+  },
+  "arr.node.clipboard.skip.notRepeatable": {
+    "defaultMessage": "not pasted, the element does not allow multiple values",
+    "srcHash": "dz1_qq6BxRoP"
+  },
+  "arr.node.clipboard.skip.notUndefinable": {
+    "defaultMessage": "not pasted, the element does not allow an exception",
+    "srcHash": "9i7Zwr2aMpmj"
+  },
+  "arr.node.clipboard.skip.otherFund": {
+    "defaultMessage": "not pasted, it refers to another archival fund",
+    "srcHash": "NqzDB3iy3D2r"
+  },
+  "arr.node.clipboard.skip.specExists": {
+    "defaultMessage": "not pasted, the description unit already has a value with this specification",
+    "srcHash": "T-N-QMnFkIb6"
+  },
+  "arr.node.clipboard.skip.undefinedNextToValue": {
+    "defaultMessage": "not pasted, an exception cannot be added to an existing value",
+    "srcHash": "Bj5KbUFu-yHX"
+  },
+  "arr.node.clipboard.skip.wouldRewriteUndefined": {
+    "defaultMessage": "not pasted, the value would overwrite the exception",
+    "srcHash": "pTC5gEVHU-II"
+  },
+  "arr.node.clipboard.tableRows": {
+    "defaultMessage": "{count, plural, one {Table, # row} other {Table, # rows}}",
+    "srcHash": "-y02TudfroCO"
+  },
+  "arr.node.clipboard.total": {
+    "defaultMessage": "{count, plural, one {# value copied in total} other {# values copied in total}}",
+    "srcHash": "MzOEspIWhchv"
+  },
+  "arr.node.clipboard.truncated": {
+    "defaultMessage": "pasted, shortened to {max} characters",
+    "srcHash": "VompMTL1MvJ3"
+  },
   "arr.node.noSelection.message": {
     "defaultMessage": "Please select a description unit.",
     "srcHash": "0MIfoFZISEWg"
@@ -4897,6 +4969,10 @@
     "defaultMessage": "Not validated",
     "srcHash": "CRpyd7Uf7COx"
   },
+  "arr.node.toolbar.copyValues": {
+    "defaultMessage": "Copy all values of the description unit to paste them into another description unit",
+    "srcHash": "X-1ggIwzML2k"
+  },
   "arr.node.toolbar.main": {
     "defaultMessage": "Description unit tools",
     "srcHash": "eRupQFNBwf1a"
@@ -4904,6 +4980,10 @@
   "arr.node.toolbar.moreItems": {
     "defaultMessage": "More items",
     "srcHash": "lL_Y3GPHYQCU"
+  },
+  "arr.node.toolbar.pasteValues": {
+    "defaultMessage": "Paste the copied values into the description unit",
+    "srcHash": "sQw_ErfsZ83B"
   },
   "arr.node.toolbar.viewSettings": {
     "defaultMessage": "Display settings",
@@ -6025,9 +6105,17 @@
     "defaultMessage": "Not filled in",
     "srcHash": "S4Fu2fAtjgYM"
   },
+  "descItemType.action.copyValues": {
+    "defaultMessage": "Copy the description element values to paste them into another description unit (Ctrl+click adds them to the values already copied)",
+    "srcHash": "iyDKK7Ybb4aI"
+  },
   "descItemType.action.openInDataGrid": {
     "defaultMessage": "Show in table",
     "srcHash": "7jwQD-SqGXED"
+  },
+  "descItemType.action.pasteValues": {
+    "defaultMessage": "Paste the copied description element values",
+    "srcHash": "gvEXEdDtEprK"
   },
   "desc_item_action_allow": {
     "defaultMessage": "Allow inherited value",
