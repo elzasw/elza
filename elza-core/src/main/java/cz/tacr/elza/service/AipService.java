@@ -8,6 +8,7 @@ import cz.tacr.elza.domain.DaDaoRelation;
 import cz.tacr.elza.domain.DaLevelView;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.repository.AipRepository;
+import cz.tacr.elza.repository.AipStateRepository;
 import cz.tacr.elza.repository.DaDaoRepository;
 import cz.tacr.elza.repository.FilteredResult;
 import jakarta.transaction.Transactional;
@@ -25,6 +26,8 @@ import static cz.tacr.elza.exception.codes.ArrangementCode.AIP_NOT_FOUND;
 public class AipService {
     @Autowired
     private AipRepository aipRepository;
+    @Autowired
+    private AipStateRepository aipStateRepository;
     @Autowired
     private ClientFactoryVO clientFactoryVO;
     @Autowired
@@ -66,16 +69,20 @@ public class AipService {
 
     @Transactional
     public AipDetailVO getAipDetail(@NotNull Integer id) {
-        DaAip aip = aipRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException("Nenalezeno AIP s id " + id, AIP_NOT_FOUND));
-        if(aip == null) {
-            return null;
-        }
-        return clientFactoryVO.createAipDetail(aip);
+        return clientFactoryVO.createAipDetail(getAip(id));
     }
 
+    /**
+     * @throws ObjectNotFoundException also for an AIP invalidated by the digital archive - it has
+     *             no active state and is not shown
+     */
     @Transactional
     public DaAip getAip(@NotNull Integer id) {
-        return aipRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException("Nenalezeno AIP s id " + id, AIP_NOT_FOUND));
+        DaAip aip = aipRepository.findById(id).orElse(null);
+        if (aip == null || aipStateRepository.findByDaAipAndDeleteChangeIsNull(aip) == null) {
+            throw new ObjectNotFoundException("Nenalezeno AIP s id " + id, AIP_NOT_FOUND);
+        }
+        return aip;
     }
 
     @Transactional
