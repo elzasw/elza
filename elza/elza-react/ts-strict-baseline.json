@@ -246,7 +246,6 @@
     "error TS7006: Parameter 'dispatch' implicitly has an 'any' type."
   ],
   "src/api/api.ts": [
-    "error TS2345: Argument of type '(dispatch: any) => Promise<any>' is not assignable to parameter of type 'AnyAction'.",
     "error TS2345: Argument of type 'void | { type: string; title: any; extended: boolean; message: any; style: string; size: string; time: any; visible: boolean; }' is not assignable to parameter of type 'AnyAction'."
   ],
   "src/api/old/ApPartInfo.tsx": [
