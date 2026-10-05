@@ -1,4 +1,5 @@
 import {
+    CounterBadge,
     FlatTree,
     TreeItemLayout,
     useHeadlessFlatTree_unstable,
@@ -13,17 +14,22 @@ import {
 } from "@fluentui/react-icons";
 import { useEffect, useState } from "react";
 import "./Tree.scss";
+import type { FlatItem } from "./AipsLogicalContainer";
   
   type FundTreeProps = {
-      nodes: any;
+      nodes: FlatItem[];
       expandedIds?: Set<TreeItemValue>;
       selectedNode: TreeItemValue;
       setSelectedNode: (item: TreeItemValue) => void;
+      /** Na začátku rozbalit všechny úrovně. */
+      openAll?: boolean;
   }
   
-  const Tree = ({nodes, expandedIds, selectedNode, setSelectedNode}: FundTreeProps) => {
+  const Tree = ({nodes, expandedIds, selectedNode, setSelectedNode, openAll}: FundTreeProps) => {
     const [openItems, setOpenItems] = useState<Set<TreeItemValue>>(
-        () => new Set()
+        () => openAll
+            ? new Set(nodes.filter(n => nodes.some(m => m.parentValue === n.value)).map(n => n.value))
+            : new Set()
     );
 
     const items = nodes;
@@ -58,7 +64,8 @@ import "./Tree.scss";
             className="tree"
         >
             {Array.from(flatTree.items(), (flatTreeItem) => {
-                const { content, ...treeItemProps } = flatTreeItem.getTreeItemProps();
+                const { content, count, ...treeItemProps } = flatTreeItem.getTreeItemProps() as
+                    ReturnType<typeof flatTreeItem.getTreeItemProps> & { count?: number };
                 
                 return (
                     <FlatTreeItem 
@@ -74,6 +81,9 @@ import "./Tree.scss";
                                 : undefined
                             }
                             className={selectedNode == flatTreeItem.value ? "selected-node" : undefined}
+                            aside={count != null
+                                ? <CounterBadge count={count} overflowCount={9999} appearance="ghost" color="informative" />
+                                : undefined}
                         >
                             {content}
                         </TreeItemLayout>

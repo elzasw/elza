@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ead xmlns:cam="http://cam.tacr.cz/2019" xmlns="http://ead3.archivists.org/schema/">
+    <control>
+        <recordid>d39c947a-7870-4c00-aa6b-aff7f4c9e01d</recordid>
+        <filedesc encodinganalog="1036">
+            <titlestmt>
+                <titleproper>E-ARK - Eliška</titleproper>
+            </titlestmt>
+        </filedesc>
+        <maintenancestatus value="derived"/>
+        <maintenanceagency countrycode="CZ">
+            <agencycode localtype="CZ_MVCR_INSTITUTION_ID">620000010</agencycode>
+            <agencyname>Ústav dějin Univerzity Karlovy a archiv Univerzity Karlovy</agencyname>
+        </maintenanceagency>
+        <localcontrol localtype="RULES">
+            <term identifier="CZ_ZP2013">základní pravidla od roku 2013</term>
+        </localcontrol>
+        <localcontrol localtype="CZ_FINDING_AID_EAD_PROFILE">
+            <term identifier="CZ_EAD3_PROFILE_20240301">profil platný od března 2024</term>
+        </localcontrol>
+        <maintenancehistory>
+            <maintenanceevent>
+                <eventtype value="created"/>
+                <eventdatetime standarddatetime="2024-11-11T10:38:43+01:00"></eventdatetime>
+                <agenttype value="machine"></agenttype>
+                <agent>eskartace</agent>
+            </maintenanceevent>
+        </maintenancehistory>
+    </control>
+    <archdesc level="otherlevel" otherlevel="balicek" id="ds_1">
+        <did>
+            <unitdatestructured>
+                <daterange altrender="Y">
+                    <fromdate standarddate="2010-01-01T00:00:00">2010</fromdate>
+                    <todate standarddate="2010-12-31T23:59:59">2010</todate>
+                </daterange>
+            </unitdatestructured>
+            <unitid localtype="ZDROJ_ID" label="identifikátor ve zdrojovém systému">eskartace_2150:d39c947a-7870-4c00-aa6b-aff7f4c9e01d</unitid>
+            <unittitle>Digitální fotografie 3</unittitle>
+        </did>
+        <dsc>
+            <c level="otherlevel" id="k_2" otherlevel="komponenta">
+                <did>
+                    <dao identifier="a_00404832_dok00001_f001_v00001" daotype="borndigital"/>
+                    <unitid localtype="PUVODNI_NAZEV" label="původní název">3.jpg</unitid>
+                    <unittitle>3.jpg</unittitle>
+                </did>
+            </c>
+        </dsc>
+    </archdesc>
+</ead>

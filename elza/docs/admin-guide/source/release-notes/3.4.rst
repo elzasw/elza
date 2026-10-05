@@ -1,0 +1,421 @@
+=================
+Changes in 3.4.x
+=================
+
+The changes of the 3.4.x builds that affect the work of users and
+administrators, newest first. Internal (development) changes are not
+listed. Changes of the Czech description rules (ZP2015) and code lists
+(CZ_BASE) are listed only in the Czech documentation.
+
+Entries that require an action of the administrator (a configuration
+change, a step during the upgrade) name the configuration key and link to
+the relevant chapter. Before an upgrade, read the entries of all builds
+between the installed and the new version; see :doc:`/03-upgrade`.
+
+Upcoming version
+================
+
+* New: ELZA DA - taking over archival description from packages (AIP) by
+  the user: an import plan and its execution (levels, description
+  elements, attachments); automatic linking creates levels under the
+  matching level; content type and profile of the AIP from METS; dates
+  and formal titles taken over from EAD
+* New: ELZA DA - automatic placement of received AIPs that match no
+  description unit by UUID: the rules of the fund (rule type
+  ``DA_MATCH``) decide by the type and content of the package whether
+  and under which levels it is placed; the levels are found or created
+  and the package is imported below them. A match by UUID always takes
+  precedence. Applies to repositories with automatic metadata download
+* New: 9963 - Password rules (minimum length, character groups,
+  validity), a required password change at the next login, accounts
+  whose password never expires, and recovering access to an account with
+  ``elza.security.recovery.username`` and
+  ``elza.security.recovery.password``. All rules are off after the
+  upgrade. **Turning the validity on makes every password not changed
+  since the upgrade expired at once**; see :doc:`/05-security`.
+* New: 9963 - Initial setup: while the database contains no user, the
+  application creates the first administrator instead of showing the
+  login. **Create the administrator right after the first start, before
+  the application is made available on the network**: until then, anyone
+  who opens the application can create it; see
+  :ref:`install-first-admin`. Users without a person (archival entity)
+  are allowed.
+* New: 9963 - Administrator from the configuration:
+  ``elza.security.admin.username`` and ``elza.security.admin.password``
+  are applied at every startup - a missing user is created as an
+  administrator, an existing user gets the configured password and is
+  activated if deactivated. While they are set, a password changed in the
+  application returns to the configured one and a deactivated account is
+  activated again at the next restart. Every outcome is logged; the
+  changes also go to the security audit log (``config_admin_*`` events);
+  see :ref:`install-admin-from-config`.
+* New: 7843 - Revalidation of dependent entities when a related entity is
+  invalidated
+* New: 7453 - Renaming of attachments
+* Change: 10028 - Storage of binary files (DMS). At the first start, the
+  files in ``work/dms`` are moved once into the new structure
+  ``dms/<year>/<month>/<block>/``. Deleted content is first moved to the
+  trash ``dms/_trash`` (``elza.dms.trashRetentionDays``, default 30 days),
+  and a new regular consistency check runs (``elza.dms.check.cron``).
+  **Before the upgrade, back up the database and the dms directory from
+  the same moment**; returning to an older version requires restoring
+  both. See :doc:`/09-backup`.
+* Removed: The ``FULL_SYNC`` mode of
+  ``elza.webservice.fonds.adminPermissionMode`` - the web service only adds
+  fund administrators (``ADD_ONLY``). With ``FULL_SYNC`` the application
+  does not start; remove the setting from :file:`elza.yaml`.
+* Change: 10054 - REST API: the endpoints ``/api/admin/asyncRequests``
+  moved to ``/api/v1/admin/async-requests``
+* Fix: Structured types - error with an unsupported description element
+  type
+
+3.4.7
+=====
+
+* New: AI assistant - links to records (entities) in chat answers
+* New: DA / AIP - the link of an AIP is shown in read-only mode as well;
+  linking and unlinking an AIP requires the arrangement permission
+* New: The login dialog and the Background tasks page redesigned (Fluent
+  UI)
+* New: Addressable opening of the digital objects page
+* Fix: 10041 - Output generation: the state of an output changed only
+  after the browser was refreshed
+* Fix: 10053 - Outputs: the Generate output button does not react for a
+  particular archival fund
+* Fix: 10051 - Table view: blank screen with a filter on a description
+  element (for example Entity roles)
+* Fix: DA / AIP - the package detail allows linking parts and refers to
+  description units; detection of digital repositories of the FILESYSTEM
+  type
+* Fix: Crash when working with several browser tabs
+* Fix: Minor translation fixes (react-intl)
+
+3.4.6
+=====
+
+* New: 9991 - Batch import - import of several archival funds at once
+  (from a folder on the server or by upload from the browser) with an
+  overview of the batch result; import from a server folder requires
+  ``elza.import.batchInputDir``, see :doc:`/04-configuration`
+* New: 10011 - Personal API keys - support and management, filter for
+  active keys only; the feature is enabled by default
+  (``elza.security.api-keys``, header ``X-API-Key``), see :doc:`/05-security`
+* New: 10029 - Import of description elements from CSV - import by entity
+  ID
+* New: Outputs - generation of large outputs (pages swapped to disk, a
+  shared cache of archival entities of limited size; settings
+  ``elza.export.jasperPageCacheSize`` and
+  ``elza.export.outputRecordCacheSize``); the default number of threads
+  generating outputs (``elza.asyncActions.output.threadCount``) lowered
+  from 4 to 2
+* New: The user settings dialog redesigned (Fluent UI), with an option to
+  clear the browser cache
+* New: Import of archival entities from XML - relations between entities
+  created by the same file, storing the external identifier
+* New: AI assistant - the last selected model is remembered
+* New: The user interface converted to react-intl and the older
+  translation layer removed (preparation for full localisation)
+* Fix: 10004 - Add description element: special access restriction - the
+  element is inserted twice
+* Fix: 9999 - Special access restriction - the element is not shown in
+  read-only mode
+* Fix: 10003 - Import of description elements (Table view, CSV) - trailing
+  spaces from MS Excel
+* Fix: 9996 - The UUID of a unit cannot be copied
+* Fix: Export - access restriction: elements with a constant value are
+  added again
+* Fix: ELZA DA / AIP - better error reporting when downloading and
+  processing packages, links in the AIP list (linked fund and package),
+  package overview
+* Fix: Wrong focus after closing a confirmation dialog
+
+3.4.5
+=====
+
+* New: ELZA DA - reworked handling of AIPs:
+
+  * AIP explorer as a separate page (tree of the downloaded package,
+    opening directly from the address bar)
+  * AIP list - readable package states, working sorting, actions by
+    state, lookup of the institution and the fund
+  * Linking AIPs to description units in the background (AIP by AIP),
+    showing the progress and the obstacles before confirmation, filtering
+    by the linking state
+  * Automatic download of metadata after pairing, linking by UUID
+  * DA repository - AIP download mode, synchronisation interval stored in
+    the database, settings test, multiple links respected
+  * Removed: the DA synchronisation timer in :file:`elza.yaml`
+    (``elza.da.sync``) - the interval is set on the digital repository in
+    External systems (default 300 s); remove the section from
+    :file:`elza.yaml`
+
+* New: 9955 - CSV import - asynchronous processing with a notification
+  when finished (WebSocket)
+* New: 9990 - Digital entities - reworked detail window (single panel) and
+  a context menu with navigation to the tree
+* New: 9981 - Conflicting value (not saved) - a description element can be
+  deleted by deleting its value
+* New: Archival funds - the active archival fund is highlighted when
+  opened, with an action menu in the detail
+* Fix: 9982 - Citations do not work
+* Fix: 9978 - The storage unit generator function does not finish for a
+  particular archival fund
+* Fix: 9995 - Outputs - the preview shows the result of the introduction
+  aggregation function only after the browser is refreshed
+* Fix: ELZA DA - crashes of the AIP list and detail (institution not
+  found, missing package size), understandable description of package
+  processing errors
+* Fix: Outputs - hidden scroll bar
+
+3.4.4
+=====
+
+* New: 9955 - CSV import - a wizard with a choice of encoding and
+  separator and a live preview
+* New: 9945 - Arrangement - the value of the element *Content* (Obsah) is
+  shown at the file level (when the unit title is missing)
+* New: 9944 - Digital entities - file repository: a context menu with file
+  download, sorting by modification time (9971) and unified browser icons
+* Fix: 9973 - Element *Language* (Jazyk) - missing exception flag
+* Fix: 9476 - Archival funds - home page: after opening a fund and
+  returning, the focus does not stay on the selected record in the left
+  panel (scrolling to the selected record in the tree added)
+* Fix: 9944 - File repository - file download
+* Fix: Splitter behaviour - panel sizes by area
+
+3.4.3
+=====
+
+* New: 9944 - Digital entities - file repository completed and extended
+  (browsing the folder tree with file previews, draggable splitter, links
+  of files to description units with navigation to the node, multiple
+  links, moving a file link to another description unit, configuration
+  and test of the repository in the administration)
+* New: Outputs - reworked output detail (new form of description
+  elements, column layout, read-only mode), highlighted output menu
+* New: 9965 - Outputs - check and warning about recommended actions that
+  have not run before generating
+* New: 9277 - Outputs - help added to tooltips
+* New: AI assistant - suggestions for completing and improving the
+  description of a description unit (suggestion cards, accept/reject,
+  record of decisions) and preparation of fixes from review findings
+* New: Support of description elements of the JSON_TABLE type
+* New: Approving a version of an archival fund - the tab switches to the
+  newly opened version
+* New: 9962 - Passwords in an older format are updated at login
+* Fix: 9960 - Arrangement - element *Coordinates* (Souřadnice): the value
+  cannot be saved and shown in the map editor; display of very long
+  coordinates
+* Fix: 9959 - Coordinate editor: the map is limited to the upper part of
+  the screen
+* Fix: 9967 - Search in an archival fund: node not found by ID
+* Fix: 9952 - Element *Entity roles* (Role entit) - the author
+  specification is not shown in read-only mode
+* Fix: Arrangement - display of some description element types in a
+  narrow form
+* Fix: Outputs - NullPointerException when importing a table
+
+3.4.2
+=====
+
+* New: 9944 - Digital entities - file repository (browsing and downloading
+  files of the fund's directory repository, MIME type detection, files
+  over 2 GB, filters by further properties)
+* New: 9679 - Change history - records loaded gradually (in batches)
+* Fix: 9943 - Function migration to Title / Content, subject description -
+  error with multiple spaces
+* Fix: 9948 - Archival entities: element *Administrative classification*
+  (Administrativní zařazení) - invalid request state when searching
+* Fix: 9950 - Archival entities - Extended filter: search by description
+  elements returns no results
+
+3.4.1
+=====
+
+* New: Table view - reworked windows for editing values, element buttons
+  moved to a drop-down menu, option to jump to a description element
+* New: Institution management - the linked entity (access point) of an
+  existing institution can be changed
+* New: Values of API keys and passwords in the settings of external
+  systems are hidden
+* Fix: 9927 - Table view - the keyboard cannot be fully used
+* Fix: 9547 - Table view - element *Coordinates* (COORDINATES) - the
+  operations "Is contained in" and "Is near"
+* Fix: 9934 - Description unit - restoring suppressed inheritance when
+  reverting changes (cache synchronisation)
+* Fix: Table view - adding hidden columns when redirected from a link,
+  link adjustments
+
+3.4.0
+=====
+
+* New: AI assistant - extended functions:
+
+  * Search tools over the archival description, archival entities and
+    funds
+  * Progress of processing and activity of the tools in real time
+  * Overview of usage and credits (weekly allowance, price), choice of the
+    AI profile
+  * Review findings in the assistant's answers
+
+* New: 9935 - Institution management - new management of institutions,
+  including changing the linked access point of an institution
+  (institution types loaded from the cz-base package)
+* New: Administration - navigation moved to a side panel, the selected
+  theme (dark mode) respected on administration pages
+* New: Table view - addressable URL (a link to a particular description
+  unit and description element) and a link from the context menu of a
+  description unit in the tree
+* New: 9240 - The screen state is kept when switching between Arrangement
+  and Table view (focus kept)
+* New: Floating windows - can be moved and resized (on all edges and
+  corners), brought to front on click and adjusted when the browser window
+  is resized
+* New: 9925 - The interval for downloading entities moved from the
+  configuration to the settings of the external system; the
+  synchronisation interval is updated without a restart. Values of
+  ``elza.accesspoints.sync`` in :file:`elza.yaml` are copied to the
+  external system settings at the first start
+* New: Health and metrics available on a separate management port
+  (default ``8081`` on ``127.0.0.1``), fix of the LDAP health check, see
+  :doc:`/08-monitoring`
+* New: Monitoring of the task scheduler - metrics and settings
+  ``elza.monitoring.scheduler.*``
+* Fix: 9594 - Digital entities - preview of files with a special
+  character in the name
+* Fix: 9797 - Error during reindexing - coordinates
+
+3.4.0-RC-3
+==========
+
+* New: AI assistant - first version of the user interface (assistant
+  panel), API keys for the AI provider, choice of profile/model, display
+  of document citations
+* New: Bulk actions over several funds - the action selection button
+  renamed, the selection of funds kept
+* New: Export - the native XML includes the source application and links
+  to DAOs bound to an AIP
+* New: Synchronisation of permissions over web services - by default,
+  permissions are only added, not removed
+  (``elza.webservice.fonds.adminPermissionMode``; the distribution
+  configuration set ``FULL_SYNC`` until 3.4.7, however)
+* Fix: 9913 - Text jumps when typing on the second line of a text
+  description element
+* Fix: 9914 - Printed output is generated slowly
+* Fix: 9916 - Element *Content* (Obsah) cannot be added to a series when
+  the unit has the element *Title* (Název)
+* Fix: Behaviour of the icon opening the entity preview in a description
+  element
+
+3.4.0-RC-2
+==========
+
+* New: AI provider - a new type of external system and the first version
+  of the interface for integrating artificial intelligence (connecting an
+  AI provider, connection test)
+* New: Selection of the application language - a new experimental
+  feature
+* New: Bulk actions over several funds - selection of funds by a filter
+  evaluated on the server, reworked dialog for starting bulk actions
+* New: Health monitoring and Prometheus metrics of the processing queue
+  (see :doc:`/08-monitoring`)
+* Fix: Cache records are deleted in batches (stability and performance)
+
+3.4.0-RC-1
+==========
+
+* New: Publication of archival description - a new function for
+  publishing (sharing) the archival description of a fund: management of
+  publication types and publication systems (connection type
+  PRODUCTION / TEST / DEVELOPMENT, generated system code), starting a
+  publication, generating and downloading publication files, copying a
+  publication; new permissions FUND_PUBLISH and FUND_PUBLISH_ALL
+* New: Structured types editor - a new editor of structured types in the
+  right panel, including read-only mode and bulk editing
+* New: Bulk actions over several funds - a bulk action can be run over
+  several archival funds at once (selection in the list of funds)
+* New: 9635 - Add description element - selection of several elements at
+  once, highlighted inputs, handling of IMPOSSIBLE description elements
+* New: Compact view and multi-column view - moved from the experimental
+  features to the display settings of a description unit
+* New: 9488, 9503 - Search in archival funds - logical OR within one
+  filter
+* New: 9582 - Export of closed versions
+* New: Export - option to include or omit digital entities (DAO)
+* New: External system (CAM) - "Revisions in the external system" renamed
+  to "Revision history", warnings/errors and revision history from CAM
+  shown, ELZA ID and CAM ID of an entity selectable with one click
+* Fix: 9911 - Entity download fails for a REPLACEMENT whose replacing
+  entity has not been downloaded locally
+* Fix: 9898 - Revision history in the external system - missing processor
+  and approver of a revision sent to CAM
+* Fix: 9888 - Structured types: editing in the right panel - an element
+  removed from the form disappeared from the element menu
+* Fix: 9887 - Structured types: access restriction - rules were not
+  loaded
+* Fix: 9886 - Structured types: the length of a storage unit does not show
+  0 as the first digit and contains a decimal point
+* Fix: 9885 - Arrangement - translation (Add description element)
+* Fix: 9869 - Error when sending an entity with an empty description
+  element value
+* Fix: 9578 - Citation generator - description units with the element
+  *Fixed link* (Pevné spojení), including citations from another fund
+  and fund version
+* Fix: 9811 - Citation generator - element *Content* (Obsah): an empty
+  value is replaced by the value of the nearest higher level (in square
+  brackets)
+* Fix: 9832 - Archival entities - export of records to CSV - completed
+  (permissions)
+* Fix: Sending to CAM - correct time by time zone (not UTC)
+* Fix: External system (CAM) - search, download of an entity by ID,
+  storing and sorting of warnings
+* Fix: Faster and more stable cache of description units (repeated
+  loading of a node skipped)
+
+3.4.0-BETA-2
+============
+
+* New: 9488, 9503 - Search in archival funds - search by institutions and
+  archival funds
+* Fix: Search by institution
+
+3.4.0-BETA-1
+============
+
+* New: ELZA DA - connection to a digital archive (DA) and work with
+  archival information packages (AIP):
+
+  * Overview of AIPs from the digital archive, including the list of AIPs
+    of an archival fund
+  * AIP explorer - browsing the content of a package (logical structure,
+    components/files), displaying and loading them from the DA
+  * Linking AIPs to the archival description - a wizard for linking
+    single AIPs and sets of AIPs, with findings (checks) shown when
+    linking
+  * The AIP assigned to a description unit shown directly in the
+    arrangement, with a jump to the component in the explorer
+  * Transfer of the archival description back to the DA - generating and
+    transferring change packages in a directory structure including METS
+  * Unlinking the archival description from an AIP
+  * Generating and deleting the AIP structure, filling the description
+    elements of the logical structure
+  * Configuration: DA synchronisation timer (:file:`elza.yaml`), a new
+    external system type "digital repository" for the DA
+
+* New: 9488 - Search in archival funds - filters by archival funds
+* New: 8746 - Table view - filter on the element *Entity roles* (Role
+  entit) - new condition "Contains the entity"
+* New: 9633 - Left panel of Arrangement (tree) - the element *Formal
+  title* (Formální název) is shown when *Content* (Obsah) has no value
+* New: Runtime environment upgraded to Java 17 (JDK 17)
+* Fix: 6044 - Marking of storage units (check boxes) does not disappear
+  after storage units are deleted
+* Fix: 9002 - Writing an entity to CAM - the element *Note* (Poznámka) of
+  a related entity that is not written in the external system is filtered
+  out
+
+Changes compared to 3.3.x
+=========================
+
+The list of changes compared to the 3.3.x line is available in the
+repository: https://github.com/elzasw/elza/compare/release-3.3.x...release-3.x

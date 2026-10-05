@@ -64,9 +64,12 @@ export function getValue({ data }: NodeItem) {
     return { value: undefined };
 }
 
-export function hasValue({ data, itemSpecId }: NodeItem) {
+export function hasValue({ data, itemSpecId, undefined: isUndefined }: NodeItem) {
+    if (isUndefined) {
+        return true;
+    }
     if (!data) {
-        return { value: undefined };
+        return false;
     }
     if (isDataBit(data)) {
         return data.bitValue != undefined;
@@ -108,6 +111,11 @@ export function hasValue({ data, itemSpecId }: NodeItem) {
 export function isValueEqual(itemA: NodeItem, itemB: NodeItem) {
     const dataA = itemA.data;
     const dataB = itemB.data;
+
+    const isEitherUndefined = itemA.undefined || itemB.undefined;
+    if (isEitherUndefined) {
+        return Boolean(itemA.undefined && itemB.undefined) && itemA.itemSpecId === itemB.itemSpecId;
+    }
 
     if (
         !dataA ||

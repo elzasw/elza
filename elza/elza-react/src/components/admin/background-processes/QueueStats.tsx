@@ -2,7 +2,7 @@ import {makeStyles, mergeClasses, tokens} from '@fluentui/react-components';
 import {ReactNode} from 'react';
 import {FormattedMessage, MessageDescriptor, useIntl} from 'react-intl';
 import {messages, queueTypeMessages} from './messages';
-import {QueueInfo} from './types';
+import {AsyncRequestInfo} from 'elza-api';
 
 const useStyles = makeStyles({
     root: {
@@ -77,7 +77,7 @@ function Stat({label, value, highlight, children}: StatProps) {
 }
 
 interface Props {
-    queue: QueueInfo;
+    queue: AsyncRequestInfo;
 }
 
 /**

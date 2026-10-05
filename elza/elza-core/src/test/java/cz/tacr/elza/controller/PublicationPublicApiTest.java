@@ -1,6 +1,7 @@
 package cz.tacr.elza.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -9,6 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
@@ -16,6 +19,7 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
@@ -30,6 +34,8 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.DmsFile;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.repository.FileRepository;
+import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.test.controller.vo.AvailablePublication;
 import cz.tacr.elza.test.controller.vo.AvailablePublications;
 import cz.tacr.elza.test.controller.vo.ConnectionType;
@@ -49,6 +55,13 @@ import cz.tacr.elza.test.controller.vo.PublicationType;
  * own.
  */
 public class PublicationPublicApiTest extends AbstractControllerTest {
+
+    @Autowired
+    private FundRepository fundRepository;
+
+    @Autowired
+    private FileRepository fileRepository;
+
     /**
      * Covers {@code GET /publications/available/{targetSystem}}:
      *
@@ -468,6 +481,37 @@ public class PublicationPublicApiTest extends AbstractControllerTest {
         assertEquals(HttpStatus.FORBIDDEN, status.getStatusCode());
     }
 
+    /**
+     * Fund deletion with existing publications:
+     *
+     *   • the fund is deleted (arr_export rows must not block it via FK
+     *     to arr_fund_version),
+     *   • exports of the fund are removed,
+     *   • their dms_file rows are removed and physical files leave the DMS
+     *     storage (moved to trash after commit).
+     */
+    @Test
+    public void deleteFundWithPublicationsTest() {
+        TestContext ctx = setupUserAndFund();
+        ArrExportType type = createTypeAndFetch(ctx, "TST_DEL_FUND");
+
+        ArrExport withFile = prepareExport(ctx.fundId, type, ArrExport.State.PREPARED, 10L, true);
+        ArrExport withoutFile = prepareExport(ctx.fundId, type, ArrExport.State.NEW, null, false);
+
+        DmsFile file = withFile.getFile();
+        Path filePath = dmsService.getFilePath(file);
+        assertTrue(Files.exists(filePath), "export file must exist before fund deletion");
+
+        loginAsAdmin();
+        deleteFund(ctx.fundId);
+
+        assertTrue(fundRepository.findById(ctx.fundId).isEmpty(), "fund must be deleted");
+        assertTrue(exportRepository.findById(withFile.getExportId()).isEmpty());
+        assertTrue(exportRepository.findById(withoutFile.getExportId()).isEmpty());
+        assertTrue(fileRepository.findById(file.getFileId()).isEmpty(), "dms_file row must be deleted");
+        assertFalse(Files.exists(filePath), "export file must be removed from DMS storage");
+    }
+
     // ----------------------------------------------------------------------
     // Helpers
     // ----------------------------------------------------------------------
@@ -497,15 +541,6 @@ public class PublicationPublicApiTest extends AbstractControllerTest {
      * {@code arr_export.user_id} from being filled in by {@link #prepareExport}.
      */
     private TestContext setupUserAndFund() {
-        // clean work/dms folder
-        try {
-            java.io.File dmsDir = resourcePathResolver.getDmsDir().toFile();
-            if (dmsDir.exists()) {
-                FileUtils.cleanDirectory(dmsDir);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to clean DMS dir", e);
-        }
         ApAccessPointVO ap = findRecord(null, null, null, null, null).get(0);
         UsrUserVO user = createUser(ap.getId(), "publication-user", "publication-pass");
         UsrPermissionVO faPermission = new UsrPermissionVO();

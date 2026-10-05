@@ -26,6 +26,7 @@ import cz.tacr.elza.domain.ArrDataUriRef;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.*;
+import cz.tacr.elza.service.dms.DmsService;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.FlushMode;
 import org.hibernate.Session;

@@ -23,6 +23,7 @@ import com.nimbusds.jose.util.ResourceRetriever;
 
 import cz.tacr.elza.security.kerberos.KerberosPassAuthProvider;
 import cz.tacr.elza.security.kerberos.KerberosProperties;
+import cz.tacr.elza.security.kerberos.KerberosSsoFailureHandler;
 import cz.tacr.elza.security.kerberos.KerberosTokenAuthProvider;
 import cz.tacr.elza.security.ldap.ActiveDirectoryUserDetailProvider;
 import cz.tacr.elza.security.ldap.LdapProperties;
@@ -65,10 +66,15 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.authentication.DelegatingAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
+import org.springframework.security.web.authentication.session.ChangeSessionIdAuthenticationStrategy;
+import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
@@ -112,12 +118,21 @@ public class ApplicationSecurity {
     public static final String AUTHENTICATE_SSO = "/authenticate/sso";
 
     /**
+     * SSO endpoint for in-page sign-in. The handshake is the same, but the result is a status
+     * code and a JSON error instead of a redirect, so the application can run it from a fetch
+     * call without losing its state. {@link #AUTHENTICATE_SSO} keeps the redirect behaviour.
+     */
+    public static final String AUTHENTICATE_SSO_JSON = "/authenticate/sso/json";
+
+    /**
      * These patterns need to be allowed to access without authorization
      * to make it possible to navigate from the browser address bar for unauthorized users
      * @see cz.tacr.elza.web.controller.ElzaWebController (elza-web)
      */
     public static final String[] PERMIT_ALL_PATTERNS = {"/", "/res/**", "/static/**", 
     		"/fund/**", "/node/**", "/entity/**", "/admin/**", "/aip/**", "/h2-console/**" };
+
+    public static final String SETUP_PATTERN = "/api/v1/setup/**";
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -376,8 +391,11 @@ public class ApplicationSecurity {
         	 */
     		.authorizeHttpRequests(auth -> auth
     				.requestMatchers(PERMIT_ALL_PATTERNS).permitAll()
+    				// first-run setup, open only while no user exists (SetupService)
+    				.requestMatchers(AntPathRequestMatcher.antMatcher(SETUP_PATTERN)).permitAll()
     				// Explicitly require auth for SSO
-    			    .requestMatchers(AntPathRequestMatcher.antMatcher(AUTHENTICATE_SSO)).authenticated() 
+    			    .requestMatchers(AntPathRequestMatcher.antMatcher(AUTHENTICATE_SSO)).authenticated()
+    			    .requestMatchers(AntPathRequestMatcher.antMatcher(AUTHENTICATE_SSO_JSON)).authenticated()
     				.anyRequest().authenticated())
     		.httpBasic(Customizer.withDefaults())
     		// .requestCache(cache -> cache.requestCache(requestCache()))
@@ -414,9 +432,11 @@ public class ApplicationSecurity {
     	// Create a map of specific matchers to specific entry points
     	LinkedHashMap<RequestMatcher, AuthenticationEntryPoint> entryPoints = new LinkedHashMap<>();
         
-        // Add SPNEGO for the SSO endpoint
+        // Add SPNEGO for the SSO endpoints. Both need the Negotiate challenge; they differ only
+        // in what the success and failure handlers write back.
         if (isKerberosEnabled()) {
-            log.debug("Mapping SpnegoEntryPoint to {}", AUTHENTICATE_SSO);
+            log.debug("Mapping SpnegoEntryPoint to {} and {}", AUTHENTICATE_SSO, AUTHENTICATE_SSO_JSON);
+            entryPoints.put(new AntPathRequestMatcher(AUTHENTICATE_SSO_JSON), spnegoEntryPoint());
             entryPoints.put(new AntPathRequestMatcher(AUTHENTICATE_SSO), spnegoEntryPoint());
         }
 
@@ -474,7 +494,8 @@ public class ApplicationSecurity {
                 
         filter.setAuthenticationManager(authenticationManagerBean());
         filter.setSuccessHandler( kerberosSuccessHandler() );
-        filter.setFailureHandler(authenticationFailureHandler);
+        filter.setFailureHandler(new KerberosSsoFailureHandler(AUTHENTICATE_SSO, AUTHENTICATE_SSO_JSON,
+                authenticationFailureHandler));
         
         http
            //	.authenticationProvider(kerberosServiceAuthenticationProvider())
@@ -488,11 +509,28 @@ public class ApplicationSecurity {
 	 * Success handler specifically for Kerberos browser-based SSO.
 	 */
 	private AuthenticationSuccessHandler kerberosSuccessHandler() {
+	    RequestMatcher jsonRequestMatcher = new AntPathRequestMatcher(AUTHENTICATE_SSO_JSON);
+	    SecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
+	    SessionAuthenticationStrategy sessionStrategy = new ChangeSessionIdAuthenticationStrategy();
 	    SavedRequestAwareAuthenticationSuccessHandler handler = new SavedRequestAwareAuthenticationSuccessHandler() {
 	        @Override
-	        public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, 
+	        public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
 	                                            Authentication authentication) throws IOException, ServletException {
-	            
+
+	            // Called from the page itself, so the session cookie is the whole result. The
+	            // response has to be committed here - the SPNEGO filter carries on down the
+	            // chain and nothing is mapped to this path, so a 204 left open becomes a 404.
+	            if (jsonRequestMatcher.matches(request)) {
+	                // Same order as a form login, all of it before the commit, while the response
+	                // can still carry the new cookie. Storing the context also keeps the rest of
+	                // the chain from replacing the session.
+	                sessionStrategy.onAuthentication(authentication, request, response);
+	                securityContextRepository.saveContext(SecurityContextHolder.getContext(), request, response);
+	                response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+	                response.flushBuffer();
+	                return;
+	            }
+
 	            SavedRequest savedRequest = (SavedRequest) request.getSession()
 	                    .getAttribute("SPRING_SECURITY_SAVED_REQUEST");
 

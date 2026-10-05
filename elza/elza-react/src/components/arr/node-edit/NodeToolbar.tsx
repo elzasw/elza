@@ -18,8 +18,10 @@ import {
 import {
   AddRegular,
   ArrowSyncRegular,
+  ClipboardArrowRightFilled,
   ColumnRegular,
   CommentRegular,
+  CopyArrowRightRegular,
   CopyRegular,
   DeleteRegular,
   HistoryRegular,
@@ -85,6 +87,10 @@ import {
 import { FormItem } from "../item-form/formItems";
 import { useActiveFund, useActiveParent } from "utils/hooks";
 import { useTemplates } from "./templates/templates";
+import { clearItemClipboard, removeItemClipboardItem, useItemClipboard } from "./clipboard/itemClipboard";
+import { useCopyItems } from "./clipboard/useCopyItems";
+import { usePasteItems } from "./clipboard/usePasteItems";
+import { ClipboardPreview } from "./clipboard/ClipboardPreview";
 import { useUserSettings } from "contexts/user";
 import { useStyles } from "../item-form/styles";
 import { toolbarMessages } from './toolbarMessages';
@@ -93,6 +99,14 @@ export const messages = defineMessages({
   toggleCopyFromPrevious: {
     id: "node_action_toggleCopyFromPrevious",
     defaultMessage: "Nastavení opakovaného kopírování všech hodnot PP",
+  },
+  copyValues: {
+    id: "arr.node.toolbar.copyValues",
+    defaultMessage: "Kopírovat všechny hodnoty JP pro vložení do jiné JP",
+  },
+  pasteValues: {
+    id: "arr.node.toolbar.pasteValues",
+    defaultMessage: "Vložit zkopírované hodnoty do JP",
   },
   visiblePolicy: {
     id: "node_action_visiblePolicy",
@@ -167,6 +181,7 @@ export interface Props {
 }
 
 export const NodeToolbar = ({
+  formData,
   formItems,
   itemTypes,
   parent,
@@ -192,6 +207,9 @@ export const NodeToolbar = ({
     });
   const { settings, update: updateSettings } = useUserSettings();
   const { formatMessage } = useIntl();
+  const copyItems = useCopyItems();
+  const pasteItems = usePasteItems();
+  const clipboard = useItemClipboard();
 
   const issueProtocol = useAppSelector(({ app }) => app.issueProtocol as any); // TODO add types
   const issueTypes = useAppSelector(({ refTables }) => refTables.issueTypes);
@@ -202,6 +220,10 @@ export const NodeToolbar = ({
   ); // TODO add types
 
   const notRoot = !isFundRootId(activeParent.id);
+  // Saved own items only; inherited values are never copied.
+  const hasOwnValue =
+    formData?.descItems.some(({ nodeId }) => nodeId === nodeData?.id) ?? false;
+  const hasClipboardItems = clipboard != undefined;
 
   function handleAddDescItem() {
     dispatch(
@@ -223,6 +245,31 @@ export const NodeToolbar = ({
 
   function handleToggleCopyFromPrevious() {
     dispatch(toggleCopyAllDescItemType(activeParent.id));
+  }
+
+  function handleCopyValues() {
+    if (!formData || !nodeData) {
+      return;
+    }
+    copyItems({
+      descItems: formData.descItems,
+      nodeId: nodeData.id,
+      fundId: activeFund.id,
+      fundVersionId: activeFund.versionId,
+    });
+  }
+
+  async function handlePasteValues() {
+    if (!formData || !nodeData) {
+      return;
+    }
+    await pasteItems({
+      formData,
+      nodeId: nodeData.id,
+      nodeVersion: nodeData.version,
+      fundId: activeFund.id,
+      fundVersionId: activeFund.versionId,
+    });
   }
 
   function handleShowHistory() {
@@ -469,6 +516,34 @@ export const NodeToolbar = ({
           action: handleToggleCopyFromPrevious,
         },
         {
+          label: formatMessage(messages.copyValues),
+          showLabel: false,
+          icon: <CopyArrowRightRegular />,
+          appearance: "subtle",
+          id: "copy-values",
+          action: handleCopyValues,
+          disabled: !hasOwnValue,
+        },
+        {
+          label: formatMessage(messages.pasteValues),
+          showLabel: false,
+          icon: <ClipboardArrowRightFilled />,
+          appearance: hasClipboardItems ? "primary" : "subtle",
+          id: "paste-values",
+          action: handlePasteValues,
+          disabled: !hasClipboardItems,
+          counter: clipboard?.items.length,
+          popover: clipboard ? (
+            <ClipboardPreview
+              title={formatMessage(messages.pasteValues)}
+              items={clipboard.items}
+              isOtherFund={clipboard.fundId !== activeFund.id}
+              onRemoveItem={removeItemClipboardItem}
+              onClear={clearItemClipboard}
+            />
+          ) : undefined,
+        },
+        {
           label: formatMessage(messages.visiblePolicy),
           showLabel: false,
           icon: <SettingsCogMultipleRegular />,
@@ -679,18 +754,21 @@ export const NodeToolbar = ({
               return (
                 <>
                   {items.filter(({ overflowOnly }) => !overflowOnly).map(
-                    ({ label, icon, appearance, id, action, showLabel }, itemIndex) => {
+                    ({ label, icon, appearance, id, action, showLabel, disabled, counter, popover }, itemIndex) => {
                       return (
                         <ToolbarOverflowButton
                           overflowId={id}
                           overflowGroupId={groupId}
                           appearance={appearance}
                           onClick={action}
+                          disabledFocusable={disabled}
+                          className={counter ? styles.toolbarCounterButton : undefined}
                           icon={icon}
                           tooltip={!showLabel && label}
+                          popover={popover}
                           showDivider={itemIndex === 0 && index > 0}
                         >
-                          {showLabel ? label : undefined}
+                          {showLabel ? label : counter || undefined}
                         </ToolbarOverflowButton>
                       );
                     },

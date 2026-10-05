@@ -802,6 +802,8 @@ public class FundLevelService {
         if (needInsert) {
             updatedLevels.addAll(placeLevels(transferCollection, parentNode, change, position));
         }
+        // write deleted versions before the caller inserts the new ones
+        levelRepository.flush();
         return updatedLevels;
     }
 
@@ -826,6 +828,8 @@ public class FundLevelService {
             ret.add(newLevel);
             position++;
         }
+        // write deleted versions before the caller inserts the new ones
+        levelRepository.flush();
 
         return ret;
     }
@@ -1291,7 +1295,9 @@ public class FundLevelService {
     /**
      * Smaže uzel (uzamkne) a vytvoří jeho kopii.
      *
-     * Předchozí verze je ihned uložena do DB. Nová verze není uložena.
+     * Předchozí verze je označena jako smazaná, nová verze není uložena.
+     * Volající musí předchozí verze zapsat (flush) dříve, než uloží nové -
+     * jinak INSERT nové verze narazí na unikátní index arr_level_parent_position_idx.
      *
      * @param prevLevel
      *            platná verze
@@ -1308,7 +1314,7 @@ public class FundLevelService {
         newLevel.setCreateChange(change);
 
         prevLevel.setDeleteChange(change);
-        levelRepository.saveAndFlush(prevLevel);
+        levelRepository.save(prevLevel);
         return newLevel;
     }
 
@@ -1355,6 +1361,8 @@ public class FundLevelService {
             newNode.setPosition(position--);
             updatedLevels.add(newNode);
         }
+        // write deleted versions before the caller inserts the new ones
+        levelRepository.flush();
         logger.debug("Shifted {} levels.", nodesToShiftList.size());
 
         return updatedLevels;
@@ -1393,6 +1401,8 @@ public class FundLevelService {
             newLevel.setPosition(i);
             updatedLevels.add(newLevel);
         }
+        // write deleted versions before inserting the new ones
+        levelRepository.flush();
         levelRepository.saveAll(updatedLevels);
         levelRepository.flush();
     }

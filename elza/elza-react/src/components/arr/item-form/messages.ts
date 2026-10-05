@@ -14,6 +14,14 @@ export const messages = defineMessages({
     id: "descItemType.action.openInDataGrid",
     defaultMessage: "Zobrazit v tabulce",
   },
+  copyValues: {
+    id: "descItemType.action.copyValues",
+    defaultMessage: "Kopírovat hodnoty PP pro vložení do jiné JP (Ctrl+kliknutí je přidá k již zkopírovaným)",
+  },
+  pasteValues: {
+    id: "descItemType.action.pasteValues",
+    defaultMessage: "Vložit zkopírované hodnoty PP",
+  },
   addDescItem: {
     id: "node_action_addDescItem",
     defaultMessage: "Prvek popisu",

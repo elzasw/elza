@@ -1160,14 +1160,6 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.adminUrl + '/externalSystems/simple');
     }
 
-    getAsyncRequestInfo() {
-        return AjaxUtils.ajaxGet(WebApiCls.adminUrl + '/asyncRequests');
-    }
-
-    getAsyncRequestDetail(requestType) {
-        return AjaxUtils.ajaxGet(WebApiCls.adminUrl + '/asyncRequests/' + requestType);
-    }
-
     getLogs(lineCount, firstLine) {
         return AjaxUtils.ajaxGet(WebApiCls.adminUrl + '/logs', { lineCount, firstLine });
     }
@@ -1672,8 +1664,12 @@ export class WebApiCls {
         return AjaxUtils.ajaxPut(WebApiCls.userUrl + '/password', null, { oldPassword, newPassword });
     }
 
-    changePassword(userId: number, newPassword: string) {
-        return AjaxUtils.ajaxPut(WebApiCls.userUrl + '/' + userId + '/password', null, { newPassword });
+    changePassword(userId: number, newPassword: string, changeRequired?: boolean, neverExpire?: boolean) {
+        return AjaxUtils.ajaxPut(WebApiCls.userUrl + '/' + userId + '/password', null, {
+            newPassword,
+            changeRequired,
+            neverExpire,
+        });
     }
 
     changeActive(userId: number, active: boolean) {

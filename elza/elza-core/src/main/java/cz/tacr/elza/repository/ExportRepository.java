@@ -8,9 +8,13 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ArrExport;
+import cz.tacr.elza.domain.ArrFund;
 
 @Repository
 public interface ExportRepository extends ElzaJpaRepository<ArrExport, Integer> {
+
+    @Query("SELECT e FROM arr_export e WHERE e.fundVersion.fund = :fund")
+    List<ArrExport> findByFund(@Param("fund") ArrFund fund);
 
     boolean existsByExportTypeExportTypeId(Integer exportTypeId);
 

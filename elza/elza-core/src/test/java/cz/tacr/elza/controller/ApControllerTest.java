@@ -359,6 +359,8 @@ public class ApControllerTest extends AbstractControllerTest {
 
     private void deleteAccessPoint(Integer apId) {
         accesspointsApi.accessPointDeleteAccessPoint(apId.toString(), null);
+        // deletion enqueues dependent entities for async revalidation
+        helperTestService.waitForWorkers();
     }
 
     private ApPartVO findPreferredPart(final ApAccessPointVO accessPoint) {

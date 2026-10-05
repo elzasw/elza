@@ -56,7 +56,7 @@ import cz.tacr.elza.repository.vo.ItemChange;
 import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.AsyncRequestService;
-import cz.tacr.elza.service.DmsService;
+import cz.tacr.elza.service.dms.DmsService;
 import cz.tacr.elza.service.IEventNotificationService;
 import cz.tacr.elza.service.RevertingChangesService;
 import cz.tacr.elza.service.RuleService;
@@ -257,8 +257,7 @@ public class DeleteFundHistoryAction {
 
         // odstranění všech arr_file a soubory na disku
         final List<ArrFile> arrFiles = arrFileRepository.findHistoricalByFund(fund);
-        final List<Integer> fileIds = arrFiles.stream().map(p -> p.getFileId()).collect(Collectors.toList());
-        dmsService.deleteFilesAfterCommitByIds(fileIds);
+        dmsService.deleteFilesAfterCommit(arrFiles, "fund-history-delete-attachment");
         iterateAction(arrFiles, arrFileRepository::deleteAll);
         em.flush();
 
@@ -271,7 +270,7 @@ public class DeleteFundHistoryAction {
         nodeOutputRepository.deleteByFundAndDeleteChangeIsNotNull(fund);
         outputTemplateRepository.deleteByFundAndDeleteChangeIsNotNull(fund);
         List<ArrOutputFile> outputFiles = outputFileRepository.findByFundAndDeleteChangeIsNotNull(fund);
-        dmsService.deleteFilesAfterCommit(outputFiles);
+        dmsService.deleteFilesAfterCommit(outputFiles, "fund-history-delete-output");
         outputFileRepository.deleteByFundAndDeleteChangeIsNotNull(fund);
 
         outputResultRepository.deleteByFundAndDeleteChangeIsNotNull(fund);

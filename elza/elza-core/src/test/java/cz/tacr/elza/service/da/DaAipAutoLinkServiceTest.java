@@ -4,7 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -19,6 +21,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import cz.tacr.elza.domain.ArrDaLink;
 import cz.tacr.elza.domain.ArrFund;
@@ -26,8 +29,10 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.DaAip;
 import cz.tacr.elza.domain.DaAipState;
+import cz.tacr.elza.domain.DaDao;
 import cz.tacr.elza.repository.AipStateRepository;
 import cz.tacr.elza.repository.ArrDaLinkRepository;
+import cz.tacr.elza.repository.DaDaoRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
@@ -52,10 +57,14 @@ public class DaAipAutoLinkServiceTest {
     private NodeRepository nodeRepository;
     private ArrangementInternalService arrangementInternalService;
     private EventNotificationService eventNotificationService;
+    private DaImportService daImportService;
+    private DaDaoRepository daoRepository;
+    private DaAipReferenceResolver referenceResolver;
 
     private DaAip aip;
     private DaAipState aipState;
     private ArrFund fund;
+    private ArrNode rootNode;
 
     @BeforeEach
     void setUp() {
@@ -65,6 +74,11 @@ public class DaAipAutoLinkServiceTest {
         nodeRepository = mock(NodeRepository.class);
         arrangementInternalService = mock(ArrangementInternalService.class);
         eventNotificationService = mock(EventNotificationService.class);
+        daImportService = mock(DaImportService.class);
+        daoRepository = mock(DaDaoRepository.class);
+        referenceResolver = mock(DaAipReferenceResolver.class);
+        // by default the rules of the fund cannot import packages
+        when(daImportService.importBelow(any(), any(), anyString(), anyBoolean())).thenReturn(Optional.empty());
 
         fund = new ArrFund();
         fund.setFundId(1);
@@ -83,6 +97,8 @@ public class DaAipAutoLinkServiceTest {
 
         ArrFundVersion fundVersion = new ArrFundVersion();
         fundVersion.setFundVersionId(7);
+        rootNode = node(1, "root");
+        fundVersion.setRootNode(rootNode);
         when(arrangementInternalService.getOpenVersionByFund(fund)).thenReturn(fundVersion);
 
         when(daService.connectToJP(any(), eq(AIP_ID))).thenAnswer(inv -> {
@@ -99,6 +115,10 @@ public class DaAipAutoLinkServiceTest {
         setField(service, "nodeRepository", nodeRepository);
         setField(service, "arrangementInternalService", arrangementInternalService);
         setField(service, "eventNotificationService", eventNotificationService);
+        setField(service, "daImportService", daImportService);
+        setField(service, "daoRepository", daoRepository);
+        setField(service, "referenceResolver", referenceResolver);
+        setField(service, "txManager", mock(PlatformTransactionManager.class));
     }
 
     private static ArrNode node(int nodeId, String uuid) {
@@ -118,10 +138,12 @@ public class DaAipAutoLinkServiceTest {
         when(nodeRepository.findByFundAndUuidIn(eq(fund), anyCollection()))
                 .thenReturn(List.of(node(5, PACKAGE_UUID)));
 
-        Optional<ArrDaLink> link = service.linkReceivedAip(AIP_ID, uuids());
+        Optional<DaAipAutoLinkService.AutoLink> link = service.linkReceivedAip(AIP_ID, uuids());
 
         assertTrue(link.isPresent());
         verify(daService).connectToJP(5, AIP_ID);
+        verify(daImportService, never()).importBelow(any(), any(), anyString(), anyBoolean());
+        verify(daImportService, never()).placeReceived(any(), any());
 
         ArgumentCaptor<EventIdNodeIdInVersion> event = ArgumentCaptor.forClass(EventIdNodeIdInVersion.class);
         verify(eventNotificationService).publishEvent(event.capture());
@@ -136,6 +158,52 @@ public class DaAipAutoLinkServiceTest {
         assertTrue(service.linkReceivedAip(AIP_ID, uuids()).isPresent());
 
         verify(daService).connectToJP(6, AIP_ID);
+    }
+
+    @Test
+    void levelMatch_importsTheLevelsBelowIt_insteadOfAttachingTheWholeAip() {
+        ArrNode level = node(6, LEVEL_UUID);
+        when(nodeRepository.findByFundAndUuidIn(eq(fund), anyCollection())).thenReturn(List.of(level));
+        DaImportBuilder.Outcome outcome = new DaImportBuilder.Outcome(2, 0, 3, List.of());
+        when(daImportService.importBelow(aip, level, LEVEL_UUID, false)).thenReturn(Optional.of(outcome));
+
+        Optional<DaAipAutoLinkService.AutoLink> result = service.linkReceivedAip(AIP_ID, uuids());
+
+        assertTrue(result.isPresent());
+        assertEquals(outcome, result.get().imported());
+        verify(daService, never()).connectToJP(any(), any());
+        verify(daService, never()).connectPartToJP(any(), any(), any());
+    }
+
+    @Test
+    void levelMatch_withNothingAttachedBelow_attachesTheMatchedLevel() {
+        ArrNode level = node(6, LEVEL_UUID);
+        when(nodeRepository.findByFundAndUuidIn(eq(fund), anyCollection())).thenReturn(List.of(level));
+        when(daImportService.importBelow(aip, level, LEVEL_UUID, false))
+                .thenReturn(Optional.of(new DaImportBuilder.Outcome(0, 0, 0, List.of())));
+        DaDao matchedDao = new DaDao();
+        matchedDao.setCode("uuid-" + LEVEL_UUID);
+        when(daoRepository.findByAipAndTypeAndDeleteChangeIsNull(aip, DaDao.DaoType.LOGICAL))
+                .thenReturn(List.of(matchedDao));
+
+        assertTrue(service.linkReceivedAip(AIP_ID, uuids()).isPresent());
+
+        verify(daService).connectPartToJP(level, aip, matchedDao);
+        verify(daService, never()).connectToJP(any(), any());
+    }
+
+    @Test
+    void failure_isRecordedAsAProblemOfTheAip() {
+        ArrNode level = node(6, LEVEL_UUID);
+        when(nodeRepository.findByFundAndUuidIn(eq(fund), anyCollection())).thenReturn(List.of(level));
+        when(daImportService.importBelow(aip, level, LEVEL_UUID, false))
+                .thenThrow(AipProblemException.metadata("EAD je chybné"));
+
+        assertEquals(0, service.linkReceivedAips(Map.of(AIP_ID, uuids())));
+
+        ArgumentCaptor<AipProblem> problem = ArgumentCaptor.forClass(AipProblem.class);
+        verify(referenceResolver).recordProblem(eq(aipState), problem.capture());
+        assertEquals("EAD je chybné", problem.getValue().description());
     }
 
     @Test
@@ -161,16 +229,32 @@ public class DaAipAutoLinkServiceTest {
 
     @Test
     void noMatchingNodeLeavesTheAipUnattached() {
+        // the rules of the fund do not place it (no DA_MATCH script, or the script says none)
         assertFalse(service.linkReceivedAip(AIP_ID, uuids()).isPresent());
 
+        verify(daImportService).placeReceived(aip, rootNode);
         verify(daService, never()).connectToJP(any(), any());
     }
 
     @Test
-    void aipWithoutUuidsIsSkipped() {
+    void noMatchingNode_isPlacedAsTheRulesOfTheFundDecide() {
+        DaImportBuilder.Outcome outcome = new DaImportBuilder.Outcome(3, 0, 1, List.of());
+        when(daImportService.placeReceived(aip, rootNode)).thenReturn(Optional.of(outcome));
+
+        Optional<DaAipAutoLinkService.AutoLink> result = service.linkReceivedAip(AIP_ID, uuids());
+
+        assertTrue(result.isPresent());
+        assertEquals(rootNode.getNodeId(), result.get().nodeId());
+        assertEquals(outcome, result.get().imported());
+        verify(daService, never()).connectToJP(any(), any());
+    }
+
+    @Test
+    void aipWithoutUuids_isOnlyPlaced() {
         assertFalse(service.linkReceivedAip(AIP_ID, List.of()).isPresent());
 
         verify(nodeRepository, never()).findByFundAndUuidIn(any(), anyCollection());
+        verify(daImportService).placeReceived(aip, rootNode);
     }
 
     @Test
@@ -180,6 +264,7 @@ public class DaAipAutoLinkServiceTest {
         assertFalse(service.linkReceivedAip(AIP_ID, uuids()).isPresent());
 
         verify(nodeRepository, never()).findByFundAndUuidIn(any(), anyCollection());
+        verify(daImportService, never()).placeReceived(any(), any());
     }
 
     @Test

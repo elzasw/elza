@@ -1,40 +1,21 @@
 package cz.tacr.elza.service.da;
 
-import cz.tacr.elza.core.ResourcePathResolver;
-import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.core.data.StructType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDaLink;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataString;
-import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.DaAip;
 import cz.tacr.elza.domain.DaChange;
 import cz.tacr.elza.domain.DaChangeType;
 import cz.tacr.elza.domain.DaDao;
 import cz.tacr.elza.domain.DaDaoFile;
 import cz.tacr.elza.domain.DaDaoFileFolder;
-import cz.tacr.elza.domain.DaDaoItem;
 import cz.tacr.elza.domain.DaDaoRelation;
-import cz.tacr.elza.domain.RulComponent;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulPackage;
-import cz.tacr.elza.domain.RulStructureDefinition;
-import cz.tacr.elza.domain.converter.UnitDateConverter;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DaDaoFileFolderRepository;
 import cz.tacr.elza.repository.DaDaoFileRepository;
-import cz.tacr.elza.repository.DaDaoItemRepository;
 import cz.tacr.elza.repository.DaDaoRelationRepository;
 import cz.tacr.elza.repository.DaDaoRepository;
 import cz.tacr.elza.repository.ArrDaLinkRepository;
-import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.DaoLevelViewService;
-import cz.tacr.elza.service.GroovyScriptService;
 import gov.loc.mets.v1_11.schema.AmdSecType;
 import gov.loc.mets.v1_11.schema.DivType;
 import gov.loc.mets.v1_11.schema.FileGrpType;
@@ -47,15 +28,6 @@ import gov.loc.premis.v3.ObjectComplexType;
 import gov.loc.premis.v3.ObjectIdentifierComplexType;
 import gov.loc.premis.v3.PremisComplexType;
 import org.apache.commons.collections4.CollectionUtils;
-import org.archivists.ead3.schema.Abstract;
-import org.archivists.ead3.schema.Archdesc;
-import org.archivists.ead3.schema.C;
-import org.archivists.ead3.schema.Daterange;
-import org.archivists.ead3.schema.Did;
-import org.archivists.ead3.schema.Dsc;
-import org.archivists.ead3.schema.Ead;
-import org.archivists.ead3.schema.Unitdatestructured;
-import org.archivists.ead3.schema.Unittitle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,10 +35,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
-import java.io.Serializable;
 import java.math.BigInteger;
 import java.nio.file.Path;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -77,7 +47,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashSet;
 
 @Component
@@ -85,7 +54,6 @@ import java.util.LinkedHashSet;
 public class DaoProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(DaoProcessor.class);
-    private static final DateTimeFormatter FORMATTER_DATE = DateTimeFormatter.ofPattern(UnitDateConverter.FORMAT_DATE);
 
     @Autowired
     private DaService daService;
@@ -98,23 +66,11 @@ public class DaoProcessor {
     @Autowired
     private DaDaoFileFolderRepository daoFileFolderRepository;
     @Autowired
-    private DaDaoItemRepository daoItemRepository;
-    @Autowired
     private ArrDaLinkRepository daLinkRepository;
     @Autowired
     private DaoLevelViewService levelViewService;
     @Autowired
-    private StaticDataService staticDataService;
-    @Autowired
-    private DataRepository dataRepository;
-    @Autowired
-    private GroovyScriptService groovyScriptService;
-    @Autowired
-    private ResourcePathResolver resourcePathResolver;
-    @Autowired
     private ArrangementInternalService arrangementInternalService;
-
-    private static final String IMPORT_DA = "IMPORT_DA";
 
     private final DaAip aip;
 
@@ -124,11 +80,6 @@ public class DaoProcessor {
 
     private final Path tempDir;
 
-    private Ead ead;
-
-    /** Path of the inherent archival description inside the package, for the error messages. */
-    private String eadHref;
-
     private Map<String, DaDao> daDaoMap;
 
     private Map<Integer, List<DaDaoRelation>> daDaoRelationMap;
@@ -136,8 +87,6 @@ public class DaoProcessor {
     private Map<Integer, List<DaDaoFileFolder>> daDaoFileFolderMap;
 
     private Map<Integer, List<DaDaoFile>> daDaoFileMap;
-
-    private Map<Integer, List<DaDaoItem>> daDaoItemMap;
 
     private final Map<String, DaDao> fileDaoMap = new HashMap<>();
 
@@ -175,8 +124,6 @@ public class DaoProcessor {
                 .collect(Collectors.groupingBy(f -> f.getRepresentationDao().getDaoId()));
         daDaoFileMap = daoFileRepository.findByDaoInAndDeleteChangeIsNull(daDaoList).stream()
                 .collect(Collectors.groupingBy(f -> f.getDao().getDaoId()));
-        daDaoItemMap = daoItemRepository.findByDaoInAndDeleteChangeIsNull(daDaoList).stream()
-                .collect(Collectors.groupingBy(i -> i.getDao().getDaoId()));
 
         DaChangeType changeType = daDaoMap.isEmpty() ? DaChangeType.AIP_UPDATE : DaChangeType.AIP_CREATE;
         DaChange change = daService.createDaChange(aip, changeType);
@@ -197,9 +144,6 @@ public class DaoProcessor {
 
         //logical
         createDaoFromStruct(metsType.getStructMap(), change);
-
-        //ead
-        createDaoItemsFromEad(change);
 
         deleteOldComponents(change);
         levelViewService.processLevelViewForAip(aip, change);
@@ -229,22 +173,16 @@ public class DaoProcessor {
                 .flatMap(List::stream)
                 .collect(Collectors.toSet());
 
-        Set<DaDaoItem> daDaoItemSet = daDaoItemMap.values().stream()
-                .flatMap(List::stream)
-                .collect(Collectors.toSet());
-
         daDaoSet.forEach(d -> d.setDeleteChange(change));
         daDaoRelationSet.forEach(r -> r.setDeleteChange(change));
         daDaoFileFolderSet.forEach(f -> f.setDeleteChange(change));
         daDaoFileSet.forEach(f -> f.setDeleteChange(change));
-        daDaoItemSet.forEach(i -> i.setDeleteChange(change));
         daoLinkList.forEach(l -> l.setDeleteChange(arrChange));
 
         daoRepository.saveAll(daDaoSet);
         daoRelationRepository.saveAll(daDaoRelationSet);
         daoFileFolderRepository.saveAll(daDaoFileFolderSet);
         daoFileRepository.saveAll(daDaoFileSet);
-        daoItemRepository.saveAll(daDaoItemSet);
         daLinkRepository.saveAll(daoLinkList);
     }
 
@@ -391,16 +329,6 @@ public class DaoProcessor {
             DaDao.DaoType type = mdSecType.getGROUPID().equals("CONTEXTUAL") ? DaDao.DaoType.METADMDCONTEXTUAL : DaDao.DaoType.METADMDINHERENT;
             String href = mdSecType.getMdRef().getHref();
 
-            if (type == DaDao.DaoType.METADMDINHERENT) {
-                try {
-                    String newHref = href.replace("/", java.io.File.separator);
-                    ead = daService.loadEadFile(tempDir, newHref);
-                    eadHref = href;
-                } catch (Exception e) {
-                    throw AipProblemException.metadata("Inherentní archivní popis '" + href
-                            + "' se nepodařilo načíst: " + AipProblem.reason(e), href, e);
-                }
-            }
 
             String label = findOriginalNameInPremis(premisComplexType, code);
             if (label == null) {
@@ -626,132 +554,11 @@ public class DaoProcessor {
     }
 
     /**
-     * Fills the components of the logical structure with the items of the inherent archival
-     * description.
-     *
-     * A package without an inherent archival description is not an error - its components
-     * simply carry no items. A package that declares one it cannot be read from is, and the
-     * processing is stopped, because an item silently left out cannot be told apart from an
-     * item the package does not contain.
-     */
-    private void createDaoItemsFromEad(DaChange change) {
-        if (ead == null) {
-            logger.info("AIP={} neobsahuje inherentní archivní popis, komponenty zůstanou bez prvků popisu",
-                    aip.getCode());
-            return;
-        }
-        if (ead.getArchdesc() == null) {
-            throw AipProblemException.metadata("Inherentní archivní popis v souboru '" + eadHref
-                    + "' neobsahuje element <archdesc>, ze kterého se přebírají prvky popisu.", eadHref, null);
-        }
-        createDaoItemsFromArchDesc(ead.getArchdesc(), change);
-    }
-
-    private void createDaoItemsFromArchDesc(Archdesc archdesc, DaChange change) {
-        createDaoItemsFromDid(archdesc.getDid(), archdesc.getId(), change);
-        for (Object a : archdesc.getAccessrestrictOrAccrualsOrAcqinfo()) {
-            if (a instanceof Dsc dsc) {
-                for (C c : dsc.getC()) {
-                    createDaoItemsFromC(c, change);
-                }
-            }
-        }
-    }
-
-    private void createDaoItemsFromC(C c, DaChange change) {
-        createDaoItemsFromDid(c.getDid(), c.getId(), change);
-
-        for (Object t : c.getTheadAndC()) {
-            if (t instanceof C newC) {
-                createDaoItemsFromC(newC, change);
-            }
-        }
-    }
-
-    private void createDaoItemsFromDid(Did did, String id, DaChange change) {
-        DaDao daDao = logicalDaoMap.getOrDefault(id, null);
-
-        if (daDao != null) {
-            for (Object o : did.getMDid()) {
-                String itemTypeCode = groovyScriptService.process(o.getClass().getSimpleName(), getGroovyFilePath());
-                if (itemTypeCode != null) {
-                    RulItemType itemType = staticDataService.getData().getItemType(itemTypeCode);
-                    ArrData data = null;
-                    if (o instanceof Abstract abs) {
-                        String stringValue = null;
-                        for (Serializable s : abs.getContent()) {
-                            if (s instanceof String sValue) {
-                                stringValue = sValue;
-                            }
-                        }
-                        data = new ArrDataString(stringValue);
-                        data.setDataType(DataType.STRING.getEntity());
-                    } else if (o instanceof Unittitle unittitle) {
-                        String stringValue = null;
-                        for (Serializable s : unittitle.getContent()) {
-                            if (s instanceof String sValue) {
-                                stringValue = sValue;
-                            }
-                        }
-                        data = new ArrDataString(stringValue);
-                        data.setDataType(DataType.STRING.getEntity());
-                    } else if (o instanceof Unitdatestructured uds) {
-                        Daterange daterange = uds.getDaterange();
-
-                        String date = "";
-                        if (daterange.getFromdate() != null) {
-                            LocalDate fromDate = LocalDate.parse(daterange.getFromdate().getStandarddate());
-                            date += fromDate.format(FORMATTER_DATE);
-                        }
-                        date += "-";
-                        if (daterange.getTodate() != null) {
-                            LocalDate toDate = LocalDate.parse(daterange.getTodate().getStandarddate());
-                            date += toDate.format(FORMATTER_DATE);
-                        }
-
-                        data = UnitDateConverter.convertToUnitDate(date, new ArrDataUnitdate());
-                        data.setDataType(DataType.UNITDATE.getEntity());
-                    }
-
-                    if (data != null) {
-                        dataRepository.save(data);
-                        daService.createDaDaoItem(daDao, change, itemType, null, data);
-                    }
-                }
-            }
-        }
-    }
-
-    /**
      * @return UUIDs the AIP offers for matching against the nodes, in matching order; empty
      *         when {@link #process()} has not run yet
      */
     public List<String> getNodeUuids() {
         return AipNodeUuids.inMatchingOrder(aip.getCode(), levelUuids, representationUuids);
-    }
-
-    public String getGroovyFilePath() {
-        StaticDataProvider sdp = staticDataService.getData();
-
-        RulComponent component;
-        RulPackage rulPackage;
-
-        StructType structType = sdp.getStructuredTypeByCode(IMPORT_DA);
-
-        List<RulStructureDefinition> structureDefinitions = structType
-                .getDefsByType(RulStructureDefinition.DefType.SERIALIZED_VALUE);
-        if (!structureDefinitions.isEmpty()) {
-            RulStructureDefinition structureDefinition = structureDefinitions.get(structureDefinitions.size() - 1);
-            component = structureDefinition.getComponent();
-            rulPackage = structureDefinition.getRulPackage();
-        } else {
-            throw new SystemException("Strukturovaný typ '" + structType.getCode()
-                    + "' nemá žádný script pro výpočet hodnoty", BaseCode.INVALID_STATE);
-        }
-
-        return resourcePathResolver.getGroovyDir(rulPackage)
-                .resolve(component.getFilename())
-                .toString();
     }
 
 }

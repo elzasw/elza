@@ -206,5 +206,11 @@ public enum ArrangementCode implements ErrorCode {
     /**
      * AIP neexistuje
      */
-    AIP_NOT_FOUND
+    AIP_NOT_FOUND,
+
+    /**
+     * Hodnota atributu nemá otevřenou verzi - byla již smazána (obvykle jiným
+     * požadavkem nebo uživatelem) a klient pracuje s neaktuálními daty.
+     */
+    DESC_ITEM_NOT_FOUND
 }

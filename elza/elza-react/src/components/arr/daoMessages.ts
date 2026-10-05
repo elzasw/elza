@@ -9,21 +9,8 @@ import { defineMessages } from "react-intl";
  * Id jsou převzatá z legacy katalogu beze změny.
  */
 export const daoMessages = defineMessages({
-    aipDetailAssignmentDescription: { id: "aip.detail.assignment.description", defaultMessage: "Popis" },
-    aipDetailAssignmentName: { id: "aip.detail.assignment.name", defaultMessage: "Název" },
-    aipDetailAssignmentPackages: { id: "aip.detail.assignment.packages", defaultMessage: "Seznam balíčků" },
-    aipDetailAssignmentPackagesNo: { id: "aip.detail.assignment.packagesNo", defaultMessage: "Počet balíčků" },
-    aipDetailAssignmentRelatedAip: { id: "aip.detail.assignment.relatedAip", defaultMessage: "Související AIP" },
-    aipDetailAssignmentRelatedAips: { id: "aip.detail.assignment.relatedAips", defaultMessage: "Související AIPy" },
     aipAssignmentBulk: { id: "arr.aip.assignment.bulk", defaultMessage: "Připojit hromadně" },
-    aipAssignmentBulkTitle: { id: "arr.aip.assignment.bulk.title", defaultMessage: "Hromadné připojení balíčku s archivním popisem" },
-    aipAssignmentCreate: { id: "arr.aip.assignment.create", defaultMessage: "Vytvořit JP z vybraných" },
-    aipAssignmentCreateAndLink: { id: "arr.aip.assignment.create-and-link", defaultMessage: "Vytvořit JP s propojením" },
     aipAssignmentIndividually: { id: "arr.aip.assignment.individually", defaultMessage: "Připojit jednotlivě" },
-    aipAssignmentIndividuallyTitle: { id: "arr.aip.assignment.individually.title", defaultMessage: "Připojení balíčku s archivním popisem" },
-    aipAssignmentLink: { id: "arr.aip.assignment.link", defaultMessage: "Připojit k JP" },
-    aipAssignmentPartConfirm: { id: "arr.aip.assignment.part.confirm", defaultMessage: "Opravdu chcete připojit pouze vybranou část? Touto volbou nedojde k propojení návazných částí balíčku." },
-    aipAssignmentSelectAndCreate: { id: "arr.aip.assignment.select-and-create", defaultMessage: "Výběrové připojení s JP" },
     daosFileSystemLoadMore: { id: "arr.daos.fileSystem.loadMore", defaultMessage: "Načíst další..." },
     daosFileSystemSelectParent: { id: "arr.daos.fileSystem.selectParent", defaultMessage: "Přejít o úroveň výš" },
     fundAddTemplateCreate: { id: "arr.fund.addTemplate.create", defaultMessage: "Vytvoření šablony" },

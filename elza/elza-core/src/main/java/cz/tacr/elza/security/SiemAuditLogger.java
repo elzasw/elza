@@ -136,4 +136,37 @@ public class SiemAuditLogger {
 				.addArgument(kv("keyId", keyId))
 				.log();
 	}
+
+	/**
+	 * Change of a user made at startup from the configuration (elza.security.admin.*).
+	 */
+	public enum ConfigAdminAction {
+		USER_CREATED("config_admin_user_created"),
+		PASSWORD_SET("config_admin_password_set"),
+		USER_ACTIVATED("config_admin_user_activated");
+
+		private final String event;
+
+		ConfigAdminAction(final String event) {
+			this.event = event;
+		}
+	}
+
+	/** A user was changed from the configuration; the actor is the configuration itself. */
+	public void configAdminApplied(String user, ConfigAdminAction action) {
+		LOG.atInfo().setMessage(action.event)
+				.addArgument(kv("actor", "configuration"))
+				.addArgument(kv("user", user))
+				.log();
+	}
+
+	/** The administrator from the configuration could not be applied. */
+	public void configAdminFailed(String user, String detail) {
+		LOG.atInfo().setMessage("config_admin_failed")
+				.addArgument(kv("actor", "configuration"))
+				.addArgument(kv("user", user))
+				.addArgument(kv("outcome", Outcome.FAILURE.toString()))
+				.addArgument(kv("detail", detail))
+				.log();
+	}
 }

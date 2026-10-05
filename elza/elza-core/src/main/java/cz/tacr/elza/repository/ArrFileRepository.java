@@ -17,6 +17,9 @@ public interface ArrFileRepository extends JpaRepository<ArrFile, Integer> {
     @Query("SELECT af.fileId FROM arr_file af WHERE af.fund = :fund AND af.createChange >= :change")
     List<Integer> findIdByFundAndGreaterOrEqualCreateChange(@Param("fund") ArrFund fund, @Param("change") ArrChange change);
 
+    @Query("SELECT af FROM arr_file af WHERE af.fund = :fund AND af.createChange >= :change")
+    List<ArrFile> findByFundAndGreaterOrEqualCreateChange(@Param("fund") ArrFund fund, @Param("change") ArrChange change);
+
     @Query("SELECT af FROM arr_file af WHERE af.fund = :fund AND af.deleteChange IS NOT NULL")
     List<ArrFile> findHistoricalByFund(@Param("fund") ArrFund fund);
 

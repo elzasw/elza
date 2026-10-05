@@ -7,3 +7,27 @@
         background-color: $color-grey;
     }
 }
+/* Struktura jednoho balíčku: řádky husté jako ve stromu, ne jako ve formuláři. */
+.aip-part-tree {
+    label {
+        font-weight: normal;
+        margin: 0;
+        padding-top: 2px;
+        padding-bottom: 2px;
+    }
+
+    .fui-Checkbox__indicator {
+        margin-top: 4px;
+        margin-bottom: 4px;
+    }
+
+    .size {
+        opacity: 0.75;
+        white-space: nowrap;
+    }
+}
+
+.aip-part-tree .linked-files {
+    color: $color-link;
+    white-space: nowrap;
+}

@@ -40,14 +40,26 @@ public enum DaAipActionType {
     /** Attach the whole package to an existing unit of description. */
     CONNECT_TO_NODE(false),
 
-    /** Attach the logical structure of the package under an existing unit of description. */
+    /** Attach one level of the logical structure of the package to an existing unit of description. */
     CONNECT_LOGICAL_STRUCTURE(false),
 
     /** Create a unit of description for the package and attach it there. */
     CREATE_NODES(false),
 
     /** Create a unit of description, build the logical structure under it and attach the package. */
-    CREATE_NODES_AND_CONNECT(false);
+    CREATE_NODES_AND_CONNECT(false),
+
+    /**
+     * Import the description the package carries into the archival description below a unit of
+     * description: levels from the logical structural map, items from the EAD, attached files.
+     */
+    IMPORT_DESCRIPTION(false),
+
+    /**
+     * Create below a unit of description a level for each level of the logical structure directly
+     * below the selected one, each with its part of the package attached.
+     */
+    CREATE_SUBLEVELS(false);
 
     private final boolean usesDigitalArchive;
 

@@ -1138,7 +1138,9 @@ enum DaAipActionType {
     CONNECT_TO_NODE,
     CONNECT_LOGICAL_STRUCTURE,
     CREATE_NODES,
-    CREATE_NODES_AND_CONNECT
+    CREATE_NODES_AND_CONNECT,
+    IMPORT_DESCRIPTION,
+    CREATE_SUBLEVELS
 }
 
 /**
@@ -1401,6 +1403,14 @@ model AipDetailVO {
      * Identifikátor vnější změny NAD v PEvA
      */
     nadChangeCode?: string;
+    /**
+     * Typ obsahu balíčku (csip:CONTENTINFORMATIONTYPE, u hodnoty OTHER csip:OTHERCONTENTINFORMATIONTYPE)
+     */
+    contentType?: string;
+    /**
+     * Profil balíčku (METS PROFILE)
+     */
+    profile?: string;
     /**
      * Velikost AIPu v bytech
      */
@@ -2186,6 +2196,8 @@ enum AipFieldName {
     ingestionCode,
     referenceNumber,
     nadChangeCode,
+    contentType,
+    profile,
     aipSize,
     metadataLoad,
     completeAipLoad,
@@ -2908,6 +2920,122 @@ namespace ElzaAPI.User.ApiKeys {
 }
 
 /**
+ * Type of asynchronous request queue.
+ * Mirrors server AsyncTypeEnum.
+ */
+enum AsyncType {
+    NODE,
+    BULK,
+    OUTPUT,
+    AP,
+    EXPORT,
+    AIP,
+    BATCH_IMPORT,
+}
+
+/** One worker thread of an asynchronous queue. */
+model AsyncWorker {
+    /** Fund version processed by the thread, `null` when the thread is idle. */
+    fundVersionId: int32 | null;
+    /** ID of the request the thread is running, `null` when the thread is idle. */
+    requestId: int64 | null;
+    /** Time the current request started. Server LocalDateTime (no zone), e.g. `2026-09-21T08:15:30`. */
+    beginTime: string | null;
+    /** Running time of the current request in milliseconds, `null` when the thread is idle. */
+    runningTime: int64 | null;
+    /** Business ID of the entity being processed (node, output, …), `null` when the thread is idle. */
+    currentId: int32 | null;
+}
+
+/**
+ * Password policy. For each rule, null or a value <= 0 means the rule is off.
+ */
+model PasswordPolicy {
+    /** Password validity in days */
+    expiryDays?: int32;
+    /** Minimal password length */
+    minLength?: int32;
+    /** Minimal number of character groups (lowercase, uppercase, digits, other), 1–4 */
+    minCharGroups?: int32;
+}
+
+/**
+ * State of a single asynchronous request queue.
+ */
+model AsyncRequestInfo {
+    /** Queue type. */
+    type: AsyncType;
+    /** Share of the capacity in use, 0..1. */
+    load: float64;
+    /** Requests processed in the last hour. */
+    requestPerHour: int32;
+    /** Number of requests waiting for a free worker. */
+    waitingRequests: int32;
+    /** Number of workers currently running a request. */
+    runningThreadCount: int32;
+    /** Total number of worker threads in the queue. */
+    totalThreadCount: int32;
+    /** Snapshot of the worker threads. */
+    currentThreads: AsyncWorker[];
+}
+
+/** Minimal fund identification used by FundStatistics. */
+model FundStatisticsFund {
+    id: int32;
+    name: string;
+}
+
+/**
+ * Number of requests waiting in a single queue, grouped by fund.
+ */
+model FundStatistics {
+    /** Fund the requests belong to. */
+    fund: FundStatisticsFund | null;
+    /** Fund version the requests target. */
+    fundVersionId: int32 | null;
+    /** Number of waiting requests. */
+    requestCount: int32;
+}
+
+/**
+ * State of the first-run setup.
+ */
+model SetupStatus {
+    /** No user exists yet - the first administrator has to be created */
+    setupRequired: boolean;
+}
+
+/**
+ * First administrator created by the first-run setup.
+ */
+model SetupAdmin {
+    /** Username of the administrator */
+    username: string;
+    /** Password of the administrator */
+    password: string;
+}
+
+/**
+ * First-run setup; available without login while no user exists.
+ */
+@tag("setup")
+@route("/setup")
+namespace ElzaAPI.Setup {
+    /**
+     * Return whether the first administrator has to be created.
+     */
+    @get op getSetupStatus(): SetupStatus;
+
+    /**
+     * Create the first administrator. Allowed only while no user exists.
+     */
+    @route("admin")
+    @post op createSetupAdmin(@body params: SetupAdmin): {
+        @Http.statusCode statusCode: 204;
+    };
+}
+
+/**
  * Administrativní funkce
  */
 @tag("admin")
@@ -2977,6 +3105,100 @@ namespace ElzaAPI.Admin {
     ): {
         @Http.statusCode statusCode: 200;
     };
+
+    /**
+     * One category of the {@link DmsConsistencyReport}: a true total and a truncated sample.
+     */
+    model DmsConsistencyEntry {
+        /** Total number of items in this category. */
+        count: integer;
+
+        /**
+         * At most the first 500 items in this category. `id` for row-anchored
+         * categories (missing, notMigrated), path relative to `dms/` otherwise.
+         */
+        sample: string[];
+    }
+
+    /**
+     * Result of one DMS consistency check run. Every count is the true total;
+     * each list holds at most the first 500 entries in that category.
+     */
+    model DmsConsistencyReport {
+        /** Rows whose file could not be located on disk. */
+        missing: DmsConsistencyEntry;
+
+        /** Files on disk that no row claims. */
+        orphans: DmsConsistencyEntry;
+
+        /** Rows whose file exists but with a different size. */
+        sizeMismatch: DmsConsistencyEntry;
+
+        /** Rows whose file exists but whose SHA-256 does not match `dms_file.checksum`. */
+        corrupted: DmsConsistencyEntry;
+
+        /** Rows still on the legacy flat path (`storage_path IS NULL`). */
+        notMigrated: DmsConsistencyEntry;
+
+        /** Abandoned `<target>.tmp` files older than `orphanMinAgeMinutes`. */
+        staleTmp: DmsConsistencyEntry;
+
+        /** Files under `dms/` that no rule created; reported only, never touched. */
+        foreign: DmsConsistencyEntry;
+
+        /** `_trash/<yyyy-MM-dd>` used if `moveOrphansToTrash` was true and moves happened. */
+        trashDirUsed?: string;
+
+        /** Wall-clock duration of the check. */
+        durationMillis: integer;
+    }
+
+    /**
+     * Run a DMS consistency check.
+     *
+     * Compares `dms_file` against the on-disk tree under `${workDir}/dms/`,
+     * categorises every discrepancy, and optionally moves orphans and stale
+     * temporary files to the trash. Requires the ADMIN permission.
+     *
+     * @param verifyChecksums re-compute SHA-256 for every checked file; when
+     *        false, only size is compared. Also drives the checksum backfill
+     *        for legacy rows.
+     * @param moveOrphansToTrash actually move orphan / stale-tmp files to
+     *        `_trash/<today>/`. When false, the check is read-only and
+     *        merely reports.
+     */
+    @route("dms/consistency-check")
+    @post op dmsConsistencyCheck(
+        @query verifyChecksums?: boolean = false,
+        @query moveOrphansToTrash?: boolean = false,
+    ): DmsConsistencyReport;
+
+    /**
+     * Return current state of asynchronous request queues.
+     */
+    @route("async-requests")
+    @get op asyncRequests(): AsyncRequestInfo[];
+
+    /**
+     * Return per-fund statistics of waiting requests for one queue.
+     * @param requestType queue whose waiting requests to break down by fund
+     */
+    @route("async-requests/{requestType}")
+    @get op asyncRequestDetail(
+        @path requestType: AsyncType,
+    ): FundStatistics[];
+
+    /**
+     * Return the password policy. Requires the USR_PERM permission.
+     */
+    @route("password-policy")
+    @get op getPasswordPolicy(): PasswordPolicy;
+
+    /**
+     * Update the password policy. Requires the USR_PERM permission.
+     */
+    @route("password-policy")
+    @put op updatePasswordPolicy(@body policy: PasswordPolicy): PasswordPolicy;
 }
 
 /**
@@ -6469,6 +6691,55 @@ namespace ElzaAPI.Aip {
         };
 
      /**
+      * Převzetí popisu z balíčků do archivního popisu pod zvolenou jednotku popisu
+      */
+      @route("/bulk-import-description")
+      @post op bulkImportDescription(
+         /** ArrNode ID - jednotka popisu, pod kterou se popis převezme */
+         @query arrNodeId: integer;
+         /** DaAip ID list */
+         @query daAipIdList: integer[];
+         /** Převzít spisový plán jako kořenovou sérii; ve výchozím stavu se vynechá */
+         @query fileplanAsRoot?: boolean;
+         /** Úroveň logické struktury (level view), pod kterou se popis převezme; bez ní celý balíček */
+         @query daLevelViewId?: integer;
+         /** Úroveň logické struktury jednoho balíčku (DaDao), pod kterou se popis převezme */
+         @query daDaoId?: integer;
+      ) : {
+          /** Akce zahájena */
+          @Http.statusCode statusCode: 200;
+          @body data: DaAipActionVO;
+        } | {
+          /** Akci nelze zahájit */
+          @Http.statusCode statusCode: 500;
+          @body data: BaseException;
+        };
+
+     /**
+      * Vytvoření úrovní pod jednotkou popisu - jedna za každou úroveň logické struktury přímo pod
+      * vybranou úrovní, s připojenou částí balíčku
+      */
+      @route("/bulk-create-sublevels")
+      @post op bulkCreateSublevels(
+         /** ArrNode ID - jednotka popisu, pod kterou se úrovně vytvoří */
+         @query arrNodeId: integer;
+         /** DaAip ID list */
+         @query daAipIdList: integer[];
+         /** Úroveň logické struktury (level view); bez ní nejvyšší úrovně balíčku */
+         @query daLevelViewId?: integer;
+         /** Úroveň logické struktury jednoho balíčku (DaDao) */
+         @query daDaoId?: integer;
+      ) : {
+          /** Akce zahájena */
+          @Http.statusCode statusCode: 200;
+          @body data: DaAipActionVO;
+        } | {
+          /** Akci nelze zahájit */
+          @Http.statusCode statusCode: 500;
+          @body data: BaseException;
+        };
+
+     /**
       * Bulk create from selected
       */
       @route("/bulk-create-from-selected")
@@ -7253,7 +7524,6 @@ namespace ElzaAPI.Output {
         createDate: offsetDateTime;
         deleteDate?: offsetDateTime;
         scopes?: Scope[]; // ?
-        anonymizedAp?: ApAccessPointVO; // ?
         outputFilterId?: integer;
     }
 
@@ -7326,7 +7596,6 @@ namespace ElzaAPI.Output {
          * List of templates
          */
         templateIds?: integer[];
-        anonymizedAp?: ApAccessPointVO;
         outputFilterId?: integer;
     }
 

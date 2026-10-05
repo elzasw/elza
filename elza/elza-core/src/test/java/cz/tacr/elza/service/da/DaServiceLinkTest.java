@@ -3,6 +3,7 @@ package cz.tacr.elza.service.da;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 
@@ -20,9 +21,14 @@ import cz.tacr.elza.api.DaAipActionState;
 import cz.tacr.elza.domain.DaAip;
 import cz.tacr.elza.domain.DaAipAction;
 import cz.tacr.elza.domain.DaAipActionItem;
+import cz.tacr.elza.domain.DaAipState;
+import cz.tacr.elza.domain.DaChange;
+import cz.tacr.elza.domain.DaChangeType;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.AipRepository;
+import cz.tacr.elza.repository.AipStateRepository;
+import cz.tacr.elza.repository.DaChangeRepository;
 import cz.tacr.elza.repository.ArrDaLinkRepository;
 import cz.tacr.elza.repository.DaAipActionItemRepository;
 import cz.tacr.elza.repository.DaAipActionRepository;
@@ -49,6 +55,10 @@ public class DaServiceLinkTest extends AbstractServiceTest {
     @Autowired
     private DigitalRepositoryRepository digitalRepositoryRepository;
     @Autowired
+    private AipStateRepository aipStateRepository;
+    @Autowired
+    private DaChangeRepository changeRepository;
+    @Autowired
     private FundLevelService fundLevelService;
     @Autowired
     private DaAipActionRepository actionRepository;
@@ -71,6 +81,8 @@ public class DaServiceLinkTest extends AbstractServiceTest {
             actionItemRepository.deleteAll();
             actionRepository.deleteAll();
             daLinkRepository.deleteAll();
+            aipStateRepository.deleteAll();
+            changeRepository.deleteAll();
             aipRepository.deleteAll();
             digitalRepositoryRepository.deleteAll();
         });
@@ -94,7 +106,20 @@ public class DaServiceLinkTest extends AbstractServiceTest {
         DaAip aip = new DaAip();
         aip.setCode(code);
         aip.setDigitalRepository(repository);
-        return aipRepository.save(aip);
+        aipRepository.save(aip);
+
+        // only an AIP with an active state can be attached
+        DaChange change = new DaChange();
+        change.setChangeDate(LocalDateTime.now());
+        change.setDaAip(aip);
+        change.setType(DaChangeType.AIP_CREATE);
+        changeRepository.save(change);
+        DaAipState state = new DaAipState();
+        state.setDaAip(aip);
+        state.setCreateChange(change);
+        state.setAipVersion("1");
+        aipStateRepository.save(state);
+        return aip;
     }
 
     /** A second unit of description under the root, to attach the same AIP to twice. */

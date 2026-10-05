@@ -850,6 +850,12 @@ public class ClientFactoryVO {
             Function<ArrData, ItemData> dataConvertor = dataConvertors.get(dataType);
             Objects.requireNonNull(dataConvertor);
             ItemData data = dataConvertor.apply(arrData);
+            if (data instanceof DataRecordRef recordRefData) {
+                ApAccessPoint record = ((ArrDataRecordRef) arrData).getRecord();
+                if (record != null) {
+                    recordRefData.setName(accessPointService.findPreferredPartDisplayName(record));
+                }
+            }
             soItem.setData(data);
         }
 
@@ -1753,10 +1759,6 @@ public class ClientFactoryVO {
         List<Integer> nodeIds = nodes.stream().map(ArrNodeOutput::getNodeId).collect(Collectors.toList());
         outputExt.setNodes(levelTreeCacheService.getNodesByIds(nodeIds, fundVersion));
         outputExt.setScopes(outputServiceInternal.getRestrictedScopeVOs(output));
-        ApAccessPoint anonymizedAp = output.getAnonymizedAp();
-        if (anonymizedAp != null) {
-            outputExt.setAnonymizedAp(apFactory.createVO(anonymizedAp));
-        }
         return outputExt;
     }
 
@@ -1797,7 +1799,15 @@ public class ClientFactoryVO {
             }
         }
         UsrUserVO result = new UsrUserVO(user, accessPointVO);
-        result.setAuthTypes(authenticationRepository.findByUser(user).stream().map(UsrAuthentication::getAuthType).collect(Collectors.toList()));
+        List<UsrAuthentication> authentications = authenticationRepository.findByUser(user);
+        result.setAuthTypes(authentications.stream().map(UsrAuthentication::getAuthType).collect(Collectors.toList()));
+        authentications.stream()
+                .filter(a -> a.getAuthType() == UsrAuthentication.AuthType.PASSWORD)
+                .findFirst()
+                .ifPresent(a -> {
+                    result.setPasswordChangeRequired(a.getChangeRequired());
+                    result.setPasswordNeverExpire(a.getNeverExpire());
+                });
         // Načtení oprávnění
         if (initPermissions) {
             List<UsrPermission> permissions = new ArrayList<>(permissionRepository.findByUser(user));
@@ -2644,6 +2654,8 @@ public class ClientFactoryVO {
             vo.setIngestionCode(state.getIngestionCode());
             vo.setReferenceNumber(state.getReferenceNumber());
             vo.setNadChangeCode(state.getNadChangeCode());
+            vo.setContentType(state.getContentType());
+            vo.setProfile(state.getProfile());
             vo.setAipSize(state.getAipSize());
             vo.setMetadataLoad(state.getMetadataLoad());
             vo.setCompleteAipLoad(state.getCompleteAipLoad());
@@ -2658,14 +2670,14 @@ public class ClientFactoryVO {
             }
         }
 
-        DaSyncQueueItem importSyncQueueItem = daSyncQueueItemRepository.findByAipAndStateInAndActiveIsTrue(src, DaService.getQueueImportStates());
+        DaSyncQueueItem importSyncQueueItem = daSyncQueueItemRepository.findFirstByAipAndStateInAndActiveIsTrueOrderBySyncQueueItemIdDesc(src, DaService.getQueueImportStates());
         if (importSyncQueueItem != null) {
             vo.setImportState(mapQueueItemState(importSyncQueueItem.getState()));
             vo.setImportStateMessage(importSyncQueueItem.getStateMessage());
             vo.setImportStateDate(importSyncQueueItem.getDate());
         }
 
-        DaSyncQueueItem exportSyncQueueItem = daSyncQueueItemRepository.findByAipAndStateInAndActiveIsTrue(src, DaService.getQueueExportStates());
+        DaSyncQueueItem exportSyncQueueItem = daSyncQueueItemRepository.findFirstByAipAndStateInAndActiveIsTrueOrderBySyncQueueItemIdDesc(src, DaService.getQueueExportStates());
         if (exportSyncQueueItem != null) {
             vo.setExportState(mapQueueItemState(exportSyncQueueItem.getState()));
             vo.setExportStateMessage(exportSyncQueueItem.getStateMessage());

@@ -1,0 +1,140 @@
+@import "../../../../variables.scss";
+
+/* Připojení balíčku: zdroj, cíl a volba způsobu vedle sebe přes celou výšku karty. */
+.aip-connect {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) minmax(220px, 1fr) minmax(260px, 360px);
+    gap: 16px;
+    height: 100%;
+    min-height: 0;
+    padding: 8px 0;
+    overflow-x: auto;
+
+    .aip-connect-column {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-height: 0;
+    }
+
+    /* v úzkém okně se zalomí mezi prvky, ne uvnitř nich */
+    .aip-connect-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 4px 12px;
+        min-height: 32px;
+
+        > * {
+            white-space: nowrap;
+        }
+    }
+
+    .aip-connect-state {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0 6px;
+
+        > * {
+            white-space: nowrap;
+        }
+    }
+
+    /* stromy zdroje: každá úroveň na jednom řádku, dlouhé názvy odroluje vodorovný posuvník */
+    .aip-part-tree,
+    .tree {
+        width: max-content;
+        min-width: 100%;
+
+        label,
+        .fui-TreeItemLayout__main {
+            white-space: nowrap;
+        }
+    }
+
+    .aip-connect-packages {
+        max-height: 20vh;
+        overflow: auto;
+        margin: 0;
+        padding: 4px 8px;
+        list-style: none;
+        border: 1px solid $color-grey;
+
+        li {
+            display: flex;
+            gap: 12px;
+        }
+
+        .code {
+            font-family: monospace;
+        }
+
+        .content-type {
+            opacity: 0.7;
+        }
+    }
+
+    .aip-connect-scroll {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: auto;
+    }
+
+    /* strom archivního souboru vyplní sloupec; jeho výšku jinak pevně nastavuje stránka digitalizátů */
+    .aip-connect-tree {
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+
+        > * {
+            flex: 1 1 auto;
+            min-height: 0;
+        }
+
+        /* celé názvy jednotek popisu místo zkrácených - řádky tak široké jako nejdelší, s posuvníkem */
+        .fa-tree-lazy-container {
+            overflow-x: auto;
+
+            > div {
+                width: max-content;
+                min-width: 100%;
+            }
+
+            .node-label {
+                overflow: visible;
+                text-overflow: clip;
+            }
+        }
+    }
+
+    .aip-connect-options {
+        overflow: auto;
+    }
+
+    .aip-connect-mode-label {
+        display: flex;
+        flex-direction: column;
+
+        .hint {
+            opacity: 0.75;
+        }
+    }
+
+    .aip-connect-option {
+        margin-left: 28px;
+    }
+
+    .aip-connect-footer {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        margin-top: 12px;
+    }
+}
+
+.aip-connect .aip-connect-state .code {
+    font-family: monospace;
+}

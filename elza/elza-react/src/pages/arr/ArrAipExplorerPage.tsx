@@ -16,7 +16,9 @@ import type { AppState, Fund, UserDetail } from 'typings/store';
  * Průzkumník archivního balíčku v kontextu archivního souboru.
  *
  * Je to běžná stránka archivního souboru, takže nese jeho pás karet; seznam balíčků
- * zůstává na samostatné stránce a slouží k výběru a připojování.
+ * zůstává na samostatné stránce a slouží k výběru a hromadnému připojování. Jeden balíček
+ * se připojuje zde, na kartě připojení. Otevřená karta a vybraná část balíčku jsou v adrese
+ * (?tab=structure&select=<uuid>) - napojení jednotky popisu tak odkazuje přímo na svou část.
  */
 const AREA = "AIP";
 
@@ -75,7 +77,7 @@ class ArrAipExplorerPage extends ArrParentPage {
     }
 
     renderCenterPanel(readMode: boolean, closed: boolean) {
-        return <AipExplorerTabs aipId={this.getAipId()}/>;
+        return <AipExplorerTabs key={this.getAipId()} aipId={this.getAipId()} connectable={!readMode && !closed}/>;
     }
 }
 

@@ -1,8 +1,9 @@
-openapi: 3.0.2
+openapi: 3.0.0
 info:
   title: ELZA API
   version: 1.0.0
 tags:
+  - name: setup
   - name: import-batches
     description: Import batches (administration)
   - name: institution
@@ -919,6 +920,85 @@ paths:
           description: The request has succeeded.
       tags:
         - admin
+  /admin/async-requests:
+    get:
+      operationId: Admin_asyncRequests
+      description: Return current state of asynchronous request queues.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AsyncRequestInfo'
+      tags:
+        - admin
+  /admin/async-requests/{requestType}:
+    get:
+      operationId: Admin_asyncRequestDetail
+      description: Return per-fund statistics of waiting requests for one queue.
+      parameters:
+        - name: requestType
+          in: path
+          required: true
+          description: queue whose waiting requests to break down by fund
+          schema:
+            $ref: '#/components/schemas/AsyncType'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FundStatistics'
+      tags:
+        - admin
+  /admin/dms/consistency-check:
+    post:
+      operationId: Admin_dmsConsistencyCheck
+      description: |-
+        Run a DMS consistency check.
+
+        Compares `dms_file` against the on-disk tree under `${workDir}/dms/`,
+        categorises every discrepancy, and optionally moves orphans and stale
+        temporary files to the trash. Requires the ADMIN permission.
+      parameters:
+        - name: verifyChecksums
+          in: query
+          required: false
+          description: |-
+            re-compute SHA-256 for every checked file; when
+            false, only size is compared. Also drives the checksum backfill
+            for legacy rows.
+          schema:
+            type: boolean
+            default: false
+          explode: false
+        - name: moveOrphansToTrash
+          in: query
+          required: false
+          description: |-
+            actually move orphan / stale-tmp files to
+            `_trash/<today>/`. When false, the check is read-only and
+            merely reports.
+          schema:
+            type: boolean
+            default: false
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Admin.DmsConsistencyReport'
+      tags:
+        - admin
   /admin/import:
     get:
       operationId: ImportBatch_list
@@ -1558,6 +1638,39 @@ paths:
                 $ref: '#/components/schemas/LoggedUsers'
       tags:
         - admin
+  /admin/password-policy:
+    get:
+      operationId: Admin_getPasswordPolicy
+      description: Return the password policy. Requires the USR_PERM permission.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordPolicy'
+      tags:
+        - admin
+    put:
+      operationId: Admin_updatePasswordPolicy
+      description: Update the password policy. Requires the USR_PERM permission.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordPolicy'
+      tags:
+        - admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordPolicy'
   /admin/user/{userId}/api-keys:
     get:
       operationId: Admin_listUserApiKeys
@@ -1799,6 +1912,115 @@ paths:
           in: query
           required: true
           description: DaLevelView ID
+          schema:
+            type: integer
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaAipActionVO'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aips
+  /aip/bulk-create-sublevels:
+    post:
+      operationId: Aip_bulkCreateSublevels
+      description: |-
+        Vytvoření úrovní pod jednotkou popisu - jedna za každou úroveň logické struktury přímo pod
+        vybranou úrovní, s připojenou částí balíčku
+      parameters:
+        - name: arrNodeId
+          in: query
+          required: true
+          description: ArrNode ID - jednotka popisu, pod kterou se úrovně vytvoří
+          schema:
+            type: integer
+          explode: false
+        - name: daAipIdList
+          in: query
+          required: true
+          description: DaAip ID list
+          schema:
+            type: array
+            items:
+              type: integer
+          explode: false
+        - name: daLevelViewId
+          in: query
+          required: false
+          description: Úroveň logické struktury (level view); bez ní nejvyšší úrovně balíčku
+          schema:
+            type: integer
+          explode: false
+        - name: daDaoId
+          in: query
+          required: false
+          description: Úroveň logické struktury jednoho balíčku (DaDao)
+          schema:
+            type: integer
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaAipActionVO'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aips
+  /aip/bulk-import-description:
+    post:
+      operationId: Aip_bulkImportDescription
+      description: Převzetí popisu z balíčků do archivního popisu pod zvolenou jednotku popisu
+      parameters:
+        - name: arrNodeId
+          in: query
+          required: true
+          description: ArrNode ID - jednotka popisu, pod kterou se popis převezme
+          schema:
+            type: integer
+          explode: false
+        - name: daAipIdList
+          in: query
+          required: true
+          description: DaAip ID list
+          schema:
+            type: array
+            items:
+              type: integer
+          explode: false
+        - name: fileplanAsRoot
+          in: query
+          required: false
+          description: Převzít spisový plán jako kořenovou sérii; ve výchozím stavu se vynechá
+          schema:
+            type: boolean
+          explode: false
+        - name: daLevelViewId
+          in: query
+          required: false
+          description: Úroveň logické struktury (level view), pod kterou se popis převezme; bez ní celý balíček
+          schema:
+            type: integer
+          explode: false
+        - name: daDaoId
+          in: query
+          required: false
+          description: Úroveň logické struktury jednoho balíčku (DaDao), pod kterou se popis převezme
           schema:
             type: integer
           explode: false
@@ -6172,6 +6394,36 @@ paths:
             schema:
               $ref: '#/components/schemas/SearchParams'
         description: search parameters
+  /setup:
+    get:
+      operationId: Setup_getSetupStatus
+      description: Return whether the first administrator has to be created.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SetupStatus'
+      tags:
+        - setup
+  /setup/admin:
+    post:
+      operationId: Setup_createSetupAdmin
+      description: Create the first administrator. Allowed only while no user exists.
+      parameters: []
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+      tags:
+        - setup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetupAdmin'
   /tasks/my:
     get:
       operationId: Tasks_getMyTasks
@@ -6420,6 +6672,72 @@ components:
       properties:
         fromUserId:
           type: integer
+    Admin.DmsConsistencyEntry:
+      type: object
+      required:
+        - count
+        - sample
+      properties:
+        count:
+          type: integer
+          description: Total number of items in this category.
+        sample:
+          type: array
+          items:
+            type: string
+          description: |-
+            At most the first 500 items in this category. `id` for row-anchored
+            categories (missing, notMigrated), path relative to `dms/` otherwise.
+      description: One category of the {
+    Admin.DmsConsistencyReport:
+      type: object
+      required:
+        - missing
+        - orphans
+        - sizeMismatch
+        - corrupted
+        - notMigrated
+        - staleTmp
+        - foreign
+        - durationMillis
+      properties:
+        missing:
+          allOf:
+            - $ref: '#/components/schemas/Admin.DmsConsistencyEntry'
+          description: Rows whose file could not be located on disk.
+        orphans:
+          allOf:
+            - $ref: '#/components/schemas/Admin.DmsConsistencyEntry'
+          description: Files on disk that no row claims.
+        sizeMismatch:
+          allOf:
+            - $ref: '#/components/schemas/Admin.DmsConsistencyEntry'
+          description: Rows whose file exists but with a different size.
+        corrupted:
+          allOf:
+            - $ref: '#/components/schemas/Admin.DmsConsistencyEntry'
+          description: Rows whose file exists but whose SHA-256 does not match `dms_file.checksum`.
+        notMigrated:
+          allOf:
+            - $ref: '#/components/schemas/Admin.DmsConsistencyEntry'
+          description: Rows still on the legacy flat path (`storage_path IS NULL`).
+        staleTmp:
+          allOf:
+            - $ref: '#/components/schemas/Admin.DmsConsistencyEntry'
+          description: Abandoned `<target>.tmp` files older than `orphanMinAgeMinutes`.
+        foreign:
+          allOf:
+            - $ref: '#/components/schemas/Admin.DmsConsistencyEntry'
+          description: Files under `dms/` that no rule created; reported only, never touched.
+        trashDirUsed:
+          type: string
+          description: '`_trash/<yyyy-MM-dd>` used if `moveOrphansToTrash` was true and moves happened.'
+        durationMillis:
+          type: integer
+          description: Wall-clock duration of the check.
+      description: |-
+        Result of one DMS consistency check run. Every count is the true total;
+        each list holds at most the first 500 entries in that category.
     AdminInfo:
       type: object
       required:
@@ -6741,8 +7059,8 @@ components:
           MARKDOWN: '#/components/schemas/AiMarkdownBlock'
           TABLE: '#/components/schemas/AiTableBlock'
           DOC_CITATIONS: '#/components/schemas/AiDocCitationsBlock'
-          NODE_UPDATE_PROPOSALS: '#/components/schemas/AiNodeUpdateProposalsBlock'
           RECORD_CITATIONS: '#/components/schemas/AiRecordCitationsBlock'
+          NODE_UPDATE_PROPOSALS: '#/components/schemas/AiNodeUpdateProposalsBlock'
       description: |-
         One display block of an AI response — THE RENDERING CONTRACT between the
         server and the client. The server (per task type) transforms the provider's
@@ -6984,16 +7302,15 @@ components:
         label:
           type: string
           description: |-
-            Display label — the record's name or title as the answer linked it. Absent when
-            the link carried no text; the client then shows a generic "open" label.
+            Display label — the record's name or title as the answer linked it. Absent
+            when the link carried no text; the client then shows a generic "open" label.
         target:
           allOf:
             - $ref: '#/components/schemas/AiContextObject'
           description: Navigation target — reuses the UI-context vocabulary (`AiContextType` codes).
       description: |-
-        One archival record of the user's own archive an answer linked to (a record link
-        `[label](ap:…|node:…|fund:…)` in the answer's markdown), renderable as a
-        navigation link. Carries only data — the client owns the heading and any
+        One archival record of the user's own archive an answer linked to, renderable
+        as a navigation link. Carries only data — the client owns the heading and any
         fallback label.
     AiRecordCitationsBlock:
       type: object
@@ -7008,10 +7325,11 @@ components:
       allOf:
         - $ref: '#/components/schemas/AiDisplayBlock'
       description: |-
-        The archival records the answer linked to — derived by the server from the record
-        links of the answer's markdown (the provider protocol's way of citing a record of
-        the client's archive). The server emits no label text; the client renders a
-        "Records" list and supplies the heading itself, in the user's language.
+        The archival records the answer linked to — derived by the server from the
+        record links of the answer's markdown (the provider protocol's way of citing a
+        record of the client's archive: `[label](ap:…|node:…|fund:…)`). The server
+        emits no label text; the client renders a "Records" list and supplies the
+        heading itself, in the user's language.
     AiRequest:
       type: object
       required:
@@ -7448,6 +7766,12 @@ components:
         nadChangeCode:
           type: string
           description: Identifikátor vnější změny NAD v PEvA
+        contentType:
+          type: string
+          description: Typ obsahu balíčku (csip:CONTENTINFORMATIONTYPE, u hodnoty OTHER csip:OTHERCONTENTINFORMATIONTYPE)
+        profile:
+          type: string
+          description: Profil balíčku (METS PROFILE)
         aipSize:
           type: integer
           format: int64
@@ -7530,6 +7854,8 @@ components:
         - ingestionCode
         - referenceNumber
         - nadChangeCode
+        - contentType
+        - profile
         - aipSize
         - metadataLoad
         - completeAipLoad
@@ -7865,6 +8191,94 @@ components:
           type: string
           description: Unitdate
       description: Archivní soubor
+    AsyncRequestInfo:
+      type: object
+      required:
+        - type
+        - load
+        - requestPerHour
+        - waitingRequests
+        - runningThreadCount
+        - totalThreadCount
+        - currentThreads
+      properties:
+        type:
+          allOf:
+            - $ref: '#/components/schemas/AsyncType'
+          description: Queue type.
+        load:
+          type: number
+          format: double
+          description: Share of the capacity in use, 0..1.
+        requestPerHour:
+          type: integer
+          format: int32
+          description: Requests processed in the last hour.
+        waitingRequests:
+          type: integer
+          format: int32
+          description: Number of requests waiting for a free worker.
+        runningThreadCount:
+          type: integer
+          format: int32
+          description: Number of workers currently running a request.
+        totalThreadCount:
+          type: integer
+          format: int32
+          description: Total number of worker threads in the queue.
+        currentThreads:
+          type: array
+          items:
+            $ref: '#/components/schemas/AsyncWorker'
+          description: Snapshot of the worker threads.
+      description: State of a single asynchronous request queue.
+    AsyncType:
+      type: string
+      enum:
+        - NODE
+        - BULK
+        - OUTPUT
+        - AP
+        - EXPORT
+        - AIP
+        - BATCH_IMPORT
+      description: |-
+        Type of asynchronous request queue.
+        Mirrors server AsyncTypeEnum.
+    AsyncWorker:
+      type: object
+      required:
+        - fundVersionId
+        - requestId
+        - beginTime
+        - runningTime
+        - currentId
+      properties:
+        fundVersionId:
+          type: integer
+          format: int32
+          nullable: true
+          description: Fund version processed by the thread, `null` when the thread is idle.
+        requestId:
+          type: integer
+          format: int64
+          nullable: true
+          description: ID of the request the thread is running, `null` when the thread is idle.
+        beginTime:
+          type: string
+          nullable: true
+          description: Time the current request started. Server LocalDateTime (no zone), e.g. `2026-09-21T08:15:30`.
+        runningTime:
+          type: integer
+          format: int64
+          nullable: true
+          description: Running time of the current request in milliseconds, `null` when the thread is idle.
+        currentId:
+          type: integer
+          format: int32
+          nullable: true
+          description: Business ID of the entity being processed (node, output, …), `null` when the thread is idle.
+      description: One worker thread of an asynchronous queue.
     AutoValue:
       type: object
       properties:
@@ -8298,6 +8712,8 @@ components:
         - CONNECT_LOGICAL_STRUCTURE
         - CREATE_NODES
         - CREATE_NODES_AND_CONNECT
+        - IMPORT_DESCRIPTION
+        - CREATE_SUBLEVELS
       description: Typ akce vyžádané nad AIPy
     DaAipActionVO:
       type: object
@@ -9588,6 +10004,41 @@ components:
           items:
             type: integer
       description: Specifies multiple sections for fund version
+    FundStatistics:
+      type: object
+      required:
+        - fund
+        - fundVersionId
+        - requestCount
+      properties:
+        fund:
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/FundStatisticsFund'
+          nullable: true
+          description: Fund the requests belong to.
+        fundVersionId:
+          type: integer
+          format: int32
+          nullable: true
+          description: Fund version the requests target.
+        requestCount:
+          type: integer
+          format: int32
+          description: Number of waiting requests.
+      description: Number of requests waiting in a single queue, grouped by fund.
+    FundStatisticsFund:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          format: int32
+        name:
+          type: string
+      description: Minimal fund identification used by FundStatistics.
     FundsActionGroup:
       type: object
       required:
@@ -11036,8 +11487,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Scope'
-        anonymizedAp:
-          $ref: '#/components/schemas/ApAccessPointVO'
         outputFilterId:
           type: integer
       description: Náhrada za `ArrOutputVO`
@@ -11115,8 +11564,6 @@ components:
           items:
             type: integer
           description: List of templates
-        anonymizedAp:
-          $ref: '#/components/schemas/ApAccessPointVO'
         outputFilterId:
           type: integer
       description: Náhrada za `OutputNameParam`
@@ -11277,6 +11724,22 @@ components:
       allOf:
         - $ref: '#/components/schemas/UserRef'
       description: Entity processor (user)
+    PasswordPolicy:
+      type: object
+      properties:
+        expiryDays:
+          type: integer
+          format: int32
+          description: Password validity in days
+        minLength:
+          type: integer
+          format: int32
+          description: Minimal password length
+        minCharGroups:
+          type: integer
+          format: int32
+          description: Minimal number of character groups (lowercase, uppercase, digits, other), 1–4
+      description: Password policy. For each rule, null or a value <= 0 means the rule is off.
     PublicationDetail:
       type: object
       required:
@@ -11938,6 +12401,28 @@ components:
             $ref: '#/components/schemas/Sorting'
           description: array of sort conditions
       description: Search parameters
+    SetupAdmin:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          description: Username of the administrator
+        password:
+          type: string
+          description: Password of the administrator
+      description: First administrator created by the first-run setup.
+    SetupStatus:
+      type: object
+      required:
+        - setupRequired
+      properties:
+        setupRequired:
+          type: boolean
+          description: No user exists yet - the first administrator has to be created
+      description: State of the first-run setup.
     Sorting:
       type: object
       required:

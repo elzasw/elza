@@ -53,7 +53,6 @@ import { useThunkDispatch } from 'utils/hooks';
 import { AppState, OutputType, Template } from 'typings/store';
 import { ArrOutputVO } from 'typings/Outputs';
 import { AutoSave } from 'components/shared/form/FinalFormAutoSave';
-import { ApAccessPointVO } from 'api';
 import { ExceptionData } from 'components/shared/exception/Exception';
 import FundNodesList from '../FundNodesList';
 import { OutputRecommendedActionsBar } from './OutputRecommendedActionsBar';
@@ -329,7 +328,6 @@ interface DetailsFields {
 
 interface SettingsFields {
     outputFilterId?: number;
-    anonymizedAp?: ApAccessPointVO; // TODO - otypovat
 }
 
 interface DetailsDialogProps {
@@ -493,7 +491,7 @@ type Props = Pick<
 
 /**
  * Definiční sloupec výstupu – hlavička (název/typ/kód + dialog úprav), šablony, filtr,
- * anonymizované AP, chyba, soubory, rozsahy a uzly. Vše v jedné komponentě; pořadí sekcí
+ * chyba, soubory, rozsahy a uzly. Vše v jedné komponentě; pořadí sekcí
  * se mění úpravou tohoto souboru. Rozvržení pouze umisťuje tento sloupec, dovnitř nezasahuje.
  */
 export function OutputDefinition({
@@ -514,7 +512,6 @@ export function OutputDefinition({
 
     const settingsInitialValues: SettingsFields = {
         outputFilterId: fundOutputDetail.outputFilterId,
-        anonymizedAp: fundOutputDetail.anonymizedAp,
     };
 
     const outputTypeId = fundOutputDetail.outputTypeId;
@@ -596,7 +593,6 @@ export function OutputDefinition({
             name,
             internalCode,
             outputFilterId,
-            anonymizedAp,
             state,
             error,
             nodes,
@@ -616,7 +612,6 @@ export function OutputDefinition({
             name,
             internalCode,
             outputFilterId,
-            anonymizedAp,
             state,
             error,
             nodes,

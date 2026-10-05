@@ -698,7 +698,7 @@ public class ArrangementService {
      * @param scopes
      * @param userIds
      * @param groupIds
-     * @param adminPermissionMode strategy for synchronizing the supplied admin users/groups
+     * @param adminPermissionMode whether the supplied admin users/groups are added
      * @return Upravená archivní pomůcka
      */
     @Transactional
@@ -747,10 +747,10 @@ public class ArrangementService {
             syncApScopes(originalFund, scopes);
         }
         
-        // Synchronize permissions; if not denied
-        if(adminPermissionMode!=null && AdminPermissionUpdateMode.NO_SYNC != adminPermissionMode) {        
-            syncUsers(originalFund, userIds, adminPermissionMode);
-            syncGroups(originalFund, groupIds, adminPermissionMode);            
+        // Add supplied administrators; if not denied
+        if (adminPermissionMode == AdminPermissionUpdateMode.ADD_ONLY) {
+            addFundAdminUsers(originalFund, userIds);
+            addFundAdminGroups(originalFund, groupIds);
         }
 
         eventNotificationService
@@ -801,67 +801,46 @@ public class ArrangementService {
     }
 
     /**
-     * Aktualizace seznamu User pro ArrFund
+     * Přidá oprávnění správce AS uživatelům, kteří ho dosud nemají.
+     * Stávající oprávnění zůstávají zachována.
      *
      * @param fund
      * @param userIds
-     * @param adminPermissionMode whether to remove existing users not in the supplied list
      */
-    private void syncUsers(final ArrFund fund, final Collection<Integer> userIds,
-                           final AdminPermissionUpdateMode adminPermissionMode) {
+    private void addFundAdminUsers(final ArrFund fund, final Collection<Integer> userIds) {
         Validate.notNull(fund, "AS musí být vyplněn");
-
-        List<UsrUser> users = userRepository.findByFund(fund);
-        Map<Integer, UsrUser> usersById = users
-                .stream().collect(Collectors.toMap(u -> u.getUserId(), u -> u));
-
-        if(userIds!=null) {
-        	// add permissions to userIds
-			for (Integer userId : userIds) {
-				UsrUser user = usersById.get(userId);
-				if (user == null) {
-					userService.addFundAdminPermissions(userId, null, fund);
-				} else {
-					usersById.remove(userId);
-				}
-			}
+        if (userIds == null) {
+            return;
         }
 
-        if (adminPermissionMode == AdminPermissionUpdateMode.FULL_SYNC) {
-            usersById.values().forEach(u -> userService.deleteUserFundPermissions(u, fund.getFundId()));
+        Set<Integer> currentUserIds = userRepository.findByFund(fund)
+                .stream().map(UsrUser::getUserId).collect(Collectors.toSet());
+        for (Integer userId : userIds) {
+            if (currentUserIds.add(userId)) {
+                userService.addFundAdminPermissions(userId, null, fund);
+            }
         }
     }
 
     /**
-     *
-     * Aktualizace seznamu Group pro ArrFund
+     * Přidá oprávnění správce AS skupinám, které ho dosud nemají.
+     * Stávající oprávnění zůstávají zachována.
      *
      * @param fund
      * @param groupIds
-     * @param adminPermissionMode whether to remove existing groups not in the supplied list
      */
-    private void syncGroups(final ArrFund fund, final Collection<Integer> groupIds,
-                            final AdminPermissionUpdateMode adminPermissionMode) {
+    private void addFundAdminGroups(final ArrFund fund, final Collection<Integer> groupIds) {
         Validate.notNull(fund, "AS musí být vyplněn");
-
-        List<UsrGroup> groups = groupRepository.findByFund(fund);
-        Map<Integer, UsrGroup> groupsById = groups
-                .stream().collect(Collectors.toMap(g -> g.getGroupId(), g -> g));
-
-        if(groupIds!=null) {
-        	// add permissions to groups
-			for (Integer groupId : groupIds) {
-				UsrGroup group = groupsById.get(groupId);
-				if (group == null) {
-					userService.addFundAdminPermissions(null, groupId, fund);
-				} else {
-					groupsById.remove(groupId);
-				}
-			}
+        if (groupIds == null) {
+            return;
         }
 
-        if (adminPermissionMode == AdminPermissionUpdateMode.FULL_SYNC) {
-            groupsById.values().forEach(g -> userService.deleteGroupFundPermissions(g, fund.getFundId()));
+        Set<Integer> currentGroupIds = groupRepository.findByFund(fund)
+                .stream().map(UsrGroup::getGroupId).collect(Collectors.toSet());
+        for (Integer groupId : groupIds) {
+            if (currentGroupIds.add(groupId)) {
+                userService.addFundAdminPermissions(null, groupId, fund);
+            }
         }
     }
 

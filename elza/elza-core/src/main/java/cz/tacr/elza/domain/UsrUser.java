@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain;
 
+import java.time.OffsetDateTime;
+
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.Column;
@@ -30,11 +32,14 @@ public class UsrUser {
     @Access(AccessType.PROPERTY) // required to read id without fetch from db
     private Integer userId;
 
+    /**
+     * Person of the user; null for the first administrator created by the first-run setup.
+     */
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApAccessPoint.class)
-    @JoinColumn(name = "accessPointId", nullable = false)
+    @JoinColumn(name = "accessPointId")
     private ApAccessPoint accessPoint;
 
-    @Column(nullable = false, updatable = false, insertable = false)
+    @Column(updatable = false, insertable = false)
     private Integer accessPointId;
 
     @Column(length = 250, nullable = false, unique = true)
@@ -46,6 +51,9 @@ public class UsrUser {
     @Column(length = 250)
     private String description;
 
+    @Column(nullable = false, updatable = false)
+    private OffsetDateTime createdAt;
+
     /* Konstanty pro vazby a fieldy. */
     public static final String FIELD_USER_ID = "userId";
     public static final String FIELD_ACCESS_POINT = "accessPoint";
@@ -53,6 +61,7 @@ public class UsrUser {
     public static final String FIELD_USERNAME = "username";
     public static final String FIELD_DESCRIPTION = "description";
     public static final String FIELD_ACTIVE = "active";
+    public static final String FIELD_CREATED_AT = "createdAt";
 
     /**
      * @return identifikátor entity
@@ -121,5 +130,13 @@ public class UsrUser {
 
     public Integer getAccessPointId() {
         return accessPointId;
+    }
+
+    public OffsetDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(final OffsetDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 }

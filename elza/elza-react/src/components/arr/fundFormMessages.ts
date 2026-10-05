@@ -52,6 +52,7 @@ export const fundFormMessages = defineMessages({
     dmsFileTitleEditableAdd: { id: "dms.file.title.editable.add", defaultMessage: "Přidání přílohy jako text" },
     dmsFileTitleEditableEdit: { id: "dms.file.title.editable.edit", defaultMessage: "Upravení přílohy" },
     dmsFileTitleFileAdd: { id: "dms.file.title.file.add", defaultMessage: "Přidání přílohy ze souboru" },
+    dmsFileTitleRename: { id: "dms.file.title.rename", defaultMessage: "Přejmenování přílohy" },
     globalActionImport: { id: "global.action.import", defaultMessage: "Importovat" },
     globalActionSelect: { id: "global.action.select", defaultMessage: "Vybrat" },
     importFile: { id: "import.file", defaultMessage: "Soubor" },

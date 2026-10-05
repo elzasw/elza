@@ -108,7 +108,6 @@
     "error TS7006: Parameter 'permissions' implicitly has an 'any' type.",
     "error TS7006: Parameter 'policyTypeIdsMap' implicitly has an 'any' type.",
     "error TS7006: Parameter 'registryParent' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'requestType' implicitly has an 'any' type.",
     "error TS7006: Parameter 'revState' implicitly has an 'any' type.",
     "error TS7006: Parameter 'ruleSetCode' implicitly has an 'any' type.",
     "error TS7006: Parameter 'scenarioName' implicitly has an 'any' type.",
@@ -246,10 +245,6 @@
   "src/actions/registry/batchExportAccessPoints.ts": [
     "error TS7006: Parameter 'dispatch' implicitly has an 'any' type."
   ],
-  "src/api/api.ts": [
-    "error TS2345: Argument of type '(dispatch: any) => Promise<any>' is not assignable to parameter of type 'AnyAction'.",
-    "error TS2345: Argument of type 'void | { type: string; title: any; extended: boolean; message: any; style: string; size: string; time: any; visible: boolean; }' is not assignable to parameter of type 'AnyAction'."
-  ],
   "src/api/old/ApPartInfo.tsx": [
     "error TS7053: Element implicitly has an 'any' type because expression of type '\"@class\"' can't be used to index type 'ApPartVO'.",
     "error TS7053: Element implicitly has an 'any' type because expression of type '\"@class\"' can't be used to index type 'ApPartVO'."
@@ -337,28 +332,16 @@
     "error TS7006: Parameter 'dispatch' implicitly has an 'any' type.",
     "error TS7006: Parameter 'props' implicitly has an 'any' type."
   ],
-  "src/components/arr/aip/assignment/NodeDetail.tsx": [
-    "error TS7006: Parameter 'aipId' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'index' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'n' implicitly has an 'any' type."
-  ],
   "src/components/arr/aip/assignment/TreeNavigation.tsx": [
     "error TS7006: Parameter 'item' implicitly has an 'any' type."
   ],
   "src/components/arr/aip/assignment/utils.ts": [
     "error TS7005: Variable 'items' implicitly has an 'any[]' type.",
-    "error TS7005: Variable 'items' implicitly has an 'any[]' type.",
-    "error TS7006: Parameter 'n' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'node' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'node' implicitly has an 'any' type.",
     "error TS7006: Parameter 'node' implicitly has an 'any' type.",
     "error TS7006: Parameter 'node' implicitly has an 'any' type.",
     "error TS7006: Parameter 'nodes' implicitly has an 'any' type.",
     "error TS7006: Parameter 'tree' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'tree' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'tree' implicitly has an 'any' type.",
     "error TS7006: Parameter 'value' implicitly has an 'any' type.",
-    "error TS7034: Variable 'items' implicitly has type 'any[]' in some locations where its type cannot be determined.",
     "error TS7034: Variable 'items' implicitly has type 'any[]' in some locations where its type cannot be determined."
   ],
   "src/components/arr/item-form/desc-items/DescItemCoordinates.tsx": [
@@ -389,9 +372,6 @@
     "error TS7006: Parameter 'toChangeId' implicitly has an 'any' type.",
     "error TS7031: Binding element 'id' implicitly has an 'any' type.",
     "error TS7031: Binding element 'onClose' implicitly has an 'any' type."
-  ],
-  "src/components/arr/node-edit/templates/utils.ts": [
-    "error TS7018: Object literal's property 'value' implicitly has an 'any' type."
   ],
   "src/components/arr/node-settings-form/NodeSettingsModal.tsx": [
     "error TS7015: Element implicitly has an 'any' type because index expression is not of type 'number'."

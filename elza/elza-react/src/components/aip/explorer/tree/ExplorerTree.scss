@@ -3,4 +3,19 @@
 .explorer-tree {
     max-height: 80vh;
     overflow: auto;
+
+    /*
+     * One line per node, whole: a row is as wide as its name (at least as the tree), so a long
+     * or deeply nested name scrolls the tree sideways instead of being cut off. The explorer
+     * otherwise breaks long words; the name is also in the tooltip.
+     */
+    .fui-TreeItemLayout {
+        width: max-content;
+        min-width: 100%;
+    }
+
+    .explorer-tree-label {
+        white-space: nowrap;
+        word-wrap: normal;
+    }
 }

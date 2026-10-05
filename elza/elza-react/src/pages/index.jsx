@@ -14,6 +14,7 @@ export {default as ArrDataGridPage} from 'pages/arr/ArrDataGridPage.jsx';
 export {default as ArrMovementsPage} from 'pages/arr/ArrMovementsPage.jsx';
 export {default as ArrAipPage} from 'pages/arr/ArrAipPage.tsx';
 export {default as ArrAipExplorerPage} from 'pages/arr/ArrAipExplorerPage.tsx';
+export {default as ArrAipConnectPage} from 'pages/arr/ArrAipConnectPage.tsx';
 export {default as ArrDaoPage} from 'pages/arr/ArrDaoPage.jsx';
 export {default as FundActionPage} from 'pages/arr/FundActionPage.jsx';
 export {default as ArrOutputPage} from 'pages/arr/ArrOutputPage.jsx';

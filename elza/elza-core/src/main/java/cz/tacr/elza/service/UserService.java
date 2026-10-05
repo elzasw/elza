@@ -1,5 +1,8 @@
 package cz.tacr.elza.service;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -16,6 +19,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.Nullable;
+import jakarta.annotation.PostConstruct;
 
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotEmpty;
@@ -159,6 +163,18 @@ public class UserService {
     @Value("${elza.security.allowDefaultUser:true}")
     private Boolean allowDefaultUser;
 
+    @Autowired
+    private PasswordPolicyService passwordPolicyService;
+
+    /**
+     * Break-glass login of a user who forgot the password; both properties must be set.
+     */
+    @Value("${elza.security.recovery.username:#{null}}")
+    private String recoveryUsername;
+
+    @Value("${elza.security.recovery.password:#{null}}")
+    private String recoveryPassword;
+
     /**
      * Cache pro nakešování oprávnění uživatele.
      */
@@ -271,6 +287,14 @@ public class UserService {
                         return calcUserPermission(user);
                     }
                 });
+    }
+
+    @PostConstruct
+    void warnRecoveryActive() {
+        if (isRecoveryConfigured()) {
+            logger.warn("Recovery přihlášení je aktivní pro uživatele {} — po použití odstraňte volbu z konfigurace!",
+                        recoveryUsername);
+        }
     }
 
     /**
@@ -1187,7 +1211,7 @@ public class UserService {
     	Objects.requireNonNull(username);
     	Objects.requireNonNull(user);
 
-        if (accessPointId != null && !accessPointId.equals(user.getAccessPoint().getAccessPointId())) {
+        if (accessPointId != null && !accessPointId.equals(user.getAccessPointId())) {
             ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
             user.setAccessPoint(accessPoint);
         }
@@ -1245,6 +1269,73 @@ public class UserService {
     }
 
     /**
+     * Creates the first administrator: a user without an access point, with a password
+     * and the ADMIN permission.
+     *
+     * Used only by the first-run setup ({@link SetupService}), which has checked that no
+     * user exists; there is no logged user to authorize the call.
+     *
+     * @param username username
+     * @param password password (plaintext), checked against the password policy
+     * @return created user
+     */
+    @Transactional(value = Transactional.TxType.MANDATORY)
+    public UsrUser createInitialAdmin(final String username, final String password) {
+        if (allowDefaultUser && username.equalsIgnoreCase(defaultUsername)) {
+            throw new BusinessException("Jméno je vyhrazeno výchozímu uživateli", UserCode.USERNAME_EXISTS);
+        }
+
+        UsrUser user = new UsrUser();
+        user.setActive(true);
+        user.setUsername(username);
+        user.setCreatedAt(OffsetDateTime.now());
+        user = userRepository.save(user);
+
+        UsrAuthentication authentication = new UsrAuthentication();
+        updateAuth(user, UsrAuthentication.AuthType.PASSWORD, password, authentication);
+        authenticationRepository.save(authentication);
+
+        UsrPermission permission = new UsrPermission();
+        permission.setUser(user);
+        permission.setPermission(UsrPermission.Permission.ADMIN);
+        permissionRepository.save(permission);
+
+        createUserEvent(user);
+        return user;
+    }
+
+    /**
+     * Sets the password from the configuration (elza.security.admin.password) to an existing
+     * user; adds the password authentication when the user has none. Only the password changes,
+     * not the permissions or the state of the user.
+     *
+     * Used only by {@link SetupService} at startup; there is no logged user to authorize the call.
+     *
+     * @param user     existing user
+     * @param password password (plaintext), checked against the password policy
+     * @return false when the user already has this password - nothing is written, so the
+     *         validity of the password does not restart at every startup
+     */
+    @Transactional(value = Transactional.TxType.MANDATORY)
+    public boolean applyConfiguredPassword(final UsrUser user, final String password) {
+        UsrAuthentication authentication = authenticationRepository.findByUserAndAuthType(user,
+                UsrAuthentication.AuthType.PASSWORD);
+        // a hash in the old format is rewritten, which also converts it to the current one
+        if (authentication != null && authentication.getAuthValue().startsWith("{")
+                && encoder.matches(password, authentication.getAuthValue())) {
+            return false;
+        }
+        if (authentication == null) {
+            authentication = new UsrAuthentication();
+        }
+        updateAuth(user, UsrAuthentication.AuthType.PASSWORD, password, authentication);
+        authentication.setChangeRequired(false);
+        authenticationRepository.save(authentication);
+        changeUserEvent(user);
+        return true;
+    }
+
+    /**
      * Vytvoření uživatele.
      *
      * @param username uživatelské jméno
@@ -1272,6 +1363,7 @@ public class UserService {
         user.setActive(true);
         user.setAccessPoint(accessPoint);
         user.setUsername(username);
+        user.setCreatedAt(OffsetDateTime.now());
 
         user = userRepository.save(user);
 
@@ -1300,10 +1392,11 @@ public class UserService {
         authentication.setUser(user);
         authentication.setAuthType(authType);
         if (authType == UsrAuthentication.AuthType.PASSWORD) {
-            authentication.setAuthValue(encodePassword(value));
+            authentication.setAuthValue(encodeNewPassword(value));
         } else {
             authentication.setAuthValue(value);
         }
+        authentication.setValidFrom(OffsetDateTime.now());
     }
 
     /**
@@ -1328,36 +1421,52 @@ public class UserService {
             }
         }
 
-        return changePasswordPrivate(user, newPassword);
+        return changePasswordPrivate(user, newPassword, false, null);
     }
 
     /**
      * Změna hesla uživatele - s ověřením oprávnění.
      *
-     * @param user        uživate, kterému měním heslo
-     * @param newPassword nové heslo (v plaintextu)
+     * @param user           uživate, kterému měním heslo
+     * @param newPassword    nové heslo (v plaintextu)
+     * @param changeRequired require a password change at next login
+     * @param neverExpire    password exempt from expiry; null keeps the current value
      * @return uživatel
      */
     @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITY})
     public UsrUser changePassword(@AuthParam(type = AuthParam.Type.USER) @NotNull final UsrUser user,
-                                  @NotEmpty final String newPassword) {
-        return changePasswordPrivate(user, newPassword);
+                                  @NotEmpty final String newPassword,
+                                  @Nullable final Boolean changeRequired,
+                                  @Nullable final Boolean neverExpire) {
+        return changePasswordPrivate(user, newPassword, changeRequired, neverExpire);
     }
 
     /**
      * Změna hesla uživatele.
      *
-     * @param user        uživate, kterému měním heslo
-     * @param newPassword nové heslo (v plaintextu)
+     * @param user           uživate, kterému měním heslo
+     * @param newPassword    nové heslo (v plaintextu)
+     * @param changeRequired require a password change at next login
+     * @param neverExpire    password exempt from expiry; null keeps the current value
      * @return uživatel
      */
     private UsrUser changePasswordPrivate(@NotNull final UsrUser user,
-                                          @NotEmpty final String newPassword) {
+                                          @NotEmpty final String newPassword,
+                                          @Nullable final Boolean changeRequired,
+                                          @Nullable final Boolean neverExpire) {
         UsrAuthentication authentication = findAuthentication(user, UsrAuthentication.AuthType.PASSWORD);
         if (authentication == null) {
             throw new BusinessException("Uživatel nemá povolené přihlášení heslem", BaseCode.INVALID_STATE);
         }
-        authentication.setAuthValue(encodePassword(newPassword));
+        if (authentication.getAuthenticationId() == null) {
+            throw new BusinessException("Heslo výchozího uživatele je definováno v konfiguraci", BaseCode.INVALID_STATE);
+        }
+        authentication.setAuthValue(encodeNewPassword(newPassword));
+        authentication.setValidFrom(OffsetDateTime.now());
+        authentication.setChangeRequired(Boolean.TRUE.equals(changeRequired));
+        if (neverExpire != null) {
+            authentication.setNeverExpire(neverExpire);
+        }
         authenticationRepository.save(authentication);
         changeUserEvent(user);
         return user;
@@ -1399,7 +1508,52 @@ public class UserService {
     }
 
     /**
+     * Checks a new password against the password policy and hashes it.
+     *
+     * @param password new password (plaintext)
+     * @return hashed password
+     */
+    private String encodeNewPassword(final String password) {
+        passwordPolicyService.validate(password);
+        return encodePassword(password);
+    }
+
+    private boolean isRecoveryConfigured() {
+        return StringUtils.isNotEmpty(recoveryUsername) && StringUtils.isNotEmpty(recoveryPassword);
+    }
+
+    /**
+     * Checks whether the credentials match the configured recovery pair
+     * (elza.security.recovery.*). Never applies to the configured default user.
+     *
+     * @param username username
+     * @param password raw password
+     * @return true if this is a recovery login
+     */
+    public boolean isRecoveryPassword(final String username, final String password) {
+        if (!isRecoveryConfigured() || !recoveryUsername.equals(username)) {
+            return false;
+        }
+        if (allowDefaultUser && username.equalsIgnoreCase(defaultUsername)) {
+            return false;
+        }
+        return MessageDigest.isEqual(recoveryPassword.getBytes(StandardCharsets.UTF_8),
+                                     password.getBytes(StandardCharsets.UTF_8));
+    }
+
+    /**
+     * Whether the user must change the password (required by the administrator or expired).
+     *
+     * @param authentication authentication of the user
+     */
+    public boolean needsPasswordChange(final UsrAuthentication authentication) {
+        return passwordPolicyService.needsChange(authentication, OffsetDateTime.now());
+    }
+
+    /**
      * Ověření hesla.
+     *
+     * Accepts also the recovery password (elza.security.recovery.*).
      *
      * @param password       raw heslo
      * @param encodePassword očekáváný hash hesla
@@ -1407,6 +1561,11 @@ public class UserService {
      * @return true - heslo je OK
      */
     public boolean matchesPassword(final String password, final String encodePassword, final String username) {
+        if (isRecoveryPassword(username, password)) {
+            logger.warn("Recovery přihlášení je aktivní pro uživatele {} — po použití odstraňte volbu z konfigurace!",
+                        username);
+            return true;
+        }
         if (!encodePassword.startsWith("{")) {
             // zpětná kompatibilita
             logger.warn("Uživatel {} používá starý mechanismus ukládání hashe hesla. Prosím, prověďte změnu hesla pro zvýšení bezpečnosti!", username);
@@ -2202,7 +2361,9 @@ public class UserService {
 			//TODO : smazáno - přiřazení preferovaného jména
 		}
 
-		return UserInfoVO.newInstance(userDetail, preferredName);
+		UserInfoVO result = UserInfoVO.newInstance(userDetail, preferredName);
+		result.setPasswordPolicy(PasswordPolicyService.toVO(passwordPolicyService.getPolicy()));
+		return result;
 	}
 
 	/**

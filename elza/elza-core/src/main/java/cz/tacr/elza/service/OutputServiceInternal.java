@@ -72,6 +72,7 @@ import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.repository.OutputTemplateRepository;
 import cz.tacr.elza.repository.TemplateRepository;
 import cz.tacr.elza.service.ItemService.FundContext;
+import cz.tacr.elza.service.dms.DmsService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventChangeOutputItem;
 import cz.tacr.elza.service.eventnotification.events.EventIdAndStringInVersion;
@@ -593,12 +594,7 @@ public class OutputServiceInternal {
                                     .set("accessPointId", accessPoint.getAccessPointId());
                         }
                         ApScope scope = state.getScope();
-                        if (isScopeRestricted(scope, restrictedScopes)) {
-                            if (output.getAnonymizedAp() != null) {
-                                dataRecordRef.setRecord(output.getAnonymizedAp());
-                                restrictedOutputItems.add(outputItem);
-                            }
-                        } else {
+                        if (!isScopeRestricted(scope, restrictedScopes)) {
                             restrictedOutputItems.add(outputItem);
                         }
                     }
@@ -667,7 +663,7 @@ public class OutputServiceInternal {
         for (ArrOutputResult outputResult : outputResults) {
             List<ArrOutputFile> outputFiles = outputResult.getOutputFiles();
             if (outputFiles != null && !outputFiles.isEmpty()) {
-                dmsService.deleteFilesAfterCommit(outputFiles);
+                dmsService.deleteFilesAfterCommit(outputFiles, "output-regenerated");
                 outputFileRepository.deleteAll(outputFiles);
             }
             outputResultRepository.delete(outputResult);

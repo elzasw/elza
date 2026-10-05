@@ -9,11 +9,9 @@ import java.util.Collections;
 import java.util.List;
 
 import jakarta.transaction.Transactional;
-import cz.tacr.elza.cam.v1.CamConnector;
 import cz.tacr.elza.common.FactoryUtils;
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.core.security.AuthMethod;
-import cz.tacr.elza.domain.AsyncTypeEnum;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -23,7 +21,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.SysExternalSystem;
@@ -61,9 +58,6 @@ public class AdminOldController {
 
     @Autowired
     private AccessPointService accessPointService;
-
-    @Autowired
-    private AsyncRequestService asyncRequestService;
 
     @Value("${elza.logFile:}")
     private String logFilePath;
@@ -188,17 +182,7 @@ public class AdminOldController {
         return adminService.findNodeByIds(fundVersion, nodeIds);
     }
 
-    @RequestMapping(value="/asyncRequests", method = RequestMethod.GET)
-    public List<ArrAsyncRequestVO> getAsyncRequestInfo() {
-        List<ArrAsyncRequestVO> requestList =  asyncRequestService.dispatcherInfo();
-        return requestList;
-    }
-
-    @RequestMapping(value= "/asyncRequests/{requestType}", method = RequestMethod.GET)
-    public List<FundStatisticsVO> getAsyncRequestDetail(@PathVariable("requestType") AsyncTypeEnum requestType) {
-        return asyncRequestService.getFundStatistics(requestType);
-    }
-
+    @Deprecated
     /**
      * Přístup k logu aplikace
      * 

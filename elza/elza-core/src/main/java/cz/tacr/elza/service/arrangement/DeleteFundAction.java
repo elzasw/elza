@@ -6,6 +6,7 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.*;
+import cz.tacr.elza.service.dms.DmsService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -22,6 +23,7 @@ import jakarta.persistence.criteria.CriteriaDelete;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import static cz.tacr.elza.repository.ExceptionThrow.fund;
@@ -141,6 +143,9 @@ public class DeleteFundAction {
     private OutputFileRepository outputFileRepository;
 
     @Autowired
+    private ExportRepository exportRepository;
+
+    @Autowired
     private ItemSettingsRepository itemSettingsRepository;
 
     @Autowired
@@ -218,6 +223,7 @@ public class DeleteFundAction {
         for (ArrFundVersion version : versions) {
             asyncRequestService.terminateNodeWorkersByFund(version.getFundVersionId());
             asyncRequestService.terminateBulkActions(version.getFundVersionId());
+            asyncRequestService.terminateExports(version.getFundVersionId());
         }
 
         structObjValueService.deleteFundRequests(fundId);
@@ -235,6 +241,7 @@ public class DeleteFundAction {
         dropDaos();
         dropBulkActions();
         dropOutputs();
+        dropExports();
         dropNodeInfo();
         dropDescItems();
         dropStructObjs();
@@ -344,8 +351,11 @@ public class DeleteFundAction {
     }
 
     private void dropOutputs() {
-        // drop outputs
-        // TODO: select changeIds and dataIds
+        // schedule physical file cleanup before the row bulk-delete —
+        // once deleteByOutputResultOutputFund runs, the entities are unreachable
+        List<ArrOutputFile> outputFiles = outputFileRepository.findByOutputResultOutputFund(fund);
+        dmsService.deleteFilesAfterCommit(outputFiles, "fund-delete-output");
+
         outputFileRepository.deleteByOutputResultOutputFund(fund);
         outputResultRepository.deleteByOutputFund(fund);
         itemSettingsRepository.deleteByOutputFund(fund);
@@ -354,6 +364,29 @@ public class DeleteFundAction {
         outputTemplateRepository.deleteByFund(fund);
         outputRepository.deleteByFund(fund);
 
+        em.flush();
+    }
+
+    /**
+     * Delete publications (arr_export) of the fund including their DMS files.
+     */
+    private void dropExports() {
+        List<ArrExport> exports = exportRepository.findByFund(fund);
+        if (exports.isEmpty()) {
+            return;
+        }
+        // PublicationService.copy() may link several exports of the fund to one dms_file
+        List<DmsFile> files = exports.stream()
+                .map(ArrExport::getFile)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
+        exportRepository.deleteAll(exports);
+        em.flush();
+
+        // deletes the dms_file row, the physical file is moved to trash after commit
+        files.forEach(dmsService::deleteFile);
         em.flush();
     }
 

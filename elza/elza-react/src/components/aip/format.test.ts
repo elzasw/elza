@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatAipSize } from './format';
+import { formatAipSize, formatPackageSize } from './format';
 
 describe('formatAipSize', () => {
     it('reads the size in the unit it fits', () => {
@@ -16,5 +16,14 @@ describe('formatAipSize', () => {
         expect(formatAipSize(undefined)).toBe('-');
         expect(formatAipSize(-1)).toBe('-');
         expect(formatAipSize(Number.NaN)).toBe('-');
+    });
+});
+
+describe('formatPackageSize', () => {
+    // a package cannot be empty; zero means the digital archive did not say how big it is
+    it('shows zero as unknown', () => {
+        expect(formatPackageSize(0)).toBe('-');
+        expect(formatPackageSize(null)).toBe('-');
+        expect(formatPackageSize(2048)).toBe('2.0 kB');
     });
 });

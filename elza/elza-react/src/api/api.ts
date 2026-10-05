@@ -19,6 +19,7 @@ import {
     PublicationInternalApi,
     InstitutionApi,
     ImportBatchesApi,
+    SetupApi,
     UserApi,
 } from 'elza-api';
 import globalAxios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
@@ -34,7 +35,7 @@ const messages = defineMessages({
     },
 });
 import { createException } from 'components/ExceptionUtils.jsx';
-import { logout } from 'actions/global/login';
+import { clearSession } from 'actions/global/login';
 import { store } from 'stores/index.jsx';
 
 interface WindowEx extends Window {
@@ -165,12 +166,13 @@ function resolveException(error: AxiosError<Error>) {
     console.error('ERROR', result);
 
     if (store) {
-        if (result.createToaster) {
-            store.dispatch(createException(result));
+        const exceptionToast = result.createToaster ? createException(result) : undefined;
+        if (exceptionToast) {
+            store.dispatch(exceptionToast);
         }
 
         if (result.unauthorized) {
-            store.dispatch(logout());
+            store.dispatch(clearSession());
         }
     }
 
@@ -236,6 +238,7 @@ export const Api: {
     publication: PublicationInternalApi;
     institution: InstitutionApi;
     importBatches: ImportBatchesApi;
+    setup: SetupApi;
     user: UserApi;
 } = {
     accesspoints: new AccesspointsApi(undefined, basePath, axios),
@@ -258,5 +261,6 @@ export const Api: {
     publication: new PublicationInternalApi(undefined, basePath, axios),
     institution: new InstitutionApi(undefined, basePath, axios),
     importBatches: new ImportBatchesApi(undefined, basePath, axios),
+    setup: new SetupApi(undefined, basePath, axios),
     user: new UserApi(undefined, basePath, axios),
 };

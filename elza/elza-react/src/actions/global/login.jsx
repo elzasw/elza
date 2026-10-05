@@ -93,18 +93,30 @@ export function login(username, password) {
 }
 
 /**
- * Disconnects websockets, logs out the user and changes the state to logged-out.
+ * Disconnects websockets and changes the state to logged-out, without calling the server.
+ *
+ * Used when the server has already refused the request as unauthorized. There is no session
+ * left to end, and a logout call would destroy the one that SSO is establishing at that moment.
  */
-export function logout(redirect = false) {
+export function clearSession() {
     return dispatch => {
         window.ws.disconnect(undefined, true);
-        if (redirect) {
-            dispatch(routerNavigate('/'));
-        }
         dispatch({
             type: types.LOGOUT,
             reset: true,
         });
+    };
+}
+
+/**
+ * Disconnects websockets, logs out the user and changes the state to logged-out.
+ */
+export function logout(redirect = false) {
+    return dispatch => {
+        dispatch(clearSession());
+        if (redirect) {
+            dispatch(routerNavigate('/'));
+        }
 
         return WebApi.logout();
     };

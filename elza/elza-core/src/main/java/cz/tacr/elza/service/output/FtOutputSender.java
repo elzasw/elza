@@ -15,7 +15,7 @@ import com.lightcomp.ft.client.ClientConfig;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.service.DmsService;
+import cz.tacr.elza.service.dms.DmsService;
 import cz.tacr.elza.service.output.ftsender.OutputUploadRequest;
 import cz.tacr.elza.service.output.ftsender.OutputUploadRequest.Status;
 import jakarta.annotation.PostConstruct;

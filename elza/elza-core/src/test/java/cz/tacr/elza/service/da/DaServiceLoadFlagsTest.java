@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -31,6 +32,7 @@ import cz.tacr.elza.domain.DaAipAction;
 import cz.tacr.elza.domain.DaAipState;
 import cz.tacr.elza.domain.DaSyncQueueItem;
 import cz.tacr.elza.repository.AipRepository;
+import org.mockito.InOrder;
 import cz.tacr.elza.repository.AipStateRepository;
 import cz.tacr.elza.repository.DaLocalCacheRepository;
 import cz.tacr.elza.repository.DaSyncQueueItemRepository;
@@ -48,6 +50,7 @@ public class DaServiceLoadFlagsTest {
 
     private AipStateRepository aipStateRepository;
     private DaSyncQueueItemRepository syncQueueItemRepository;
+    private AipRepository aipRepository;
 
     private DaAip aip;
     private DaAipState aipState;
@@ -74,7 +77,7 @@ public class DaServiceLoadFlagsTest {
 
     @BeforeEach
     void setUp() {
-        AipRepository aipRepository = mock(AipRepository.class);
+        aipRepository = mock(AipRepository.class);
         aipStateRepository = mock(AipStateRepository.class);
         syncQueueItemRepository = mock(DaSyncQueueItemRepository.class);
         DaLocalCacheRepository localCacheRepository = mock(DaLocalCacheRepository.class);
@@ -127,7 +130,17 @@ public class DaServiceLoadFlagsTest {
         DaSyncQueueItem pending = new DaSyncQueueItem();
         pending.setAipType(aipType);
         pending.setState(DaSyncQueueItem.QueueItemState.UPDATE);
-        when(syncQueueItemRepository.findByAipAndStateInAndActiveIsTrue(eq(aip), any())).thenReturn(pending);
+        when(syncQueueItemRepository.findFirstByAipAndStateInAndActiveIsTrueOrderBySyncQueueItemIdDesc(eq(aip), any())).thenReturn(pending);
+    }
+
+    @Test
+    void queueingLocksTheAipFirst() {
+        service.createDaoStructure(List.of(AIP_ID), sink);
+
+        // a request supersedes the pending one only if it sees it committed - so it waits for it
+        InOrder order = inOrder(aipRepository, syncQueueItemRepository);
+        order.verify(aipRepository).lockByIds(List.of(AIP_ID));
+        order.verify(syncQueueItemRepository).save(any(DaSyncQueueItem.class));
     }
 
     @Test

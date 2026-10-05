@@ -3,6 +3,7 @@ package cz.tacr.elza.service.da;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -20,8 +21,13 @@ import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.DaAip;
+import cz.tacr.elza.domain.DaAipState;
+import cz.tacr.elza.domain.DaChange;
+import cz.tacr.elza.domain.DaChangeType;
 import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.repository.AipRepository;
+import cz.tacr.elza.repository.AipStateRepository;
+import cz.tacr.elza.repository.DaChangeRepository;
 import cz.tacr.elza.repository.ArrDaLinkRepository;
 import cz.tacr.elza.repository.DigitalRepositoryRepository;
 import cz.tacr.elza.security.UserDetail;
@@ -45,6 +51,10 @@ public class DaServiceLinkPermissionTest extends AbstractServiceTest {
     private AipRepository aipRepository;
     @Autowired
     private DigitalRepositoryRepository digitalRepositoryRepository;
+    @Autowired
+    private AipStateRepository aipStateRepository;
+    @Autowired
+    private DaChangeRepository changeRepository;
 
     private TransactionTemplate tx() {
         return new TransactionTemplate(txManager);
@@ -59,6 +69,8 @@ public class DaServiceLinkPermissionTest extends AbstractServiceTest {
         authorizeAsAdmin();
         tx().executeWithoutResult(t -> {
             daLinkRepository.deleteAll();
+            aipStateRepository.deleteAll();
+            changeRepository.deleteAll();
             aipRepository.deleteAll();
             digitalRepositoryRepository.deleteAll();
         });
@@ -75,7 +87,20 @@ public class DaServiceLinkPermissionTest extends AbstractServiceTest {
         DaAip aip = new DaAip();
         aip.setCode("aip-link-perm-test");
         aip.setDigitalRepository(digitalRepositoryRepository.save(repository));
-        return aipRepository.save(aip).getAipId();
+        aipRepository.save(aip);
+
+        // only an AIP with an active state can be attached
+        DaChange change = new DaChange();
+        change.setChangeDate(LocalDateTime.now());
+        change.setDaAip(aip);
+        change.setType(DaChangeType.AIP_CREATE);
+        changeRepository.save(change);
+        DaAipState state = new DaAipState();
+        state.setDaAip(aip);
+        state.setCreateChange(change);
+        state.setAipVersion("1");
+        aipStateRepository.save(state);
+        return aip.getAipId();
     }
 
     /**
