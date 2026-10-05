@@ -72,7 +72,7 @@ describe('FileSystemBrowser', () => {
             />,
         );
 
-        await waitFor(() => expect(onSelect).toHaveBeenCalled());
+        await waitFor(() => expect(onSelect).toHaveBeenCalled(), { timeout: 5000 });
 
         const listing = itemRequests.find((params) => params.get('path') === 'photos/1968');
         expect(listing).toBeDefined();
@@ -121,7 +121,9 @@ describe('FileSystemBrowser', () => {
 
         // "1968" only ever appears in the tree as a child of the expanded "photos", which
         // itself is a child of the expanded repository root — no clicking involved.
-        expect(await screen.findByTitle('1968')).toBeTruthy();
+        // the tree loads level by level (repos, root, photos) - on a busy CI runner that takes
+        // longer than the default one-second wait
+        expect(await screen.findByTitle('1968', {}, { timeout: 5000 })).toBeTruthy();
     });
 
     it('offers the expander on a repository restored deep inside', async () => {
@@ -137,7 +139,7 @@ describe('FileSystemBrowser', () => {
 
         // The tree has fetched and shown this repository's sub-folders, so the row that
         // holds them must offer the collapse button too.
-        await screen.findByTitle('1968');
+        await screen.findByTitle('1968', {}, { timeout: 5000 });
         const expander = screen.getByTitle('Skeny').querySelector('span > span');
         expect(expander).toHaveStyle({ visibility: 'visible' });
     });

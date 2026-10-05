@@ -163,6 +163,9 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     const [itemQueueId, setItemQueueId] = useState<number>(-1);
     const [revisionActive, setRevisionActive] = useState<boolean>(revisionActiveUrl);
     const autoEnabledForEntity = useRef<number | null>(null);
+    // Set when the auto-enable effect is about to switch to the revision view,
+    // so the validation effect skips the run that still sees the old value.
+    const pendingAutoEnable = useRef(false);
 
     const detailFetched = detail.fetched;
     const detailIsFetching = detail.isFetching;
@@ -192,10 +195,13 @@ const ApDetailPageWrapper: React.FC<Props> = ({
 
         const isAssignee = currentUserId != null && loadedAssignedTo === currentUserId;
         if (detailHasRevision && isAssignee) {
+            if (!revisionActive) {
+                pendingAutoEnable.current = true;
+            }
             setRevisionActive(true);
         }
         autoEnabledForEntity.current = loadedEntityId;
-    }, [loadedEntityId, loadedAssignedTo, detailHasRevision, currentUserId, select]);
+    }, [loadedEntityId, loadedAssignedTo, detailHasRevision, currentUserId, select, revisionActive]);
 
     useEffect(() => {
         if (id) {
@@ -330,10 +336,14 @@ const ApDetailPageWrapper: React.FC<Props> = ({
 
     useEffect(() => {
         fetchViewSettings();
+        if (pendingAutoEnable.current && !revisionActive) {
+            return;
+        }
+        pendingAutoEnable.current = false;
         if (detail.fetched && detail.data) {
             refreshValidation(id, revisionActive);
         }
-    }, [id, detail]);
+    }, [id, detail, revisionActive]);
 
     // Handler defined above the useEffect that uses it to avoid a TDZ
     // ReferenceError when early returns below skip the original declaration
@@ -567,14 +577,11 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                     globalCollapsed={localGlobalCollapsed}
                     onToggleCollapsed={() => setCollapsed(!collapsed)}
                     onToggleGlobalCollapsed={() => setLocalGlobalCollapsed(!localGlobalCollapsed)}
-                    onToggleRevision={() => {
-                        setRevisionActive(!revisionActive);
-                        refreshValidation(id, !revisionActive);
-                    }}
+                    onToggleRevision={() => setRevisionActive(!revisionActive)}
                     validationErrors={validationResult?.errors}
                     validationPartErrors={validationResult?.partErrors}
                     onInvalidateDetail={() => refreshDetail(detail.data!.id, true, true, revisionActive)}
-                    onInvalidateValidation={() => refreshValidation(id, !revisionActive)}
+                    onInvalidateValidation={() => refreshValidation(id, revisionActive)}
                     onPushApToExt={onPushApToExt}
                     revisionActive={revisionActive}
                 />

@@ -1,5 +1,4 @@
 import { TreeItem, TreeItemLayout, Tree, TreeItemValue } from "@fluentui/react-components";
-import File from "./File"
 import {
     AddSquare16Regular,
     SubtractSquare16Regular,
@@ -7,6 +6,7 @@ import {
 import { useExplorerContext } from "../ExplorerContext";
 import { DaoFileFolderVO } from "api/DaoFileFolderVO";
 import { levelIcon, useNodeName } from "../levels";
+import TreeLabel from "./TreeLabel";
 
 type FolderProps = {
     folder: DaoFileFolderVO;
@@ -36,7 +36,7 @@ const Folder = ({folder, openItems, parent}: FolderProps) => {
                 expandIcon={isLast ? undefined : getExpandIcon()}
                 iconBefore={levelIcon(folder.levelType)}
             >
-                {nodeName(folder)}
+                <TreeLabel text={nodeName(folder)}/>
             </TreeItemLayout>
             <Tree>
                 {folder.childFolders?.map((item, index) =>

@@ -3,6 +3,8 @@ package cz.tacr.elza.service;
 import static cz.tacr.elza.common.string.Normalizer.normalizeLineEnds;
 
 import java.math.BigDecimal;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -88,6 +90,7 @@ import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
@@ -1532,9 +1535,60 @@ public class DescriptionItemService {
         if (descItems.size() > 1) {
             throw new SystemException("Hodnota musí být právě jedna", BaseCode.DB_INTEGRITY_PROBLEM);
         } else if (descItems.size() == 0) {
-            throw new SystemException("Hodnota neexistuje, pravděpodobně byla již smazána");
+            throw createDescItemNotFound(descItemObjectId);
         }
         return descItems.get(0);
+    }
+
+    private static final DateTimeFormatter CHANGE_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+    /**
+     * Výjimka pro hodnotu atributu, která nemá otevřenou verzi.
+     *
+     * Dohledá poslední uzavřenou verzi, aby šlo z hlášky i z logu poznat, kde
+     * hodnota byla a kdo a kdy ji smazal. Identifikátory se předávají jako text,
+     * klient by je jinak naformátoval jako čísla s oddělovačem tisíců.
+     *
+     * @param descItemObjectId identifikátor hodnoty atributu
+     * @return výjimka k vyhození
+     */
+    private ObjectNotFoundException createDescItemNotFound(int descItemObjectId) {
+        List<ArrDescItem> closedItems = descItemRepository.findClosedDescItems(descItemObjectId);
+        if (closedItems.isEmpty()) {
+            ObjectNotFoundException e = new ObjectNotFoundException(
+                    "Hodnota atributu neexistuje, descItemObjectId=" + descItemObjectId,
+                    ArrangementCode.DESC_ITEM_NOT_FOUND);
+            e.set("descItemObjectId", String.valueOf(descItemObjectId))
+                    .set("state", "unknown");
+            return e;
+        }
+
+        ArrDescItem lastItem = closedItems.get(0);
+        ArrChange deleteChange = lastItem.getDeleteChange();
+        String deletedBy = deleteChange.getUser() != null ? deleteChange.getUser().getUsername() : "system";
+        String deletedAt = deleteChange.getChangeDate()
+                .atZoneSameInstant(ZoneId.systemDefault())
+                .format(CHANGE_DATE_FORMAT);
+        String itemType = lastItem.getItemType().getName();
+
+        ObjectNotFoundException e = new ObjectNotFoundException(
+                "Hodnota atributu již byla smazána, descItemObjectId=" + descItemObjectId
+                        + ", nodeId=" + lastItem.getNodeId()
+                        + ", itemType=" + lastItem.getItemType().getCode()
+                        + ", deleteChangeId=" + deleteChange.getChangeId()
+                        + " (" + deleteChange.getType() + ", " + deletedAt + ", " + deletedBy + ")",
+                ArrangementCode.DESC_ITEM_NOT_FOUND);
+        e.set("descItemObjectId", String.valueOf(descItemObjectId))
+                .set("state", "deleted")
+                .set("nodeId", String.valueOf(lastItem.getNodeId()))
+                .set("fundId", String.valueOf(lastItem.getNode().getFundId()))
+                .set("itemType", itemType)
+                .set("deleteChangeId", String.valueOf(deleteChange.getChangeId()))
+                .set("deleteChangeType", String.valueOf(deleteChange.getType()))
+                .set("deletedAt", deletedAt)
+                .set("deletedBy", deletedBy);
+        e.level(Level.WARNING);
+        return e;
     }
 
 	/**

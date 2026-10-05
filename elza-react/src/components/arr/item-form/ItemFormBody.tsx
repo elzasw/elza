@@ -33,6 +33,10 @@ interface Props {
   isFirstNode?: boolean;
   handleCopyFromPrev?: (descItemTypeId: number) => void;
   handleCopyToggle?: (descItemTypeId: number) => void;
+  handleCopyValues?: (descItemTypeId: number, append: boolean) => void;
+  handlePasteValues?: (descItemTypeId: number) => void;
+  /** Types whose paste button is shown: those the item clipboard holds values for. */
+  pastableTypeIds?: number[];
   getOpenInDataGridHref?: (descItemTypeId: number) => string;
   onOpenInDataGrid?: (descItemTypeId: number) => void;
   hideCopyButtons?: boolean;
@@ -72,6 +76,9 @@ export function ItemFormBody({
   isFirstNode = true,
   handleCopyFromPrev = noop,
   handleCopyToggle = noop,
+  handleCopyValues,
+  handlePasteValues,
+  pastableTypeIds,
   getOpenInDataGridHref,
   onOpenInDataGrid,
   hideCopyButtons,
@@ -121,6 +128,9 @@ export function ItemFormBody({
               isFirstNode={isFirstNode}
               handleCopyFromPrev={handleCopyFromPrev}
               handleCopyToggle={handleCopyToggle}
+              handleCopyValues={handleCopyValues}
+              handlePasteValues={handlePasteValues}
+              pastableTypeIds={pastableTypeIds}
               getOpenInDataGridHref={getOpenInDataGridHref}
               onOpenInDataGrid={onOpenInDataGrid}
               addEmptyDescItem={addEmptyDescItem}

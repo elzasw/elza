@@ -14,6 +14,8 @@ export const messages = defineMessages({
     ingestionCode:    { id: "aip.col.ingestionCode",    defaultMessage: "Číslo přejímky" },
     referenceNumber:  { id: "aip.col.referenceNumber",  defaultMessage: "Číslo jednací" },
     nadChangeCode:    { id: "aip.col.nadChangeCode",    defaultMessage: "Vnější změna" },
+    contentType:      { id: "aip.col.contentType",      defaultMessage: "Typ obsahu" },
+    profile:          { id: "aip.col.profile",          defaultMessage: "Profil" },
     aipSize:          { id: "aip.col.aipSize",          defaultMessage: "Velikost" },
     metadataLoad:     { id: "aip.col.metadataLoad",     defaultMessage: "Načtená metadata" },
     importState:      { id: "aip.col.importState",      defaultMessage: "Stav importu" },
@@ -91,7 +93,6 @@ export const listMessages = defineMessages({
  */
 export const explorerMessages = defineMessages({
     treeLabel:       { id: "aip.explorer.tree.label",       defaultMessage: "Průzkumník" },
-    title:           { id: "aip.explorer.title",            defaultMessage: "AIP Průzkumník" },
     colName:         { id: "aip.explorer.col.name",         defaultMessage: "Název" },
     colSize:         { id: "aip.explorer.col.size",         defaultMessage: "Velikost" },
     colFormat:       { id: "aip.explorer.col.format",       defaultMessage: "Formát" },
@@ -124,6 +125,7 @@ export const explorerPageMessages = defineMessages({
     packageTab:    { id: "aip.explorer.tab.package",   defaultMessage: "Balíček" },
     structureTab:  { id: "aip.explorer.tab.structure", defaultMessage: "Struktura" },
     filesTab:      { id: "aip.explorer.tab.files",     defaultMessage: "Soubory" },
+    connectTab:    { id: "aip.explorer.tab.connect",   defaultMessage: "Připojení k popisu" },
 });
 
 /**

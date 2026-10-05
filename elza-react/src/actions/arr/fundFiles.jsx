@@ -127,7 +127,7 @@ export function fundFilesUpdate(fundId, fileId, data, callback = null) {
         formData.append('fundId', fundId);
         formData.append(JAVA_ATTR_CLASS, '.ArrFileVO');
 
-        savingApiWrapper(
+        return savingApiWrapper(
             dispatch,
             WebApi.updateFundFileRaw(fileId, formData).then(json => {
                 return callback && callback(json);

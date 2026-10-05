@@ -1,6 +1,7 @@
 package cz.tacr.elza.core;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -137,6 +138,7 @@ public class UserPermissionTest extends AbstractTest {
         user.setAccessPoint(accessPoint);
         user.setUsername(userName);
         user.setActive(true);
+        user.setCreatedAt(OffsetDateTime.now());
         return userRepository.save(user);
     }
 

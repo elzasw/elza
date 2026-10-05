@@ -27,7 +27,7 @@ const AipPage: FC = () => {
     }, [match.params.id]);
 
     return (
-        <div>
+        <div className="aip-page">
             <AipPageRibbon />
             <AipTable detailOpen={detailOpen} setDetailOpen={setDetailOpen}/>
         </div>

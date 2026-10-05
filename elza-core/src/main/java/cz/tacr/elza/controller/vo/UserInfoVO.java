@@ -22,6 +22,16 @@ public class UserInfoVO extends UsrUserVO {
     private Collection<UISettingsVO> settings;
 
     /**
+     * The user must change the password before continuing.
+     */
+    private boolean needChangePassword;
+
+    /**
+     * Password rules for client-side validation of a new password.
+     */
+    private PasswordPolicyVO passwordPolicy;
+
+    /**
      * Default empty constructor for deserialization
      */
     public UserInfoVO() {
@@ -31,7 +41,24 @@ public class UserInfoVO extends UsrUserVO {
     protected UserInfoVO(final String preferredName, final UserDetail userDetail) {
 		super(userDetail);
 		this.preferredName = preferredName;
+		this.needChangePassword = userDetail.isNeedChangePassword();
 	}
+
+    public boolean isNeedChangePassword() {
+        return needChangePassword;
+    }
+
+    public void setNeedChangePassword(final boolean needChangePassword) {
+        this.needChangePassword = needChangePassword;
+    }
+
+    public PasswordPolicyVO getPasswordPolicy() {
+        return passwordPolicy;
+    }
+
+    public void setPasswordPolicy(final PasswordPolicyVO passwordPolicy) {
+        this.passwordPolicy = passwordPolicy;
+    }
 
 	public String getPreferredName() {
 		return preferredName;

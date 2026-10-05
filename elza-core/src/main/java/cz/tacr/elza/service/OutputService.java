@@ -2,7 +2,6 @@ package cz.tacr.elza.service;
 
 import static cz.tacr.elza.domain.RulItemType.Type.RECOMMENDED;
 import static cz.tacr.elza.domain.RulItemType.Type.REQUIRED;
-import static cz.tacr.elza.repository.ExceptionThrow.ap;
 import static cz.tacr.elza.repository.ExceptionThrow.output;
 import static cz.tacr.elza.repository.ExceptionThrow.outputFilter;
 import static cz.tacr.elza.repository.ExceptionThrow.outputType;
@@ -38,7 +37,6 @@ import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.Result;
 import cz.tacr.elza.common.db.HibernateUtils;
-import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ArrOutputRestrictionScopeVO;
 import cz.tacr.elza.controller.vo.ArrOutputTemplateVO;
 import cz.tacr.elza.controller.vo.BulkActionRunVO;
@@ -50,7 +48,6 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.core.security.AuthParam.Type;
-import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
@@ -84,7 +81,6 @@ import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.OutputCode;
 import cz.tacr.elza.repository.ActionRecommendedRepository;
-import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemSettingsRepository;
@@ -177,9 +173,6 @@ public class OutputService {
 
     @Autowired
     private ScopeRepository scopeRepository;
-
-    @Autowired
-    private ApAccessPointRepository apAccessPointRepository;
 
     @Autowired
     private OutputFilterRepository outputFilterRepository;
@@ -502,7 +495,6 @@ public class OutputService {
      * @param name název výstupu
      * @param internalCode kód výstupu
      * @param templateId id šablony
-     * @param anonymizedAp id anonymizovaného přístupového bodu
      * @return upravený výstup
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN,
@@ -512,7 +504,6 @@ public class OutputService {
                                        final String name,
                                        final String internalCode,
                                        final Integer templateId,
-                                       final ApAccessPointVO anonymizedAp,
                                        final Integer outputFilterId) {
         Assert.notNull(fundVersion, "Verze AS musí být vyplněna");
         Assert.notNull(output, "Výstup musí být vyplněn");
@@ -537,14 +528,6 @@ public class OutputService {
             //output.setTemplate(templateRepository.findById(templateId).orElseThrow(template(templateId)));
         } else {
             //output.setTemplate(null);
-        }
-
-        if (anonymizedAp != null) {
-            ApAccessPoint accessPoint = apAccessPointRepository.findById(anonymizedAp.getId())
-                    .orElseThrow(ap(anonymizedAp.getId()));
-            output.setAnonymizedAp(accessPoint);
-        } else {
-            output.setAnonymizedAp(null);
         }
 
         if (outputFilterId != null) {

@@ -10,6 +10,24 @@ const messages = defineMessages({
 });
 import {consolidateState} from 'components/Utils';
 
+/**
+ * Celý strom načtený i s vybranými uzly, které v něm server nenašel (uzel mezitím smazán):
+ * výběr se jich vzdá. Jinak by je fundTreeFetchIfNeeded žádal pořád dokola - server neznámé
+ * uzly tiše vynechá, takže nikdy nejsou "ve stromu".
+ */
+function dropMissingSelection(state, includeIds) {
+    const missing = (includeIds || []).filter(id => indexById(state.nodes, id) === null);
+    if (missing.length === 0) {
+        return state;
+    }
+    if (state.multipleSelection) {
+        const selectedIds = {...state.selectedIds};
+        missing.forEach(id => delete selectedIds[id]);
+        return {...state, selectedIds};
+    }
+    return missing.some(id => id == state.selectedId) ? {...state, selectedId: null} : state;
+}
+
 const initialState = {
     selectedId: null,
     selectedIds: {},
@@ -518,7 +536,7 @@ export default function fundTree(state = initialState, action = {}) {
                 action.expandedIdsExtension.forEach(id => {
                     result.expandedIds[id] = true;
                 });
-                return result;
+                return dropMissingSelection(result, action.includeIds);
             }
 
         case types.CHANGE_MOVE_LEVEL:

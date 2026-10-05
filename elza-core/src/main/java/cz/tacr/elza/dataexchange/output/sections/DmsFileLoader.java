@@ -5,7 +5,7 @@ import jakarta.persistence.EntityManager;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.dataexchange.output.loaders.AbstractEntityLoader;
 import cz.tacr.elza.domain.DmsFile;
-import cz.tacr.elza.service.DmsService;
+import cz.tacr.elza.service.dms.DmsService;
 
 public class DmsFileLoader
         extends AbstractEntityLoader<DmsFileInfoImpl, DmsFile> {

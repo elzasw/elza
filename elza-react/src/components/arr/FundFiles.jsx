@@ -21,6 +21,7 @@ import {UrlFactory} from 'actions/index.jsx';
 import './FundFiles.scss';
 import {downloadFile} from '../../actions/global/download';
 import EditableFileForm from './EditableFileForm';
+import {RenameFileForm} from './RenameFileForm';
 import {WebApi} from '../../actions/WebApi';
 import {showAsyncWaiting} from '../../actions/global/modalDialog';
 import TooltipTrigger from '../shared/tooltip/TooltipTrigger';
@@ -147,6 +148,20 @@ class FundFiles extends AbstractReactComponent {
         );
     };
 
+    handleRename = (id, item) => {
+        const {fundId} = this.props;
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                this.props.intl.formatMessage(fundFormMessages.dmsFileTitleRename),
+                <RenameFileForm
+                    initialValues={{name: item.name}}
+                    onSubmit={({name}) => this.props.dispatch(fundFilesUpdate(fundId, id, {name}))}
+                />,
+            ),
+        );
+    };
+
     handleDownload = id => {
         this.props.dispatch(downloadFile(UrlFactory.downloadDmsFile(id)));
     };
@@ -241,6 +256,7 @@ class FundFiles extends AbstractReactComponent {
                             onSearch={this.handleTextSearch}
                             onDownload={this.handleDownload}
                             onReplace={this.handleReplace}
+                            onRename={this.handleRename}
                             onDelete={this.handleDelete}
                             onEdit={this.handleEdit}
                             supportEdit={(id, item) => item.editable}

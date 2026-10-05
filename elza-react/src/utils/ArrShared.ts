@@ -134,9 +134,10 @@ export const processNodeNavigation = (nodeInfo: NodeInfo, versionId: number | nu
                         siblingsMaxCount: 0,
                         nodeStatus: false,
                     });
+                    // the server lists the parents from the direct parent up to the root
                     const parents = nodeData.parents ?? [];
                     const parentNode = parents.length > 0
-                        ? parents[parents.length - 1]
+                        ? parents[0]
                         : createFundRoot(selectFund);
 
                     dispatch(fundSelectSubNode(

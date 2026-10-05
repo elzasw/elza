@@ -58,8 +58,11 @@ const ExplorerDetail: FC<{selected?: string;}> = ({selected}) => {
         fetchData()
     }, [aip.id]);
 
+    // the structure store is shared: until this package's structure arrives it holds the previous one
+    const structureOfThis = structure?.id === aip.id;
+
     useEffect(() => {
-        if(!structure?.data) return;
+        if(!structure?.data || !structureOfThis) return;
 
         if(!selectedItem) {
             setSelectedItem(structure.data);
@@ -81,7 +84,7 @@ const ExplorerDetail: FC<{selected?: string;}> = ({selected}) => {
     }, [selectedItem]);
 
     useEffect(() => {
-        if (selected && structure.data) {
+        if (selected && structure.data && structureOfThis) {
             const result = findNodeByUUID(structure.data, selected);
             if (result && result.node) {
                 setSelectedItem(result.node);

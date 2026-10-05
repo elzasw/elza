@@ -935,6 +935,42 @@
     "defaultMessage": "Package import",
     "srcHash": "VEr6BP5UcCdM"
   },
+  "admin.passwordPolicy.expiryDays": {
+    "defaultMessage": "Password validity (days)",
+    "srcHash": "lpf-RxKuEEl1"
+  },
+  "admin.passwordPolicy.expiryDaysHint": {
+    "defaultMessage": "Once validity is turned on, all users who have not changed their password for longer than the set period will have to change it.",
+    "srcHash": "YgGPloRUWEFP"
+  },
+  "admin.passwordPolicy.info": {
+    "defaultMessage": "An empty value or 0 means no limit.",
+    "srcHash": "DaftcWuE7VHH"
+  },
+  "admin.passwordPolicy.invalidNumber": {
+    "defaultMessage": "Enter a whole number from 0 to {max}.",
+    "srcHash": "2dFa73JaO3g6"
+  },
+  "admin.passwordPolicy.minCharGroups": {
+    "defaultMessage": "Minimum number of character groups (0–{max})",
+    "srcHash": "vbHC3vmzEgVn"
+  },
+  "admin.passwordPolicy.minCharGroupsHint": {
+    "defaultMessage": "Groups: lowercase letters, uppercase letters, digits, other characters.",
+    "srcHash": "SNZWZIrfbXSw"
+  },
+  "admin.passwordPolicy.minLength": {
+    "defaultMessage": "Minimum password length",
+    "srcHash": "KT07PUQEx352"
+  },
+  "admin.passwordPolicy.saved": {
+    "defaultMessage": "Password rules have been saved",
+    "srcHash": "PXtlHYcYVr91"
+  },
+  "admin.passwordPolicy.title": {
+    "defaultMessage": "Password rules",
+    "srcHash": "aVJftnn0ByBq"
+  },
   "admin.perm.advanced.control.entity.add.title": {
     "defaultMessage": "Add users and groups",
     "srcHash": "SX5QLFdMFRM1"
@@ -1222,6 +1258,18 @@
   "admin.user.password": {
     "defaultMessage": "Password",
     "srcHash": "pSKy5YhV1Jvy"
+  },
+  "admin.user.password.changeRequired": {
+    "defaultMessage": "Require a password change at next login",
+    "srcHash": "wLprZ87CtHAh"
+  },
+  "admin.user.password.forcedInfo": {
+    "defaultMessage": "Your password has expired. Set a new password to continue.",
+    "srcHash": "obGljoeTXNG_"
+  },
+  "admin.user.password.neverExpire": {
+    "defaultMessage": "Password never expires",
+    "srcHash": "FSUFGSoQqaXv"
   },
   "admin.user.passwordAgain": {
     "defaultMessage": "Repeat password",
@@ -1877,6 +1925,10 @@
     "defaultMessage": "Complete AIP loaded",
     "srcHash": "fagm5bQf_w7v"
   },
+  "aip.col.contentType": {
+    "defaultMessage": "Content type",
+    "srcHash": "6zvdoABI4nl8"
+  },
   "aip.col.exportState": {
     "defaultMessage": "Export state",
     "srcHash": "Z6AadsdMdPep"
@@ -1924,6 +1976,10 @@
   "aip.col.problemType": {
     "defaultMessage": "Problem",
     "srcHash": "WdRzqC9KeHRa"
+  },
+  "aip.col.profile": {
+    "defaultMessage": "Profile",
+    "srcHash": "4mfTQ4IfJk5h"
   },
   "aip.col.referenceNumber": {
     "defaultMessage": "Reference number",
@@ -2016,30 +2072,6 @@
   "aip.detail.aipVersionMetadata": {
     "defaultMessage": "Version with loaded metadata",
     "srcHash": "cb4Tq2NMj0fN"
-  },
-  "aip.detail.assignment.description": {
-    "defaultMessage": "Description",
-    "srcHash": "rx7qx-MBKenQ"
-  },
-  "aip.detail.assignment.name": {
-    "defaultMessage": "Name",
-    "srcHash": "EQAs0dy3Z5es"
-  },
-  "aip.detail.assignment.packages": {
-    "defaultMessage": "List of packages",
-    "srcHash": "-l7nwELYSQi7"
-  },
-  "aip.detail.assignment.packagesNo": {
-    "defaultMessage": "Number of packages",
-    "srcHash": "EZSVMiCUEUKJ"
-  },
-  "aip.detail.assignment.relatedAip": {
-    "defaultMessage": "Related AIP",
-    "srcHash": "bkighM6Jb80L"
-  },
-  "aip.detail.assignment.relatedAips": {
-    "defaultMessage": "Related AIPs",
-    "srcHash": "ryLU5OVsgNKL"
   },
   "aip.detail.downloadPackage": {
     "defaultMessage": "Download package",
@@ -2149,6 +2181,10 @@
     "defaultMessage": "Select all",
     "srcHash": "tzdoYdlGzv8D"
   },
+  "aip.explorer.tab.connect": {
+    "defaultMessage": "Connect to description",
+    "srcHash": "TBMX7pEzsvq5"
+  },
   "aip.explorer.tab.files": {
     "defaultMessage": "Files",
     "srcHash": "nTEkFmNPvJ6o"
@@ -2160,10 +2196,6 @@
   "aip.explorer.tab.structure": {
     "defaultMessage": "Structure",
     "srcHash": "zYUhA8KwsL8v"
-  },
-  "aip.explorer.title": {
-    "defaultMessage": "AIP explorer",
-    "srcHash": "I-2shepkwVQC"
   },
   "aip.explorer.tree.label": {
     "defaultMessage": "Explorer",
@@ -3257,45 +3289,225 @@
     "defaultMessage": "Application build version: {version}",
     "srcHash": "OeYvnUZYVjUy"
   },
+  "arr.aip.actions.connectOne.disabled": {
+    "defaultMessage": "Select exactly one package in the list",
+    "srcHash": "jYdeBN6Nv8Iv"
+  },
+  "arr.aip.actions.connectOne.hint": {
+    "defaultMessage": "Connect one package or its selected parts",
+    "srcHash": "GdCMTsxo4cG-"
+  },
+  "arr.aip.actions.connectSelected": {
+    "defaultMessage": "Connect selected ({count})",
+    "srcHash": "8jnptXHSdKI5"
+  },
+  "arr.aip.actions.connectSelected.hint": {
+    "defaultMessage": "Connect the selected packages to the archival description or import their description",
+    "srcHash": "YsfLnxj7mpXj"
+  },
+  "arr.aip.actions.connectShown": {
+    "defaultMessage": "Connect shown ({count})",
+    "srcHash": "jIqR_a-_6-x2"
+  },
+  "arr.aip.actions.connectShown.hint": {
+    "defaultMessage": "Nothing is selected - connect the packages shown on this page of the list",
+    "srcHash": "l_RhTHm9LhGd"
+  },
+  "arr.aip.actions.connectWhole": {
+    "defaultMessage": "Connect whole to unit…",
+    "srcHash": "lLnzla7GomVv"
+  },
+  "arr.aip.actions.connectWhole.hint": {
+    "defaultMessage": "Quickly connect {count, plural, one {# package} other {# packages}} whole to the unit of description chosen in a dialog - without browsing their structure",
+    "srcHash": "Hxw7rMhGwNBK"
+  },
+  "arr.aip.actions.connectWhole.skipped": {
+    "defaultMessage": "{count, plural, one {# package is already connected and is skipped} other {# packages are already connected and are skipped}}",
+    "srcHash": "13Imzik6LNIv"
+  },
+  "arr.aip.actions.connectWhole.title": {
+    "defaultMessage": "Connect {count, plural, one {# package} other {# packages}} whole to a unit of description",
+    "srcHash": "BvNBJAeQFjfq"
+  },
+  "arr.aip.assignment.allLinked": {
+    "defaultMessage": "All packages are fully connected.",
+    "srcHash": "dDky3iC0O52C"
+  },
   "arr.aip.assignment.bulk": {
     "defaultMessage": "Link in bulk",
     "srcHash": "ZuJohRiCpnY6"
   },
-  "arr.aip.assignment.bulk.title": {
-    "defaultMessage": "Bulk linking of a package to the archival description",
-    "srcHash": "c4kvrLqKymwy"
+  "arr.aip.assignment.chooseMode": {
+    "defaultMessage": "Choose what to connect.",
+    "srcHash": "AyRX9WhWLKQc"
   },
-  "arr.aip.assignment.create": {
-    "defaultMessage": "Create description units from the selected ones",
-    "srcHash": "gp63O4KTbclU"
+  "arr.aip.assignment.connect": {
+    "defaultMessage": "Connect",
+    "srcHash": "8xxt79Dio94K"
   },
-  "arr.aip.assignment.create-and-link": {
-    "defaultMessage": "Create description units with a link",
-    "srcHash": "rcMZ18W8oSsR"
+  "arr.aip.assignment.fileplanAsRoot": {
+    "defaultMessage": "File plan as the root series",
+    "srcHash": "gaQcl8F7wtYN"
+  },
+  "arr.aip.assignment.hidePackages": {
+    "defaultMessage": "Hide packages",
+    "srcHash": "K04kAx_YFQZO"
   },
   "arr.aip.assignment.individually": {
     "defaultMessage": "Link individually",
     "srcHash": "5747DsAcQWRE"
   },
-  "arr.aip.assignment.individually.title": {
-    "defaultMessage": "Linking a package to the archival description",
-    "srcHash": "Vb22Cg92eMNb"
+  "arr.aip.assignment.loading": {
+    "defaultMessage": "Loading packages…",
+    "srcHash": "4w39zPvO4Rf6"
   },
-  "arr.aip.assignment.link": {
-    "defaultMessage": "Link to a description unit",
-    "srcHash": "NYGXBdMDTXi-"
+  "arr.aip.assignment.mode.level": {
+    "defaultMessage": "The selected level “{level}”",
+    "srcHash": "UdAc4MSQKixk"
   },
-  "arr.aip.assignment.part.confirm": {
-    "defaultMessage": "Do you really want to link only the selected part? With this option the related parts of the package will not be linked.",
-    "srcHash": "E1EktVUIcpnH"
+  "arr.aip.assignment.mode.level.hint": {
+    "defaultMessage": "Connects the selected level of the packages to the selected unit of description; the lower levels are connected with it.",
+    "srcHash": "dR8X0Ui2uHno"
   },
-  "arr.aip.assignment.select-and-create": {
-    "defaultMessage": "Selective linking with a description unit",
-    "srcHash": "-Ejl0u_vM2bg"
+  "arr.aip.assignment.mode.structure": {
+    "defaultMessage": "Import structure and description",
+    "srcHash": "4mpvga0lWKcj"
+  },
+  "arr.aip.assignment.mode.structure.hint": {
+    "defaultMessage": "Creates the levels below the selected level down to the documents, with description items from the packages, and attaches the files to them.",
+    "srcHash": "Wt-mTKSjai3r"
+  },
+  "arr.aip.assignment.mode.sublevels": {
+    "defaultMessage": "Levels below the selected level",
+    "srcHash": "ZVTDOiwglhMZ"
+  },
+  "arr.aip.assignment.mode.sublevels.hint": {
+    "defaultMessage": "For each level directly below the selected level creates a sublevel under the selected unit of description and attaches its part of the packages to it.",
+    "srcHash": "ll_V7y-srDS7"
+  },
+  "arr.aip.assignment.mode.whole": {
+    "defaultMessage": "Whole packages ({count})",
+    "srcHash": "KcZL0MwPJh-S"
+  },
+  "arr.aip.assignment.mode.whole.hint": {
+    "defaultMessage": "Connects the whole packages to the selected unit of description, regardless of their structure.",
+    "srcHash": "UEiLclgbmjGb"
+  },
+  "arr.aip.assignment.needsLevel": {
+    "defaultMessage": "Select a level below the root in the structure - the root means the whole packages.",
+    "srcHash": "V50aKG2mzOGM"
+  },
+  "arr.aip.assignment.noPackages": {
+    "defaultMessage": "None of the requested packages was found.",
+    "srcHash": "he4hUb0YbnEg"
+  },
+  "arr.aip.assignment.readOnly": {
+    "defaultMessage": "The fund is read-only (read mode or a closed version) - nothing can be connected.",
+    "srcHash": "uF8UHbfei85x"
+  },
+  "arr.aip.assignment.selectedCount": {
+    "defaultMessage": "{count, plural, one {# package selected} other {# packages selected}}",
+    "srcHash": "7er4i4NHhkjP"
+  },
+  "arr.aip.assignment.showPackages": {
+    "defaultMessage": "Show packages of the selected level",
+    "srcHash": "5Mod0QCV9q_l"
+  },
+  "arr.aip.assignment.source": {
+    "defaultMessage": "Source - logical structure of the packages",
+    "srcHash": "A-PVCvILVEr-"
+  },
+  "arr.aip.assignment.summary": {
+    "defaultMessage": "{count, plural, one {# package} other {# packages}} → “{target}”",
+    "srcHash": "ci3RH8VrsVzM"
+  },
+  "arr.aip.assignment.target": {
+    "defaultMessage": "Target - archival fund",
+    "srcHash": "0i4WzlWXG1ng"
+  },
+  "arr.aip.assignment.what": {
+    "defaultMessage": "What to connect",
+    "srcHash": "strvxu5kogE4"
   },
   "arr.aip.dao.link.delete": {
     "defaultMessage": "Do you really want to delete this link?",
     "srcHash": "swdNg_7H1jt3"
+  },
+  "arr.aip.parts.files": {
+    "defaultMessage": "{count, plural, one {# file} other {# files}}",
+    "srcHash": "Kh_ocu4Is_VP"
+  },
+  "arr.aip.parts.linkedFiles": {
+    "defaultMessage": "{count} connected",
+    "srcHash": "VDQv_1JCuimS"
+  },
+  "arr.aip.parts.linkedTo": {
+    "defaultMessage": "Connected to: {nodes}",
+    "srcHash": "JhggxWUJDck9"
+  },
+  "arr.aip.parts.tree": {
+    "defaultMessage": "Package structure",
+    "srcHash": "xhaHnyuVOnv1"
+  },
+  "arr.aip.single.connected": {
+    "defaultMessage": "Connected",
+    "srcHash": "YFN9pQfS-Fvk"
+  },
+  "arr.aip.single.linkedFiles": {
+    "defaultMessage": "{linked} of {count, plural, one {# file} other {# files}} connected",
+    "srcHash": "LdPIt3yWCCta"
+  },
+  "arr.aip.single.mode.newLevels": {
+    "defaultMessage": "Selected parts, each into a new unit",
+    "srcHash": "OzHSY9nkHZzv"
+  },
+  "arr.aip.single.mode.newLevels.hint": {
+    "defaultMessage": "For each selected part creates a new unit of description under the selected unit and attaches the part to it.",
+    "srcHash": "FUPP6oDbR_gK"
+  },
+  "arr.aip.single.mode.parts": {
+    "defaultMessage": "Selected parts ({count})",
+    "srcHash": "Hh0W194jys8w"
+  },
+  "arr.aip.single.mode.parts.hint": {
+    "defaultMessage": "Connects the selected parts to the selected unit of description, each with its lower parts.",
+    "srcHash": "k-uWitFoHA0P"
+  },
+  "arr.aip.single.mode.whole": {
+    "defaultMessage": "Whole package",
+    "srcHash": "XUw5g1Y07qUR"
+  },
+  "arr.aip.single.mode.whole.hint": {
+    "defaultMessage": "Connects the whole package to the selected unit of description.",
+    "srcHash": "Cqj3-h_JuWc2"
+  },
+  "arr.aip.single.needsLevel": {
+    "defaultMessage": "Select one level of the logical structure, or nothing - the whole package is used then.",
+    "srcHash": "z5mtfcmJX5bO"
+  },
+  "arr.aip.single.needsParts": {
+    "defaultMessage": "Select one or more parts in the package structure.",
+    "srcHash": "LM-Fe6zaxVKJ"
+  },
+  "arr.aip.single.noTarget": {
+    "defaultMessage": "Select the unit of description in the tree to connect to.",
+    "srcHash": "78WgTenaMaUQ"
+  },
+  "arr.aip.single.selected": {
+    "defaultMessage": "{count, plural, =0 {nothing selected} one {# part selected} other {# parts selected}}",
+    "srcHash": "Oyukfa8Y3t0F"
+  },
+  "arr.aip.single.showFiles": {
+    "defaultMessage": "Show files",
+    "srcHash": "VaAdkP9YQMeL"
+  },
+  "arr.aip.single.source": {
+    "defaultMessage": "Source - package structure",
+    "srcHash": "xR_aBIPaEV3S"
+  },
+  "arr.aip.single.withoutLower": {
+    "defaultMessage": "without lower parts",
+    "srcHash": "xiJOWLohP7rY"
   },
   "arr.daos.createUnderAndLink": {
     "defaultMessage": "Create a child description unit",
@@ -4497,6 +4709,10 @@
     "defaultMessage": "description unit synchronised",
     "srcHash": "ThBWrM25nlBX"
   },
+  "arr.history.change.title.UPDATE_ATTACHMENT": {
+    "defaultMessage": "file replaced",
+    "srcHash": "e1DHTPkTn3oS"
+  },
   "arr.history.change.title.UPDATE_DESC_ITEM": {
     "defaultMessage": "attribute changed",
     "srcHash": "O31CHv0m-8iM"
@@ -4649,6 +4865,78 @@
     "defaultMessage": "Move under",
     "srcHash": "paht2ztI_r9g"
   },
+  "arr.node.clipboard.clear": {
+    "defaultMessage": "Clear all",
+    "srcHash": "Vl9AQsGr0D2L"
+  },
+  "arr.node.clipboard.copied": {
+    "defaultMessage": "{count, plural, one {# value copied} other {# values copied}}",
+    "srcHash": "W9XL2DTF_AnA"
+  },
+  "arr.node.clipboard.copyFailed": {
+    "defaultMessage": "The values could not be copied",
+    "srcHash": "dnvUJejOXt_B"
+  },
+  "arr.node.clipboard.duplicates": {
+    "defaultMessage": "{count, plural, one {# value is already in the description unit} other {# values are already in the description unit}}",
+    "srcHash": "6BEoENASj0I5"
+  },
+  "arr.node.clipboard.pasteFailed": {
+    "defaultMessage": "The values could not be pasted",
+    "srcHash": "lWA0_H9Za6dK"
+  },
+  "arr.node.clipboard.pasted": {
+    "defaultMessage": "{count, plural, one {# value pasted} other {# values pasted}}",
+    "srcHash": "tlIHW7BcRKtq"
+  },
+  "arr.node.clipboard.removeItem": {
+    "defaultMessage": "Remove from the copied values",
+    "srcHash": "7Rv_kNuDnFad"
+  },
+  "arr.node.clipboard.reportLine": {
+    "defaultMessage": "{label}: {reason}",
+    "srcHash": "8pn83_RU0qx0"
+  },
+  "arr.node.clipboard.skip.calculated": {
+    "defaultMessage": "not pasted, the element is calculated automatically",
+    "srcHash": "xIQ9jpXUvgIB"
+  },
+  "arr.node.clipboard.skip.notRepeatable": {
+    "defaultMessage": "not pasted, the element does not allow multiple values",
+    "srcHash": "dz1_qq6BxRoP"
+  },
+  "arr.node.clipboard.skip.notUndefinable": {
+    "defaultMessage": "not pasted, the element does not allow an exception",
+    "srcHash": "9i7Zwr2aMpmj"
+  },
+  "arr.node.clipboard.skip.otherFund": {
+    "defaultMessage": "not pasted, it refers to another archival fund",
+    "srcHash": "NqzDB3iy3D2r"
+  },
+  "arr.node.clipboard.skip.specExists": {
+    "defaultMessage": "not pasted, the description unit already has a value with this specification",
+    "srcHash": "T-N-QMnFkIb6"
+  },
+  "arr.node.clipboard.skip.undefinedNextToValue": {
+    "defaultMessage": "not pasted, an exception cannot be added to an existing value",
+    "srcHash": "Bj5KbUFu-yHX"
+  },
+  "arr.node.clipboard.skip.wouldRewriteUndefined": {
+    "defaultMessage": "not pasted, the value would overwrite the exception",
+    "srcHash": "pTC5gEVHU-II"
+  },
+  "arr.node.clipboard.tableRows": {
+    "defaultMessage": "{count, plural, one {Table, # row} other {Table, # rows}}",
+    "srcHash": "-y02TudfroCO"
+  },
+  "arr.node.clipboard.total": {
+    "defaultMessage": "{count, plural, one {# value copied in total} other {# values copied in total}}",
+    "srcHash": "MzOEspIWhchv"
+  },
+  "arr.node.clipboard.truncated": {
+    "defaultMessage": "pasted, shortened to {max} characters",
+    "srcHash": "VompMTL1MvJ3"
+  },
   "arr.node.noSelection.message": {
     "defaultMessage": "Please select a description unit.",
     "srcHash": "0MIfoFZISEWg"
@@ -4681,6 +4969,10 @@
     "defaultMessage": "Not validated",
     "srcHash": "CRpyd7Uf7COx"
   },
+  "arr.node.toolbar.copyValues": {
+    "defaultMessage": "Copy all values of the description unit to paste them into another description unit",
+    "srcHash": "X-1ggIwzML2k"
+  },
   "arr.node.toolbar.main": {
     "defaultMessage": "Description unit tools",
     "srcHash": "eRupQFNBwf1a"
@@ -4688,6 +4980,10 @@
   "arr.node.toolbar.moreItems": {
     "defaultMessage": "More items",
     "srcHash": "lL_Y3GPHYQCU"
+  },
+  "arr.node.toolbar.pasteValues": {
+    "defaultMessage": "Paste the copied values into the description unit",
+    "srcHash": "sQw_ErfsZ83B"
   },
   "arr.node.toolbar.viewSettings": {
     "defaultMessage": "Display settings",
@@ -5809,9 +6105,17 @@
     "defaultMessage": "Not filled in",
     "srcHash": "S4Fu2fAtjgYM"
   },
+  "descItemType.action.copyValues": {
+    "defaultMessage": "Copy the description element values to paste them into another description unit (Ctrl+click adds them to the values already copied)",
+    "srcHash": "iyDKK7Ybb4aI"
+  },
   "descItemType.action.openInDataGrid": {
     "defaultMessage": "Show in table",
     "srcHash": "7jwQD-SqGXED"
+  },
+  "descItemType.action.pasteValues": {
+    "defaultMessage": "Paste the copied description element values",
+    "srcHash": "gvEXEdDtEprK"
   },
   "desc_item_action_allow": {
     "defaultMessage": "Allow inherited value",
@@ -5937,6 +6241,10 @@
     "defaultMessage": "Add an attachment from a file",
     "srcHash": "scUtfdhTFl6E"
   },
+  "dms.file.title.rename": {
+    "defaultMessage": "Rename the attachment",
+    "srcHash": "8AMKi7SZne0J"
+  },
   "download.allreadyDownloading": {
     "defaultMessage": "The file download request has already been sent",
     "srcHash": "e_KcjxEyNdJR"
@@ -6000,6 +6308,10 @@
   "exception.arr.DATA_NOT_FOUND": {
     "defaultMessage": "The data does not exist.",
     "srcHash": "jz8_FI-2pi7x"
+  },
+  "exception.arr.DESC_ITEM_NOT_FOUND": {
+    "defaultMessage": "{state, select, deleted {Description item \"{itemType}\" (ID {descItemObjectId}) no longer exists, it was deleted by user {deletedBy} at {deletedAt} (change {deleteChangeId}). Reload the description unit.} other {Description item (ID {descItemObjectId}) does not exist. Reload the description unit.}}",
+    "srcHash": "07iDXfN8TMDa"
   },
   "exception.arr.EXISTS_BLOCKING_CHANGE": {
     "defaultMessage": "The revert cannot be performed because a blocking change exists in the description unit",
@@ -6453,6 +6765,10 @@
     "defaultMessage": "The original password does not match",
     "srcHash": "nD5ehB9gcYOn"
   },
+  "exception.usr.PASSWORD_POLICY_VIOLATION": {
+    "defaultMessage": "{rule, select, minLength {The password must be at least {minLength, plural, one {# character} other {# characters}} long.} other {The password must contain characters from at least {minCharGroups, plural, one {# group} other {# groups}}: lowercase letters, uppercase letters, digits, other characters.}}",
+    "srcHash": "KzcHAkxsQZfv"
+  },
   "exception.usr.PERM_ILLEGAL_INPUT": {
     "defaultMessage": "Invalid permission input: {type}",
     "srcHash": "iSigoQmgIJ2n"
@@ -6460,6 +6776,10 @@
   "exception.usr.PERM_NOT_EXIST": {
     "defaultMessage": "The permission does not exist",
     "srcHash": "XO3WO2FurdpF"
+  },
+  "exception.usr.SETUP_NOT_AVAILABLE": {
+    "defaultMessage": "The initial setup has already been completed. Please log in.",
+    "srcHash": "GybOLpnMD_FQ"
   },
   "exception.usr.USERNAME_EXISTS": {
     "defaultMessage": "The username already exists",
@@ -6772,6 +7092,10 @@
   "global.action.remove": {
     "defaultMessage": "Remove",
     "srcHash": "Ofs6avvgqpQw"
+  },
+  "global.action.rename": {
+    "defaultMessage": "Rename",
+    "srcHash": "lDdbnIaYNyTV"
   },
   "global.action.replace": {
     "defaultMessage": "Replace",
@@ -7209,9 +7533,41 @@
     "defaultMessage": "The default user is enabled. Create your own user with administrator permissions and disable the default user.",
     "srcHash": "5GQb-lCsvEuv"
   },
+  "login.error.badCredentials": {
+    "defaultMessage": "Invalid user name or password.",
+    "srcHash": "lr8jIRdyw17u"
+  },
+  "login.error.setupLoginFailed": {
+    "defaultMessage": "The administrator has been created, but the login failed. Log in with the administrator's name and password.",
+    "srcHash": "WAg107eDLn_G"
+  },
+  "login.error.ssoFailed": {
+    "defaultMessage": "Sign-in with Windows authentication failed. Contact your administrator.",
+    "srcHash": "xO_L5DMfukIp"
+  },
+  "login.error.ssoNoTicket": {
+    "defaultMessage": "Windows authentication did not take place. The usual reasons: the domain sign-in has expired, the computer is not in the domain, or the browser does not allow Windows authentication for this server.",
+    "srcHash": "zD6B8c7qPgzQ"
+  },
+  "login.error.ssoSessionNotCreated": {
+    "defaultMessage": "Windows authentication succeeded, but the sign-in could not be completed. Try again, or sign in with a username and password.",
+    "srcHash": "2Qb_5AsUztZf"
+  },
+  "login.error.ssoUserInactive": {
+    "defaultMessage": "Windows authentication succeeded, but your ELZA user is not active. Contact your administrator.",
+    "srcHash": "JxtlSzaj7yV8"
+  },
+  "login.error.ssoUserNotFound": {
+    "defaultMessage": "Windows authentication succeeded, but user \"{username}\" does not exist in ELZA. Ask your administrator to create the user.",
+    "srcHash": "y7xxq-4hilXV"
+  },
   "login.error.unknown": {
     "defaultMessage": "Unknown sign-in error",
     "srcHash": "jKOti0dKdTuK"
+  },
+  "login.error.userInactive": {
+    "defaultMessage": "The user is deactivated. Contact the administrator.",
+    "srcHash": "ZiC1LCzWSbXu"
   },
   "login.field.password": {
     "defaultMessage": "Password",
@@ -7224,6 +7580,10 @@
   "login.form.title": {
     "defaultMessage": "User sign-in",
     "srcHash": "5n0yZfWzxL0-"
+  },
+  "login.state.signingIn": {
+    "defaultMessage": "Signing in…",
+    "srcHash": "A6o042dKzGEK"
   },
   "mandatoryType.impossible": {
     "defaultMessage": "Impossible",
@@ -7981,6 +8341,10 @@
     "defaultMessage": "Change password",
     "srcHash": "0iNPH3nqvHU4"
   },
+  "ribbon.action.admin.user.passwordPolicy": {
+    "defaultMessage": "Password rules",
+    "srcHash": "cmLdNbmpOQeB"
+  },
   "ribbon.action.aip": {
     "defaultMessage": "Archival packages",
     "srcHash": "j-OwZ5UftK-t"
@@ -8324,6 +8688,34 @@
   "search_funds_form_uuid": {
     "defaultMessage": "UUID",
     "srcHash": "KomLyYqvbJby"
+  },
+  "setup.wizard.create": {
+    "defaultMessage": "Create administrator",
+    "srcHash": "AvVkXy-v6QQN"
+  },
+  "setup.wizard.createFailed": {
+    "defaultMessage": "The administrator could not be created.",
+    "srcHash": "p1JTzQ2FgfDm"
+  },
+  "setup.wizard.hidePassword": {
+    "defaultMessage": "Hide password",
+    "srcHash": "86hQhgacUGGF"
+  },
+  "setup.wizard.intro": {
+    "defaultMessage": "The application has no user yet. Create the first administrator.",
+    "srcHash": "biqgG_mBrN_q"
+  },
+  "setup.wizard.showPassword": {
+    "defaultMessage": "Show password",
+    "srcHash": "pT-IPVYdHvBJ"
+  },
+  "setup.wizard.title": {
+    "defaultMessage": "Initial setup",
+    "srcHash": "SYa_AgqFglj-"
+  },
+  "setup.wizard.username": {
+    "defaultMessage": "Administrator user name",
+    "srcHash": "oex4zHFJtjSY"
   },
   "shared.maskedValue.hide": {
     "defaultMessage": "Hide",

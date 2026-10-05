@@ -45,6 +45,7 @@ const FileListBox = class FileListBox extends AbstractReactComponent {
             supportEdit,
             onDownload,
             onInfo,
+            onRename,
             readMode,
         } = this.props;
         let iconName;
@@ -97,6 +98,13 @@ const FileListBox = class FileListBox extends AbstractReactComponent {
                             title={this.props.intl.formatMessage(globalMessages.replace)}
                             glyph="fa-exchange"
                             onClick={() => onReplace(item.id)}
+                        />
+                    )}
+                    {onRename && !readMode && (
+                        <Icon
+                            title={this.props.intl.formatMessage(globalMessages.rename)}
+                            glyph="fa-pencil"
+                            onClick={() => onRename(item.id, item)}
                         />
                     )}
                     {onDelete && !readMode && (
@@ -180,6 +188,7 @@ FileListBox.propsTypes = {
     onEdit: PropTypes.func,
     onInfo: PropTypes.func,
     onDelete: PropTypes.func,
+    onRename: PropTypes.func,
     onDownloadPdf: PropTypes.func,
 
     supportEdit: PropTypes.func,

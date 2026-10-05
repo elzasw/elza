@@ -280,8 +280,25 @@ export const urlFundAb = (fundId: number, versionId?: number, aipId?: number) =>
     return fundSub(fundId, versionId, AIP, aipId);
 }
 
-export const urlFundAipExplorer = (fundId: number, aipId: number, versionId?: number) => {
-    return `${fundSub(fundId, versionId, AIP)}/${aipId}/explorer`;
+/**
+ * Průzkumník balíčku ve fondu; s tab rovnou na dané kartě (např. "connect" - připojení k popisu),
+ * se select na kartě struktury vybere část balíčku daného UUID.
+ */
+export const urlFundAipExplorer = (fundId: number, aipId: number, versionId?: number, tab?: string, select?: string) => {
+    const query = new URLSearchParams();
+    if (tab) {
+        query.set("tab", tab);
+    }
+    if (select) {
+        query.set("select", select);
+    }
+    const search = query.toString();
+    return `${fundSub(fundId, versionId, AIP)}/${aipId}/explorer${search ? "?" + search : ""}`;
+}
+
+/** Hromadné připojení balíčků k popisu fondu; balíčky nese adresa, aby stránka přežila znovunačtení. */
+export const urlFundAipConnect = (fundId: number, aipIds: number[], versionId?: number) => {
+    return `${fundSub(fundId, versionId, AIP)}/connect?aips=${aipIds.join(",")}`;
 }
 
 export const urlFundPublication = (fundId: number, versionId?: number) => {

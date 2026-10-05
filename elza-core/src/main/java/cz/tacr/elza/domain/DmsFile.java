@@ -1,6 +1,7 @@
 package cz.tacr.elza.domain;
 
 import java.io.File;
+import java.time.OffsetDateTime;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -52,6 +53,15 @@ public class DmsFile {
 
     @Column
     private Integer pagesCount;
+
+    @Column(nullable = false)
+    private OffsetDateTime createdAt;
+
+    @Column(length = 255)
+    private String storagePath;
+
+    @Column(length = 64)
+    private String checksum;
 
     @Transient
     private File file;
@@ -139,6 +149,40 @@ public class DmsFile {
      */
     public void setPagesCount(final Integer pagesCount) {
         this.pagesCount = pagesCount;
+    }
+
+    /**
+     * @return okamžik vytvoření souboru; zdroj pro rrrr/MM ve storagePath
+     */
+    public OffsetDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(final OffsetDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    /**
+     * @return relativní cesta pod dms/ (např. 2026/09/000051/51230.pdf);
+     *         NULL znamená staré ploché uložení dms/&lt;file_id&gt;
+     */
+    public String getStoragePath() {
+        return storagePath;
+    }
+
+    public void setStoragePath(final String storagePath) {
+        this.storagePath = storagePath;
+    }
+
+    /**
+     * @return SHA-256 obsahu v hex; NULL u legacy řádků do doplnění kontrolou konzistence
+     */
+    public String getChecksum() {
+        return checksum;
+    }
+
+    public void setChecksum(final String checksum) {
+        this.checksum = checksum;
     }
 
     @Override

@@ -46,7 +46,7 @@ public interface UserRepository extends ElzaJpaRepository<UsrUser, Integer>, Use
 	 * @param userId	User to be fetched from DB
 	 * @return
 	 */
-	@Query("select u from usr_user u join fetch u.accessPoint r where u.userId = :userId")
+	@Query("select u from usr_user u left join fetch u.accessPoint r where u.userId = :userId")
 	UsrUser findOneWithDetail(@Param("userId") Integer userId);
 
 	/**

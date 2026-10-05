@@ -600,4 +600,182 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="20260918120000" author="sergey.iryupin" runInTransaction="false">
+        <!-- DMS rework #10028: dms_file gains three columns.
+             created_at is the source of the yyyy/MM segment in the on-disk
+             path; storage_path is the authoritative relative path under dms/
+             (NULL means the row still lives at the legacy flat location
+             dms/<file_id> and will be moved by the startup migration);
+             checksum holds the SHA-256 hex of the content, written on every
+             new file and backfilled for legacy content by the consistency
+             check. created_at is populated from the existing back-references
+             (arr_file.create_change_id -> arr_change; arr_output_file via
+             arr_output_result; MIN over arr_export copies; MIN over imp_item)
+             with CURRENT_TIMESTAMP as a last-resort fallback so the NOT NULL
+             promotion is trivial. storage_path and checksum stay nullable
+             deliberately. No index on storage_path: lookups are by file_id
+             and MSSQL rejects multiple NULLs under a plain unique index. -->
+
+        <addColumn tableName="dms_file">
+            <column name="created_at" type="timestamp with time zone"/>
+            <column name="storage_path" type="nvarchar(255)"/>
+            <column name="checksum" type="nvarchar(64)"/>
+        </addColumn>
+
+        <!-- 1) Attachments -->
+        <sql>
+            UPDATE dms_file
+               SET created_at = (
+                   SELECT c.change_date
+                     FROM arr_file f
+                     JOIN arr_change c ON c.change_id = f.create_change_id
+                    WHERE f.file_id = dms_file.file_id)
+             WHERE created_at IS NULL
+               AND EXISTS (SELECT 1 FROM arr_file f WHERE f.file_id = dms_file.file_id)
+        </sql>
+
+        <!-- 2) Output files -->
+        <sql>
+            UPDATE dms_file
+               SET created_at = (
+                   SELECT c.change_date
+                     FROM arr_output_file ofile
+                     JOIN arr_output_result ores ON ores.output_result_id = ofile.output_result_id
+                     JOIN arr_change c ON c.change_id = ores.change_id
+                    WHERE ofile.file_id = dms_file.file_id)
+             WHERE created_at IS NULL
+               AND EXISTS (SELECT 1 FROM arr_output_file ofile WHERE ofile.file_id = dms_file.file_id)
+        </sql>
+
+        <!-- 3) Publication exports (one dms_file may back several arr_export rows) -->
+        <sql>
+            UPDATE dms_file
+               SET created_at = (
+                   SELECT MIN(e.created_at)
+                     FROM arr_export e
+                    WHERE e.file_id = dms_file.file_id)
+             WHERE created_at IS NULL
+               AND EXISTS (SELECT 1 FROM arr_export e WHERE e.file_id = dms_file.file_id)
+        </sql>
+
+        <!-- 4) Import sources -->
+        <sql>
+            UPDATE dms_file
+               SET created_at = (
+                   SELECT MIN(i.created_at)
+                     FROM imp_item i
+                    WHERE i.dms_id = dms_file.file_id)
+             WHERE created_at IS NULL
+               AND EXISTS (SELECT 1 FROM imp_item i WHERE i.dms_id = dms_file.file_id)
+        </sql>
+
+        <!-- 5) Fallback for rows with no back-reference at all -->
+        <sql>
+            UPDATE dms_file
+               SET created_at = CURRENT_TIMESTAMP
+             WHERE created_at IS NULL
+        </sql>
+
+        <addNotNullConstraint tableName="dms_file"
+                              columnName="created_at"
+                              columnDataType="timestamp with time zone"/>
+
+        <customChange class="cz.tacr.elza.dbchangelog.DbChangeset20260918120000"/>
+    </changeSet>
+
+    <changeSet id="20260924100000" author="ppy">
+        <!-- The items read from the EAD of an AIP were stored in da_dao_item, but nothing ever read
+             them: the archival description is filled by the import from a package, which reads
+             the EAD itself, and change packages are generated from the archival description.
+             Every item had its own arr_data row (string or unitdate; text from an unreleased
+             version), used by nothing else; those rows go with the table. A row referenced by an
+             item of the description or of an entity is kept, however it came to be shared. -->
+        <sql>
+            DELETE FROM arr_data_string WHERE data_id IN (
+                SELECT d.data_id FROM da_dao_item d
+                 WHERE d.data_id IS NOT NULL
+                   AND NOT EXISTS (SELECT 1 FROM arr_item i WHERE i.data_id = d.data_id)
+                   AND NOT EXISTS (SELECT 1 FROM ap_item a WHERE a.data_id = d.data_id)
+                   AND NOT EXISTS (SELECT 1 FROM ap_rev_item r WHERE r.data_id = d.data_id))
+        </sql>
+        <sql>
+            DELETE FROM arr_data_text WHERE data_id IN (
+                SELECT d.data_id FROM da_dao_item d
+                 WHERE d.data_id IS NOT NULL
+                   AND NOT EXISTS (SELECT 1 FROM arr_item i WHERE i.data_id = d.data_id)
+                   AND NOT EXISTS (SELECT 1 FROM ap_item a WHERE a.data_id = d.data_id)
+                   AND NOT EXISTS (SELECT 1 FROM ap_rev_item r WHERE r.data_id = d.data_id))
+        </sql>
+        <sql>
+            DELETE FROM arr_data_unitdate WHERE data_id IN (
+                SELECT d.data_id FROM da_dao_item d
+                 WHERE d.data_id IS NOT NULL
+                   AND NOT EXISTS (SELECT 1 FROM arr_item i WHERE i.data_id = d.data_id)
+                   AND NOT EXISTS (SELECT 1 FROM ap_item a WHERE a.data_id = d.data_id)
+                   AND NOT EXISTS (SELECT 1 FROM ap_rev_item r WHERE r.data_id = d.data_id))
+        </sql>
+        <dropForeignKeyConstraint baseTableName="da_dao_item" constraintName="fk_da_dao_item_arr_data"/>
+        <sql>
+            DELETE FROM arr_data WHERE data_id IN (
+                SELECT d.data_id FROM da_dao_item d
+                 WHERE d.data_id IS NOT NULL
+                   AND NOT EXISTS (SELECT 1 FROM arr_item i WHERE i.data_id = d.data_id)
+                   AND NOT EXISTS (SELECT 1 FROM ap_item a WHERE a.data_id = d.data_id)
+                   AND NOT EXISTS (SELECT 1 FROM ap_rev_item r WHERE r.data_id = d.data_id))
+        </sql>
+        <dropTable tableName="da_dao_item"/>
+    </changeSet>
+
+    <changeSet id="20260924140000" author="ppy">
+        <!-- Type of the AIP as the METS of its metadata declares it: content_type is
+             csip:CONTENTINFORMATIONTYPE, or csip:OTHERCONTENTINFORMATIONTYPE when the former is
+             OTHER (e.g. NSESSS); profile is the METS PROFILE. Both are filled when the metadata
+             are processed, so AIPs processed earlier have them empty until their next rebuild. -->
+        <addColumn tableName="da_aip_state">
+            <column name="content_type" type="nvarchar(250)"/>
+            <column name="profile" type="nvarchar(250)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260925142500" author="sergey.iryupin">
+        <!-- Anonymized access point of an output is no longer supported -->
+        <dropForeignKeyConstraint baseTableName="arr_output"
+                                  constraintName="fk_arr_output_anonymized_ap_access_point"/>
+        <dropColumn tableName="arr_output" columnName="anonymized_ap_id"/>
+    </changeSet>
+
+    <changeSet id="20260930100000" author="sergey.iryupin">
+        <!-- Password age, forced change and per-account expiry exemption; existing rows get 2016-01-01 -->
+        <addColumn tableName="usr_authentication">
+            <column name="valid_from" type="timestamp with time zone" defaultValueDate="2016-01-01T00:00:00">
+                <constraints nullable="false"/>
+            </column>
+            <column name="change_required" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="never_expire" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <dropDefaultValue tableName="usr_authentication" columnName="valid_from"/>
+        <addColumn tableName="usr_user">
+            <column name="created_at" type="timestamp with time zone" defaultValueDate="2016-01-01T00:00:00">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <dropDefaultValue tableName="usr_user" columnName="created_at"/>
+        <!-- Single-row password policy, everything off -->
+        <createTable tableName="usr_policy">
+            <column name="policy_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_usr_policy" nullable="false"/>
+            </column>
+            <column name="password_expiry_days" type="int"/>
+            <column name="password_min_length" type="int"/>
+            <column name="password_min_char_groups" type="int"/>
+        </createTable>
+        <insert tableName="usr_policy">
+            <column name="policy_id" valueNumeric="1"/>
+        </insert>
+    </changeSet>
+
 </databaseChangeLog>

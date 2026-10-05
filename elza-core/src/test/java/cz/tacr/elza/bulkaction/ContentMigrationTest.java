@@ -138,6 +138,97 @@ public class ContentMigrationTest extends AbstractServiceTest {
         assertSingle(nodeF, titleType, "Krátký název F");
     }
 
+    @Test
+    public void migrateBlankValues() {
+        TransactionTemplate tt = new TransactionTemplate(txManager);
+        tt.executeWithoutResult(r -> migrateBlankValuesInTransaction());
+    }
+
+    /**
+     * Blank values could be stored before 2022 (now rejected by the validator).
+     * They must neither break the action nor block the target.
+     */
+    private void migrateBlankValuesInTransaction() {
+        authorizeAsAdmin();
+
+        RulItemType titleType = itemTypeRepository.findOneByCode("SRD_TITLE");
+        RulItemType nameType = itemTypeRepository.findOneByCode("SRD_NAME");
+        RulItemType unitContentType = itemTypeRepository.findOneByCode("SRD_UNIT_CONTENT");
+
+        FundInfo fi = createFund("F-content-migration-blank");
+        Integer fvId = fi.getFundVersionId();
+        Integer rootId = fi.getRootNodeId();
+
+        Integer nodeG = addChild(fi.getFundVersion(), rootId);   // empty title -> stays, nothing moved
+        Integer nodeH = addChild(fi.getFundVersion(), rootId);   // blank title + unit content -> blank title replaced
+        Integer nodeI = addChild(fi.getFundVersion(), rootId);   // title + empty NAME -> empty NAME replaced
+        Integer nodeJ = addChild(fi.getFundVersion(), rootId);   // title with trailing line break -> trimmed to NAME
+
+        levelTreeCacheService.invalidateFundVersion(fi.getFundVersion());
+
+        addLegacyText(nodeG, titleType, "", fvId);
+        addLegacyText(nodeH, titleType, "   ", fvId);
+        addText(nodeH, unitContentType, "Tematický popis H", fvId);
+        addText(nodeI, titleType, "Krátký název I", fvId);
+        addLegacyString(nodeI, nameType, "", fvId);
+        addLegacyText(nodeJ, titleType, "Krátký název J\n", fvId);
+
+        // drop entities with placeholder values, the action has to read the legacy ones
+        em.clear();
+        levelTreeCacheService.invalidateFundVersion(fi.getFundVersion());
+
+        ContentMigrationResult result = runMigration(fvId, rootId);
+
+        // H -> unit content to title; I -> title to NAME; J -> title to NAME
+        Assertions.assertEquals(3, result.getMovedItems(), "Unexpected number of moved items");
+
+        // G: empty title is not moved
+        assertNone(nodeG, nameType);
+        assertSingle(nodeG, titleType, "");
+
+        // H: blank title is not moved to NAME, it is replaced by unit content
+        assertNone(nodeH, nameType);
+        assertSingle(nodeH, titleType, "Tematický popis H");
+        assertNone(nodeH, unitContentType);
+
+        // I: empty NAME does not block the move
+        assertSingle(nodeI, nameType, "Krátký název I");
+        assertNone(nodeI, titleType);
+
+        // J: trailing line break is trimmed, value is single-line
+        assertSingle(nodeJ, nameType, "Krátký název J");
+        assertNone(nodeJ, titleType);
+    }
+
+    /**
+     * Creates a TEXT item and overwrites its value in the database, bypassing the validator.
+     */
+    private void addLegacyText(Integer nodeId, RulItemType itemType, String rawValue, Integer fundVersionId) {
+        ArrItemTextVO vo = new ArrItemTextVO();
+        vo.setValue("placeholder");
+        ArrDescItem item = addItem(nodeId, itemType, vo, fundVersionId);
+        overwriteValue("UPDATE arr_data_text SET text_value = :value WHERE data_id = :dataId", item, rawValue);
+    }
+
+    /**
+     * Creates a STRING item and overwrites its value in the database, bypassing the validator.
+     */
+    private void addLegacyString(Integer nodeId, RulItemType itemType, String rawValue, Integer fundVersionId) {
+        ArrItemStringVO vo = new ArrItemStringVO();
+        vo.setValue("placeholder");
+        ArrDescItem item = addItem(nodeId, itemType, vo, fundVersionId);
+        overwriteValue("UPDATE arr_data_string SET string_value = :value WHERE data_id = :dataId", item, rawValue);
+    }
+
+    private void overwriteValue(String sql, ArrDescItem item, String rawValue) {
+        em.flush();
+        int updated = em.createNativeQuery(sql)
+                .setParameter("value", rawValue)
+                .setParameter("dataId", item.getData().getDataId())
+                .executeUpdate();
+        Assertions.assertEquals(1, updated);
+    }
+
     private Integer addChild(ArrFundVersion fundVersion, Integer parentNodeId) {
         ArrNode parent = nodeRepository.findById(parentNodeId).orElseThrow();
         List<ArrLevel> levels = fundLevelService.addNewLevel(fundVersion, parent, parent, AddLevelDirection.CHILD,
@@ -158,11 +249,11 @@ public class ContentMigrationTest extends AbstractServiceTest {
         addItem(nodeId, itemType, vo, fundVersionId);
     }
 
-    private void addItem(Integer nodeId, RulItemType itemType, ArrItemVO vo, Integer fundVersionId) {
+    private ArrDescItem addItem(Integer nodeId, RulItemType itemType, ArrItemVO vo, Integer fundVersionId) {
         vo.setItemTypeId(itemType.getItemTypeId());
         // reload node to get the current optimistic-lock version (multiple items per node)
         ArrNode node = nodeRepository.findById(nodeId).orElseThrow();
-        createDescItem(vo, node, fundVersionId);
+        return createDescItem(vo, node, fundVersionId);
     }
 
     private ContentMigrationResult runMigration(Integer fundVersionId, Integer rootNodeId) {

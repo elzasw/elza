@@ -115,6 +115,7 @@ const initialState = {
     username: '',
     userPermissions: {},
     permissionsMap: {},
+    needChangePassword: false,
     fetched: false,
     fetching: false,
 };

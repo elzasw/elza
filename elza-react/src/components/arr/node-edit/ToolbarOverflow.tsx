@@ -1,4 +1,4 @@
-import { Fragment, ReactElement, ReactNode } from "react";
+import { Fragment, ReactElement, ReactNode, useEffect, useRef, useState } from "react";
 import { MoreHorizontal20Filled } from "@fluentui/react-icons";
 import {
   ToolbarButton,
@@ -11,6 +11,12 @@ import {
   MenuPopover,
   MenuTrigger,
   OverflowItem,
+  Popover,
+  PopoverSurface,
+  PopoverTrigger,
+  makeStyles,
+  mergeClasses,
+  tokens,
   useOverflowMenu,
   useIsOverflowItemVisible,
   useIsOverflowGroupVisible,
@@ -19,6 +25,7 @@ import {
 import type {
   ToolbarButtonProps,
   MenuItemProps,
+  PopoverProps,
 } from "@fluentui/react-components";
 import { useStyles } from "../item-form/styles";
 import { useIntl } from 'react-intl';
@@ -32,7 +39,12 @@ export interface ToolbarButtonDef {
   appearance?: "primary" | "subtle";
   action: () => void;
   isVisible?: boolean;
+  disabled?: boolean;
   overflowOnly?: boolean;
+  /** Number shown next to the icon (and in the overflow menu item); hidden when 0 or undefined. */
+  counter?: number;
+  /** Hover content replacing the label tooltip; it is interactive, unlike a tooltip. */
+  popover?: ReactElement;
 }
 
 export interface ToolbarButtonGroupDef {
@@ -114,7 +126,7 @@ export const OverflowMenu = ({ items }: OverflowMenuProps) => {
             const isLast = index === arr.length - 1;
             return (
               <Fragment key={groupId}>
-                {items.map(({ label, action, id, icon, overflowOnly }) => (
+                {items.map(({ label, action, id, icon, overflowOnly, disabled, counter }) => (
                   <ToolbarOverflowMenuItem
                     key={id}
                     id={id}
@@ -122,6 +134,8 @@ export const OverflowMenu = ({ items }: OverflowMenuProps) => {
                     action={action}
                     icon={icon}
                     overflowOnly={overflowOnly}
+                    disabled={disabled}
+                    secondaryContent={counter || undefined}
                   />
                 ))}
                 {!isLast && <ToolbarMenuOverflowDivider id={groupId} />}
@@ -150,10 +164,59 @@ export const ToolbarOverflowDivider = ({
   return null;
 };
 
+const HOVER_OPEN_DELAY = 400;
+
+const useHoverStyles = makeStyles({
+  surface: {
+    maxWidth: "480px",
+    maxHeight: "60vh",
+    overflowY: "auto",
+    paddingBlock: tokens.spacingVerticalS,
+    paddingInline: tokens.spacingHorizontalM,
+  },
+});
+
+/** Popover opened by hovering, after a delay; a click on the trigger closes it. */
+function HoverPopover({ trigger, children }: { trigger: ReactElement; children: ReactNode }) {
+  const styles = useHoverStyles();
+  const [isOpen, setIsOpen] = useState(false);
+  const openTimeout = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => () => clearTimeout(openTimeout.current), []);
+
+  // Fluent's Popover opens as soon as the pointer enters and toggles on click; delay the hover
+  // opening and let a click (the button's own action) close it instead.
+  const handleOpenChange: PopoverProps["onOpenChange"] = (event, { open }) => {
+    clearTimeout(openTimeout.current);
+    const isHoverOpen = open && event.type !== "click";
+    if (isHoverOpen) {
+      openTimeout.current = setTimeout(() => setIsOpen(true), HOVER_OPEN_DELAY);
+    } else {
+      setIsOpen(false);
+    }
+  };
+
+  return (
+    <Popover
+      open={isOpen}
+      onOpenChange={handleOpenChange}
+      openOnHover
+      mouseLeaveDelay={200}
+      withArrow
+      positioning="below"
+    >
+      <PopoverTrigger disableButtonEnhancement>{trigger}</PopoverTrigger>
+      <PopoverSurface className={styles.surface}>{children}</PopoverSurface>
+    </Popover>
+  );
+}
+
 type ToolbarOverflowMenuProps = {
   overflowId: string;
   overflowGroupId: string;
   tooltip?: string | ReactElement;
+  /** Replaces the tooltip with an interactive hover popover. */
+  popover?: ReactElement;
     showDivider?: boolean;
 } & ToolbarButtonProps;
 
@@ -161,15 +224,19 @@ export const ToolbarOverflowButton = ({
   overflowId,
   overflowGroupId,
   tooltip,
+  popover,
   showDivider,
   ...props
 }: ToolbarOverflowMenuProps) => {
   const styles = useStyles();
+  const { className, ...buttonProps } = props;
   let button = (
-      <ToolbarButton className={styles.toolbarOverflowButton} {...props} />
+      <ToolbarButton className={mergeClasses(styles.toolbarOverflowButton, className)} {...buttonProps} />
   );
 
-  if (tooltip) {
+  if (popover) {
+    button = <HoverPopover trigger={button}>{popover}</HoverPopover>;
+  } else if (tooltip) {
     button =  <Tooltip appearance="inverted" relationship="label" content={tooltip}>
         {button}
     </Tooltip>

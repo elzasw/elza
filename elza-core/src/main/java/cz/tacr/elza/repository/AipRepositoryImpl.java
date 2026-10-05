@@ -187,7 +187,8 @@ public class AipRepositoryImpl implements AipRepositoryCustom {
     }
 
     private Joins joins(final CriteriaBuilder cb, final Root<DaAip> aipRoot) {
-        Join<DaAip, DaAipState> stateJoin = aipRoot.join("states", JoinType.LEFT);
+        // an AIP without an active state was invalidated by the digital archive and is not listed
+        Join<DaAip, DaAipState> stateJoin = aipRoot.join("states", JoinType.INNER);
         stateJoin.on(cb.isNull(stateJoin.get("deleteChange")));
         Join<DaAip, DaSyncQueueItem> importSyncJoin = aipRoot.join("syncQueueItems", JoinType.LEFT);
         importSyncJoin.on(cb.isTrue(importSyncJoin.get("active")), importSyncJoin.get("state").in(DaSyncQueueItem.QueueItemState.IMPORT_NEW,

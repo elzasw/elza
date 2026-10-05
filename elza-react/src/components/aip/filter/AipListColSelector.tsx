@@ -5,15 +5,12 @@ import {
 	MenuItemCheckbox,
 	MenuPopover,
 	MenuButton,
-	makeStyles,
-	mergeClasses
 } from "@fluentui/react-components";
+import { TableSettingsRegular } from "@fluentui/react-icons";
 import type { MenuCheckedValueChangeData, MenuCheckedValueChangeEvent } from "@fluentui/react-components";
 import { colDef } from "../columns";
 import { useIntl } from "react-intl";
 import { tableMessages } from "components/shared/lang/tableMessages";
-import { Icon } from "components/shared";
-import "../AipDetail.scss";
 
 
 type AipListColSelectorProps = {
@@ -24,7 +21,6 @@ type AipListColSelectorProps = {
 };
 
 const AipListColSelector = ({columns, onChange, hiddenValues, ...props} : AipListColSelectorProps) => {
-	const classes = useStyles();
 	const {formatMessage} = useIntl();
 	const columnsDef = colDef.filter(col => !hiddenValues?.includes(col.key));
 
@@ -34,22 +30,17 @@ const AipListColSelector = ({columns, onChange, hiddenValues, ...props} : AipLis
 			onCheckedValueChange={onChange}
 		>
 			<MenuTrigger disableButtonEnhancement>
-				<MenuButton 
-					menuIcon={null}
-					shape="square"
-					{...props}
-				>
-					<span>{formatMessage(tableMessages.columns)}  <Icon glyph="fa-caret-down"/></span>
+				<MenuButton icon={<TableSettingsRegular />} {...props}>
+					{formatMessage(tableMessages.columns)}
 				</MenuButton>
 			</MenuTrigger>
-			<MenuPopover className={mergeClasses(classes.bg, classes.menuPopover)}>
+			<MenuPopover>
 				<MenuList>
 					{columnsDef.map((column) =>
 						<MenuItemCheckbox 
 							name="col" 
 							key={`selector-${column.field}`}
 							value={formatMessage(column.message)} 
-							className={mergeClasses(classes.bg, classes.menuItem)}
 						>
 							{formatMessage(column.message)}
 						</MenuItemCheckbox>
@@ -59,18 +50,5 @@ const AipListColSelector = ({columns, onChange, hiddenValues, ...props} : AipLis
 		</Menu>
 	);
 }
-
-const useStyles = makeStyles({
-	bg: {
-		backgroundColor: "#e3e3e3ff", 
-	},
-	menuPopover: {
-		borderRadius: 0, 
-		padding: 0
-	},
-	menuItem: {
-		padding: "5px"
-	}
-});
 
 export default AipListColSelector;

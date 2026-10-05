@@ -8,6 +8,7 @@ import cz.tacr.elza.domain.DaDaoRelation;
 import cz.tacr.elza.domain.DaLevelView;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.repository.AipRepository;
+import cz.tacr.elza.repository.AipStateRepository;
 import cz.tacr.elza.repository.DaDaoRepository;
 import cz.tacr.elza.repository.FilteredResult;
 import jakarta.transaction.Transactional;
@@ -25,6 +26,8 @@ import static cz.tacr.elza.exception.codes.ArrangementCode.AIP_NOT_FOUND;
 public class AipService {
     @Autowired
     private AipRepository aipRepository;
+    @Autowired
+    private AipStateRepository aipStateRepository;
     @Autowired
     private ClientFactoryVO clientFactoryVO;
     @Autowired
@@ -66,28 +69,35 @@ public class AipService {
 
     @Transactional
     public AipDetailVO getAipDetail(@NotNull Integer id) {
-        DaAip aip = aipRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException("Nenalezeno AIP s id " + id, AIP_NOT_FOUND));
-        if(aip == null) {
-            return null;
-        }
-        return clientFactoryVO.createAipDetail(aip);
+        return clientFactoryVO.createAipDetail(getAip(id));
     }
 
+    /**
+     * @throws ObjectNotFoundException also for an AIP invalidated by the digital archive - it has
+     *             no active state and is not shown
+     */
     @Transactional
     public DaAip getAip(@NotNull Integer id) {
-        return aipRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException("Nenalezeno AIP s id " + id, AIP_NOT_FOUND));
+        DaAip aip = aipRepository.findById(id).orElse(null);
+        if (aip == null || aipStateRepository.findByDaAipAndDeleteChangeIsNull(aip) == null) {
+            throw new ObjectNotFoundException("Nenalezeno AIP s id " + id, AIP_NOT_FOUND);
+        }
+        return aip;
     }
 
     @Transactional
     public TreeDataCustomGen getAipsLogicalTree(List<Integer> aipIds) {
         TreeDataCustomGen result = new TreeDataCustomGen();
         List<DaDao> daoList = daoService.getDaosByTypeAndAipIn(aipIds, DaDao.DaoType.LOGICAL);
+        // a logical part outside the level views (e.g. the root of the structure) has no place in the tree
         Map<Integer, List<DaDao>> levelViewIdToDaosMap = daoList.stream()
+                .filter(dao -> dao.getLevelView() != null)
                 .collect(Collectors.groupingBy(
                         dao -> dao.getLevelView().getLevelViewId()
                 ));
         Set<DaLevelView> allLevelViews = daoList.stream()
                 .map(DaDao::getLevelView)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
         Set<DaLevelView> rootLevelViews = allLevelViews.stream()
                 .filter(levelView -> levelView.getParentLevelView() == null)
@@ -151,6 +161,11 @@ public class AipService {
             List<Integer> aipIds
     ) {
         List<DaDao> daos = levelViewIdToDaosMap.get(levelView.getLevelViewId());
+        if (daos == null) {
+            // level views are shared by the packages of the fund: this one (and all below it) is
+            // of other packages than the selected ones
+            return;
+        }
         List<DaLevelView> children = levelView.getChildren();
         List<Integer> relatedAipsIds = daos
                 .stream()

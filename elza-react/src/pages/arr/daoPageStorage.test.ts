@@ -3,7 +3,7 @@ import { FsItemFilterByLinked, FsItemSortType } from 'elza-api';
 import { DEFAULT_DAO_PAGE_URL_STATE } from './daoPageUrl';
 import { loadDaoPageState, saveDaoPageState } from './daoPageStorage';
 
-// jsdom in this setup does not provide localStorage - supply an in-memory replacement.
+// Supply an in-memory replacement where the environment provides no localStorage.
 function installStorageMock() {
     if (typeof (globalThis as Record<string, unknown>).localStorage === 'undefined') {
         const store = new Map<string, string>();
@@ -70,10 +70,15 @@ describe('daoPageStorage', () => {
 
     it('survives storage that refuses to be read or written', () => {
         vi.spyOn(console, 'warn').mockImplementation(() => undefined);
-        vi.spyOn(localStorage, 'getItem').mockImplementation(() => {
+        // On a real Storage, assigning a method to the instance stores an item named after it
+        // instead of replacing the method - the spy has to go on the prototype.
+        const storage = typeof Storage !== 'undefined' && localStorage instanceof Storage
+            ? Storage.prototype
+            : localStorage;
+        vi.spyOn(storage, 'getItem').mockImplementation(() => {
             throw new Error('access denied');
         });
-        vi.spyOn(localStorage, 'setItem').mockImplementation(() => {
+        vi.spyOn(storage, 'setItem').mockImplementation(() => {
             throw new Error('quota exceeded');
         });
 

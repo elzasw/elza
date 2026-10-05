@@ -32,6 +32,8 @@ public class DaExportExtSyncsProcessor implements Runnable {
     private ExternalSystemService externalSystemService;
     @Autowired
     private DaAipActionService actionService;
+    @Autowired
+    private DaCommunicationLock communicationLock;
 
     private volatile Thread asyncThread = null;
 
@@ -69,6 +71,9 @@ public class DaExportExtSyncsProcessor implements Runnable {
                     // pokud true - pauza po ukončení práce procesoru
                     boolean wait = true;
                     List<DaSyncQueueItem> syncQueueItemList = null;
+                    // the batch is one exchange with the DA, from reading the queue to closing its
+                    // items - an export once sent is finished before anything else is decided about it
+                    communicationLock.lock();
                     try {
                         syncQueueItemList = daService.getNextItems(exportListSize, DaSyncQueueItem.QueueItemState.EXPORT_NEW);
                         if (CollectionUtils.isNotEmpty(syncQueueItemList)) {
@@ -139,6 +144,8 @@ public class DaExportExtSyncsProcessor implements Runnable {
                         logger.error("Failed to process item. ", ex);
                         // v případě chyby číst po 1 záznamu
                         exportListSize = 1;
+                    } finally {
+                        communicationLock.unlock();
                     }
                     if (wait) {
                         try {

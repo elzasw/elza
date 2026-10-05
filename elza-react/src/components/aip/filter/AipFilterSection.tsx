@@ -11,7 +11,7 @@ import { generateUUID } from "utils/uuid";
 import { aipColumns } from "../columns";
 import { buildFilter } from "./aipFilterModel";
 import { AipFieldName } from "elza-api";
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import { useIntl } from "react-intl";
 import { filterMessages } from "../messages";
 
@@ -21,11 +21,13 @@ type AipFilterSectionProps = {
     filterDisabled: boolean;
     initialFilters: AipFilterEntry[];
     hiddenValues: string[];
+    /** Akce stránky, zobrazené vpravo před výběrem sloupců. */
+    actions?: ReactNode;
 }
 
 const FULLTEXT_ID = "fulltext";
 
-const AipFilterSection = ({columns, onColsChange, filterDisabled, initialFilters, hiddenValues}: AipFilterSectionProps) => {
+const AipFilterSection = ({columns, onColsChange, filterDisabled, initialFilters, hiddenValues, actions}: AipFilterSectionProps) => {
     const [filters, setFilters] = useState<AipFilterEntry[]>(initialFilters || []);
     const {formatMessage} = useIntl();
 
@@ -73,7 +75,8 @@ const AipFilterSection = ({columns, onColsChange, filterDisabled, initialFilters
                 filters={filters}
                 createFilter={handleCreate}
                 removeFilter={handleRemove}
-            /> 
+            />
+            {actions && <div className="aip-filter-actions">{actions}</div>}
             <AipListColSelector 
                 columns={columns} 
                 onChange={onColsChange}

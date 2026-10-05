@@ -51,6 +51,7 @@ export const historyChangeMessages = defineMessages({
     CHANGE_SCENARIO_ITEMS: { id: "arr.history.change.title.CHANGE_SCENARIO_ITEMS", defaultMessage: "změna záznamu podle scénářů" },
     ADD_ATTACHMENT: { id: "arr.history.change.title.ADD_ATTACHMENT", defaultMessage: "přidání souboru" },
     DELETE_ATTACHMENT: { id: "arr.history.change.title.DELETE_ATTACHMENT", defaultMessage: "mazání souborů" },
+    UPDATE_ATTACHMENT: { id: "arr.history.change.title.UPDATE_ATTACHMENT", defaultMessage: "nahrazení souboru" },
 });
 
 /** Podrobnější popis změny; má ho jen část typů. */

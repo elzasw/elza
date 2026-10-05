@@ -24,6 +24,7 @@ import {
     AipPage,
     AipExplorerPage,
     ArrAipExplorerPage,
+    ArrAipConnectPage,
     ArrDaoPage,
     ArrDataGridPage,
     ArrMovementsPage,
@@ -47,6 +48,7 @@ import { Route, Switch } from 'react-router-dom';
 import { Shortcuts } from 'react-shortcuts';
 import CrossTabHelper, { CrossTabEventType } from "../components/CrossTabHelper";
 import Login from '../components/shared/login/Login';
+import { ForcedPasswordChange } from '../components/shared/login/ForcedPasswordChange';
 import {
     ACTIONS,
     DAOS,
@@ -238,6 +240,7 @@ class Layout extends AbstractReactComponent {
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${NODE}/:nodeId`} component={ArrPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${GRID}/:nodeId/:descItemTypeId?`} component={ArrDataGridPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${GRID}`} component={ArrDataGridPage} />
+                                            <Route path={`${URL_FUND}/:id/v/:versionId/${AIP}/connect`} component={ArrAipConnectPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${AIP}/:aipId/explorer`} component={ArrAipExplorerPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${AIP}/:aipId`} component={ArrAipPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${AIP}`} component={ArrAipPage} />
@@ -257,6 +260,7 @@ class Layout extends AbstractReactComponent {
                                             <Route path={`${URL_FUND}/:id/${NODE}/:nodeId`} component={ArrPage} />
                                             <Route path={`${URL_FUND}/:id/${GRID}/:nodeId/:descItemTypeId?`} component={ArrDataGridPage} />
                                             <Route path={`${URL_FUND}/:id/${GRID}`} component={ArrDataGridPage} />
+                                            <Route path={`${URL_FUND}/:id/${AIP}/connect`} component={ArrAipConnectPage} />
                                             <Route path={`${URL_FUND}/:id/${AIP}/:aipId/explorer`} component={ArrAipExplorerPage} />
                                             <Route path={`${URL_FUND}/:id/${AIP}/:aipId`} component={ArrAipPage} />
                                             <Route path={`${URL_FUND}/:id/${AIP}`} component={ArrAipPage} />
@@ -317,6 +321,7 @@ class Layout extends AbstractReactComponent {
                         <ModalDialog />
                         <WebSocket />
                         <Login />
+                        <ForcedPasswordChange />
                         <AppRouter />
                     </WebsocketProvider>
                 </div>

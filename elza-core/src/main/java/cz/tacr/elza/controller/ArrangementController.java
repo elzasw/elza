@@ -2142,7 +2142,7 @@ public class ArrangementController {
         Assert.notNull(param, "Vstupní data musí být vyplněny");
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
         ArrOutput output = outputService.getOutput(outputId);
-        outputService.updateNamedOutput(fundVersion, output, param.getName(), param.getInternalCode(), param.getTemplateId(), param.getAnonymizedAp(), param.getOutputFilterId());
+        outputService.updateNamedOutput(fundVersion, output, param.getName(), param.getInternalCode(), param.getTemplateId(), param.getOutputFilterId());
     }
 
     /**
@@ -3556,8 +3556,6 @@ public class ArrangementController {
          */
         private List<Integer> templateIds;
 
-        private ApAccessPointVO anonymizedAp;
-
         private Integer outputFilterId;
 
         public String getName() {
@@ -3599,14 +3597,6 @@ public class ArrangementController {
 		public void setTemplateIds(List<Integer> templateIds) {
 			this.templateIds = templateIds;
 		}
-
-		public ApAccessPointVO getAnonymizedAp() {
-            return anonymizedAp;
-        }
-
-        public void setAnonymizedAp(ApAccessPointVO anonymizedAp) {
-            this.anonymizedAp = anonymizedAp;
-        }
 
         public Integer getOutputFilterId() {
             return outputFilterId;

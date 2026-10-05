@@ -44,7 +44,6 @@ import cz.tacr.elza.domain.DaChangeType;
 import cz.tacr.elza.domain.DaDao;
 import cz.tacr.elza.domain.DaDaoFile;
 import cz.tacr.elza.domain.DaDaoFileFolder;
-import cz.tacr.elza.domain.DaDaoItem;
 import cz.tacr.elza.domain.DaDaoRelation;
 import cz.tacr.elza.domain.DaLevelView;
 import cz.tacr.elza.domain.DaLocalCache;
@@ -61,7 +60,6 @@ import cz.tacr.elza.repository.ArrDaLinkRepository;
 import cz.tacr.elza.repository.DaChangeRepository;
 import cz.tacr.elza.repository.DaDaoFileFolderRepository;
 import cz.tacr.elza.repository.DaDaoFileRepository;
-import cz.tacr.elza.repository.DaDaoItemRepository;
 import cz.tacr.elza.repository.DaDaoRelationRepository;
 import cz.tacr.elza.repository.DaDaoRepository;
 import cz.tacr.elza.repository.DaLevelViewRepository;
@@ -93,6 +91,7 @@ import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.da.vo.DaUploadRequestImpl;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.EventIdNodeIdInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.utils.EadReaderWriter;
 import gov.loc.mets.v1_11.schema.AmdSecType;
@@ -197,6 +196,9 @@ public class DaService {
      */
     private static final int STATE_MESSAGE_MAX_LENGTH = 4000;
 
+    /** Why a request for an AIP the digital archive invalidated is not carried out. */
+    static final String AIP_INVALIDATED = "AIP byl v digitálním archivu zneplatněn.";
+
     @Autowired
     private ApplicationContext applicationContext;
     @Autowired
@@ -238,8 +240,6 @@ public class DaService {
     @Autowired
     private NodeRepository nodeRepository;
     @Autowired
-    private DaDaoItemRepository daoItemRepository;
-    @Autowired
     private ExternalSystemService externalSystemService;
     @Autowired
     private LevelRepository levelRepository;
@@ -256,8 +256,6 @@ public class DaService {
     @Autowired
     private FundRepository fundRepository;
     @Autowired
-    private DaDaoItemRepository daDaoItemRepository;
-    @Autowired
     private DataStringRepository dataStringRepository;
     @Autowired
     private DataUnitdateRepository dataUnitdateRepository;
@@ -269,6 +267,8 @@ public class DaService {
     private DaoLinkPolicy daoLinkPolicy;
     @Autowired
     private DaAipLinkStateResolver linkStateResolver;
+    @Autowired
+    private DaCommunicationLock communicationLock;
 
     /** Reads and writes what an action was asked to do; see {@link ConnectParams}. */
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -281,7 +281,13 @@ public class DaService {
     public void synchronizeDaRepository(String code) {
         logger.debug("Spuštěna synchronizace s DA pro externí systém CODE={}", code);
         ArrDigitalRepository arrDigitalRepository = externalSystemService.findDigitalRepositoryByCode(code);
-        applicationContext.getBean(DaService.class).synchronizeDA(arrDigitalRepository);
+        // held over the commit, so the processors see the withdrawn requests as withdrawn
+        communicationLock.lock();
+        try {
+            applicationContext.getBean(DaService.class).synchronizeDA(arrDigitalRepository);
+        } finally {
+            communicationLock.unlock();
+        }
         logger.debug("Dokončena synchronizace s DA pro externí systém CODE={}", code);
     }
 
@@ -297,39 +303,119 @@ public class DaService {
 
             if (CollectionUtils.isNotEmpty(updatesAips.getAipIds())) {
                 logger.debug("Z externího systému CODE={} se vrátilo {} aip ID", digitalRepository.getCode(), updatesAips.getAipIds().size());
-                List<String> aipCodes = updatesAips.getAipIds().stream()
-                        .map(UpdatedInfo::getAipId)
-                        .toList();
-
-                List<DaAip> aipList = aipRepository.findByCodeIn(aipCodes);
-                Map<String, DaAip> aipMap = aipList.stream()
-                        .collect(Collectors.toMap(DaAip::getCode, a -> a));
-                Map<DaAip, DaAipState> stateMap = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList).stream()
-                        .collect(Collectors.toMap(DaAipState::getDaAip, Function.identity()));
-
-                for (UpdatedInfo updatedInfo : updatesAips.getAipIds()) {
-                    DaAip aip = aipMap.getOrDefault(updatedInfo.getAipId(), null);
-
-                    DaSyncQueueItem.QueueItemState queueItemState = DaSyncQueueItem.QueueItemState.IMPORT_NEW;
-                    AipType aipType = AipType.PACKAGE_INFO;
-                    if (aip != null) {
-                        DaAipState aipState = stateMap.get(aip);
-                        queueItemState = DaSyncQueueItem.QueueItemState.UPDATE;
-
-                        if (BooleanUtils.isTrue(aipState.getCompleteAipLoad())) {
-                            aipType = AipType.AIP_BASE;
-                        } else if (BooleanUtils.isTrue(aipState.getMetadataLoad())) {
-                            aipType = AipType.METADATA_BASE;
-                        }
-                    }
-
-                    createSyncQueueItem(updatedInfo.getAipId(), aip, digitalRepository, queueItemState, updatedInfo.getAipVersion(), aipType, true);
-                }
+                processUpdates(digitalRepository, updatesAips.getAipIds());
             }
         } while (updatesAips.getAipIds().size() == DA_UPDATE_PAGE_SIZE);
 
         daRemoteRepositorySync.setNextQuery(nextQuery);
         remoteRepositorySyncRepository.save(daRemoteRepositorySync);
+    }
+
+    /**
+     * Handles one page of changes reported by the digital archive.
+     *
+     * A valid AIP is queued for download. An AIP without an active state - unknown to ELZA, or
+     * invalidated earlier - is imported as a new package; links it had before its invalidation are
+     * not restored, the current rules of the repository decide what happens to it. An invalidated
+     * AIP is withdrawn, see {@link #invalidateAip}.
+     */
+    void processUpdates(ArrDigitalRepository digitalRepository, List<UpdatedInfo> updates) {
+        List<String> aipCodes = updates.stream()
+                .map(UpdatedInfo::getAipId)
+                .toList();
+
+        List<DaAip> aipList = aipRepository.findByCodeIn(aipCodes);
+        Map<String, DaAip> aipMap = aipList.stream()
+                .collect(Collectors.toMap(DaAip::getCode, a -> a));
+        Map<DaAip, DaAipState> stateMap = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList).stream()
+                .collect(Collectors.toMap(DaAipState::getDaAip, Function.identity()));
+
+        for (UpdatedInfo updatedInfo : updates) {
+            DaAip aip = aipMap.get(updatedInfo.getAipId());
+            DaAipState aipState = aip == null ? null : stateMap.get(aip);
+
+            if (BooleanUtils.isTrue(updatedInfo.getInvalidated())) {
+                invalidateAip(updatedInfo.getAipId(), aip, aipState, digitalRepository);
+                continue;
+            }
+
+            DaSyncQueueItem.QueueItemState queueItemState = DaSyncQueueItem.QueueItemState.IMPORT_NEW;
+            AipType aipType = AipType.PACKAGE_INFO;
+            if (aipState != null) {
+                queueItemState = DaSyncQueueItem.QueueItemState.UPDATE;
+
+                if (BooleanUtils.isTrue(aipState.getCompleteAipLoad())) {
+                    aipType = AipType.AIP_BASE;
+                } else if (BooleanUtils.isTrue(aipState.getMetadataLoad())) {
+                    aipType = AipType.METADATA_BASE;
+                }
+            }
+
+            createSyncQueueItem(updatedInfo.getAipId(), aip, digitalRepository, queueItemState, updatedInfo.getAipVersion(), aipType, true);
+        }
+    }
+
+    /**
+     * Withdraws an AIP the digital archive has invalidated, so that it disappears from ELZA while its
+     * history stays readable: its links to the archival description, its digital entities and its
+     * state are closed by a change instead of being deleted. The downloaded packages are removed -
+     * they are of a package that no longer exists.
+     *
+     * Requests still waiting for the AIP are withdrawn as well, whether ELZA knows the AIP or not: a
+     * download would fetch the package again, or retry forever once the archive stops delivering it,
+     * and an export would send a change of a package that no longer exists. None of them is being
+     * carried out - the synchronization holds {@link DaCommunicationLock}, so a batch in flight was
+     * finished before it started.
+     *
+     * @param aip      null when ELZA does not know the AIP
+     * @param aipState null when ELZA does not know the AIP or it is invalidated already
+     */
+    private void invalidateAip(String code, @Nullable DaAip aip, @Nullable DaAipState aipState,
+                               ArrDigitalRepository digitalRepository) {
+        deactivateQueueItems(code, aip, digitalRepository, getQueueAllStates(), AIP_INVALIDATED);
+        if (aipState == null) {
+            logger.info("AIP {} byl v DA CODE={} zneplatněn, v ELZA není aktivní, není co stahovat",
+                        code, digitalRepository.getCode());
+            return;
+        }
+
+        DaChange change = createDaChange(aip, DaChangeType.AIP_INVALIDATE);
+        int unlinked = unlinkFromDescription(aip);
+
+        List<DaAip> aips = List.of(aip);
+        deleteDaoEntities(aips, change);
+        deleteLocalCaches(aips, getQueueAllStates());
+
+        aipState.setDeleteChange(change);
+        aipStateRepository.save(aipState);
+        logger.info("AIP {} byl v DA CODE={} zneplatněn, počet odpojených vazeb na jednotky popisu: {}",
+                    code, digitalRepository.getCode(), unlinked);
+    }
+
+    /**
+     * Closes every link of the AIP - of the whole package and of its parts - by a change of the
+     * unit of description it hangs on, so that the history of each unit records the removal.
+     *
+     * @return number of links closed
+     */
+    private int unlinkFromDescription(DaAip aip) {
+        List<ArrDaLink> links = daLinkRepository.findByAipIdAndDeleteChangeIsNull(aip.getAipId());
+        Map<Integer, ArrChange> changeByNode = new HashMap<>();
+        for (ArrDaLink link : links) {
+            ArrNode node = link.getNode();
+            ArrChange change = changeByNode.computeIfAbsent(node.getNodeId(),
+                    id -> arrangementInternalService.createChange(ArrChange.Type.DELETE_DAO_LINK, node));
+            link.setDeleteChange(change);
+            daLinkRepository.save(link);
+
+            ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFund(node.getFund());
+            if (fundVersion != null) {
+                eventNotificationService.publishEvent(new EventIdNodeIdInVersion(EventType.DAO_LINK_DELETE,
+                        fundVersion.getFundVersionId(), link.getDaoLinkId(),
+                        Collections.singletonList(node.getNodeId())));
+            }
+        }
+        return links.size();
     }
 
     private DaRemoteRepositorySync getDaRemoteRepositorySync(ArrDigitalRepository digitalRepository) {
@@ -399,21 +485,34 @@ public class DaService {
         }
 
         Path tempDir = null;
+        AipPackageType packageType = null;
         try {
             tempDir = unpack(input.zip());
             MetsType metsType = readMets(tempDir);
+            packageType = AipPackageType.of(metsType);
             PremisComplexType premisComplexType = readPremis(tempDir);
 
             Path unpacked = tempDir;
-            return inTransaction(() -> storeDaoStructure(input, metsType, premisComplexType, unpacked, forceUpdate, sink));
+            AipPackageType type = packageType;
+            return inTransaction(() -> storeDaoStructure(input, metsType, type, premisComplexType, unpacked,
+                                                         forceUpdate, sink));
         } catch (Exception e) {
-            logger.error("Došlo k chybě při zpracování metadat pro AIP={}", aipId, e);
-            // The transaction the rebuild ran in is gone; the problem has to be written in one of
-            // its own or it would be rolled back together with the work that failed.
             AipProblem problem = AipProblem.of(e);
+            logger.error("Došlo k chybě při zpracování metadat pro AIP={} ({}), balíček {}{}: {}", aipId,
+                    input.aip().getCode(), input.zip(),
+                    problem.file() != null ? ", soubor " + problem.file() : "",
+                    problem.description(), e);
+            // The transaction the rebuild ran in is gone; the problem has to be written in one of
+            // its own or it would be rolled back together with the work that failed. What kind of
+            // package it is stays known when its METS could be read - it helps to tell which
+            // packages fail.
+            AipPackageType typeRead = packageType;
             inTransaction(() -> {
                 DaAipState aipState = aipStateRepository.findById(input.aipStateId()).orElse(null);
                 if (aipState != null) {
+                    if (typeRead != null) {
+                        typeRead.applyTo(aipState);
+                    }
                     referenceResolver.recordProblem(aipState, problem);
                     aipStateRepository.save(aipState);
                 }
@@ -431,6 +530,10 @@ public class DaService {
     private RebuildInput readRebuildInput(Integer aipId, AipOutcomeSink sink) {
         DaAip aip = findAipById(aipId);
         DaAipState aipState = aipStateRepository.findByDaAipAndDeleteChangeIsNull(aip);
+        if (aipState == null) {
+            sink.skipped(aipId, AIP_INVALIDATED);
+            return null;
+        }
         DaLocalCache localCache = daLocalCacheRepository.findByAipStateAndAipTypeIn(aipState,
                 EnumSet.of(AipType.METADATA_BASE, AipType.AIP_BASE),
                 getQueueImportStates());
@@ -449,8 +552,17 @@ public class DaService {
                                 Paths.get(localCache.getFilePath()));
     }
 
-    private List<String> storeDaoStructure(RebuildInput input, MetsType metsType, PremisComplexType premisComplexType,
-                                           Path tempDir, boolean forceUpdate, AipOutcomeSink sink) {
+    private List<String> storeDaoStructure(RebuildInput input, MetsType metsType, AipPackageType packageType,
+                                           PremisComplexType premisComplexType, Path tempDir, boolean forceUpdate,
+                                           AipOutcomeSink sink) {
+        // The package was read in an earlier transaction; the AIP may have been invalidated since.
+        // The invalidation holds the lock until it commits, so it is either seen here or waits for
+        // the entities built below and closes them too.
+        aipRepository.lockByIds(List.of(input.aip().getAipId()));
+        if (aipStateRepository.findByDaAipAndDeleteChangeIsNull(input.aip()) == null) {
+            sink.skipped(input.aip().getAipId(), AIP_INVALIDATED);
+            return null;
+        }
         List<String> nodeUuids = createDaoStructure(input.aip(), metsType, premisComplexType, tempDir, forceUpdate);
 
         DaLocalCache localCache = daLocalCacheRepository.findById(input.localCacheId()).orElseThrow();
@@ -463,6 +575,7 @@ public class DaService {
 
         DaAipState aipState = aipStateRepository.findById(input.aipStateId()).orElseThrow();
         aipState.setAipVersionMetadata(aipState.getAipVersion());
+        packageType.applyTo(aipState);
         referenceResolver.clearProblem(aipState);
         // Rebuilding the package can add files to it, so how much of it is attached changes even
         // though no link was touched.
@@ -472,7 +585,7 @@ public class DaService {
         return nodeUuids;
     }
 
-    private Path unpack(Path zip) throws IOException {
+    Path unpack(Path zip) throws IOException {
         Path tempDir = Files.createTempDirectory("unzipped");
         try (ZipInputStream zipInputStream = new ZipInputStream((Files.newInputStream(zip)))) {
             ZipEntry entry;
@@ -489,7 +602,7 @@ public class DaService {
         return tempDir;
     }
 
-    private MetsType readMets(Path tempDir) throws Exception {
+    MetsType readMets(Path tempDir) throws Exception {
         try (Stream<Path> str = Files.walk(tempDir).filter(path -> path.toString().endsWith("METS.xml"))) {
             Path mets = str.findFirst().orElseThrow(() -> AipProblemException.metadata("Balíček neobsahuje soubor METS.xml"));
             return MetsReaderWriter.unmarshal(mets);
@@ -554,7 +667,7 @@ public class DaService {
      * for; asking again would only replace the pending item with an identical one.
      */
     private boolean isDownloadPending(DaAip aip, AipType requested) {
-        DaSyncQueueItem pending = syncQueueItemRepository.findByAipAndStateInAndActiveIsTrue(aip,
+        DaSyncQueueItem pending = syncQueueItemRepository.findFirstByAipAndStateInAndActiveIsTrueOrderBySyncQueueItemIdDesc(aip,
                 List.of(DaSyncQueueItem.QueueItemState.IMPORT_NEW, DaSyncQueueItem.QueueItemState.UPDATE));
         return pending != null && pending.getAipType() != null && rank(pending.getAipType()) >= rank(requested);
     }
@@ -588,6 +701,10 @@ public class DaService {
 
         for (DaAip aip : aipList) {
             DaAipState aipState = stateMap.get(aip);
+            if (aipState == null) {
+                sink.skipped(aip.getAipId(), AIP_INVALIDATED);
+                continue;
+            }
             if (aipState.getFund() == null) {
                 referenceResolver.resolveReferences(aipState);
                 resolvedStates.add(aipState);
@@ -639,7 +756,9 @@ public class DaService {
 
         for (DaAip aip : aipList) {
             DaAipState aipState = stateMap.get(aip);
-            if (BooleanUtils.isTrue(aipState.getMetadataLoad()) && BooleanUtils.isNotTrue(aipState.getCompleteAipLoad())) {
+            if (aipState == null) {
+                sink.skipped(aip.getAipId(), AIP_INVALIDATED);
+            } else if (BooleanUtils.isTrue(aipState.getMetadataLoad()) && BooleanUtils.isNotTrue(aipState.getCompleteAipLoad())) {
                 createSyncQueueItem(aip.getCode(), aip, aip.getDigitalRepository(), DaSyncQueueItem.QueueItemState.IMPORT_OK,
                         aipState.getAipVersion(), AipType.PACKAGE_INFO, true);
                 deletedAipList.add(aip);
@@ -652,31 +771,45 @@ public class DaService {
         }
 
         List<DaAipState> stateList = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(deletedAipList);
-        List<DaDao> daDaoList = daoRepository.findByAipInAndDeleteChangeIsNull(deletedAipList);
-        List<DaDaoRelation> daDaoRelationList = daoRelationRepository.findByDaoInAndDeleteChangeIsNull(daDaoList);
-        List<DaDaoFileFolder> daDaoFileFolderList = daoFileFolderRepository.findByRepresentationDaoInAndDeleteChangeIsNull(daDaoList);
-        List<DaDaoFile> daDaoFileList = daoFileRepository.findByDaoInAndDeleteChangeIsNull(daDaoList);
-        List<DaDaoItem> daDaoItemList = daoItemRepository.findByDaoInAndDeleteChangeIsNull(daDaoList);
-
         DaChange change = createDaChange(null, DaChangeType.AIP_UPDATE);
 
         stateList.forEach(this::deleteStateMetadata);
+        aipStateRepository.saveAll(stateList);
+
+        deleteDaoEntities(deletedAipList, change);
+        deleteLocalCaches(deletedAipList, getQueueImportStates());
+    }
+
+    /**
+     * Closes the digital entities of the AIPs - DAOs, their relations, file folders and files - by
+     * the given change, and drops the level views no longer used by any of them.
+     */
+    private void deleteDaoEntities(List<DaAip> aips, DaChange change) {
+        List<DaDao> daDaoList = daoRepository.findByAipInAndDeleteChangeIsNull(aips);
+        List<DaDaoRelation> daDaoRelationList = daoRelationRepository.findByDaoInAndDeleteChangeIsNull(daDaoList);
+        List<DaDaoFileFolder> daDaoFileFolderList = daoFileFolderRepository.findByRepresentationDaoInAndDeleteChangeIsNull(daDaoList);
+        List<DaDaoFile> daDaoFileList = daoFileRepository.findByDaoInAndDeleteChangeIsNull(daDaoList);
+
         daDaoList.forEach(d -> d.setDeleteChange(change));
         daDaoRelationList.forEach(r -> r.setDeleteChange(change));
         daDaoFileFolderList.forEach(f -> f.setDeleteChange(change));
         daDaoFileList.forEach(f -> f.setDeleteChange(change));
-        daDaoItemList.forEach(i -> i.setDeleteChange(change));
 
-        aipStateRepository.saveAll(stateList);
         daoRepository.saveAll(daDaoList);
         daoRelationRepository.saveAll(daDaoRelationList);
         daoFileFolderRepository.saveAll(daDaoFileFolderList);
         daoFileRepository.saveAll(daDaoFileList);
-        daoItemRepository.saveAll(daDaoItemList);
 
         levelViewService.deleteDisconnectedLevelViews(change);
+    }
 
-        List<DaLocalCache> localCacheList = daLocalCacheRepository.findByAipInAndQueueItemStatesIn(deletedAipList, getQueueImportStates());
+    /**
+     * Deletes the packages of the AIPs stored for queue items in the given states - downloaded ones
+     * for the import states, prepared exports for the export states - the files together with their
+     * records.
+     */
+    private void deleteLocalCaches(List<DaAip> aips, Collection<DaSyncQueueItem.QueueItemState> queueItemStates) {
+        List<DaLocalCache> localCacheList = daLocalCacheRepository.findByAipInAndQueueItemStatesIn(aips, queueItemStates);
         for (DaLocalCache localCache : localCacheList) {
             if (localCache.getFilePath() != null) {
                 if (localCache.getFilePathMetadata() != null && !localCache.getFilePath().equals(localCache.getFilePathMetadata())) {
@@ -710,6 +843,9 @@ public class DaService {
     public int remapReferences(List<Integer> aipIds, AipOutcomeSink sink) {
         List<DaAip> aipList = aipRepository.findAllById(aipIds);
         List<DaAipState> stateList = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList);
+        Set<Integer> activeAipIds = stateList.stream().map(s -> s.getDaAip().getAipId()).collect(Collectors.toSet());
+        aipList.stream().map(DaAip::getAipId).filter(id -> !activeAipIds.contains(id))
+                .forEach(id -> sink.skipped(id, AIP_INVALIDATED));
         List<DaAipState> resolvedStates = new ArrayList<>();
         for (DaAipState aipState : stateList) {
             Integer aipId = aipState.getDaAip().getAipId();
@@ -754,7 +890,9 @@ public class DaService {
 
         for (DaAip aip : aipList) {
             DaAipState aipState = stateMap.get(aip);
-            if (BooleanUtils.isTrue(aipState.getCompleteAipLoad())) {
+            if (aipState == null) {
+                sink.skipped(aip.getAipId(), AIP_INVALIDATED);
+            } else if (BooleanUtils.isTrue(aipState.getCompleteAipLoad())) {
                 sink.skipped(aip.getAipId(), "Kompletní AIP je už stažený.");
             } else if (BooleanUtils.isNotTrue(aipState.getMetadataLoad())) {
                 sink.skipped(aip.getAipId(), "AIP nemá stažená metadata; nejprve je nutné stáhnout ta.");
@@ -783,7 +921,9 @@ public class DaService {
         // shows as the queue item of the AIP.
         for (DaAip aip : aipList) {
             DaAipState aipState = stateMap.get(aip);
-            if (BooleanUtils.isNotTrue(aipState.getCompleteAipLoad())) {
+            if (aipState == null) {
+                sink.skipped(aip.getAipId(), AIP_INVALIDATED);
+            } else if (BooleanUtils.isNotTrue(aipState.getCompleteAipLoad())) {
                 sink.skipped(aip.getAipId(), "AIP nemá stažený kompletní balíček, není co mazat.");
             } else if (isDownloadPending(aip, AipType.METADATA_BASE)) {
                 sink.skipped(aip.getAipId(), "Nahrazení kompletního balíčku metadaty už je ve frontě.");
@@ -814,6 +954,10 @@ public class DaService {
 
                 for (DaAip aip : aipList) {
                     DaAipState aipState = stateMap.get(aip);
+                    if (aipState == null) {
+                        sink.skipped(aip.getAipId(), AIP_INVALIDATED);
+                        continue;
+                    }
                     AipType aipType = AipType.PACKAGE_INFO;
                     if (BooleanUtils.isTrue(aipState.getCompleteAipLoad())) {
                         aipType = AipType.AIP_BASE;
@@ -859,6 +1003,11 @@ public class DaService {
         // Only an AIP attached to a unit of description can be exported; the query filters the
         // rest out, and without saying so the action would report success and send nothing.
         Set<Integer> exportable = aipList.stream().map(DaAip::getAipId).collect(Collectors.toSet());
+        // an export submitted twice at once waits here for the first one, then supersedes its items -
+        // otherwise both build the packages and both queue them as active (seen after a double click)
+        if (!exportable.isEmpty()) {
+            aipRepository.lockByIds(exportable);
+        }
         aipIds.stream().filter(id -> !exportable.contains(id)).forEach(id ->
                 sink.skipped(id, "AIP není napojený na jednotku popisu, není co exportovat."));
         Map<DaAip, DaAipState> stateMap = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList).stream()
@@ -866,6 +1015,10 @@ public class DaService {
 
         for (DaAip aip : aipList) {
             DaAipState aipState = stateMap.get(aip);
+            if (aipState == null) {
+                sink.skipped(aip.getAipId(), AIP_INVALIDATED);
+                continue;
+            }
 
             AipType aipType = AipType.PACKAGE_INFO;
             if (BooleanUtils.isTrue(aipState.getCompleteAipLoad())) {
@@ -1264,16 +1417,6 @@ public class DaService {
         return daoFileRepository.save(daoFile);
     }
 
-    public DaDaoItem createDaDaoItem(DaDao dao, DaChange change, RulItemType itemType, RulItemSpec itemSpec, ArrData data) {
-        DaDaoItem daoItem = new DaDaoItem();
-        daoItem.setCreateChange(change);
-        daoItem.setDao(dao);
-        daoItem.setItemType(itemType);
-        daoItem.setItemSpec(itemSpec);
-        daoItem.setData(data);
-        return daoItemRepository.save(daoItem);
-    }
-
     @Transactional
     public List<DaSyncQueueItem> getNextItems(int pageSize, DaSyncQueueItem.QueueItemState... states) {
         Pageable pageable = PageRequest.of(0, pageSize);
@@ -1511,7 +1654,7 @@ public class DaService {
         }
     }
 
-    private static void deleteTempDirectory(Path tempDir) {
+    static void deleteTempDirectory(Path tempDir) {
         if (tempDir == null) {
             return;
         }
@@ -1646,17 +1789,9 @@ public class DaService {
         Validate.isTrue(TransactionSynchronizationManager.isActualTransactionActive(),
                         "Zařazení do fronty vyžaduje otevřenou transakci");
 
-        List<DaSyncQueueItem.QueueItemState> queueItemStates = getQueueItemStates(queueItemState);
-
-        // The request being queued replaces the ones already waiting for the same AIP. Their action
-        // items are closed here, where they lose their queue item - the processors read active items
-        // only, so nothing else would ever report on them again.
-        for (Integer superseded : syncQueueItemRepository.findActionItemIdsToSupersede(code, digitalRepository, queueItemStates)) {
-            actionService.recordOutcome(superseded, DaAipActionItemState.SKIPPED,
-                                        "Požadavek nahradil novější požadavek na tentýž AIP.");
-        }
-
-        syncQueueItemRepository.updateActiveByCodeAndDigitalRepositoryAndStateInAndActiveIsTrue(code, digitalRepository, queueItemStates);
+        // The request being queued replaces the ones already waiting for the same AIP.
+        deactivateQueueItems(code, aip, digitalRepository, getQueueItemStates(queueItemState),
+                             "Požadavek nahradil novější požadavek na tentýž AIP.");
 
         DaSyncQueueItem syncQueueItem = new DaSyncQueueItem();
         syncQueueItem.setCode(code);
@@ -1668,6 +1803,27 @@ public class DaService {
         syncQueueItem.setActive(active);
         syncQueueItem.setDate(OffsetDateTime.now());
         return syncQueueItemRepository.save(syncQueueItem);
+    }
+
+    /**
+     * Withdraws the active queue items of the AIP in the given states. Their action items are
+     * closed here, where they lose their queue item - the processors read active items only, so
+     * nothing else would ever report on them again.
+     *
+     * @param reason why the action items end skipped
+     */
+    private void deactivateQueueItems(String code, @Nullable DaAip aip, ArrDigitalRepository digitalRepository,
+                                      Collection<DaSyncQueueItem.QueueItemState> queueItemStates, String reason) {
+        // One request of an AIP at a time: the pending one is withdrawn only if it is seen committed
+        if (aip != null && aip.getAipId() != null) {
+            aipRepository.lockByIds(List.of(aip.getAipId()));
+        }
+
+        for (Integer withdrawn : syncQueueItemRepository.findActionItemIdsToSupersede(code, digitalRepository, queueItemStates)) {
+            actionService.recordOutcome(withdrawn, DaAipActionItemState.SKIPPED, reason);
+        }
+
+        syncQueueItemRepository.updateActiveByCodeAndDigitalRepositoryAndStateInAndActiveIsTrue(code, digitalRepository, queueItemStates);
     }
 
     private List<DaSyncQueueItem.QueueItemState> getQueueItemStates(DaSyncQueueItem.QueueItemState queueItemState) {
@@ -1694,6 +1850,12 @@ public class DaService {
         states.add(DaSyncQueueItem.QueueItemState.IMPORT_NEW);
         states.add(DaSyncQueueItem.QueueItemState.IMPORT_OK);
         states.add(DaSyncQueueItem.QueueItemState.IMPORT_ERROR);
+        return states;
+    }
+
+    private static Collection<DaSyncQueueItem.QueueItemState> getQueueAllStates() {
+        List<DaSyncQueueItem.QueueItemState> states = new ArrayList<>(getQueueImportStates());
+        states.addAll(getQueueExportStates());
         return states;
     }
 
@@ -1790,8 +1952,15 @@ public class DaService {
      *
      * @return the link, existing when the object already hangs on this unit of description
      */
-    private ArrDaLink linkToNode(DaAip daAip, @Nullable DaDao daDao, ArrNode arrNode,
+    ArrDaLink linkToNode(DaAip daAip, @Nullable DaDao daDao, ArrNode arrNode,
                                  ArrDaoLink.LinkType linkType, ArrChange change) {
+        // The invalidation holds the lock until it commits, so the state is read either before it
+        // started or after it closed the links - a link cannot be created in between.
+        aipRepository.lockByIds(List.of(daAip.getAipId()));
+        if (aipStateRepository.findByDaAipAndDeleteChangeIsNull(daAip) == null) {
+            throw new BusinessException("AIP " + daAip.getCode() + " byl v digitálním archivu zneplatněn, nelze jej připojit.",
+                                        BaseCode.INVALID_STATE);
+        }
         List<ArrDaLink> liveLinks = daDao == null
                 ? daLinkRepository.findByAip_AipIdAndDaDaoIsNullAndDeleteChangeIsNull(daAip.getAipId())
                 : daLinkRepository.findByDaDaoInAndDeleteChangeIsNull(List.of(daDao));
@@ -1932,7 +2101,12 @@ public class DaService {
      * @return the newly created child node
      */
     private ArrNode createChildNode(ArrNode parentNode, ArrChange change, int position) {
-        ArrNode newNode = arrangementService.createNode(parentNode.getFund(), generateUuid(), change);
+        return createChildNode(parentNode, change, position, generateUuid());
+    }
+
+    /** See {@link #createChildNode(ArrNode, ArrChange, int)}; the new node gets the given UUID. */
+    ArrNode createChildNode(ArrNode parentNode, ArrChange change, int position, String uuid) {
+        ArrNode newNode = arrangementService.createNode(parentNode.getFund(), uuid, change);
 
         ArrLevel arrLevel = new ArrLevel();
         arrLevel.setNodeParent(parentNode);
@@ -1973,8 +2147,23 @@ public class DaService {
      *                    made one
      * @param levelViewId the level view whose digital entities are attached, for the actions that
      *                    build a logical structure
+     * @param fileplanAsRoot for the import of the description: whether the file plan becomes the
+     *                    root series; null (in actions submitted earlier) is false
+     * @param daoId       for the import of the description of one package: the level of its logical
+     *                    structure below which the description is taken; null for the level view or
+     *                    the whole package
      */
-    public record ConnectParams(Integer nodeId, @Nullable Integer changeId, @Nullable Integer levelViewId) {
+    public record ConnectParams(Integer nodeId, @Nullable Integer changeId, @Nullable Integer levelViewId,
+                                @Nullable Boolean fileplanAsRoot, @Nullable Integer daoId) {
+
+        public ConnectParams(Integer nodeId, @Nullable Integer changeId, @Nullable Integer levelViewId) {
+            this(nodeId, changeId, levelViewId, null, null);
+        }
+
+        public ConnectParams(Integer nodeId, @Nullable Integer changeId, @Nullable Integer levelViewId,
+                             @Nullable Boolean fileplanAsRoot) {
+            this(nodeId, changeId, levelViewId, fileplanAsRoot, null);
+        }
     }
 
 
@@ -2071,6 +2260,41 @@ public class DaService {
                                                  new ConnectParams(nodeId, null, null)));
     }
 
+    /**
+     * Imports the description the packages carry into the archival description below a unit of
+     * description, one package after another - a later package finds the levels an earlier one
+     * created, so the packages of one file plan share its groups.
+     *
+     * The packages are imported in the background, where nobody is logged in, so the permission
+     * to arrange the fund is checked here. Whether a package can be imported is decided for each
+     * package when it is imported, so one that cannot does not stop the others.
+     */
+    public DaAipAction submitImportDescription(Integer nodeId, List<Integer> aipIds, @Nullable Integer levelViewId,
+                                               @Nullable Integer daoId, boolean fileplanAsRoot) {
+        return submitImport(DaAipActionType.IMPORT_DESCRIPTION, nodeId, aipIds, levelViewId, daoId, fileplanAsRoot);
+    }
+
+    /**
+     * Creates, below a unit of description, a level for each level of the logical structure
+     * directly below the given one (or the top of the packages) and attaches to it its part of the
+     * packages. With the rules of the fund the levels get their items from the EAD; without them
+     * they carry only the attached parts.
+     */
+    public DaAipAction submitCreateSublevels(Integer nodeId, List<Integer> aipIds, @Nullable Integer levelViewId,
+                                             @Nullable Integer daoId) {
+        return submitImport(DaAipActionType.CREATE_SUBLEVELS, nodeId, aipIds, levelViewId, daoId, false);
+    }
+
+    private DaAipAction submitImport(DaAipActionType actionType, Integer nodeId, List<Integer> aipIds,
+                                     @Nullable Integer levelViewId, @Nullable Integer daoId, boolean fileplanAsRoot) {
+        inTransaction(() -> {
+            checkArrPermission(nodeRepository.getOneCheckExist(nodeId));
+            return null;
+        });
+        return inTransaction(() -> submitConnect(actionType, aipIds,
+                                                 new ConnectParams(nodeId, null, levelViewId, fileplanAsRoot, daoId)));
+    }
+
     /** Creates a unit of description per package and attaches the package there. */
     public DaAipAction submitBulkCreateFromSelected(Integer nodeId, List<Integer> aipIds) {
         inTransaction(() -> {
@@ -2082,9 +2306,20 @@ public class DaService {
                                                  new ConnectParams(nodeId, null, null)));
     }
 
-    /** Builds the logical structure under an existing unit of description and attaches the packages. */
+    /**
+     * Attaches one level of the logical structure of the packages to an existing unit of
+     * description; the levels below it are attached with it. Nothing is created.
+     */
     public DaAipAction submitBulkConnectLogicalStructure(Integer nodeId, List<Integer> aipIds, Integer levelViewId) {
-        return submitLogicalStructure(DaAipActionType.CONNECT_LOGICAL_STRUCTURE, nodeId, aipIds, levelViewId, false);
+        inTransaction(() -> {
+            checkArrPermission(nodeRepository.getOneCheckExist(nodeId));
+            daLevelViewRepository.findById(levelViewId).orElseThrow(
+                    () -> new ObjectNotFoundException("Nebylo nalezeno level view s předaným ID. ID=" + levelViewId,
+                                                      BaseCode.ID_NOT_EXIST));
+            return null;
+        });
+        return inTransaction(() -> submitConnect(DaAipActionType.CONNECT_LOGICAL_STRUCTURE, aipIds,
+                                                 new ConnectParams(nodeId, null, levelViewId)));
     }
 
     /** Creates a unit of description, builds the logical structure under it and attaches the packages. */
@@ -2156,7 +2391,10 @@ public class DaService {
         }
     }
 
-    /** Attaches the logical entities of one AIP that belong to the level view of the action. */
+    /**
+     * Attaches the level of the logical structure of one AIP that belongs to the level view of the
+     * action. The levels below it are attached with it.
+     */
     private void connectLogicalDaos(DaAip daAip, ArrNode nodeToConnect, ConnectParams params) {
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, nodeToConnect);
         DaLevelView levelViewToConnect = daLevelViewRepository.findById(params.levelViewId()).orElseThrow(
@@ -2165,13 +2403,16 @@ public class DaService {
 
         List<DaDao> daoList = daoRepository.findAllByLevelViewInAndDeleteChangeIsNull(
                 Collections.singletonList(levelViewToConnect));
+        boolean linked = false;
         for (DaDao daDao : daoList) {
-            for (DaDaoRelation relation : daoRelationRepository.findByParentDaoAndDeleteChangeIsNull(daDao)) {
-                DaDao dao = relation.getDao();
-                if (dao.getType().equals(DaDao.DaoType.LOGICAL) && dao.getAip().equals(daAip)) {
-                    linkToNode(daAip, dao, nodeToConnect, ArrDaoLink.LinkType.PART_AIP, change);
-                }
+            if (daDao.getType() == DaDao.DaoType.LOGICAL && daDao.getAip().equals(daAip)) {
+                linkToNode(daAip, daDao, nodeToConnect, ArrDaoLink.LinkType.PART_AIP, change);
+                linked = true;
             }
+        }
+        if (!linked) {
+            throw new BusinessException("AIP " + daAip.getCode() + " vybranou úroveň logické struktury neobsahuje.",
+                                        BaseCode.INVALID_STATE);
         }
     }
     private ArrNode createNextLevel(ArrNode arrNode, ArrChange change, int position, DaLevelView levelView) {

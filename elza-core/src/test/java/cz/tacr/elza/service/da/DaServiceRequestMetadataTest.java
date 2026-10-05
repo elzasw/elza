@@ -123,7 +123,7 @@ public class DaServiceRequestMetadataTest extends AbstractServiceTest {
 
         tx().executeWithoutResult(t -> {
             DaAip aip = aipRepository.findById(aipId).orElseThrow();
-            DaSyncQueueItem queued = syncQueueItemRepository.findByAipAndStateInAndActiveIsTrue(aip,
+            DaSyncQueueItem queued = syncQueueItemRepository.findFirstByAipAndStateInAndActiveIsTrueOrderBySyncQueueItemIdDesc(aip,
                     List.of(DaSyncQueueItem.QueueItemState.UPDATE));
             assertNotNull(queued, "requesting the metadata has to leave an item in the queue");
             assertEquals(AipType.METADATA_BASE, queued.getAipType());

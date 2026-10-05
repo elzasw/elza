@@ -1,9 +1,9 @@
 import {Badge, Spinner, makeStyles, tokens} from '@fluentui/react-components';
-import {WebApi} from 'actions/index.jsx';
+import {Api} from 'api';
+import {AsyncRequestInfo, AsyncType, FundStatistics} from 'elza-api';
 import {FormattedMessage, useIntl} from 'react-intl';
 import {localUTCToDateTime} from 'shared/utils/commons';
 import {messages} from './messages';
-import {QueueFundStats, QueueInfo, QueueType} from './types';
 import {usePolledData} from './usePolledData';
 
 /** How often the queue contents are reloaded while the panel is open. */
@@ -52,11 +52,11 @@ const useStyles = makeStyles({
     },
 });
 
-function fetchQueueFunds(type: QueueType): Promise<QueueFundStats[]> {
-    return WebApi.getAsyncRequestDetail(type);
+function fetchQueueFunds(type: AsyncType): Promise<FundStatistics[]> {
+    return Api.admin.adminAsyncRequestDetail(type).then(({data}) => data);
 }
 
-function RunningThreads({queue}: {queue: QueueInfo}) {
+function RunningThreads({queue}: {queue: AsyncRequestInfo}) {
     const styles = useStyles();
     const intl = useIntl();
 
@@ -97,7 +97,7 @@ function RunningThreads({queue}: {queue: QueueInfo}) {
     );
 }
 
-function QueueContent({type}: {type: QueueType}) {
+function QueueContent({type}: {type: AsyncType}) {
     const styles = useStyles();
     const {data} = usePolledData(() => fetchQueueFunds(type), DETAIL_REFRESH_MS);
 
@@ -137,7 +137,7 @@ function QueueContent({type}: {type: QueueType}) {
  * the administrator actually opened are polled. The panel is unmounted while
  * collapsed, which stops that polling.
  */
-export function QueueDetail({queue}: {queue: QueueInfo}) {
+export function QueueDetail({queue}: {queue: AsyncRequestInfo}) {
     const styles = useStyles();
 
     return (

@@ -83,6 +83,18 @@ public class DaAipState {
     @Column(length = 250)
     private String nadChangeCode;
 
+    /**
+     * Type of the content of the package, from the METS of its metadata:
+     * {@code csip:CONTENTINFORMATIONTYPE}, or {@code csip:OTHERCONTENTINFORMATIONTYPE} when the
+     * former is OTHER (e.g. NSESSS). Null until the metadata are read.
+     */
+    @Column(length = 250)
+    private String contentType;
+
+    /** Profile of the package, the METS PROFILE. Null until the metadata are read. */
+    @Column(length = 250)
+    private String profile;
+
     @Column
     private Boolean metadataLoad;
 
@@ -300,6 +312,22 @@ public class DaAipState {
 
     public void setNadChangeCode(String nadChangeCode) {
         this.nadChangeCode = nadChangeCode;
+    }
+
+    public String getContentType() {
+        return contentType;
+    }
+
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
+    }
+
+    public String getProfile() {
+        return profile;
+    }
+
+    public void setProfile(String profile) {
+        this.profile = profile;
     }
 
     public Boolean getMetadataLoad() {

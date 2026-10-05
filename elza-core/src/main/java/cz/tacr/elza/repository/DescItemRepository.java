@@ -142,7 +142,19 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
      * @return
      */
 	@Query("SELECT i FROM arr_desc_item i WHERE i.deleteChange IS NULL AND i.descItemObjectId = ?1")
-    List<ArrDescItem> findOpenDescItems(Integer descItemObjectId); // exclude: LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType 
+    List<ArrDescItem> findOpenDescItems(Integer descItemObjectId); // exclude: LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType
+
+    /**
+     * Vyhledá uzavřené verze hodnoty atributu, nejnovější první.
+     *
+     * Slouží k dohledání, kdy a kým byla hodnota smazána.
+     *
+     * @param descItemObjectId identifikátor hodnoty atributu
+     * @return uzavřené verze seřazené od poslední změny
+     */
+    @Query("SELECT i FROM arr_desc_item i JOIN FETCH i.deleteChange dc LEFT JOIN FETCH dc.user"
+            + " WHERE i.descItemObjectId = ?1 ORDER BY dc.changeId DESC")
+    List<ArrDescItem> findClosedDescItems(Integer descItemObjectId);
 
     @Query("SELECT i FROM arr_desc_item i WHERE i.deleteChange IS NULL AND i.descItemObjectId IN :descItemObjectIds")
     List<ArrDescItem> findOpenDescItemsByIds(@Param("descItemObjectIds") Collection<Integer> descItemObjectIds); // exclude: LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType 

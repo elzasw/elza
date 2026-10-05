@@ -1,11 +1,11 @@
 import { useIntl } from "react-intl";
 import { tableMessages } from "components/shared/lang/tableMessages";
 import { SortingOrder } from "elza-api";
-import {FC, useCallback, useEffect, useRef, useState, MouseEvent, KeyboardEvent} from 'react';
+import {FC, useCallback, useEffect, useRef, useState, MouseEvent, KeyboardEvent, ReactNode} from 'react';
 import { useAppSelector } from 'utils/hooks';
 import {StoreHorizontalLoader} from 'components/shared';
 import storeFromArea from '../../shared/utils/storeFromArea.jsx';
-import { formatAipSize, formatUnitDate } from './format';
+import { formatPackageSize, formatUnitDate } from './format';
 import { findColDefByKey } from './columns';
 import './AipTable.scss';
 import { useHistory} from 'react-router';
@@ -57,6 +57,8 @@ type AipTableProps = {
     setDetailOpen?: (open: boolean) => void;
     /** Balíček, na kterém má seznam začít - místo první stránky se otevře ta, na které leží. */
     focusAipId?: number;
+    /** Akce stránky nad seznamem; zobrazí se v liště s vyhledáváním, vedle výběru sloupců. */
+    toolbarActions?: ReactNode;
 }
 
 /**
@@ -79,7 +81,7 @@ const getAipRows = (aips: Aips) => {
     return [];
 };
 
-const AipTable: FC<AipTableProps> = ({onAipSelect, onExplore, filterDisabled, initialFilters, hiddenValues, detailOpen, setDetailOpen, focusAipId}) => {
+const AipTable: FC<AipTableProps> = ({onAipSelect, onExplore, filterDisabled, initialFilters, hiddenValues, detailOpen, setDetailOpen, focusAipId, toolbarActions}) => {
     const aips = useAppSelector(state => storeFromArea(state, AREA_AIPS) as Aips);
     const aip = useAppSelector(state => storeFromArea(state, AREA_AIP) as Aip);
     const {from, pageSize} = aips.filter;
@@ -123,7 +125,7 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, onExplore, filterDisabled, in
                     {item.code}
                 </span>
             );
-            case "aipSize": return formatAipSize(item[key]);
+            case "aipSize": return formatPackageSize(item[key]);
             case "unitdateFrom":  return item.unitdateFrom ? formatUnitDate(item.unitdateFrom, item.unitdateTo): "-";
             // Napojený AIP vede na balíčky svého archivního souboru a rovnou se tam vybere;
             // nedohledaný fond zůstane pomlčkou, není kam odkázat.
@@ -357,6 +359,7 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, onExplore, filterDisabled, in
                         filterDisabled={filterDisabled}
                         initialFilters={initialFilters}
                         hiddenValues={hiddenValues}
+                        actions={toolbarActions}
                     />
                     <div className="aip-table-scroll">
                     <Table
@@ -395,9 +398,8 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, onExplore, filterDisabled, in
                                 return (
                                 <TableRow
                                     key={item.code}
-                                    className="table-row"
+                                    className={isDetailShown ? "table-row detail-shown" : "table-row"}
                                     ref={isDetailShown ? focusedRow : undefined}
-                                    style={{backgroundColor: isDetailShown ? "#ddd": undefined}}
                                 >
                                     <TableSelectionCell
                                         checked={selected}

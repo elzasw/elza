@@ -7,19 +7,26 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import cz.tacr.elza.domain.ArrDaLink;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.DaAip;
 import cz.tacr.elza.domain.DaAipState;
+import cz.tacr.elza.domain.DaDao;
 import cz.tacr.elza.repository.AipStateRepository;
 import cz.tacr.elza.repository.ArrDaLinkRepository;
+import cz.tacr.elza.repository.DaDaoRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
@@ -33,55 +40,113 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
  * The AIP is matched onto a node by UUID: the UUID of the package first, then the levels of
  * its logical structural map top down, then its representations - see {@link AipNodeUuids}.
  * The first UUID that belongs to a node of the AIP's fund wins, so the match is the outermost
- * part of the AIP that ELZA already describes. An AIP that already has a live link is never
- * touched.
+ * part of the AIP that ELZA already describes. A UUID match always wins. An AIP that already has
+ * a live link is never touched.
+ *
+ * What follows depends on what matched:
+ * <ul>
+ * <li>the package itself, or one of its representations - the whole AIP is attached to the node;
+ * nothing is created, the description is taken to exist and be complete;</li>
+ * <li>a level of the logical structural map - the levels below it that ELZA does not describe yet
+ * are created, by the rules of the fund, with their items from the EAD, and the files are
+ * attached to them ({@link DaImportService#importBelow}); the matched node itself is taken as it
+ * is. When the rules of the fund cannot import packages, the whole AIP is attached instead.</li>
+ * </ul>
+ * An AIP that matches no node by UUID is placed as the DA_MATCH script of the rules of the fund
+ * decides - under levels it finds or creates below the root of the fund
+ * ({@link DaImportService#placeReceived}); without the script, or when the script leaves it to a
+ * user, it stays unattached.
+ *
+ * A failure is recorded as a problem of the AIP; nothing of the AIP is attached then, so it can be
+ * processed again once the problem is solved.
  */
 @Service
 public class DaAipAutoLinkService {
 
     private static final Logger logger = LoggerFactory.getLogger(DaAipAutoLinkService.class);
 
+    /**
+     * What the automatic processing did to an AIP.
+     *
+     * @param nodeId the node the AIP was matched onto; the root of the fund when it was placed by
+     *            the DA_MATCH script
+     * @param link the link of the whole AIP; null when the levels below the node were imported
+     * @param imported what the import below the node (or the placement) did; null when the whole
+     *            AIP was attached
+     */
+    public record AutoLink(Integer nodeId, @Nullable ArrDaLink link, @Nullable DaImportBuilder.Outcome imported) {
+    }
+
     @Autowired
     private DaService daService;
+    @Autowired
+    private DaImportService daImportService;
     @Autowired
     private AipStateRepository aipStateRepository;
     @Autowired
     private ArrDaLinkRepository daLinkRepository;
+    @Autowired
+    private DaDaoRepository daoRepository;
     @Autowired
     private NodeRepository nodeRepository;
     @Autowired
     private ArrangementInternalService arrangementInternalService;
     @Autowired
     private EventNotificationService eventNotificationService;
+    @Autowired
+    private DaAipReferenceResolver referenceResolver;
+    @Autowired
+    @Qualifier("transactionManager")
+    private PlatformTransactionManager txManager;
 
     /**
-     * Attaches every AIP whose UUIDs select a node. A failure of one AIP is logged and does not
-     * stop the others - the metadata import itself already succeeded.
+     * Attaches every AIP whose UUIDs select a node, each in a transaction of its own. A failure of
+     * one AIP is recorded on it and does not stop the others - the metadata import itself already
+     * succeeded.
      *
      * @param uuidsByAip AIP id to the UUIDs it offers, in matching order
-     * @return number of created links
+     * @return number of attached AIPs
      */
     public int linkReceivedAips(Map<Integer, List<String>> uuidsByAip) {
         int linked = 0;
         for (Map.Entry<Integer, List<String>> entry : uuidsByAip.entrySet()) {
+            Integer aipId = entry.getKey();
             try {
-                if (linkReceivedAip(entry.getKey(), entry.getValue()).isPresent()) {
+                Optional<AutoLink> result = new TransactionTemplate(txManager)
+                        .execute(status -> linkReceivedAip(aipId, entry.getValue()));
+                if (result != null && result.isPresent()) {
                     linked++;
                 }
             } catch (Exception e) {
-                logger.error("Automatic attachment of AIP={} failed", entry.getKey(), e);
+                logger.error("Automatic attachment of AIP={} failed", aipId, e);
+                recordProblem(aipId, e);
             }
         }
         return linked;
     }
 
+    /** The work of the failed attachment is rolled back; the problem is written in a transaction of its own. */
+    private void recordProblem(Integer aipId, Exception failure) {
+        try {
+            new TransactionTemplate(txManager).executeWithoutResult(status -> {
+                DaAipState aipState = aipStateRepository.findByDaAipAndDeleteChangeIsNull(daService.findAipById(aipId));
+                if (aipState != null) {
+                    referenceResolver.recordProblem(aipState, AipProblem.of(failure));
+                    aipStateRepository.save(aipState);
+                }
+            });
+        } catch (Exception e) {
+            logger.error("Problem of the automatic attachment of AIP={} could not be recorded", aipId, e);
+        }
+    }
+
     /**
      * @param aipId     AIP to attach
      * @param nodeUuids UUIDs the AIP offers, in matching order
-     * @return the created link, empty when the AIP was not attached
+     * @return what was done, empty when the AIP was not attached
      */
     @Transactional
-    public Optional<ArrDaLink> linkReceivedAip(Integer aipId, List<String> nodeUuids) {
+    public Optional<AutoLink> linkReceivedAip(Integer aipId, List<String> nodeUuids) {
         DaAip aip = daService.findAipById(aipId);
         if (!daLinkRepository.findByAipIdAndDeleteChangeIsNull(aipId).isEmpty()) {
             logger.debug("AIP={} is already attached to a node, automatic attachment skipped", aipId);
@@ -94,7 +159,7 @@ public class DaAipAutoLinkService {
         }
         if (nodeUuids == null || nodeUuids.isEmpty()) {
             logger.info("AIP={} offers no UUID to match a node by", aipId);
-            return Optional.empty();
+            return place(aip, aipState);
         }
 
         Map<String, ArrNode> nodesByUuid = nodeRepository
@@ -103,7 +168,7 @@ public class DaAipAutoLinkService {
         if (nodesByUuid.isEmpty()) {
             logger.info("AIP={} matches no node of fund={} by any of its {} UUID(s)", aipId,
                     aipState.getFund().getFundId(), nodeUuids.size());
-            return Optional.empty();
+            return place(aip, aipState);
         }
 
         // the UUIDs come in matching order, so the first hit is the outermost matching part
@@ -112,6 +177,18 @@ public class DaAipAutoLinkService {
         if (nodesByUuid.size() > 1) {
             logger.info("AIP={} matches {} nodes of fund={}, attaching to the first one in matching order: {}",
                     aipId, nodesByUuid.size(), aipState.getFund().getFundId(), matchedUuid);
+        }
+
+        if (!matchedUuid.equals(AipNodeUuids.normalize(aip.getCode()))) {
+            Optional<DaImportBuilder.Outcome> imported = daImportService.importBelow(aip, node, matchedUuid, false);
+            if (imported.isPresent()) {
+                if (imported.get().attached() == 0) {
+                    attachMatchedLevel(aip, node, matchedUuid);
+                }
+                logger.info("AIP={} matched node={} by UUID {}, levels below imported: {}", aipId,
+                        node.getNodeId(), matchedUuid, imported.get());
+                return Optional.of(new AutoLink(node.getNodeId(), null, imported.get()));
+            }
         }
 
         ArrDaLink link = daService.connectToJP(node.getNodeId(), aipId);
@@ -123,6 +200,31 @@ public class DaAipAutoLinkService {
                     fundVersion.getFundVersionId(), link.getDaoLinkId(),
                     Collections.singletonList(node.getNodeId())));
         }
-        return Optional.of(link);
+        return Optional.of(new AutoLink(node.getNodeId(), link, null));
+    }
+
+    /** Places an AIP no UUID of which matched, as the DA_MATCH script of the rules of the fund decides. */
+    private Optional<AutoLink> place(DaAip aip, DaAipState aipState) {
+        ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFund(aipState.getFund());
+        if (fundVersion == null) {
+            return Optional.empty();
+        }
+        ArrNode root = fundVersion.getRootNode();
+        Optional<DaImportBuilder.Outcome> placed = daImportService.placeReceived(aip, root);
+        placed.ifPresent(outcome -> logger.info("AIP={} placed by the rules of fund={}: {}", aip.getAipId(),
+                                                aipState.getFund().getFundId(), outcome));
+        return placed.map(outcome -> new AutoLink(root.getNodeId(), null, outcome));
+    }
+
+    /**
+     * Nothing below the matched level was attached - e.g. the matched level is the lowest one. So
+     * that the AIP does not stay unattached, the matched level of the package is attached to the
+     * node it matched.
+     */
+    private void attachMatchedLevel(DaAip aip, ArrNode node, String matchedUuid) {
+        daoRepository.findByAipAndTypeAndDeleteChangeIsNull(aip, DaDao.DaoType.LOGICAL).stream()
+                .filter(dao -> matchedUuid.equals(AipNodeUuids.normalize(dao.getCode())))
+                .findFirst()
+                .ifPresent(dao -> daService.connectPartToJP(node, aip, dao));
     }
 }
