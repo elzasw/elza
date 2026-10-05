@@ -6309,6 +6309,10 @@
     "defaultMessage": "The data does not exist.",
     "srcHash": "jz8_FI-2pi7x"
   },
+  "exception.arr.DESC_ITEM_NOT_FOUND": {
+    "defaultMessage": "{state, select, deleted {Description item \"{itemType}\" (ID {descItemObjectId}) no longer exists, it was deleted by user {deletedBy} at {deletedAt} (change {deleteChangeId}). Reload the description unit.} other {Description item (ID {descItemObjectId}) does not exist. Reload the description unit.}}",
+    "srcHash": "07iDXfN8TMDa"
+  },
   "exception.arr.EXISTS_BLOCKING_CHANGE": {
     "defaultMessage": "The revert cannot be performed because a blocking change exists in the description unit",
     "srcHash": "4WK3kEQi-F_4"

@@ -24,6 +24,7 @@ export const exceptionMessages = defineMessages({
     "exception.arr.DAO_ALREADY_LINKED": { id: "exception.arr.DAO_ALREADY_LINKED", defaultMessage: "Digitální entita je již připojena k jednotce popisu a repozitář neumožňuje více vazeb" },
     "exception.arr.DAO_LINK_NOT_FOUND": { id: "exception.arr.DAO_LINK_NOT_FOUND", defaultMessage: "Propojení digitální entity s jednotkou popisu neexistuje" },
     "exception.arr.DATA_NOT_FOUND": { id: "exception.arr.DATA_NOT_FOUND", defaultMessage: "Data neexistují." },
+    "exception.arr.DESC_ITEM_NOT_FOUND": { id: "exception.arr.DESC_ITEM_NOT_FOUND", defaultMessage: "{state, select, deleted {Prvek popisu „{itemType}“ (ID {descItemObjectId}) již neexistuje, smazal jej uživatel {deletedBy} {deletedAt} (změna {deleteChangeId}). Načtěte jednotku popisu znovu.} other {Prvek popisu (ID {descItemObjectId}) neexistuje. Načtěte jednotku popisu znovu.}}" },
     "exception.arr.EXISTS_BLOCKING_CHANGE": { id: "exception.arr.EXISTS_BLOCKING_CHANGE", defaultMessage: "Nelze provést revert, protože existuje blokující změna v JP" },
     "exception.arr.EXISTS_NEWER_CHANGE": { id: "exception.arr.EXISTS_NEWER_CHANGE", defaultMessage: "Existuje novější změna, je potřeba přenačíst seznam" },
     "exception.arr.FUND_NOT_FOUND": { id: "exception.arr.FUND_NOT_FOUND", defaultMessage: "Archivní fond neexistuje." },
