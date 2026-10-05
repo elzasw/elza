@@ -554,11 +554,7 @@ public class Zp2015DaImportBuildTest {
                 throw new IllegalStateException(e);
             }
             DaAip aip = createAip("uuid-" + UUID.randomUUID(), mets);
-            DaAipState state = new DaAipState();
-            state.setDaAip(aip);
-            state.setCreateChange(daChangeRepository.findAll().stream()
-                    .filter(c -> c.getDaAip().getAipId().equals(aip.getAipId())).findFirst().orElseThrow());
-            state.setAipVersion("1");
+            DaAipState state = aipStateRepository.findByDaAipAndDeleteChangeIsNull(aip);
             state.setFund(nodeRepository.findById(rootNodeId).orElseThrow().getFund());
             state.setContentType("NSESSS");
             aipStateRepository.save(state);
@@ -622,6 +618,14 @@ public class Zp2015DaImportBuildTest {
         change.setDaAip(aip);
         change.setType(DaChangeType.AIP_CREATE);
         daChangeRepository.save(change);
+
+        // only an AIP with an active state can be attached
+        DaAipState state = new DaAipState();
+        state.setDaAip(aip);
+        state.setCreateChange(change);
+        state.setAipVersion("1");
+        aipStateRepository.save(state);
+
         Map<String, DaDao> files = new java.util.HashMap<>();
         for (StructMapType structMap : mets.getStructMap()) {
             if ("LOGICAL".equals(structMap.getTYPE())) {
