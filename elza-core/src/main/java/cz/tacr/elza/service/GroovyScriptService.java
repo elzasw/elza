@@ -14,6 +14,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.Validate;
 import org.codehaus.groovy.runtime.InvokerHelper;
@@ -47,6 +49,7 @@ import cz.tacr.elza.ws.types.v1.Did;
 import cz.tacr.elza.service.da.DaImportLevel;
 import cz.tacr.elza.service.da.DaImportPackage;
 import cz.tacr.elza.service.da.DaImportResult;
+import cz.tacr.elza.service.da.DaMatchResult;
 import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyCodeSource;
@@ -74,6 +77,8 @@ public class GroovyScriptService {
     private static final String PACKAGE = "PACKAGE";
     private static final String LEVEL = "LEVEL";
     private static final String RESULT = "RESULT";
+    private static final String ROOT = "ROOT";
+    private static final String MATCH = "MATCH";
     private static final String GENERATOR_CONTEXT = "GENERATOR_CONTEXT";
     // Used for StaticDataProvider
     private static final String DATA_PROVIDER = "DATA_PROVIDER";
@@ -187,6 +192,25 @@ public class GroovyScriptService {
         input.put(PACKAGE, importPackage);
         input.put(LEVEL, level);
         input.put(RESULT, result);
+
+        groovyScriptFile.evaluate(input);
+    }
+
+    /**
+     * Runs the DA_MATCH script for a received package; the script writes where the package is
+     * placed into the result.
+     *
+     * @param root top div of the logical structural map, with the divs below it; null when the
+     *            package has none
+     */
+    public void processDaMatch(DaImportPackage importPackage, @Nullable DaImportLevel root, DaMatchResult result,
+                               String groovyFilePath) {
+        GroovyScriptFile groovyScriptFile = getGroovyScriptFile(groovyFilePath);
+
+        Map<String, Object> input = new HashMap<>();
+        input.put(PACKAGE, importPackage);
+        input.put(ROOT, root);
+        input.put(MATCH, result);
 
         groovyScriptFile.evaluate(input);
     }

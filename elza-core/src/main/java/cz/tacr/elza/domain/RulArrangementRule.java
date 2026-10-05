@@ -164,6 +164,12 @@ public class RulArrangementRule {
          * Groovy script deciding how a package of the digital archive is imported into the
          * archival description, see {@link cz.tacr.elza.service.da.DaImportPlanner}.
          */
-        DA_IMPORT
+        DA_IMPORT,
+        /**
+         * Groovy script deciding where a received package of the digital archive that matches no
+         * unit of description by UUID is placed, see
+         * {@link cz.tacr.elza.service.da.DaImportPlanner#planPlacement}.
+         */
+        DA_MATCH
     }
 }

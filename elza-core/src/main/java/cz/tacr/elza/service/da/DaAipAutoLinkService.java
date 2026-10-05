@@ -52,6 +52,11 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
  * attached to them ({@link DaImportService#importBelow}); the matched node itself is taken as it
  * is. When the rules of the fund cannot import packages, the whole AIP is attached instead.</li>
  * </ul>
+ * An AIP that matches no node by UUID is placed as the DA_MATCH script of the rules of the fund
+ * decides - under levels it finds or creates below the root of the fund
+ * ({@link DaImportService#placeReceived}); without the script, or when the script leaves it to a
+ * user, it stays unattached.
+ *
  * A failure is recorded as a problem of the AIP; nothing of the AIP is attached then, so it can be
  * processed again once the problem is solved.
  */
@@ -63,9 +68,11 @@ public class DaAipAutoLinkService {
     /**
      * What the automatic processing did to an AIP.
      *
-     * @param nodeId the node the AIP was matched onto
+     * @param nodeId the node the AIP was matched onto; the root of the fund when it was placed by
+     *            the DA_MATCH script
      * @param link the link of the whole AIP; null when the levels below the node were imported
-     * @param imported what the import below the node did; null when the whole AIP was attached
+     * @param imported what the import below the node (or the placement) did; null when the whole
+     *            AIP was attached
      */
     public record AutoLink(Integer nodeId, @Nullable ArrDaLink link, @Nullable DaImportBuilder.Outcome imported) {
     }
@@ -152,7 +159,7 @@ public class DaAipAutoLinkService {
         }
         if (nodeUuids == null || nodeUuids.isEmpty()) {
             logger.info("AIP={} offers no UUID to match a node by", aipId);
-            return Optional.empty();
+            return place(aip, aipState);
         }
 
         Map<String, ArrNode> nodesByUuid = nodeRepository
@@ -161,7 +168,7 @@ public class DaAipAutoLinkService {
         if (nodesByUuid.isEmpty()) {
             logger.info("AIP={} matches no node of fund={} by any of its {} UUID(s)", aipId,
                     aipState.getFund().getFundId(), nodeUuids.size());
-            return Optional.empty();
+            return place(aip, aipState);
         }
 
         // the UUIDs come in matching order, so the first hit is the outermost matching part
@@ -194,6 +201,19 @@ public class DaAipAutoLinkService {
                     Collections.singletonList(node.getNodeId())));
         }
         return Optional.of(new AutoLink(node.getNodeId(), link, null));
+    }
+
+    /** Places an AIP no UUID of which matched, as the DA_MATCH script of the rules of the fund decides. */
+    private Optional<AutoLink> place(DaAip aip, DaAipState aipState) {
+        ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFund(aipState.getFund());
+        if (fundVersion == null) {
+            return Optional.empty();
+        }
+        ArrNode root = fundVersion.getRootNode();
+        Optional<DaImportBuilder.Outcome> placed = daImportService.placeReceived(aip, root);
+        placed.ifPresent(outcome -> logger.info("AIP={} placed by the rules of fund={}: {}", aip.getAipId(),
+                                                aipState.getFund().getFundId(), outcome));
+        return placed.map(outcome -> new AutoLink(root.getNodeId(), null, outcome));
     }
 
     /**

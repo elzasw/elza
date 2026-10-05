@@ -64,6 +64,7 @@ public class DaAipAutoLinkServiceTest {
     private DaAip aip;
     private DaAipState aipState;
     private ArrFund fund;
+    private ArrNode rootNode;
 
     @BeforeEach
     void setUp() {
@@ -96,6 +97,8 @@ public class DaAipAutoLinkServiceTest {
 
         ArrFundVersion fundVersion = new ArrFundVersion();
         fundVersion.setFundVersionId(7);
+        rootNode = node(1, "root");
+        fundVersion.setRootNode(rootNode);
         when(arrangementInternalService.getOpenVersionByFund(fund)).thenReturn(fundVersion);
 
         when(daService.connectToJP(any(), eq(AIP_ID))).thenAnswer(inv -> {
@@ -140,6 +143,7 @@ public class DaAipAutoLinkServiceTest {
         assertTrue(link.isPresent());
         verify(daService).connectToJP(5, AIP_ID);
         verify(daImportService, never()).importBelow(any(), any(), anyString(), anyBoolean());
+        verify(daImportService, never()).placeReceived(any(), any());
 
         ArgumentCaptor<EventIdNodeIdInVersion> event = ArgumentCaptor.forClass(EventIdNodeIdInVersion.class);
         verify(eventNotificationService).publishEvent(event.capture());
@@ -225,16 +229,32 @@ public class DaAipAutoLinkServiceTest {
 
     @Test
     void noMatchingNodeLeavesTheAipUnattached() {
+        // the rules of the fund do not place it (no DA_MATCH script, or the script says none)
         assertFalse(service.linkReceivedAip(AIP_ID, uuids()).isPresent());
 
+        verify(daImportService).placeReceived(aip, rootNode);
         verify(daService, never()).connectToJP(any(), any());
     }
 
     @Test
-    void aipWithoutUuidsIsSkipped() {
+    void noMatchingNode_isPlacedAsTheRulesOfTheFundDecide() {
+        DaImportBuilder.Outcome outcome = new DaImportBuilder.Outcome(3, 0, 1, List.of());
+        when(daImportService.placeReceived(aip, rootNode)).thenReturn(Optional.of(outcome));
+
+        Optional<DaAipAutoLinkService.AutoLink> result = service.linkReceivedAip(AIP_ID, uuids());
+
+        assertTrue(result.isPresent());
+        assertEquals(rootNode.getNodeId(), result.get().nodeId());
+        assertEquals(outcome, result.get().imported());
+        verify(daService, never()).connectToJP(any(), any());
+    }
+
+    @Test
+    void aipWithoutUuids_isOnlyPlaced() {
         assertFalse(service.linkReceivedAip(AIP_ID, List.of()).isPresent());
 
         verify(nodeRepository, never()).findByFundAndUuidIn(any(), anyCollection());
+        verify(daImportService).placeReceived(aip, rootNode);
     }
 
     @Test
@@ -244,6 +264,7 @@ public class DaAipAutoLinkServiceTest {
         assertFalse(service.linkReceivedAip(AIP_ID, uuids()).isPresent());
 
         verify(nodeRepository, never()).findByFundAndUuidIn(any(), anyCollection());
+        verify(daImportService, never()).placeReceived(any(), any());
     }
 
     @Test

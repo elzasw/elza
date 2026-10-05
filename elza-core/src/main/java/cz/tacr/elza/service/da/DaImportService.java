@@ -90,6 +90,25 @@ public class DaImportService {
     }
 
     /**
+     * Places a received package that matches no unit of description by UUID into the archival
+     * description, as the DA_MATCH script of the rules of the fund decides
+     * ({@link DaImportPlanner#planPlacement}): the levels it is placed under are found or created
+     * below the root of the fund, and the package is imported below them or linked to them.
+     *
+     * @param root the root of the fund of the package
+     * @return what the placement did; empty when the rules of the fund have no DA_MATCH script, or
+     *         the script leaves the package to a user
+     * @throws AipProblemException when the package cannot be read or its EAD is not written the
+     *             way it can be read
+     */
+    @Transactional(Transactional.TxType.MANDATORY)
+    public Optional<DaImportBuilder.Outcome> placeReceived(DaAip aip, ArrNode root) {
+        return withPackage(aip, root, false, (pkg, ruleSetId) ->
+                planner.planPlacement(pkg.mets(), pkg.ead(), pkg.eadHref(), ruleSetId, pkg.importPackage()))
+                .map(plan -> builder.build(aip, root, plan));
+    }
+
+    /**
      * Imports the description the package carries - its whole logical structural map - below the
      * given unit of description, as asked for by a user
      * ({@link cz.tacr.elza.api.DaAipActionType#IMPORT_DESCRIPTION}).
@@ -194,8 +213,8 @@ public class DaImportService {
                                DaImportPackage importPackage) {
     }
 
-    private Optional<DaImportPlan> withPackage(DaAip aip, ArrNode node, boolean fileplanAsRoot,
-                                               BiFunction<OpenPackage, Integer, Optional<DaImportPlan>> planning) {
+    private <R> Optional<R> withPackage(DaAip aip, ArrNode node, boolean fileplanAsRoot,
+                                        BiFunction<OpenPackage, Integer, Optional<R>> planning) {
         DaAipState aipState = aipStateRepository.findByDaAipAndDeleteChangeIsNull(aip);
         ArrFundVersion version = arrangementInternalService.getOpenVersionByFund(node.getFund());
         DaImportPackage importPackage = new DaImportPackage(aipState.getContentType(), aipState.getProfile(),
