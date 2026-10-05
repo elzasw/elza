@@ -12,7 +12,7 @@ import { getOneSettings, setSettings } from '../../ArrUtils';
 import TemplateForm, { EXISTS_TEMPLATE as exists_template, NEW_TEMPLATE as new_template } from '../../TemplateForm';
 import { useActiveFund } from 'utils/hooks';
 import { convertToNewTemplate, convertToOldDescItem } from './conversionUtils';
-import { hasValue, isValueEqual } from './utils';
+import { mergeItemsIntoNode } from './mergeItems';
 import { ActionTypes } from 'actions/constants/ActionTypes';
 import { isDataEnum } from './types';
 import { getIntl } from 'components/shared/lang/intlInstance';
@@ -62,7 +62,7 @@ export interface DeprecatedNodeTemplate {
 
 export type NodeTemplateItem = Omit<
     NodeItem,
-    'id' | 'itemObjectId' | 'readOnly' | 'nodeId' | 'nodeVersion' | 'inhibited' | 'undefined'
+    'id' | 'itemObjectId' | 'readOnly' | 'nodeId' | 'nodeVersion' | 'inhibited'
 >;
 
 export function isNodeTemplate(template: NodeTemplate | DeprecatedNodeTemplate): template is NodeTemplate {
@@ -98,17 +98,18 @@ export function useTemplates({ descItems, nodeId, nodeVersion, fondsVersionId, o
                     onSubmitForm={({ withValues, name, type }: TemplateFormData) => {
                         const formData: NodeTemplateItem[] = descItems
                             .filter(({ nodeId: _nodeId }) => _nodeId === nodeId) // remove inherited
-                            .map((descItem) => ({
-                                // convert to TemplateItem
-                                itemSpecId: !isDataEnum(descItem.data) || withValues ? descItem.itemSpecId : undefined,
-                                itemTypeId: descItem.itemTypeId,
-                                position: descItem.position,
-                                data: withValues
-                                    ? descItem.data
-                                    : {
-                                          dataType: descItem.data.dataType,
-                                      },
-                            }));
+                            .map((descItem) => {
+                                // convert to TemplateItem; an undefined item has no data
+                                const isEnum = descItem.data != undefined && isDataEnum(descItem.data);
+                                const typeOnlyData = descItem.data ? { dataType: descItem.data.dataType } : undefined;
+                                return {
+                                    itemSpecId: !isEnum || withValues ? descItem.itemSpecId : undefined,
+                                    itemTypeId: descItem.itemTypeId,
+                                    position: descItem.position,
+                                    undefined: withValues ? descItem.undefined : undefined,
+                                    data: withValues ? descItem.data : typeOnlyData,
+                                };
+                            });
                         const template = { name, withValues, formData };
 
                         switch (type) {
@@ -177,83 +178,19 @@ export function useTemplates({ descItems, nodeId, nodeVersion, fondsVersionId, o
                             template = convertToNewTemplate(template);
                         }
 
-                        const descItemsWithoutValue = template.formData.filter((item) => !hasValue(item));
-                        const descItemsWithValue = template.formData.filter((item) => hasValue(item));
-
                         // exclude inherited items
                         const ownDescItems = descItems.filter(({ nodeId: _nodeId }) => _nodeId === nodeId);
 
-                        const createItems: NodeItem[] = [];
-                        const deleteItems: NodeItem[] = [];
-
-                        const itemTypePositions: Record<number, number> = {};
-                        const skippedItemObjectIds: number[] = [];
-
-                        descItemsWithValue
-                            .sort((a, b) => a.itemTypeId - b.itemTypeId || a.position - b.position) // sort by itemTypeId and position
-                            .forEach((descItem) => {
-                                // remove items already processed, exclude items without values
-                                const pendingDescItems = ownDescItems.filter(
-                                    ({ itemObjectId }) => itemObjectId != undefined
-                                        && !skippedItemObjectIds.includes(itemObjectId)
-                                );
-
-                                // skip items that already have the same value
-                                const itemWithSameValue = pendingDescItems.find((_descItem) =>
-                                    _descItem.itemTypeId === descItem.itemTypeId
-                                    && isValueEqual(_descItem, descItem)
-                                );
-                                if (itemWithSameValue) {
-                                    skippedItemObjectIds.push(itemWithSameValue.itemObjectId);
-                                    return;
-                                }
-
-                                // get next position for created item
-                                const highestPositionDescItem = ownDescItems
-                                    .filter(({ itemTypeId }) => itemTypeId === descItem.itemTypeId)
-                                    .sort((a, b) => a.position - b.position)
-                                    .pop();
-
-                                const lastPosition =
-                                    itemTypePositions[descItem.itemTypeId] || // incremented position
-                                    (!data.replaceValues && highestPositionDescItem?.position) || // previous item position
-                                    0;
-                                const nextPosition = lastPosition + 1;
-                                itemTypePositions[descItem.itemTypeId] = nextPosition;
-
-                                createItems.push({
-                                    ...descItem,
-                                    position: nextPosition,
-                                });
-                            });
-
-                        // Get remaining unprocessed descItems with value and add them to be deleted
-                        // if they are of item type, that has been changed
-                        if (data.replaceValues) {
-                            const remainingDescItems = ownDescItems.filter(
-                                ({ itemObjectId }) => !skippedItemObjectIds.includes(itemObjectId)
-                                    && itemObjectId != undefined
-                            );
-                            const processedItemTypes = descItemsWithValue.map(({ itemTypeId }) => itemTypeId);
-                            remainingDescItems.forEach((descItem) => {
-                                if (processedItemTypes.includes(descItem.itemTypeId)) {
-                                    deleteItems.push(descItem);
-                                }
-                            })
-                        }
+                        const { createItems, deleteItems, missingEmptyItems } = mergeItemsIntoNode(
+                            ownDescItems,
+                            template.formData,
+                            { replace: Boolean(data.replaceValues) },
+                        );
 
                         // add local empty desc items
-                        descItemsWithoutValue
-                            .filter(
-                                ({ itemTypeId, itemSpecId }) =>
-                                    !ownDescItems.find((_descItem) =>(
-                                        _descItem.itemTypeId === itemTypeId
-                                        && _descItem.itemSpecId === itemSpecId
-                                    ))
-                            )
-                            .forEach((item) => {
-                                onAddDescItem(item.itemTypeId, item.itemSpecId);
-                            });
+                        missingEmptyItems.forEach((item) => {
+                            onAddDescItem(item.itemTypeId, item.itemSpecId);
+                        });
 
                         if (createItems.length > 0 || deleteItems.length > 0) {
                             await WebApi.updateDescItems(
