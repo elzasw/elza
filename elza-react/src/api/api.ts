@@ -36,6 +36,9 @@ const messages = defineMessages({
 import { createException } from 'components/ExceptionUtils.jsx';
 import { clearSession } from 'actions/global/login';
 import { store } from 'stores/index.jsx';
+import { AnyAction } from 'redux';
+import { ThunkDispatch } from 'redux-thunk';
+import { AppState } from 'typings/store';
 
 interface WindowEx extends Window {
     serverContextPath?: string;
@@ -170,7 +173,8 @@ function resolveException(error: AxiosError<Error>) {
         }
 
         if (result.unauthorized) {
-            store.dispatch(clearSession());
+            // clearSession is a thunk; the store is typed for plain actions only
+            (store.dispatch as ThunkDispatch<AppState, void, AnyAction>)(clearSession());
         }
     }
 
