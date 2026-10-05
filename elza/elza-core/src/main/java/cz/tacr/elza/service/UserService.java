@@ -1211,7 +1211,7 @@ public class UserService {
     	Objects.requireNonNull(username);
     	Objects.requireNonNull(user);
 
-        if (accessPointId != null && !accessPointId.equals(user.getAccessPoint().getAccessPointId())) {
+        if (accessPointId != null && !accessPointId.equals(user.getAccessPointId())) {
             ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
             user.setAccessPoint(accessPoint);
         }
@@ -1266,6 +1266,73 @@ public class UserService {
 
         changeUserEvent(user);
         return user;
+    }
+
+    /**
+     * Creates the first administrator: a user without an access point, with a password
+     * and the ADMIN permission.
+     *
+     * Used only by the first-run setup ({@link SetupService}), which has checked that no
+     * user exists; there is no logged user to authorize the call.
+     *
+     * @param username username
+     * @param password password (plaintext), checked against the password policy
+     * @return created user
+     */
+    @Transactional(value = Transactional.TxType.MANDATORY)
+    public UsrUser createInitialAdmin(final String username, final String password) {
+        if (allowDefaultUser && username.equalsIgnoreCase(defaultUsername)) {
+            throw new BusinessException("Jméno je vyhrazeno výchozímu uživateli", UserCode.USERNAME_EXISTS);
+        }
+
+        UsrUser user = new UsrUser();
+        user.setActive(true);
+        user.setUsername(username);
+        user.setCreatedAt(OffsetDateTime.now());
+        user = userRepository.save(user);
+
+        UsrAuthentication authentication = new UsrAuthentication();
+        updateAuth(user, UsrAuthentication.AuthType.PASSWORD, password, authentication);
+        authenticationRepository.save(authentication);
+
+        UsrPermission permission = new UsrPermission();
+        permission.setUser(user);
+        permission.setPermission(UsrPermission.Permission.ADMIN);
+        permissionRepository.save(permission);
+
+        createUserEvent(user);
+        return user;
+    }
+
+    /**
+     * Sets the password from the configuration (elza.security.admin.password) to an existing
+     * user; adds the password authentication when the user has none. Only the password changes,
+     * not the permissions or the state of the user.
+     *
+     * Used only by {@link SetupService} at startup; there is no logged user to authorize the call.
+     *
+     * @param user     existing user
+     * @param password password (plaintext), checked against the password policy
+     * @return false when the user already has this password - nothing is written, so the
+     *         validity of the password does not restart at every startup
+     */
+    @Transactional(value = Transactional.TxType.MANDATORY)
+    public boolean applyConfiguredPassword(final UsrUser user, final String password) {
+        UsrAuthentication authentication = authenticationRepository.findByUserAndAuthType(user,
+                UsrAuthentication.AuthType.PASSWORD);
+        // a hash in the old format is rewritten, which also converts it to the current one
+        if (authentication != null && authentication.getAuthValue().startsWith("{")
+                && encoder.matches(password, authentication.getAuthValue())) {
+            return false;
+        }
+        if (authentication == null) {
+            authentication = new UsrAuthentication();
+        }
+        updateAuth(user, UsrAuthentication.AuthType.PASSWORD, password, authentication);
+        authentication.setChangeRequired(false);
+        authenticationRepository.save(authentication);
+        changeUserEvent(user);
+        return true;
     }
 
     /**

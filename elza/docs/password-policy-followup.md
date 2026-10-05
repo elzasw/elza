@@ -10,7 +10,7 @@ view is documented in the administration guide,
 `admin-guide/source/05-security.rst`.
 
 This document lists what was left out: small gaps of #9963, the options the
-plan postponed (Phase 2), and the related follow-up task.
+plan postponed (Phase 2), and the state of the first-run setup.
 
 
 Differences from the plan
@@ -92,17 +92,54 @@ requirement appears.
   `elza.security.salt` property.
 
 
-Related follow-up task (separate)
----------------------------------
+First-run setup
+---------------
 
-**First-run setup and removal of the default user.** On an empty `usr_user`
-table, enter a setup mode and create the first administrator, including
-its `ap_access_point`. The real scope is larger than it looks: it needs
-packages and access point types, a setup-mode UI outside the normal
-authentication, installation documentation and distribution updates.
-Then switch the default of `elza.security.allowDefaultUser` to `false` and
-remove the default user mechanism (`UserService.createDefaultUser`, the
-fabricated row in `findAuthentication`) together with the
-`authenticationId == null` / `userDetail.getId() == null` guards added by
-#9963. Recovering an administrator's access is already covered by
-`elza.security.recovery.*`.
+Implemented: while `usr_user` is empty, the client shows the *Initial setup*
+dialog (`SetupWizard.tsx`, from `Login.tsx`) instead of the login, and
+`SetupService` creates the first administrator through `GET /api/v1/setup`
+and `POST /api/v1/setup/admin` (open without login). The administrator's
+view is in `admin-guide/source/02-installation.rst` ("First administrator").
+
+- The endpoints are open to anyone while no user exists; by the architect's
+  decision there is no setup key, the administrator creates the first user
+  before the application is made available on the network. The check that
+  no user exists and the creation run under one lock in one transaction.
+- `elza.security.admin.username` / `password` (plain text) are applied at
+  every startup by `SetupService.applyAdminFromConfiguration`: a missing
+  user is created as an administrator (`UserService.createInitialAdmin`),
+  an existing user gets the password (`UserService.applyConfiguredPassword`;
+  nothing is written when it already has it, so `valid_from` does not
+  restart); a deactivated user is activated. Permissions of an existing
+  user do not change. Every outcome is logged; the changes and a failure
+  also go to the SIEM log (`SiemAuditLogger.configAdminApplied` /
+  `configAdminFailed`, events `config_admin_*`).
+- The first administrator has **no access point**: on an empty database
+  there are no packages, so no access point types. `usr_user.access_point_id`
+  was nullable in the database already; the JPA mapping, `changeUser`,
+  `CamUserService`, `UserRepository.findOneWithDetail` and the user search
+  (`UserRepositoryImpl`, left joins) were adapted. A regular user is still
+  created with an access point.
+- The default user stays as it is; the dialog offers *Log in as the default
+  user* while it is enabled, and the first administrator cannot be named
+  like the default user.
+
+Remaining:
+
+- **Integration test of the setup.** `SetupServiceTest` and
+  `UserServiceInitialAdminTest` are unit tests with mocks; a test on an
+  empty database (status, wrong key, creation, the user found in the search
+  and able to load `GET /api/user/detail`) is missing.
+- **Removal of the default user.** Switch the default of
+  `elza.security.allowDefaultUser` to `false` (`UserService`,
+  `ElzaWebController`, `elza-web/config/elza.yaml.template`, the guide) and
+  remove the default user mechanism (`UserService.createDefaultUser`, the
+  fabricated row in `findAuthentication`, `createAdminUserDetail`) together
+  with the `authenticationId == null` / `userDetail.getId() == null` guards
+  added by #9963 and the *Sign in* button of the setup.
+  Installations that run only on the default user must create their
+  administrator first - the release notes have to say so. Recovering an
+  administrator's access is covered by `elza.security.recovery.*`.
+- **Person of the first administrator.** It can be assigned later in
+  *Administration* > *Users* > *Edit*; nothing reminds the administrator
+  to do so.

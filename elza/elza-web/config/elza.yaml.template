@@ -16,6 +16,12 @@ elza:
         initial: false
         layer: GR_ORTFOTORGB
   #security:
+  #  # Uživatel-administrátor z konfigurace: při každém startu se vytvoří, pokud neexistuje,
+  #  # jinak se mu nastaví toto heslo a deaktivovaný účet se aktivuje. Heslo je v otevřeném
+  #  # textu; dokud je volba nastavena, heslo změněné v aplikaci se při restartu vrátí na toto.
+  #  admin:
+  #    username: spravce
+  #    password: zmente-me
   #  sso-header:
   #    user-header: X-SSO-User
   #    allowDefaultUser: false
