@@ -108,6 +108,10 @@ export class WebsocketClient {
     };
 
     disconnect = (error = false, force = false) => {
+        // Set before the socket is closed - deactivate() can deliver the close event straight
+        // away, and onWebsocketClose would otherwise treat an intentional sign-out as a dropped
+        // connection and ask the server about the user again.
+        if (force) { this.forcedDisconnect = true }
         if (this.stompClient) {
             // When ready state is not CLOSING(2) or CLOSED(3) and stompClient exists
             console.log('#ws Websocket disconnected');
@@ -116,7 +120,6 @@ export class WebsocketClient {
             // Notify components about disconnected websocket
             appStore.dispatch(webSocketDisconnect(error));
         }
-        if (force) { this.forcedDisconnect = true }
     };
 
     reconnect = () => {
@@ -206,6 +209,12 @@ export class WebsocketClient {
 
     // Handles websocket connection errors (e.g. unintentional disconnects)
     onWebsocketError = (error?: unknown) => {
+        // A socket torn down by a sign-out reports the failure here as well, and asking the
+        // server about the user then only produces an answer nobody is waiting for.
+        if (this.forcedDisconnect) {
+            return;
+        }
+
         console.warn("#ws websocket error", error);
 
         this.reconnect();
@@ -219,6 +228,13 @@ export class WebsocketClient {
     };
 
     handleError = (error: WebsocketFrame) => {
+        // Signing out closes the session, and the server reports that on the socket as an error.
+        // It is the expected end of the connection, so neither a message nor a reconnect belongs
+        // to it. The flag is cleared again by connect().
+        if (this.forcedDisconnect) {
+            return;
+        }
+
         const { body, command, headers } = error;
 
         const data = body ? JSON.parse(body) : {};

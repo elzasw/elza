@@ -18,12 +18,12 @@ import {
     tokens,
 } from '@fluentui/react-components';
 import { PersonKeyRegular } from '@fluentui/react-icons';
-import { checkUserLogged, login } from 'actions/global/login';
+import { checkUserLogged, login, logout } from 'actions/global/login';
 import { FormEvent, useEffect, useState } from 'react';
 import { FormattedMessage, defineMessages, useIntl } from 'react-intl';
 import { AppState } from 'typings/store';
 import { useAppSelector, useAppThunkDispatch } from 'utils/hooks';
-import { isAutoSsoLoginSuppressed } from 'utils/loginMethod';
+import { isAutoSsoLoginSuppressed, suppressAutoSsoLogin } from 'utils/loginMethod';
 
 // Id převzatých hlášek jsou z legacy katalogu beze změny.
 const messages = defineMessages({
@@ -57,6 +57,16 @@ const messages = defineMessages({
         id: 'login.error.ssoFailed',
         defaultMessage: 'Přihlášení pomocí Windows autentizace se nezdařilo. Obraťte se na administrátora.',
     },
+    ssoErrorNoTicket: {
+        id: 'login.error.ssoNoTicket',
+        defaultMessage:
+            'Windows autentizace neproběhla. Nejčastější příčiny: Vypršelo přihlášení do domény, počítač není v doméně, nebo prohlížeč nemá server povolený pro Windows autentizaci.',
+    },
+    ssoErrorSessionNotCreated: {
+        id: 'login.error.ssoSessionNotCreated',
+        defaultMessage:
+            'Windows autentizace proběhla úspěšně, ale přihlášení se nepodařilo dokončit. Zkuste to znovu, nebo se přihlaste jménem a heslem.',
+    },
     username: { id: 'login.field.username', defaultMessage: 'Uživatelské jméno' },
     password: { id: 'login.field.password', defaultMessage: 'Heslo' },
     login: { id: 'login.action.login', defaultMessage: 'Přihlásit' },
@@ -73,7 +83,11 @@ interface WindowEx extends Window {
 }
 
 interface SsoError {
-    code: 'USER_NOT_FOUND' | 'USER_INACTIVE' | 'FAILED';
+    /**
+     * The first three come from the server. NO_TICKET and SESSION_NOT_CREATED are raised here -
+     * the server never sees a request it could report them on.
+     */
+    code: 'USER_NOT_FOUND' | 'USER_INACTIVE' | 'FAILED' | 'NO_TICKET' | 'SESSION_NOT_CREATED';
     username?: string | null;
 }
 
@@ -95,8 +109,19 @@ const PASSWORD_LOGIN_PARAM_VALUE = 'form';
  */
 const IS_AUTO_SSO_LOGIN_ALLOWED = !!windowEx.autoSsoLogin;
 
-const isPasswordLoginRequested =
+let isPasswordLoginRequested =
     new URLSearchParams(window.location.search).get(PASSWORD_LOGIN_PARAM) === PASSWORD_LOGIN_PARAM_VALUE;
+
+/**
+ * Takes the parameter out of the address bar without reloading, so that signing back in does
+ * not sign the user out again and a reload starts from a clean state.
+ */
+const clearPasswordLoginRequest = () => {
+    isPasswordLoginRequested = false;
+    const url = new URL(window.location.href);
+    url.searchParams.delete(PASSWORD_LOGIN_PARAM);
+    window.history.replaceState(null, '', url);
+};
 
 const getDefaultCredentials = () =>
     isDefaultUserEnabled ? { username: 'admin', password: 'admin' } : { username: '', password: '' };
@@ -228,6 +253,10 @@ export const Login = () => {
     const [submitting, setSubmitting] = useState(false);
     const [ssoError, setSsoError] = useState(() => windowEx.ssoError ?? null);
     const [ssoStatus, setSsoStatus] = useState<SsoStatus>('idle');
+    // Nothing is shown until the request for the form has been dealt with, otherwise the dialog
+    // would follow every step on the way there: open on the user detail, close on the sign-in,
+    // open again on the sign-out.
+    const [isPasswordLoginHandled, setIsPasswordLoginHandled] = useState(!isPasswordLoginRequested);
 
     const ssoKerberosUrl = windowEx.ssoKerberosUrl;
     const isSsoAvailable = !!ssoKerberosUrl;
@@ -241,7 +270,7 @@ export const Login = () => {
         !isAutoSsoLoginSuppressed() &&
         !ssoError;
     // Waiting for the user detail keeps the dialog from flashing on a page reload.
-    const isUserLoggedOut = !logged && userDetailFetched;
+    const isUserLoggedOut = !logged && userDetailFetched && isPasswordLoginHandled;
     const isAutoSsoLoginPending = isUserLoggedOut && isAutoSsoLoginEnabled && ssoStatus !== 'finished';
 
     const startSsoLogin = async () => {
@@ -261,12 +290,26 @@ export const Login = () => {
         }
 
         // Stays 'running' on success: the dialog has to keep the spinner until the user detail
-        // arrives and closes it, otherwise the form shows through in between.
+        // arrives and closes it, otherwise the form shows through in between. A handshake that
+        // leaves the user signed out is settled here as well, otherwise the next answer about
+        // the user would start the whole sign-in again, and again after that one.
         if (outcome.status === 'authenticated') {
-            dispatch(checkUserLogged());
+            dispatch(
+                checkUserLogged((isLogged: boolean) => {
+                    if (!isLogged) {
+                        setSsoError({ code: 'SESSION_NOT_CREATED' });
+                        setSsoStatus('finished');
+                    }
+                })
+            );
             return;
         }
 
+        // The browser answers the Negotiate challenge on its own, so a missing answer never
+        // reaches the server and the reason has to be guessed from here.
+        if (outcome.status === 'noTicket') {
+            setSsoError({ code: 'NO_TICKET' });
+        }
         if (outcome.status === 'rejected') {
             setSsoError(outcome.error);
         }
@@ -274,7 +317,26 @@ export const Login = () => {
     };
 
     useEffect(() => {
-        dispatch(checkUserLogged());
+        if (!isPasswordLoginRequested) {
+            dispatch(checkUserLogged());
+            return;
+        }
+
+        // Asking for the form is a request to sign in as somebody else, and the session has to
+        // end before anyone asks who the user is. A page behind a permission mounts the moment
+        // the answer says signed in, and the requests it sends then fail on the way out, as
+        // errors the user never caused. The request itself lives on as the suppression flag,
+        // which lasts for this page only; keeping the parameter would sign the user out again
+        // on the next sign-in.
+        suppressAutoSsoLogin();
+        clearPasswordLoginRequest();
+        dispatch(logout(true))
+            .catch(() => undefined)
+            .then(() => {
+                // Only now, so the answer is about the ended session and the form can open.
+                dispatch(checkUserLogged());
+                setIsPasswordLoginHandled(true);
+            });
     }, [dispatch]);
 
     useEffect(() => {
@@ -302,6 +364,10 @@ export const Login = () => {
                 return intl.formatMessage(messages.ssoErrorUserNotFound, { username: value.username ?? '' });
             case 'USER_INACTIVE':
                 return intl.formatMessage(messages.ssoErrorUserInactive);
+            case 'NO_TICKET':
+                return intl.formatMessage(messages.ssoErrorNoTicket);
+            case 'SESSION_NOT_CREATED':
+                return intl.formatMessage(messages.ssoErrorSessionNotCreated);
             default:
                 return intl.formatMessage(messages.ssoErrorFailed);
         }

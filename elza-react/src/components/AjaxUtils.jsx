@@ -26,7 +26,7 @@ const messages = defineMessages({
 });
 
 import $ from 'jquery';
-import { logout } from 'actions/global/login';
+import { clearSession } from 'actions/global/login';
 
 const serverContextPath = window.serverContextPath;
 
@@ -116,7 +116,7 @@ function resolveException(status, statusText, data) {
         _store.dispatch(createException(result));
     }
     if (result.unauthorized) {
-        _store.dispatch(logout());
+        _store.dispatch(clearSession());
     }
 
     return result;
