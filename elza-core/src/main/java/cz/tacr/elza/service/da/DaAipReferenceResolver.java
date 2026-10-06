@@ -65,6 +65,17 @@ public class DaAipReferenceResolver {
     }
 
     /**
+     * Drops the pairing with the fund. The active state is left as if the AIP was received
+     * without a matching fund; a historical state only loses the reference.
+     */
+    public void releaseFund(DaAipState aipState) {
+        aipState.setFund(null);
+        if (aipState.getDeleteChange() == null) {
+            updateProblemState(aipState, null);
+        }
+    }
+
+    /**
      * Records the problem the processing of the package failed with. It outranks the problems
      * derived from the references, which are described again once it is cleared.
      */

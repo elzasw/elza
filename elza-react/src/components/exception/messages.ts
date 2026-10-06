@@ -27,6 +27,7 @@ export const exceptionMessages = defineMessages({
     "exception.arr.DESC_ITEM_NOT_FOUND": { id: "exception.arr.DESC_ITEM_NOT_FOUND", defaultMessage: "{state, select, deleted {Prvek popisu „{itemType}“ (ID {descItemObjectId}) již neexistuje, smazal jej uživatel {deletedBy} {deletedAt} (změna {deleteChangeId}). Načtěte jednotku popisu znovu.} other {Prvek popisu (ID {descItemObjectId}) neexistuje. Načtěte jednotku popisu znovu.}}" },
     "exception.arr.EXISTS_BLOCKING_CHANGE": { id: "exception.arr.EXISTS_BLOCKING_CHANGE", defaultMessage: "Nelze provést revert, protože existuje blokující změna v JP" },
     "exception.arr.EXISTS_NEWER_CHANGE": { id: "exception.arr.EXISTS_NEWER_CHANGE", defaultMessage: "Existuje novější změna, je potřeba přenačíst seznam" },
+    "exception.arr.FUND_HAS_DA_LINKS": { id: "exception.arr.FUND_HAS_DA_LINKS", defaultMessage: "AS nelze smazat, protože jeho jednotky popisu mají {count, plural, one {# aktivní vazbu} few {# aktivní vazby} other {# aktivních vazeb}} na digitální archiv. Nejprve vazby zrušte." },
     "exception.arr.FUND_NOT_FOUND": { id: "exception.arr.FUND_NOT_FOUND", defaultMessage: "Archivní fond neexistuje." },
     "exception.arr.FUND_VERSION_NOT_FOUND": { id: "exception.arr.FUND_VERSION_NOT_FOUND", defaultMessage: "Verze archivního fondu neexistuje." },
     "exception.arr.ILLEGAL_COUNT_EXTERNAL_SYSTEM": { id: "exception.arr.ILLEGAL_COUNT_EXTERNAL_SYSTEM", defaultMessage: "Neplatný počet externích systémů" },
