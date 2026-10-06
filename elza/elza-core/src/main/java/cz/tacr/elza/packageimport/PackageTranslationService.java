@@ -3,6 +3,7 @@ package cz.tacr.elza.packageimport;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -49,6 +50,12 @@ public class PackageTranslationService {
     /** Number of hex characters of the SHA-256 hash stored in {@code source_hash}. */
     private static final int SOURCE_HASH_LENGTH = 16;
 
+    /** Length of {@code rul_translation.source_hash}. */
+    private static final int SOURCE_HASH_MAX_LENGTH = 20;
+
+    /** Length of {@code rul_translation.entity_code}. */
+    private static final int CODE_MAX_LENGTH = 100;
+
     /**
      * Problem of a stored translation.
      */
@@ -82,7 +89,7 @@ public class PackageTranslationService {
      */
     public SysLanguage resolvePackageLanguage(String tag) {
         String languageTag = StringUtils.isBlank(tag) ? "cs" : tag.trim();
-        SysLanguage language = sysLanguageRepository.findByTag(languageTag.toLowerCase(Locale.ROOT));
+        SysLanguage language = sysLanguageRepository.findByTagIgnoreCase(languageTag);
         if (language == null) {
             throw new BusinessException("Unknown language of the package: " + languageTag, PackageCode.CODE_NOT_FOUND)
                     .set("code", languageTag)
@@ -95,23 +102,33 @@ public class PackageTranslationService {
      * Replaces the translations of the imported package by the content of its translation files.
      * Has to run after all entities of the package were saved, so orphans can be detected and
      * source hashes computed against them.
+     *
+     * The source hash of a translation is the hash of the source text it was made from: taken from
+     * the {@code src-hash} attribute when the file has it; otherwise kept from the stored row when
+     * the translated text did not change (the translation still renders the source text it was
+     * made from); otherwise computed from the current source text (a new or changed translation).
      */
     public void importTranslations(PackageContext pkgCtx) {
         RulPackage rulPackage = pkgCtx.getPackage();
         SysLanguage sourceLanguage = rulPackage.getLanguage();
 
-        List<RulTranslation> rows = new ArrayList<>();
         Map<String, String> ownMessages = new HashMap<>();
+        SourceTexts sourceTexts = new SourceTexts(rulPackage, ownMessages);
+
+        List<RulTranslation> rows = new ArrayList<>();
+        Map<Integer, String> filesByLanguage = new HashMap<>();
         for (String file : translationFiles(pkgCtx)) {
             Translations translations = pkgCtx.convertXmlStreamToObject(Translations.class, file);
-            readFile(file, translations, rulPackage, sourceLanguage, rows, ownMessages);
+            readFile(file, translations, rulPackage, sourceLanguage, sourceTexts, filesByLanguage, rows, ownMessages);
         }
 
-        SourceTexts sourceTexts = new SourceTexts(rulPackage, ownMessages);
+        Map<String, RulTranslation> previous = new HashMap<>();
+        for (RulTranslation row : translationRepository.findByRulPackage(rulPackage)) {
+            previous.put(rowKey(row), row);
+        }
+
         for (RulTranslation row : rows) {
-            boolean definesMessage = TranslationEntityType.MESSAGE.name().equals(row.getEntityType())
-                    && row.getLanguageId().equals(sourceLanguage.getLanguageId());
-            if (definesMessage) {
+            if (isOwnMessage(row, rulPackage)) {
                 continue;
             }
             TranslationEntityType type = TranslationEntityType.valueOf(row.getEntityType());
@@ -123,7 +140,15 @@ public class PackageTranslationService {
                 logger.warn("Package {}: translation of a missing text {}.{}.{} ({}) is kept as orphan",
                             rulPackage.getCode(), row.getEntityType(), row.getEntityCode(), row.getField(),
                             row.getLanguage().getTag());
-            } else {
+            }
+            if (row.getSourceHash() != null) {
+                continue;
+            }
+            RulTranslation before = previous.get(rowKey(row));
+            if (before != null && before.getSourceHash() != null
+                    && StringUtils.equals(before.getTextValue(), row.getTextValue())) {
+                row.setSourceHash(before.getSourceHash());
+            } else if (source != null) {
                 row.setSourceHash(sourceHash(source));
             }
         }
@@ -158,6 +183,7 @@ public class PackageTranslationService {
             t.setType(row.getEntityType());
             t.setCode(row.getEntityCode());
             t.setField(row.getField());
+            t.setSrcHash(row.getSourceHash());
             t.setValue(row.getTextValue());
             file.getTranslations().add(t);
         }
@@ -177,12 +203,7 @@ public class PackageTranslationService {
         SourceTexts sourceTexts = new SourceTexts(rulPackage, null);
         for (RulTranslation row : translationRepository.findByRulPackageOrdered(rulPackage)) {
             TranslationEntityType type = TranslationEntityType.fromCode(row.getEntityType());
-            if (type == null || !sourceTexts.isChecked(type)) {
-                continue;
-            }
-            boolean definesMessage = type == TranslationEntityType.MESSAGE
-                    && row.getLanguageId().equals(rulPackage.getLanguageId());
-            if (definesMessage) {
+            if (type == null || !sourceTexts.isChecked(type) || isOwnMessage(row, rulPackage)) {
                 continue;
             }
             String source = sourceTexts.get(type, row.getEntityCode(), row.getField());
@@ -212,6 +233,20 @@ public class PackageTranslationService {
         }
     }
 
+    /**
+     * A message defined by the package itself: its row in the package's source language is the
+     * source text, not a translation.
+     */
+    private static boolean isOwnMessage(RulTranslation row, RulPackage rulPackage) {
+        return TranslationEntityType.MESSAGE.name().equals(row.getEntityType())
+                && row.getLanguageId().equals(rulPackage.getLanguageId())
+                && row.getEntityCode().startsWith(rulPackage.getCode() + TranslationEntityType.CODE_SEPARATOR);
+    }
+
+    private static String rowKey(RulTranslation row) {
+        return row.getEntityType() + "|" + row.getEntityCode() + "|" + row.getField() + "|" + row.getLanguageId();
+    }
+
     private static TranslationIssue issue(IssueKind kind, RulTranslation row) {
         return new TranslationIssue(kind, row.getEntityType(), row.getEntityCode(), row.getField(),
                 row.getLanguage().getTag());
@@ -232,18 +267,24 @@ public class PackageTranslationService {
     }
 
     private void readFile(String file, Translations translations, RulPackage rulPackage, SysLanguage sourceLanguage,
+                          SourceTexts sourceTexts, Map<Integer, String> filesByLanguage,
                           List<RulTranslation> rows, Map<String, String> ownMessages) {
         String fileTag = file.substring(TRANSLATIONS_DIR.length(), file.length() - XML_EXTENSION.length());
         if (translations == null || !fileTag.equalsIgnoreCase(StringUtils.trimToEmpty(translations.getLang()))) {
             throw invalid(file, "lang", "The lang attribute must be equal to the file name: " + fileTag);
         }
-        SysLanguage language = sysLanguageRepository.findByTag(fileTag.toLowerCase(Locale.ROOT));
+        SysLanguage language = sysLanguageRepository.findByTagIgnoreCase(fileTag);
         if (language == null) {
             throw new BusinessException("Unknown language of translation file: " + fileTag, PackageCode.CODE_NOT_FOUND)
                     .set("code", fileTag)
                     .set("file", file);
         }
+        String otherFile = filesByLanguage.putIfAbsent(language.getLanguageId(), file);
+        if (otherFile != null) {
+            throw invalid(file, "lang", "Another file has the same language: " + otherFile);
+        }
         boolean sourceFile = language.getLanguageId().equals(sourceLanguage.getLanguageId());
+        Locale locale = Locale.forLanguageTag(language.getTag());
 
         Set<String> keys = new HashSet<>();
         List<Translation> items = translations.getTranslations() != null ? translations.getTranslations() : List.of();
@@ -251,37 +292,51 @@ public class PackageTranslationService {
             String key = t.getType() + "." + t.getCode() + "." + t.getField();
             TranslationEntityType type = TranslationEntityType.fromCode(t.getType());
             if (type == null) {
-                throw invalid(file, key, "Unknown type");
+                throw invalid(file, key, "Unknown type, allowed: " + List.of(TranslationEntityType.values()));
             }
             if (StringUtils.isBlank(t.getCode())) {
                 throw invalid(file, key, "Missing code");
             }
-            if (!type.isFieldAllowed(t.getField())) {
-                throw invalid(file, key, "Field not allowed for the type, allowed: " + type.getFields());
+            if (t.getCode().length() > CODE_MAX_LENGTH) {
+                throw invalid(file, key, "Code longer than " + CODE_MAX_LENGTH + " characters");
             }
-            if (t.getValue() == null) {
+            if (StringUtils.isBlank(t.getField()) || !type.isFieldAllowed(t.getField())) {
+                throw invalid(file, key, "Missing or not allowed field, allowed: " + new TreeSet<>(type.getFields()));
+            }
+            if (StringUtils.isBlank(t.getValue())) {
                 throw invalid(file, key, "Missing text");
+            }
+            if (t.getSrcHash() != null && (t.getSrcHash().isBlank() || t.getSrcHash().length() > SOURCE_HASH_MAX_LENGTH)) {
+                throw invalid(file, key, "Invalid src-hash");
             }
             if (!keys.add(key)) {
                 throw invalid(file, key, "Duplicate key");
             }
+            boolean ownMessage = false;
             if (type == TranslationEntityType.MESSAGE || type == TranslationEntityType.TYPE_GROUP) {
                 int separator = t.getCode().indexOf(TranslationEntityType.CODE_SEPARATOR);
                 if (separator <= 0) {
                     throw invalid(file, key, "Code has to be qualified: <PACKAGE or RULE SET>/<CODE>");
                 }
-                if (type == TranslationEntityType.MESSAGE && sourceFile
-                        && !t.getCode().substring(0, separator).equals(rulPackage.getCode())) {
-                    throw invalid(file, key, "A package defines only messages with its own code as prefix: "
-                            + rulPackage.getCode() + TranslationEntityType.CODE_SEPARATOR);
+                ownMessage = type == TranslationEntityType.MESSAGE && sourceFile
+                        && t.getCode().substring(0, separator).equals(rulPackage.getCode());
+            }
+            if (type == TranslationEntityType.MESSAGE) {
+                try {
+                    new MessageFormat(t.getValue(), locale);
+                } catch (IllegalArgumentException e) {
+                    throw invalid(file, key, "Invalid message pattern: " + e.getMessage());
                 }
             }
-            if (sourceFile) {
-                if (type != TranslationEntityType.MESSAGE) {
-                    logger.warn("Package {}: {} translates {} into the source language of the package, skipped",
-                                rulPackage.getCode(), file, key);
-                    continue;
-                }
+            // The source texts of the package's own entities are in its entity files; a row in its
+            // source language for an entity of ANOTHER package overrides that package's text.
+            if (sourceFile && type != TranslationEntityType.MESSAGE
+                    && rulPackage.getCode().equals(sourceTexts.ownerPackageCode(type, t.getCode()))) {
+                logger.warn("Package {}: {} translates its own {} into its source language, skipped",
+                            rulPackage.getCode(), file, key);
+                continue;
+            }
+            if (ownMessage) {
                 ownMessages.put(t.getCode(), t.getValue());
             }
 
@@ -292,6 +347,7 @@ public class PackageTranslationService {
             row.setField(t.getField());
             row.setLanguage(language);
             row.setTextValue(t.getValue());
+            row.setSourceHash(t.getSrcHash());
             rows.add(row);
         }
     }
@@ -300,12 +356,13 @@ public class PackageTranslationService {
         return (BusinessException) new BusinessException("Invalid translation " + key + " in " + file + ": " + reason,
                 PackageCode.INVALID_TRANSLATION)
                 .set("file", file)
-                .set("key", key);
+                .set("key", key)
+                .set("reason", reason);
     }
 
     /**
-     * Current source texts of translated entities and messages, loaded per type and field on
-     * first use.
+     * Current source texts and owning packages of translated entities and messages, loaded per
+     * type and field on first use.
      */
     private class SourceTexts {
 
@@ -328,13 +385,31 @@ public class PackageTranslationService {
             if (type == TranslationEntityType.MESSAGE) {
                 return message(code);
             }
-            return cache.computeIfAbsent(type.name() + "." + field, k -> load(type, field)).get(code);
+            return cache.computeIfAbsent(type.name() + "." + field, k -> load(type, "e." + field)).get(code);
         }
 
-        private Map<String, String> load(TranslationEntityType type, String field) {
-            // entity name and field come from TranslationEntityType, never from the file
+        /**
+         * Code of the package owning the translated entity; for a type group the package owning
+         * its rule set. Null when the entity does not exist.
+         */
+        String ownerPackageCode(TranslationEntityType type, String code) {
+            if (type == TranslationEntityType.MESSAGE) {
+                return null;
+            }
+            if (type == TranslationEntityType.TYPE_GROUP) {
+                String ruleSet = code.substring(0, code.indexOf(TranslationEntityType.CODE_SEPARATOR));
+                return cache.computeIfAbsent("owner.RULE_SET", k -> load(TranslationEntityType.RULE_SET, "e.rulPackage.code"))
+                        .get(ruleSet);
+            }
+            return cache.computeIfAbsent("owner." + type.name(), k -> load(type, "e.rulPackage.code")).get(code);
+        }
+
+        private Map<String, String> load(TranslationEntityType type, String selected) {
+            // entity name and selected path come from TranslationEntityType and this class, never from the file
+            String where = type == TranslationEntityType.TEMPLATE ? " WHERE e.deleted = false" : "";
             List<Object[]> result = entityManager
-                    .createQuery("SELECT e.code, e." + field + " FROM " + type.getEntityName() + " e", Object[].class)
+                    .createQuery("SELECT e.code, " + selected + " FROM " + type.getEntityName() + " e" + where,
+                                 Object[].class)
                     .getResultList();
             Map<String, String> texts = new HashMap<>(result.size());
             for (Object[] r : result) {

@@ -23,8 +23,23 @@ public class Translation {
     @XmlAttribute(name = "field", required = true)
     private String field;
 
+    /**
+     * Hash of the source text the translation was made from. Optional: written by the export and
+     * by translator tools; the import keeps it, so a later change of the source text is detected.
+     */
+    @XmlAttribute(name = "src-hash")
+    private String srcHash;
+
     @XmlValue
     private String value;
+
+    public String getSrcHash() {
+        return srcHash;
+    }
+
+    public void setSrcHash(String srcHash) {
+        this.srcHash = srcHash;
+    }
 
     public String getType() {
         return type;

@@ -6622,8 +6622,8 @@
     "srcHash": "pwkQJfvnX8zM"
   },
   "exception.pkg.INVALID_TRANSLATION": {
-    "defaultMessage": "Invalid translation “{key}” in the file “{file}”",
-    "srcHash": "WOD0Zaf_SfEV"
+    "defaultMessage": "Invalid translation “{key}” in the file “{file}”: {reason}",
+    "srcHash": "2ia7ekwwoPP0"
   },
   "exception.pkg.MIN_DEPENDENCY": {
     "defaultMessage": "The minimum version of package {code} is not met: {version}.",

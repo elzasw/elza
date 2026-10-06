@@ -6,6 +6,7 @@ import java.util.Locale;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -35,8 +36,10 @@ public class LanguagesController implements LanguagesApi {
     /**
      * GET /languages
      * Returns all languages known to the installation with their usages, ordered by tag.
+     * Public (the login page needs it); static data are bound to a transaction.
      */
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<List<Language>> languagesListLanguages() {
         SysLanguage defaultLanguage = findDefaultLanguage();
         List<Language> result = staticDataService.getData().getSysLanguages().stream()

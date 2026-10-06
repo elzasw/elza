@@ -10,8 +10,12 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -36,6 +40,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -125,6 +130,8 @@ public class PackageTranslationTest {
     @Autowired
     @Qualifier("transactionManager")
     private PlatformTransactionManager txManager;
+    @Value("${local.server.port}")
+    private int port;
 
     @BeforeAll
     void loadPackagesOnce() {
@@ -153,8 +160,8 @@ public class PackageTranslationTest {
             RulPackage addon = packageRepository.findByCode(ADDON_CODE);
             assertEquals("cs", base.getLanguage().getTag());
             assertEquals(13, translationRepository.findByRulPackage(base).size());
-            // both message rows, three item-type rows
-            assertEquals(5, translationRepository.findByRulPackage(addon).size());
+            // both message rows, three English item-type rows, one Czech override of SIMPLE-DEV
+            assertEquals(6,translationRepository.findByRulPackage(addon).size());
         });
     }
 
@@ -170,6 +177,8 @@ public class PackageTranslationTest {
         assertEquals("source", text(TranslationEntityType.ITEM_TYPE, "SRD_UNIT_DATE", "name", en));
         // no language: source text
         assertEquals("source", text(TranslationEntityType.ITEM_TYPE, "SRD_TITLE", "name", null));
+        // a dependent package overrides a SIMPLE-DEV text in its source language
+        assertEquals("Datace (doplněk)", text(TranslationEntityType.ITEM_TYPE, "SRD_UNIT_DATE", "name", language("cs")));
     }
 
     @Test
@@ -298,6 +307,13 @@ public class PackageTranslationTest {
                         new ByteArrayInputStream(Files.readAllBytes(resourceDir(ADDON_DIR).resolve(file))));
                 assertEquals(source.getLang(), exported.getLang());
                 assertEquals(rows(source), rows(exported), file);
+                // a translation of an existing text carries the hash of its source; the own
+                // messages (source texts themselves) and the orphan have none
+                for (Translation t : exported.getTranslations()) {
+                    boolean noSource = t.getCode().equals("SRD_NOT_EXISTING")
+                            || (t.getType().equals("MESSAGE") && exported.getLang().equals("cs"));
+                    assertEquals(noSource, t.getSrcHash() == null, t.getCode() + " in " + file);
+                }
             }
             String packageXml = new String(zipFile.getInputStream(zipFile.getEntry(PackageContext.PACKAGE_XML))
                     .readAllBytes(), StandardCharsets.UTF_8);
@@ -318,12 +334,18 @@ public class PackageTranslationTest {
                 "<t type=\"ITEM_TYPE\" code=\"SRD_TITLE\" field=\"name\">x</t>",
                 "<t type=\"ITEM_TYPE\" code=\"SRD_TITLE\" field=\"name\">y</t>")));
         assertRefused(PackageCode.INVALID_TRANSLATION, Map.of(cs, file("cs", "<t type=\"MESSAGE\" code=\"GREETING\" field=\"text\">x</t>")));
-        assertRefused(PackageCode.INVALID_TRANSLATION, Map.of(cs, file("cs", "<t type=\"MESSAGE\" code=\"SIMPLE-DEV/X\" field=\"text\">x</t>")));
+        // missing field, empty text, broken message pattern, too long code
+        assertRefused(PackageCode.INVALID_TRANSLATION, Map.of(en, file("en", "<t type=\"ITEM_TYPE\" code=\"SRD_TITLE\">x</t>")));
+        assertRefused(PackageCode.INVALID_TRANSLATION, Map.of(en, file("en", "<t type=\"ITEM_TYPE\" code=\"SRD_TITLE\" field=\"name\"/>")));
+        assertRefused(PackageCode.INVALID_TRANSLATION, Map.of(en, file("en", "<t type=\"MESSAGE\" code=\"" + GREETING + "\" field=\"text\">Hello {0</t>")));
+        assertRefused(PackageCode.INVALID_TRANSLATION, Map.of(en, file("en", "<t type=\"ITEM_TYPE\" code=\"" + "X".repeat(101) + "\" field=\"name\">x</t>")));
+        // a second file of the same language
+        assertRefused(PackageCode.INVALID_TRANSLATION, Map.of("translations/EN.xml", file("EN", "<t type=\"ITEM_TYPE\" code=\"SRD_TITLE\" field=\"name\">x</t>")));
         assertRefused(PackageCode.INVALID_TRANSLATION, Map.of(en, file("de", "<t type=\"ITEM_TYPE\" code=\"SRD_TITLE\" field=\"name\">x</t>")));
         assertRefused(PackageCode.CODE_NOT_FOUND, Map.of("translations/xx.xml", file("xx", "<t type=\"ITEM_TYPE\" code=\"SRD_TITLE\" field=\"name\">x</t>")));
 
         // the installed package is untouched
-        tx(() -> assertEquals(5, translationRepository.findByRulPackage(packageRepository.findByCode(ADDON_CODE)).size()));
+        tx(() -> assertEquals(6, translationRepository.findByRulPackage(packageRepository.findByCode(ADDON_CODE)).size()));
         assertEquals("Content summary", text(TranslationEntityType.ITEM_TYPE, "SRD_TITLE", "name", language("en")));
     }
 
@@ -334,11 +356,81 @@ public class PackageTranslationTest {
         SysLanguage en = language("en");
         assertEquals("Content summary", text(TranslationEntityType.ITEM_TYPE, "SRD_TITLE", "name", en));
         assertEquals("Level of description", text(TranslationEntityType.ITEM_TYPE, "SRD_LEVEL_TYPE", "name", en));
-        tx(() -> assertEquals(5, translationRepository.findByRulPackage(packageRepository.findByCode(ADDON_CODE)).size()));
+        tx(() -> assertEquals(6, translationRepository.findByRulPackage(packageRepository.findByCode(ADDON_CODE)).size()));
+    }
+
+    /**
+     * A new version of SIMPLE-DEV changes two source texts and keeps its English file: the
+     * translations of both packages become outdated and stay so after a re-import of the
+     * translating package (the hash is kept while the translation is unchanged). Restoring the
+     * texts makes them current again. The own Czech row in the variant is skipped.
+     */
+    @Test
+    @Order(12)
+    void changedSourceTextInANewVersionMarksTranslationsOutdated() throws Exception {
+        String itemTypes = Files.readString(resourceDir(BASE_DIR).resolve("rul_item_type.xml"), StandardCharsets.UTF_8);
+        assertTrue(itemTypes.contains("<name>Úroveň popisu</name>") && itemTypes.contains("<name>Obsah, regest</name>"));
+        Map<String, String> variant = new HashMap<>();
+        variant.put("rul_item_type.xml", itemTypes
+                .replace("<name>Úroveň popisu</name>", "<name>Úroveň popisu (nová)</name>")
+                .replace("<name>Obsah, regest</name>", "<name>Obsah a regest</name>"));
+        variant.put("translations/cs.xml", file("cs", "<t type=\"ITEM_TYPE\" code=\"SRD_TITLE\" field=\"name\">Vlastní</t>"));
+        File zip = buildVariant(BASE_DIR, variant);
+        try {
+            reimport(() -> importZip(zip));
+        } finally {
+            Files.deleteIfExists(zip.toPath());
+        }
+        tx(() -> {
+            RulPackage base = packageRepository.findByCode(BASE_CODE);
+            assertEquals(13, translationRepository.findByRulPackage(base).size());
+            assertEquals(Set.of("SRD_LEVEL_TYPE", "SRD_TITLE"), outdated(base));
+            assertEquals(Set.of("SRD_TITLE"), outdated(packageRepository.findByCode(ADDON_CODE)));
+        });
+
+        reimport(() -> helperTestService.loadPackage(ADDON_CODE, ADDON_DIR));
+        tx(() -> assertEquals(Set.of("SRD_TITLE"), outdated(packageRepository.findByCode(ADDON_CODE))));
+
+        reimport(() -> helperTestService.loadPackage(BASE_CODE, BASE_DIR));
+        tx(() -> {
+            assertEquals(Set.of(), outdated(packageRepository.findByCode(BASE_CODE)));
+            assertEquals(Set.of(), outdated(packageRepository.findByCode(ADDON_CODE)));
+        });
+    }
+
+    /** Tags are case-insensitive: {@code EN.xml} with {@code lang="EN"} is the English file. */
+    @Test
+    @Order(13)
+    void languageTagsAreCaseInsensitive() throws Exception {
+        String en = Files.readString(resourceDir(ADDON_DIR).resolve("translations/en.xml"), StandardCharsets.UTF_8)
+                .replace("lang=\"en\"", "lang=\"EN\"");
+        Map<String, String> variant = new HashMap<>();
+        variant.put("translations/en.xml", null);
+        variant.put("translations/EN.xml", en);
+        File zip = buildVariant(ADDON_DIR, variant);
+        try {
+            reimport(() -> importZip(zip));
+            assertEquals("Content summary", text(TranslationEntityType.ITEM_TYPE, "SRD_TITLE", "name", language("en")));
+        } finally {
+            Files.deleteIfExists(zip.toPath());
+            reimport(() -> helperTestService.loadPackage(ADDON_CODE, ADDON_DIR));
+        }
+    }
+
+    /** The language list is public: the login page needs it before the user signs in. */
+    @Test
+    @Order(14)
+    void languagesEndpointIsPublic() throws Exception {
+        HttpResponse<String> response = HttpClient.newHttpClient().send(
+                HttpRequest.newBuilder(URI.create("http://localhost:" + port + "/api/v1/languages"))
+                        .header("Accept", "application/json").GET().build(),
+                HttpResponse.BodyHandlers.ofString());
+        assertEquals(200, response.statusCode(), response.body());
+        assertTrue(response.body().contains("\"tag\":\"en\""), response.body());
     }
 
     @Test
-    @Order(12)
+    @Order(20)
     void deletingTheDependentPackageRemovesOnlyItsRows() {
         packageService.deletePackage(ADDON_CODE);
         staticDataService.refreshForCurrentThread();
@@ -374,30 +466,46 @@ public class PackageTranslationTest {
         return "<translations lang=\"" + lang + "\">" + String.join("", rows) + "</translations>";
     }
 
+    /** Codes of the entities whose translations by the package are outdated. */
+    private Set<String> outdated(RulPackage rulPackage) {
+        return packageTranslationService.checkTranslations(rulPackage).stream()
+                .filter(i -> i.kind() == IssueKind.OUTDATED)
+                .map(TranslationIssue::entityCode)
+                .collect(Collectors.toSet());
+    }
+
+    private void importZip(File zip) {
+        packageService.preImportPackage();
+        packageService.importPackageInternal(zip, true);
+    }
+
     private void assertRefused(PackageCode expected, Map<String, String> replacedFiles) throws Exception {
-        File zip = buildVariant(replacedFiles);
+        File zip = buildVariant(ADDON_DIR, replacedFiles);
         try {
-            AbstractException e = assertThrows(AbstractException.class,
-                    () -> reimport(() -> {
-                        packageService.preImportPackage();
-                        packageService.importPackageInternal(zip, true);
-                    }));
+            AbstractException e = assertThrows(AbstractException.class, () -> reimport(() -> importZip(zip)));
             assertEquals(expected, e.getErrorCode(), e.getMessage());
         } finally {
             Files.deleteIfExists(zip.toPath());
         }
     }
 
-    /** The test package with some files replaced, as a ZIP. */
-    private static File buildVariant(Map<String, String> replacedFiles) throws IOException, URISyntaxException {
-        Path dir = resourceDir(ADDON_DIR);
+    /** A test package with some files replaced (null removes the file), as a ZIP. */
+    private static File buildVariant(String packageDir, Map<String, String> replacedFiles)
+            throws IOException, URISyntaxException {
+        Path dir = resourceDir(packageDir);
         Map<String, byte[]> files = new HashMap<>();
         try (Stream<Path> paths = Files.walk(dir)) {
             for (Path p : paths.filter(Files::isRegularFile).toList()) {
                 files.put(dir.relativize(p).toString().replace('\\', '/'), Files.readAllBytes(p));
             }
         }
-        replacedFiles.forEach((name, content) -> files.put(name, content.getBytes(StandardCharsets.UTF_8)));
+        replacedFiles.forEach((name, content) -> {
+            if (content == null) {
+                files.remove(name);
+            } else {
+                files.put(name, content.getBytes(StandardCharsets.UTF_8));
+            }
+        });
 
         File zip = File.createTempFile("translation-variant_", ".zip");
         try (OutputStream os = Files.newOutputStream(zip.toPath()); ZipOutputStream zos = new ZipOutputStream(os)) {
