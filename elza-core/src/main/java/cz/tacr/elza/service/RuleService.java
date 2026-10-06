@@ -92,6 +92,7 @@ import cz.tacr.elza.domain.ArrNodeExtension;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.RulArrangementExtension;
+import cz.tacr.elza.domain.RulArrangementRule;
 import cz.tacr.elza.domain.RulComponent;
 import cz.tacr.elza.domain.RulExportFilter;
 import cz.tacr.elza.domain.RulExtensionRule;
@@ -1995,8 +1996,12 @@ public class RuleService {
         List<String> itemTypeCodes = new ArrayList<>();
         List<ItemType> itemTypeList = null;
         try {
-            if (rulRuleSet.getItemTypeComponent() != null) {
-                itemTypeList = availableItemsRules.execute(rulRuleSet, createModelItemTypes());
+            // own filter of the rule set, then filters contributed by other packages
+            List<RulArrangementRule> filterRules = staticDataService.getData()
+                    .getRuleSetById(rulRuleSet.getRuleSetId())
+                    .getRulesByType(RulArrangementRule.RuleType.ITEM_TYPE_FILTER);
+            if (rulRuleSet.getItemTypeComponent() != null || !filterRules.isEmpty()) {
+                itemTypeList = availableItemsRules.execute(rulRuleSet, filterRules, createModelItemTypes());
             }
         } catch (Exception e) {
             throw new SystemException(e);

@@ -1,0 +1,12 @@
+package AddonTest;
+
+import cz.tacr.elza.drools.model.ItemType;
+
+// Adds the addon's own item type to the ZP2015 list of item types (grid, search, add-item dialog,
+// AI dictionary). Runs after the ZP2015 filter, over the same facts.
+rule "ADT filter"
+when
+    $it: ItemType(code in ("ADT_STAGE"))
+then
+    $it.setPossible();
+end

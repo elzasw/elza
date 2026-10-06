@@ -3363,19 +3363,17 @@ public class PackageService {
         }
 
         List<RulItemTypeSpecAssign> typeAssigned = itemTypeSpecAssignRepository.findByItemSpecIn(rulDescItemSpecs);
-        Map<Integer, List<String>> typeAssignedBySpecId = typeAssigned.stream()
-                .collect(Collectors.groupingBy(tsa -> tsa.getItemSpec().getItemSpecId(),
-                                               Collectors.mapping(tsa -> tsa.getItemType().getCode(),
-                                                                  Collectors.toList())));
+        Map<Integer, List<RulItemTypeSpecAssign>> typeAssignedBySpecId = typeAssigned.stream()
+                .collect(Collectors.groupingBy(tsa -> tsa.getItemSpec().getItemSpecId()));
 
         ItemSpecs itemSpecs = new ItemSpecs();
         List<ItemSpec> itemSpecList = new ArrayList<>(rulDescItemSpecs.size());
         itemSpecs.setItemSpecs(itemSpecList);
 
         for (RulItemSpec rulDescItemSpec : rulDescItemSpecs) {
-            List<String> assignedTypes = typeAssignedBySpecId.get(rulDescItemSpec.getItemSpecId());
+            List<RulItemTypeSpecAssign> assignments = typeAssignedBySpecId.get(rulDescItemSpec.getItemSpecId());
 
-            ItemSpec itemSpec = ItemSpec.fromEntity(rulDescItemSpec, assignedTypes, itemAptypeRepository);
+            ItemSpec itemSpec = ItemSpec.fromEntity(rulDescItemSpec, assignments, itemAptypeRepository);
             itemSpecList.add(itemSpec);
         }
 

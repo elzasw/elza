@@ -1,7 +1,7 @@
 <package>
   <code>ADDON_TEST</code>
   <name>Addon test package</name>
-  <version>1</version>
+  <version>2</version>
   <description>Test-only package: proves that a dependent package can contribute item types, specifications and rules to the ZP2015 rule set without owning it.</description>
   <dependencies>
     <dependency code="ZP2015" min-version="344" />

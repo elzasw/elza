@@ -86,16 +86,16 @@ import cz.tacr.elza.service.UserService;
  * "addon" path of the package importer.
  *
  * <p>The test package {@code rules-addon-test} declares a dependency on ZP2015 and contributes an
- * item type of its own, a specification attached to the ZP2015 item type {@code ZP2015_OTHER_ID},
- * and two rule files placed under {@code rul_rule_set/ZP2015/}. The importer registers such a
- * directory for a rule set the package does not own as an addon; its rules are stored against the
- * addon package and executed after the ZP2015 rules because of their higher priority, each rule
- * file in a session of its own. That ordering is what lets an addon both add to and override what
- * the base rules decided.
+ * item type of its own, a specification attached to the ZP2015 item type {@code ZP2015_OTHER_ID}
+ * and placed after one of its ZP2015 specifications ({@code view-after}), and rule files placed
+ * under {@code rul_rule_set/ZP2015/}. The importer registers such a directory for a rule set the
+ * package does not own as an addon; its rules are stored against the addon package and executed
+ * after the ZP2015 rules because of their higher priority, each rule file in a session of its own.
+ * That ordering is what lets an addon both add to and override what the base rules decided. An
+ * {@code ITEM_TYPE_FILTER} rule adds the addon item type to the rule set's list of item types.
  *
- * <p>One assertion records a current limit of the path rather than the desired behaviour: the
- * rule set's item-type filter does not see addon item types. (A rule-set {@code ui_setting.xml}
- * from a second package is refused by the importer as well; the test package ships none.)
+ * <p>A rule-set {@code ui_setting.xml} from a second package is still refused by the importer; the
+ * test package ships none.
  *
  * <p>Packages are imported once for the class and removed again afterwards, because the rule
  * packages are not among the tables the shared helper wipes and would otherwise stay visible to
@@ -117,6 +117,8 @@ public class AddonPackageTest {
     private static final String ADDON_ITEM_TYPE = "ADT_STAGE";
     private static final String ADDON_SPEC = "ADT_OTHERID_TEST";
     private static final String FOREIGN_ITEM_TYPE = "ZP2015_OTHER_ID";
+    /** ZP2015 specification the addon places its specification after (view-after). */
+    private static final String ANCHOR_SPEC = "ZP2015_OTHERID_SIG";
     private static final String OVERRIDDEN_ITEM_TYPE = "ZP2015_INTERNAL_NOTE";
     private static final String ADDON_MISSING_MESSAGE = "Addon stage is missing (rule ADT_001).";
 
@@ -222,16 +224,32 @@ public class AddonPackageTest {
             assertEquals(BASE_CODE, otherIdEntity.getRulPackage().getCode(),
                          "attaching a specification must not change who owns the item type");
 
-            // Specifications are ordered by package (topological order), so the addon's comes last.
-            List<RulItemTypeSpecAssign> assignments = itemTypeSpecAssignRepository
-                    .findByItemTypeSorted(otherIdEntity);
-            assertEquals(ADDON_SPEC, assignments.get(assignments.size() - 1).getItemSpec().getCode());
+            assertSpecFollowsAnchor(otherIdEntity);
         });
+    }
+
+    /**
+     * The anchor survives a re-import of the package that owns the item type: the ordering pass
+     * runs over all item types on every import, so ZP2015 cannot push the addon spec back to the end.
+     */
+    @Test
+    @Order(2)
+    void specificationPositionSurvivesReimportOfTheBasePackage() {
+        Boolean testing = packageService.getTesting();
+        packageService.setTesting(true); // same version may be imported again
+        try {
+            helperTestService.loadPackage(BASE_CODE, "rules-cz-zp2015");
+        } finally {
+            packageService.setTesting(testing);
+        }
+        staticDataService.refreshForCurrentThread();
+
+        tx(() -> assertSpecFollowsAnchor(itemTypeRepository.findOneByCode(FOREIGN_ITEM_TYPE)));
     }
 
     /** Addon rules are appended to the ZP2015 rule set, run last, and are read from the addon's directory. */
     @Test
-    @Order(2)
+    @Order(3)
     void addonRulesRunAfterTheBaseRulesFromTheAddonPackageDirectory() {
         tx(() -> {
             RulPackage addon = addonPackage();
@@ -262,7 +280,7 @@ public class AddonPackageTest {
      * the root, and the addon validation rule reports its missing item in its own words.
      */
     @Test
-    @Order(3)
+    @Order(4)
     void addonRulesExtendAndOverrideAvailabilityAndValidateFolders() {
         TransactionTemplate template = new TransactionTemplate(txManager);
         template.executeWithoutResult(status -> {
@@ -311,24 +329,24 @@ public class AddonPackageTest {
     }
 
     /**
-     * Records a limit of the addon path: the rule set's item-type filter is a single rule file of
-     * the owning package, so the addon item type stays invisible to the grid, search and AI
-     * dictionary. This is the behaviour to change next; the assertion flips then.
+     * The addon's ITEM_TYPE_FILTER rule adds its item type to the rule set's list of item types,
+     * which feeds the grid, search, the add-item dialog and the AI dictionary.
      */
     @Test
-    @Order(4)
-    void ruleSetItemTypeFilterDoesNotSeeAddonItemTypes() {
+    @Order(5)
+    void addonFilterRuleAddsItsItemTypeToTheRuleSet() {
         tx(() -> {
             RulRuleSet base = ruleSetRepository.findByCode(BASE_CODE);
             List<String> codes = ruleService.getItemTypeCodesByRuleSet(base);
-            assertTrue(codes.contains("ZP2015_NAME"), "sanity: base filter works");
-            assertFalse(codes.contains(ADDON_ITEM_TYPE), "addon item types are not part of the rule set filter yet");
+            assertTrue(codes.contains("ZP2015_NAME"), "the rule set's own filter still applies");
+            assertTrue(codes.contains(ADDON_ITEM_TYPE), "the addon filter rule adds its item type");
+            assertFalse(codes.contains("SRD_TITLE"), "item types named by no filter stay out");
         });
     }
 
     /** The base package is protected while an addon depends on it. */
     @Test
-    @Order(5)
+    @Order(6)
     void basePackageCannotBeDeletedWhileTheAddonDependsOnIt() {
         BusinessException ex = assertThrows(BusinessException.class, () -> packageService.deletePackage(BASE_CODE));
         assertEquals(PackageCode.FOREIGN_DEPENDENCY, ex.getErrorCode());
@@ -337,7 +355,7 @@ public class AddonPackageTest {
 
     /** Removing the addon takes its item type, specification, rules and files away and leaves ZP2015 as it was. */
     @Test
-    @Order(6)
+    @Order(7)
     void deletingTheAddonRestoresTheBaseRuleSet() {
         RulPackage addon = addonPackage();
 
@@ -361,6 +379,17 @@ public class AddonPackageTest {
     }
 
     // ---------------------------------------------------------------------------------------------
+
+    /** The addon spec sits right after its anchor, not at the end where its package would put it. */
+    private void assertSpecFollowsAnchor(RulItemType otherIdEntity) {
+        List<String> order = itemTypeSpecAssignRepository.findByItemTypeSorted(otherIdEntity).stream()
+                .map(a -> a.getItemSpec().getCode())
+                .toList();
+        int anchor = order.indexOf(ANCHOR_SPEC);
+        assertTrue(anchor >= 0, "anchor specification missing: " + order);
+        assertEquals(ADDON_SPEC, order.get(anchor + 1), "addon specification must follow its anchor: " + order);
+        assertNotEquals(ADDON_SPEC, order.get(order.size() - 1), "anchor must move the spec from the end");
+    }
 
     private RulPackage addonPackage() {
         RulPackage addon = packageRepository.findByCode(ADDON_CODE);
