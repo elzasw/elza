@@ -18,12 +18,14 @@ import cz.tacr.elza.controller.vo.ItemTypeSpec;
 import cz.tacr.elza.controller.vo.ItemViewDefinition;
 import cz.tacr.elza.controller.vo.JsonTableViewDefinition;
 import cz.tacr.elza.controller.vo.StringViewDefinition;
+import cz.tacr.elza.core.data.PackageTexts;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.data.StructType;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemSpecExt;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.domain.integer.DisplayType;
 import cz.tacr.elza.domain.table.ElzaColumn;
 
@@ -38,52 +40,59 @@ public class RulesMapper {
 
     private final StaticDataService staticDataService;
 
+    private final PackageTexts packageTexts;
+
     @Autowired
-    public RulesMapper(StaticDataService staticDataService) {
+    public RulesMapper(StaticDataService staticDataService, PackageTexts packageTexts) {
         this.staticDataService = staticDataService;
+        this.packageTexts = packageTexts;
     }
 
-    public ItemTypeList toItemTypeList(List<RulItemTypeExt> source) {
+    /**
+     * @param language
+     *            language of names, shortcuts and descriptions; null for the source texts
+     */
+    public ItemTypeList toItemTypeList(List<RulItemTypeExt> source, SysLanguage language) {
         List<ItemType> mapped = new ArrayList<>(source.size());
         for (RulItemTypeExt src : source) {
-            mapped.add(toItemType(src));
+            mapped.add(toItemType(src, language));
         }
         return new ItemTypeList(mapped);
     }
 
-    ItemType toItemType(RulItemTypeExt src) {
+    ItemType toItemType(RulItemTypeExt src, SysLanguage language) {
         DataType dataType = toDataType(src.getDataType().getCode());
         ItemType out = new ItemType(
                 src.getItemTypeId(),
                 src.getCode(),
-                src.getName(),
-                src.getShortcut(),
+                packageTexts.name(src, language),
+                packageTexts.shortcut(src, language),
                 dataType,
                 Boolean.TRUE.equals(src.getCanBeOrdered()));
-        out.setDescription(src.getDescription());
+        out.setDescription(packageTexts.description(src, language));
         out.setStructureTypeCode(resolveStructureTypeCode(src, dataType));
         out.setViewDefinition(toViewDefinition(src, dataType));
         if (src.getRulItemSpecList() != null && !src.getRulItemSpecList().isEmpty()) {
-            out.setSpecs(toItemTypeSpecs(src.getRulItemSpecList()));
+            out.setSpecs(toItemTypeSpecs(src.getRulItemSpecList(), language));
         }
         return out;
     }
 
-    private List<ItemTypeSpec> toItemTypeSpecs(List<RulItemSpecExt> source) {
+    private List<ItemTypeSpec> toItemTypeSpecs(List<RulItemSpecExt> source, SysLanguage language) {
         List<ItemTypeSpec> mapped = new ArrayList<>(source.size());
         for (RulItemSpec src : source) {
-            mapped.add(toItemTypeSpec(src));
+            mapped.add(toItemTypeSpec(src, language));
         }
         return mapped;
     }
 
-    ItemTypeSpec toItemTypeSpec(RulItemSpec src) {
+    ItemTypeSpec toItemTypeSpec(RulItemSpec src, SysLanguage language) {
         ItemTypeSpec out = new ItemTypeSpec(
                 src.getItemSpecId(),
                 src.getCode(),
-                src.getName(),
-                src.getShortcut());
-        out.setDescription(src.getDescription());
+                packageTexts.name(src, language),
+                packageTexts.shortcut(src, language));
+        out.setDescription(packageTexts.description(src, language));
         return out;
     }
 

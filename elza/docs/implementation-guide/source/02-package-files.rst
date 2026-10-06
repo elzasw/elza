@@ -22,6 +22,7 @@ package.xml
      <name>Addon test package</name>
      <version>2</version>
      <description>...</description>
+     <language>en</language>
      <dependencies>
        <dependency code="ZP2015" min-version="344"/>
      </dependencies>
@@ -38,6 +39,13 @@ package.xml
 
 ``description``
    Free text.
+
+``language``
+   BCP 47 tag of the language the package writes its texts in (names,
+   shortcuts and descriptions of its entities, messages); ``cs`` when the
+   element is missing. Texts in other languages come from translation files
+   (see :ref:`translation-files`). The language must be known to the
+   installation (table ``sys_language``), otherwise the import is refused.
 
 ``dependencies/dependency``
    ``code`` and ``min-version`` (both required) of a package this package
@@ -341,6 +349,87 @@ parts use the structured type are queued for regeneration.
 Structure extensions (:file:`rul_structure_extension.xml`,
 :file:`rul_structure_extension_definition.xml`) add optional definitions
 to a structured type.
+
+.. _translation-files:
+
+translations/<lang>.xml
+=======================
+
+Texts of a package in another language - of its own entities, or of the
+entities of any other package. One file per language, named by its BCP 47
+tag (:file:`translations/en.xml`), so a translator works with one file.
+
+.. code-block:: xml
+
+   <translations lang="en">
+     <t type="ITEM_TYPE" code="SRD_TITLE" field="name">Content, abstract</t>
+     <t type="ITEM_SPEC" code="SRD_LEVEL_SERIES" field="shortcut">Series</t>
+     <t type="MESSAGE" code="ADDON_TEST/ADT_001" field="text">Stage {0} is missing.</t>
+   </translations>
+
+``lang`` (required, attribute)
+   Tag of the language, equal to the file name.
+
+``t``
+   One translated text. ``type`` and ``field`` say which text of which kind
+   of entity, ``code`` is the code of the entity:
+
+   ========================= ==================================== ===========================
+   ``type``                  ``code``                             ``field``
+   ========================= ==================================== ===========================
+   ``ITEM_TYPE``             item type                            ``name``, ``shortcut``,
+                                                                  ``description``
+   ``ITEM_SPEC``             specification                        ``name``, ``shortcut``,
+                                                                  ``description``
+   ``RULE_SET``              rule set                             ``name``
+   ``AP_TYPE``               entity type                          ``name``
+   ``PART_TYPE``             part type                            ``name``
+   ``STRUCTURED_TYPE``       structured type                      ``name``
+   ``POLICY_TYPE``           policy type                          ``name``
+   ``OUTPUT_TYPE``           output type                          ``name``
+   ``TEMPLATE``              output template                      ``name``
+   ``ARRANGEMENT_EXTENSION`` arrangement extension                ``name``
+   ``ISSUE_TYPE``            issue type                           ``name``
+   ``ISSUE_STATE``           issue state                          ``name``
+   ``TYPE_GROUP``            ``<RULE_SET>/<GROUP>``               ``name``
+   ``MESSAGE``               ``<PACKAGE>/<KEY>``                  ``text``
+   ========================= ==================================== ===========================
+
+The text stored with the entity is the source text, in the language of
+the package that defines it (``language`` in :file:`package.xml`); it is
+shown when no translation into the reader's language exists. A
+translation into ``en-GB`` falls back to ``en`` and then to the source
+text.
+
+**Messages.** A message is defined by the translation file of its
+package's own language: ``ZP2015`` writing in Czech defines
+``ZP2015/UJ_012`` in :file:`translations/cs.xml`, and any package can
+translate it in a file of another language. The code starts with the code
+of the defining package; a source file may define only messages of its own
+package. Arguments are ``java.text.MessageFormat`` placeholders (``{0}``,
+``{1,number,integer}``), formatted with the conventions of the language;
+an apostrophe is written ``''``. The source-language file holds only
+messages - other rows in it are skipped with a warning, the entity files
+hold those texts.
+
+**Several packages, one text.** When several packages translate the same
+text into the same language, the package that depends on the other wins,
+so a customization overrides the translations of the package it builds
+on. Packages without a dependency between them are ordered by code.
+
+**Import.** Each import replaces all translations of the package. It is
+refused for an unknown ``type``, a ``field`` not allowed for the type, an
+unknown language, the same text twice in one file, or a message code
+without the package prefix. A translation of an entity that does not exist
+is kept with a warning: the entity may come with the next version of its
+package. The translations are exported with the package and removed with
+it.
+
+**Outdated translations.** With each translation the import stores a hash
+of the source text it was made from. When the source text changes later
+(a new version of the package that defines the entity), the translation
+is reported as outdated; it is still used until the translator updates
+it. Translations of type groups are not checked.
 
 .. todo::
 

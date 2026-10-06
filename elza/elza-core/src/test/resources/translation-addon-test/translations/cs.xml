@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<translations lang="cs">
+    <t type="MESSAGE" code="TRANSLATION_TEST/GREETING" field="text">Dobrý den, {0}. Máte {1} zprávy.</t>
+</translations>

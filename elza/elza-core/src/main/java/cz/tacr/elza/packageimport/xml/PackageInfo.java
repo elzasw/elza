@@ -31,6 +31,10 @@ public class PackageInfo {
     @XmlElement(name = "description", nillable = true)
     private String description;
 
+    /** BCP 47 tag of the source language of the package texts; Czech when missing. */
+    @XmlElement(name = "language")
+    private String language;
+
     @XmlElement(name = "dependency", required = true)
     @XmlElementWrapper(name = "dependencies")
     private List<PackageDependency> dependencies;
@@ -73,6 +77,14 @@ public class PackageInfo {
 
     public void setDescription(final String description) {
         this.description = description;
+    }
+
+    public String getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(final String language) {
+        this.language = language;
     }
 
     public List<PackageDependency> getDependencies() {

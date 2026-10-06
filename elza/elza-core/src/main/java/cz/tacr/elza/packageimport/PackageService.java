@@ -134,6 +134,7 @@ import cz.tacr.elza.packageimport.xml.OutputType;
 import cz.tacr.elza.packageimport.xml.OutputTypes;
 import cz.tacr.elza.packageimport.xml.PackageDependency;
 import cz.tacr.elza.packageimport.xml.PackageInfo;
+import cz.tacr.elza.packageimport.xml.Translations;
 import cz.tacr.elza.packageimport.xml.PartType;
 import cz.tacr.elza.packageimport.xml.PartTypes;
 import cz.tacr.elza.packageimport.xml.PolicyType;
@@ -372,6 +373,9 @@ public class PackageService {
 
     @Autowired
     private PackageRepository packageRepository;
+
+    @Autowired
+    private PackageTranslationService packageTranslationService;
 
     @Autowired
     private RuleSetRepository ruleSetRepository;
@@ -764,6 +768,9 @@ public class PackageService {
 
         InstitutionTypes institutionTypes = pkgCtx.convertXmlStreamToObject(InstitutionTypes.class, INSTITUTION_TYPE_XML);
         processInstitutionTypes(institutionTypes, rulPackage);
+
+        // translations last: they are checked against the entities saved above
+        packageTranslationService.importTranslations(pkgCtx);
 
         asyncRequestService.enqueueAp(accessPoints);
 
@@ -2432,6 +2439,7 @@ public class PackageService {
         rulPackage.setName(packageInfo.getName());
         rulPackage.setDescription(packageInfo.getDescription());
         rulPackage.setVersion(packageInfo.getVersion());
+        rulPackage.setLanguage(packageTranslationService.resolvePackageLanguage(packageInfo.getLanguage()));
 
         rulPackage = packageRepository.save(rulPackage);
 
@@ -2608,6 +2616,7 @@ public class PackageService {
         issueStateRepository.deleteByRulPackage(rulPackage);
         issueTypeRepository.deleteByRulPackage(rulPackage);
         institutionTypeRepository.deleteByRulPackage(rulPackage);
+        packageTranslationService.deleteTranslations(rulPackage);
         packageRepository.delete(rulPackage);
 
         entityManager.flush();
@@ -2783,6 +2792,13 @@ public class PackageService {
             exportIssueStates(rulPackage, zos);
             exportInstitutionTypes(rulPackage, zos);
             exportPartTypes(rulPackage, zos);
+            exportTranslations(rulPackage, zos);
+        }
+    }
+
+    private void exportTranslations(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
+        for (Map.Entry<String, Translations> file : packageTranslationService.exportTranslations(rulPackage).entrySet()) {
+            addObjectToZipFile(file.getValue(), zos, file.getKey());
         }
     }
 
@@ -3157,6 +3173,7 @@ public class PackageService {
         packageInfo.setName(rulPackage.getName());
         packageInfo.setDescription(rulPackage.getDescription());
         packageInfo.setVersion(rulPackage.getVersion());
+        packageInfo.setLanguage(rulPackage.getLanguage().getTag());
 
         List<RulPackageDependency> dependencies = packageDependencyRepository.findByRulPackage(rulPackage);
         packageInfo.setDependencies(dependencies.stream()

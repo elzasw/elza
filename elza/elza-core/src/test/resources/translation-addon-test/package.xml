@@ -1,0 +1,10 @@
+<package>
+  <code>TRANSLATION_TEST</code>
+  <name>Translation test package</name>
+  <version>1</version>
+  <description>Translations contributed by a dependent package (PackageTranslationTest)</description>
+  <language>cs</language>
+  <dependencies>
+    <dependency code="SIMPLE-DEV" min-version="42" />
+  </dependencies>
+</package>

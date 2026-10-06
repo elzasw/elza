@@ -22,10 +22,12 @@ import cz.tacr.elza.repository.ExtensionRuleRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.ItemTypeSpecAssignRepository;
+import cz.tacr.elza.repository.PackageDependencyRepository;
 import cz.tacr.elza.repository.PackageRepository;
 import cz.tacr.elza.repository.PartTypeRepository;
 import cz.tacr.elza.repository.PolicyTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.repository.RulTranslationRepository;
 import cz.tacr.elza.repository.StructureDefinitionRepository;
 import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
 import cz.tacr.elza.repository.StructuredTypeExtensionRepository;
@@ -104,6 +106,10 @@ public class StaticDataService {
     final ComponentRepository componentRepository;
 
     final PolicyTypeRepository policyTypeRepository;
+
+    final PackageDependencyRepository packageDependencyRepository;
+
+    final RulTranslationRepository translationRepository;
     
     final ApplicationContext context;
 
@@ -128,7 +134,9 @@ public class StaticDataService {
                              final PartTypeRepository partTypeRepository,
                              final ApExternalSystemRepository apExternalSystemRepository,
                              final ComponentRepository componentRepository,
-                             final PolicyTypeRepository policyTypeRepository, 
+                             final PolicyTypeRepository policyTypeRepository,
+                             final PackageDependencyRepository packageDependencyRepository,
+                             final RulTranslationRepository translationRepository,
                              final ApplicationContext context) {
         this.em = em;
         this.ruleSetRepository = ruleSetRepository;
@@ -151,6 +159,8 @@ public class StaticDataService {
         this.apExternalSystemRepository = apExternalSystemRepository;
         this.componentRepository = componentRepository;
         this.policyTypeRepository = policyTypeRepository;
+        this.packageDependencyRepository = packageDependencyRepository;
+        this.translationRepository = translationRepository;
         this.context = context;
     }
 

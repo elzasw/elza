@@ -8,8 +8,10 @@ import org.springframework.web.bind.annotation.RestController;
 import cz.tacr.elza.controller.mapper.RulesMapper;
 import cz.tacr.elza.controller.vo.ItemTypeList;
 import cz.tacr.elza.controller.vo.PartType;
+import cz.tacr.elza.core.data.PackageTexts;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulPartType;
+import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.StructObjService;
 
@@ -31,12 +33,15 @@ public class RulesController implements RulesApi {
     private final StructObjService structureService;
     private final RuleService ruleService;
     private final RulesMapper mapper;
+    private final PackageTexts packageTexts;
 
     @Autowired
-    public RulesController(StructObjService structureService, RuleService ruleService, RulesMapper mapper) {
+    public RulesController(StructObjService structureService, RuleService ruleService, RulesMapper mapper,
+                           PackageTexts packageTexts) {
     	this.structureService = structureService;
         this.ruleService = ruleService;
         this.mapper = mapper;
+        this.packageTexts = packageTexts;
     }
 
     /**
@@ -50,12 +55,10 @@ public class RulesController implements RulesApi {
      */
     @Override
     public ResponseEntity<ItemTypeList> rulesListItemTypes(String ruleSetCode, String acceptLanguage) {
-        // TODO(localization): Accept-Language is currently accepted but
-        //  ignored. rul_item_type / rul_item_spec store name/shortcut/
-        //  description in the single language set at package-import time.
-        //  A translation layer is required before this header has any effect.
+        // names of item types and specifications are translated; column names of table views are not
+        SysLanguage language = packageTexts.resolveRequestLanguage(acceptLanguage);
         List<RulItemTypeExt> source = ruleService.getDescriptionItemTypesByRuleSet(ruleSetCode);
-        return ResponseEntity.ok(mapper.toItemTypeList(source));
+        return ResponseEntity.ok(mapper.toItemTypeList(source, language));
     }
 
     /**

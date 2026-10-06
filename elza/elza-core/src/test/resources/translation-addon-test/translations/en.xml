@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<translations lang="en">
+    <!-- overrides the translation of SIMPLE-DEV -->
+    <t type="ITEM_TYPE" code="SRD_TITLE" field="name">Content summary</t>
+    <!-- SIMPLE-DEV does not translate this one -->
+    <t type="ITEM_TYPE" code="SRD_ARRANGEMENT_TYPE" field="name">Arrangement method</t>
+    <!-- no such item type: kept as orphan -->
+    <t type="ITEM_TYPE" code="SRD_NOT_EXISTING" field="name">Ghost</t>
+    <t type="MESSAGE" code="TRANSLATION_TEST/GREETING" field="text">Hello, {0}. You have {1} messages.</t>
+</translations>

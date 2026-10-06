@@ -804,4 +804,94 @@
                              constraintName="ux_rul_item_type_spec_assign"/>
     </changeSet>
 
+    <changeSet id="20261007100000" author="ppy">
+        <!-- Languages get a BCP 47 tag - the key used by translation files, Accept-Language and
+             the client. Filled for the rows of db.elza-init.xml; the next changeset refuses to run
+             while a row is left without a tag. -->
+        <addColumn tableName="sys_language">
+            <column name="tag" type="nvarchar(10)"/>
+            <!-- The UI can be used in this language -->
+            <column name="ui_enabled" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <!-- The language can be chosen as the language of an entity scope -->
+            <column name="scope_enabled" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <update tableName="sys_language"><column name="tag" value="cs"/><column name="ui_enabled" valueBoolean="true"/><where>code = 'cze'</where></update>
+        <update tableName="sys_language"><column name="tag" value="en"/><column name="ui_enabled" valueBoolean="true"/><where>code = 'eng'</where></update>
+        <update tableName="sys_language"><column name="tag" value="de"/><where>code = 'ger'</where></update>
+        <update tableName="sys_language"><column name="tag" value="ru"/><where>code = 'rus'</where></update>
+        <update tableName="sys_language"><column name="tag" value="la"/><where>code = 'lat'</where></update>
+        <update tableName="sys_language"><column name="tag" value="sk"/><where>code = 'slo'</where></update>
+        <update tableName="sys_language"><column name="tag" value="pl"/><where>code = 'pol'</where></update>
+        <update tableName="sys_language"><column name="tag" value="it"/><where>code = 'ita'</where></update>
+        <update tableName="sys_language"><column name="tag" value="fr"/><where>code = 'fre'</where></update>
+        <update tableName="sys_language"><column name="tag" value="es"/><where>code = 'spa'</where></update>
+        <update tableName="sys_language"><column name="tag" value="he"/><where>code = 'heb'</where></update>
+    </changeSet>
+
+    <changeSet id="20261007100100" author="ppy">
+        <!-- A language added outside the changelog has no tag. Fill sys_language.tag of such a row
+             (BCP 47, e.g. 'hu') before starting ELZA again. -->
+        <preConditions onFail="HALT" onFailMessage="sys_language contains rows without a tag; set sys_language.tag (BCP 47, e.g. 'hu') for them and start ELZA again">
+            <sqlCheck expectedResult="0">SELECT count(*) FROM sys_language WHERE tag IS NULL</sqlCheck>
+        </preConditions>
+        <addNotNullConstraint tableName="sys_language" columnName="tag" columnDataType="nvarchar(10)"/>
+        <addUniqueConstraint tableName="sys_language" columnNames="tag" constraintName="ux_sys_language_tag"/>
+
+        <!-- Source language of the texts a package defines (<language> in package.xml) -->
+        <addColumn tableName="rul_package">
+            <column name="language_id" type="int"/>
+        </addColumn>
+        <sql>UPDATE rul_package SET language_id = (SELECT language_id FROM sys_language WHERE tag = 'cs')</sql>
+        <addNotNullConstraint tableName="rul_package" columnName="language_id" columnDataType="int"/>
+        <addForeignKeyConstraint baseTableName="rul_package" baseColumnNames="language_id"
+                                 constraintName="fk_rul_package_sys_language"
+                                 referencedTableName="sys_language" referencedColumnNames="language_id"/>
+
+        <!-- One translated piece of text: field of the entity entity_type/entity_code in a language,
+             contributed by a package. Keys are codes, so rows survive re-imports of the package that
+             defines the entity. -->
+        <createTable tableName="rul_translation">
+            <column name="translation_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_rul_translation" nullable="false"/>
+            </column>
+            <column name="package_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_translation_rul_package"
+                             referencedTableName="rul_package" referencedColumnNames="package_id"/>
+            </column>
+            <column name="entity_type" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="entity_code" type="nvarchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="field" type="nvarchar(30)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="language_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_translation_sys_language"
+                             referencedTableName="sys_language" referencedColumnNames="language_id"/>
+            </column>
+            <column name="text_value" type="${type.text}">
+                <constraints nullable="false"/>
+            </column>
+            <!-- Short hash of the source text the translation was made from; a different hash of
+                 the current source text means the translation is outdated -->
+            <column name="source_hash" type="nvarchar(20)"/>
+        </createTable>
+        <addUniqueConstraint tableName="rul_translation"
+                             columnNames="entity_type, entity_code, field, language_id, package_id"
+                             constraintName="ux_rul_translation"/>
+        <createIndex tableName="rul_translation" indexName="ix_rul_translation_package">
+            <column name="package_id"/>
+        </createIndex>
+        <insert tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="rul_translation|translation_id"/>
+            <column name="next_val" value="0"/>
+        </insert>
+    </changeSet>
+
 </databaseChangeLog>

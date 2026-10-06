@@ -6,4 +6,6 @@ public interface SysLanguageRepository extends ElzaJpaRepository<SysLanguage, In
 
     SysLanguage findByCode(String code);
 
+    SysLanguage findByTag(String tag);
+
 }
