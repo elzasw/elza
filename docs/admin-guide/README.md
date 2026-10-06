@@ -14,6 +14,14 @@ Changes still to be translated are listed by
 `git log --follow <commit>..HEAD -- docs/admin-guide/source/<file>`; after translating,
 update the commit in the comment.
 
+## Publishing
+
+The CI jobs `build-doc-en` and `deploy-doc-en` (`.elza-ci.yml` in elza-build)
+publish the guide to `https://docs.lightcomp.cz/elza/en/<edition>/admin-guide/`,
+where the edition is `3.4` for branch 3.4.x and `main` for main; `current` and
+`next` point to the current release line and to main. The Czech translation is
+published with the Czech documentation at `https://docs.lightcomp.cz/elza/cs/`.
+
 ## Build
 
 ```
