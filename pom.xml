@@ -356,11 +356,6 @@
 			    <version>${jasperreport.version}</version>
 			</dependency>			
 			<dependency>
-			    <groupId>net.sf.jasperreports</groupId>
-			    <artifactId>jasperreports-barbecue</artifactId>
-			    <version>${jasperreport.version}</version>
-			</dependency>			
-			<dependency>
 				<groupId>net.sf.jasperreports</groupId>
 				<artifactId>jasperreports-fonts</artifactId>
 				<version>${jasperreport.version}</version>
