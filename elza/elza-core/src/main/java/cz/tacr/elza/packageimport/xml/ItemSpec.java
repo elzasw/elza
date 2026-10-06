@@ -17,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import cz.tacr.elza.domain.RulItemAptype;
 import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemTypeSpecAssign;
 import cz.tacr.elza.packageimport.ItemTypeUpdater;
 import cz.tacr.elza.repository.ItemAptypeRepository;
 
@@ -119,10 +120,11 @@ public class ItemSpec {
      *
      * @param rulDescItemSpec
      *            DAO specifikace
-     * @param assignedTypes
+     * @param assignments
+     *            assignments of the specification to item types
      */
     public static ItemSpec fromEntity(RulItemSpec rulDescItemSpec,
-                                      final List<String> assignedTypes,
+                                      final List<RulItemTypeSpecAssign> assignments,
                                       ItemAptypeRepository itemAptypeRepository) {
 
         ItemSpec itemSpec = new ItemSpec();
@@ -144,10 +146,10 @@ public class ItemSpec {
             itemSpec.setCategories(categories);
         }
 
-        if (CollectionUtils.isNotEmpty(assignedTypes)) {
+        if (CollectionUtils.isNotEmpty(assignments)) {
             List<ItemTypeAssign> itemTypesAssigns = new ArrayList<>();
-            for (String itemTypeSpecAssign : assignedTypes) {
-                itemTypesAssigns.add(ItemTypeAssign.fromEntity(itemTypeSpecAssign));
+            for (RulItemTypeSpecAssign assignment : assignments) {
+                itemTypesAssigns.add(ItemTypeAssign.fromEntity(assignment));
             }
             itemSpec.setItemTypeAssigns(itemTypesAssigns);
         }

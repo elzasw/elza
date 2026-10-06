@@ -170,6 +170,13 @@ public class RulArrangementRule {
          * unit of description by UUID is placed, see
          * {@link cz.tacr.elza.service.da.DaImportPlanner#planPlacement}.
          */
-        DA_MATCH
+        DA_MATCH,
+        /**
+         * Drools rules adding item types to the rule set's list of item types (grid columns,
+         * search filters, the add-item dialog, the AI dictionary). They run after the rule set's
+         * own item type filter, over the same facts; typically contributed by an addon package
+         * for its own item types.
+         */
+        ITEM_TYPE_FILTER
     }
 }

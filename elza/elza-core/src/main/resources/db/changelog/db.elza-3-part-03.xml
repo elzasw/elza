@@ -784,4 +784,24 @@
         <dropColumn tableName="da_level_view" columnName="fund_id"/>
     </changeSet>
 
+    <changeSet id="20261006140000" author="ppy">
+        <!-- A package may place its specification right after a given specification of the item
+             type (view-after in <item-type-assign>). The anchor is stored as a code, so it survives
+             re-imports of the package that owns the anchor. -->
+        <addColumn tableName="rul_item_type_spec_assign">
+            <column name="view_after_spec_code" type="nvarchar(50)"/>
+        </addColumn>
+        <!-- One assignment per item type and specification. Nothing prevented duplicates so far;
+             any found are dropped first, keeping the oldest row. -->
+        <sql>
+            DELETE FROM rul_item_type_spec_assign WHERE item_type_spec_assign_id NOT IN (
+                SELECT keep_id FROM (
+                    SELECT MIN(item_type_spec_assign_id) AS keep_id FROM rul_item_type_spec_assign
+                     GROUP BY item_type_id, item_spec_id) k)
+        </sql>
+        <addUniqueConstraint tableName="rul_item_type_spec_assign"
+                             columnNames="item_type_id, item_spec_id"
+                             constraintName="ux_rul_item_type_spec_assign"/>
+    </changeSet>
+
 </databaseChangeLog>

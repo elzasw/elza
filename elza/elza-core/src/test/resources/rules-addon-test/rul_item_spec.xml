@@ -3,6 +3,7 @@
         <name>Addon identifier</name>
         <description>Specification attached by the addon package to the ZP2015 item type ZP2015_OTHER_ID</description>
         <shortcut>addon id</shortcut>
-        <item-type-assign code="ZP2015_OTHER_ID"/>
+        <!-- placed right after the ZP2015 specification "signatura" -->
+        <item-type-assign code="ZP2015_OTHER_ID" view-after="ZP2015_OTHERID_SIG"/>
     </item-spec>
 </item-specs>

@@ -310,7 +310,7 @@ public class ItemTypeUpdater {
         Map<String, RulItemSpec> dbOldSpecsByCode = dbItemSpecs.stream()
                 .collect(toMap(RulItemSpec::getCode, Function.identity()));
         
-        Map<String, List<String>> xmlSpecAssigmentsByType = new HashMap<>();
+        Map<String, List<XmlSpecAssignment>> xmlSpecAssigmentsByType = new HashMap<>();
 
         // kolekce vsech zpracovanych kodu
         Map<String, RulItemSpec> dbUpdatedSpecsByCode = new LinkedHashMap<>();
@@ -340,10 +340,11 @@ public class ItemTypeUpdater {
                 if (xmlItemSpec.getItemTypeAssigns() != null) {
                     for (ItemTypeAssign xmlSpecAssignment : xmlItemSpec.getItemTypeAssigns()) {
                         // get list of assigned spec to the type 
-                        List<String> specs = xmlSpecAssigmentsByType.computeIfAbsent(xmlSpecAssignment.getCode(),
-                                                                                     c -> new ArrayList<>());
+                        List<XmlSpecAssignment> specs = xmlSpecAssigmentsByType
+                                .computeIfAbsent(xmlSpecAssignment.getCode(), c -> new ArrayList<>());
                         // append new spec
-                        specs.add(itemSpecCode);
+                        specs.add(new XmlSpecAssignment(itemSpecCode,
+                                StringUtils.trimToNull(xmlSpecAssignment.getViewAfter())));
                     }
                 }
             }
@@ -372,7 +373,7 @@ public class ItemTypeUpdater {
      * @param dbUpdatedSpecsByCode
      *            Updated specifications by code
      */
-    private void assignItemTypesToSpec(final Map<String, List<String>> xmlSpecAssigmentsByType,
+    private void assignItemTypesToSpec(final Map<String, List<XmlSpecAssignment>> xmlSpecAssigmentsByType,
                                        final List<RulItemSpec> dbPrevItemSpecs,
                                        final Map<String, RulItemSpec> dbUpdatedSpecsByCode) {
 
@@ -392,9 +393,9 @@ public class ItemTypeUpdater {
         }
         
         // iterate xml requiremens
-        for (Entry<String, List<String>> itemTypeAssignedSpecs : xmlSpecAssigmentsByType.entrySet()) {
+        for (Entry<String, List<XmlSpecAssignment>> itemTypeAssignedSpecs : xmlSpecAssigmentsByType.entrySet()) {
             String itemTypeCode = itemTypeAssignedSpecs.getKey();
-            List<String> requieredSpecs = itemTypeAssignedSpecs.getValue();
+            List<XmlSpecAssignment> requieredSpecs = itemTypeAssignedSpecs.getValue();
 
             List<RulItemTypeSpecAssign> currDbAssignedSpecs = specAssigmentsByType.get(itemTypeCode);
 
@@ -405,7 +406,8 @@ public class ItemTypeUpdater {
             // get required specs            
             // 
             for (int pos = 0; pos < requieredSpecs.size(); pos++) {
-                String specCode = requieredSpecs.get(pos);
+                XmlSpecAssignment required = requieredSpecs.get(pos);
+                String specCode = required.specCode();
                 RulItemTypeSpecAssign assignment = currDbAssignmentsBySpecCode.remove(specCode);
                 int nextViewOrder = pos + 1;
                 if (assignment == null) {
@@ -415,6 +417,7 @@ public class ItemTypeUpdater {
                     Validate.notNull(itemSpec, "Item spec not found %s", specCode);
 
                     assignment = new RulItemTypeSpecAssign(itemType, itemSpec, nextViewOrder);
+                    assignment.setViewAfterSpecCode(required.viewAfter());
                     assignment = itemTypeSpecAssignRepository.save(assignment);
 
                     logger.debug("Specification '{}' assigned to item type '{}'", specCode, itemTypeCode);
@@ -423,6 +426,7 @@ public class ItemTypeUpdater {
                     if (assignment.getViewOrder() != nextViewOrder) {
                         assignment.setViewOrder(nextViewOrder);
                     }
+                    assignment.setViewAfterSpecCode(required.viewAfter());
                     assignment = itemTypeSpecAssignRepository.save(assignment);
                 }
             }
@@ -610,6 +614,13 @@ public class ItemTypeUpdater {
                 int i2 = sortedPackages.indexOf(o2.getItemSpec().getPackage());
                 return Integer.compare(i1, i2);
             });
+
+            // specifications with view-after are moved right behind their anchor
+            ritsaList = AnchoredOrder.apply(ritsaList,
+                    a -> a.getItemSpec().getCode(),
+                    RulItemTypeSpecAssign::getViewAfterSpecCode,
+                    a -> logger.warn("Specification '{}' of item type '{}' should follow '{}', which is not a specification of this type; placed last",
+                                     a.getItemSpec().getCode(), rulItemType.getCode(), a.getViewAfterSpecCode()));
 
             // provede přečíslování
             for (int i = 0; i < ritsaList.size(); i++) {
@@ -1143,4 +1154,9 @@ public class ItemTypeUpdater {
         return this.numDroppedCachedNode;
     }
 
+    /**
+     * Specification assigned to an item type in the imported XML, with its optional anchor.
+     */
+    private record XmlSpecAssignment(String specCode, String viewAfter) {
+    }
 }
