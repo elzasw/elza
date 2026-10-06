@@ -213,7 +213,7 @@
 				</box>
 			</element>
 			<element kind="component" uuid="8d7b7ea3-f582-419d-8e09-7a64d9c15c41" positionType="Float" x="0" y="130" width="200" height="30">
-				<component kind="barcode4j:PDF417" minColumns="16" maxColumns="16">
+				<component kind="barcode4j:PDF417" moduleWidth="5.0" minColumns="9" maxColumns="9">
 					<codeExpression><![CDATA["f:"+(($P{fund}.getFundNumber()!=null)?$P{fund}.getFundNumber():"")+",r:"+$V{refNumber}+",u:"+$F{node}.getUuid()]]></codeExpression>
 				</component>
 				<property name="com.jaspersoft.studio.unit.y" value="px"/>
