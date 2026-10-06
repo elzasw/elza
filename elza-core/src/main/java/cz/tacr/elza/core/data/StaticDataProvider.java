@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
@@ -45,10 +46,12 @@ import cz.tacr.elza.repository.ExtensionRuleRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.ItemTypeSpecAssignRepository;
+import cz.tacr.elza.repository.PackageDependencyRepository;
 import cz.tacr.elza.repository.PackageRepository;
 import cz.tacr.elza.repository.PartTypeRepository;
 import cz.tacr.elza.repository.PolicyTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.repository.RulTranslationRepository;
 import cz.tacr.elza.repository.StructureDefinitionRepository;
 import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
 import cz.tacr.elza.repository.StructuredTypeExtensionRepository;
@@ -121,6 +124,10 @@ public class StaticDataProvider {
 
     private Map<String, SysLanguage> sysLanguageCodeMap;
 
+    private Map<String, SysLanguage> sysLanguageTagMap;
+
+    private PackageTranslations translations;
+
     private Map<Integer, ApTypeRoles> apTypeRolesIdMap;
 
     private Map<String, ApExternalSystem> apExternalSystemCodeMap = new HashMap<>();
@@ -191,6 +198,19 @@ public class StaticDataProvider {
     public SysLanguage getSysLanguageByCode(String code) {
         Validate.notEmpty(code);
         return sysLanguageCodeMap.get(code);
+    }
+
+    /**
+     * @param tag
+     *            BCP 47 tag, compared case-insensitively
+     */
+    public SysLanguage getSysLanguageByTag(String tag) {
+        Validate.notEmpty(tag);
+        return sysLanguageTagMap.get(tag.toLowerCase(Locale.ROOT));
+    }
+
+    public PackageTranslations getTranslations() {
+        return translations;
     }
 
     public List<StructType> getStructuredTypes() {
@@ -359,6 +379,7 @@ public class StaticDataProvider {
         initPartTypes(service.partTypeRepository);
         initApExternalSystems(service.apExternalSystemRepository);
         initPolicyTypes(service.policyTypeRepository);
+        initTranslations(service.translationRepository, service.packageDependencyRepository);
         self = this;
     }
 
@@ -585,6 +606,14 @@ public class StaticDataProvider {
         this.sysLanguages = Collections.unmodifiableList(languages);
         this.sysLanguageIdMap = createLookup(languages, SysLanguage::getLanguageId);
         this.sysLanguageCodeMap = createLookup(languages, SysLanguage::getCode);
+        this.sysLanguageTagMap = createLookup(languages, l -> l.getTag().toLowerCase(Locale.ROOT));
+    }
+
+    private void initTranslations(RulTranslationRepository translationRepository,
+                                  PackageDependencyRepository packageDependencyRepository) {
+        this.translations = PackageTranslations.build(translationRepository.findAllFetchPackageAndLanguage(),
+                                                      packages,
+                                                      packageDependencyRepository.findAll());
     }
 
     public static <K, V> Map<K, V> createLookup(Collection<V> values, Function<V, K> keyMapping) {

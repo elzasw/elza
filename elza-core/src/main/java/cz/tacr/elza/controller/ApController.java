@@ -312,12 +312,14 @@ public class ApController {
     }
 
     /**
-     * Vrací všechny jazyky.
+     * Vrací jazyky, které lze zvolit jako jazyk oblasti entit.
      */
     @RequestMapping(value = "/languages", method = RequestMethod.GET)
     @Transactional
     public List<LanguageVO> getAllLanguages() {
-        List<SysLanguage> languages = accessPointService.findAllLanguagesOrderByCode();
+        List<SysLanguage> languages = accessPointService.findAllLanguagesOrderByCode().stream()
+                .filter(l -> Boolean.TRUE.equals(l.getScopeEnabled()))
+                .toList();
         return FactoryUtils.transformList(languages, apFactory::createVO);
     }
 

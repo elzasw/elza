@@ -4853,6 +4853,35 @@ namespace ElzaAPI.Rules {
 }
 
 /**
+ * Language known to the installation (`sys_language`).
+ * Display names are not part of the model; clients take them from CLDR
+ * (`Intl.DisplayNames`) by `tag`.
+ */
+model Language {
+    /** BCP 47 tag, e.g. "cs", "en". */
+    tag: string;
+    /** ISO 639-2/B code, e.g. "cze", "eng". */
+    code: string;
+    /** The UI can be used in this language. */
+    uiEnabled: boolean;
+    /** The language can be chosen as the language of an entity scope. */
+    scopeEnabled: boolean;
+    /** Default language of the installation (`elza.locale`). */
+    defaultLanguage: boolean;
+}
+
+@tag("languages")
+@route("/languages")
+namespace ElzaAPI.Languages {
+    /**
+     * Returns all languages known to the installation with their usages.
+     *
+     * Public URL: `GET /api/v1/languages`.
+     */
+    @get op listLanguages(): Language[];
+}
+
+/**
  * Area in which the access-point search runs.
  */
 enum ApSearchArea {
@@ -8153,6 +8182,7 @@ namespace ElzaAPI.Tasks {
     version: "1.0.0",
 })
 @tagMetadata("admin", #{description: "Administrativní funkce"})
+@tagMetadata("languages", #{description: "Jazyky"})
 @tagMetadata("user", #{description: "Nastavení přihlášeného uživatele"})
 @tagMetadata("daos", #{description: "Digitální archivní objekty"})
 @tagMetadata("externalsystems", #{description: "Externí systémy"})

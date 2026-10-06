@@ -46,6 +46,8 @@ tags:
     description: Digitální archivní objekty
   - name: user
     description: Nastavení přihlášeného uživatele
+  - name: languages
+    description: Jazyky
   - name: admin
     description: Administrativní funkce
 paths:
@@ -5629,6 +5631,25 @@ paths:
                 $ref: '#/components/schemas/BaseException'
       tags:
         - io
+  /languages:
+    get:
+      operationId: Languages_listLanguages
+      description: |-
+        Returns all languages known to the installation with their usages.
+
+        Public URL: `GET /api/v1/languages`.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Language'
+      tags:
+        - languages
   /node/copyOlderSiblingAttribute:
     put:
       operationId: Node_copyOlderSiblingAttribute
@@ -10748,6 +10769,34 @@ components:
       allOf:
         - $ref: '#/components/schemas/ItemViewDefinition'
       description: Column definitions for JSON_TABLE items.
+    Language:
+      type: object
+      required:
+        - tag
+        - code
+        - uiEnabled
+        - scopeEnabled
+        - defaultLanguage
+      properties:
+        tag:
+          type: string
+          description: BCP 47 tag, e.g. "cs", "en".
+        code:
+          type: string
+          description: ISO 639-2/B code, e.g. "cze", "eng".
+        uiEnabled:
+          type: boolean
+          description: The UI can be used in this language.
+        scopeEnabled:
+          type: boolean
+          description: The language can be chosen as the language of an entity scope.
+        defaultLanguage:
+          type: boolean
+          description: Default language of the installation (`elza.locale`).
+      description: |-
+        Language known to the installation (`sys_language`).
+        Display names are not part of the model; clients take them from CLDR
+        (`Intl.DisplayNames`) by `tag`.
     LinkType:
       type: string
       enum:

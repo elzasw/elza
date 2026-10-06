@@ -102,6 +102,7 @@ export const exceptionMessages = defineMessages({
     "exception.pkg.FILE_NOT_FOUND": { id: "exception.pkg.FILE_NOT_FOUND", defaultMessage: "Nenalezen soubor „{file}“" },
     "exception.pkg.FOREIGN_DEPENDENCY": { id: "exception.pkg.FOREIGN_DEPENDENCY", defaultMessage: "Na balíček existuje závislost: {foreignPackageCodes}" },
     "exception.pkg.FOREIGN_PACKAGES_NOT_EXIST": { id: "exception.pkg.FOREIGN_PACKAGES_NOT_EXIST", defaultMessage: "Nebyly nalezeny požadované balíčky: {codes}" },
+    "exception.pkg.INVALID_TRANSLATION": { id: "exception.pkg.INVALID_TRANSLATION", defaultMessage: "Neplatný překlad „{key}“ v souboru „{file}“" },
     "exception.pkg.MIN_DEPENDENCY": { id: "exception.pkg.MIN_DEPENDENCY", defaultMessage: "Není splněna minimální verze balíčku {code}: {version}." },
     "exception.pkg.OTHER_PACKAGE": { id: "exception.pkg.OTHER_PACKAGE", defaultMessage: "Entita existuje již v balíčku {code}" },
     "exception.pkg.PACKAGE_NOT_EXIST": { id: "exception.pkg.PACKAGE_NOT_EXIST", defaultMessage: "Balíček s kódem „{code}“ neexistuje" },

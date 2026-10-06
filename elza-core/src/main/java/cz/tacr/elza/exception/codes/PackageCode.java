@@ -62,4 +62,9 @@ public enum PackageCode implements ErrorCode {
      * Scenario nebyl nalezen
      */
     SCENARIO_NOT_FOUND,
+
+    /**
+     * Invalid row of a translation file: unknown type or field, duplicate key, wrong message code.
+     */
+    INVALID_TRANSLATION,
 }

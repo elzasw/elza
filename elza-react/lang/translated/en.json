@@ -6621,6 +6621,10 @@
     "defaultMessage": "The required packages were not found: {codes}",
     "srcHash": "pwkQJfvnX8zM"
   },
+  "exception.pkg.INVALID_TRANSLATION": {
+    "defaultMessage": "Invalid translation “{key}” in the file “{file}”",
+    "srcHash": "WOD0Zaf_SfEV"
+  },
   "exception.pkg.MIN_DEPENDENCY": {
     "defaultMessage": "The minimum version of package {code} is not met: {version}.",
     "srcHash": "ePY5iK9u_eLf"

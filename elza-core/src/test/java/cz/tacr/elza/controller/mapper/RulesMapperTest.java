@@ -25,6 +25,7 @@ import cz.tacr.elza.controller.vo.ItemTypeList;
 import cz.tacr.elza.controller.vo.ItemTypeSpec;
 import cz.tacr.elza.controller.vo.JsonTableViewDefinition;
 import cz.tacr.elza.controller.vo.StringViewDefinition;
+import cz.tacr.elza.core.data.PackageTexts;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.data.StructType;
@@ -53,7 +54,7 @@ class RulesMapperTest {
         staticDataService = mock(StaticDataService.class);
         staticDataProvider = mock(StaticDataProvider.class);
         lenient().when(staticDataService.getData()).thenReturn(staticDataProvider);
-        mapper = new RulesMapper(staticDataService);
+        mapper = new RulesMapper(staticDataService, new PackageTexts(staticDataService));
     }
 
     // ---------- toItemTypeList -------------------------------------------------
@@ -63,7 +64,7 @@ class RulesMapperTest {
         RulItemTypeExt a = stringItemType(1, "A_CODE", null);
         RulItemTypeExt b = stringItemType(2, "B_CODE", null);
 
-        ItemTypeList out = mapper.toItemTypeList(List.of(a, b));
+        ItemTypeList out = mapper.toItemTypeList(List.of(a, b), null);
 
         assertThat(out.getItemTypes()).extracting(ItemType::getCode).containsExactly("A_CODE", "B_CODE");
     }
@@ -74,7 +75,7 @@ class RulesMapperTest {
     void viewDefinition_intDuration_mappedToIntViewDefinition() {
         RulItemTypeExt src = intItemType("INT_DURATION", DisplayType.DURATION);
 
-        ItemType out = mapper.toItemType(src);
+        ItemType out = mapper.toItemType(src, null);
 
         assertInstanceOf(IntViewDefinition.class, out.getViewDefinition());
         IntViewDefinition vd = (IntViewDefinition) out.getViewDefinition();
@@ -86,7 +87,7 @@ class RulesMapperTest {
     void viewDefinition_intNumber_omitted() {
         RulItemTypeExt src = intItemType("INT_NUMBER", DisplayType.NUMBER);
 
-        assertNull(mapper.toItemType(src).getViewDefinition());
+        assertNull(mapper.toItemType(src, null).getViewDefinition());
     }
 
     @Test
@@ -94,7 +95,7 @@ class RulesMapperTest {
         // No viewDefinition set on the source.
         RulItemTypeExt src = intItemType("INT_NULL", null);
 
-        assertNull(mapper.toItemType(src).getViewDefinition());
+        assertNull(mapper.toItemType(src, null).getViewDefinition());
     }
 
     // ---------- viewDefinition: STRING -----------------------------------------
@@ -106,7 +107,7 @@ class RulesMapperTest {
         raw.setMask("###-##");
         RulItemTypeExt src = stringItemType(3, "STR_MASK", raw);
 
-        ItemType out = mapper.toItemType(src);
+        ItemType out = mapper.toItemType(src, null);
 
         assertInstanceOf(StringViewDefinition.class, out.getViewDefinition());
         StringViewDefinition vd = (StringViewDefinition) out.getViewDefinition();
@@ -118,7 +119,7 @@ class RulesMapperTest {
     void viewDefinition_stringNullRaw_omitted() {
         RulItemTypeExt src = stringItemType(4, "STR_PLAIN", null);
 
-        assertNull(mapper.toItemType(src).getViewDefinition());
+        assertNull(mapper.toItemType(src, null).getViewDefinition());
     }
 
     @Test
@@ -128,7 +129,7 @@ class RulesMapperTest {
         raw.setMask("");
         RulItemTypeExt src = stringItemType(5, "STR_EMPTY_MASK", raw);
 
-        assertNull(mapper.toItemType(src).getViewDefinition());
+        assertNull(mapper.toItemType(src, null).getViewDefinition());
     }
 
     // ---------- viewDefinition: JSON_TABLE --------------------------------------
@@ -142,7 +143,7 @@ class RulesMapperTest {
         col.setWidth(120);
         RulItemTypeExt src = jsonTableItemType("JT", List.of(col));
 
-        ItemType out = mapper.toItemType(src);
+        ItemType out = mapper.toItemType(src, null);
 
         assertInstanceOf(JsonTableViewDefinition.class, out.getViewDefinition());
         JsonTableViewDefinition vd = (JsonTableViewDefinition) out.getViewDefinition();
@@ -158,7 +159,7 @@ class RulesMapperTest {
     void viewDefinition_jsonTableEmptyColumns_omitted() {
         RulItemTypeExt src = jsonTableItemType("JT_EMPTY", Collections.emptyList());
 
-        assertNull(mapper.toItemType(src).getViewDefinition());
+        assertNull(mapper.toItemType(src, null).getViewDefinition());
     }
 
     // ---------- viewDefinition: other data types --------------------------------
@@ -167,7 +168,7 @@ class RulesMapperTest {
     void viewDefinition_otherDataType_omitted() {
         RulItemTypeExt src = bareItemType(6, "T_TEXT", "TEXT");
 
-        assertNull(mapper.toItemType(src).getViewDefinition());
+        assertNull(mapper.toItemType(src, null).getViewDefinition());
     }
 
     // ---------- structureTypeCode ----------------------------------------------
@@ -181,14 +182,14 @@ class RulesMapperTest {
         RulItemTypeExt src = bareItemType(7, "STORAGE", "STRUCTURED");
         src.setStructuredType(rulStructuredType(42));
 
-        assertEquals("SRD_PACKET", mapper.toItemType(src).getStructureTypeCode());
+        assertEquals("SRD_PACKET", mapper.toItemType(src, null).getStructureTypeCode());
     }
 
     @Test
     void structureTypeCode_nullForNonStructured() {
         RulItemTypeExt src = bareItemType(8, "PLAIN", "STRING");
 
-        assertNull(mapper.toItemType(src).getStructureTypeCode());
+        assertNull(mapper.toItemType(src, null).getStructureTypeCode());
     }
 
     @Test
@@ -197,7 +198,7 @@ class RulesMapperTest {
         RulItemTypeExt src = bareItemType(9, "UNKNOWN_STRUCT", "STRUCTURED");
         src.setStructuredType(rulStructuredType(99));
 
-        assertNull(mapper.toItemType(src).getStructureTypeCode());
+        assertNull(mapper.toItemType(src, null).getStructureTypeCode());
     }
 
     // ---------- toItemType: basic fields ---------------------------------------
@@ -210,7 +211,7 @@ class RulesMapperTest {
         src.setDescription("Long description");
         src.setCanBeOrdered(Boolean.TRUE);
 
-        ItemType out = mapper.toItemType(src);
+        ItemType out = mapper.toItemType(src, null);
 
         assertEquals(10, out.getId());
         assertEquals("FULL", out.getCode());
@@ -228,8 +229,8 @@ class RulesMapperTest {
         RulItemTypeExt falseCase = bareItemType(12, "FALSE_ORD", "STRING");
         falseCase.setCanBeOrdered(Boolean.FALSE);
 
-        assertEquals(Boolean.FALSE, mapper.toItemType(nullCase).getSortable());
-        assertEquals(Boolean.FALSE, mapper.toItemType(falseCase).getSortable());
+        assertEquals(Boolean.FALSE, mapper.toItemType(nullCase, null).getSortable());
+        assertEquals(Boolean.FALSE, mapper.toItemType(falseCase, null).getSortable());
     }
 
     // ---------- specs ----------------------------------------------------------
@@ -239,7 +240,7 @@ class RulesMapperTest {
         RulItemTypeExt src = bareItemType(13, "NO_SPECS", "ENUM");
         // The mapper does not call setSpecs; the generated DTO initializes
         // specs to an empty list by default, so consumers see [] either way.
-        assertThat(mapper.toItemType(src).getSpecs()).isEmpty();
+        assertThat(mapper.toItemType(src, null).getSpecs()).isEmpty();
     }
 
     @Test
@@ -251,7 +252,7 @@ class RulesMapperTest {
         src.setShortcut("SA");
         src.setDescription("Spec A description");
 
-        ItemTypeSpec out = mapper.toItemTypeSpec(src);
+        ItemTypeSpec out = mapper.toItemTypeSpec(src, null);
 
         assertEquals(101, out.getId());
         assertEquals("SPEC_A", out.getCode());
