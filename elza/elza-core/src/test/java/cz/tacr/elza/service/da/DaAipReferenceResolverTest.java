@@ -52,6 +52,7 @@ public class DaAipReferenceResolverTest {
         fund.setFundId(5);
         fund.setFundNumber(42);
         fund.setInternalCode("FUND-42");
+        fund.setInstitution(institution);
 
         when(institutionRepository.findByInternalCode(any())).thenReturn(null);
         when(fundRepository.findByInternalCode(any())).thenReturn(null);
@@ -110,6 +111,35 @@ public class DaAipReferenceResolverTest {
         // the fund is known, so the AIP is usable - the unresolved institution is descriptive
         assertEquals(AipProblemType.UNKNOWN_INSTITUTION, aipState.getProblemType());
         assertTrue(aipState.getProblemDescription().contains("INST-X"));
+    }
+
+    /** The same fund code under another institution is another fund. */
+    @Test
+    void fundOfAnotherInstitutionIsNotFoundByItsInternalCode() {
+        ParInstitution other = new ParInstitution();
+        other.setInstitutionId(2);
+        other.setInternalCode("INST-2");
+        when(institutionRepository.findByInternalCode("INST-2")).thenReturn(other);
+        when(fundRepository.findByInternalCode("FUND-42")).thenReturn(fund);
+        DaAipState aipState = state("INST-2", "FUND-42");
+
+        resolver.resolveReferences(aipState);
+
+        assertNull(aipState.getFund());
+        assertEquals(AipProblemType.UNKNOWN_FUND, aipState.getProblemType());
+        assertTrue(aipState.getProblemDescription().contains("INST-2"));
+    }
+
+    /** A new version naming an unknown institution does not fall back to the fund it had before. */
+    @Test
+    void formerFundIsNotFoundAgainUnderAnUnknownInstitution() {
+        when(fundRepository.findByInternalCode("FUND-42")).thenReturn(fund);
+        DaAipState aipState = state("INST-X", "FUND-42");
+
+        resolver.resolveReferences(aipState, fund);
+
+        assertNull(aipState.getFund());
+        assertEquals(AipProblemType.UNKNOWN_FUND, aipState.getProblemType());
     }
 
     @Test

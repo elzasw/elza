@@ -24,7 +24,9 @@ import cz.tacr.elza.repository.InstitutionRepository;
  * The references an AIP carries are codes of its originating system - the institution and the
  * fund. The fund is looked up by the institution together with the fund number first, because
  * a fund number is only unique within an institution; the fund internal code is the fallback
- * for packages whose FONDS_ID is not a fund number. Every fund has an institution, so a
+ * for packages whose FONDS_ID is not a fund number. The same fund code under another institution
+ * is another fund, so a fund the fallback finds is not used when it belongs to another institution
+ * than the package names. Every fund has an institution, so a
  * resolved fund also says which institution the AIP belongs to - an unresolved institution
  * therefore does not prevent the AIP from being used, while an unresolved fund does.
  */
@@ -46,6 +48,16 @@ public class DaAipReferenceResolver {
      * @return true when a reference was newly resolved
      */
     public boolean resolveReferences(DaAipState aipState) {
+        return resolveReferences(aipState, null);
+    }
+
+    /**
+     * @param formerFund the fund of the previous version of the package when the new version names
+     *                   another institution: the same fund code under another institution is
+     *                   another fund, so this one is not found again by its code
+     * @see #resolveReferences(DaAipState)
+     */
+    public boolean resolveReferences(DaAipState aipState, @Nullable ArrFund formerFund) {
         boolean hadInstitution = aipState.getInstitution() != null;
         boolean hadFund = aipState.getFund() != null;
         String note = null;
@@ -54,7 +66,7 @@ public class DaAipReferenceResolver {
             aipState.setInstitution(institutionRepository.findByInternalCode(aipState.getInstitutionCode()));
         }
         if (!hadFund) {
-            FundLookup lookup = findFund(aipState.getInstitution(), aipState.getFundCode());
+            FundLookup lookup = findFund(aipState.getInstitution(), aipState.getFundCode(), formerFund);
             aipState.setFund(lookup.fund());
             note = lookup.note();
         }
@@ -136,7 +148,8 @@ public class DaAipReferenceResolver {
         return null;
     }
 
-    private FundLookup findFund(@Nullable ParInstitution institution, @Nullable String fundCode) {
+    private FundLookup findFund(@Nullable ParInstitution institution, @Nullable String fundCode,
+                                @Nullable ArrFund formerFund) {
         if (StringUtils.isBlank(fundCode)) {
             return new FundLookup(null, "Balíček neuvádí identifikátor fondu.");
         }
@@ -153,7 +166,21 @@ public class DaAipReferenceResolver {
                         + "' má více fondů s číslem " + fundNumber + ", fond nelze určit jednoznačně.");
             }
         }
+        // The internal code is unique across institutions, so the fund it finds may belong to
+        // another institution than the package names - and then it is not the fund of the package.
         ArrFund fund = fundRepository.findByInternalCode(fundCode);
+        if (fund != null && institution != null
+                && !institution.getInstitutionId().equals(fund.getInstitution().getInstitutionId())) {
+            return new FundLookup(null, "Fond '" + fundCode + "' patří jiné instituci než '"
+                    + institution.getInternalCode() + "'.");
+        }
+        // an institution ELZA does not know cannot be compared, but it is not the one of the
+        // former fund - the package named another one before
+        if (fund != null && institution == null && formerFund != null
+                && fund.getFundId().equals(formerFund.getFundId())) {
+            return new FundLookup(null, "Balíček uvádí jinou instituci než jeho předchozí verze, fond '"
+                    + fundCode + "' této instituce nebyl nalezen.");
+        }
         return new FundLookup(fund, fund == null ? fundNotFoundMessage(fundCode) : null);
     }
 

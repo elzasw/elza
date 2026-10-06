@@ -65,8 +65,8 @@ export const updateTypeDescriptions = defineMessages({
     [AipUpdateType.DbUpdate]: {
         id: "aip.form.update.type.DbUpdate.hint",
         defaultMessage: "Znovu sestaví digitální entity v ELZA z už staženého balíčku, "
-            + "z digitálního archivu se nestahuje nic. Skončí chybou, pokud by musela odstranit "
-            + "entitu napojenou na jednotku popisu.",
+            + "z digitálního archivu se nestahuje nic. Napojení na části, které balíček už nemá, "
+            + "se odpojí.",
     },
     [AipUpdateType.ForceUpdate]: {
         id: "aip.form.update.type.ForceUpdate.hint",

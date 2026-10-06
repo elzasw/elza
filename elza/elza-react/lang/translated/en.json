@@ -2294,8 +2294,8 @@
     "srcHash": "QJkW_O6qWoE2"
   },
   "aip.form.update.type.DbUpdate.hint": {
-    "defaultMessage": "Rebuilds the digital entities in ELZA from the already downloaded package; nothing is downloaded. It fails when it would have to remove an entity linked to a description unit.",
-    "srcHash": "GLHF_Zs8wSFE"
+    "defaultMessage": "Rebuilds the digital entities in ELZA from the already downloaded package; nothing is downloaded. Links to parts the package no longer contains are removed.",
+    "srcHash": "_ANh71miSfuB"
   },
   "aip.form.update.type.DownloadUpdate": {
     "defaultMessage": "Download the AIP again",
