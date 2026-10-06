@@ -1,6 +1,5 @@
 package cz.tacr.elza.service.da;
 
-import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDaLink;
 import cz.tacr.elza.domain.DaAip;
 import cz.tacr.elza.domain.DaChange;
@@ -14,7 +13,6 @@ import cz.tacr.elza.repository.DaDaoFileRepository;
 import cz.tacr.elza.repository.DaDaoRelationRepository;
 import cz.tacr.elza.repository.DaDaoRepository;
 import cz.tacr.elza.repository.ArrDaLinkRepository;
-import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.DaoLevelViewService;
 import gov.loc.mets.v1_11.schema.AmdSecType;
 import gov.loc.mets.v1_11.schema.DivType;
@@ -70,7 +68,7 @@ public class DaoProcessor {
     @Autowired
     private DaoLevelViewService levelViewService;
     @Autowired
-    private ArrangementInternalService arrangementInternalService;
+    private DaLinkCloser linkCloser;
 
     private final DaAip aip;
 
@@ -102,14 +100,11 @@ public class DaoProcessor {
     /** Codes of the representations, in document order. */
     private final Set<String> representationUuids = new LinkedHashSet<>();
 
-    private boolean forceUpdate;
-
-    public DaoProcessor(DaAip aip, MetsType metsType, PremisComplexType premisComplexType, Path tempDir, boolean forceUpdate) {
+    public DaoProcessor(DaAip aip, MetsType metsType, PremisComplexType premisComplexType, Path tempDir) {
         this.aip = aip;
         this.metsType = metsType;
         this.premisComplexType = premisComplexType;
         this.tempDir = tempDir;
-        this.forceUpdate = forceUpdate;
     }
 
 
@@ -125,7 +120,7 @@ public class DaoProcessor {
         daDaoFileMap = daoFileRepository.findByDaoInAndDeleteChangeIsNull(daDaoList).stream()
                 .collect(Collectors.groupingBy(f -> f.getDao().getDaoId()));
 
-        DaChangeType changeType = daDaoMap.isEmpty() ? DaChangeType.AIP_UPDATE : DaChangeType.AIP_CREATE;
+        DaChangeType changeType = daDaoMap.isEmpty() ? DaChangeType.AIP_CREATE : DaChangeType.AIP_UPDATE;
         DaChange change = daService.createDaChange(aip, changeType);
 
         //representation and files
@@ -150,16 +145,20 @@ public class DaoProcessor {
         return true;
     }
 
+    /**
+     * Closes what the new version of the package no longer contains. A link to such a part points
+     * at nothing that exists any more, so it is closed too - by a change of its unit of
+     * description, like any other removal of a link.
+     */
     private void deleteOldComponents(DaChange change) {
-        //smazání starých komponent
         Set<DaDao> daDaoSet = new HashSet<>(daDaoMap.values());
 
         List<ArrDaLink> daoLinkList = daLinkRepository.findByDaDaoInAndDeleteChangeIsNull(daDaoSet);
-        if (CollectionUtils.isNotEmpty(daoLinkList) && !forceUpdate) {
-            throw new IllegalStateException("Nelze smazat dao, které má vazbu na node");
+        if (!daoLinkList.isEmpty()) {
+            logger.info("AIP={}: the new version no longer contains {} linked part(s), closing their links",
+                        aip.getAipId(), daoLinkList.size());
+            linkCloser.close(daoLinkList);
         }
-        ArrChange arrChange = arrangementInternalService.createChange(ArrChange.Type.DELETE_DAO_LINK, null);
-
 
         Set<DaDaoRelation> daDaoRelationSet = daDaoRelationMap.values().stream()
                 .flatMap(List::stream)
@@ -177,13 +176,11 @@ public class DaoProcessor {
         daDaoRelationSet.forEach(r -> r.setDeleteChange(change));
         daDaoFileFolderSet.forEach(f -> f.setDeleteChange(change));
         daDaoFileSet.forEach(f -> f.setDeleteChange(change));
-        daoLinkList.forEach(l -> l.setDeleteChange(arrChange));
 
         daoRepository.saveAll(daDaoSet);
         daoRelationRepository.saveAll(daDaoRelationSet);
         daoFileFolderRepository.saveAll(daDaoFileFolderSet);
         daoFileRepository.saveAll(daDaoFileSet);
-        daLinkRepository.saveAll(daoLinkList);
     }
 
     private void createRepresentationDaoFromStruct(List<StructMapType> structMap, MetsType.FileSec fileSec, DaChange change) {
@@ -203,12 +200,7 @@ public class DaoProcessor {
                     representationUuids.add(code);
                     DaDao.DaoType type = DaDao.DaoType.REPRESENTATION;
                     String label = getRepresentationLabel(fileSec, code);
-                    DaDao daDao = daDaoMap.getOrDefault(code, null);
-                    if (daDao == null || isDaoChanged(daDao, code, label, type)) {
-                        daDao = daService.createDaDao(aip, change, code, label, type);
-                    } else {
-                        daDaoMap.remove(code);
-                    }
+                    DaDao daDao = findOrCreateDao(code, label, type, change);
 
                     representations.put(code, daDao);
                 }
@@ -269,12 +261,7 @@ public class DaoProcessor {
             label = getDaoLabel(getFileHref(fileType));
         }
 
-        DaDao daDao = daDaoMap.getOrDefault(code, null);
-        if (daDao == null || isDaoChanged(daDao, code, label, type)) {
-            daDao = daService.createDaDao(aip, change, code, label, type);
-        } else {
-            daDaoMap.remove(code);
-        }
+        DaDao daDao = findOrCreateDao(code, label, type, change);
 
         findOrCreateDaoRelation(daDao, representationDao, change);
 
@@ -348,12 +335,7 @@ public class DaoProcessor {
     }
 
     private void createDaoFromMdSecType(MdSecType mdSecType, String code, String label, DaDao.DaoType type, DaChange change) {
-        DaDao daDao = daDaoMap.getOrDefault(code, null);
-        if (daDao == null || isDaoChanged(daDao, code, label, type)) {
-            daDao = daService.createDaDao(aip, change, code, label, type);
-        } else {
-            daDaoMap.remove(code);
-        }
+        DaDao daDao = findOrCreateDao(code, label, type, change);
 
         createFileFromMdSec(mdSecType, daDao, change);
         fileDaoMap.put(code, daDao);
@@ -393,18 +375,9 @@ public class DaoProcessor {
         String label = divType.getTYPE() != null ? divType.getTYPE() + ":" + divType.getLABEL() : divType.getLABEL();
         String code = divType.getID();
         levelUuids.add(code);
-        DaDao daDao = daDaoMap.getOrDefault(code, null);
-        DaDao.DaoType type = DaDao.DaoType.LOGICAL;
-        if (daDao == null || isDaoChanged(daDao, code, label, type)) {
-            daDao = daService.createDaDao(aip, change, code, label, type);
-            if (parentDao != null) {
-                daService.createDaDaoRelation(daDao, parentDao, change);
-            }
-        } else {
-            daDaoMap.remove(code);
-            if (parentDao != null) {
-                findOrCreateDaoRelation(daDao, parentDao, change);
-            }
+        DaDao daDao = findOrCreateDao(code, label, DaDao.DaoType.LOGICAL, change);
+        if (parentDao != null) {
+            findOrCreateDaoRelation(daDao, parentDao, change);
         }
 
         if (CollectionUtils.isNotEmpty(divType.getFptr())) {
@@ -523,8 +496,23 @@ public class DaoProcessor {
         }
     }
 
-    private boolean isDaoChanged(DaDao daDao, String code, String label, DaDao.DaoType type) {
-        return !(daDao.getCode().equals(code) && daDao.getLabel().equals(label) && daDao.getType().equals(type));
+    /**
+     * The entity of the previous version with the same code and type, under the label of the new
+     * one, or a new entity. The label is only what the entity is called - renaming a level or a
+     * file in the archive must not take away the links to it. What is not taken here is closed by
+     * {@link #deleteOldComponents}.
+     */
+    private DaDao findOrCreateDao(String code, String label, DaDao.DaoType type, DaChange change) {
+        DaDao daDao = daDaoMap.get(code);
+        if (daDao == null || daDao.getType() != type) {
+            return daService.createDaDao(aip, change, code, label, type);
+        }
+        daDaoMap.remove(code);
+        if (!Objects.equals(daDao.getLabel(), label)) {
+            daDao.setLabel(label);
+            daoRepository.save(daDao);
+        }
+        return daDao;
     }
 
     @Nullable

@@ -129,9 +129,11 @@ public class DaImportExtSyncsProcessor implements Runnable {
     }
 
     /**
-     * Requests the metadata package of the AIPs that have just been received (queue items in
-     * state IMPORT_NEW) - the repository is configured to download metadata automatically. The
-     * metadata import later attaches the AIP to its node.
+     * Requests the metadata package of the AIPs whose PACKAGE-INFO has just been received - the
+     * repository is configured to download metadata automatically. The metadata import later
+     * attaches the AIP to its node. AIPs that cannot or need not be asked are skipped by
+     * {@link DaService#createDaoStructure(List)}: without a fund, with the metadata stored, or
+     * with a download waiting.
      */
     private void requestMetadataOfReceivedAips(List<Integer> receivedAipIds) {
         if (!receivedAipIds.isEmpty()) {
@@ -152,12 +154,13 @@ public class DaImportExtSyncsProcessor implements Runnable {
     }
 
     /**
-     * @return ids of the AIPs the batch has just received (queue items in state IMPORT_NEW
-     *         whose PACKAGE-INFO created the AIP)
+     * @return ids of the AIPs the batch has received PACKAGE-INFO of - new ones as well as new
+     *         versions of known ones: a new version may name a fund the previous one did not, and
+     *         then it has to be placed like a package received for the first time
      */
     private static List<Integer> receivedAipIds(List<DaSyncQueueItem> syncQueueItemList) {
         return syncQueueItemList.stream()
-                .filter(q -> q.getState() == DaSyncQueueItem.QueueItemState.IMPORT_NEW && q.getAip() != null)
+                .filter(q -> q.getAip() != null)
                 .map(q -> q.getAip().getAipId())
                 .toList();
     }
@@ -199,7 +202,7 @@ public class DaImportExtSyncsProcessor implements Runnable {
                                         ? receivedAipIds(syncQueueItemList) : List.of();
                                 if (aipType == AipType.METADATA_BASE || aipType == AipType.AIP_BASE) {
                                     List<Integer> aipids = syncQueueItemList.stream().map(q -> q.getAip().getAipId()).toList();
-                                    Map<Integer, List<String>> uuidsByAip = daService.doCreateDaoStructure(aipids, false,
+                                    Map<Integer, List<String>> uuidsByAip = daService.doCreateDaoStructure(aipids,
                                             actionService.sinkForQueueItems(syncQueueItemList));
                                     if (autoProcess) {
                                         aipAutoLinkService.linkReceivedAips(uuidsByAip);

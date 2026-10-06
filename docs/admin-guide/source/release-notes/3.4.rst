@@ -26,6 +26,15 @@ Upcoming version
   and under which levels it is placed; the levels are found or created
   and the package is imported below them. A match by UUID always takes
   precedence. Applies to repositories with automatic metadata download
+* Change: ELZA DA - a new version of an attached AIP: a part the new
+  version no longer contains is detached from its description unit (the
+  update used to fail and the AIP stayed at its old content); a renamed
+  part keeps its link; a version naming another fund is detached from
+  the former fund and, with automatic metadata download, placed into the
+  new one; a version naming the same fund and institution keeps the fund of the AIP;
+  the same fund code under another institution is another fund. The
+  *Forced update* is no longer offered, the update from the stored
+  package does the same
 * New: 9963 - Password rules (minimum length, character groups,
   validity), a required password change at the next login, accounts
   whose password never expires, and recovering access to an account with
