@@ -32,7 +32,7 @@
 				</box>
 			</element>
 			<element kind="component" uuid="8d7b7ea3-f582-419d-8e09-7a64d9c15c41" x="48" y="225" width="200" height="20">
-				<component kind="barbecue" type="Code128" drawText="false" checksumRequired="false">
+				<component kind="barcode4j:Code128" textPosition="none">
 					<codeExpression><![CDATA["ul"+(($P{fund}.getFundNumber()!=null)?$P{fund}.getFundNumber():"")+","+$F{value}]]></codeExpression>
 				</component>
 				<property name="com.jaspersoft.studio.unit.y" value="px"/>
