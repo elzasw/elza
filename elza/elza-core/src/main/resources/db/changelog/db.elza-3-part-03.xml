@@ -778,4 +778,10 @@
         </insert>
     </changeSet>
 
+    <changeSet id="20261006100000" author="ppy">
+        <!-- Level views are shared by all AIPs with the same logical structure, they do not belong to a fund -->
+        <dropForeignKeyConstraint baseTableName="da_level_view" constraintName="fk_da_level_view_arr_fund"/>
+        <dropColumn tableName="da_level_view" columnName="fund_id"/>
+    </changeSet>
+
 </databaseChangeLog>

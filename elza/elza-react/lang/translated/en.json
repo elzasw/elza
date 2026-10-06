@@ -6321,6 +6321,10 @@
     "defaultMessage": "A newer change exists, the list needs to be reloaded",
     "srcHash": "jXlhE1xkqcN1"
   },
+  "exception.arr.FUND_HAS_DA_LINKS": {
+    "defaultMessage": "The fund cannot be deleted because its description units have {count, plural, one {# active link} other {# active links}} to a digital archive. Remove the links first.",
+    "srcHash": "zaBRyN5XdMc8"
+  },
   "exception.arr.FUND_NOT_FOUND": {
     "defaultMessage": "The archival fund does not exist.",
     "srcHash": "NvoHyzJ7hdjG"
