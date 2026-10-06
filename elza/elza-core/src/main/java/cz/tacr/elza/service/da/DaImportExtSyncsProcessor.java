@@ -7,11 +7,13 @@ import cz.tacr.elza.api.DaDownloadMethod;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.DaSyncQueueItem;
 import cz.tacr.elza.service.ExternalSystemService;
+import cz.tacr.elza.service.UserService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -41,6 +43,8 @@ public class DaImportExtSyncsProcessor implements Runnable {
     private DaAipActionService actionService;
     @Autowired
     private DaCommunicationLock communicationLock;
+    @Autowired
+    private UserService userService;
 
     private volatile Thread asyncThread = null;
 
@@ -161,6 +165,9 @@ public class DaImportExtSyncsProcessor implements Runnable {
     @Override
     public void run() {
         synchronized (lock) {
+            // the import creates levels and listeners of their events (e.g. the level tree cache)
+            // read the fund version through secured services
+            SecurityContextHolder.setContext(userService.createSecurityContextSystem());
             try {
                 while (status == ThreadStatus.RUNNING) {
                     // pokud true - pauza po ukončení práce procesoru
@@ -240,6 +247,8 @@ public class DaImportExtSyncsProcessor implements Runnable {
                 }
             } catch (Exception e) {
                 logger.error("DaImportExtSyncsProcessor - processor thread error", e);
+            } finally {
+                SecurityContextHolder.clearContext();
             }
             status = ThreadStatus.STOPPED;
             lock.notifyAll();
