@@ -123,6 +123,49 @@ class PackageTextsTest {
         assertEquals(2, depth.get(base.getPackageId()));
     }
 
+    /**
+     * Diamond: LEFT and RIGHT both depend on BASE (equal depth, the later code wins), TOP depends on
+     * both and wins over them.
+     */
+    @Test
+    void diamondTieIsDecidedByCodeAndTheTopWins() {
+        RulPackage left = pkg(20, "LEFT", cs);
+        RulPackage right = pkg(21, "RIGHT", cs);
+        RulPackage top = pkg(22, "TOP", cs);
+        List<RulPackageDependency> deps = List.of(dependency(left, base), dependency(right, base),
+                                                  dependency(top, left), dependency(top, right));
+        List<RulPackage> packages = List.of(base, left, right, top);
+
+        PackageTranslations tie = PackageTranslations.build(List.of(
+                row(left, "ITEM_TYPE", "T1", "name", en, "left"),
+                row(right, "ITEM_TYPE", "T1", "name", en, "right"),
+                row(base, "ITEM_TYPE", "T1", "name", en, "base")), packages, deps);
+        lenient().when(sdp.getTranslations()).thenReturn(tie);
+        assertEquals("right", text("T1", en));
+
+        PackageTranslations withTop = PackageTranslations.build(List.of(
+                row(left, "ITEM_TYPE", "T1", "name", en, "left"),
+                row(top, "ITEM_TYPE", "T1", "name", en, "top"),
+                row(right, "ITEM_TYPE", "T1", "name", en, "right")), packages, deps);
+        lenient().when(sdp.getTranslations()).thenReturn(withTop);
+        assertEquals("top", text("T1", en));
+    }
+
+    /**
+     * A dependent package may override a text of its dependency in the dependency's own source
+     * language; the override wins over the source text.
+     */
+    @Test
+    void sameLanguageOverrideWins() {
+        RulPackageDependency dependency = dependency(addon, base);
+        PackageTranslations overridden = PackageTranslations.build(List.of(
+                row(addon, "ITEM_TYPE", "T1", "name", cs, "přejmenováno")),
+                List.of(base, addon, other), List.of(dependency));
+        lenient().when(sdp.getTranslations()).thenReturn(overridden);
+        assertEquals("přejmenováno", text("T1", cs));
+        assertEquals("source", text("T1", en));
+    }
+
     private String text(String code, SysLanguage language) {
         return texts.text(TranslationEntityType.ITEM_TYPE, code, TranslationEntityType.NAME, "source", language);
     }

@@ -1,6 +1,6 @@
 # Rules-package customization layer and first internationalized version — plan
 
-Status as of 2026-10-06. This is the design record for extending rules packages without forks
+Status as of 2026-10-07. This is the design record for extending rules packages without forks
 (addon packages, customizations edited in the admin UI) and for the first internationalized
 version of ELZA (an English generic rule set based on ISAD(G)). Line numbers refer to the `3.4.x`
 tree at the time of writing.
@@ -99,9 +99,10 @@ Already in place; listed only as functionality the plan relies on.
 | Phase | Content | DB | UI | Exit criterion |
 |---|---|---|---|---|
 | **1. Layer core** | Done: spec placement, addon item-type filter rules. Open: DRL compile check at import; revalidation on rule change; export fixes; `PACKAGE` event on delete | done (changeset A) | refTable invalidation only | `AddonPackageTest` covers each item; re-importing unchanged ZP2015 and CZ_BASE is a no-op on a production copy |
-| **2a.1 Localization infrastructure** (implemented, 7.0.1) | Changeset T; translation files in packages (import, export, delete); resolver `PackageTexts`; `GET /api/v1/languages`; `Accept-Language` on `GET /api/v1/rules/itemTypes` as the first read site | changeset T | none | a test package with English translations round-trips; `/api/v1/rules/itemTypes` returns its English names with `Accept-Language: en`; nothing else changes for users |
-| **2a.2 Language of requests and read sites** (7.0.2) | client sends its UI language and offers the `ui_enabled` languages; all read sites go through the resolver | none | small (language header, language picker, refetch on switch) | with the English UI, names of translated entities appear in English everywhere |
-| **2a.3 Messages, content, translator support** (7.0.3, planned after 2a.1) | message keys for validation messages; `CZ_BASE_EN`; missing/outdated translations page | own changeset (conformity message keys) | message rendering, admin page | with the English UI, entity types, part types and item types of CZ_BASE and the validation messages appear in English; Czech unchanged |
+| **2a.1 Localization infrastructure** (done, 7.0.1) | Changeset T; translation files in packages; resolver `PackageTexts`; `GET /api/v1/languages`; translated `GET /api/v1/rules/itemTypes` | changeset T | none | done |
+| **2a.1b Review fixes** (done, 7.0.2) | source hash in translation files, same-language overrides, case-insensitive tags, file validation, message pattern check, SIMPLE-DEV version, public language endpoint | none | the client message shows the reason of a refused translation | done |
+| **2a.2 Language of requests and read sites** (next, 7.0.3) | the client sends its UI language and offers the `ui_enabled` languages; server `LocaleResolver` with the `elza.locale` default; all read sites through the resolver | none | small (language header, language picker, refetch on switch) | with the English UI, names of translated entities appear in English everywhere; without a header the installation's language is used |
+| **2a.3–2a.5 Messages, translator support, content** (7.0.4) | message keys for validation messages; missing/outdated/orphaned translations endpoint and page; `CZ_BASE_EN` | own changeset (conformity message keys) | message rendering, admin page | with the English UI, entity types, part types and item types of CZ_BASE and the validation messages appear in English; Czech unchanged |
 | **2b. First internationalized version** | `rules-en-isadg` package; core neutrality fixes; description language for generated content | none | none | an English user creates an ISAD(G) fund, describes and validates it, and sees no Czech text |
 | **3. Pilots** | Settings composition; DPP and CT converted to file addons; their overlays retired | none | none | both pilots run on the dev server against stock ZP2015 |
 | **4. Customizations in the UI** | `kind`, archive, `CustomizationPackageService`, OpenAPI `customization`, admin page: customizations, specifications with position and generated rule, rule editor with compile check | changeset B | yes | an admin adds "osobní číslo" after an existing identifier type, and it appears in the node form at that position without restart |
@@ -109,8 +110,8 @@ Already in place; listed only as functionality the plan relies on.
 | **6. Convergence** | Rule-set inheritance; renames of semantically generic ZP2015 codes towards the ISAD(G) catalogue via aliases | later | — | — |
 
 Phases 1 and 2 are independent and can run in parallel. Phase 2a uses nothing from the open part of
-Phase 1; its first step 2a.1 is implemented (section 7.0.1). 2a.2 and 2a.3 are planned in detail
-against the finished infrastructure; 2b builds on 2a.
+Phase 1; its first step 2a.1 (7.0.1) and the fixes from its review (7.0.2) are done; 2a.2 (7.0.3)
+comes next; 2b builds on 2a.
 
 ## 5. Database changes
 
@@ -277,84 +278,88 @@ together with the resolver every later step calls. It ships with a test package 
 site, so the design is proven end to end before anything is built on it. The later steps only call
 the resolver and are planned in detail once it exists.
 
-#### 7.0.1 Step 2a.1 — localization infrastructure (implemented)
+#### 7.0.1 Step 2a.1 — localization infrastructure (done, commit `74506e2356`)
 
-Implemented on `3.4.x`, not released yet. Nothing changes for users except the new endpoint and
-English names on `/api/v1/rules/itemTypes` for clients that send `Accept-Language`; only SIMPLE-DEV
-ships translations. The format is described in the implementation guide, chapter "Package Files",
-section `translations/<lang>.xml`.
+Implemented on `3.4.x`, not released. The package format is described in the implementation guide
+(chapter "Package Files", section `translations/<lang>.xml`). Decisions that later steps build on:
 
-- **Schema.** Changesets `20261007100000` (adds `sys_language.tag`, `ui_enabled`, `scope_enabled`,
-  fills the tags) and `20261007100100` (precondition: no row without a tag; then `NOT NULL`,
-  `ux_sys_language_tag`, `rul_package.language_id` set to `cs`, table `rul_translation`). The
-  translated text is stored in `rul_translation.text_value` - `value` is a reserved word in H2.
-- **Entities and static data.** `SysLanguage` (`tag`, `uiEnabled`, `scopeEnabled`), `RulPackage`
-  (`language`), new `RulTranslation`, `RulTranslationRepository`; `StaticDataProvider` gains
-  `getSysLanguageByTag` and `getTranslations()` (`core/data/PackageTranslations`, rebuilt with the
-  static data). The scope language list (`ApController`) returns `scope_enabled` languages.
-- **Kinds of texts.** `domain/TranslationEntityType`: the 14 kinds of 5.2 with their JPA entity and
-  allowed fields. Type groups have no stored source text and are not checked for orphans or
-  outdated translations.
-- **Import, export, delete.** `packageimport/PackageTranslationService`, called by `PackageService`:
-  package language from `<language>` (unknown tag refuses the import, `CODE_NOT_FOUND`), the
-  translation step as the last step of the import (refusals raise the new
-  `PackageCode.INVALID_TRANSLATION`, with a Czech and English client message), export of
-  `translations/<tag>.xml`, removal in `deletePackage`, and `checkTranslations(package)` listing
-  orphaned and outdated rows for the translator page of 2a.3. Source texts for hashes and orphans
-  are read from the database in the import transaction, not from static data, which is reloaded only
-  after commit. A message row in another language may translate a message of any package; only the
-  source-language file is limited to the package's own prefix.
-- **Resolver** `core/data/PackageTexts`: `resolveRequestLanguage(Accept-Language)` (first UI
-  language of the header, region falls back to the language), `text(type, code, field, sourceText,
-  language)` with the fallback requested language → language without region → source text,
-  `name/shortcut/description` for item types and specifications, `message(key, language, args)`.
-  There is no short cut for the package's own language: a dependent package may override a source
-  text by a translation into the source language, which precedence then lets win.
-- **Precedence** is by dependency depth (longest chain of dependencies below the package), ties by
-  package code. `PackageUtils.Graph` was not used: it drops packages without dependency edges.
-- **REST.** `GET /api/v1/languages` (`main.tsp` namespace `ElzaAPI.Languages`, YAML delta applied by
-  hand, `LanguagesController`); `GET /api/v1/rules/itemTypes` translates names, shortcuts and
-  descriptions of item types and specifications. Column names of table views are not translated.
-- **Tests.** `PackageTranslationTest` (12 scenarios: own rows, precedence, region fallback,
-  messages, both endpoints, orphan, outdated, export round trip, seven refusals built as temporary
-  ZIP variants of `TRANSLATION_TEST`, re-import of SIMPLE-DEV, delete), `PackageTextsTest` (unit),
-  `RulesMapperTest` adapted.
+- Changesets `20261007100000` and `20261007100100`; the translated text is in
+  `rul_translation.text_value` (`value` is reserved in H2).
+- `domain/TranslationEntityType` lists the 14 kinds with their entities and allowed fields.
+- Import: `packageimport/PackageTranslationService`, the last step of the import, reading source
+  texts from the database in the import transaction.
+- Resolver `core/data/PackageTexts` with an explicit `SysLanguage`; `resolveRequestLanguage(header)`
+  parses `Accept-Language` with `Locale.LanguageRange`.
+- Precedence by dependency depth, ties by package code. A dependent package always has a larger depth
+  than its dependencies, so "later in dependency order wins" also holds for diamonds.
+- Read sites so far: `GET /api/v1/rules/itemTypes`; new `GET /api/v1/languages`.
 
-**Open.** Gate on a copy of production: the changesets apply (no `sys_language` row without a tag),
-re-importing CZ_BASE and ZP2015 is a no-op, the scope language list is unchanged.
+#### 7.0.2 Step 2a.1b — fixes from the review of 2a.1 (done)
 
-#### 7.0.2 Step 2a.2 — language of requests and read sites (planned after 2a.1)
+Implemented on `3.4.x` in the commit following `74506e2356`; the guide section
+`translations/<lang>.xml` describes the result. Decisions that later steps build on:
 
-- **Client language.** The client offers the `uiEnabled` languages of `GET /api/v1/languages` for
-  which it ships a catalog, named by `Intl.DisplayNames` in the language itself, instead of the
-  hard-coded `'cs' | 'en'`. It sends `Accept-Language` with its UI language on every API call (axios
-  defaults for the generated client and `WebApi`). Switching the language refetches the rule
-  reference tables. Language names shown anywhere (scope picker, entity forms) come from
-  `Intl.DisplayNames`, on the server from `Locale.getDisplayLanguage`.
-- **Server language.** Every request resolves its language once (`LocaleContextHolder` with a
-  resolver limited to `ui_enabled` languages, `elza.locale` as default); `PackageTexts` reads it
-  when no locale is passed.
-- **Read sites.** The VO factories and mappers that return names go through the resolver:
-  `ClientFactoryVO` (`/api/rule/descItemTypes`, specs, rule sets, extensions, output types,
-  templates, policy types, type groups), `ApFactory` (entity and part types), issue types/states,
-  and `GetItemTypesTool` (AI dictionary, with the conversation language). The exact list is made
-  when 2a.2 is planned, as the call sites of the `PackageTexts` methods.
+- **Source hash.** Optional `src-hash` attribute on `<t>`. The import takes it from the file; without
+  it a translation whose text is unchanged keeps the previous row's hash, a new or changed one gets
+  the hash of the current source text. The export writes it. A translation therefore stays outdated
+  after a re-import of the translating package; 2a.4 builds on this.
+- **Own language.** In the file of the package's own language only rows of the package's own
+  entities are skipped (owner from the entity's package; type groups by the rule set). Rows for
+  other packages' entities and their messages are imported as same-language overrides.
+- **Tags** are matched case-insensitively (`SysLanguageRepository.findByTagIgnoreCase`, static data
+  lower-cases); tags are not rewritten to canonical form. One file per language.
+- **Validation** in `readFile` (missing attributes, empty text, code length, `src-hash` length,
+  message patterns compiled with `MessageFormat`); every refusal is `INVALID_TRANSLATION` with
+  `reason`, shown by the client.
+- Templates are read with `deleted = false`; SIMPLE-DEV version 43.
+- `GET /api/v1/languages` is public and runs in a read-only transaction (static data are bound to a
+  transaction; the endpoint failed over HTTP before, also for logged-in users, which the controller
+  test calling the bean directly did not show).
+- Upgrade notes: rows of `sys_language` without a tag stop the upgrade; the `cze` row must exist.
 
-#### 7.0.3 Later steps of 2a (planned after 2a.1)
+#### 7.0.3 Step 2a.2 — language of requests and read sites
 
-- **Messages.** `DataValidationResults.createMissing/createError` accept a message key; the
-  conformity rows keep the key and its arguments, and the server renders them in the request language
-  when it returns the node's conformity. Today `arr_node_conformity_error.description` and
-  `arr_node_conformity_missing.description` hold the rendered sentence, so this needs a changeset of
-  its own (key and arguments columns). The generic "item X must be filled" message becomes a core key
-  with the item type as argument. Literal sentences keep working for packages not yet converted.
-  ZP2015 converts its `Validation.drl` messages to keys with Czech source texts.
-- **Content.** `CZ_BASE_EN` (`elza/package-cz-base-en`, depending on CZ_BASE): English texts for
+- **The client sends its own `Accept-Language`.** Browsers send their own header on every request, so
+  without an explicit header a Czech UI in an English browser would get English names. The client
+  sets the header from its UI language on all API calls (axios defaults for the generated client and
+  `WebApi`, including file downloads and exports).
+- **Client language picker.** It offers the `uiEnabled` languages of `GET /api/v1/languages` for which
+  the client ships a catalog, named by `Intl.DisplayNames` in the language itself, instead of the
+  hard-coded `'cs' | 'en'`; the choice stays in the browser's user settings. Switching the language
+  refetches the rule reference tables.
+- **Server language per request.** A Spring `LocaleResolver` resolves the language once per request:
+  the first `ui_enabled` language of the header (with the region fallback of `PackageTexts`), else
+  `elza.locale`. A request without a usable header gets the installation's language, not the source
+  texts. `PackageTexts` gains overloads without a language argument that read `LocaleContextHolder`.
+  Work without an HTTP request (async jobs, websocket pushes) uses `elza.locale`; none of it returns
+  package names today.
+- **Read sites.** The VO factories and mappers that return package texts call the resolver:
+  `ClientFactoryVO` (`/api/rule/descItemTypes` with specifications and their categories, rule sets,
+  extensions, output types, templates, policy types, type groups), `ApFactory` (entity and part
+  types, view settings), issue types and states, the data-grid CSV export headers (`ArrIOService`),
+  and `GetItemTypesTool` (AI dictionary, with the conversation language). No server-side cache holds
+  package texts today (titles are rebuilt per request), so no cache needs a language dimension.
+- **Language names** shown anywhere (scope picker, entity forms) come from `Intl.DisplayNames`, on the
+  server from `Locale.getDisplayLanguage`.
+- **Tests.** One controller test per converted read site with `Accept-Language: en`; a request
+  without the header returns texts in the `elza.locale` language.
+
+#### 7.0.4 Later steps of 2a
+
+- **2a.3 Messages.** `DataValidationResults.createMissing/createError` accept a message key; the
+  conformity rows keep the key and its arguments in new columns of
+  `arr_node_conformity_error/missing` (own changeset), and the server renders them in the request
+  language when it returns the node's conformity. The generic "item X must be filled" message becomes
+  a core key with the item type as argument. Literal sentences keep working for packages not yet
+  converted. ZP2015 converts its `Validation.drl` messages to keys with Czech source texts.
+- **2a.4 Translator support.** An admin endpoint listing, per package and language, the missing,
+  outdated (by `src-hash`) and orphaned texts, and exporting them as a translation file to fill in;
+  a small admin page on top. It comes before the content step, because it produces the files the
+  translators fill.
+- **2a.5 Content.** `CZ_BASE_EN` (`elza/package-cz-base-en`, depending on CZ_BASE): English texts for
   entity types, part types, entity item types and specifications, the 166 language specifications,
-  issue types and states. Optionally `ZP2015_EN` for ZP2015 item types used by English-speaking
-  users of Czech funds.
-- **Translator support.** An admin endpoint and page listing, per package and language, missing,
-  outdated and orphaned translations; it can export the list as a translation file to fill in.
+  issue types and states; optionally `ZP2015_EN`. Mostly translation work, starting from the files
+  of 2a.4.
 
 **Out of scope of 2a — description language.** Names stored as text keep the language in which they
 were generated: structured object values (`arr_structured_object.value`), entity names and key values

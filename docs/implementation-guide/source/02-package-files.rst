@@ -368,11 +368,13 @@ tag (:file:`translations/en.xml`), so a translator works with one file.
    </translations>
 
 ``lang`` (required, attribute)
-   Tag of the language, equal to the file name.
+   Tag of the language, equal to the file name. Tags are case-insensitive
+   (``en-GB`` = ``en-gb``); a package has at most one file per language.
 
 ``t``
    One translated text. ``type`` and ``field`` say which text of which kind
-   of entity, ``code`` is the code of the entity:
+   of entity, ``code`` is the code of the entity (at most 100 characters),
+   the element text is the translation and must not be empty:
 
    ========================= ==================================== ===========================
    ``type``                  ``code``                             ``field``
@@ -405,12 +407,16 @@ text.
 package's own language: ``ZP2015`` writing in Czech defines
 ``ZP2015/UJ_012`` in :file:`translations/cs.xml`, and any package can
 translate it in a file of another language. The code starts with the code
-of the defining package; a source file may define only messages of its own
-package. Arguments are ``java.text.MessageFormat`` placeholders (``{0}``,
-``{1,number,integer}``), formatted with the conventions of the language;
-an apostrophe is written ``''``. The source-language file holds only
-messages - other rows in it are skipped with a warning, the entity files
-hold those texts.
+of the defining package. Arguments are ``java.text.MessageFormat``
+placeholders (``{0}``, ``{1,number,integer}``), formatted with the
+conventions of the language; an apostrophe is written ``''``. The import
+compiles every message and refuses a broken pattern.
+
+**The package's own language.** Texts of the package's own entities are in
+the entity files, so in the file of its own language rows translating them
+are skipped with a warning. Rows for entities of other packages, and
+messages of other packages, are imported: a customization written in Czech
+renames a Czech text of the package it builds on this way.
 
 **Several packages, one text.** When several packages translate the same
 text into the same language, the package that depends on the other wins,
@@ -418,18 +424,31 @@ so a customization overrides the translations of the package it builds
 on. Packages without a dependency between them are ordered by code.
 
 **Import.** Each import replaces all translations of the package. It is
-refused for an unknown ``type``, a ``field`` not allowed for the type, an
-unknown language, the same text twice in one file, or a message code
-without the package prefix. A translation of an entity that does not exist
-is kept with a warning: the entity may come with the next version of its
-package. The translations are exported with the package and removed with
-it.
+refused - with the file, the row and the reason in the error - for an
+unknown ``type``, a missing ``code``, a ``field`` missing or not allowed
+for the type, an empty text, an unknown language, two files of one
+language, the same text twice in one file, a message or type-group code
+without its prefix, or a message that is not a valid pattern. A
+translation of an entity that does not exist is kept with a warning: the
+entity may come with the next version of its package. The translations
+are exported with the package and removed with it.
 
-**Outdated translations.** With each translation the import stores a hash
-of the source text it was made from. When the source text changes later
-(a new version of the package that defines the entity), the translation
-is reported as outdated; it is still used until the translator updates
-it. Translations of type groups are not checked.
+**Outdated translations.** Each translation carries a hash of the source
+text it was made from, optionally written in the file:
+
+.. code-block:: xml
+
+   <t type="ITEM_TYPE" code="SRD_TITLE" field="name" src-hash="3f9a1c07b2e4d856">Content, abstract</t>
+
+The import takes ``src-hash`` from the file when present. Without it, a
+translation whose text did not change since the previous import keeps the
+hash it had, and a new or changed translation gets the hash of the current
+source text. The export writes the hash, so an exported package keeps it.
+When the source text changes later (a new version of the package that
+defines the entity), the translation is reported as outdated - also after
+the translating package is imported again unchanged; it is still used
+until the translator updates it. Translations of type groups are not
+checked.
 
 .. todo::
 

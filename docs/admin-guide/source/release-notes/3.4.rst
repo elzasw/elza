@@ -15,6 +15,19 @@ between the installed and the new version; see :doc:`/03-upgrade`.
 Upcoming version
 ================
 
+* New: Translations of rules packages - a package can carry texts of its
+  own and other packages' item types, specifications and other entities
+  in further languages (:file:`translations/<lang>.xml`); the names are
+  shown in the language of the user interface. The list of languages
+  (``GET /api/v1/languages``) is available without login.
+* Change: The languages (``sys_language``) get a BCP 47 tag (``cs``,
+  ``en``, ...). The upgrade fills it for the languages delivered with
+  ELZA. **If languages were added to the database by hand, the upgrade
+  stops** with the message "sys_language contains rows without a tag";
+  find them with ``SELECT * FROM sys_language WHERE tag IS NULL``, fill
+  ``tag`` (e.g. ``UPDATE sys_language SET tag = 'hu' WHERE code =
+  'hun'``) and start ELZA again. The language with code ``cze`` must not
+  be deleted: installed rules packages are assigned to it.
 * New: ELZA DA - taking over archival description from packages (AIP) by
   the user: an import plan and its execution (levels, description
   elements, attachments); automatic linking creates levels under the
