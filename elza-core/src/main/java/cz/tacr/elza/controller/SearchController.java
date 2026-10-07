@@ -2,7 +2,6 @@ package cz.tacr.elza.controller;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import jakarta.transaction.Transactional;
@@ -31,7 +30,6 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -270,9 +268,6 @@ public class SearchController implements SearchApi {
         log.debug("Received request on: /api/v1/search-ap, query: {}", searchParams);
 
 		StaticDataProvider sdp = staticDataService.createProvider();
-		final RulPartType bodyType = sdp.getPartTypeByCode(StaticDataProvider.DEFAULT_BODY_PART_TYPE);
-		Objects.requireNonNull(bodyType);
-		final RulPartType nameType = sdp.getPartTypeByCode(StaticDataProvider.DEFAULT_PART_TYPE);
 
 		ApSearchParams apsp = new ApSearchParams(sdp);
 		if(!apsp.prepare(searchParams)) {

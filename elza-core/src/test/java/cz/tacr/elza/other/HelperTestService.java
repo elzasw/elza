@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -24,11 +26,15 @@ import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingIssueRepository;
@@ -72,6 +78,8 @@ import cz.tacr.elza.repository.ExportRepository;
 import cz.tacr.elza.repository.ExportTypeRepository;
 import cz.tacr.elza.repository.ExternalSystemRepository;
 import cz.tacr.elza.repository.FundRegisterScopeRepository;
+import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.repository.PackageDependencyRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.FundStructureExtensionRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -275,6 +283,16 @@ public class HelperTestService {
     private PackageService packageService;
 
     @Autowired
+    private PackageDependencyRepository packageDependencyRepository;
+
+    @Autowired
+    private ScopeRepository scopeRepository;
+
+    @Autowired
+    @Qualifier("transactionManager")
+    private PlatformTransactionManager txManager;
+
+    @Autowired
     private ResourcePathResolver resourcePathResolver;
 
     @Autowired
@@ -294,6 +312,37 @@ public class HelperTestService {
     }
 
     @Transactional
+    /**
+     * Removes the data and all rules packages, in dependency order; scopes lose their rule set. Packages
+     * stay installed across test classes otherwise: a test class needing an installation without them
+     * calls this, and later test classes import the packages they need again (as {@code AbstractTest}
+     * does for CZ_BASE and SIMPLE-DEV).
+     */
+    public void deleteAllPackages() {
+        deleteTables(false);
+        new TransactionTemplate(txManager).executeWithoutResult(status -> {
+            for (ApScope scope : scopeRepository.findAll()) {
+                if (scope.getRulRuleSet() != null) {
+                    scope.setRulRuleSet(null);
+                    scopeRepository.save(scope);
+                }
+            }
+        });
+        List<RulPackage> packages = packageService.getPackages();
+        while (!packages.isEmpty()) {
+            Set<Integer> required = packageDependencyRepository.findAll().stream()
+                    .map(d -> d.getDependsOnPackage().getPackageId())
+                    .collect(Collectors.toSet());
+            List<RulPackage> leaves = packages.stream()
+                    .filter(p -> !required.contains(p.getPackageId()))
+                    .toList();
+            Assertions.assertFalse(leaves.isEmpty(), "Packages depend on each other: " + packages);
+            leaves.forEach(p -> packageService.deletePackage(p.getCode()));
+            packages = packageService.getPackages();
+        }
+        staticDataService.refreshForCurrentThread();
+    }
+
     public RulPackage getPackage(String packageCode) {
         List<RulPackage> packages = packageService.getPackages();
         for (RulPackage p : packages) {

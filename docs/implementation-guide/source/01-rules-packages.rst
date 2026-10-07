@@ -38,7 +38,7 @@ definitions; each rule set has a directory under :file:`rul_rule_set/`.
        rul_arrangement_rule.xml    rules of the rule set
        rul_arrangement_extension.xml   optional extensions of the rule set
        rul_extension_rule.xml      rules of those extensions
-       rul_entity_rule.xml         rules and name scripts of an entity rule set
+       rul_entity_rule.xml         rules and scripts of an entity rule set
        rul_ap_type.xml             entity classes of an entity rule set
        rul_part_type.xml           part types of an entity rule set, in order
        rul_output_type.xml, rul_template.xml, rul_policy_type.xml,

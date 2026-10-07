@@ -18,6 +18,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.NotImplementedException;
@@ -1626,6 +1627,10 @@ public class RuleService {
 
     }
 
+    /**
+     * CAM rule written in Java: a relation of a non-repeatable kind (specification of REL_ENTITY) is
+     * listed once per entity or parent part. Entities of other frameworks have no REL_ENTITY.
+     */
     private void validateRelationRepeatabilitySpecs(ModelAvailable availableResult, Map<Integer, Map<String, Relation>> relationMap, ApValidationIssues apValidationIssues) {
         StaticDataProvider sdp = staticDataService.getData();
         if (availableResult.getPart().getType().equals(PartType.PT_REL)) {
@@ -1633,17 +1638,16 @@ public class RuleService {
             Integer key = parent != null ? parent.getId() : -1;
             Map<String, Relation> simpleRelationMap = relationMap.get(key);
 
-            // Co dela cela kontrola nize a proc neni v pravidlech?
             cz.tacr.elza.core.data.ItemType itemTypeRelEntity = sdp.getItemTypeByCode(REL_ENTITY);
-            if (itemTypeRelEntity == null) {
-                Validate.notNull(itemTypeRelEntity, "Chybi itemType " + REL_ENTITY);
+            if (itemTypeRelEntity == null || simpleRelationMap == null) {
+                return;
             }
 
             // ?? muze vratit vice item stejneho typu
             AbstractItem item = availableResult.findItem(itemTypeRelEntity);
             if (item != null) {
                 Relation simpleRelation = simpleRelationMap.get(item.getSpec());
-                if (simpleRelation.getRelationCount() > 1) {
+                if (simpleRelation != null && simpleRelation.getRelationCount() > 1) {
                     // Uplatni se jen pri vetsim poctu vztahu
                     ItemType itemType = availableResult.getItemType(item);
                     ItemSpec itemSpec = itemType.getSpec(item.getSpec());
@@ -1669,7 +1673,8 @@ public class RuleService {
         if (availableResult.getPart().getType().equals(PartType.PT_IDENT)) {
             // TODO: itemu muze byt vice??
             AbstractItem item = availableResult.findItem(IDN_TYPE);
-            if (item != null && identMap.get(item.getSpec()) > 1) {
+            Integer count = item != null ? identMap.get(item.getSpec()) : null;
+            if (count != null && count > 1) {
                 ItemType itemType = availableResult.getItemType(item);
                 ItemSpec itemSpec = itemType.getSpec(item.getSpec());
 
@@ -1683,9 +1688,16 @@ public class RuleService {
         return errors;
     }
 
+    /**
+     * CAM model of a geographic entity (class GEO_UNIT); none when the CAM item types it reads are not
+     * installed (a GEO_UNIT class of another framework).
+     */
     @Nullable
     private GeoModel createGeoModel(final Ap ap) {
-        if (ap.getAeType().equals(GEO_UNIT)) {
+        StaticDataProvider sdp = staticDataService.getData();
+        boolean camItemTypes = Stream.of(GEO_ADMIN_CLASS, GEO_TYPE, IDN_TYPE, IDN_VALUE)
+                .allMatch(code -> sdp.getItemTypeByCode(code) != null);
+        if (camItemTypes && ap.getAeType().equals(GEO_UNIT)) {
             Integer parentGeoId = findParentGeoId(ap);
             String country = findEntityCountry(ap);
             if (parentGeoId != null) {

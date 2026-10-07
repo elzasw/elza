@@ -42,7 +42,12 @@ public class RulEntityRule {
          * Groovy script building the name and indexes of a part (display name, sort name, key values);
          * the most specific rule applies.
          */
-        INDEX
+        INDEX,
+        /**
+         * Groovy script computing items of the whole entity (offered to the user and checked by the
+         * validation); not bound to a part type, the most specific rule applies.
+         */
+        AUTO_ITEMS
     }
 
     @Id

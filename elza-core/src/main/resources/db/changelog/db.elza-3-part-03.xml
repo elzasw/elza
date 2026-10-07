@@ -1206,4 +1206,33 @@
         </sql>
     </changeSet>
 
+    <changeSet id="20261008140000" author="ppy">
+        <!-- The script computing items of an entity (AUTO_ITEMS) becomes an entity rule (rul_entity_rule),
+             like the index scripts; the arrangement rules of this type are removed and the new version
+             of the package (CZ_BASE 89) imports the script as an entity rule. Data are migrated on
+             PostgreSQL only (test databases start empty). -->
+        <sql dbms="postgresql">
+            WITH deleted AS (
+                DELETE FROM rul_arrangement_rule WHERE rule_type = 'AUTO_ITEMS'
+                RETURNING component_id)
+            DELETE FROM rul_component WHERE component_id IN (SELECT component_id FROM deleted);
+        </sql>
+    </changeSet>
+
+    <changeSet id="20261008150000" author="ppy">
+        <!-- db.elza-init inserts the GLOBAL scope and the DEFAULT institution type with id 1 and leaves
+             their sequences at 1. The pooled id generator (allocation 20) then hands out -18 .. 1, so the
+             20th scope or institution type created in a fresh database collides with id 1. The sequences
+             start above the highest existing id. -->
+        <sql>
+            UPDATE db_hibernate_sequences SET next_val = (SELECT coalesce(max(scope_id), 0) + 20 FROM ap_scope)
+            WHERE sequence_name = 'ap_scope|scope_id'
+              AND next_val &lt; (SELECT coalesce(max(scope_id), 0) + 20 FROM ap_scope);
+            UPDATE db_hibernate_sequences SET next_val =
+                (SELECT coalesce(max(institution_type_id), 0) + 20 FROM par_institution_type)
+            WHERE sequence_name = 'par_institution_type|institution_type_id'
+              AND next_val &lt; (SELECT coalesce(max(institution_type_id), 0) + 20 FROM par_institution_type);
+        </sql>
+    </changeSet>
+
 </databaseChangeLog>

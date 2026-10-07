@@ -358,10 +358,14 @@ login redirect to the provider.
    Mapping of values of the token's ``authorities`` claim to ELZA
    permissions. ``scope`` restricts a permission to a scope of archival
    entities, by its code.
+``user-scope``, ``user-ap-type``
+   Scope and class of the archival entities of users created from tokens;
+   default ``JWT_USERS`` and ``PERSON_INDIVIDUAL``. The class must be
+   offered by the rule set of the scope.
 
 The token's ``sub`` claim is the user name and ``name`` the display name.
 Unlike the other methods, a user who does not exist is created, together
-with an archival entity of the person in the scope ``JWT_USERS``. The
+with an archival entity of the person in the scope ``user-scope``. The
 user's directly assigned permissions are replaced by those mapped from
 the token. User data are cached for five minutes, so a change of
 permissions or deactivation takes effect within five minutes.

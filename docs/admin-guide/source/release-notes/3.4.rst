@@ -15,6 +15,30 @@ between the installed and the new version; see :doc:`/03-upgrade`.
 Upcoming version
 ================
 
+* Fix: Deleting a rules package that defines task types failed on a
+  database constraint; its task types are now deleted with it.
+* Fix: In a newly created database the 20th archival entity scope or
+  institution type collided with the initial ``GLOBAL`` scope or
+  ``DEFAULT`` institution type (identifier 1); the upgrade moves both
+  identifier sequences above the existing records.
+* Change: Rules packages - the script computing items of archival entities
+  is an entity rule of the rule set (kind ``AUTO_ITEMS`` in
+  :file:`rul_entity_rule.xml`, optionally per class; the most specific one
+  applies); before, it was an arrangement rule of type ``AUTO_ITEMS``. A
+  rule set without it computes no items. The upgrade removes the old rule;
+  CZ_BASE version 89 declares its unchanged ``AutoItems.groovy`` as the
+  entity rule. A package declaring ``AUTO_ITEMS`` in
+  :file:`rul_arrangement_rule.xml` is refused.
+* Change: Archival entities described by a rule set other than CAM (an
+  entity description package independent of CZ_BASE) are created, named
+  and validated without the CZ_BASE item types: the CAM checks of
+  relations and identifiers and the geographic checks apply only when the
+  CAM item types exist, users created from OAuth2 tokens get the class set by
+  ``elza.security.o-auth2.user-ap-type`` (default ``PERSON_INDIVIDUAL``) in
+  the scope ``user-scope`` (default ``JWT_USERS``). The short name of an
+  institution falls back to the ``SHORT_NAME`` index of the entity, and
+  the institution statistics list institutions without a short name under
+  their name (before they were left out).
 * Change: Rules packages - an item type may be declared by several packages
   with the same code, like entity classes and part types; its texts follow
   the language of the user. The data type and other values deciding how

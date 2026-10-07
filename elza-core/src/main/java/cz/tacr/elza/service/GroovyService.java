@@ -277,26 +277,90 @@ public class GroovyService {
         return groovyScriptService.process(groovyPart, getIndexScriptPath(scope, groovyPart));
     }
 
+    /**
+     * Items computed by the {@code AUTO_ITEMS} entity rule of the rule set of the entity's scope (the most
+     * specific for its class); none when the rule set has no such rule.
+     */
     public List<GroovyItem> getAutoItems(@NotNull final ApState state) {
-        ApScope scope = state.getScope();
+        String groovyFilePath = autoItemsScriptPath(state);
+        if (groovyFilePath == null) {
+            return Collections.emptyList();
+        }
         List<ApPart> parts = partService.findPartsByAccessPoint(state.getAccessPoint());
         List<ApItem> itemsByParts = accessPointItemService.findItemsByParts(parts);
         GroovyAe groovyAe = convertAe(state, parts, itemsByParts);
-        String groovyFilePath = getGroovyFilePath(RulArrangementRule.RuleType.AUTO_ITEMS, scope.getRuleSetId());
 
         return groovyScriptService.process(groovyAe, groovyFilePath, accessPointCacheService);
     }
 
     public List<GroovyItem> getAutoItemsForRev(@NotNull final ApState state, @NotNull final ApRevision revision) {
-        ApScope scope = state.getScope();
+        String groovyFilePath = autoItemsScriptPath(state);
+        if (groovyFilePath == null) {
+            return Collections.emptyList();
+        }
         List<ApPart> parts = partService.findPartsByAccessPoint(state.getAccessPoint());
         List<ApItem> itemsByParts = accessPointItemService.findItemsByParts(parts);
         List<ApRevPart> revParts = revisionPartService.findPartsByRevision(revision);
         List<ApRevItem> itemsByRevParts = revisionItemService.findByParts(revParts);
         GroovyAe groovyAe = convertAe(revision.getState(), parts, revParts, itemsByParts, itemsByRevParts);
-        String groovyFilePath = getGroovyFilePath(RulArrangementRule.RuleType.AUTO_ITEMS, scope.getRuleSetId());
 
         return groovyScriptService.process(groovyAe, groovyFilePath, accessPointCacheService);
+    }
+
+    @Nullable
+    private String autoItemsScriptPath(final ApState state) {
+        RuleSet ruleSet = entityRuleSetOf(state.getScope());
+        if (ruleSet == null) {
+            return null;
+        }
+        String apType = staticDataService.getData().getApTypeById(state.getApTypeId()).getCode();
+        RulEntityRule rule = mostSpecificEntityRule(ruleSet, RulEntityRule.Kind.AUTO_ITEMS, apType, null);
+        return rule != null ? resourcePathResolver.getDroolFile(rule).toString() : null;
+    }
+
+    /**
+     * The most specific entity rule of the kind: a rule of the class or its nearest parent before a rule
+     * of all classes, a rule of the part type before a rule of all parts, the highest priority.
+     *
+     * @param partTypeCode
+     *            part type, null for rules of the whole entity
+     */
+    @Nullable
+    private RulEntityRule mostSpecificEntityRule(final RuleSet ruleSet, final RulEntityRule.Kind kind,
+                                                 final String apTypeCode, @Nullable final String partTypeCode) {
+        StaticDataProvider sdp = staticDataService.getData();
+        List<Integer> apTypeIds = new ArrayList<>();
+        for (ApType apType = sdp.getApTypeByCode(apTypeCode); apType != null; apType = apType.getParentApType()) {
+            apTypeIds.add(apType.getApTypeId());
+        }
+        RulPartType partType = partTypeCode != null ? sdp.getPartTypeByCode(partTypeCode) : null;
+        List<RulEntityRule> rules = ruleSet.getEntityRules(kind, apTypeIds,
+                                                           partType != null ? partType.getPartTypeId() : null);
+        // rules of all part types are included when partTypeId is null; keep only matching ones
+        RulEntityRule rule = null;
+        for (RulEntityRule candidate : rules) {
+            if (candidate.getPartTypeId() == null || partType != null
+                    && candidate.getPartTypeId().equals(partType.getPartTypeId())) {
+                rule = candidate;
+            }
+        }
+        return rule;
+    }
+
+    /**
+     * Rule set of the entities of the scope; a scope without a rule set (older data) uses the only entity
+     * rule set, as the package import does. Null when there is none or several.
+     */
+    @Nullable
+    private RuleSet entityRuleSetOf(final ApScope scope) {
+        StaticDataProvider sdp = staticDataService.getData();
+        if (scope.getRuleSetId() != null) {
+            return sdp.getRuleSetById(scope.getRuleSetId());
+        }
+        List<RuleSet> entityRuleSets = sdp.getRuleSets().stream()
+                .filter(rs -> rs.getEntity().getRuleType() == RulRuleSet.RuleType.ENTITY)
+                .toList();
+        return entityRuleSets.size() == 1 ? entityRuleSets.get(0) : null;
     }
 
     public List<NodePlainTextRepresentation> getNodePlainText(@NotNull final ArrFundVersion fundVersion, ParInstitution institution, List<ArrDescItem> items, List<List<ArrDescItem>> parentItemsByLevel) {
@@ -593,36 +657,13 @@ public class GroovyService {
      * classes, a rule of the part type before a rule of all parts, the highest priority.
      */
     public String getIndexScriptPath(final ApScope scope, final GroovyPart part) {
-        StaticDataProvider sdp = staticDataService.getData();
-        RuleSet ruleSet = scope.getRuleSetId() != null ? sdp.getRuleSetById(scope.getRuleSetId()) : null;
-        if (ruleSet == null) {
-            // a scope without a rule set (older data): the only entity rule set, as the package import does
-            List<RuleSet> entityRuleSets = sdp.getRuleSets().stream()
-                    .filter(rs -> rs.getEntity().getRuleType() == RulRuleSet.RuleType.ENTITY)
-                    .toList();
-            if (entityRuleSets.size() == 1) {
-                ruleSet = entityRuleSets.get(0);
-            }
-        }
+        RuleSet ruleSet = entityRuleSetOf(scope);
         if (ruleSet == null) {
             throw new SystemException("Scope has no rule set for the names of entities", BaseCode.INVALID_STATE)
                     .set("scope", scope.getCode());
         }
-        List<Integer> apTypeIds = new ArrayList<>();
-        for (ApType apType = sdp.getApTypeByCode(part.getAeType()); apType != null; apType = apType.getParentApType()) {
-            apTypeIds.add(apType.getApTypeId());
-        }
-        RulPartType partType = sdp.getPartTypeByCode(part.getPartTypeCode());
-        List<RulEntityRule> rules = ruleSet.getEntityRules(RulEntityRule.Kind.INDEX, apTypeIds,
-                                                           partType != null ? partType.getPartTypeId() : null);
-        // rules of all part types are included when partTypeId is null; keep only matching ones
-        RulEntityRule rule = null;
-        for (RulEntityRule candidate : rules) {
-            if (candidate.getPartTypeId() == null || partType != null
-                    && candidate.getPartTypeId().equals(partType.getPartTypeId())) {
-                rule = candidate;
-            }
-        }
+        RulEntityRule rule = mostSpecificEntityRule(ruleSet, RulEntityRule.Kind.INDEX, part.getAeType(),
+                                                    part.getPartTypeCode());
         if (rule == null) {
             throw new SystemException("No script for the name of the part", BaseCode.INVALID_STATE)
                     .set("ruleSet", ruleSet.getCode())
