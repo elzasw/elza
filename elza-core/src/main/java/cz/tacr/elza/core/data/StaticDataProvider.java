@@ -30,6 +30,7 @@ import cz.tacr.elza.domain.RulRuleSetApType;
 import cz.tacr.elza.domain.RulRuleSetPartType;
 import cz.tacr.elza.domain.RulApTypeDeclaration;
 import cz.tacr.elza.domain.RulPartTypeDeclaration;
+import cz.tacr.elza.domain.RulItemTypeDeclaration;
 import cz.tacr.elza.domain.RulExtensionRule;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
@@ -396,7 +397,8 @@ public class StaticDataProvider {
         initPolicyTypes(service.policyTypeRepository);
         List<RulApTypeDeclaration> apTypeDeclarations = service.apTypeDeclarationRepository.findAll();
         initTranslations(service.translationRepository, service.packageDependencyRepository, apTypeDeclarations,
-                         service.partTypeDeclarationRepository.findAll());
+                         service.partTypeDeclarationRepository.findAll(),
+                         service.itemTypeDeclarationRepository.findAll());
         initRuleSetApTypes(service.ruleSetApTypeRepository, service.ruleSetPartTypeRepository,
                            service.packageDependencyRepository, apTypeDeclarations);
         self = this;
@@ -682,24 +684,36 @@ public class StaticDataProvider {
     private void initTranslations(RulTranslationRepository translationRepository,
                                   PackageDependencyRepository packageDependencyRepository,
                                   List<RulApTypeDeclaration> apTypeDeclarations,
-                                  List<RulPartTypeDeclaration> partTypeDeclarations) {
+                                  List<RulPartTypeDeclaration> partTypeDeclarations,
+                                  List<RulItemTypeDeclaration> itemTypeDeclarations) {
         List<RulTranslation> rows = new ArrayList<>(translationRepository.findAllFetchPackageAndLanguage());
         for (RulApTypeDeclaration declaration : apTypeDeclarations) {
-            addDeclaredName(rows, declaration.getPackageId(), TranslationEntityType.AP_TYPE,
-                            apTypeIdMap.get(declaration.getApTypeId()).getCode(), declaration.getName());
+            addDeclaredText(rows, declaration.getPackageId(), TranslationEntityType.AP_TYPE,
+                            apTypeIdMap.get(declaration.getApTypeId()).getCode(), TranslationEntityType.NAME,
+                            declaration.getName());
         }
         for (RulPartTypeDeclaration declaration : partTypeDeclarations) {
-            addDeclaredName(rows, declaration.getPackageId(), TranslationEntityType.PART_TYPE,
-                            partTypeIdMap.get(declaration.getPartTypeId()).getCode(), declaration.getName());
+            addDeclaredText(rows, declaration.getPackageId(), TranslationEntityType.PART_TYPE,
+                            partTypeIdMap.get(declaration.getPartTypeId()).getCode(), TranslationEntityType.NAME,
+                            declaration.getName());
+        }
+        for (RulItemTypeDeclaration declaration : itemTypeDeclarations) {
+            String code = itemTypeIdMap.get(declaration.getItemTypeId()).getCode();
+            addDeclaredText(rows, declaration.getPackageId(), TranslationEntityType.ITEM_TYPE, code,
+                            TranslationEntityType.NAME, declaration.getName());
+            addDeclaredText(rows, declaration.getPackageId(), TranslationEntityType.ITEM_TYPE, code,
+                            TranslationEntityType.SHORTCUT, declaration.getShortcut());
+            addDeclaredText(rows, declaration.getPackageId(), TranslationEntityType.ITEM_TYPE, code,
+                            TranslationEntityType.DESCRIPTION, declaration.getDescription());
         }
         this.translations = PackageTranslations.build(rows, packages, packageDependencyRepository.findAll());
     }
 
     /**
-     * Name of a declaration as a text in the language of the declaring package.
+     * Text of a declaration as a text in the language of the declaring package.
      */
-    private void addDeclaredName(List<RulTranslation> rows, Integer packageId, TranslationEntityType type,
-                                 String code, String name) {
+    private void addDeclaredText(List<RulTranslation> rows, Integer packageId, TranslationEntityType type,
+                                 String code, String field, String text) {
         RulPackage rulPackage = packageIdMap.get(packageId);
         SysLanguage language = rulPackage != null && rulPackage.getLanguageId() != null
                 ? getSysLanguageById(rulPackage.getLanguageId()) : null;
@@ -710,9 +724,9 @@ public class StaticDataProvider {
         row.setRulPackage(rulPackage);
         row.setEntityType(type.name());
         row.setEntityCode(code);
-        row.setField(TranslationEntityType.NAME);
+        row.setField(field);
         row.setLanguage(language);
-        row.setTextValue(name);
+        row.setTextValue(text);
         rows.add(row);
     }
 

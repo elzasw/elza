@@ -15,6 +15,14 @@ between the installed and the new version; see :doc:`/03-upgrade`.
 Upcoming version
 ================
 
+* Change: Rules packages - an item type may be declared by several packages
+  with the same code, like entity classes and part types; its texts follow
+  the language of the user. The data type and other values deciding how
+  values are stored must agree, otherwise the import is refused. An item
+  type used by descriptions or entities can no longer be removed by a new
+  version of its package (before, the import failed on a database
+  constraint). The package export writes the mask of ``STRING`` item types
+  and the structured type of ``STRUCTURED`` item types, which it omitted.
 * Change: Rules packages - the item type flag ``is-value-unique`` is
   removed (column ``rul_item_type.is_value_unique``). ELZA never enforced
   it; the element is ignored when a package still contains it.

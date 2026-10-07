@@ -6633,6 +6633,14 @@
     "defaultMessage": "Invalid translation “{key}” in the file “{file}”: {reason}",
     "srcHash": "2ia7ekwwoPP0"
   },
+  "exception.pkg.ITEM_TYPE_CONFLICT": {
+    "defaultMessage": "Item type \"{code}\" is declared by package {otherPackageCode} with another {attribute}",
+    "srcHash": "86Ju5wC3GxVv"
+  },
+  "exception.pkg.ITEM_TYPE_IN_USE": {
+    "defaultMessage": "Item types \"{codes}\" cannot be removed, descriptions or entities use them",
+    "srcHash": "92pBwa1vlOjV"
+  },
   "exception.pkg.MIN_DEPENDENCY": {
     "defaultMessage": "The minimum version of package {code} is not met: {version}.",
     "srcHash": "ePY5iK9u_eLf"

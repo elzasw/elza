@@ -14,6 +14,8 @@ import jakarta.xml.bind.annotation.XmlType;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.RulItemAptype;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemTypeDeclaration;
+import cz.tacr.elza.domain.viewDefinition.StringViewDefinition;
 import cz.tacr.elza.domain.table.ElzaColumn;
 import cz.tacr.elza.repository.ItemAptypeRepository;
 
@@ -187,7 +189,34 @@ public class ItemType {
      * @param rulDescItemType DAO typy
      * @param itemType VO typu
      */
+    /**
+     * The item type as the package declares it: the stored data (data type, use of specifications,
+     * structured type, columns) from the item type, texts and the other values from the declaration.
+     *
+     * @param itemAptypes
+     *            RECORD_REF classes, written for the owner of the item type only
+     */
+    public static ItemType fromDeclaration(RulItemType rulItemType, RulItemTypeDeclaration declaration,
+                                           List<RulItemAptype> itemAptypes) {
+        RulItemType declared = new RulItemType();
+        declared.setCode(rulItemType.getCode());
+        declared.setDataType(rulItemType.getDataType());
+        declared.setUseSpecification(rulItemType.getUseSpecification());
+        declared.setStructuredType(rulItemType.getStructuredType());
+        declared.setName(declaration.getName());
+        declared.setShortcut(declaration.getShortcut());
+        declared.setDescription(declaration.getDescription());
+        declared.setCanBeOrdered(declaration.getCanBeOrdered());
+        declared.setStringLengthLimit(declaration.getStringLengthLimit());
+        declared.setViewDefinitionJson(declaration.getViewDefinition());
+        return fromEntity(declared, itemAptypes);
+    }
+
     public static ItemType fromEntity(RulItemType rulDescItemType, ItemAptypeRepository itemAptypeRepository) {
+        return fromEntity(rulDescItemType, itemAptypeRepository.findByItemType(rulDescItemType));
+    }
+
+    private static ItemType fromEntity(RulItemType rulDescItemType, List<RulItemAptype> itemAptypes) {
 
         ItemType itemType = new ItemType();
         itemType.setCode(rulDescItemType.getCode());
@@ -221,9 +250,16 @@ public class ItemType {
             if (displayType != null) {
                 itemType.displayType = cz.tacr.elza.packageimport.xml.DisplayType.valueOf(displayType.name());
             }
+        } else if (dataType == DataType.STRING) {
+            StringViewDefinition stringViewDefinition = (StringViewDefinition) rulDescItemType.getViewDefinition();
+            if (stringViewDefinition != null) {
+                itemType.setMask(stringViewDefinition.getMask());
+            }
+        }
+        if (rulDescItemType.getStructuredType() != null) {
+            itemType.setStructureType(rulDescItemType.getStructuredType().getCode());
         }
 
-        List<RulItemAptype> itemAptypes = itemAptypeRepository.findByItemType(rulDescItemType);
         if (!itemAptypes.isEmpty()) {
             itemType.setItemAptypes(itemAptypes.stream().map(ItemAptype::fromEntity).collect(Collectors.toList()));
         }

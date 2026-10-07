@@ -23,6 +23,7 @@ import cz.tacr.elza.repository.RuleSetApTypeRepository;
 import cz.tacr.elza.repository.RuleSetPartTypeRepository;
 import cz.tacr.elza.repository.ApTypeDeclarationRepository;
 import cz.tacr.elza.repository.PartTypeDeclarationRepository;
+import cz.tacr.elza.repository.ItemTypeDeclarationRepository;
 import cz.tacr.elza.repository.ExtensionRuleRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
@@ -116,6 +117,8 @@ public class StaticDataService {
 
     final PartTypeDeclarationRepository partTypeDeclarationRepository;
 
+    final ItemTypeDeclarationRepository itemTypeDeclarationRepository;
+
     final ArrangementRuleRepository arrangementRuleRepository;
 
     final ComponentRepository componentRepository;
@@ -139,6 +142,7 @@ public class StaticDataService {
                              final RuleSetPartTypeRepository ruleSetPartTypeRepository,
                              final ApTypeDeclarationRepository apTypeDeclarationRepository,
                              final PartTypeDeclarationRepository partTypeDeclarationRepository,
+                             final ItemTypeDeclarationRepository itemTypeDeclarationRepository,
                              final ItemTypeRepository itemTypeRepository,
                              final ItemSpecRepository itemSpecRepository,
                              final ItemTypeSpecAssignRepository itemTypeSpecAssignRepository,
@@ -168,6 +172,7 @@ public class StaticDataService {
         this.ruleSetPartTypeRepository = ruleSetPartTypeRepository;
         this.apTypeDeclarationRepository = apTypeDeclarationRepository;
         this.partTypeDeclarationRepository = partTypeDeclarationRepository;
+        this.itemTypeDeclarationRepository = itemTypeDeclarationRepository;
         this.itemTypeRepository = itemTypeRepository;
         this.itemSpecRepository = itemSpecRepository;
         this.itemTypeSpecAssignRepository = itemTypeSpecAssignRepository;

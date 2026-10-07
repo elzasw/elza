@@ -274,8 +274,10 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
                     itemSpecCodes.add(itemSpec.getCode());
                     for (ItemTypeAssign itemTypeAssign : itemSpec.getItemTypeAssigns()) {
                         ItemTypeInfo itemTypeInfo = itemTypeMap.get(itemTypeAssign.getCode());
-                        List<String> listItemSpecCodes = itemTypeInfo.getSpecs();
-                        listItemSpecCodes.add(itemSpec.getCode());
+                        // a type of a package not read yet: the assignment is merged from the database
+                        if (itemTypeInfo != null && !itemTypeInfo.getSpecs().contains(itemSpec.getCode())) {
+                            itemTypeInfo.getSpecs().add(itemSpec.getCode());
+                        }
                     }
                 }
             }

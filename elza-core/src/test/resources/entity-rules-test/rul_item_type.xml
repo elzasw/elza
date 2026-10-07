@@ -1,0 +1,15 @@
+<item-types>
+    <!-- declared by CZ_BASE too: same item type, English texts -->
+    <item-type code="NOTE" data-type="TEXT">
+        <name>Note</name>
+        <shortcut>Note</shortcut>
+        <description>General note</description>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="ENT_LOCAL_ID" data-type="STRING">
+        <name>Local identifier</name>
+        <shortcut>Local id</shortcut>
+        <use-specification>false</use-specification>
+        <string-length-limit>50</string-length-limit>
+    </item-type>
+</item-types>

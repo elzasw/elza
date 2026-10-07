@@ -393,7 +393,8 @@ public class PackageTranslationService {
          * declaring it.
          */
         boolean isOwn(TranslationEntityType type, String code, String packageCode) {
-            if (type == TranslationEntityType.AP_TYPE || type == TranslationEntityType.PART_TYPE) {
+            if (type == TranslationEntityType.AP_TYPE || type == TranslationEntityType.PART_TYPE
+                    || type == TranslationEntityType.ITEM_TYPE) {
                 Set<String> declaring = declarations(type).get(code);
                 return declaring != null && declaring.contains(packageCode);
             }
@@ -402,12 +403,14 @@ public class PackageTranslationService {
 
         private final Map<TranslationEntityType, Map<String, Set<String>>> declarations = new HashMap<>();
 
-        /** Codes of the packages declaring each entity class or part type. */
+        /** Codes of the packages declaring each entity class, part type or item type. */
         private Map<String, Set<String>> declarations(TranslationEntityType type) {
             return declarations.computeIfAbsent(type, t -> {
-                String query = t == TranslationEntityType.AP_TYPE
-                        ? "SELECT d.apType.code, d.rulPackage.code FROM rul_ap_type_declaration d"
-                        : "SELECT d.partType.code, d.rulPackage.code FROM rul_part_type_declaration d";
+                String query = switch (t) {
+                    case AP_TYPE -> "SELECT d.apType.code, d.rulPackage.code FROM rul_ap_type_declaration d";
+                    case PART_TYPE -> "SELECT d.partType.code, d.rulPackage.code FROM rul_part_type_declaration d";
+                    default -> "SELECT d.itemType.code, d.rulPackage.code FROM rul_item_type_declaration d";
+                };
                 Map<String, Set<String>> result = new HashMap<>();
                 for (Object[] r : entityManager.createQuery(query, Object[].class).getResultList()) {
                     result.computeIfAbsent((String) r[0], k -> new HashSet<>()).add((String) r[1]);
