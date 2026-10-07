@@ -17,9 +17,9 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -72,10 +72,12 @@ import cz.tacr.elza.domain.RulArrangementRule;
 import cz.tacr.elza.domain.RulComponent;
 import cz.tacr.elza.domain.RulExportFilter;
 import cz.tacr.elza.domain.RulApTypeDeclaration;
+import cz.tacr.elza.domain.RulPartTypeDeclaration;
 import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.core.data.PackageTexts;
 import cz.tacr.elza.domain.RulEntityRule;
 import cz.tacr.elza.domain.RulRuleSetApType;
+import cz.tacr.elza.domain.RulRuleSetPartType;
 import cz.tacr.elza.domain.RulExtensionRule;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
@@ -124,6 +126,7 @@ import cz.tacr.elza.packageimport.xml.ExtensionRule;
 import cz.tacr.elza.packageimport.xml.EntityRule;
 import cz.tacr.elza.packageimport.xml.EntityRules;
 import cz.tacr.elza.packageimport.xml.RuleSetApTypes;
+import cz.tacr.elza.packageimport.xml.RuleSetPartTypes;
 import cz.tacr.elza.packageimport.xml.ExtensionRules;
 import cz.tacr.elza.packageimport.xml.ExternalIdType;
 import cz.tacr.elza.packageimport.xml.ExternalIdTypes;
@@ -172,8 +175,12 @@ import cz.tacr.elza.repository.ArrangementRuleRepository;
 import cz.tacr.elza.repository.ComponentRepository;
 import cz.tacr.elza.repository.ExportFilterRepository;
 import cz.tacr.elza.repository.ApTypeDeclarationRepository;
+import cz.tacr.elza.repository.PartTypeDeclarationRepository;
+import cz.tacr.elza.repository.ApPartRepository;
+import cz.tacr.elza.repository.ApRevPartRepository;
 import cz.tacr.elza.repository.EntityRuleRepository;
 import cz.tacr.elza.repository.RuleSetApTypeRepository;
+import cz.tacr.elza.repository.RuleSetPartTypeRepository;
 import cz.tacr.elza.repository.ExtensionRuleRepository;
 import cz.tacr.elza.repository.InstitutionTypeRepository;
 import cz.tacr.elza.repository.ItemAptypeRepository;
@@ -295,6 +302,11 @@ public class PackageService {
      * Entity classes used by an entity rule set.
      */
     public static final String RULE_SET_AP_TYPE_XML = "rul_ap_type.xml";
+
+    /**
+     * Part types offered by an entity rule set, in display order (in the rule set directory).
+     */
+    public static final String RULE_SET_PART_TYPE_XML = "rul_part_type.xml";
 
     /**
      * Pro strukturovaný datový typ a jeho rozšíření.
@@ -485,7 +497,19 @@ public class PackageService {
     private RuleSetApTypeRepository ruleSetApTypeRepository;
 
     @Autowired
+    private RuleSetPartTypeRepository ruleSetPartTypeRepository;
+
+    @Autowired
     private ApTypeDeclarationRepository apTypeDeclarationRepository;
+
+    @Autowired
+    private PartTypeDeclarationRepository partTypeDeclarationRepository;
+
+    @Autowired
+    private ApPartRepository partRepository;
+
+    @Autowired
+    private ApRevPartRepository revPartRepository;
 
     @Autowired
     private PackageTexts packageTexts;
@@ -727,6 +751,8 @@ public class PackageService {
         deleteEntityRules(pkgCtx.getPackage());
         ruleSetApTypeRepository.deleteByRulPackage(pkgCtx.getPackage());
         ruleSetApTypeRepository.flush();
+        ruleSetPartTypeRepository.deleteByRulPackage(pkgCtx.getPackage());
+        ruleSetPartTypeRepository.flush();
 
         importApTypes(pkgCtx);
 
@@ -744,6 +770,7 @@ public class PackageService {
 
             List<RulEntityRule> rulEntityRules = processEntityRules(ruc);
             processRuleSetApTypes(ruc);
+            processRuleSetPartTypes(ruc);
             List<RulArrangementExtension> rulArrangementExtensions = processArrangementExtensions(ruc);
             List<RulExtensionRule> rulExtensionRuleList = processExtensionRules(ruc, rulArrangementExtensions);
 
@@ -924,9 +951,9 @@ public class PackageService {
     /**
      * Summary of class declarations with the current dependencies and the installation language.
      */
-    private ApTypeDeclarations apTypeDeclarations() {
+    private PackageDeclarations packageDeclarations() {
         SysLanguage defaultLanguage = packageTexts.defaultLanguage();
-        return new ApTypeDeclarations(packageDependencyRepository.findAll(),
+        return new PackageDeclarations(packageDependencyRepository.findAll(),
                                       defaultLanguage != null ? defaultLanguage.getLanguageId() : null);
     }
 
@@ -938,7 +965,7 @@ public class PackageService {
         List<RulApTypeDeclaration> declarations = apTypeDeclarationRepository.findByRulPackage(rulPackage);
         apTypeDeclarationRepository.deleteAll(declarations);
         apTypeDeclarationRepository.flush();
-        ApTypeDeclarations summary = apTypeDeclarations();
+        PackageDeclarations summary = packageDeclarations();
         List<ApType> remove = new ArrayList<>();
         for (RulApTypeDeclaration declaration : declarations) {
             ApType apType = declaration.getApType();
@@ -965,7 +992,7 @@ public class PackageService {
                 entityRuleRepository,
                 ruleSetApTypeRepository,
                 apTypeDeclarationRepository,
-                apTypeDeclarations(),
+                packageDeclarations(),
                 staticDataService.getData()
         );
         apTypeUpdater.run(pkgCtx);
@@ -1201,85 +1228,134 @@ public class PackageService {
         item.setAnonymous(structureType.getAnonymous());
     }
 
+    /**
+     * Declarations of part types by the package: the first package creates the part type, further
+     * packages add declarations; name, child part and repeatable of the part type come from the winning
+     * declaration. A part type no longer declared by any package is removed, not while parts of
+     * entities or rules and members of other packages use it.
+     */
     private void processPartTypes(final PackageContext packageContext) {
     	logger.debug("Updating part types ...");
-        // read from XML
+        RulPackage rulPackage = packageContext.getPackage();
         PartTypes partTypes = PackageUtils.convertXmlStreamToObject(PartTypes.class,
                 packageContext.getByteStream(PART_TYPE_XML));
 
-        // get current types
-        List<RulPartType> currPartTypes = partTypeRepository.findByRulPackage(packageContext.getPackage());
-        List<RulPartType> newPartTypes = new ArrayList<>();
+        Map<String, RulPartType> existing = new HashMap<>();
+        partTypeRepository.findAll().forEach(t -> existing.put(t.getCode(), t));
+        Map<String, RulPartTypeDeclaration> oldDeclarations = new HashMap<>();
+        partTypeDeclarationRepository.findByRulPackage(rulPackage)
+                .forEach(d -> oldDeclarations.put(d.getPartType().getCode(), d));
 
-        if (partTypes != null && !CollectionUtils.isEmpty(partTypes.getPartTypes())) {
-            for (PartType partType : partTypes.getPartTypes()) {
-                // find existing or create new type
-                RulPartType item = currPartTypes.stream().filter(
-                        (r) -> r.getCode().equals(partType.getCode()))
-                        .findFirst()
-                        .orElse(new RulPartType());
-
-                convertRulPartType(packageContext.getPackage(), partType, item);
-                newPartTypes.add(item);
+        List<PartType> xmlTypes = partTypes != null && partTypes.getPartTypes() != null ? partTypes.getPartTypes()
+                : Collections.emptyList();
+        Map<String, RulPartType> declared = new LinkedHashMap<>();
+        for (PartType partType : xmlTypes) {
+            if (declared.containsKey(partType.getCode())) {
+                throw invalidEntityRule(PART_TYPE_XML, "Part type declared twice: " + partType.getCode());
             }
-            processPartTypesChildPart(partTypes.getPartTypes(), newPartTypes);
+            RulPartType item = existing.get(partType.getCode());
+            if (item == null) {
+                item = new RulPartType();
+                convertRulPartType(rulPackage, partType, item);
+            }
+            declared.put(partType.getCode(), item);
         }
+        partTypeRepository.saveAll(declared.values());
 
-        newPartTypes = partTypeRepository.saveAll(newPartTypes);
-        Set<Integer> savedPartIds = newPartTypes.stream().map(i -> i.getPartTypeId()).collect(Collectors.toSet()); 
+        List<RulPartTypeDeclaration> declarations = new ArrayList<>();
+        for (PartType partType : xmlTypes) {
+            RulPartType childPart = null;
+            if (StringUtils.isNotEmpty(partType.getChildPart())) {
+                childPart = declared.get(partType.getChildPart());
+                if (childPart == null) {
+                    childPart = existing.get(partType.getChildPart());
+                }
+                if (childPart == null) {
+                    throw invalidEntityRule(PART_TYPE_XML, "Unknown child part " + partType.getChildPart());
+                }
+            }
+            RulPartTypeDeclaration declaration = oldDeclarations.remove(partType.getCode());
+            if (declaration == null) {
+                declaration = new RulPartTypeDeclaration();
+            }
+            declaration.setPartType(declared.get(partType.getCode()));
+            declaration.setRulPackage(rulPackage);
+            declaration.setName(partType.getName());
+            declaration.setChildPart(childPart);
+            declaration.setRepeatable(partType.getRepeatable() == null || partType.getRepeatable());
+            declarations.add(declaration);
+        }
+        partTypeDeclarationRepository.saveAll(declarations);
 
-        List<RulPartType> rulPartTypeDelete = new ArrayList<>();
-        // add parts with parent
-        for(RulPartType currPartType: currPartTypes) {
-        	if (currPartType.getChildPart() != null && !savedPartIds.contains(currPartType.getPartTypeId())) {
-        		rulPartTypeDelete.add(currPartType);
-        	}
-        }
-        // add parts without parent
-        for(RulPartType currPartType: currPartTypes) {
-        	if (currPartType.getChildPart() == null && !savedPartIds.contains(currPartType.getPartTypeId())) {
-        		rulPartTypeDelete.add(currPartType);
-        	}
-        }
-        if (!CollectionUtils.isEmpty(rulPartTypeDelete)) {
-            checkNoForeignEntityRules(entityRuleRepository.findForeignByPartTypes(rulPartTypeDelete,
-                    packageContext.getPackage()).stream().map(RulEntityRule::getRulPackage).toList());
-            logger.debug("Deleting {}.", rulPartTypeDelete);
-            partTypeRepository.deleteAll(rulPartTypeDelete);
-        }
+        // declarations the package no longer has
+        Collection<RulPartTypeDeclaration> removed = oldDeclarations.values();
+        partTypeDeclarationRepository.deleteAll(removed);
+        partTypeDeclarationRepository.flush();
+        List<RulPartType> affected = new ArrayList<>(declared.values());
+        removed.forEach(d -> affected.add(d.getPartType()));
+        resolvePartTypes(affected, rulPackage);
         logger.debug("Part types updated.");
     }
 
-    private void processPartTypesChildPart(List<PartType> partTypes, List<RulPartType> newPartTypes) {
-        if (CollectionUtils.isNotEmpty(partTypes) && CollectionUtils.isNotEmpty(newPartTypes)) {
-            for (PartType partType : partTypes) {
-                if (StringUtils.isNotEmpty(partType.getChildPart())) {
-                    RulPartType rulPartType = findRulPartTypeByCode(newPartTypes, partType.getCode());
-                    if (rulPartType == null) {
-                        throw new IllegalStateException("Nenalezen typ části s kódem: " + partType.getCode());
-                    }
-
-                    RulPartType childPartType = findRulPartTypeByCode(newPartTypes, partType.getChildPart());
-                    if (childPartType == null) {
-                        throw new IllegalStateException("Nenalezen typ podřízené části s kódem: " + partType.getChildPart());
-                    }
-
-                    rulPartType.setChildPart(childPartType);
-                }
+    /**
+     * Part types whose declarations changed: a part type still declared takes its values from the
+     * winning declaration, one without declarations is removed.
+     */
+    private void resolvePartTypes(final Collection<RulPartType> partTypes, final RulPackage rulPackage) {
+        PackageDeclarations summary = packageDeclarations();
+        List<RulPartType> remove = new ArrayList<>();
+        for (RulPartType partType : partTypes) {
+            List<RulPartTypeDeclaration> remaining = partTypeDeclarationRepository.findByPartTypes(List.of(partType));
+            if (remaining.isEmpty()) {
+                remove.add(partType);
+            } else {
+                summary.summarize(partType, remaining);
+                partTypeRepository.save(partType);
             }
         }
+        deletePartTypes(remove, rulPackage);
     }
 
-    @Nullable
-    private RulPartType findRulPartTypeByCode(final List<RulPartType> rulPartTypes, final String code) {
-        if (CollectionUtils.isNotEmpty(rulPartTypes)) {
-            for (RulPartType rulPartType : rulPartTypes) {
-                if (rulPartType.getCode().equals(code)) {
-                    return rulPartType;
-                }
-            }
+    /**
+     * Removes part types no package declares any more; refused while parts of entities use them, or
+     * entity rules, part lists or child parts of another package refer to them.
+     */
+    private void deletePartTypes(final List<RulPartType> partTypes, final RulPackage rulPackage) {
+        if (partTypes.isEmpty()) {
+            return;
         }
-        return null;
+        List<RulPackage> foreign = new ArrayList<>();
+        entityRuleRepository.findForeignByPartTypes(partTypes, rulPackage)
+                .forEach(r -> foreign.add(r.getRulPackage()));
+        ruleSetPartTypeRepository.findForeignByPartTypes(partTypes, rulPackage)
+                .forEach(m -> foreign.add(m.getRulPackage()));
+        partTypeDeclarationRepository.findByChildParts(partTypes).stream()
+                .filter(d -> !d.getPackageId().equals(rulPackage.getPackageId()))
+                .forEach(d -> foreign.add(d.getRulPackage()));
+        checkNoForeignEntityRules(foreign);
+        long used = partRepository.countByPartTypes(partTypes) + revPartRepository.countByPartTypes(partTypes);
+        if (used > 0) {
+            throw new BusinessException("Part type is used by parts of entities", PackageCode.PART_TYPE_IN_USE)
+                    .set("codes", partTypes.stream().map(RulPartType::getCode).collect(Collectors.joining(", ")))
+                    .set("count", used);
+        }
+        // child parts first unlinked, so that the part types can be deleted in any order
+        partTypes.forEach(t -> t.setChildPart(null));
+        partTypeRepository.saveAll(partTypes);
+        partTypeRepository.flush();
+        logger.debug("Deleting {}.", partTypes);
+        partTypeRepository.deleteAll(partTypes);
+    }
+
+    /**
+     * Removes the part type declarations of a deleted package: a part type still declared by another
+     * package stays, with its values from the remaining declarations; the others are removed.
+     */
+    private void deletePartTypeDeclarations(final RulPackage rulPackage) {
+        List<RulPartTypeDeclaration> declarations = partTypeDeclarationRepository.findByRulPackage(rulPackage);
+        partTypeDeclarationRepository.deleteAll(declarations);
+        partTypeDeclarationRepository.flush();
+        resolvePartTypes(declarations.stream().map(RulPartTypeDeclaration::getPartType).toList(), rulPackage);
     }
 
     private void convertRulPartType(final RulPackage rulPackage,
@@ -1982,6 +2058,7 @@ public class PackageService {
                 .collect(Collectors.toMap(ApType::getCode, Function.identity()));
         Set<String> seen = new HashSet<>();
         List<RulRuleSetApType> members = new ArrayList<>();
+        int position = 0;
         for (RuleSetApTypes.Member member : xml.getApTypes()) {
             ApType apType = apTypes.get(member.getCode());
             if (apType == null) {
@@ -1996,9 +2073,48 @@ public class PackageService {
             row.setRulPackage(ruc.getRulPackage());
             row.setAssignable(member.getAssignable() != null ? member.getAssignable()
                     : !readOnlyFor(apType, ruc.getRulPackage()));
+            row.setPosition(++position);
             members.add(row);
         }
         ruleSetApTypeRepository.saveAll(members);
+    }
+
+    /**
+     * Part types offered by an entity rule set in display order ({@link #RULE_SET_PART_TYPE_XML}), of
+     * the package or contributed to a rule set of another package. The previous members of the package
+     * were deleted at the start of the import.
+     */
+    private void processRuleSetPartTypes(final RuleUpdateContext ruc) {
+        RulRuleSet ruleSet = ruc.getRulSet();
+        String file = ZIP_DIR_RULE_SET + "/" + ruc.getRulSetCode() + "/" + RULE_SET_PART_TYPE_XML;
+        RuleSetPartTypes xml = ruc.convertXmlStreamToObject(RuleSetPartTypes.class, RULE_SET_PART_TYPE_XML);
+        if (xml == null || xml.getPartTypes() == null) {
+            return;
+        }
+        if (ruleSet.getRuleType() != RulRuleSet.RuleType.ENTITY) {
+            throw invalidEntityRule(file, "Part types belong to a rule set of type ENTITY");
+        }
+        Map<String, RulPartType> partTypes = partTypeRepository.findAll().stream()
+                .collect(Collectors.toMap(RulPartType::getCode, Function.identity()));
+        Set<String> seen = new HashSet<>();
+        List<RulRuleSetPartType> members = new ArrayList<>();
+        int position = 0;
+        for (RuleSetPartTypes.Member member : xml.getPartTypes()) {
+            RulPartType partType = partTypes.get(member.getCode());
+            if (partType == null) {
+                throw invalidEntityRule(file, "Unknown part type " + member.getCode());
+            }
+            if (!seen.add(member.getCode())) {
+                throw invalidEntityRule(file, "Part type listed twice: " + member.getCode());
+            }
+            RulRuleSetPartType row = new RulRuleSetPartType();
+            row.setRuleSet(ruleSet);
+            row.setPartType(partType);
+            row.setRulPackage(ruc.getRulPackage());
+            row.setPosition(++position);
+            members.add(row);
+        }
+        ruleSetPartTypeRepository.saveAll(members);
     }
 
     /**
@@ -2881,7 +2997,8 @@ public class PackageService {
         structureTypeRepository.deleteByRulPackage(rulPackage);
         entityRuleRepository.deleteByRulPackage(rulPackage);
         ruleSetApTypeRepository.deleteByRulPackage(rulPackage);
-        partTypeRepository.deleteByRulPackage(rulPackage);
+        ruleSetPartTypeRepository.deleteByRulPackage(rulPackage);
+        deletePartTypeDeclarations(rulPackage);
         packageActionsRepository.deleteByRulPackage(rulPackage);
         outputFilterRepository.deleteByRulPackage(rulPackage);
         exportFilterRepository.deleteByRulPackage(rulPackage);
@@ -3066,6 +3183,7 @@ public class PackageService {
             exportExtensionRules(rulPackage, zos);
             exportEntityRules(rulPackage, zos);
             exportRuleSetApTypes(rulPackage, zos);
+            exportRuleSetPartTypes(rulPackage, zos);
             exportOutputTypes(rulPackage, zos);
             exportTemplates(rulPackage, zos);
             exportRegisterTypes(rulPackage, zos);
@@ -3187,7 +3305,12 @@ public class PackageService {
      */
     private void exportRuleSetApTypes(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
         Map<RulRuleSet, List<RulRuleSetApType>> byRuleSet = ruleSetApTypeRepository.findByRulPackage(rulPackage)
-                .stream().collect(Collectors.groupingBy(RulRuleSetApType::getRuleSet));
+                .stream()
+                .sorted(Comparator.comparing(RulRuleSetApType::getPosition,
+                                             Comparator.nullsLast(Comparator.naturalOrder()))
+                        .thenComparing(RulRuleSetApType::getRuleSetApTypeId))
+                .collect(Collectors.groupingBy(RulRuleSetApType::getRuleSet, LinkedHashMap::new,
+                                               Collectors.toList()));
         for (Map.Entry<RulRuleSet, List<RulRuleSetApType>> entry : byRuleSet.entrySet()) {
             List<RuleSetApTypes.Member> members = new ArrayList<>();
             for (RulRuleSetApType row : entry.getValue()) {
@@ -3203,6 +3326,29 @@ public class PackageService {
             xml.setApTypes(members);
             addObjectToZipFile(xml, zos,
                                ZIP_DIR_RULE_SET + "/" + entry.getKey().getCode() + "/" + RULE_SET_AP_TYPE_XML);
+        }
+    }
+
+    /**
+     * Part types of entity rule sets declared by the package ({@link #RULE_SET_PART_TYPE_XML}).
+     */
+    private void exportRuleSetPartTypes(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
+        Map<RulRuleSet, List<RulRuleSetPartType>> byRuleSet = ruleSetPartTypeRepository.findByRulPackage(rulPackage)
+                .stream()
+                .sorted(Comparator.comparing(RulRuleSetPartType::getPosition))
+                .collect(Collectors.groupingBy(RulRuleSetPartType::getRuleSet, LinkedHashMap::new,
+                                               Collectors.toList()));
+        for (Map.Entry<RulRuleSet, List<RulRuleSetPartType>> entry : byRuleSet.entrySet()) {
+            List<RuleSetPartTypes.Member> members = new ArrayList<>();
+            for (RulRuleSetPartType row : entry.getValue()) {
+                RuleSetPartTypes.Member member = new RuleSetPartTypes.Member();
+                member.setCode(row.getPartType().getCode());
+                members.add(member);
+            }
+            RuleSetPartTypes xml = new RuleSetPartTypes();
+            xml.setPartTypes(members);
+            addObjectToZipFile(xml, zos,
+                               ZIP_DIR_RULE_SET + "/" + entry.getKey().getCode() + "/" + RULE_SET_PART_TYPE_XML);
         }
     }
 
@@ -3961,66 +4107,25 @@ public class PackageService {
      * @throws IOException
      */
     private void exportPartTypes(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
-        List<RulPartType> rulPartTypes = partTypeRepository.findByRulPackage(rulPackage);
-
-        if (CollectionUtils.isNotEmpty(rulPartTypes)) {
-            PartTypes partTypes = new PartTypes();
-            List<PartType> partTypeList = new ArrayList<>(rulPartTypes.size());
-            partTypes.setPartTypes(partTypeList);
-
-            for (RulPartType rulPartType : rulPartTypes) {
-                PartType partType = new PartType();
-                convertPartType(rulPartType, partType);
-                partTypeList.add(partType);
-            }
-            processRulPartTypesChildPart(rulPartTypes, partTypeList);
-
-            addObjectToZipFile(partTypes, zos, PART_TYPE_XML);
+        // the declarations of the package (a part type may be declared by several packages)
+        List<RulPartTypeDeclaration> declarations = partTypeDeclarationRepository.findByRulPackage(rulPackage).stream()
+                .sorted(Comparator.comparing(RulPartTypeDeclaration::getPartTypeDeclarationId))
+                .toList();
+        if (declarations.isEmpty()) {
+            return;
         }
-    }
-
-    /**
-     * Převod DAO na VO typů částí přístupových bodů
-     *
-     * @param rulPartType DAO typu části přístupových bodů
-     * @param partType VO typu části přístupových bodů
-     */
-    private void convertPartType(RulPartType rulPartType, PartType partType) {
-        partType.setCode(rulPartType.getCode());
-        partType.setName(rulPartType.getName());
-        partType.setRepeatable(rulPartType.getRepeatable());
-    }
-
-    private void processRulPartTypesChildPart(List<RulPartType> rulPartTypes, List<PartType> partTypes) {
-        if (CollectionUtils.isNotEmpty(rulPartTypes) && CollectionUtils.isNotEmpty(partTypes)) {
-            for (RulPartType rulPartType : rulPartTypes) {
-                if (rulPartType.getChildPart() != null) {
-                    PartType partType = findPartTypeByCode(partTypes, rulPartType.getCode());
-                    if (partType == null) {
-                        throw new IllegalStateException("Nenalezen typ části s kódem: " + rulPartType.getCode());
-                    }
-
-                    PartType childPartType = findPartTypeByCode(partTypes, rulPartType.getChildPart().getCode());
-                    if (childPartType == null) {
-                        throw new IllegalStateException("Nenalezen typ podřízené části s kódem: " + rulPartType.getChildPart().getCode());
-                    }
-
-                    partType.setChildPart(childPartType.getCode());
-                }
-            }
+        PartTypes partTypes = new PartTypes();
+        List<PartType> partTypeList = new ArrayList<>(declarations.size());
+        partTypes.setPartTypes(partTypeList);
+        for (RulPartTypeDeclaration declaration : declarations) {
+            PartType partType = new PartType();
+            partType.setCode(declaration.getPartType().getCode());
+            partType.setName(declaration.getName());
+            partType.setRepeatable(declaration.getRepeatable());
+            partType.setChildPart(declaration.getChildPart() != null ? declaration.getChildPart().getCode() : null);
+            partTypeList.add(partType);
         }
-    }
-
-    @Nullable
-    private PartType findPartTypeByCode(final List<PartType> partTypes, final String code) {
-        if (CollectionUtils.isNotEmpty(partTypes)) {
-            for (PartType partType : partTypes) {
-                if (partType.getCode().equals(code)) {
-                    return partType;
-                }
-            }
-        }
-        return null;
+        addObjectToZipFile(partTypes, zos, PART_TYPE_XML);
     }
 
     /**

@@ -14,22 +14,18 @@ import jakarta.persistence.Table;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * Entity class used by an entity rule set ({@code rul_rule_set/<RS>/rul_ap_type.xml}).
- *
- * <p>A rule set with members offers only its members; whether a member can be assigned to an entity
- * is stated here and overrides {@link ApType#isReadOnly()}. The rows belong to the package that
- * declared them - the owner of the rule set or a package contributing to it; when several packages
- * state the same class, the package deeper in dependency order wins.
+ * Part type offered by an entity rule set ({@code rul_rule_set/<RS>/rul_part_type.xml}), in the order
+ * of the file. A rule set without members offers all part types.
  */
-@Entity(name = "rul_rule_set_ap_type")
+@Entity(name = "rul_rule_set_part_type")
 @Table
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
-public class RulRuleSetApType {
+public class RulRuleSetPartType {
 
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY) // required to read id without fetch from db
-    private Integer ruleSetApTypeId;
+    private Integer ruleSetPartTypeId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulRuleSet.class)
     @JoinColumn(name = "ruleSetId", nullable = false)
@@ -38,12 +34,12 @@ public class RulRuleSetApType {
     @Column(nullable = false, insertable = false, updatable = false)
     private Integer ruleSetId;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApType.class)
-    @JoinColumn(name = "apTypeId", nullable = false)
-    private ApType apType;
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPartType.class)
+    @JoinColumn(name = "partTypeId", nullable = false)
+    private RulPartType partType;
 
     @Column(nullable = false, insertable = false, updatable = false)
-    private Integer apTypeId;
+    private Integer partTypeId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RulPackage.class)
     @JoinColumn(name = "packageId", nullable = false)
@@ -52,19 +48,16 @@ public class RulRuleSetApType {
     @Column(nullable = false, insertable = false, updatable = false)
     private Integer packageId;
 
+    /** Order within the members the package declares for the rule set. */
     @Column(nullable = false)
-    private Boolean assignable;
-
-    /** Order within the members the package declares for the rule set; null for rows before 3.4.x. */
-    @Column
     private Integer position;
 
-    public Integer getRuleSetApTypeId() {
-        return ruleSetApTypeId;
+    public Integer getRuleSetPartTypeId() {
+        return ruleSetPartTypeId;
     }
 
-    public void setRuleSetApTypeId(final Integer ruleSetApTypeId) {
-        this.ruleSetApTypeId = ruleSetApTypeId;
+    public void setRuleSetPartTypeId(final Integer ruleSetPartTypeId) {
+        this.ruleSetPartTypeId = ruleSetPartTypeId;
     }
 
     public RulRuleSet getRuleSet() {
@@ -80,17 +73,17 @@ public class RulRuleSetApType {
         this.ruleSetId = ruleSet != null ? ruleSet.getRuleSetId() : null;
     }
 
-    public ApType getApType() {
-        return apType;
+    public RulPartType getPartType() {
+        return partType;
     }
 
-    public Integer getApTypeId() {
-        return apTypeId;
+    public Integer getPartTypeId() {
+        return partTypeId;
     }
 
-    public void setApType(final ApType apType) {
-        this.apType = apType;
-        this.apTypeId = apType != null ? apType.getApTypeId() : null;
+    public void setPartType(final RulPartType partType) {
+        this.partType = partType;
+        this.partTypeId = partType != null ? partType.getPartTypeId() : null;
     }
 
     public RulPackage getRulPackage() {
@@ -112,13 +105,5 @@ public class RulRuleSetApType {
 
     public void setPosition(final Integer position) {
         this.position = position;
-    }
-
-    public Boolean getAssignable() {
-        return assignable;
-    }
-
-    public void setAssignable(final Boolean assignable) {
-        this.assignable = assignable;
     }
 }

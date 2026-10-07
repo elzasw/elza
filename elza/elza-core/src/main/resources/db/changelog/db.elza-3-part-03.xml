@@ -1066,4 +1066,85 @@
         </sql>
     </changeSet>
 
+    <changeSet id="20261008100000" author="ppy">
+        <!-- A part type may be declared by several packages: rul_part_type stays one row per code;
+             each declaring package states its name (in the package's language), child part and
+             repeatable here; rul_part_type holds the values of the winning declaration. -->
+        <createTable tableName="rul_part_type_declaration">
+            <column name="part_type_declaration_id" type="int">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="part_type_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_part_type_declaration_part_type"
+                             referencedTableName="rul_part_type" referencedColumnNames="part_type_id"/>
+            </column>
+            <column name="package_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_part_type_declaration_package"
+                             referencedTableName="rul_package" referencedColumnNames="package_id"/>
+            </column>
+            <column name="name" type="nvarchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="child_part_id" type="int">
+                <constraints foreignKeyName="fk_rul_part_type_declaration_child"
+                             referencedTableName="rul_part_type" referencedColumnNames="part_type_id"/>
+            </column>
+            <column name="repeatable" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="rul_part_type_declaration" columnNames="part_type_id, package_id"
+                             constraintName="ux_rul_part_type_declaration"/>
+        <!-- every existing part type is declared by its current package -->
+        <sql>
+            INSERT INTO rul_part_type_declaration
+                (part_type_declaration_id, part_type_id, package_id, name, child_part_id, repeatable)
+            SELECT part_type_id, part_type_id, package_id, name, child_part_id, coalesce(repeatable, true)
+            FROM rul_part_type
+        </sql>
+        <insert tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="rul_part_type_declaration|part_type_declaration_id"/>
+            <column name="next_val" value="0"/>
+        </insert>
+        <sql>
+            UPDATE db_hibernate_sequences SET next_val =
+                (SELECT coalesce(max(part_type_declaration_id), 0) + 20 FROM rul_part_type_declaration)
+            WHERE sequence_name = 'rul_part_type_declaration|part_type_declaration_id'
+        </sql>
+    </changeSet>
+
+    <changeSet id="20261008110000" author="ppy">
+        <!-- Order of the classes and part types an entity rule set offers: position in the file of
+             the declaring package; existing members get their position at the next package import. -->
+        <addColumn tableName="rul_rule_set_ap_type">
+            <column name="position" type="int"/>
+        </addColumn>
+        <createTable tableName="rul_rule_set_part_type">
+            <column name="rule_set_part_type_id" type="int">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="rule_set_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_rule_set_part_type_rule_set"
+                             referencedTableName="rul_rule_set" referencedColumnNames="rule_set_id"/>
+            </column>
+            <column name="part_type_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_rule_set_part_type_part_type"
+                             referencedTableName="rul_part_type" referencedColumnNames="part_type_id"/>
+            </column>
+            <column name="package_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_rule_set_part_type_package"
+                             referencedTableName="rul_package" referencedColumnNames="package_id"/>
+            </column>
+            <column name="position" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="rul_rule_set_part_type" columnNames="rule_set_id, part_type_id, package_id"
+                             constraintName="ux_rul_rule_set_part_type"/>
+        <insert tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="rul_rule_set_part_type|rule_set_part_type_id"/>
+            <column name="next_val" value="0"/>
+        </insert>
+    </changeSet>
+
 </databaseChangeLog>

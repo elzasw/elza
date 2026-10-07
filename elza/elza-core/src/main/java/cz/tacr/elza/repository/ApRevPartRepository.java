@@ -1,5 +1,7 @@
 package cz.tacr.elza.repository;
 
+import cz.tacr.elza.domain.RulPartType;
+
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApRevPart;
 import cz.tacr.elza.domain.ApRevision;
@@ -13,6 +15,11 @@ import java.util.List;
 
 @Repository
 public interface ApRevPartRepository extends JpaRepository<ApRevPart, Integer> {
+
+    /** Number of parts of the part types. */
+    @Query("SELECT count(p) FROM ApRevPart p WHERE p.partType IN :partTypes")
+    long countByPartTypes(@Param("partTypes") Collection<RulPartType> partTypes);
+
 
     @Query("SELECT p FROM ApRevPart p WHERE p.revision = :revision AND p.deleteChange IS NULL")
     List<ApRevPart> findByRevision(@Param("revision") ApRevision revision);

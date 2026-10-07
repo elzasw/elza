@@ -18,7 +18,7 @@ import cz.tacr.elza.domain.RulPackage;
  * @author <a href="mailto:martin.kuzel@marbes.cz">Martin Kužel</a>
  */
 @Repository
-public interface ApTypeRepository extends JpaRepository<ApType, Integer>, ApTypeRepositoryCustom, Packaging<ApType> {
+public interface ApTypeRepository extends JpaRepository<ApType, Integer>, ApTypeRepositoryCustom {
 
     /**
      * Najde všechny typy rejstříků seřazené podle názvu.

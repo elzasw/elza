@@ -78,4 +78,9 @@ public enum PackageCode implements ErrorCode {
      * An entity class is declared by another package with another parent.
      */
     AP_TYPE_CONFLICT,
+
+    /**
+     * A part type to be removed is used by parts of entities.
+     */
+    PART_TYPE_IN_USE,
 }

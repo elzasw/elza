@@ -140,7 +140,8 @@ export const ApCopyModal = ({
 
 
     const sortedPartTypes = detail && partTypes.items
-        ? sortPart(partTypes.items, apViewSettings.data?.rules[detail.ruleSetId])
+        ? sortPart(partTypes.items, apViewSettings.data?.rules[detail.ruleSetId],
+                   partTypeId => (groupedParts[partTypeId] || []).length > 0)
         : [];
 
     const validate = (data: ApCopyModalFields) => {

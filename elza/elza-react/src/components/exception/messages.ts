@@ -103,6 +103,7 @@ export const exceptionMessages = defineMessages({
     "exception.pkg.FOREIGN_DEPENDENCY": { id: "exception.pkg.FOREIGN_DEPENDENCY", defaultMessage: "Na balíček existuje závislost: {foreignPackageCodes}" },
     "exception.pkg.FOREIGN_PACKAGES_NOT_EXIST": { id: "exception.pkg.FOREIGN_PACKAGES_NOT_EXIST", defaultMessage: "Nebyly nalezeny požadované balíčky: {codes}" },
     "exception.pkg.AP_TYPE_CONFLICT": { id: "exception.pkg.AP_TYPE_CONFLICT", defaultMessage: "Třídu „{code}“ deklaruje jiný balíček s jiným nadřazeným typem ({otherParentCode})" },
+    "exception.pkg.PART_TYPE_IN_USE": { id: "exception.pkg.PART_TYPE_IN_USE", defaultMessage: "Typ části „{codes}“ nelze odstranit, používá jej {count} částí entit" },
     "exception.pkg.INVALID_ENTITY_RULE": { id: "exception.pkg.INVALID_ENTITY_RULE", defaultMessage: "Neplatná pravidla entit v souboru „{file}“: {reason}" },
     "exception.pkg.INVALID_TRANSLATION": { id: "exception.pkg.INVALID_TRANSLATION", defaultMessage: "Neplatný překlad „{key}“ v souboru „{file}“: {reason}" },
     "exception.pkg.MIN_DEPENDENCY": { id: "exception.pkg.MIN_DEPENDENCY", defaultMessage: "Není splněna minimální verze balíčku {code}: {version}." },

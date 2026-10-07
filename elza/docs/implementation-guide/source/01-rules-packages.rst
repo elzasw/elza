@@ -29,6 +29,8 @@ definitions; each rule set has a directory under :file:`rul_rule_set/`.
    rul_item_type.xml               item types
    rul_item_spec.xml               specifications and their item types
    rul_rule_set.xml                rule sets owned by the package
+   ap_type.xml                     entity classes
+   rul_part_type.xml               part types of entities
    rul_structure_type.xml          structured types (and their definitions,
    rul_structure_definition.xml    extensions and scripts)
    ui_setting.xml                  package-level UI settings
@@ -38,6 +40,7 @@ definitions; each rule set has a directory under :file:`rul_rule_set/`.
        rul_extension_rule.xml      rules of those extensions
        rul_entity_rule.xml         rules and name scripts of an entity rule set
        rul_ap_type.xml             entity classes of an entity rule set
+       rul_part_type.xml           part types of an entity rule set, in order
        rul_output_type.xml, rul_template.xml, rul_policy_type.xml,
        rul_package_actions.xml, ui_setting.xml, ...
        rules/                      Drools (.drl) and Groovy rule files

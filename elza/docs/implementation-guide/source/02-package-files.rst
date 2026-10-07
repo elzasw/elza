@@ -208,6 +208,47 @@ depend on each other give different names in one language, an installation
 fixes the choice with a small package depending on both that translates
 the name.
 
+rul_part_type.xml
+=================
+
+Part types of entities the package declares: the sections of an entity
+such as names, creation or relations.
+
+.. code-block:: xml
+
+   <part-types>
+       <part-type code="PT_NAME">
+           <name>Označení</name>
+           <repeatable>true</repeatable>
+       </part-type>
+       <part-type code="PT_CRE">
+           <name>Vznik</name>
+           <child_part>PT_REL</child_part>
+           <repeatable>false</repeatable>
+       </part-type>
+   </part-types>
+
+``code`` (required, attribute), ``name`` (required)
+   Code of the part type and its name in the language of the package.
+
+``child_part``
+   Part type of parts attached to a part of this type (relations of a
+   creation); declared in the same file or by a package this one depends
+   on.
+
+``repeatable``
+   An entity may have several parts of the type.
+
+Part types are shared by packages like classes: several packages may
+declare the same code, the part type exists once, and the names resolve
+by language like the names of classes. ``child_part`` and ``repeatable``
+are not checked across declarations; they come from the winning
+declaration (the package deeper in the dependency order, ties by package
+code). Declarations of one code should agree; an installation forces a
+value with a small package depending on both. The part type is removed
+with the last package declaring it; the import is refused while parts of
+entities use it or rules of another package refer to it.
+
 rul_rule_set.xml
 ================
 
@@ -382,6 +423,40 @@ wins. A class used by members of another package cannot be removed. The
 rule set of a scope cannot be changed while the scope holds entities of a
 class the new rule set does not offer, and the CAM import of an entity of
 such a class into a scope fails.
+
+The order of the file is the order of the class tree: a class takes its
+position, a parent that is not listed takes the position of its first
+listed subclass. The members of the owner of the rule set come first, then
+those of contributing packages in dependency order (ties by package code),
+each in the order of its file; a class listed by several packages keeps
+its first position. Without the file, roots are ordered as declared and
+subclasses by name.
+
+rul_rule_set/<RS>/rul_part_type.xml
+===================================
+
+Part types an entity rule set offers, in the order in which the parts of an
+entity are shown. Without this file the rule set offers all part types,
+ordered by the ``parts-order`` UI setting of the rule set when present.
+
+.. code-block:: xml
+
+   <part-types>
+       <part-type code="PT_NAME"/>
+       <part-type code="PT_CRE"/>
+       <part-type code="PT_EXT"/>
+       <part-type code="PT_BODY"/>
+   </part-types>
+
+``code`` (required, attribute)
+   Code of a part type of the package or of a package it depends on; a
+   code may be listed once.
+
+The entity detail does not offer a part type the rule set does not list
+(the server does not refuse it); an entity that already has parts of it
+still shows them, after the listed ones. Contributing packages add part types in
+:file:`rul_rule_set/<FOREIGN>/rul_part_type.xml`, ordered as member
+classes are. A part type listed by another package cannot be removed.
 
 rul_rule_set/<RS>/rul_policy_type.xml
 =====================================
@@ -601,6 +676,5 @@ checked.
 .. todo::
 
    Remaining files: :file:`ui_setting.xml` (package and rule set level),
-   :file:`rul_part_type.xml`,
    :file:`ap_external_id_type.xml`, :file:`par_institution_type.xml`, issue
    types and states, export and output filters, import transformations.
