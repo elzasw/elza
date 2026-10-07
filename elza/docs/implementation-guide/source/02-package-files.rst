@@ -70,7 +70,8 @@ file, after the item types of the packages imported earlier.
    </item-types>
 
 ``code`` (required, attribute)
-   Code of the item type, unique across all packages.
+   Code of the item type; another package may declare the same code (see
+   below).
 
 ``data-type`` (required, attribute)
    ``STRING`` (one line), ``TEXT``, ``FORMATTED_TEXT``, ``INT``,
@@ -117,7 +118,34 @@ file, after the item types of the packages imported earlier.
 
 The data type of an existing item type can be changed only while no values
 exist, with two exceptions that convert existing values: ``STRING`` to
-``DATE`` and ``TEXT`` to ``STRING``.
+``DATE`` and ``TEXT`` to ``STRING``. An item type is removed with its
+package version only while no description or entity uses it and no
+specification of another package is assigned to it.
+
+**Item types shared by packages.** Several packages may declare an item type
+with the same code - for example an international entity description
+declaring ``NOTE`` or ``NM_MAIN`` of CZ_BASE. The item type then exists
+once: values, rules, search and exchange use it whatever package describes
+the entity. Declaring a code declared by another package asserts that it is
+the same element.
+
+- The values deciding how data are stored must agree: ``data-type``,
+  ``use-specification``, ``structure-type`` and the codes and data types of
+  ``columns-definitions``; a declaration that differs refuses the import.
+  The owner cannot change them either while another package declares the
+  item type.
+- The package that created the item type owns it; its place among the item
+  types and the other values (``string-length-limit``, ``mask``,
+  ``display-type``, ``can-be-ordered``) are those of the owner. A declaration
+  of another package takes no place in the order and may not state
+  ``item-aptypes``.
+- Each package states its own ``name``, ``shortcut`` and ``description`` in
+  its language; the texts resolve by language as the names of classes.
+- When the owner no longer declares the item type, the package winning by
+  dependency order becomes the owner; the item type is removed with its
+  last declaration.
+- The export writes the package's declarations: its own item types in their
+  order, then the declarations of item types of other packages.
 
 rul_item_spec.xml
 =================

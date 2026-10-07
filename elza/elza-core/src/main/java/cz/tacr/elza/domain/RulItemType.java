@@ -505,6 +505,20 @@ public class RulItemType {
         }
     }
 
+    /**
+     * @return the view definition as stored (JSON), null when none
+     */
+    public String getViewDefinitionJson() {
+        return viewDefinition;
+    }
+
+    /**
+     * Sets the view definition as stored (JSON); null clears it.
+     */
+    public void setViewDefinitionJson(final String viewDefinition) {
+        this.viewDefinition = viewDefinition;
+    }
+
     public void setViewDefinition(final Object viewDefinition) {
         if (viewDefinition == null) {
             return;

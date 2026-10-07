@@ -45,18 +45,12 @@ public interface ItemTypeRepository extends ElzaJpaRepository<RulItemType, Integ
 
     List<RulItemType> findByCodeIn(Collection<String> codes);
 
+    /**
+     * Item types owned by the package (other packages may declare them too, see
+     * {@link ItemTypeDeclarationRepository}).
+     */
     List<RulItemType> findByRulPackage(RulPackage rulPackage);
 
     @Query(value = "SELECT t FROM rul_item_type t ORDER BY t.viewOrder")
     List<RulItemType> findAllOrderByViewOrderAsc();
-
-    List<RulItemType> findByRulPackageOrderByViewOrderAsc(RulPackage rulPackage);
-
-    /**
-     * Return item type with the highest view-order
-     * @return return item with highest view_order
-     */
-    RulItemType findFirstByOrderByViewOrderDesc();
-
-    void deleteByRulPackage(RulPackage rulPackage);
 }

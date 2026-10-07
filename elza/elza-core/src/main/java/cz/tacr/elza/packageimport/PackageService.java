@@ -73,6 +73,7 @@ import cz.tacr.elza.domain.RulComponent;
 import cz.tacr.elza.domain.RulExportFilter;
 import cz.tacr.elza.domain.RulApTypeDeclaration;
 import cz.tacr.elza.domain.RulPartTypeDeclaration;
+import cz.tacr.elza.domain.RulItemTypeDeclaration;
 import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.core.data.PackageTexts;
 import cz.tacr.elza.domain.RulEntityRule;
@@ -176,6 +177,7 @@ import cz.tacr.elza.repository.ComponentRepository;
 import cz.tacr.elza.repository.ExportFilterRepository;
 import cz.tacr.elza.repository.ApTypeDeclarationRepository;
 import cz.tacr.elza.repository.PartTypeDeclarationRepository;
+import cz.tacr.elza.repository.ItemTypeDeclarationRepository;
 import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApRevPartRepository;
 import cz.tacr.elza.repository.EntityRuleRepository;
@@ -504,6 +506,9 @@ public class PackageService {
 
     @Autowired
     private PartTypeDeclarationRepository partTypeDeclarationRepository;
+
+    @Autowired
+    private ItemTypeDeclarationRepository itemTypeDeclarationRepository;
 
     @Autowired
     private ApPartRepository partRepository;
@@ -2968,7 +2973,6 @@ public class PackageService {
         List<RulStructureDefinition> structureDefinitions = structureDefinitionRepository.findByRulPackage(rulPackage);
         List<RulAction> actions = packageActionsRepository.findByRulPackage(rulPackage);
         List<RulOutputType> outputTypes = outputTypeRepository.findByRulPackage(rulPackage);
-        List<RulItemType> rulDescItemTypes = itemTypeRepository.findByRulPackage(rulPackage);
         List<RulOutputFilter> outputFilters = outputFilterRepository.findByRulPackage(rulPackage);
         List<RulExportFilter> exportFilters = exportFilterRepository.findByRulPackage(rulPackage);
 
@@ -2986,10 +2990,8 @@ public class PackageService {
         outputFilters.forEach(f -> ruleSetsToClean.putIfAbsent(f.getRuleSet().getRuleSetId(), f.getRuleSet()));
         exportFilters.forEach(f -> ruleSetsToClean.putIfAbsent(f.getRuleSet().getRuleSetId(), f.getRuleSet()));
 
-        for (RulItemType rulDescItemType : rulDescItemTypes) {
-            itemAptypeRepository.deleteByItemType(rulDescItemType);
-        }
-        itemTypeRepository.deleteByRulPackage(rulPackage);
+        // item types declared also by other packages stay
+        applicationContext.getBean(ItemTypeUpdater.class).deletePackageDeclarations(rulPackage);
 
         structureExtensionDefinitionRepository.deleteByRulPackage(rulPackage);
         structureExtensionRepository.deleteByRulPackage(rulPackage);
@@ -3832,18 +3834,27 @@ public class PackageService {
      * @param zos        stream zip souboru
      */
     private void exportItemTypes(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
-        List<RulItemType> rulDescItemTypes = itemTypeRepository.findByRulPackageOrderByViewOrderAsc(rulPackage);
-        if (rulDescItemTypes.size() == 0) {
+        // the declarations of the package: own item types in their order, then item types of other
+        // packages it declares too
+        List<RulItemTypeDeclaration> declarations = new ArrayList<>(
+                itemTypeDeclarationRepository.findByRulPackage(rulPackage));
+        if (declarations.isEmpty()) {
             return;
         }
+        Integer packageId = rulPackage.getPackageId();
+        declarations.sort(Comparator
+                .comparing((RulItemTypeDeclaration d) -> !d.getItemType().getRulPackage().getPackageId().equals(packageId))
+                .thenComparing(d -> d.getItemType().getViewOrder()));
 
         ItemTypes itemTypes = new ItemTypes();
-        List<ItemType> itemTypeList = new ArrayList<>(rulDescItemTypes.size());
+        List<ItemType> itemTypeList = new ArrayList<>(declarations.size());
         itemTypes.setItemTypes(itemTypeList);
 
-        for (RulItemType rulDescItemType : rulDescItemTypes) {
-            ItemType itemType = ItemType.fromEntity(rulDescItemType, itemAptypeRepository);
-            itemTypeList.add(itemType);
+        for (RulItemTypeDeclaration declaration : declarations) {
+            RulItemType rulItemType = declaration.getItemType();
+            boolean owned = rulItemType.getRulPackage().getPackageId().equals(packageId);
+            itemTypeList.add(ItemType.fromDeclaration(rulItemType, declaration,
+                    owned ? itemAptypeRepository.findByItemType(rulItemType) : List.of()));
         }
 
         addObjectToZipFile(itemTypes, zos, ITEM_TYPE_XML);

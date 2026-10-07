@@ -82,6 +82,14 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import cz.tacr.elza.service.StartupService;
 import cz.tacr.elza.service.PartService;
+import cz.tacr.elza.service.AccessPointItemService;
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemTypeDeclaration;
+import cz.tacr.elza.repository.ItemTypeDeclarationRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.RulPartTypeDeclaration;
 import cz.tacr.elza.repository.PartTypeDeclarationRepository;
@@ -140,6 +148,12 @@ public class EntityRulesTest {
     private PartTypeDeclarationRepository partTypeDeclarationRepository;
     @Autowired
     private PartService partService;
+    @Autowired
+    private AccessPointItemService accessPointItemService;
+    @Autowired
+    private ItemTypeRepository itemTypeRepository;
+    @Autowired
+    private ItemTypeDeclarationRepository itemTypeDeclarationRepository;
     @Autowired
     private GroovyService groovyService;
     @Autowired
@@ -264,6 +278,14 @@ public class EntityRulesTest {
                     .readAllBytes(), StandardCharsets.UTF_8);
             assertTrue(partTypes.contains("<name>Name</name>") && partTypes.contains("PT_ENT_NOTE")
                     && !partTypes.contains("PT_BODY"), partTypes);
+            // own item type and the declaration of NOTE of CZ_BASE, with the package's texts
+            String itemTypes = new String(zipFile.getInputStream(zipFile.getEntry(PackageService.ITEM_TYPE_XML))
+                    .readAllBytes(), StandardCharsets.UTF_8);
+            assertTrue(itemTypes.contains("<name>Note</name>") && itemTypes.contains("ENT_LOCAL_ID")
+                    && itemTypes.contains("<string-length-limit>50</string-length-limit>")
+                    && !itemTypes.contains("NOTE_INTERNAL") && !itemTypes.contains("Poznámka"), itemTypes);
+            assertTrue(itemTypes.indexOf("ENT_LOCAL_ID") < itemTypes.indexOf("\"NOTE\""), itemTypes);
+
             ZipEntry partList = zipFile.getEntry(RULE_SET_DIR + PackageService.RULE_SET_PART_TYPE_XML);
             assertNotNull(partList);
             String partListXml = new String(zipFile.getInputStream(partList).readAllBytes(), StandardCharsets.UTF_8);
@@ -301,6 +323,15 @@ public class EntityRulesTest {
                              "<part-types><part-type code=\"PT_NO_SUCH\"/></part-types>"));
         assertRefused(Map.of(RULE_SET_DIR + PackageService.RULE_SET_PART_TYPE_XML,
                              "<part-types><part-type code=\"PT_NAME\"/><part-type code=\"PT_NAME\"/></part-types>"));
+        // a declaration of NOTE of CZ_BASE must keep how its data are stored
+        String note = "<item-types><item-type code=\"NOTE\" data-type=\"%s\"><name>Note</name><shortcut>Note</shortcut>"
+                + "<use-specification>%s</use-specification>%s</item-type></item-types>";
+        assertRefused(PackageCode.ITEM_TYPE_CONFLICT,
+                      Map.of(PackageService.ITEM_TYPE_XML, String.format(note, "STRING", "false", "")));
+        assertRefused(PackageCode.ITEM_TYPE_CONFLICT,
+                      Map.of(PackageService.ITEM_TYPE_XML, String.format(note, "TEXT", "true", "")));
+        assertRefused(PackageCode.ITEM_TYPE_CONFLICT, Map.of(PackageService.ITEM_TYPE_XML, String.format(note, "TEXT",
+                "false", "<item-aptypes><item-aptype register-type=\"PERSON\"/></item-aptypes>")));
         // part type declarations: a code declared twice, an unknown child part
         assertRefused(Map.of(PackageService.PART_TYPE_XML, "<part-types>"
                 + "<part-type code=\"PT_ENT_NOTE\"><name>Note</name></part-type>"
@@ -308,6 +339,26 @@ public class EntityRulesTest {
         assertRefused(Map.of(PackageService.PART_TYPE_XML, "<part-types>"
                 + "<part-type code=\"PT_ENT_NOTE\"><name>Note</name><child_part>PT_NO_SUCH</child_part>"
                 + "</part-type></part-types>"));
+    }
+
+    /** An item type used by entities cannot be removed by a new version of its package. */
+    @Test
+    @Order(16)
+    void aUsedItemTypeCannotBeRemoved() throws Exception {
+        tx(() -> {
+            ApChange change = accessPointDataService.createChange(ApChange.Type.AP_CREATE);
+            ApState state = accessPointService.createAccessPoint(scope(scopeIds.get(1)), type("PERSON_INDIVIDUAL"),
+                                                                 ApState.StateApproval.NEW, change, null);
+            ApPart part = partService.createPart(partTypeRepository.findByCode("PT_NAME"), state.getAccessPoint(),
+                                                 change, null);
+            ArrDataString data = new ArrDataString("A-1");
+            data.setDataType(DataType.STRING.getEntity());
+            accessPointItemService.createItemWithSave(part, data, itemTypeRepository.findOneByCode("ENT_LOCAL_ID"),
+                                                      null, change, new ArrayList<>(), null, null);
+        });
+        assertRefused(PackageCode.ITEM_TYPE_IN_USE, Map.of(PackageService.ITEM_TYPE_XML,
+                "<item-types><item-type code=\"NOTE\" data-type=\"TEXT\"><name>Note</name><shortcut>Note</shortcut>"
+                + "<use-specification>false</use-specification></item-type></item-types>"));
     }
 
     /** A part type used by parts of entities cannot be removed by a new version of its package. */
@@ -505,6 +556,36 @@ public class EntityRulesTest {
         assertEquals(List.of("PT_ENT_NOTE", "PT_NAME"), partsOrder.stream().map(SettingPartsOrder.Part::getCode).toList());
     }
 
+    /**
+     * NOTE is declared by CZ_BASE (Czech) and by the test package (English): one item type owned by
+     * CZ_BASE, which keeps its place; the texts follow the language of the reader.
+     */
+    @Test
+    @Order(10)
+    void anItemTypeDeclaredByTwoPackagesExistsOnce() {
+        tx(() -> {
+            RulItemType note = itemTypeRepository.findOneByCode("NOTE");
+            List<RulItemTypeDeclaration> declarations = itemTypeDeclarationRepository.findByItemTypes(List.of(note));
+            assertEquals(Set.of("CZ_BASE", TEST_CODE),
+                         declarations.stream().map(d -> d.getRulPackage().getCode()).collect(Collectors.toSet()));
+            assertEquals("CZ_BASE", note.getRulPackage().getCode());
+            assertEquals("Poznámka", note.getName());
+            RulItemType noteInternal = itemTypeRepository.findOneByCode("NOTE_INTERNAL");
+            assertEquals(note.getViewOrder() + 1, noteInternal.getViewOrder());
+
+            StaticDataProvider sdp = staticDataService.getData();
+            assertEquals("Note", packageTexts.text(TranslationEntityType.ITEM_TYPE, "NOTE", TranslationEntityType.NAME,
+                                                   "source", sdp.getSysLanguageByTag("en")));
+            assertEquals("General note", packageTexts.text(TranslationEntityType.ITEM_TYPE, "NOTE",
+                                                           TranslationEntityType.DESCRIPTION, "source",
+                                                           sdp.getSysLanguageByTag("en")));
+            assertEquals("Poznámka", packageTexts.text(TranslationEntityType.ITEM_TYPE, "NOTE",
+                                                       TranslationEntityType.NAME, "source",
+                                                       sdp.getSysLanguageByTag("cs")));
+            assertEquals(TEST_CODE, itemTypeRepository.findOneByCode("ENT_LOCAL_ID").getRulPackage().getCode());
+        });
+    }
+
     private List<String> partCodes(List<Integer> partTypeIds) {
         StaticDataProvider sdp = staticDataService.getData();
         return partTypeIds.stream().map(id -> sdp.getPartTypeById(id).getCode()).toList();
@@ -557,6 +638,13 @@ public class EntityRulesTest {
             assertEquals("CZ_BASE", name.getRulPackage().getCode());
             assertEquals(null, partTypeRepository.findByCode("PT_ENT_NOTE"));
             assertEquals(7, staticDataService.getData().getRuleSetByCode("CAM").getPartTypeOrder().size());
+
+            // the shared item type stays with CZ_BASE, the own one is removed
+            RulItemType note = itemTypeRepository.findOneByCode("NOTE");
+            assertEquals(List.of("CZ_BASE"), itemTypeDeclarationRepository.findByItemTypes(List.of(note)).stream()
+                    .map(d -> d.getRulPackage().getCode()).toList());
+            assertEquals("Poznámka", note.getName());
+            assertEquals(null, itemTypeRepository.findOneByCode("ENT_LOCAL_ID"));
         });
     }
 

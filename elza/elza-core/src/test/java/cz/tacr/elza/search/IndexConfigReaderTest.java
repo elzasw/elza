@@ -81,7 +81,10 @@ public class IndexConfigReaderTest implements IndexConfigReader {
 
                     ItemTypes itemTypes = PackageUtils.convertXmlFileToObject(ItemTypes.class, path.resolve(ITEM_TYPE_XML));
                     if (itemTypes != null) {
-                    	itemTypeCodes.addAll(itemTypes.getItemTypes().stream().map(i -> i.getCode()).collect(Collectors.toList()));
+                    	// an item type may be declared by several packages
+                    	itemTypes.getItemTypes().stream().map(i -> i.getCode())
+                    	        .filter(code -> !itemTypeCodes.contains(code))
+                    	        .forEach(itemTypeCodes::add);
                     	itemTypes.getItemTypes().forEach(item -> {
                     		itemTypeDataTypeMap.put(item.getCode(), DataType.valueOf(item.getDataType()));
                     	});
@@ -92,7 +95,9 @@ public class IndexConfigReaderTest implements IndexConfigReader {
                     	itemSpecs.getItemSpecs().forEach(itemSpec -> {
                     		for (ItemTypeAssign itemTypeAssign : itemSpec.getItemTypeAssigns()) {
                     			List<String> listItemSpecCodes = typeSpecMap.computeIfAbsent(itemTypeAssign.getCode(), i -> new ArrayList<>());
-                    			listItemSpecCodes.add(itemSpec.getCode());
+                    			if (!listItemSpecCodes.contains(itemSpec.getCode())) {
+                    				listItemSpecCodes.add(itemSpec.getCode());
+                    			}
                     		}
                     	});
                     }

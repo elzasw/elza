@@ -10,13 +10,15 @@ import java.util.function.Function;
 import cz.tacr.elza.core.data.PackageTranslations;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.RulApTypeDeclaration;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemTypeDeclaration;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulPackageDependency;
 import cz.tacr.elza.domain.RulPartTypeDeclaration;
 import cz.tacr.elza.domain.RulPartType;
 
 /**
- * Precedence of declarations of one definition (entity class, part type) by several packages, and
+ * Precedence of declarations of one definition (entity class, part type, item type) by several packages, and
  * the summary of the declarations in the defining row.
  *
  * <p>Declarations are ordered as translations are: the package deeper in dependency order first,
@@ -90,5 +92,32 @@ public class PackageDeclarations {
         partType.setChildPart(first.getChildPart());
         partType.setRepeatable(first.getRepeatable());
         partType.setName(named(ordered, RulPartTypeDeclaration::getRulPackage).getName());
+    }
+
+    /**
+     * Sets owner, texts and the remaining values of the item type from its declarations. Unlike
+     * classes and part types, the owner stays the package that created the item type while it declares
+     * it (the owner decides the position in {@code view_order}); the values come from the owner's
+     * declaration. When the owner no longer declares it, the winning declaration takes over. Texts are
+     * those of the first declaration in the language of the installation.
+     *
+     * @param declarations
+     *            all declarations of the item type, not empty
+     */
+    public void summarize(final RulItemType itemType, final Collection<RulItemTypeDeclaration> declarations) {
+        List<RulItemTypeDeclaration> ordered = ordered(declarations, RulItemTypeDeclaration::getRulPackage);
+        Integer ownerId = itemType.getRulPackage() != null ? itemType.getRulPackage().getPackageId() : null;
+        RulItemTypeDeclaration owner = ordered.stream()
+                .filter(d -> d.getPackageId().equals(ownerId))
+                .findFirst()
+                .orElse(ordered.get(0));
+        itemType.setRulPackage(owner.getRulPackage());
+        itemType.setCanBeOrdered(owner.getCanBeOrdered());
+        itemType.setStringLengthLimit(owner.getStringLengthLimit());
+        itemType.setViewDefinitionJson(owner.getViewDefinition());
+        RulItemTypeDeclaration named = named(ordered, RulItemTypeDeclaration::getRulPackage);
+        itemType.setName(named.getName());
+        itemType.setShortcut(named.getShortcut());
+        itemType.setDescription(named.getDescription());
     }
 }

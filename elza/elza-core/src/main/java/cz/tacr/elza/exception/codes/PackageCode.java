@@ -83,4 +83,16 @@ public enum PackageCode implements ErrorCode {
      * A part type to be removed is used by parts of entities.
      */
     PART_TYPE_IN_USE,
+
+    /**
+     * An item type is declared by another package with another data type, use of specifications,
+     * structured type or columns, or a declaration of an item type of another package states RECORD_REF
+     * classes.
+     */
+    ITEM_TYPE_CONFLICT,
+
+    /**
+     * An item type to be removed is used by descriptions or entities.
+     */
+    ITEM_TYPE_IN_USE,
 }

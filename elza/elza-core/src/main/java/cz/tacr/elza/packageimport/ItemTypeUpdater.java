@@ -39,6 +39,12 @@ import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.RulItemAptype;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemTypeDeclaration;
+import cz.tacr.elza.domain.SysLanguage;
+import cz.tacr.elza.core.data.PackageTexts;
+import cz.tacr.elza.exception.AbstractException;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.PackageCode;
 import cz.tacr.elza.domain.RulItemTypeSpecAssign;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulPackageDependency;
@@ -57,6 +63,8 @@ import cz.tacr.elza.packageimport.xml.ItemType;
 import cz.tacr.elza.packageimport.xml.ItemTypeAssign;
 import cz.tacr.elza.packageimport.xml.ItemTypes;
 import cz.tacr.elza.repository.ApItemRepository;
+import cz.tacr.elza.repository.ApRevItemRepository;
+import cz.tacr.elza.repository.ItemTypeDeclarationRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.CachedNodeRepository;
 import cz.tacr.elza.repository.DataDateRepository;
@@ -128,6 +136,15 @@ public class ItemTypeUpdater {
     @Autowired
     private PackageDependencyRepository packageDependencyRepository;
 
+    @Autowired
+    private ItemTypeDeclarationRepository declarationRepository;
+
+    @Autowired
+    private ApRevItemRepository apRevItemRepository;
+
+    @Autowired
+    private PackageTexts packageTexts;
+
     public static final String CATEGORY_SEPARATOR = "|";
 
     /**
@@ -169,6 +186,11 @@ public class ItemTypeUpdater {
      * Item types to be deleted at the cleanup
      */
     private List<RulItemType> deleteItemTypes = new ArrayList<>();
+
+    /**
+     * Item types whose declarations changed; summarized at the end of the update
+     */
+    private Map<Integer, RulItemType> declaredItemTypes = new LinkedHashMap<>();
 
     /**
      * Number of nodes dropped in arr_cached_node table
@@ -231,12 +253,8 @@ public class ItemTypeUpdater {
             if(es.getKey().equals(rulPackage.getPackageId())) {
                 packageFound = true;
                 // prepare number of received types
-                int numReceivedTypes;
-                if(xmlItemTypes!=null&&xmlItemTypes.getItemTypes()!=null) {
-                    numReceivedTypes = xmlItemTypes.getItemTypes().size();
-                } else {
-                    numReceivedTypes = 0;
-                }
+                // declarations of item types of other packages take no position
+                int numReceivedTypes = ownXmlTypes(xmlItemTypes, rulPackage).size();
                 
                 // check if some shifts are needed
                 if(numReceivedTypes>es.getValue().size()) {
@@ -267,6 +285,27 @@ public class ItemTypeUpdater {
             lastUsedOrderPos += shiftBy;
         }
         return result;
+    }
+
+    /**
+     * Item types of the XML the package owns or creates; the others are declarations of item types
+     * owned by other packages.
+     */
+    private List<ItemType> ownXmlTypes(ItemTypes xmlItemTypes, RulPackage rulPackage) {
+        if (xmlItemTypes == null || xmlItemTypes.getItemTypes() == null) {
+            return Collections.emptyList();
+        }
+        return xmlItemTypes.getItemTypes().stream()
+                .filter(t -> !isForeign(t.getCode(), rulPackage))
+                .toList();
+    }
+
+    /**
+     * The item type exists and is owned by another package.
+     */
+    private boolean isForeign(String code, RulPackage rulPackage) {
+        RulItemType itemType = allItemTypesByCode.get(code);
+        return itemType != null && !itemType.getRulPackage().getPackageId().equals(rulPackage.getPackageId());
     }
 
     /**
@@ -447,6 +486,7 @@ public class ItemTypeUpdater {
 
         List<RulItemType> dbItemTypes = prepareForUpdate(xmlItemTypes, pkgCtx.getPackage());
         processItemTypes(dbItemTypes, xmlItemTypes, pkgCtx);
+        summarizeDeclaredItemTypes();
 
         // update specifications
         processItemSpecs(xmlItemSpecs, pkgCtx.getPackage());
@@ -507,6 +547,10 @@ public class ItemTypeUpdater {
         }
 
         List<RulItemType> itemTypesAfterUpdate = new ArrayList<>();
+        RulPackage rulPackage = puc.getPackage();
+        Map<String, RulItemTypeDeclaration> oldDeclarations = new HashMap<>();
+        declarationRepository.findByRulPackage(rulPackage)
+                .forEach(d -> oldDeclarations.put(d.getItemType().getCode(), d));
 
         // prepare list of updated/new items
         if (itemTypes != null && CollectionUtils.isNotEmpty(itemTypes.getItemTypes())) {
@@ -516,7 +560,7 @@ public class ItemTypeUpdater {
             for (ItemType itemType : itemTypes.getItemTypes()) {
                 // check code duplicity
                 String itemTypeCode = itemType.getCode();
-                if (rulItemTypeCodes.contains(itemTypeCode)) {
+                if (!rulItemTypeCodes.add(itemTypeCode)) {
                     throw new SystemException("Duplicitní kód typu: " + itemTypeCode, BaseCode.ID_EXIST)
                             .set("code", itemTypeCode);
                 }
@@ -527,6 +571,19 @@ public class ItemTypeUpdater {
                     throw new SystemException("Incorrect data type: " + itemType.getDataType(), BaseCode.ID_NOT_EXIST)
                             .set("dataType", itemType.getDataType())
                             .set("code", itemTypeCode);
+                }
+
+                // an item type of another package: a declaration, which takes no position
+                if (isForeign(itemTypeCode, rulPackage)) {
+                    RulItemType foreignType = allItemTypesByCode.get(itemTypeCode);
+                    checkAgreement(itemType, newDataType, foreignType);
+                    if (CollectionUtils.isNotEmpty(itemType.getItemAptypes())) {
+                        throw conflict(itemTypeCode, "item-aptypes", foreignType);
+                    }
+                    declare(foreignType, rulPackage, oldDeclarations.remove(itemTypeCode), itemType.getName(),
+                            itemType.getShortcut(), descriptionOf(itemType), canBeOrderedOf(itemType),
+                            itemType.getStringLengthLimit(), viewDefinitionJson(itemType));
+                    continue;
                 }
 
                 // pouzijeme remove() - co zbyde bude smazano z DB
@@ -548,15 +605,12 @@ public class ItemTypeUpdater {
                 // now nextViewOrderPos is free and can be used
                 boolean modified;
                 if (rulItemType != null) {
+                    // declared by other packages too: the stored data must stay as they declare them
+                    if (hasOtherDeclarations(rulItemType, rulPackage)) {
+                        checkAgreement(itemType, newDataType, rulItemType);
+                    }
                     modified = updateDBItemType(rulItemType, itemType, newDataType);
                 } else {
-                    // check existance of same code in other package
-                    rulItemType = this.allItemTypesByCode.get(itemTypeCode);
-                    if (rulItemType != null) {
-                        throw new SystemException("Duplicitní kód typu v jiném balíčku: " + itemTypeCode,
-                                BaseCode.ID_EXIST)
-                                .set("code", itemTypeCode);
-                    }
                     modified = true;
                     rulItemType = prepareNewItemType(itemType, newDataType, puc);
                 }
@@ -577,14 +631,169 @@ public class ItemTypeUpdater {
                     rulItemType = itemTypeRepository.saveAndFlush(rulItemType);
                     allItemTypesByCode.put(rulItemType.getCode(), rulItemType);
                 }
+                declare(rulItemType, rulPackage, oldDeclarations.remove(itemTypeCode), rulItemType.getName(),
+                        rulItemType.getShortcut(), rulItemType.getDescription(), rulItemType.getCanBeOrdered(),
+                        rulItemType.getStringLengthLimit(), rulItemType.getViewDefinitionJson());
                 itemTypesAfterUpdate.add(rulItemType);
             }
 
-            processItemAptypesByItemTypes(itemTypesAfterUpdate, itemTypes.getItemTypes());
+            processItemAptypesByItemTypes(itemTypesAfterUpdate, ownXmlTypes(itemTypes, rulPackage));
         }
 
-        // delete unused item types
-        deleteItemTypes.addAll(origDBItemsByCode.values());
+        // declarations the package no longer has
+        declarationRepository.deleteAll(oldDeclarations.values());
+        declarationRepository.flush();
+        oldDeclarations.values().forEach(d -> declaredItemTypes.put(d.getItemTypeId(), d.getItemType()));
+
+        // own item types no longer declared: another package takes over, or they are removed
+        List<RulItemType> removed = new ArrayList<>();
+        for (RulItemType itemType : origDBItemsByCode.values()) {
+            if (declarationRepository.findByItemTypes(List.of(itemType)).isEmpty()) {
+                declaredItemTypes.remove(itemType.getItemTypeId());
+                removed.add(itemType);
+            } else {
+                // RECORD_REF classes belong to the declaration of the owner
+                deleteItemApTypes.addAll(itemAptypeRepository.findByItemType(itemType));
+            }
+        }
+        checkRemovable(removed, rulPackage);
+        deleteItemTypes.addAll(removed);
+    }
+
+    /**
+     * Creates or updates the declaration of the item type by the package.
+     */
+    private void declare(RulItemType itemType, RulPackage rulPackage, RulItemTypeDeclaration declaration,
+                         String name, String shortcut, String description, Boolean canBeOrdered,
+                         Integer stringLengthLimit, String viewDefinition) {
+        if (declaration == null) {
+            declaration = new RulItemTypeDeclaration();
+        }
+        declaration.setItemType(itemType);
+        declaration.setRulPackage(rulPackage);
+        declaration.setName(name);
+        declaration.setShortcut(shortcut);
+        declaration.setDescription(description);
+        declaration.setCanBeOrdered(canBeOrdered);
+        declaration.setStringLengthLimit(stringLengthLimit);
+        declaration.setViewDefinition(viewDefinition);
+        declarationRepository.save(declaration);
+        declaredItemTypes.put(itemType.getItemTypeId(), itemType);
+    }
+
+    private boolean hasOtherDeclarations(RulItemType itemType, RulPackage rulPackage) {
+        return declarationRepository.findByItemTypes(List.of(itemType)).stream()
+                .anyMatch(d -> !d.getPackageId().equals(rulPackage.getPackageId()));
+    }
+
+    /**
+     * Values deciding how data of the item type are stored must agree with the existing item type.
+     */
+    private void checkAgreement(ItemType xmlItemType, DataType dataType, RulItemType itemType) {
+        String code = xmlItemType.getCode();
+        if (DataType.fromId(itemType.getDataTypeId()) != dataType) {
+            throw conflict(code, "data-type", itemType);
+        }
+        if (!Objects.equals(itemType.getUseSpecification(), xmlItemType.getUseSpecification())) {
+            throw conflict(code, "use-specification", itemType);
+        }
+        if (dataType == DataType.STRUCTURED) {
+            String structuredType = itemType.getStructuredType() != null ? itemType.getStructuredType().getCode() : null;
+            if (!Objects.equals(structuredType, xmlItemType.getStructureType())) {
+                throw conflict(code, "structure-type", itemType);
+            }
+        }
+        if (dataType == DataType.JSON_TABLE) {
+            @SuppressWarnings("unchecked")
+            List<ElzaColumn> columns = (List<ElzaColumn>) itemType.getViewDefinition();
+            List<Column> xmlColumns = xmlItemType.getColumnsDefinition();
+            int size = columns != null ? columns.size() : 0;
+            if (size != (xmlColumns != null ? xmlColumns.size() : 0)
+                    || (size > 0 && !canUpdateColumns(columns, xmlColumns))) {
+                throw conflict(code, "columns-definitions", itemType);
+            }
+        }
+    }
+
+    private static AbstractException conflict(String code, String attribute, RulItemType itemType) {
+        return new BusinessException("Item type " + code + " is declared by another package with another "
+                + attribute, PackageCode.ITEM_TYPE_CONFLICT)
+                .set("code", code)
+                .set("attribute", attribute)
+                .set("otherPackageCode", itemType.getRulPackage().getCode());
+    }
+
+    /**
+     * Item types to be removed: refused while descriptions or entities use them, or specifications of
+     * other packages are assigned to them.
+     */
+    private void checkRemovable(List<RulItemType> itemTypes, RulPackage rulPackage) {
+        if (itemTypes.isEmpty()) {
+            return;
+        }
+        List<String> used = itemTypes.stream().filter(t -> countUsage(t) + apRevItemRepository.countByType(t) > 0)
+                .map(RulItemType::getCode).toList();
+        if (!used.isEmpty()) {
+            throw new BusinessException("Item types are used by descriptions or entities: " + used,
+                    PackageCode.ITEM_TYPE_IN_USE)
+                    .set("codes", String.join(", ", used));
+        }
+        String foreign = itemTypeSpecAssignRepository.findByItemTypeIn(itemTypes).stream()
+                .map(a -> a.getItemSpec().getPackage())
+                .filter(p -> !p.getPackageId().equals(rulPackage.getPackageId()))
+                .map(RulPackage::getCode)
+                .distinct()
+                .collect(Collectors.joining(", "));
+        if (!foreign.isEmpty()) {
+            throw new BusinessException("Specifications of other packages are assigned to a removed item type",
+                    PackageCode.FOREIGN_DEPENDENCY)
+                    .set("foreignPackageCodes", foreign);
+        }
+    }
+
+    /**
+     * Owner, texts and values of item types whose declarations changed.
+     */
+    private void summarizeDeclaredItemTypes() {
+        if (declaredItemTypes.isEmpty()) {
+            return;
+        }
+        SysLanguage defaultLanguage = packageTexts.defaultLanguage();
+        PackageDeclarations summary = new PackageDeclarations(packageDependencyRepository.findAll(),
+                defaultLanguage != null ? defaultLanguage.getLanguageId() : null);
+        for (RulItemType itemType : declaredItemTypes.values()) {
+            summary.summarize(itemType, declarationRepository.findByItemTypes(List.of(itemType)));
+            RulItemType saved = itemTypeRepository.save(itemType);
+            allItemTypesByCode.put(saved.getCode(), saved);
+        }
+        itemTypeRepository.flush();
+    }
+
+    /**
+     * Removes the declarations of a deleted package: an item type still declared by another package
+     * stays (owned by the winning declaration when the package owned it), the others are removed.
+     */
+    public void deletePackageDeclarations(RulPackage rulPackage) {
+        List<RulItemTypeDeclaration> declarations = declarationRepository.findByRulPackage(rulPackage);
+        declarationRepository.deleteAll(declarations);
+        declarationRepository.flush();
+        List<RulItemType> removed = new ArrayList<>();
+        for (RulItemTypeDeclaration declaration : declarations) {
+            RulItemType itemType = declaration.getItemType();
+            boolean owned = itemType.getRulPackage().getPackageId().equals(rulPackage.getPackageId());
+            if (declarationRepository.findByItemTypes(List.of(itemType)).isEmpty()) {
+                removed.add(itemType);
+            } else {
+                if (owned) {
+                    deleteItemApTypes.addAll(itemAptypeRepository.findByItemType(itemType));
+                }
+                declaredItemTypes.put(itemType.getItemTypeId(), itemType);
+            }
+        }
+        checkRemovable(removed, rulPackage);
+        deleteItemTypes.addAll(removed);
+        summarizeDeclaredItemTypes();
+        cleanUp();
     }
 
     /**
@@ -903,13 +1112,13 @@ public class ItemTypeUpdater {
             modified = true;
         }
 
-        String description = itemType.getDescription() == null ? itemType.getName() : itemType.getDescription();
+        String description = descriptionOf(itemType);
         if (!Objects.equals(dbItemType.getDescription(), description)) {
             dbItemType.setDescription(description);
             modified = true;
         }
 
-        Boolean canBeOrdered = itemType.getCanBeOrdered() == null ? false : itemType.getCanBeOrdered();
+        Boolean canBeOrdered = canBeOrderedOf(itemType);
         if (!Objects.equals(dbItemType.getCanBeOrdered(), canBeOrdered)) {
             dbItemType.setCanBeOrdered(canBeOrdered);
             modified = true;
@@ -946,6 +1155,28 @@ public class ItemTypeUpdater {
             }
         }
 
+        Object viewDefinition = viewDefinitionOf(itemType);
+        // compare previous and new view definition
+        if (!Objects.equals(viewDefinition, dbItemType.getViewDefinition())) {
+            dbItemType.setViewDefinition(viewDefinition);
+            modified = true;
+        }
+
+        return modified;
+    }
+
+    private static String descriptionOf(ItemType itemType) {
+        return itemType.getDescription() == null ? itemType.getName() : itemType.getDescription();
+    }
+
+    private static Boolean canBeOrderedOf(ItemType itemType) {
+        return itemType.getCanBeOrdered() == null ? false : itemType.getCanBeOrdered();
+    }
+
+    /**
+     * View definition of the XML item type: columns of a table, display type or mask.
+     */
+    private static Object viewDefinitionOf(ItemType itemType) {
         Object viewDefinition = null;
         if (itemType.getColumnsDefinition() != null) {
             List<ElzaColumn> elzaColumns = new ArrayList<>(itemType.getColumnsDefinition().size());
@@ -970,13 +1201,16 @@ public class ItemTypeUpdater {
         	stringViewDefinition.setMask(itemType.getMask());
         	viewDefinition = stringViewDefinition;
 		}
-        // compare previous and new view definition
-        if (!Objects.equals(viewDefinition, dbItemType.getViewDefinition())) {
-            dbItemType.setViewDefinition(viewDefinition);
-            modified = true;
-        }
+        return viewDefinition;
+    }
 
-        return modified;
+    /**
+     * View definition of the XML item type as stored (JSON).
+     */
+    private static String viewDefinitionJson(ItemType itemType) {
+        RulItemType stored = new RulItemType();
+        stored.setViewDefinition(viewDefinitionOf(itemType));
+        return stored.getViewDefinitionJson();
     }
 
     /**
