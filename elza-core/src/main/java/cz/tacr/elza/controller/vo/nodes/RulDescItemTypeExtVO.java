@@ -36,7 +36,6 @@ public class RulDescItemTypeExtVO extends RulDescItemTypeVO {
     	result.setName(itemType.getName());
     	result.setShortcut(itemType.getShortcut());
     	result.setDescription(itemType.getDescription());
-    	result.setIsValueUnique(itemType.getIsValueUnique());
     	result.setCanBeOrdered(itemType.getCanBeOrdered());
     	result.setUseSpecification(itemType.getUseSpecification());
     	result.setViewOrder(itemType.getViewOrder());

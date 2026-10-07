@@ -64,7 +64,6 @@ file, after the item types of the packages imported earlier.
            <name>Addon stage</name>
            <shortcut>Stage</shortcut>
            <description>...</description>
-           <is-value-unique>false</is-value-unique>
            <can-be-ordered>false</can-be-ordered>
            <use-specification>false</use-specification>
        </item-type>
@@ -94,10 +93,10 @@ file, after the item types of the packages imported earlier.
    An ``ENUM`` value consists of the specification only, so ``ENUM`` item
    types set it to ``true``. It cannot be switched while values exist.
 
-``is-value-unique``, ``can-be-ordered``
-   Flags passed to clients (``can-be-ordered`` is the ``orderable`` flag of
-   the item type dictionary of the REST API). Default ``false``. ELZA does
-   not enforce uniqueness.
+``can-be-ordered``
+   Flag passed to clients (the ``orderable`` flag of the item type
+   dictionary of the REST API). Default ``false``. The former
+   ``is-value-unique`` is ignored.
 
 ``string-length-limit``
    For ``STRING``: maximal length.

@@ -142,7 +142,6 @@
         <name>Interní doplněk</name>
         <shortcut>Interní doplněk</shortcut>
         <description>Interní doplněk</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <string-length-limit>50</string-length-limit>
@@ -217,7 +216,6 @@
         <name>Pohlaví</name>
         <shortcut>Pohlaví</shortcut>
         <description>Pohlaví</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
     </item-type>
@@ -285,7 +283,6 @@
         <name>Jazyk</name>
         <shortcut>Jazyk</shortcut>
         <description>ZP5.2.10 Jazyk</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
     </item-type>
@@ -293,7 +290,6 @@
         <name>Jazyk archivního popisu</name>
         <shortcut>Jazyk popisu</shortcut>
         <description>Jazyk archivního popisu</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
     </item-type>
@@ -301,7 +297,6 @@
         <name>Jazyk archivního souboru</name>
         <shortcut>Jazyk souboru</shortcut>
         <description>ZP5.2.10 Jazyk, který se uvádí povinně na úrovni popisu archivní soubor</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
     </item-type>

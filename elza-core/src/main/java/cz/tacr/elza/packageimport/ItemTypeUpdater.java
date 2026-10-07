@@ -909,12 +909,6 @@ public class ItemTypeUpdater {
             modified = true;
         }
 
-        Boolean isValueUnique = itemType.getIsValueUnique() == null ? false : itemType.getIsValueUnique();
-        if (!Objects.equals(dbItemType.getIsValueUnique(), isValueUnique)) {
-            dbItemType.setIsValueUnique(isValueUnique);
-            modified = true;
-        }
-
         Boolean canBeOrdered = itemType.getCanBeOrdered() == null ? false : itemType.getCanBeOrdered();
         if (!Objects.equals(dbItemType.getCanBeOrdered(), canBeOrdered)) {
             dbItemType.setCanBeOrdered(canBeOrdered);
