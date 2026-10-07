@@ -310,6 +310,13 @@ public class EntityRulesTest {
         assertRefused(Map.of(RULE_SET_DIR + PackageService.ENTITY_RULE_XML, "<entity-rules><entity-rule"
                 + " filename=\"available_items/PT_NAME.drl\" kind=\"AVAILABLE_ITEMS\" part-type=\"PT_NO_SUCH\""
                 + " priority=\"100\"/></entity-rules>"));
+        // computed items apply to the whole entity; they are entity rules, not arrangement rules
+        assertRefused(Map.of(RULE_SET_DIR + PackageService.ENTITY_RULE_XML, "<entity-rules><entity-rule"
+                + " filename=\"auto_items/GLOBAL.groovy\" kind=\"AUTO_ITEMS\" part-type=\"PT_NAME\""
+                + " priority=\"100\"/></entity-rules>"));
+        assertRefused(Map.of(RULE_SET_DIR + PackageService.ARRANGEMENT_RULE_XML, "<arrangement-rules>"
+                + "<arrangement-rule filename=\"auto_items/GLOBAL.groovy\"><rule-type>AUTO_ITEMS</rule-type>"
+                + "<priority>100</priority></arrangement-rule></arrangement-rules>"));
         // an INDEX rule needs a Groovy file, the other kinds a DRL file
         assertRefused(Map.of(RULE_SET_DIR + PackageService.ENTITY_RULE_XML, "<entity-rules><entity-rule"
                 + " filename=\"available_items/PT_NAME.drl\" kind=\"INDEX\" priority=\"100\"/></entity-rules>"));
@@ -583,6 +590,27 @@ public class EntityRulesTest {
                                                        TranslationEntityType.NAME, "source",
                                                        sdp.getSysLanguageByTag("cs")));
             assertEquals(TEST_CODE, itemTypeRepository.findOneByCode("ENT_LOCAL_ID").getRulPackage().getCode());
+        });
+    }
+
+    /**
+     * The items computed for an entity come from the most specific AUTO_ITEMS entity rule of the rule set
+     * of its scope.
+     */
+    @Test
+    @Order(11)
+    void autoItemsFollowTheRuleSetAndClass() {
+        Integer testScope = scopeIds.get(1);
+        assertEquals(List.of("ENT auto"), autoItemValues(testScope, "PERSON_INDIVIDUAL"));
+        assertEquals(List.of("ENT local auto"), autoItemValues(testScope, "ENT_PERSON_LOCAL"));
+    }
+
+    private List<String> autoItemValues(Integer scopeId, String apType) {
+        return txGet(() -> {
+            ApChange change = accessPointDataService.createChange(ApChange.Type.AP_CREATE);
+            ApState state = accessPointService.createAccessPoint(scope(scopeId), type(apType),
+                                                                 ApState.StateApproval.NEW, change, null);
+            return groovyService.getAutoItems(state).stream().map(GroovyItem::getValue).toList();
         });
     }
 

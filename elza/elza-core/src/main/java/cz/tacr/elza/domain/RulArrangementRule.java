@@ -158,7 +158,6 @@ public class RulArrangementRule {
         AP_MAPPING_TYPE,
         // TODO: Remove AP_MAPPING_SPEC, not used
         AP_MAPPING_SPEC,
-        AUTO_ITEMS,
         PLAIN_TEXT_GENERATOR,
         /**
          * Groovy script deciding how a package of the digital archive is imported into the

@@ -140,4 +140,6 @@
     <entity-rule filename="index/PARTY_GROUP/PT_NAME.groovy" kind="INDEX" ap-type="PARTY_GROUP" part-type="PT_NAME" priority="100" compatibility-rul-package="64"/>
     <entity-rule filename="index/PERSON/PT_NAME.groovy" kind="INDEX" ap-type="PERSON" part-type="PT_NAME" priority="100" compatibility-rul-package="64"/>
     <entity-rule filename="index/TERM/PT_NAME.groovy" kind="INDEX" ap-type="TERM" part-type="PT_NAME" priority="100" compatibility-rul-package="64"/>
+    <!-- items computed from the whole entity -->
+    <entity-rule filename="AutoItems.groovy" kind="AUTO_ITEMS" priority="100"/>
 </entity-rules>

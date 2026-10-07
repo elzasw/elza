@@ -1,0 +1,7 @@
+<entity-rules>
+    <!-- no AUTO_ITEMS script and no CAM item types: the core must not need them -->
+    <entity-rule filename="available_items/GLOBAL.drl" kind="AVAILABLE_ITEMS" priority="100"/>
+    <entity-rule filename="index/PT_NAME.groovy" kind="INDEX" part-type="PT_NAME" priority="100"/>
+    <entity-rule filename="index/PT_BODY.groovy" kind="INDEX" part-type="PT_BODY" priority="100"/>
+    <entity-rule filename="index/PT_REL.groovy" kind="INDEX" part-type="PT_REL" priority="100"/>
+</entity-rules>

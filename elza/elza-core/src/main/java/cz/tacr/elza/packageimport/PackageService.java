@@ -1982,8 +1982,10 @@ public class PackageService {
                     throw invalidEntityRule(dir + ENTITY_RULE_XML,
                                             "filename, kind and priority are required: " + entityRule.getFilename());
                 }
-                // index scripts are Groovy, the other kinds Drools
-                String extension = entityRule.getKind() == RulEntityRule.Kind.INDEX ? ".groovy" : ".drl";
+                // index and automatic items scripts are Groovy, the other kinds Drools
+                boolean groovy = entityRule.getKind() == RulEntityRule.Kind.INDEX
+                        || entityRule.getKind() == RulEntityRule.Kind.AUTO_ITEMS;
+                String extension = groovy ? ".groovy" : ".drl";
                 if (!entityRule.getFilename().toLowerCase().endsWith(extension)) {
                     throw invalidEntityRule(dir + ENTITY_RULE_XML, "A rule of kind " + entityRule.getKind()
                             + " needs a " + extension + " file: " + entityRule.getFilename());
@@ -1998,6 +2000,10 @@ public class PackageService {
                 }
                 RulPartType partType = null;
                 if (entityRule.getPartType() != null) {
+                    if (entityRule.getKind() == RulEntityRule.Kind.AUTO_ITEMS) {
+                        throw invalidEntityRule(dir + ENTITY_RULE_XML, "A rule of kind AUTO_ITEMS applies to "
+                                + "the whole entity, not to a part type: " + entityRule.getFilename());
+                    }
                     partType = partTypeRepository.findByCode(entityRule.getPartType());
                     if (partType == null) {
                         throw invalidEntityRule(dir + ENTITY_RULE_XML, "Unknown part type "
@@ -2216,6 +2222,12 @@ public class PackageService {
                                            final RulArrangementRule rulArrangementRule,
                                            final RulRuleSet rulRuleSet) {
 
+        if (arrangementRule.getRuleType() == null) {
+            // e.g. AUTO_ITEMS, which is an entity rule now
+            throw invalidEntityRule(ZIP_DIR_RULE_SET + "/" + rulRuleSet.getCode() + "/" + ARRANGEMENT_RULE_XML,
+                                    "Unknown rule type of " + arrangementRule.getFilename()
+                                    + "; scripts of entities are declared in " + ENTITY_RULE_XML);
+        }
         rulArrangementRule.setPackage(rulPackage);
         rulArrangementRule.setPriority(arrangementRule.getPriority());
         rulArrangementRule.setRuleType(arrangementRule.getRuleType());
@@ -3015,6 +3027,7 @@ public class PackageService {
         settingsRepository.deleteByRulPackage(rulPackage);
         issueStateRepository.deleteByRulPackage(rulPackage);
         issueTypeRepository.deleteByRulPackage(rulPackage);
+        taskTypeRepository.deleteByRulPackage(rulPackage);
         institutionTypeRepository.deleteByRulPackage(rulPackage);
         packageTranslationService.deleteTranslations(rulPackage);
         packageRepository.delete(rulPackage);

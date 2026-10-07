@@ -1,0 +1,14 @@
+<part-types>
+    <part-type code="PT_NAME">
+        <name>Name</name>
+        <repeatable>true</repeatable>
+    </part-type>
+    <part-type code="PT_BODY">
+        <name>Description</name>
+        <repeatable>false</repeatable>
+    </part-type>
+    <part-type code="PT_REL">
+        <name>Relation</name>
+        <repeatable>true</repeatable>
+    </part-type>
+</part-types>

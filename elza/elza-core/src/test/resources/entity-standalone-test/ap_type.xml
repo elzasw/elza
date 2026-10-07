@@ -1,0 +1,7 @@
+<ap-types>
+    <ap-type code="PERSON">
+        <name>Person</name>
+        <hierarchical>false</hierarchical>
+        <read-only>false</read-only>
+    </ap-type>
+</ap-types>

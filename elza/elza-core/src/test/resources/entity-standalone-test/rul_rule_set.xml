@@ -1,0 +1,6 @@
+<rule-sets>
+    <rule-set code="STD_TEST">
+        <name>Standalone entity rules</name>
+        <rule-type>ENTITY</rule-type>
+    </rule-set>
+</rule-sets>

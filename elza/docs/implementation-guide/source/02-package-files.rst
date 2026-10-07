@@ -326,8 +326,10 @@ Rule files of the rule set, in :file:`rul_rule_set/<RS>/rules/`.
    :doc:`01-rules-packages`. Further types: ``PLAIN_TEXT_GENERATOR``
    (Groovy script building the citation of a unit of description),
    ``DA_IMPORT`` and ``DA_MATCH`` (Groovy scripts for packages from a
-   digital archive), and for the entity rule set ``AP_MAPPING_TYPE`` and
-   ``AUTO_ITEMS``.
+   digital archive), and for the entity rule set ``AP_MAPPING_TYPE``
+   (items sent to the CAM system; needed only when entities of the rule
+   set are exchanged with CAM). Items computed from an entity are an
+   entity rule (``AUTO_ITEMS`` in :file:`rul_entity_rule.xml`).
 
 rul_rule_set/<RS>/rul_arrangement_extension.xml and rul_extension_rule.xml
 ==========================================================================
@@ -387,12 +389,30 @@ set. The files are in :file:`rul_rule_set/<RS>/rules/`.
 ``filename``, ``kind`` and ``priority`` (required, attributes)
    ``kind`` is ``AVAILABLE_ITEMS`` (items available in a part, evaluated
    for one part), ``VALIDATION`` (validation of the whole entity) - both
-   Drools files - or ``INDEX``: a Groovy script building the name and
+   Drools files - ``INDEX``: a Groovy script building the name and
    indexes of a part (display name, sort name, the preferred name of the
-   entity, key values). For ``INDEX`` only the most specific rule applies:
+   entity, key values) - or ``AUTO_ITEMS``: a Groovy script computing items
+   of the whole entity (offered to the user and checked by validation; it
+   gets the entity as ``AE`` and returns a list of ``GroovyItem``; without
+   a rule the entity has no computed items; no ``part-type``). For
+   ``INDEX`` and ``AUTO_ITEMS`` only the most specific rule applies:
    a rule of the class or its nearest parent before a rule of all classes,
    a rule of the part type before a rule of all parts, the highest
    priority. A part without a script cannot be saved.
+
+The ``INDEX`` script receives the part as ``PART`` and returns a
+``GroovyResult``:
+
+- ``setDisplayName`` (required): the name of the part; for the preferred
+  name part it is the name of the entity in lists, search and sorting,
+  for the description part (``PT_BODY``) the description of the entity.
+- ``setPtPreferName`` on the preferred name part (``PART.isPreferred()``):
+  the name must be unique in the scope; a duplicate gets a suffix.
+- ``setSortName``: the order of parts of one type.
+- ``addIndex("SHORT_NAME", ...)`` on the preferred name: the short name
+  of an institution described by the entity and of the institution in
+  statistics (otherwise the display name is used).
+- ``setKeyValue`` and further ``addIndex`` values as the rule set needs.
 
 ``ap-type`` (attribute)
    Code of the entity class. The rule applies to the class and its

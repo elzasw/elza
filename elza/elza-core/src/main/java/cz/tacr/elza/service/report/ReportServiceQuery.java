@@ -229,7 +229,7 @@ public class ReportServiceQuery {
 				where rvapu.delete_change_id is null 
 				group by f.institution_id) 
 			select pi.internal_code as INST_CODE, 
-				pref_indx.index_value as INST_NAME, 
+				coalesce(pref_indx.index_value, disp_indx.index_value) as INST_NAME, 
 				coalesce(fonds.cnt, 0) as FONDS_CNT,  
 				coalesce(level_new.cnt, 0) - coalesce(level_delete.cnt, 0) as LEVELS_CNT,  
 				coalesce(item_new.cnt, 0) - coalesce(item_delete.cnt, 0) as ITEMS_CNT,  
@@ -237,7 +237,9 @@ public class ReportServiceQuery {
 			from fonds  
 				join par_institution pi on pi.institution_id = fonds.institution_id  
 				join ap_access_point ap on ap.access_point_id = pi.access_point_id  
-				join ap_index pref_indx on pref_indx.part_id = ap.preferred_part_id and pref_indx.index_type = 'SHORT_NAME' 
+				-- SHORT_NAME of the preferred name, else its DISPLAY_NAME (frameworks without a short name)
+				left join ap_index pref_indx on pref_indx.part_id = ap.preferred_part_id and pref_indx.index_type = 'SHORT_NAME' 
+				left join ap_index disp_indx on disp_indx.part_id = ap.preferred_part_id and disp_indx.index_type = 'DISPLAY_NAME' 
 				left join level_new on level_new.institution_id = pi.institution_id  
 				left join level_delete on level_delete.institution_id = pi.institution_id 
 				left join item_new on item_new.institution_id = pi.institution_id  
@@ -278,7 +280,7 @@ public class ReportServiceQuery {
 			  	where rvapu.create_date_id < :DATE_TO and (rvapu.delete_date_id is null or rvapu.delete_date_id >= :DATE_TO) 
 			  	group by f.institution_id) 
 			select pi.internal_code as INST_CODE, 
-				pref_indx.index_value as INST_NAME, 
+				coalesce(pref_indx.index_value, disp_indx.index_value) as INST_NAME, 
 				coalesce(fonds.cnt, 0) as FONDS_CNT, 
 				coalesce(level_new.cnt, 0) - coalesce(level_delete.cnt, 0) as LEVELS_CNT, 
 				coalesce(item_new.cnt, 0) - coalesce(item_delete.cnt, 0) as ITEMS_CNT, 
@@ -286,7 +288,9 @@ public class ReportServiceQuery {
 			from fonds  
 				join par_institution pi on pi.institution_id = fonds.institution_id  
 				join ap_access_point ap on ap.access_point_id = pi.access_point_id  
-				join ap_index pref_indx on pref_indx.part_id = ap.preferred_part_id and pref_indx.index_type = 'SHORT_NAME' 
+				-- SHORT_NAME of the preferred name, else its DISPLAY_NAME (frameworks without a short name)
+				left join ap_index pref_indx on pref_indx.part_id = ap.preferred_part_id and pref_indx.index_type = 'SHORT_NAME' 
+				left join ap_index disp_indx on disp_indx.part_id = ap.preferred_part_id and disp_indx.index_type = 'DISPLAY_NAME' 
 				left join level_new on level_new.institution_id = pi.institution_id  
 				left join level_delete on level_delete.institution_id = pi.institution_id 
 				left join item_new on item_new.institution_id = pi.institution_id  
@@ -327,7 +331,7 @@ public class ReportServiceQuery {
 		final static String SYS_OUTPUT_COUNT_QUERY = """
 			with max_change as (select max(change_id) as change_id from arr_change where change_date <= :DATE_TO), 
 				min_change as (select min(change_id) as change_id from arr_change where change_date >= :DATE_FROM) 
-			select pref_indx.index_value as INST_NAME, 
+			select coalesce(pref_indx.index_value, disp_indx.index_value) as INST_NAME, 
 				inst.internal_code as INST_CODE,  
 				f.fund_number as FONDS_NUMBER, 
 				f."name" as FONDS_NAME, 
@@ -377,7 +381,9 @@ public class ReportServiceQuery {
 			and (fa_unit_count.delete_change_id is null or fa_unit_count.delete_change_id>aor.change_id) 
 				join par_institution inst on inst.institution_id = f.institution_id  
 				join ap_access_point ap on ap.access_point_id = inst.access_point_id  
-				join ap_index pref_indx on pref_indx.part_id = ap.preferred_part_id and pref_indx.index_type = 'SHORT_NAME' 
+				-- SHORT_NAME of the preferred name, else its DISPLAY_NAME (frameworks without a short name)
+				left join ap_index pref_indx on pref_indx.part_id = ap.preferred_part_id and pref_indx.index_type = 'SHORT_NAME' 
+				left join ap_index disp_indx on disp_indx.part_id = ap.preferred_part_id and disp_indx.index_type = 'DISPLAY_NAME' 
 				--join arr_output_template out_tmpl on out_tmpl.output_template_id = aor.template_id  
 				join rul_template rt on rt.template_id = aor.template_id  
 				join rul_output_type ot on ot.output_type_id = o.output_type_id  
