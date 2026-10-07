@@ -4,6 +4,7 @@ import { http, HttpResponse } from 'msw';
 import { fireEvent, renderWithProviders, screen, waitFor } from 'test/test-utils';
 import { server } from 'test/mocks/server';
 import { ApTypePicker } from './ApTypePicker';
+import { ApTypeVO } from 'api/ApTypeVO';
 
 /**
  * The class picker shows the classes the rule set of the scope offers: a root that cannot be assigned
@@ -16,7 +17,7 @@ const tree = [
         code: 'PERSON',
         name: 'Osoba',
         addRecord: false,
-        children: [{ id: 2, code: 'PERSON_INDIVIDUAL', name: 'Fyzická osoba', addRecord: true, children: [] }],
+        children: [{ id: 2, code: 'PERSON_INDIVIDUAL', name: 'Fyzická osoba', addRecord: true, children: [] as ApTypeVO[] }],
     },
 ];
 

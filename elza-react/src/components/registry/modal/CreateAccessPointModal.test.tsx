@@ -4,6 +4,7 @@ import { http, HttpResponse } from 'msw';
 import { fireEvent, renderWithProviders, screen, waitFor } from 'test/test-utils';
 import { server } from 'test/mocks/server';
 import CreateAccessPointModal from './CreateAccessPointModal';
+import { ApTypeVO } from 'api/ApTypeVO';
 
 /**
  * New archival entity: the scope is chosen first, and the classes offered are those of the rule set
@@ -14,11 +15,11 @@ const preloadedState = (scopes: Array<{ id: number; name: string }>) => ({
     refTables: {
         scopesData: { scopes: [{ versionId: -1, scopes }] },
         partTypes: { fetched: true, items: [{ id: 3, code: 'PT_NAME', name: 'Označení' }] },
-        rulDataTypes: { fetched: true, items: [] },
-        descItemTypes: { fetched: true, items: [] },
+        rulDataTypes: { fetched: true, items: [] as unknown[] },
+        descItemTypes: { fetched: true, items: [] as unknown[] },
     },
     app: { apViewSettings: { fetched: true, data: {} } },
-    userDetail: { permissionsMap: { AP_SCOPE_WR_ALL: { all: true } }, userPermissions: [] },
+    userDetail: { permissionsMap: { AP_SCOPE_WR_ALL: { all: true } }, userPermissions: [] as unknown[] },
 });
 
 const serveClasses = () => {
@@ -27,7 +28,7 @@ const serveClasses = () => {
         http.get('/api/registry/recordTypes', ({ request }) => {
             scopeIds.push(new URL(request.url).searchParams.get('scopeId'));
             return HttpResponse.json([
-                { id: 2, code: 'PERSON_INDIVIDUAL', name: 'Fyzická osoba', addRecord: true, children: [] },
+                { id: 2, code: 'PERSON_INDIVIDUAL', name: 'Fyzická osoba', addRecord: true, children: [] as ApTypeVO[] },
             ]);
         }),
     );
