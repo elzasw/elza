@@ -1,4 +1,5 @@
 <entity-rules>
     <!-- same file name as in CAM: the files of rule sets are kept apart -->
     <entity-rule filename="available_items/PT_NAME.drl" kind="AVAILABLE_ITEMS" part-type="PT_NAME" priority="100"/>
+    <entity-rule filename="index/PT_NAME.groovy" kind="INDEX" part-type="PT_NAME" priority="100"/>
 </entity-rules>

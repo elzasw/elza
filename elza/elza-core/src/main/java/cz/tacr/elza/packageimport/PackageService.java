@@ -1901,6 +1901,12 @@ public class PackageService {
                     throw invalidEntityRule(dir + ENTITY_RULE_XML,
                                             "filename, kind and priority are required: " + entityRule.getFilename());
                 }
+                // index scripts are Groovy, the other kinds Drools
+                String extension = entityRule.getKind() == RulEntityRule.Kind.INDEX ? ".groovy" : ".drl";
+                if (!entityRule.getFilename().toLowerCase().endsWith(extension)) {
+                    throw invalidEntityRule(dir + ENTITY_RULE_XML, "A rule of kind " + entityRule.getKind()
+                            + " needs a " + extension + " file: " + entityRule.getFilename());
+                }
                 ApType apType = null;
                 if (entityRule.getApType() != null) {
                     apType = apTypes.get(entityRule.getApType());

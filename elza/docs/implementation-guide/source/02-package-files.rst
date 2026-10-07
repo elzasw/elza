@@ -296,9 +296,9 @@ rul_rule_set/<RS>/rul_entity_rule.xml
 =====================================
 
 Rules of an entity rule set (``rule-type`` ``ENTITY``): which items a part
-of an entity offers, and how the entity is validated. A rule runs only for
-entities whose scope uses the rule set. The files are in
-:file:`rul_rule_set/<RS>/rules/`.
+of an entity offers, how the entity is validated, and how the names of its
+parts are built. A rule runs only for entities whose scope uses the rule
+set. The files are in :file:`rul_rule_set/<RS>/rules/`.
 
 .. code-block:: xml
 
@@ -310,11 +310,21 @@ entities whose scope uses the rule set. The files are in
                     ap-type="PERSON" part-type="PT_NAME" priority="100"/>
        <entity-rule filename="validation/PERSON/GLOBAL.drl" kind="VALIDATION"
                     ap-type="PERSON" priority="100" compatibility-rul-package="31"/>
+       <entity-rule filename="index/PT_BODY.groovy" kind="INDEX"
+                    part-type="PT_BODY" priority="100"/>
+       <entity-rule filename="index/PERSON/PT_NAME.groovy" kind="INDEX"
+                    ap-type="PERSON" part-type="PT_NAME" priority="100"/>
    </entity-rules>
 
 ``filename``, ``kind`` and ``priority`` (required, attributes)
    ``kind`` is ``AVAILABLE_ITEMS`` (items available in a part, evaluated
-   for one part) or ``VALIDATION`` (validation of the whole entity).
+   for one part), ``VALIDATION`` (validation of the whole entity) - both
+   Drools files - or ``INDEX``: a Groovy script building the name and
+   indexes of a part (display name, sort name, the preferred name of the
+   entity, key values). For ``INDEX`` only the most specific rule applies:
+   a rule of the class or its nearest parent before a rule of all classes,
+   a rule of the part type before a rule of all parts, the highest
+   priority. A part without a script cannot be saved.
 
 ``ap-type`` (attribute)
    Code of the entity class. The rule applies to the class and its
@@ -327,9 +337,9 @@ entities whose scope uses the rule set. The files are in
 ``compatibility-rul-package`` (attribute)
    A package version: when the package is upgraded from a lower version,
    the entities of the class (all, without ``ap-type``) in the scopes of the
-   rule set are validated again.
+   rule set are validated again (and their names built again).
 
-Rules run in this order: rules for all classes, then for each class from
+``AVAILABLE_ITEMS`` and ``VALIDATION`` rules run in this order: rules for all classes, then for each class from
 the root of the class hierarchy down to the class of the entity; on each
 level the rules without a part type before those of the part; by priority
 within a group. A package may contribute rules to the entity rule set of
@@ -478,12 +488,15 @@ attributes), ``def-type`` (required) and ``priority`` (required):
 of the object; ``SERIALIZED_VALUE`` and ``PARSE_VALUE`` are Groovy scripts
 in :file:`scripts/` producing the text value of the object and parsing
 it back. ``compatibility-rul-package`` (attribute) - a package version:
-when the package is upgraded from a lower version, archival entities whose
-parts use the structured type are queued for regeneration.
+when the package is upgraded from a lower version, the objects of the
+structured type are queued for regeneration.
 
 Structure extensions (:file:`rul_structure_extension.xml`,
 :file:`rul_structure_extension_definition.xml`) add optional definitions
-to a structured type.
+to a structured type. Structured types serve archival description; the
+names of parts of archival entities are built by ``INDEX`` entity rules
+(:file:`rul_entity_rule.xml`), not by structured types named by part
+codes as before.
 
 .. _translation-files:
 

@@ -1036,4 +1036,34 @@
         </sql>
     </changeSet>
 
+    <changeSet id="20261007200000" author="ppy">
+        <!-- Scripts building names and indexes of entity parts become entity rules of kind INDEX
+             (rul_entity_rule), bound to the rule set. The structured types named by part type codes,
+             with their definitions and extensions, were used only for them and are removed; the new
+             version of the package (CZ_BASE 89) imports the scripts as entity rules. Data are
+             migrated on PostgreSQL only (test databases start empty). -->
+        <sql dbms="postgresql">
+            DELETE FROM arr_fund_structure_extension WHERE structured_type_extension_id IN (
+                SELECT e.structured_type_extension_id FROM rul_structured_type_extension e
+                JOIN rul_structured_type t ON t.structured_type_id = e.structured_type_id
+                JOIN rul_part_type p ON p.code = t.code);
+            WITH deleted AS (
+                DELETE FROM rul_structure_extension_definition WHERE structured_type_extension_id IN (
+                    SELECT e.structured_type_extension_id FROM rul_structured_type_extension e
+                    JOIN rul_structured_type t ON t.structured_type_id = e.structured_type_id
+                    JOIN rul_part_type p ON p.code = t.code)
+                RETURNING component_id)
+            DELETE FROM rul_component WHERE component_id IN (SELECT component_id FROM deleted);
+            DELETE FROM rul_structured_type_extension WHERE structured_type_id IN (
+                SELECT t.structured_type_id FROM rul_structured_type t JOIN rul_part_type p ON p.code = t.code);
+            WITH deleted AS (
+                DELETE FROM rul_structure_definition WHERE structured_type_id IN (
+                    SELECT t.structured_type_id FROM rul_structured_type t JOIN rul_part_type p ON p.code = t.code)
+                RETURNING component_id)
+            DELETE FROM rul_component WHERE component_id IN (SELECT component_id FROM deleted);
+            DELETE FROM rul_structured_type WHERE structured_type_id IN (
+                SELECT t.structured_type_id FROM rul_structured_type t JOIN rul_part_type p ON p.code = t.code);
+        </sql>
+    </changeSet>
+
 </databaseChangeLog>

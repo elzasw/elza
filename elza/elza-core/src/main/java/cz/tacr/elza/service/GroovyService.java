@@ -67,7 +67,9 @@ import cz.tacr.elza.domain.RulArrangementRule.RuleType;
 import cz.tacr.elza.domain.RulComponent;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.RulEntityRule;
 import cz.tacr.elza.domain.RulPartType;
+import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulStructureDefinition;
 import cz.tacr.elza.domain.RulStructureExtensionDefinition;
 import cz.tacr.elza.exception.SystemException;
@@ -240,12 +242,13 @@ public class GroovyService {
      * @param preferred
      * @return
      */
-    public GroovyResult processGroovy(@NotNull final Integer apTypeId,
+    public GroovyResult processGroovy(@NotNull final ApScope scope,
+                                      @NotNull final Integer apTypeId,
                                       @NotNull final ApPart part,
                                       @Nullable final List<? extends AccessPointPart> childrenParts,
                                       @NotNull final List<? extends AccessPointItem> items,
                                       final boolean preferred) {
-        return processGroovy(apTypeId, part, childrenParts, items, Collections.emptyList(), preferred);
+        return processGroovy(scope, apTypeId, part, childrenParts, items, Collections.emptyList(), preferred);
     }
 
     /**
@@ -263,14 +266,15 @@ public class GroovyService {
      * @param preferred
      * @return
      */
-    public GroovyResult processGroovy(@NotNull final Integer apTypeId,
+    public GroovyResult processGroovy(@NotNull final ApScope scope,
+                                      @NotNull final Integer apTypeId,
                                       @NotNull final AccessPointPart part,
                                       @Nullable final List<? extends AccessPointPart> childrenParts,
                                       @NotNull final List<? extends AccessPointItem> items,
                                       @NotNull final List<ApRevItem> revItems,
                                       final boolean preferred) {
         GroovyPart groovyPart = convertPart(apTypeId, part, childrenParts, items, revItems, preferred);
-        return groovyScriptService.process(groovyPart, getGroovyFilePath(groovyPart));
+        return groovyScriptService.process(groovyPart, getIndexScriptPath(scope, groovyPart));
     }
 
     public List<GroovyItem> getAutoItems(@NotNull final ApState state) {
@@ -583,47 +587,49 @@ public class GroovyService {
         return groovyScriptService.filterOutgoingItems(part, itemList, filePath);
     }
 
-    public String getGroovyFilePath(GroovyPart part) {
+    /**
+     * Script building the name and indexes of a part: the most specific {@code INDEX} entity rule of
+     * the rule set of the scope - a rule of the class or its nearest parent before a rule of all
+     * classes, a rule of the part type before a rule of all parts, the highest priority.
+     */
+    public String getIndexScriptPath(final ApScope scope, final GroovyPart part) {
         StaticDataProvider sdp = staticDataService.getData();
-
-        RulComponent component = null;
-        RulPackage rulPackage = null;
-
-        StructType structType = sdp.getStructuredTypeByCode(part.getPartTypeCode());
-        ApType apType = sdp.getApTypeByCode(part.getAeType());
-        while (apType != null) {
-            String extCode = apType.getCode() + "/" + part.getPartTypeCode();
-            StructTypeExtension structTypeExt = structType.getExtByCode(extCode);
-            if (structTypeExt != null) {
-                List<RulStructureExtensionDefinition> structureExtensionDefinitions = structTypeExt
-                        .getDefsByType(RulStructureExtensionDefinition.DefType.SERIALIZED_VALUE);
-                if (structureExtensionDefinitions.size() > 0) {
-                    RulStructureExtensionDefinition structureExtensionDefinition = structureExtensionDefinitions
-                            .get(structureExtensionDefinitions.size() - 1);
-                    component = structureExtensionDefinition.getComponent();
-                    rulPackage = structureExtensionDefinition.getRulPackage();
-                    break;
-                }
-            }
-            apType = apType.getParentApType();
-        }
-
-        // if not found in extension read from base definition
-        if (component == null) {
-            // extension not exists -> we will find script in standard definition
-            List<RulStructureDefinition> structureDefinitions = structType
-                    .getDefsByType(RulStructureDefinition.DefType.SERIALIZED_VALUE);
-            if (structureDefinitions.size() > 0) {
-                RulStructureDefinition structureDefinition = structureDefinitions.get(structureDefinitions.size() - 1);
-                component = structureDefinition.getComponent();
-                rulPackage = structureDefinition.getRulPackage();
-            } else {
-                throw new SystemException("Strukturovaný typ '" + structType.getCode()
-                        + "' nemá žádný script pro výpočet hodnoty", BaseCode.INVALID_STATE);
+        RuleSet ruleSet = scope.getRuleSetId() != null ? sdp.getRuleSetById(scope.getRuleSetId()) : null;
+        if (ruleSet == null) {
+            // a scope without a rule set (older data): the only entity rule set, as the package import does
+            List<RuleSet> entityRuleSets = sdp.getRuleSets().stream()
+                    .filter(rs -> rs.getEntity().getRuleType() == RulRuleSet.RuleType.ENTITY)
+                    .toList();
+            if (entityRuleSets.size() == 1) {
+                ruleSet = entityRuleSets.get(0);
             }
         }
-
-        return resourcePathResolver.getGroovyDir(rulPackage).resolve(component.getFilename()).toString();
+        if (ruleSet == null) {
+            throw new SystemException("Scope has no rule set for the names of entities", BaseCode.INVALID_STATE)
+                    .set("scope", scope.getCode());
+        }
+        List<Integer> apTypeIds = new ArrayList<>();
+        for (ApType apType = sdp.getApTypeByCode(part.getAeType()); apType != null; apType = apType.getParentApType()) {
+            apTypeIds.add(apType.getApTypeId());
+        }
+        RulPartType partType = sdp.getPartTypeByCode(part.getPartTypeCode());
+        List<RulEntityRule> rules = ruleSet.getEntityRules(RulEntityRule.Kind.INDEX, apTypeIds,
+                                                           partType != null ? partType.getPartTypeId() : null);
+        // rules of all part types are included when partTypeId is null; keep only matching ones
+        RulEntityRule rule = null;
+        for (RulEntityRule candidate : rules) {
+            if (candidate.getPartTypeId() == null || partType != null
+                    && candidate.getPartTypeId().equals(partType.getPartTypeId())) {
+                rule = candidate;
+            }
+        }
+        if (rule == null) {
+            throw new SystemException("No script for the name of the part", BaseCode.INVALID_STATE)
+                    .set("ruleSet", ruleSet.getCode())
+                    .set("apType", part.getAeType())
+                    .set("partType", part.getPartTypeCode());
+        }
+        return resourcePathResolver.getDroolFile(rule).toString();
     }
 
     public String getGroovyFilePath(RulArrangementRule.RuleType ruleType, Integer ruleSetId) {
