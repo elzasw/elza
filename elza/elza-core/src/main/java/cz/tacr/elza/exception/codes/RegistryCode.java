@@ -160,4 +160,10 @@ public enum RegistryCode implements ErrorCode {
      * Nesprávná verze archivní entity
      */
     INVALID_ENTITY_VERSION,
+
+    /**
+     * The entity class cannot be used in the scope: the rule set of the scope does not offer it or
+     * it cannot be assigned there.
+     */
+    AP_TYPE_NOT_IN_RULE_SET,
 }

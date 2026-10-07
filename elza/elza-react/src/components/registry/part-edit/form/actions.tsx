@@ -132,7 +132,7 @@ export const getUpdatedForm = async (
     accessPointId?: number,
     revParentPartId?: number,
 ) => {
-    const apViewSettingRule = apViewSettings.data!.rules[apViewSettings.data!.typeRuleSetMap[typeId]];
+    const apViewSettingRule = apViewSettings.data!.rules[apViewSettings.data!.scopeRuleSetMap[scopeId]];
     const items = data.items.filter((item) =>
         item.updatedItem?.changeType !== "DELETED"
     ).map((item) =>

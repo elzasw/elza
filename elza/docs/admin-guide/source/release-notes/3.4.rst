@@ -15,6 +15,15 @@ between the installed and the new version; see :doc:`/03-upgrade`.
 Upcoming version
 ================
 
+* Change: Entity classes per scope - an entity rule set may declare the
+  classes it uses (:file:`rul_ap_type.xml` of rules packages). Entities of
+  a scope can only have the classes of its rule set; the server now also
+  refuses classes that cannot be assigned (read-only), which only the
+  client checked before. The CAM import of an entity of a class the rule
+  set of the target scope does not offer fails. The dialog of a new
+  archival entity asks for the scope first and offers the classes of its
+  rule set. Installations with CZ_BASE alone are not affected: its rule
+  set declares no classes and offers all.
 * Change: Rules packages - the rules of an entity rule set (CZ_BASE, rule
   set ``CAM``) are declared in :file:`rul_entity_rule.xml` and run only for
   entities whose scope uses the rule set. The upgrade removes the rules

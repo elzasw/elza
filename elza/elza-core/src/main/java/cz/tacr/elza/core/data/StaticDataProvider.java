@@ -3,6 +3,7 @@ package cz.tacr.elza.core.data;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -22,6 +23,7 @@ import cz.tacr.elza.domain.RulArrangementExtension;
 import cz.tacr.elza.domain.RulArrangementRule;
 import cz.tacr.elza.domain.RulComponent;
 import cz.tacr.elza.domain.RulEntityRule;
+import cz.tacr.elza.domain.RulRuleSetApType;
 import cz.tacr.elza.domain.RulExtensionRule;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
@@ -44,6 +46,7 @@ import cz.tacr.elza.repository.ArrangementExtensionRepository;
 import cz.tacr.elza.repository.ArrangementRuleRepository;
 import cz.tacr.elza.repository.ComponentRepository;
 import cz.tacr.elza.repository.EntityRuleRepository;
+import cz.tacr.elza.repository.RuleSetApTypeRepository;
 import cz.tacr.elza.repository.ExtensionRuleRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
@@ -383,7 +386,26 @@ public class StaticDataProvider {
         initApExternalSystems(service.apExternalSystemRepository);
         initPolicyTypes(service.policyTypeRepository);
         initTranslations(service.translationRepository, service.packageDependencyRepository);
+        initRuleSetApTypes(service.ruleSetApTypeRepository, service.packageDependencyRepository);
         self = this;
+    }
+
+    /**
+     * Member classes of the rule sets; when several packages state one class in one rule set, the
+     * package deeper in dependency order wins (ties by package code), as for translations.
+     */
+    private void initRuleSetApTypes(RuleSetApTypeRepository ruleSetApTypeRepository,
+                                    PackageDependencyRepository packageDependencyRepository) {
+        Map<Integer, Integer> depth = PackageTranslations.dependencyDepth(packageDependencyRepository.findAll());
+        Comparator<RulRuleSetApType> precedence = Comparator
+                .comparing((RulRuleSetApType m) -> depth.getOrDefault(m.getPackageId(), 0))
+                .thenComparing(m -> packageIdMap.get(m.getPackageId()).getCode());
+        Map<Integer, Map<Integer, Boolean>> membersByRuleSet = new HashMap<>();
+        ruleSetApTypeRepository.findAll().stream().sorted(precedence).forEach(m -> membersByRuleSet
+                .computeIfAbsent(m.getRuleSetId(), k -> new HashMap<>()).put(m.getApTypeId(), m.getAssignable()));
+        for (RuleSet ruleSet : ruleSets) {
+            ruleSet.setApTypeMembers(membersByRuleSet.getOrDefault(ruleSet.getRuleSetId(), Map.of()));
+        }
     }
 
     private void initPolicyTypes(PolicyTypeRepository policyTypeRepository) {

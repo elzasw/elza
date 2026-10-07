@@ -91,7 +91,7 @@ export const PartEditForm = ({
     const dispatch = useThunkDispatch();
     const form = useForm();
 
-    const apViewSettingRule = apViewSettings.data!.rules[apViewSettings.data!.typeRuleSetMap[apTypeId]];
+    const apViewSettingRule = apViewSettings.data!.rules[apViewSettings.data!.scopeRuleSetMap[scopeId]];
 
     const isDisabled = submitting || !availableAttributes;
     const partType = refTables.partTypes.itemsMap[partTypeId];

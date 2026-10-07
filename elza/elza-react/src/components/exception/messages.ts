@@ -109,6 +109,7 @@ export const exceptionMessages = defineMessages({
     "exception.pkg.PACKAGE_NOT_EXIST": { id: "exception.pkg.PACKAGE_NOT_EXIST", defaultMessage: "Balíček s kódem „{code}“ neexistuje" },
     "exception.pkg.PARSE_ERROR": { id: "exception.pkg.PARSE_ERROR", defaultMessage: "Chyba při parsování XML souboru" },
     "exception.pkg.VERSION_APPLIED": { id: "exception.pkg.VERSION_APPLIED", defaultMessage: "Balíček {code} je již ve verzi {version} aplikován" },
+    "exception.reg.AP_TYPE_NOT_IN_RULE_SET": { id: "exception.reg.AP_TYPE_NOT_IN_RULE_SET", defaultMessage: "Třídu „{apType}“ nelze použít v oblasti „{scope}“ (pravidla {ruleSet})" },
     "exception.reg.CANT_CHANGE_DELETED_AP": { id: "exception.reg.CANT_CHANGE_DELETED_AP", defaultMessage: "Zneplatněnou archivní entitu nelze měnit" },
     "exception.reg.CANT_CHANGE_DELETED_NAME": { id: "exception.reg.CANT_CHANGE_DELETED_NAME", defaultMessage: "Zneplatněné jméno nelze měnit" },
     "exception.reg.CANT_CHANGE_STATE_ENTITY_WITH_REVISION": { id: "exception.reg.CANT_CHANGE_STATE_ENTITY_WITH_REVISION", defaultMessage: "Nelze změnit stav archivní entity, která má revizi" },

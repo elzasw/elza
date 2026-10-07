@@ -54,7 +54,19 @@ import cz.tacr.elza.exception.codes.PackageCode;
 import cz.tacr.elza.other.HelperTestService;
 import cz.tacr.elza.repository.PackageRepository;
 import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.service.AccessPointDataService;
+import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.RuleService;
+import cz.tacr.elza.service.UserService;
+import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.controller.ApController;
+import cz.tacr.elza.controller.vo.ApTypeVO;
+import cz.tacr.elza.domain.ApChange;
+import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.exception.codes.RegistryCode;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import cz.tacr.elza.service.StartupService;
 
 /**
@@ -90,6 +102,14 @@ public class EntityRulesTest {
     @Autowired
     private RuleService ruleService;
     @Autowired
+    private AccessPointService accessPointService;
+    @Autowired
+    private AccessPointDataService accessPointDataService;
+    @Autowired
+    private ApController apController;
+    @Autowired
+    private UserService userService;
+    @Autowired
     @Qualifier("transactionManager")
     private PlatformTransactionManager txManager;
 
@@ -99,6 +119,7 @@ public class EntityRulesTest {
     void loadPackagesOnce() {
         helperTestService.deleteTables(false);
         startupService.startNow();
+        authorizeAsAdmin();
         helperTestService.loadPackage("CZ_BASE", "package-cz-base");
         helperTestService.loadPackage(TEST_CODE, TEST_DIR);
     }
@@ -106,6 +127,8 @@ public class EntityRulesTest {
     @AfterAll
     void unloadPackages() {
         try {
+            // entities created by the tests
+            helperTestService.deleteTables(false);
             tx(() -> {
                 scopeRepository.deleteAllById(scopeIds);
                 // scopes of other tests without a rule set got ENT_TEST at its import: restore them
@@ -185,6 +208,13 @@ public class EntityRulesTest {
             String xml = new String(zipFile.getInputStream(rules).readAllBytes(), StandardCharsets.UTF_8);
             assertTrue(xml.contains("kind=\"AVAILABLE_ITEMS\"") && xml.contains("part-type=\"PT_NAME\""), xml);
             assertNotNull(zipFile.getEntry(RULE_SET_DIR + "rules/available_items/PT_NAME.drl"));
+
+            ZipEntry members = zipFile.getEntry(RULE_SET_DIR + PackageService.RULE_SET_AP_TYPE_XML);
+            assertNotNull(members);
+            String membersXml = new String(zipFile.getInputStream(members).readAllBytes(), StandardCharsets.UTF_8);
+            // PERSON is read-only by its class: its default, not assignable, is not written
+            assertTrue(membersXml.contains("code=\"PERSON\"") && membersXml.contains("code=\"PERSON_INDIVIDUAL\"")
+                    && !membersXml.contains("assignable"), membersXml);
         } finally {
             Files.deleteIfExists(zip);
         }
@@ -204,6 +234,97 @@ public class EntityRulesTest {
         assertRefused(Map.of(RULE_SET_DIR + PackageService.ENTITY_RULE_XML, "<entity-rules><entity-rule"
                 + " filename=\"available_items/PT_NAME.drl\" kind=\"AVAILABLE_ITEMS\" part-type=\"PT_NO_SUCH\""
                 + " priority=\"100\"/></entity-rules>"));
+        // member classes: an unknown class, a class listed twice
+        assertRefused(Map.of(RULE_SET_DIR + PackageService.RULE_SET_AP_TYPE_XML,
+                             "<ap-types><ap-type code=\"NO_SUCH_CLASS\"/></ap-types>"));
+        assertRefused(Map.of(RULE_SET_DIR + PackageService.RULE_SET_AP_TYPE_XML,
+                             "<ap-types><ap-type code=\"PERSON\"/><ap-type code=\"PERSON\"/></ap-types>"));
+    }
+
+    /**
+     * ENT_TEST declares PERSON (not assignable) and PERSON_INDIVIDUAL; CAM declares no classes and
+     * offers all of them, assignable when not read-only.
+     */
+    @Test
+    @Order(5)
+    void ruleSetsOfferTheirClasses() {
+        tx(() -> {
+            StaticDataProvider sdp = staticDataService.getData();
+            RuleSet test = sdp.getRuleSetByCode("ENT_TEST");
+            RuleSet cam = sdp.getRuleSetByCode("CAM");
+            assertTrue(test.hasApTypeMembers());
+            assertTrue(test.offersApType(sdp.getApTypeByCode("PERSON")));
+            assertTrue(!test.isApTypeAssignable(sdp.getApTypeByCode("PERSON")));
+            assertTrue(test.isApTypeAssignable(sdp.getApTypeByCode("PERSON_INDIVIDUAL")));
+            assertTrue(!test.offersApType(sdp.getApTypeByCode("GEO_UNIT")));
+
+            assertTrue(!cam.hasApTypeMembers());
+            assertTrue(cam.offersApType(sdp.getApTypeByCode("GEO_UNIT")));
+            assertTrue(!cam.isApTypeAssignable(sdp.getApTypeByCode("PERSON")));
+            assertTrue(cam.isApTypeAssignable(sdp.getApTypeByCode("PERSON_INDIVIDUAL")));
+        });
+
+        // the class tree of a scope: members with their parents, assignable ones selectable
+        Integer testScope = scopeIds.get(1);
+        List<ApTypeVO> tree = txGet(() -> apController.getApTypes(testScope));
+        assertEquals(List.of("PERSON"), tree.stream().map(ApTypeVO::getCode).toList());
+        assertTrue(!tree.get(0).getAddRecord());
+        assertEquals(List.of("PERSON_INDIVIDUAL"), tree.get(0).getChildren().stream().map(ApTypeVO::getCode).toList());
+        assertTrue(tree.get(0).getChildren().get(0).getAddRecord());
+        assertTrue(txGet(() -> apController.getApTypes(null)).size() > 1);
+    }
+
+    @Test
+    @Order(6)
+    void classesOutsideTheRuleSetOfTheScopeAreRefused() {
+        Integer camScope = scopeIds.get(0);
+        Integer testScope = scopeIds.get(1);
+        assertRefusedClass("GEO_UNIT", testScope, true);
+        assertRefusedClass("GEO_UNIT", testScope, false);
+        // a member that is not assignable cannot be chosen, but entities of it may be in the scope
+        assertRefusedClass("PERSON", testScope, true);
+        tx(() -> accessPointService.checkApTypeInScope(type("PERSON"), scope(testScope), false));
+        tx(() -> accessPointService.checkApTypeInScope(type("PERSON_INDIVIDUAL"), scope(testScope), true));
+        // CAM keeps the read-only roots
+        assertRefusedClass("PERSON", camScope, true);
+
+        // a scope with an entity of a class the new rule set does not offer keeps its rule set
+        tx(() -> {
+            ApChange change = accessPointDataService.createChange(ApChange.Type.AP_CREATE);
+            accessPointService.createAccessPoint(scope(camScope), type("GEO_UNIT"), ApState.StateApproval.NEW,
+                                                 change, null);
+        });
+        AbstractException e = assertThrows(AbstractException.class, () -> tx(() -> {
+            // as the scope form sends it: a new object with the id and the new rule set
+            ApScope moved = new ApScope();
+            moved.setScopeId(camScope);
+            moved.setCode("ENT_RULES_CAM");
+            moved.setName("ENT_RULES_CAM");
+            moved.setRulRuleSet(staticDataService.getData().getRuleSetByCode("ENT_TEST").getEntity());
+            accessPointService.checkScopeRuleSet(moved);
+        }));
+        assertEquals(RegistryCode.AP_TYPE_NOT_IN_RULE_SET, e.getErrorCode());
+    }
+
+    private void assertRefusedClass(String apType, Integer scopeId, boolean assign) {
+        AbstractException e = assertThrows(AbstractException.class,
+                () -> tx(() -> accessPointService.checkApTypeInScope(type(apType), scope(scopeId), assign)));
+        assertEquals(RegistryCode.AP_TYPE_NOT_IN_RULE_SET, e.getErrorCode(), apType);
+    }
+
+    private ApType type(String code) {
+        return staticDataService.getData().getApTypeByCode(code);
+    }
+
+    private ApScope scope(Integer scopeId) {
+        return scopeRepository.findById(scopeId).orElseThrow();
+    }
+
+    private void authorizeAsAdmin() {
+        UserDetail userDetail = userService.createUserDetail((Integer) null);
+        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken("", "", null);
+        auth.setDetails(userDetail);
+        SecurityContextHolder.getContext().setAuthentication(auth);
     }
 
     private Map<String, RequiredType> availableNameItems(Integer scopeId) {

@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.RulArrangementExtension;
 import cz.tacr.elza.domain.RulArrangementRule;
 import cz.tacr.elza.domain.RulArrangementRule.RuleType;
@@ -34,6 +35,12 @@ public class RuleSet {
     final Map<RulEntityRule.Kind, List<RulEntityRule>> entityRulesByKind;
 
     final Map<RuleType, List<RulArrangementRule>> rulesByType;
+
+    /**
+     * Member classes (id to assignable); empty when the rule set declares no members and offers all
+     * classes
+     */
+    private Map<Integer, Boolean> apTypeMembers = Map.of();
 
     RuleSet(final RulRuleSet entity,
             final List<RulArrangementRule> rules,
@@ -64,6 +71,36 @@ public class RuleSet {
                 .collect(Collectors.groupingBy(RulEntityRule::getKind, HashMap::new, Collectors.toList()));
     }
     
+    void setApTypeMembers(final Map<Integer, Boolean> apTypeMembers) {
+        this.apTypeMembers = Map.copyOf(apTypeMembers);
+    }
+
+    /**
+     * @return true when the rule set declares its classes ({@code rul_ap_type.xml}); otherwise it
+     *         offers all classes
+     */
+    public boolean hasApTypeMembers() {
+        return !apTypeMembers.isEmpty();
+    }
+
+    /**
+     * Entities of the class may be in scopes of this rule set.
+     */
+    public boolean offersApType(final ApType apType) {
+        return apTypeMembers.isEmpty() || apTypeMembers.containsKey(apType.getApTypeId());
+    }
+
+    /**
+     * The class can be chosen for an entity in scopes of this rule set: a member declared assignable,
+     * or - without members - a class that is not read-only.
+     */
+    public boolean isApTypeAssignable(final ApType apType) {
+        if (apTypeMembers.isEmpty()) {
+            return !apType.isReadOnly();
+        }
+        return Boolean.TRUE.equals(apTypeMembers.get(apType.getApTypeId()));
+    }
+
     public RuleSetExtension getRuleSetExtension(Integer ruleSetExtensionId) {
 		return ruleSetExtensionsById.get(ruleSetExtensionId);
 	}

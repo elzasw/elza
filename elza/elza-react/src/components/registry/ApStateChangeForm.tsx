@@ -26,7 +26,7 @@ import { useSelector } from 'react-redux';
 import { StateApproval, StateApprovalCaption } from '../../api/StateApproval';
 import { AppState } from "typings/store";
 import { WebApi } from 'actions';
-import { ApTypeVO } from 'api/ApTypeVO';
+import { ApTypePicker } from './ApTypePicker';
 import UserField from 'components/admin/UserField';
 import { Api } from 'api';
 import { Participant } from 'elza-api';
@@ -67,7 +67,6 @@ export const ApStateChangeForm = ({
 }: Props) => {
     const intl = useIntl();
     const scopesData = useSelector((appState: AppState) => appState.refTables.scopesData);
-    const apTypes = useSelector((appState: AppState) => appState.refTables.apTypes)
     const {id: currentUserId} = useAppSelector(({ userDetail }) => userDetail);
 
     const [states, setStates] = useState<string[]>([]);
@@ -148,18 +147,17 @@ export const ApStateChangeForm = ({
                             }}
                         </Field>
                         {!hideType && (
-                            <Field
-                                component={FormInputField}
-                                type="autocomplete"
-                                label={intl.formatMessage(messages.type)}
-                                items={apTypes.items ? apTypes.items : []}
-                                tree={true}
-                                alwaysExpanded={true}
-                                allowSelectItem={(item: ApTypeVO) => item.addRecord}
-                                name={'typeId'}
-                                useIdAsValue={true}
-                                disabled={submitting || isStateChangeDisabled}
-                            />
+                            <Field<number> name={'typeId'}>
+                                {({ input }) => (
+                                    <ApTypePicker
+                                        label={intl.formatMessage(messages.type)}
+                                        scopeId={values.scopeId ? Number(values.scopeId) : undefined}
+                                        value={input.value || undefined}
+                                        onChange={(type) => input.onChange(type?.id)}
+                                        disabled={submitting || isStateChangeDisabled}
+                                    />
+                                )}
+                            </Field>
                         )}
                         <Field
                             component={FormInputField}

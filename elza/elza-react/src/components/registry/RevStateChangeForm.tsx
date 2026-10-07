@@ -22,7 +22,7 @@ import { Form, Modal } from 'react-bootstrap';
 import { Button } from '../ui';
 import FormInputField from '../../components/shared/form/FormInputField';
 import { RevStateApproval, RevStateApprovalCaption } from "../../api/RevStateApproval";
-import { ApTypeVO } from 'api/ApTypeVO';
+import { ApTypePicker } from './ApTypePicker';
 import { Participant, RevStateChange } from 'elza-api';
 import { ApValidationErrorsVO } from 'api/ApValidationErrorsVO';
 import { UsrUserVO } from 'api/UsrUserVO';
@@ -42,6 +42,8 @@ export interface Props {
     onSubmit: (data: RevStateFormFields) => void;
     states: string[];
     initialValues?: Partial<RevStateFormFields>;
+    /** Scope of the entity: its rule set decides the offered classes. */
+    scopeId?: number;
 }
 
 type FormErrors<T> = Partial<Record<keyof T, string>>;
@@ -52,10 +54,10 @@ export const RevStateChangeFormFn = ({
     onSubmit,
     initialValues,
     accessPointId,
+    scopeId,
 }: Props) => {
     const intl = useIntl();
 
-    const apTypes = useAppSelector(({refTables}) => refTables.apTypes)
     const { data: validationData } = useAppSelector(({app}) => app.apValidation);
     const {id: currentUserId} = useAppSelector(({ userDetail }) => userDetail);
 
@@ -149,18 +151,17 @@ export const RevStateChangeFormFn = ({
                             </div>
                         }
                         {!hideType && (
-                            <Field
-                                name={'typeId'}
-                                component={FormInputField}
-                                type="autocomplete"
-                                label={intl.formatMessage(messages.type)}
-                                items={apTypes.items ? apTypes.items : []}
-                                tree={true}
-                                alwaysExpanded={true}
-                                allowSelectItem={(item: ApTypeVO) => item.addRecord}
-                                useIdAsValue={true}
-                                disabled={submitting}
-                            />
+                            <Field<number> name={'typeId'}>
+                                {({ input }) => (
+                                    <ApTypePicker
+                                        label={intl.formatMessage(messages.type)}
+                                        scopeId={scopeId}
+                                        value={input.value || undefined}
+                                        onChange={(type) => input.onChange(type?.id)}
+                                        disabled={submitting}
+                                    />
+                                )}
+                            </Field>
                         )}
                         <Field
                             name={'state'}

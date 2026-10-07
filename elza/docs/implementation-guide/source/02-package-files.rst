@@ -287,6 +287,41 @@ class and the part type must exist (in the package or its dependencies);
 an unknown one refuses the import. A package cannot remove a class or part
 type that entity rules of another package refer to.
 
+rul_rule_set/<RS>/rul_ap_type.xml
+=================================
+
+Entity classes an entity rule set uses (its members). Entities of a scope
+can only have classes the rule set of the scope offers, and only an
+assignable class can be chosen for an entity, when it is created or its
+class or scope is changed. Without this file the rule set offers all
+classes, assignable unless ``read-only`` in :file:`ap_type.xml`.
+
+.. code-block:: xml
+
+   <ap-types>
+       <ap-type code="PERSON" assignable="false"/>
+       <ap-type code="PERSON_INDIVIDUAL"/>
+   </ap-types>
+
+``code`` (required, attribute)
+   Code of a class of the package or of a package it depends on. A class
+   may be used by several rule sets; its definition (name, parent) stays
+   with the package that defines it.
+
+``assignable`` (attribute)
+   Whether entities may get the class in scopes of the rule set; without
+   it, the opposite of ``read-only`` of the class. Abstract roots are
+   members that are not assignable: they are shown in the class tree, and
+   rules may refer to them.
+
+A package may declare members of the entity rule set of another package in
+:file:`rul_rule_set/<FOREIGN>/rul_ap_type.xml`. When several packages state
+the same class for one rule set, the package deeper in the dependency order
+wins. A class used by members of another package cannot be removed. The
+rule set of a scope cannot be changed while the scope holds entities of a
+class the new rule set does not offer, and the CAM import of an entity of
+such a class into a scope fails.
+
 rul_rule_set/<RS>/rul_policy_type.xml
 =====================================
 

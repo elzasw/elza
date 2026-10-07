@@ -928,8 +928,12 @@ export class WebApiCls {
      *
      * @return  seznam typů rejstříku (typů hesel)
      */
-    getApTypes(): Promise<ApTypeVO[]> {
-        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/recordTypes');
+    /**
+     * @param scopeId when set, the classes the rule set of the scope offers; `addRecord` says
+     *                whether a class can be assigned there
+     */
+    getApTypes(scopeId?: number): Promise<ApTypeVO[]> {
+        return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/recordTypes', scopeId != null ? { scopeId } : undefined);
     }
 
     // End registry

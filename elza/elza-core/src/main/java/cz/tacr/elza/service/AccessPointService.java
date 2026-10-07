@@ -108,6 +108,7 @@ import cz.tacr.elza.domain.WfTask.Status;
 import cz.tacr.elza.domain.WfTaskApState;
 import cz.tacr.elza.domain.projection.ApStateInfo;
 import cz.tacr.elza.exception.AccessDeniedException;
+import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ExceptionUtils;
 import cz.tacr.elza.exception.Level;
@@ -1678,6 +1679,8 @@ public class AccessPointService {
             throw new IllegalArgumentException("Část musí být typu " + defaultPartType.getCode());
         }
 
+        checkApTypeInScope(type, scope, true);
+
         ApChange apChange = apDataService.createChange(ApChange.Type.AP_CREATE);
         ApState apState = createAccessPoint(scope, type, StateApproval.NEW, apChange, null);
         ApAccessPoint accessPoint = apState.getAccessPoint();
@@ -2431,6 +2434,70 @@ public class AccessPointService {
      * @param change změna
      * @return přístupový bod
      */
+    /**
+     * Refuses a change of the rule set of a scope while the scope holds entities of classes the new
+     * rule set does not offer.
+     *
+     * @param scope
+     *            scope with the new rule set, not yet saved
+     */
+    public void checkScopeRuleSet(final ApScope scope) {
+        if (scope.getScopeId() == null || scope.getRuleSetId() == null) {
+            return;
+        }
+        ApScope saved = scopeRepository.findById(scope.getScopeId()).orElse(null);
+        if (saved == null || Objects.equals(saved.getRuleSetId(), scope.getRuleSetId())) {
+            return;
+        }
+        StaticDataProvider sdp = staticDataService.getData();
+        RuleSet ruleSet = sdp.getRuleSetById(scope.getRuleSetId());
+        for (ApType apType : stateRepository.findApTypesInScope(saved)) {
+            if (!ruleSet.offersApType(sdp.getApTypeById(apType.getApTypeId()))) {
+                throw new BusinessException("Entity class cannot be used in the scope", RegistryCode.AP_TYPE_NOT_IN_RULE_SET)
+                        .set("apType", apType.getCode())
+                        .set("scope", saved.getCode())
+                        .set("ruleSet", ruleSet.getCode());
+            }
+        }
+    }
+
+    /**
+     * Refuses a class that cannot be used in the scope (see {@link #isApTypeAllowedInScope}).
+     *
+     * @param assign
+     *            the class is being chosen for an entity (created or changed), so it must be
+     *            assignable; otherwise it must only be offered by the rule set of the scope
+     */
+    public void checkApTypeInScope(final ApType apType, final ApScope scope, final boolean assign) {
+        StaticDataProvider sdp = staticDataService.getData();
+        if (!isApTypeAllowedInScope(sdp, apType, scope, assign)) {
+            RuleSet ruleSet = sdp.getRuleSetById(scope.getRuleSetId());
+            throw new BusinessException("Entity class cannot be used in the scope", RegistryCode.AP_TYPE_NOT_IN_RULE_SET)
+                    .set("apType", apType.getCode())
+                    .set("scope", scope.getCode())
+                    .set("ruleSet", ruleSet.getCode());
+        }
+    }
+
+    /**
+     * A class can be used in a scope when the rule set of the scope offers it (its member classes, or
+     * all classes without members) and, when assigned, when it is assignable there. A scope without a
+     * rule set accepts any class.
+     */
+    public static boolean isApTypeAllowedInScope(final StaticDataProvider sdp, final ApType apType,
+                                                 final ApScope scope, final boolean assign) {
+        if (scope.getRuleSetId() == null) {
+            return true;
+        }
+        RuleSet ruleSet = sdp.getRuleSetById(scope.getRuleSetId());
+        if (ruleSet == null) {
+            return true;
+        }
+        ApType cached = sdp.getApTypeById(apType.getApTypeId());
+        ApType type = cached != null ? cached : apType;
+        return assign ? ruleSet.isApTypeAssignable(type) : ruleSet.offersApType(type);
+    }
+
     public ApState createAccessPoint(final ApScope scope, final ApType type, final StateApproval state,
                                      final ApChange change,
                                      String uuid) {
@@ -2445,6 +2512,7 @@ public class AccessPointService {
     }
 
     public ApState createAccessPointState(ApAccessPoint ap, ApScope scope, ApType type, StateApproval state, ApChange change) {
+        checkApTypeInScope(type, scope, false);
         ApState apState = new ApState();
         apState.setAccessPoint(ap);
         apState.setScope(scope);
@@ -2794,6 +2862,13 @@ public class AccessPointService {
                     .set("stateChange", stateChange);
             */
             return oldApState;
+        }
+
+        // the class must be usable in the (new) scope: a new class must be assignable, a moved entity
+        // must keep a class the rule set of the new scope offers
+        if (newApType != null || newApScope != null) {
+            checkApTypeInScope(newApType != null ? newApType : oldApState.getApType(),
+                               newApScope != null ? newApScope : oldApScope, newApType != null);
         }
 
         // pokud je entita schvalena ci ke schvaleni, musi dojit
