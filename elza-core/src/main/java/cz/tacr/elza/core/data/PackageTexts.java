@@ -7,13 +7,20 @@ import java.util.Locale;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.domain.TranslationEntityType;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Resolves package-provided texts in a language.
@@ -22,15 +29,91 @@ import cz.tacr.elza.domain.TranslationEntityType;
  * ({@code en-GB} -> {@code en}), and falls back to the source text - the text stored in the entity
  * itself, or for {@link TranslationEntityType#MESSAGE} the text in the source language of the
  * package that defines the message. A {@code null} language always gives the source text.
+ *
+ * <p>Methods without a language argument use the language of the current request, see
+ * {@link #requestLanguage()}.
  */
 @Service
 public class PackageTexts {
 
+    /**
+     * Cookie with the UI language of the client (BCP 47 tag). The client sets it, so it reaches also
+     * plain links (downloads, exports), which cannot carry a header.
+     */
+    public static final String LANGUAGE_COOKIE = "elza-lang";
+
+    /** Request attribute caching the resolved language of the request. */
+    private static final String REQUEST_LANGUAGE_ATTRIBUTE = PackageTexts.class.getName() + ".language";
+
+    /** Value of {@link #REQUEST_LANGUAGE_ATTRIBUTE} for "no language" (source texts). */
+    private static final Object NO_LANGUAGE = new Object();
+
     private final StaticDataService staticDataService;
 
+    private final ElzaLocale elzaLocale;
+
     @Autowired
-    public PackageTexts(StaticDataService staticDataService) {
+    public PackageTexts(StaticDataService staticDataService, ElzaLocale elzaLocale) {
         this.staticDataService = staticDataService;
+        this.elzaLocale = elzaLocale;
+    }
+
+    /**
+     * Language of the current request: the UI language from the {@link #LANGUAGE_COOKIE} cookie, else
+     * the first UI language of the {@code Accept-Language} header, else the language of
+     * {@code elza.locale}. Without an HTTP request (asynchronous work) the language of
+     * {@code elza.locale}. Resolved once per request.
+     *
+     * @return language, null when even {@code elza.locale} names no known language (source texts)
+     */
+    public SysLanguage requestLanguage() {
+        RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
+        if (!(attributes instanceof ServletRequestAttributes servletAttributes)) {
+            return defaultLanguage();
+        }
+        Object cached = attributes.getAttribute(REQUEST_LANGUAGE_ATTRIBUTE, RequestAttributes.SCOPE_REQUEST);
+        if (cached != null) {
+            return cached == NO_LANGUAGE ? null : (SysLanguage) cached;
+        }
+        HttpServletRequest request = servletAttributes.getRequest();
+        SysLanguage language = resolveRequestLanguage(cookieValue(request, LANGUAGE_COOKIE));
+        if (language == null) {
+            language = resolveRequestLanguage(request.getHeader(HttpHeaders.ACCEPT_LANGUAGE));
+        }
+        if (language == null) {
+            language = defaultLanguage();
+        }
+        attributes.setAttribute(REQUEST_LANGUAGE_ATTRIBUTE, language != null ? language : NO_LANGUAGE,
+                                RequestAttributes.SCOPE_REQUEST);
+        return language;
+    }
+
+    /**
+     * Language of {@code elza.locale}; a locale with a region falls back to its language.
+     *
+     * @return language, null when the locale names no known language
+     */
+    public SysLanguage defaultLanguage() {
+        Locale locale = elzaLocale.getLocale();
+        StaticDataProvider sdp = staticDataService.getData();
+        SysLanguage language = sdp.getSysLanguageByTag(locale.toLanguageTag());
+        if (language == null && !locale.getLanguage().isEmpty()) {
+            language = sdp.getSysLanguageByTag(locale.getLanguage());
+        }
+        return language;
+    }
+
+    private static String cookieValue(HttpServletRequest request, String name) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) {
+            return null;
+        }
+        for (Cookie cookie : cookies) {
+            if (name.equals(cookie.getName())) {
+                return cookie.getValue();
+            }
+        }
+        return null;
     }
 
     /**
@@ -79,6 +162,46 @@ public class PackageTexts {
                        SysLanguage language) {
         String translated = translate(entityType, entityCode, field, language);
         return translated != null ? translated : sourceText;
+    }
+
+    /**
+     * Text in the language of the current request.
+     *
+     * @see #text(TranslationEntityType, String, String, String, SysLanguage)
+     */
+    public String text(TranslationEntityType entityType, String entityCode, String field, String sourceText) {
+        return text(entityType, entityCode, field, sourceText, requestLanguage());
+    }
+
+    /**
+     * Name (field {@code name}) in the language of the current request.
+     */
+    public String name(TranslationEntityType entityType, String entityCode, String sourceName) {
+        return text(entityType, entityCode, TranslationEntityType.NAME, sourceName, requestLanguage());
+    }
+
+    public String name(RulItemType itemType) {
+        return name(itemType, requestLanguage());
+    }
+
+    public String shortcut(RulItemType itemType) {
+        return shortcut(itemType, requestLanguage());
+    }
+
+    public String description(RulItemType itemType) {
+        return description(itemType, requestLanguage());
+    }
+
+    public String name(RulItemSpec itemSpec) {
+        return name(itemSpec, requestLanguage());
+    }
+
+    public String shortcut(RulItemSpec itemSpec) {
+        return shortcut(itemSpec, requestLanguage());
+    }
+
+    public String description(RulItemSpec itemSpec) {
+        return description(itemSpec, requestLanguage());
     }
 
     public String name(RulItemType itemType, SysLanguage language) {

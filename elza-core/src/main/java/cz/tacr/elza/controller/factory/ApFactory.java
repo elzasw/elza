@@ -65,6 +65,8 @@ import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.PackageTexts;
+import cz.tacr.elza.domain.TranslationEntityType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.AccessPointItem;
@@ -153,6 +155,8 @@ public class ApFactory {
 
     private final ElzaLocale elzaLocale;
 
+    private final PackageTexts packageTexts;
+
     @Autowired
     public ApFactory(final ApAccessPointRepository apRepository,
                      final ApStateRepository stateRepository,
@@ -170,7 +174,8 @@ public class ApFactory {
                      final RevisionItemService revisionItemService,
                      final AccessPointItemService apItemService,
                      final AccessPointConnectorService apConnectorService,
-                     final ElzaLocale elzaLocale) {
+                     final ElzaLocale elzaLocale,
+                     final PackageTexts packageTexts) {
         this.apRepository = apRepository;
         this.stateRepository = stateRepository;
         this.scopeRepository = scopeRepository;
@@ -188,6 +193,7 @@ public class ApFactory {
         this.apItemService = apItemService;
         this.accessPointConnectorService = apConnectorService;
         this.elzaLocale = elzaLocale;
+        this.packageTexts = packageTexts;
     }
 
     /**
@@ -858,6 +864,7 @@ public class ApFactory {
         }
 
         typeVO = ApTypeVO.newInstance(type, staticData);
+        typeVO.setName(packageTexts.name(TranslationEntityType.AP_TYPE, type.getCode(), typeVO.getName()));
         typeIdVOMap.put(typeVO.getId(), typeVO);
 
         if (type.getParentApTypeId() != null) {

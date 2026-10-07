@@ -17,6 +17,7 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.controller.vo.DataType;
 import cz.tacr.elza.controller.vo.IntViewDefinition;
 import cz.tacr.elza.controller.vo.ItemDisplayType;
@@ -54,7 +55,7 @@ class RulesMapperTest {
         staticDataService = mock(StaticDataService.class);
         staticDataProvider = mock(StaticDataProvider.class);
         lenient().when(staticDataService.getData()).thenReturn(staticDataProvider);
-        mapper = new RulesMapper(staticDataService, new PackageTexts(staticDataService));
+        mapper = new RulesMapper(staticDataService, new PackageTexts(staticDataService, mock(ElzaLocale.class)));
     }
 
     // ---------- toItemTypeList -------------------------------------------------

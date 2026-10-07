@@ -4826,9 +4826,9 @@ namespace ElzaAPI.Rules {
      * Public URL: `GET /api/v1/rules/itemTypes`.
      *
      * Localized strings (`name`, `shortcut`, `description` on `ItemType` and
-     * `ItemTypeSpec`, plus `name` on `ItemTableColumn`) honour the
-     * `Accept-Language` request header when provided; otherwise the server
-     * default language is used.
+     * `ItemTypeSpec`) are in the language of the request: the `elza-lang`
+     * cookie set by the client, else the first UI language of the
+     * `Accept-Language` header, else the server default language.
      *
      * Replaces the legacy `GET /api/rule/descItemTypes`.
      */

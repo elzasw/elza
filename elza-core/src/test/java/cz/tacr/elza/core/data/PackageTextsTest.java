@@ -10,9 +10,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulPackageDependency;
 import cz.tacr.elza.domain.RulTranslation;
@@ -66,7 +71,14 @@ class PackageTextsTest {
                 List.of(dependency));
         lenient().when(sdp.getTranslations()).thenReturn(translations);
 
-        texts = new PackageTexts(sds);
+        ElzaLocale elzaLocale = mock(ElzaLocale.class);
+        lenient().when(elzaLocale.getLocale()).thenReturn(Locale.forLanguageTag("cs-CZ"));
+        texts = new PackageTexts(sds, elzaLocale);
+    }
+
+    @AfterEach
+    void tearDown() {
+        RequestContextHolder.resetRequestAttributes();
     }
 
     @Test
@@ -100,6 +112,34 @@ class PackageTextsTest {
         assertNull(texts.resolveRequestLanguage("de"));
         assertNull(texts.resolveRequestLanguage("cs;q=0"));
         assertNull(texts.resolveRequestLanguage(""));
+    }
+
+    /**
+     * The cookie of the client wins over the browser header; without both the language of
+     * {@code elza.locale} (with region, falling back to the language) is used, also outside a request.
+     */
+    @Test
+    void requestLanguageComesFromCookieHeaderOrDefault() {
+        assertEquals(cs, texts.requestLanguage());
+
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader("Accept-Language", "en-GB,en;q=0.9");
+        request.setCookies(new jakarta.servlet.http.Cookie(PackageTexts.LANGUAGE_COOKIE, "cs"));
+        bind(request);
+        assertEquals(cs, texts.requestLanguage());
+
+        request = new MockHttpServletRequest();
+        request.addHeader("Accept-Language", "en-GB,en;q=0.9");
+        bind(request);
+        assertEquals(enGb, texts.requestLanguage());
+        assertEquals("british T2", texts.name(TranslationEntityType.ITEM_TYPE, "T2", "source"));
+
+        // a cookie naming no UI language is ignored
+        request = new MockHttpServletRequest();
+        request.setCookies(new jakarta.servlet.http.Cookie(PackageTexts.LANGUAGE_COOKIE, "de"));
+        bind(request);
+        assertEquals(cs, texts.requestLanguage());
+        assertEquals("source", texts.name(TranslationEntityType.ITEM_TYPE, "T1", "source"));
     }
 
     @Test
@@ -164,6 +204,10 @@ class PackageTextsTest {
         lenient().when(sdp.getTranslations()).thenReturn(overridden);
         assertEquals("přejmenováno", text("T1", cs));
         assertEquals("source", text("T1", en));
+    }
+
+    private static void bind(MockHttpServletRequest request) {
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
     }
 
     private String text(String code, SysLanguage language) {

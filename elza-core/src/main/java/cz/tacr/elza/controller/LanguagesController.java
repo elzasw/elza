@@ -2,7 +2,6 @@ package cz.tacr.elza.controller;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.controller.vo.Language;
-import cz.tacr.elza.core.ElzaLocale;
+import cz.tacr.elza.core.data.PackageTexts;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.SysLanguage;
 
@@ -25,12 +24,12 @@ import cz.tacr.elza.domain.SysLanguage;
 public class LanguagesController implements LanguagesApi {
 
     private final StaticDataService staticDataService;
-    private final ElzaLocale elzaLocale;
+    private final PackageTexts packageTexts;
 
     @Autowired
-    public LanguagesController(StaticDataService staticDataService, ElzaLocale elzaLocale) {
+    public LanguagesController(StaticDataService staticDataService, PackageTexts packageTexts) {
         this.staticDataService = staticDataService;
-        this.elzaLocale = elzaLocale;
+        this.packageTexts = packageTexts;
     }
 
     /**
@@ -41,7 +40,7 @@ public class LanguagesController implements LanguagesApi {
     @Override
     @Transactional(readOnly = true)
     public ResponseEntity<List<Language>> languagesListLanguages() {
-        SysLanguage defaultLanguage = findDefaultLanguage();
+        SysLanguage defaultLanguage = packageTexts.defaultLanguage();
         List<Language> result = staticDataService.getData().getSysLanguages().stream()
                 .sorted(Comparator.comparing(SysLanguage::getTag))
                 .map(l -> new Language(l.getTag(),
@@ -51,18 +50,5 @@ public class LanguagesController implements LanguagesApi {
                         l == defaultLanguage))
                 .toList();
         return ResponseEntity.ok(result);
-    }
-
-    /**
-     * Language of {@code elza.locale}; a locale with a region falls back to its language.
-     */
-    private SysLanguage findDefaultLanguage() {
-        Locale locale = elzaLocale.getLocale();
-        var sdp = staticDataService.getData();
-        SysLanguage language = sdp.getSysLanguageByTag(locale.toLanguageTag());
-        if (language == null && !locale.getLanguage().isEmpty()) {
-            language = sdp.getSysLanguageByTag(locale.getLanguage());
-        }
-        return language;
     }
 }

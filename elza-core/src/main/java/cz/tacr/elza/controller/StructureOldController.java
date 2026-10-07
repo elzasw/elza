@@ -28,6 +28,7 @@ import cz.tacr.elza.controller.vo.RulStructureTypeVO;
 import cz.tacr.elza.controller.vo.StructureExtensionFundVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.TranslationEntityType;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulPartType;
@@ -264,7 +265,9 @@ public class StructureOldController {
             ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
             structureTypes = structureService.findStructureTypes(fundVersion);
         }
-        return structureTypes.stream().map(i -> RulStructureTypeVO.newInstance(i)).collect(Collectors.toList());
+        return structureTypes.stream()
+                .map(i -> factoryVO.translateName(RulStructureTypeVO.newInstance(i), TranslationEntityType.STRUCTURED_TYPE))
+                .collect(Collectors.toList());
     }
 
     @Deprecated
@@ -272,7 +275,9 @@ public class StructureOldController {
     @RequestMapping(value = "/part-type", method = RequestMethod.GET)
     public List<RulPartTypeVO> findPartTypes() {
         List<RulPartType> partTypes = structureService.findPartTypes();
-        return partTypes.stream().map(i -> RulPartTypeVO.newInstance(i)).collect(Collectors.toList());
+        return partTypes.stream()
+                .map(i -> factoryVO.translateName(RulPartTypeVO.newInstance(i), TranslationEntityType.PART_TYPE))
+                .collect(Collectors.toList());
     }
 
     /**
