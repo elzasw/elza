@@ -58,6 +58,13 @@ import cz.tacr.elza.service.AccessPointDataService;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.UserService;
+import cz.tacr.elza.core.data.PackageTexts;
+import cz.tacr.elza.domain.RulApTypeDeclaration;
+import cz.tacr.elza.domain.TranslationEntityType;
+import cz.tacr.elza.repository.ApTypeDeclarationRepository;
+import cz.tacr.elza.repository.ApTypeRepository;
+import java.util.Set;
+import java.util.stream.Collectors;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.controller.ApController;
 import cz.tacr.elza.controller.vo.ApTypeVO;
@@ -109,6 +116,12 @@ public class EntityRulesTest {
     private ApController apController;
     @Autowired
     private UserService userService;
+    @Autowired
+    private ApTypeRepository apTypeRepository;
+    @Autowired
+    private ApTypeDeclarationRepository apTypeDeclarationRepository;
+    @Autowired
+    private PackageTexts packageTexts;
     @Autowired
     @Qualifier("transactionManager")
     private PlatformTransactionManager txManager;
@@ -209,12 +222,19 @@ public class EntityRulesTest {
             assertTrue(xml.contains("kind=\"AVAILABLE_ITEMS\"") && xml.contains("part-type=\"PT_NAME\""), xml);
             assertNotNull(zipFile.getEntry(RULE_SET_DIR + "rules/available_items/PT_NAME.drl"));
 
+            // the package's own declarations of classes, PERSON with its English name
+            String apTypes = new String(zipFile.getInputStream(zipFile.getEntry(APTypeUpdater.AP_TYPE_XML))
+                    .readAllBytes(), StandardCharsets.UTF_8);
+            assertTrue(apTypes.contains("<name>Person</name>") && apTypes.contains("ENT_PERSON_LOCAL")
+                    && !apTypes.contains("osoba"), apTypes);
+
             ZipEntry members = zipFile.getEntry(RULE_SET_DIR + PackageService.RULE_SET_AP_TYPE_XML);
             assertNotNull(members);
             String membersXml = new String(zipFile.getInputStream(members).readAllBytes(), StandardCharsets.UTF_8);
-            // PERSON is read-only by its class: its default, not assignable, is not written
-            assertTrue(membersXml.contains("code=\"PERSON\"") && membersXml.contains("code=\"PERSON_INDIVIDUAL\"")
-                    && !membersXml.contains("assignable"), membersXml);
+            // the package declares PERSON assignable, the rule set not: written; PERSON_INDIVIDUAL keeps
+            // the default of its class: not written
+            assertTrue(membersXml.contains("code=\"PERSON\" assignable=\"false\"")
+                    && membersXml.contains("<ap-type code=\"PERSON_INDIVIDUAL\"/>"), membersXml);
         } finally {
             Files.deleteIfExists(zip);
         }
@@ -306,6 +326,70 @@ public class EntityRulesTest {
         assertEquals(RegistryCode.AP_TYPE_NOT_IN_RULE_SET, e.getErrorCode());
     }
 
+    /**
+     * PERSON is declared by CZ_BASE (Czech, read-only) and by the test package (English, assignable):
+     * one class, two declarations; the name follows the language of the reader, the stored name is
+     * the one in the language of the installation; CAM keeps PERSON read-only.
+     */
+    @Test
+    @Order(7)
+    void aClassDeclaredByTwoPackagesExistsOnce() {
+        tx(() -> {
+            ApType person = apTypeRepository.findAll().stream().filter(t -> t.getCode().equals("PERSON"))
+                    .reduce((a, b) -> {
+                        throw new AssertionError("PERSON twice");
+                    }).orElseThrow();
+            List<RulApTypeDeclaration> declarations = apTypeDeclarationRepository.findByApTypes(List.of(person));
+            assertEquals(Set.of("CZ_BASE", TEST_CODE),
+                         declarations.stream().map(d -> d.getRulPackage().getCode()).collect(Collectors.toSet()));
+            assertEquals("osoba / bytost", person.getName());
+
+            StaticDataProvider sdp = staticDataService.getData();
+            assertEquals("Person", packageTexts.text(TranslationEntityType.AP_TYPE, "PERSON", TranslationEntityType.NAME, "source",
+                                                     sdp.getSysLanguageByTag("en")));
+            assertEquals("osoba / bytost", packageTexts.text(TranslationEntityType.AP_TYPE, "PERSON", TranslationEntityType.NAME, "source",
+                                                             sdp.getSysLanguageByTag("cs")));
+            assertTrue(!sdp.getRuleSetByCode("CAM").isApTypeAssignable(sdp.getApTypeByCode("PERSON")));
+            assertEquals("PERSON", sdp.getApTypeByCode("ENT_PERSON_LOCAL").getParentApType().getCode());
+        });
+    }
+
+    @Test
+    @Order(8)
+    void aClassDeclaredWithAnotherParentIsRefused() throws Exception {
+        assertRefused(PackageCode.AP_TYPE_CONFLICT, Map.of(APTypeUpdater.AP_TYPE_XML,
+                "<ap-types><ap-type code=\"PERSON\" parent-ap-type=\"DYNASTY\"><name>Person</name>"
+                + "<hierarchical>false</hierarchical><read-only>false</read-only></ap-type></ap-types>"));
+    }
+
+    /** Deleting the package removes its own class and keeps the shared one, declared by CZ_BASE only. */
+    @Test
+    @Order(20)
+    void deletingThePackageKeepsTheSharedClass() {
+        helperTestService.deleteTables(false);
+        tx(() -> {
+            scopeRepository.deleteAllById(scopeIds);
+            for (ApScope scope : scopeRepository.findAll()) {
+                if (scope.getRulRuleSet() != null && "ENT_TEST".equals(scope.getRulRuleSet().getCode())) {
+                    scope.setRulRuleSet(null);
+                    scopeRepository.save(scope);
+                }
+            }
+        });
+        scopeIds.clear();
+        packageService.deletePackage(TEST_CODE);
+        staticDataService.refreshForCurrentThread();
+        tx(() -> {
+            ApType person = apTypeRepository.findAll().stream().filter(t -> t.getCode().equals("PERSON"))
+                    .findFirst().orElseThrow();
+            List<RulApTypeDeclaration> declarations = apTypeDeclarationRepository.findByApTypes(List.of(person));
+            assertEquals(List.of("CZ_BASE"), declarations.stream().map(d -> d.getRulPackage().getCode()).toList());
+            assertEquals("CZ_BASE", person.getRulPackage().getCode());
+            assertTrue(person.isReadOnly());
+            assertTrue(apTypeRepository.findAll().stream().noneMatch(t -> t.getCode().equals("ENT_PERSON_LOCAL")));
+        });
+    }
+
     private void assertRefusedClass(String apType, Integer scopeId, boolean assign) {
         AbstractException e = assertThrows(AbstractException.class,
                 () -> tx(() -> accessPointService.checkApTypeInScope(type(apType), scope(scopeId), assign)));
@@ -367,6 +451,10 @@ public class EntityRulesTest {
     }
 
     private void assertRefused(Map<String, String> replacedFiles) throws Exception {
+        assertRefused(PackageCode.INVALID_ENTITY_RULE, replacedFiles);
+    }
+
+    private void assertRefused(PackageCode expected, Map<String, String> replacedFiles) throws Exception {
         File zip = buildVariant(replacedFiles);
         Boolean testing = packageService.getTesting();
         packageService.setTesting(true);
@@ -375,7 +463,7 @@ public class EntityRulesTest {
                 packageService.preImportPackage();
                 packageService.importPackageInternal(zip, true);
             });
-            assertEquals(PackageCode.INVALID_ENTITY_RULE, e.getErrorCode(), e.getMessage());
+            assertEquals(expected, e.getErrorCode(), e.getMessage());
         } finally {
             packageService.setTesting(testing);
             staticDataService.refreshForCurrentThread();

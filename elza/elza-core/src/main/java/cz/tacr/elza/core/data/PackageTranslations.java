@@ -67,7 +67,7 @@ public class PackageTranslations {
      * Length of the longest dependency chain below each package: 0 for a package without
      * dependencies, 1 for a package depending only on such packages, and so on.
      */
-    static Map<Integer, Integer> dependencyDepth(Collection<RulPackageDependency> dependencies) {
+    public static Map<Integer, Integer> dependencyDepth(Collection<RulPackageDependency> dependencies) {
         Map<Integer, List<Integer>> dependsOn = new HashMap<>();
         for (RulPackageDependency d : dependencies) {
             dependsOn.computeIfAbsent(d.getPackageId(), k -> new ArrayList<>()).add(d.getDependsOnPackageId());

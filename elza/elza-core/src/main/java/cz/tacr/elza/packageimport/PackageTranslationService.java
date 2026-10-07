@@ -331,7 +331,7 @@ public class PackageTranslationService {
             // The source texts of the package's own entities are in its entity files; a row in its
             // source language for an entity of ANOTHER package overrides that package's text.
             if (sourceFile && type != TranslationEntityType.MESSAGE
-                    && rulPackage.getCode().equals(sourceTexts.ownerPackageCode(type, t.getCode()))) {
+                    && sourceTexts.isOwn(type, t.getCode(), rulPackage.getCode())) {
                 logger.warn("Package {}: {} translates its own {} into its source language, skipped",
                             rulPackage.getCode(), file, key);
                 continue;
@@ -386,6 +386,33 @@ public class PackageTranslationService {
                 return message(code);
             }
             return cache.computeIfAbsent(type.name() + "." + field, k -> load(type, "e." + field)).get(code);
+        }
+
+        /**
+         * The entity belongs to the package: its owner, or for an entity class one of the packages
+         * declaring it.
+         */
+        boolean isOwn(TranslationEntityType type, String code, String packageCode) {
+            if (type == TranslationEntityType.AP_TYPE) {
+                Set<String> declaring = apTypeDeclarations().get(code);
+                return declaring != null && declaring.contains(packageCode);
+            }
+            return packageCode.equals(ownerPackageCode(type, code));
+        }
+
+        private Map<String, Set<String>> apTypeDeclarations;
+
+        /** Codes of the packages declaring each entity class. */
+        private Map<String, Set<String>> apTypeDeclarations() {
+            if (apTypeDeclarations == null) {
+                apTypeDeclarations = new HashMap<>();
+                for (Object[] r : entityManager.createQuery(
+                        "SELECT d.apType.code, d.rulPackage.code FROM rul_ap_type_declaration d", Object[].class)
+                        .getResultList()) {
+                    apTypeDeclarations.computeIfAbsent((String) r[0], k -> new HashSet<>()).add((String) r[1]);
+                }
+            }
+            return apTypeDeclarations;
         }
 
         /**

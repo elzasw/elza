@@ -24,6 +24,7 @@ import cz.tacr.elza.domain.RulArrangementRule;
 import cz.tacr.elza.domain.RulComponent;
 import cz.tacr.elza.domain.RulEntityRule;
 import cz.tacr.elza.domain.RulRuleSetApType;
+import cz.tacr.elza.domain.RulApTypeDeclaration;
 import cz.tacr.elza.domain.RulExtensionRule;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
@@ -37,6 +38,8 @@ import cz.tacr.elza.domain.RulStructureExtensionDefinition;
 import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.domain.RulStructuredTypeExtension;
 import cz.tacr.elza.domain.SysLanguage;
+import cz.tacr.elza.domain.RulTranslation;
+import cz.tacr.elza.domain.TranslationEntityType;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApExternalIdTypeRepository;
@@ -385,8 +388,9 @@ public class StaticDataProvider {
         initPartTypes(service.partTypeRepository);
         initApExternalSystems(service.apExternalSystemRepository);
         initPolicyTypes(service.policyTypeRepository);
-        initTranslations(service.translationRepository, service.packageDependencyRepository);
-        initRuleSetApTypes(service.ruleSetApTypeRepository, service.packageDependencyRepository);
+        List<RulApTypeDeclaration> apTypeDeclarations = service.apTypeDeclarationRepository.findAll();
+        initTranslations(service.translationRepository, service.packageDependencyRepository, apTypeDeclarations);
+        initRuleSetApTypes(service.ruleSetApTypeRepository, service.packageDependencyRepository, apTypeDeclarations);
         self = this;
     }
 
@@ -395,7 +399,8 @@ public class StaticDataProvider {
      * package deeper in dependency order wins (ties by package code), as for translations.
      */
     private void initRuleSetApTypes(RuleSetApTypeRepository ruleSetApTypeRepository,
-                                    PackageDependencyRepository packageDependencyRepository) {
+                                    PackageDependencyRepository packageDependencyRepository,
+                                    List<RulApTypeDeclaration> apTypeDeclarations) {
         Map<Integer, Integer> depth = PackageTranslations.dependencyDepth(packageDependencyRepository.findAll());
         Comparator<RulRuleSetApType> precedence = Comparator
                 .comparing((RulRuleSetApType m) -> depth.getOrDefault(m.getPackageId(), 0))
@@ -403,8 +408,16 @@ public class StaticDataProvider {
         Map<Integer, Map<Integer, Boolean>> membersByRuleSet = new HashMap<>();
         ruleSetApTypeRepository.findAll().stream().sorted(precedence).forEach(m -> membersByRuleSet
                 .computeIfAbsent(m.getRuleSetId(), k -> new HashMap<>()).put(m.getApTypeId(), m.getAssignable()));
+        // read-only of the classes as the package of each rule set declares them
+        Map<Integer, Map<Integer, Boolean>> readOnlyByPackage = new HashMap<>();
+        for (RulApTypeDeclaration declaration : apTypeDeclarations) {
+            readOnlyByPackage.computeIfAbsent(declaration.getPackageId(), k -> new HashMap<>())
+                    .put(declaration.getApTypeId(), declaration.getReadOnly());
+        }
         for (RuleSet ruleSet : ruleSets) {
             ruleSet.setApTypeMembers(membersByRuleSet.getOrDefault(ruleSet.getRuleSetId(), Map.of()));
+            ruleSet.setDeclaredReadOnly(readOnlyByPackage.getOrDefault(
+                    ruleSet.getEntity().getPackage().getPackageId(), Map.of()));
         }
     }
 
@@ -639,11 +652,31 @@ public class StaticDataProvider {
         this.sysLanguageTagMap = createLookup(languages, l -> l.getTag().toLowerCase(Locale.ROOT));
     }
 
+    /**
+     * Translations of package texts; the names of class declarations are texts of the classes in the
+     * languages of the declaring packages.
+     */
     private void initTranslations(RulTranslationRepository translationRepository,
-                                  PackageDependencyRepository packageDependencyRepository) {
-        this.translations = PackageTranslations.build(translationRepository.findAllFetchPackageAndLanguage(),
-                                                      packages,
-                                                      packageDependencyRepository.findAll());
+                                  PackageDependencyRepository packageDependencyRepository,
+                                  List<RulApTypeDeclaration> apTypeDeclarations) {
+        List<RulTranslation> rows = new ArrayList<>(translationRepository.findAllFetchPackageAndLanguage());
+        for (RulApTypeDeclaration declaration : apTypeDeclarations) {
+            RulPackage rulPackage = packageIdMap.get(declaration.getPackageId());
+            SysLanguage language = rulPackage != null && rulPackage.getLanguageId() != null
+                    ? getSysLanguageById(rulPackage.getLanguageId()) : null;
+            if (language == null) {
+                continue;
+            }
+            RulTranslation row = new RulTranslation();
+            row.setRulPackage(rulPackage);
+            row.setEntityType(TranslationEntityType.AP_TYPE.name());
+            row.setEntityCode(apTypeIdMap.get(declaration.getApTypeId()).getCode());
+            row.setField(TranslationEntityType.NAME);
+            row.setLanguage(language);
+            row.setTextValue(declaration.getName());
+            rows.add(row);
+        }
+        this.translations = PackageTranslations.build(rows, packages, packageDependencyRepository.findAll());
     }
 
     public static <K, V> Map<K, V> createLookup(Collection<V> values, Function<V, K> keyMapping) {
