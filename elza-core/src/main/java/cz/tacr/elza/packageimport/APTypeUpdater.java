@@ -53,7 +53,7 @@ public class APTypeUpdater {
 
     final private ApTypeDeclarationRepository declarationRepository;
 
-    final private ApTypeDeclarations summary;
+    final private PackageDeclarations summary;
 
     private APTypes apXmlTypes = null;
 
@@ -72,7 +72,7 @@ public class APTypeUpdater {
                          final EntityRuleRepository entityRuleRepository,
                          final RuleSetApTypeRepository ruleSetApTypeRepository,
                          final ApTypeDeclarationRepository declarationRepository,
-                         final ApTypeDeclarations summary,
+                         final PackageDeclarations summary,
                          final StaticDataProvider staticDataProvider) {
         this.apStateRepository = apStateRepository;
         this.apTypeRepository = apTypeRepository;

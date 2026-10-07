@@ -6649,6 +6649,10 @@
     "defaultMessage": "Error while parsing the XML file",
     "srcHash": "j9Xrpj5ZuZnR"
   },
+  "exception.pkg.PART_TYPE_IN_USE": {
+    "defaultMessage": "Part type \"{codes}\" cannot be removed, {count} parts of entities use it",
+    "srcHash": "8aa7bJu0rWMh"
+  },
   "exception.pkg.VERSION_APPLIED": {
     "defaultMessage": "Package {code} is already applied at version {version}",
     "srcHash": "NW8GVCeF9F0a"

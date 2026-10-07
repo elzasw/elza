@@ -1,5 +1,7 @@
 package cz.tacr.elza.repository;
 
+import cz.tacr.elza.domain.RulPartType;
+
 import java.util.Collection;
 import java.util.List;
 
@@ -14,6 +16,11 @@ import cz.tacr.elza.domain.ApPart;
 
 @Repository
 public interface ApPartRepository extends JpaRepository<ApPart, Integer> {
+
+    /** Number of parts of the part types. */
+    @Query("SELECT count(p) FROM ApPart p WHERE p.partType IN :partTypes")
+    long countByPartTypes(@Param("partTypes") Collection<RulPartType> partTypes);
+
 
     @Query("SELECT p FROM ApPart p WHERE p.accessPoint = :accessPoint AND p.deleteChange IS NULL")
     List<ApPart> findValidPartByAccessPoint(@Param("accessPoint") ApAccessPoint accessPoint);

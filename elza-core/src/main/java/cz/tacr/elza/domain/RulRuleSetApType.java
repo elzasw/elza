@@ -55,6 +55,10 @@ public class RulRuleSetApType {
     @Column(nullable = false)
     private Boolean assignable;
 
+    /** Order within the members the package declares for the rule set; null for rows before 3.4.x. */
+    @Column
+    private Integer position;
+
     public Integer getRuleSetApTypeId() {
         return ruleSetApTypeId;
     }
@@ -100,6 +104,14 @@ public class RulRuleSetApType {
     public void setRulPackage(final RulPackage rulPackage) {
         this.rulPackage = rulPackage;
         this.packageId = rulPackage != null ? rulPackage.getPackageId() : null;
+    }
+
+    public Integer getPosition() {
+        return position;
+    }
+
+    public void setPosition(final Integer position) {
+        this.position = position;
     }
 
     public Boolean getAssignable() {

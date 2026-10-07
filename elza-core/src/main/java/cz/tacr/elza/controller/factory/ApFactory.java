@@ -856,8 +856,48 @@ public class ApFactory {
         List<ApTypeVO> roots = createTypesWithHierarchyAll(types);
         if (ruleSet != null) {
             setAssignable(roots, ruleSet, staticDataService.getData());
+            sortByMemberOrder(roots, ruleSet.getApTypeOrder());
         }
         return roots;
+    }
+
+    /**
+     * Orders the class tree as the rule set lists its classes: a class not listed (a parent of
+     * members) takes the place of its first listed descendant; classes at one level that are not
+     * placed keep their order.
+     */
+    private static void sortByMemberOrder(final List<ApTypeVO> roots, final List<Integer> order) {
+        if (order.isEmpty()) {
+            return;
+        }
+        Map<Integer, Integer> positions = new HashMap<>();
+        for (int i = 0; i < order.size(); i++) {
+            positions.put(order.get(i), i);
+        }
+        Map<Integer, Integer> ranks = new HashMap<>();
+        roots.forEach(vo -> rank(vo, positions, ranks));
+        sortByRank(roots, ranks);
+    }
+
+    private static int rank(final ApTypeVO vo, final Map<Integer, Integer> positions,
+                            final Map<Integer, Integer> ranks) {
+        int rank = positions.getOrDefault(vo.getId(), Integer.MAX_VALUE);
+        if (vo.getChildren() != null) {
+            for (ApTypeVO child : vo.getChildren()) {
+                rank = Math.min(rank, rank(child, positions, ranks));
+            }
+        }
+        ranks.put(vo.getId(), rank);
+        return rank;
+    }
+
+    private static void sortByRank(final List<ApTypeVO> types, final Map<Integer, Integer> ranks) {
+        if (types == null) {
+            return;
+        }
+        // stable sort: classes without a rank stay in their order
+        types.sort(Comparator.comparing(vo -> ranks.get(vo.getId())));
+        types.forEach(vo -> sortByRank(vo.getChildren(), ranks));
     }
 
     private static void setAssignable(final List<ApTypeVO> types, final RuleSet ruleSet, final StaticDataProvider sdp) {
@@ -940,9 +980,20 @@ public class ApFactory {
         result.setItemTypes(itemTypesSettings.size() > 0
                 ? SettingItemTypes.newInstance(itemTypesSettings.get(0)).getItemTypes()
                 : Collections.emptyList());
-        result.setPartsOrder(partsOrderSettings.size() > 0
-                ? SettingPartsOrder.newInstance(partsOrderSettings.get(0)).getParts()
-                : Collections.emptyList());
+        // the part types listed by the rule set (rul_part_type.xml), or the older parts-order setting
+        StaticDataProvider sdp = staticDataService.getData();
+        List<Integer> partTypeOrder = sdp.getRuleSetById(ruleRule.getRuleSetId()).getPartTypeOrder();
+        if (!partTypeOrder.isEmpty()) {
+            result.setPartsOrder(partTypeOrder.stream().map(id -> {
+                SettingPartsOrder.Part part = new SettingPartsOrder.Part();
+                part.setCode(sdp.getPartTypeById(id).getCode());
+                return part;
+            }).toList());
+        } else {
+            result.setPartsOrder(partsOrderSettings.size() > 0
+                    ? SettingPartsOrder.newInstance(partsOrderSettings.get(0)).getParts()
+                    : Collections.emptyList());
+        }
         result.setCode(ruleRule.getCode());
         result.setRuleSetId(ruleRule.getRuleSetId());
         return result;

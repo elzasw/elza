@@ -5,10 +5,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -24,7 +27,9 @@ import cz.tacr.elza.domain.RulArrangementRule;
 import cz.tacr.elza.domain.RulComponent;
 import cz.tacr.elza.domain.RulEntityRule;
 import cz.tacr.elza.domain.RulRuleSetApType;
+import cz.tacr.elza.domain.RulRuleSetPartType;
 import cz.tacr.elza.domain.RulApTypeDeclaration;
+import cz.tacr.elza.domain.RulPartTypeDeclaration;
 import cz.tacr.elza.domain.RulExtensionRule;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
@@ -50,6 +55,7 @@ import cz.tacr.elza.repository.ArrangementRuleRepository;
 import cz.tacr.elza.repository.ComponentRepository;
 import cz.tacr.elza.repository.EntityRuleRepository;
 import cz.tacr.elza.repository.RuleSetApTypeRepository;
+import cz.tacr.elza.repository.RuleSetPartTypeRepository;
 import cz.tacr.elza.repository.ExtensionRuleRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
@@ -389,25 +395,41 @@ public class StaticDataProvider {
         initApExternalSystems(service.apExternalSystemRepository);
         initPolicyTypes(service.policyTypeRepository);
         List<RulApTypeDeclaration> apTypeDeclarations = service.apTypeDeclarationRepository.findAll();
-        initTranslations(service.translationRepository, service.packageDependencyRepository, apTypeDeclarations);
-        initRuleSetApTypes(service.ruleSetApTypeRepository, service.packageDependencyRepository, apTypeDeclarations);
+        initTranslations(service.translationRepository, service.packageDependencyRepository, apTypeDeclarations,
+                         service.partTypeDeclarationRepository.findAll());
+        initRuleSetApTypes(service.ruleSetApTypeRepository, service.ruleSetPartTypeRepository,
+                           service.packageDependencyRepository, apTypeDeclarations);
         self = this;
     }
 
     /**
-     * Member classes of the rule sets; when several packages state one class in one rule set, the
-     * package deeper in dependency order wins (ties by package code), as for translations.
+     * Member classes and part types of the rule sets; when several packages state one class in one
+     * rule set, the package deeper in dependency order wins (ties by package code), as for
+     * translations. Display order: packages from the owner in dependency order, each in its file
+     * order.
      */
     private void initRuleSetApTypes(RuleSetApTypeRepository ruleSetApTypeRepository,
+                                    RuleSetPartTypeRepository ruleSetPartTypeRepository,
                                     PackageDependencyRepository packageDependencyRepository,
                                     List<RulApTypeDeclaration> apTypeDeclarations) {
         Map<Integer, Integer> depth = PackageTranslations.dependencyDepth(packageDependencyRepository.findAll());
+        // a later package overrides assignable; the position stays where the class was first listed
         Comparator<RulRuleSetApType> precedence = Comparator
                 .comparing((RulRuleSetApType m) -> depth.getOrDefault(m.getPackageId(), 0))
-                .thenComparing(m -> packageIdMap.get(m.getPackageId()).getCode());
+                .thenComparing(m -> packageIdMap.get(m.getPackageId()).getCode())
+                .thenComparing(RulRuleSetApType::getPosition, Comparator.nullsLast(Comparator.naturalOrder()))
+                .thenComparing(RulRuleSetApType::getRuleSetApTypeId);
         Map<Integer, Map<Integer, Boolean>> membersByRuleSet = new HashMap<>();
         ruleSetApTypeRepository.findAll().stream().sorted(precedence).forEach(m -> membersByRuleSet
-                .computeIfAbsent(m.getRuleSetId(), k -> new HashMap<>()).put(m.getApTypeId(), m.getAssignable()));
+                .computeIfAbsent(m.getRuleSetId(), k -> new LinkedHashMap<>())
+                .put(m.getApTypeId(), m.getAssignable()));
+        Comparator<RulRuleSetPartType> partPrecedence = Comparator
+                .comparing((RulRuleSetPartType m) -> depth.getOrDefault(m.getPackageId(), 0))
+                .thenComparing(m -> packageIdMap.get(m.getPackageId()).getCode())
+                .thenComparing(RulRuleSetPartType::getPosition);
+        Map<Integer, Set<Integer>> partsByRuleSet = new HashMap<>();
+        ruleSetPartTypeRepository.findAll().stream().sorted(partPrecedence).forEach(m -> partsByRuleSet
+                .computeIfAbsent(m.getRuleSetId(), k -> new LinkedHashSet<>()).add(m.getPartTypeId()));
         // read-only of the classes as the package of each rule set declares them
         Map<Integer, Map<Integer, Boolean>> readOnlyByPackage = new HashMap<>();
         for (RulApTypeDeclaration declaration : apTypeDeclarations) {
@@ -416,6 +438,7 @@ public class StaticDataProvider {
         }
         for (RuleSet ruleSet : ruleSets) {
             ruleSet.setApTypeMembers(membersByRuleSet.getOrDefault(ruleSet.getRuleSetId(), Map.of()));
+            ruleSet.setPartTypeOrder(new ArrayList<>(partsByRuleSet.getOrDefault(ruleSet.getRuleSetId(), Set.of())));
             ruleSet.setDeclaredReadOnly(readOnlyByPackage.getOrDefault(
                     ruleSet.getEntity().getPackage().getPackageId(), Map.of()));
         }
@@ -658,25 +681,39 @@ public class StaticDataProvider {
      */
     private void initTranslations(RulTranslationRepository translationRepository,
                                   PackageDependencyRepository packageDependencyRepository,
-                                  List<RulApTypeDeclaration> apTypeDeclarations) {
+                                  List<RulApTypeDeclaration> apTypeDeclarations,
+                                  List<RulPartTypeDeclaration> partTypeDeclarations) {
         List<RulTranslation> rows = new ArrayList<>(translationRepository.findAllFetchPackageAndLanguage());
         for (RulApTypeDeclaration declaration : apTypeDeclarations) {
-            RulPackage rulPackage = packageIdMap.get(declaration.getPackageId());
-            SysLanguage language = rulPackage != null && rulPackage.getLanguageId() != null
-                    ? getSysLanguageById(rulPackage.getLanguageId()) : null;
-            if (language == null) {
-                continue;
-            }
-            RulTranslation row = new RulTranslation();
-            row.setRulPackage(rulPackage);
-            row.setEntityType(TranslationEntityType.AP_TYPE.name());
-            row.setEntityCode(apTypeIdMap.get(declaration.getApTypeId()).getCode());
-            row.setField(TranslationEntityType.NAME);
-            row.setLanguage(language);
-            row.setTextValue(declaration.getName());
-            rows.add(row);
+            addDeclaredName(rows, declaration.getPackageId(), TranslationEntityType.AP_TYPE,
+                            apTypeIdMap.get(declaration.getApTypeId()).getCode(), declaration.getName());
+        }
+        for (RulPartTypeDeclaration declaration : partTypeDeclarations) {
+            addDeclaredName(rows, declaration.getPackageId(), TranslationEntityType.PART_TYPE,
+                            partTypeIdMap.get(declaration.getPartTypeId()).getCode(), declaration.getName());
         }
         this.translations = PackageTranslations.build(rows, packages, packageDependencyRepository.findAll());
+    }
+
+    /**
+     * Name of a declaration as a text in the language of the declaring package.
+     */
+    private void addDeclaredName(List<RulTranslation> rows, Integer packageId, TranslationEntityType type,
+                                 String code, String name) {
+        RulPackage rulPackage = packageIdMap.get(packageId);
+        SysLanguage language = rulPackage != null && rulPackage.getLanguageId() != null
+                ? getSysLanguageById(rulPackage.getLanguageId()) : null;
+        if (language == null) {
+            return;
+        }
+        RulTranslation row = new RulTranslation();
+        row.setRulPackage(rulPackage);
+        row.setEntityType(type.name());
+        row.setEntityCode(code);
+        row.setField(TranslationEntityType.NAME);
+        row.setLanguage(language);
+        row.setTextValue(name);
+        rows.add(row);
     }
 
     public static <K, V> Map<K, V> createLookup(Collection<V> values, Function<V, K> keyMapping) {

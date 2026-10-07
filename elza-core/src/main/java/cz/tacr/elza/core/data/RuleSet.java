@@ -43,6 +43,17 @@ public class RuleSet {
     private Map<Integer, Boolean> apTypeMembers = Map.of();
 
     /**
+     * Member classes in display order (ids)
+     */
+    private List<Integer> apTypeOrder = List.of();
+
+    /**
+     * Part types offered by the rule set in display order (ids); empty when the rule set does not
+     * list its part types
+     */
+    private List<Integer> partTypeOrder = List.of();
+
+    /**
      * Read-only of classes as the package of the rule set declares them (class id to read-only)
      */
     private Map<Integer, Boolean> declaredReadOnly = Map.of();
@@ -76,8 +87,34 @@ public class RuleSet {
                 .collect(Collectors.groupingBy(RulEntityRule::getKind, HashMap::new, Collectors.toList()));
     }
     
+    /**
+     * @param apTypeMembers
+     *            class id to assignable, iterated in display order
+     */
     void setApTypeMembers(final Map<Integer, Boolean> apTypeMembers) {
         this.apTypeMembers = Map.copyOf(apTypeMembers);
+        this.apTypeOrder = List.copyOf(apTypeMembers.keySet());
+    }
+
+    void setPartTypeOrder(final List<Integer> partTypeOrder) {
+        this.partTypeOrder = List.copyOf(partTypeOrder);
+    }
+
+    /**
+     * Member classes in display order: the members of the owner of the rule set in the order of its
+     * file, then members contributed by other packages (in dependency order, then by package code).
+     * Empty when the rule set declares no members.
+     */
+    public List<Integer> getApTypeOrder() {
+        return apTypeOrder;
+    }
+
+    /**
+     * Part types offered by the rule set in display order, composed as {@link #getApTypeOrder()}.
+     * Empty when the rule set does not list its part types.
+     */
+    public List<Integer> getPartTypeOrder() {
+        return partTypeOrder;
     }
 
     void setDeclaredReadOnly(final Map<Integer, Boolean> declaredReadOnly) {

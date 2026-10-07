@@ -73,7 +73,10 @@ public class IndexConfigReaderTest implements IndexConfigReader {
 
                     PartTypes partTypes = PackageUtils.convertXmlFileToObject(PartTypes.class, path.resolve(PART_TYPE_XML));
                     if (partTypes != null) {
-                    	partTypeCodes.addAll(partTypes.getPartTypes().stream().map(i -> i.getCode()).collect(Collectors.toList()));
+                    	// a part type may be declared by several packages
+                    	partTypes.getPartTypes().stream().map(i -> i.getCode())
+                    	        .filter(code -> !partTypeCodes.contains(code))
+                    	        .forEach(partTypeCodes::add);
                     }
 
                     ItemTypes itemTypes = PackageUtils.convertXmlFileToObject(ItemTypes.class, path.resolve(ITEM_TYPE_XML));

@@ -81,6 +81,12 @@ import cz.tacr.elza.exception.codes.RegistryCode;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import cz.tacr.elza.service.StartupService;
+import cz.tacr.elza.service.PartService;
+import cz.tacr.elza.domain.RulPartType;
+import cz.tacr.elza.domain.RulPartTypeDeclaration;
+import cz.tacr.elza.repository.PartTypeDeclarationRepository;
+import cz.tacr.elza.repository.PartTypeRepository;
+import cz.tacr.elza.packageimport.xml.SettingPartsOrder;
 
 /**
  * Entity rules belong to their rule set: CZ_BASE (rule set CAM) and the test package
@@ -128,6 +134,12 @@ public class EntityRulesTest {
     private ApTypeDeclarationRepository apTypeDeclarationRepository;
     @Autowired
     private PackageTexts packageTexts;
+    @Autowired
+    private PartTypeRepository partTypeRepository;
+    @Autowired
+    private PartTypeDeclarationRepository partTypeDeclarationRepository;
+    @Autowired
+    private PartService partService;
     @Autowired
     private GroovyService groovyService;
     @Autowired
@@ -245,6 +257,18 @@ public class EntityRulesTest {
             // the default of its class: not written
             assertTrue(membersXml.contains("code=\"PERSON\" assignable=\"false\"")
                     && membersXml.contains("<ap-type code=\"PERSON_INDIVIDUAL\"/>"), membersXml);
+            assertTrue(membersXml.indexOf("PERSON_INDIVIDUAL") < membersXml.indexOf("ENT_PERSON_LOCAL"), membersXml);
+
+            // own declarations of part types (PT_NAME with its English name) and the list of the rule set
+            String partTypes = new String(zipFile.getInputStream(zipFile.getEntry(PackageService.PART_TYPE_XML))
+                    .readAllBytes(), StandardCharsets.UTF_8);
+            assertTrue(partTypes.contains("<name>Name</name>") && partTypes.contains("PT_ENT_NOTE")
+                    && !partTypes.contains("PT_BODY"), partTypes);
+            ZipEntry partList = zipFile.getEntry(RULE_SET_DIR + PackageService.RULE_SET_PART_TYPE_XML);
+            assertNotNull(partList);
+            String partListXml = new String(zipFile.getInputStream(partList).readAllBytes(), StandardCharsets.UTF_8);
+            assertTrue(partListXml.indexOf("PT_ENT_NOTE") >= 0
+                    && partListXml.indexOf("PT_ENT_NOTE") < partListXml.indexOf("PT_NAME"), partListXml);
         } finally {
             Files.deleteIfExists(zip);
         }
@@ -272,6 +296,35 @@ public class EntityRulesTest {
                              "<ap-types><ap-type code=\"NO_SUCH_CLASS\"/></ap-types>"));
         assertRefused(Map.of(RULE_SET_DIR + PackageService.RULE_SET_AP_TYPE_XML,
                              "<ap-types><ap-type code=\"PERSON\"/><ap-type code=\"PERSON\"/></ap-types>"));
+        // part types of the rule set: an unknown part type, a part type listed twice
+        assertRefused(Map.of(RULE_SET_DIR + PackageService.RULE_SET_PART_TYPE_XML,
+                             "<part-types><part-type code=\"PT_NO_SUCH\"/></part-types>"));
+        assertRefused(Map.of(RULE_SET_DIR + PackageService.RULE_SET_PART_TYPE_XML,
+                             "<part-types><part-type code=\"PT_NAME\"/><part-type code=\"PT_NAME\"/></part-types>"));
+        // part type declarations: a code declared twice, an unknown child part
+        assertRefused(Map.of(PackageService.PART_TYPE_XML, "<part-types>"
+                + "<part-type code=\"PT_ENT_NOTE\"><name>Note</name></part-type>"
+                + "<part-type code=\"PT_ENT_NOTE\"><name>Note</name></part-type></part-types>"));
+        assertRefused(Map.of(PackageService.PART_TYPE_XML, "<part-types>"
+                + "<part-type code=\"PT_ENT_NOTE\"><name>Note</name><child_part>PT_NO_SUCH</child_part>"
+                + "</part-type></part-types>"));
+    }
+
+    /** A part type used by parts of entities cannot be removed by a new version of its package. */
+    @Test
+    @Order(17)
+    void aUsedPartTypeCannotBeRemoved() throws Exception {
+        tx(() -> {
+            ApChange change = accessPointDataService.createChange(ApChange.Type.AP_CREATE);
+            ApState state = accessPointService.createAccessPoint(scope(scopeIds.get(1)), type("PERSON_INDIVIDUAL"),
+                                                                 ApState.StateApproval.NEW, change, null);
+            partService.createPart(partTypeRepository.findByCode("PT_ENT_NOTE"), state.getAccessPoint(), change, null);
+        });
+        assertRefused(PackageCode.PART_TYPE_IN_USE, Map.of(
+                PackageService.PART_TYPE_XML, "<part-types><part-type code=\"PT_NAME\"><name>Name</name>"
+                        + "<repeatable>true</repeatable></part-type></part-types>",
+                RULE_SET_DIR + PackageService.RULE_SET_PART_TYPE_XML,
+                "<part-types><part-type code=\"PT_NAME\"/></part-types>"));
     }
 
     /**
@@ -302,7 +355,9 @@ public class EntityRulesTest {
         List<ApTypeVO> tree = txGet(() -> apController.getApTypes(testScope));
         assertEquals(List.of("PERSON"), tree.stream().map(ApTypeVO::getCode).toList());
         assertTrue(!tree.get(0).getAddRecord());
-        assertEquals(List.of("PERSON_INDIVIDUAL"), tree.get(0).getChildren().stream().map(ApTypeVO::getCode).toList());
+        // in the order of the rule set, not by name ("Local person" before "osoba")
+        assertEquals(List.of("PERSON_INDIVIDUAL", "ENT_PERSON_LOCAL"),
+                     tree.get(0).getChildren().stream().map(ApTypeVO::getCode).toList());
         assertTrue(tree.get(0).getChildren().get(0).getAddRecord());
         assertTrue(txGet(() -> apController.getApTypes(null)).size() > 1);
     }
@@ -406,6 +461,55 @@ public class EntityRulesTest {
         });
     }
 
+    /**
+     * PT_NAME is declared by CZ_BASE (Czech) and by the test package (English): one part type, two
+     * declarations, the name follows the language of the reader.
+     */
+    @Test
+    @Order(8)
+    void aPartTypeDeclaredByTwoPackagesExistsOnce() {
+        tx(() -> {
+            RulPartType name = partTypeRepository.findByCode("PT_NAME");
+            List<RulPartTypeDeclaration> declarations = partTypeDeclarationRepository.findByPartTypes(List.of(name));
+            assertEquals(Set.of("CZ_BASE", TEST_CODE),
+                         declarations.stream().map(d -> d.getRulPackage().getCode()).collect(Collectors.toSet()));
+            assertEquals("Označení", name.getName());
+            assertTrue(name.getRepeatable());
+
+            StaticDataProvider sdp = staticDataService.getData();
+            assertEquals("Name", packageTexts.text(TranslationEntityType.PART_TYPE, "PT_NAME", TranslationEntityType.NAME,
+                                                   "source", sdp.getSysLanguageByTag("en")));
+            assertEquals("Označení", packageTexts.text(TranslationEntityType.PART_TYPE, "PT_NAME",
+                                                       TranslationEntityType.NAME, "source",
+                                                       sdp.getSysLanguageByTag("cs")));
+            assertEquals(TEST_CODE, partTypeRepository.findByCode("PT_ENT_NOTE").getRulPackage().getCode());
+        });
+    }
+
+    /**
+     * A rule set lists its part types (rul_part_type.xml of the rule set); the parts of an entity are
+     * shown in that order.
+     */
+    @Test
+    @Order(9)
+    void ruleSetsListTheirPartTypes() {
+        tx(() -> {
+            StaticDataProvider sdp = staticDataService.getData();
+            assertEquals(List.of("PT_ENT_NOTE", "PT_NAME"), partCodes(sdp.getRuleSetByCode("ENT_TEST").getPartTypeOrder()));
+            assertEquals(List.of("PT_NAME", "PT_CRE", "PT_EXT", "PT_BODY", "PT_EVENT", "PT_REL", "PT_IDENT"),
+                         partCodes(sdp.getRuleSetByCode("CAM").getPartTypeOrder()));
+        });
+        Integer testRuleSetId = staticDataService.getData().getRuleSetByCode("ENT_TEST").getRuleSetId();
+        List<SettingPartsOrder.Part> partsOrder = txGet(() -> apController.getApTypeViewSettings()).getRules()
+                .get(testRuleSetId).getPartsOrder();
+        assertEquals(List.of("PT_ENT_NOTE", "PT_NAME"), partsOrder.stream().map(SettingPartsOrder.Part::getCode).toList());
+    }
+
+    private List<String> partCodes(List<Integer> partTypeIds) {
+        StaticDataProvider sdp = staticDataService.getData();
+        return partTypeIds.stream().map(id -> sdp.getPartTypeById(id).getCode()).toList();
+    }
+
     private GroovyPart groovyPart(String apType, String partType) {
         StaticDataProvider sdp = staticDataService.getData();
         return new GroovyPart(sdp, sdp.getApTypeByCode(apType), sdp.getPartTypeByCode(partType), true,
@@ -445,6 +549,14 @@ public class EntityRulesTest {
             assertEquals("CZ_BASE", person.getRulPackage().getCode());
             assertTrue(person.isReadOnly());
             assertTrue(apTypeRepository.findAll().stream().noneMatch(t -> t.getCode().equals("ENT_PERSON_LOCAL")));
+
+            // the shared part type stays with the declaration of CZ_BASE, the own one is removed
+            RulPartType name = partTypeRepository.findByCode("PT_NAME");
+            assertEquals(List.of("CZ_BASE"), partTypeDeclarationRepository.findByPartTypes(List.of(name)).stream()
+                    .map(d -> d.getRulPackage().getCode()).toList());
+            assertEquals("CZ_BASE", name.getRulPackage().getCode());
+            assertEquals(null, partTypeRepository.findByCode("PT_ENT_NOTE"));
+            assertEquals(7, staticDataService.getData().getRuleSetByCode("CAM").getPartTypeOrder().size());
         });
     }
 

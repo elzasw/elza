@@ -1,4 +1,5 @@
 <ap-types>
     <ap-type code="PERSON" assignable="false"/>
     <ap-type code="PERSON_INDIVIDUAL"/>
+    <ap-type code="ENT_PERSON_LOCAL"/>
 </ap-types>

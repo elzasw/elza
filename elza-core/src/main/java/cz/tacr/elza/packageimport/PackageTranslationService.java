@@ -393,26 +393,27 @@ public class PackageTranslationService {
          * declaring it.
          */
         boolean isOwn(TranslationEntityType type, String code, String packageCode) {
-            if (type == TranslationEntityType.AP_TYPE) {
-                Set<String> declaring = apTypeDeclarations().get(code);
+            if (type == TranslationEntityType.AP_TYPE || type == TranslationEntityType.PART_TYPE) {
+                Set<String> declaring = declarations(type).get(code);
                 return declaring != null && declaring.contains(packageCode);
             }
             return packageCode.equals(ownerPackageCode(type, code));
         }
 
-        private Map<String, Set<String>> apTypeDeclarations;
+        private final Map<TranslationEntityType, Map<String, Set<String>>> declarations = new HashMap<>();
 
-        /** Codes of the packages declaring each entity class. */
-        private Map<String, Set<String>> apTypeDeclarations() {
-            if (apTypeDeclarations == null) {
-                apTypeDeclarations = new HashMap<>();
-                for (Object[] r : entityManager.createQuery(
-                        "SELECT d.apType.code, d.rulPackage.code FROM rul_ap_type_declaration d", Object[].class)
-                        .getResultList()) {
-                    apTypeDeclarations.computeIfAbsent((String) r[0], k -> new HashSet<>()).add((String) r[1]);
+        /** Codes of the packages declaring each entity class or part type. */
+        private Map<String, Set<String>> declarations(TranslationEntityType type) {
+            return declarations.computeIfAbsent(type, t -> {
+                String query = t == TranslationEntityType.AP_TYPE
+                        ? "SELECT d.apType.code, d.rulPackage.code FROM rul_ap_type_declaration d"
+                        : "SELECT d.partType.code, d.rulPackage.code FROM rul_part_type_declaration d";
+                Map<String, Set<String>> result = new HashMap<>();
+                for (Object[] r : entityManager.createQuery(query, Object[].class).getResultList()) {
+                    result.computeIfAbsent((String) r[0], k -> new HashSet<>()).add((String) r[1]);
                 }
-            }
-            return apTypeDeclarations;
+                return result;
+            });
         }
 
         /**

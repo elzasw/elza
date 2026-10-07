@@ -15,6 +15,18 @@ between the installed and the new version; see :doc:`/03-upgrade`.
 Upcoming version
 ================
 
+* Change: Rules packages - a part type of archival entities may be declared
+  by several packages with the same code, like entity classes; its name
+  follows the language of the user. An entity rule set lists the part
+  types it offers in :file:`rul_rule_set/<RS>/rul_part_type.xml`, in the
+  order in which the parts of an entity are shown, and the order of its
+  classes in :file:`rul_ap_type.xml` is the order of the class tree.
+  CZ_BASE version 89 lists its part types this way instead of the
+  ``parts-order`` UI setting of the CAM rule set; a local ``parts-order``
+  setting still applies to rule sets without the list. The entity detail
+  does not offer a part type that the rule set does not list; existing
+  parts of it stay visible. A part type used by parts of entities cannot be removed
+  by a new version of its package.
 * Change: Rules packages - the scripts building the names of parts of
   archival entities are entity rules of the rule set (kind ``INDEX`` in
   :file:`rul_entity_rule.xml`) and apply only to entities whose scope uses

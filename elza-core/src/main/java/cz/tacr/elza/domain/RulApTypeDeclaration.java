@@ -21,7 +21,7 @@ import cz.tacr.elza.domain.enumeration.StringLength;
  * <p>Several packages may declare one class: the class ({@link ApType}) exists once, with one code
  * and id, and each package states its name (in the package's language), parent and read-only. The
  * parents of all declarations must agree. The name, owner and read-only of {@link ApType} summarize
- * the declarations (see {@code ApTypeDeclarations}); the names of all declarations are offered as
+ * the declarations (see {@code PackageDeclarations}); the names of all declarations are offered as
  * texts of the class in the languages of the packages.
  */
 @Entity(name = "rul_ap_type_declaration")
