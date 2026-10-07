@@ -6649,6 +6649,10 @@
     "defaultMessage": "Package {code} is already applied at version {version}",
     "srcHash": "NW8GVCeF9F0a"
   },
+  "exception.reg.AP_TYPE_NOT_IN_RULE_SET": {
+    "defaultMessage": "The class “{apType}” cannot be used in the scope “{scope}” (rules {ruleSet})",
+    "srcHash": "aZOMnt5l4fjD"
+  },
   "exception.reg.CANT_CHANGE_DELETED_AP": {
     "defaultMessage": "An invalidated archival entity cannot be changed",
     "srcHash": "FGScL2RS7WZ8"
@@ -8104,6 +8108,14 @@
   "registry.allRevisionStates": {
     "defaultMessage": "All",
     "srcHash": "5C_lbtoov7Gn"
+  },
+  "registry.apTypePicker.chooseScopeFirst": {
+    "defaultMessage": "Choose a scope first",
+    "srcHash": "eT4nJ87G2Da-"
+  },
+  "registry.apTypePicker.noMatch": {
+    "defaultMessage": "No subclass matches",
+    "srcHash": "qPJYSLC3OVIz"
   },
   "registry.batchExport.action": {
     "defaultMessage": "Export to CSV",

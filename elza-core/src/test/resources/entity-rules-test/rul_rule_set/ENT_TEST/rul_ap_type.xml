@@ -1,0 +1,4 @@
+<ap-types>
+    <ap-type code="PERSON" assignable="false"/>
+    <ap-type code="PERSON_INDIVIDUAL"/>
+</ap-types>

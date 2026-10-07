@@ -21,6 +21,12 @@ import cz.tacr.elza.domain.projection.ApStateInfo;
 public interface ApStateRepository extends ElzaJpaRepository<ApState, Integer>, JpaSpecificationExecutor<ApState> {
 
     /**
+     * Classes of the valid entities of a scope.
+     */
+    @Query("SELECT DISTINCT s.apType FROM ap_state s WHERE s.scope = :scope AND s.deleteChangeId IS NULL")
+    List<ApType> findApTypesInScope(@Param("scope") ApScope scope);
+
+    /**
      * Search for deleted APs
      */
     @Query("SELECT st FROM ap_state st" +

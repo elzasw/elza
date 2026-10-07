@@ -29,6 +29,7 @@ import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.EntityRuleRepository;
+import cz.tacr.elza.repository.RuleSetApTypeRepository;
 
 /**
  * Update AP types
@@ -45,6 +46,8 @@ public class APTypeUpdater {
 
     final private EntityRuleRepository entityRuleRepository;
 
+    final private RuleSetApTypeRepository ruleSetApTypeRepository;
+
     private APTypes apXmlTypes = null;
 
     /**
@@ -60,10 +63,12 @@ public class APTypeUpdater {
                          final ApTypeRepository apTypeRepository,
                          final ApAccessPointRepository accessPointRepository,
                          final EntityRuleRepository entityRuleRepository,
+                         final RuleSetApTypeRepository ruleSetApTypeRepository,
                          final StaticDataProvider staticDataProvider) {
         this.apStateRepository = apStateRepository;
         this.apTypeRepository = apTypeRepository;
         this.entityRuleRepository = entityRuleRepository;
+        this.ruleSetApTypeRepository = ruleSetApTypeRepository;
         this.accessPointRepository = accessPointRepository;
         this.staticDataProvider = staticDataProvider;
     }
@@ -186,7 +191,12 @@ public class APTypeUpdater {
        // TODO: smazáno - odstranění starých typů - oldTypes.forEach(registryRoleRepository::deleteByApType);
 
         if (!oldTypes.isEmpty()) {
-            PackageService.checkNoForeignEntityRules(entityRuleRepository.findForeignByApTypes(oldTypes, rulPackage));
+            List<RulPackage> foreign = new ArrayList<>();
+            entityRuleRepository.findForeignByApTypes(oldTypes, rulPackage)
+                    .forEach(r -> foreign.add(r.getRulPackage()));
+            ruleSetApTypeRepository.findForeignByApTypes(oldTypes, rulPackage)
+                    .forEach(m -> foreign.add(m.getRulPackage()));
+            PackageService.checkNoForeignEntityRules(foreign);
         }
         apTypeRepository.deleteAll(oldTypes);
     }

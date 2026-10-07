@@ -71,6 +71,7 @@ import cz.tacr.elza.domain.RulArrangementRule;
 import cz.tacr.elza.domain.RulComponent;
 import cz.tacr.elza.domain.RulExportFilter;
 import cz.tacr.elza.domain.RulEntityRule;
+import cz.tacr.elza.domain.RulRuleSetApType;
 import cz.tacr.elza.domain.RulExtensionRule;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
@@ -118,6 +119,7 @@ import cz.tacr.elza.packageimport.xml.ExportFiltersXml;
 import cz.tacr.elza.packageimport.xml.ExtensionRule;
 import cz.tacr.elza.packageimport.xml.EntityRule;
 import cz.tacr.elza.packageimport.xml.EntityRules;
+import cz.tacr.elza.packageimport.xml.RuleSetApTypes;
 import cz.tacr.elza.packageimport.xml.ExtensionRules;
 import cz.tacr.elza.packageimport.xml.ExternalIdType;
 import cz.tacr.elza.packageimport.xml.ExternalIdTypes;
@@ -166,6 +168,7 @@ import cz.tacr.elza.repository.ArrangementRuleRepository;
 import cz.tacr.elza.repository.ComponentRepository;
 import cz.tacr.elza.repository.ExportFilterRepository;
 import cz.tacr.elza.repository.EntityRuleRepository;
+import cz.tacr.elza.repository.RuleSetApTypeRepository;
 import cz.tacr.elza.repository.ExtensionRuleRepository;
 import cz.tacr.elza.repository.InstitutionTypeRepository;
 import cz.tacr.elza.repository.ItemAptypeRepository;
@@ -282,6 +285,11 @@ public class PackageService {
      * Rules of an entity rule set.
      */
     public static final String ENTITY_RULE_XML = "rul_entity_rule.xml";
+
+    /**
+     * Entity classes used by an entity rule set.
+     */
+    public static final String RULE_SET_AP_TYPE_XML = "rul_ap_type.xml";
 
     /**
      * Pro strukturovaný datový typ a jeho rozšíření.
@@ -467,6 +475,9 @@ public class PackageService {
 
     @Autowired
     private EntityRuleRepository entityRuleRepository;
+
+    @Autowired
+    private RuleSetApTypeRepository ruleSetApTypeRepository;
 
     @Autowired
     private ApExternalIdTypeRepository externalIdTypeRepository;
@@ -700,9 +711,11 @@ public class PackageService {
 
     public void importPackageInternal(final PackageContext pkgCtx) throws IOException {
 
-        // entity rules of the package are created again from the package; removed first, so that
-        // they do not hold classes and part types the new version removes
+        // entity rules and member classes of the package are created again from the package;
+        // removed first, so that they do not hold classes and part types the new version removes
         deleteEntityRules(pkgCtx.getPackage());
+        ruleSetApTypeRepository.deleteByRulPackage(pkgCtx.getPackage());
+        ruleSetApTypeRepository.flush();
 
         importApTypes(pkgCtx);
 
@@ -719,6 +732,7 @@ public class PackageService {
             List<RulArrangementRule> rulArrangementRuleList = processArrangementRules(ruc);
 
             List<RulEntityRule> rulEntityRules = processEntityRules(ruc);
+            processRuleSetApTypes(ruc);
             List<RulArrangementExtension> rulArrangementExtensions = processArrangementExtensions(ruc);
             List<RulExtensionRule> rulExtensionRuleList = processExtensionRules(ruc, rulArrangementExtensions);
 
@@ -902,6 +916,7 @@ public class PackageService {
                 apTypeRepository,
                 accessPointRepository,
                 entityRuleRepository,
+                ruleSetApTypeRepository,
                 staticDataService.getData()
         );
         apTypeUpdater.run(pkgCtx);
@@ -1179,7 +1194,7 @@ public class PackageService {
         }
         if (!CollectionUtils.isEmpty(rulPartTypeDelete)) {
             checkNoForeignEntityRules(entityRuleRepository.findForeignByPartTypes(rulPartTypeDelete,
-                                                                                  packageContext.getPackage()));
+                    packageContext.getPackage()).stream().map(RulEntityRule::getRulPackage).toList());
             logger.debug("Deleting {}.", rulPartTypeDelete);
             partTypeRepository.deleteAll(rulPartTypeDelete);
         }
@@ -1894,6 +1909,43 @@ public class PackageService {
     }
 
     /**
+     * Member classes of an entity rule set ({@link #RULE_SET_AP_TYPE_XML}), of the package or
+     * contributed to a rule set of another package. The previous members of the package were deleted
+     * at the start of the import.
+     */
+    private void processRuleSetApTypes(final RuleUpdateContext ruc) {
+        RulRuleSet ruleSet = ruc.getRulSet();
+        String file = ZIP_DIR_RULE_SET + "/" + ruc.getRulSetCode() + "/" + RULE_SET_AP_TYPE_XML;
+        RuleSetApTypes xml = ruc.convertXmlStreamToObject(RuleSetApTypes.class, RULE_SET_AP_TYPE_XML);
+        if (xml == null || xml.getApTypes() == null) {
+            return;
+        }
+        if (ruleSet.getRuleType() != RulRuleSet.RuleType.ENTITY) {
+            throw invalidEntityRule(file, "Entity classes belong to a rule set of type ENTITY");
+        }
+        Map<String, ApType> apTypes = apTypeRepository.findAll().stream()
+                .collect(Collectors.toMap(ApType::getCode, Function.identity()));
+        Set<String> seen = new HashSet<>();
+        List<RulRuleSetApType> members = new ArrayList<>();
+        for (RuleSetApTypes.Member member : xml.getApTypes()) {
+            ApType apType = apTypes.get(member.getCode());
+            if (apType == null) {
+                throw invalidEntityRule(file, "Unknown entity class " + member.getCode());
+            }
+            if (!seen.add(member.getCode())) {
+                throw invalidEntityRule(file, "Entity class listed twice: " + member.getCode());
+            }
+            RulRuleSetApType row = new RulRuleSetApType();
+            row.setRuleSet(ruleSet);
+            row.setApType(apType);
+            row.setRulPackage(ruc.getRulPackage());
+            row.setAssignable(member.getAssignable() != null ? member.getAssignable() : !apType.isReadOnly());
+            members.add(row);
+        }
+        ruleSetApTypeRepository.saveAll(members);
+    }
+
+    /**
      * Entity rules of the package with their components; they are imported again from the package.
      */
     private void deleteEntityRules(final RulPackage rulPackage) {
@@ -1907,11 +1959,15 @@ public class PackageService {
     }
 
     /**
-     * Refuses to remove a class or part type that entity rules of another package refer to.
+     * Refuses to remove a class or part type that entity rules or member classes of another package
+     * refer to.
+     *
+     * @param foreignPackages
+     *            packages referring to the class or part type
      */
-    static void checkNoForeignEntityRules(final List<RulEntityRule> foreignRules) {
-        if (!foreignRules.isEmpty()) {
-            String packages = foreignRules.stream().map(r -> r.getRulPackage().getCode()).distinct()
+    static void checkNoForeignEntityRules(final Collection<RulPackage> foreignPackages) {
+        if (!foreignPackages.isEmpty()) {
+            String packages = foreignPackages.stream().map(RulPackage::getCode).distinct()
                     .collect(Collectors.joining(", "));
             throw new BusinessException("Entity rules of other packages refer to a removed class or part type",
                     PackageCode.FOREIGN_DEPENDENCY)
@@ -2468,8 +2524,10 @@ public class PackageService {
         // uložení pravidel
         rulRuleSetsNew = ruleSetRepository.saveAll(rulRuleSetsNew);
 
-        // nastavení pravidel pro entity u oblastí, které žádné nemají
-        if (entityRuleSet != null) {
+        // nastavení pravidel pro entity u oblastí, které žádné nemají - jen pokud jsou jediná
+        long entityRuleSets = ruleSetRepository.findAll().stream()
+                .filter(rs -> rs.getRuleType() == RulRuleSet.RuleType.ENTITY).count();
+        if (entityRuleSet != null && entityRuleSets == 1) {
             List<ApScope> scopes = scopeRepository.findScopeByRuleSetIdIsNull();
             if (CollectionUtils.isNotEmpty(scopes)) {
                 for (ApScope scope : scopes) {
@@ -2754,6 +2812,7 @@ public class PackageService {
         structureDefinitionRepository.deleteByRulPackage(rulPackage);
         structureTypeRepository.deleteByRulPackage(rulPackage);
         entityRuleRepository.deleteByRulPackage(rulPackage);
+        ruleSetApTypeRepository.deleteByRulPackage(rulPackage);
         partTypeRepository.deleteByRulPackage(rulPackage);
         packageActionsRepository.deleteByRulPackage(rulPackage);
         outputFilterRepository.deleteByRulPackage(rulPackage);
@@ -2939,6 +2998,7 @@ public class PackageService {
             exportArrangementExtensions(rulPackage, zos);
             exportExtensionRules(rulPackage, zos);
             exportEntityRules(rulPackage, zos);
+            exportRuleSetApTypes(rulPackage, zos);
             exportOutputTypes(rulPackage, zos);
             exportTemplates(rulPackage, zos);
             exportRegisterTypes(rulPackage, zos);
@@ -3052,6 +3112,30 @@ public class PackageService {
             EntityRules entityRules = new EntityRules();
             entityRules.setEntityRules(xmlRules);
             addObjectToZipFile(entityRules, zos, ruleSetDir + ENTITY_RULE_XML);
+        }
+    }
+
+    /**
+     * Member classes of entity rule sets declared by the package ({@link #RULE_SET_AP_TYPE_XML}).
+     */
+    private void exportRuleSetApTypes(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
+        Map<RulRuleSet, List<RulRuleSetApType>> byRuleSet = ruleSetApTypeRepository.findByRulPackage(rulPackage)
+                .stream().collect(Collectors.groupingBy(RulRuleSetApType::getRuleSet));
+        for (Map.Entry<RulRuleSet, List<RulRuleSetApType>> entry : byRuleSet.entrySet()) {
+            List<RuleSetApTypes.Member> members = new ArrayList<>();
+            for (RulRuleSetApType row : entry.getValue()) {
+                RuleSetApTypes.Member member = new RuleSetApTypes.Member();
+                member.setCode(row.getApType().getCode());
+                // written only when it differs from the class
+                if (row.getAssignable() == row.getApType().isReadOnly()) {
+                    member.setAssignable(row.getAssignable());
+                }
+                members.add(member);
+            }
+            RuleSetApTypes xml = new RuleSetApTypes();
+            xml.setApTypes(members);
+            addObjectToZipFile(xml, zos,
+                               ZIP_DIR_RULE_SET + "/" + entry.getKey().getCode() + "/" + RULE_SET_AP_TYPE_XML);
         }
     }
 

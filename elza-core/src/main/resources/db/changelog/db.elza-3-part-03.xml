@@ -958,4 +958,36 @@
         <dropColumn tableName="rul_extension_rule" columnName="condition"/>
     </changeSet>
 
+    <changeSet id="20261007150000" author="ppy">
+        <!-- Entity classes used by an entity rule set, declared by the owner of the rule set or by
+             a package contributing to it; assignable overrides ap_type.read_only for the rule set.
+             A rule set without rows offers all classes. -->
+        <createTable tableName="rul_rule_set_ap_type">
+            <column name="rule_set_ap_type_id" type="int">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="rule_set_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_rule_set_ap_type_rule_set"
+                             referencedTableName="rul_rule_set" referencedColumnNames="rule_set_id"/>
+            </column>
+            <column name="ap_type_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_rule_set_ap_type_ap_type"
+                             referencedTableName="ap_type" referencedColumnNames="ap_type_id"/>
+            </column>
+            <column name="package_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_rule_set_ap_type_package"
+                             referencedTableName="rul_package" referencedColumnNames="package_id"/>
+            </column>
+            <column name="assignable" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="rul_rule_set_ap_type" columnNames="rule_set_id, ap_type_id, package_id"
+                             constraintName="ux_rul_rule_set_ap_type"/>
+        <insert tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="rul_rule_set_ap_type|rule_set_ap_type_id"/>
+            <column name="next_val" value="0"/>
+        </insert>
+    </changeSet>
+
 </databaseChangeLog>

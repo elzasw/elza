@@ -85,7 +85,7 @@ const RelationPartItemEditModalForm = ({
 
     const getSpecialActionField = () => {
         if (apViewSettings.data && itemType && part) {
-            const apViewSettingRule = apViewSettings.data.rules[apViewSettings.data.typeRuleSetMap[apTypeId]];
+            const apViewSettingRule = apViewSettings.data.rules[apViewSettings.data.scopeRuleSetMap[scopeId]];
             const itemTypeSettings = findViewItemType(apViewSettingRule.itemTypes, part, itemType.code);
             if (itemTypeSettings && itemTypeSettings.geoSearchItemType) {
                 const getItemType = objectById(refTables.descItemTypes.items, itemTypeSettings.geoSearchItemType, 'code') as RulDescItemTypeExtVO;

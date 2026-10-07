@@ -468,11 +468,13 @@ public class EntityDBDispatcher {
                		// retain deleted state
                		stateNew.setDeleteChange(procCtx.getApChange());
                 }
+                accessPointService.checkApTypeInScope(apType, stateNew.getScope(), false);
                 stateNew.setApType(apType);
                 state = stateRepository.save(stateNew);
         	} else {
         		// if entity will be deleted and class is changed
         		// -> create unversioned change of class
+        		accessPointService.checkApTypeInScope(apType, state.getScope(), false);
         		state.setApType(apType);
         	}
         }

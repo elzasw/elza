@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.dataexchange.common.items.ImportableItemData;
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.aps.context.AccessPointInfo;
@@ -317,8 +318,9 @@ public class AccessPointEntryProcessor implements ItemProcessor {
         if (apType == null) {
             throw new DEImportException("AP has invalid type, apeId:" + entry.getId());
         }
-        if (apType.isReadOnly()) {
-            throw new DEImportException("AP type is read only, apeId:" + entry.getId());
+        if (!AccessPointService.isApTypeAllowedInScope(staticData, apType, context.getScope(), true)) {
+            throw new DEImportException("AP type " + apType.getCode() + " cannot be assigned in the scope "
+                    + context.getScope().getCode() + ", apeId:" + entry.getId());
         }
 
         // create AP

@@ -66,6 +66,7 @@ import cz.tacr.elza.controller.vo.ap.ApViewSettings;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.controller.vo.ApSearchType;
+import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
@@ -305,10 +306,16 @@ public class ApController {
      */
     @RequestMapping(value = "/recordTypes", method = RequestMethod.GET)
 	@Transactional
-    public List<ApTypeVO> getApTypes() {
+    public List<ApTypeVO> getApTypes(@RequestParam(value = "scopeId", required = false) final Integer scopeId) {
         List<ApType> allTypes = apTypeRepository.findAllOrderByNameAsc();
-
-        return apFactory.createTypesWithHierarchy(allTypes);
+        if (scopeId == null) {
+            return apFactory.createTypesWithHierarchy(allTypes);
+        }
+        // classes the rule set of the scope offers, with their parents; assignable ones can be chosen
+        ApScope scope = accessPointService.getApScope(scopeId);
+        RuleSet ruleSet = scope.getRuleSetId() != null ? staticDataService.getData().getRuleSetById(scope.getRuleSetId())
+                : null;
+        return apFactory.createTypesWithHierarchy(allTypes, ruleSet);
     }
 
     /**
@@ -430,6 +437,7 @@ public class ApController {
 
         StaticDataProvider staticData = staticDataService.getData();
         ApScope apScope = scopeVO.createEntity(staticData);
+        accessPointService.checkScopeRuleSet(apScope);
         apScope = accessPointService.saveScope(apScope);
         return ApScopeVO.newInstance(apScope, staticData);
     }
@@ -902,7 +910,7 @@ public class ApController {
             map.put(settings.getRuleSetId(), settings);
         }
         result.setRules(map);
-        result.setTypeRuleSetMap(apFactory.getTypeRuleSetMap());
+        result.setScopeRuleSetMap(apFactory.getScopeRuleSetMap());
 
         return result;
     }

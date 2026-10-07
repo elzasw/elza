@@ -67,6 +67,7 @@ import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.PackageTexts;
 import cz.tacr.elza.domain.TranslationEntityType;
+import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.AccessPointItem;
@@ -111,7 +112,6 @@ import cz.tacr.elza.repository.ApRevPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.repository.vo.TypeRuleSet;
 import cz.tacr.elza.service.RevisionItemService;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
@@ -269,12 +269,15 @@ public class ApFactory {
         return result;
     }
 
-    // TODO: odstranit
-    public Map<Integer, Integer> getTypeRuleSetMap() {
-        List<TypeRuleSet> typeRuleSets = apTypeRepository.findTypeRuleSets();
-        Map<Integer, Integer> result = new HashMap<>(typeRuleSets.size());
-        for (TypeRuleSet typeRuleSet : typeRuleSets) {
-            result.put(typeRuleSet.getTypeId(), typeRuleSet.getRuleSetId());
+    /**
+     * Rule set of each scope that has one.
+     */
+    public Map<Integer, Integer> getScopeRuleSetMap() {
+        Map<Integer, Integer> result = new HashMap<>();
+        for (ApScope scope : scopeRepository.findAll()) {
+            if (scope.getRuleSetId() != null) {
+                result.put(scope.getScopeId(), scope.getRuleSetId());
+            }
         }
         return result;
     }
@@ -835,6 +838,40 @@ public class ApFactory {
      * @return List of root nodes which contains given types on proper parent path.
      */
     public List<ApTypeVO> createTypesWithHierarchy(Collection<ApType> types) {
+        return createTypesWithHierarchy(types, null);
+    }
+
+    /**
+     * Classes offered by a rule set, with their parents up to the root; {@code addRecord} says
+     * whether the class can be assigned in the rule set.
+     *
+     * @param ruleSet
+     *            entity rule set; null for all classes, assignable when not read-only
+     */
+    public List<ApTypeVO> createTypesWithHierarchy(Collection<ApType> types, @Nullable RuleSet ruleSet) {
+        if (ruleSet != null) {
+            StaticDataProvider sdp = staticDataService.getData();
+            types = types.stream().filter(t -> ruleSet.offersApType(sdp.getApTypeById(t.getApTypeId()))).toList();
+        }
+        List<ApTypeVO> roots = createTypesWithHierarchyAll(types);
+        if (ruleSet != null) {
+            setAssignable(roots, ruleSet, staticDataService.getData());
+        }
+        return roots;
+    }
+
+    private static void setAssignable(final List<ApTypeVO> types, final RuleSet ruleSet, final StaticDataProvider sdp) {
+        if (types == null) {
+            return;
+        }
+        for (ApTypeVO vo : types) {
+            ApType type = sdp.getApTypeById(vo.getId());
+            vo.setAddRecord(ruleSet.offersApType(type) && ruleSet.isApTypeAssignable(type));
+            setAssignable(vo.getChildren(), ruleSet, sdp);
+        }
+    }
+
+    private List<ApTypeVO> createTypesWithHierarchyAll(Collection<ApType> types) {
         if (CollectionUtils.isEmpty(types)) {
             return Collections.emptyList();
         }
