@@ -7175,10 +7175,13 @@ then
 end
 */
 
-rule "PP_011 Tematický popis - možný, pokud není uveden prvek Název"
+rule "PP_011 Tematický popis - možný, pokud není uveden prvek Název ani Obsah na kořeni nebo sérii"
 no-loop
 when $activeLevel: ActiveLevel( )
+    // descItems also contain the items taken over from parent levels
     not DescItem(type=="ZP2015_NAME") from $activeLevel.descItems
+    not ( DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ROOT", "ZP2015_LEVEL_SERIES")) from $activeLevel.ownDescItems
+          and DescItem(type=="ZP2015_CONTENT") from $activeLevel.ownDescItems )
     $itemType : RulItemTypeExt(code in
     ( // 4.3.4 Tematický popis jednotky popisu
       "ZP2015_UNIT_CONTENT"
