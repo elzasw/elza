@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Logging of elza-core tests (Spring Boot prefers logback-test.xml to logback-spring.xml).
+     The CI job log is limited to 4 MB: routine messages repeated by every test class (startup, queues,
+     caches, package import, mass indexing) are lowered to WARN and stack traces are shortened, so that
+     the output of the steps after the tests stays visible. Levels can still be raised for a local run
+     in the test application.yaml (logging.level). -->
+<configuration>
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!-- stack traces: the first 12 frames of the exception and of each cause -->
+            <pattern>%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg%n%ex{12}</pattern>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+    <!-- repeated by every test class -->
+    <logger name="cz.tacr.elza.asynchactions.AsyncExecutor" level="WARN"/>
+    <logger name="cz.tacr.elza.service.AsyncRequestService" level="WARN"/>
+    <logger name="cz.tacr.elza.service.StartupService" level="WARN"/>
+    <logger name="cz.tacr.elza.service.AdminService" level="WARN"/>
+    <logger name="cz.tacr.elza.service.cache.AccessPointCacheService" level="WARN"/>
+    <logger name="cz.tacr.elza.service.cache.NodeCacheService" level="WARN"/>
+    <logger name="cz.tacr.elza.packageimport.ItemTypeUpdater" level="WARN"/>
+    <logger name="cz.tacr.elza.packageimport.PackageService" level="WARN"/>
+    <logger name="cz.tacr.elza.dataexchange.input.context.ImportContext" level="WARN"/>
+
+    <!-- libraries -->
+    <logger name="liquibase" level="WARN"/>
+    <logger name="org.hibernate.search" level="WARN"/>
+    <logger name="org.hibernate.orm.cache" level="WARN"/>
+    <logger name="org.ehcache" level="WARN"/>
+    <logger name="org.drools" level="WARN"/>
+    <logger name="org.kie" level="WARN"/>
+</configuration>
