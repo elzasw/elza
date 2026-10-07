@@ -894,4 +894,68 @@
         </insert>
     </changeSet>
 
+    <changeSet id="20261007120000" author="ppy">
+        <!-- Entity rules get their own table instead of arrangement extensions with extension
+             rules keyed by a condition string. A rule belongs to its rule set. -->
+        <createTable tableName="rul_entity_rule">
+            <column name="entity_rule_id" type="int">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="rule_set_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_entity_rule_rule_set"
+                             referencedTableName="rul_rule_set" referencedColumnNames="rule_set_id"/>
+            </column>
+            <column name="package_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_entity_rule_package"
+                             referencedTableName="rul_package" referencedColumnNames="package_id"/>
+            </column>
+            <column name="component_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_entity_rule_component"
+                             referencedTableName="rul_component" referencedColumnNames="component_id"/>
+            </column>
+            <column name="kind" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <!-- Entity class with its subclasses; null = all classes -->
+            <column name="ap_type_id" type="int">
+                <constraints foreignKeyName="fk_rul_entity_rule_ap_type"
+                             referencedTableName="ap_type" referencedColumnNames="ap_type_id"/>
+            </column>
+            <!-- Part type; null = all parts -->
+            <column name="part_type_id" type="int">
+                <constraints foreignKeyName="fk_rul_entity_rule_part_type"
+                             referencedTableName="rul_part_type" referencedColumnNames="part_type_id"/>
+            </column>
+            <column name="priority" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="compatibility_rul_package" type="int"/>
+        </createTable>
+        <createIndex tableName="rul_entity_rule" indexName="ix_rul_entity_rule_rule_set">
+            <column name="rule_set_id"/>
+        </createIndex>
+        <insert tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="rul_entity_rule|entity_rule_id"/>
+            <column name="next_val" value="0"/>
+        </insert>
+        <!-- Entity rules in the old form - arrangement extensions of ENTITY rule sets with their
+             extension rules - are removed; the new version of the package imports the rules.
+             Data are migrated on PostgreSQL only (test databases start empty). -->
+        <sql dbms="postgresql">
+            DELETE FROM arr_node_extension WHERE arrangement_extension_id IN (
+                SELECT e.arrangement_extension_id FROM rul_arrangement_extension e
+                JOIN rul_rule_set r ON r.rule_set_id = e.rule_set_id WHERE r.rule_type = 'ENTITY');
+            WITH deleted_rules AS (
+                DELETE FROM rul_extension_rule WHERE arrangement_extension_id IN (
+                    SELECT e.arrangement_extension_id FROM rul_arrangement_extension e
+                    JOIN rul_rule_set r ON r.rule_set_id = e.rule_set_id WHERE r.rule_type = 'ENTITY')
+                RETURNING component_id)
+            DELETE FROM rul_component WHERE component_id IN (SELECT component_id FROM deleted_rules);
+            DELETE FROM rul_arrangement_extension WHERE rule_set_id IN (
+                SELECT rule_set_id FROM rul_rule_set WHERE rule_type = 'ENTITY');
+        </sql>
+        <!-- The condition was used only by entity rules -->
+        <dropColumn tableName="rul_extension_rule" columnName="condition"/>
+    </changeSet>
+
 </databaseChangeLog>

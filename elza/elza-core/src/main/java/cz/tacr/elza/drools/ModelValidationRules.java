@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.core.ResourcePathResolver;
-import cz.tacr.elza.domain.RulExtensionRule;
+import cz.tacr.elza.domain.RulEntityRule;
 import cz.tacr.elza.drools.model.ModelValidation;
 
 @Component
@@ -23,7 +23,7 @@ public class ModelValidationRules extends Rules {
     private ResourcePathResolver resourcePathResolver;
 
 
-    public synchronized ModelValidation execute(final List<RulExtensionRule> rules,
+    public synchronized ModelValidation execute(final List<RulEntityRule> rules,
                                                final ModelValidation modelValidation) throws Exception {
         
         long startTime = System.currentTimeMillis();
@@ -40,7 +40,7 @@ public class ModelValidationRules extends Rules {
                      Thread.currentThread().getId(),
                      System.currentTimeMillis() - startTime);
 
-        for (RulExtensionRule rule : rules) {
+        for (RulEntityRule rule : rules) {
             Path path = resourcePathResolver.getDroolFile(rule);
 
             StatelessKieSession ksession = createKieStatelessSession(path);

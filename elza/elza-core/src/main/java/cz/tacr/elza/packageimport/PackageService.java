@@ -70,6 +70,7 @@ import cz.tacr.elza.domain.RulArrangementExtension;
 import cz.tacr.elza.domain.RulArrangementRule;
 import cz.tacr.elza.domain.RulComponent;
 import cz.tacr.elza.domain.RulExportFilter;
+import cz.tacr.elza.domain.RulEntityRule;
 import cz.tacr.elza.domain.RulExtensionRule;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
@@ -115,6 +116,8 @@ import cz.tacr.elza.packageimport.xml.ArrangementRules;
 import cz.tacr.elza.packageimport.xml.ExportFilterXml;
 import cz.tacr.elza.packageimport.xml.ExportFiltersXml;
 import cz.tacr.elza.packageimport.xml.ExtensionRule;
+import cz.tacr.elza.packageimport.xml.EntityRule;
+import cz.tacr.elza.packageimport.xml.EntityRules;
 import cz.tacr.elza.packageimport.xml.ExtensionRules;
 import cz.tacr.elza.packageimport.xml.ExternalIdType;
 import cz.tacr.elza.packageimport.xml.ExternalIdTypes;
@@ -162,6 +165,7 @@ import cz.tacr.elza.repository.ArrangementExtensionRepository;
 import cz.tacr.elza.repository.ArrangementRuleRepository;
 import cz.tacr.elza.repository.ComponentRepository;
 import cz.tacr.elza.repository.ExportFilterRepository;
+import cz.tacr.elza.repository.EntityRuleRepository;
 import cz.tacr.elza.repository.ExtensionRuleRepository;
 import cz.tacr.elza.repository.InstitutionTypeRepository;
 import cz.tacr.elza.repository.ItemAptypeRepository;
@@ -275,6 +279,11 @@ public class PackageService {
     public static final String EXTENSION_RULE_XML = "rul_extension_rule.xml";
 
     /**
+     * Rules of an entity rule set.
+     */
+    public static final String ENTITY_RULE_XML = "rul_entity_rule.xml";
+
+    /**
      * Pro strukturovaný datový typ a jeho rozšíření.
      */
     public static final String STRUCTURE_DEFINITION_XML = "rul_structure_definition.xml";
@@ -357,8 +366,6 @@ public class PackageService {
      */
     static public final String ZIP_DIR_SCRIPTS = "scripts";
 
-    private static final String AVAILABLE_ITEMS = "AVAILABLE_ITEMS";
-    private static final String VALIDATION = "VALIDATION";
 
     /**
      *  soubor s názvem a verzí balíčku
@@ -457,6 +464,9 @@ public class PackageService {
 
     @Autowired
     private ExtensionRuleRepository extensionRuleRepository;
+
+    @Autowired
+    private EntityRuleRepository entityRuleRepository;
 
     @Autowired
     private ApExternalIdTypeRepository externalIdTypeRepository;
@@ -690,6 +700,10 @@ public class PackageService {
 
     public void importPackageInternal(final PackageContext pkgCtx) throws IOException {
 
+        // entity rules of the package are created again from the package; removed first, so that
+        // they do not hold classes and part types the new version removes
+        deleteEntityRules(pkgCtx.getPackage());
+
         importApTypes(pkgCtx);
 
         processRuleSets(pkgCtx);
@@ -704,10 +718,11 @@ public class PackageService {
             List<RulOutputType> rulOutputTypes = processOutputTypes(ruc);
             List<RulArrangementRule> rulArrangementRuleList = processArrangementRules(ruc);
 
+            List<RulEntityRule> rulEntityRules = processEntityRules(ruc);
             List<RulArrangementExtension> rulArrangementExtensions = processArrangementExtensions(ruc);
             List<RulExtensionRule> rulExtensionRuleList = processExtensionRules(ruc, rulArrangementExtensions);
 
-            checkUniqueFilename(rulArrangementRuleList, rulExtensionRuleList, rulOutputTypes);
+            checkUniqueFilename(rulArrangementRuleList, rulExtensionRuleList, rulEntityRules, rulOutputTypes);
 
             StructTypeExtensionUpdater steu = new StructTypeExtensionUpdater(this.structureExtensionRepository,
                     this.structureExtensionDefinitionRepository,
@@ -886,6 +901,7 @@ public class PackageService {
                 apStateRepository,
                 apTypeRepository,
                 accessPointRepository,
+                entityRuleRepository,
                 staticDataService.getData()
         );
         apTypeUpdater.run(pkgCtx);
@@ -1162,6 +1178,8 @@ public class PackageService {
         	}
         }
         if (!CollectionUtils.isEmpty(rulPartTypeDelete)) {
+            checkNoForeignEntityRules(entityRuleRepository.findForeignByPartTypes(rulPartTypeDelete,
+                                                                                  packageContext.getPackage()));
             logger.debug("Deleting {}.", rulPartTypeDelete);
             partTypeRepository.deleteAll(rulPartTypeDelete);
         }
@@ -1214,10 +1232,12 @@ public class PackageService {
      *
      * @param rulArrangementRuleList základní pravidla
      * @param rulExtensionRuleList   řídící pravidla
+     * @param rulEntityRules         pravidla entit
      * @param rulOutputTypes         typy výstupů
      */
     private void checkUniqueFilename(final List<RulArrangementRule> rulArrangementRuleList,
                                      final List<RulExtensionRule> rulExtensionRuleList,
+                                     final List<RulEntityRule> rulEntityRules,
                                      final List<RulOutputType> rulOutputTypes) {
         Set<String> exists = new HashSet<>();
         for (RulArrangementRule rulArrangementRule : rulArrangementRuleList) {
@@ -1229,6 +1249,13 @@ public class PackageService {
         }
         for (RulExtensionRule rulExtensionRule : rulExtensionRuleList) {
             String filename = rulExtensionRule.getComponent().getFilename().toLowerCase();
+            if (exists.contains(filename)) {
+                throw new IllegalStateException("Duplicitní reference na název souboru pravidel: " + filename);
+            }
+            exists.add(filename);
+        }
+        for (RulEntityRule rulEntityRule : rulEntityRules) {
+            String filename = rulEntityRule.getComponent().getFilename().toLowerCase();
             if (exists.contains(filename)) {
                 throw new IllegalStateException("Duplicitní reference na název souboru pravidel: " + filename);
             }
@@ -1740,7 +1767,8 @@ public class PackageService {
                 if (extensionRule.getCompatibilityRulPackage() != null) {
                     if (ruc.getPackageUpdateContext().getOldPackageVersion() == null ||
                             extensionRule.getCompatibilityRulPackage() > ruc.getPackageUpdateContext().getOldPackageVersion()) {
-                        enqueueAccessPoints(item);
+                        // extension rules belong to rule sets of funds
+                        ruc.getPackageUpdateContext().addCodeRuleToRevalidateFunds(ruc.getRulSetCode());
                     }
                 }
 
@@ -1770,6 +1798,133 @@ public class PackageService {
         return rulExtensionRulesNew;
     }
 
+    /**
+     * Rules of an entity rule set ({@link #ENTITY_RULE_XML}), of the package or contributed to a rule
+     * set of another package. The rules of an entity rule set are no longer imported from
+     * arrangement extensions and extension rules; such files are refused. The previous rules of the
+     * package were deleted at the start of the import ({@link #deleteEntityRules}).
+     *
+     * @return rules of the package in the rule set
+     */
+    private List<RulEntityRule> processEntityRules(final RuleUpdateContext ruc) {
+        RulRuleSet ruleSet = ruc.getRulSet();
+        RulPackage rulPackage = ruc.getRulPackage();
+        String dir = ZIP_DIR_RULE_SET + "/" + ruc.getRulSetCode() + "/";
+        EntityRules entityRules = ruc.convertXmlStreamToObject(EntityRules.class, ENTITY_RULE_XML);
+
+        if (ruleSet.getRuleType() != RulRuleSet.RuleType.ENTITY) {
+            if (entityRules != null) {
+                throw invalidEntityRule(dir + ENTITY_RULE_XML, "Entity rules belong to a rule set of type ENTITY");
+            }
+            return Collections.emptyList();
+        }
+        for (String oldFile : List.of(EXTENSION_RULE_XML, ARRANGEMENT_EXTENSION_XML)) {
+            if (ruc.containsFile(oldFile)) {
+                throw invalidEntityRule(dir + oldFile,
+                                        "Rules of an entity rule set are declared in " + ENTITY_RULE_XML);
+            }
+        }
+
+        Map<String, ApType> apTypes = apTypeRepository.findAll().stream()
+                .collect(Collectors.toMap(ApType::getCode, Function.identity()));
+        List<RulEntityRule> rulesNew = new ArrayList<>();
+        Integer oldVersion = ruc.getPackageUpdateContext().getOldPackageVersion();
+
+        if (entityRules != null && entityRules.getEntityRules() != null) {
+            for (EntityRule entityRule : entityRules.getEntityRules()) {
+                if (StringUtils.isBlank(entityRule.getFilename()) || entityRule.getKind() == null
+                        || entityRule.getPriority() == null) {
+                    throw invalidEntityRule(dir + ENTITY_RULE_XML,
+                                            "filename, kind and priority are required: " + entityRule.getFilename());
+                }
+                ApType apType = null;
+                if (entityRule.getApType() != null) {
+                    apType = apTypes.get(entityRule.getApType());
+                    if (apType == null) {
+                        throw invalidEntityRule(dir + ENTITY_RULE_XML, "Unknown entity class "
+                                + entityRule.getApType() + " in " + entityRule.getFilename());
+                    }
+                }
+                RulPartType partType = null;
+                if (entityRule.getPartType() != null) {
+                    partType = partTypeRepository.findByCode(entityRule.getPartType());
+                    if (partType == null) {
+                        throw invalidEntityRule(dir + ENTITY_RULE_XML, "Unknown part type "
+                                + entityRule.getPartType() + " in " + entityRule.getFilename());
+                    }
+                }
+                RulEntityRule item = new RulEntityRule();
+                convertRulEntityRule(rulPackage, ruleSet, entityRule, apType, partType, item);
+                rulesNew.add(item);
+
+                if (entityRule.getCompatibilityRulPackage() != null
+                        && (oldVersion == null || entityRule.getCompatibilityRulPackage() > oldVersion)) {
+                    enqueueAccessPoints(apType, ruleSet);
+                }
+            }
+        }
+
+        rulesNew = entityRuleRepository.saveAll(rulesNew);
+
+        try {
+            for (RulEntityRule rule : rulesNew) {
+                ruc.getPackageUpdateContext().saveFile(ruc.getRulesDir(), dir + ZIP_DIR_RULES,
+                                                       rule.getComponent().getFilename());
+            }
+        } catch (IOException e) {
+            throw new SystemException(e);
+        }
+        return rulesNew;
+    }
+
+    private void convertRulEntityRule(final RulPackage rulPackage, final RulRuleSet ruleSet,
+                                      final EntityRule entityRule, final ApType apType,
+                                      final RulPartType partType, final RulEntityRule rulEntityRule) {
+        rulEntityRule.setRulPackage(rulPackage);
+        rulEntityRule.setRuleSet(ruleSet);
+        rulEntityRule.setKind(entityRule.getKind());
+        rulEntityRule.setApType(apType);
+        rulEntityRule.setPartType(partType);
+        rulEntityRule.setPriority(entityRule.getPriority());
+        rulEntityRule.setCompatibilityRulPackage(entityRule.getCompatibilityRulPackage());
+
+        RulComponent component = new RulComponent();
+        component.setFilename(entityRule.getFilename());
+        rulEntityRule.setComponent(componentRepository.save(component));
+    }
+
+    /**
+     * Entity rules of the package with their components; they are imported again from the package.
+     */
+    private void deleteEntityRules(final RulPackage rulPackage) {
+        List<RulEntityRule> rules = entityRuleRepository.findByRulPackage(rulPackage);
+        if (!rules.isEmpty()) {
+            List<RulComponent> components = rules.stream().map(RulEntityRule::getComponent).toList();
+            entityRuleRepository.deleteAll(rules);
+            entityRuleRepository.flush();
+            componentRepository.deleteAll(components);
+        }
+    }
+
+    /**
+     * Refuses to remove a class or part type that entity rules of another package refer to.
+     */
+    static void checkNoForeignEntityRules(final List<RulEntityRule> foreignRules) {
+        if (!foreignRules.isEmpty()) {
+            String packages = foreignRules.stream().map(r -> r.getRulPackage().getCode()).distinct()
+                    .collect(Collectors.joining(", "));
+            throw new BusinessException("Entity rules of other packages refer to a removed class or part type",
+                    PackageCode.FOREIGN_DEPENDENCY)
+                    .set("foreignPackageCodes", packages);
+        }
+    }
+
+    private static AbstractException invalidEntityRule(final String file, final String reason) {
+        return new BusinessException(reason, PackageCode.INVALID_ENTITY_RULE)
+                .set("file", file)
+                .set("reason", reason);
+    }
+
     private void convertRulExtensionRule(final RulPackage rulPackage,
                                          final ExtensionRule extensionRule,
                                          final RulExtensionRule rulExtensionRule,
@@ -1782,7 +1937,6 @@ public class PackageService {
                 .findFirst()
                 .orElse(null));
         rulExtensionRule.setCompatibilityRulPackage(extensionRule.getCompatibilityRulPackage());
-        rulExtensionRule.setCondition(extensionRule.getCondition());
 
         String filename = extensionRule.getFilename();
         if (filename != null) {
@@ -2599,6 +2753,7 @@ public class PackageService {
         structureExtensionRepository.deleteByRulPackage(rulPackage);
         structureDefinitionRepository.deleteByRulPackage(rulPackage);
         structureTypeRepository.deleteByRulPackage(rulPackage);
+        entityRuleRepository.deleteByRulPackage(rulPackage);
         partTypeRepository.deleteByRulPackage(rulPackage);
         packageActionsRepository.deleteByRulPackage(rulPackage);
         outputFilterRepository.deleteByRulPackage(rulPackage);
@@ -2783,6 +2938,7 @@ public class PackageService {
             exportArrangementRules(rulPackage, zos);
             exportArrangementExtensions(rulPackage, zos);
             exportExtensionRules(rulPackage, zos);
+            exportEntityRules(rulPackage, zos);
             exportOutputTypes(rulPackage, zos);
             exportTemplates(rulPackage, zos);
             exportRegisterTypes(rulPackage, zos);
@@ -2867,6 +3023,35 @@ public class PackageService {
             }
 
             addObjectToZipFile(extensionRules, zos, ZIP_DIR_RULE_SET + "/" + ruleSetCode + "/" + EXTENSION_RULE_XML);
+        }
+    }
+
+    /**
+     * Rules of entity rule sets, per rule set ({@link #ENTITY_RULE_XML} and the DRL files).
+     */
+    private void exportEntityRules(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
+        List<RulEntityRule> rules = entityRuleRepository.findByRulPackage(rulPackage);
+        Map<RulRuleSet, List<RulEntityRule>> rulesByRuleSet = rules.stream()
+                .collect(Collectors.groupingBy(RulEntityRule::getRuleSet));
+        for (Map.Entry<RulRuleSet, List<RulEntityRule>> entry : rulesByRuleSet.entrySet()) {
+            RulRuleSet ruleSet = entry.getKey();
+            String ruleSetDir = ZIP_DIR_RULE_SET + "/" + ruleSet.getCode() + "/";
+            List<EntityRule> xmlRules = new ArrayList<>();
+            for (RulEntityRule rule : entry.getValue()) {
+                EntityRule xmlRule = new EntityRule();
+                xmlRule.setFilename(rule.getComponent().getFilename());
+                xmlRule.setKind(rule.getKind());
+                xmlRule.setApType(rule.getApType() != null ? rule.getApType().getCode() : null);
+                xmlRule.setPartType(rule.getPartType() != null ? rule.getPartType().getCode() : null);
+                xmlRule.setPriority(rule.getPriority());
+                xmlRule.setCompatibilityRulPackage(rule.getCompatibilityRulPackage());
+                xmlRules.add(xmlRule);
+                addToZipFile(ruleSetDir + ZIP_DIR_RULES + "/" + rule.getComponent().getFilename(),
+                             resourcePathResolver.getDroolFile(rule).toFile(), zos);
+            }
+            EntityRules entityRules = new EntityRules();
+            entityRules.setEntityRules(xmlRules);
+            addObjectToZipFile(entityRules, zos, ruleSetDir + ENTITY_RULE_XML);
         }
     }
 
@@ -3763,18 +3948,23 @@ public class PackageService {
         enqueueAccessPoints(apTypeCode);
     }
 
-    private void enqueueAccessPoints(RulExtensionRule rulExtensionRule) {
-        String apTypeCode = null;
-        String arrangementExtensionCode = rulExtensionRule.getArrangementExtension().getCode();
-        String[] strArray = StringUtils.split(arrangementExtensionCode, "/");
-        if (strArray != null && strArray.length > 0) {
-            String rulType = strArray[0];
-            if ((rulType.equals(AVAILABLE_ITEMS) && strArray.length == 3) ||
-                    (rulType.equals(VALIDATION) && strArray.length == 2)) {
-                apTypeCode = strArray[1];
-            }
+    /**
+     * Entities of a class (with subclasses; all classes for null) in the scopes of an entity rule set.
+     */
+    private void enqueueAccessPoints(final ApType apType, final RulRuleSet ruleSet) {
+        if (accessPoints == null) {
+            accessPoints = new HashSet<>();
         }
-        enqueueAccessPoints(apTypeCode);
+        List<Integer> accessPointList;
+        if (apType == null) {
+            accessPointList = accessPointRepository.findActiveAccessPointIdsByRuleSet(ruleSet.getRuleSetId());
+        } else {
+            List<ApType> apTypeList = findTreeApTypes(apType.getApTypeId());
+            accessPointList = CollectionUtils.isEmpty(apTypeList) ? Collections.emptyList()
+                    : accessPointRepository.findActiveAccessPointIdsByApTypesAndRuleSet(apTypeList,
+                                                                                         ruleSet.getRuleSetId());
+        }
+        accessPoints.addAll(accessPointList);
     }
 
     private void enqueueAccessPoints(final String apTypeCode) {

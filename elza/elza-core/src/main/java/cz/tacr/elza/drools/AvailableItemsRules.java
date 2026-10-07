@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.RulArrangementRule;
-import cz.tacr.elza.domain.RulExtensionRule;
+import cz.tacr.elza.domain.RulEntityRule;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.drools.model.Ap;
 import cz.tacr.elza.drools.model.ItemType;
@@ -27,12 +27,12 @@ public class AvailableItemsRules extends Rules {
     private ResourcePathResolver resourcePathResolver;
 
 
-    public synchronized ModelAvailable execute(final List<RulExtensionRule> rules,
+    public synchronized ModelAvailable execute(final List<RulEntityRule> rules,
                                                final ModelAvailable modelAvailable) throws Exception {
         Ap ap = modelAvailable.getAp();
         logger.debug("Executing rules for AccessPoint, accessPointId: {}", ap.getId());
 
-        for (RulExtensionRule rule : rules) {
+        for (RulEntityRule rule : rules) {
             Path path = resourcePathResolver.getDroolFile(rule);
             KieSession kSession = createKieSession(path);
             kSession.insert(ap);

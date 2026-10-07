@@ -67,4 +67,10 @@ public enum PackageCode implements ErrorCode {
      * Invalid row of a translation file: unknown type or field, duplicate key, wrong message code.
      */
     INVALID_TRANSLATION,
+
+    /**
+     * Invalid entity rules of a rule set: rules of an entity rule set in the old format, entity
+     * rules in a rule set of another type, a rule without a file.
+     */
+    INVALID_ENTITY_RULE,
 }
