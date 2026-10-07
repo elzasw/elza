@@ -85,6 +85,7 @@ actions:
       inputTypes:
         # ZP4.3.4 Tematický popis jednotky popisu
         - ZP2015_UNIT_CONTENT
+        - ZP2015_CONTENT
       outputType: ZP2015_UNIT_CONTENT
       onlyRoots: true
     
