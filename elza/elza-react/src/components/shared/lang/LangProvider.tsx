@@ -3,12 +3,11 @@ import { useUserSettings } from "contexts/user";
 import { PropsWithChildren, useEffect, useMemo, useState } from "react";
 import { RawIntlProvider } from "react-intl";
 import { createAppIntl } from "./intlInstance";
+import { effectiveLanguage } from "./language";
 
 export function LangProvider({ children }: PropsWithChildren) {
   const { settings } = useUserSettings();
-  // The language selector is an experimental feature; without it enabled there is no way to switch
-  // back, so a non-default language only applies while experimental features are on.
-  const locale = settings.showExperimentalFeatures ? settings.language ?? "cs" : "cs";
+  const locale = effectiveLanguage(settings.language);
   const [messages, setMessages] = useState<Record<string, string>>({});
 
   useEffect(() => {

@@ -15,6 +15,7 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -22,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+import cz.tacr.elza.core.data.PackageTexts;
 import cz.tacr.elza.controller.vo.FundsActionGroupResult;
 import cz.tacr.elza.controller.vo.MultiFundActionResult;
 import cz.tacr.elza.controller.vo.SearchParams;
@@ -78,9 +80,17 @@ class BulkActionServiceMultiFundTest {
     private NodeRepository nodeRepository;
     @Mock
     private BulkActionNodeRepository bulkActionNodeRepository;
+    @Mock
+    private PackageTexts packageTexts;
 
     @InjectMocks
     private BulkActionService service;
+
+    @BeforeEach
+    void sourceTexts() {
+        // no translations: names are the source texts
+        when(packageTexts.name(any(), any(), any())).thenAnswer(i -> i.getArgument(2));
+    }
 
     private RulRuleSet ruleSet(int id, String code, String name) {
         RulRuleSet rs = new RulRuleSet();

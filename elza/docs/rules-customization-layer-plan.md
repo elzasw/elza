@@ -101,7 +101,7 @@ Already in place; listed only as functionality the plan relies on.
 | **1. Layer core** | Done: spec placement, addon item-type filter rules. Open: DRL compile check at import; revalidation on rule change; export fixes; `PACKAGE` event on delete | done (changeset A) | refTable invalidation only | `AddonPackageTest` covers each item; re-importing unchanged ZP2015 and CZ_BASE is a no-op on a production copy |
 | **2a.1 Localization infrastructure** (done, 7.0.1) | Changeset T; translation files in packages; resolver `PackageTexts`; `GET /api/v1/languages`; translated `GET /api/v1/rules/itemTypes` | changeset T | none | done |
 | **2a.1b Review fixes** (done, 7.0.2) | source hash in translation files, same-language overrides, case-insensitive tags, file validation, message pattern check, SIMPLE-DEV version, public language endpoint | none | the client message shows the reason of a refused translation | done |
-| **2a.2 Language of requests and read sites** (next, 7.0.3) | the client sends its UI language and offers the `ui_enabled` languages; server `LocaleResolver` with the `elza.locale` default; all read sites through the resolver | none | small (language header, language picker, refetch on switch) | with the English UI, names of translated entities appear in English everywhere; without a header the installation's language is used |
+| **2a.2 Language of requests and read sites** (done, 7.0.3) | the client sends its UI language and offers the `ui_enabled` languages; server `LocaleResolver` with the `elza.locale` default; all read sites through the resolver | none | small (language header, language picker, refetch on switch) | with the English UI, names of translated entities appear in English everywhere; without a header the installation's language is used |
 | **2a.3–2a.5 Messages, translator support, content** (7.0.4) | message keys for validation messages; missing/outdated/orphaned translations endpoint and page; `CZ_BASE_EN` | own changeset (conformity message keys) | message rendering, admin page | with the English UI, entity types, part types and item types of CZ_BASE and the validation messages appear in English; Czech unchanged |
 | **2b. First internationalized version** | `rules-en-isadg` package; core neutrality fixes; description language for generated content | none | none | an English user creates an ISAD(G) fund, describes and validates it, and sees no Czech text |
 | **3. Pilots** | Settings composition; DPP and CT converted to file addons; their overlays retired | none | none | both pilots run on the dev server against stock ZP2015 |
@@ -110,8 +110,8 @@ Already in place; listed only as functionality the plan relies on.
 | **6. Convergence** | Rule-set inheritance; renames of semantically generic ZP2015 codes towards the ISAD(G) catalogue via aliases | later | — | — |
 
 Phases 1 and 2 are independent and can run in parallel. Phase 2a uses nothing from the open part of
-Phase 1; its first step 2a.1 (7.0.1) and the fixes from its review (7.0.2) are done; 2a.2 (7.0.3)
-comes next; 2b builds on 2a.
+Phase 1; steps 2a.1 (7.0.1), its review fixes (7.0.2) and 2a.2 (7.0.3) are done; 2a.3 comes next;
+2b builds on 2a.
 
 ## 5. Database changes
 
@@ -317,32 +317,41 @@ Implemented on `3.4.x` in the commit following `74506e2356`; the guide section
   test calling the bean directly did not show).
 - Upgrade notes: rows of `sys_language` without a tag stop the upgrade; the `cze` row must exist.
 
-#### 7.0.3 Step 2a.2 — language of requests and read sites
+#### 7.0.3 Step 2a.2 — language of requests and read sites (done)
 
-- **The client sends its own `Accept-Language`.** Browsers send their own header on every request, so
-  without an explicit header a Czech UI in an English browser would get English names. The client
-  sets the header from its UI language on all API calls (axios defaults for the generated client and
-  `WebApi`, including file downloads and exports).
-- **Client language picker.** It offers the `uiEnabled` languages of `GET /api/v1/languages` for which
-  the client ships a catalog, named by `Intl.DisplayNames` in the language itself, instead of the
-  hard-coded `'cs' | 'en'`; the choice stays in the browser's user settings. Switching the language
-  refetches the rule reference tables.
-- **Server language per request.** A Spring `LocaleResolver` resolves the language once per request:
-  the first `ui_enabled` language of the header (with the region fallback of `PackageTexts`), else
-  `elza.locale`. A request without a usable header gets the installation's language, not the source
-  texts. `PackageTexts` gains overloads without a language argument that read `LocaleContextHolder`.
-  Work without an HTTP request (async jobs, websocket pushes) uses `elza.locale`; none of it returns
-  package names today.
-- **Read sites.** The VO factories and mappers that return package texts call the resolver:
-  `ClientFactoryVO` (`/api/rule/descItemTypes` with specifications and their categories, rule sets,
-  extensions, output types, templates, policy types, type groups), `ApFactory` (entity and part
-  types, view settings), issue types and states, the data-grid CSV export headers (`ArrIOService`),
-  and `GetItemTypesTool` (AI dictionary, with the conversation language). No server-side cache holds
-  package texts today (titles are rebuilt per request), so no cache needs a language dimension.
-- **Language names** shown anywhere (scope picker, entity forms) come from `Intl.DisplayNames`, on the
-  server from `Locale.getDisplayLanguage`.
-- **Tests.** One controller test per converted read site with `Accept-Language: en`; a request
-  without the header returns texts in the `elza.locale` language.
+Implemented on `3.4.x`. Decisions, some differing from the original sketch:
+
+- **A cookie instead of a header.** The client writes its UI language into the cookie `elza-lang`
+  at startup and on every switch. Browsers send their own `Accept-Language` on every request, so the
+  server could not tell the user's UI choice from the browser's; a cookie also reaches downloads,
+  exports, iframes and the websocket handshake, which cannot carry a custom header.
+- **Server.** `PackageTexts.requestLanguage()` resolves once per request (request attribute): the
+  cookie (a UI language), else the first UI language of `Accept-Language` (API clients), else the
+  language of `elza.locale` (`defaultLanguage()`); without a request `elza.locale`. No Spring
+  `LocaleResolver` (the one in `ElzaWebApp` is unrelated). Overloads without a language argument
+  (`text`, `name(type, code, source)`, `name/shortcut/description` of item types and specs).
+- **Read sites converted:** `ClientFactoryVO` (`/api/rule/descItemTypes` and `/outputItemTypes` with
+  specifications, item types in node data, templates, policy and output types,
+  `translateName` for any `BaseCodeVo`), `RuleController` (rule sets, type groups, extensions),
+  `StructureOldController` (structured and part types), `RulesController` (`/v1/rules/itemTypes`,
+  `/v1/rules/partTypes`), `ApFactory` (entity types), `WfFactory` (issue types and states),
+  `StructObjService` (`SdoType`), `OutputFactory`, `BulkActionService` (rule set name),
+  `GetItemTypesTool`.
+- **Left for later:** the CSV exports (data grid, issues) - their column headers are hard-coded Czech,
+  translating only the names would mix languages; specification categories (no translation type);
+  the AI context and proposal rows (`AiContextResolver`, `AiProposalService`); generated content -
+  node titles with specification names, conformity messages (2a.3), print models.
+- **Client.** The language is no longer an experimental feature. `effectiveLanguage` = the user's
+  choice, else `window.defaultLanguage` (`elza.locale` from `web.html`), not the browser language
+  (many users run a browser in another language). Offered languages = `uiEnabled` of
+  `GET /api/v1/languages` with a client catalog, named in their own language (`Intl.DisplayNames`).
+  Switching reloads the application - names are held in many client stores, and a switch is rare.
+- **Login dialog.** `LanguagePicker` in the start actions: only an icon with a menu; when the user
+  has not chosen a language and the browser prefers another offered language, that language's name
+  is shown instead (one click to switch). Choosing the language already shown records the choice.
+- **Tests.** `PackageTextsTest` (cookie over header, invalid cookie, default),
+  `PackageTranslationTest` (new and legacy item-type endpoints by cookie and header, default
+  language), `LanguagePicker.test.tsx` (suggestion, switch, icon after the choice).
 
 #### 7.0.4 Later steps of 2a
 

@@ -15,4 +15,11 @@ export const handlers = [
     http.get('/api/admin/externalSystems', () => HttpResponse.json([])),
     // Login asks whether the first-run setup is needed whenever nobody is logged in.
     http.get('/api/v1/setup', () => HttpResponse.json({ setupRequired: false })),
+    http.get('/api/v1/languages', () =>
+        HttpResponse.json([
+            { tag: 'cs', code: 'cze', uiEnabled: true, scopeEnabled: true, defaultLanguage: true },
+            { tag: 'de', code: 'ger', uiEnabled: false, scopeEnabled: true, defaultLanguage: false },
+            { tag: 'en', code: 'eng', uiEnabled: true, scopeEnabled: true, defaultLanguage: false },
+        ]),
+    ),
 ];

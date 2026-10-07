@@ -74,8 +74,10 @@ Database and working directory
    * - ``elza.locale``
      - ``cs``
      - Locale used for sorting texts and for formatting and parsing dates
-       in the application. It does not determine the language of the user
-       interface.
+       in the application. Its language is also the language of the user
+       interface for users who have not chosen one (Czech when the client
+       has no texts in that language), and the language of names from rules
+       packages in requests that name no language.
 
 The connection pool is set to 20 connections
 (``spring.datasource.hikari.maximumPoolSize``); raise it only together

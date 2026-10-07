@@ -7521,6 +7521,10 @@
     "defaultMessage": "Take over",
     "srcHash": "Zl25rJ2urUHA"
   },
+  "lang.picker.language": {
+    "defaultMessage": "Language",
+    "srcHash": "ARpdV1qvwAV4"
+  },
   "loggedUsers.title": {
     "defaultMessage": "Signed-in users",
     "srcHash": "Z4fQxDmHvFCP"

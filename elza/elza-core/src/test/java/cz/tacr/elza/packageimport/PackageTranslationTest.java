@@ -43,19 +43,24 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import cz.tacr.elza.ElzaCoreMain;
 import cz.tacr.elza.controller.ApController;
 import cz.tacr.elza.controller.LanguagesController;
+import cz.tacr.elza.controller.RuleController;
 import cz.tacr.elza.controller.RulesController;
 import cz.tacr.elza.controller.vo.ItemType;
 import cz.tacr.elza.controller.vo.ItemTypeSpec;
 import cz.tacr.elza.controller.vo.Language;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.core.data.PackageTexts;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.RulItemType;
@@ -75,6 +80,7 @@ import cz.tacr.elza.repository.RulTranslationRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.StartupService;
 import cz.tacr.elza.service.UserService;
+import jakarta.servlet.http.Cookie;
 
 /**
  * Translations of package-provided texts, in the two ways they reach an installation.
@@ -123,6 +129,8 @@ public class PackageTranslationTest {
     private RulesController rulesController;
     @Autowired
     private LanguagesController languagesController;
+    @Autowired
+    private RuleController ruleController;
     @Autowired
     private ApController apController;
     @Autowired
@@ -206,23 +214,39 @@ public class PackageTranslationTest {
 
     @Test
     @Order(5)
-    void itemTypesEndpointHonoursAcceptLanguage() {
-        ItemType titleEn = itemType(rulesController.rulesListItemTypes(null, "en-GB,en;q=0.9").getBody().getItemTypes(),
-                                    "SRD_TITLE");
-        assertEquals("Content summary", titleEn.getName());
-        assertEquals("Content", titleEn.getShortcut());
+    void itemTypesEndpointsUseTheRequestLanguage() {
+        try {
+            bindRequest(null, "en-GB,en;q=0.9");
+            ItemType titleEn = itemType(rulesController.rulesListItemTypes(null, null).getBody().getItemTypes(),
+                                        "SRD_TITLE");
+            assertEquals("Content summary", titleEn.getName());
+            assertEquals("Content", titleEn.getShortcut());
 
-        ItemType levelEn = itemType(rulesController.rulesListItemTypes(null, "en").getBody().getItemTypes(),
-                                    "SRD_LEVEL_TYPE");
-        assertEquals("Level of description", levelEn.getName());
-        assertEquals("ZP4.2.7 Level of description", levelEn.getDescription());
-        ItemTypeSpec series = levelEn.getSpecs().stream()
-                .filter(s -> s.getCode().equals("SRD_LEVEL_SERIES")).findFirst().orElseThrow();
-        assertEquals("Series", series.getName());
+            // the cookie of the client wins over the browser header
+            bindRequest("en", "cs");
+            ItemType levelEn = itemType(rulesController.rulesListItemTypes(null, null).getBody().getItemTypes(),
+                                        "SRD_LEVEL_TYPE");
+            assertEquals("Level of description", levelEn.getName());
+            assertEquals("ZP4.2.7 Level of description", levelEn.getDescription());
+            ItemTypeSpec series = levelEn.getSpecs().stream()
+                    .filter(s -> s.getCode().equals("SRD_LEVEL_SERIES")).findFirst().orElseThrow();
+            assertEquals("Series", series.getName());
 
-        ItemType titleCs = itemType(rulesController.rulesListItemTypes(null, null).getBody().getItemTypes(),
-                                    "SRD_TITLE");
-        assertEquals("Obsah, regest", titleCs.getName());
+            // legacy endpoint of the node form
+            RulDescItemTypeExtVO levelVo = txGet(() -> ruleController.getDescItemTypes()).stream()
+                    .filter(t -> t.getCode().equals("SRD_LEVEL_TYPE")).findFirst().orElseThrow();
+            assertEquals("Level of description", levelVo.getName());
+            assertEquals("Series", levelVo.getDescItemSpecs().stream()
+                    .filter(s -> s.getCode().equals("SRD_LEVEL_SERIES")).findFirst().orElseThrow().getName());
+
+            // no cookie and no header: the language of elza.locale
+            bindRequest(null, null);
+            ItemType titleCs = itemType(rulesController.rulesListItemTypes(null, null).getBody().getItemTypes(),
+                                        "SRD_TITLE");
+            assertEquals("Obsah, regest", titleCs.getName());
+        } finally {
+            RequestContextHolder.resetRequestAttributes();
+        }
     }
 
     @Test
@@ -440,6 +464,18 @@ public class PackageTranslationTest {
         assertEquals("source", text(TranslationEntityType.ITEM_TYPE, "SRD_ARRANGEMENT_TYPE", "name", en));
         assertEquals(GREETING, packageTexts.message(GREETING, en));
         tx(() -> assertEquals(13, translationRepository.findByRulPackage(packageRepository.findByCode(BASE_CODE)).size()));
+    }
+
+    /** Binds a request with the language cookie and the {@code Accept-Language} header (both optional). */
+    private static void bindRequest(String cookie, String acceptLanguage) {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        if (cookie != null) {
+            request.setCookies(new Cookie(PackageTexts.LANGUAGE_COOKIE, cookie));
+        }
+        if (acceptLanguage != null) {
+            request.addHeader("Accept-Language", acceptLanguage);
+        }
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
     }
 
     private String text(TranslationEntityType type, String code, String field, SysLanguage language) {

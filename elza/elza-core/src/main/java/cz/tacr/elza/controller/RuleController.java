@@ -54,6 +54,7 @@ import cz.tacr.elza.controller.vo.RulTemplateVO;
 import cz.tacr.elza.controller.vo.TypeInfoVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.PackageTexts;
 import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -68,6 +69,7 @@ import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputFilter;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulPackageDependency;
+import cz.tacr.elza.domain.TranslationEntityType;
 import cz.tacr.elza.domain.RulPolicyType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulTemplate;
@@ -101,6 +103,9 @@ public class RuleController {
 
     @Autowired
     private ClientFactoryVO factoryVo;
+
+    @Autowired
+    private PackageTexts packageTexts;
 
     @Autowired
     private DataTypeRepository dataTypeRepository;
@@ -141,6 +146,11 @@ public class RuleController {
     @Autowired
     private SettingsService settingsService;
 
+    private RulArrangementExtensionVO createExtension(final RulArrangementExtension extension) {
+        return factoryVo.translateName(RulArrangementExtensionVO.newInstance(extension),
+                                       TranslationEntityType.ARRANGEMENT_EXTENSION);
+    }
+
     @Transactional
     @RequestMapping(value = "/getRuleSets", method = RequestMethod.GET)
     public List<RulRuleSetVO> getRuleSets() {
@@ -150,7 +160,9 @@ public class RuleController {
         return ruleSets.stream().map(rs -> {
             List<SettingGridView.ItemType> itemTypes = settingsService.getGridView(rs.getRuleSetId());
 
-            return RulRuleSetVO.newInstance(rs, itemTypes, sdp);
+            RulRuleSetVO vo = RulRuleSetVO.newInstance(rs, itemTypes, sdp);
+            vo.setName(packageTexts.name(TranslationEntityType.RULE_SET, vo.getCode(), vo.getName()));
+            return vo;
         }).collect(Collectors.toList());
     }
 
@@ -293,7 +305,9 @@ public class RuleController {
 
         List<ItemType> ruleSystemItemTypes = new ArrayList<>(sdp.getItemTypes());
         for (GroupConfiguration configuration : viewConfig.getGroups()) {
-            GroupVO group = new GroupVO(configuration.getCode(), configuration.getName());
+            String groupName = packageTexts.name(TranslationEntityType.TYPE_GROUP,
+                    ruleCode + TranslationEntityType.CODE_SEPARATOR + configuration.getCode(), configuration.getName());
+            GroupVO group = new GroupVO(configuration.getCode(), groupName);
             List<TypeInfoVO> typeInfos = new ArrayList<>(configuration.getTypes().size());
             for (TypeInfo typeInfo : configuration.getTypes()) {
                 String code = typeInfo.getCode();
@@ -402,14 +416,14 @@ public class RuleController {
         result.setNodePolicyTypeIdsMap(nodeVisibleTypeIdsPolicy);
 
         final List<RulArrangementExtension> availableExtensions = ruleService.findArrangementExtensionsByFundVersionId(fundVersion.getFundVersionId());
-        result.setAvailableExtensions(availableExtensions.stream().map(i -> RulArrangementExtensionVO.newInstance(i)).collect(Collectors.toList()));
+        result.setAvailableExtensions(availableExtensions.stream().map(this::createExtension).collect(Collectors.toList()));
 
         final List<RulArrangementExtension> nodeExtensions = ruleService.findArrangementExtensionsByNodeId(fundVersion, node);
-        result.setNodeExtensions(nodeExtensions.stream().map(i -> RulArrangementExtensionVO.newInstance(i)).collect(Collectors.toList()));
+        result.setNodeExtensions(nodeExtensions.stream().map(this::createExtension).collect(Collectors.toList()));
 
         if(CollectionUtils.isNotEmpty(parentNodeIds)) {
         	final List<RulArrangementExtension> parentExtensions = ruleService.findArrangementExtensionsByNodeIds(parentNodeIds, fundVersion);
-        	result.setParentExtensions(parentExtensions.stream().map(i -> RulArrangementExtensionVO.newInstance(i)).collect(Collectors.toList()));
+        	result.setParentExtensions(parentExtensions.stream().map(this::createExtension).collect(Collectors.toList()));
         }
 
         return result;

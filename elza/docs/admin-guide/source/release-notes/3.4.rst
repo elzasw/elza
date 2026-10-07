@@ -20,6 +20,12 @@ Upcoming version
   in further languages (:file:`translations/<lang>.xml`); the names are
   shown in the language of the user interface. The list of languages
   (``GET /api/v1/languages``) is available without login.
+* New: The language of the user interface is chosen in the user settings
+  (no longer an experimental feature) and in the login dialog. Without a
+  choice the interface is in the language of ``elza.locale``; the login
+  dialog names the browser's language when it differs. The languages
+  offered are the UI languages of ``sys_language`` (``ui_enabled``) for
+  which the client has texts, today Czech and English.
 * Change: The languages (``sys_language``) get a BCP 47 tag (``cs``,
   ``en``, ...). The upgrade fills it for the languages delivered with
   ELZA. **If languages were added to the database by hand, the upgrade
