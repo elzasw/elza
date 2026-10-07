@@ -15,6 +15,16 @@ between the installed and the new version; see :doc:`/03-upgrade`.
 Upcoming version
 ================
 
+* Change: Rules packages - the scripts building the names of parts of
+  archival entities are entity rules of the rule set (kind ``INDEX`` in
+  :file:`rul_entity_rule.xml`) and apply only to entities whose scope uses
+  the rule set; before, they were global structured types named by part
+  codes (``PT_NAME`` ...). The upgrade removes those structured types with
+  their definitions and extensions; CZ_BASE version 89, delivered with
+  ELZA, imports the same scripts as entity rules at the first start (names
+  are not regenerated). Local changes of the CZ_BASE scripts or added
+  scripts (patches of :file:`rul_structure_extension*.xml`) must move to
+  :file:`rul_entity_rule.xml`.
 * Change: Rules packages - an entity class may be declared by several
   packages with the same code (for example a national and an international
   entity description); the class exists once and its name follows the

@@ -531,7 +531,8 @@ public class RevisionService {
             }
         }
 
-        GroovyResult result = groovyService.processGroovy(revState.getTypeId(), part, childrenParts,
+        GroovyResult result = groovyService.processGroovy(revState.getRevision().getState().getScope(),
+                                                          revState.getTypeId(), part, childrenParts,
                                                           apItems, revItems, preferred);
         revisionPartService.updateRevIndexes(revPart, result);
     }

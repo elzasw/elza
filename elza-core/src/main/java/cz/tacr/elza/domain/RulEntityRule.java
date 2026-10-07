@@ -37,7 +37,12 @@ public class RulEntityRule {
         /** Item types available in a part of an entity. */
         AVAILABLE_ITEMS,
         /** Validation of the whole entity. */
-        VALIDATION
+        VALIDATION,
+        /**
+         * Groovy script building the name and indexes of a part (display name, sort name, key values);
+         * the most specific rule applies.
+         */
+        INDEX
     }
 
     @Id

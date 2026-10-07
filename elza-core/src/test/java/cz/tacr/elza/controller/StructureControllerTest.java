@@ -210,7 +210,9 @@ public class StructureControllerTest extends AbstractControllerTest {
         // find structure types
         List<SdoType> structureTypes = structureApi.sdoFindStructureTypes(null);
         assertNotNull(structureTypes);
-        assertEquals(11, structureTypes.size()); // SRD_PACKET, STAT_ZASTUPCE, SRD_*
+        // structured types of the loaded packages; the 7 part types of entities (PT_*) are no longer
+        // structured types
+        assertEquals(4, structureTypes.size());
 
         // check name and id
         SdoType structureType = structureTypes.stream()

@@ -59,6 +59,12 @@ import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.core.data.PackageTexts;
+import cz.tacr.elza.groovy.GroovyItem;
+import cz.tacr.elza.groovy.GroovyItems;
+import cz.tacr.elza.groovy.GroovyPart;
+import cz.tacr.elza.groovy.GroovyResult;
+import cz.tacr.elza.service.GroovyScriptService;
+import cz.tacr.elza.service.GroovyService;
 import cz.tacr.elza.domain.RulApTypeDeclaration;
 import cz.tacr.elza.domain.TranslationEntityType;
 import cz.tacr.elza.repository.ApTypeDeclarationRepository;
@@ -122,6 +128,10 @@ public class EntityRulesTest {
     private ApTypeDeclarationRepository apTypeDeclarationRepository;
     @Autowired
     private PackageTexts packageTexts;
+    @Autowired
+    private GroovyService groovyService;
+    @Autowired
+    private GroovyScriptService groovyScriptService;
     @Autowired
     @Qualifier("transactionManager")
     private PlatformTransactionManager txManager;
@@ -241,7 +251,7 @@ public class EntityRulesTest {
     }
 
     @Test
-    @Order(4)
+    @Order(18)
     void invalidEntityRulesAreRefused() throws Exception {
         assertRefused(Map.of(RULE_SET_DIR + "rul_extension_rule.xml", "<extension-rules/>"));
         assertRefused(Map.of(RULE_SET_DIR + "rul_arrangement_extension.xml", "<arrangement-extensions/>"));
@@ -254,6 +264,9 @@ public class EntityRulesTest {
         assertRefused(Map.of(RULE_SET_DIR + PackageService.ENTITY_RULE_XML, "<entity-rules><entity-rule"
                 + " filename=\"available_items/PT_NAME.drl\" kind=\"AVAILABLE_ITEMS\" part-type=\"PT_NO_SUCH\""
                 + " priority=\"100\"/></entity-rules>"));
+        // an INDEX rule needs a Groovy file, the other kinds a DRL file
+        assertRefused(Map.of(RULE_SET_DIR + PackageService.ENTITY_RULE_XML, "<entity-rules><entity-rule"
+                + " filename=\"available_items/PT_NAME.drl\" kind=\"INDEX\" priority=\"100\"/></entity-rules>"));
         // member classes: an unknown class, a class listed twice
         assertRefused(Map.of(RULE_SET_DIR + PackageService.RULE_SET_AP_TYPE_XML,
                              "<ap-types><ap-type code=\"NO_SUCH_CLASS\"/></ap-types>"));
@@ -354,8 +367,53 @@ public class EntityRulesTest {
         });
     }
 
+    /**
+     * The script building the name of a part is the most specific INDEX rule of the rule set of the
+     * scope: CAM has scripts per part and per class, the test rule set one script for names.
+     */
     @Test
-    @Order(8)
+    @Order(4)
+    void indexScriptsFollowTheRuleSetOfTheScope() {
+        Integer camScope = scopeIds.get(0);
+        Integer testScope = scopeIds.get(1);
+        tx(() -> {
+            String camName = groovyService.getIndexScriptPath(scope(camScope), groovyPart("PERSON_INDIVIDUAL", "PT_NAME"));
+            assertTrue(camName.replace('\\', '/').endsWith("/CAM/drools/index/PERSON/PT_NAME.groovy")
+                    || camName.replace('\\', '/').endsWith("index/PERSON/PT_NAME.groovy"), camName);
+            String camBody = groovyService.getIndexScriptPath(scope(camScope), groovyPart("PERSON_INDIVIDUAL", "PT_BODY"));
+            assertTrue(camBody.replace('\\', '/').endsWith("index/PT_BODY.groovy"), camBody);
+
+            String testName = groovyService.getIndexScriptPath(scope(testScope), groovyPart("PERSON_INDIVIDUAL", "PT_NAME"));
+            assertTrue(testName.replace('\\', '/').endsWith("index/PT_NAME.groovy")
+                    && testName.contains(TEST_CODE), testName);
+
+            // no script: a clear error naming the part and the class
+            AbstractException e = assertThrows(AbstractException.class, () -> groovyService
+                    .getIndexScriptPath(scope(testScope), groovyPart("PERSON_INDIVIDUAL", "PT_BODY")));
+            assertTrue(e.getMessage().contains("No script"), e.getMessage());
+            // CZ_BASE has no name script of DYNASTY itself, only of its subclasses
+            assertThrows(AbstractException.class, () -> groovyService
+                    .getIndexScriptPath(scope(camScope), groovyPart("DYNASTY", "PT_NAME")));
+
+            // the script of the test rule set builds the name from the main name
+            StaticDataProvider sdp = staticDataService.getData();
+            GroovyItems items = new GroovyItems();
+            items.addItem(new GroovyItem(sdp.getItemTypeByCode("NM_MAIN"), null, "Novák"));
+            GroovyPart part = new GroovyPart(sdp, sdp.getApTypeByCode("PERSON_INDIVIDUAL"),
+                                             sdp.getPartTypeByCode("PT_NAME"), true, items, List.of());
+            GroovyResult result = groovyScriptService.process(part, testName);
+            assertEquals("ENT Novák", result.getIndexes().get("DISPLAY_NAME"));
+        });
+    }
+
+    private GroovyPart groovyPart(String apType, String partType) {
+        StaticDataProvider sdp = staticDataService.getData();
+        return new GroovyPart(sdp, sdp.getApTypeByCode(apType), sdp.getPartTypeByCode(partType), true,
+                              new GroovyItems(), List.of());
+    }
+
+    @Test
+    @Order(19)
     void aClassDeclaredWithAnotherParentIsRefused() throws Exception {
         assertRefused(PackageCode.AP_TYPE_CONFLICT, Map.of(APTypeUpdater.AP_TYPE_XML,
                 "<ap-types><ap-type code=\"PERSON\" parent-ap-type=\"DYNASTY\"><name>Person</name>"

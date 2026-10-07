@@ -1839,7 +1839,8 @@ public class AccessPointService {
             boolean preferred = prefPartId == null || Objects.equals(prefPartId, part.getPartId());
             List<AccessPointPart> childParts = new ArrayList<>(childrenParts);
             List<AccessPointItem> accessPointItemList = new ArrayList<>(items);
-            GroovyResult result = groovyService.processGroovy(state.getApTypeId(), part, childParts, accessPointItemList, preferred);
+            GroovyResult result = groovyService.processGroovy(state.getScope(), state.getApTypeId(), part, childParts,
+                                                              accessPointItemList, preferred);
             if (!partService.updatePartIndexes(part, result, state, state.getScope(), async, preferred)) {
                 success = false;
             }
@@ -1913,7 +1914,8 @@ public class AccessPointService {
                 preferred = true;
             }
 
-            GroovyResult result = groovyService.processGroovy(state.getApTypeId(), apPart, childrenParts, items, preferred);
+            GroovyResult result = groovyService.processGroovy(state.getScope(), state.getApTypeId(), apPart,
+                                                              childrenParts, items, preferred);
 
             if (!partService.updatePartIndexes(apPart, result, state, state.getScope(), false, preferred)) {
                 success = false;
@@ -1970,7 +1972,8 @@ public class AccessPointService {
         boolean preferred = preferredNamePart == null || Objects.equals(preferredNamePart.getPartId(), apPart.getPartId());
         List<AccessPointPart> childParts = new ArrayList<>(childrenParts);
         List<AccessPointItem> accessPointItemList = new ArrayList<>(items);
-        GroovyResult result = groovyService.processGroovy(state.getApTypeId(), apPart, childParts, accessPointItemList, preferred);
+        GroovyResult result = groovyService.processGroovy(state.getScope(), state.getApTypeId(), apPart, childParts,
+                                                          accessPointItemList, preferred);
 
         boolean success = partService.updatePartIndexes(apPart, result, state, state.getScope(), false, preferred);
         if (success) {
