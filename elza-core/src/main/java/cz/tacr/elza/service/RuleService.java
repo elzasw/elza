@@ -110,7 +110,8 @@ import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.drools.AvailableItemsRules;
-import cz.tacr.elza.drools.DrlType;
+import cz.tacr.elza.domain.RulEntityRule;
+import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.drools.ModelValidationRules;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.drools.model.Ap;
@@ -1903,24 +1904,10 @@ public class RuleService {
     private ModelAvailable executeAvailable(@NotNull final PartType partType,
                                             @NotNull final ModelAvailable modelAvailable,
                                             @NotNull final RuleSet ruleSet) {
-        StaticDataProvider sdp = staticDataService.getData();
-        DrlType drlType = DrlType.AVAILABLE_ITEMS;
-
-        Ap ae = modelAvailable.getAp();
-        ApType aeType = sdp.getApTypeByCode(ae.getAeType());
-
-        // prepare list of rule codes
-        ApType aeTypeProcess = aeType;
-        ArrayList<String> executeDrls = new ArrayList<>();
-        while (aeTypeProcess != null) {
-            executeDrls.add(drlType.value() + "/" + aeTypeProcess.getCode() + "/" + partType.value());
-            executeDrls.add(drlType.value() + "/" + aeTypeProcess.getCode());
-            aeTypeProcess = aeTypeProcess.getParentApType();
-        }
-        executeDrls.add(drlType.value() + "/" + partType.value());
-        executeDrls.add(drlType.value());
-
-        List<RulExtensionRule> rules = prepareExtRuleList(executeDrls, ruleSet);
+        RulPartType rulPartType = staticDataService.getData().getPartTypeByCode(partType.value());
+        List<RulEntityRule> rules = ruleSet.getEntityRules(RulEntityRule.Kind.AVAILABLE_ITEMS,
+                                                           apTypeIds(modelAvailable.getAp()),
+                                                           rulPartType != null ? rulPartType.getPartTypeId() : null);
 
         try {
             availableItemsRules.execute(rules, modelAvailable);
@@ -1933,28 +1920,9 @@ public class RuleService {
 
     private ModelValidation executeValidation(@NotNull final ModelValidation modelValidation,
                                               @NotNull final RuleSet ruleSet) {
-        StaticDataProvider sdp = staticDataService.getData();
-        DrlType drlType = DrlType.VALIDATION;
-
-        Ap ae = modelValidation.getAp();
-        ApType aeType = sdp.getApTypeByCode(ae.getAeType());
-
-        // prepare list of rule codes
-        ApType aeTypeProcess = aeType;
-        ArrayList<String> executeDrls = new ArrayList<>();
-        while (aeTypeProcess != null) {
-            for (PartType partType : PartType.values()) {
-                executeDrls.add(drlType.value() + "/" + aeTypeProcess.getCode() + "/" + partType.value());
-            }
-            executeDrls.add(drlType.value() + "/" + aeTypeProcess.getCode());
-            aeTypeProcess = aeTypeProcess.getParentApType();
-        }
-        for (PartType partType : PartType.values()) {
-            executeDrls.add(drlType.value() + "/" + partType.value());
-        }
-        executeDrls.add(drlType.value());
-
-        List<RulExtensionRule> rules = prepareExtRuleList(executeDrls, ruleSet);
+        // validation rules of all part types
+        List<RulEntityRule> rules = ruleSet.getEntityRules(RulEntityRule.Kind.VALIDATION,
+                                                           apTypeIds(modelValidation.getAp()), null);
 
         try {
             modelValidationRules.execute(rules, modelValidation);
@@ -1965,18 +1933,16 @@ public class RuleService {
         return modelValidation;
     }
 
-    private List<RulExtensionRule> prepareExtRuleList(@NotNull final ArrayList<String> executeDrls,
-                                                      @NotNull final RuleSet ruleSet) {
-        // add in reverse order
-        List<RulExtensionRule> rules = new ArrayList<>(executeDrls.size());
-        for (int pos = executeDrls.size() - 1; pos >= 0; pos--) {
-            String condition = executeDrls.get(pos);
-            List<RulExtensionRule> rulExtensionRule = ruleSet.getExtByCondition(condition);
-            if (rulExtensionRule != null) {
-                rules.addAll(rulExtensionRule);
-            }
+    /**
+     * Ids of the entity's class and its parents, from the class up to the root.
+     */
+    private List<Integer> apTypeIds(final Ap ap) {
+        StaticDataProvider sdp = staticDataService.getData();
+        List<Integer> ids = new ArrayList<>();
+        for (ApType apType = sdp.getApTypeByCode(ap.getAeType()); apType != null; apType = apType.getParentApType()) {
+            ids.add(apType.getApTypeId());
         }
-        return rules;
+        return ids;
     }
 
     public RulItemSpec getItemSpecById(final Integer specId) {

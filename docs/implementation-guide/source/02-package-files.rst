@@ -214,7 +214,9 @@ rul_rule_set/<RS>/rul_arrangement_extension.xml and rul_extension_rule.xml
 ==========================================================================
 
 Arrangement extensions are optional sets of rules that archivists switch on
-for a unit of description and the units below it.
+for a unit of description and the units below it. They belong to rule sets
+of type ``ARRANGEMENT``; an entity rule set declares its rules in
+:file:`rul_entity_rule.xml` and refuses these files.
 
 .. code-block:: xml
 
@@ -236,7 +238,54 @@ packages) and ``name`` (required). ``extension-rule``: ``filename`` and
 ``arrangement-extension`` (required, attributes), ``rule-type``
 (``ATTRIBUTE_TYPES``, ``CONFORMITY_INFO``, ``CONFORMITY_IMPACT``,
 ``NEW_LEVEL``) and ``priority`` (required); ``compatibility-rul-package``
-(attribute) as for rule sets; ``condition`` is used by the entity rule set.
+(attribute): the funds of the rule set are validated again, as for rule
+sets.
+
+rul_rule_set/<RS>/rul_entity_rule.xml
+=====================================
+
+Rules of an entity rule set (``rule-type`` ``ENTITY``): which items a part
+of an entity offers, and how the entity is validated. A rule runs only for
+entities whose scope uses the rule set. The files are in
+:file:`rul_rule_set/<RS>/rules/`.
+
+.. code-block:: xml
+
+   <entity-rules>
+       <entity-rule filename="available_items/GLOBAL.drl" kind="AVAILABLE_ITEMS" priority="100"/>
+       <entity-rule filename="available_items/PT_NAME.drl" kind="AVAILABLE_ITEMS"
+                    part-type="PT_NAME" priority="100"/>
+       <entity-rule filename="available_items/PERSON/PT_NAME.drl" kind="AVAILABLE_ITEMS"
+                    ap-type="PERSON" part-type="PT_NAME" priority="100"/>
+       <entity-rule filename="validation/PERSON/GLOBAL.drl" kind="VALIDATION"
+                    ap-type="PERSON" priority="100" compatibility-rul-package="31"/>
+   </entity-rules>
+
+``filename``, ``kind`` and ``priority`` (required, attributes)
+   ``kind`` is ``AVAILABLE_ITEMS`` (items available in a part, evaluated
+   for one part) or ``VALIDATION`` (validation of the whole entity).
+
+``ap-type`` (attribute)
+   Code of the entity class. The rule applies to the class and its
+   subclasses; without it, to all classes.
+
+``part-type`` (attribute)
+   Code of the part type; without it, the rule applies to all parts.
+   Validation rules run for all parts regardless of it.
+
+``compatibility-rul-package`` (attribute)
+   A package version: when the package is upgraded from a lower version,
+   the entities of the class (all, without ``ap-type``) in the scopes of the
+   rule set are validated again.
+
+Rules run in this order: rules for all classes, then for each class from
+the root of the class hierarchy down to the class of the entity; on each
+level the rules without a part type before those of the part; by priority
+within a group. A package may contribute rules to the entity rule set of
+another package in :file:`rul_rule_set/<FOREIGN>/rul_entity_rule.xml`. The
+class and the part type must exist (in the package or its dependencies);
+an unknown one refuses the import. A package cannot remove a class or part
+type that entity rules of another package refer to.
 
 rul_rule_set/<RS>/rul_policy_type.xml
 =====================================

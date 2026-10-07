@@ -6621,6 +6621,10 @@
     "defaultMessage": "The required packages were not found: {codes}",
     "srcHash": "pwkQJfvnX8zM"
   },
+  "exception.pkg.INVALID_ENTITY_RULE": {
+    "defaultMessage": "Invalid entity rules in the file “{file}”: {reason}",
+    "srcHash": "UnKVJIRAPDyh"
+  },
   "exception.pkg.INVALID_TRANSLATION": {
     "defaultMessage": "Invalid translation “{key}” in the file “{file}”: {reason}",
     "srcHash": "2ia7ekwwoPP0"

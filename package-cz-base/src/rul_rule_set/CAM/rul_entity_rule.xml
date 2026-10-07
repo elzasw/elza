@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity-rules>
+    <entity-rule filename="available_items/GLOBAL.drl" kind="AVAILABLE_ITEMS" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/PT_BODY.drl" kind="AVAILABLE_ITEMS" part-type="PT_BODY" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/PT_CRE.drl" kind="AVAILABLE_ITEMS" part-type="PT_CRE" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/PT_EVENT.drl" kind="AVAILABLE_ITEMS" part-type="PT_EVENT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/PT_EXT.drl" kind="AVAILABLE_ITEMS" part-type="PT_EXT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/PT_IDENT.drl" kind="AVAILABLE_ITEMS" part-type="PT_IDENT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/PT_NAME.drl" kind="AVAILABLE_ITEMS" part-type="PT_NAME" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/PT_REL.drl" kind="AVAILABLE_ITEMS" part-type="PT_REL" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/ARTWORK/PT_BODY.drl" kind="AVAILABLE_ITEMS" ap-type="ARTWORK" part-type="PT_BODY" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/ARTWORK/PT_CRE.drl" kind="AVAILABLE_ITEMS" ap-type="ARTWORK" part-type="PT_CRE" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/ARTWORK/PT_EVENT.drl" kind="AVAILABLE_ITEMS" ap-type="ARTWORK" part-type="PT_EVENT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/ARTWORK/PT_EXT.drl" kind="AVAILABLE_ITEMS" ap-type="ARTWORK" part-type="PT_EXT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/ARTWORK/PT_NAME.drl" kind="AVAILABLE_ITEMS" ap-type="ARTWORK" part-type="PT_NAME" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/ARTWORK/PT_REL.drl" kind="AVAILABLE_ITEMS" ap-type="ARTWORK" part-type="PT_REL" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/ARTWORK_ARTWORK/PT_BODY.drl" kind="AVAILABLE_ITEMS" ap-type="ARTWORK_ARTWORK" part-type="PT_BODY" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/ARTWORK_ARTWORK/PT_CRE.drl" kind="AVAILABLE_ITEMS" ap-type="ARTWORK_ARTWORK" part-type="PT_CRE" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/ARTWORK_ARTWORK/PT_EXT.drl" kind="AVAILABLE_ITEMS" ap-type="ARTWORK_ARTWORK" part-type="PT_EXT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/ARTWORK_ARTWORK/PT_NAME.drl" kind="AVAILABLE_ITEMS" ap-type="ARTWORK_ARTWORK" part-type="PT_NAME" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/ARTWORK_AWARD/PT_CRE.drl" kind="AVAILABLE_ITEMS" ap-type="ARTWORK_AWARD" part-type="PT_CRE" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/ARTWORK_AWARD/PT_EXT.drl" kind="AVAILABLE_ITEMS" ap-type="ARTWORK_AWARD" part-type="PT_EXT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/ARTWORK_AWARD/PT_NAME.drl" kind="AVAILABLE_ITEMS" ap-type="ARTWORK_AWARD" part-type="PT_NAME" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/ARTWORK_CHARTER/PT_CRE.drl" kind="AVAILABLE_ITEMS" ap-type="ARTWORK_CHARTER" part-type="PT_CRE" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/ARTWORK_CHARTER/PT_EXT.drl" kind="AVAILABLE_ITEMS" ap-type="ARTWORK_CHARTER" part-type="PT_EXT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/ARTWORK_CHARTER/PT_NAME.drl" kind="AVAILABLE_ITEMS" ap-type="ARTWORK_CHARTER" part-type="PT_NAME" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/ARTWORK_CONSTR/PT_BODY.drl" kind="AVAILABLE_ITEMS" ap-type="ARTWORK_CONSTR" part-type="PT_BODY" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/ARTWORK_CONSTR/PT_CRE.drl" kind="AVAILABLE_ITEMS" ap-type="ARTWORK_CONSTR" part-type="PT_CRE" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/ARTWORK_CONSTR/PT_EXT.drl" kind="AVAILABLE_ITEMS" ap-type="ARTWORK_CONSTR" part-type="PT_EXT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/ARTWORK_CONSTR/PT_NAME.drl" kind="AVAILABLE_ITEMS" ap-type="ARTWORK_CONSTR" part-type="PT_NAME" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/ARTWORK_GAME/PT_CRE.drl" kind="AVAILABLE_ITEMS" ap-type="ARTWORK_GAME" part-type="PT_CRE" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/ARTWORK_GAME/PT_EXT.drl" kind="AVAILABLE_ITEMS" ap-type="ARTWORK_GAME" part-type="PT_EXT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/ARTWORK_PROD/PT_CRE.drl" kind="AVAILABLE_ITEMS" ap-type="ARTWORK_PROD" part-type="PT_CRE" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/ARTWORK_PROD/PT_EXT.drl" kind="AVAILABLE_ITEMS" ap-type="ARTWORK_PROD" part-type="PT_EXT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/ARTWORK_PROD/PT_NAME.drl" kind="AVAILABLE_ITEMS" ap-type="ARTWORK_PROD" part-type="PT_NAME" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/ARTWORK_PROJ/PT_CRE.drl" kind="AVAILABLE_ITEMS" ap-type="ARTWORK_PROJ" part-type="PT_CRE" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/ARTWORK_PROJ/PT_EXT.drl" kind="AVAILABLE_ITEMS" ap-type="ARTWORK_PROJ" part-type="PT_EXT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/ARTWORK_PROJ/PT_NAME.drl" kind="AVAILABLE_ITEMS" ap-type="ARTWORK_PROJ" part-type="PT_NAME" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/DYNASTY/PT_BODY.drl" kind="AVAILABLE_ITEMS" ap-type="DYNASTY" part-type="PT_BODY" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/DYNASTY/PT_CRE.drl" kind="AVAILABLE_ITEMS" ap-type="DYNASTY" part-type="PT_CRE" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/DYNASTY/PT_EVENT.drl" kind="AVAILABLE_ITEMS" ap-type="DYNASTY" part-type="PT_EVENT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/DYNASTY/PT_EXT.drl" kind="AVAILABLE_ITEMS" ap-type="DYNASTY" part-type="PT_EXT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/DYNASTY/PT_IDENT.drl" kind="AVAILABLE_ITEMS" ap-type="DYNASTY" part-type="PT_IDENT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/DYNASTY/PT_NAME.drl" kind="AVAILABLE_ITEMS" ap-type="DYNASTY" part-type="PT_NAME" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/DYNASTY/PT_REL.drl" kind="AVAILABLE_ITEMS" ap-type="DYNASTY" part-type="PT_REL" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/EVENT/PT_BODY.drl" kind="AVAILABLE_ITEMS" ap-type="EVENT" part-type="PT_BODY" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/EVENT/PT_CRE.drl" kind="AVAILABLE_ITEMS" ap-type="EVENT" part-type="PT_CRE" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/EVENT/PT_EVENT.drl" kind="AVAILABLE_ITEMS" ap-type="EVENT" part-type="PT_EVENT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/EVENT/PT_EXT.drl" kind="AVAILABLE_ITEMS" ap-type="EVENT" part-type="PT_EXT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/EVENT/PT_IDENT.drl" kind="AVAILABLE_ITEMS" ap-type="EVENT" part-type="PT_IDENT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/EVENT/PT_NAME.drl" kind="AVAILABLE_ITEMS" ap-type="EVENT" part-type="PT_NAME" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/EVENT/PT_REL.drl" kind="AVAILABLE_ITEMS" ap-type="EVENT" part-type="PT_REL" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/EVENT_EVENT/PT_CRE.drl" kind="AVAILABLE_ITEMS" ap-type="EVENT_EVENT" part-type="PT_CRE" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/EVENT_EVENT/PT_EXT.drl" kind="AVAILABLE_ITEMS" ap-type="EVENT_EVENT" part-type="PT_EXT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/EVENT_EVENT/PT_NAME.drl" kind="AVAILABLE_ITEMS" ap-type="EVENT_EVENT" part-type="PT_NAME" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/EVENT_NATURE/PT_NAME.drl" kind="AVAILABLE_ITEMS" ap-type="EVENT_NATURE" part-type="PT_NAME" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/EVENT_TRADITION/PT_CRE.drl" kind="AVAILABLE_ITEMS" ap-type="EVENT_TRADITION" part-type="PT_CRE" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/EVENT_TRADITION/PT_EXT.drl" kind="AVAILABLE_ITEMS" ap-type="EVENT_TRADITION" part-type="PT_EXT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/EVENT_TRADITION/PT_NAME.drl" kind="AVAILABLE_ITEMS" ap-type="EVENT_TRADITION" part-type="PT_NAME" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/FAMILY/PT_NAME.drl" kind="AVAILABLE_ITEMS" ap-type="FAMILY" part-type="PT_NAME" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/FAMILY_BRANCH/PT_NAME.drl" kind="AVAILABLE_ITEMS" ap-type="FAMILY_BRANCH" part-type="PT_NAME" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/GEO/PT_BODY.drl" kind="AVAILABLE_ITEMS" ap-type="GEO" part-type="PT_BODY" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/GEO/PT_CRE.drl" kind="AVAILABLE_ITEMS" ap-type="GEO" part-type="PT_CRE" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/GEO/PT_EVENT.drl" kind="AVAILABLE_ITEMS" ap-type="GEO" part-type="PT_EVENT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/GEO/PT_EXT.drl" kind="AVAILABLE_ITEMS" ap-type="GEO" part-type="PT_EXT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/GEO/PT_IDENT.drl" kind="AVAILABLE_ITEMS" ap-type="GEO" part-type="PT_IDENT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/GEO/PT_NAME.drl" kind="AVAILABLE_ITEMS" ap-type="GEO" part-type="PT_NAME" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/GEO/PT_REL.drl" kind="AVAILABLE_ITEMS" ap-type="GEO" part-type="PT_REL" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/GEO_ADMIN_UNIT/PT_BODY.drl" kind="AVAILABLE_ITEMS" ap-type="GEO_ADMIN_UNIT" part-type="PT_BODY" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/GEO_ADMIN_UNIT/PT_EXT.drl" kind="AVAILABLE_ITEMS" ap-type="GEO_ADMIN_UNIT" part-type="PT_EXT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/GEO_CLIMATIC_PHEN/PT_BODY.drl" kind="AVAILABLE_ITEMS" ap-type="GEO_CLIMATIC_PHEN" part-type="PT_BODY" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/GEO_FORMATION/PT_BODY.drl" kind="AVAILABLE_ITEMS" ap-type="GEO_FORMATION" part-type="PT_BODY" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/GEO_FORMATION/PT_EXT.drl" kind="AVAILABLE_ITEMS" ap-type="GEO_FORMATION" part-type="PT_EXT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/GEO_NATURE_RES/PT_BODY.drl" kind="AVAILABLE_ITEMS" ap-type="GEO_NATURE_RES" part-type="PT_BODY" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/GEO_NATURE_RES/PT_EXT.drl" kind="AVAILABLE_ITEMS" ap-type="GEO_NATURE_RES" part-type="PT_EXT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/GEO_SEA_FORMATION/PT_BODY.drl" kind="AVAILABLE_ITEMS" ap-type="GEO_SEA_FORMATION" part-type="PT_BODY" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/GEO_SEA_FORMATION/PT_EXT.drl" kind="AVAILABLE_ITEMS" ap-type="GEO_SEA_FORMATION" part-type="PT_EXT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/GEO_SHAPES/PT_BODY.drl" kind="AVAILABLE_ITEMS" ap-type="GEO_SHAPES" part-type="PT_BODY" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/GEO_SHAPES/PT_EXT.drl" kind="AVAILABLE_ITEMS" ap-type="GEO_SHAPES" part-type="PT_EXT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/GEO_SPACE/PT_BODY.drl" kind="AVAILABLE_ITEMS" ap-type="GEO_SPACE" part-type="PT_BODY" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/GEO_UNIT/PT_BODY.drl" kind="AVAILABLE_ITEMS" ap-type="GEO_UNIT" part-type="PT_BODY" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/GEO_UNIT/PT_EXT.drl" kind="AVAILABLE_ITEMS" ap-type="GEO_UNIT" part-type="PT_EXT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/GEO_UNIT/PT_IDENT.drl" kind="AVAILABLE_ITEMS" ap-type="GEO_UNIT" part-type="PT_IDENT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/GEO_WATERS/PT_BODY.drl" kind="AVAILABLE_ITEMS" ap-type="GEO_WATERS" part-type="PT_BODY" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/GEO_WATERS/PT_EXT.drl" kind="AVAILABLE_ITEMS" ap-type="GEO_WATERS" part-type="PT_EXT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/HEALTH_AND_EDU/PT_IDENT.drl" kind="AVAILABLE_ITEMS" ap-type="HEALTH_AND_EDU" part-type="PT_IDENT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/PARTY_GROUP/PT_BODY.drl" kind="AVAILABLE_ITEMS" ap-type="PARTY_GROUP" part-type="PT_BODY" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/PARTY_GROUP/PT_CRE.drl" kind="AVAILABLE_ITEMS" ap-type="PARTY_GROUP" part-type="PT_CRE" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/PARTY_GROUP/PT_EVENT.drl" kind="AVAILABLE_ITEMS" ap-type="PARTY_GROUP" part-type="PT_EVENT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/PARTY_GROUP/PT_EXT.drl" kind="AVAILABLE_ITEMS" ap-type="PARTY_GROUP" part-type="PT_EXT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/PARTY_GROUP/PT_IDENT.drl" kind="AVAILABLE_ITEMS" ap-type="PARTY_GROUP" part-type="PT_IDENT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/PARTY_GROUP/PT_NAME.drl" kind="AVAILABLE_ITEMS" ap-type="PARTY_GROUP" part-type="PT_NAME" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/PARTY_GROUP/PT_REL.drl" kind="AVAILABLE_ITEMS" ap-type="PARTY_GROUP" part-type="PT_REL" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/PERSON/PT_BODY.drl" kind="AVAILABLE_ITEMS" ap-type="PERSON" part-type="PT_BODY" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/PERSON/PT_CRE.drl" kind="AVAILABLE_ITEMS" ap-type="PERSON" part-type="PT_CRE" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/PERSON/PT_EVENT.drl" kind="AVAILABLE_ITEMS" ap-type="PERSON" part-type="PT_EVENT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/PERSON/PT_EXT.drl" kind="AVAILABLE_ITEMS" ap-type="PERSON" part-type="PT_EXT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/PERSON/PT_IDENT.drl" kind="AVAILABLE_ITEMS" ap-type="PERSON" part-type="PT_IDENT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/PERSON/PT_NAME.drl" kind="AVAILABLE_ITEMS" ap-type="PERSON" part-type="PT_NAME" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/PERSON/PT_REL.drl" kind="AVAILABLE_ITEMS" ap-type="PERSON" part-type="PT_REL" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/PERSON_ANIMAL/PT_NAME.drl" kind="AVAILABLE_ITEMS" ap-type="PERSON_ANIMAL" part-type="PT_NAME" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/PERSON_BEING/PT_NAME.drl" kind="AVAILABLE_ITEMS" ap-type="PERSON_BEING" part-type="PT_NAME" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/PERSON_INDIVIDUAL/PT_IDENT.drl" kind="AVAILABLE_ITEMS" ap-type="PERSON_INDIVIDUAL" part-type="PT_IDENT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/PERSON_INDIVIDUAL/PT_NAME.drl" kind="AVAILABLE_ITEMS" ap-type="PERSON_INDIVIDUAL" part-type="PT_NAME" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/PUBLIC_ADMINISTRATION/PT_IDENT.drl" kind="AVAILABLE_ITEMS" ap-type="PUBLIC_ADMINISTRATION" part-type="PT_IDENT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/TERM/PT_BODY.drl" kind="AVAILABLE_ITEMS" ap-type="TERM" part-type="PT_BODY" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/TERM/PT_CRE.drl" kind="AVAILABLE_ITEMS" ap-type="TERM" part-type="PT_CRE" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/TERM/PT_EVENT.drl" kind="AVAILABLE_ITEMS" ap-type="TERM" part-type="PT_EVENT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/TERM/PT_EXT.drl" kind="AVAILABLE_ITEMS" ap-type="TERM" part-type="PT_EXT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/TERM/PT_NAME.drl" kind="AVAILABLE_ITEMS" ap-type="TERM" part-type="PT_NAME" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/TERM_GENERAL/PT_REL.drl" kind="AVAILABLE_ITEMS" ap-type="TERM_GENERAL" part-type="PT_REL" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/TERM_TAXONOMY/PT_IDENT.drl" kind="AVAILABLE_ITEMS" ap-type="TERM_TAXONOMY" part-type="PT_IDENT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/TERM_TAXONOMY/PT_REL.drl" kind="AVAILABLE_ITEMS" ap-type="TERM_TAXONOMY" part-type="PT_REL" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="available_items/COMPANY/PT_REL.drl" kind="AVAILABLE_ITEMS" ap-type="COMPANY" part-type="PT_REL" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="validation/GLOBAL.drl" kind="VALIDATION" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="validation/ARTWORK/GLOBAL.drl" kind="VALIDATION" ap-type="ARTWORK" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="validation/DYNASTY/GLOBAL.drl" kind="VALIDATION" ap-type="DYNASTY" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="validation/EVENT/GLOBAL.drl" kind="VALIDATION" ap-type="EVENT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="validation/GEO/GLOBAL.drl" kind="VALIDATION" ap-type="GEO" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="validation/GEO_UNIT/GLOBAL.drl" kind="VALIDATION" ap-type="GEO_UNIT" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="validation/PARTY_GROUP/GLOBAL.drl" kind="VALIDATION" ap-type="PARTY_GROUP" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="validation/PERSON/GLOBAL.drl" kind="VALIDATION" ap-type="PERSON" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="validation/PERSON_INDIVIDUAL/GLOBAL.drl" kind="VALIDATION" ap-type="PERSON_INDIVIDUAL" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="validation/TERM/GLOBAL.drl" kind="VALIDATION" ap-type="TERM" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="validation/TERM_GENERAL/GLOBAL.drl" kind="VALIDATION" ap-type="TERM_GENERAL" priority="100" compatibility-rul-package="31"/>
+    <entity-rule filename="validation/TERM_TAXONOMY/GLOBAL.drl" kind="VALIDATION" ap-type="TERM_TAXONOMY" priority="100" compatibility-rul-package="31"/>
+</entity-rules>

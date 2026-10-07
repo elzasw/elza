@@ -28,6 +28,7 @@ import cz.tacr.elza.packageimport.xml.common.OtherCodes;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
+import cz.tacr.elza.repository.EntityRuleRepository;
 
 /**
  * Update AP types
@@ -41,6 +42,8 @@ public class APTypeUpdater {
     final private ApStateRepository apStateRepository;
 
     final private ApTypeRepository apTypeRepository;
+
+    final private EntityRuleRepository entityRuleRepository;
 
     private APTypes apXmlTypes = null;
 
@@ -56,9 +59,11 @@ public class APTypeUpdater {
     public APTypeUpdater(final ApStateRepository apStateRepository,
                          final ApTypeRepository apTypeRepository,
                          final ApAccessPointRepository accessPointRepository,
+                         final EntityRuleRepository entityRuleRepository,
                          final StaticDataProvider staticDataProvider) {
         this.apStateRepository = apStateRepository;
         this.apTypeRepository = apTypeRepository;
+        this.entityRuleRepository = entityRuleRepository;
         this.accessPointRepository = accessPointRepository;
         this.staticDataProvider = staticDataProvider;
     }
@@ -180,6 +185,9 @@ public class APTypeUpdater {
         Collection<ApType> oldTypes = oldTypeCodeMap.values();
        // TODO: smazáno - odstranění starých typů - oldTypes.forEach(registryRoleRepository::deleteByApType);
 
+        if (!oldTypes.isEmpty()) {
+            PackageService.checkNoForeignEntityRules(entityRuleRepository.findForeignByApTypes(oldTypes, rulPackage));
+        }
         apTypeRepository.deleteAll(oldTypes);
     }
 

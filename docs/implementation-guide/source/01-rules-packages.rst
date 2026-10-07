@@ -36,6 +36,7 @@ definitions; each rule set has a directory under :file:`rul_rule_set/`.
        rul_arrangement_rule.xml    rules of the rule set
        rul_arrangement_extension.xml   optional extensions of the rule set
        rul_extension_rule.xml      rules of those extensions
+       rul_entity_rule.xml         rules of an entity rule set
        rul_output_type.xml, rul_template.xml, rul_policy_type.xml,
        rul_package_actions.xml, ui_setting.xml, ...
        rules/                      Drools (.drl) and Groovy rule files

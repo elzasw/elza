@@ -2,14 +2,17 @@ package cz.tacr.elza.core.data;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import cz.tacr.elza.domain.RulArrangementExtension;
 import cz.tacr.elza.domain.RulArrangementRule;
 import cz.tacr.elza.domain.RulArrangementRule.RuleType;
+import cz.tacr.elza.domain.RulEntityRule;
 import cz.tacr.elza.domain.RulExtensionRule;
 import cz.tacr.elza.domain.RulRuleSet;
 
@@ -25,17 +28,18 @@ public class RuleSet {
      */
     final Map<Integer, RuleSetExtension> ruleSetExtensionsById;
 
-    final Map<String, List<RulExtensionRule>> extRuleByCondition;
+    /**
+     * Entity rules of this rule set by kind, sorted by priority
+     */
+    final Map<RulEntityRule.Kind, List<RulEntityRule>> entityRulesByKind;
 
     final Map<RuleType, List<RulArrangementRule>> rulesByType;
-
-    final String NULL_CONDITION = "$_NULL";
 
     RuleSet(final RulRuleSet entity,
             final List<RulArrangementRule> rules,
             final List<RulArrangementExtension> exts,
             final Map<Integer, List<RulExtensionRule>> extRulesByExtId,
-            final List<RulExtensionRule> rulExtensionRules) {
+            final List<RulEntityRule> entityRules) {
         this.entity = entity;
         this.rulesByType = rules.stream().collect(Collectors.groupingBy(RulArrangementRule::getRuleType,
                                                                         Collectors.toList()));
@@ -54,10 +58,10 @@ public class RuleSet {
                 .collect(Collectors.toList());
         this.ruleSetExtensionsById = this.ruleSetExtensions.stream().collect(
         		Collectors.toMap(rex -> rex.getEntity().getArrangementExtensionId(), p -> p));
-        this.extRuleByCondition = rulExtensionRules.stream()
-                .collect(Collectors.groupingBy(p -> {
-                    return p.getCondition() == null? NULL_CONDITION : p.getCondition();
-                }, HashMap::new, Collectors.toCollection(ArrayList::new)));
+        this.entityRulesByKind = entityRules.stream()
+                .sorted(Comparator.comparing(RulEntityRule::getPriority)
+                        .thenComparing(RulEntityRule::getEntityRuleId))
+                .collect(Collectors.groupingBy(RulEntityRule::getKind, HashMap::new, Collectors.toList()));
     }
     
     public RuleSetExtension getRuleSetExtension(Integer ruleSetExtensionId) {
@@ -76,11 +80,46 @@ public class RuleSet {
         return entity.getRuleSetId();
     }
 
-    public List<RulExtensionRule> getExtByCondition(String condition) {
-        if (condition == null) {
-            return extRuleByCondition.get(NULL_CONDITION);
+    /**
+     * Entity rules to run, in the order of execution: rules for all classes first, then for each
+     * class from the root of the class hierarchy down to the entity's class; on each level the rules
+     * without a part type before the rules of a part type; by priority within a group.
+     *
+     * @param kind
+     *            kind of the rules
+     * @param apTypeIds
+     *            ids of the entity's class and its parents, from the class up to the root
+     * @param partTypeId
+     *            part type; null for the rules of all part types
+     * @return rules of this rule set only
+     */
+    public List<RulEntityRule> getEntityRules(final RulEntityRule.Kind kind, final List<Integer> apTypeIds,
+                                              final Integer partTypeId) {
+        List<RulEntityRule> rules = entityRulesByKind.getOrDefault(kind, Collections.emptyList());
+        if (rules.isEmpty()) {
+            return rules;
         }
-        return extRuleByCondition.get(condition);
+        List<RulEntityRule> result = new ArrayList<>();
+        addEntityRules(result, rules, null, partTypeId);
+        for (int i = apTypeIds.size() - 1; i >= 0; i--) {
+            addEntityRules(result, rules, apTypeIds.get(i), partTypeId);
+        }
+        return result;
+    }
+
+    private static void addEntityRules(final List<RulEntityRule> result, final List<RulEntityRule> rules,
+                                       final Integer apTypeId, final Integer partTypeId) {
+        for (RulEntityRule rule : rules) {
+            if (Objects.equals(apTypeId, rule.getApTypeId()) && rule.getPartTypeId() == null) {
+                result.add(rule);
+            }
+        }
+        for (RulEntityRule rule : rules) {
+            if (Objects.equals(apTypeId, rule.getApTypeId()) && rule.getPartTypeId() != null
+                    && (partTypeId == null || partTypeId.equals(rule.getPartTypeId()))) {
+                result.add(rule);
+            }
+        }
     }
 
     /**

@@ -15,6 +15,15 @@ between the installed and the new version; see :doc:`/03-upgrade`.
 Upcoming version
 ================
 
+* Change: Rules packages - the rules of an entity rule set (CZ_BASE, rule
+  set ``CAM``) are declared in :file:`rul_entity_rule.xml` and run only for
+  entities whose scope uses the rule set. The upgrade removes the rules
+  stored in the old form and CZ_BASE version 89, delivered with ELZA,
+  imports them again at the first start. Packages with entity rules in the
+  old form (:file:`rul_arrangement_extension.xml` and
+  :file:`rul_extension_rule.xml` in an entity rule set) are refused and must
+  be converted; DRL files keep their names and paths, so local changes of
+  CZ_BASE rule files still apply.
 * New: Translations of rules packages - a package can carry texts of its
   own and other packages' item types, specifications and other entities
   in further languages (:file:`translations/<lang>.xml`); the names are

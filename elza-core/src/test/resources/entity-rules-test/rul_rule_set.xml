@@ -1,0 +1,6 @@
+<rule-sets>
+    <rule-set code="ENT_TEST">
+        <name>Entity rules test</name>
+        <rule-type>ENTITY</rule-type>
+    </rule-set>
+</rule-sets>
