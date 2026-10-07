@@ -85,9 +85,6 @@ public class RulItemType {
     private String description;
 
     @Column(nullable = false)
-    private Boolean isValueUnique;
-
-    @Column(nullable = false)
     private Boolean canBeOrdered;
 
     @Column(nullable = false)
@@ -154,7 +151,6 @@ public class RulItemType {
 		name = src.getName();
 		shortcut = src.getShortcut();
 		description = src.getDescription();
-		isValueUnique = src.getIsValueUnique();
 		canBeOrdered = src.getCanBeOrdered();
 		useSpecification = src.getUseSpecification();
 		viewOrder = src.getViewOrder();
@@ -230,22 +226,6 @@ public class RulItemType {
      */
     public void setDescription(final String description) {
         this.description = description;
-    }
-
-    /**
-     * @return příznak, zda je hodnota atributu při použití tohoto typu jedinečná v rámci celé archivní pomůcky.
-     */
-    public Boolean getIsValueUnique() {
-        return isValueUnique;
-    }
-
-    /**
-     * příznak, zda je hodnota atributu při použití tohoto typu jedinečná v rámci celé archivní pomůcky.
-     *
-     * @param isValueUnique příznak.
-     */
-    public void setIsValueUnique(final Boolean isValueUnique) {
-        this.isValueUnique = isValueUnique;
     }
 
     /**

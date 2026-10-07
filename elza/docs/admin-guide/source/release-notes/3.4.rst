@@ -15,6 +15,9 @@ between the installed and the new version; see :doc:`/03-upgrade`.
 Upcoming version
 ================
 
+* Change: Rules packages - the item type flag ``is-value-unique`` is
+  removed (column ``rul_item_type.is_value_unique``). ELZA never enforced
+  it; the element is ignored when a package still contains it.
 * Change: Rules packages - a part type of archival entities may be declared
   by several packages with the same code, like entity classes; its name
   follows the language of the user. An entity rule set lists the part

@@ -1147,4 +1147,10 @@
         </insert>
     </changeSet>
 
+    <changeSet id="20261008120000" author="ppy">
+        <!-- rul_item_type.is_value_unique was never enforced nor used; packages may still contain the
+             element is-value-unique, the import ignores it -->
+        <dropColumn tableName="rul_item_type" columnName="is_value_unique"/>
+    </changeSet>
+
 </databaseChangeLog>

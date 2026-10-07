@@ -50,9 +50,6 @@ public class ItemType {
     @XmlElement(name = "description")
     private String description;
 
-    @XmlElement(name = "is-value-unique")
-    private Boolean isValueUnique;
-
     @XmlElement(name = "can-be-ordered")
     private Boolean canBeOrdered;
 
@@ -124,14 +121,6 @@ public class ItemType {
 
     public void setDescription(final String description) {
         this.description = description;
-    }
-
-    public Boolean getIsValueUnique() {
-        return isValueUnique;
-    }
-
-    public void setIsValueUnique(final Boolean isValueUnique) {
-        this.isValueUnique = isValueUnique;
     }
 
     public Boolean getCanBeOrdered() {
@@ -207,7 +196,6 @@ public class ItemType {
         itemType.setCanBeOrdered(rulDescItemType.getCanBeOrdered());
         itemType.setDataType(rulDescItemType.getDataType().getCode());
         itemType.setDescription(rulDescItemType.getDescription());
-        itemType.setIsValueUnique(rulDescItemType.getIsValueUnique());
         itemType.setUseSpecification(rulDescItemType.getUseSpecification());
         itemType.setStringLengthLimit(rulDescItemType.getStringLengthLimit());
 

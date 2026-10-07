@@ -43,11 +43,6 @@ public class RulDescItemTypeVO {
     private String description;
 
     /**
-     * je hodnota unikátní?
-     */
-    private Boolean isValueUnique;
-
-    /**
      * může se řadit?
      */
     private Boolean canBeOrdered;
@@ -137,14 +132,6 @@ public class RulDescItemTypeVO {
 
     public void setDescription(final String description) {
         this.description = description;
-    }
-
-    public Boolean getIsValueUnique() {
-        return isValueUnique;
-    }
-
-    public void setIsValueUnique(final Boolean isValueUnique) {
-        this.isValueUnique = isValueUnique;
     }
 
     public Boolean getCanBeOrdered() {
