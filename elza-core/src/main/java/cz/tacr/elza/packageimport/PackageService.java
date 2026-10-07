@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -70,6 +71,9 @@ import cz.tacr.elza.domain.RulArrangementExtension;
 import cz.tacr.elza.domain.RulArrangementRule;
 import cz.tacr.elza.domain.RulComponent;
 import cz.tacr.elza.domain.RulExportFilter;
+import cz.tacr.elza.domain.RulApTypeDeclaration;
+import cz.tacr.elza.domain.SysLanguage;
+import cz.tacr.elza.core.data.PackageTexts;
 import cz.tacr.elza.domain.RulEntityRule;
 import cz.tacr.elza.domain.RulRuleSetApType;
 import cz.tacr.elza.domain.RulExtensionRule;
@@ -167,6 +171,7 @@ import cz.tacr.elza.repository.ArrangementExtensionRepository;
 import cz.tacr.elza.repository.ArrangementRuleRepository;
 import cz.tacr.elza.repository.ComponentRepository;
 import cz.tacr.elza.repository.ExportFilterRepository;
+import cz.tacr.elza.repository.ApTypeDeclarationRepository;
 import cz.tacr.elza.repository.EntityRuleRepository;
 import cz.tacr.elza.repository.RuleSetApTypeRepository;
 import cz.tacr.elza.repository.ExtensionRuleRepository;
@@ -478,6 +483,12 @@ public class PackageService {
 
     @Autowired
     private RuleSetApTypeRepository ruleSetApTypeRepository;
+
+    @Autowired
+    private ApTypeDeclarationRepository apTypeDeclarationRepository;
+
+    @Autowired
+    private PackageTexts packageTexts;
 
     @Autowired
     private ApExternalIdTypeRepository externalIdTypeRepository;
@@ -910,6 +921,42 @@ public class PackageService {
         }
     }
 
+    /**
+     * Summary of class declarations with the current dependencies and the installation language.
+     */
+    private ApTypeDeclarations apTypeDeclarations() {
+        SysLanguage defaultLanguage = packageTexts.defaultLanguage();
+        return new ApTypeDeclarations(packageDependencyRepository.findAll(),
+                                      defaultLanguage != null ? defaultLanguage.getLanguageId() : null);
+    }
+
+    /**
+     * Removes the class declarations of a deleted package: a class still declared by another package
+     * stays, with owner, name and read-only from its remaining declarations; the others are removed.
+     */
+    private void deleteApTypeDeclarations(final RulPackage rulPackage) {
+        List<RulApTypeDeclaration> declarations = apTypeDeclarationRepository.findByRulPackage(rulPackage);
+        apTypeDeclarationRepository.deleteAll(declarations);
+        apTypeDeclarationRepository.flush();
+        ApTypeDeclarations summary = apTypeDeclarations();
+        List<ApType> remove = new ArrayList<>();
+        for (RulApTypeDeclaration declaration : declarations) {
+            ApType apType = declaration.getApType();
+            List<RulApTypeDeclaration> remaining = apTypeDeclarationRepository.findByApTypes(List.of(apType));
+            if (remaining.isEmpty()) {
+                remove.add(apType);
+            } else {
+                summary.summarize(apType, remaining);
+                apTypeRepository.save(apType);
+            }
+        }
+        // parents first unlinked, so that the classes can be deleted in any order
+        remove.forEach(t -> t.setParentApType(null));
+        apTypeRepository.saveAll(remove);
+        apTypeRepository.flush();
+        apTypeRepository.deleteAll(remove);
+    }
+
     private void importApTypes(PackageContext pkgCtx) throws IOException {
         APTypeUpdater apTypeUpdater = new APTypeUpdater(
                 apStateRepository,
@@ -917,6 +964,8 @@ public class PackageService {
                 accessPointRepository,
                 entityRuleRepository,
                 ruleSetApTypeRepository,
+                apTypeDeclarationRepository,
+                apTypeDeclarations(),
                 staticDataService.getData()
         );
         apTypeUpdater.run(pkgCtx);
@@ -1939,10 +1988,23 @@ public class PackageService {
             row.setRuleSet(ruleSet);
             row.setApType(apType);
             row.setRulPackage(ruc.getRulPackage());
-            row.setAssignable(member.getAssignable() != null ? member.getAssignable() : !apType.isReadOnly());
+            row.setAssignable(member.getAssignable() != null ? member.getAssignable()
+                    : !readOnlyFor(apType, ruc.getRulPackage()));
             members.add(row);
         }
         ruleSetApTypeRepository.saveAll(members);
+    }
+
+    /**
+     * Read-only of a class as the package declares it, or of the class when the package does not
+     * declare it.
+     */
+    private boolean readOnlyFor(final ApType apType, final RulPackage rulPackage) {
+        return apTypeDeclarationRepository.findByApTypes(List.of(apType)).stream()
+                .filter(d -> d.getPackageId().equals(rulPackage.getPackageId()))
+                .map(RulApTypeDeclaration::getReadOnly)
+                .findFirst()
+                .orElse(apType.isReadOnly());
     }
 
     /**
@@ -2824,8 +2886,7 @@ public class PackageService {
         extensionRuleRepository.deleteByRulPackage(rulPackage);
         arrangementExtensionRepository.deleteByRulPackage(rulPackage);
         ruleSetRepository.deleteAll(ruleSets);
-        apTypeRepository.preDeleteByRulPackage(rulPackage);
-        apTypeRepository.deleteByRulPackage(rulPackage);
+        deleteApTypeDeclarations(rulPackage);
         settingsRepository.deleteByRulPackage(rulPackage);
         issueStateRepository.deleteByRulPackage(rulPackage);
         issueTypeRepository.deleteByRulPackage(rulPackage);
@@ -3127,7 +3188,7 @@ public class PackageService {
                 RuleSetApTypes.Member member = new RuleSetApTypes.Member();
                 member.setCode(row.getApType().getCode());
                 // written only when it differs from the class
-                if (row.getAssignable() == row.getApType().isReadOnly()) {
+                if (row.getAssignable() == readOnlyFor(row.getApType(), rulPackage)) {
                     member.setAssignable(row.getAssignable());
                 }
                 members.add(member);
@@ -3287,27 +3348,27 @@ public class PackageService {
 
     private void exportRegisterTypes(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
         APTypes registerTypes = new APTypes();
-        List<ApType> apTypes = apTypeRepository.findByRulPackage(rulPackage);
-        if (apTypes.size() == 0) {
+        // the declarations of the package (a class may be declared by several packages)
+        List<RulApTypeDeclaration> declarations = apTypeDeclarationRepository.findByRulPackage(rulPackage).stream()
+                .sorted(Comparator.comparing(RulApTypeDeclaration::getApTypeDeclarationId))
+                .toList();
+        if (declarations.isEmpty()) {
             return;
         }
-        List<APTypeXml> registerTypeList = new ArrayList<>(apTypes.size());
+        List<APTypeXml> registerTypeList = new ArrayList<>(declarations.size());
         registerTypes.setRegisterTypes(registerTypeList);
 
-        for (ApType apType : apTypes) {
+        for (RulApTypeDeclaration declaration : declarations) {
             APTypeXml registerType = new APTypeXml();
-            convertRegisterType(apType, registerType);
+            registerType.setName(declaration.getName());
+            registerType.setCode(declaration.getApType().getCode());
+            registerType.setReadOnly(declaration.getReadOnly());
+            registerType.setParentType(declaration.getParentApType() == null ? null
+                    : declaration.getParentApType().getCode());
             registerTypeList.add(registerType);
         }
 
         addObjectToZipFile(registerTypes, zos, APTypeUpdater.AP_TYPE_XML);
-    }
-
-    private void convertRegisterType(final ApType apType, final APTypeXml registerType) {
-        registerType.setName(apType.getName());
-        registerType.setCode(apType.getCode());
-        registerType.setReadOnly(apType.isReadOnly());
-        registerType.setParentType(apType.getParentApType() == null ? null : apType.getParentApType().getCode());
     }
 
     private void exportOutputTypes(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {

@@ -3,6 +3,7 @@
   <name>Entity rules test package</name>
   <version>1</version>
   <description>A second entity rule set next to CAM (EntityRulesTest)</description>
+  <language>en</language>
   <dependencies>
     <dependency code="CZ_BASE" min-version="89" />
   </dependencies>

@@ -1,0 +1,13 @@
+<ap-types>
+    <!-- declared by CZ_BASE too: same class, English name, assignable in this package -->
+    <ap-type code="PERSON">
+        <name>Person</name>
+        <hierarchical>false</hierarchical>
+        <read-only>false</read-only>
+    </ap-type>
+    <ap-type code="ENT_PERSON_LOCAL" parent-ap-type="PERSON">
+        <name>Local person</name>
+        <hierarchical>false</hierarchical>
+        <read-only>false</read-only>
+    </ap-type>
+</ap-types>

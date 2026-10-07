@@ -157,6 +157,57 @@ other item types with ``use-specification``.
    For specifications of ``RECORD_REF`` item types: entity types that may be
    referenced with this specification.
 
+ap_type.xml
+===========
+
+Entity classes (types of archival entities) the package declares.
+
+.. code-block:: xml
+
+   <ap-types>
+       <ap-type code="PERSON">
+           <name>osoba / bytost</name>
+           <hierarchical>false</hierarchical>
+           <read-only>true</read-only>
+       </ap-type>
+       <ap-type code="PERSON_INDIVIDUAL" parent-ap-type="PERSON">
+           <name>fyzická osoba</name>
+           <hierarchical>false</hierarchical>
+           <read-only>false</read-only>
+       </ap-type>
+   </ap-types>
+
+``code`` (required, attribute), ``parent-ap-type`` (attribute)
+   Code of the class and of its parent; the parent is declared in the same
+   file or by a package this one depends on.
+
+``name`` (required)
+   Name of the class in the language of the package.
+
+``read-only``
+   The class cannot be chosen for an entity (abstract class); the default
+   of rule sets of this package that do not list their classes
+   (:file:`rul_ap_type.xml`).
+
+**Classes shared by packages.** Several packages may declare a class with
+the same code - for example a national and an international entity
+description both declaring ``PERSON``. The class then exists once: the
+same entities, rules and references use it. Each package states its own
+name, in its own language, and its own ``read-only``. Declaring a code
+declared by another package asserts that it is the same concept. The
+packages must agree on the parent: a declaration with another parent
+refuses the import. The class is removed with the last package declaring
+it.
+
+The names of all declarations are texts of the class in the languages of
+the declaring packages, resolved like translations: the reader's language
+first; when several packages give a text in that language, the package
+deeper in the dependency order wins, ties by package code; otherwise the
+name in the language of the installation. When two packages that do not
+depend on each other give different names in one language, an installation
+fixes the choice with a small package depending on both that translates
+the name.
+
 rul_rule_set.xml
 ================
 
@@ -537,6 +588,6 @@ checked.
 .. todo::
 
    Remaining files: :file:`ui_setting.xml` (package and rule set level),
-   :file:`ap_type.xml`, :file:`rul_part_type.xml`,
+   :file:`rul_part_type.xml`,
    :file:`ap_external_id_type.xml`, :file:`par_institution_type.xml`, issue
    types and states, export and output filters, import transformations.

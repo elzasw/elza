@@ -42,6 +42,11 @@ public class RuleSet {
      */
     private Map<Integer, Boolean> apTypeMembers = Map.of();
 
+    /**
+     * Read-only of classes as the package of the rule set declares them (class id to read-only)
+     */
+    private Map<Integer, Boolean> declaredReadOnly = Map.of();
+
     RuleSet(final RulRuleSet entity,
             final List<RulArrangementRule> rules,
             final List<RulArrangementExtension> exts,
@@ -75,6 +80,10 @@ public class RuleSet {
         this.apTypeMembers = Map.copyOf(apTypeMembers);
     }
 
+    void setDeclaredReadOnly(final Map<Integer, Boolean> declaredReadOnly) {
+        this.declaredReadOnly = Map.copyOf(declaredReadOnly);
+    }
+
     /**
      * @return true when the rule set declares its classes ({@code rul_ap_type.xml}); otherwise it
      *         offers all classes
@@ -92,11 +101,13 @@ public class RuleSet {
 
     /**
      * The class can be chosen for an entity in scopes of this rule set: a member declared assignable,
-     * or - without members - a class that is not read-only.
+     * or - without members - a class that is not read-only as the package of the rule set declares it
+     * (or as the class is, when the package does not declare it).
      */
     public boolean isApTypeAssignable(final ApType apType) {
         if (apTypeMembers.isEmpty()) {
-            return !apType.isReadOnly();
+            Boolean readOnly = declaredReadOnly.get(apType.getApTypeId());
+            return !(readOnly != null ? readOnly : apType.isReadOnly());
         }
         return Boolean.TRUE.equals(apTypeMembers.get(apType.getApTypeId()));
     }

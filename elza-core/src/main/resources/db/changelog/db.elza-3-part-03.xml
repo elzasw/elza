@@ -990,4 +990,50 @@
         </insert>
     </changeSet>
 
+    <changeSet id="20261007180000" author="ppy">
+        <!-- An entity class may be declared by several packages: ap_type stays one row (one id and
+             code); each declaring package states its name (in the package's language), parent and
+             read-only here. ap_type.package_id, name and read_only summarize the declarations. -->
+        <createTable tableName="rul_ap_type_declaration">
+            <column name="ap_type_declaration_id" type="int">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="ap_type_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_ap_type_declaration_ap_type"
+                             referencedTableName="ap_type" referencedColumnNames="ap_type_id"/>
+            </column>
+            <column name="package_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_ap_type_declaration_package"
+                             referencedTableName="rul_package" referencedColumnNames="package_id"/>
+            </column>
+            <column name="name" type="nvarchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="parent_ap_type_id" type="int">
+                <constraints foreignKeyName="fk_rul_ap_type_declaration_parent"
+                             referencedTableName="ap_type" referencedColumnNames="ap_type_id"/>
+            </column>
+            <column name="read_only" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="rul_ap_type_declaration" columnNames="ap_type_id, package_id"
+                             constraintName="ux_rul_ap_type_declaration"/>
+        <!-- every existing class is declared by its current package -->
+        <sql>
+            INSERT INTO rul_ap_type_declaration
+                (ap_type_declaration_id, ap_type_id, package_id, name, parent_ap_type_id, read_only)
+            SELECT ap_type_id, ap_type_id, package_id, name, parent_ap_type_id, read_only FROM ap_type
+        </sql>
+        <insert tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="rul_ap_type_declaration|ap_type_declaration_id"/>
+            <column name="next_val" value="0"/>
+        </insert>
+        <sql>
+            UPDATE db_hibernate_sequences SET next_val =
+                (SELECT coalesce(max(ap_type_declaration_id), 0) + 20 FROM rul_ap_type_declaration)
+            WHERE sequence_name = 'rul_ap_type_declaration|ap_type_declaration_id'
+        </sql>
+    </changeSet>
+
 </databaseChangeLog>

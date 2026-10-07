@@ -6601,6 +6601,10 @@
     "defaultMessage": "The validation schema was not found",
     "srcHash": "Mt7-YWJX3tMk"
   },
+  "exception.pkg.AP_TYPE_CONFLICT": {
+    "defaultMessage": "The class “{code}” is declared by another package with another parent ({otherParentCode})",
+    "srcHash": "5tqgW9RCJ29D"
+  },
   "exception.pkg.CIRCULAR_DEPENDENCY": {
     "defaultMessage": "Circular dependency",
     "srcHash": "giQQgfFkV64c"

@@ -15,6 +15,11 @@ between the installed and the new version; see :doc:`/03-upgrade`.
 Upcoming version
 ================
 
+* Change: Rules packages - an entity class may be declared by several
+  packages with the same code (for example a national and an international
+  entity description); the class exists once and its name follows the
+  language of the user. A package declaring a class with another parent
+  than another package is refused.
 * Change: Entity classes per scope - an entity rule set may declare the
   classes it uses (:file:`rul_ap_type.xml` of rules packages). Entities of
   a scope can only have the classes of its rule set; the server now also

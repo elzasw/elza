@@ -73,4 +73,9 @@ public enum PackageCode implements ErrorCode {
      * rules in a rule set of another type, a rule without a file.
      */
     INVALID_ENTITY_RULE,
+
+    /**
+     * An entity class is declared by another package with another parent.
+     */
+    AP_TYPE_CONFLICT,
 }
