@@ -1202,7 +1202,7 @@ public class PackageService {
     private List<RulStructuredType> processStructureTypes(final PackageContext puc) {
         // read from XML
         StructureTypes structureTypes = PackageUtils.convertXmlStreamToObject(StructureTypes.class,
-                puc.getByteStream(STRUCTURE_TYPE_XML));
+                puc.getByteStream(STRUCTURE_TYPE_XML), STRUCTURE_TYPE_XML);
 
         // get current types
         List<RulStructuredType> currStructTypes = structureTypeRepository.findByRulPackage(puc.getPackage());
@@ -1260,7 +1260,7 @@ public class PackageService {
     	logger.debug("Updating part types ...");
         RulPackage rulPackage = packageContext.getPackage();
         PartTypes partTypes = PackageUtils.convertXmlStreamToObject(PartTypes.class,
-                packageContext.getByteStream(PART_TYPE_XML));
+                packageContext.getByteStream(PART_TYPE_XML), PART_TYPE_XML);
 
         Map<String, RulPartType> existing = new HashMap<>();
         partTypeRepository.findAll().forEach(t -> existing.put(t.getCode(), t));

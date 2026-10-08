@@ -397,7 +397,7 @@
     <item-type code="ODKAZ_OBECNY" data-type="URI_REF">
         <name>Odkaz obecný</name>
         <shortcut>Odkaz</shortcut>
-        <description><Odkaz></Odkaz></description>
+        <description>&lt;Odkaz&gt;</description>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>

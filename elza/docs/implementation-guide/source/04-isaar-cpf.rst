@@ -58,7 +58,13 @@ Item types and specifications
    types), ``ISAAR_CONCEPT_SCHEME``, and the texts ``ISAAR_FUNCTIONS``,
    ``ISAAR_PLACES``, ``ISAAR_GENERAL_CONTEXT``. The relation
    ``ISAAR_RT_ASSOCIATED`` replaces CAM's ``RT_RELATED``, whose related
-   classes the package does not declare.
+   classes the package does not declare. The languages of a name
+   (``NM_LANG``) are the ISO 639-2 list without the range reserved for
+   local use: 486 languages with English names, coded ``LNG_`` plus the
+   bibliographic ISO 639-2 code as in CAM. 142 of them are CAM's languages
+   too and are shared, the others only ISAAR scopes
+   offer; CAM's own codes outside ISO 639-2 (``LNG_0as``, ``LNG_hbo`` ...)
+   are offered only in CAM scopes.
 
 Rules
    ``AVAILABLE_ITEMS`` rules per part and class, a ``VALIDATION`` rule set

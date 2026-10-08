@@ -335,91 +335,78 @@
         <name>kartotéční zásuvka</name>
         <description>kartotéční zásuvka</description>
         <shortcut>zásuvka</shortcut>
-        <view-order>55</view-order>
         <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_KTT_ITEM">
         <name>kartotéční lístek</name>
         <description>kartotéční lístek</description>
         <shortcut>lístek</shortcut>
-        <view-order>56</view-order>
         <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_PART">
         <name>část jednotlivosti</name>
         <description>část jednotlivosti</description>
         <shortcut>část</shortcut>
-        <view-order>57</view-order>
         <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_FPA">
         <name>filmový pás</name>
         <description>filmový pás</description>
         <shortcut>fpa</shortcut>
-        <view-order>58</view-order>
         <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_ANZ">
         <name>jiný nosič analogového záznamu</name>
         <description>jiný nosič analogového záznamu</description>
         <shortcut>anz</shortcut>
-        <view-order>59</view-order>
         <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_MHZ">
         <name>nosič digitálního záznamu</name>
         <description>nosič digitálního záznamu</description>
         <shortcut>mhz</shortcut>
-        <view-order>60</view-order>
         <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_FVA">
         <name>fonografický váleček</name>
         <description>fonografický váleček</description>
         <shortcut>fva</shortcut>
-        <view-order>61</view-order>
         <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_FDR">
         <name>fonografický drát</name>
         <description>fonografický drát</description>
         <shortcut>fdr</shortcut>
-        <view-order>62</view-order>
         <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_GD">
         <name>gramofonová deska</name>
         <description>gramofonová deska</description>
         <shortcut>gd</shortcut>
-        <view-order>63</view-order>
         <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_MAT">
         <name>matrice</name>
         <description>matrice</description>
         <shortcut>mat</shortcut>
-        <view-order>64</view-order>
         <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_MG">
         <name>magnetofonový pásek</name>
         <description>magnetofonový pásek</description>
         <shortcut>mg</shortcut>
-        <view-order>65</view-order>
         <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_AKA">
         <name>audiokazeta</name>
         <description>audiokazeta</description>
         <shortcut>aka</shortcut>
-        <view-order>66</view-order>
         <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_UNIT_TYPE_KDI">
         <name>kompaktní disk</name>
         <description>kompaktní disk</description>
         <shortcut>kdi</shortcut>
-        <view-order>67</view-order>
         <item-type-assign code="ZP2015_UNIT_TYPE"/>
     </item-spec>
 
@@ -2085,28 +2072,24 @@
         <name>Manipulační seznam</name>
         <description>Manipulační seznam</description>
         <shortcut>Manipulační seznam</shortcut>
-        <view-order>1</view-order>
         <item-type-assign code="ZP2015_OUTPUT_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_OUTPUT_INV">
         <name>Inventář</name>
         <description>Inventář</description>
         <shortcut>Inventář</shortcut>
-        <view-order>2</view-order>
         <item-type-assign code="ZP2015_OUTPUT_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_OUTPUT_KAT">
         <name>Katalog</name>
         <description>Katalog</description>
         <shortcut>Katalog</shortcut>
-        <view-order>3</view-order>
         <item-type-assign code="ZP2015_OUTPUT_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_OUTPUT_PROV_INV">
         <name>Prozatímní inventární seznam</name>
         <description>Prozatímní inventární seznam</description>
         <shortcut>Prozatímní inv. seznam</shortcut>
-        <view-order>4</view-order>
         <item-type-assign code="ZP2015_OUTPUT_TYPE"/>
     </item-spec>
 
@@ -2115,21 +2098,18 @@
         <name>nedohledáno</name>
         <description>položka nebyla ve fondu nalezena</description>
         <shortcut>nedohledáno</shortcut>
-        <view-order>1</view-order>
         <item-type-assign code="ZP2015_INVALID_RECORD"/>
     </item-spec>
     <item-spec code="ZP2015_INV_DESTROYED">
         <name>zničeno</name>
         <description>položka byla zničena</description>
         <shortcut>zničeno</shortcut>
-        <view-order>2</view-order>
         <item-type-assign code="ZP2015_INVALID_RECORD"/>
     </item-spec>
     <item-spec code="ZP2015_INV_MOVED">
         <name>delimitováno</name>
         <description>položka byla delimitována</description>
         <shortcut>delimitováno</shortcut>
-        <view-order>3</view-order>
         <item-type-assign code="ZP2015_INVALID_RECORD"/>
     </item-spec>
 
@@ -2138,7 +2118,6 @@
         <name>součást předchozí EJ</name>
         <description>souvislost s předchozí EJ</description>
         <shortcut>předchozí</shortcut>
-        <view-order>1</view-order>
         <item-type-assign code="ZP2015_CONNECTED_RECORD"/>
     </item-spec>
 
@@ -2147,7 +2126,6 @@
         <name>mm</name>
         <description>mm</description>
         <shortcut>mm</shortcut>
-        <view-order>1</view-order>
         <item-type-assign code="ZP2015_SIZE_UNITS"/>
     </item-spec>
 
@@ -2156,7 +2134,6 @@
         <name>g</name>
         <description>g</description>
         <shortcut>g</shortcut>
-        <view-order>1</view-order>
         <item-type-assign code="ZP2015_WEIGHT"/>
     </item-spec>
 
@@ -2801,91 +2778,78 @@
         <name>křehký, lámavý</name>
         <description>křehký, lámavý</description>
         <shortcut>křehký, lámavý</shortcut>
-        <view-order>1</view-order>
         <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_DAMAGE_CRACK">
         <name>trhliny, přelomení</name>
         <description>trhliny, přelomení</description>
         <shortcut>trhliny, přelomení</shortcut>
-        <view-order>2</view-order>
         <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_DAMAGE_MOULD">
         <name>plísněmi</name>
         <description>poškozený plísněmi</description>
         <shortcut>plíseň</shortcut>
-        <view-order>3</view-order>
         <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_DAMAGE_INSECT">
         <name>hmyzem</name>
         <description>poškozený hmyzem</description>
         <shortcut>hmyz</shortcut>
-        <view-order>4</view-order>
         <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_DAMAGE_RODENT">
         <name>hlodavci</name>
         <description>poškozený hlodavci</description>
         <shortcut>hlodavci</shortcut>
-        <view-order>5</view-order>
         <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_DAMAGE_FIRE">
         <name>ohněm</name>
         <description>poškozený ohněm</description>
         <shortcut>oheň</shortcut>
-        <view-order>6</view-order>
         <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_DAMAGE_HEAT">
         <name>teplem</name>
         <description>poškozený teplem</description>
         <shortcut>teplo</shortcut>
-        <view-order>7</view-order>
         <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_DAMAGE_WATER">
         <name>vodou</name>
         <description>poškozený vodou</description>
         <shortcut>voda</shortcut>
-        <view-order>8</view-order>
         <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_DAMAGE_RUST">
         <name>rzí</name>
         <description>poškozený rzí</description>
         <shortcut>rez</shortcut>
-        <view-order>9</view-order>
         <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_DAMAGE_ELECTROMAGNETIC">
         <name>vlivem elektromagnetického pole</name>
         <description>poškozený vlivem elektromagnetického pole</description>
         <shortcut>vliv elektromag. pole</shortcut>
-        <view-order>10</view-order>
         <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_DAMAGE_DUST">
         <name>prachem</name>
         <description>poškozený prachem</description>
         <shortcut>prach</shortcut>
-        <view-order>11</view-order>
         <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_DAMAGE_LIGHT">
         <name>světlem</name>
         <description>poškozený světlem</description>
         <shortcut>světlo</shortcut>
-        <view-order>12</view-order>
         <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_DAMAGE_OTHER">
         <name>jiné</name>
         <description>jiné</description>
         <shortcut>jiné</shortcut>
-        <view-order>13</view-order>
         <item-type-assign code="ZP2015_UNIT_DAMAGE_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_SIZE_PLICA">

@@ -33,6 +33,7 @@ import cz.tacr.elza.exception.codes.PackageCode;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.Unmarshaller;
+import jakarta.xml.bind.ValidationEventLocator;
 
 /**
  * Utils pro import balíčků.
@@ -115,7 +116,8 @@ public class PackageUtils {
      */
     public static <T> T convertXmlFileToObject(final Class<T> classObject, final Path xmlFile) throws IOException {
     	if (Files.exists(xmlFile)) { 
-    		return convertXmlStreamToObject(classObject, new ByteArrayInputStream(FileUtils.readFileToByteArray(xmlFile.toFile())));
+    		return convertXmlStreamToObject(classObject, new ByteArrayInputStream(FileUtils.readFileToByteArray(xmlFile.toFile())),
+                                            xmlFile.toString());
     	}
     	return null;
     }
@@ -128,13 +130,43 @@ public class PackageUtils {
      * @param <T>         typ pro převod
      */
     public static <T> T convertXmlStreamToObject(final Class<T> classObject, final ByteArrayInputStream xmlStream) {
+        return convertXmlStreamToObject(classObject, xmlStream, null);
+    }
+
+    /**
+     * Převod streamu souboru XML na třídu; neznámý nebo špatně umístěný element je chyba.
+     *
+     * @param fileName název souboru do chybové zprávy, může být null
+     */
+    public static <T> T convertXmlStreamToObject(final Class<T> classObject, final ByteArrayInputStream xmlStream,
+                                                 final String fileName) {
         if (xmlStream != null) {
+            // the first event stops reading: JAXB's default handler skips unknown elements silently, so a
+            // misplaced element (e.g. <category> without <categories>) would be lost without an error
+            List<String> events = new ArrayList<>(1);
             try {
                 JAXBContext jaxbContext = JAXBContext.newInstance(classObject);
                 Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+                unmarshaller.setEventHandler(event -> {
+                    ValidationEventLocator locator = event.getLocator();
+                    events.add(locator != null && locator.getLineNumber() > 0
+                            ? "line " + locator.getLineNumber() + ": " + event.getMessage()
+                            : event.getMessage());
+                    return false;
+                });
                 return (T) unmarshaller.unmarshal(xmlStream);
             } catch (Exception e) {
-                throw new SystemException("Nepodařilo se načíst objekt " + classObject.getSimpleName() + " ze streamu", e, PackageCode.PARSE_ERROR).set("class", classObject.toString());
+                SystemException se = new SystemException("Nepodařilo se načíst objekt " + classObject.getSimpleName()
+                        + (fileName != null ? " ze souboru " + fileName : " ze streamu") + (events.isEmpty() ? "" : ": " + events.get(0)),
+                        e, PackageCode.PARSE_ERROR);
+                se.set("class", classObject.toString());
+                if (fileName != null) {
+                    se.set("file", fileName);
+                }
+                if (!events.isEmpty()) {
+                    se.set("detail", events.get(0));
+                }
+                throw se;
             }
         }
         return null;

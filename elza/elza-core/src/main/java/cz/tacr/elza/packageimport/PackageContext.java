@@ -124,7 +124,7 @@ public class PackageContext {
             return null;
         }
 
-        return PackageUtils.convertXmlStreamToObject(classObject, inputStream);
+        return PackageUtils.convertXmlStreamToObject(classObject, inputStream, fileName);
     }
 
 	Integer getOldPackageVersion() {

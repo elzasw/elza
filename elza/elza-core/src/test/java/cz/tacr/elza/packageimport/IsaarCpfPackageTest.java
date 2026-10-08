@@ -86,6 +86,11 @@ public class IsaarCpfPackageTest {
     private static final String CODE = "ISAAR_CPF";
     private static final String DIR = "package-isaar-cpf";
     private static final List<String> ROOTS = List.of("PERSON_INDIVIDUAL", "FAMILY", "PARTY_GROUP", "GEO", "TERM");
+    /** ISO 639-2 without the range reserved for local use (qaa-qtz) */
+    private static final int ISAAR_LANGUAGES = 486;
+    private static final int CAM_LANGUAGES = 166;
+    /** languages both packages declare (the ISO 639-2 codes among CAM's) */
+    private static final int SHARED_LANGUAGES = 142;
 
     @Autowired
     private HelperTestService helperTestService;
@@ -198,7 +203,7 @@ public class IsaarCpfPackageTest {
         assertEquals(RequiredType.POSSIBLE, name.get("NM_MINOR"));
         assertEquals(RequiredType.POSSIBLE, name.get("NM_TYPE/NT_PSEUDONYM"));
         assertEquals(RequiredType.POSSIBLE, name.get("NM_LANG/LNG_eng"));
-        assertEquals(16, name.keySet().stream().filter(k -> k.startsWith("NM_LANG/")).count());
+        assertEquals(ISAAR_LANGUAGES, name.keySet().stream().filter(k -> k.startsWith("NM_LANG/")).count());
         Map<String, RequiredType> body = available(isaarScope, "PARTY_GROUP", "PT_BODY");
         assertEquals(RequiredType.POSSIBLE, body.get("ISAAR_CORP_TYPE/ISAAR_CORP_TYPE_PARTY"));
         assertEquals(RequiredType.POSSIBLE, body.get("ISAAR_LEGAL_STATUS/ISAAR_LEGAL_STATUS_COMPANY"));
@@ -228,7 +233,7 @@ public class IsaarCpfPackageTest {
             }
             isaarScope = createScope("ISAAR_TEST", CODE);
             assertEquals(ROOTS, roots(isaarScope));
-            tx(() -> assertEquals(121, itemSpecRepository.findAll().size()));
+            tx(() -> assertEquals(591, itemSpecRepository.findAll().size()));
         } finally {
             Files.deleteIfExists(zip);
         }
@@ -269,19 +274,25 @@ public class IsaarCpfPackageTest {
         });
         assertEquals(ROOTS, roots(isaar));
 
-        // the ISAAR rules open every language of a name, but a rule set sees only the specifications
-        // assigned by packages related to its own: ISAAR_CPF's 16 languages, not the 150 CZ_BASE adds
-        // to NM_LANG; the CAM rule set (same package as the shared codes) keeps every language
+        // the ISAAR rules and the CAM rules open every language of a name, but a rule set sees only the
+        // specifications assigned by packages related to its own: ISAAR_CPF's ISO 639-2 list, not CAM's
+        // own codes (LNG_0as, LNG_hbo); CAM's list, not the ISO codes only ISAAR_CPF declares (LNG_aar)
+        int allLanguages = txGet(() -> itemTypeSpecAssignRepository
+                .findByItemTypeSorted(itemTypeRepository.findOneByCode("NM_LANG")).size());
+        assertEquals(ISAAR_LANGUAGES + CAM_LANGUAGES - SHARED_LANGUAGES, allLanguages);
         Map<String, RequiredType> isaarName = available(isaar, "PERSON_INDIVIDUAL", "PT_NAME");
         assertEquals(RequiredType.POSSIBLE, isaarName.get("NM_LANG/LNG_eng"));
-        assertNull(isaarName.get("NM_LANG/LNG_heb"));
-        assertEquals(16, isaarName.keySet().stream().filter(k -> k.startsWith("NM_LANG/")).count());
+        assertEquals(RequiredType.POSSIBLE, isaarName.get("NM_LANG/LNG_heb"));
+        assertEquals(RequiredType.POSSIBLE, isaarName.get("NM_LANG/LNG_aar"));
+        assertNull(isaarName.get("NM_LANG/LNG_0as"));
+        assertNull(isaarName.get("NM_LANG/LNG_hbo"));
+        assertEquals(ISAAR_LANGUAGES, isaarName.keySet().stream().filter(k -> k.startsWith("NM_LANG/")).count());
         Map<String, RequiredType> camName = available(cam, "PERSON_INDIVIDUAL", "PT_NAME");
         assertEquals(RequiredType.POSSIBLE, camName.get("NM_LANG/LNG_heb"));
         assertEquals(RequiredType.POSSIBLE, camName.get("NM_LANG/LNG_eng"));
-        int camLanguages = txGet(() -> itemTypeSpecAssignRepository
-                .findByItemTypeSorted(itemTypeRepository.findOneByCode("NM_LANG")).size());
-        assertEquals(camLanguages, camName.keySet().stream().filter(k -> k.startsWith("NM_LANG/")).count());
+        assertEquals(RequiredType.POSSIBLE, camName.get("NM_LANG/LNG_0as"));
+        assertNull(camName.get("NM_LANG/LNG_aar"));
+        assertEquals(CAM_LANGUAGES, camName.keySet().stream().filter(k -> k.startsWith("NM_LANG/")).count());
 
         List<ApTypeVO> camTree = txGet(() -> apController.getApTypes(cam));
         ApTypeVO person = camTree.stream().filter(t -> t.getCode().equals("PERSON")).findFirst().orElseThrow();
