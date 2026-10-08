@@ -11,7 +11,7 @@ const messages = defineMessages({
     },
     noMatch: {
         id: 'registry.apTypePicker.noMatch',
-        defaultMessage: 'Žádná podtřída neodpovídá',
+        defaultMessage: 'Žádná třída neodpovídá',
     },
 });
 

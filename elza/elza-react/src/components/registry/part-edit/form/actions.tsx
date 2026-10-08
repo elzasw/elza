@@ -6,11 +6,11 @@ import {RulDescItemTypeExtVO} from 'api/RulDescItemTypeExtVO';
 import {RulDataTypeVO} from 'api/RulDataTypeVO';
 import {RequiredType} from 'api/RequiredType';
 import * as ItemInfo from 'utils/ItemInfo';
-import { findItemPlacePosition } from 'utils/partEdit';
+import { compareItems, findItemPlacePosition } from 'utils/partEdit';
 import {ApItemBitVO} from 'api/ApItemBitVO';
 import {WebApi} from 'actions/WebApi';
 import { RefTablesState } from 'typings/store'
-import { ApViewSettings} from 'api/ApViewSettings';
+import { ApViewSettingRule, ApViewSettings } from 'api/ApViewSettings';
 import {ApAccessPointCreateVO} from 'api/ApAccessPointCreateVO';
 // import { ApPartFormVO } from "api/ApPartFormVO";
 import { compareCreateTypes, hasItemValue } from 'utils/ItemInfo';
@@ -27,14 +27,13 @@ export const addEmptyItems = (
     partTypeId: number,
     arrayInsert: (index: number, value: RevisionItem) => void,
     userAction: boolean,
+    apViewSettings?: ApViewSettingRule,
 ) => {
     let emptyItems = attributes.map((attribute) => createEmptyItem(attribute, refTables, userAction));
 
     // Vložení do formuláře - od konce
-    // sortOwnItems(partTypeId, newItems, refTables, apViewSettings);
-
     emptyItems.reverse().forEach(item => {
-        let index = findItemPlacePosition(item, formItems, partTypeId, refTables);
+        let index = findItemPlacePosition(item, formItems, partTypeId, refTables, apViewSettings);
         arrayInsert(index, item);
     });
 }
@@ -45,10 +44,11 @@ export const createAutoValueItemWithIndex = (
     refTables: RefTablesState,
     formItems: RevisionItem[],
     partTypeId: number,
+    apViewSettings?: ApViewSettingRule,
 ) => {
     const item = createAutoValueItems(attribute, value, refTables);
 
-    const index = findItemPlacePosition(item, formItems, partTypeId, refTables);
+    const index = findItemPlacePosition(item, formItems, partTypeId, refTables, apViewSettings);
     return {item, index};
 }
 
@@ -163,7 +163,7 @@ export const getUpdatedForm = async (
         errors,
         data: {
             ...data,
-            items: getItemsWithRequired(data.items, attributes, partTypeId, refTables),
+            items: getItemsWithRequired(data.items, attributes, partTypeId, refTables, apViewSettingRule),
         } as RevisionApPartForm
     }
 };
@@ -173,6 +173,7 @@ export const getItemsWithRequired = (
     attributes: ApCreateTypeVO[],
     partTypeId: number,
     refTables: RefTablesState,
+    apViewSettings?: ApViewSettingRule,
 ) => {
     const newItems: RevisionItem[] = [];
     addEmptyItems(
@@ -182,14 +183,9 @@ export const getItemsWithRequired = (
         partTypeId,
         (_index, item) => {newItems.push(item)},
         false,
+        apViewSettings,
     )
-    return sortApItems([...items, ...newItems], refTables.descItemTypes.itemsMap);
-}
-
-const sortApItems = (items: RevisionItem[], descItemTypesMap: Record<number, RulDescItemTypeExtVO>) => {
-    return [...items].sort((a, b) => {
-        return descItemTypesMap[a.typeId].viewOrder - descItemTypesMap[b.typeId].viewOrder;
-    })
+    return [...items, ...newItems].sort((a, b) => compareItems(a, b, partTypeId, refTables, apViewSettings));
 }
 
 const getRequiredAttributes = (items: RevisionItem[], attributes: ApCreateTypeVO[]) => {

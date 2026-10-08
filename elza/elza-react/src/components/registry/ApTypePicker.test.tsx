@@ -34,7 +34,7 @@ const serveTree = () => {
 
 describe('ApTypePicker', () => {
     it('is disabled until a scope is chosen', () => {
-        renderWithProviders(<ApTypePicker label="Podtřída" onChange={vi.fn()} />);
+        renderWithProviders(<ApTypePicker label="Třída entity" onChange={vi.fn()} />);
 
         expect(screen.getByRole('combobox')).toBeDisabled();
         expect(screen.getByPlaceholderText('Nejprve vyberte oblast')).toBeInTheDocument();
@@ -43,7 +43,7 @@ describe('ApTypePicker', () => {
     it('offers the classes of the scope and lets choose only assignable ones', async () => {
         const scopeIds = serveTree();
         const onChange = vi.fn();
-        renderWithProviders(<ApTypePicker label="Podtřída" scopeId={7} onChange={onChange} />);
+        renderWithProviders(<ApTypePicker label="Třída entity" scopeId={7} onChange={onChange} />);
 
         await waitFor(() => expect(scopeIds).toEqual(['7']));
         const combobox = screen.getByRole('combobox');
@@ -61,7 +61,7 @@ describe('ApTypePicker', () => {
 
     it('filters the classes by the typed name', async () => {
         serveTree();
-        renderWithProviders(<ApTypePicker label="Podtřída" scopeId={7} onChange={vi.fn()} />);
+        renderWithProviders(<ApTypePicker label="Třída entity" scopeId={7} onChange={vi.fn()} />);
 
         const combobox = screen.getByRole('combobox');
         await waitFor(() => expect(combobox).toBeEnabled());
@@ -75,7 +75,7 @@ describe('ApTypePicker', () => {
     it('clears a class the scope does not allow', async () => {
         serveTree();
         const onChange = vi.fn();
-        renderWithProviders(<ApTypePicker label="Podtřída" scopeId={7} value={99} onChange={onChange} />);
+        renderWithProviders(<ApTypePicker label="Třída entity" scopeId={7} value={99} onChange={onChange} />);
 
         await waitFor(() => expect(onChange).toHaveBeenCalledWith(undefined));
     });

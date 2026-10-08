@@ -84,6 +84,7 @@ export const PartEditForm = ({
             handleValueUpdate(form);
         },
         userAction,
+        apViewSettingRule,
     )
     const descItemTypesMap = useSelector((state: AppState) => state.refTables.descItemTypes.itemsMap);
     const apViewSettings = useSelector((state: AppState) => storeFromArea(state, AP_VIEW_SETTINGS) as DetailStoreState<ApViewSettings>);
@@ -164,7 +165,8 @@ export const PartEditForm = ({
                             autoValue,
                             refTables,
                             orderedItems,
-                            partTypeId
+                            partTypeId,
+                            apViewSettingRule,
                         )
                         appendedNewItems.push(item);
                         orderedItems.splice(index, 0, item);
