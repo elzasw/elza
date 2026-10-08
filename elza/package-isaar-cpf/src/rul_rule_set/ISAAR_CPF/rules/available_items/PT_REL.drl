@@ -1,0 +1,19 @@
+package isaarcpf;
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ItemSpec;
+import cz.tacr.elza.drools.model.item.IntItem;
+import cz.tacr.elza.drools.model.Part;
+import cz.tacr.elza.drools.model.PartType;
+
+rule "ISAAR 5.3.1: the related entity is required"
+when $it: ItemType(code in ("REL_ENTITY"))
+then
+    $it.setRequired();
+end
+
+rule "ISAAR 5.3.4: dates of the relationship"
+when $it: ItemType(code in ("REL_BEGIN", "REL_END"))
+then
+    $it.setPossible();
+end
+

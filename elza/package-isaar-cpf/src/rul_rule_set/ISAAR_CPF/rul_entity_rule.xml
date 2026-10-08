@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entity-rules>
+    <entity-rule filename="available_items/GLOBAL.drl" kind="AVAILABLE_ITEMS" priority="100"/>
+    <entity-rule filename="available_items/PT_NAME.drl" kind="AVAILABLE_ITEMS" part-type="PT_NAME" priority="100"/>
+    <entity-rule filename="available_items/PT_IDENT.drl" kind="AVAILABLE_ITEMS" part-type="PT_IDENT" priority="100"/>
+    <entity-rule filename="available_items/PT_BODY.drl" kind="AVAILABLE_ITEMS" part-type="PT_BODY" priority="100"/>
+    <entity-rule filename="available_items/PT_CRE.drl" kind="AVAILABLE_ITEMS" part-type="PT_CRE" priority="100"/>
+    <entity-rule filename="available_items/PT_EXT.drl" kind="AVAILABLE_ITEMS" part-type="PT_EXT" priority="100"/>
+    <entity-rule filename="available_items/PT_EVENT.drl" kind="AVAILABLE_ITEMS" part-type="PT_EVENT" priority="100"/>
+    <entity-rule filename="available_items/PT_REL.drl" kind="AVAILABLE_ITEMS" part-type="PT_REL" priority="100"/>
+    <entity-rule filename="available_items/GEO/PT_IDENT.drl" kind="AVAILABLE_ITEMS" ap-type="GEO" part-type="PT_IDENT" priority="100"/>
+    <entity-rule filename="available_items/PERSON_INDIVIDUAL/PT_BODY.drl" kind="AVAILABLE_ITEMS" ap-type="PERSON_INDIVIDUAL" part-type="PT_BODY" priority="100"/>
+    <entity-rule filename="available_items/FAMILY/PT_BODY.drl" kind="AVAILABLE_ITEMS" ap-type="FAMILY" part-type="PT_BODY" priority="100"/>
+    <entity-rule filename="available_items/PARTY_GROUP/PT_BODY.drl" kind="AVAILABLE_ITEMS" ap-type="PARTY_GROUP" part-type="PT_BODY" priority="100"/>
+    <entity-rule filename="available_items/GEO/PT_BODY.drl" kind="AVAILABLE_ITEMS" ap-type="GEO" part-type="PT_BODY" priority="100"/>
+    <entity-rule filename="available_items/TERM/PT_BODY.drl" kind="AVAILABLE_ITEMS" ap-type="TERM" part-type="PT_BODY" priority="100"/>
+    <entity-rule filename="available_items/PARTY_GROUP/PT_EVENT.drl" kind="AVAILABLE_ITEMS" ap-type="PARTY_GROUP" part-type="PT_EVENT" priority="100"/>
+    <entity-rule filename="available_items/PERSON_INDIVIDUAL/PT_CRE.drl" kind="AVAILABLE_ITEMS" ap-type="PERSON_INDIVIDUAL" part-type="PT_CRE" priority="100"/>
+    <entity-rule filename="available_items/PERSON_INDIVIDUAL/PT_EXT.drl" kind="AVAILABLE_ITEMS" ap-type="PERSON_INDIVIDUAL" part-type="PT_EXT" priority="100"/>
+    <entity-rule filename="available_items/FAMILY/PT_CRE.drl" kind="AVAILABLE_ITEMS" ap-type="FAMILY" part-type="PT_CRE" priority="100"/>
+    <entity-rule filename="available_items/FAMILY/PT_EXT.drl" kind="AVAILABLE_ITEMS" ap-type="FAMILY" part-type="PT_EXT" priority="100"/>
+    <entity-rule filename="available_items/PARTY_GROUP/PT_CRE.drl" kind="AVAILABLE_ITEMS" ap-type="PARTY_GROUP" part-type="PT_CRE" priority="100"/>
+    <entity-rule filename="available_items/PARTY_GROUP/PT_EXT.drl" kind="AVAILABLE_ITEMS" ap-type="PARTY_GROUP" part-type="PT_EXT" priority="100"/>
+    <entity-rule filename="available_items/GEO/PT_CRE.drl" kind="AVAILABLE_ITEMS" ap-type="GEO" part-type="PT_CRE" priority="100"/>
+    <entity-rule filename="available_items/GEO/PT_EXT.drl" kind="AVAILABLE_ITEMS" ap-type="GEO" part-type="PT_EXT" priority="100"/>
+    <entity-rule filename="available_items/PERSON_INDIVIDUAL/PT_REL.drl" kind="AVAILABLE_ITEMS" ap-type="PERSON_INDIVIDUAL" part-type="PT_REL" priority="100"/>
+    <entity-rule filename="available_items/FAMILY/PT_REL.drl" kind="AVAILABLE_ITEMS" ap-type="FAMILY" part-type="PT_REL" priority="100"/>
+    <entity-rule filename="available_items/PARTY_GROUP/PT_REL.drl" kind="AVAILABLE_ITEMS" ap-type="PARTY_GROUP" part-type="PT_REL" priority="100"/>
+    <entity-rule filename="available_items/GEO/PT_REL.drl" kind="AVAILABLE_ITEMS" ap-type="GEO" part-type="PT_REL" priority="100"/>
+    <entity-rule filename="available_items/TERM/PT_REL.drl" kind="AVAILABLE_ITEMS" ap-type="TERM" part-type="PT_REL" priority="100"/>
+    <entity-rule filename="validation/GLOBAL.drl" kind="VALIDATION" priority="100"/>
+    <entity-rule filename="index/PT_NAME.groovy" kind="INDEX" part-type="PT_NAME" priority="100"/>
+    <entity-rule filename="index/PT_BODY.groovy" kind="INDEX" part-type="PT_BODY" priority="100"/>
+    <entity-rule filename="index/PT_IDENT.groovy" kind="INDEX" part-type="PT_IDENT" priority="100"/>
+    <entity-rule filename="index/PT_CRE.groovy" kind="INDEX" part-type="PT_CRE" priority="100"/>
+    <entity-rule filename="index/PT_EXT.groovy" kind="INDEX" part-type="PT_EXT" priority="100"/>
+    <entity-rule filename="index/PT_EVENT.groovy" kind="INDEX" part-type="PT_EVENT" priority="100"/>
+    <entity-rule filename="index/PT_REL.groovy" kind="INDEX" part-type="PT_REL" priority="100"/>
+</entity-rules>

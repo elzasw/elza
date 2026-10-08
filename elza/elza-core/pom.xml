@@ -430,6 +430,10 @@
                 <targetPath>${basedir}/target/test-classes/package-cz-base</targetPath>
             </testResource>
             <testResource>
+                <directory>${basedir}/../package-isaar-cpf/src</directory>
+                <targetPath>${basedir}/target/test-classes/package-isaar-cpf</targetPath>
+            </testResource>
+            <testResource>
                 <directory>${basedir}/../rules-simple-dev/src</directory>
                 <targetPath>${basedir}/target/test-classes/rules-simple-dev</targetPath>
             </testResource>

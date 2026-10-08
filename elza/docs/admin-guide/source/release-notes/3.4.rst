@@ -15,6 +15,15 @@ between the installed and the new version; see :doc:`/03-upgrade`.
 Upcoming version
 ================
 
+* New: Rules packages - the package ISAAR_CPF describes archival entities
+  (persons, families, corporate bodies, places, concepts) according to the
+  international standard ISAAR(CPF), in English. It is delivered with ELZA
+  and imported at the first start; a scope uses it by choosing the rule set
+  ``ISAAR_CPF``. It shares classes, part types, item types and
+  specifications with CZ_BASE where the meaning is the same, so an
+  installation may run CZ_BASE, ISAAR_CPF or both; existing Czech
+  installations see a new rule set offered for scopes and no change in
+  their CAM scopes.
 * Change: Archival entities - the class tree of a scope shows the classes
   its rule set lists; a class whose parent the rule set does not list is
   shown as a root. CZ_BASE lists no classes, so Czech installations see no

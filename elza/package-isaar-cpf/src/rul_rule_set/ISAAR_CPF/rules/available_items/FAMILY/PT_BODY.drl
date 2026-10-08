@@ -1,0 +1,21 @@
+package isaarcpf;
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ItemSpec;
+import cz.tacr.elza.drools.model.item.IntItem;
+import cz.tacr.elza.drools.model.Part;
+import cz.tacr.elza.drools.model.PartType;
+
+rule "ISAAR 5.2.3, 5.2.5, 5.2.7: places, activities and genealogy of a family"
+when $it: ItemType(code in ("ISAAR_PLACES", "ISAAR_FUNCTIONS", "GENEALOGY"))
+then
+    $it.setPossible();
+end
+
+rule "Type of family"
+when $it: ItemType(code == "ISAAR_FAMILY_TYPE")
+     $is: ItemSpec(code in ("ISAAR_FAMILY_TYPE_FAMILY", "ISAAR_FAMILY_TYPE_DYNASTY", "ISAAR_FAMILY_TYPE_HOUSE", "ISAAR_FAMILY_TYPE_CLAN", "ISAAR_FAMILY_TYPE_BRANCH")) from $it.specs
+then
+    $it.setPossible();
+    $is.setPossible();
+end
+

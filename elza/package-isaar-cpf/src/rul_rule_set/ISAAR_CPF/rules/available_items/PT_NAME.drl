@@ -1,0 +1,40 @@
+package isaarcpf;
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ItemSpec;
+import cz.tacr.elza.drools.model.item.IntItem;
+import cz.tacr.elza.drools.model.Part;
+import cz.tacr.elza.drools.model.PartType;
+
+rule "ISAAR 5.1.2: the main part of the name is required"
+when $it: ItemType(code in ("NM_MAIN"))
+then
+    $it.setRequired();
+end
+
+rule "ISAAR 5.1.2: other parts and dates of use of the name"
+when $it: ItemType(code in ("NM_MINOR", "NM_USED_FROM", "NM_USED_TO"))
+then
+    $it.setPossible();
+end
+
+rule "ISAAR 5.1.3: language of the name"
+when $it: ItemType(code in ("NM_LANG"))
+then
+    $it.setPossible();
+end
+
+rule "ISAAR 5.1.3: any language of the name"
+when $it: ItemType(code == "NM_LANG")
+     $is: ItemSpec() from $it.specs
+then
+    $is.setPossible();
+end
+
+rule "ISAAR 5.1.3-5.1.5: forms of the name"
+when $it: ItemType(code == "NM_TYPE")
+     $is: ItemSpec(code in ("NT_EQUIV", "NT_TRANSLATED", "NT_OTHERRULES", "NT_ALIAS", "NT_PSEUDONYM", "NT_ACRONYM", "NT_FORMER", "NT_NATIV", "NT_HISTORICAL", "NT_RELIGIOUS")) from $it.specs
+then
+    $it.setPossible();
+    $is.setPossible();
+end
+

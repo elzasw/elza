@@ -1,0 +1,16 @@
+package isaarcpf;
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ItemSpec;
+import cz.tacr.elza.drools.model.item.IntItem;
+import cz.tacr.elza.drools.model.Part;
+import cz.tacr.elza.drools.model.PartType;
+
+rule "Place identifiers"
+when $it: ItemType(code == "IDN_TYPE")
+     $is: ItemSpec(code in ("ISO3166_2", "ISO3166_3", "ISAAR_GEONAMES", "ISAAR_TGN", "ISAAR_WIKIDATA")) from $it.specs
+then
+    $it.setPossible();
+    $is.setPossible();
+    $is.setRepeatable(true);
+end
+

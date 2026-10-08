@@ -1,0 +1,23 @@
+package isaarcpf;
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ItemSpec;
+import cz.tacr.elza.drools.model.item.IntItem;
+import cz.tacr.elza.drools.model.Part;
+import cz.tacr.elza.drools.model.PartType;
+
+rule "ISAAR 5.2.4: dated change of legal status"
+when $it: ItemType(code == "EV_TYPE")
+     $is: ItemSpec(code in ("ISAAR_ET_LEGAL_STATUS")) from $it.specs
+then
+    $it.setRequired();
+    $is.setPossible();
+end
+
+rule "ISAAR 5.2.4: the new legal status"
+when $it: ItemType(code == "ISAAR_LEGAL_STATUS")
+     $is: ItemSpec(code in ("ISAAR_LEGAL_STATUS_PUBLIC_LAW", "ISAAR_LEGAL_STATUS_PRIVATE_LAW", "ISAAR_LEGAL_STATUS_COMPANY", "ISAAR_LEGAL_STATUS_PARTNERSHIP", "ISAAR_LEGAL_STATUS_COOPERATIVE", "ISAAR_LEGAL_STATUS_ASSOCIATION", "ISAAR_LEGAL_STATUS_FOUNDATION", "ISAAR_LEGAL_STATUS_RELIGIOUS", "ISAAR_LEGAL_STATUS_SOLE_TRADER", "ISAAR_LEGAL_STATUS_NO_PERSONALITY", "ISAAR_LEGAL_STATUS_OTHER")) from $it.specs
+then
+    $it.setPossible();
+    $is.setPossible();
+end
+

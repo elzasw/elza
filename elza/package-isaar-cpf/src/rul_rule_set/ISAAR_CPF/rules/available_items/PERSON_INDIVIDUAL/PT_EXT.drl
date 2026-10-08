@@ -1,0 +1,15 @@
+package isaarcpf;
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ItemSpec;
+import cz.tacr.elza.drools.model.item.IntItem;
+import cz.tacr.elza.drools.model.Part;
+import cz.tacr.elza.drools.model.PartType;
+
+rule "Kind of end"
+when $it: ItemType(code == "EXT_CLASS")
+     $is: ItemSpec(code in ("EXC_DEATH")) from $it.specs
+then
+    $it.setPossible();
+    $is.setPossible();
+end
+
