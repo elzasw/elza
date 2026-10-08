@@ -44,14 +44,14 @@ describe('CreateAccessPointModal', () => {
         );
 
         expect(await screen.findByText('Nová archivní entita')).toBeInTheDocument();
-        const classes = screen.getByRole('combobox', { name: /Podtřída/ });
+        const classes = screen.getByRole('combobox', { name: /Třída entity/ });
         expect(classes).toBeDisabled();
 
         fireEvent.click(screen.getByRole('combobox', { name: /Oblast/ }));
         fireEvent.click(await screen.findByRole('option', { name: 'ISAAR' }));
 
         await waitFor(() => expect(scopeIds).toEqual(['8']));
-        await waitFor(() => expect(screen.getByRole('combobox', { name: /Podtřída/ })).toBeEnabled());
+        await waitFor(() => expect(screen.getByRole('combobox', { name: /Třída entity/ })).toBeEnabled());
     });
 
     it('presets the only writable scope', async () => {

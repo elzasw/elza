@@ -42,14 +42,14 @@ const messages = defineMessages({
     titleMessage: {
         id: 'accesspoint.create.titleMessage',
         defaultMessage:
-            'Nejprve vyberte oblast a poté podtřídu nové archivní entity. Podle vybrané podtřídy se zobrazí příslušné atributy. Po vyplnění hlavní části jména je možné archivní entitu založit.',
+            'Nejprve vyberte oblast a poté třídu nové archivní entity. Podle vybrané třídy se zobrazí příslušné atributy. Po vyplnění hlavní části jména je možné archivní entitu založit.',
     },
     titleMessageSingleScope: {
         id: 'accesspoint.create.titleMessageSingleScope',
         defaultMessage:
-            'Nejprve vyberte podtřídu nové archivní entity. Podle vybrané podtřídy se zobrazí příslušné atributy. Po vyplnění hlavní části jména je možné archivní entitu založit.',
+            'Nejprve vyberte třídu nové archivní entity. Podle vybrané třídy se zobrazí příslušné atributy. Po vyplnění hlavní části jména je možné archivní entitu založit.',
     },
-    addType: { id: 'registry.add.type', defaultMessage: 'Podtřída' },
+    addType: { id: 'registry.add.type', defaultMessage: 'Třída entity' },
     scopeClass: { id: 'registry.scopeClass', defaultMessage: 'Oblast' },
 });
 
@@ -62,6 +62,8 @@ const useStyles = makeStyles({
         display: 'flex',
         flexDirection: 'column',
         rowGap: tokens.spacingVerticalM,
+        // the bootstrap rows of the part form have negative side margins
+        overflowX: 'hidden',
     },
 });
 
@@ -104,6 +106,7 @@ const CreateAccessPointModal: FC<CreateAccessPointModalProps> = ({ title, onClos
     });
     const [availableAttributes, setAvailableAttributes] = useState<ApCreateTypeVO[] | undefined>();
     const [editErrors, setEditErrors] = useState<Array<string> | undefined>(undefined);
+    const [saveAttempted, setSaveAttempted] = useState(false);
 
     const loading =
         !refTables.scopesData.scopes ||
@@ -151,7 +154,12 @@ const CreateAccessPointModal: FC<CreateAccessPointModalProps> = ({ title, onClos
                         }}
                     >
                         {({ submitting, values: { apType, scopeId, partForm }, handleSubmit, form }) => (
-                            <form onSubmit={handleSubmit}>
+                            <form
+                                onSubmit={(event) => {
+                                    setSaveAttempted(true);
+                                    return handleSubmit(event);
+                                }}
+                            >
                                 <DialogBody>
                                     <DialogTitle
                                         action={
@@ -227,7 +235,15 @@ const CreateAccessPointModal: FC<CreateAccessPointModalProps> = ({ title, onClos
                                                     scopeId={scopeId}
                                                     submitting={submitting}
                                                     availableAttributes={availableAttributes}
-                                                    editErrors={editErrors}
+                                                    editErrors={
+                                                        // a missing name is no error until the user starts filling in
+                                                        saveAttempted ||
+                                                        partForm.items.some(
+                                                            (item) => item.updatedItem && hasItemValue(item.updatedItem),
+                                                        )
+                                                            ? editErrors
+                                                            : undefined
+                                                    }
                                                     arrayName="partForm.items"
                                                 />
                                             </>

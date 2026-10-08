@@ -8,7 +8,7 @@ import { getIntl } from 'components/shared/lang/intlInstance';
 // Id jsou převzatá z legacy katalogu beze změny.
 const messages = defineMessages({
     scope: { id: 'ap.state.title.scope', defaultMessage: 'Oblast' },
-    type: { id: 'ap.state.title.type', defaultMessage: 'Podtřída' },
+    type: { id: 'ap.state.title.type', defaultMessage: 'Třída entity' },
     state: { id: 'ap.state.title.state', defaultMessage: 'Stav' },
     comment: { id: 'ap.state.title.comment', defaultMessage: 'Komentář' },
     assignedUser: { id: 'ap.state.title.assignedUser', defaultMessage: 'Přiděleno' },

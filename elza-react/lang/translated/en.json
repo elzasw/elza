@@ -1,11 +1,11 @@
 {
   "accesspoint.create.titleMessage": {
-    "defaultMessage": "First choose the scope, then the subclass of the new archival entity. The attributes of the chosen subclass are then shown. Once the main part of the name is filled in, the archival entity can be created.",
-    "srcHash": "C_qjW7FTGhCD"
+    "defaultMessage": "First choose the scope, then the class of the new archival entity. The attributes of the chosen class are then shown. Once the main part of the name is filled in, the archival entity can be created.",
+    "srcHash": "22RpDMqj6Lod"
   },
   "accesspoint.create.titleMessageSingleScope": {
-    "defaultMessage": "First choose the subclass of the new archival entity. The attributes of the chosen subclass are then shown. Once the main part of the name is filled in, the archival entity can be created.",
-    "srcHash": "TPx_BX40PBUF"
+    "defaultMessage": "First choose the class of the new archival entity. The attributes of the chosen class are then shown. Once the main part of the name is filled in, the archival entity can be created.",
+    "srcHash": "14BHlrcBHbPR"
   },
   "accesspoint.removeDuplicity": {
     "defaultMessage": "Remove the duplicate",
@@ -3306,8 +3306,8 @@
     "srcHash": "1sRUDB31F_YQ"
   },
   "ap.state.title.type": {
-    "defaultMessage": "Subclass",
-    "srcHash": "_jrDercTzKxJ"
+    "defaultMessage": "Entity class",
+    "srcHash": "vF8Ye4V_74q1"
   },
   "ap.stateHistory": {
     "defaultMessage": "State history",
@@ -8182,8 +8182,8 @@
     "srcHash": "xxAzjqAuIzkG"
   },
   "registry.add.type": {
-    "defaultMessage": "Subclass",
-    "srcHash": "_jrDercTzKxJ"
+    "defaultMessage": "Entity class",
+    "srcHash": "vF8Ye4V_74q1"
   },
   "registry.addNewRegistry": {
     "defaultMessage": "New entity",
@@ -8206,8 +8206,8 @@
     "srcHash": "eT4nJ87G2Da-"
   },
   "registry.apTypePicker.noMatch": {
-    "defaultMessage": "No subclass matches",
-    "srcHash": "qPJYSLC3OVIz"
+    "defaultMessage": "No class matches",
+    "srcHash": "wWlw0qZPgYJo"
   },
   "registry.batchExport.action": {
     "defaultMessage": "Export to CSV",
