@@ -3089,6 +3089,15 @@ namespace ElzaAPI.Admin {
     @route("info/logged-users")
     op loggedUsers(): LoggedUsers;
 
+    /**
+     * Restart the application: after the response, the application stops with the exit code
+     * elza.restart.exitCode, and the service manager starts it again. Refused when the key is not set.
+     */
+    @route("restart")
+    @post op restart(): {
+        @Http.statusCode statusCode: 202;
+    };
+
     /** Seznam API klíčů daného uživatele (bez tajné hodnoty). Ve výchozím stavu jen aktivní. */
     @route("user/{userId}/api-keys")
     @get op listUserApiKeys(
@@ -4896,6 +4905,93 @@ namespace ElzaAPI.Rules {
      */
     @route("/partTypes")
     @get op listPartTypes(): PartType[];
+}
+
+/**
+ * Why a package of the dpkg directory that is not installed will or will not be imported
+ * at the next start.
+ */
+enum AvailablePackageState {
+    /** Listed in elza.packages.enabled (or required by a listed package): imported at the next start */
+    CONFIGURED,
+    /** Marked in the administration: imported at the next start */
+    MARKED,
+    /** Neither installed, listed nor marked: left alone */
+    NOT_LOADED,
+}
+
+/**
+ * Package required by a package of the dpkg directory.
+ */
+model AvailablePackageDependency {
+    /** Code of the required package */
+    code: string;
+    /** Minimal version of the required package */
+    minVersion: int32;
+}
+
+/**
+ * Package present in the dpkg directory of the working directory and not installed.
+ */
+model AvailablePackage {
+    /** Code of the package */
+    code: string;
+    /** Name of the package */
+    name: string;
+    /** Version of the package in the file */
+    version: int32;
+    /** Description of the package */
+    description?: string;
+    /** Required packages */
+    dependencies: AvailablePackageDependency[];
+    /** What happens with the package at the next start */
+    state: AvailablePackageState;
+    /** Name of the file in the dpkg directory */
+    fileName: string;
+}
+
+/**
+ * Packages of the dpkg directory that are not installed, with the restart state of the application.
+ */
+model AvailablePackages {
+    /** Packages by code */
+    items: AvailablePackage[];
+    /** A restart is needed: packages are marked for the next start, or a package was imported since the start */
+    restartRequired: boolean;
+    /** The application can restart itself from the administration (elza.restart.exitCode is set) */
+    restartAvailable: boolean;
+}
+
+/**
+ * Packages of the dpkg directory of the working directory that are not installed, and marking
+ * them for the import at the next start. Administrators only.
+ */
+@tag("packages")
+@route("/packages")
+namespace ElzaAPI.Packages {
+    /**
+     * Packages of the dpkg directory that are not installed, by code, and whether a restart is needed.
+     */
+    @route("available")
+    @get op listAvailablePackages(): AvailablePackages;
+
+    /**
+     * Mark a package of the dpkg directory for the import at the next start. Refused when the
+     * package is installed, or when a package it requires is neither installed, marked nor in the
+     * directory.
+     */
+    @route("available/{code}/mark")
+    @post op markPackage(@path code: string): {
+        @Http.statusCode statusCode: 204;
+    };
+
+    /**
+     * Cancel the mark of a package. Refused when the package is installed.
+     */
+    @route("available/{code}/mark")
+    @delete op unmarkPackage(@path code: string): {
+        @Http.statusCode statusCode: 204;
+    };
 }
 
 /**

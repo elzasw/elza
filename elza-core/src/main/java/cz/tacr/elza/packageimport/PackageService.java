@@ -410,6 +410,12 @@ public class PackageService {
     @Autowired
     private ApplicationContext applicationContext;
 
+    /**
+     * A package was imported while the application runs; the search index registers the fields of
+     * its new item types, specifications and part types after a restart.
+     */
+    private volatile boolean importedSinceStart;
+
     @Autowired
     private PackageRepository packageRepository;
 
@@ -619,6 +625,11 @@ public class PackageService {
         preImportPackage();
 
         importPackageInternal(file, true);
+        importedSinceStart = true;
+    }
+
+    public boolean isImportedSinceStart() {
+        return importedSinceStart;
     }
 
     /**

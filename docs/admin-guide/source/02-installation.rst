@@ -133,7 +133,9 @@ the JAR file and set at least:
 
 - the database connection (``elza.data.url``, ``elza.data.user``,
   ``elza.data.pass``),
-- the working directory (``elza.workingDir``).
+- the working directory (``elza.workingDir``),
+- the packages the installation uses (``elza.packages.enabled``, see
+  :ref:`install-packages`).
 
 .. code-block:: yaml
 
@@ -145,6 +147,8 @@ the JAR file and set at least:
      workingDir: /opt/elza/work
      logFile: ${elza.workingDir}/log/elza.log
      siemLogFile: ${elza.workingDir}/log/siem.log
+     packages:
+       enabled: [CZ_BASE, ZP2015]
 
 All other settings are described in :doc:`04-configuration`.
 
@@ -182,7 +186,10 @@ Example systemd unit (:file:`/etc/systemd/system/elza.service`):
 Adjust the heap size (``-Xmx``) to the available memory. The working
 directory of the process must be the installation directory, so that
 :file:`config/elza.yaml` is found. Enable and start the service with
-``systemctl enable --now elza``.
+``systemctl enable --now elza``. With ``Restart=on-failure`` the
+application can restart itself from the administration: set
+``elza.restart.exitCode`` to a non-zero code other than 143 (see
+:doc:`04-configuration`).
 
 On Windows, ELZA can be run as a service with a service wrapper such as
 WinSW or NSSM, running the same ``java -jar`` command. See also the
@@ -302,12 +309,42 @@ loads each package from this directory whose version is newer than the
 imported one. An upgrade then only replaces the files in :file:`dpkg/`
 together with the JAR.
 
+Which packages of the directory the installation uses is set by
+``elza.packages.enabled``, a list of package codes. At every start, ELZA
+loads from :file:`dpkg/` the packages that are already imported and the
+packages the list names, together with the packages they depend on; the
+other files of the directory are left alone. A package that a new version
+of ELZA adds to :file:`packages/` is therefore not imported into an
+existing installation unless it is listed. The distribution contains:
+
+- ``CZ_BASE`` - entity description according to the Czech CAM, and the
+  shared code lists; required by ``ZP2015``,
+- ``ZP2015`` - the Czech description rules,
+- ``ISAAR_CPF`` - entity description according to the international
+  standard ISAAR(CPF), in English; for installations outside the Czech
+  practice or alongside ``CZ_BASE``.
+
+Set the key before the first start. On an empty database without the
+key, ELZA imports every package of the directory. The log of the start
+lists the packages imported and skipped.
+
 .. note::
 
    If :file:`dpkg/` contains an older version of a package than the one
    already imported, the application does not start. Remove the old file.
 
-Packages can also be imported in *Administration* > *Package management*.
+*Administration* > *Package management* lists the packages of
+:file:`dpkg/` that are not loaded, with what the next start does with
+each of them. *Load at the next start* marks a package: the mark is a
+package record without content, and the next start imports the file (with
+the packages it requires). *Cancel the mark* removes it. The page then
+reminds that a restart is needed, and offers *Restart the application*
+when ``elza.restart.exitCode`` is set (see :doc:`04-configuration`).
+
+Packages can also be imported there directly; an imported package is then
+upgraded from :file:`dpkg/` like the others, and the search index registers
+the fields of its new item types after a restart. A package deleted there
+stays deleted at the next start unless the key lists it.
 
 Importing institutions
 ----------------------

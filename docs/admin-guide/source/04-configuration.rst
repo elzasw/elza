@@ -407,10 +407,41 @@ Import
        funds in batches (*Import from a server folder*). Users can browse
        only its subdirectories. Without the setting, import from a server
        folder is disabled; upload from the browser works regardless.
+   * - ``elza.packages.enabled``
+     - (none)
+     - Codes of the packages to load from :file:`dpkg/` at startup besides
+       the packages already imported, for example ``[CZ_BASE, ZP2015]``;
+       the packages they depend on are loaded with them. A package of the
+       directory that is neither imported nor listed is skipped. Without
+       the key, an empty database imports every package of the directory.
+       See :ref:`install-packages`.
    * - ``elza.package.testing``
      - ``false``
      - Re-import a package with the same version as the imported one.
        For developing packages only.
+
+Restart from the administration
+===============================
+
+A Java process cannot restart itself. The restart offered in
+*Administration* > *Package management* stops the application with the
+configured exit code after the response, and the service manager starts
+it again: systemd with ``Restart=on-failure`` (see :doc:`02-installation`)
+or a Windows service wrapper. Without the key the restart is not offered,
+and the page asks for a manual restart.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 16 54
+
+   * - Key
+     - Default
+     - Meaning
+   * - ``elza.restart.exitCode``
+     - (none)
+     - Exit code of the restart from the administration, for example
+       ``3``. Use a non-zero code the service manager restarts on; with
+       the unit of :doc:`02-installation`, any code other than 0 and 143.
 
 Archival entities
 =================

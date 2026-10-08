@@ -26,6 +26,16 @@ elza:
   # On Windows set: D:\Elza\work
   # On Linux set: /opt/elza/work
   workingDir: D:\Elza\work
+  # Packages loaded from dpkg at startup besides the imported ones
+  # (their dependencies are loaded with them); other packages of the
+  # directory are skipped. ISAAR_CPF: international entity description.
+  packages:
+    enabled: [CZ_BASE, ZP2015]
+  # Restart from the administration: the application exits with this code
+  # and the service manager (systemd with Restart=on-failure) starts it
+  # again. Without the key the restart is not offered.
+  #restart:
+  #  exitCode: 3
 #
 # Performance specific options
 #

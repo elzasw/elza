@@ -6,7 +6,6 @@ import static cz.tacr.elza.packageimport.PackageService.PART_TYPE_XML;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -17,15 +16,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.FileSystemUtils;
@@ -34,6 +30,8 @@ import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.packageimport.PackageUtils;
+import cz.tacr.elza.packageimport.autoimport.AutoImportSelection;
+import cz.tacr.elza.packageimport.autoimport.EnabledPackagesConfig;
 import cz.tacr.elza.packageimport.autoimport.PackageInfoWrapper;
 import cz.tacr.elza.packageimport.xml.ItemSpec;
 import cz.tacr.elza.packageimport.xml.ItemSpecs;
@@ -61,8 +59,6 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    private static final String PACKAGE_XML = "package.xml";
-
     private static final String SELECT_RUL_PACKAGE = "SELECT * FROM rul_package";
 
     private static final String SELECT_RUL_DATA_TYPE = "SELECT * FROM rul_data_type";
@@ -85,6 +81,10 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
 
     @Value("${elza.package.testing:false}")
     private Boolean testing;
+
+    /** The configuration is read through the environment: this bean initializes before the configuration beans. */
+    @Autowired
+    private Environment environment;
 
     private List<PackageInfoWrapper> packagesToImport;
     private List<PackageInfoWrapper> allPackages;
@@ -133,20 +133,32 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
             latestVersionMap = packageInfoList.stream()
                     .collect(Collectors.toMap(PackageInfo::getCode, p -> new PackageInfoWrapper(p, null)));
 
-            try (Stream<Path> streamPaths = Files.list(dpkgDir)) {
+            try {
+                Map<String, PackageInfoWrapper> available = PackageUtils.readPackageDirectory(dpkgDir);
+
+                // installed packages (a marked one counts) keep upgrading; a new one is imported only when enabled
+                List<String> enabled = EnabledPackagesConfig.read(environment);
+                AutoImportSelection.Result selection = AutoImportSelection.select(enabled, latestVersionMap.keySet(),
+                                                                                 available);
+                if (selection.bootstrap()) {
+                    logger.info("No package is installed and {} is not set: every package in {} is imported",
+                                EnabledPackagesConfig.KEY, dpkgDir);
+                }
+                if (!selection.implied().isEmpty()) {
+                    logger.info("Packages imported as dependencies of the enabled packages: {}", selection.implied());
+                }
+                if (!selection.skipped().isEmpty()) {
+                    logger.info("Packages in {} not imported, neither installed nor listed in {}: {}",
+                                dpkgDir, EnabledPackagesConfig.KEY, selection.skipped());
+                }
+                if (!selection.unavailable().isEmpty()) {
+                    logger.warn("Packages listed in {} are neither installed nor present in {}: {}",
+                                EnabledPackagesConfig.KEY, dpkgDir, selection.unavailable());
+                }
 
                 // vyhledani poslednich verzi balicku
-                for (Path path : streamPaths.collect(Collectors.toList())) {
-                    // check if file is package
-                    if (Files.isDirectory(path) || !path.getFileName().toString().endsWith("zip")) {
-                        continue;
-                    }
-                    logger.info("Reading package info: {}", path);
-
-                    PackageInfoWrapper pkg = getPackageInfo(path);
-
-                    if (pkg == null) {
-                        logger.error("Cannot read package info from file : {}. File is skipped.", path.toString());
+                for (PackageInfoWrapper pkg : available.values()) {
+                    if (!selection.codes().contains(pkg.getCode())) {
                         continue;
                     }
 
@@ -168,8 +180,8 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
 
                     // pokud balíček není stažen nebo jeho verze neodpovídá stažené (menší) nebo probíhá vývoj
                     if (readFromFile) {
-                        packagesToImport.add(new PackageInfoWrapper(pkg.getPkg(), path));
-                        latestVersionMap.put(pkg.getCode(), new PackageInfoWrapper(pkg.getPkg(), path));
+                        packagesToImport.add(pkg);
+                        latestVersionMap.put(pkg.getCode(), pkg);
 
                         Map<String, ByteArrayInputStream> streamMap = PackageUtils.createStreamsMap(pkg.getPath().toFile());
                         readTypeAndSpecDataFromZipFilePackage(streamMap);
@@ -320,22 +332,6 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
 
     public List<PackageInfoWrapper> getAllPackages() {
         return allPackages;
-    }
-
-    private PackageInfoWrapper getPackageInfo(Path path) throws IOException {
-        try (ZipFile zipFile = new ZipFile(path.toFile())) {
-            ZipEntry zipEntry = zipFile.getEntry(PACKAGE_XML);
-            if (zipEntry == null) {
-                // package info not found
-                return null;
-            }
-            try (InputStream is = zipFile.getInputStream(zipEntry)) {
-                ByteArrayInputStream bais = new ByteArrayInputStream(IOUtils.toByteArray(is));
-                PackageInfo pkgZip = PackageUtils.convertXmlStreamToObject(PackageInfo.class, bais, path + "/" + PACKAGE_XML);
-
-                return new PackageInfoWrapper(pkgZip, path);
-            }
-        }
     }
 
     private class ItemTypeInfo {

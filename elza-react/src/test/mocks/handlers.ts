@@ -15,6 +15,10 @@ export const handlers = [
     http.get('/api/admin/externalSystems', () => HttpResponse.json([])),
     // Login asks whether the first-run setup is needed whenever nobody is logged in.
     http.get('/api/v1/setup', () => HttpResponse.json({ setupRequired: false })),
+    // The package administration lists the packages of dpkg that are not loaded; none by default.
+    http.get('/api/v1/packages/available', () =>
+        HttpResponse.json({ items: [], restartRequired: false, restartAvailable: false }),
+    ),
     http.get('/api/v1/languages', () =>
         HttpResponse.json([
             { tag: 'cs', code: 'cze', uiEnabled: true, scopeEnabled: true, defaultLanguage: true },

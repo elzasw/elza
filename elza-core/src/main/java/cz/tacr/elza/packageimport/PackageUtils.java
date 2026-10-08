@@ -16,20 +16,27 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.PackageCode;
+import cz.tacr.elza.packageimport.autoimport.PackageInfoWrapper;
+import cz.tacr.elza.packageimport.xml.PackageInfo;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.Unmarshaller;
@@ -339,5 +346,62 @@ public class PackageUtils {
         System.out.println("Following is a Topological " +
                 "sort of the given graph");
         System.out.println(g.topologicalSort());
+    }
+
+    private static final Logger logger = LoggerFactory.getLogger(PackageUtils.class);
+
+    private static final String PACKAGE_XML = "package.xml";
+
+    /**
+     * Reads the description of a package from its ZIP file.
+     *
+     * @return the description with the path of the file, or {@code null} when the file holds no
+     *         {@code package.xml}
+     */
+    public static PackageInfoWrapper readPackageInfo(final Path path) throws IOException {
+        try (ZipFile zipFile = new ZipFile(path.toFile())) {
+            ZipEntry zipEntry = zipFile.getEntry(PACKAGE_XML);
+            if (zipEntry == null) {
+                return null;
+            }
+            try (InputStream is = zipFile.getInputStream(zipEntry)) {
+                ByteArrayInputStream bais = new ByteArrayInputStream(IOUtils.toByteArray(is));
+                PackageInfo packageInfo = convertXmlStreamToObject(PackageInfo.class, bais, path + "/" + PACKAGE_XML);
+                return new PackageInfoWrapper(packageInfo, path);
+            }
+        }
+    }
+
+    /**
+     * Reads the packages of a directory: the ZIP files by code, in the order of the file names; of
+     * two files of one package the one with the higher version. A file without a package
+     * description is skipped with an error in the log. A missing directory holds no packages.
+     */
+    public static Map<String, PackageInfoWrapper> readPackageDirectory(final Path dir) throws IOException {
+        Map<String, PackageInfoWrapper> packages = new LinkedHashMap<>();
+        if (!Files.isDirectory(dir)) {
+            return packages;
+        }
+        try (Stream<Path> paths = Files.list(dir)) {
+            for (Path path : paths.sorted().toList()) {
+                if (Files.isDirectory(path) || !path.getFileName().toString().endsWith("zip")) {
+                    continue;
+                }
+                logger.info("Reading package info: {}", path);
+                PackageInfoWrapper pkg = readPackageInfo(path);
+                if (pkg == null) {
+                    logger.error("Cannot read package info from file : {}. File is skipped.", path);
+                    continue;
+                }
+                PackageInfoWrapper other = packages.get(pkg.getCode());
+                if (other != null && other.getVersion() >= pkg.getVersion()) {
+                    logger.warn("Package {} version {} in file {} is not newer than file {}. File is skipped.",
+                                pkg.getCode(), pkg.getVersion(), path, other.getPath());
+                    continue;
+                }
+                packages.put(pkg.getCode(), pkg);
+            }
+        }
+        return packages;
     }
 }

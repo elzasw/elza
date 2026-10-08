@@ -14,7 +14,9 @@ entity types. ELZA ships two packages:
 
 Packages are imported in *Administration* > *Package management*, or
 automatically at startup from the :file:`dpkg/` subdirectory of the working
-directory (see the administration guide).
+directory: the imported packages, and those the configuration key
+``elza.packages.enabled`` lists, with their dependencies (see the
+administration guide).
 
 Structure of a package
 ======================

@@ -20,6 +20,7 @@ import {
     InstitutionApi,
     ImportBatchesApi,
     LanguagesApi,
+    PackagesApi,
     SetupApi,
     UserApi,
 } from 'elza-api';
@@ -240,6 +241,7 @@ export const Api: {
     institution: InstitutionApi;
     importBatches: ImportBatchesApi;
     languages: LanguagesApi;
+    packages: PackagesApi;
     setup: SetupApi;
     user: UserApi;
 } = {
@@ -264,6 +266,7 @@ export const Api: {
     institution: new InstitutionApi(undefined, basePath, axios),
     importBatches: new ImportBatchesApi(undefined, basePath, axios),
     languages: new LanguagesApi(undefined, basePath, axios),
+    packages: new PackagesApi(undefined, basePath, axios),
     setup: new SetupApi(undefined, basePath, axios),
     user: new UserApi(undefined, basePath, axios),
 };
