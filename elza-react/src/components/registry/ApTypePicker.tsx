@@ -107,6 +107,8 @@ export const ApTypePicker = ({
                 selectedOptions={value != null ? [String(value)] : []}
                 placeholder={scopeId == null ? intl.formatMessage(messages.chooseScopeFirst) : undefined}
                 disabled={disabled || scopeId == null}
+                // the class tree is longer than the viewport; keep the list on screen and scroll it
+                positioning={{ autoSize: 'height' }}
                 onChange={(event) => setQuery(event.target.value)}
                 onOptionSelect={(_event, data) => {
                     const type = types.find((t) => String(t.type.id) === data.optionValue)?.type;
