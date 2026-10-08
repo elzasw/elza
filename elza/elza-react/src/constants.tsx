@@ -143,6 +143,9 @@ export const ADMIN_USER = 'admin';
 
 export const FORM_DATA_GRID_EXPORT = 'dataGridExportForm';
 
+// Kód výstupního filtru, který se předvyplňuje u nových výstupů
+export const DEFAULT_OUTPUT_FILTER_CODE = 'ZP_ACCESS_RESTRICT';
+
 export const JAVA_CLASS_AP_ACCESS_POINT_VO = 'cz.tacr.elza.controller.vo.ApAccessPointVO';
 export const JAVA_CLASS_ARR_DIGITIZATION_FRONTDESK_SIMPLE_VO = '.ArrDigitizationFrontdeskSimpleVO';
 export const JAVA_ATTR_CLASS = '@class';
