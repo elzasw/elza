@@ -135,6 +135,17 @@ elza:
   #import:
   #  batchInputDir: C:/data/elza-import
 
+  # Balíčky, které se při startu načtou z adresáře dpkg kromě již naimportovaných
+  # (jejich závislosti se načtou s nimi). Ostatní balíčky v adresáři se přeskočí.
+  # Bez klíče se do prázdné databáze naimportují všechny balíčky z adresáře.
+  #packages:
+  #  enabled: [CZ_BASE, ZP2015]
+
+  # Restart aplikace z administrace: aplikace se ukončí s tímto návratovým kódem a správce
+  # služeb (systemd s Restart=on-failure) ji znovu spustí. Bez klíče se restart nenabízí.
+  #restart:
+  #  exitCode: 3
+
   # Task scheduler observability (the elza.scheduler.* and elza.cam.pending_* metrics).
   # The values below are the built-in defaults, already applied in code — with no
   # configuration the scheduler behaves exactly as shown, so leave this commented out for

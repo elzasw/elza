@@ -2,6 +2,6 @@
   <code>ISAAR_CPF</code>
   <name>ISAAR(CPF) entity description</name>
   <version>1</version>
-  <description>International description of persons, families and corporate bodies according to ISAAR(CPF), with places and concepts; independent of the Czech CAM package (CZ_BASE), sharing its codes where the meaning is the same.</description>
+  <description>International description of persons, families and corporate bodies according to ISAAR(CPF), with places and concepts.</description>
   <language>en</language>
 </package>

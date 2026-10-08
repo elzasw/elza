@@ -50,6 +50,7 @@ tags:
     description: Jazyky
   - name: admin
     description: Administrativní funkce
+  - name: packages
 paths:
   /accesspoint:
     delete:
@@ -1673,6 +1674,18 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/PasswordPolicy'
+  /admin/restart:
+    post:
+      operationId: Admin_restart
+      description: |-
+        Restart the application: after the response, the application stops with the exit code
+        elza.restart.exitCode, and the service manager starts it again. Refused when the key is not set.
+      parameters: []
+      responses:
+        '202':
+          description: The request has been accepted for processing, but processing has not yet completed.
+      tags:
+        - admin
   /admin/user/{userId}/api-keys:
     get:
       operationId: Admin_listUserApiKeys
@@ -5944,6 +5957,52 @@ paths:
                 $ref: '#/components/schemas/FsCreateDaoLinkResult'
       tags:
         - node
+  /packages/available:
+    get:
+      operationId: Packages_listAvailablePackages
+      description: Packages of the dpkg directory that are not installed, by code, and whether a restart is needed.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailablePackages'
+      tags:
+        - packages
+  /packages/available/{code}/mark:
+    post:
+      operationId: Packages_markPackage
+      description: |-
+        Mark a package of the dpkg directory for the import at the next start. Refused when the
+        package is installed, or when a package it requires is neither installed, marked nor in the
+        directory.
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+      tags:
+        - packages
+    delete:
+      operationId: Packages_unmarkPackage
+      description: Cancel the mark of a package. Refused when the package is installed.
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+      tags:
+        - packages
   /publication/types:
     get:
       operationId: PublicationTypeAdmin_listPublicationTypes
@@ -8386,6 +8445,84 @@ components:
           type: string
           description: value of the element
       description: Automatically generated elements of the description
+    AvailablePackage:
+      type: object
+      required:
+        - code
+        - name
+        - version
+        - dependencies
+        - state
+        - fileName
+      properties:
+        code:
+          type: string
+          description: Code of the package
+        name:
+          type: string
+          description: Name of the package
+        version:
+          type: integer
+          format: int32
+          description: Version of the package in the file
+        description:
+          type: string
+          description: Description of the package
+        dependencies:
+          type: array
+          items:
+            $ref: '#/components/schemas/AvailablePackageDependency'
+          description: Required packages
+        state:
+          allOf:
+            - $ref: '#/components/schemas/AvailablePackageState'
+          description: What happens with the package at the next start
+        fileName:
+          type: string
+          description: Name of the file in the dpkg directory
+      description: Package present in the dpkg directory of the working directory and not installed.
+    AvailablePackageDependency:
+      type: object
+      required:
+        - code
+        - minVersion
+      properties:
+        code:
+          type: string
+          description: Code of the required package
+        minVersion:
+          type: integer
+          format: int32
+          description: Minimal version of the required package
+      description: Package required by a package of the dpkg directory.
+    AvailablePackageState:
+      type: string
+      enum:
+        - CONFIGURED
+        - MARKED
+        - NOT_LOADED
+      description: |-
+        Why a package of the dpkg directory that is not installed will or will not be imported
+        at the next start.
+    AvailablePackages:
+      type: object
+      required:
+        - items
+        - restartRequired
+        - restartAvailable
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AvailablePackage'
+          description: Packages by code
+        restartRequired:
+          type: boolean
+          description: 'A restart is needed: packages are marked for the next start, or a package was imported since the start'
+        restartAvailable:
+          type: boolean
+          description: The application can restart itself from the administration (elza.restart.exitCode is set)
+      description: Packages of the dpkg directory that are not installed, with the restart state of the application.
     AvailablePublication:
       type: object
       required:

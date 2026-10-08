@@ -181,7 +181,9 @@ guide, chapter "International entity description (ISAAR_CPF)".
    relation types with CAM's target classes). The proposed values are **accepted for version 1**
    (2026-10-08); a later change of a value is a new specification code (package version bump, data
    migration for stored values).
-6. **Shipped with every installation**; a scope uses it when its rule set is chosen.
+6. **Shipped with every installation**, imported where `elza.packages.enabled` lists it (or at the
+   first start of an empty database without the key; decided 2026-10-09, see section 9); a scope
+   uses it when its rule set is chosen.
 7. **Research documents stay out of git** (`docs/entity-framework-research.md`,
    `docs/isaar-cpf-cam-comparison.md`, `research_notes/`, `reports/`); what the guide needs from them
    (the CAM class mapping) is in the guide itself.
@@ -506,7 +508,14 @@ deletion; OpenAPI tag `customization` (ADMIN), admin page `/admin/customization`
 - Item-type filter: the rule set's DRL plus `ITEM_TYPE_FILTER` rules of other packages
   (`RuleService.getItemTypeCodesByRuleSet`).
 - Startup: `autoImportPackages` imports distribution ZIPs in topological order, independent packages
-  by code; packages existing only in the database are not re-applied.
+  by code; packages existing only in the database are not re-applied. The ZIPs considered are
+  chosen by `AutoImportSelection` in `IndexConfigReaderImpl` (so the index schema matches): the
+  installed packages, those listed in `elza.packages.enabled` and their dependencies; the other
+  ZIPs are skipped, so a package deleted in the administration stays deleted. An empty database
+  without the key imports every ZIP. The package administration lists the ZIPs not loaded
+  (`AvailablePackageService`, `/api/v1/packages/available`); a mark is a `rul_package` row with
+  `PENDING_VERSION` (0), which the selection counts as installed. `RestartService` exits with
+  `elza.restart.exitCode` for the service manager; no in-process restart (static state).
 - Same-version re-import in testing mode replaces the package directory; tests reading package files
   run before refusal tests.
 - Conventions: changesets only in `db.elza-3-part-03.xml` (id `yyyyMMddHHmmss`, hibernate sequences in

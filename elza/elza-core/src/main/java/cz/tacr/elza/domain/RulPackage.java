@@ -29,6 +29,13 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class RulPackage {
 
+    /**
+     * Version of a package marked for the import at the next start: the row holds the description
+     * of the package from its file and nothing else; the startup import treats it as installed and
+     * imports the file (see {@code AutoImportSelection}).
+     */
+    public static final int PENDING_VERSION = 0;
+
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY) // required to read id without fetch from db
@@ -121,6 +128,11 @@ public class RulPackage {
     /**
      * @param version verze balíčku
      */
+    /** Marked for the import at the next start, with no content imported yet. */
+    public boolean isPending() {
+        return version != null && version == PENDING_VERSION;
+    }
+
     public void setVersion(final Integer version) {
         this.version = version;
     }

@@ -203,7 +203,9 @@ public class RuleController {
     @AuthMethod(permission = Permission.ADMIN)
     public List<PackageVO> getPackages() {
         List<RulPackage> packages = packageService.getPackages();
-        List<PackageVO> packageVO = packages.stream().map(i -> PackageVO.newInstance(i)).collect(Collectors.toList());
+        // a package marked for the next start is listed among the available packages
+        List<PackageVO> packageVO = packages.stream().filter(p -> !p.isPending())
+                .map(i -> PackageVO.newInstance(i)).collect(Collectors.toList());
         Map<Integer, PackageVO> packageVOMap = packageVO.stream().collect(Collectors.toMap(PackageVO::getPackageId, Function.identity()));
         List<RulPackageDependency> packagesDependencies = packageService.getPackagesDependencies();
         for (RulPackageDependency dependency : packagesDependencies) {

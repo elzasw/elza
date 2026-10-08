@@ -15,6 +15,26 @@ between the installed and the new version; see :doc:`/03-upgrade`.
 Upcoming version
 ================
 
+* New: Package management - the administration lists the packages of
+  :file:`dpkg/` that are not loaded, with what the next start does with
+  each of them, and lets the administrator mark a package for the import at
+  the next start (or cancel the mark); a marked package appears among the
+  installed ones after the restart. The page reminds that a restart is
+  needed after a mark or an import during the run, and offers *Restart the
+  application* when the new key ``elza.restart.exitCode`` is set: the
+  application exits with that code and the service manager starts it again
+  (``Restart=on-failure`` in the systemd unit). See :ref:`install-packages`
+  and :doc:`/04-configuration`.
+* Change: Packages at startup - the packages loaded from :file:`dpkg/`
+  are the imported ones and those listed in the new key
+  ``elza.packages.enabled`` (with their dependencies); the other files of
+  the directory are skipped, and a package deleted in the administration
+  stays deleted unless listed. Existing installations keep their packages
+  without a change of the configuration. A new installation sets the key
+  before the first start; on an empty database without the key every
+  package of the directory is imported, as before. The log of the start
+  lists the imported and the skipped packages. See
+  :ref:`install-packages` and :doc:`/04-configuration`.
 * Change: Rules packages - the files of a package are read strictly: an
   unknown or misplaced element stops the import of the package (the error
   names the file, the line and the element) instead of being skipped
@@ -25,12 +45,13 @@ Upcoming version
 * New: Rules packages - the package ISAAR_CPF describes archival entities
   (persons, families, corporate bodies, places, concepts) according to the
   international standard ISAAR(CPF), in English. It is delivered with ELZA
-  and imported at the first start; a scope uses it by choosing the rule set
-  ``ISAAR_CPF``. It shares classes, part types, item types and
+  and imported when ``elza.packages.enabled`` lists it (or at the first
+  start of an empty database without the key); a scope uses it by choosing
+  the rule set ``ISAAR_CPF``. It shares classes, part types, item types and
   specifications with CZ_BASE where the meaning is the same, so an
-  installation may run CZ_BASE, ISAAR_CPF or both; existing Czech
-  installations see a new rule set offered for scopes and no change in
-  their CAM scopes. The languages of a name are the ISO 639-2 list with
+  installation may run CZ_BASE, ISAAR_CPF or both; an existing Czech
+  installation that adds it sees a new rule set offered for scopes and no
+  change in its CAM scopes. The languages of a name are the ISO 639-2 list with
   English names (486 languages), coded as in CZ_BASE (``LNG_`` plus the
   bibliographic code).
 * Change: Archival entities - the class tree of a scope shows the classes

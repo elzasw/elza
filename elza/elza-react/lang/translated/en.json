@@ -923,6 +923,70 @@
     "defaultMessage": "Import",
     "srcHash": "yTA6PZurxTjn"
   },
+  "admin.packages.available.dependencies": {
+    "defaultMessage": "Required packages (minimal version)",
+    "srcHash": "2cR-WAXudg3q"
+  },
+  "admin.packages.available.empty": {
+    "defaultMessage": "Every package of the dpkg directory is loaded.",
+    "srcHash": "7NIaiTF5GVIg"
+  },
+  "admin.packages.available.file": {
+    "defaultMessage": "File",
+    "srcHash": "XuE2x3rNQQt-"
+  },
+  "admin.packages.available.mark": {
+    "defaultMessage": "Load at the next start",
+    "srcHash": "U9yc0xDfaVgW"
+  },
+  "admin.packages.available.restart": {
+    "defaultMessage": "Restart the application",
+    "srcHash": "NdHUWey_C2cD"
+  },
+  "admin.packages.available.restart.confirm": {
+    "defaultMessage": "The application stops and the service manager starts it again; every user is disconnected. Continue?",
+    "srcHash": "k6NXTShoJz0X"
+  },
+  "admin.packages.available.restart.imported": {
+    "defaultMessage": "A package was imported while the application runs; the search index registers its new fields only after a restart.",
+    "srcHash": "GYIz6CWdB0nB"
+  },
+  "admin.packages.available.restart.manual": {
+    "defaultMessage": "Restart the application.",
+    "srcHash": "VQJaYWhmeVFe"
+  },
+  "admin.packages.available.restart.marked": {
+    "defaultMessage": "The marked packages are loaded at the next start of the application.",
+    "srcHash": "yVhMqPgMHeNc"
+  },
+  "admin.packages.available.restart.requested": {
+    "defaultMessage": "The restart has started. The application stops in a moment and starts again.",
+    "srcHash": "sPM-N26k8ry5"
+  },
+  "admin.packages.available.state": {
+    "defaultMessage": "At the next start",
+    "srcHash": "HRVOA6isRpUz"
+  },
+  "admin.packages.available.state.configured": {
+    "defaultMessage": "Loaded (configuration)",
+    "srcHash": "tu4P0_9gZETC"
+  },
+  "admin.packages.available.state.marked": {
+    "defaultMessage": "Loaded (marked)",
+    "srcHash": "tIu1hvIrxdkY"
+  },
+  "admin.packages.available.state.notLoaded": {
+    "defaultMessage": "Not loaded",
+    "srcHash": "is2PZCpvoBLv"
+  },
+  "admin.packages.available.title": {
+    "defaultMessage": "Packages in the dpkg directory that are not loaded",
+    "srcHash": "kxla5y81yNGl"
+  },
+  "admin.packages.available.unmark": {
+    "defaultMessage": "Cancel the mark",
+    "srcHash": "ZLutkqJVK7-G"
+  },
   "admin.packages.message.delete.message": {
     "defaultMessage": "The package {0} was deleted successfully",
     "srcHash": "ev_5z5Tdeg4p"

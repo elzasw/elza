@@ -105,4 +105,9 @@ public enum PackageCode implements ErrorCode {
      * A specification or its assignment to an item type to be removed is used by descriptions or entities.
      */
     ITEM_SPEC_IN_USE,
+
+    /**
+     * The package is installed: it cannot be marked for the import at the next start and a mark cannot be cancelled.
+     */
+    ALREADY_INSTALLED,
 }
