@@ -1,4 +1,4 @@
-import { defineConfig, loadEnv, Plugin, ViteDevServer } from 'vite'
+import { defineConfig, loadEnv, Plugin, searchForWorkspaceRoot, ViteDevServer } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path';
 
@@ -132,6 +132,10 @@ export default ({ mode }) => {
       port: 3000,
       hmr: {
         port: 3001
+      },
+      fs: {
+        // the unit-date lexicon is shared with the server and imported from elza-core
+        allow: [searchForWorkspaceRoot(process.cwd()), path.resolve(__dirname, '../elza-core/src/main/resources/unitdate')],
       },
       proxy: {
         '/login': endpoint,

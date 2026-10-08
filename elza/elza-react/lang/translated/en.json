@@ -6054,32 +6054,32 @@
     "srcHash": "M0pT0njvr6H0"
   },
   "dataType.UNITDATE.format": {
-    "defaultMessage": "<p><b>Date format</b></p><p>Century: 20. st. <i>or</i> 20.st. <i>or</i> 20st</p><p>Year: 1968</p><p>Month: 8.1968</p><p>Day: 21.8.1968</p><p>Hours, minutes, seconds: 21.8.1968 2:43 <i>or</i> 21.8.1968 8:23:31</p><p><b>Intervals</b></p><p>Years: 1968-1969</p><p>Combination: 8.1968-1969 <i>or</i> 21.8.1968 2:43-27.6.1989</p><p><b>Estimate</b></p><p>Defined by enclosing the value in round or square brackets:</p><p>E.g.: [16.8.1977] <i>or</i> [1990]-1992</p><p>When the '/' character is used to separate an interval, both from and to are treated as an estimate:</p><p>E.g.: 1985/1990</p>",
-    "srcHash": "eW59aBerEcN3"
+    "defaultMessage": "<p><b>Date format</b></p><p>Century: {century}</p><p>Year: {year}</p><p>Month: {month}</p><p>Day: {day}</p><p>Hours, minutes, seconds: {time}</p><p><b>Intervals</b></p><p>Years: {intervalYears}</p><p>Combined: {intervalCombined}</p><p><b>Estimate</b></p><p>Written by enclosing the value in round or square brackets:</p><p>For example: {estimateBrackets}</p><p>When '/' separates an interval, both ends are read as an estimate:</p><p>For example: {estimateSlash}</p>",
+    "srcHash": "WoVZ06OmVkIr"
   },
   "dataType.coordinates.format": {
     "defaultMessage": "<div><b>Loading coordinates from a file</b> in the<br />KML, GML or WKT format<br /><b>WGS84 system</b> (e.g. Mapy.cz)<br /><i>example: 49.5765442N, 14.3965617E</i><br /><b>WKT markup language</b><br /><i>examples: POINT (14.3965617 49.5765442)</i><br /><i>LINESTRING (14.3965528 49.5765909,14.4172300 49.5551484)</i><br /><i>POLYGON ((14.3828494 49.5976066,14.3829031 49.5971094,<br />14.3842817 49.5971546,14.3842281 49.5976379,<br />14.3828494 49.5976066))</i></div>",
     "srcHash": "eF7NJdW2to1P"
   },
   "dataType.unitdate.format": {
-    "defaultMessage": "<div><b>Date format</b><br />Century: 20. st. <i>or</i> 20.st. <i>or</i> 20st<br />Year: 1968<br />Month: 8.1968<br />Day: 21.8.1968<br />Hours, minutes, seconds: 21.8.1968 2:43 <i>or</i> 21.8.1968 8:23:31<br /><b>Intervals</b><br />Years: 1968-1969<br />Combinations: 8.1968-1969 <i>or</i> 21.8.1968 2:43-27.6.1989<br /><b>Estimate</b><br />Written by enclosing the value in round or square brackets:<br />For example: [16.8.1977] <i>or</i> [1990]-1992<br />When \"/\" is used to separate an interval, both ends are read as an estimate:<br />For example: 1985/1990</div>",
-    "srcHash": "xnAtbsKZetGY"
+    "defaultMessage": "<div><b>Date format</b><br />Century: {century}<br />Year: {year}<br />Month: {month}<br />Day: {day}<br />Hours, minutes, seconds: {time}<br /><b>Intervals</b><br />Years: {intervalYears}<br />Combined: {intervalCombined}<br /><b>Estimate</b><br />Written by enclosing the value in round or square brackets:<br />For example: {estimateBrackets}<br />When \"/\" is used to separate an interval, both ends are read as an estimate:<br />For example: {estimateSlash}</div>",
+    "srcHash": "VwQpdaTBw-V0"
   },
   "dataType.unitdate.format.century": {
-    "defaultMessage": "Century: 20. st. <i>or</i> 20.st. <i>or</i> 20st",
-    "srcHash": "pnH-szqQNR37"
+    "defaultMessage": "Century: {century}",
+    "srcHash": "iKtDJ1M4oiS7"
   },
   "dataType.unitdate.format.day": {
-    "defaultMessage": "Day: 21.8.1968",
-    "srcHash": "QtGB4sUeEReX"
+    "defaultMessage": "Day: {day}",
+    "srcHash": "gfNKglnjqV4H"
   },
   "dataType.unitdate.format.estimate.brackets": {
     "defaultMessage": "Defined by enclosing the value in round or square brackets:",
     "srcHash": "O7DuiUHQ9Sxd"
   },
   "dataType.unitdate.format.estimate.bracketsExample": {
-    "defaultMessage": "For example: [16.8.1977] <i>or</i> [1990]-1992",
-    "srcHash": "J_oEJsVE5e5u"
+    "defaultMessage": "For example: {estimateBrackets}",
+    "srcHash": "vVPKYj8O9nyV"
   },
   "dataType.unitdate.format.estimate.heading": {
     "defaultMessage": "Estimate",
@@ -6090,36 +6090,40 @@
     "srcHash": "wIiXpvjgfaRk"
   },
   "dataType.unitdate.format.estimate.slashExample": {
-    "defaultMessage": "For example: 1985/1990",
-    "srcHash": "cQz65spn-04-"
+    "defaultMessage": "For example: {estimateSlash}",
+    "srcHash": "0ALXjERBOJRZ"
   },
   "dataType.unitdate.format.heading": {
     "defaultMessage": "Date format",
     "srcHash": "awuEWz-ElkJG"
   },
   "dataType.unitdate.format.intervals.combined": {
-    "defaultMessage": "Combined: 8.1968-1969 <i>or</i> 21.8.1968 2:43-27.6.1989",
-    "srcHash": "UrWFTi-M6vtc"
+    "defaultMessage": "Combined: {intervalCombined}",
+    "srcHash": "p_xI63f8fyOU"
   },
   "dataType.unitdate.format.intervals.heading": {
     "defaultMessage": "Intervals",
     "srcHash": "Iw-A2gDo2i_3"
   },
   "dataType.unitdate.format.intervals.years": {
-    "defaultMessage": "Years: 1968-1969",
-    "srcHash": "y-nDxchCbXQf"
+    "defaultMessage": "Years: {intervalYears}",
+    "srcHash": "eTAdXMZeEhNR"
   },
   "dataType.unitdate.format.month": {
-    "defaultMessage": "Month: 8.1968",
-    "srcHash": "u1HsdOk6gNa7"
+    "defaultMessage": "Month: {month}",
+    "srcHash": "p3p2fSTX2Pi0"
+  },
+  "dataType.unitdate.format.or": {
+    "defaultMessage": "or",
+    "srcHash": "hKvRkJrrFeHY"
   },
   "dataType.unitdate.format.time": {
-    "defaultMessage": "Hours, minutes, seconds: 21.8.1968 2:43 <i>or</i> 21.8.1968 8:23:31",
-    "srcHash": "A9cmcmPkHlWU"
+    "defaultMessage": "Hours, minutes, seconds: {time}",
+    "srcHash": "O_C2J06FdK9M"
   },
   "dataType.unitdate.format.year": {
-    "defaultMessage": "Year: 1968",
-    "srcHash": "Z5zW1BerWdAy"
+    "defaultMessage": "Year: {year}",
+    "srcHash": "RXh1_OIy_QqB"
   },
   "deleted_entity_table_column_deleteDate": {
     "defaultMessage": "Deletion date",

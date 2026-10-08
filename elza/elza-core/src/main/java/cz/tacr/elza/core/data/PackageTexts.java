@@ -89,6 +89,15 @@ public class PackageTexts {
     }
 
     /**
+     * Tag of the language of the current request, see {@link #requestLanguage()}; null when there is
+     * none (texts in the default language).
+     */
+    public String requestLanguageTag() {
+        SysLanguage language = requestLanguage();
+        return language != null ? language.getTag() : null;
+    }
+
+    /**
      * Language of {@code elza.locale}; a locale with a region falls back to its language.
      *
      * @return language, null when the locale names no known language

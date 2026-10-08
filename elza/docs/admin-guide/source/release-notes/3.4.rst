@@ -39,6 +39,20 @@ Upcoming version
   version of its package (before, the import failed on a database
   constraint). The package export writes each specification once, also
   specifications without an assignment.
+* Change: Unit dates are read in every supported language whatever the
+  language of the user interface, and shown in the language of the user
+  interface. Besides the Czech forms (``20. st.``, ``21.8.1968``,
+  ``31 př. n. l.``) the English forms are accepted: ``20th century``,
+  ``Aug 1968``, ``21 Aug 1968``, ``500 BC``, intervals written as
+  ``1968 – 1969`` or ``1968 - 1969``, and the ISO full date
+  ``1968-08-21``. In the English interface the dates of entities and
+  units of description are shown in the English forms; stored values,
+  indexes, titles and print outputs keep the Czech form for now. The forms
+  are defined once in :file:`unitdate/lexicon.json` of elza-core and
+  checked by the corpus :file:`unitdate/cases.json` on the server and in
+  the client. The format help of the date fields shows the examples of the
+  language of the user interface. The unit-date validation endpoint
+  ``/api/validate/unitDate`` is no longer called by the client.
 * Change: Rules packages - a rule set offers only the specifications
   assigned by packages related to its own: the package itself, the
   packages it depends on and the packages depending on it. A specification

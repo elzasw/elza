@@ -1,4 +1,5 @@
-import { defineMessages } from "react-intl";
+import { defineMessages, IntlShape } from "react-intl";
+import { unitdateHelpHtmlValues } from "components/shared/unitdate/helpValues";
 
 /**
  * Popisky editace jednotky popisu - panel JP, formular pridani JP,
@@ -61,7 +62,8 @@ export const nodeMessages = defineMessages({
     requestTitleTypeDAO_LINKUNLINK: { id: "arr.request.title.type.DAO_LINK.UNLINK", defaultMessage: "Odpojení od" },
     syncNodesTitle: { id: "arr.syncNodes.title", defaultMessage: "Synchronizace JP ze zdrojových AS" },
     dataTypeCoordinatesFormat: { id: "dataType.coordinates.format", defaultMessage: "<div><b>Načtení souřadnic ze souboru</b> ve formátu<br />KML, GML nebo WKT<br /><b>Systém WGS84</b> (např. Mapy.cz)<br /><i>příklad: 49.5765442N, 14.3965617E</i><br /><b>Značkovací jazyk WKT</b><br /><i>příklady: POINT (14.3965617 49.5765442)</i><br /><i>LINESTRING (14.3965528 49.5765909,14.4172300 49.5551484)</i><br /><i>POLYGON ((14.3828494 49.5976066,14.3829031 49.5971094,<br />14.3842817 49.5971546,14.3842281 49.5976379,<br />14.3828494 49.5976066))</i></div>" },
-    dataTypeUnitdateFormat: { id: "dataType.unitdate.format", defaultMessage: "<div><b>Formát datace</b><br />Století: 20. st. <i>nebo</i> 20.st. <i>nebo</i> 20st<br />Rok: 1968<br />Měsíc: 8.1968<br />Den: 21.8.1968<br />Hodiny, minuty, sekundy: 21.8.1968 2:43 <i>nebo</i> 21.8.1968 8:23:31<br /><b>Intervaly</b><br />Roky: 1968-1969<br />Kombinace: 8.1968-1969 <i>nebo</i> 21.8.1968 2:43-27.6.1989<br /><b>Odhad</b><br />Definuje se uzavřením hodnoty do kulatých nebo hranatých závorek:<br />Např.: [16.8.1977] <i>nebo</i> [1990]-1992<br />Při použití znaku \"/\" pro oddělení intervalu jsou od i do chápány jako odhad:<br />Např.: 1985/1990</div>" },
+    // the examples come from components/shared/unitdate/examples by UI language (formatHintValues)
+    dataTypeUnitdateFormat: { id: "dataType.unitdate.format", defaultMessage: "<div><b>Formát datace</b><br />Století: {century}<br />Rok: {year}<br />Měsíc: {month}<br />Den: {day}<br />Hodiny, minuty, sekundy: {time}<br /><b>Intervaly</b><br />Roky: {intervalYears}<br />Kombinace: {intervalCombined}<br /><b>Odhad</b><br />Definuje se uzavřením hodnoty do kulatých nebo hranatých závorek:<br />Např.: {estimateBrackets}<br />Při použití znaku \"/\" pro oddělení intervalu jsou od i do chápány jako odhad:<br />Např.: {estimateSlash}</div>" },
     globalActionCopyToClipboardFinished: { id: "global.action.copyToClipboard.finished", defaultMessage: "Zkopírováno do schránky" },
     globalActionSelect: { id: "global.action.select", defaultMessage: "Vybrat" },
     globalDataLoadingNode: { id: "global.data.loading.node", defaultMessage: "Načítání seznamu JP" },
@@ -114,4 +116,12 @@ export const daoLinkTypeMessages = {
 export const formatHintMessages = {
     'dataType.coordinates.format': nodeMessages.dataTypeCoordinatesFormat,
     'dataType.unitdate.format': nodeMessages.dataTypeUnitdateFormat,
+};
+
+/**
+ * Values of the placeholders of a format hint, by the hint's key: the unit-date hint shows the
+ * examples of the UI language as HTML strings.
+ */
+export const formatHintValues: Record<string, (intl: IntlShape) => Record<string, string>> = {
+    'dataType.unitdate.format': unitdateHelpHtmlValues,
 };

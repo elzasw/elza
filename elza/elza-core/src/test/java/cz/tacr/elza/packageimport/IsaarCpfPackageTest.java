@@ -131,6 +131,8 @@ public class IsaarCpfPackageTest {
     void loadPackage() {
         startupService.startNow();
         authorizeAsAdmin();
+        // validation workers of a preceding test class may still write; they would collide with the delete
+        helperTestService.waitForWorkers();
         helperTestService.deleteAllPackages();
         helperTestService.loadPackage(CODE, DIR);
         isaarScope = createScope("ISAAR_TEST", CODE);
@@ -139,6 +141,7 @@ public class IsaarCpfPackageTest {
     @AfterAll
     void unloadPackages() {
         try {
+            helperTestService.waitForWorkers();
             helperTestService.deleteAllPackages();
         } finally {
             startupService.stop();

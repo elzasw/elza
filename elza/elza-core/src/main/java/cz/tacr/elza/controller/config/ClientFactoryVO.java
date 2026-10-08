@@ -176,12 +176,13 @@ import cz.tacr.elza.ws.types.v1.Items;
 @Service
 public class ClientFactoryVO {
 
-	static Map<cz.tacr.elza.core.data.DataType, Function<ArrData, ItemData>> dataConvertors = new HashMap<>();
-	static {
+	// an instance map: the unit-date converter renders in the language of the request
+	private final Map<cz.tacr.elza.core.data.DataType, Function<ArrData, ItemData>> dataConvertors = new HashMap<>();
+	{
 		dataConvertors.put(cz.tacr.elza.core.data.DataType.INT, ClientFactoryVO::convertInt);
 		dataConvertors.put(cz.tacr.elza.core.data.DataType.STRING, ClientFactoryVO::convertString);
 		dataConvertors.put(cz.tacr.elza.core.data.DataType.TEXT, ClientFactoryVO::convertText);
-		dataConvertors.put(cz.tacr.elza.core.data.DataType.UNITDATE, ClientFactoryVO::convertUnitdate);
+		dataConvertors.put(cz.tacr.elza.core.data.DataType.UNITDATE, this::convertUnitdate);
 		dataConvertors.put(cz.tacr.elza.core.data.DataType.UNITID, ClientFactoryVO::convertUnitid);
 		dataConvertors.put(cz.tacr.elza.core.data.DataType.FORMATTED_TEXT, ClientFactoryVO::convertFormattedText);
 		dataConvertors.put(cz.tacr.elza.core.data.DataType.COORDINATES, ClientFactoryVO::convertCoordinates);
@@ -340,8 +341,11 @@ public class ClientFactoryVO {
      * @param arrData
      * @return
      */
-    private static ItemData convertUnitdate(ArrData arrData) {
-    	DataUnitdate data = new DataUnitdate(UnitDateConverter.convertToString(((ArrDataUnitdate) arrData)), DataType.UNITDATE);
+    private ItemData convertUnitdate(ArrData arrData) {
+        // the text follows the UI language of the request
+    	DataUnitdate data = new DataUnitdate(UnitDateConverter.convertToString((ArrDataUnitdate) arrData,
+    	                                                                       packageTexts.requestLanguageTag()),
+    	                                     DataType.UNITDATE);
         data.setDataId(arrData.getDataId());
         return data;
     }
@@ -804,7 +808,7 @@ public class ClientFactoryVO {
             case RECORD_REF:
                 return ArrItemRecordRefVO.newInstance(item, apFactory);
             case UNITDATE:
-            	return ArrItemUnitdateVO.newInstance(item);
+            	return ArrItemUnitdateVO.newInstance(item, packageTexts.requestLanguageTag());
             case UNITID:
             	return ArrItemUnitidVO.newInstance(item);
             case COORDINATES:
