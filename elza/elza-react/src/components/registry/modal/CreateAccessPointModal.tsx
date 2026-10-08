@@ -42,7 +42,12 @@ const messages = defineMessages({
     titleMessage: {
         id: 'accesspoint.create.titleMessage',
         defaultMessage:
-            'Nejprve vyberte podtřídu a oblast nové archivní entity. Dle vybrané podtřídy se zobrazí příslušné atributy. Po vyplnění hlavní části jména je možné archivní entitu založit.',
+            'Nejprve vyberte oblast a poté podtřídu nové archivní entity. Podle vybrané podtřídy se zobrazí příslušné atributy. Po vyplnění hlavní části jména je možné archivní entitu založit.',
+    },
+    titleMessageSingleScope: {
+        id: 'accesspoint.create.titleMessageSingleScope',
+        defaultMessage:
+            'Nejprve vyberte podtřídu nové archivní entity. Podle vybrané podtřídy se zobrazí příslušné atributy. Po vyplnění hlavní části jména je možné archivní entitu založit.',
     },
     addType: { id: 'registry.add.type', defaultMessage: 'Podtřída' },
     scopeClass: { id: 'registry.scopeClass', defaultMessage: 'Oblast' },
@@ -162,7 +167,11 @@ const CreateAccessPointModal: FC<CreateAccessPointModalProps> = ({ title, onClos
                                     </DialogTitle>
                                     <DialogContent className={styles.content}>
                                         <p>
-                                            <FormattedMessage {...messages.titleMessage} />
+                                            <FormattedMessage
+                                                {...(visibleScopes.length > 1
+                                                    ? messages.titleMessage
+                                                    : messages.titleMessageSingleScope)}
+                                            />
                                         </p>
                                         {visibleScopes.length > 1 && (
                                             <Field<number> name="scopeId">

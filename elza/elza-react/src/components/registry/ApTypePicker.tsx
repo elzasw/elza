@@ -16,11 +16,9 @@ const messages = defineMessages({
 });
 
 const useStyles = makeStyles({
-    option: {
-        display: 'block',
-    },
     group: {
         color: tokens.colorNeutralForeground3,
+        fontWeight: tokens.fontWeightSemibold,
     },
 });
 
@@ -123,7 +121,7 @@ export const ApTypePicker = ({
                         value={String(type.id)}
                         text={type.name}
                         disabled={!type.addRecord}
-                        className={type.addRecord ? styles.option : `${styles.option} ${styles.group}`}
+                        className={type.addRecord ? undefined : styles.group}
                     >
                         <span style={{ paddingLeft: `${depth * 16}px` }}>{type.name}</span>
                     </Option>
