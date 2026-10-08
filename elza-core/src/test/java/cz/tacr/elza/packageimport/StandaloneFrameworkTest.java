@@ -29,6 +29,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import cz.tacr.elza.ElzaCoreMain;
 import cz.tacr.elza.controller.AccessPointController;
+import cz.tacr.elza.controller.ApController;
+import cz.tacr.elza.controller.vo.ApTypeVO;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemStringVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemTextVO;
@@ -61,7 +63,7 @@ import cz.tacr.elza.repository.ItemTypeRepository;
 
 /**
  * An entity description framework without CZ_BASE: the test package {@code entity-standalone-test}
- * declares PERSON, PT_NAME, PT_BODY, PT_REL, NM_MAIN and NOTE itself, has no AUTO_ITEMS script and none
+ * declares PERSON (as the parent only), PERSON_INDIVIDUAL, PT_NAME, PT_BODY, PT_REL, NM_MAIN and NOTE itself, has no AUTO_ITEMS script and none
  * of the CAM item types. The core must create, index and validate its entities, create users from
  * tokens and institutions.
  *
@@ -91,6 +93,8 @@ public class StandaloneFrameworkTest {
     private AccessPointService accessPointService;
     @Autowired
     private AccessPointController accessPointController;
+    @Autowired
+    private ApController apController;
     @Autowired
     private RuleService ruleService;
     @Autowired
@@ -143,7 +147,13 @@ public class StandaloneFrameworkTest {
     void entityIsCreatedAndValidated() {
         ApScope scope = txGet(() -> scopeRepository.save(newScope("STD_SCOPE")));
         ApState state = txGet(() -> accessPointService.createAccessPoint(scope,
-                staticDataService.getData().getApTypeByCode("PERSON"), form("PT_NAME", string("NM_MAIN", "Novak"))));
+                staticDataService.getData().getApTypeByCode("PERSON_INDIVIDUAL"), form("PT_NAME", string("NM_MAIN", "Novak"))));
+        // the tree of the scope and of the installation: the person class as a root, its parent is not a member
+        for (List<ApTypeVO> tree : List.of(txGet(() -> apController.getApTypes(scope.getScopeId())),
+                                           txGet(() -> apController.getApTypes(null)))) {
+            assertEquals(List.of("PERSON_INDIVIDUAL"), tree.stream().map(ApTypeVO::getCode).toList());
+            assertTrue(tree.get(0).getChildren() == null || tree.get(0).getChildren().isEmpty());
+        }
         accessPointId = state.getAccessPointId();
 
         tx(() -> {
@@ -174,7 +184,7 @@ public class StandaloneFrameworkTest {
         txGet(() -> scopeRepository.save(newScope("STD_USERS")));
         OAuth2Properties properties = new OAuth2Properties();
         properties.setUserScope("STD_USERS");
-        properties.setUserApType("PERSON");
+        properties.setUserApType("PERSON_INDIVIDUAL");
         JwtUserDetailProvider provider = new JwtUserDetailProvider(null, txManager, userService, accessPointService,
                 itemTypeRepository, properties, null);
 

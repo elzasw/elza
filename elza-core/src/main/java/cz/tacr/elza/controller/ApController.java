@@ -309,9 +309,14 @@ public class ApController {
     public List<ApTypeVO> getApTypes(@RequestParam(value = "scopeId", required = false) final Integer scopeId) {
         List<ApType> allTypes = apTypeRepository.findAllOrderByNameAsc();
         if (scopeId == null) {
-            return apFactory.createTypesWithHierarchy(allTypes);
+            // the union of the trees of the entity rule sets
+            StaticDataProvider sdp = staticDataService.getData();
+            List<RuleSet> entityRuleSets = sdp.getRuleSets().stream()
+                    .filter(rs -> rs.getEntity().getRuleType() == RulRuleSet.RuleType.ENTITY)
+                    .toList();
+            return apFactory.createTypesOfRuleSets(allTypes, entityRuleSets);
         }
-        // classes the rule set of the scope offers, with their parents; assignable ones can be chosen
+        // the tree of the rule set of the scope: its members; assignable ones can be chosen
         ApScope scope = accessPointService.getApScope(scopeId);
         RuleSet ruleSet = scope.getRuleSetId() != null ? staticDataService.getData().getRuleSetById(scope.getRuleSetId())
                 : null;

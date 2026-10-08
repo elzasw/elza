@@ -15,6 +15,13 @@ between the installed and the new version; see :doc:`/03-upgrade`.
 Upcoming version
 ================
 
+* Change: Archival entities - the class tree of a scope shows the classes
+  its rule set lists; a class whose parent the rule set does not list is
+  shown as a root. CZ_BASE lists no classes, so Czech installations see no
+  change.
+* Fix: A rules package without dependencies that no other package depends
+  on was skipped by the import at startup; packages are now imported in the
+  order of their dependencies, independent ones by code.
 * Change: Rules packages - a specification may be declared by several
   packages with the same code, like item types; its texts follow the
   language of the user, and it belongs to the item types all declaring

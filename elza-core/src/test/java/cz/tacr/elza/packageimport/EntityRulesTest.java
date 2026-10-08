@@ -168,6 +168,8 @@ public class EntityRulesTest {
     @Autowired
     private ItemTypeSpecAssignRepository itemTypeSpecAssignRepository;
     @Autowired
+    private cz.tacr.elza.repository.ItemAptypeRepository itemAptypeRepository;
+    @Autowired
     private GroovyService groovyService;
     @Autowired
     private GroovyScriptService groovyScriptService;
@@ -359,10 +361,15 @@ public class EntityRulesTest {
                       Map.of(PackageService.ITEM_TYPE_XML, String.format(note, "TEXT", "true", "")));
         assertRefused(PackageCode.ITEM_TYPE_CONFLICT, Map.of(PackageService.ITEM_TYPE_XML, String.format(note, "TEXT",
                 "false", "<item-aptypes><item-aptype register-type=\"PERSON\"/></item-aptypes>")));
-        // RECORD_REF classes of a specification of CZ_BASE stay with CZ_BASE
+        // RECORD_REF classes of a specification of CZ_BASE stay with CZ_BASE: a declaration may repeat
+        // them (RT_RELATED in the test package), not state others
         assertRefused(PackageCode.ITEM_SPEC_CONFLICT, Map.of(PackageService.ITEM_SPEC_XML, "<item-specs>"
                 + "<item-spec code=\"NT_PSEUDONYM\"><name>Pseudonym</name><description>Pseudonym</description>"
                 + "<shortcut>Pseudonym</shortcut><item-type-assign code=\"NM_TYPE\"/>"
+                + "<item-aptypes><item-aptype register-type=\"PERSON\"/></item-aptypes></item-spec></item-specs>"));
+        assertRefused(PackageCode.ITEM_SPEC_CONFLICT, Map.of(PackageService.ITEM_SPEC_XML, "<item-specs>"
+                + "<item-spec code=\"RT_RELATED\"><name>Related</name><description>Related</description>"
+                + "<shortcut>Related</shortcut><item-type-assign code=\"REL_ENTITY\"/>"
                 + "<item-aptypes><item-aptype register-type=\"PERSON\"/></item-aptypes></item-spec></item-specs>"));
         // part type declarations: a code declared twice, an unknown child part
         assertRefused(Map.of(PackageService.PART_TYPE_XML, "<part-types>"
@@ -678,6 +685,10 @@ public class EntityRulesTest {
             assertEquals(Set.of("CZ_BASE", TEST_CODE),
                          declarations.stream().map(d -> d.getRulPackage().getCode()).collect(Collectors.toSet()));
             assertEquals("CZ_BASE", pseudonym.getPackage().getCode());
+            // the shared relation specification keeps CZ_BASE's classes of related entities
+            RulItemSpec related = itemSpecRepository.findOneByCode("RT_RELATED");
+            assertEquals("CZ_BASE", related.getPackage().getCode());
+            assertEquals(6, itemAptypeRepository.findByItemSpec(related).size());
             assertEquals("pseudonym", pseudonym.getName());
             assertEquals(TEST_CODE, itemSpecRepository.findOneByCode("ENT_NT_LOCAL").getPackage().getCode());
 
