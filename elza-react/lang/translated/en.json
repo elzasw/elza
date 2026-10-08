@@ -1,7 +1,11 @@
 {
   "accesspoint.create.titleMessage": {
-    "defaultMessage": "First choose the subclass and scope of the new archival entity. The relevant attributes are shown according to the chosen subclass. Once the main part of the name is filled in, the archival entity can be created.",
-    "srcHash": "o_2XettCsbEL"
+    "defaultMessage": "First choose the scope, then the subclass of the new archival entity. The attributes of the chosen subclass are then shown. Once the main part of the name is filled in, the archival entity can be created.",
+    "srcHash": "C_qjW7FTGhCD"
+  },
+  "accesspoint.create.titleMessageSingleScope": {
+    "defaultMessage": "First choose the subclass of the new archival entity. The attributes of the chosen subclass are then shown. Once the main part of the name is filled in, the archival entity can be created.",
+    "srcHash": "TPx_BX40PBUF"
   },
   "accesspoint.removeDuplicity": {
     "defaultMessage": "Remove the duplicate",
