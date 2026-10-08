@@ -80,11 +80,102 @@ An entity moved from a CAM scope to an ISAAR scope keeps its class when
 the class is a member of ISAAR's rule set (``PERSON_INDIVIDUAL``,
 ``FAMILY``, ``PARTY_GROUP``, ``GEO``, ``TERM``); CAM subclasses of
 ``PARTY_GROUP``, ``GEO`` and the fictional or non-human classes are not
-offered in ISAAR scopes. The kind of a CAM corporate body corresponds to
-a value of ``ISAAR_CORP_TYPE`` (for example ``COMPANY`` to "Business
-enterprise", ``CHURCH`` to "Religious body") and, for legal forms, of
-``ISAAR_LEGAL_STATUS``; the mapping is in
-:file:`docs/entity-framework-research.md`.
+offered in ISAAR scopes. What CAM expresses as a subclass, ISAAR_CPF
+expresses as the root class plus a value of its own item types; the
+table gives the correspondence used when an entity is translated between
+the frameworks (the ISAAR value is a specification of the item type named
+in the column head, its code is the item type code plus the value).
+
+.. list-table::
+   :header-rows: 1
+   :widths: 28 22 50
+
+   * - CAM class
+     - ISAAR_CPF class
+     - ISAAR_CPF values
+   * - ``REGION``
+     - ``PARTY_GROUP``
+     - ``ISAAR_CORP_TYPE`` TERRITORIAL; the territory itself is a ``GEO``
+       entity related by ``RT_GEOSCOPE``
+   * - ``PUBLIC_ADMINISTRATION``
+     - ``PARTY_GROUP``
+     - ``ISAAR_CORP_TYPE`` GOVERNMENT (JUDICIAL, LEGISLATIVE where it
+       fits); ``ISAAR_LEGAL_STATUS`` PUBLIC_LAW
+   * - ``ORGANIZATION``
+     - ``PARTY_GROUP``
+     - ``ISAAR_CORP_TYPE`` INTERNATIONAL (umbrella organisation)
+   * - ``ARMY``
+     - ``PARTY_GROUP``
+     - ``ISAAR_CORP_TYPE`` MILITARY
+   * - ``COMPANY``
+     - ``PARTY_GROUP``
+     - ``ISAAR_CORP_TYPE`` BUSINESS or FINANCE; ``ISAAR_LEGAL_STATUS``
+       COMPANY, PARTNERSHIP, COOPERATIVE or SOLE_TRADER
+   * - ``POLITICAL_PARTY``
+     - ``PARTY_GROUP``
+     - ``ISAAR_CORP_TYPE`` PARTY
+   * - ``CHURCH``
+     - ``PARTY_GROUP``
+     - ``ISAAR_CORP_TYPE`` RELIGIOUS; ``ISAAR_LEGAL_STATUS`` RELIGIOUS
+   * - ``HEALTH_AND_EDU``
+     - ``PARTY_GROUP``
+     - ``ISAAR_CORP_TYPE`` EDUCATION, HEALTH or CULTURE
+   * - ``CHARITY``
+     - ``PARTY_GROUP``
+     - ``ISAAR_CORP_TYPE`` FOUNDATION; ``ISAAR_LEGAL_STATUS`` FOUNDATION
+   * - ``GUILD``
+     - ``PARTY_GROUP``
+     - ``ISAAR_CORP_TYPE`` PROFESSIONAL
+   * - ``CLUB``
+     - ``PARTY_GROUP``
+     - ``ISAAR_CORP_TYPE`` ASSOCIATION; ``ISAAR_LEGAL_STATUS`` ASSOCIATION
+   * - ``PERSON_INDIVIDUAL``
+     - ``PERSON_INDIVIDUAL``
+     - same class
+   * - ``FICTIVE_INDIVIDUAL``, ``PERSON_BEING``, ``PERSON_ANIMAL``,
+       ``FICTIVE_DYNASTY``
+     - none
+     - not agents in ISAAR(CPF) and RiC; CAM only
+   * - ``FAMILY``
+     - ``FAMILY``
+     - ``ISAAR_FAMILY_TYPE`` FAMILY, DYNASTY, HOUSE or CLAN
+   * - ``FAMILY_BRANCH``
+     - ``FAMILY``
+     - ``ISAAR_FAMILY_TYPE`` BRANCH; the parent family related by
+       ``RT_GENUSMEMBER``
+   * - ``GEO_UNIT``, ``GEO_ADMIN_UNIT``
+     - ``GEO``
+     - ``ISAAR_PLACE_TYPE`` ADMINISTRATIVE, POPULATED or AREA
+   * - ``GEO_NATURE_RES``
+     - ``GEO``
+     - ``ISAAR_PLACE_TYPE`` AREA or VEGETATION
+   * - ``GEO_FORMATION``
+     - ``GEO``
+     - ``ISAAR_PLACE_TYPE`` ELEVATION
+   * - ``GEO_WATERS``
+     - ``GEO``
+     - ``ISAAR_PLACE_TYPE`` WATER
+   * - ``GEO_SEA_FORMATION``
+     - ``GEO``
+     - ``ISAAR_PLACE_TYPE`` UNDERSEA
+   * - ``GEO_SHAPES``
+     - ``GEO``
+     - ``ISAAR_PLACE_TYPE`` SPOT or ROAD
+   * - ``GEO_CLIMATIC_PHEN``, ``GEO_SPACE``
+     - ``GEO``
+     - no place type (outside the EAC-CPF list)
+   * - ``TERM_GENERAL``, ``TERM_TAXONOMY``
+     - ``TERM``
+     - ``ISAAR_CONCEPT_SCHEME`` SUBJECT, OCCUPATION, FUNCTION or OTHER
+   * - ``EVENT_*``, ``ARTWORK_*``
+     - none
+     - CAM only (an event of an entity's life is a ``PT_EVENT`` part)
+
+The translation from CAM to ISAAR is total; from ISAAR to CAM it works
+where the value has a CAM counterpart, otherwise the entity keeps the
+root class. Nothing in the code applies the table yet; it is the
+reference for a future EAC-CPF or CAM export of entities of the other
+framework.
 
 Installation without CZ_BASE
 ============================

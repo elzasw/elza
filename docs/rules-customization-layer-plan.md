@@ -26,8 +26,8 @@ answers to R2's questions.
    what a package writes follows the package, everything else carries no language - and needs no
    language on funds.
 
-Nothing blocks implementation. Decisions still open are listed in section 5 (R2 Q1–Q4) and in the A1
-record once it exists.
+Nothing blocks implementation. Decisions still open: the A1 record (section 7, four points for the
+user) and R2 Q1–Q4 (section 5).
 
 ## 1. Goals and principles
 
@@ -79,8 +79,8 @@ record once it exists.
 | L1 | a rule set sees only the specifications assigned by packages related to its own (`PackageRelations`, `RuleSet.getItemSpecs`, Drools models and `ItemTypeExtBuilder` built per rule set); `IsaarCpfPackageTest` languages, `PackageRelationsTest`; guide chapters 01 and 02 | `3290e86392` |
 | L2 (1-3) | unit dates: lexicon `unitdate/lexicon.json` and corpus `unitdate/cases.json` shared by server and client; `UnitDateConverter` and `components/shared/unitdate/parse.ts` built from the lexicon, tolerant parsing, rendering per language, English forms; request-time texts in the UI language; format help from `examples.ts`; `UnitDateCorpusTest`, `unitdate.test.ts` | `1582e2b6ee` |
 | 2c.5b-d | package `package-isaar-cpf` (ISAAR_CPF, version 1, English): shared classes, part types, 31 shared item types + 8 own, 121 specifications, rules and scripts, UI settings; distribution and test wiring; `IsaarCpfPackageTest` (alone, entities, export round trip, with CZ_BASE in both orders); guide chapter 04 | `cb38e0e182`, `222ce99cec` |
-| L1-lang | ISAAR_CPF `NM_LANG`: the ISO 639-2 list with English names (486 languages; `LNG_` + bibliographic code as in CAM, `qaa-qtz` left out; 142 shared with CZ_BASE); generator committed (`package-isaar-cpf/generator/gen_isaar.py` with the LoC list `iso639-2.txt`); `IsaarCpfPackageTest` (486 for ISAAR, 166 for CAM, `LNG_aar` not in CAM, `LNG_0as` not in ISAAR); guide chapters 02 and 04, release notes. ISAAR_CPF stays version 1 (not released) | (uncommitted) |
-| strict-xml | package files read strictly: the first unmarshalling event stops the import, the error names the file, the line and the element (`PackageUtils.convertXmlStreamToObject`; before, JAXB skipped unknown elements silently). Fixed in the packages: CZ_BASE 280 `<category>` without `<categories>` (no CZ_BASE specification ever had a category; the 166 languages are grouped now), `<hierarchical>` in `ap_type.xml` (CZ_BASE, ISAAR_CPF, two test packages, `EntityRulesTest`), `<view-order>` on specifications (ZP2015, simple-dev), unescaped `<Odkaz>` in a simple-dev description; versions unchanged (CZ_BASE 89, simple-dev 43 open; ZP2015 only lost ignored elements). `PackageXmlFilesTest` reads every file of the delivered and test packages | (uncommitted) |
+| L1-lang | ISAAR_CPF `NM_LANG`: the ISO 639-2 list with English names (486 languages; `LNG_` + bibliographic code as in CAM, `qaa-qtz` left out; 142 shared with CZ_BASE); generator committed (`package-isaar-cpf/generator/gen_isaar.py` with the LoC list `iso639-2.txt`); `IsaarCpfPackageTest` (486 for ISAAR, 166 for CAM, `LNG_aar` not in CAM, `LNG_0as` not in ISAAR); guide chapters 02 and 04, release notes. ISAAR_CPF stays version 1 (not released) | `ecd180c80d` |
+| strict-xml | package files read strictly: the first unmarshalling event stops the import, the error names the file, the line and the element (`PackageUtils.convertXmlStreamToObject`; before, JAXB skipped unknown elements silently). Fixed in the packages: CZ_BASE 280 `<category>` without `<categories>` (no CZ_BASE specification ever had a category; the 166 languages are grouped now), `<hierarchical>` in `ap_type.xml` (CZ_BASE, ISAAR_CPF, two test packages, `EntityRulesTest`), `<view-order>` on specifications (ZP2015, simple-dev), unescaped `<Odkaz>` in a simple-dev description; versions unchanged (CZ_BASE 89, simple-dev 43 open; ZP2015 only lost ignored elements). `PackageXmlFilesTest` reads every file of the delivered and test packages | `ecd180c80d` |
 
 **Decisions later steps build on.**
 - *Translations:* key `(entity_type, entity_code, field, language)`, rows owned by the contributing
