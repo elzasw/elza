@@ -2,12 +2,10 @@
     <!-- the root is declared as the parent only; the rule set offers the person class as a root -->
     <ap-type code="PERSON">
         <name>Person or being</name>
-        <hierarchical>false</hierarchical>
         <read-only>true</read-only>
     </ap-type>
     <ap-type code="PERSON_INDIVIDUAL" parent-ap-type="PERSON">
         <name>Person</name>
-        <hierarchical>false</hierarchical>
         <read-only>false</read-only>
     </ap-type>
 </ap-types>

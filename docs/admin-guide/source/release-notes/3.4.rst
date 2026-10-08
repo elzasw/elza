@@ -15,6 +15,13 @@ between the installed and the new version; see :doc:`/03-upgrade`.
 Upcoming version
 ================
 
+* Change: Rules packages - the files of a package are read strictly: an
+  unknown or misplaced element stops the import of the package (the error
+  names the file, the line and the element) instead of being skipped
+  silently. The packages delivered with ELZA are corrected. A package of
+  your own or of a third party that imported before may now be refused;
+  remove or correct the reported element and raise the version of the
+  package.
 * New: Rules packages - the package ISAAR_CPF describes archival entities
   (persons, families, corporate bodies, places, concepts) according to the
   international standard ISAAR(CPF), in English. It is delivered with ELZA
@@ -23,7 +30,9 @@ Upcoming version
   specifications with CZ_BASE where the meaning is the same, so an
   installation may run CZ_BASE, ISAAR_CPF or both; existing Czech
   installations see a new rule set offered for scopes and no change in
-  their CAM scopes.
+  their CAM scopes. The languages of a name are the ISO 639-2 list with
+  English names (486 languages), coded as in CZ_BASE (``LNG_`` plus the
+  bibliographic code).
 * Change: Archival entities - the class tree of a scope shows the classes
   its rule set lists; a class whose parent the rule set does not list is
   shown as a root. CZ_BASE lists no classes, so Czech installations see no
@@ -60,8 +69,8 @@ Upcoming version
   offered by the rules, forms and item-type listing of the rule set, even
   when a rule allows every specification of the item type. Installations
   with CZ_BASE and ZP2015 and their addons see no change; an ISAAR_CPF
-  entity offers the 16 languages of a name the package declares instead of
-  the 166 of CZ_BASE.
+  entity offers the languages of a name the package declares, a CAM entity
+  only CZ_BASE's 166.
 * Fix: Deleting a rules package that defines task types failed on a
   database constraint; its task types are now deleted with it.
 * Fix: In a newly created database the 20th archival entity scope or

@@ -731,7 +731,7 @@ public class EntityRulesTest {
     void aClassDeclaredWithAnotherParentIsRefused() throws Exception {
         assertRefused(PackageCode.AP_TYPE_CONFLICT, Map.of(APTypeUpdater.AP_TYPE_XML,
                 "<ap-types><ap-type code=\"PERSON\" parent-ap-type=\"DYNASTY\"><name>Person</name>"
-                + "<hierarchical>false</hierarchical><read-only>false</read-only></ap-type></ap-types>"));
+                + "<read-only>false</read-only></ap-type></ap-types>"));
     }
 
     /** Deleting the package removes its own class and keeps the shared one, declared by CZ_BASE only. */

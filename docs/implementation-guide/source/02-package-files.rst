@@ -8,7 +8,10 @@ optional unless marked *required*. A package leaves out the files it does
 not need; each file it contains needs at least its root element.
 
 The full set of elements is defined by the classes in
-``cz.tacr.elza.packageimport.xml`` of the ELZA sources; the packages
+``cz.tacr.elza.packageimport.xml`` of the ELZA sources. An element the
+classes do not define, or one in the wrong place (``category`` outside
+``categories``), stops the import with the file, the line and the element
+named; it is never skipped. The packages
 ``package-cz-base``, ``rules-cz-zp2015`` and ``rules-simple-dev`` in the
 sources are complete examples.
 
@@ -203,9 +206,9 @@ describes the entity.
   packages depending on it, both transitively. The rules of the rule set,
   the forms and the item-type listing of the rule set offer nothing else,
   even when a rule allows every specification of the item type. CZ_BASE
-  assigns 166 languages to ``NM_LANG`` and ISAAR_CPF 16 of them; a CAM
-  entity offers all 166, an ISAAR_CPF entity the 16, and an addon of
-  ISAAR_CPF may add more by declaring them. An assignment without any
+  assigns 166 languages to ``NM_LANG`` and ISAAR_CPF the 486 of ISO 639-2,
+  142 of them shared; a CAM entity offers CAM's 166, an ISAAR_CPF entity
+  the 486, and an addon of either package may add more by declaring them. An assignment without any
   declaration (data older than the declarations) is seen everywhere.
 - The package that created the specification owns it: its place among the
   specifications of an item type follows the owner's order and

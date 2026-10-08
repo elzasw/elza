@@ -257,7 +257,7 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
     }
 
     private void readTypeAndSpecDataFromZipFilePackage(Map<String, ByteArrayInputStream> streamMap) {
-        ItemTypes itemTypes = PackageUtils.convertXmlStreamToObject(ItemTypes.class, streamMap.get(ITEM_TYPE_XML));
+        ItemTypes itemTypes = PackageUtils.convertXmlStreamToObject(ItemTypes.class, streamMap.get(ITEM_TYPE_XML), ITEM_TYPE_XML);
         if (itemTypes != null) {
             for (ItemType itemType : itemTypes.getItemTypes()) {
                 if (!itemTypeMap.keySet().contains(itemType.getCode())) {
@@ -267,7 +267,7 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
                 }
             }
         }
-        ItemSpecs itemSpecs = PackageUtils.convertXmlStreamToObject(ItemSpecs.class, streamMap.get(ITEM_SPEC_XML));
+        ItemSpecs itemSpecs = PackageUtils.convertXmlStreamToObject(ItemSpecs.class, streamMap.get(ITEM_SPEC_XML), ITEM_SPEC_XML);
         if (itemSpecs != null) {
             for (ItemSpec itemSpec : itemSpecs.getItemSpecs()) {
                 if (!itemSpecCodes.contains(itemSpec.getCode())) {
@@ -282,7 +282,7 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
                 }
             }
         }
-        PartTypes partTypes = PackageUtils.convertXmlStreamToObject(PartTypes.class, streamMap.get(PART_TYPE_XML));
+        PartTypes partTypes = PackageUtils.convertXmlStreamToObject(PartTypes.class, streamMap.get(PART_TYPE_XML), PART_TYPE_XML);
         if (partTypes != null) {
             for (PartType partType : partTypes.getPartTypes()) {
                 if (!partTypeCodes.contains(partType.getCode())) {
@@ -331,7 +331,7 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
             }
             try (InputStream is = zipFile.getInputStream(zipEntry)) {
                 ByteArrayInputStream bais = new ByteArrayInputStream(IOUtils.toByteArray(is));
-                PackageInfo pkgZip = PackageUtils.convertXmlStreamToObject(PackageInfo.class, bais);
+                PackageInfo pkgZip = PackageUtils.convertXmlStreamToObject(PackageInfo.class, bais, path + "/" + PACKAGE_XML);
 
                 return new PackageInfoWrapper(pkgZip, path);
             }
