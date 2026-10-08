@@ -1,0 +1,3 @@
+!OutputFilterConfig
+restrictions:
+  - ZP2015_INTERNAL_NOTE

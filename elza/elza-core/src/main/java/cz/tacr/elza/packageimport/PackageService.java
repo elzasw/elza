@@ -158,6 +158,7 @@ import cz.tacr.elza.packageimport.xml.RuleSetXml;
 import cz.tacr.elza.packageimport.xml.RuleSets;
 import cz.tacr.elza.packageimport.xml.Setting;
 import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs;
+import cz.tacr.elza.packageimport.xml.SettingOutputDefaults;
 import cz.tacr.elza.packageimport.xml.Settings;
 import cz.tacr.elza.packageimport.xml.StructureDefinition;
 import cz.tacr.elza.packageimport.xml.StructureDefinitions;
@@ -1451,18 +1452,24 @@ public class PackageService {
         for (UISettings sett : allSettings) {
             if (rulPackage.getPackageId().equals(sett.getPackageId())) {
                 currSettings.add(sett);
-            } else {
+            } else if (sett.getPackageId() != null && sett.getUserId() == null) {
+                // settings of users and settings saved locally are not owned by a package
                 otherSettings.add(sett);
             }
         }
 
         for (UISettings sett : newSettings) {
-            // find same settings in other packages (throws exception when found)
+            // find same settings in other packages (throws exception when found);
+            // a layered setting is kept per package and resolved when read
+            boolean layered = UISettings.SettingsType.isLayered(sett.getSettingsType());
             for (UISettings otherSett : otherSettings) {
-                if (sett.isSameSettings(otherSett)) {
+                if (!layered && sett.isSameSettings(otherSett)) {
                     throw new SystemException("Settings already exists", PackageCode.OTHER_PACKAGE)
                             .set("UISettingsId", otherSett.getSettingsId())
-                            .set("settingsType", otherSett.getSettingsType());
+                            .set("settingsType", otherSett.getSettingsType())
+                            .set("entityType", otherSett.getEntityType())
+                            .set("entityId", otherSett.getEntityId())
+                            .set("otherPackageId", otherSett.getPackageId());
                 }
             }
 
@@ -1504,6 +1511,9 @@ public class PackageService {
                 Validate.notNull(ruleSet, "Ruleset is null for settings: %1$s", sett);
 
                 entityId = ruleSet.getRuleSetId();
+                if (sett instanceof SettingOutputDefaults outputDefaults) {
+                    checkOutputFilterExists(outputDefaults.outputFilterCode(), ruleSet);
+                }
             } else if (uiSett.getEntityType() == EntityType.ITEM_TYPE) {
                 SettingFavoriteItemSpecs specs = (SettingFavoriteItemSpecs) sett;
                 String specsCode = specs.getCode();
@@ -1523,6 +1533,18 @@ public class PackageService {
         }
 
         return result;
+    }
+
+    /**
+     * The default output filter has to be an output filter of the rule set (of this or another
+     * package); output filters of the package are imported before its settings.
+     */
+    private void checkOutputFilterExists(String code, RulRuleSet ruleSet) {
+        if (code != null && outputFilterRepository.findByRuleSetIdAndCode(ruleSet.getRuleSetId(), code) == null) {
+            throw new BusinessException("Výstupní filtr s code=" + code + " nenalezen v pravidlech " + ruleSet.getCode(),
+                    PackageCode.CODE_NOT_FOUND)
+                    .set("code", code).set("ruleSet", ruleSet.getCode()).set("file", SETTING_XML);
+        }
     }
 
     /**
@@ -2294,7 +2316,8 @@ public class PackageService {
         ActionsXml actionsXml = ruc
                 .convertXmlStreamToObject(ActionsXml.class, PACKAGE_ACTIONS_XML);
 
-        List<RulAction> dbActions = packageActionsRepository.findByRulPackage(rulPackage);
+        // only actions of this rule set: the other rule sets of the package have their own context
+        List<RulAction> dbActions = packageActionsRepository.findByRulPackageAndRuleSet(rulPackage, ruc.getRulSet());
         List<RulAction> rulPackageActionsNew = new ArrayList<>();
 
         if (actionsXml != null && !CollectionUtils.isEmpty(actionsXml.getPackageActions())) {
@@ -2440,7 +2463,8 @@ public class PackageService {
         OutputFiltersXml outputFiltersXml = ruc
                 .convertXmlStreamToObject(OutputFiltersXml.class, PACKAGE_OUTPUT_FILTERS_XML);
 
-        List<RulOutputFilter> dbOutputFilters = outputFilterRepository.findByRulPackage(rulPackage);
+        // only filters of this rule set: the other rule sets of the package have their own context
+        List<RulOutputFilter> dbOutputFilters = outputFilterRepository.findByRulPackageAndRuleSet(rulPackage, ruc.getRulSet());
         List<RulOutputFilter> rulPackageOutputFiltersNew = new ArrayList<>();
 
         if (outputFiltersXml != null && !CollectionUtils.isEmpty(outputFiltersXml.getPackageOutputFilters())) {
@@ -2491,7 +2515,8 @@ public class PackageService {
         ExportFiltersXml exportFiltersXml = ruc
                 .convertXmlStreamToObject(ExportFiltersXml.class, PACKAGE_EXPORT_FILTERS_XML);
 
-        List<RulExportFilter> dbExportFilters = exportFilterRepository.findByRulPackage(rulPackage);
+        // only filters of this rule set: the other rule sets of the package have their own context
+        List<RulExportFilter> dbExportFilters = exportFilterRepository.findByRulPackageAndRuleSet(rulPackage, ruc.getRulSet());
         List<RulExportFilter> rulPackageExportFiltersNew = new ArrayList<>();
 
         if (exportFiltersXml != null && !CollectionUtils.isEmpty(exportFiltersXml.getPackageExportFilters())) {

@@ -221,9 +221,10 @@ set:
 
    Placing an own item type among the item types of the customized package
    (form groups, tree title, grid columns) - requires composition of UI
-   settings from several packages, not available yet: a rule-set
-   :file:`ui_setting.xml` in an addon is refused when the customized package
-   already defines the same setting.
+   settings from several packages, not available yet for these settings: a
+   rule-set :file:`ui_setting.xml` in an addon is refused when the
+   customized package already defines the same setting. Only
+   ``output-defaults`` is composed so far (:ref:`output-defaults`).
 
 Rules for a part of a fund
 ==========================
@@ -268,7 +269,7 @@ allows it again where the extension is active.
 .. todo::
 
    Not yet possible in an addon: placing own item types among the item types
-   of the customized package; contributing UI settings for the customized
-   rule set; extending a structured type of another package; removing a
+   of the customized package; contributing UI settings other than
+   ``output-defaults`` for the customized rule set; extending a structured type of another package; removing a
    scenario of a new unit of description; renaming codes. See the
    development plan :file:`docs/rules-customization-layer-plan.md`.
