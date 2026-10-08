@@ -352,7 +352,18 @@ public class SettingsService {
      * @return winning setting, null when no package states it
      */
     public UISettings resolveGlobal(SettingsType settingsType, EntityType entityType, Integer entityId) {
-        List<UISettings> candidates = getGlobalSettings(settingsType.toString(), entityType, entityId);
+        return resolve(getGlobalSettings(settingsType.toString(), entityType, entityId));
+    }
+
+    /**
+     * Global setting of a layered type not bound to an entity, see
+     * {@link #resolveGlobal(SettingsType, EntityType, Integer)}.
+     */
+    public UISettings resolveGlobal(SettingsType settingsType) {
+        return resolve(getGlobalSettings(settingsType));
+    }
+
+    private UISettings resolve(List<UISettings> candidates) {
         if (candidates.isEmpty()) {
             return null;
         }

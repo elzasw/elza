@@ -31,8 +31,10 @@ public class UISettingsTest {
     }
 
     @Test
-    void onlyOutputDefaultsIsLayered() {
+    void layeredTypes() {
         assertTrue(SettingsType.isLayered("OUTPUT_DEFAULTS"));
+        // stated globally by ZP2015 and SIMPLE-DEV, which may be installed together
+        assertTrue(SettingsType.isLayered("DAO_LEVEL_IMPORT"));
         assertFalse(SettingsType.isLayered("FUND_VIEW"));
         assertFalse(SettingsType.isLayered("STRUCT_TYPE_ZP2015_PACKET"));
     }
