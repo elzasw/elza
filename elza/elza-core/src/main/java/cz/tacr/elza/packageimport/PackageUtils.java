@@ -198,6 +198,18 @@ public class PackageUtils {
             }
         }
 
+        /**
+         * Adds a vertex without edges (a package without dependencies that no package depends on); the
+         * order of vertices without edges between them is the order of their addition.
+         */
+        public void addVertex(T vv) {
+            Integer v = map.computeIfAbsent(vv, k -> map.size());
+            if (map.size() > V) {
+                throw new IllegalStateException("Graph has only " + V + " vertex");
+            }
+            reverseMap.put(v, vv);
+        }
+
         public void addEdge(T vv, T ww) {
             Integer v = map.computeIfAbsent(vv, k -> map.size());
             Integer w = map.computeIfAbsent(ww, k -> map.size());

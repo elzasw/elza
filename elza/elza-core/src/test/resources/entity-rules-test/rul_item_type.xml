@@ -11,6 +11,11 @@
         <shortcut>Form of name</shortcut>
         <use-specification>true</use-specification>
     </item-type>
+    <item-type code="REL_ENTITY" data-type="RECORD_REF">
+        <name>Related entity</name>
+        <shortcut>Related entity</shortcut>
+        <use-specification>true</use-specification>
+    </item-type>
     <item-type code="ENT_LOCAL_ID" data-type="STRING">
         <name>Local identifier</name>
         <shortcut>Local id</shortcut>

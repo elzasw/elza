@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.Nullable;
@@ -842,18 +843,21 @@ public class ApFactory {
     }
 
     /**
-     * Classes offered by a rule set, with their parents up to the root; {@code addRecord} says
-     * whether the class can be assigned in the rule set.
+     * Classes offered by a rule set as a tree of its members: the parent of a member is its nearest member
+     * ancestor, a member without one is a root; {@code addRecord} says whether the class can be assigned
+     * in the rule set. A rule set without members offers all classes with their parents.
      *
      * @param ruleSet
      *            entity rule set; null for all classes, assignable when not read-only
      */
     public List<ApTypeVO> createTypesWithHierarchy(Collection<ApType> types, @Nullable RuleSet ruleSet) {
+        Predicate<ApType> member = null;
         if (ruleSet != null) {
             StaticDataProvider sdp = staticDataService.getData();
             types = types.stream().filter(t -> ruleSet.offersApType(sdp.getApTypeById(t.getApTypeId()))).toList();
+            member = ruleSet.hasApTypeMembers() ? ruleSet::offersApType : null;
         }
-        List<ApTypeVO> roots = createTypesWithHierarchyAll(types);
+        List<ApTypeVO> roots = createTypesWithHierarchyAll(types, member);
         if (ruleSet != null) {
             setAssignable(roots, ruleSet, staticDataService.getData());
             sortByMemberOrder(roots, ruleSet.getApTypeOrder());
@@ -862,8 +866,23 @@ public class ApFactory {
     }
 
     /**
-     * Orders the class tree as the rule set lists its classes: a class not listed (a parent of
-     * members) takes the place of its first listed descendant; classes at one level that are not
+     * Classes of an installation as the union of the trees of its entity rule sets (search without a
+     * scope): a rule set without members contributes all classes.
+     */
+    public List<ApTypeVO> createTypesOfRuleSets(Collection<ApType> types, Collection<RuleSet> ruleSets) {
+        List<RuleSet> withMembers = ruleSets.stream().filter(RuleSet::hasApTypeMembers).toList();
+        if (ruleSets.isEmpty() || withMembers.size() < ruleSets.size()) {
+            return createTypesWithHierarchyAll(types, null);
+        }
+        StaticDataProvider sdp = staticDataService.getData();
+        Predicate<ApType> member = t -> withMembers.stream().anyMatch(rs -> rs.offersApType(t));
+        List<ApType> offered = types.stream().filter(t -> member.test(sdp.getApTypeById(t.getApTypeId()))).toList();
+        return createTypesWithHierarchyAll(offered, member);
+    }
+
+    /**
+     * Orders the class tree as the rule set lists its classes: a class not placed (a grouping listed by
+     * another package) takes the place of its first placed descendant; classes at one level that are not
      * placed keep their order.
      */
     private static void sortByMemberOrder(final List<ApTypeVO> roots, final List<Integer> order) {
@@ -912,6 +931,15 @@ public class ApFactory {
     }
 
     private List<ApTypeVO> createTypesWithHierarchyAll(Collection<ApType> types) {
+        return createTypesWithHierarchyAll(types, null);
+    }
+
+    /**
+     * @param member
+     *            classes shown; the parent of a class is its nearest ancestor that is shown. Null shows
+     *            all ancestors.
+     */
+    private List<ApTypeVO> createTypesWithHierarchyAll(Collection<ApType> types, @Nullable Predicate<ApType> member) {
         if (CollectionUtils.isEmpty(types)) {
             return Collections.emptyList();
         }
@@ -921,7 +949,7 @@ public class ApFactory {
         List<ApTypeVO> rootsVO = new ArrayList<>();
 
         for (ApType type : types) {
-            createTypeHierarchy(type, typeIdVOMap, rootsVO, staticData);
+            createTypeHierarchy(type, typeIdVOMap, rootsVO, staticData, member);
         }
 
         rootsVO.sort(Comparator.comparing(ApTypeVO::getId));
@@ -929,12 +957,13 @@ public class ApFactory {
     }
 
     /**
-     * Creates type with his parent hierarchy up to root.
+     * Creates type with its parent hierarchy up to the root, or up to the nearest shown ancestor.
      */
     private ApTypeVO createTypeHierarchy(ApType type,
                                          Map<Integer, ApTypeVO> typeIdVOMap,
                                          List<ApTypeVO> rootsVO,
-                                         StaticDataProvider staticData) {
+                                         StaticDataProvider staticData,
+                                         @Nullable Predicate<ApType> member) {
         ApTypeVO typeVO = typeIdVOMap.get(type.getApTypeId());
         if (typeVO != null) {
             return typeVO;
@@ -944,9 +973,12 @@ public class ApFactory {
         typeVO.setName(packageTexts.name(TranslationEntityType.AP_TYPE, type.getCode(), typeVO.getName()));
         typeIdVOMap.put(typeVO.getId(), typeVO);
 
-        if (type.getParentApTypeId() != null) {
-            ApType parent = staticData.getApTypeById(type.getParentApTypeId());
-            ApTypeVO parentVO = createTypeHierarchy(parent, typeIdVOMap, rootsVO, staticData);
+        ApType parent = type.getParentApTypeId() != null ? staticData.getApTypeById(type.getParentApTypeId()) : null;
+        while (parent != null && member != null && !member.test(parent)) {
+            parent = parent.getParentApTypeId() != null ? staticData.getApTypeById(parent.getParentApTypeId()) : null;
+        }
+        if (parent != null) {
+            ApTypeVO parentVO = createTypeHierarchy(parent, typeIdVOMap, rootsVO, staticData, member);
             parentVO.addChild(typeVO);
             // TODO: parent names is needed/used on client?
             typeVO.addParent(parentVO.getName());

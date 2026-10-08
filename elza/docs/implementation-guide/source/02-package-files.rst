@@ -137,8 +137,9 @@ the same element.
 - The package that created the item type owns it; its place among the item
   types and the other values (``string-length-limit``, ``mask``,
   ``display-type``, ``can-be-ordered``) are those of the owner. A declaration
-  of another package takes no place in the order and may not state
-  ``item-aptypes``.
+  of another package takes no place in the order; it may state
+  ``item-aptypes`` only equal to the owner's (so that the same file works
+  whether or not the package is the owner).
 - Each package states its own ``name``, ``shortcut`` and ``description`` in
   its language; the texts resolve by language as the names of classes.
 - When the owner no longer declares the item type, the package winning by
@@ -200,7 +201,7 @@ describes the entity.
 - The package that created the specification owns it: its place among the
   specifications of an item type follows the owner's order and
   ``view-after``; the category is the owner's. A declaration of another
-  package may not state ``item-aptypes``.
+  package may state ``item-aptypes`` only equal to the owner's.
 - A specification is removed with its last declaration, an assignment with
   the last declaration assigning it; both only while no description or
   entity uses them.
@@ -468,6 +469,14 @@ can only have classes the rule set of the scope offers, and only an
 assignable class can be chosen for an entity, when it is created or its
 class or scope is changed. Without this file the rule set offers all
 classes, assignable unless ``read-only`` in :file:`ap_type.xml`.
+
+The class tree of a scope shows the members of its rule set: the parent of
+a member is its nearest ancestor that is a member, a member without one is
+a root. A grouping (a read-only root such as ``PERSON``) is shown only when
+the rule set lists it; a rule set may list a subclass alone and show it as a
+root. The class tree of the installation (search without a scope) is the
+union of the trees of the entity rule sets; a rule set without members
+contributes all classes.
 
 .. code-block:: xml
 

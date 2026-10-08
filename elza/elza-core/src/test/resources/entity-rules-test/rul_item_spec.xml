@@ -6,6 +6,21 @@
         <shortcut>Pseudonym</shortcut>
         <item-type-assign code="NM_TYPE"/>
     </item-spec>
+    <!-- declared by CZ_BASE too, with the same classes of related entities -->
+    <item-spec code="RT_RELATED">
+        <name>Related entity</name>
+        <description>Associated entity</description>
+        <shortcut>Related</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="GEO"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+            <item-aptype register-type="ARTWORK"/>
+            <item-aptype register-type="EVENT"/>
+        </item-aptypes>
+    </item-spec>
     <!-- an own specification on the shared item type -->
     <item-spec code="ENT_NT_LOCAL">
         <name>Local form</name>

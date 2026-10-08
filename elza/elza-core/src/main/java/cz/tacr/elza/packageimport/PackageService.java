@@ -902,9 +902,15 @@ public class PackageService {
         }
 
 
-        // řazení balíčků podle závislostí mezi sebou
+        // řazení balíčků podle závislostí mezi sebou; packages without dependencies that nothing depends on
+        // are vertices too (otherwise they would never be imported), independent packages in the order of
+        // their codes (CZ_BASE before ISAAR_CPF: a scope without a rule set gets the first entity rule set)
         PackageUtils.Graph<String> g = new PackageUtils.Graph<>(latestVersionMap.size());
-        latestVersionMap.values().forEach(p -> {
+        List<PackageInfoWrapper> packagesSorted = latestVersionMap.values().stream()
+                .sorted(Comparator.comparing(PackageInfoWrapper::getCode))
+                .toList();
+        packagesSorted.forEach(p -> g.addVertex(p.getCode()));
+        packagesSorted.forEach(p -> {
             if (p.getDependencies() != null) {
                 p.getDependencies().forEach(d -> g.addEdge(p.getCode(), d.getCode()));
             }

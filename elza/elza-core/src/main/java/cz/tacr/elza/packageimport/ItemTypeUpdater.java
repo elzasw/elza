@@ -20,6 +20,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.annotation.PostConstruct;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -388,8 +389,8 @@ public class ItemTypeUpdater {
                 boolean foreign = rulItemSpec != null
                         && !rulItemSpec.getPackage().getPackageId().equals(rulPackage.getPackageId());
                 if (foreign) {
-                    // RECORD_REF classes of a specification stay with its owner
-                    if (CollectionUtils.isNotEmpty(xmlItemSpec.getItemAptypes())) {
+                    // RECORD_REF classes of a specification stay with its owner; a declaration may repeat them
+                    if (!sameApTypes(xmlItemSpec.getItemAptypes(), itemAptypeRepository.findByItemSpec(rulItemSpec))) {
                         throw new BusinessException("Specification " + itemSpecCode
                                 + " is owned by another package, its classes cannot be declared",
                                 PackageCode.ITEM_SPEC_CONFLICT)
@@ -705,7 +706,8 @@ public class ItemTypeUpdater {
                 if (isForeign(itemTypeCode, rulPackage)) {
                     RulItemType foreignType = allItemTypesByCode.get(itemTypeCode);
                     checkAgreement(itemType, newDataType, foreignType);
-                    if (CollectionUtils.isNotEmpty(itemType.getItemAptypes())) {
+                    // RECORD_REF classes stay with the owner; a declaration may repeat them
+                    if (!sameApTypes(itemType.getItemAptypes(), itemAptypeRepository.findByItemType(foreignType))) {
                         throw conflict(itemTypeCode, "item-aptypes", foreignType);
                     }
                     declare(foreignType, rulPackage, oldDeclarations.remove(itemTypeCode), itemType.getName(),
@@ -1298,6 +1300,16 @@ public class ItemTypeUpdater {
         }
 
         return modified;
+    }
+
+    /**
+     * The RECORD_REF classes of a declaration equal those stored for the owner (both may be empty).
+     */
+    private static boolean sameApTypes(@Nullable List<ItemAptype> declared, List<RulItemAptype> stored) {
+        Set<String> declaredCodes = declared == null ? Set.of()
+                : declared.stream().map(ItemAptype::getRegisterType).collect(Collectors.toSet());
+        Set<String> storedCodes = stored.stream().map(a -> a.getApType().getCode()).collect(Collectors.toSet());
+        return declaredCodes.equals(storedCodes);
     }
 
     private static String descriptionOf(ItemType itemType) {
