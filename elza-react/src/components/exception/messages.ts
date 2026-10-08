@@ -106,6 +106,8 @@ export const exceptionMessages = defineMessages({
     "exception.pkg.PART_TYPE_IN_USE": { id: "exception.pkg.PART_TYPE_IN_USE", defaultMessage: "Typ části „{codes}“ nelze odstranit, používá jej {count} částí entit" },
     "exception.pkg.ITEM_TYPE_CONFLICT": { id: "exception.pkg.ITEM_TYPE_CONFLICT", defaultMessage: "Typ prvku „{code}“ deklaruje balíček {otherPackageCode} s jinou hodnotou {attribute}" },
     "exception.pkg.ITEM_TYPE_IN_USE": { id: "exception.pkg.ITEM_TYPE_IN_USE", defaultMessage: "Typy prvků „{codes}“ nelze odstranit, používají je popisy nebo entity" },
+    "exception.pkg.ITEM_SPEC_CONFLICT": { id: "exception.pkg.ITEM_SPEC_CONFLICT", defaultMessage: "Specifikace „{code}“ patří balíčku {otherPackageCode}, její třídy entit nelze deklarovat" },
+    "exception.pkg.ITEM_SPEC_IN_USE": { id: "exception.pkg.ITEM_SPEC_IN_USE", defaultMessage: "Specifikace „{codes}“ nelze odstranit, používají je popisy nebo entity ({count})" },
     "exception.pkg.INVALID_ENTITY_RULE": { id: "exception.pkg.INVALID_ENTITY_RULE", defaultMessage: "Neplatná pravidla entit v souboru „{file}“: {reason}" },
     "exception.pkg.INVALID_TRANSLATION": { id: "exception.pkg.INVALID_TRANSLATION", defaultMessage: "Neplatný překlad „{key}“ v souboru „{file}“: {reason}" },
     "exception.pkg.MIN_DEPENDENCY": { id: "exception.pkg.MIN_DEPENDENCY", defaultMessage: "Není splněna minimální verze balíčku {code}: {version}." },

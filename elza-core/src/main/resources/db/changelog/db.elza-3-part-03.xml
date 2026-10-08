@@ -1235,4 +1235,88 @@
         </sql>
     </changeSet>
 
+    <changeSet id="20261008160000" author="ppy">
+        <!-- A specification may be declared by several packages: rul_item_spec stays one row per code;
+             each declaring package states its texts (in the package's language) and category, and the
+             item types it assigns the specification to. rul_item_type_spec_assign holds the union of
+             the assignments. -->
+        <createTable tableName="rul_item_spec_declaration">
+            <column name="item_spec_declaration_id" type="int">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="item_spec_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_item_spec_declaration_item_spec"
+                             referencedTableName="rul_item_spec" referencedColumnNames="item_spec_id"/>
+            </column>
+            <column name="package_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_item_spec_declaration_package"
+                             referencedTableName="rul_package" referencedColumnNames="package_id"/>
+            </column>
+            <column name="name" type="nvarchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="shortcut" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="${type.text}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="category" type="nvarchar(1000)"/>
+        </createTable>
+        <addUniqueConstraint tableName="rul_item_spec_declaration" columnNames="item_spec_id, package_id"
+                             constraintName="ux_rul_item_spec_declaration"/>
+        <createTable tableName="rul_item_spec_assign_declaration">
+            <column name="item_spec_assign_declaration_id" type="int">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="item_spec_declaration_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_item_spec_assign_decl_declaration"
+                             referencedTableName="rul_item_spec_declaration"
+                             referencedColumnNames="item_spec_declaration_id"/>
+            </column>
+            <column name="item_type_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_item_spec_assign_decl_item_type"
+                             referencedTableName="rul_item_type" referencedColumnNames="item_type_id"/>
+            </column>
+            <column name="position" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="view_after_spec_code" type="nvarchar(50)"/>
+        </createTable>
+        <addUniqueConstraint tableName="rul_item_spec_assign_declaration"
+                             columnNames="item_spec_declaration_id, item_type_id"
+                             constraintName="ux_rul_item_spec_assign_declaration"/>
+        <!-- every existing specification and assignment is declared by the package of the specification -->
+        <sql>
+            INSERT INTO rul_item_spec_declaration
+                (item_spec_declaration_id, item_spec_id, package_id, name, shortcut, description, category)
+            SELECT item_spec_id, item_spec_id, package_id, name, shortcut, description, category
+            FROM rul_item_spec
+        </sql>
+        <sql>
+            INSERT INTO rul_item_spec_assign_declaration
+                (item_spec_assign_declaration_id, item_spec_declaration_id, item_type_id, position,
+                 view_after_spec_code)
+            SELECT item_type_spec_assign_id, item_spec_id, item_type_id, item_spec_view_order,
+                   view_after_spec_code
+            FROM rul_item_type_spec_assign
+        </sql>
+        <insert tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="rul_item_spec_declaration|item_spec_declaration_id"/>
+            <column name="next_val" value="0"/>
+        </insert>
+        <insert tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="rul_item_spec_assign_declaration|item_spec_assign_declaration_id"/>
+            <column name="next_val" value="0"/>
+        </insert>
+        <sql>
+            UPDATE db_hibernate_sequences SET next_val =
+                (SELECT coalesce(max(item_spec_declaration_id), 0) + 20 FROM rul_item_spec_declaration)
+            WHERE sequence_name = 'rul_item_spec_declaration|item_spec_declaration_id';
+            UPDATE db_hibernate_sequences SET next_val =
+                (SELECT coalesce(max(item_spec_assign_declaration_id), 0) + 20 FROM rul_item_spec_assign_declaration)
+            WHERE sequence_name = 'rul_item_spec_assign_declaration|item_spec_assign_declaration_id';
+        </sql>
+    </changeSet>
+
 </databaseChangeLog>

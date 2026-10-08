@@ -6,6 +6,11 @@
         <description>General note</description>
         <use-specification>false</use-specification>
     </item-type>
+    <item-type code="NM_TYPE" data-type="ENUM">
+        <name>Form of name</name>
+        <shortcut>Form of name</shortcut>
+        <use-specification>true</use-specification>
+    </item-type>
     <item-type code="ENT_LOCAL_ID" data-type="STRING">
         <name>Local identifier</name>
         <shortcut>Local id</shortcut>

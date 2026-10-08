@@ -10,6 +10,8 @@ import java.util.function.Function;
 import cz.tacr.elza.core.data.PackageTranslations;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.RulApTypeDeclaration;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemSpecDeclaration;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeDeclaration;
 import cz.tacr.elza.domain.RulPackage;
@@ -18,7 +20,7 @@ import cz.tacr.elza.domain.RulPartTypeDeclaration;
 import cz.tacr.elza.domain.RulPartType;
 
 /**
- * Precedence of declarations of one definition (entity class, part type, item type) by several packages, and
+ * Precedence of declarations of one definition (entity class, part type, item type, specification) by several packages, and
  * the summary of the declarations in the defining row.
  *
  * <p>Declarations are ordered as translations are: the package deeper in dependency order first,
@@ -106,11 +108,7 @@ public class PackageDeclarations {
      */
     public void summarize(final RulItemType itemType, final Collection<RulItemTypeDeclaration> declarations) {
         List<RulItemTypeDeclaration> ordered = ordered(declarations, RulItemTypeDeclaration::getRulPackage);
-        Integer ownerId = itemType.getRulPackage() != null ? itemType.getRulPackage().getPackageId() : null;
-        RulItemTypeDeclaration owner = ordered.stream()
-                .filter(d -> d.getPackageId().equals(ownerId))
-                .findFirst()
-                .orElse(ordered.get(0));
+        RulItemTypeDeclaration owner = owner(itemType.getRulPackage(), ordered, RulItemTypeDeclaration::getRulPackage);
         itemType.setRulPackage(owner.getRulPackage());
         itemType.setCanBeOrdered(owner.getCanBeOrdered());
         itemType.setStringLengthLimit(owner.getStringLengthLimit());
@@ -119,5 +117,38 @@ public class PackageDeclarations {
         itemType.setName(named.getName());
         itemType.setShortcut(named.getShortcut());
         itemType.setDescription(named.getDescription());
+    }
+
+    /**
+     * Sets owner, texts and category of the specification from its declarations, with the owner rule of
+     * item types: the package that created the specification stays its owner while it declares it (the
+     * owner decides its place among the packages in the order of specifications), the category comes from
+     * the owner's declaration, the texts from the first declaration in the language of the installation.
+     *
+     * @param declarations
+     *            all declarations of the specification, not empty
+     */
+    public void summarize(final RulItemSpec itemSpec, final Collection<RulItemSpecDeclaration> declarations) {
+        List<RulItemSpecDeclaration> ordered = ordered(declarations, RulItemSpecDeclaration::getRulPackage);
+        RulItemSpecDeclaration owner = owner(itemSpec.getPackage(), ordered, RulItemSpecDeclaration::getRulPackage);
+        itemSpec.setPackage(owner.getRulPackage());
+        itemSpec.setCategory(owner.getCategory());
+        RulItemSpecDeclaration named = named(ordered, RulItemSpecDeclaration::getRulPackage);
+        itemSpec.setName(named.getName());
+        itemSpec.setShortcut(named.getShortcut());
+        itemSpec.setDescription(named.getDescription());
+    }
+
+    /**
+     * The declaration of the current owner, or the winning declaration when the owner no longer declares
+     * the definition.
+     */
+    private static <T> T owner(final RulPackage currentOwner, final List<T> ordered,
+                               final Function<T, RulPackage> rulPackage) {
+        Integer ownerId = currentOwner != null ? currentOwner.getPackageId() : null;
+        return ordered.stream()
+                .filter(d -> rulPackage.apply(d).getPackageId().equals(ownerId))
+                .findFirst()
+                .orElse(ordered.get(0));
     }
 }

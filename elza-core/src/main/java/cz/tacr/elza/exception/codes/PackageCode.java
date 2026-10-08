@@ -95,4 +95,14 @@ public enum PackageCode implements ErrorCode {
      * An item type to be removed is used by descriptions or entities.
      */
     ITEM_TYPE_IN_USE,
+
+    /**
+     * A declaration of a specification of another package states RECORD_REF classes.
+     */
+    ITEM_SPEC_CONFLICT,
+
+    /**
+     * A specification or its assignment to an item type to be removed is used by descriptions or entities.
+     */
+    ITEM_SPEC_IN_USE,
 }

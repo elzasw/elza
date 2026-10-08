@@ -31,6 +31,7 @@ import cz.tacr.elza.domain.RulRuleSetPartType;
 import cz.tacr.elza.domain.RulApTypeDeclaration;
 import cz.tacr.elza.domain.RulPartTypeDeclaration;
 import cz.tacr.elza.domain.RulItemTypeDeclaration;
+import cz.tacr.elza.domain.RulItemSpecDeclaration;
 import cz.tacr.elza.domain.RulExtensionRule;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
@@ -398,7 +399,8 @@ public class StaticDataProvider {
         List<RulApTypeDeclaration> apTypeDeclarations = service.apTypeDeclarationRepository.findAll();
         initTranslations(service.translationRepository, service.packageDependencyRepository, apTypeDeclarations,
                          service.partTypeDeclarationRepository.findAll(),
-                         service.itemTypeDeclarationRepository.findAll());
+                         service.itemTypeDeclarationRepository.findAll(),
+                         service.itemSpecDeclarationRepository.findAll());
         initRuleSetApTypes(service.ruleSetApTypeRepository, service.ruleSetPartTypeRepository,
                            service.packageDependencyRepository, apTypeDeclarations);
         self = this;
@@ -685,7 +687,8 @@ public class StaticDataProvider {
                                   PackageDependencyRepository packageDependencyRepository,
                                   List<RulApTypeDeclaration> apTypeDeclarations,
                                   List<RulPartTypeDeclaration> partTypeDeclarations,
-                                  List<RulItemTypeDeclaration> itemTypeDeclarations) {
+                                  List<RulItemTypeDeclaration> itemTypeDeclarations,
+                                  List<RulItemSpecDeclaration> itemSpecDeclarations) {
         List<RulTranslation> rows = new ArrayList<>(translationRepository.findAllFetchPackageAndLanguage());
         for (RulApTypeDeclaration declaration : apTypeDeclarations) {
             addDeclaredText(rows, declaration.getPackageId(), TranslationEntityType.AP_TYPE,
@@ -704,6 +707,15 @@ public class StaticDataProvider {
             addDeclaredText(rows, declaration.getPackageId(), TranslationEntityType.ITEM_TYPE, code,
                             TranslationEntityType.SHORTCUT, declaration.getShortcut());
             addDeclaredText(rows, declaration.getPackageId(), TranslationEntityType.ITEM_TYPE, code,
+                            TranslationEntityType.DESCRIPTION, declaration.getDescription());
+        }
+        for (RulItemSpecDeclaration declaration : itemSpecDeclarations) {
+            String code = itemSpecIdMap.get(declaration.getItemSpecId()).getCode();
+            addDeclaredText(rows, declaration.getPackageId(), TranslationEntityType.ITEM_SPEC, code,
+                            TranslationEntityType.NAME, declaration.getName());
+            addDeclaredText(rows, declaration.getPackageId(), TranslationEntityType.ITEM_SPEC, code,
+                            TranslationEntityType.SHORTCUT, declaration.getShortcut());
+            addDeclaredText(rows, declaration.getPackageId(), TranslationEntityType.ITEM_SPEC, code,
                             TranslationEntityType.DESCRIPTION, declaration.getDescription());
         }
         this.translations = PackageTranslations.build(rows, packages, packageDependencyRepository.findAll());

@@ -17,6 +17,12 @@ import cz.tacr.elza.domain.RulItemType;
 @Repository
 public interface ApRevItemRepository extends JpaRepository<ApRevItem, Integer> {
 
+    @Query("SELECT COUNT(i) FROM ApRevItem i WHERE i.itemSpec = ?1")
+    long countBySpec(cz.tacr.elza.domain.RulItemSpec itemSpec);
+
+    @Query("SELECT COUNT(i) FROM ApRevItem i WHERE i.itemType = ?1 AND i.itemSpec = ?2")
+    long countByTypeAndSpec(RulItemType itemType, cz.tacr.elza.domain.RulItemSpec itemSpec);
+
     @Query("SELECT COUNT(i) FROM ApRevItem i WHERE i.itemType = ?1")
     long countByType(RulItemType itemType);
 

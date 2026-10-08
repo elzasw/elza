@@ -15,6 +15,14 @@ between the installed and the new version; see :doc:`/03-upgrade`.
 Upcoming version
 ================
 
+* Change: Rules packages - a specification may be declared by several
+  packages with the same code, like item types; its texts follow the
+  language of the user, and it belongs to the item types all declaring
+  packages assign it to. A specification or its assignment to an item type
+  used by descriptions or entities can no longer be removed by a new
+  version of its package (before, the import failed on a database
+  constraint). The package export writes each specification once, also
+  specifications without an assignment.
 * Fix: Deleting a rules package that defines task types failed on a
   database constraint; its task types are now deleted with it.
 * Fix: In a newly created database the 20th archival entity scope or

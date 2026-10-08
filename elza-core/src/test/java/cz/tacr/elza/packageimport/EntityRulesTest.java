@@ -90,6 +90,13 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeDeclaration;
 import cz.tacr.elza.repository.ItemTypeDeclarationRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.domain.ArrDataNull;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemSpecDeclaration;
+import cz.tacr.elza.domain.RulItemTypeSpecAssign;
+import cz.tacr.elza.repository.ItemSpecDeclarationRepository;
+import cz.tacr.elza.repository.ItemSpecRepository;
+import cz.tacr.elza.repository.ItemTypeSpecAssignRepository;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.RulPartTypeDeclaration;
 import cz.tacr.elza.repository.PartTypeDeclarationRepository;
@@ -154,6 +161,12 @@ public class EntityRulesTest {
     private ItemTypeRepository itemTypeRepository;
     @Autowired
     private ItemTypeDeclarationRepository itemTypeDeclarationRepository;
+    @Autowired
+    private ItemSpecRepository itemSpecRepository;
+    @Autowired
+    private ItemSpecDeclarationRepository itemSpecDeclarationRepository;
+    @Autowired
+    private ItemTypeSpecAssignRepository itemTypeSpecAssignRepository;
     @Autowired
     private GroovyService groovyService;
     @Autowired
@@ -286,6 +299,13 @@ public class EntityRulesTest {
                     && !itemTypes.contains("NOTE_INTERNAL") && !itemTypes.contains("Poznámka"), itemTypes);
             assertTrue(itemTypes.indexOf("ENT_LOCAL_ID") < itemTypes.indexOf("\"NOTE\""), itemTypes);
 
+            // own specification and the declaration of NT_PSEUDONYM of CZ_BASE, with the package's texts
+            String itemSpecs = new String(zipFile.getInputStream(zipFile.getEntry(PackageService.ITEM_SPEC_XML))
+                    .readAllBytes(), StandardCharsets.UTF_8);
+            assertTrue(itemSpecs.contains("<name>Pseudonym</name>") && itemSpecs.contains("ENT_NT_LOCAL")
+                    && itemSpecs.contains("<item-type-assign code=\"NM_TYPE\"/>")
+                    && !itemSpecs.contains("NT_OFFICIAL"), itemSpecs);
+
             ZipEntry partList = zipFile.getEntry(RULE_SET_DIR + PackageService.RULE_SET_PART_TYPE_XML);
             assertNotNull(partList);
             String partListXml = new String(zipFile.getInputStream(partList).readAllBytes(), StandardCharsets.UTF_8);
@@ -339,6 +359,11 @@ public class EntityRulesTest {
                       Map.of(PackageService.ITEM_TYPE_XML, String.format(note, "TEXT", "true", "")));
         assertRefused(PackageCode.ITEM_TYPE_CONFLICT, Map.of(PackageService.ITEM_TYPE_XML, String.format(note, "TEXT",
                 "false", "<item-aptypes><item-aptype register-type=\"PERSON\"/></item-aptypes>")));
+        // RECORD_REF classes of a specification of CZ_BASE stay with CZ_BASE
+        assertRefused(PackageCode.ITEM_SPEC_CONFLICT, Map.of(PackageService.ITEM_SPEC_XML, "<item-specs>"
+                + "<item-spec code=\"NT_PSEUDONYM\"><name>Pseudonym</name><description>Pseudonym</description>"
+                + "<shortcut>Pseudonym</shortcut><item-type-assign code=\"NM_TYPE\"/>"
+                + "<item-aptypes><item-aptype register-type=\"PERSON\"/></item-aptypes></item-spec></item-specs>"));
         // part type declarations: a code declared twice, an unknown child part
         assertRefused(Map.of(PackageService.PART_TYPE_XML, "<part-types>"
                 + "<part-type code=\"PT_ENT_NOTE\"><name>Note</name></part-type>"
@@ -346,6 +371,31 @@ public class EntityRulesTest {
         assertRefused(Map.of(PackageService.PART_TYPE_XML, "<part-types>"
                 + "<part-type code=\"PT_ENT_NOTE\"><name>Note</name><child_part>PT_NO_SUCH</child_part>"
                 + "</part-type></part-types>"));
+    }
+
+    /** A specification used by entities cannot be removed by a new version of its package. */
+    @Test
+    @Order(15)
+    void aUsedSpecificationCannotBeRemoved() throws Exception {
+        tx(() -> {
+            ApChange change = accessPointDataService.createChange(ApChange.Type.AP_CREATE);
+            ApState state = accessPointService.createAccessPoint(scope(scopeIds.get(1)), type("PERSON_INDIVIDUAL"),
+                                                                 ApState.StateApproval.NEW, change, null);
+            ApPart part = partService.createPart(partTypeRepository.findByCode("PT_NAME"), state.getAccessPoint(),
+                                                 change, null);
+            ArrDataNull data = new ArrDataNull();
+            data.setDataType(DataType.ENUM.getEntity());
+            accessPointItemService.createItemWithSave(part, data, itemTypeRepository.findOneByCode("NM_TYPE"),
+                                                      itemSpecRepository.findOneByCode("ENT_NT_LOCAL"), change,
+                                                      new ArrayList<>(), null, null);
+        });
+        assertRefused(PackageCode.ITEM_SPEC_IN_USE, Map.of(PackageService.ITEM_SPEC_XML, "<item-specs>"
+                + "<item-spec code=\"NT_PSEUDONYM\"><name>Pseudonym</name><description>Pseudonym</description>"
+                + "<shortcut>Pseudonym</shortcut><item-type-assign code=\"NM_TYPE\"/></item-spec></item-specs>"));
+        // the specification stays, but its used assignment to NM_TYPE would be removed
+        assertRefused(PackageCode.ITEM_SPEC_IN_USE, Map.of(PackageService.ITEM_SPEC_XML, "<item-specs>"
+                + "<item-spec code=\"ENT_NT_LOCAL\"><name>Local form</name><description>Local</description>"
+                + "<shortcut>Local form</shortcut></item-spec></item-specs>"));
     }
 
     /** An item type used by entities cannot be removed by a new version of its package. */
@@ -614,6 +664,46 @@ public class EntityRulesTest {
         });
     }
 
+    /**
+     * NT_PSEUDONYM is declared by CZ_BASE (Czech) and by the test package (English): one specification
+     * owned by CZ_BASE; the specifications of NM_TYPE are the union of both packages, CZ_BASE's first in
+     * their order, the own specification of the test package last.
+     */
+    @Test
+    @Order(12)
+    void aSpecificationDeclaredByTwoPackagesExistsOnce() {
+        tx(() -> {
+            RulItemSpec pseudonym = itemSpecRepository.findOneByCode("NT_PSEUDONYM");
+            List<RulItemSpecDeclaration> declarations = itemSpecDeclarationRepository.findByItemSpecs(List.of(pseudonym));
+            assertEquals(Set.of("CZ_BASE", TEST_CODE),
+                         declarations.stream().map(d -> d.getRulPackage().getCode()).collect(Collectors.toSet()));
+            assertEquals("CZ_BASE", pseudonym.getPackage().getCode());
+            assertEquals("pseudonym", pseudonym.getName());
+            assertEquals(TEST_CODE, itemSpecRepository.findOneByCode("ENT_NT_LOCAL").getPackage().getCode());
+
+            List<String> specs = nameTypeSpecs();
+            assertEquals(33, specs.size(), specs.toString());
+            assertEquals(1, specs.stream().filter("NT_PSEUDONYM"::equals).count());
+            assertEquals("NT_OFFICIAL", specs.get(0));
+            assertEquals("ENT_NT_LOCAL", specs.get(specs.size() - 1));
+
+            StaticDataProvider sdp = staticDataService.getData();
+            assertEquals("Pseudonym", packageTexts.text(TranslationEntityType.ITEM_SPEC, "NT_PSEUDONYM",
+                                                        TranslationEntityType.NAME, "source",
+                                                        sdp.getSysLanguageByTag("en")));
+            assertEquals("pseudonym", packageTexts.text(TranslationEntityType.ITEM_SPEC, "NT_PSEUDONYM",
+                                                        TranslationEntityType.NAME, "source",
+                                                        sdp.getSysLanguageByTag("cs")));
+        });
+    }
+
+    private List<String> nameTypeSpecs() {
+        return itemTypeSpecAssignRepository.findByItemTypeSorted(itemTypeRepository.findOneByCode("NM_TYPE")).stream()
+                .map(RulItemTypeSpecAssign::getItemSpec)
+                .map(RulItemSpec::getCode)
+                .toList();
+    }
+
     private List<String> partCodes(List<Integer> partTypeIds) {
         StaticDataProvider sdp = staticDataService.getData();
         return partTypeIds.stream().map(id -> sdp.getPartTypeById(id).getCode()).toList();
@@ -673,6 +763,16 @@ public class EntityRulesTest {
                     .map(d -> d.getRulPackage().getCode()).toList());
             assertEquals("Poznámka", note.getName());
             assertEquals(null, itemTypeRepository.findOneByCode("ENT_LOCAL_ID"));
+
+            // the shared specification stays with CZ_BASE, the own one and its assignment are removed
+            RulItemSpec pseudonym = itemSpecRepository.findOneByCode("NT_PSEUDONYM");
+            assertEquals(List.of("CZ_BASE"), itemSpecDeclarationRepository.findByItemSpecs(List.of(pseudonym)).stream()
+                    .map(d -> d.getRulPackage().getCode()).toList());
+            assertEquals("pseudonym", pseudonym.getName());
+            assertEquals(null, itemSpecRepository.findOneByCode("ENT_NT_LOCAL"));
+            List<String> specs = nameTypeSpecs();
+            assertEquals(32, specs.size(), specs.toString());
+            assertTrue(specs.contains("NT_PSEUDONYM"));
         });
     }
 

@@ -165,7 +165,8 @@ other item types with ``use-specification``.
    </item-specs>
 
 ``code`` (required, attribute)
-   Code of the specification, unique across all packages.
+   Code of the specification; another package may declare the same code
+   (see below).
 
 ``name``, ``description``, ``shortcut`` (required)
    Texts shown to archivists.
@@ -183,6 +184,29 @@ other item types with ``use-specification``.
 ``item-aptypes/item-aptype``
    For specifications of ``RECORD_REF`` item types: entity types that may be
    referenced with this specification.
+
+**Specifications shared by packages.** Several packages may declare a
+specification with the same code - for example an international entity
+description declaring the name type ``NT_PSEUDONYM`` of CZ_BASE. The
+specification then exists once, and stored values use it whatever package
+describes the entity.
+
+- Each package states its own ``name``, ``shortcut``, ``description`` and
+  ``categories``; the texts resolve by language as the names of classes.
+- Each package states the item types it assigns the specification to; the
+  specification belongs to every item type any declaration assigns it to.
+  A package may assign its own or a shared specification to its own or a
+  shared item type.
+- The package that created the specification owns it: its place among the
+  specifications of an item type follows the owner's order and
+  ``view-after``; the category is the owner's. A declaration of another
+  package may not state ``item-aptypes``.
+- A specification is removed with its last declaration, an assignment with
+  the last declaration assigning it; both only while no description or
+  entity uses them.
+- The export writes the package's declarations, each specification once
+  with its assignments: its own specifications first, then the
+  declarations of specifications of other packages.
 
 ap_type.xml
 ===========

@@ -33,6 +33,12 @@ public interface ItemRepository extends JpaRepository<ArrItem, Integer>, DeleteF
     @Query("SELECT i FROM arr_item i WHERE i.descItemObjectId = :descItemObjectId AND i.createChange < :lockChange AND (i.deleteChange > :lockChange OR i.deleteChange IS NULL)")
     ArrItem findByItemObjectIdAndChange(@Param("descItemObjectId") int descItemObjectId, @Param("lockChange") ArrChange lockChange); 
 
+    @Query("SELECT COUNT(i) FROM arr_item i WHERE i.itemSpec = ?1")
+    long countBySpec(cz.tacr.elza.domain.RulItemSpec itemSpec);
+
+    @Query("SELECT COUNT(i) FROM arr_item i WHERE i.itemType = ?1 AND i.itemSpec = ?2")
+    long countByTypeAndSpec(RulItemType itemType, cz.tacr.elza.domain.RulItemSpec itemSpec);
+
     @Query("SELECT COUNT(i) FROM arr_item i WHERE i.itemType = ?1")
     long countByType(RulItemType itemType);
 
