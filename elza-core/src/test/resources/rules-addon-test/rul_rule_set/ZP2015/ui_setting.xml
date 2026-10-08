@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<settings xmlns:ns7="output-defaults">
+    <!-- layered setting: replaces the default output filter of ZP2015 by the addon's own -->
+    <output-defaults settings-type="OUTPUT_DEFAULTS" entity-type="RULE">
+        <ns7:output-filter code="ADT_FILTER"/>
+    </output-defaults>
+</settings>

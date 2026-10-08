@@ -653,6 +653,37 @@ names of parts of archival entities are built by ``INDEX`` entity rules
 (:file:`rul_entity_rule.xml`), not by structured types named by part
 codes as before.
 
+.. _output-defaults:
+
+rul_rule_set/<RS>/ui_setting.xml: output-defaults
+=================================================
+
+Values preselected in the dialog of a new output of a fund of the rule set.
+Today it is the output filter; the dialog offers only the output filters of
+the fund's rule set.
+
+.. code-block:: xml
+
+   <settings xmlns:ns7="output-defaults">
+       <output-defaults settings-type="OUTPUT_DEFAULTS" entity-type="RULE">
+           <ns7:output-filter code="ZP_ACCESS_RESTRICT"/>
+       </output-defaults>
+   </settings>
+
+``output-filter`` (optional) - ``code`` (required, attribute) of an output
+filter of the rule set (:file:`rul_package_output_filters.xml` of this or
+another package). The import refuses an unknown code (``CODE_NOT_FOUND``).
+Without ``output-filter`` no filter is preselected.
+
+**Several packages, one setting.** Unlike other UI settings, this one may be
+stated for the same rule set by several packages: each keeps its own, and
+the package that depends on the other wins (packages without a dependency
+between them are ordered by code). A customization replaces the default
+filter of the package it builds on, or removes it with an empty
+``<output-defaults settings-type="OUTPUT_DEFAULTS" entity-type="RULE"/>``.
+Deleting the customization brings the default of the customized package
+back.
+
 .. _translation-files:
 
 translations/<lang>.xml

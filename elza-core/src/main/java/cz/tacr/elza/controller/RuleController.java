@@ -10,9 +10,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -79,6 +81,7 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.packageimport.xml.SettingGridView;
+import cz.tacr.elza.packageimport.xml.SettingOutputDefaults;
 import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.ExportFilterRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -226,7 +229,17 @@ public class RuleController {
     @RequestMapping(value = "/outputFilters", method = RequestMethod.GET)
     public List<RulOutputFilterVO> getOutputFilters() {
         List<RulOutputFilter> outputFilters = outputFilterRepository.findAll();
-        return factoryVo.createOutputFilterList(outputFilters);
+        List<RulOutputFilterVO> result = factoryVo.createOutputFilterList(outputFilters);
+        // default filter code per rule set, null when the rule set has none
+        Map<Integer, Optional<String>> defaultCodes = new HashMap<>();
+        for (RulOutputFilterVO vo : result) {
+            Optional<String> defaultCode = defaultCodes.computeIfAbsent(vo.getRuleSetId(), ruleSetId -> {
+                SettingOutputDefaults defaults = settingsService.getOutputDefaults(ruleSetId);
+                return Optional.ofNullable(defaults != null ? defaults.outputFilterCode() : null);
+            });
+            vo.setDefaultFilter(defaultCode.map(c -> c.equals(vo.getCode())).orElse(false));
+        }
+        return result;
     }
 
     @RequestMapping(value = "/exportFilters", method = RequestMethod.GET)

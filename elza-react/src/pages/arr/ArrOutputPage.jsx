@@ -225,6 +225,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
                 this.props.intl.formatMessage(arrPageMessages.outputTitleAdd),
                 <AddOutputForm
                     create
+                    ruleSetId={fund.activeVersion.ruleSetId}
                     onSubmitForm={data => {
                         return this.props.dispatch(fundOutputCreate(fund.versionId, data));
                     }}
