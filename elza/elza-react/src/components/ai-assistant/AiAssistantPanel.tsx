@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Button, Textarea, Spinner, ProgressBar, makeStyles, mergeClasses, tokens, Badge, Tooltip, Menu, MenuTrigger, MenuPopover, MenuList, MenuItem, MenuItemCheckbox, MenuItemRadio, MenuDivider } from "@fluentui/react-components";
-import { SendRegular, FolderRegular, DocumentRegular, PersonRegular, AppsRegular, AddRegular, SparkleRegular, HistoryRegular, ChevronLeftRegular, ChevronRightRegular, SettingsRegular, ChevronDownRegular, MoneyRegular } from "@fluentui/react-icons";
+import { Button, Textarea, Spinner, ProgressBar, makeStyles, mergeClasses, tokens, Badge, Tooltip, Menu, MenuTrigger, MenuPopover, MenuList, MenuItem, MenuItemCheckbox, MenuItemRadio, MenuDivider, Dialog, DialogSurface, DialogBody, DialogTitle, DialogContent, DialogActions, Field, Input } from "@fluentui/react-components";
+import { SendRegular, FolderRegular, DocumentRegular, PersonRegular, AppsRegular, AddRegular, SparkleRegular, HistoryRegular, ChevronLeftRegular, ChevronRightRegular, SettingsRegular, ChevronDownRegular, MoneyRegular, StopRegular, CopyRegular, CheckmarkRegular, MoreHorizontalRegular, EditRegular, DeleteRegular } from "@fluentui/react-icons";
+import { AiConversation, AiContextType, AiDisplayBlock, AiTaskType } from "elza-api";
 import { useUserSettings } from "contexts/user";
-import type { AiContextSegmentLabel } from "./useCurrentAiContext";
+import type { AiContext, AiContextSegmentLabel } from "./useCurrentAiContext";
 import { FormattedMessage, useIntl, IntlShape } from "react-intl";
 import { CollapsibleDragWindow } from "components/shared/dialog/FluentModalDialog";
 import { AiDisplayBlocks } from "./AiDisplayBlocks";
@@ -36,6 +37,103 @@ function formatDuration(intl: IntlShape, milliseconds: number): string {
     if (minutes > 0) parts.push(unit(minutes, "minute"));
     if (seconds > 0 || parts.length === 0) parts.push(unit(seconds, "second"));
     return intl.formatList(parts, { type: "unit" });
+}
+
+// Which panel context fills a declared parameter type (mirrors the server's
+// AiContextResolver.resolvePrimary); a type outside this map is assumed
+// fillable — the server decides, the panel only avoids obviously doomed runs.
+const PARAMETER_CONTEXT: Record<string, AiContextType[]> = {
+    "elza.archivalDescription": [AiContextType.Node],
+    "elza.archivalEntity": [AiContextType.Accesspoint],
+    "elza.fundInfo": [AiContextType.Fund, AiContextType.Node],
+};
+// Parameter types the server synthesizes without any context.
+const SYNTHESIZED_PARAMETERS = new Set(["elza.revisionConfig"]);
+
+/** `reason` names the missing context when the task is not runnable. */
+interface TaskAvailability {
+    runnable: boolean;
+    reason?: MessageDescriptor;
+}
+
+/**
+ * Whether a task can run in the current context: every required parameter and
+ * every alternatives group (provider protocol 0.16.0 — exactly one of its
+ * members) must be fillable from what the panel sends. The reason names what
+ * is missing, so the user learns "this needs an open unit of description"
+ * instead of starting a task that fails.
+ */
+function taskAvailability(task: AiTaskType, context: AiContext | null): TaskAvailability {
+    const present = new Set<AiContextType>((context?.objects ?? []).map(object => object.type));
+    const fillable = (type: string) =>
+        SYNTHESIZED_PARAMETERS.has(type)
+        || !(type in PARAMETER_CONTEXT)
+        || PARAMETER_CONTEXT[type].some(contextType => present.has(contextType));
+    const groups = new Map<string, string[]>();
+    for (const parameter of task.parameters ?? []) {
+        if (parameter.alternativeGroup) {
+            groups.set(parameter.alternativeGroup, [...(groups.get(parameter.alternativeGroup) ?? []), parameter.type]);
+        } else if (parameter.required && !fillable(parameter.type)) {
+            return { runnable: false, reason: missingContextReason([parameter.type]) };
+        }
+    }
+    for (const types of groups.values()) {
+        if (!types.some(fillable)) {
+            return { runnable: false, reason: missingContextReason(types) };
+        }
+    }
+    return { runnable: true };
+}
+
+function missingContextReason(types: string[]): MessageDescriptor {
+    const node = types.includes("elza.archivalDescription");
+    const entity = types.includes("elza.archivalEntity");
+    if (node && entity) return aiAssistantMessages.taskNeedsNodeOrEntity;
+    if (node) return aiAssistantMessages.taskNeedsNode;
+    if (entity) return aiAssistantMessages.taskNeedsEntity;
+    if (types.includes("elza.fundInfo")) return aiAssistantMessages.taskNeedsFund;
+    return aiAssistantMessages.taskNeedsContext;
+}
+
+/** The answer as plain Markdown — its text/markdown blocks, for the clipboard. */
+function answerText(blocks: AiDisplayBlock[] | undefined): string {
+    return (blocks ?? [])
+        .filter(block => block.type === "TEXT" || block.type === "MARKDOWN")
+        .map(block => (block as { content?: string }).content ?? "")
+        .filter(content => content.length > 0)
+        .join("\n\n");
+}
+
+/** A copy-to-clipboard icon button with a short "copied" confirmation. */
+function CopyButton({ text, className }: { text: string; className?: string }) {
+    const intl = useIntl();
+    const [copied, setCopied] = useState(false);
+    useEffect(() => {
+        if (!copied) return;
+        const timer = window.setTimeout(() => setCopied(false), 1500);
+        return () => window.clearTimeout(timer);
+    }, [copied]);
+    const copy = async () => {
+        try {
+            await navigator.clipboard.writeText(text);
+            setCopied(true);
+        } catch {
+            // Clipboard access denied (insecure context) — nothing to show.
+        }
+    };
+    const label = intl.formatMessage(copied ? aiAssistantMessages.copied : aiAssistantMessages.copy);
+    return (
+        <Tooltip content={label} relationship="label">
+            <Button
+                className={className}
+                appearance="subtle"
+                size="small"
+                icon={copied ? <CheckmarkRegular /> : <CopyRegular />}
+                onClick={copy}
+                aria-label={label}
+            />
+        </Tooltip>
+    );
 }
 
 const contextSegmentIcons: Record<AiContextSegmentLabel, JSX.Element> = {
@@ -141,6 +239,50 @@ const useStyles = makeStyles({
     conversationItemActive: {
         backgroundColor: tokens.colorNeutralBackground1Selected,
         fontWeight: tokens.fontWeightSemibold,
+    },
+    conversationRow: {
+        display: "flex",
+        alignItems: "center",
+        flexShrink: 0,
+        minWidth: 0,
+    },
+    conversationTitle: {
+        flexGrow: 1,
+        minWidth: 0,
+    },
+    conversationMenuButton: {
+        flexShrink: 0,
+        minWidth: "24px",
+    },
+    quickRow: {
+        display: "flex",
+        flexWrap: "wrap",
+        flexShrink: 0,
+        gap: tokens.spacingHorizontalXS,
+    },
+    quickBubbleDisabled: {
+        color: tokens.colorNeutralForegroundDisabled,
+        borderTopColor: tokens.colorNeutralStrokeDisabled,
+        borderRightColor: tokens.colorNeutralStrokeDisabled,
+        borderBottomColor: tokens.colorNeutralStrokeDisabled,
+        borderLeftColor: tokens.colorNeutralStrokeDisabled,
+        cursor: "not-allowed",
+        ":hover": {
+            backgroundColor: tokens.colorNeutralBackground1,
+        },
+    },
+    messageActions: {
+        display: "flex",
+        justifyContent: "flex-end",
+        alignSelf: "center",
+        width: "100%",
+        maxWidth: "900px",
+        marginTop: `calc(-1 * ${tokens.spacingVerticalS})`,
+    },
+    answerActions: {
+        display: "flex",
+        gap: tokens.spacingHorizontalXXS,
+        marginTop: tokens.spacingVerticalXS,
     },
     body: {
         display: "flex",
@@ -319,21 +461,50 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
     const context = useCurrentAiContext();
     const contextRef = useRef(context);
     contextRef.current = context;
-    const { requests, pending, error, send, activeConversationId, openConversation, newConversation, replaceRequest } = useAiConversation({
+    const {
+        requests, pending, error, send, cancel, activeConversationId, openConversation, newConversation,
+        replaceRequest, renameConversation, deleteConversation,
+    } = useAiConversation({
         externalSystemCode,
         getContext: () => contextRef.current,
     });
     const { taskTypes, profiles } = useAiProviderInfo(externalSystemCode);
-    // The first task type is the default (used by the free-text input); the rest get quick-action bubbles.
+    // The first task type is the default (used by the free-text input); the rest
+    // are the quick actions — always at hand above the composer (not only in an
+    // empty conversation), so the same action runs level after level in one
+    // thread: each run re-sends the context the panel shows at that moment.
     const defaultTaskType = taskTypes[0]?.code;
     const quickTasks = taskTypes.slice(1);
+
+    // Conversation list housekeeping (rename / delete).
+    const [renameTarget, setRenameTarget] = useState<AiConversation | null>(null);
+    const [renameValue, setRenameValue] = useState("");
+    const [deleteTarget, setDeleteTarget] = useState<AiConversation | null>(null);
 
     // The conversation's CURRENT mode — a follow-up may switch the task type
     // (the "fix this finding" handoff), so the badge tracks the last exchange.
     const currentTaskType = requests[requests.length - 1]?.taskType;
     const currentTask = currentTaskType ? taskTypes.find(task => task.code === currentTaskType) : undefined;
     const currentTaskLabel = currentTask?.name || currentTaskType;
-    const { conversations } = useAiConversationList(activeConversationId);
+    const { conversations, reload: reloadConversations } = useAiConversationList(activeConversationId);
+
+    const submitRename = async () => {
+        if (!renameTarget) return;
+        const title = renameValue.trim();
+        if (!title) return;
+        if (await renameConversation(renameTarget.id, title)) {
+            await reloadConversations();
+        }
+        setRenameTarget(null);
+    };
+
+    const submitDelete = async () => {
+        if (!deleteTarget) return;
+        if (await deleteConversation(deleteTarget.id)) {
+            await reloadConversations();
+        }
+        setDeleteTarget(null);
+    };
     const [draft, setDraft] = useState("");
     // The pick is remembered per AI external system across restarts (localStorage);
     // undefined = follow the provider default. A remembered profile the provider no
@@ -486,18 +657,47 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
                     {sidebarOpen && (
                         <div className={styles.conversationList}>
                             {conversations.map(conversation => (
-                                <button
-                                    key={conversation.id}
-                                    type="button"
-                                    className={mergeClasses(
-                                        styles.conversationItem,
-                                        conversation.id === activeConversationId && styles.conversationItemActive,
-                                    )}
-                                    onClick={() => handleOpenConversation(conversation.id)}
-                                    title={conversation.title}
-                                >
-                                    {conversation.title}
-                                </button>
+                                <div key={conversation.id} className={styles.conversationRow}>
+                                    <button
+                                        type="button"
+                                        className={mergeClasses(
+                                            styles.conversationItem,
+                                            styles.conversationTitle,
+                                            conversation.id === activeConversationId && styles.conversationItemActive,
+                                        )}
+                                        onClick={() => handleOpenConversation(conversation.id)}
+                                        title={conversation.title}
+                                    >
+                                        {conversation.title}
+                                    </button>
+                                    <Menu>
+                                        <MenuTrigger disableButtonEnhancement>
+                                            <Button
+                                                className={styles.conversationMenuButton}
+                                                appearance="subtle"
+                                                size="small"
+                                                icon={<MoreHorizontalRegular />}
+                                                aria-label={intl.formatMessage(aiAssistantMessages.conversationMenu)}
+                                            />
+                                        </MenuTrigger>
+                                        <MenuPopover>
+                                            <MenuList>
+                                                <MenuItem
+                                                    icon={<EditRegular />}
+                                                    onClick={() => {
+                                                        setRenameValue(conversation.title ?? "");
+                                                        setRenameTarget(conversation);
+                                                    }}
+                                                >
+                                                    <FormattedMessage {...aiAssistantMessages.rename} />
+                                                </MenuItem>
+                                                <MenuItem icon={<DeleteRegular />} onClick={() => setDeleteTarget(conversation)}>
+                                                    <FormattedMessage {...aiAssistantMessages.delete} />
+                                                </MenuItem>
+                                            </MenuList>
+                                        </MenuPopover>
+                                    </Menu>
+                                </div>
                             ))}
                         </div>
                     )}
@@ -519,24 +719,6 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
                     {!hasMessages && !pending && (
                         <div className={styles.empty}>
                             <FormattedMessage {...aiAssistantMessages.empty} />
-                            {quickTasks.length > 0 && (
-                                <div className={styles.quickSelect}>
-                                    {quickTasks.map(task => {
-                                        const label = task.name || task.code;
-                                        return (
-                                            <button
-                                                key={task.code}
-                                                type="button"
-                                                className={styles.quickBubble}
-                                                title={task.description}
-                                                onClick={() => send(label, task.code, activeProfileCode)}
-                                            >
-                                                {label}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            )}
                         </div>
                     )}
                     {requests.map(request => {
@@ -562,9 +744,14 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
                         return (
                         <div key={request.id} style={{ display: "contents" }}>
                             {request.userInstructions && (
-                                <div ref={isLastRequest ? lastRequestRef : undefined} className={mergeClasses(styles.userMessageRow, aiFullWidth && styles.aiMessageFull)}>
-                                    <div className={styles.userMessage}>{request.userInstructions}</div>
-                                </div>
+                                <>
+                                    <div ref={isLastRequest ? lastRequestRef : undefined} className={mergeClasses(styles.userMessageRow, aiFullWidth && styles.aiMessageFull)}>
+                                        <div className={styles.userMessage}>{request.userInstructions}</div>
+                                    </div>
+                                    <div className={mergeClasses(styles.messageActions, aiFullWidth && styles.aiMessageFull)}>
+                                        <CopyButton text={request.userInstructions} />
+                                    </div>
+                                </>
                             )}
                             {request.state === "error" ? (
                                 <div ref={isLastRequest ? aiMessageRef : undefined} className={mergeClasses(styles.aiMessage, aiFullWidth && styles.aiMessageFull)}>
@@ -587,6 +774,17 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
                                     {request.progressPercent != null && (
                                         <ProgressBar className={styles.progressBar} value={request.progressPercent / 100} />
                                     )}
+                                    {/* Stop: best-effort cancel on the provider; what was already
+                                        computed is billed, the exchange ends as "cancelled" and the
+                                        conversation can go on. */}
+                                    <Button
+                                        size="small"
+                                        appearance="secondary"
+                                        icon={<StopRegular />}
+                                        onClick={() => cancel(request.id)}
+                                    >
+                                        <FormattedMessage {...aiAssistantMessages.stop} />
+                                    </Button>
                                 </div>
                             ) : (
                                 request.blocks && (
@@ -600,6 +798,11 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
                                             onFollowUp={(action) => send(action.userInstructions, action.taskType ?? undefined, activeProfileCode)}
                                             followUpDisabled={pending}
                                         />
+                                        {answerText(request.blocks) && (
+                                            <div className={styles.answerActions}>
+                                                <CopyButton text={answerText(request.blocks)} />
+                                            </div>
+                                        )}
                                         {request.usage && (
                                             <details className={styles.usage}>
                                                 <summary className={styles.usageSummary}>
@@ -675,6 +878,34 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
                     {error && <div className={styles.aiError}>{error}</div>}
                 </div>
                 <div className={styles.composer}>
+                    {quickTasks.length > 0 && !pending && (
+                        <div className={styles.quickRow}>
+                            {quickTasks.map(task => {
+                                const label = task.name || task.code;
+                                const availability = taskAvailability(task, context);
+                                const bubble = (
+                                    <button
+                                        type="button"
+                                        className={mergeClasses(styles.quickBubble, !availability.runnable && styles.quickBubbleDisabled)}
+                                        title={availability.runnable ? task.description : undefined}
+                                        disabled={!availability.runnable}
+                                        onClick={() => send(label, task.code, activeProfileCode)}
+                                    >
+                                        {label}
+                                    </button>
+                                );
+                                // A disabled action says what context it needs instead of silently
+                                // doing nothing (the provider would refuse the run anyway).
+                                return availability.runnable || !availability.reason ? (
+                                    <span key={task.code}>{bubble}</span>
+                                ) : (
+                                    <Tooltip key={task.code} content={intl.formatMessage(availability.reason)} relationship="description">
+                                        <span>{bubble}</span>
+                                    </Tooltip>
+                                );
+                            })}
+                        </div>
+                    )}
                     <div className={styles.contextBar}>
                         {currentTaskLabel && (
                             <Badge appearance="outline" icon={<SparkleRegular />} className={styles.taskBadge}>
@@ -797,6 +1028,54 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
             </div>
             </div>
             <AiUsageDialog open={usageOpen} onClose={() => setUsageOpen(false)} balance={balance} />
+            <Dialog open={renameTarget !== null} onOpenChange={(_event, data) => { if (!data.open) setRenameTarget(null); }}>
+                <DialogSurface>
+                    <DialogBody>
+                        <DialogTitle>
+                            <FormattedMessage {...aiAssistantMessages.renameTitle} />
+                        </DialogTitle>
+                        <DialogContent>
+                            <Field label={intl.formatMessage(aiAssistantMessages.renameLabel)}>
+                                <Input
+                                    value={renameValue}
+                                    maxLength={250}
+                                    onChange={(_event, data) => setRenameValue(data.value)}
+                                    onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); submitRename(); } }}
+                                    autoFocus
+                                />
+                            </Field>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button appearance="secondary" onClick={() => setRenameTarget(null)}>
+                                <FormattedMessage {...aiAssistantMessages.cancel} />
+                            </Button>
+                            <Button appearance="primary" disabled={renameValue.trim().length === 0} onClick={submitRename}>
+                                <FormattedMessage {...aiAssistantMessages.save} />
+                            </Button>
+                        </DialogActions>
+                    </DialogBody>
+                </DialogSurface>
+            </Dialog>
+            <Dialog open={deleteTarget !== null} onOpenChange={(_event, data) => { if (!data.open) setDeleteTarget(null); }}>
+                <DialogSurface>
+                    <DialogBody>
+                        <DialogTitle>
+                            <FormattedMessage {...aiAssistantMessages.deleteTitle} />
+                        </DialogTitle>
+                        <DialogContent>
+                            <FormattedMessage {...aiAssistantMessages.deleteConfirm} values={{ title: deleteTarget?.title ?? "" }} />
+                        </DialogContent>
+                        <DialogActions>
+                            <Button appearance="secondary" onClick={() => setDeleteTarget(null)}>
+                                <FormattedMessage {...aiAssistantMessages.cancel} />
+                            </Button>
+                            <Button appearance="primary" onClick={submitDelete}>
+                                <FormattedMessage {...aiAssistantMessages.delete} />
+                            </Button>
+                        </DialogActions>
+                    </DialogBody>
+                </DialogSurface>
+            </Dialog>
         </CollapsibleDragWindow>
     );
 }

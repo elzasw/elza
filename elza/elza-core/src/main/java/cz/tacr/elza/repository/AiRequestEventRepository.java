@@ -22,4 +22,6 @@ public interface AiRequestEventRepository extends JpaRepository<AiRequestEvent, 
      */
     List<AiRequestEvent> findByAiRequestIdInOrderByCreateDateAscAiRequestEventIdAsc(
             Collection<Integer> aiRequestIds);
+    /** Removes the events of several requests (the conversation delete). */
+    void deleteByAiRequestIdIn(Collection<Integer> aiRequestIds);
 }

@@ -17,6 +17,70 @@ export const aiAssistantMessages = defineMessages({
         id: "aiAssistant.action.cancel",
         defaultMessage: "Zrušit",
     },
+    stop: {
+        id: "aiAssistant.action.stop",
+        defaultMessage: "Zastavit",
+    },
+    copy: {
+        id: "aiAssistant.action.copy",
+        defaultMessage: "Kopírovat",
+    },
+    copied: {
+        id: "aiAssistant.action.copied",
+        defaultMessage: "Zkopírováno",
+    },
+    conversationMenu: {
+        id: "aiAssistant.action.conversationMenu",
+        defaultMessage: "Možnosti konverzace",
+    },
+    rename: {
+        id: "aiAssistant.action.rename",
+        defaultMessage: "Přejmenovat",
+    },
+    renameTitle: {
+        id: "aiAssistant.rename.title",
+        defaultMessage: "Přejmenovat konverzaci",
+    },
+    renameLabel: {
+        id: "aiAssistant.rename.label",
+        defaultMessage: "Název",
+    },
+    save: {
+        id: "aiAssistant.action.save",
+        defaultMessage: "Uložit",
+    },
+    delete: {
+        id: "aiAssistant.action.delete",
+        defaultMessage: "Smazat",
+    },
+    deleteTitle: {
+        id: "aiAssistant.delete.title",
+        defaultMessage: "Smazat konverzaci",
+    },
+    deleteConfirm: {
+        id: "aiAssistant.delete.confirm",
+        defaultMessage: "Konverzace „{title}“ bude smazána včetně všech odpovědí. Pokračovat?",
+    },
+    taskNeedsNode: {
+        id: "aiAssistant.task.needsNode",
+        defaultMessage: "Vyžaduje otevřenou jednotku popisu",
+    },
+    taskNeedsEntity: {
+        id: "aiAssistant.task.needsEntity",
+        defaultMessage: "Vyžaduje otevřenou archivní entitu",
+    },
+    taskNeedsNodeOrEntity: {
+        id: "aiAssistant.task.needsNodeOrEntity",
+        defaultMessage: "Vyžaduje otevřenou jednotku popisu nebo archivní entitu",
+    },
+    taskNeedsFund: {
+        id: "aiAssistant.task.needsFund",
+        defaultMessage: "Vyžaduje otevřený archivní soubor",
+    },
+    taskNeedsContext: {
+        id: "aiAssistant.task.needsContext",
+        defaultMessage: "Není dostupné v aktuálním kontextu",
+    },
     empty: {
         id: "aiAssistant.state.empty",
         defaultMessage: "Zeptejte se AI asistenta na cokoli.",

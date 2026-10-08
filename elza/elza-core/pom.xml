@@ -735,6 +735,7 @@
                                 <modelNameMapping>AiConversation=AiConversationVO</modelNameMapping>
                                 <modelNameMapping>AiConversationDetail=AiConversationDetailVO</modelNameMapping>
                                 <modelNameMapping>AiConversationCreate=AiConversationCreateVO</modelNameMapping>
+                                <modelNameMapping>AiConversationUpdate=AiConversationUpdateVO</modelNameMapping>
                                 <modelNameMapping>AiRequest=AiRequestVO</modelNameMapping>
                                 <modelNameMapping>AiRequestCreate=AiRequestCreateVO</modelNameMapping>
                                 <modelNameMapping>AiRequestEvent=AiRequestEventVO</modelNameMapping>

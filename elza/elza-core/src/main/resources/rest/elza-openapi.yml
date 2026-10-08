@@ -2891,6 +2891,62 @@ paths:
                 $ref: '#/components/schemas/BaseException'
       tags:
         - aiprovider
+    put:
+      operationId: AiProvider_updateConversation
+      description: Renames one of the current user's conversations.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: conversation id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiConversation'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aiprovider
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AiConversationUpdate'
+    delete:
+      operationId: AiProvider_deleteConversation
+      description: |-
+        Deletes one of the current user's conversations with all its exchanges,
+        events and proposal decisions (the provider keeps its own task records
+        under its retention policy). Refused while an exchange is still running
+        — cancel it first.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: conversation id
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aiprovider
   /aiprovider/conversation/{id}/request:
     post:
       operationId: AiProvider_createRequest
@@ -7035,6 +7091,16 @@ components:
           items:
             $ref: '#/components/schemas/AiRequest'
       description: 'Full conversation detail: the thread = requests in create order.'
+    AiConversationUpdate:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          maxLength: 250
+          description: New title of the conversation (shown in the history list).
+      description: Editable attributes of a conversation (the rename).
     AiCustomerUsage:
       type: object
       required:
@@ -7596,6 +7662,13 @@ components:
         required:
           type: boolean
           description: Whether the caller must supply it.
+        alternativeGroup:
+          type: string
+          description: |-
+            Alternatives group (provider protocol 0.16.0): parameters sharing a group
+            are alternatives — exactly one of them is supplied and the group as a
+            whole is required (each member's own `required` is false). The panel
+            uses it to tell whether a task can run in the current context.
       description: One typed parameter a task declares.
     AiTaskType:
       type: object

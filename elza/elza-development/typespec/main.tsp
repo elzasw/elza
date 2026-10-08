@@ -4219,6 +4219,20 @@ model AiTaskParameter {
     description?: string;
     /** Whether the caller must supply it. */
     required?: boolean;
+    /**
+     * Alternatives group (provider protocol 0.16.0): parameters sharing a group
+     * are alternatives — exactly one of them is supplied and the group as a
+     * whole is required (each member's own `required` is false). The panel
+     * uses it to tell whether a task can run in the current context.
+     */
+    alternativeGroup?: string;
+}
+
+/** Editable attributes of a conversation (the rename). */
+model AiConversationUpdate {
+    /** New title of the conversation (shown in the history list). */
+    @maxLength(250)
+    title: string;
 }
 
 /** A quality/cost tier the provider offers. */
@@ -4303,6 +4317,38 @@ namespace ElzaAPI.AiProvider {
         /** context type code filter */
         @query contextType?: string;
     ): AiConversation[];
+
+    /**
+     * Renames one of the current user's conversations.
+     */
+    @route("/conversation/{id}")
+    @put op updateConversation(
+        /** conversation id */
+        @path id: integer;
+        @body body: AiConversationUpdate;
+    ): AiConversation | {
+        /** Id does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Deletes one of the current user's conversations with all its exchanges,
+     * events and proposal decisions (the provider keeps its own task records
+     * under its retention policy). Refused while an exchange is still running
+     * — cancel it first.
+     */
+    @route("/conversation/{id}")
+    @delete op deleteConversation(
+        /** conversation id */
+        @path id: integer;
+    ): {
+        @Http.statusCode statusCode: 204;
+    } | {
+        /** Id does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
 
     /**
      * Submits a follow-up exchange into an existing conversation (continues
