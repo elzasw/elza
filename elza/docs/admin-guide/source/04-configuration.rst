@@ -425,10 +425,10 @@ Restart from the administration
 
 A Java process cannot restart itself. The restart offered in
 *Administration* > *Package management* stops the application with the
-configured exit code after the response, and the service manager starts
-it again: systemd with ``Restart=on-failure`` (see :doc:`02-installation`)
-or a Windows service wrapper. Without the key the restart is not offered,
-and the page asks for a manual restart.
+exit code below after the response, and the service manager starts it
+again: systemd with ``Restart=on-failure`` (see :doc:`02-installation`)
+or a Windows service wrapper. Without a service manager the application
+only stops; the confirmation of the restart says so.
 
 .. list-table::
    :header-rows: 1
@@ -438,10 +438,10 @@ and the page asks for a manual restart.
      - Default
      - Meaning
    * - ``elza.restart.exitCode``
-     - (none)
-     - Exit code of the restart from the administration, for example
-       ``3``. Use a non-zero code the service manager restarts on; with
-       the unit of :doc:`02-installation`, any code other than 0 and 143.
+     - ``3``
+     - Exit code of the restart from the administration. Change it only
+       when the service manager restarts on another code; the unit of
+       :doc:`02-installation` restarts on any code other than 0 and 143.
 
 Archival entities
 =================

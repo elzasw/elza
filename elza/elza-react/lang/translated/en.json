@@ -944,16 +944,12 @@
     "srcHash": "NdHUWey_C2cD"
   },
   "admin.packages.available.restart.confirm": {
-    "defaultMessage": "The application stops and the service manager starts it again; every user is disconnected. Continue?",
-    "srcHash": "k6NXTShoJz0X"
+    "defaultMessage": "The application stops and the service manager (systemd) starts it again; if the application does not run as a service, start it again by hand. Every user is disconnected. Continue?",
+    "srcHash": "o41YAycdVPRl"
   },
   "admin.packages.available.restart.imported": {
     "defaultMessage": "A package was imported while the application runs; the search index registers its new fields only after a restart.",
     "srcHash": "GYIz6CWdB0nB"
-  },
-  "admin.packages.available.restart.manual": {
-    "defaultMessage": "Restart the application.",
-    "srcHash": "VQJaYWhmeVFe"
   },
   "admin.packages.available.restart.marked": {
     "defaultMessage": "The marked packages are loaded at the next start of the application.",

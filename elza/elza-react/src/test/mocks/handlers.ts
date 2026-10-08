@@ -17,7 +17,7 @@ export const handlers = [
     http.get('/api/v1/setup', () => HttpResponse.json({ setupRequired: false })),
     // The package administration lists the packages of dpkg that are not loaded; none by default.
     http.get('/api/v1/packages/available', () =>
-        HttpResponse.json({ items: [], restartRequired: false, restartAvailable: false }),
+        HttpResponse.json({ items: [], restartRequired: false }),
     ),
     http.get('/api/v1/languages', () =>
         HttpResponse.json([
