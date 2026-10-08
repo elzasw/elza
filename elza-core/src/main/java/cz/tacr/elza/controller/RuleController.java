@@ -305,6 +305,7 @@ public class RuleController {
      * @return seznam skupin
      */
     @RequestMapping(value = "/groups/{fundVersionId}", method = RequestMethod.GET)
+    @Transactional
     public List<GroupVO> getGroups(@PathVariable(value = "fundVersionId") final Integer fundVersionId) {
         ArrFundVersion fundVersion = fundVersionRepository.findById(fundVersionId)
                 .orElseThrow(version(fundVersionId));
