@@ -1,0 +1,28 @@
+package isaarcpf;
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ItemSpec;
+import cz.tacr.elza.drools.model.item.IntItem;
+import cz.tacr.elza.drools.model.Part;
+import cz.tacr.elza.drools.model.PartType;
+
+rule "ISAAR 5.1.6: type and value of the identifier are required"
+when $it: ItemType(code in ("IDN_TYPE", "IDN_VALUE"))
+then
+    $it.setRequired();
+end
+
+rule "ISAAR 5.1.6: validity of the identifier"
+when $it: ItemType(code in ("IDN_VALID_FROM", "IDN_VALID_TO"))
+then
+    $it.setPossible();
+end
+
+rule "ISAAR 5.4.1: authority identifiers"
+when $it: ItemType(code == "IDN_TYPE")
+     $is: ItemSpec(code in ("VIAF", "LCNAF", "ORCID_ID", "ISAAR_ISNI", "ISAAR_WIKIDATA", "ISAAR_GND")) from $it.specs
+then
+    $it.setPossible();
+    $is.setPossible();
+    $is.setRepeatable(true);
+end
+

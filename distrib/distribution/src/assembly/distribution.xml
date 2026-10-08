@@ -15,6 +15,7 @@
 		<dependencySet>
 			<includes>
 				<include>cz.tacr.elza:package-cz-base</include>
+				<include>cz.tacr.elza:package-isaar-cpf</include>
 				<include>cz.tacr.elza:rules-cz-zp2015</include>
 			</includes>
 			<useTransitiveDependencies>false</useTransitiveDependencies>

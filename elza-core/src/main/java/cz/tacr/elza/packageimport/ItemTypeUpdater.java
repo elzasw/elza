@@ -437,9 +437,10 @@ public class ItemTypeUpdater {
 
         declareAssignments(xmlSpecAssigmentsByType, declarations, oldAssigns, affected);
 
-        // declarations the package no longer has
+        // declarations the package no longer has (entities, not a bulk query: instances loaded earlier in
+        // the transaction would otherwise stay in the session and refer to removed declarations)
         oldDeclarations.values().forEach(d -> affected.put(d.getItemSpecId(), d.getItemSpec()));
-        assignDeclarationRepository.deleteByDeclarations(oldDeclarations.values());
+        assignDeclarationRepository.deleteAll(assignDeclarationRepository.findByDeclarations(oldDeclarations.values()));
         specDeclarationRepository.deleteAll(oldDeclarations.values());
         specDeclarationRepository.flush();
 
@@ -656,7 +657,7 @@ public class ItemTypeUpdater {
                 itemAptypeRepository.flush();
             }
             itemTypeSpecAssignRepository.deleteByItemTypeIn(deleteItemTypes);
-            assignDeclarationRepository.deleteByItemTypes(deleteItemTypes);
+            assignDeclarationRepository.deleteAll(assignDeclarationRepository.findByItemTypes(deleteItemTypes));
 
             itemTypeRepository.deleteAll(deleteItemTypes);
             itemTypeRepository.flush();
@@ -906,7 +907,7 @@ public class ItemTypeUpdater {
         List<RulItemSpecDeclaration> specDeclarations = specDeclarationRepository.findByRulPackage(rulPackage);
         Map<Integer, RulItemSpec> affectedSpecs = new LinkedHashMap<>();
         specDeclarations.forEach(d -> affectedSpecs.put(d.getItemSpecId(), d.getItemSpec()));
-        assignDeclarationRepository.deleteByDeclarations(specDeclarations);
+        assignDeclarationRepository.deleteAll(assignDeclarationRepository.findByDeclarations(specDeclarations));
         specDeclarationRepository.deleteAll(specDeclarations);
         specDeclarationRepository.flush();
         resolveItemSpecs(affectedSpecs.values(), rulPackage);

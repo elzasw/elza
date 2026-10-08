@@ -1,0 +1,21 @@
+package isaarcpf;
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ItemSpec;
+import cz.tacr.elza.drools.model.item.IntItem;
+import cz.tacr.elza.drools.model.Part;
+import cz.tacr.elza.drools.model.PartType;
+
+rule "Dates of the event"
+when $it: ItemType(code in ("EV_BEGIN", "EV_END"))
+then
+    $it.setPossible();
+end
+
+rule "Kind of event is required"
+when $it: ItemType(code == "EV_TYPE")
+     $is: ItemSpec(code in ("ET_JOB", "ET_MEMBERSHIP", "ET_STUDY", "ET_AWARD")) from $it.specs
+then
+    $it.setRequired();
+    $is.setPossible();
+end
+

@@ -1,0 +1,34 @@
+<part-types>
+    <!-- shared with CZ_BASE (CAM) by code, the same child parts and repeatability -->
+    <part-type code="PT_NAME">
+        <name>Name</name>
+        <repeatable>true</repeatable>
+    </part-type>
+    <part-type code="PT_IDENT">
+        <name>Identifier</name>
+        <repeatable>true</repeatable>
+    </part-type>
+    <part-type code="PT_BODY">
+        <name>Description</name>
+        <repeatable>false</repeatable>
+    </part-type>
+    <part-type code="PT_CRE">
+        <name>Beginning of existence</name>
+        <child_part>PT_REL</child_part>
+        <repeatable>false</repeatable>
+    </part-type>
+    <part-type code="PT_EXT">
+        <name>End of existence</name>
+        <child_part>PT_REL</child_part>
+        <repeatable>false</repeatable>
+    </part-type>
+    <part-type code="PT_EVENT">
+        <name>Event</name>
+        <child_part>PT_REL</child_part>
+        <repeatable>true</repeatable>
+    </part-type>
+    <part-type code="PT_REL">
+        <name>Relation</name>
+        <repeatable>true</repeatable>
+    </part-type>
+</part-types>

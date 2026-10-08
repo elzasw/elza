@@ -17,3 +17,4 @@ published separately in Czech.
    01-rules-packages
    02-package-files
    03-customization
+   04-isaar-cpf

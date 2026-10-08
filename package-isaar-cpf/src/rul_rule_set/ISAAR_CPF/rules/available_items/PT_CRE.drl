@@ -1,0 +1,13 @@
+package isaarcpf;
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ItemSpec;
+import cz.tacr.elza.drools.model.item.IntItem;
+import cz.tacr.elza.drools.model.Part;
+import cz.tacr.elza.drools.model.PartType;
+
+rule "ISAAR 5.2.1: date of the beginning of existence"
+when $it: ItemType(code in ("CRE_DATE"))
+then
+    $it.setPossible();
+end
+

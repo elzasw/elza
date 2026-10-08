@@ -1,0 +1,13 @@
+package isaarcpf;
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ItemSpec;
+import cz.tacr.elza.drools.model.item.IntItem;
+import cz.tacr.elza.drools.model.Part;
+import cz.tacr.elza.drools.model.PartType;
+
+rule "ISAAR 5.2.3, 5.2.5: places and occupations of a person"
+when $it: ItemType(code in ("ISAAR_PLACES", "ISAAR_FUNCTIONS"))
+then
+    $it.setPossible();
+end
+

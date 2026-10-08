@@ -1,0 +1,826 @@
+<item-specs>
+    <!-- specifications shared with CZ_BASE (CAM) by code (English texts, the same classes of related
+         entities); ISAAR_* are own -->
+    <item-spec code="NT_EQUIV">
+        <name>Parallel form</name>
+        <description>Form of name: parallel form</description>
+        <shortcut>Parallel form</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_TRANSLATED">
+        <name>Translated form</name>
+        <description>Form of name: translated form</description>
+        <shortcut>Translated form</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_OTHERRULES">
+        <name>Form by other rules</name>
+        <description>Form of name: form by other rules</description>
+        <shortcut>Form by other rules</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_ALIAS">
+        <name>Alias / nickname</name>
+        <description>Form of name: alias / nickname</description>
+        <shortcut>Alias / nickname</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_PSEUDONYM">
+        <name>Pseudonym</name>
+        <description>Form of name: pseudonym</description>
+        <shortcut>Pseudonym</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_ACRONYM">
+        <name>Acronym / abbreviation</name>
+        <description>Form of name: acronym / abbreviation</description>
+        <shortcut>Acronym / abbreviation</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_FORMER">
+        <name>Former form</name>
+        <description>Form of name: former form</description>
+        <shortcut>Former form</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_NATIV">
+        <name>Birth name</name>
+        <description>Form of name: birth name</description>
+        <shortcut>Birth name</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_HISTORICAL">
+        <name>Historical form</name>
+        <description>Form of name: historical form</description>
+        <shortcut>Historical form</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_RELIGIOUS">
+        <name>Religious name</name>
+        <description>Form of name: religious name</description>
+        <shortcut>Religious name</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="LNG_eng">
+        <name>English</name>
+        <description>Language: English</description>
+        <shortcut>English</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_cze">
+        <name>Czech</name>
+        <description>Language: Czech</description>
+        <shortcut>Czech</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ger">
+        <name>German</name>
+        <description>Language: German</description>
+        <shortcut>German</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_fre">
+        <name>French</name>
+        <description>Language: French</description>
+        <shortcut>French</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_spa">
+        <name>Spanish</name>
+        <description>Language: Spanish</description>
+        <shortcut>Spanish</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ita">
+        <name>Italian</name>
+        <description>Language: Italian</description>
+        <shortcut>Italian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_lat">
+        <name>Latin</name>
+        <description>Language: Latin</description>
+        <shortcut>Latin</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_pol">
+        <name>Polish</name>
+        <description>Language: Polish</description>
+        <shortcut>Polish</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_slo">
+        <name>Slovak</name>
+        <description>Language: Slovak</description>
+        <shortcut>Slovak</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_rus">
+        <name>Russian</name>
+        <description>Language: Russian</description>
+        <shortcut>Russian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_hun">
+        <name>Hungarian</name>
+        <description>Language: Hungarian</description>
+        <shortcut>Hungarian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_dut">
+        <name>Dutch</name>
+        <description>Language: Dutch</description>
+        <shortcut>Dutch</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_por">
+        <name>Portuguese</name>
+        <description>Language: Portuguese</description>
+        <shortcut>Portuguese</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_swe">
+        <name>Swedish</name>
+        <description>Language: Swedish</description>
+        <shortcut>Swedish</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_gre">
+        <name>Greek</name>
+        <description>Language: Greek</description>
+        <shortcut>Greek</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ukr">
+        <name>Ukrainian</name>
+        <description>Language: Ukrainian</description>
+        <shortcut>Ukrainian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="VIAF">
+        <name>VIAF</name>
+        <description>Identifier type: VIAF</description>
+        <shortcut>VIAF</shortcut>
+        <item-type-assign code="IDN_TYPE"/>
+    </item-spec>
+    <item-spec code="LCNAF">
+        <name>Library of Congress Name Authority File</name>
+        <description>Identifier type: Library of Congress Name Authority File</description>
+        <shortcut>Library of Congress Name Authority File</shortcut>
+        <item-type-assign code="IDN_TYPE"/>
+    </item-spec>
+    <item-spec code="ORCID_ID">
+        <name>ORCID</name>
+        <description>Identifier type: ORCID</description>
+        <shortcut>ORCID</shortcut>
+        <item-type-assign code="IDN_TYPE"/>
+    </item-spec>
+    <item-spec code="ISO3166_2">
+        <name>ISO 3166-1 alpha-2</name>
+        <description>Identifier type: ISO 3166-1 alpha-2</description>
+        <shortcut>ISO 3166-1 alpha-2</shortcut>
+        <item-type-assign code="IDN_TYPE"/>
+    </item-spec>
+    <item-spec code="ISO3166_3">
+        <name>ISO 3166-1 alpha-3</name>
+        <description>Identifier type: ISO 3166-1 alpha-3</description>
+        <shortcut>ISO 3166-1 alpha-3</shortcut>
+        <item-type-assign code="IDN_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_ISNI">
+        <name>ISNI</name>
+        <description>Identifier type: ISNI</description>
+        <shortcut>ISNI</shortcut>
+        <item-type-assign code="IDN_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_WIKIDATA">
+        <name>Wikidata</name>
+        <description>Identifier type: Wikidata</description>
+        <shortcut>Wikidata</shortcut>
+        <item-type-assign code="IDN_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_GND">
+        <name>GND</name>
+        <description>Identifier type: GND</description>
+        <shortcut>GND</shortcut>
+        <item-type-assign code="IDN_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_GEONAMES">
+        <name>GeoNames</name>
+        <description>Identifier type: GeoNames</description>
+        <shortcut>GeoNames</shortcut>
+        <item-type-assign code="IDN_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_TGN">
+        <name>Getty TGN</name>
+        <description>Identifier type: Getty TGN</description>
+        <shortcut>Getty TGN</shortcut>
+        <item-type-assign code="IDN_TYPE"/>
+    </item-spec>
+    <item-spec code="CRC_BIRTH">
+        <name>Birth</name>
+        <description>Kind of beginning: birth</description>
+        <shortcut>Birth</shortcut>
+        <item-type-assign code="CRE_CLASS"/>
+    </item-spec>
+    <item-spec code="CRC_RISE">
+        <name>Establishment</name>
+        <description>Kind of beginning: establishment</description>
+        <shortcut>Establishment</shortcut>
+        <item-type-assign code="CRE_CLASS"/>
+    </item-spec>
+    <item-spec code="CRC_FIRSTWMENTION">
+        <name>First written mention</name>
+        <description>Kind of beginning: first written mention</description>
+        <shortcut>First written mention</shortcut>
+        <item-type-assign code="CRE_CLASS"/>
+    </item-spec>
+    <item-spec code="EXC_DEATH">
+        <name>Death</name>
+        <description>Kind of end: death</description>
+        <shortcut>Death</shortcut>
+        <item-type-assign code="EXT_CLASS"/>
+    </item-spec>
+    <item-spec code="EXC_EXTINCTION">
+        <name>Dissolution</name>
+        <description>Kind of end: dissolution</description>
+        <shortcut>Dissolution</shortcut>
+        <item-type-assign code="EXT_CLASS"/>
+    </item-spec>
+    <item-spec code="EXC_LASTWMENTION">
+        <name>Last written mention</name>
+        <description>Kind of end: last written mention</description>
+        <shortcut>Last written mention</shortcut>
+        <item-type-assign code="EXT_CLASS"/>
+    </item-spec>
+    <item-spec code="ET_JOB">
+        <name>Occupation / office</name>
+        <description>Event: occupation / office</description>
+        <shortcut>Occupation / office</shortcut>
+        <item-type-assign code="EV_TYPE"/>
+    </item-spec>
+    <item-spec code="ET_MEMBERSHIP">
+        <name>Membership</name>
+        <description>Event: membership</description>
+        <shortcut>Membership</shortcut>
+        <item-type-assign code="EV_TYPE"/>
+    </item-spec>
+    <item-spec code="ET_STUDY">
+        <name>Study</name>
+        <description>Event: study</description>
+        <shortcut>Study</shortcut>
+        <item-type-assign code="EV_TYPE"/>
+    </item-spec>
+    <item-spec code="ET_AWARD">
+        <name>Award</name>
+        <description>Event: award</description>
+        <shortcut>Award</shortcut>
+        <item-type-assign code="EV_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_ET_LEGAL_STATUS">
+        <name>Change of legal status</name>
+        <description>Event: change of legal status</description>
+        <shortcut>Change of legal status</shortcut>
+        <item-type-assign code="EV_TYPE"/>
+    </item-spec>
+    <item-spec code="RT_FATHER">
+        <name>Father</name>
+        <description>Relationship (family): father</description>
+        <shortcut>Father</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_MOTHER">
+        <name>Mother</name>
+        <description>Relationship (family): mother</description>
+        <shortcut>Mother</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_HUSBAND">
+        <name>Husband</name>
+        <description>Relationship (family): husband</description>
+        <shortcut>Husband</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_WIFE">
+        <name>Wife</name>
+        <description>Relationship (family): wife</description>
+        <shortcut>Wife</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_PARTNER">
+        <name>Partner</name>
+        <description>Relationship (family): partner</description>
+        <shortcut>Partner</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_BROTHER">
+        <name>Brother</name>
+        <description>Relationship (family): brother</description>
+        <shortcut>Brother</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_SISTER">
+        <name>Sister</name>
+        <description>Relationship (family): sister</description>
+        <shortcut>Sister</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_RELATIONS">
+        <name>Other family relationship</name>
+        <description>Relationship (family): other family relationship</description>
+        <shortcut>Other family relationship</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_GENUSMEMBER">
+        <name>Member of family</name>
+        <description>Relationship (family): member of family</description>
+        <shortcut>Member of family</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_SUPCORP">
+        <name>Superior body</name>
+        <description>Relationship (hierarchical): superior body</description>
+        <shortcut>Superior body</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_ISPART">
+        <name>Part of</name>
+        <description>Relationship (hierarchical): part of</description>
+        <shortcut>Part of</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_ISMEMBER">
+        <name>Member of</name>
+        <description>Relationship (hierarchical): member of</description>
+        <shortcut>Member of</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_EMPLOYER">
+        <name>Employer</name>
+        <description>Relationship (hierarchical): employer</description>
+        <shortcut>Employer</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_FOUNDER">
+        <name>Founder</name>
+        <description>Relationship (hierarchical): founder</description>
+        <shortcut>Founder</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_OWNER">
+        <name>Owner</name>
+        <description>Relationship (hierarchical): owner</description>
+        <shortcut>Owner</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_PREDECESSOR">
+        <name>Predecessor</name>
+        <description>Relationship (temporal): predecessor</description>
+        <shortcut>Predecessor</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_SUCCESSOR">
+        <name>Successor</name>
+        <description>Relationship (temporal): successor</description>
+        <shortcut>Successor</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_OTHERNAME">
+        <name>Other identity of the same entity</name>
+        <description>Relationship (identity): other identity of the same entity</description>
+        <shortcut>Other identity of the same entity</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_COLLABORATOR">
+        <name>Collaborator</name>
+        <description>Relationship (associative): collaborator</description>
+        <shortcut>Collaborator</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_RESIDENCE">
+        <name>Seat / residence</name>
+        <description>Relationship (place): seat / residence</description>
+        <shortcut>Seat / residence</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="GEO"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_PLACE">
+        <name>Place</name>
+        <description>Relationship (place): place</description>
+        <shortcut>Place</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="GEO"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_GEOSCOPE">
+        <name>Jurisdiction / geographic scope</name>
+        <description>Relationship (place): jurisdiction / geographic scope</description>
+        <shortcut>Jurisdiction / geographic scope</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="GEO"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_FUNCTION">
+        <name>Function / occupation</name>
+        <description>Relationship (concept): function / occupation</description>
+        <shortcut>Function / occupation</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="TERM"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_ACTIVITYFIELD">
+        <name>Field of activity</name>
+        <description>Relationship (concept): field of activity</description>
+        <shortcut>Field of activity</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="TERM"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_SUPTERM">
+        <name>Broader concept</name>
+        <description>Relationship (concept): broader concept</description>
+        <shortcut>Broader concept</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="TERM"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_RELATEDTERM">
+        <name>Related concept</name>
+        <description>Relationship (concept): related concept</description>
+        <shortcut>Related concept</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="TERM"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="ISAAR_RT_ASSOCIATED">
+        <name>Associated entity</name>
+        <description>Relationship (associative): associated entity</description>
+        <shortcut>Associated entity</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+            <item-aptype register-type="GEO"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="ISAAR_CORP_TYPE_GOVERNMENT">
+        <name>Government or public administration body</name>
+        <description>Type of corporate body: government or public administration body</description>
+        <shortcut>Government or public administration body</shortcut>
+        <item-type-assign code="ISAAR_CORP_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_CORP_TYPE_TERRITORIAL">
+        <name>Territorial self-government</name>
+        <description>Type of corporate body: territorial self-government</description>
+        <shortcut>Territorial self-government</shortcut>
+        <item-type-assign code="ISAAR_CORP_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_CORP_TYPE_JUDICIAL">
+        <name>Court or judicial body</name>
+        <description>Type of corporate body: court or judicial body</description>
+        <shortcut>Court or judicial body</shortcut>
+        <item-type-assign code="ISAAR_CORP_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_CORP_TYPE_LEGISLATIVE">
+        <name>Legislative body</name>
+        <description>Type of corporate body: legislative body</description>
+        <shortcut>Legislative body</shortcut>
+        <item-type-assign code="ISAAR_CORP_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_CORP_TYPE_MILITARY">
+        <name>Military or security body</name>
+        <description>Type of corporate body: military or security body</description>
+        <shortcut>Military or security body</shortcut>
+        <item-type-assign code="ISAAR_CORP_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_CORP_TYPE_PARTY">
+        <name>Political party</name>
+        <description>Type of corporate body: political party</description>
+        <shortcut>Political party</shortcut>
+        <item-type-assign code="ISAAR_CORP_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_CORP_TYPE_RELIGIOUS">
+        <name>Religious body</name>
+        <description>Type of corporate body: religious body</description>
+        <shortcut>Religious body</shortcut>
+        <item-type-assign code="ISAAR_CORP_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_CORP_TYPE_EDUCATION">
+        <name>Educational or research institution</name>
+        <description>Type of corporate body: educational or research institution</description>
+        <shortcut>Educational or research institution</shortcut>
+        <item-type-assign code="ISAAR_CORP_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_CORP_TYPE_HEALTH">
+        <name>Health or social-care institution</name>
+        <description>Type of corporate body: health or social-care institution</description>
+        <shortcut>Health or social-care institution</shortcut>
+        <item-type-assign code="ISAAR_CORP_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_CORP_TYPE_CULTURE">
+        <name>Cultural or heritage institution</name>
+        <description>Type of corporate body: cultural or heritage institution</description>
+        <shortcut>Cultural or heritage institution</shortcut>
+        <item-type-assign code="ISAAR_CORP_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_CORP_TYPE_BUSINESS">
+        <name>Business enterprise</name>
+        <description>Type of corporate body: business enterprise</description>
+        <shortcut>Business enterprise</shortcut>
+        <item-type-assign code="ISAAR_CORP_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_CORP_TYPE_FINANCE">
+        <name>Financial institution</name>
+        <description>Type of corporate body: financial institution</description>
+        <shortcut>Financial institution</shortcut>
+        <item-type-assign code="ISAAR_CORP_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_CORP_TYPE_PROFESSIONAL">
+        <name>Professional, trade or labour organisation</name>
+        <description>Type of corporate body: professional, trade or labour organisation</description>
+        <shortcut>Professional, trade or labour organisation</shortcut>
+        <item-type-assign code="ISAAR_CORP_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_CORP_TYPE_ASSOCIATION">
+        <name>Association or club</name>
+        <description>Type of corporate body: association or club</description>
+        <shortcut>Association or club</shortcut>
+        <item-type-assign code="ISAAR_CORP_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_CORP_TYPE_FOUNDATION">
+        <name>Foundation or charitable body</name>
+        <description>Type of corporate body: foundation or charitable body</description>
+        <shortcut>Foundation or charitable body</shortcut>
+        <item-type-assign code="ISAAR_CORP_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_CORP_TYPE_INTERNATIONAL">
+        <name>International or umbrella organisation</name>
+        <description>Type of corporate body: international or umbrella organisation</description>
+        <shortcut>International or umbrella organisation</shortcut>
+        <item-type-assign code="ISAAR_CORP_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_CORP_TYPE_CONFERENCE">
+        <name>Conference or meeting</name>
+        <description>Type of corporate body: conference or meeting</description>
+        <shortcut>Conference or meeting</shortcut>
+        <item-type-assign code="ISAAR_CORP_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_CORP_TYPE_OTHER">
+        <name>Other / not determined</name>
+        <description>Type of corporate body: other / not determined</description>
+        <shortcut>Other / not determined</shortcut>
+        <item-type-assign code="ISAAR_CORP_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_LEGAL_STATUS_PUBLIC_LAW">
+        <name>Public-law body</name>
+        <description>Legal status: public-law body</description>
+        <shortcut>Public-law body</shortcut>
+        <item-type-assign code="ISAAR_LEGAL_STATUS"/>
+    </item-spec>
+    <item-spec code="ISAAR_LEGAL_STATUS_PRIVATE_LAW">
+        <name>Private-law body</name>
+        <description>Legal status: private-law body</description>
+        <shortcut>Private-law body</shortcut>
+        <item-type-assign code="ISAAR_LEGAL_STATUS"/>
+    </item-spec>
+    <item-spec code="ISAAR_LEGAL_STATUS_COMPANY">
+        <name>Company with share capital</name>
+        <description>Legal status: company with share capital</description>
+        <shortcut>Company with share capital</shortcut>
+        <item-type-assign code="ISAAR_LEGAL_STATUS"/>
+    </item-spec>
+    <item-spec code="ISAAR_LEGAL_STATUS_PARTNERSHIP">
+        <name>Partnership</name>
+        <description>Legal status: partnership</description>
+        <shortcut>Partnership</shortcut>
+        <item-type-assign code="ISAAR_LEGAL_STATUS"/>
+    </item-spec>
+    <item-spec code="ISAAR_LEGAL_STATUS_COOPERATIVE">
+        <name>Cooperative</name>
+        <description>Legal status: cooperative</description>
+        <shortcut>Cooperative</shortcut>
+        <item-type-assign code="ISAAR_LEGAL_STATUS"/>
+    </item-spec>
+    <item-spec code="ISAAR_LEGAL_STATUS_ASSOCIATION">
+        <name>Association</name>
+        <description>Legal status: association</description>
+        <shortcut>Association</shortcut>
+        <item-type-assign code="ISAAR_LEGAL_STATUS"/>
+    </item-spec>
+    <item-spec code="ISAAR_LEGAL_STATUS_FOUNDATION">
+        <name>Foundation</name>
+        <description>Legal status: foundation</description>
+        <shortcut>Foundation</shortcut>
+        <item-type-assign code="ISAAR_LEGAL_STATUS"/>
+    </item-spec>
+    <item-spec code="ISAAR_LEGAL_STATUS_RELIGIOUS">
+        <name>Religious legal person</name>
+        <description>Legal status: religious legal person</description>
+        <shortcut>Religious legal person</shortcut>
+        <item-type-assign code="ISAAR_LEGAL_STATUS"/>
+    </item-spec>
+    <item-spec code="ISAAR_LEGAL_STATUS_SOLE_TRADER">
+        <name>Sole trader</name>
+        <description>Legal status: sole trader</description>
+        <shortcut>Sole trader</shortcut>
+        <item-type-assign code="ISAAR_LEGAL_STATUS"/>
+    </item-spec>
+    <item-spec code="ISAAR_LEGAL_STATUS_NO_PERSONALITY">
+        <name>No legal personality</name>
+        <description>Legal status: no legal personality</description>
+        <shortcut>No legal personality</shortcut>
+        <item-type-assign code="ISAAR_LEGAL_STATUS"/>
+    </item-spec>
+    <item-spec code="ISAAR_LEGAL_STATUS_OTHER">
+        <name>Other</name>
+        <description>Legal status: other</description>
+        <shortcut>Other</shortcut>
+        <item-type-assign code="ISAAR_LEGAL_STATUS"/>
+    </item-spec>
+    <item-spec code="ISAAR_FAMILY_TYPE_FAMILY">
+        <name>Family</name>
+        <description>Type of family: family</description>
+        <shortcut>Family</shortcut>
+        <item-type-assign code="ISAAR_FAMILY_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_FAMILY_TYPE_DYNASTY">
+        <name>Dynasty / royal house</name>
+        <description>Type of family: dynasty / royal house</description>
+        <shortcut>Dynasty / royal house</shortcut>
+        <item-type-assign code="ISAAR_FAMILY_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_FAMILY_TYPE_HOUSE">
+        <name>Noble house / lineage</name>
+        <description>Type of family: noble house / lineage</description>
+        <shortcut>Noble house / lineage</shortcut>
+        <item-type-assign code="ISAAR_FAMILY_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_FAMILY_TYPE_CLAN">
+        <name>Clan / tribe</name>
+        <description>Type of family: clan / tribe</description>
+        <shortcut>Clan / tribe</shortcut>
+        <item-type-assign code="ISAAR_FAMILY_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_FAMILY_TYPE_BRANCH">
+        <name>Branch of a family</name>
+        <description>Type of family: branch of a family</description>
+        <shortcut>Branch of a family</shortcut>
+        <item-type-assign code="ISAAR_FAMILY_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_PLACE_TYPE_ADMINISTRATIVE">
+        <name>Administrative division</name>
+        <description>Type of place: administrative division</description>
+        <shortcut>Administrative division</shortcut>
+        <item-type-assign code="ISAAR_PLACE_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_PLACE_TYPE_AREA">
+        <name>Area</name>
+        <description>Type of place: area</description>
+        <shortcut>Area</shortcut>
+        <item-type-assign code="ISAAR_PLACE_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_PLACE_TYPE_WATER">
+        <name>Body of water</name>
+        <description>Type of place: body of water</description>
+        <shortcut>Body of water</shortcut>
+        <item-type-assign code="ISAAR_PLACE_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_PLACE_TYPE_ELEVATION">
+        <name>Land elevation</name>
+        <description>Type of place: land elevation</description>
+        <shortcut>Land elevation</shortcut>
+        <item-type-assign code="ISAAR_PLACE_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_PLACE_TYPE_POPULATED">
+        <name>Populated place</name>
+        <description>Type of place: populated place</description>
+        <shortcut>Populated place</shortcut>
+        <item-type-assign code="ISAAR_PLACE_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_PLACE_TYPE_ROAD">
+        <name>Road or railroad</name>
+        <description>Type of place: road or railroad</description>
+        <shortcut>Road or railroad</shortcut>
+        <item-type-assign code="ISAAR_PLACE_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_PLACE_TYPE_SPOT">
+        <name>Spot, building or farm</name>
+        <description>Type of place: spot, building or farm</description>
+        <shortcut>Spot, building or farm</shortcut>
+        <item-type-assign code="ISAAR_PLACE_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_PLACE_TYPE_UNDERSEA">
+        <name>Undersea</name>
+        <description>Type of place: undersea</description>
+        <shortcut>Undersea</shortcut>
+        <item-type-assign code="ISAAR_PLACE_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_PLACE_TYPE_VEGETATION">
+        <name>Vegetation</name>
+        <description>Type of place: vegetation</description>
+        <shortcut>Vegetation</shortcut>
+        <item-type-assign code="ISAAR_PLACE_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_CONCEPT_SCHEME_OCCUPATION">
+        <name>Occupation</name>
+        <description>Concept scheme: occupation</description>
+        <shortcut>Occupation</shortcut>
+        <item-type-assign code="ISAAR_CONCEPT_SCHEME"/>
+    </item-spec>
+    <item-spec code="ISAAR_CONCEPT_SCHEME_FUNCTION">
+        <name>Function / activity</name>
+        <description>Concept scheme: function / activity</description>
+        <shortcut>Function / activity</shortcut>
+        <item-type-assign code="ISAAR_CONCEPT_SCHEME"/>
+    </item-spec>
+    <item-spec code="ISAAR_CONCEPT_SCHEME_SUBJECT">
+        <name>Subject</name>
+        <description>Concept scheme: subject</description>
+        <shortcut>Subject</shortcut>
+        <item-type-assign code="ISAAR_CONCEPT_SCHEME"/>
+    </item-spec>
+    <item-spec code="ISAAR_CONCEPT_SCHEME_OTHER">
+        <name>Other</name>
+        <description>Concept scheme: other</description>
+        <shortcut>Other</shortcut>
+        <item-type-assign code="ISAAR_CONCEPT_SCHEME"/>
+    </item-spec>
+</item-specs>

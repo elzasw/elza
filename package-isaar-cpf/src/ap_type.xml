@@ -1,0 +1,38 @@
+<ap-types>
+    <!-- shared with CZ_BASE (CAM) by code; PERSON and DYNASTY are declared as parents only -->
+    <ap-type code="PERSON">
+        <name>Person or being</name>
+        <hierarchical>false</hierarchical>
+        <read-only>true</read-only>
+    </ap-type>
+    <ap-type code="PERSON_INDIVIDUAL" parent-ap-type="PERSON">
+        <name>Person</name>
+        <hierarchical>false</hierarchical>
+        <read-only>false</read-only>
+    </ap-type>
+    <ap-type code="DYNASTY">
+        <name>Family or dynasty</name>
+        <hierarchical>false</hierarchical>
+        <read-only>true</read-only>
+    </ap-type>
+    <ap-type code="FAMILY" parent-ap-type="DYNASTY">
+        <name>Family</name>
+        <hierarchical>false</hierarchical>
+        <read-only>false</read-only>
+    </ap-type>
+    <ap-type code="PARTY_GROUP">
+        <name>Corporate body</name>
+        <hierarchical>false</hierarchical>
+        <read-only>false</read-only>
+    </ap-type>
+    <ap-type code="GEO">
+        <name>Place</name>
+        <hierarchical>false</hierarchical>
+        <read-only>false</read-only>
+    </ap-type>
+    <ap-type code="TERM">
+        <name>Concept</name>
+        <hierarchical>false</hierarchical>
+        <read-only>false</read-only>
+    </ap-type>
+</ap-types>

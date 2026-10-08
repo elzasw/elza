@@ -1,0 +1,21 @@
+package isaarcpf;
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ItemSpec;
+import cz.tacr.elza.drools.model.item.IntItem;
+import cz.tacr.elza.drools.model.Part;
+import cz.tacr.elza.drools.model.PartType;
+
+rule "Type of place is required"
+when $it: ItemType(code == "ISAAR_PLACE_TYPE")
+     $is: ItemSpec(code in ("ISAAR_PLACE_TYPE_ADMINISTRATIVE", "ISAAR_PLACE_TYPE_AREA", "ISAAR_PLACE_TYPE_WATER", "ISAAR_PLACE_TYPE_ELEVATION", "ISAAR_PLACE_TYPE_POPULATED", "ISAAR_PLACE_TYPE_ROAD", "ISAAR_PLACE_TYPE_SPOT", "ISAAR_PLACE_TYPE_UNDERSEA", "ISAAR_PLACE_TYPE_VEGETATION")) from $it.specs
+then
+    $it.setRequired();
+    $is.setPossible();
+end
+
+rule "Location and hierarchy of the place"
+when $it: ItemType(code in ("COORD_POINT", "GEO_ADMIN_CLASS"))
+then
+    $it.setPossible();
+end
+
