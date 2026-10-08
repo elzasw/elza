@@ -190,9 +190,10 @@ public class UISettings {
         FUND_TEMPLATES(true, EntityType.FUND),
 
         /**
-         * nastavení pro automatizaci importu dao
+         * nastavení pro automatizaci importu dao; globální nastavení může uvést více balíčků,
+         * platí balíček nejhlouběji v pořadí závislostí
          */
-        DAO_LEVEL_IMPORT(true, EntityType.FUND),
+        DAO_LEVEL_IMPORT(true, EntityType.FUND, true),
 
         /**
          * oblíbené specifikace u typu atributu

@@ -675,7 +675,8 @@ filter of the rule set (:file:`rul_package_output_filters.xml` of this or
 another package). The import refuses an unknown code (``CODE_NOT_FOUND``).
 Without ``output-filter`` no filter is preselected.
 
-**Several packages, one setting.** Unlike other UI settings, this one may be
+**Several packages, one setting.** Unlike other UI settings (except the
+global ``dao-import-level-settings``, composed the same way), this one may be
 stated for the same rule set by several packages: each keeps its own, and
 the package that depends on the other wins (packages without a dependency
 between them are ordered by code). A customization replaces the default
