@@ -142,6 +142,16 @@ the earlier ones. The ZP2015 and CZ_BASE rules use priority 100.
 At the start of the ``ATTRIBUTE_TYPES`` evaluation every item type and every
 specification is impossible; a rule has to allow it.
 
+The specifications a rule can allow are those the rule set sees: the
+specifications assigned to the item type by packages related to the package
+of the rule set - the package itself, the packages it depends on and the
+packages depending on it (addons), both transitively. A specification that
+only an unrelated package assigns to a shared item type is not offered under
+the rule set, even by a rule allowing every specification of the item type
+(``ItemSpec() from $it.specs``). The same holds for the entity rules of an
+entity rule set. See "Specifications shared by packages" in the chapter on
+package files.
+
 Order of specifications
 =======================
 

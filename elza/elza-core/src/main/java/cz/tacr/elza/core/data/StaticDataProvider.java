@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -32,6 +33,8 @@ import cz.tacr.elza.domain.RulApTypeDeclaration;
 import cz.tacr.elza.domain.RulPartTypeDeclaration;
 import cz.tacr.elza.domain.RulItemTypeDeclaration;
 import cz.tacr.elza.domain.RulItemSpecDeclaration;
+import cz.tacr.elza.domain.RulItemSpecAssignDeclaration;
+import cz.tacr.elza.domain.RulPackageDependency;
 import cz.tacr.elza.domain.RulExtensionRule;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
@@ -397,12 +400,15 @@ public class StaticDataProvider {
         initApExternalSystems(service.apExternalSystemRepository);
         initPolicyTypes(service.policyTypeRepository);
         List<RulApTypeDeclaration> apTypeDeclarations = service.apTypeDeclarationRepository.findAll();
+        List<RulItemSpecDeclaration> itemSpecDeclarations = service.itemSpecDeclarationRepository.findAll();
         initTranslations(service.translationRepository, service.packageDependencyRepository, apTypeDeclarations,
                          service.partTypeDeclarationRepository.findAll(),
                          service.itemTypeDeclarationRepository.findAll(),
-                         service.itemSpecDeclarationRepository.findAll());
+                         itemSpecDeclarations);
         initRuleSetApTypes(service.ruleSetApTypeRepository, service.ruleSetPartTypeRepository,
                            service.packageDependencyRepository, apTypeDeclarations);
+        initRuleSetItemSpecs(service.packageDependencyRepository.findAll(), itemSpecDeclarations,
+                             service.itemSpecAssignDeclarationRepository.findAll());
         self = this;
     }
 
@@ -445,6 +451,53 @@ public class StaticDataProvider {
             ruleSet.setPartTypeOrder(new ArrayList<>(partsByRuleSet.getOrDefault(ruleSet.getRuleSetId(), Set.of())));
             ruleSet.setDeclaredReadOnly(readOnlyByPackage.getOrDefault(
                     ruleSet.getEntity().getPackage().getPackageId(), Map.of()));
+        }
+    }
+
+    /**
+     * Specifications each rule set sees: those assigned to an item type by a package related to the
+     * package of the rule set - the package itself, the packages it depends on and the packages
+     * depending on it, both transitively ({@link PackageRelations#relatedPackages}). An assignment
+     * nobody declares (data older than the declarations) is seen by every rule set. Only item types
+     * with a hidden specification are stored on the rule set.
+     */
+    private void initRuleSetItemSpecs(List<RulPackageDependency> dependencies,
+                                      List<RulItemSpecDeclaration> itemSpecDeclarations,
+                                      List<RulItemSpecAssignDeclaration> assignDeclarations) {
+        Map<Integer, Set<Integer>> related = PackageRelations.relatedPackages(dependencies);
+        Map<Integer, RulItemSpecDeclaration> declarationById = createLookup(itemSpecDeclarations,
+                RulItemSpecDeclaration::getItemSpecDeclarationId);
+        // item type id -> specification id -> packages assigning the specification to the item type
+        Map<Integer, Map<Integer, Set<Integer>>> assigningPackages = new HashMap<>();
+        for (RulItemSpecAssignDeclaration assign : assignDeclarations) {
+            RulItemSpecDeclaration declaration = declarationById.get(assign.getItemSpecDeclarationId());
+            Validate.notNull(declaration, "Assignment declaration without its specification declaration, id: %d",
+                             assign.getItemSpecAssignDeclarationId());
+            assigningPackages.computeIfAbsent(assign.getItemTypeId(), k -> new HashMap<>())
+                    .computeIfAbsent(declaration.getItemSpecId(), k -> new HashSet<>())
+                    .add(declaration.getPackageId());
+        }
+        for (RuleSet ruleSet : ruleSets) {
+            Integer packageId = ruleSet.getEntity().getPackage().getPackageId();
+            Set<Integer> relatedPackages = related.getOrDefault(packageId, Set.of(packageId));
+            Map<Integer, List<CachedItemSpec>> visibleByType = new HashMap<>();
+            for (ItemType itemType : itemTypes) {
+                Map<Integer, Set<Integer>> packagesBySpec = assigningPackages.get(itemType.getItemTypeId());
+                if (packagesBySpec == null) {
+                    continue;
+                }
+                List<CachedItemSpec> visible = new ArrayList<>(itemType.getItemSpecs().size());
+                for (CachedItemSpec itemSpec : itemType.getItemSpecs()) {
+                    Set<Integer> packages = packagesBySpec.get(itemSpec.getItemSpecId());
+                    if (packages == null || !Collections.disjoint(packages, relatedPackages)) {
+                        visible.add(itemSpec);
+                    }
+                }
+                if (visible.size() < itemType.getItemSpecs().size()) {
+                    visibleByType.put(itemType.getItemTypeId(), Collections.unmodifiableList(visible));
+                }
+            }
+            ruleSet.setItemSpecs(visibleByType);
         }
     }
 

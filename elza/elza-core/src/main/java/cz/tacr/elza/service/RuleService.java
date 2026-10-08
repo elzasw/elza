@@ -866,8 +866,7 @@ public class RuleService {
 
         ArrLevel level = levelRepository.findByNode(node, version.getLockChange());
 
-        // TODO: Limit itemTypes to itemTypes defined in given RuleSet
-		List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes();
+        List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes(version.getRuleSetId());
 
         return rulesExecutor.executeDescItemTypesRules(level, rulDescItemTypeExtList, version);
     }
@@ -892,37 +891,40 @@ public class RuleService {
      * When {@code ruleSetCode} is {@code null} all loaded item types are
      * returned; an unknown rule set yields an empty list. The scoping uses the
      * rule set's availability rules, so it reflects the item types the rule set
-     * can use (POSSIBLE/REQUIRED), not necessarily every code ever stored.
+     * can use (POSSIBLE/REQUIRED), not necessarily every code ever stored; the
+     * specifications are those the rule set sees.
      */
     @Transactional
     public List<RulItemTypeExt> getDescriptionItemTypesByRuleSet(final String ruleSetCode) {
-        List<RulItemTypeExt> all = getAllDescriptionItemTypes();
         if (ruleSetCode == null) {
-            return all;
+            return getAllDescriptionItemTypes();
         }
         RulRuleSet ruleSet = ruleSetRepository.findByCode(ruleSetCode);
         if (ruleSet == null) {
             return Collections.emptyList();
         }
         Set<String> codes = new HashSet<>(getItemTypeCodesByRuleSet(ruleSet));
-        return all.stream()
+        return getRulesetDescriptionItemTypes(ruleSet.getRuleSetId()).stream()
                 .filter(itemType -> codes.contains(itemType.getCode()))
                 .toList();
     }
 
     /**
-	 * Získání typů atributů se specifikacemi pro pravidla
-	 *
-	 * @return typy hodnot atributů
-	 */
-	private List<RulItemTypeExt> getRulesetDescriptionItemTypes() {
-		StaticDataProvider sdp = staticDataService.getData();
+     * Item types for the rules of a rule set, each with the specifications the rule set sees
+     * ({@link RuleSet#getItemSpecs(cz.tacr.elza.core.data.ItemType)}).
+     *
+     * @param ruleSetId
+     *            rule set, null for every specification
+     * @return item types, all impossible
+     */
+    private List<RulItemTypeExt> getRulesetDescriptionItemTypes(@Nullable final Integer ruleSetId) {
+        StaticDataProvider sdp = staticDataService.getData();
 
-		ItemTypeExtBuilder builder = new ItemTypeExtBuilder();
+        ItemTypeExtBuilder builder = new ItemTypeExtBuilder(ruleSetId != null ? sdp.getRuleSetById(ruleSetId) : null);
         builder.add(sdp.getItemTypes());
 
-		return builder.getResult();
-	}
+        return builder.getResult();
+    }
 
     /**
      * Vrací typy atributu.
@@ -932,7 +934,7 @@ public class RuleService {
      */
     public List<RulItemTypeExt> getOutputItemTypes(final ArrOutput output) {
         RulOutputType outputType = output.getOutputType();
-        List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes();
+        List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes(outputType.getRuleSetId());
 
         List<RulItemTypeAction> itemTypeActions = itemTypeActionRepository.findAll();
         Map<Integer, RulItemType> itemTypeMap = new HashMap<>();
@@ -1194,7 +1196,7 @@ public class RuleService {
     public List<RulItemTypeExt> getStructureItemTypesInternal(final Integer structTypeId,
                                                               final ArrFundVersion fundVersion,
                                                               final List<ArrStructuredItem> structureItems) {
-        List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes();
+        List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes(fundVersion.getRuleSetId());
         return rulesExecutor.executeStructureItemTypesRules(structTypeId, rulDescItemTypeExtList, fundVersion,
                                                             structureItems);
     }
@@ -1293,7 +1295,7 @@ public class RuleService {
             modelItems.add(ai);
         }
 
-        List<ItemType> modelItemTypes = createModelItemTypes();
+        List<ItemType> modelItemTypes = createModelItemTypes(ruleSet);
 
         Part parentPart = null;
         if(partForm.getParentPartId() != null) {
@@ -1448,7 +1450,7 @@ public class RuleService {
         }
 
         for (Part part : ap.getParts()) {
-            ModelAvailable modelAvailable = new ModelAvailable(ap, part, part.getItems(), createModelItemTypes());
+            ModelAvailable modelAvailable = new ModelAvailable(ap, part, part.getItems(), createModelItemTypes(ruleSet));
             ModelAvailable availableResult = executeAvailable(part.getType(), modelAvailable, ruleSet);
 
             // validace možných itemů
@@ -1883,12 +1885,17 @@ public class RuleService {
         return null;
     }
 
-    private List<ItemType> createModelItemTypes() {
+    /**
+     * Item types for the entity rules of a rule set, each with the specifications the rule set sees
+     * ({@link RuleSet#getItemSpecs(cz.tacr.elza.core.data.ItemType)}). Every item type is offered;
+     * the rules decide which ones are possible.
+     */
+    private List<ItemType> createModelItemTypes(final RuleSet ruleSet) {
         StaticDataProvider sdp = staticDataService.getData();
         Collection<cz.tacr.elza.core.data.ItemType> itemTypes = sdp.getItemTypes();
         List<ItemType> modelItemTypes = new ArrayList<>(itemTypes.size());
         for (cz.tacr.elza.core.data.ItemType itemType : itemTypes) {
-            modelItemTypes.add(new ItemType(itemType));
+            modelItemTypes.add(new ItemType(itemType, ruleSet.getItemSpecs(itemType)));
         }
         return modelItemTypes;
     }
@@ -1975,11 +1982,10 @@ public class RuleService {
         List<ItemType> itemTypeList = null;
         try {
             // own filter of the rule set, then filters contributed by other packages
-            List<RulArrangementRule> filterRules = staticDataService.getData()
-                    .getRuleSetById(rulRuleSet.getRuleSetId())
-                    .getRulesByType(RulArrangementRule.RuleType.ITEM_TYPE_FILTER);
+            RuleSet ruleSet = staticDataService.getData().getRuleSetById(rulRuleSet.getRuleSetId());
+            List<RulArrangementRule> filterRules = ruleSet.getRulesByType(RulArrangementRule.RuleType.ITEM_TYPE_FILTER);
             if (rulRuleSet.getItemTypeComponent() != null || !filterRules.isEmpty()) {
-                itemTypeList = availableItemsRules.execute(rulRuleSet, filterRules, createModelItemTypes());
+                itemTypeList = availableItemsRules.execute(rulRuleSet, filterRules, createModelItemTypes(ruleSet));
             }
         } catch (Exception e) {
             throw new SystemException(e);

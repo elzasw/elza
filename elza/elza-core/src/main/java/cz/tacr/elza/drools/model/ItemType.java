@@ -21,13 +21,19 @@ public class ItemType {
     private List<ItemSpec> specs;
     private Map<String, ItemSpec> specMap;
 
-    public ItemType(final cz.tacr.elza.core.data.ItemType itemType) {
+    /**
+     * Item type with the specifications a rule set sees, see
+     * {@link cz.tacr.elza.core.data.RuleSet#getItemSpecs(cz.tacr.elza.core.data.ItemType)}.
+     *
+     * @param itemSpecs
+     *            specifications offered to the rules, a subset of the item type's specifications
+     */
+    public ItemType(final cz.tacr.elza.core.data.ItemType itemType, final List<CachedItemSpec> itemSpecs) {
         this.itemType = itemType;
         this.repeatable = false;
         this.requiredType = RequiredType.IMPOSSIBLE;
-        
-        List<CachedItemSpec> itemSpecs = itemType.getItemSpecs();
-        if (CollectionUtils.isNotEmpty(itemType.getItemSpecs())) {
+
+        if (CollectionUtils.isNotEmpty(itemSpecs)) {
             specs = new ArrayList<>(itemSpecs.size());
             specMap = new HashMap<>();
             for (RulItemSpec itemSpec : itemSpecs) {
