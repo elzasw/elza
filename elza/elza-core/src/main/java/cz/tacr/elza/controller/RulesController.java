@@ -2,6 +2,7 @@ package cz.tacr.elza.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -56,6 +57,7 @@ public class RulesController implements RulesApi {
      * @return The request has succeeded. (status code 200)
      */
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<ItemTypeList> rulesListItemTypes(String ruleSetCode, String acceptLanguage) {
         // names of item types and specifications are translated; column names of table views are not
         SysLanguage language = packageTexts.requestLanguage();
@@ -70,6 +72,7 @@ public class RulesController implements RulesApi {
      * @return The request has succeeded. (status code 200)
      */
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<List<PartType>> rulesListPartTypes() {
     	List<RulPartType> partTypes = structureService.findPartTypes();
     	List<PartType> result = partTypes.stream()
