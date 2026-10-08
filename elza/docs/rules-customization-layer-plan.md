@@ -1,543 +1,468 @@
 # Rules-package customization layer and first internationalized version — plan
 
-Status as of 2026-10-07. This is the design record for extending rules packages without forks
-(addon packages, customizations edited in the admin UI) and for the first internationalized
-version of ELZA (an English generic rule set based on ISAD(G)). Line numbers refer to the `3.4.x`
-tree at the time of writing.
+Status as of 2026-10-08. Design record for extending rules packages without forks (addon packages,
+customizations edited in the admin UI), for entity description frameworks beside CAM, and for the
+first internationalized version of ELZA (an English rule set based on ISAD(G)). Finished work is
+described for implementers in the implementation guide (`elza/docs/implementation-guide`, English
+only) and in the release notes; this plan keeps the decisions later steps build on and the open work.
+Line numbers refer to the `3.4.x` tree at the time of writing.
 
-## 1. Goal and principles
+## 0. Next
+
+Direction agreed 2026-10-08: **A1 (texts built in core) as a decision record, then 2b
+`rules-en-isadg`.** The customization-layer pilots (Phase 1 rest, Phase 3) stay independent and can
+be interleaved; 2c.6 (EAC-CPF export) and R2 (reference scope) wait for a concrete need and for the
+answers to R2's questions.
+
+1. **A1** — inventory done (section 7): three rules proposed (persisted findings as codes rendered
+   by the client; request-time texts from a core catalog in the request language; content texts in
+   the description language). Waiting for the user's decision, then the implementation step.
+2. **2b** — `rules-en-isadg` (section 7); prerequisite 2c.5 met.
+3. Release gate of 3.4 (section 6): re-import of unchanged CZ_BASE 89 and ZP2015 on a PostgreSQL copy
+   after the four declaration migrations, `view_order` and spec order unchanged.
+4. Follow-up of 2c.5 (section 7): **L2** (unit-date text per language) designed with the
+   description-language step of 2b, its UI-language half can start as soon as Q1 is answered. L1
+   (specifications a rule set sees) is done.
+
+Nothing blocks implementation. Decisions still open are listed in section 5 (R2 Q1–Q4) and in the A1
+record once it exists.
+
+## 1. Goals and principles
 
 **Goals.**
-- Institutions customize ZP2015 (and later the generic rule set) without forking it. Today three
-  institutions (DPP, CT, UK) maintain patch overlays on the stock package ZIPs. Their changes are
-  small and ~90 % additive: own item types, specifications on upstream item types, availability and
-  validation rules, small UI-settings edits. The overlays exist only because a dependent package
-  could not contribute to ZP2015.
-- An English-speaking archive can describe a fund in an English rule set, with English names
-  everywhere it looks, as early as possible.
+- Institutions customize ZP2015 (and later the generic rule set) without forking it. DPP, CT and UK
+  maintain patch overlays on the stock package ZIPs; their changes are small and ~90 % additive.
+- An English-speaking archive describes funds and entities in English rule sets, with English names
+  everywhere.
+- One installation holds several entity description frameworks: CAM (Czech methodology) and an
+  international one based on ISAAR(CPF), plus scope-bound extensions of CAM (portal.nacr.cz).
 
 **Principles.**
-- **The layer is a package.** Every customization is a `rul_package`: a file addon (a ZIP
-  depending on ZP2015 / CZ_BASE) or a named customization edited in the admin UI. Database rows stay
-  a projection of imported packages; only the importer writes rule tables. A UI-made customization
-  and a git-managed addon are the same artefact.
-- **DRL first.** Behaviour a customization needs is expressed in its own Drools rules, running after
-  the base rules (priority ≥ 200), or in extension rules when scoped. A customization made in the UI
-  carries rules generated from fixed templates. Declarative primitives are added later, where rules
-  prove repetitive; the generated templates are their natural candidates.
-- **Data only where rules cannot help.** The first phase adds database changes only for what DRL
-  cannot express: the position of a new specification among the existing ones.
-- **Any number of customizations per installation** (per domain, per fund, per part of a fund),
-  each one a `rul_package`, optionally scoped through an arrangement extension of its own.
-- **Translations are package content too.** English names for entities of another package (CZ_BASE)
-  are contributed by a package, the same way specifications are.
+- **The layer is a package.** Every customization is a `rul_package` (file addon or a customization
+  edited in the UI). Only the importer writes rule tables.
+- **DRL first.** Customization behaviour is the customization's own rules (priority ≥ 200, or
+  extension rules when scoped); declarative primitives only where rules prove repetitive.
+- **Methodologies are not translated.** CZ_BASE (CAM) and ZP2015 stay Czech; the international
+  version gets its own packages with English source texts. Translations serve those packages and
+  customizations.
+- **Definition and use are separate.** A definition (class, part type, item type, specification) may
+  be declared by several packages under one code and exists once; each declaration carries its own
+  texts in its package's language. Rule sets state which definitions they use (members) and in which
+  order.
+- **Precedence is one rule everywhere:** the package deeper in dependency order wins, ties by package
+  code (translations, declarations, members). An installation fixes a conflict of unrelated packages
+  with a small local package depending on both.
+- **Revalidation is the author's decision** through `compatibility-rul-package`.
+- **No compile check at import.** A broken rule shows up where it runs; ELZA stays operational and a
+  fixed package can be imported. Only the rule editor of Phase 4 compiles before saving.
+- **Migrations are SQL changesets for PostgreSQL**; H2 is used only by tests and holds no data.
 
-## 2. Existing functionality this plan builds on
+## 2. Done (2026-09 – 2026-10)
 
-Already in place; listed only as functionality the plan relies on.
-
-- **Addon contribution to a foreign rule set.** A dependent package that ships
-  `rul_rule_set/<FOREIGN_CODE>/` is imported as a `RuleState.ADDON` context. Its arrangement rules,
-  extensions, actions and filters are stored against the addon package and run after the base rules
-  when their priority is higher. Specifications attach to foreign item types through
-  `<item-type-assign>`. Proven by `elza-core/src/test/java/cz/tacr/elza/rules/addon/AddonPackageTest.java`
-  with the test package `elza-core/src/test/resources/rules-addon-test/`.
-- **Rule order.** ZP2015 and CZ_BASE declare every arrangement rule at priority 100; addon and
-  customization rules use 200 or more. `DescItemTypesRules.execute` runs arrangement rules by
-  priority, then the extension rules active on the node and its ancestors.
-- **Package deletion.** `PackageService.deletePackage` cleans rule files in every rule set the
-  package contributed to and reloads static data after commit. It does not yet publish the
-  websocket `PACKAGE` event.
-- **In-memory import entry.** `PackageContext.init(Map<String, ByteArrayInputStream>)` exists; only
-  the public `importPackageInternal(File, boolean)` signature forces a file.
-- **Per-fund scoping.** Arrangement extensions (`rul_arrangement_extension`) are switched on per node
-  (`arr_node_extension`, inherited by the subtree) in the node settings dialog; their extension rules
-  run only there. CT already uses this for `IDEC_Doporuceny`.
-- **Bilingual UI chrome.** The React UI has Czech and English catalogs. Names that come from
-  packages (item types, specifications, ap types, part types, rule sets) are shown verbatim and are
-  Czech in CZ_BASE and ZP2015.
-- **Placement of specifications** (done in Phase 1). `view-after` on `<item-type-assign>` places a
-  specification after another specification of the same item type; stored in
-  `rul_item_type_spec_assign.view_after_spec_code` (changeset `20261006140000`, which also adds the
-  unique key `ux_rul_item_type_spec_assign`), applied by `ItemTypeUpdater.postSpecsOrder` through
-  `packageimport/AnchoredOrder` on every import, exported back by `ItemSpec.fromEntity`.
-- **Addon item-type filter** (done in Phase 1). Rule type `ITEM_TYPE_FILTER`: rules of other
-  packages run after the rule set's own filter in `RuleService.getItemTypeCodesByRuleSet`
-  (`AvailableItemsRules.execute`), so addon item types reach the grid, search, add-item dialog and
-  AI dictionary.
-- **Documentation.** Package format and customization are described for implementers in the
-  English-only implementation guide `elza/docs/implementation-guide` (chapters "Rules Packages",
-  "Package Files", "Customizing a Rule Set"); the Czech documentation points to it instead of
-  describing packages itself. Each implemented step updates the guide; this plan keeps only open
-  work.
-
-## 3. Changes against the previous version of this plan
-
-- **DRL first instead of declarative primitives.** The availability flag, `specs-extensible` with a
-  runtime policy, and the `rul_rule_set_item_type` table are gone from the early phases. Spec
-  visibility and scoping are rules of the customization; addon item types reach the grid, search
-  and AI dictionary through an addon filter rule.
-- **Spec ordering stays early.** Placing a new specification relative to the existing ones is
-  essential for archivists and customization authors. It cannot be expressed in DRL, so it is the
-  one database change of Phase 1.
-- **The English rule set moves from the last phase to Phase 2.** It never depended on the
-  customization layer. It needs core neutrality fixes and English names for CZ_BASE entities.
-- **Localization is a generic translation layer, not a language of the entity.** Entities keep one
-  source text; translations are optional key-value rows (entity, code, field, language) contributed by
-  any package. A language column on `rul_item_type` was rejected: whether an archive uses an item
-  type is decided by the rule set, and duplicating shared elements per language would split data,
-  rules and exports. Localization of package texts becomes its own Phase 2a, the proposed next step.
-- **Phases merged.** Settings composition joins the pilots, because the pilots are its only early
-  consumer. Customization backend, specification UI and the rule editor become one phase, because a
-  UI-made specification needs a generated rule anyway.
-- **A compile check at import is required.** Today a DRL is compiled lazily on first use
-  (`Rules.reloadRules`), so a broken addon rule would surface as errors in archivists' forms. With
-  DRL first this check is mandatory.
-
-## 4. Phases
-
-| Phase | Content | DB | UI | Exit criterion |
-|---|---|---|---|---|
-| **1. Layer core** | Done: spec placement, addon item-type filter rules. Open: DRL compile check at import; revalidation on rule change; export fixes; `PACKAGE` event on delete | done (changeset A) | refTable invalidation only | `AddonPackageTest` covers each item; re-importing unchanged ZP2015 and CZ_BASE is a no-op on a production copy |
-| **2a.1 Localization infrastructure** (done, 7.0.1) | Changeset T; translation files in packages; resolver `PackageTexts`; `GET /api/v1/languages`; translated `GET /api/v1/rules/itemTypes` | changeset T | none | done |
-| **2a.1b Review fixes** (done, 7.0.2) | source hash in translation files, same-language overrides, case-insensitive tags, file validation, message pattern check, SIMPLE-DEV version, public language endpoint | none | the client message shows the reason of a refused translation | done |
-| **2a.2 Language of requests and read sites** (done, 7.0.3) | the client sends its UI language and offers the `ui_enabled` languages; server `LocaleResolver` with the `elza.locale` default; all read sites through the resolver | none | small (language header, language picker, refetch on switch) | with the English UI, names of translated entities appear in English everywhere; without a header the installation's language is used |
-| **2a.3–2a.5 Messages, translator support, content** (7.0.4) | message keys for validation messages; missing/outdated/orphaned translations endpoint and page; `CZ_BASE_EN` | own changeset (conformity message keys) | message rendering, admin page | with the English UI, entity types, part types and item types of CZ_BASE and the validation messages appear in English; Czech unchanged |
-| **2b. First internationalized version** | `rules-en-isadg` package; core neutrality fixes; description language for generated content | none | none | an English user creates an ISAD(G) fund, describes and validates it, and sees no Czech text |
-| **3. Pilots** | Settings composition; DPP and CT converted to file addons; their overlays retired | none | none | both pilots run on the dev server against stock ZP2015 |
-| **4. Customizations in the UI** | `kind`, archive, `CustomizationPackageService`, OpenAPI `customization`, admin page: customizations, specifications with position and generated rule, rule editor with compile check | changeset B | yes | an admin adds "osobní číslo" after an existing identifier type, and it appears in the node form at that position without restart |
-| **5. Declarative primitives and overrides** | Templates that repeat become data (`specs-extensible` guard); item-type ordering anchors and layout pass; structure extensions across packages; removable new-level scenarios; code aliases; spec retirement; UK pilot | changeset C | partial | UK overlay retired |
-| **6. Convergence** | Rule-set inheritance; renames of semantically generic ZP2015 codes towards the ISAD(G) catalogue via aliases | later | — | — |
-
-Phases 1 and 2 are independent and can run in parallel. Phase 2a uses nothing from the open part of
-Phase 1; steps 2a.1 (7.0.1), its review fixes (7.0.2) and 2a.2 (7.0.3) are done; 2a.3 comes next;
-2b builds on 2a.
-
-## 5. Database changes
-
-All changes go into `elza-core/src/main/resources/db/changelog/db.elza-3-part-03.xml`, with
-changeset ids in the `yyyyMMddHHmmss` convention. The changelog also supports MSSQL, so no
-PostgreSQL-only constructs (partial indexes) are used. Every new column has a default that
-reproduces today's behaviour.
-
-### 5.1 Changeset A — spec ordering (Phase 1, done)
-
-Implemented as changeset `20261006140000`: `rul_item_type_spec_assign.view_after_spec_code
-nvarchar(50) NULL` and the unique key `ux_rul_item_type_spec_assign (item_type_id, item_spec_id)`.
-The changeset deletes duplicate assignments (keeping the oldest row) before adding the key. Behaviour
-is described in the implementation guide, chapter "Rules Packages", section "Order of
-specifications".
-
-### 5.2 Changeset T — translations of package-provided texts (Phase 2a)
-
-**Model.** Every entity keeps its text in its own table (`rul_item_type.name` etc.), written in the
-source language of the package that defines it; that text is the default and the fallback. A
-translation is an optional row per translatable piece of text and language. One item type exists
-once, whatever the number of languages: an ISAD(G) element has an English source name and a Czech
-translation; a country-specific element (`ZP2015_NAD`) has only its Czech source name. Which item
-types an archive uses is decided by the rule set, never by language.
-
-| Change | Definition | Meaning |
+| Step | Result | Commit |
 |---|---|---|
-| `sys_language.tag` | `nvarchar(10) NOT NULL`, unique `ux_sys_language_tag` | BCP 47 tag of the language; the key used by translation files, `Accept-Language`, the client setting and display names. Filled for the rows inserted by `db.elza-init.xml`: cze `cs`, eng `en`, fre `fr`, ger `de`, heb `he`, ita `it`, lat `la`, pol `pl`, rus `ru`, slo `sk`, spa `es`. Installations have no own rows; should one exist, a precondition stops the update with the list of codes without a tag, and the administrator fills them before restarting. |
-| `sys_language.ui_enabled` | `boolean NOT NULL DEFAULT false`; `true` for `cs`, `en` | The UI can be used in this language. |
-| `sys_language.scope_enabled` | `boolean NOT NULL DEFAULT true` | The language can be chosen as the language of an entity scope (`ap_scope.language_id`); `true` for all rows keeps today's choice. |
-| new `rul_translation` | `translation_id int PK`; `package_id int NOT NULL FK rul_package` (contributing package); `entity_type nvarchar(50) NOT NULL`; `entity_code nvarchar(100) NOT NULL`; `field nvarchar(30) NOT NULL`; `language_id int NOT NULL FK sys_language`; `text_value ${type.text} NOT NULL`; `source_hash nvarchar(20) NULL`; `ux_rul_translation (entity_type, entity_code, field, language_id, package_id)`; index `ix_rul_translation_package (package_id)` | One translated piece of text: field `field` of the entity `entity_type`/`entity_code`, in the given language. |
-| `rul_package.language_id` | `int NOT NULL FK sys_language`, default the row of `cs` | Source language of the texts the package defines (`<language>cs</language>` in `package.xml`). Lets the client mark untranslated texts and lets the import skip a "translation" into the source language. |
+| Phase 1 (part) | spec placement `view-after` (changeset `20261006140000`), addon item-type filter rules (`ITEM_TYPE_FILTER`), `AddonPackageTest` | earlier |
+| 2a.1, 2a.1b | `rul_translation`, `sys_language.tag/ui_enabled/scope_enabled`, `rul_package.language_id`; `translations/<lang>.xml` with `src-hash`; resolver `PackageTexts`; `GET /api/v1/languages` | `74506e2356` + follow-up |
+| 2a.2 | UI language in the cookie `elza-lang`, `PackageTexts.requestLanguage()`, read sites of names, language picker (settings, login) | `916851c229` |
+| 2c.1 | entity rules `rul_rule_set/<RS>/rul_entity_rule.xml`, table `rul_entity_rule` with FKs to class and part type, `RuleSet.getEntityRules` | `d7ad30f6bd` |
+| 2c.2 | class members `rul_rule_set/<RS>/rul_ap_type.xml` (`assignable`), server enforcement (`AP_TYPE_NOT_IN_RULE_SET`), scope-aware Fluent class picker, `scopeRuleSetMap` | `7041ea5d8a` |
+| 2c.3 | classes declared by several packages (`rul_ap_type_declaration`), parents must agree (`AP_TYPE_CONFLICT`), names by language | `4681181964` |
+| 2c.4a | name/index Groovy scripts as entity rules of kind `INDEX`, PT_* structured types removed | `7571baeaf9` |
+| 2c.4b | part types declared by several packages (`rul_part_type_declaration`); order of classes (`position`) and the part list of a rule set (`rul_rule_set/<RS>/rul_part_type.xml`, `rul_rule_set_part_type`) | `6669125db8` |
+| 2c.4c prep | unused item type flag `is_value_unique` removed (changeset `20261008120000`; the XML element is ignored) | `d586f7e1c8` |
+| 2c.4c | item types declared by several packages (`rul_item_type_declaration`, changeset `20261008130000`); stored-data values must agree (`ITEM_TYPE_CONFLICT`), removal of a used item type refused (`ITEM_TYPE_IN_USE`); export writes the mask and structured type it omitted | `19166f8303` |
+| 2c.5a | core without CZ_BASE (CAM checks only with CAM item types, JWT user scope/class settings, institution short name, report), `AUTO_ITEMS` as an entity rule (changeset `20261008140000`), sequence fix of `ap_scope`/`par_institution_type` (`20261008150000`), task types deleted with their package; `StandaloneFrameworkTest` | `1ced6233ce` |
+| 2c.4d | specifications declared by several packages (`rul_item_spec_declaration`, `rul_item_spec_assign_declaration`, changeset `20261008160000`); assignments are the union of the packages' declarations; `ITEM_SPEC_CONFLICT`, `ITEM_SPEC_IN_USE`; export fixes (each specification once, unassigned ones too) | `3dd400a540` |
+| 2c.5b-prep | class tree of a rule set = its members (union for the installation), `item-aptypes` of foreign declarations equal to the owner's allowed, startup import includes packages without dependencies (bug) in code order | `26d6d50d0b` |
+| L1 | a rule set sees only the specifications assigned by packages related to its own (`PackageRelations`, `RuleSet.getItemSpecs`, Drools models and `ItemTypeExtBuilder` built per rule set); `IsaarCpfPackageTest` languages, `PackageRelationsTest`; guide chapters 01 and 02 | this commit |
+| 2c.5b-d | package `package-isaar-cpf` (ISAAR_CPF, version 1, English): shared classes, part types, 31 shared item types + 8 own, 121 specifications, rules and scripts, UI settings; distribution and test wiring; `IsaarCpfPackageTest` (alone, entities, export round trip, with CZ_BASE in both orders); guide chapter 04 | `cb38e0e182`, `222ce99cec` |
 
-**`sys_language` is the language registry.** It already holds the languages of entity scopes; it now
-also says which languages the UI offers, and every translation refers to it. Liquibase owns its rows:
-adding a UI language needs a new frontend catalog and so a code release, which carries the changeset
-setting `ui_enabled`. A new usage of languages becomes a new flag column - each usage needs code
-reading it anyway, so a separate usage table would add nothing. The codes in `code` are ISO 639-2/B
-(`cze`, `ger`, `slo`, `fre`), not the terminology codes (`ces`, `deu`, `slk`, `fra`) some libraries
-expect; every lookup goes through `tag`, so neither convention leaks.
+**Decisions later steps build on.**
+- *Translations:* key `(entity_type, entity_code, field, language)`, rows owned by the contributing
+  package; an outdated translation (source hash differs) is still used. Declared names are added to
+  the translations in static data (no rows stored).
+- *Declarations (2c.3, 2c.4b, 2c.4c, 2c.4d):* the defining row (`ap_type`, `rul_part_type`,
+  `rul_item_type`, `rul_item_spec`) holds the summary - owner and structural values from the winning
+  declaration, the texts in the installation language. Item types and specifications differ: the
+  package that created them stays the owner while it declares them (the owner decides the place in
+  `view_order` / among the specifications), the other values come from the owner's declaration, and
+  a declaration of another package takes no place and may state RECORD_REF classes (`item-aptypes`)
+  only equal to the owner's; data type, use of specifications, structured type and table columns
+  must agree. Specification assignments are the union of the packages' assignment declarations.
+  Nothing reads the owner of a shared definition any more; the repositories no longer offer
+  package-scoped finders. A definition is removed with its last declaration, refused while entities
+  use it (`PART_TYPE_IN_USE`, `ITEM_TYPE_IN_USE`, `ITEM_SPEC_IN_USE`) or other packages refer to it
+  (`FOREIGN_DEPENDENCY`: entity rules, members, part lists, child parts). Conflicting structure
+  (class parent) refuses the import; values that do not affect stored data (part `repeatable`,
+  `child_part`) come from the winning declaration.
+- *Members and order:* a rule set without members offers everything (today's behaviour). The class
+  tree of a rule set shows its members only: a member's parent chain is walked through members, the
+  nearest member ancestor is the parent, otherwise the member is a root; the global tree (search
+  filters) is the union over the entity rule sets. Display order: members of the owner of the rule
+  set in file order, then contributing packages by dependency depth, package code, file order; a
+  code listed twice keeps its first position. The part list is applied by the client (detail and
+  copy dialog); an unlisted part type with existing parts is still shown. The `parts-order` UI
+  setting is only the fallback for rule sets without a list.
+- *Scripts:* the index script of a part (`INDEX`) and the script computing items of the entity
+  (`AUTO_ITEMS`) are entity rules; the most specific rule of the rule set of the entity's scope applies
+  (`GroovyService.mostSpecificEntityRule`); a scope without a rule set uses the only ENTITY rule set.
+  No `AUTO_ITEMS` rule means no computed items. The index script contract (`DISPLAY_NAME` required,
+  `PT_PREFER_NAME`, `SORT_NAME`, `SHORT_NAME`) is in the implementation guide.
+- *Core and CAM:* core paths reachable by any entity work without CAM's item types; the CAM checks
+  written in Java (relations, identifiers, GEO) apply only when those item types exist.
+- *Tests:* packages stay installed across test classes; a test needing an installation without them
+  calls `HelperTestService.deleteAllPackages()` and later classes re-import what they need. A second
+  Spring context in the JVM is not possible (`DataType` keeps static state).
+- *Scopes:* the package import assigns the ENTITY rule set to scopes without one only when there is
+  exactly one; a change of a scope's rule set is refused while it holds entities of classes the new
+  rule set does not offer.
+- *Startup import:* packages without dependencies are imported in code order (`CZ_BASE` before
+  `ISAAR_CPF`), so a new Czech installation gets CAM on scopes without a rule set.
+- *Specifications a rule set sees (L1):* the assignments of packages related to the package of the
+  rule set - itself, its dependencies and its dependents, both transitively
+  (`PackageRelations.relatedPackages`); an assignment without a declaration is seen everywhere.
+  Computed in static data (`RuleSet.getItemSpecs(ItemType)`) and applied wherever a rule model is
+  built for a rule set: fund, output and structured-object rules (`ItemTypeExtBuilder`), entity
+  rules and item-type filters (`RuleService.createModelItemTypes`), the item-type listing of a rule
+  set (`rulesListItemTypes`, AI tool). `getAllDescriptionItemTypes` (no rule set) keeps every
+  specification. Siblings are not related: a local package depending on CZ_BASE and ISAAR_CPF does
+  not make CAM's specifications visible to ISAAR_CPF.
 
-**Names of languages are not stored.** Display names come from the Unicode CLDR data, by tag and the
-language of the reader: on the server `Locale.forLanguageTag(tag).getDisplayLanguage(locale)` (JDK),
-in the browser `Intl.DisplayNames`. This gives `němčina` in the Czech UI, `German` in the English UI
-and `Deutsch` as the name of the language in itself, which is what a language picker shows. The
-existing `sys_language.name` (Czech names) stays only as the fallback for a language CLDR does not
-know; no `LANGUAGE` translations and no native-name column are needed.
+## 3. Phases and order
 
-- **Generic key-value, not fixed columns.** A row is one piece of text, so any field of any entity
-  can be translated (output types, templates, extensions, type groups, messages) without a schema
-  change, a missing translation is a missing row, and a translation of only the shortcut is
-  possible.
-- **`field` is required**: `name`, `shortcut`, `description`, or another documented name for entity
-  kinds with more texts. A required field keeps one row = one text; an optional "context" would let
-  two rows differ only by an empty or filled value.
-- **Structured key, not one string.** Separate columns let the import check that the translated
-  entity exists, let deletion and orphan checks use plain queries, and give the list of
-  untranslated texts per language with a join against the entity tables. The package file and the
-  client may show the key as one string (`ITEM_TYPE.ZP2015_NAME.name`); the database does not.
-- **Globally unique keys.** Codes of item types, specifications, rule sets, entity types, part
-  types, structured types, extensions, output types, templates, policy types and issue types/states
-  are globally unique and used as they are. Entities whose codes are unique only within a rule set
-  are qualified with the rule set code: type groups `ZP2015/01_BASE`. Messages are qualified with the
-  package code (5.2 `MESSAGE` below).
-- **`entity_type` values** (documented in the implementation guide; adding one needs no schema
-  change): `ITEM_TYPE`, `ITEM_SPEC`, `RULE_SET`, `AP_TYPE`, `PART_TYPE`, `STRUCTURED_TYPE`,
-  `POLICY_TYPE`, `OUTPUT_TYPE`, `TEMPLATE`, `ARRANGEMENT_EXTENSION`, `TYPE_GROUP`, `ISSUE_TYPE`,
-  `ISSUE_STATE`, `MESSAGE`. Languages are not among them: their names come from CLDR (above).
-- **`MESSAGE`**: texts of validation and other messages written by rules. A rule reports a message
-  key instead of a sentence (`ZP2015/UJ_012`); the package defines the source text of the key in its
-  own translation file for its source language, and other languages in further files. Arguments are
-  `java.text.MessageFormat` placeholders (`{0}`, `{1}`), formatted with the locale of the target
-  language; a literal apostrophe is written `''`. Replaces the separate "message keys" item of the
-  earlier plan.
-- **Languages** are rows of `sys_language`; files and requests name them by tag (`cs`, `en`). A
-  request for `en-GB` falls back to `en`. An unknown tag in a translation file refuses the import:
-  the language must be added to `sys_language` first.
-- **Stale translations**: `source_hash` is a short hash of the source text the translation was made
-  from (the same idea as `srcHash` in the UI catalog `en.json`). The import computes the current
-  hash; a mismatch marks the translation outdated. An outdated translation is still used, and listed
-  as outdated for the translator.
-- **Precedence**: when several packages translate the same text, the package latest in dependency
-  order wins (dependency depth, ties by package code), so a customization package can override a
-  translation of the base package.
-- **Lifecycle**: rows belong to the contributing package; `deletePackage` removes them, the package
-  export writes them back to the translation files. Rows translating an entity that no longer exists
-  stay (the entity may come back with the next version of its package) and are reported as orphans.
-
-### 5.3 Changeset B — customization packages (Phase 4)
-
-| Change | Definition | Meaning |
+| Phase | Content | State |
 |---|---|---|
-| `rul_package.kind` | `nvarchar(20) NOT NULL DEFAULT 'IMPORTED'`, values `IMPORTED`, `LOCAL` | `LOCAL` = edited in the admin UI. A file import of a code whose row is `LOCAL` is refused. Never written into `package.xml`. |
-| new `rul_package_archive` | `package_archive_id int PK`, `package_id int NOT NULL FK rul_package ON DELETE CASCADE`, `version int NOT NULL`, `content blob NOT NULL` (bytea / varbinary(max)), `create_date timestamp NOT NULL`, `user_id int NULL FK usr_user`, `ux_rul_package_archive (package_id, version)` | The exact ZIP of every version of a customization: the source the UI edits, the export download and the undo history. |
+| **2c. Entity description frameworks** | ISAAR_CPF package done (section 4); 2c.6 EAC-CPF export and R2 reference scope on demand | done for 2b |
+| **A1. Analysis: texts built in core** | decide per group of texts the Java code builds (validation messages, CSV headers) whether they belong to core, the rules or the client | **inventory done, decision pending** (section 7) |
+| **2b. First internationalized version** | `rules-en-isadg` referring to the ISAAR_CPF classes; core neutrality; description language for generated content | after A1 |
+| **2a.3 Remaining read sites** | tree titles, specification categories, further entity kinds, AI context; CSV exports after A1 | open, independent |
+| **2a.4 Translation template** | export of translatable texts with source, hash and state | on demand (first maintained translation) |
+| **1. Layer core (rest)** | revalidation requested by an addon, `PACKAGE` event on delete, settings export guard (section 6) | open, independent |
+| **3. Pilots** | settings composition; DPP and CT as file addons | after 1 |
+| **4. Customizations in the UI** | `kind`, archive, customization service and admin page, rule editor with compile check | after 3 |
+| **5. Declarative primitives and overrides** | `specs-extensible`, item-type anchors, structure extensions across packages, aliases, retirement; UK pilot | later |
+| **6. Convergence** | rule-set inheritance, renames towards ISAD(G) | later |
 
-- The ZIP is stored rather than regenerated from rows, because the UI change is applied to the
-  package model and re-imported. Customizations are user data, so they belong in the database
-  backup, not in the work directory. A customization is a few kilobytes per version.
+## 4. The international entity framework (2c.5) — done
 
-### 5.4 Changeset C — declarative primitives and overrides (Phase 5, sketch)
+**Goal (R1).** Persons, families and corporate bodies described according to ISAAR(CPF), with English
+source texts, in the same installation as CAM entities and sharing with them what means the same.
+ISADG (2b) will refer to these entities as creators. The result is described in the implementation
+guide, chapter "International entity description (ISAAR_CPF)".
 
-- `rul_item_type.specs_extensible` — the owning package declares a vocabulary open; a guard against
-  adding specifications to closed vocabularies such as `ZP2015_LEVEL_TYPE`, and the basis for
-  replacing the generated "spec follows type" rule by data.
-- `rul_item_type.view_after_code` — item-type ordering anchors, with a layout pass that replaces the
-  per-package block allocation of the globally unique `view_order`.
-- `rul_item_type_spec_assign.retired` — withdraw a used specification from the offer while existing
-  values keep resolving.
-- `rul_item_type_alias`, `rul_item_spec_alias` — permanent old codes after a rename in place.
+### 4.1 Decisions (user, 2026-10-07 and 2026-10-08)
 
-## 6. Phase 1 — layer core (open part)
+1. **No dependency between ISAAR_CPF and CZ_BASE.** Definitions are shared through declarations of
+   the same code; each package works alone.
+2. **Roots only, kind of body as data** (research R-a, option (a)): assignable `PERSON_INDIVIDUAL`,
+   `FAMILY`, `PARTY_GROUP`, `GEO`, `TERM`; own ENUM item types `ISAAR_CORP_TYPE`,
+   `ISAAR_LEGAL_STATUS`, `ISAAR_FAMILY_TYPE`, `ISAAR_PLACE_TYPE`, `ISAAR_CONCEPT_SCHEME`. CAM's
+   subclasses (kinds of bodies, fictional and non-human classes, family branches) stay CAM-only; the
+   mapping of CAM classes to ISAAR values is in the guide chapter.
+3. **Persons and families through option D:** the class tree of a rule set shows its members only;
+   `PERSON` and `DYNASTY` are declared by ISAAR_CPF as parents (CAM's "person or being" is wider than
+   ISAAR's person), not as members. CAM's logic is unchanged. Rejected: a visible grouping root (C) and
+   ISAAR using the root class (E) - CAM is the Czech national system and its subclass concept is not
+   shared with other methodologies.
+4. **Non-agent classes:** `GEO` (Place) and `TERM` (Concept) in the first version; no `EVENT` class
+   (dated facts of an entity are `PT_EVENT` parts); functions and mandates as concepts and text;
+   `ARTWORK` stays CAM-only.
+5. **Vocabularies as specifications** on the own ENUM item types, reuse of CAM's codes where the
+   meaning matches (name forms, languages, identifier types, kinds of beginning and end, event types,
+   relation types with CAM's target classes). The proposed values are **accepted for version 1**
+   (2026-10-08); a later change of a value is a new specification code (package version bump, data
+   migration for stored values).
+6. **Shipped with every installation**; a scope uses it when its rule set is chosen.
+7. **Research documents stay out of git** (`docs/entity-framework-research.md`,
+   `docs/isaar-cpf-cam-comparison.md`, `research_notes/`, `reports/`); what the guide needs from them
+   (the CAM class mapping) is in the guide itself.
 
-Spec placement and addon item-type filter rules are done (section 2). The items below need further
-discussion before implementation.
+### 4.2 Results
 
-### 6.1 Compile check at import
-- `processArrangementRules`, `processExtensionRules` and the output-type rules compile each new or
-  changed DRL in memory with the `KieFileSystem`/`KieBuilder` code of `Rules.reloadRules`
-  (`drools/Rules.java:78-110`), extracted into a shared `DrlCompiler`. Errors refuse the import with
-  the file name and Drools messages (`PackageCode.INVALID_RULE`).
-- The same compiler serves the rule editor in Phase 4.
+- *2c.4d* (`3dd400a540`): specifications declared by several packages, assignments as the union,
+  owner rule as for item types, `ITEM_SPEC_CONFLICT`, `ITEM_SPEC_IN_USE`, export of declarations;
+  853 specifications and 1,596 assignments on dev declared by their packages.
+- *Research R-a/R-b* (2026-10-08, `docs/entity-framework-research.md`, uncommitted): no archival
+  standard or profile subclasses agents; kind of body and legal status are dated, vocabulary-backed
+  data (ISAAR 5.2.4, EAC-CPF, RiC-O; AnF keeps 64 categories as SKOS). Practice ranks Place first among
+  non-agent entities; place model = dated names, type (the nine EAC-CPF/GeoNames classes), dated
+  part-of, coordinates, external identifiers. Decisions D1-D9 of the document are closed by 4.1.
+- *2c.5b-prep* (`26d6d50d0b`): members-only class tree, equal `item-aptypes` in foreign declarations,
+  startup import of independent packages.
+- *2c.5b-d* (`cb38e0e182`): package ISAAR_CPF version 1 - generated by a script (regenerate rather
+  than hand-edit when values change; `gen_isaar.py` is not in git yet - it lives in the Claude
+  scratchpad of the session that built the package, commit it under `package-isaar-cpf/` with the
+  first regeneration). Adjustments against the design: CAM's `RT_RELATED` not reused
+  (its target classes are not declared; own `ISAAR_RT_ASSOCIATED`); `CRE_CLASS`/`EXT_CLASS` reused
+  with per-class subsets; languages of names are CAM's `LNG_*` (16); `IDN_VALID_FROM/TO` reused; no
+  `AUTO_ITEMS`. Tests pass alone and with CZ_BASE in both import orders.
 
-### 6.2 Revalidation, publish, export
-- For an `ADDON` context, when an arrangement or extension rule was added, removed, or its
-  `rul_component.hash` changed, call `addCodeRuleToRevalidateFunds(ruleSetCode)`. Unchanged
-  re-imports enqueue nothing. Same when the package adds or removes a spec on a foreign item type.
-  The decision lives in a small `RevalidationPolicy` with a unit test.
-- `deletePackage` publishes `ActionEvent(EventType.PACKAGE)` after commit and enqueues revalidation
-  of the rule sets it cleaned.
-- Export fixes: `exportItemSpecs` reads `itemSpecRepository.findByRulPackage` plus assignments via
-  `findByItemSpecIn`, writes one element per spec and includes unassigned specs;
-  `findByRulPackageFetchItemType` (no DISTINCT, duplicates multi-assigned specs so the export cannot
-  be re-imported) is removed; `exportSettingsForRuleset` reports a missing rule set instead of an NPE.
-- Client: `websocketActions.jsx` `packageEvent()` also invalidates `refTables.groups`,
-  `structureTypes` and `apTypes`.
+**Known limits of the first version** (open work): no EAC-CPF export (2c.6; needs `uri` on
+specifications and relation categories derived from the specification); `NM_LANG` offers only the
+16 languages the package declares (a fuller ISO 639-2 list with English names is a later package
+version, see L1 in section 7); concepts have no scheme hierarchy beyond `RT_SUPTERM`; no Czech
+translation file (2a.4 template when needed); when ISAAR_CPF is imported before CZ_BASE it owns the
+shared codes and CAM's specification order on those item types follows ISAAR_CPF.
 
-### 6.3 Tests and gates
-- `AddonPackageTest` already covers spec placement (also after a ZP2015 re-import) and the addon
-  filter rule. Still to add:
-  - spec `ADT_AGENDA_TEST` on `ZP2015_AGENDA_TYPE` with an addon rule raising it where the type is
-    possible: offered on a folder;
-  - a scoped variant: a second addon with its own extension lowers its `ZP2015_OTHER_ID` spec
-    everywhere in an arrangement rule and raises it in its extension rule; offered only below a node
-    with the extension set;
-  - an addon with a syntax error in a DRL is refused at import with the Drools message;
-  - revalidation enqueued on a changed addon rule and not on an unchanged re-import;
-  - export → delete → re-import round trip.
-- Unit test `RevalidationPolicyTest`.
-- Gate on a copy of production (open for changeset A as well): apply the changesets, re-import
-  unchanged CZ_BASE and ZP2015; spec order and `view_order` unchanged.
+## 5. Entity description frameworks — remaining work
 
-## 7. Phase 2 — localization and the first internationalized version
+**R2 Scope-bound CAM extension.** A reference scope of portal.nacr.cz holds template entities with
+items beyond CAM (explanatory items, a classification for browsing); they stay CAM entities. Open
+questions (user): Q1 are reference entities exchanged with the central CAM system? Q2 extra items
+inside CAM parts or extra parts? Q3 an extension activated per scope (`ap_scope_extension`, extension
+rules for entities of the scope) or a rule set inheriting CAM (Phase 6)? Q4 (R1) relations across
+frameworks (CAM entity to ISAAR entity, fund description referring to both, shared search).
 
-### 7.0 Localization of package texts (Phase 2a)
+**Remaining obstacles.**
+- The DRL model's `PartType` enum and the TypeScript part enum are closed; a new part code needs both
+  opened (the test package's `PT_ENT_NOTE` works only because it is never validated).
+- CAM exchange with extra content (R2): extra item types are dropped by `ItemTypeMap.groovy` (safe);
+  an extra specification of a CAM item type drops the whole part from the export; an extra part type
+  crashes the export (`PartTypeXml.fromValue`, `cam/v2/SearchFilterFactory` `:244`).
+- Search boosts (`index-search` in the root `ui_setting.xml` of CZ_BASE) are global, not per rule set.
 
-**Why next.** It depends on nothing open in Phase 1, it is the prerequisite of an English version
-that does not show Czech CZ_BASE texts, and it fixes the stored Czech validation messages, which
-affect every installation. It is a contained change: one table, one import step, one resolver, and
-the read sites that already return names.
+**Known gaps found while building 2c.5a.**
+- Computed items and the Groovy model of a revision use the entity's current class, not a class
+  changed in the revision (`GroovyService.convertAe`, `autoItemsScriptPath`; older behaviour).
+- Test helpers (`authorizeAsAdmin`, `tx`, `txGet`) are repeated in `EntityRulesTest`,
+  `StandaloneFrameworkTest` and `IsaarCpfPackageTest`; a shared base for package tests would remove
+  them.
 
-**Split.** 2a is realized in steps. Step 2a.1 builds the parts that are hard to change once
-released - the schema (changeset T) and the package file format, a contract with package authors -
-together with the resolver every later step calls. It ships with a test package and one real read
-site, so the design is proven end to end before anything is built on it. The later steps only call
-the resolver and are planned in detail once it exists.
+**Later, optional.** `AP_MAPPING_TYPE` (CAM export mapping) as an entity rule; the CAM relation and
+identifier checks of `RuleService` as CAM `VALIDATION` rules; a server-side check that a
+new part's type is in the rule set's part list; port the rest of `ApStateChangeForm` /
+`RevStateChangeForm` to Fluent UI; per-package RECORD_REF classes of shared item types and
+specifications.
 
-#### 7.0.1 Step 2a.1 — localization infrastructure (done, commit `74506e2356`)
+## 6. Phase 1 — layer core, open part; release gate
 
-Implemented on `3.4.x`, not released. The package format is described in the implementation guide
-(chapter "Package Files", section `translations/<lang>.xml`). Decisions that later steps build on:
+- **Revalidation requested by an addon.** `compatibility-rul-package` lives on the owner's rule set
+  and on extension and entity rules; an addon cannot ask for revalidation of a foreign rule set.
+  Proposal: accept it on `<arrangement-rule>`; for rules contributed to a foreign rule set compare
+  with the addon's installed version and revalidate the funds of that rule set. Open: whether deleting
+  an addon revalidates.
+- **Package deletion** publishes `ActionEvent(EventType.PACKAGE)` after commit and enqueues
+  revalidation of the cleaned rule sets; the client's `packageEvent()` also invalidates `groups`,
+  `structureTypes`, `apTypes`.
+- **Export:** `exportSettingsForRuleset` reports a missing rule set instead of an NPE (the
+  specification export fixes were done in 2c.4d).
+- **Tests to add to `AddonPackageTest`:** spec raised by an addon rule where its type is possible; a
+  scoped variant with its own extension; revalidation by an addon rule; export → delete → re-import.
+- **Release gate of 3.4 (not done):** on a PostgreSQL copy of production apply the changesets
+  (`20261006140000` … `20261008160000`), re-import unchanged CZ_BASE 89 and ZP2015, and check that
+  spec order and `view_order` are unchanged and that ISAAR_CPF imports at startup next to them.
 
-- Changesets `20261007100000` and `20261007100100`; the translated text is in
-  `rul_translation.text_value` (`value` is reserved in H2).
-- `domain/TranslationEntityType` lists the 14 kinds with their entities and allowed fields.
-- Import: `packageimport/PackageTranslationService`, the last step of the import, reading source
-  texts from the database in the import transaction.
-- Resolver `core/data/PackageTexts` with an explicit `SysLanguage`; `resolveRequestLanguage(header)`
-  parses `Accept-Language` with `Locale.LanguageRange`.
-- Precedence by dependency depth, ties by package code. A dependent package always has a larger depth
-  than its dependencies, so "later in dependency order wins" also holds for diamonds.
-- Read sites so far: `GET /api/v1/rules/itemTypes`; new `GET /api/v1/languages`.
+## 7. Localization and the internationalized version
 
-#### 7.0.2 Step 2a.1b — fixes from the review of 2a.1 (done)
+### A1 — texts built in core (inventory 2026-10-08, decision pending)
 
-Implemented on `3.4.x` in the commit following `74506e2356`; the guide section
-`translations/<lang>.xml` describes the result. Decisions that later steps build on:
+*Method:* string literals with Czech diacritics in `elza-core/src/main/java` outside comments,
+logging and exception texts (exceptions reach the client as codes mapped in `messages.ts`): 284
+literals; plus core resources and init data. Texts without diacritics or in English are not
+caught; the groups below are complete for the mechanisms, not necessarily for every string.
 
-- **Source hash.** Optional `src-hash` attribute on `<t>`. The import takes it from the file; without
-  it a translation whose text is unchanged keeps the previous row's hash, a new or changed one gets
-  the hash of the current source text. The export writes it. A translation therefore stays outdated
-  after a re-import of the translating package; 2a.4 builds on this.
-- **Own language.** In the file of the package's own language only rows of the package's own
-  entities are skipped (owner from the entity's package; type groups by the rule set). Rows for
-  other packages' entities and their messages are imported as same-language overrides.
-- **Tags** are matched case-insensitively (`SysLanguageRepository.findByTagIgnoreCase`, static data
-  lower-cases); tags are not rewritten to canonical form. One file per language.
-- **Validation** in `readFile` (missing attributes, empty text, code length, `src-hash` length,
-  message patterns compiled with `MessageFormat`); every refusal is `INVALID_TRANSLATION` with
-  `reason`, shown by the client.
-- Templates are read with `deleted = false`; SIMPLE-DEV version 43.
-- `GET /api/v1/languages` is public and runs in a read-only transaction (static data are bound to a
-  transaction; the endpoint failed over HTTP before, also for logged-in users, which the controller
-  test calling the bean directly did not show).
-- Upgrade notes: rows of `sys_language` without a tag stop the upgrade; the `cze` row must exist.
+| Group | Where (class:line) | Count | Reaches the user as |
+|---|---|---|---|
+| A. Node conformity (fund validation) | `validation/impl/Validator` `:91,118,153,172,187,225,239`, `domain/vo/DataValidationResults` `:126,128` - "Prvek X musí být vyplněn.", "... se specifikací Y není možné evidovat ...", "Atribut X není opakovatelný.", "... odkazuje na zneplatněnou entitu (id)" ... | 7 templates | stored in `arr_node_conformity_error.description`, `arr_node_conformity_missing.description`; `NodeConformityErrorVO(descItemObjectId, description, policyTypeId)`, `NodeConformityMissingVO(descItemTypeId, descItemSpecId, description, policyTypeId)`; the client prints `description` (`NodePanel.jsx:718,742`, `ErrorDisplay.tsx:43`). Rule-owned messages (`createMissing(typeCode, message, policy)` from DRL, 31 calls in ZP2015 `Validation.drl`) share the column. |
+| A2. Entity validation | `service/RuleService` `:1516-1684` - "V části X chybí povinný typ prvku ...", "... je zakázaná specifikace ...", "... je vztah ... vícekrát." ...; `AccessPointService:3619`, `PartService:70` (duplicate key value) | 9 templates | returned as `ApValidationErrorsVO` (strings); the duplicate-key text goes into the entity's error text |
+| B. CSV headers | `ArrIOService` `:449-455` (data export: "Číslo záznamu", "Číslo JP", "Atribut", "Specifikace", "Hodnota", "ID entity"), `:537-539` (grid export + item shortcuts), `IssueService` `:470-480` (issues: "Druh", "Stav", "Uživatel", "Popis", "Komentáře" ...) | 19 strings | downloaded files (`DEExportService` headers are English identifiers, fine) |
+| C. Data type names | `db.elza-init.xml` `:99-123` (`rul_data_type.name/description`: "Celé číslo", "Řetězec", "Datace" ...) | 12 rows | not read by the client (no `dataType.name` use in `elza-react`); only in server exception texts |
+| D1. Content: unit-date text | `domain/converter/UnitDateConverter` `:37-52` (" př. n. l.", "%d. st. př. n. l."; input regexes accept the Czech form), `print/item/convertors/UnitDatePrintConvertor` `:36-42` (months, "%d. století") | 7 constants | `ArrDataUnitdate.getFulltextValue()` (index), `GroovyItem.value`/`GroovyAppender` (entity indexes and display names stored in `ap_index`), `ArrItemUnitdateVO`/`ApItemUnitdateVO.value` (REST display), tree titles (`DescriptionItemServiceInternal:185`), print outputs, `ImportFromFund` |
+| D2. Content: values and names written by core | `DaoCoreServiceWsImpl:543` ("Importováno - <date>" as an item value of a node), `ArrangementService:2239` (default name "Šablona" of a reference template), `ArrangementService.UNDEFINED` = "výjimka" (tree titles `DescriptionItemServiceInternal:158`, validator text) | 3 | persisted content / titles |
+| D3. DA / AIP module | `service/da/*` (`DaService` `:200-2190`, `AipProblem`, `DaAipReferenceResolver`, `DaImportBuilder`, `DaImportPlanner`, `DaLevelItems`, `DaMatchResult`, `EadUnitdateParser`, `DidElementConverters`, `AipPackageType`, `DaAipStepService:137`), `domain/DaDao.DaoType` labels | ≈ 80 | AIP state and step messages persisted on the AIP and shown in the AIP pages; script errors of `DA_IMPORT`/`DA_MATCH` |
+| E1. AI module | `service/ai/AiProposalService` `:492-711` (why a proposal cannot be applied), `RevisionFindingsBlockMapper` `:41-155` (labels of the findings block: "Doporučení", "závažnost", severity words, action labels) | 27 | REST display, built in the request thread |
+| E2. Request-time labels | `DaoService:1038,1043`, `AipService:110,134` (explorer tree: "Logická struktura", "Balíček", "Bez logické struktury"), `security/apikey/ApiKeyFailure` `:8-13` (401 bodies), `PasswordPolicyService:80`, `AdminOldController:199,238` (log viewer) | 14 | REST display |
+| E3. Enum labels | `controller/vo/ExtAsyncQueueState`, `domain/ExtSyncsQueueItem` states, `DaSyncQueueItem` states ("Ke stažení", "Odesláno" ...) | 25 | the VOs serialize the enum constant, the client has its own labels - presumably dead; verify `value()` callers and delete |
+| F. Core resources | `script/groovy/createDid.groovy` (assert texts only), `exportDaTemplates/*.xml` (DA export samples, Czech by design) | - | - |
 
-#### 7.0.3 Step 2a.2 — language of requests and read sites (done)
+*Three rules (proposal).*
+1. **Persisted findings carry a code, the client renders them** (A, A2). `arr_node_conformity_error` and
+   `arr_node_conformity_missing` get `message_code` (nullable) and `message_param` (the entity id of the
+   deleted-entity case); `description` stays for rule-owned messages and old rows. Codes:
+   `MISSING_REQUIRED`, `TYPE_IMPOSSIBLE`, `SPEC_IMPOSSIBLE`, `TYPE_NOT_ALLOWED`, `NOT_REPEATABLE`,
+   `UNDEFINED_NOT_ALLOWED`, `DELETED_ENTITY_REF`. The VOs expose the code; the client renders it with
+   the item type and specification names from its reference tables in the UI language (`messages.ts`),
+   falls back to `description`. The same for `ApValidationErrorsVO`: structured entries
+   `(code, partTypeCode, itemTypeCode, itemSpecCode)` beside the text. Rule-owned messages stay text;
+   `TranslationEntityType.MESSAGE` (2a.1) is the path to translate them when a package wants to. No
+   data migration: rows are rewritten by revalidation. Validation runs in workers without a request
+   language, so server-side rendering is not an option for this group.
+2. **Request-time texts come from a core catalog in the request language** (B, E1, E2): a resource
+   bundle `core-messages_<tag>.properties` (cs, en) read through a `CoreMessages` helper next to
+   `PackageTexts.requestLanguage()`; keys in code, no literals. About 60 keys (CSV headers 19, explorer
+   labels 4, AI block labels and reasons 27, API-key failures 6, password policy 1). This is the
+   "server catalog" option, limited to texts that are built inside a request and are not data.
+3. **Content texts follow the description language** (D1, D2): the text form of unit dates, the word
+   for an undefined value in titles, default names and values written by imports are rendered in the
+   language of the fund or scope, not the UI language - part of the 2b "description language" step
+   (formatter per language: cs today, en for ISADG funds; the DAO import value and the template name
+   come from the rules or the client instead of core).
 
-Implemented on `3.4.x`. Decisions, some differing from the original sketch:
+*Out of scope, documented as Czech modules:* D3 (the DA/AIP integration is the Czech national digital
+archive interface, like CAM), C (not shown), F. E3 is a cleanup.
 
-- **A cookie instead of a header.** The client writes its UI language into the cookie `elza-lang`
-  at startup and on every switch. Browsers send their own `Accept-Language` on every request, so the
-  server could not tell the user's UI choice from the browser's; a cookie also reaches downloads,
-  exports, iframes and the websocket handshake, which cannot carry a custom header.
-- **Server.** `PackageTexts.requestLanguage()` resolves once per request (request attribute): the
-  cookie (a UI language), else the first UI language of `Accept-Language` (API clients), else the
-  language of `elza.locale` (`defaultLanguage()`); without a request `elza.locale`. No Spring
-  `LocaleResolver` (the one in `ElzaWebApp` is unrelated). Overloads without a language argument
-  (`text`, `name(type, code, source)`, `name/shortcut/description` of item types and specs).
-- **Read sites converted:** `ClientFactoryVO` (`/api/rule/descItemTypes` and `/outputItemTypes` with
-  specifications, item types in node data, templates, policy and output types,
-  `translateName` for any `BaseCodeVo`), `RuleController` (rule sets, type groups, extensions),
-  `StructureOldController` (structured and part types), `RulesController` (`/v1/rules/itemTypes`,
-  `/v1/rules/partTypes`), `ApFactory` (entity types), `WfFactory` (issue types and states),
-  `StructObjService` (`SdoType`), `OutputFactory`, `BulkActionService` (rule set name),
-  `GetItemTypesTool`.
-- **Left for later:** the CSV exports (data grid, issues) - their column headers are hard-coded Czech,
-  translating only the names would mix languages; specification categories (no translation type);
-  the AI context and proposal rows (`AiContextResolver`, `AiProposalService`); generated content -
-  node titles with specification names, conformity messages (2a.3), print models.
-- **Client.** The language is no longer an experimental feature. `effectiveLanguage` = the user's
-  choice, else `window.defaultLanguage` (`elza.locale` from `web.html`), not the browser language
-  (many users run a browser in another language). Offered languages = `uiEnabled` of
-  `GET /api/v1/languages` with a client catalog, named in their own language (`Intl.DisplayNames`).
-  Switching reloads the application - names are held in many client stores, and a switch is rare.
-- **Login dialog.** `LanguagePicker` in the start actions: only an icon with a menu; when the user
-  has not chosen a language and the browser prefers another offered language, that language's name
-  is shown instead (one click to switch). Choosing the language already shown records the choice.
-- **Tests.** `PackageTextsTest` (cookie over header, invalid cookie, default),
-  `PackageTranslationTest` (new and legacy item-type endpoints by cookie and header, default
-  language), `LanguagePicker.test.tsx` (suggestion, switch, icon after the choice).
+*Open for the user:* (1) agree with the three rules; (2) A2 in the same implementation step as A
+(recommended: the 2b exit criterion includes entity editing) or later; (3) DA/AIP and CAM declared
+Czech-only, no catalog for them; (4) unit dates: English formatting of BC dates and centuries for
+English funds in 2b, Czech form kept for Czech funds. *Implementation step (after the decision):* 2
+changesets, `Validator`/`DataValidationResults`/`RuleService` codes, 3 VOs, client rendering, the
+`CoreMessages` catalog with the B/E1/E2 call sites, enum-label cleanup; tests for codes and both
+languages of the catalog. Estimate 2-3 days.
 
-#### 7.0.4 Later steps of 2a
+### L1 — languages of a name in ISAAR_CPF (found and done 2026-10-08)
 
-- **2a.3 Messages.** `DataValidationResults.createMissing/createError` accept a message key; the
-  conformity rows keep the key and its arguments in new columns of
-  `arr_node_conformity_error/missing` (own changeset), and the server renders them in the request
-  language when it returns the node's conformity. The generic "item X must be filled" message becomes
-  a core key with the item type as argument. Literal sentences keep working for packages not yet
-  converted. ZP2015 converts its `Validation.drl` messages to keys with Czech source texts.
-- **2a.4 Translator support.** An admin endpoint listing, per package and language, the missing,
-  outdated (by `src-hash`) and orphaned texts, and exporting them as a translation file to fill in;
-  a small admin page on top. It comes before the content step, because it produces the files the
-  translators fill.
-- **2a.5 Content.** `CZ_BASE_EN` (`elza/package-cz-base-en`, depending on CZ_BASE): English texts for
-  entity types, part types, entity item types and specifications, the 166 language specifications,
-  issue types and states; optionally `ZP2015_EN`. Mostly translation work, starting from the files
-  of 2a.4.
+*Finding.* An ISAAR entity in the English UI offers 166 languages for `NM_LANG`, 150 of them with
+Czech names. Three facts combine: (1) assignments of specifications to a shared item type are the
+union over packages (2c.4d), so `NM_LANG` carries CZ_BASE's 166 `LNG_*` next to the 16 ISAAR_CPF
+declares; (2) the rule "ISAAR 5.1.3: any language of the name" (`available_items/PT_NAME.drl`,
+written by the generator's `rule_all_specs`) opens every specification of the item type - the only
+ISAAR rule written that way, every other one lists codes; (3) a specification declared only by
+CZ_BASE has no English text, so the English UI falls back to the Czech source text - by design,
+methodologies are not translated. CAM has the same open rule for `NM_LANG` (`R_NAM_002.4`) and for
+`LANG` of ARTWORK, so a language ISAAR_CPF declared and CAM did not would show up in CAM entities with
+an English name; today ISAAR's 16 are a subset of CAM's and nothing leaks that way. Not a defect of
+the texts and not generic to specifications: a rule listing codes sees nothing foreign, and the
+three open rules all concern languages.
 
-**Out of scope of 2a — description language.** Names stored as text keep the language in which they
-were generated: structured object values (`arr_structured_object.value`), entity names and key values
-(`ap_index`, `ap_key_value`), auto items, outputs (finding aids, EAD) and the fulltext index of ENUM
-values. These are archival content and must follow the **description language**, never the user's UI language: the
-language of the entity scope or fund (a `sys_language` row, resolved through its `tag`), with the
-installation's `elza.locale` as the default. Phase 2b makes Groovy scripts and
-print templates resolve names through the same resolver with the description language, so an
-English-source rule set produces Czech content on a Czech installation. Prerequisite: scripts that use
-names as identifiers switch to codes - `PT_IDENT.groovy` (compares spec names), the EAD template of
-ZP2015 (switches on the lowercased finding-aid type name), the PDF content page (matches storage units
-by spec shortcut or name).
+*Decision (user, 2026-10-08): the generic solution in core, not a code list in the rule.* The
+rules of a rule set receive only the specifications the rule set sees - those assigned by packages
+related to the rule set's package (itself, its dependencies, its dependents; section 2 "Decisions").
+The assignments stay the union (2c.4d); what changes is which part of the union each rule set is
+offered. The ISAAR rule "any language of the name" is right as written: it opens the 16 languages
+ISAAR_CPF declares, and an addon of ISAAR_CPF adds a language by declaring it. Dependents are
+included because addons raise their own specifications in the rule set they extend
+(`AddonPackageTest`, `ADT_OTHERID_TEST` in ZP2015). Siblings are excluded, so a local package
+depending on both frameworks does not open CAM's languages to ISAAR_CPF. *Done:* `PackageRelations`,
+`RuleSet.getItemSpecs`, the model builders, `IsaarCpfPackageTest` (16 languages for ISAAR, all for
+CAM, in both import orders), `PackageRelationsTest`, guide chapters 01 and 02, release notes. No
+package change, so ISAAR_CPF stays version 1. Later, optional: a fuller ISO 639-2 list with English
+names in a later package version (codes keep CAM's `LNG_<iso639-2>` form so the two packages keep
+sharing them).
 
-### 7.1 English generic rule set `rules-en-isadg`
-- Module `elza/rules-en-isadg` (package and rule set `ISADG`, prefix `ISADG_`), copied from the
-  `rules-simple-dev` skeleton, `<dependency code="CZ_BASE"/>`. Wired into `elza/pom.xml`, the
-  distribution assembly and `elza-core` test resources.
-- One item type per ISAD(G) element, no STRUCTURED types:
-  - identity: `ISADG_LEVEL` (ENUM: fonds, subfonds, series, subseries, file, item — EAD3 `@level`),
-    `ISADG_REF_CODE` (UNITID), `ISADG_OTHER_ID`, `ISADG_TITLE`, `ISADG_UNIT_DATE`,
-    `ISADG_UNIT_DATE_BULK`, `ISADG_UNIT_DATE_TEXT`, `ISADG_EXTENT`, `ISADG_EXTENT_QUANTITY`;
-  - context: `ISADG_CREATOR` (RECORD_REF to CZ_BASE `PARTY_GROUP`, `PERSON`, `DYNASTY`),
-    `ISADG_BIOG_HIST`, `ISADG_CUSTOD_HIST`, `ISADG_ACQ_INFO`;
-  - content and structure: `ISADG_SCOPE_CONTENT`, `ISADG_APPRAISAL`, `ISADG_ACCRUALS`,
-    `ISADG_ARRANGEMENT`;
-  - access and use: `ISADG_ACCESS_RESTRICT`, `ISADG_USE_RESTRICT`, language (see below),
-    `ISADG_PHYS_TECH`, `ISADG_OTHER_FIND_AID`;
-  - allied materials: `ISADG_ORIGINALS_LOC`, `ISADG_ALT_FORM_AVAIL`, `ISADG_RELATED_MATERIAL`,
-    `ISADG_BIBLIOGRAPHY`;
-  - notes and description control: `ISADG_NOTE`, `ISADG_PROCESS_INFO`, `ISADG_RULES_CONVENTIONS`,
-    `ISADG_DESCRIPTION_DATE`;
-  - ELZA practicalities: `ISADG_DAO_LINK`, `ISADG_CONTAINER`, `ISADG_ACCESS_POINT`.
-- Language: reuse CZ_BASE's `ZP2015_LANGUAGE` and its 166 `LNG_*` specifications, made English by
-  the translation package `CZ_BASE_EN` (7.0). This avoids duplicating the language list; the code is
-  never shown.
-- Rules (English messages): item-type filter, available items with the ISAD(G) mandatory elements
-  (reference code, title, creator, dates, extent, level) required at fonds level, new-level scenarios
-  ("Fonds", "Sub-fonds", "Series", "Sub-series", "File", "Item"), validation, change impact; policy
-  types; fund validation bulk action.
-- UI settings: tree title `REF_CODE TITLE UNIT_DATE`, hierarchy icons by level, type groups by the
-  seven ISAD(G) areas plus "Physical and digital management", grid view, fund issues.
-- Outputs (PDF finding aid, EAD3) follow after the first version.
+### L2 — unit-date text per language (found 2026-10-08, design with 2b)
 
-### 7.2 Core neutrality
-- `elza-react/src/components/arr/FundTreeMain.jsx`: the "Compute EJ" menu item queues the ZP2015
-  bulk action `ZP2015_INTRO_VYPOCET_EJ` for every fund; show it only when the fund's rule set offers
-  that action.
-- `elza-core/src/main/resources/script/groovy/createDid.groovy`: the DAO `did` is built only from
-  ZP2015 codes; add the ISADG title, reference code and date.
-- Validation messages: handled by `MESSAGE` translations in 7.0; ISADG writes its rules with message
-  keys and English source texts from the start.
-- Description language for generated content (7.0, "Out of scope of 2a"), including the switch of
-  name-based identifiers in scripts and templates to codes.
-- `ArrangementService` (`ZP2015_ITEM_LINK`) and `ReportServiceQuery` (four ZP2015 output codes) are
-  null-safe for other rule sets and stay as they are.
+*Finding.* The stored form of a unit date is language-neutral (`valueFrom`/`valueTo` ISO, `format`);
+only the text is Czech, in two places. Server: `UnitDateConverter` renders and parses one Czech form
+(" př. n. l.", "%d. st.", dates `d.M.u`; a negative year is accepted as BC too),
+`UnitDatePrintConvertor` prints Czech month names and "%d. století". Rendering reaches 14 files (REST
+`ArrItemUnitdateVO`/`ApItemUnitdateVO.value`, the fulltext index `ArrDataUnitdate.getFulltextValue`,
+`ap_index` through `GroovyItem`/`GroovyAppender`/`GroovyUnitdateFormatter`, tree titles,
+`DateRangeAction`, `ImportFromFund`, print), parsing 10 (item input through `ArrDataUnitdate`, search
+filters of nodes and entities, CAM search filters, `DrlUtils`, `ValidationController`). Client: the
+validation grammar `shared/datace/datace.pegjs` accepts the Czech century and a `bc ` prefix the
+server does not parse (and not " př. n. l."), `convertToEstimate` in `UnitdateField.tsx` splits the
+text on "-", and the format help `dataType.unitdate.format` is Czech only (no English translation in
+`en.json`). `ApScope` already has a language (ISO 639-2); `ArrFund` has none.
 
-### 7.3 Translations
-Implemented in Phase 2a (7.0). ISADG declares `<language>en</language>` (the `sys_language` row `eng`) and ships
-`translations/cs.xml` for the elements that make sense in Czech too.
+*Design (proposal, needs the user's answers to Q1 and Q2).*
+1. One `UnitDateFormat` per language (cs = today's texts; en) with render and parse behind
+   `UnitDateConverter`; parse is tolerant - every known language's BC marker and century form is
+   accepted whatever the language, plus the negative year; render follows the language asked for.
+2. Which language: request-time display and input (REST VOs, search filters, client help and
+   grammar) follow the UI language (`PackageTexts.requestLanguage()`); persisted and indexed texts
+   (fulltext, `ap_index`, titles, print, import) follow the description language (A1 rule 3): the
+   scope's language for entities, for funds a new `arr_fund.language_id` (default the language of the
+   rule set's package, then `elza.locale`).
+3. **Q1** English form: `500 BC`, `20th century`; dates `d/M/u` or ISO `u-MM-dd`? ISO collides with
+   the interval delimiter "-" (`splitInterval`, `SECOND_YEAR_IS_NEGATIVE`) and "/" already means an
+   estimated interval, so ISO needs another interval delimiter for English (" – ") or English stays
+   with `d/M/u`. **Q2** month names in print outputs by language (the English templates of 2b).
+4. Client: grammar per language (peggy regeneration), help text translated, `convertToEstimate` on
+   the parsed structure instead of string surgery; `UnitDateConvertorTest` extended per language.
+   Effort: 3-5 days with tests.
 
-### 7.4 Tests and exit
-- `IsadgPackageTest` (pattern of `Zp2015EjCountTest`: import CZ_BASE and ISADG once, unload after):
-  filter contents, required items at fonds level, new-level scenarios, validation messages.
-- Exit: on the dev server with the English UI, create an ISADG fund, add levels, fill the mandatory
-  elements, pick a creator and a language, run validation; no Czech text appears.
+*Order.* L1 first: independent, hours, fixes a visible defect of the shipped ISAAR_CPF. L2 is
+cross-cutting and its persisted half depends on the description language of 2b; the UI-language half
+(steps 1, 2 for request-time texts, 4) can start before 2b once Q1 is answered.
+
+**2a.3 Remaining read sites.** Tree titles (specification names in node titles,
+`DescriptionItemServiceInternal` `:164`); specification categories (kind `ITEM_SPEC_CATEGORY`); kinds
+`EXPORT_FILTER`, `OUTPUT_FILTER`, `STRUCTURED_TYPE_EXTENSION`, `EXTERNAL_ID_TYPE`, `INSTITUTION_TYPE`,
+`ACTION`; AI context and proposal rows; CSV exports after A1.
+
+**2a.4 Translation template (on demand).** `PackageTranslationService.template(packageCode, tag,
+of)`: every translatable text with `src-hash`, the existing translation, the source text and state in
+a comment, orphans at the end; `GET /api/v1/admin/packages/{code}/translation-template`.
+
+**Description language.** Names stored as text (structured object values, entity indexes and key
+values, auto items, outputs, the fulltext index of ENUM values) follow the language of the scope or
+fund (default `elza.locale`), never the UI language. 2b makes Groovy scripts and print templates
+resolve names with the description language; prerequisite: scripts using names as identifiers switch
+to codes (`PT_IDENT.groovy`, the ZP2015 EAD template, the PDF content page).
+
+**2b `rules-en-isadg`.** Module `elza/rules-en-isadg` (package and rule set `ISADG`, prefix `ISADG_`)
+from the `rules-simple-dev` skeleton, no dependency on CZ_BASE; one item type per ISAD(G) element, no
+STRUCTURED types (identity, context with `ISADG_CREATOR` referring to the ISAAR_CPF classes, content
+and structure, access and use with an own `ISADG_LANGUAGE`, allied materials, notes and control, DAO
+link, container, access point); rules with English messages (filter, available items with the
+mandatory elements at fonds level, new-level scenarios, validation, impact), policy types, fund
+validation; UI settings by the seven ISAD(G) areas; Czech translation file. Core neutrality:
+"Compute EJ" only for rule sets offering `ZP2015_INTRO_VYPOCET_EJ` (`FundTreeMain.jsx`),
+`createDid.groovy` with ISADG codes, core messages per A1. Test `IsadgPackageTest`; exit: an English
+user creates an ISADG fund, fills the mandatory elements, links a creator, validates, and sees no
+Czech text.
 
 ## 8. Later phases — design notes
 
 **Phase 3 — pilots.** `SettingsService.resolveGlobal(type, entityType, entityId)` composes settings
-rows by package dependency order (base → addons → customizations): last wins for FUND_VIEW,
-STRUCTURE_TYPES, PARTS_ORDER, ITEM_TYPES, DAO_LEVEL_IMPORT, STRUCT_TYPE_*, FUND_ISSUES; TYPE_GROUPS
-as a placement patch (add a type to a group, optional `after=`); GRID_VIEW appends. Nine read sites
-route through it: `SettingsService` `:341` and `:393`, `ConfigRules.java:61`, `ConfigView.java:88`,
-`IssueDataService.java:150` (also not invalidated today), `StructObjService.java:1321`,
-`ClientFactoryVO.java:1251` and `:1343`, `ApFactory.java:894`, `DaoCoreServiceWsImpl.java:476`
-(`Validate.isTrue(size()==1)`). `UISettings.isSameSettings` (`:132`) compares strings with `==`, so
-the "other package owns this setting" guard in `processSettings` never fires; before fixing it, check
-production for same-key rows owned by different packages. With composition, a same-key row is
-accepted from a package that depends on the owner. Then DPP and CT become file addons and their
-overlays are retired.
+by package dependency order: last wins for FUND_VIEW, STRUCTURE_TYPES, PARTS_ORDER, ITEM_TYPES,
+DAO_LEVEL_IMPORT, STRUCT_TYPE_*, FUND_ISSUES; TYPE_GROUPS as a placement patch; GRID_VIEW appends.
+*Started 2026-10-08:* `resolveGlobal` exists (last wins; a setting without a package wins over all)
+and `UISettings.SettingsType.layered` marks the types it applies to - so far only the new
+`OUTPUT_DEFAULTS` (default output filter, guide chapter 02 "output-defaults"); import skips the
+`OTHER_PACKAGE` check for layered types. The types above join by setting the flag and switching
+their read site to `resolveGlobal`.
+Nine read sites (`SettingsService` `:341`, `:393`, `ConfigRules` `:61`, `ConfigView` `:88`,
+`IssueDataService` `:150`, `StructObjService` `:1321`, `ClientFactoryVO` `:1251`, `:1343`, `ApFactory`
+view settings, `DaoCoreServiceWsImpl` `:476`). `UISettings.isSameSettings` (`:132`) compares strings
+with `==` - check production for same-key rows of different packages before fixing. Then DPP and CT
+become file addons.
 
-**Phase 4 — customizations in the UI.**
-- Any number per installation, `kind = LOCAL`. The package code is also the code prefix: every code
-  inside starts with `<CODE>_` and with no other installed package's code.
-- Scope: global, or one arrangement extension of its own (code `<CODE>`) that archivists switch on in
-  node settings.
-- Dependencies derived on every save (owners of referenced item types, rule sets, ap types, at their
-  installed version); version increments per save.
-- `CustomizationPackageService.rebuild(code, change)`, on the same monitor as `importPackage`:
-  pre-validate, load the latest archived ZIP, apply the change with the existing JAXB classes,
-  regenerate `package.xml`, import in memory (new overload
-  `importPackageInternal(Map<String, ByteArrayInputStream>, boolean)`), archive the new ZIP, enqueue
-  revalidation when needed. A save takes 1–3 s and briefly stops the async workers, so the UI saves
-  per dialog.
-- Adding a specification writes the spec, its `view-after` position, and a generated rule from a
-  template: "offered wherever its item type is possible" for global customizations; "lowered
-  everywhere, raised where the extension is active" for scoped ones.
-- The rule editor edits further DRL files of the customization, compiled with `DrlCompiler` before
-  save; templates give starting rules for common intents.
-- Detach and attach flip `kind` when a customization moves to git or back. Spec usage counts
-  (`arr_item`, `ap_item`, `ap_rev_item`, `da_dao_item`, `arr_ref_template_map_spec`) protect deletion.
-- OpenAPI tag `customization`, all `@AuthMethod(ADMIN)`; admin page `/admin/customization` with the
-  customization list, create dialog, specifications tab (pick a spec-bearing item type, see all specs
-  with owner, add with a "place after" choice) and rules tab.
+**Phase 4 — customizations in the UI.** `rul_package.kind` (`IMPORTED`, `LOCAL`), `rul_package_archive`
+(every version's ZIP, in the database); package code = code prefix; scope global or an own
+arrangement extension; dependencies derived on save; `CustomizationPackageService.rebuild` imports in
+memory (`importPackageInternal(Map, boolean)`); a specification is added with its position and a
+generated rule; the rule editor compiles before save; detach/attach; spec usage counts protect
+deletion; OpenAPI tag `customization` (ADMIN), admin page `/admin/customization`.
 
-**Phase 5 — declarative primitives and overrides.** Changeset C; generated templates that turn out
-repetitive become data (`specs-extensible` and a runtime policy); item-type anchors with the layout
-pass; structure extensions and `structure-type=` resolved across packages;
-`NewLevelApproaches.remove(name)`; code aliases (`other-codes` for item types and specs, rename in
-place keeping the id); retirement; UK pilot.
+**Phase 5.** `rul_item_type.specs_extensible`, item-type anchors with a layout pass replacing the
+`view_order` blocks, retirement of specs, code aliases, structure extensions across packages,
+`NewLevelApproaches.remove`; UK pilot (its `PERSON/PT_EVENT.groovy` patch becomes an `INDEX` rule).
 
-**Phase 6 — convergence.** Rule-set inheritance; renames of semantically generic ZP2015 codes towards
-the ISAD(G) catalogue through aliases, batched per major release, never to bare codes such as `NAME`
-(they collide with CZ_BASE codes like `HISTORY`, `LANG`).
+**Phase 6.** Rule-set inheritance; renames of generic ZP2015 codes towards ISAD(G) through aliases.
 
 ## 9. Reference facts
 
-- Spec availability: `RulItemTypeExt` sets every spec IMPOSSIBLE and only DRL raises it. ZP2015
-  raises all specs generically for `ZP2015_OTHER_ID`, `ZP2015_UNIT_DAMAGE_TYPE` and the language
-  types; `ZP2015_AGENDA_TYPE` ships with no specs and no spec rule. `ClientFactoryVO.createFormItemTypes`
-  drops IMPOSSIBLE specs and `DescItemSpec.tsx` hides them in strict mode.
-- Item-type filter: the rule set's own DRL plus `ITEM_TYPE_FILTER` rules of other packages
+- Spec availability: `RulItemTypeExt` sets every spec IMPOSSIBLE, only DRL raises it;
+  `ClientFactoryVO.createFormItemTypes` drops IMPOSSIBLE specs.
+- Item-type filter: the rule set's DRL plus `ITEM_TYPE_FILTER` rules of other packages
   (`RuleService.getItemTypeCodesByRuleSet`).
-- Ordering: spec order within a type follows the topological package order, then `view-after`
-  anchors (`postSpecsOrder`). Item-type `view_order` is globally unique and allocated per package
-  as a block; the form orders by group, then `viewOrder`, so addon item types still land last in
-  their group.
-- Client refresh: `EventType.PACKAGE` marks `ruleSet`, `descItemTypes`, `outputTypes` and `templates`
-  dirty (`stores/app/refTables/refTables.jsx:151`), not `groups`, `structureTypes` or `apTypes`.
-- Startup: `autoImportPackages` imports distribution ZIPs in topological order and skips packages
-  that exist only in the database; customizations are never re-applied at startup, so base imports
-  must keep them consistent (`postSpecsOrder` runs over all item types).
-- Language: there is no per-user server locale today; `ElzaLocale` is server-wide and used for
-  collation and date formatting. `RulesController.rulesListItemTypes` already accepts
-  `Accept-Language`.
-- Languages: `sys_language` (`code` ISO 639-2/B, `name` in Czech) has the 11 rows of
-  `db.elza-init.xml` and no others on the installations. The scope language list is the old REST
-  `GET /api/registry/languages` in `ApController`.
-- Conventions: Liquibase changesets only in `db.elza-3-part-03.xml`; REST OpenAPI-first: the source is
-  `elza-development/typespec/main.tsp`, and the same delta is applied by hand to
-  `rest/elza-openapi.yml` (post-processed, not byte-identical to the compiler output); tag →
-  generated `<Tag>Api`, `@RestController @RequestMapping("/api/v1")`,
-  `@AuthMethod(permission = Permission.ADMIN)` for admin operations.
+- Startup: `autoImportPackages` imports distribution ZIPs in topological order, independent packages
+  by code; packages existing only in the database are not re-applied.
+- Same-version re-import in testing mode replaces the package directory; tests reading package files
+  run before refusal tests.
+- Conventions: changesets only in `db.elza-3-part-03.xml` (id `yyyyMMddHHmmss`, hibernate sequences in
+  `db_hibernate_sequences` as `table|column`, allocation 20); REST OpenAPI-first
+  (`elza-development/typespec/main.tsp`, delta applied to `rest/elza-openapi.yml`); client messages in
+  `messages.ts` + `npm run locale:sync` + `lang/translated/en.json` (locale gate); `npm run
+  ts:strict-check` before every commit touching `.ts/.tsx`; the docs job builds both guides with
+  Sphinx `-W`.
+- A content change of a package without a version bump never reaches an installation; CZ_BASE 89 is
+  not released yet, so 2c changes stay in version 89; ISAAR_CPF is version 1.
 
 ## 10. Critical files
 
-- Importer: `elza-core/src/main/java/cz/tacr/elza/packageimport/PackageService.java`
-  (`importPackageInternal` :554/:687, `processSettings` :1246, `processArrangementRules` :1615,
-  `processRuleSets` :2270, `deletePackage` :2538, export :2745-3383), `ItemTypeUpdater.java`
-  (`processItemSpecs` :305, `assignItemTypesToSpec` :375, `postSpecsOrder` :591),
-  `xml/ItemSpec.java`, `xml/ItemTypeAssign.java`.
-- Runtime: `drools/Rules.java`, `drools/DescItemTypesRules.java`, `drools/AvailableItemsRules.java`,
-  `domain/RulArrangementRule.java`, `service/RuleService.java`, `core/data/StaticDataProvider.java`,
-  `controller/config/ClientFactoryVO.java`, `controller/mapper/RulesMapper.java`,
-  `controller/factory/ApFactory.java`, `domain/vo/DataValidationResults.java`.
+- Import: `packageimport/PackageService.java`, `ItemTypeUpdater.java`, `APTypeUpdater.java`,
+  `PackageDeclarations.java`, `PackageTranslationService.java`, `PackageUtils.java`, `xml/*`.
+- Runtime: `core/data/StaticDataProvider.java`, `core/data/RuleSet.java`, `core/data/PackageTexts.java`,
+  `service/RuleService.java`, `service/GroovyService.java`, `service/AccessPointService.java`,
+  `controller/factory/ApFactory.java`, `domain/bridge/IndexConfigReaderImpl.java`.
 - Schema: `elza-core/src/main/resources/db/changelog/db.elza-3-part-03.xml`.
-- Localization (2a.1): `domain/SysLanguage.java`, `domain/RulPackage.java`,
-  `domain/RulTranslation.java`, `domain/TranslationEntityType.java`,
-  `packageimport/xml/PackageInfo.java`, `xml/Translations.java`,
-  `packageimport/PackageTranslationService.java`, `core/data/PackageTexts.java`,
-  `core/data/PackageTranslations.java`, `controller/ApController.java` (scope languages),
-  `controller/LanguagesController.java`, `controller/RulesController.java`.
-- REST: `elza-development/typespec/main.tsp`, `elza-core/src/main/resources/rest/elza-openapi.yml`.
-- Packages: `rules-simple-dev/` (skeleton), `rules-cz-zp2015/`, `package-cz-base/`, new
-  `rules-en-isadg/` and `package-cz-base-en/`; `elza/pom.xml`,
-  `distrib/distribution/src/assembly/distribution.xml`.
-- Client: `elza-react/src/websocketActions.jsx`, `components/arr/FundTreeMain.jsx`, API client setup
-  (language header), `components/arr/item-form/desc-items/ErrorDisplay.tsx`.
-- Tests: `elza-core/src/test/java/cz/tacr/elza/rules/addon/AddonPackageTest.java`,
-  `elza-core/src/test/resources/rules-addon-test/`, `rules/zp2015/Zp2015EjCountTest.java` (pattern);
-  `rules-simple-dev/src/translations/en.xml`, new `translation-addon-test/` with
-  `PackageTranslationTest`.
+- Packages: `package-cz-base/`, `package-isaar-cpf/` (generated), `rules-cz-zp2015/`,
+  `rules-simple-dev/`.
+- Client: `components/registry/ApDetailPageWrapper.tsx`, `ApTypePicker.tsx`,
+  `modal/CreateAccessPointModal.tsx`, `components/shared/lang/language.ts`, `LanguagePicker.tsx`.
+- Tests: `packageimport/EntityRulesTest.java` (`entity-rules-test`), `StandaloneFrameworkTest.java`
+  (`entity-standalone-test`), `IsaarCpfPackageTest.java`, `rules/addon/AddonPackageTest.java`
+  (`rules-addon-test`), `PackageTranslationTest` (`translation-addon-test`),
+  `search/IndexConfigReaderTest.java`, `other/HelperTestService.java` (`deleteAllPackages`).
