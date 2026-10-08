@@ -1,6 +1,6 @@
-===========================================
+============================================
 International entity description (ISAAR_CPF)
-===========================================
+============================================
 
 The package ``ISAAR_CPF`` (module :file:`package-isaar-cpf`) describes
 archival entities according to ISAAR(CPF): persons, families and corporate
