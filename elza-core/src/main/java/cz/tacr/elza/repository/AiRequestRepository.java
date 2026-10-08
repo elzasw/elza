@@ -20,6 +20,8 @@ public interface AiRequestRepository extends JpaRepository<AiRequest, Integer> {
     Optional<AiRequest> findByTaskUid(String taskUid);
 
     List<AiRequest> findByAiConversationIdOrderByCreateDateAsc(Integer aiConversationId);
+    /** Removes a conversation's exchanges (the conversation delete; children first). */
+    void deleteByAiConversationId(Integer aiConversationId);
 
     /** Open requests to resume polling for after an application start. */
     List<AiRequest> findByStateNotInAndTaskUidIsNotNull(Collection<String> states);

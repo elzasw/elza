@@ -1565,6 +1565,18 @@
     "defaultMessage": "Collapse panel",
     "srcHash": "hVRlVn5JBC8y"
   },
+  "aiAssistant.action.conversationMenu": {
+    "defaultMessage": "Conversation options"
+  },
+  "aiAssistant.action.copied": {
+    "defaultMessage": "Copied"
+  },
+  "aiAssistant.action.copy": {
+    "defaultMessage": "Copy"
+  },
+  "aiAssistant.action.delete": {
+    "defaultMessage": "Delete"
+  },
   "aiAssistant.action.expandPanel": {
     "defaultMessage": "Expand panel",
     "srcHash": "wPp1aA3CjF7g"
@@ -1581,6 +1593,12 @@
     "defaultMessage": "Model",
     "srcHash": "XixhTCPwIjm8"
   },
+  "aiAssistant.action.rename": {
+    "defaultMessage": "Rename"
+  },
+  "aiAssistant.action.save": {
+    "defaultMessage": "Save"
+  },
   "aiAssistant.action.send": {
     "defaultMessage": "Send",
     "srcHash": "qmmhj7gqjJS4"
@@ -1588,6 +1606,9 @@
   "aiAssistant.action.settings": {
     "defaultMessage": "Settings",
     "srcHash": "4BNW7MyPieeu"
+  },
+  "aiAssistant.action.stop": {
+    "defaultMessage": "Stop"
   },
   "aiAssistant.activity.linkOpen": {
     "defaultMessage": "Show record",
@@ -1701,6 +1722,12 @@
     "defaultMessage": "Context:",
     "srcHash": "g-NS7D1rL5QJ"
   },
+  "aiAssistant.delete.confirm": {
+    "defaultMessage": "The conversation “{title}” will be deleted with all its answers. Continue?"
+  },
+  "aiAssistant.delete.title": {
+    "defaultMessage": "Delete conversation"
+  },
   "aiAssistant.error.accountQuotaExceeded": {
     "defaultMessage": "Your credit limit for this period is exhausted.",
     "srcHash": "ULxSQM8vrYqj"
@@ -1749,6 +1776,12 @@
     "defaultMessage": "Superseded by a newer proposal",
     "srcHash": "DA45jq9z2d1Q"
   },
+  "aiAssistant.rename.label": {
+    "defaultMessage": "Title"
+  },
+  "aiAssistant.rename.title": {
+    "defaultMessage": "Rename conversation"
+  },
   "aiAssistant.settings.fullWidthResponses": {
     "defaultMessage": "Full-width responses",
     "srcHash": "u04WWMytfMeS"
@@ -1764,6 +1797,21 @@
   "aiAssistant.state.thinking": {
     "defaultMessage": "AI is thinking…",
     "srcHash": "-N1FvyhY7A-b"
+  },
+  "aiAssistant.task.needsContext": {
+    "defaultMessage": "Not available in the current context"
+  },
+  "aiAssistant.task.needsEntity": {
+    "defaultMessage": "Requires an open archival entity"
+  },
+  "aiAssistant.task.needsFund": {
+    "defaultMessage": "Requires an open fonds"
+  },
+  "aiAssistant.task.needsNode": {
+    "defaultMessage": "Requires an open unit of description"
+  },
+  "aiAssistant.task.needsNodeOrEntity": {
+    "defaultMessage": "Requires an open unit of description or archival entity"
   },
   "aiAssistant.usage.accountHeading": {
     "defaultMessage": "Your account",
