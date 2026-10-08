@@ -729,19 +729,20 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                 List<ArrItem> replaceItems = itemsByType.get(replaceDef.getSource());
                 if (CollectionUtils.isNotEmpty(replaceItems)) {
                     // source found -> store as new target
+                    // hide original Target item(s), they are replaced by Source item(s)
+                    List<ArrItem> replacedItems = itemsByType.get(replaceDef.getTarget());
+                    if (CollectionUtils.isNotEmpty(replacedItems)) {
+                        replacedItems.forEach(ri -> filter.addHideItem(ri));
+                    }
                     for (ArrItem replaceItem : replaceItems) {
-                        List<ArrItem> replacedItems = itemsByType.get(replaceDef.getTarget());
-                        // if exists ArrItem(s) with Target type
-                        if (CollectionUtils.isNotEmpty(replacedItems)) {
-                            // hide Source item
-                            filter.addHideItem(replaceItem);
-                            // copy from Source item
-                            ArrItem copy = replaceItem.makeCopy();
-                            // set Target type to copy of Source item
-                            copy.setItemType(replaceDef.getTarget().getEntity());
-                            filter.addItem(copy);
-                            changed = true;
-                        }
+                        // hide Source item
+                        filter.addHideItem(replaceItem);
+                        // copy from Source item
+                        ArrItem copy = replaceItem.makeCopy();
+                        // set Target type to copy of Source item
+                        copy.setItemType(replaceDef.getTarget().getEntity());
+                        filter.addItem(copy);
+                        changed = true;
                     }
                 }
             }
