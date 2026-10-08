@@ -1,0 +1,16 @@
+<item-specs>
+    <!-- declared by CZ_BASE too: same specification, English texts -->
+    <item-spec code="NT_PSEUDONYM">
+        <name>Pseudonym</name>
+        <description>Pseudonym of a person</description>
+        <shortcut>Pseudonym</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <!-- an own specification on the shared item type -->
+    <item-spec code="ENT_NT_LOCAL">
+        <name>Local form</name>
+        <description>Form of the name used locally</description>
+        <shortcut>Local form</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+</item-specs>

@@ -394,7 +394,7 @@ public class PackageTranslationService {
          */
         boolean isOwn(TranslationEntityType type, String code, String packageCode) {
             if (type == TranslationEntityType.AP_TYPE || type == TranslationEntityType.PART_TYPE
-                    || type == TranslationEntityType.ITEM_TYPE) {
+                    || type == TranslationEntityType.ITEM_TYPE || type == TranslationEntityType.ITEM_SPEC) {
                 Set<String> declaring = declarations(type).get(code);
                 return declaring != null && declaring.contains(packageCode);
             }
@@ -403,12 +403,13 @@ public class PackageTranslationService {
 
         private final Map<TranslationEntityType, Map<String, Set<String>>> declarations = new HashMap<>();
 
-        /** Codes of the packages declaring each entity class, part type or item type. */
+        /** Codes of the packages declaring each entity class, part type, item type or specification. */
         private Map<String, Set<String>> declarations(TranslationEntityType type) {
             return declarations.computeIfAbsent(type, t -> {
                 String query = switch (t) {
                     case AP_TYPE -> "SELECT d.apType.code, d.rulPackage.code FROM rul_ap_type_declaration d";
                     case PART_TYPE -> "SELECT d.partType.code, d.rulPackage.code FROM rul_part_type_declaration d";
+                    case ITEM_SPEC -> "SELECT d.itemSpec.code, d.rulPackage.code FROM rul_item_spec_declaration d";
                     default -> "SELECT d.itemType.code, d.rulPackage.code FROM rul_item_type_declaration d";
                 };
                 Map<String, Set<String>> result = new HashMap<>();

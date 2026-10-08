@@ -17,6 +17,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import cz.tacr.elza.domain.RulItemAptype;
 import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemSpecAssignDeclaration;
+import cz.tacr.elza.domain.RulItemSpecDeclaration;
 import cz.tacr.elza.domain.RulItemTypeSpecAssign;
 import cz.tacr.elza.packageimport.ItemTypeUpdater;
 import cz.tacr.elza.repository.ItemAptypeRepository;
@@ -123,6 +125,39 @@ public class ItemSpec {
      * @param assignments
      *            assignments of the specification to item types
      */
+    /**
+     * The specification as the package declares it: texts, category and assignments of the declaration;
+     * RECORD_REF classes for the owner of the specification only.
+     */
+    public static ItemSpec fromDeclaration(final RulItemSpecDeclaration declaration,
+                                           final List<RulItemSpecAssignDeclaration> assignments,
+                                           final List<RulItemAptype> itemAptypes) {
+        ItemSpec itemSpec = new ItemSpec();
+        itemSpec.setCode(declaration.getItemSpec().getCode());
+        itemSpec.setName(declaration.getName());
+        itemSpec.setDescription(declaration.getDescription());
+        itemSpec.setShortcut(declaration.getShortcut());
+        if (!itemAptypes.isEmpty()) {
+            itemSpec.setItemAptypes(itemAptypes.stream().map(ItemAptype::fromEntity).collect(Collectors.toList()));
+        }
+        if (StringUtils.isNotEmpty(declaration.getCategory())) {
+            itemSpec.setCategories(Arrays.stream(declaration.getCategory().split("\\" + ItemTypeUpdater.CATEGORY_SEPARATOR))
+                    .map(Category::new)
+                    .collect(Collectors.toList()));
+        }
+        if (!assignments.isEmpty()) {
+            List<ItemTypeAssign> itemTypesAssigns = new ArrayList<>();
+            for (RulItemSpecAssignDeclaration assignment : assignments) {
+                ItemTypeAssign assign = new ItemTypeAssign();
+                assign.setCode(assignment.getItemType().getCode());
+                assign.setViewAfter(assignment.getViewAfterSpecCode());
+                itemTypesAssigns.add(assign);
+            }
+            itemSpec.setItemTypeAssigns(itemTypesAssigns);
+        }
+        return itemSpec;
+    }
+
     public static ItemSpec fromEntity(RulItemSpec rulDescItemSpec,
                                       final List<RulItemTypeSpecAssign> assignments,
                                       ItemAptypeRepository itemAptypeRepository) {

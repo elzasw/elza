@@ -40,6 +40,8 @@ import cz.tacr.elza.domain.RulItemAptype;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeDeclaration;
+import cz.tacr.elza.domain.RulItemSpecAssignDeclaration;
+import cz.tacr.elza.domain.RulItemSpecDeclaration;
 import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.core.data.PackageTexts;
 import cz.tacr.elza.exception.AbstractException;
@@ -65,6 +67,8 @@ import cz.tacr.elza.packageimport.xml.ItemTypes;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApRevItemRepository;
 import cz.tacr.elza.repository.ItemTypeDeclarationRepository;
+import cz.tacr.elza.repository.ItemSpecAssignDeclarationRepository;
+import cz.tacr.elza.repository.ItemSpecDeclarationRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.CachedNodeRepository;
 import cz.tacr.elza.repository.DataDateRepository;
@@ -141,6 +145,12 @@ public class ItemTypeUpdater {
 
     @Autowired
     private ApRevItemRepository apRevItemRepository;
+
+    @Autowired
+    private ItemSpecDeclarationRepository specDeclarationRepository;
+
+    @Autowired
+    private ItemSpecAssignDeclarationRepository assignDeclarationRepository;
 
     @Autowired
     private PackageTexts packageTexts;
@@ -341,138 +351,255 @@ public class ItemTypeUpdater {
      *
      * @param xmlItemSpecs seznam importovaných specifikací
      */
+    /**
+     * Declarations of specifications by the package: the first package creates a specification, further
+     * packages add declarations (texts, category, assignments to item types). The assignments of a
+     * specification are the union of the assignments of its declarations. A specification no longer
+     * declared by any package is removed, not while items use it.
+     */
     private void processItemSpecs(ItemSpecs xmlItemSpecs,
                                   @Nonnull RulPackage rulPackage) {
-
-        // read current specs from DB
-        List<RulItemSpec> dbItemSpecs = itemSpecRepository.findByRulPackage(rulPackage);
-        Map<String, RulItemSpec> dbOldSpecsByCode = dbItemSpecs.stream()
+        Map<String, RulItemSpec> allSpecsByCode = itemSpecRepository.findAll().stream()
                 .collect(toMap(RulItemSpec::getCode, Function.identity()));
-        
-        Map<String, List<XmlSpecAssignment>> xmlSpecAssigmentsByType = new HashMap<>();
+        Map<String, RulItemSpecDeclaration> oldDeclarations = new HashMap<>();
+        specDeclarationRepository.findByRulPackage(rulPackage)
+                .forEach(d -> oldDeclarations.put(d.getItemSpec().getCode(), d));
+        List<RulItemSpecAssignDeclaration> oldAssigns = new ArrayList<>(
+                assignDeclarationRepository.findByDeclarations(oldDeclarations.values()));
 
-        // kolekce vsech zpracovanych kodu
-        Map<String, RulItemSpec> dbUpdatedSpecsByCode = new LinkedHashMap<>();
+        Map<String, RulItemSpecDeclaration> declarations = new LinkedHashMap<>();
+        Map<Integer, RulItemSpec> affected = new LinkedHashMap<>();
+        // assignments of the package per item type code, in the order of the file
+        Map<String, List<XmlSpecAssignment>> xmlSpecAssigmentsByType = new LinkedHashMap<>();
 
         if (xmlItemSpecs != null && CollectionUtils.isNotEmpty(xmlItemSpecs.getItemSpecs())) {
+            List<ItemSpec> ownXmlSpecs = new ArrayList<>();
+            Map<String, RulItemSpec> ownSpecsByCode = new HashMap<>();
 
             for (ItemSpec xmlItemSpec : xmlItemSpecs.getItemSpecs()) {
-
                 String itemSpecCode = xmlItemSpec.getCode();
-                if (dbUpdatedSpecsByCode.containsKey(itemSpecCode)) {
+                if (declarations.containsKey(itemSpecCode)) {
                     throw new SystemException("Duplicitní kód specifikace: " + itemSpecCode, BaseCode.DB_INTEGRITY_PROBLEM)
                             .set("code", itemSpecCode);
                 }
+                checkSpecLength(xmlItemSpec);
 
-                // pouzijeme remove() - co zbyde nechame nakonec smazat z DB
-                RulItemSpec rulItemSpec = dbOldSpecsByCode.remove(itemSpecCode);
-                if (rulItemSpec == null) {
-                    rulItemSpec = new RulItemSpec();
-                    logger.debug("Creating new specification: {}", itemSpecCode);
+                RulItemSpec rulItemSpec = allSpecsByCode.get(itemSpecCode);
+                boolean foreign = rulItemSpec != null
+                        && !rulItemSpec.getPackage().getPackageId().equals(rulPackage.getPackageId());
+                if (foreign) {
+                    // RECORD_REF classes of a specification stay with its owner
+                    if (CollectionUtils.isNotEmpty(xmlItemSpec.getItemAptypes())) {
+                        throw new BusinessException("Specification " + itemSpecCode
+                                + " is owned by another package, its classes cannot be declared",
+                                PackageCode.ITEM_SPEC_CONFLICT)
+                                .set("code", itemSpecCode)
+                                .set("otherPackageCode", rulItemSpec.getPackage().getCode());
+                    }
+                } else {
+                    if (rulItemSpec == null) {
+                        rulItemSpec = new RulItemSpec();
+                        logger.debug("Creating new specification: {}", itemSpecCode);
+                    }
+                    convertRulItemSpec(rulPackage, xmlItemSpec, rulItemSpec);
+                    rulItemSpec = itemSpecRepository.save(rulItemSpec);
+                    allSpecsByCode.put(itemSpecCode, rulItemSpec);
+                    ownXmlSpecs.add(xmlItemSpec);
+                    ownSpecsByCode.put(itemSpecCode, rulItemSpec);
                 }
-                convertRulItemSpec(rulPackage, xmlItemSpec, rulItemSpec);
 
-                RulItemSpec rulItemSpecSaved = itemSpecRepository.save(rulItemSpec);
-                dbUpdatedSpecsByCode.put(rulItemSpec.getCode(), rulItemSpecSaved);
+                RulItemSpecDeclaration declaration = oldDeclarations.remove(itemSpecCode);
+                if (declaration == null) {
+                    declaration = new RulItemSpecDeclaration();
+                }
+                declaration.setItemSpec(rulItemSpec);
+                declaration.setRulPackage(rulPackage);
+                declaration.setName(xmlItemSpec.getName());
+                declaration.setShortcut(xmlItemSpec.getShortcut());
+                declaration.setDescription(xmlItemSpec.getDescription());
+                declaration.setCategory(categoryOf(xmlItemSpec));
+                declaration = specDeclarationRepository.save(declaration);
+                declarations.put(itemSpecCode, declaration);
+                affected.put(rulItemSpec.getItemSpecId(), rulItemSpec);
 
-                // prepare list of assigned specs per type
                 if (xmlItemSpec.getItemTypeAssigns() != null) {
                     for (ItemTypeAssign xmlSpecAssignment : xmlItemSpec.getItemTypeAssigns()) {
-                        // get list of assigned spec to the type 
-                        List<XmlSpecAssignment> specs = xmlSpecAssigmentsByType
-                                .computeIfAbsent(xmlSpecAssignment.getCode(), c -> new ArrayList<>());
-                        // append new spec
-                        specs.add(new XmlSpecAssignment(itemSpecCode,
-                                StringUtils.trimToNull(xmlSpecAssignment.getViewAfter())));
+                        xmlSpecAssigmentsByType.computeIfAbsent(xmlSpecAssignment.getCode(), c -> new ArrayList<>())
+                                .add(new XmlSpecAssignment(itemSpecCode,
+                                        StringUtils.trimToNull(xmlSpecAssignment.getViewAfter())));
                     }
                 }
             }
 
-            processItemAptypesByItemSpecs(xmlItemSpecs.getItemSpecs(), dbUpdatedSpecsByCode);
+            processItemAptypesByItemSpecs(ownXmlSpecs, ownSpecsByCode);
         }
 
-        // delete unused item specs
-        this.deleteItemSpecs.addAll(dbOldSpecsByCode.values());
-        
-        // assign specs to types - solve order issue
-        assignItemTypesToSpec(xmlSpecAssigmentsByType,
-                              dbItemSpecs,
-                              dbUpdatedSpecsByCode);
-        
+        declareAssignments(xmlSpecAssigmentsByType, declarations, oldAssigns, affected);
+
+        // declarations the package no longer has
+        oldDeclarations.values().forEach(d -> affected.put(d.getItemSpecId(), d.getItemSpec()));
+        assignDeclarationRepository.deleteByDeclarations(oldDeclarations.values());
+        specDeclarationRepository.deleteAll(oldDeclarations.values());
+        specDeclarationRepository.flush();
+
+        resolveItemSpecs(affected.values(), rulPackage);
     }
 
     /**
-     * Assigne item types to specification
-     * 
-     * @param xmlSpecAssigmentsByType
-     *            Specification assigment from XML.
-     *            Map key is typeCode.
-     * @param dbPrevItemSpecs
-     *            Previouse specifications
-     * @param dbUpdatedSpecsByCode
-     *            Updated specifications by code
+     * Assignment declarations of the package, rebuilt from the file; the position is the order of the
+     * assignment among the package's assignments of the item type.
      */
-    private void assignItemTypesToSpec(final Map<String, List<XmlSpecAssignment>> xmlSpecAssigmentsByType,
-                                       final List<RulItemSpec> dbPrevItemSpecs,
-                                       final Map<String, RulItemSpec> dbUpdatedSpecsByCode) {
-
-        // prepare list of types for modification
-        // - all types assigned to new specs
-        // - list of types for prev assignments
-        
-        // Update spec assignments
-        Map<String, List<RulItemTypeSpecAssign>> specAssigmentsByType = new HashMap<>();
-        if (CollectionUtils.isNotEmpty(dbPrevItemSpecs)) {
-            // get current assignments
-            List<RulItemTypeSpecAssign> dbAssignedSpecTypes = itemTypeSpecAssignRepository
-                    .findByItemSpecIn(dbPrevItemSpecs);
-            specAssigmentsByType = dbAssignedSpecTypes.stream().collect(Collectors.groupingBy(a -> a.getItemType().getCode()));            
-        } else {
-            specAssigmentsByType = Collections.emptyMap();
+    private void declareAssignments(final Map<String, List<XmlSpecAssignment>> xmlSpecAssigmentsByType,
+                                    final Map<String, RulItemSpecDeclaration> declarations,
+                                    final List<RulItemSpecAssignDeclaration> oldAssigns,
+                                    final Map<Integer, RulItemSpec> affected) {
+        Map<String, RulItemSpecAssignDeclaration> oldByKey = new HashMap<>();
+        for (RulItemSpecAssignDeclaration assign : oldAssigns) {
+            oldByKey.put(assign.getItemSpecDeclarationId() + "/" + assign.getItemTypeId(), assign);
         }
-        
-        // iterate xml requiremens
-        for (Entry<String, List<XmlSpecAssignment>> itemTypeAssignedSpecs : xmlSpecAssigmentsByType.entrySet()) {
-            String itemTypeCode = itemTypeAssignedSpecs.getKey();
-            List<XmlSpecAssignment> requieredSpecs = itemTypeAssignedSpecs.getValue();
-
-            List<RulItemTypeSpecAssign> currDbAssignedSpecs = specAssigmentsByType.get(itemTypeCode);
-
-            Map<String, RulItemTypeSpecAssign> currDbAssignmentsBySpecCode = currDbAssignedSpecs != null
-                    ? currDbAssignedSpecs.stream()
-                            .collect(Collectors.toMap(dba -> dba.getItemSpec().getCode(), Function.identity()))
-                    : Collections.emptyMap();
-            // get required specs            
-            // 
-            for (int pos = 0; pos < requieredSpecs.size(); pos++) {
-                XmlSpecAssignment required = requieredSpecs.get(pos);
-                String specCode = required.specCode();
-                RulItemTypeSpecAssign assignment = currDbAssignmentsBySpecCode.remove(specCode);
-                int nextViewOrder = pos + 1;
-                if (assignment == null) {
-                    RulItemType itemType = allItemTypesByCode.get(itemTypeCode);
-                    Validate.notNull(itemType, "Item type not found %s", itemTypeCode);
-                    RulItemSpec itemSpec = dbUpdatedSpecsByCode.get(specCode);
-                    Validate.notNull(itemSpec, "Item spec not found %s", specCode);
-
-                    assignment = new RulItemTypeSpecAssign(itemType, itemSpec, nextViewOrder);
-                    assignment.setViewAfterSpecCode(required.viewAfter());
-                    assignment = itemTypeSpecAssignRepository.save(assignment);
-
-                    logger.debug("Specification '{}' assigned to item type '{}'", specCode, itemTypeCode);
-
-                } else {
-                    if (assignment.getViewOrder() != nextViewOrder) {
-                        assignment.setViewOrder(nextViewOrder);
-                    }
-                    assignment.setViewAfterSpecCode(required.viewAfter());
-                    assignment = itemTypeSpecAssignRepository.save(assignment);
+        for (Entry<String, List<XmlSpecAssignment>> entry : xmlSpecAssigmentsByType.entrySet()) {
+            RulItemType itemType = allItemTypesByCode.get(entry.getKey());
+            Validate.notNull(itemType, "Item type not found %s", entry.getKey());
+            List<XmlSpecAssignment> required = entry.getValue();
+            for (int pos = 0; pos < required.size(); pos++) {
+                RulItemSpecDeclaration declaration = declarations.get(required.get(pos).specCode());
+                RulItemSpecAssignDeclaration assign = oldByKey
+                        .remove(declaration.getItemSpecDeclarationId() + "/" + itemType.getItemTypeId());
+                if (assign == null) {
+                    assign = new RulItemSpecAssignDeclaration();
+                    assign.setSpecDeclaration(declaration);
+                    assign.setItemType(itemType);
                 }
+                assign.setPosition(pos + 1);
+                assign.setViewAfterSpecCode(required.get(pos).viewAfter());
+                assignDeclarationRepository.save(assign);
             }
-            // delete remaining assignments
-            deleteSpecToTypeAssignments.addAll(currDbAssignmentsBySpecCode.values());
         }
+        for (RulItemSpecAssignDeclaration removed : oldByKey.values()) {
+            affected.put(removed.getSpecDeclaration().getItemSpecId(), removed.getSpecDeclaration().getItemSpec());
+            assignDeclarationRepository.delete(removed);
+        }
+        assignDeclarationRepository.flush();
+    }
+
+    /**
+     * Specifications whose declarations changed: a specification still declared takes owner, texts and
+     * the union of the assignments from its declarations; one without declarations is removed.
+     */
+    private void resolveItemSpecs(final Collection<RulItemSpec> itemSpecs, final RulPackage rulPackage) {
+        if (itemSpecs.isEmpty()) {
+            return;
+        }
+        PackageDeclarations summary = packageDeclarations();
+        // loaded at once: a package import touches all its specifications
+        Map<Integer, List<RulItemSpecDeclaration>> declarationsBySpec = specDeclarationRepository
+                .findByItemSpecs(itemSpecs).stream()
+                .collect(Collectors.groupingBy(RulItemSpecDeclaration::getItemSpecId));
+        Map<Integer, List<RulItemSpecAssignDeclaration>> assignsByDeclaration = assignDeclarationRepository
+                .findByItemSpecs(itemSpecs).stream()
+                .collect(Collectors.groupingBy(RulItemSpecAssignDeclaration::getItemSpecDeclarationId));
+        Map<Integer, List<RulItemTypeSpecAssign>> assignmentsBySpec = itemTypeSpecAssignRepository
+                .findByItemSpecIn(itemSpecs).stream()
+                .collect(Collectors.groupingBy(a -> a.getItemSpec().getItemSpecId()));
+        List<RulItemSpec> removed = new ArrayList<>();
+        for (RulItemSpec itemSpec : itemSpecs) {
+            List<RulItemSpecDeclaration> remaining = declarationsBySpec.getOrDefault(itemSpec.getItemSpecId(),
+                                                                                     List.of());
+            if (remaining.isEmpty()) {
+                removed.add(itemSpec);
+                continue;
+            }
+            Integer previousOwnerId = itemSpec.getPackage().getPackageId();
+            summary.summarize(itemSpec, remaining);
+            if (!previousOwnerId.equals(itemSpec.getPackage().getPackageId())) {
+                // RECORD_REF classes belong to the declaration of the owner
+                deleteItemApTypes.addAll(itemAptypeRepository.findByItemSpec(itemSpec));
+            }
+            RulItemSpec saved = itemSpecRepository.save(itemSpec);
+            List<RulItemSpecAssignDeclaration> assigns = remaining.stream()
+                    .flatMap(d -> assignsByDeclaration.getOrDefault(d.getItemSpecDeclarationId(), List.of()).stream())
+                    .toList();
+            syncAssignments(saved, remaining, assigns,
+                            assignmentsBySpec.getOrDefault(itemSpec.getItemSpecId(), List.of()), summary);
+        }
+        checkSpecsRemovable(removed);
+        deleteItemSpecs.addAll(removed);
         itemTypeSpecAssignRepository.flush();
+    }
+
+    /**
+     * The assignments of the specification: one per item type assigned by any declaration; the position
+     * and {@code view-after} from the owner's declaration of the pair, else from the winning one.
+     */
+    private void syncAssignments(final RulItemSpec itemSpec, final List<RulItemSpecDeclaration> declarations,
+                                 final List<RulItemSpecAssignDeclaration> assigns,
+                                 final List<RulItemTypeSpecAssign> assignments,
+                                 final PackageDeclarations summary) {
+        Map<Integer, Integer> rank = new HashMap<>();
+        List<RulItemSpecDeclaration> ordered = summary.ordered(declarations, RulItemSpecDeclaration::getRulPackage);
+        for (int i = 0; i < ordered.size(); i++) {
+            boolean owner = ordered.get(i).getPackageId().equals(itemSpec.getPackage().getPackageId());
+            rank.put(ordered.get(i).getItemSpecDeclarationId(), owner ? -1 : i);
+        }
+        Map<Integer, RulItemSpecAssignDeclaration> byItemType = new HashMap<>();
+        for (RulItemSpecAssignDeclaration assign : assigns) {
+            byItemType.merge(assign.getItemTypeId(), assign,
+                             (a, b) -> rank.get(a.getItemSpecDeclarationId()) <= rank.get(b.getItemSpecDeclarationId())
+                                     ? a : b);
+        }
+        Map<Integer, RulItemTypeSpecAssign> current = new HashMap<>();
+        assignments.forEach(a -> current.put(a.getItemType().getItemTypeId(), a));
+        for (RulItemSpecAssignDeclaration assign : byItemType.values()) {
+            RulItemTypeSpecAssign assignment = current.remove(assign.getItemTypeId());
+            // the owner's assignments keep their order; others follow them (postSpecsOrder renumbers)
+            boolean ownerAssigns = rank.get(assign.getItemSpecDeclarationId()) < 0;
+            int viewOrder = ownerAssigns ? assign.getPosition() : 1000 + assign.getPosition();
+            if (assignment == null) {
+                assignment = new RulItemTypeSpecAssign(assign.getItemType(), itemSpec, viewOrder);
+                logger.debug("Specification '{}' assigned to item type '{}'", itemSpec.getCode(),
+                             assign.getItemType().getCode());
+            } else if (ownerAssigns) {
+                assignment.setViewOrder(viewOrder);
+            }
+            assignment.setViewAfterSpecCode(assign.getViewAfterSpecCode());
+            itemTypeSpecAssignRepository.save(assignment);
+        }
+        // assignments no package declares any more
+        for (RulItemTypeSpecAssign removed : current.values()) {
+            long used = itemRepository.countByTypeAndSpec(removed.getItemType(), itemSpec)
+                    + apItemRepository.countByTypeAndSpec(removed.getItemType(), itemSpec)
+                    + apRevItemRepository.countByTypeAndSpec(removed.getItemType(), itemSpec);
+            if (used > 0) {
+                throw specInUse(itemSpec.getCode() + " / " + removed.getItemType().getCode(), used);
+            }
+            deleteSpecToTypeAssignments.add(removed);
+        }
+    }
+
+    /**
+     * Specifications to be removed: refused while items use them.
+     */
+    private void checkSpecsRemovable(final List<RulItemSpec> itemSpecs) {
+        for (RulItemSpec itemSpec : itemSpecs) {
+            long used = itemRepository.countBySpec(itemSpec) + apItemRepository.countBySpec(itemSpec)
+                    + apRevItemRepository.countBySpec(itemSpec);
+            if (used > 0) {
+                throw specInUse(itemSpec.getCode(), used);
+            }
+        }
+    }
+
+    private static AbstractException specInUse(final String codes, final long count) {
+        return new BusinessException("Specification is used by descriptions or entities: " + codes,
+                PackageCode.ITEM_SPEC_IN_USE)
+                .set("codes", codes)
+                .set("count", count);
+    }
+
+    private PackageDeclarations packageDeclarations() {
+        SysLanguage defaultLanguage = packageTexts.defaultLanguage();
+        return new PackageDeclarations(packageDependencyRepository.findAll(),
+                defaultLanguage != null ? defaultLanguage.getLanguageId() : null);
     }
 
     /**
@@ -528,6 +655,7 @@ public class ItemTypeUpdater {
                 itemAptypeRepository.flush();
             }
             itemTypeSpecAssignRepository.deleteByItemTypeIn(deleteItemTypes);
+            assignDeclarationRepository.deleteByItemTypes(deleteItemTypes);
 
             itemTypeRepository.deleteAll(deleteItemTypes);
             itemTypeRepository.flush();
@@ -738,8 +866,8 @@ public class ItemTypeUpdater {
                     PackageCode.ITEM_TYPE_IN_USE)
                     .set("codes", String.join(", ", used));
         }
-        String foreign = itemTypeSpecAssignRepository.findByItemTypeIn(itemTypes).stream()
-                .map(a -> a.getItemSpec().getPackage())
+        String foreign = assignDeclarationRepository.findByItemTypes(itemTypes).stream()
+                .map(a -> a.getSpecDeclaration().getRulPackage())
                 .filter(p -> !p.getPackageId().equals(rulPackage.getPackageId()))
                 .map(RulPackage::getCode)
                 .distinct()
@@ -758,9 +886,7 @@ public class ItemTypeUpdater {
         if (declaredItemTypes.isEmpty()) {
             return;
         }
-        SysLanguage defaultLanguage = packageTexts.defaultLanguage();
-        PackageDeclarations summary = new PackageDeclarations(packageDependencyRepository.findAll(),
-                defaultLanguage != null ? defaultLanguage.getLanguageId() : null);
+        PackageDeclarations summary = packageDeclarations();
         for (RulItemType itemType : declaredItemTypes.values()) {
             summary.summarize(itemType, declarationRepository.findByItemTypes(List.of(itemType)));
             RulItemType saved = itemTypeRepository.save(itemType);
@@ -770,10 +896,19 @@ public class ItemTypeUpdater {
     }
 
     /**
-     * Removes the declarations of a deleted package: an item type still declared by another package
-     * stays (owned by the winning declaration when the package owned it), the others are removed.
+     * Removes the declarations of a deleted package: a specification or item type still declared by
+     * another package stays (owned by the winning declaration when the package owned it), the others are
+     * removed.
      */
     public void deletePackageDeclarations(RulPackage rulPackage) {
+        List<RulItemSpecDeclaration> specDeclarations = specDeclarationRepository.findByRulPackage(rulPackage);
+        Map<Integer, RulItemSpec> affectedSpecs = new LinkedHashMap<>();
+        specDeclarations.forEach(d -> affectedSpecs.put(d.getItemSpecId(), d.getItemSpec()));
+        assignDeclarationRepository.deleteByDeclarations(specDeclarations);
+        specDeclarationRepository.deleteAll(specDeclarations);
+        specDeclarationRepository.flush();
+        resolveItemSpecs(affectedSpecs.values(), rulPackage);
+
         List<RulItemTypeDeclaration> declarations = declarationRepository.findByRulPackage(rulPackage);
         declarationRepository.deleteAll(declarations);
         declarationRepository.flush();
@@ -1223,26 +1358,29 @@ public class ItemTypeUpdater {
     private void convertRulItemSpec(final RulPackage rulPackage,
                                     final ItemSpec itemSpec,
                                     final RulItemSpec rulItemSpec) {
-        // check length code and shortcut
+        rulItemSpec.setName(itemSpec.getName());
+        rulItemSpec.setCode(itemSpec.getCode());
+        rulItemSpec.setDescription(itemSpec.getDescription());
+        rulItemSpec.setShortcut(itemSpec.getShortcut());
+        rulItemSpec.setPackage(rulPackage);
+        rulItemSpec.setCategory(categoryOf(itemSpec));
+    }
+
+    private static void checkSpecLength(final ItemSpec itemSpec) {
         if ((itemSpec.getCode() != null && itemSpec.getCode().length() > 50)
             || (itemSpec.getShortcut() != null && itemSpec.getShortcut().length() > 50)) {
             throw new SystemException("Item spec code or shortcut is too long", BaseCode.INVALID_LENGTH)
                 .set("iteSpec.code", itemSpec.getCode())
                 .set("iteSpec.shortcut", itemSpec.getShortcut());
         }
+    }
 
-        rulItemSpec.setName(itemSpec.getName());
-        rulItemSpec.setCode(itemSpec.getCode());
-        rulItemSpec.setDescription(itemSpec.getDescription());
-        rulItemSpec.setShortcut(itemSpec.getShortcut());
-        rulItemSpec.setPackage(rulPackage);
-
-        if (CollectionUtils.isNotEmpty(itemSpec.getCategories())) {
-            List<String> categories = itemSpec.getCategories().stream().map(Category::getValue).collect(Collectors.toList());
-            rulItemSpec.setCategory(StringUtils.join(categories, CATEGORY_SEPARATOR));
-        } else {
-            rulItemSpec.setCategory(null);
+    private static String categoryOf(final ItemSpec itemSpec) {
+        if (CollectionUtils.isEmpty(itemSpec.getCategories())) {
+            return null;
         }
+        List<String> categories = itemSpec.getCategories().stream().map(Category::getValue).collect(Collectors.toList());
+        return StringUtils.join(categories, CATEGORY_SEPARATOR);
     }
 
     /**

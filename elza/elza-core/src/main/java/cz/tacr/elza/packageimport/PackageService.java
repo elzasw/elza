@@ -74,6 +74,8 @@ import cz.tacr.elza.domain.RulExportFilter;
 import cz.tacr.elza.domain.RulApTypeDeclaration;
 import cz.tacr.elza.domain.RulPartTypeDeclaration;
 import cz.tacr.elza.domain.RulItemTypeDeclaration;
+import cz.tacr.elza.domain.RulItemSpecDeclaration;
+import cz.tacr.elza.domain.RulItemSpecAssignDeclaration;
 import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.core.data.PackageTexts;
 import cz.tacr.elza.domain.RulEntityRule;
@@ -178,6 +180,8 @@ import cz.tacr.elza.repository.ExportFilterRepository;
 import cz.tacr.elza.repository.ApTypeDeclarationRepository;
 import cz.tacr.elza.repository.PartTypeDeclarationRepository;
 import cz.tacr.elza.repository.ItemTypeDeclarationRepository;
+import cz.tacr.elza.repository.ItemSpecDeclarationRepository;
+import cz.tacr.elza.repository.ItemSpecAssignDeclarationRepository;
 import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApRevPartRepository;
 import cz.tacr.elza.repository.EntityRuleRepository;
@@ -509,6 +513,12 @@ public class PackageService {
 
     @Autowired
     private ItemTypeDeclarationRepository itemTypeDeclarationRepository;
+
+    @Autowired
+    private ItemSpecDeclarationRepository itemSpecDeclarationRepository;
+
+    @Autowired
+    private ItemSpecAssignDeclarationRepository itemSpecAssignDeclarationRepository;
 
     @Autowired
     private ApPartRepository partRepository;
@@ -2972,13 +2982,6 @@ public class PackageService {
         }
         packageDependencyRepository.deleteByRulPackage(rulPackage);
 
-        List<RulItemSpec> rulDescItemSpecs = itemSpecRepository.findByRulPackage(rulPackage);
-        itemTypeSpecAssignRepository.deleteByItemSpecIn(rulDescItemSpecs);
-        for (RulItemSpec rulDescItemSpec : rulDescItemSpecs) {
-            itemAptypeRepository.deleteByItemSpec(rulDescItemSpec);
-        }
-        itemSpecRepository.deleteAll(rulDescItemSpecs);
-
         List<RulRuleSet> ruleSets = ruleSetRepository.findByRulPackage(rulPackage);
         List<RulArrangementRule> arrangementRules = arrangementRuleRepository.findByRulPackage(rulPackage);
         List<RulStructureExtensionDefinition> structureExtensionDefinitions = structureExtensionDefinitionRepository.findByRulPackage(rulPackage);
@@ -3002,7 +3005,7 @@ public class PackageService {
         outputFilters.forEach(f -> ruleSetsToClean.putIfAbsent(f.getRuleSet().getRuleSetId(), f.getRuleSet()));
         exportFilters.forEach(f -> ruleSetsToClean.putIfAbsent(f.getRuleSet().getRuleSetId(), f.getRuleSet()));
 
-        // item types declared also by other packages stay
+        // specifications and item types declared also by other packages stay
         applicationContext.getBean(ItemTypeUpdater.class).deletePackageDeclarations(rulPackage);
 
         structureExtensionDefinitionRepository.deleteByRulPackage(rulPackage);
@@ -3880,24 +3883,41 @@ public class PackageService {
      * @param zos        stream zip souboru
      */
     private void exportItemSpecs(final RulPackage rulPackage, final ZipOutputStream zos) throws IOException {
-        List<RulItemSpec> rulDescItemSpecs = itemSpecRepository.findByRulPackageFetchItemType(rulPackage);
-        if (CollectionUtils.isEmpty(rulDescItemSpecs)) {
+        // the declarations of the package, each once with its assignments (also unassigned ones): own
+        // specifications first, ordered by their first assignment, then specifications of other packages
+        List<RulItemSpecDeclaration> declarations = new ArrayList<>(
+                itemSpecDeclarationRepository.findByRulPackage(rulPackage));
+        if (declarations.isEmpty()) {
             return;
         }
-
-        List<RulItemTypeSpecAssign> typeAssigned = itemTypeSpecAssignRepository.findByItemSpecIn(rulDescItemSpecs);
-        Map<Integer, List<RulItemTypeSpecAssign>> typeAssignedBySpecId = typeAssigned.stream()
-                .collect(Collectors.groupingBy(tsa -> tsa.getItemSpec().getItemSpecId()));
+        Map<Integer, List<RulItemSpecAssignDeclaration>> assignsByDeclaration = itemSpecAssignDeclarationRepository
+                .findByDeclarations(declarations).stream()
+                .sorted(Comparator.comparing((RulItemSpecAssignDeclaration a) -> a.getItemType().getViewOrder())
+                        .thenComparing(RulItemSpecAssignDeclaration::getPosition))
+                .collect(Collectors.groupingBy(RulItemSpecAssignDeclaration::getItemSpecDeclarationId));
+        Integer packageId = rulPackage.getPackageId();
+        Comparator<RulItemSpecDeclaration> order = Comparator
+                .comparing((RulItemSpecDeclaration d) -> !d.getItemSpec().getPackage().getPackageId().equals(packageId))
+                .thenComparing(d -> {
+                    List<RulItemSpecAssignDeclaration> assigns = assignsByDeclaration.get(d.getItemSpecDeclarationId());
+                    return assigns == null ? Integer.MAX_VALUE : assigns.get(0).getItemType().getViewOrder();
+                })
+                .thenComparing(d -> {
+                    List<RulItemSpecAssignDeclaration> assigns = assignsByDeclaration.get(d.getItemSpecDeclarationId());
+                    return assigns == null ? Integer.MAX_VALUE : assigns.get(0).getPosition();
+                })
+                .thenComparing(d -> d.getItemSpec().getCode());
+        declarations.sort(order);
 
         ItemSpecs itemSpecs = new ItemSpecs();
-        List<ItemSpec> itemSpecList = new ArrayList<>(rulDescItemSpecs.size());
+        List<ItemSpec> itemSpecList = new ArrayList<>(declarations.size());
         itemSpecs.setItemSpecs(itemSpecList);
-
-        for (RulItemSpec rulDescItemSpec : rulDescItemSpecs) {
-            List<RulItemTypeSpecAssign> assignments = typeAssignedBySpecId.get(rulDescItemSpec.getItemSpecId());
-
-            ItemSpec itemSpec = ItemSpec.fromEntity(rulDescItemSpec, assignments, itemAptypeRepository);
-            itemSpecList.add(itemSpec);
+        for (RulItemSpecDeclaration declaration : declarations) {
+            RulItemSpec rulItemSpec = declaration.getItemSpec();
+            boolean owned = rulItemSpec.getPackage().getPackageId().equals(packageId);
+            itemSpecList.add(ItemSpec.fromDeclaration(declaration,
+                    assignsByDeclaration.getOrDefault(declaration.getItemSpecDeclarationId(), List.of()),
+                    owned ? itemAptypeRepository.findByItemSpec(rulItemSpec) : List.of()));
         }
 
         addObjectToZipFile(itemSpecs, zos, ITEM_SPEC_XML);
