@@ -515,7 +515,7 @@ deletion; OpenAPI tag `customization` (ADMIN), admin page `/admin/customization`
   without the key imports every ZIP. The package administration lists the ZIPs not loaded
   (`AvailablePackageService`, `/api/v1/packages/available`); a mark is a `rul_package` row with
   `PENDING_VERSION` (0), which the selection counts as installed. `RestartService` exits with
-  `elza.restart.exitCode` for the service manager; no in-process restart (static state).
+  `elza.restart.exitCode` (default 3) for the service manager; no in-process restart (static state).
 - Same-version re-import in testing mode replaces the package directory; tests reading package files
   run before refusal tests.
 - Conventions: changesets only in `db.elza-3-part-03.xml` (id `yyyyMMddHHmmss`, hibernate sequences in

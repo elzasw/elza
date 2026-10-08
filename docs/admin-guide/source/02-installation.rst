@@ -186,10 +186,9 @@ Example systemd unit (:file:`/etc/systemd/system/elza.service`):
 Adjust the heap size (``-Xmx``) to the available memory. The working
 directory of the process must be the installation directory, so that
 :file:`config/elza.yaml` is found. Enable and start the service with
-``systemctl enable --now elza``. With ``Restart=on-failure`` the
-application can restart itself from the administration: set
-``elza.restart.exitCode`` to a non-zero code other than 143 (see
-:doc:`04-configuration`).
+``systemctl enable --now elza``. With ``Restart=on-failure`` the restart
+from the administration works as it is: the application exits with code
+3, which the unit restarts on (see :doc:`04-configuration`).
 
 On Windows, ELZA can be run as a service with a service wrapper such as
 WinSW or NSSM, running the same ``java -jar`` command. See also the
@@ -338,8 +337,10 @@ lists the packages imported and skipped.
 each of them. *Load at the next start* marks a package: the mark is a
 package record without content, and the next start imports the file (with
 the packages it requires). *Cancel the mark* removes it. The page then
-reminds that a restart is needed, and offers *Restart the application*
-when ``elza.restart.exitCode`` is set (see :doc:`04-configuration`).
+reminds that a restart is needed and offers *Restart the application*:
+the application exits with the code ``elza.restart.exitCode`` (3 by
+default) and the service manager starts it again; without a service
+manager it only stops (see :doc:`04-configuration`).
 
 Packages can also be imported there directly; an imported package is then
 upgraded from :file:`dpkg/` like the others, and the search index registers

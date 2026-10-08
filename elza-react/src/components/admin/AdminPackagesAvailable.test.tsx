@@ -24,7 +24,6 @@ describe('AdminPackagesAvailable', () => {
                 HttpResponse.json({
                     items: [isaar(marked ? 'MARKED' : 'NOT_LOADED')],
                     restartRequired: marked,
-                    restartAvailable: false,
                 }),
             ),
             http.post('/api/v1/packages/available/:code/mark', ({ params }) => {
@@ -45,21 +44,19 @@ describe('AdminPackagesAvailable', () => {
 
         await waitFor(() => expect(markRequests).toEqual(['ISAAR_CPF']));
         expect(await screen.findByText(/Označené balíčky se načtou při příštím startu/)).toBeInTheDocument();
-        expect(screen.getByText(/Restartujte aplikaci/)).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /Restartovat aplikaci/ })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /Zrušit označení/ })).toBeInTheDocument();
     });
 
-    it('offers the restart when the server can restart itself', async () => {
+    it('reminds of the restart after an import during the run', async () => {
         server.use(
-            http.get('/api/v1/packages/available', () =>
-                HttpResponse.json({ items: [isaar('MARKED')], restartRequired: true, restartAvailable: true }),
-            ),
+            http.get('/api/v1/packages/available', () => HttpResponse.json({ items: [], restartRequired: true })),
         );
 
         renderWithProviders(<AdminPackagesAvailable />);
 
-        expect(await screen.findByRole('button', { name: /Restartovat aplikaci/ })).toBeInTheDocument();
-        expect(screen.queryByText(/Restartujte aplikaci\./)).not.toBeInTheDocument();
+        expect(await screen.findByText(/Balíček byl naimportován za běhu/)).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /Restartovat aplikaci/ })).toBeInTheDocument();
     });
 
     it('says so when every package of dpkg is loaded', async () => {

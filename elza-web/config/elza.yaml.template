@@ -141,8 +141,9 @@ elza:
   #packages:
   #  enabled: [CZ_BASE, ZP2015]
 
-  # Restart aplikace z administrace: aplikace se ukončí s tímto návratovým kódem a správce
-  # služeb (systemd s Restart=on-failure) ji znovu spustí. Bez klíče se restart nenabízí.
+  # Restart aplikace z administrace: aplikace se ukončí s tímto návratovým kódem (výchozí 3)
+  # a správce služeb (systemd s Restart=on-failure) ji znovu spustí. Měňte jen tehdy, když
+  # správce služeb restartuje při jiném kódu.
   #restart:
   #  exitCode: 3
 

@@ -32,8 +32,9 @@ elza:
   packages:
     enabled: [CZ_BASE, ZP2015]
   # Restart from the administration: the application exits with this code
-  # and the service manager (systemd with Restart=on-failure) starts it
-  # again. Without the key the restart is not offered.
+  # (3 by default) and the service manager (systemd with Restart=on-failure)
+  # starts it again. Change it only when the service manager restarts on
+  # another code.
   #restart:
   #  exitCode: 3
 #

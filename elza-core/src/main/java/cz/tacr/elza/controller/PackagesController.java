@@ -18,7 +18,6 @@ import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.packageimport.AvailablePackageService;
 import cz.tacr.elza.packageimport.autoimport.PackageInfoWrapper;
-import cz.tacr.elza.service.RestartService;
 
 /**
  * Packages of the {@code dpkg} directory that are not installed, and their mark for the import at
@@ -31,9 +30,6 @@ public class PackagesController implements PackagesApi {
     @Autowired
     private AvailablePackageService availablePackageService;
 
-    @Autowired
-    private RestartService restartService;
-
     @Override
     @Transactional(readOnly = true)
     @AuthMethod(permission = {Permission.ADMIN})
@@ -44,7 +40,6 @@ public class PackagesController implements PackagesApi {
         AvailablePackages result = new AvailablePackages();
         result.setItems(items);
         result.setRestartRequired(availablePackageService.isRestartRequired());
-        result.setRestartAvailable(restartService.isAvailable());
         return ResponseEntity.ok(result);
     }
 

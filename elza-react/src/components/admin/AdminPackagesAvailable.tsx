@@ -69,15 +69,11 @@ const messages = defineMessages({
         defaultMessage:
             'Balíček byl naimportován za běhu aplikace; vyhledávací index zaregistruje jeho nové prvky až po restartu.',
     },
-    restartManual: {
-        id: 'admin.packages.available.restart.manual',
-        defaultMessage: 'Restartujte aplikaci.',
-    },
     restart: { id: 'admin.packages.available.restart', defaultMessage: 'Restartovat aplikaci' },
     restartConfirm: {
         id: 'admin.packages.available.restart.confirm',
         defaultMessage:
-            'Aplikace se ukončí a správce služeb ji znovu spustí; všichni uživatelé budou odpojeni. Pokračovat?',
+            'Aplikace se ukončí a správce služeb (systemd) ji znovu spustí; pokud aplikace neběží jako služba, je nutné ji spustit ručně. Všichni uživatelé budou odpojeni. Pokračovat?',
     },
     restartRequested: {
         id: 'admin.packages.available.restart.requested',
@@ -93,7 +89,7 @@ const stateMessages = {
 
 /**
  * Packages of the dpkg directory that are not loaded: the administrator marks them for the import
- * at the next start, and restarts the application when the server offers it.
+ * at the next start, and restarts the application.
  */
 export function AdminPackagesAvailable() {
     const intl = useIntl();
@@ -143,16 +139,13 @@ export function AdminPackagesAvailable() {
             {data.restartRequired && (
                 <MessageBar intent="warning" layout="multiline">
                     <MessageBarBody>
-                        <FormattedMessage {...(marked ? messages.restartMarked : messages.restartImported)} />{' '}
-                        {!data.restartAvailable && <FormattedMessage {...messages.restartManual} />}
+                        <FormattedMessage {...(marked ? messages.restartMarked : messages.restartImported)} />
                     </MessageBarBody>
-                    {data.restartAvailable && (
-                        <MessageBarActions>
-                            <Button onClick={handleRestart}>
-                                <FormattedMessage {...messages.restart} />
-                            </Button>
-                        </MessageBarActions>
-                    )}
+                    <MessageBarActions>
+                        <Button onClick={handleRestart}>
+                            <FormattedMessage {...messages.restart} />
+                        </Button>
+                    </MessageBarActions>
                 </MessageBar>
             )}
             <h3>

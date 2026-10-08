@@ -3091,7 +3091,8 @@ namespace ElzaAPI.Admin {
 
     /**
      * Restart the application: after the response, the application stops with the exit code
-     * elza.restart.exitCode, and the service manager starts it again. Refused when the key is not set.
+     * elza.restart.exitCode (3 by default), and the service manager starts it again. Without a
+     * service manager the application only stops.
      */
     @route("restart")
     @post op restart(): {
@@ -4958,8 +4959,6 @@ model AvailablePackages {
     items: AvailablePackage[];
     /** A restart is needed: packages are marked for the next start, or a package was imported since the start */
     restartRequired: boolean;
-    /** The application can restart itself from the administration (elza.restart.exitCode is set) */
-    restartAvailable: boolean;
 }
 
 /**
