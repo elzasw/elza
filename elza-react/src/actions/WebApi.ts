@@ -104,7 +104,6 @@ export class WebApiCls {
     static userUrl = WebApiCls.baseUrl + '/user';
     static groupUrl = WebApiCls.baseUrl + '/group';
     static adminUrl = WebApiCls.baseUrl + '/admin';
-    static validateUrl = WebApiCls.baseUrl + '/validate';
     static structureUrl = WebApiCls.baseUrl + '/structure';
 
     findInFundTree(versionId: number, nodeId: number, searchText: string, type, searchParams = null, luceneQuery = false) {
@@ -199,10 +198,6 @@ export class WebApiCls {
             fromChangeId,
             toChangeId,
         });
-    }
-
-    validateUnitdate(value) {
-        return AjaxUtils.ajaxGet(WebApiCls.validateUrl + '/unitDate', { value: value || '' });
     }
 
     moveNodesUnder(versionId: number, nodes, nodesParent, dest, destParent) {

@@ -21,11 +21,16 @@ public class ApItemUnitdateVO extends ApItemVO {
     public ApItemUnitdateVO() {
     }
 
-    public ApItemUnitdateVO(final AccessPointItem item) {
+    /**
+     * @param languageTag
+     *            language of the text of the value (the UI language of the request); null for the
+     *            default language
+     */
+    public ApItemUnitdateVO(final AccessPointItem item, final String languageTag) {
         super(item);
         ArrDataUnitdate data = HibernateUtils.unproxy(item.getData());
         if (data != null) {
-            value = UnitDateConverter.convertToString(data);
+            value = UnitDateConverter.convertToString(data, languageTag);
         }
     }
 
@@ -43,13 +48,34 @@ public class ApItemUnitdateVO extends ApItemVO {
         return data;
     }
 
+    /**
+     * Compares the stored form of the dates, not their text: the text of this VO is in the language
+     * of the request, the stored value has none.
+     */
     @Override
     public boolean equalsValue(AccessPointItem item) {
-        String value = null;
-        ArrDataUnitdate data = HibernateUtils.unproxy(item.getData());
-        if (data != null) {
-            value = UnitDateConverter.convertToString(data);
+        if (!equalsBase(item)) {
+            return false;
         }
-        return equalsBase(item) && Objects.equals(this.value, value);
+        ArrDataUnitdate data = HibernateUtils.unproxy(item.getData());
+        if (data == null || value == null) {
+            return data == null && value == null;
+        }
+        ArrDataUnitdate parsed;
+        try {
+            parsed = UnitDateConverter.convertToUnitDate(value, new ArrDataUnitdate());
+        } catch (RuntimeException e) {
+            return false;
+        }
+        return Objects.equals(parsed.getFormat(), data.getFormat())
+                && Objects.equals(parsed.getValueFrom(), trim(data.getValueFrom()))
+                && Objects.equals(parsed.getValueTo(), trim(data.getValueTo()))
+                && Objects.equals(parsed.getValueFromEstimated(), data.getValueFromEstimated())
+                && Objects.equals(parsed.getValueToEstimated(), data.getValueToEstimated());
+    }
+
+    /** Values read from the database may carry trailing spaces. */
+    private static String trim(final String value) {
+        return value != null ? value.trim() : null;
     }
 }

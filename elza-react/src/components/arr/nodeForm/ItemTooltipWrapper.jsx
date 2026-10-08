@@ -7,7 +7,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {AbstractReactComponent, TooltipTrigger} from 'components/shared';
 import { injectIntl } from 'react-intl';
-import { formatHintMessages } from 'components/arr/nodeMessages';
+import { formatHintMessages, formatHintValues } from 'components/arr/nodeMessages';
 
 
 class ItemTooltipWrapper extends AbstractReactComponent {
@@ -21,8 +21,9 @@ class ItemTooltipWrapper extends AbstractReactComponent {
         // Hlaska je cely HTML blok, proto ignoreTag; neznamy klic (napr.
         // dataType.recordRef.format, ktery zadny text nema) tooltip vypne.
         const descriptor = formatHintMessages[tooltipTitle];
+        const values = formatHintValues[tooltipTitle]?.(this.props.intl);
         const tooltipText = descriptor
-            ? this.props.intl.formatMessage(descriptor, undefined, { ignoreTag: true })
+            ? this.props.intl.formatMessage(descriptor, values, { ignoreTag: true })
             : null;
         const tooltip = tooltipText ? <div dangerouslySetInnerHTML={{__html: tooltipText}}></div> : null;
 

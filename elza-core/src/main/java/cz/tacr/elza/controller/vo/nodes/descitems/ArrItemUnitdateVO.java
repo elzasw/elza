@@ -44,7 +44,12 @@ public class ArrItemUnitdateVO extends ArrItemVO {
         return data;
     }
 
-    public static ArrItemUnitdateVO newInstance(ArrItem item) {
+    /**
+     * @param languageTag
+     *            language of the text of the value (the UI language of the request); null for the
+     *            default language
+     */
+    public static ArrItemUnitdateVO newInstance(ArrItem item, String languageTag) {
         ArrData data = HibernateUtils.unproxy(item.getData());
         String value = null;
         if (data != null) {
@@ -53,7 +58,7 @@ public class ArrItemUnitdateVO extends ArrItemVO {
                         .set("dataClass", item.getClass());
             }
             ArrDataUnitdate dataUnitdate = (ArrDataUnitdate) data;
-            value = UnitDateConverter.convertToString(dataUnitdate);
+            value = UnitDateConverter.convertToString(dataUnitdate, languageTag);
         }
         ArrItemUnitdateVO vo = new ArrItemUnitdateVO(item, value);
         return vo;

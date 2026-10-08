@@ -22,7 +22,8 @@ import {
 } from "@fluentui/react-icons";
 import { FormItemType } from "elza-api";
 import { MouseEvent, PropsWithChildren, ReactNode } from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
+import { unitdateHelpValues } from "components/shared/unitdate/helpValues";
 import { DescItemTypeRef, NodeSettings } from "typings/store";
 import { useAppSelector } from "utils/hooks/useAppSelector";
 import { useUserSettings } from "contexts/user";
@@ -88,13 +89,16 @@ export function DescItemTypeHeader({
   const isCopied = nodeSettings?.descItemTypeCopyIds.includes(typeRef.id);  const { settings } = useUserSettings();
   const compact = settings.compact;
 
+  const intl = useIntl();
   const dataType = useAppSelector(({ refTables }) => refTables.rulDataTypes.itemsMap[typeRef.dataTypeId]);
   const formatDescriptor = dataType ? dataTypeFormatMessages[dataType.code] : undefined;
+  // the unit-date hint takes its examples from the UI language; other hints ignore the extra values
+  const formatValues = formatDescriptor ? { ...richTextValues, ...unitdateHelpValues(intl) } : richTextValues;
   const tooltipContent = typeRef.description || formatDescriptor ? (
     <>
       {typeRef.description && <div>{typeRef.description}</div>}
           {formatDescriptor && <div style={{ marginTop: "8px" }}>
-              <FormattedMessage {...formatDescriptor} values={richTextValues} />
+              <FormattedMessage {...formatDescriptor} values={formatValues} />
           </div>}
     </>
   ) : undefined;

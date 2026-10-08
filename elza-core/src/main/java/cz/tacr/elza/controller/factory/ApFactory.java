@@ -789,7 +789,7 @@ public class ApFactory {
                 item = new ApItemTextVO(apItem);
                 break;
             case UNITDATE:
-                item = new ApItemUnitdateVO(apItem);
+                item = new ApItemUnitdateVO(apItem, packageTexts.requestLanguageTag());
                 break;
             case UNITID:
                 item = new ApItemUnitidVO(apItem);
