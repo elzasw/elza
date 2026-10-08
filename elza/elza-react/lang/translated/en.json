@@ -8305,6 +8305,30 @@
     "defaultMessage": "Scope",
     "srcHash": "K6XBwbqHYyDh"
   },
+  "registry.state.approved": {
+    "defaultMessage": "Approved",
+    "srcHash": "iFSDFb-ftuYC"
+  },
+  "registry.state.invalid": {
+    "defaultMessage": "Invalidated",
+    "srcHash": "A88JPeoL7lCQ"
+  },
+  "registry.state.new": {
+    "defaultMessage": "New",
+    "srcHash": "FzR-6REK3Bz4"
+  },
+  "registry.state.replaced": {
+    "defaultMessage": "Replaced",
+    "srcHash": "FjQnXA8aI1SQ"
+  },
+  "registry.state.toAmend": {
+    "defaultMessage": "To be amended",
+    "srcHash": "WLbxDYwC64Yu"
+  },
+  "registry.state.toApprove": {
+    "defaultMessage": "Awaiting approval",
+    "srcHash": "PSfHpbgV7Rqf"
+  },
   "registry.type": {
     "defaultMessage": "Entity class / subclass",
     "srcHash": "0yItqrrxX9pT"
