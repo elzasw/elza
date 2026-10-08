@@ -198,6 +198,15 @@ describes the entity.
   specification belongs to every item type any declaration assigns it to.
   A package may assign its own or a shared specification to its own or a
   shared item type.
+- A rule set sees only the specifications assigned by packages related to
+  its own package: the package itself, the packages it depends on and the
+  packages depending on it, both transitively. The rules of the rule set,
+  the forms and the item-type listing of the rule set offer nothing else,
+  even when a rule allows every specification of the item type. CZ_BASE
+  assigns 166 languages to ``NM_LANG`` and ISAAR_CPF 16 of them; a CAM
+  entity offers all 166, an ISAAR_CPF entity the 16, and an addon of
+  ISAAR_CPF may add more by declaring them. An assignment without any
+  declaration (data older than the declarations) is seen everywhere.
 - The package that created the specification owns it: its place among the
   specifications of an item type follows the owner's order and
   ``view-after``; the category is the owner's. A declaration of another

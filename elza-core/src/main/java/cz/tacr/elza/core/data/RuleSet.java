@@ -21,11 +21,8 @@ public class RuleSet {
 
     final RulRuleSet entity;
 
-    // TODO: check if this it used
-    final List<RuleSetExtension> ruleSetExtensions;
-    
     /**
-     * Map of rule set extensions by rule set id
+     * Extensions of the rule set by arrangement extension id
      */
     final Map<Integer, RuleSetExtension> ruleSetExtensionsById;
 
@@ -58,6 +55,12 @@ public class RuleSet {
      */
     private Map<Integer, Boolean> declaredReadOnly = Map.of();
 
+    /**
+     * Specifications the rule set sees, by item type id; only item types with at least one hidden
+     * specification are listed, see {@link #getItemSpecs(ItemType)}
+     */
+    private Map<Integer, List<CachedItemSpec>> itemSpecsByTypeId = Map.of();
+
     RuleSet(final RulRuleSet entity,
             final List<RulArrangementRule> rules,
             final List<RulArrangementExtension> exts,
@@ -76,11 +79,9 @@ public class RuleSet {
                 return ret;
             });
         }
-        this.ruleSetExtensions = exts.stream()
+        this.ruleSetExtensionsById = exts.stream()
                 .map(ruleExt -> new RuleSetExtension(ruleExt, extRulesByExtId.get(ruleExt.getArrangementExtensionId())))
-                .collect(Collectors.toList());
-        this.ruleSetExtensionsById = this.ruleSetExtensions.stream().collect(
-        		Collectors.toMap(rex -> rex.getEntity().getArrangementExtensionId(), p -> p));
+                .collect(Collectors.toMap(rex -> rex.getEntity().getArrangementExtensionId(), p -> p));
         this.entityRulesByKind = entityRules.stream()
                 .sorted(Comparator.comparing(RulEntityRule::getPriority)
                         .thenComparing(RulEntityRule::getEntityRuleId))
@@ -98,6 +99,29 @@ public class RuleSet {
 
     void setPartTypeOrder(final List<Integer> partTypeOrder) {
         this.partTypeOrder = List.copyOf(partTypeOrder);
+    }
+
+    /**
+     * @param itemSpecsByTypeId
+     *            item type id to the specifications the rule set sees, for item types with at least
+     *            one hidden specification
+     */
+    void setItemSpecs(final Map<Integer, List<CachedItemSpec>> itemSpecsByTypeId) {
+        this.itemSpecsByTypeId = Map.copyOf(itemSpecsByTypeId);
+    }
+
+    /**
+     * Specifications of an item type the rule set sees: those assigned to the item type by a
+     * package related to the package of the rule set - the package itself, the packages it depends
+     * on and the packages depending on it. A specification assigned only by unrelated packages is
+     * not offered under this rule set even when a rule opens every specification of the item type.
+     * An assignment without a declaration (data older than the declarations) is seen everywhere.
+     *
+     * @return specifications in the order of the item type
+     */
+    public List<CachedItemSpec> getItemSpecs(final ItemType itemType) {
+        List<CachedItemSpec> visible = itemSpecsByTypeId.get(itemType.getItemTypeId());
+        return visible != null ? visible : itemType.getItemSpecs();
     }
 
     /**

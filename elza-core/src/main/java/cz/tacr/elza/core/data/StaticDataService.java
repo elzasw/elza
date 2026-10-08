@@ -24,6 +24,7 @@ import cz.tacr.elza.repository.RuleSetPartTypeRepository;
 import cz.tacr.elza.repository.ApTypeDeclarationRepository;
 import cz.tacr.elza.repository.PartTypeDeclarationRepository;
 import cz.tacr.elza.repository.ItemTypeDeclarationRepository;
+import cz.tacr.elza.repository.ItemSpecAssignDeclarationRepository;
 import cz.tacr.elza.repository.ItemSpecDeclarationRepository;
 import cz.tacr.elza.repository.ExtensionRuleRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
@@ -122,6 +123,8 @@ public class StaticDataService {
 
     final ItemSpecDeclarationRepository itemSpecDeclarationRepository;
 
+    final ItemSpecAssignDeclarationRepository itemSpecAssignDeclarationRepository;
+
     final ArrangementRuleRepository arrangementRuleRepository;
 
     final ComponentRepository componentRepository;
@@ -147,6 +150,7 @@ public class StaticDataService {
                              final PartTypeDeclarationRepository partTypeDeclarationRepository,
                              final ItemTypeDeclarationRepository itemTypeDeclarationRepository,
                              final ItemSpecDeclarationRepository itemSpecDeclarationRepository,
+                             final ItemSpecAssignDeclarationRepository itemSpecAssignDeclarationRepository,
                              final ItemTypeRepository itemTypeRepository,
                              final ItemSpecRepository itemSpecRepository,
                              final ItemTypeSpecAssignRepository itemTypeSpecAssignRepository,
@@ -178,6 +182,7 @@ public class StaticDataService {
         this.partTypeDeclarationRepository = partTypeDeclarationRepository;
         this.itemTypeDeclarationRepository = itemTypeDeclarationRepository;
         this.itemSpecDeclarationRepository = itemSpecDeclarationRepository;
+        this.itemSpecAssignDeclarationRepository = itemSpecAssignDeclarationRepository;
         this.itemTypeRepository = itemTypeRepository;
         this.itemSpecRepository = itemSpecRepository;
         this.itemTypeSpecAssignRepository = itemTypeSpecAssignRepository;

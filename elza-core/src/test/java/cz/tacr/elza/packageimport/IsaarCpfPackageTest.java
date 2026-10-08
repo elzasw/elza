@@ -2,6 +2,7 @@ package cz.tacr.elza.packageimport;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -193,6 +194,8 @@ public class IsaarCpfPackageTest {
         assertEquals(RequiredType.REQUIRED, name.get("NM_MAIN"));
         assertEquals(RequiredType.POSSIBLE, name.get("NM_MINOR"));
         assertEquals(RequiredType.POSSIBLE, name.get("NM_TYPE/NT_PSEUDONYM"));
+        assertEquals(RequiredType.POSSIBLE, name.get("NM_LANG/LNG_eng"));
+        assertEquals(16, name.keySet().stream().filter(k -> k.startsWith("NM_LANG/")).count());
         Map<String, RequiredType> body = available(isaarScope, "PARTY_GROUP", "PT_BODY");
         assertEquals(RequiredType.POSSIBLE, body.get("ISAAR_CORP_TYPE/ISAAR_CORP_TYPE_PARTY"));
         assertEquals(RequiredType.POSSIBLE, body.get("ISAAR_LEGAL_STATUS/ISAAR_LEGAL_STATUS_COMPANY"));
@@ -262,6 +265,21 @@ public class IsaarCpfPackageTest {
                                                         TranslationEntityType.NAME, "x", sdp.getSysLanguageByTag("cs")));
         });
         assertEquals(ROOTS, roots(isaar));
+
+        // the ISAAR rules open every language of a name, but a rule set sees only the specifications
+        // assigned by packages related to its own: ISAAR_CPF's 16 languages, not the 150 CZ_BASE adds
+        // to NM_LANG; the CAM rule set (same package as the shared codes) keeps every language
+        Map<String, RequiredType> isaarName = available(isaar, "PERSON_INDIVIDUAL", "PT_NAME");
+        assertEquals(RequiredType.POSSIBLE, isaarName.get("NM_LANG/LNG_eng"));
+        assertNull(isaarName.get("NM_LANG/LNG_heb"));
+        assertEquals(16, isaarName.keySet().stream().filter(k -> k.startsWith("NM_LANG/")).count());
+        Map<String, RequiredType> camName = available(cam, "PERSON_INDIVIDUAL", "PT_NAME");
+        assertEquals(RequiredType.POSSIBLE, camName.get("NM_LANG/LNG_heb"));
+        assertEquals(RequiredType.POSSIBLE, camName.get("NM_LANG/LNG_eng"));
+        int camLanguages = txGet(() -> itemTypeSpecAssignRepository
+                .findByItemTypeSorted(itemTypeRepository.findOneByCode("NM_LANG")).size());
+        assertEquals(camLanguages, camName.keySet().stream().filter(k -> k.startsWith("NM_LANG/")).count());
+
         List<ApTypeVO> camTree = txGet(() -> apController.getApTypes(cam));
         ApTypeVO person = camTree.stream().filter(t -> t.getCode().equals("PERSON")).findFirst().orElseThrow();
         assertTrue(!person.getAddRecord());

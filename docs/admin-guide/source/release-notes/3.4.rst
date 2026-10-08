@@ -39,6 +39,15 @@ Upcoming version
   version of its package (before, the import failed on a database
   constraint). The package export writes each specification once, also
   specifications without an assignment.
+* Change: Rules packages - a rule set offers only the specifications
+  assigned by packages related to its own: the package itself, the
+  packages it depends on and the packages depending on it. A specification
+  that only an unrelated package assigns to a shared item type is not
+  offered by the rules, forms and item-type listing of the rule set, even
+  when a rule allows every specification of the item type. Installations
+  with CZ_BASE and ZP2015 and their addons see no change; an ISAAR_CPF
+  entity offers the 16 languages of a name the package declares instead of
+  the 166 of CZ_BASE.
 * Fix: Deleting a rules package that defines task types failed on a
   database constraint; its task types are now deleted with it.
 * Fix: In a newly created database the 20th archival entity scope or
