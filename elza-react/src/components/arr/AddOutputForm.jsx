@@ -13,6 +13,7 @@ import {outputTypesFetchIfNeeded} from '../../actions/refTables/outputTypes';
 import {templatesFetchIfNeeded} from '../../actions/refTables/templates';
 import {indexById} from '../../stores/app/utils';
 import { getIntl } from 'components/shared/lang/intlInstance';
+import {DEFAULT_OUTPUT_FILTER_CODE} from '../../constants';
 
 /**
  * Formulář přidání výstupu.
@@ -59,7 +60,27 @@ class AddOutputForm extends AbstractReactComponent {
 
     componentDidMount() {
         this.props.dispatch(outputTypesFetchIfNeeded());
+        this.applyDefaultFilter();
     }
+
+    componentDidUpdate() {
+        this.applyDefaultFilter();
+    }
+
+    /**
+     * U nového výstupu po načtení filtrů předvyplní výchozí filtr (pouze jednou, volbu uživatele nepřepisuje).
+     */
+    applyDefaultFilter = () => {
+        const {create, outputFilters, change} = this.props;
+        if (!create || this.defaultFilterApplied || !outputFilters.fetched || !outputFilters.data) {
+            return;
+        }
+        this.defaultFilterApplied = true;
+        const defaultFilter = outputFilters.data.find(i => i.code === DEFAULT_OUTPUT_FILTER_CODE);
+        if (defaultFilter) {
+            change('outputFilterId', defaultFilter.id);
+        }
+    };
 
     submitReduxForm = (values, dispatch) =>
         submitForm(AddOutputForm.validate, values, this.props, this.props.onSubmitForm, dispatch);
