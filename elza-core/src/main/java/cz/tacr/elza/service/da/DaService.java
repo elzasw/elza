@@ -2742,7 +2742,7 @@ public class DaService {
      * is coded by the ID the file has in the METS; its stored name may be the original name of
      * the file, which need not be the name in the package, nor unique in it.
      */
-    private static ZipEntry componentEntry(ZipFile zipFile, String daoCode) throws IOException {
+    static ZipEntry componentEntry(ZipFile zipFile, String daoCode) throws IOException {
         ZipEntry metsEntry = zipFile.stream()
                 .filter(e -> !e.isDirectory() && isRootMets(e.getName()))
                 .findFirst()
@@ -2759,8 +2759,12 @@ public class DaService {
         if (href == null) {
             throw AipProblemException.metadata("METS.xml balíčku neobsahuje soubor " + daoCode);
         }
-        String path = root + (href.startsWith("./") ? href.substring(2) : href);
-        ZipEntry entry = zipFile.getEntry(path);
+        String relative = href.startsWith("./") ? href.substring(2) : href;
+        ZipEntry entry = zipFile.getEntry(root + relative);
+        String decoded = AipPackageFiles.decodedHref(relative);
+        if (entry == null && decoded != null) {
+            entry = zipFile.getEntry(root + decoded);
+        }
         if (entry == null || entry.isDirectory()) {
             throw AipProblemException.metadata("Balíček neobsahuje soubor " + href + ", na který odkazuje METS.xml",
                                                href, null);
