@@ -2080,6 +2080,9 @@ public class DaService {
 
     /** See {@link #createChildNode(ArrNode, ArrChange, int)}; the new node gets the given UUID. */
     ArrNode createChildNode(ArrNode parentNode, ArrChange change, int position, String uuid) {
+        // checked here, inside the transaction creating the level: the level tree cache follows
+        // the change only after commit, through secured services, and cannot undo it
+        checkArrPermission(parentNode);
         ArrNode newNode = arrangementService.createNode(parentNode.getFund(), uuid, change);
 
         ArrLevel arrLevel = new ArrLevel();
