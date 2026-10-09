@@ -1399,6 +1399,10 @@
     "defaultMessage": "The passwords do not match",
     "srcHash": "1rOyiAy_40BR"
   },
+  "admin.userPicker.noMatch": {
+    "defaultMessage": "No user matches",
+    "srcHash": "V6A5s8LIhiba"
+  },
   "admin_packages_label_action": {
     "defaultMessage": "Action",
     "srcHash": "zI4C_P1sVn28"

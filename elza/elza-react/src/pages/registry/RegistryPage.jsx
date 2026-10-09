@@ -31,8 +31,8 @@ import { AP_VIEW_SETTINGS, FOCUS_KEYS, MODAL_DIALOG_SIZE, urlEntity } from '../.
 import * as eidTypes from '../../actions/refTables/eidTypes';
 import ScopeLists from '../../components/arr/ScopeLists';
 import ApStateHistoryForm from '../../components/registry/ApStateHistoryForm';
-import ApStateChangeForm from '../../components/registry/ApStateChangeForm';
-import RevStateChangeForm from '../../components/registry/RevStateChangeForm';
+import ApStateChangeDialog from '../../components/registry/ApStateChangeDialog';
+import RevStateChangeDialog from '../../components/registry/RevStateChangeDialog';
 import RevMergeForm from '../../components/registry/RevMergeForm';
 import { WebApi } from '../../actions';
 import ApDetailPageWrapper from '../../components/registry/ApDetailPageWrapper';
@@ -88,7 +88,7 @@ class RegistryPage extends AbstractReactComponent {
         revisionActive: PropTypes.bool,
     };
 
-    state = { items: [], createOpen: false };
+    state = { items: [], createOpen: false, stateChangeOpen: false, revStateChangeOpen: false };
 
     componentDidMount() {
         this.initData();
@@ -429,39 +429,21 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     handleChangeApState = () => {
-        const {
-            dispatch,
-            history,
-            registryDetail: {
-                data: { id, typeId, scopeId, stateApproval, version, assignedTo },
-            },
-            select = false,
-            revisionActive,
-        } = this.props;
-        const form = (
-            <ApStateChangeForm
-                accessPointId={id}
-                initialValues={{
-                    state: stateApproval,
-                    typeId,
-                    scopeId,
-                    assignedTo,
-                }}
-                onSubmit={async (data) => {
-                    const finalData = {
-                        comment: data.comment,
-                        stateApproval: data.state,
-                        typeId: data.typeId,
-                        scopeId: data.scopeId !== '' ? parseInt(data.scopeId) : null,
-                    };
-                    await Api.accesspoints.accessPointChangeState(id, finalData, version, data?.assignedTo);
+        this.setState({ stateChangeOpen: true });
+    };
 
-                    dispatch(modalDialogHide());
-                    dispatch(goToAe(history, id, true, !select, revisionActive));
-                }}
-            />
-        );
-        dispatch(modalDialogShow(this, this.props.intl.formatMessage(registryMessages.changeState), form));
+    handleSubmitApState = async (data) => {
+        const { dispatch, history, registryDetail: { data: { id, version } }, select = false, revisionActive } = this.props;
+        const finalData = {
+            comment: data.comment,
+            stateApproval: data.state,
+            typeId: data.typeId,
+            scopeId: data.scopeId ?? null,
+        };
+        await Api.accesspoints.accessPointChangeState(id, finalData, version, data.assignedTo);
+
+        this.setState({ stateChangeOpen: false });
+        dispatch(goToAe(history, id, true, !select, revisionActive));
     };
 
     handleCreateRevision = async () => {
@@ -481,35 +463,17 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     handleChangeStateRevision = () => {
-        const {
-            dispatch,
-            history,
-            registryDetail: {
-                data: { id, newTypeId, revStateApproval, version, assignedTo, scopeId },
-            },
-            select = false,
-            revisionActive,
-        } = this.props;
-        const form = (
-            <RevStateChangeForm
-                accessPointId={id}
-                scopeId={scopeId}
-                initialValues={{
-                    state: revStateApproval,
-                    typeId: newTypeId,
-                    assignedTo,
-                }}
-                onSubmit={async (data) => {
-                  const { assignedTo, ...state } = data;
-                    await dispatch(registryChangeStateRevision(id, version, state, history, select, assignedTo))
+        this.setState({ revStateChangeOpen: true });
+    };
 
-                    dispatch(modalDialogHide());
-                    dispatch(goToAe(history, id, true, !select, revisionActive));
-                    dispatch(registryListInvalidate());
-                }}
-            />
-        );
-        dispatch(modalDialogShow(this, this.props.intl.formatMessage(registryMessages.changeStateRevision), form));
+    handleSubmitRevState = async (data) => {
+        const { dispatch, history, registryDetail: { data: { id, version } }, select = false, revisionActive } = this.props;
+        const { assignedTo, ...state } = data;
+        await dispatch(registryChangeStateRevision(id, version, state, history, select, assignedTo));
+
+        this.setState({ revStateChangeOpen: false });
+        dispatch(goToAe(history, id, true, !select, revisionActive));
+        dispatch(registryListInvalidate());
     };
 
     handleMergeRevision = () => {
@@ -919,6 +883,34 @@ class RegistryPage extends AbstractReactComponent {
                         title={this.props.intl.formatMessage(registryMessages.addRegistry)}
                         onClose={() => this.setState({ createOpen: false })}
                         onSubmit={this.handleCreateRegistry}
+                    />
+                )}
+                {this.state.stateChangeOpen && registryDetail.data && (
+                    <ApStateChangeDialog
+                        title={this.props.intl.formatMessage(registryMessages.changeState)}
+                        accessPointId={registryDetail.data.id}
+                        initialValues={{
+                            state: registryDetail.data.stateApproval,
+                            typeId: registryDetail.data.typeId,
+                            scopeId: registryDetail.data.scopeId,
+                            assignedTo: registryDetail.data.assignedTo,
+                        }}
+                        onClose={() => this.setState({ stateChangeOpen: false })}
+                        onSubmit={this.handleSubmitApState}
+                    />
+                )}
+                {this.state.revStateChangeOpen && registryDetail.data && (
+                    <RevStateChangeDialog
+                        title={this.props.intl.formatMessage(registryMessages.changeStateRevision)}
+                        accessPointId={registryDetail.data.id}
+                        scopeId={registryDetail.data.scopeId}
+                        initialValues={{
+                            state: registryDetail.data.revStateApproval,
+                            typeId: registryDetail.data.newTypeId,
+                            assignedTo: registryDetail.data.assignedTo,
+                        }}
+                        onClose={() => this.setState({ revStateChangeOpen: false })}
+                        onSubmit={this.handleSubmitRevState}
                     />
                 )}
             </Shortcuts>
