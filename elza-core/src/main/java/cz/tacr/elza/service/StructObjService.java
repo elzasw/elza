@@ -1,8 +1,12 @@
 package cz.tacr.elza.service;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -16,6 +20,8 @@ import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.controller.vo.SdoType;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +34,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.Lists;
 
 import cz.tacr.elza.common.ObjectListIterator;
+import cz.tacr.elza.core.data.CoreMessage;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.PackageTexts;
@@ -71,6 +78,7 @@ import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.repository.StructuredTypeExtensionRepository;
 import cz.tacr.elza.repository.StructuredTypeRepository;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.utils.CsvUtils;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventStructureDataChange;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -869,6 +877,90 @@ public class StructObjService {
                                                                  final int count) {
         return structObjRepository.findStructureData(structureType.getStructuredTypeId(),
                                                      fund.getFundId(), search, assignable, from, count);
+    }
+
+    /**
+     * Export hodnot strukt. typu v AS do CSV (formát pro CZ Excel).
+     *
+     * Sloupce: ID, hodnota, doplněk, stav (otevřený/uzavřený) a jeden sloupec za každý použitý typ prvku
+     * (opakované prvky jsou spojené čárkou). ID slouží pro import prvků popisu z CSV.
+     *
+     * @param structureType strukturovaný typ
+     * @param fund          archivní soubor
+     * @param search        fulltext (může být prázdný)
+     * @param assignable    přiřaditelnost (pokud je null, není brána v potaz)
+     * @param os            výstup
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR,
+            UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD})
+    public void exportStructureDataCsv(final RulStructuredType structureType,
+                                       @AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
+                                       @Nullable final String search,
+                                       @Nullable final Boolean assignable,
+                                       final OutputStream os) throws IOException {
+        List<ArrStructuredObject> objs = structObjRepository.findStructureData(structureType.getStructuredTypeId(),
+                fund.getFundId(), search, assignable, 0, 0).getList();
+
+        Map<Integer, List<ArrStructuredItem>> itemsByObj = new HashMap<>();
+        for (List<ArrStructuredObject> part : Lists.partition(objs, ObjectListIterator.getMaxBatchSize())) {
+            for (ArrStructuredItem item : findByStructuredObjectListAndDeleteChangeIsNullFetchData(part)) {
+                itemsByObj.computeIfAbsent(item.getStructuredObjectId(), k -> new ArrayList<>()).add(item);
+            }
+        }
+
+        // columns for the item types used, in the view order of the rules
+        StaticDataProvider sdp = staticDataService.getData();
+        List<RulItemType> itemTypes = itemsByObj.values().stream()
+                .flatMap(List::stream)
+                .map(ArrItem::getItemTypeId)
+                .distinct()
+                .map(id -> sdp.getItemTypeById(id).getEntity())
+                .sorted(Comparator.comparing(RulItemType::getViewOrder, Comparator.nullsLast(Comparator.naturalOrder())))
+                .collect(Collectors.toList());
+
+        List<String> headers = new ArrayList<>();
+        headers.add(packageTexts.text(CoreMessage.STRUCT_COL_ID));
+        headers.add(packageTexts.text(CoreMessage.EXPORT_COL_VALUE));
+        headers.add(packageTexts.text(CoreMessage.STRUCT_COL_COMPLEMENT));
+        headers.add(packageTexts.text(CoreMessage.STRUCT_COL_STATE));
+        itemTypes.forEach(it -> headers.add(packageTexts.name(it)));
+
+        CSVPrinter printer = CsvUtils.CSV_EXCEL_FORMAT.builder()
+                .setHeader(headers.toArray(new String[0]))
+                .build()
+                .print(new OutputStreamWriter(os, CsvUtils.CSV_EXCEL_CHARSET));
+        for (ArrStructuredObject obj : objs) {
+            printer.print(obj.getStructuredObjectId());
+            printer.print(obj.getValue());
+            printer.print(obj.getComplement());
+            printer.print(packageTexts.text(Boolean.TRUE.equals(obj.getAssignable())
+                    ? CoreMessage.STRUCT_STATE_OPEN : CoreMessage.STRUCT_STATE_CLOSED));
+
+            Map<Integer, List<ArrStructuredItem>> byType = itemsByObj
+                    .getOrDefault(obj.getStructuredObjectId(), Collections.emptyList()).stream()
+                    .sorted(Comparator.comparing(ArrItem::getPosition, Comparator.nullsLast(Comparator.naturalOrder())))
+                    .collect(Collectors.groupingBy(ArrItem::getItemTypeId));
+            for (RulItemType itemType : itemTypes) {
+                printer.print(byType.getOrDefault(itemType.getItemTypeId(), Collections.emptyList()).stream()
+                        .map(item -> itemText(sdp, item))
+                        .filter(StringUtils::isNotEmpty)
+                        .collect(Collectors.joining(", ")));
+            }
+            printer.println();
+        }
+        printer.flush();
+    }
+
+    /**
+     * Text prvku pro export: specifikace, hodnota nebo "specifikace: hodnota".
+     */
+    private String itemText(StaticDataProvider sdp, ArrStructuredItem item) {
+        String spec = item.getItemSpecId() == null ? null : packageTexts.name(sdp.getItemSpecById(item.getItemSpecId()));
+        String value = item.getData() == null ? null : item.getData().getFulltextValue();
+        if (spec == null) {
+            return value;
+        }
+        return StringUtils.isEmpty(value) ? spec : spec + ": " + value;
     }
 
     /**

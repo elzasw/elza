@@ -71,6 +71,11 @@ public enum CoreMessage {
     ISSUES_COL_DATE(0, "Date"),
     ISSUES_COL_DESCRIPTION(0, "Description"),
     ISSUES_COL_COMMENTS(0, "Comments"),
+    STRUCT_COL_ID(0, "ID"),
+    STRUCT_COL_COMPLEMENT(0, "Complement"),
+    STRUCT_COL_STATE(0, "State"),
+    STRUCT_STATE_OPEN(0, "Open"),
+    STRUCT_STATE_CLOSED(0, "Closed"),
 
     // refused API-key authentication (ApiKeyFailure), the body of the 401 response
     API_KEY_MALFORMED_TOKEN(0, "The token is malformed; use the value issued by the server."),

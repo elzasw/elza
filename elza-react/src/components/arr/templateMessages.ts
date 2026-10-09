@@ -43,6 +43,7 @@ export const templateMessages = defineMessages({
     refTemplatesNoSelected: { id: "arr.refTemplates.noSelected", defaultMessage: "Vyberte šablonu k úpravě" },
     structureAddMany: { id: "arr.structure.addMany", defaultMessage: "Přidat hromadně" },
     structureAddOne: { id: "arr.structure.addOne", defaultMessage: "Přidat jednotlivě" },
+    structureExportCsv: { id: "arr.structure.exportCsv", defaultMessage: "Exportovat do CSV" },
     structureFilterAssignableAll: { id: "arr.structure.filter.assignable.all", defaultMessage: "Vše" },
     structureFilterAssignableFalse: { id: "arr.structure.filter.assignable.false", defaultMessage: "Uzavřený" },
     structureFilterAssignableTrue: { id: "arr.structure.filter.assignable.true", defaultMessage: "Otevřený" },

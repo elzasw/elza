@@ -5945,6 +5945,10 @@
     "defaultMessage": "Add individually",
     "srcHash": "Gk8ygyeuyLCG"
   },
+  "arr.structure.exportCsv": {
+    "defaultMessage": "Export to CSV",
+    "srcHash": "UIqakTgYMuBs"
+  },
   "arr.structure.filter.assignable.all": {
     "defaultMessage": "All",
     "srcHash": "5C_lbtoov7Gn"
