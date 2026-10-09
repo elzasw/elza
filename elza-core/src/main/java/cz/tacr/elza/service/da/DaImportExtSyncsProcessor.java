@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -58,6 +60,15 @@ public class DaImportExtSyncsProcessor implements Runnable {
     private volatile Thread asyncThread = null;
 
     private final Object lock = new Object();
+
+    /**
+     * Ends the idle wait early. A flag, not a monitor: whoever wakes the processor must never
+     * wait for the step it is running, and the idle wait must release {@link #lock}.
+     */
+    private volatile boolean wakeRequested;
+
+    /** How often the idle wait looks whether it was woken. */
+    private static final long WAKE_CHECK_MS = 200;
 
     private static final long QUEUE_CHECK_TIME_INTERVAL = 10000;
 
@@ -265,6 +276,30 @@ public class DaImportExtSyncsProcessor implements Runnable {
                 .toList();
     }
 
+    /**
+     * A request waits sooner than the idle wait ends; it is taken right away. A wake-up that comes
+     * while a step runs is kept, so the next idle wait ends at once.
+     */
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
+    public void onQueueChanged(DaQueueChangedEvent event) {
+        wakeUp();
+    }
+
+    public void wakeUp() {
+        wakeRequested = true;
+    }
+
+    /** Waits on {@link #lock} - releasing it - until the time passes or the processor is woken. */
+    private void idle(long millis) throws InterruptedException {
+        long end = System.currentTimeMillis() + millis;
+        long remaining = millis;
+        while (!wakeRequested && remaining > 0) {
+            lock.wait(Math.min(remaining, WAKE_CHECK_MS));
+            remaining = end - System.currentTimeMillis();
+        }
+        wakeRequested = false;
+    }
+
     /** One exchange with the DA: from reading the queue to saving what it brought. */
     private boolean exchange(Supplier<Boolean> step) {
         communicationLock.lock();
@@ -290,7 +325,7 @@ public class DaImportExtSyncsProcessor implements Runnable {
                     boolean requested = exchange(this::requestNextBatch);
                     if (!processed && !requested) {
                         try {
-                            lock.wait(DaService.idleMillis(daService.getEarliestAttempt(QUEUE_STATES), QUEUE_CHECK_TIME_INTERVAL));
+                            idle(DaService.idleMillis(daService.getEarliestAttempt(QUEUE_STATES), QUEUE_CHECK_TIME_INTERVAL));
                         } catch (InterruptedException e) {
                             logger.error(e.getMessage(), e);
                             break;

@@ -226,6 +226,91 @@ model FsRepo {
 }
 
 /**
+ * Kind of a digital repository.
+ */
+enum DigitalRepositoryType {
+    /** Repository reached over the legacy WSDL interface */
+    WSDL,
+    /** Repository on a file system served by ELZA */
+    FILESYSTEM,
+    /** Digital archive (DA API) */
+    DA,
+}
+
+/**
+ * A digital repository, as listed for choosing one.
+ */
+model DigitalRepositoryInfo {
+    /** External system ID */
+    id: integer;
+    code: string;
+    name: string;
+    type: DigitalRepositoryType;
+}
+
+/**
+ * Direction of a request in the queue of a digital archive.
+ */
+enum DaQueueDirection {
+    /** A package is downloaded from the DA */
+    DOWNLOAD,
+    /** A change package is sent to the DA */
+    EXPORT,
+}
+
+/**
+ * One request in the queue of a digital archive.
+ */
+model DaQueueItemVO {
+    /** Queue item ID */
+    id: integer;
+    /** AIP ID, null for a package ELZA does not know yet */
+    aipId?: integer;
+    /** AIP code (identifier in the DA) */
+    aipCode: string;
+    /** AIP version the request is about */
+    aipVersion?: string;
+    direction: DaQueueDirection;
+    /** Requested form of the package */
+    aipType?: AipType;
+    state: QueueItemState;
+    /** False for a request replaced by a newer one, withdrawn or of an invalidated AIP */
+    active: boolean;
+    /** Batch the DA prepares or ingests */
+    batchId?: string;
+    /** Number of failed attempts */
+    attemptCount: integer;
+    /** Not before this time is the request taken again; null = now */
+    nextAttemptAt?: utcDateTime;
+    /** When the state was last set */
+    stateDate?: utcDateTime;
+    /** Why the request is in its state (failures, DA answers) */
+    stateMessage?: string;
+    /** User who asked for it; null when the synchronization did */
+    requestedBy?: string;
+}
+
+/**
+ * One page of the queue of a digital archive.
+ */
+model DaQueueItemPage {
+    /** The requests on this page, newest first */
+    items: DaQueueItemVO[];
+    /** Total number of requests matching the filter */
+    totalCount: integer;
+}
+
+/**
+ * Result of an action over requests of the queue.
+ */
+model DaQueueActionResult {
+    /** Number of requests the action was carried out on */
+    done: integer;
+    /** Number of selected requests it did not apply to */
+    skipped: integer;
+}
+
+/**
  * Result of a digital repository configuration test
  */
 model DigitalRepositoryTestResult {
@@ -3596,6 +3681,76 @@ namespace ElzaAPI.ExternalSystem {
     };
 
     /**
+     * Digital repositories, optionally of one kind only, ordered by name.
+     */
+    @route("/digitalrepository")
+    @get op digitalRepositories(
+        /** Only repositories of this kind */
+        @query type?: DigitalRepositoryType;
+    ): DigitalRepositoryInfo[];
+
+    /**
+     * Requests in the queue of a digital archive, newest first. Available to administrators.
+     */
+    @route("/digitalrepository/{id}/queue")
+    @get op daQueue(
+        /** digital repository (external system) ID */
+        @path id: integer;
+        /** True = every request incl. finished and withdrawn; false = only those waiting */
+        @query all?: boolean = false;
+        /** Only these states */
+        @query states?: QueueItemState[];
+        /** Only this direction */
+        @query direction?: DaQueueDirection;
+        /** AIP code contains */
+        @query aipCode?: string;
+        /** Only this batch */
+        @query batchId?: string;
+        /** Only requests with a failed attempt or ended by an error */
+        @query failedOnly?: boolean = false;
+        /** index of the first returned item (zero-based offset) */
+        @query from?: integer = 0;
+        /** number of returned items */
+        @query count?: integer = 50;
+    ): DaQueueItemPage;
+
+    /**
+     * Retry now: the selected waiting requests are taken on the next cycle of the queue,
+     * without the retry delay - a question about a batch in flight as well.
+     */
+    @route("/digitalrepository/{id}/queue/retry-now")
+    @post op daQueueRetryNow(
+        /** digital repository (external system) ID */
+        @path id: integer;
+        /** Queue item IDs */
+        @body itemIds: integer[];
+    ): DaQueueActionResult;
+
+    /**
+     * Cancels the selected requests the DA has not received yet. A request the DA knows is
+     * left to finish.
+     */
+    @route("/digitalrepository/{id}/queue/withdraw")
+    @post op daQueueWithdraw(
+        /** digital repository (external system) ID */
+        @path id: integer;
+        /** Queue item IDs */
+        @body itemIds: integer[];
+    ): DaQueueActionResult;
+
+    /**
+     * Repeats the selected failed requests: a download is requested again in the same form, an
+     * export sends a new change package built from the current description.
+     */
+    @route("/digitalrepository/{id}/queue/repeat")
+    @post op daQueueRepeat(
+        /** digital repository (external system) ID */
+        @path id: integer;
+        /** Queue item IDs */
+        @body itemIds: integer[];
+    ): DaQueueActionResult;
+
+    /**
      * Return list of all properties of external system
      */
     @route("property")
@@ -6626,44 +6781,6 @@ namespace ElzaAPI.Aip {
         @body data: DaAipActionVO;
        } | {
         /** Failed to delete complete AIPs */
-        @Http.statusCode statusCode: 500;
-        @body data: BaseException;
-       };
-
-    /**
-     * Retry now: the waiting requests of the AIPs (downloads, exports, questions about a batch
-     * the DA prepares) are taken on the next cycle of the queue, without the retry delay.
-     */
-    @route("/queue/retry-now")
-    @post op queueRetryNow(
-        /** Aip IDs */
-        @body aipIds: integer[];
-    ): {
-        /** Number of requests to be taken now */
-        @Http.statusCode statusCode: 200;
-        @header contentType: "application/json";
-        @body data: integer;
-       } | {
-        /** Failed to reschedule the requests */
-        @Http.statusCode statusCode: 500;
-        @body data: BaseException;
-       };
-
-    /**
-     * Withdraws the requests of the AIPs the DA has not received yet (downloads not requested,
-     * exports not sent). A request the DA already knows is left to finish.
-     */
-    @route("/queue/withdraw")
-    @post op queueWithdraw(
-        /** Aip IDs */
-        @body aipIds: integer[];
-    ): {
-        /** Number of withdrawn requests */
-        @Http.statusCode statusCode: 200;
-        @header contentType: "application/json";
-        @body data: integer;
-       } | {
-        /** Failed to withdraw the requests */
         @Http.statusCode statusCode: 500;
         @body data: BaseException;
        };

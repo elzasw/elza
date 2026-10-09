@@ -21,7 +21,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.common.FactoryUtils;
 import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.domain.*;
@@ -2644,13 +2643,6 @@ public class ArrangementController {
                                                  @RequestParam("count") final Integer count) {
         FilteredResult<ApAccessPoint> aps = accessPointService.findAccessPointsByText(text, from, count);
         return new FilteredResultVO<>(apFactory.createVOs(aps.getList()), aps.getTotalCount());
-    }
-
-    @RequestMapping(value = "/digitalRepositories", method = RequestMethod.GET)
-    @Transactional
-    public List<SysExternalSystemSimpleVO> findAllDigitalRepositories() {
-        List<ArrDigitalRepository> extSystems = externalSystemService.findDigitalRepository();
-        return FactoryUtils.transformList(extSystems, ArrDigitalRepositorySimpleVO::newInstance);
     }
 
     /**

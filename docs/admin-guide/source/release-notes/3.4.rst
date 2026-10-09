@@ -15,6 +15,16 @@ between the installed and the new version; see :doc:`/03-upgrade`.
 Upcoming version
 ================
 
+* Change: Import of description elements from CSV - the import of a fund
+  (Table view) and the batch import (*Administration → Import*) read the
+  same format: the node by UUID or ID, every data type (newly also
+  FORMATTED_TEXT, UNITID, DATE, BIT, COORDINATES as WKT, JSON_TABLE,
+  STRUCTURED and FILE_REF by ID), an optional byte order mark. The rows are
+  imported in parts of 1000, each with one change per fund; when a row
+  fails, the parts before it stay imported and the message names the last
+  imported row. A deleted node is refused, and so is a node of another
+  fund in the import of a fund. A test
+  run of a CSV batch checks the whole file without importing.
 * Change: a rules package may declare its own part types of entities and
   validate parts of them by its rules; such an entity used to fail its
   validation. The dialogs of a part of such a type are titled by the name
@@ -30,8 +40,15 @@ Upcoming version
   accepted one its new version, or with a permanent failure (HTTP 403/404).
   A failure to reach the archive is retried with a growing interval (from
   the status interval up to 5 minutes); a failed download is never given up.
-  The REST API offers "retry now" and the withdrawal of requests the archive
-  has not received yet (``/aip/queue/retry-now``, ``/aip/queue/withdraw``).
+* New: ELZA DA - *Administration → Fronta digitálního archivu*
+  (``/admin/da/<id>/requests``) lists the requests of the queue of a digital
+  archive, newest first: the waiting ones, or the whole history including
+  finished, replaced and cancelled requests. It filters by state, direction,
+  AIP code, batch and failure, shows the batch, attempts, next attempt and
+  the message of each request, and over the selected requests offers *Retry
+  now*, *Cancel request* (only requests the archive has not received yet) and
+  *Repeat* (a failed download is requested again, a failed export sends a new
+  change package). Requests are never deleted.
 * Fix: ELZA DA - the files of a package are found where its root METS puts
   them, not by their names. A package whose PREMIS file has another name
   (``premis.xml``, ``RETENTION-METADATA.xml``) is no longer refused with

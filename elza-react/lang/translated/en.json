@@ -187,6 +187,210 @@
     "defaultMessage": "Waiting requests",
     "srcHash": "yget6MsdhuDe"
   },
+  "admin.daQueue.action.done": {
+    "defaultMessage": "{done, plural, one {Done for # request} other {Done for # requests}}{skipped, plural, =0 {} one { · # skipped} other { · # skipped}}",
+    "srcHash": "jcJx3F-1dLnS"
+  },
+  "admin.daQueue.action.nothing": {
+    "defaultMessage": "The action applies to none of the selected requests",
+    "srcHash": "NEpOoEQoVdwg"
+  },
+  "admin.daQueue.action.repeat": {
+    "defaultMessage": "Repeat",
+    "srcHash": "YE321p9H9lQs"
+  },
+  "admin.daQueue.action.repeat.title": {
+    "defaultMessage": "A failed download is requested again, a failed export sends a new change package",
+    "srcHash": "rMRGe3bzudJS"
+  },
+  "admin.daQueue.action.retryNow": {
+    "defaultMessage": "Retry now",
+    "srcHash": "owAoRDVvpqw8"
+  },
+  "admin.daQueue.action.retryNow.title": {
+    "defaultMessage": "A waiting request is taken at once, without waiting for the next attempt",
+    "srcHash": "afLdwDjpfkDr"
+  },
+  "admin.daQueue.action.withdraw": {
+    "defaultMessage": "Cancel request",
+    "srcHash": "XzTehGM7-AH4"
+  },
+  "admin.daQueue.action.withdraw.title": {
+    "defaultMessage": "Only requests the digital archive has not received yet",
+    "srcHash": "zMjpjWptMKRI"
+  },
+  "admin.daQueue.aipType.AIP_BASE": {
+    "defaultMessage": "complete AIP",
+    "srcHash": "RhVpPUs-R8AW"
+  },
+  "admin.daQueue.aipType.AIP_RAW": {
+    "defaultMessage": "native AIP",
+    "srcHash": "ftX2egf1Djxz"
+  },
+  "admin.daQueue.aipType.ARCHDESC": {
+    "defaultMessage": "archival description",
+    "srcHash": "RmoG4UfKKxII"
+  },
+  "admin.daQueue.aipType.METADATA_BASE": {
+    "defaultMessage": "metadata",
+    "srcHash": "RUR7evvV5UT3"
+  },
+  "admin.daQueue.aipType.PACKAGE_INFO": {
+    "defaultMessage": "PACKAGE-INFO",
+    "srcHash": "YV_Gp0Qr11fO"
+  },
+  "admin.daQueue.col.aip": {
+    "defaultMessage": "AIP",
+    "srcHash": "skqGhZPbqOfI"
+  },
+  "admin.daQueue.col.attempts": {
+    "defaultMessage": "Attempts",
+    "srcHash": "6keKD8SqikQB"
+  },
+  "admin.daQueue.col.batch": {
+    "defaultMessage": "Batch",
+    "srcHash": "b3_QzSgJkKXg"
+  },
+  "admin.daQueue.col.changed": {
+    "defaultMessage": "State changed",
+    "srcHash": "FvctuYd2d4QQ"
+  },
+  "admin.daQueue.col.id": {
+    "defaultMessage": "ID",
+    "srcHash": "OEOXHc_e5Qg-"
+  },
+  "admin.daQueue.col.message": {
+    "defaultMessage": "Message",
+    "srcHash": "AoTNLeVuwfN1"
+  },
+  "admin.daQueue.col.nextAttempt": {
+    "defaultMessage": "Next attempt",
+    "srcHash": "lGBxbYhypGv9"
+  },
+  "admin.daQueue.col.request": {
+    "defaultMessage": "Request",
+    "srcHash": "_GcrJzrwtG9G"
+  },
+  "admin.daQueue.col.requestedBy": {
+    "defaultMessage": "Requested by",
+    "srcHash": "K04R648isUVp"
+  },
+  "admin.daQueue.col.state": {
+    "defaultMessage": "State",
+    "srcHash": "1sRUDB31F_YQ"
+  },
+  "admin.daQueue.col.version": {
+    "defaultMessage": "AIP version",
+    "srcHash": "xvWVAM-nx_id"
+  },
+  "admin.daQueue.detail.close": {
+    "defaultMessage": "Close",
+    "srcHash": "0r4EKpo4ZhJv"
+  },
+  "admin.daQueue.detail.title": {
+    "defaultMessage": "Request {id}",
+    "srcHash": "Kl_mWWLCIkGe"
+  },
+  "admin.daQueue.direction.DOWNLOAD": {
+    "defaultMessage": "Download",
+    "srcHash": "A32sgqBbFAmN"
+  },
+  "admin.daQueue.direction.EXPORT": {
+    "defaultMessage": "Export",
+    "srcHash": "NmSJVXnwp-aM"
+  },
+  "admin.daQueue.empty": {
+    "defaultMessage": "No request in the queue matches the filter.",
+    "srcHash": "K79a4AnofB2S"
+  },
+  "admin.daQueue.filter.aipCode": {
+    "defaultMessage": "AIP code",
+    "srcHash": "Bfqnt0DzjU3h"
+  },
+  "admin.daQueue.filter.anyDirection": {
+    "defaultMessage": "Both directions",
+    "srcHash": "jg4XnHZ8S00M"
+  },
+  "admin.daQueue.filter.batch": {
+    "defaultMessage": "Batch",
+    "srcHash": "b3_QzSgJkKXg"
+  },
+  "admin.daQueue.filter.direction": {
+    "defaultMessage": "Direction",
+    "srcHash": "mHzGHwCsqrdO"
+  },
+  "admin.daQueue.filter.failed": {
+    "defaultMessage": "Failed only",
+    "srcHash": "IaPNTlrxHZQS"
+  },
+  "admin.daQueue.filter.state": {
+    "defaultMessage": "State",
+    "srcHash": "1sRUDB31F_YQ"
+  },
+  "admin.daQueue.filterByBatch": {
+    "defaultMessage": "Show only this batch",
+    "srcHash": "mt0zyE_rKNeA"
+  },
+  "admin.daQueue.inactive": {
+    "defaultMessage": "inactive",
+    "srcHash": "kWpRnmJUqvQN"
+  },
+  "admin.daQueue.inactive.title": {
+    "defaultMessage": "Replaced by a newer request, cancelled, or the AIP was invalidated",
+    "srcHash": "Vq2jLBZ-CIrJ"
+  },
+  "admin.daQueue.loadFailed": {
+    "defaultMessage": "The queue could not be loaded, the last known state is shown.",
+    "srcHash": "FXT8voYubsLj"
+  },
+  "admin.daQueue.next": {
+    "defaultMessage": "Next",
+    "srcHash": "5A98XqhyHbQ8"
+  },
+  "admin.daQueue.noRepository": {
+    "defaultMessage": "No digital archive is set up. Create one in External systems.",
+    "srcHash": "HKreFRwA5-sn"
+  },
+  "admin.daQueue.now": {
+    "defaultMessage": "now",
+    "srcHash": "q_Ria4I90viQ"
+  },
+  "admin.daQueue.pager": {
+    "defaultMessage": "{from}–{to} of {total}",
+    "srcHash": "1m_PehPhbP82"
+  },
+  "admin.daQueue.preset.all": {
+    "defaultMessage": "All",
+    "srcHash": "5C_lbtoov7Gn"
+  },
+  "admin.daQueue.preset.waiting": {
+    "defaultMessage": "Waiting",
+    "srcHash": "ZFjCEuIqOTpj"
+  },
+  "admin.daQueue.previous": {
+    "defaultMessage": "Previous",
+    "srcHash": "zOLN3BpLNrFE"
+  },
+  "admin.daQueue.refresh": {
+    "defaultMessage": "Refresh",
+    "srcHash": "YsuU5HF0yj5p"
+  },
+  "admin.daQueue.repository": {
+    "defaultMessage": "Digital archive",
+    "srcHash": "iPgFLR6539C0"
+  },
+  "admin.daQueue.selected": {
+    "defaultMessage": "{count, plural, one {# request selected} other {# requests selected}}",
+    "srcHash": "QCQ-rzbxMPyR"
+  },
+  "admin.daQueue.synchronization": {
+    "defaultMessage": "synchronization",
+    "srcHash": "Cv76dRbDphOT"
+  },
+  "admin.daQueue.title": {
+    "defaultMessage": "Digital archive queue",
+    "srcHash": "0gvSSKdSrEZm"
+  },
   "admin.extSystem.add.title": {
     "defaultMessage": "New external system",
     "srcHash": "bw_993MNN6Op"
@@ -250,6 +454,10 @@
   "admin.extSystem.da": {
     "defaultMessage": "Digital archive",
     "srcHash": "iPgFLR6539C0"
+  },
+  "admin.extSystem.daQueue": {
+    "defaultMessage": "Digital archive request queue",
+    "srcHash": "zeuzMGQwHRZ-"
   },
   "admin.extSystem.daStatusPollInterval": {
     "defaultMessage": "Batch status check interval (s)",
@@ -8488,6 +8696,10 @@
   "ribbon.action.admin.backgroundProcesses": {
     "defaultMessage": "Background tasks",
     "srcHash": "U2XnpMnd4E_t"
+  },
+  "ribbon.action.admin.daQueue": {
+    "defaultMessage": "Digital archive queue",
+    "srcHash": "0gvSSKdSrEZm"
   },
   "ribbon.action.admin.developer": {
     "defaultMessage": "Developer mode",
