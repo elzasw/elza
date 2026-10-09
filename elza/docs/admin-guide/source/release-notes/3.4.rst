@@ -30,8 +30,15 @@ Upcoming version
   accepted one its new version, or with a permanent failure (HTTP 403/404).
   A failure to reach the archive is retried with a growing interval (from
   the status interval up to 5 minutes); a failed download is never given up.
-  The REST API offers "retry now" and the withdrawal of requests the archive
-  has not received yet (``/aip/queue/retry-now``, ``/aip/queue/withdraw``).
+* New: ELZA DA - *Administration → Fronta digitálního archivu*
+  (``/admin/da/<id>/requests``) lists the requests of the queue of a digital
+  archive, newest first: the waiting ones, or the whole history including
+  finished, replaced and cancelled requests. It filters by state, direction,
+  AIP code, batch and failure, shows the batch, attempts, next attempt and
+  the message of each request, and over the selected requests offers *Retry
+  now*, *Cancel request* (only requests the archive has not received yet) and
+  *Repeat* (a failed download is requested again, a failed export sends a new
+  change package). Requests are never deleted.
 * Fix: ELZA DA - the files of a package are found where its root METS puts
   them, not by their names. A package whose PREMIS file has another name
   (``premis.xml``, ``RETENTION-METADATA.xml``) is no longer refused with

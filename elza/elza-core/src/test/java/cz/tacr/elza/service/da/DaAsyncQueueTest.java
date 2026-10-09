@@ -17,9 +17,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import cz.tacr.elza.AbstractTest;
+import cz.tacr.elza.AbstractServiceTest;
 import cz.tacr.elza.api.AipType;
 import cz.tacr.elza.api.DigitalRepositoryType;
+import cz.tacr.elza.controller.vo.DaQueueActionResult;
+import cz.tacr.elza.controller.vo.DaQueueDirection;
+import cz.tacr.elza.controller.vo.DaQueueItemVO;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.DaAip;
 import cz.tacr.elza.domain.DaAipState;
@@ -43,10 +46,12 @@ import cz.tacr.elza.repository.DigitalRepositoryRepository;
  * The test holds {@link DaCommunicationLock}, so the processors running in the application do
  * not take the items it creates.
  */
-public class DaAsyncQueueTest extends AbstractTest {
+public class DaAsyncQueueTest extends AbstractServiceTest {
 
     @Autowired
     private DaService daService;
+    @Autowired
+    private DaQueueService daQueueService;
     @Autowired
     private DaCommunicationLock communicationLock;
     @Autowired
@@ -160,11 +165,12 @@ public class DaAsyncQueueTest extends AbstractTest {
     @Test
     void anItemIsTakenWhenDueAndRetryNowTakesItAtOnce() {
         DaAip aip = aip("aip-1");
-        item(aip, QueueItemState.UPDATE, null, OffsetDateTime.now().plusMinutes(5));
+
+        Integer itemId = item(aip, QueueItemState.UPDATE, null, OffsetDateTime.now().plusMinutes(5));
 
         assertEquals(List.of(), nextDownloads());
-        assertEquals(1, daService.retryNow(List.of(aip.getAipId())));
-        assertEquals(1, nextDownloads().size());
+        assertEquals(1, daQueueService.retryNow(repository.getExternalSystemId(), List.of(itemId)).getDone());
+        assertEquals(List.of(itemId), nextDownloads());
     }
 
     @Test
@@ -194,8 +200,10 @@ public class DaAsyncQueueTest extends AbstractTest {
         Integer downloadRequested = item(requested, QueueItemState.DOWNLOAD_REQUESTED, "d1", null);
         Integer update = item(toDownload, QueueItemState.UPDATE, null, null);
 
-        assertEquals(2, daService.withdrawRequests(List.of(toExport.getAipId(), sent.getAipId(),
-                                                           requested.getAipId(), toDownload.getAipId())));
+        DaQueueActionResult result = daQueueService.withdraw(repository.getExternalSystemId(),
+                List.of(exportNew, exportSent, downloadRequested, update));
+        assertEquals(2, result.getDone());
+        assertEquals(2, result.getSkipped());
 
         assertFalse(reload(exportNew).getActive());
         assertFalse(reload(update).getActive());
@@ -255,5 +263,92 @@ public class DaAsyncQueueTest extends AbstractTest {
         assertEquals("d1", item.getBatchId());
         assertFalse(item.getNextAttemptAt().isBefore(before.plus(Duration.ofSeconds(2))));
         assertEquals(List.of(), daService.getDueBatch(QueueItemState.DOWNLOAD_REQUESTED), "not due before the interval");
+    }
+
+    private List<Integer> listed(DaQueueService.Filter filter) {
+        return daQueueService.find(repository.getExternalSystemId(), filter, 0, 50).getItems().stream()
+                .map(DaQueueItemVO::getId).toList();
+    }
+
+    private static DaQueueService.Filter waiting() {
+        return new DaQueueService.Filter(false, null, null, null, null, false);
+    }
+
+    private static DaQueueService.Filter all() {
+        return new DaQueueService.Filter(true, null, null, null, null, false);
+    }
+
+    /** The view opens with the waiting requests, newest first; the history is one switch away. */
+    @Test
+    void theViewListsWaitingRequestsNewestFirst() {
+        Integer download = item(aip("aip-1"), QueueItemState.UPDATE, null, null);
+        Integer finished = item(aip("aip-2"), QueueItemState.IMPORT_OK, null, null);
+        Integer export = item(aip("aip-3"), QueueItemState.EXPORT_SENT, "e1", null);
+
+        assertEquals(List.of(export, download), listed(waiting()));
+        assertEquals(List.of(export, finished, download), listed(all()));
+        assertEquals(3, daQueueService.find(repository.getExternalSystemId(), all(), 0, 50).getTotalCount());
+    }
+
+    @Test
+    void theViewFiltersByDirectionCodeBatchAndFailure() {
+        Integer download = item(aip("pkg-alpha"), QueueItemState.DOWNLOAD_REQUESTED, "d1", null);
+        Integer export = item(aip("pkg-beta"), QueueItemState.EXPORT_ERROR, null, null);
+        Integer retried = item(aip("pkg-gamma"), QueueItemState.UPDATE, null, null);
+        tx().executeWithoutResult(t -> {
+            DaSyncQueueItem item = queueRepository.findById(retried).orElseThrow();
+            item.setAttemptCount(3);
+            queueRepository.save(item);
+        });
+
+        assertEquals(List.of(export), listed(new DaQueueService.Filter(true, null, DaQueueDirection.EXPORT, null, null, false)));
+        assertEquals(List.of(retried, download),
+                     listed(new DaQueueService.Filter(true, null, DaQueueDirection.DOWNLOAD, null, null, false)));
+        assertEquals(List.of(download), listed(new DaQueueService.Filter(true, null, null, "ALPHA", null, false)));
+        assertEquals(List.of(download), listed(new DaQueueService.Filter(true, null, null, null, "d1", false)));
+        assertEquals(List.of(retried, export), listed(new DaQueueService.Filter(true, null, null, null, null, true)));
+        DaQueueItemVO vo = daQueueService.find(repository.getExternalSystemId(),
+                new DaQueueService.Filter(true, null, null, null, "d1", false), 0, 50).getItems().get(0);
+        assertEquals("pkg-alpha", vo.getAipCode());
+        assertEquals(DaQueueDirection.DOWNLOAD, vo.getDirection());
+    }
+
+    /** An action is carried out only on the selected requests it fits; the rest are counted. */
+    @Test
+    void retryNowSkipsRequestsThatDoNotWait() {
+        Integer waiting = item(aip("aip-1"), QueueItemState.EXPORT_SENT, "e1", OffsetDateTime.now().plusMinutes(5));
+        Integer finished = item(aip("aip-2"), QueueItemState.EXPORT_OK, null, null);
+
+        DaQueueActionResult result = daQueueService.retryNow(repository.getExternalSystemId(), List.of(waiting, finished));
+
+        assertEquals(1, result.getDone());
+        assertEquals(1, result.getSkipped());
+        assertNull(reload(waiting).getNextAttemptAt());
+    }
+
+    /** A failed download is requested again in the same form; the failed request stays in the history. */
+    @Test
+    void aFailedDownloadIsRequestedAgain() {
+        DaAip aip = aip("aip-1");
+        Integer failed = item(aip, QueueItemState.IMPORT_ERROR, null, null);
+
+        DaQueueActionResult result = daQueueService.repeat(repository.getExternalSystemId(), List.of(failed));
+
+        assertEquals(1, result.getDone());
+        assertFalse(reload(failed).getActive());
+        List<DaQueueItemVO> waitingNow = daQueueService.find(repository.getExternalSystemId(), waiting(), 0, 50).getItems();
+        assertEquals(1, waitingNow.size());
+        assertEquals(cz.tacr.elza.controller.vo.QueueItemState.UPDATE, waitingNow.get(0).getState());
+        assertEquals(cz.tacr.elza.controller.vo.AipType.METADATA_BASE, waitingNow.get(0).getAipType());
+    }
+
+    @Test
+    void onlyFailedRequestsCanBeRepeated() {
+        Integer waiting = item(aip("aip-1"), QueueItemState.UPDATE, null, null);
+
+        DaQueueActionResult result = daQueueService.repeat(repository.getExternalSystemId(), List.of(waiting));
+
+        assertEquals(0, result.getDone());
+        assertEquals(1, result.getSkipped());
     }
 }

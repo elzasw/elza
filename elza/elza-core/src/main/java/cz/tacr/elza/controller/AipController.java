@@ -91,16 +91,6 @@ public class AipController implements AipsApi {
     }
 
     @Override
-    public ResponseEntity<Integer> aipQueueRetryNow(List<Integer> aipIds) {
-        return ResponseEntity.ok(daService.retryNow(aipIds));
-    }
-
-    @Override
-    public ResponseEntity<Integer> aipQueueWithdraw(List<Integer> aipIds) {
-        return ResponseEntity.ok(daService.withdrawRequests(aipIds));
-    }
-
-    @Override
     public ResponseEntity<DaAipActionVO> aipExportAip(List<Integer> aipIds) {
         return ResponseEntity.ok(clientFactoryVO.createAipAction(daService.aipExportAip(aipIds)));
     }

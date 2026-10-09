@@ -6,6 +6,7 @@ import cz.tacr.elza.domain.DaSyncQueueItem;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,7 +18,8 @@ import java.util.List;
 
 
 @Repository
-public interface DaSyncQueueItemRepository extends JpaRepository<DaSyncQueueItem, Integer> {
+public interface DaSyncQueueItemRepository extends JpaRepository<DaSyncQueueItem, Integer>,
+        JpaSpecificationExecutor<DaSyncQueueItem> {
 
     /**
      * Pending items in the order they should be processed: items whose download failed go
@@ -52,12 +54,6 @@ public interface DaSyncQueueItemRepository extends JpaRepository<DaSyncQueueItem
     /** When the earliest of the waiting items is to be taken; null when none waits for a time. */
     @Query("SELECT MIN(i.nextAttemptAt) FROM da_sync_queue_item i WHERE i.state IN :states AND i.active = true")
     OffsetDateTime findEarliestAttempt(@Param("states") Collection<DaSyncQueueItem.QueueItemState> states);
-
-    /** Active items of the AIPs in the given states. */
-    @Query("SELECT i FROM da_sync_queue_item i WHERE i.aip.aipId IN :aipIds AND i.state IN :states"
-            + " AND i.active = true")
-    List<DaSyncQueueItem> findActiveByAipsAndStates(@Param("aipIds") Collection<Integer> aipIds,
-                                                    @Param("states") Collection<DaSyncQueueItem.QueueItemState> states);
 
     /**
      * Action items carried by the AIP's active queue items in the given states - what a newly
