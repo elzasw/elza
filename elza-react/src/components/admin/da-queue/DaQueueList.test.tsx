@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import { renderWithProviders, screen, fireEvent } from 'test/test-utils';
+import { renderWithProviders, screen, fireEvent, waitFor } from 'test/test-utils';
 import { DaQueueDirection, DaQueueItemVO, QueueItemState } from 'elza-api';
 import { DaQueueList } from './DaQueueList';
 
@@ -92,7 +92,7 @@ describe('DaQueueList', () => {
         await select('aip-2');
         fireEvent.click(button(/Zrušit požadavek/));
 
-        await vi.waitFor(() => expect(toasts.success).toHaveBeenCalledWith('Provedeno u 2 požadavků'));
+        await waitFor(() => expect(toasts.success).toHaveBeenCalledWith('Provedeno u 2 požadavků'));
         expect(api.externalSystemDaQueueWithdraw).toHaveBeenCalledWith(7, [1, 2]);
     });
 
@@ -102,7 +102,7 @@ describe('DaQueueList', () => {
 
         fireEvent.click(await screen.findByRole('button', { name: 'd1' }));
 
-        await vi.waitFor(() => expect(api.externalSystemDaQueue).toHaveBeenLastCalledWith(
+        await waitFor(() => expect(api.externalSystemDaQueue).toHaveBeenLastCalledWith(
             7, true, undefined, undefined, undefined, 'd1', false, 0, 50));
     });
 });
