@@ -911,6 +911,22 @@
     "defaultMessage": "Scroll down",
     "srcHash": "diTqvnzq62es"
   },
+  "admin.logs.error.fileNotFound": {
+    "defaultMessage": "The log file {path} was not found.",
+    "srcHash": "8LUNHwlafmOR"
+  },
+  "admin.logs.error.load": {
+    "defaultMessage": "Error loading the log.",
+    "srcHash": "EB7bq9rz-An8"
+  },
+  "admin.logs.error.noPath": {
+    "defaultMessage": "Configuration error: the path to the log file is not set.",
+    "srcHash": "kZ-7BftnZQ4W"
+  },
+  "admin.logs.error.read": {
+    "defaultMessage": "Error reading the log file {path}.",
+    "srcHash": "YVPVQWW0dQTO"
+  },
   "admin.logs.loading": {
     "defaultMessage": "Loading…",
     "srcHash": "huKZrEM4ZxuE"

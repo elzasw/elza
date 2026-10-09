@@ -4,12 +4,17 @@ import Tree from "./Tree";
 import { mapNodesToFlatItemArr } from "./utils";
 import { useEffect, useState } from "react";
 import { useNodeName } from "components/aip/explorer/levels";
+import { AipLevelType } from "elza-api";
 
 export type FlatItem = HeadlessFlatTreeItemProps & { content: string; count?: number };
 
 /** Úroveň logické struktury balíčků, jak ji vrací server. */
 export interface LogicalTreeNode {
     UUID: TreeItemValue;
+    /** Typ virtuální úrovně (kořeny "logická struktura" a "bez logické struktury"); klient ji pojmenuje podle typu. */
+    levelType?: AipLevelType;
+    /** Název ze serveru - záložní pro uzel bez typu, který klient nezná. */
+    name?: string;
     /** Balíčky, které úroveň zastupuje. */
     value: number[];
     /** Úroveň logické struktury (level view); virtuální úrovně ji nemají. */

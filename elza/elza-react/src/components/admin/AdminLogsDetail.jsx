@@ -12,7 +12,18 @@ const messages = defineMessages({
     resume: { id: 'admin.logs.action.resume', defaultMessage: 'Pokračovat' },
     pause: { id: 'admin.logs.action.pause', defaultMessage: 'Pozastavit' },
     loading: { id: 'admin.logs.loading', defaultMessage: 'Načítání...' },
+    loadError: { id: 'admin.logs.error.load', defaultMessage: 'Chyba při načítání logu.' },
+    // why the server could not read the log file (LogVO.error)
+    errorNoPath: { id: 'admin.logs.error.noPath', defaultMessage: 'Chyba konfigurace, není nastavena cesta k souboru logu.' },
+    errorFileNotFound: { id: 'admin.logs.error.fileNotFound', defaultMessage: 'Soubor logu {path} nebyl nalezen.' },
+    errorRead: { id: 'admin.logs.error.read', defaultMessage: 'Chyba při čtení souboru logu {path}.' },
 });
+
+const errorMessages = {
+    NO_PATH: messages.errorNoPath,
+    FILE_NOT_FOUND: messages.errorFileNotFound,
+    READ_ERROR: messages.errorRead,
+};
 
 /**
  * Komponenta detailu osoby
@@ -31,15 +42,24 @@ class AdminLogsDetail extends AbstractReactComponent {
     componentDidMount() {
         WebApi.getLogs(this.state.lineCount, this.state.firstLine)
             .then(data => {
-                this.setState({logs: data.lines, fetched: true}, () => {
+                this.setState({logs: this.linesOf(data), fetched: true}, () => {
                     this.scrollDown();
                     this.refresh();
                 });
             })
-            .catch(e => {
-                this.setState({logs: ['Chyba', e], fetched: true});
+            .catch(() => {
+                this.setState({logs: [this.props.intl.formatMessage(messages.loadError)], fetched: true});
             });
     }
+
+    /** Lines of the server's answer, with the message for a read error first. */
+    linesOf = data => {
+        const message = data.error && errorMessages[data.error];
+        if (!message) {
+            return data.lines;
+        }
+        return [this.props.intl.formatMessage(message, {path: data.path}), ...data.lines];
+    };
 
     componentWillUnmount() {
         this.stop = true;
@@ -97,7 +117,7 @@ class AdminLogsDetail extends AbstractReactComponent {
 
         WebApi.getLogs(lineCount, firstLine)
             .then(newData => {
-                if (newData.lineCount > 0) {
+                if (newData.lineCount > 0 || newData.error) {
                     let scrollDown = false;
 
                     if (this.isOnEnd()) {
@@ -108,7 +128,7 @@ class AdminLogsDetail extends AbstractReactComponent {
                         {
                             ...this.state,
                             fetched: true,
-                            logs: newData.lines,
+                            logs: this.linesOf(newData),
                         },
                         () => {
                             if (scrollDown) {
@@ -121,8 +141,8 @@ class AdminLogsDetail extends AbstractReactComponent {
                     setTimeout(this.refresh, 3000);
                 }
             })
-            .catch(e => {
-                this.setState({logs: ['Chyba', e], fetched: true});
+            .catch(() => {
+                this.setState({logs: [this.props.intl.formatMessage(messages.loadError)], fetched: true});
             });
     };
 

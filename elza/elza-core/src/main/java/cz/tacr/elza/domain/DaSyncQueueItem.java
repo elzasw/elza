@@ -177,36 +177,27 @@ public class DaSyncQueueItem {
         this.attemptCount = attemptCount;
     }
 
+    /**
+     * State of the queue item; the client labels the states itself.
+     */
     public enum QueueItemState {
 
-        UPDATE("K aktualizaci"),
+        UPDATE,
 
-        IMPORT_NEW("Ke stažení"),
+        IMPORT_NEW,
 
-        IMPORT_OK("Aktualizováno/Staženo"), // předchozí OK
+        IMPORT_OK, // previously OK
 
-        IMPORT_ERROR("Chyba při importu"),
+        IMPORT_ERROR,
 
-        EXPORT_NEW("K exportu"),
+        EXPORT_NEW,
 
-        EXPORT_OK("Exportováno"),
+        EXPORT_OK,
 
-        EXPORT_ERROR("Chyba při exportu");
-
-        private String value;
-
-        QueueItemState(String value) {
-            this.value = value;
-        }
-
-        public String value() {
-            return value;
-        }
+        EXPORT_ERROR;
 
         public static QueueItemState fromValue(String v) {
             return valueOf(v);
         }
-
-
     }
 }

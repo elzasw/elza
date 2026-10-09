@@ -204,44 +204,35 @@ public class ExtSyncsQueueItem {
 		this.uploadMap = uploadMap;
 	}
 
+	/**
+	 * State of the queue item; the client labels the states itself.
+	 */
 	public enum ExtAsyncQueueState {
 
-        UPDATE("K aktualizaci"),
+        UPDATE,
 
-        UPDATE_DEFERRED("Odloženo (čeká na náhradu)"),
+        UPDATE_DEFERRED,
 
-        IMPORT_NEW("Ke stažení"),
+        IMPORT_NEW,
 
-        IMPORT_OK("Aktualizováno/Staženo"), // předchozí OK
+        IMPORT_OK, // previously OK
 
-        EXPORT_NEW("K odeslání"),
+        EXPORT_NEW,
 
-        EXPORT_START("Odesílání"),
+        EXPORT_START,
 
-        EXPORT_PROCESSING("Ukládání"),
+        EXPORT_PROCESSING,
 
-        EXPORT_NEED_CONFIRM("Potřeba potvrzení"),
+        EXPORT_NEED_CONFIRM,
 
-        EXPORT_OK("Odesláno"),
+        EXPORT_OK,
 
-        EXPORT_CANCELLED("Zrušeno uživatelem"),
+        EXPORT_CANCELLED,
 
-        ERROR("Chyba");
-
-        private String value;
-
-        ExtAsyncQueueState(String value) {
-            this.value = value;
-        }
-
-        public String value() {
-            return value;
-        }
+        ERROR;
 
         public static ExtAsyncQueueState fromValue(String v) {
             return valueOf(v);
         }
-
-
     }
 }
