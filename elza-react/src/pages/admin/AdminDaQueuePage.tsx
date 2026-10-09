@@ -1,8 +1,9 @@
 import { Dropdown, MessageBar, MessageBarBody, Option, Spinner } from '@fluentui/react-components';
+import { Api } from 'api';
+import { DigitalRepositoryInfo, DigitalRepositoryType } from 'elza-api';
 import { DaQueueList } from 'components/admin/da-queue/DaQueueList';
 import { messages } from 'components/admin/da-queue/messages';
 import { Ribbon } from 'components/index.jsx';
-import { WebApi } from 'actions/index.jsx';
 import { useEffect, useState } from 'react';
 import { FormattedMessage, useIntl } from 'react-intl';
 import { Redirect, useHistory, useParams } from 'react-router';
@@ -12,12 +13,6 @@ export const URL_ADMIN_DA = '/admin/da';
 
 export const urlAdminDaQueue = (repositoryId: number) => `${URL_ADMIN_DA}/${repositoryId}/requests`;
 
-interface DigitalRepository {
-    id: number;
-    name: string;
-    digitalRepositoryType?: string;
-}
-
 /**
  * Queue of a digital archive: {@code /admin/da/<id>/requests}. Without an id the first digital
  * archive is opened; with more of them a selector switches between them.
@@ -26,11 +21,11 @@ export function AdminDaQueuePage() {
     const intl = useIntl();
     const history = useHistory();
     const { daId } = useParams<{ daId?: string }>();
-    const [repositories, setRepositories] = useState<DigitalRepository[]>();
+    const [repositories, setRepositories] = useState<DigitalRepositoryInfo[]>();
 
     useEffect(() => {
-        WebApi.getAllDigitalRepositorySystem().then((all: DigitalRepository[]) =>
-            setRepositories(all.filter(repository => repository.digitalRepositoryType === 'DA')));
+        Api.externalSystems.externalSystemDigitalRepositories(DigitalRepositoryType.Da)
+            .then(({ data }) => setRepositories(data));
     }, []);
 
     let content;

@@ -3447,6 +3447,29 @@ paths:
             schema:
               $ref: '#/components/schemas/NodeItem'
         description: new attribute value
+  /extsystem/digitalrepository:
+    get:
+      operationId: ExternalSystem_digitalRepositories
+      description: Digital repositories, optionally of one kind only, ordered by name.
+      parameters:
+        - name: type
+          in: query
+          required: false
+          description: Only repositories of this kind
+          schema:
+            $ref: '#/components/schemas/DigitalRepositoryType'
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DigitalRepositoryInfo'
+      tags:
+        - externalsystems
   /extsystem/digitalrepository/{id}/queue:
     get:
       operationId: ExternalSystem_daQueue
@@ -9598,6 +9621,24 @@ components:
       allOf:
         - $ref: '#/components/schemas/AbstractField'
       description: Node (descItem) field names for filter
+    DigitalRepositoryInfo:
+      type: object
+      required:
+        - id
+        - code
+        - name
+        - type
+      properties:
+        id:
+          type: integer
+          description: External system ID
+        code:
+          type: string
+        name:
+          type: string
+        type:
+          $ref: '#/components/schemas/DigitalRepositoryType'
+      description: A digital repository, as listed for choosing one.
     DigitalRepositoryTestResult:
       type: object
       required:
@@ -9624,6 +9665,13 @@ components:
             $ref: '#/components/schemas/FsItem'
           description: First few entries of the repository root, as a sanity check of the configured path
       description: Result of a digital repository configuration test
+    DigitalRepositoryType:
+      type: string
+      enum:
+        - WSDL
+        - FILESYSTEM
+        - DA
+      description: Kind of a digital repository.
     DigitizationRequest:
       type: object
       required:
