@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<institution-types>
+    <institution-type code="STD_ARCHIVE">
+        <name>Archive</name>
+    </institution-type>
+</institution-types>

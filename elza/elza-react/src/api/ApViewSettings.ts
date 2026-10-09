@@ -12,12 +12,13 @@ export interface ItemType {
 }
 
 export interface ApViewSettings {
-    typeRuleSetMap: TypeRuleSetMap;
+    /** Rule set of each scope: an entity is shown with the settings of the rule set of its scope. */
+    scopeRuleSetMap: ScopeRuleSetMap;
     rules: ApViewSettingRuleMap;
 }
 
-interface TypeRuleSetMap {
-    [id: number]: number;
+interface ScopeRuleSetMap {
+    [scopeId: number]: number;
 }
 
 interface ApViewSettingRuleMap {

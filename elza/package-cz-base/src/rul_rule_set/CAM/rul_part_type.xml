@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<part-types>
+    <part-type code="PT_NAME"/>
+    <part-type code="PT_CRE"/>
+    <part-type code="PT_EXT"/>
+    <part-type code="PT_BODY"/>
+    <part-type code="PT_EVENT"/>
+    <part-type code="PT_REL"/>
+    <part-type code="PT_IDENT"/>
+</part-types>

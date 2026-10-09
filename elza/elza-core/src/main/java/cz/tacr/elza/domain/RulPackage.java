@@ -5,8 +5,11 @@ import jakarta.persistence.AccessType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 import org.hibernate.Length;
@@ -26,6 +29,13 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class RulPackage {
 
+    /**
+     * Version of a package marked for the import at the next start: the row holds the description
+     * of the package from its file and nothing else; the startup import treats it as installed and
+     * imports the file (see {@code AutoImportSelection}).
+     */
+    public static final int PENDING_VERSION = 0;
+
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY) // required to read id without fetch from db
@@ -42,6 +52,14 @@ public class RulPackage {
 
     @Column(nullable = false)
     private Integer version;
+
+    /** Source language of the texts the package defines. */
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = SysLanguage.class)
+    @JoinColumn(name = "languageId", nullable = false)
+    private SysLanguage language;
+
+    @Column(insertable = false, updatable = false)
+    private Integer languageId;
 
 
     /**
@@ -110,7 +128,25 @@ public class RulPackage {
     /**
      * @param version verze balíčku
      */
+    /** Marked for the import at the next start, with no content imported yet. */
+    public boolean isPending() {
+        return version != null && version == PENDING_VERSION;
+    }
+
     public void setVersion(final Integer version) {
         this.version = version;
+    }
+
+    public SysLanguage getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(final SysLanguage language) {
+        this.language = language;
+        this.languageId = language != null ? language.getLanguageId() : null;
+    }
+
+    public Integer getLanguageId() {
+        return languageId;
     }
 }

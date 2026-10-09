@@ -127,6 +127,10 @@ public class SearchEntitiesTool implements AiTool {
         int limit = params.getLimit() != null && params.getLimit() > 0
                 ? Math.min(params.getLimit(), MAX_TOTAL_HITS)
                 : MAX_TOTAL_HITS;
+        // Protocol 0.16.0: a listing (relatedTo / typeCode) is a bounded ordered
+        // list the model pages with 'from'; a full-text hit list is refined, but
+        // the offset is honoured there too (the contract does not forbid it).
+        int from = params.getFrom() != null && params.getFrom() > 0 ? params.getFrom() : 0;
 
         // The poller thread has no transaction; the searches and the cache reads
         // (lazy entities) need one.
@@ -145,9 +149,9 @@ public class SearchEntitiesTool implements AiTool {
             // the Lucene index (scored, best match first), a purely structural
             // one as a criteria query (ordered by preferred name).
             if (hasFulltext) {
-                return searchByLucene(params, filter, apTypeIds, scopeIds, limit, sdp);
+                return searchByLucene(params, filter, apTypeIds, scopeIds, from, limit, sdp);
             }
-            return searchByCriteria(filter, apTypeIds, scopeIds, limit, sdp);
+            return searchByCriteria(filter, apTypeIds, scopeIds, from, limit, sdp);
         });
     }
 
@@ -155,9 +159,9 @@ public class SearchEntitiesTool implements AiTool {
     private SearchEntitiesResult searchByLucene(final SearchEntitiesParams params,
                                                 final ApAdvanceSearchFilter filter,
                                                 final Set<Integer> apTypeIds, final Set<Integer> scopeIds,
-                                                final int limit, final StaticDataProvider sdp) {
+                                                final int from, final int limit, final StaticDataProvider sdp) {
         QueryResults<ApCachedAccessPoint> results = cachedAccessPointRepository.findApCachedAccessPointisByQuery(
-                params.getFulltext(), filter, apTypeIds, scopeIds, SEARCHED_STATES, null, 0, limit, sdp);
+                params.getFulltext(), filter, apTypeIds, scopeIds, SEARCHED_STATES, null, from, limit, sdp);
         List<ArchivalEntityInfo> entities = new ArrayList<>(results.getRecords().size());
         for (ApCachedAccessPoint record : results.getRecords()) {
             CachedAccessPoint cap = accessPointCacheService.deserialize(record.getData(), record.getAccessPoint());
@@ -165,16 +169,17 @@ public class SearchEntitiesTool implements AiTool {
         }
         return new SearchEntitiesResult()
                 .entities(entities)
+                .from(from)
                 .totalCount((long) results.getRecordCount())
-                .partial(results.getRecordCount() > entities.size());
+                .partial(results.getRecordCount() > from + entities.size());
     }
 
     /** Structural search (type and/or relation only) as a criteria query. */
     private SearchEntitiesResult searchByCriteria(final ApAdvanceSearchFilter filter,
                                                   final Set<Integer> apTypeIds, final Set<Integer> scopeIds,
-                                                  final int limit, final StaticDataProvider sdp) {
+                                                  final int from, final int limit, final StaticDataProvider sdp) {
         Page<ApState> page = accessPointService.findApAccessPointBySearchFilter(
-                filter, apTypeIds, scopeIds, SEARCHED_STATES, null, 0, limit, sdp);
+                filter, apTypeIds, scopeIds, SEARCHED_STATES, null, from, limit, sdp);
         List<Integer> ids = page.getContent().stream().map(ApState::getAccessPointId).toList();
         Map<Integer, CachedAccessPoint> capById = ids.isEmpty()
                 ? Map.of()
@@ -189,8 +194,9 @@ public class SearchEntitiesTool implements AiTool {
         }
         return new SearchEntitiesResult()
                 .entities(entities)
+                .from(from)
                 .totalCount(page.getTotalElements())
-                .partial(page.getTotalElements() > entities.size());
+                .partial(page.getTotalElements() > from + entities.size());
     }
 
     /**

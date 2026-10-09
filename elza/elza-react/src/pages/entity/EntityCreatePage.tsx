@@ -11,7 +11,6 @@ import { ApAccessPointCreateVO } from 'api/ApAccessPointCreateVO';
 import React, { FC, useEffect } from 'react';
 import { useLocation } from "react-router-dom";
 import { WebApi } from '../../actions';
-import { modalDialogShow } from '../../actions/global/modalDialog.jsx';
 import CreateAccessPointModal, { CreateAccessPointModalFields } from '../../components/registry/modal/CreateAccessPointModal';
 import {} from '../../components/shared';
 import { defineMessages, useIntl } from 'react-intl';
@@ -98,21 +97,6 @@ export const EntityCreatePage:FC = () => {
         ]);
     }
 
-    const showDialog = () => {
-        dispatch(
-            modalDialogShow(
-                this,
-                intl.formatMessage(messages.addRegistry),
-                <CreateAccessPointModal
-                    initialValues={{}}
-                    onSubmit={handleSubmit}
-                    apTypeFilter={entityClasses}
-                />,
-                'dialog-lg',
-                handleDialogClose,
-            ),
-        );
-    }
 
 
     useEffect(()=>{
@@ -124,13 +108,19 @@ export const EntityCreatePage:FC = () => {
             dispatch(refRulDataTypesFetchIfNeeded());
     },[dispatch]);
 
-    useEffect(showDialog, [dispatch])
-
     return (
-        <PageLayout
-            className='entity-create-page'
-            centerPanel={<div/>}
-        />
+        <>
+            <PageLayout
+                className='entity-create-page'
+                centerPanel={<div/>}
+            />
+            <CreateAccessPointModal
+                title={intl.formatMessage(messages.addRegistry)}
+                onSubmit={handleSubmit}
+                onClose={handleDialogClose}
+                apTypeFilter={entityClasses}
+            />
+        </>
     )
 }
 

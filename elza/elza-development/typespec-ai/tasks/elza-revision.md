@@ -45,15 +45,24 @@ v 1. pádu* — and title repetition) live inside `formulation` and
 
 Parameters (names as the provider's catalog declares them):
 
-- **`subject`** — the reviewed unit(s): one `elza.archivalDescription` per
-  reviewed level, **with `allowedItemTypes`** filled (the POSSIBLE/REQUIRED
-  item-type codes Elza's rules compute for the node — the catalog element
-  suggestions must stay within) and with `issues` filled (Elza's existing
-  formal findings, so the AI does not repeat them). All items travel with
-  stable codes + display values, as everywhere.
+- **`subject`** — the reviewed unit: one `elza.archivalDescription`, **with
+  `allowedItemTypes`** filled (the POSSIBLE/REQUIRED item-type codes Elza's
+  rules compute for the node — the catalog element suggestions must stay
+  within) and with `issues` filled (Elza's existing formal findings, so the AI
+  does not repeat them). All items travel with stable codes + display values,
+  as everywhere.
+- **`entity`** (0.16.0) — the reviewed **archival entity** instead of a
+  level: one `elza.archivalEntity` in full (all parts and items, with its
+  `ruleSetCode` so the provider resolves the CAM item codes). `subject` and
+  `entity` are **alternatives** (`TaskParameterInfo.alternativeGroup =
+  "subject"`): exactly one of them is supplied; a submission with neither is
+  refused (`INVALID_INPUT`). Entities carry no `allowedItemTypes`, so
+  `targetItemType` is suggested only when the element code is certain.
 - **`config`** — one `elza.revisionConfig`: `checks` (category codes, omitted
   = all), `scope` hint (`unit` | `branch`), `language` (of descriptions and
-  findings, e.g. `cs`).
+  findings, e.g. `cs`), and for branch runs `reviewedNodeIds` (0.16.0) — the
+  levels under review among the supplied material (the subject plus levels
+  pushed as context); omitted = the subject alone.
 
 Context (supplementary `AiObject`s):
 
@@ -98,13 +107,16 @@ findings are never errors.
 
 ## 4. Output — `elza.revisionFindings` (contract-owned, typed)
 
-`RevisionFindings.findings[]` of `RevisionFinding` (spec 0.13.0): `nodeId`,
-`category`, `severity` (`high|medium|low`), `confidence` (0–100), `kind`
-(`rule|contradiction|style`), `sourceItemType`/`sourceItemSpec`, **`excerpt`**
-(verbatim, required), `explanation` (self-contained, in `config.language`),
-`targetItemType` (only from `allowedItemTypes`), `action`
-(`move|split|verify|reformulate|keep`), `proposedText` (advisory only),
-`relatedNodeIds`. An empty `findings` array is a valid, expected result.
+`RevisionFindings.findings[]` of `RevisionFinding` (spec 0.13.0, extended
+0.16.0): `nodeId` **or** `accessPointId` (exactly one — which record the
+finding concerns; `nodeId` was required before 0.16.0), `sourcePartType`
+(entity findings: the part the finding sits in), `category`, `severity`
+(`high|medium|low`), `confidence` (0–100), `kind` (`rule|contradiction|style`),
+`sourceItemType`/`sourceItemSpec`, **`excerpt`** (verbatim, required),
+`explanation` (self-contained, in `config.language`), `targetItemType` (only
+from `allowedItemTypes`), `action` (`move|split|verify|reformulate|keep`),
+`proposedText` (advisory only), `relatedNodeIds`. An empty `findings` array
+is a valid, expected result.
 
 ## 5. Elza-side validation & landing
 
@@ -165,10 +177,20 @@ three scopes from `kontrola-popisu.md` phase in as:
   input tokens), interactive, panel-native — the cheapest end-to-end exercise
   of the whole chain (typed input → findings → validation → triage →
   evaluation).
-- **v2 — Kontrola větve**: `subject` = a window of levels of one subtree
-  (siblings stay together), plus the branch outline; adds `wrong_level`,
-  `duplicate`, `inconsistency`. One conversation, one `ai_request` per
-  window; `requestId` idempotency means a crashed run re-polls paid windows.
+- **v2 — Kontrola větve**: a window of levels of one subtree (siblings stay
+  together) — the `subject` is the window's anchor (its common parent or
+  first level), the other levels of the window travel as context in full and
+  `config.reviewedNodeIds` (0.16.0) names every level under review; plus the
+  branch outline; adds `wrong_level`, `duplicate`, `inconsistency`. One
+  conversation, one `ai_request` per window, driven sequentially by Elza
+  (estimate + confirm first, stop/resume, aggregated summary — design:
+  elza-ai-provider `doc/feedback-soa-plzen-2026-10.md` §3.3); `requestId`
+  idempotency means a crashed run re-polls paid windows.
+- **Entity check** (0.16.0): the same task over one `elza.archivalEntity`
+  (`entity` parameter) — the categories read naturally on an entity (hidden
+  data in the free-text history, a contradiction between relation datings and
+  the history, formulations, duplicates); hierarchy categories produce
+  nothing. Findings carry `accessPointId` (+ `sourcePartType`).
 - **v3 — Kontrola archivního souboru**: batch pattern analysis (e.g. the same
   internal remark in hundreds of content fields). Deterministic
   pre-clustering first (repeated-value clusters computed by Elza, the model

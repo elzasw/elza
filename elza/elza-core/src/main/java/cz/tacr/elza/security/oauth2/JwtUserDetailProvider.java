@@ -33,6 +33,8 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemStringVO;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -79,10 +81,8 @@ public class JwtUserDetailProvider implements AuthenticationProvider {
     private final String CLAIM_NAME = "name";
     private final String CLAIM_AUTHORITIES = "authorities";
 
-    private final String JWT_USERS = "JWT_USERS";
-    private final String PERSON_INDIVIDUAL = "PERSON_INDIVIDUAL";
-
     private final String NM_MAIN = "NM_MAIN";
+    /** CAM: private supplement of the name, holds the user name; written only when installed */
     private final String NM_SUP_PRIV = "NM_SUP_PRIV";
     
     public JwtUserDetailProvider(final JwtDecoder jwtDecoder,
@@ -185,8 +185,12 @@ public class JwtUserDetailProvider implements AuthenticationProvider {
     }
 
     private UsrUser createJWTUser(String sub, String name) {
-        ApScope userScope = apService.getApScope(JWT_USERS);
-        ApType type = apService.getType(PERSON_INDIVIDUAL);
+        ApScope userScope = apService.getApScope(oAuth2Properties.getUserScope());
+        ApType type = apService.getType(oAuth2Properties.getUserApType());
+        if (type == null) {
+            throw new SystemException("Class " + oAuth2Properties.getUserApType() + " of users created from tokens "
+                    + "does not exist (elza.security.o-auth2.user-ap-type)", BaseCode.INVALID_STATE);
+        }
 
         ApPartFormVO pf = createPrefName(name, sub);
         // create person
@@ -200,6 +204,10 @@ public class JwtUserDetailProvider implements AuthenticationProvider {
     private ApPartFormVO createPrefName(String name, String sub) {
 
         RulItemType itemTypeNmMain = itemTypeRepository.findOneByCode(NM_MAIN);
+        if (itemTypeNmMain == null) {
+            throw new SystemException("Item type " + NM_MAIN + " for the names of users is not installed",
+                    BaseCode.INVALID_STATE);
+        }
         RulItemType itemTypeNmInternal = itemTypeRepository.findOneByCode(NM_SUP_PRIV);
 
         ApPartFormVO pf = new ApPartFormVO();
@@ -208,10 +216,12 @@ public class JwtUserDetailProvider implements AuthenticationProvider {
         nmMainVo.setTypeId(itemTypeNmMain.getItemTypeId());
         nmMainVo.setValue(name);
         pf.getItems().add(nmMainVo);
-        ApItemStringVO nmPrivVo = new ApItemStringVO();
-        nmPrivVo.setTypeId(itemTypeNmInternal.getItemTypeId());
-        nmPrivVo.setValue(sub);
-        pf.getItems().add(nmPrivVo);
+        if (itemTypeNmInternal != null) {
+            ApItemStringVO nmPrivVo = new ApItemStringVO();
+            nmPrivVo.setTypeId(itemTypeNmInternal.getItemTypeId());
+            nmPrivVo.setValue(sub);
+            pf.getItems().add(nmPrivVo);
+        }
 
         return pf;
     }

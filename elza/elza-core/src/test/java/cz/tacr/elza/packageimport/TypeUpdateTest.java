@@ -174,11 +174,11 @@ public class TypeUpdateTest extends AbstractServiceTest {
         ItemType itemType = ItemType.fromEntity(dbItemType, itemAptypeRepository);
         if (Boolean.TRUE.equals(dbItemType.getUseSpecification())) {
 
-            List<String> assignedTypes = Collections.singletonList(SimpleDevRules.SRD_LEVEL_TYPE);
             // Copy specifications
             List<RulItemTypeSpecAssign> dbSpecs = this.itemTypeSpecAssignRepository.findByItemTypeSorted(dbItemType);
             for (RulItemTypeSpecAssign dbSpec : dbSpecs) {
-                ItemSpec itemSpec = ItemSpec.fromEntity(dbSpec.getItemSpec(), assignedTypes, itemAptypeRepository);
+                ItemSpec itemSpec = ItemSpec.fromEntity(dbSpec.getItemSpec(), Collections.singletonList(dbSpec),
+                                                        itemAptypeRepository);
                 itemSpecList.add(itemSpec);
             }
         }

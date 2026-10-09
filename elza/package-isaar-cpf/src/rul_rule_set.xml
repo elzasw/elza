@@ -1,0 +1,7 @@
+<rule-sets>
+    <rule-set code="ISAAR_CPF">
+        <name>ISAAR(CPF) entity description</name>
+        <rule-type>ENTITY</rule-type>
+        <rule-item-type-filter>ItemTypeFilter.drl</rule-item-type-filter>
+    </rule-set>
+</rule-sets>

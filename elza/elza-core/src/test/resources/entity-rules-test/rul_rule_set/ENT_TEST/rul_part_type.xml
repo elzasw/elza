@@ -1,0 +1,4 @@
+<part-types>
+    <part-type code="PT_ENT_NOTE"/>
+    <part-type code="PT_NAME"/>
+</part-types>

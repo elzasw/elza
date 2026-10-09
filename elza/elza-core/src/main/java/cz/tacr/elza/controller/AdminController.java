@@ -54,6 +54,7 @@ import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.ArrangementService.ArrangementStats;
 import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.PasswordPolicyService;
+import cz.tacr.elza.service.RestartService;
 import cz.tacr.elza.service.dms.DmsConsistencyReport;
 import cz.tacr.elza.service.dms.DmsConsistencyService;
 import cz.tacr.elza.service.UserService;
@@ -68,6 +69,9 @@ public class AdminController implements AdminApi {
 
     @Autowired
     private NodeCacheService nodeCacheService;
+
+    @Autowired
+    private RestartService restartService;
 
     @Autowired
     @Qualifier("clientOutboundChannelExecutor")
@@ -336,4 +340,15 @@ public class AdminController implements AdminApi {
         return new AdminDmsConsistencyEntry(entry.count, entry.sample);
     }
 
+
+    /**
+     * POST /admin/restart: the application exits with the configured code after the response, and
+     * the service manager starts it again.
+     */
+    @Override
+    @AuthMethod(permission = {Permission.ADMIN})
+    public ResponseEntity<Void> adminRestart() {
+        restartService.restart();
+        return new ResponseEntity<>(HttpStatus.ACCEPTED);
+    }
 }

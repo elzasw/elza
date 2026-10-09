@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<translations lang="cs">
+    <!-- validation messages of rules/validation/GLOBAL.drl -->
+    <t type="MESSAGE" code="ISAAR_CPF/AT_LEAST_ONE_NAME" field="text">Entita musí mít alespoň jedno jméno; preferované jméno je autorizovaná forma.</t>
+    <t type="MESSAGE" code="ISAAR_CPF/EMPTY_PART" field="text">Entita obsahuje prázdnou část.</t>
+    <t type="MESSAGE" code="ISAAR_CPF/ONE_DESCRIPTION" field="text">Popis entity je uveden vícekrát.</t>
+    <t type="MESSAGE" code="ISAAR_CPF/ONE_BEGINNING_OF_EXISTENCE" field="text">Počátek existence je uveden vícekrát.</t>
+    <t type="MESSAGE" code="ISAAR_CPF/ONE_END_OF_EXISTENCE" field="text">Konec existence je uveden vícekrát.</t>
+</translations>

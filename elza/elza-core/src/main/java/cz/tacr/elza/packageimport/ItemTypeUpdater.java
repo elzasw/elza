@@ -20,6 +20,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.annotation.PostConstruct;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -39,6 +40,14 @@ import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.RulItemAptype;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemTypeDeclaration;
+import cz.tacr.elza.domain.RulItemSpecAssignDeclaration;
+import cz.tacr.elza.domain.RulItemSpecDeclaration;
+import cz.tacr.elza.domain.SysLanguage;
+import cz.tacr.elza.core.data.PackageTexts;
+import cz.tacr.elza.exception.AbstractException;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.PackageCode;
 import cz.tacr.elza.domain.RulItemTypeSpecAssign;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulPackageDependency;
@@ -57,6 +66,10 @@ import cz.tacr.elza.packageimport.xml.ItemType;
 import cz.tacr.elza.packageimport.xml.ItemTypeAssign;
 import cz.tacr.elza.packageimport.xml.ItemTypes;
 import cz.tacr.elza.repository.ApItemRepository;
+import cz.tacr.elza.repository.ApRevItemRepository;
+import cz.tacr.elza.repository.ItemTypeDeclarationRepository;
+import cz.tacr.elza.repository.ItemSpecAssignDeclarationRepository;
+import cz.tacr.elza.repository.ItemSpecDeclarationRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.CachedNodeRepository;
 import cz.tacr.elza.repository.DataDateRepository;
@@ -128,6 +141,21 @@ public class ItemTypeUpdater {
     @Autowired
     private PackageDependencyRepository packageDependencyRepository;
 
+    @Autowired
+    private ItemTypeDeclarationRepository declarationRepository;
+
+    @Autowired
+    private ApRevItemRepository apRevItemRepository;
+
+    @Autowired
+    private ItemSpecDeclarationRepository specDeclarationRepository;
+
+    @Autowired
+    private ItemSpecAssignDeclarationRepository assignDeclarationRepository;
+
+    @Autowired
+    private PackageTexts packageTexts;
+
     public static final String CATEGORY_SEPARATOR = "|";
 
     /**
@@ -169,6 +197,11 @@ public class ItemTypeUpdater {
      * Item types to be deleted at the cleanup
      */
     private List<RulItemType> deleteItemTypes = new ArrayList<>();
+
+    /**
+     * Item types whose declarations changed; summarized at the end of the update
+     */
+    private Map<Integer, RulItemType> declaredItemTypes = new LinkedHashMap<>();
 
     /**
      * Number of nodes dropped in arr_cached_node table
@@ -231,12 +264,8 @@ public class ItemTypeUpdater {
             if(es.getKey().equals(rulPackage.getPackageId())) {
                 packageFound = true;
                 // prepare number of received types
-                int numReceivedTypes;
-                if(xmlItemTypes!=null&&xmlItemTypes.getItemTypes()!=null) {
-                    numReceivedTypes = xmlItemTypes.getItemTypes().size();
-                } else {
-                    numReceivedTypes = 0;
-                }
+                // declarations of item types of other packages take no position
+                int numReceivedTypes = ownXmlTypes(xmlItemTypes, rulPackage).size();
                 
                 // check if some shifts are needed
                 if(numReceivedTypes>es.getValue().size()) {
@@ -267,6 +296,27 @@ public class ItemTypeUpdater {
             lastUsedOrderPos += shiftBy;
         }
         return result;
+    }
+
+    /**
+     * Item types of the XML the package owns or creates; the others are declarations of item types
+     * owned by other packages.
+     */
+    private List<ItemType> ownXmlTypes(ItemTypes xmlItemTypes, RulPackage rulPackage) {
+        if (xmlItemTypes == null || xmlItemTypes.getItemTypes() == null) {
+            return Collections.emptyList();
+        }
+        return xmlItemTypes.getItemTypes().stream()
+                .filter(t -> !isForeign(t.getCode(), rulPackage))
+                .toList();
+    }
+
+    /**
+     * The item type exists and is owned by another package.
+     */
+    private boolean isForeign(String code, RulPackage rulPackage) {
+        RulItemType itemType = allItemTypesByCode.get(code);
+        return itemType != null && !itemType.getRulPackage().getPackageId().equals(rulPackage.getPackageId());
     }
 
     /**
@@ -302,134 +352,256 @@ public class ItemTypeUpdater {
      *
      * @param xmlItemSpecs seznam importovaných specifikací
      */
+    /**
+     * Declarations of specifications by the package: the first package creates a specification, further
+     * packages add declarations (texts, category, assignments to item types). The assignments of a
+     * specification are the union of the assignments of its declarations. A specification no longer
+     * declared by any package is removed, not while items use it.
+     */
     private void processItemSpecs(ItemSpecs xmlItemSpecs,
                                   @Nonnull RulPackage rulPackage) {
-
-        // read current specs from DB
-        List<RulItemSpec> dbItemSpecs = itemSpecRepository.findByRulPackage(rulPackage);
-        Map<String, RulItemSpec> dbOldSpecsByCode = dbItemSpecs.stream()
+        Map<String, RulItemSpec> allSpecsByCode = itemSpecRepository.findAll().stream()
                 .collect(toMap(RulItemSpec::getCode, Function.identity()));
-        
-        Map<String, List<String>> xmlSpecAssigmentsByType = new HashMap<>();
+        Map<String, RulItemSpecDeclaration> oldDeclarations = new HashMap<>();
+        specDeclarationRepository.findByRulPackage(rulPackage)
+                .forEach(d -> oldDeclarations.put(d.getItemSpec().getCode(), d));
+        List<RulItemSpecAssignDeclaration> oldAssigns = new ArrayList<>(
+                assignDeclarationRepository.findByDeclarations(oldDeclarations.values()));
 
-        // kolekce vsech zpracovanych kodu
-        Map<String, RulItemSpec> dbUpdatedSpecsByCode = new LinkedHashMap<>();
+        Map<String, RulItemSpecDeclaration> declarations = new LinkedHashMap<>();
+        Map<Integer, RulItemSpec> affected = new LinkedHashMap<>();
+        // assignments of the package per item type code, in the order of the file
+        Map<String, List<XmlSpecAssignment>> xmlSpecAssigmentsByType = new LinkedHashMap<>();
 
         if (xmlItemSpecs != null && CollectionUtils.isNotEmpty(xmlItemSpecs.getItemSpecs())) {
+            List<ItemSpec> ownXmlSpecs = new ArrayList<>();
+            Map<String, RulItemSpec> ownSpecsByCode = new HashMap<>();
 
             for (ItemSpec xmlItemSpec : xmlItemSpecs.getItemSpecs()) {
-
                 String itemSpecCode = xmlItemSpec.getCode();
-                if (dbUpdatedSpecsByCode.containsKey(itemSpecCode)) {
+                if (declarations.containsKey(itemSpecCode)) {
                     throw new SystemException("Duplicitní kód specifikace: " + itemSpecCode, BaseCode.DB_INTEGRITY_PROBLEM)
                             .set("code", itemSpecCode);
                 }
+                checkSpecLength(xmlItemSpec);
 
-                // pouzijeme remove() - co zbyde nechame nakonec smazat z DB
-                RulItemSpec rulItemSpec = dbOldSpecsByCode.remove(itemSpecCode);
-                if (rulItemSpec == null) {
-                    rulItemSpec = new RulItemSpec();
-                    logger.debug("Creating new specification: {}", itemSpecCode);
+                RulItemSpec rulItemSpec = allSpecsByCode.get(itemSpecCode);
+                boolean foreign = rulItemSpec != null
+                        && !rulItemSpec.getPackage().getPackageId().equals(rulPackage.getPackageId());
+                if (foreign) {
+                    // RECORD_REF classes of a specification stay with its owner; a declaration may repeat them
+                    if (!sameApTypes(xmlItemSpec.getItemAptypes(), itemAptypeRepository.findByItemSpec(rulItemSpec))) {
+                        throw new BusinessException("Specification " + itemSpecCode
+                                + " is owned by another package, its classes cannot be declared",
+                                PackageCode.ITEM_SPEC_CONFLICT)
+                                .set("code", itemSpecCode)
+                                .set("otherPackageCode", rulItemSpec.getPackage().getCode());
+                    }
+                } else {
+                    if (rulItemSpec == null) {
+                        rulItemSpec = new RulItemSpec();
+                        logger.debug("Creating new specification: {}", itemSpecCode);
+                    }
+                    convertRulItemSpec(rulPackage, xmlItemSpec, rulItemSpec);
+                    rulItemSpec = itemSpecRepository.save(rulItemSpec);
+                    allSpecsByCode.put(itemSpecCode, rulItemSpec);
+                    ownXmlSpecs.add(xmlItemSpec);
+                    ownSpecsByCode.put(itemSpecCode, rulItemSpec);
                 }
-                convertRulItemSpec(rulPackage, xmlItemSpec, rulItemSpec);
 
-                RulItemSpec rulItemSpecSaved = itemSpecRepository.save(rulItemSpec);
-                dbUpdatedSpecsByCode.put(rulItemSpec.getCode(), rulItemSpecSaved);
+                RulItemSpecDeclaration declaration = oldDeclarations.remove(itemSpecCode);
+                if (declaration == null) {
+                    declaration = new RulItemSpecDeclaration();
+                }
+                declaration.setItemSpec(rulItemSpec);
+                declaration.setRulPackage(rulPackage);
+                declaration.setName(xmlItemSpec.getName());
+                declaration.setShortcut(xmlItemSpec.getShortcut());
+                declaration.setDescription(xmlItemSpec.getDescription());
+                declaration.setCategory(categoryOf(xmlItemSpec));
+                declaration = specDeclarationRepository.save(declaration);
+                declarations.put(itemSpecCode, declaration);
+                affected.put(rulItemSpec.getItemSpecId(), rulItemSpec);
 
-                // prepare list of assigned specs per type
                 if (xmlItemSpec.getItemTypeAssigns() != null) {
                     for (ItemTypeAssign xmlSpecAssignment : xmlItemSpec.getItemTypeAssigns()) {
-                        // get list of assigned spec to the type 
-                        List<String> specs = xmlSpecAssigmentsByType.computeIfAbsent(xmlSpecAssignment.getCode(),
-                                                                                     c -> new ArrayList<>());
-                        // append new spec
-                        specs.add(itemSpecCode);
+                        xmlSpecAssigmentsByType.computeIfAbsent(xmlSpecAssignment.getCode(), c -> new ArrayList<>())
+                                .add(new XmlSpecAssignment(itemSpecCode,
+                                        StringUtils.trimToNull(xmlSpecAssignment.getViewAfter())));
                     }
                 }
             }
 
-            processItemAptypesByItemSpecs(xmlItemSpecs.getItemSpecs(), dbUpdatedSpecsByCode);
+            processItemAptypesByItemSpecs(ownXmlSpecs, ownSpecsByCode);
         }
 
-        // delete unused item specs
-        this.deleteItemSpecs.addAll(dbOldSpecsByCode.values());
-        
-        // assign specs to types - solve order issue
-        assignItemTypesToSpec(xmlSpecAssigmentsByType,
-                              dbItemSpecs,
-                              dbUpdatedSpecsByCode);
-        
+        declareAssignments(xmlSpecAssigmentsByType, declarations, oldAssigns, affected);
+
+        // declarations the package no longer has (entities, not a bulk query: instances loaded earlier in
+        // the transaction would otherwise stay in the session and refer to removed declarations)
+        oldDeclarations.values().forEach(d -> affected.put(d.getItemSpecId(), d.getItemSpec()));
+        assignDeclarationRepository.deleteAll(assignDeclarationRepository.findByDeclarations(oldDeclarations.values()));
+        specDeclarationRepository.deleteAll(oldDeclarations.values());
+        specDeclarationRepository.flush();
+
+        resolveItemSpecs(affected.values(), rulPackage);
     }
 
     /**
-     * Assigne item types to specification
-     * 
-     * @param xmlSpecAssigmentsByType
-     *            Specification assigment from XML.
-     *            Map key is typeCode.
-     * @param dbPrevItemSpecs
-     *            Previouse specifications
-     * @param dbUpdatedSpecsByCode
-     *            Updated specifications by code
+     * Assignment declarations of the package, rebuilt from the file; the position is the order of the
+     * assignment among the package's assignments of the item type.
      */
-    private void assignItemTypesToSpec(final Map<String, List<String>> xmlSpecAssigmentsByType,
-                                       final List<RulItemSpec> dbPrevItemSpecs,
-                                       final Map<String, RulItemSpec> dbUpdatedSpecsByCode) {
-
-        // prepare list of types for modification
-        // - all types assigned to new specs
-        // - list of types for prev assignments
-        
-        // Update spec assignments
-        Map<String, List<RulItemTypeSpecAssign>> specAssigmentsByType = new HashMap<>();
-        if (CollectionUtils.isNotEmpty(dbPrevItemSpecs)) {
-            // get current assignments
-            List<RulItemTypeSpecAssign> dbAssignedSpecTypes = itemTypeSpecAssignRepository
-                    .findByItemSpecIn(dbPrevItemSpecs);
-            specAssigmentsByType = dbAssignedSpecTypes.stream().collect(Collectors.groupingBy(a -> a.getItemType().getCode()));            
-        } else {
-            specAssigmentsByType = Collections.emptyMap();
+    private void declareAssignments(final Map<String, List<XmlSpecAssignment>> xmlSpecAssigmentsByType,
+                                    final Map<String, RulItemSpecDeclaration> declarations,
+                                    final List<RulItemSpecAssignDeclaration> oldAssigns,
+                                    final Map<Integer, RulItemSpec> affected) {
+        Map<String, RulItemSpecAssignDeclaration> oldByKey = new HashMap<>();
+        for (RulItemSpecAssignDeclaration assign : oldAssigns) {
+            oldByKey.put(assign.getItemSpecDeclarationId() + "/" + assign.getItemTypeId(), assign);
         }
-        
-        // iterate xml requiremens
-        for (Entry<String, List<String>> itemTypeAssignedSpecs : xmlSpecAssigmentsByType.entrySet()) {
-            String itemTypeCode = itemTypeAssignedSpecs.getKey();
-            List<String> requieredSpecs = itemTypeAssignedSpecs.getValue();
-
-            List<RulItemTypeSpecAssign> currDbAssignedSpecs = specAssigmentsByType.get(itemTypeCode);
-
-            Map<String, RulItemTypeSpecAssign> currDbAssignmentsBySpecCode = currDbAssignedSpecs != null
-                    ? currDbAssignedSpecs.stream()
-                            .collect(Collectors.toMap(dba -> dba.getItemSpec().getCode(), Function.identity()))
-                    : Collections.emptyMap();
-            // get required specs            
-            // 
-            for (int pos = 0; pos < requieredSpecs.size(); pos++) {
-                String specCode = requieredSpecs.get(pos);
-                RulItemTypeSpecAssign assignment = currDbAssignmentsBySpecCode.remove(specCode);
-                int nextViewOrder = pos + 1;
-                if (assignment == null) {
-                    RulItemType itemType = allItemTypesByCode.get(itemTypeCode);
-                    Validate.notNull(itemType, "Item type not found %s", itemTypeCode);
-                    RulItemSpec itemSpec = dbUpdatedSpecsByCode.get(specCode);
-                    Validate.notNull(itemSpec, "Item spec not found %s", specCode);
-
-                    assignment = new RulItemTypeSpecAssign(itemType, itemSpec, nextViewOrder);
-                    assignment = itemTypeSpecAssignRepository.save(assignment);
-
-                    logger.debug("Specification '{}' assigned to item type '{}'", specCode, itemTypeCode);
-
-                } else {
-                    if (assignment.getViewOrder() != nextViewOrder) {
-                        assignment.setViewOrder(nextViewOrder);
-                    }
-                    assignment = itemTypeSpecAssignRepository.save(assignment);
+        for (Entry<String, List<XmlSpecAssignment>> entry : xmlSpecAssigmentsByType.entrySet()) {
+            RulItemType itemType = allItemTypesByCode.get(entry.getKey());
+            Validate.notNull(itemType, "Item type not found %s", entry.getKey());
+            List<XmlSpecAssignment> required = entry.getValue();
+            for (int pos = 0; pos < required.size(); pos++) {
+                RulItemSpecDeclaration declaration = declarations.get(required.get(pos).specCode());
+                RulItemSpecAssignDeclaration assign = oldByKey
+                        .remove(declaration.getItemSpecDeclarationId() + "/" + itemType.getItemTypeId());
+                if (assign == null) {
+                    assign = new RulItemSpecAssignDeclaration();
+                    assign.setSpecDeclaration(declaration);
+                    assign.setItemType(itemType);
                 }
+                assign.setPosition(pos + 1);
+                assign.setViewAfterSpecCode(required.get(pos).viewAfter());
+                assignDeclarationRepository.save(assign);
             }
-            // delete remaining assignments
-            deleteSpecToTypeAssignments.addAll(currDbAssignmentsBySpecCode.values());
         }
+        for (RulItemSpecAssignDeclaration removed : oldByKey.values()) {
+            affected.put(removed.getSpecDeclaration().getItemSpecId(), removed.getSpecDeclaration().getItemSpec());
+            assignDeclarationRepository.delete(removed);
+        }
+        assignDeclarationRepository.flush();
+    }
+
+    /**
+     * Specifications whose declarations changed: a specification still declared takes owner, texts and
+     * the union of the assignments from its declarations; one without declarations is removed.
+     */
+    private void resolveItemSpecs(final Collection<RulItemSpec> itemSpecs, final RulPackage rulPackage) {
+        if (itemSpecs.isEmpty()) {
+            return;
+        }
+        PackageDeclarations summary = packageDeclarations();
+        // loaded at once: a package import touches all its specifications
+        Map<Integer, List<RulItemSpecDeclaration>> declarationsBySpec = specDeclarationRepository
+                .findByItemSpecs(itemSpecs).stream()
+                .collect(Collectors.groupingBy(RulItemSpecDeclaration::getItemSpecId));
+        Map<Integer, List<RulItemSpecAssignDeclaration>> assignsByDeclaration = assignDeclarationRepository
+                .findByItemSpecs(itemSpecs).stream()
+                .collect(Collectors.groupingBy(RulItemSpecAssignDeclaration::getItemSpecDeclarationId));
+        Map<Integer, List<RulItemTypeSpecAssign>> assignmentsBySpec = itemTypeSpecAssignRepository
+                .findByItemSpecIn(itemSpecs).stream()
+                .collect(Collectors.groupingBy(a -> a.getItemSpec().getItemSpecId()));
+        List<RulItemSpec> removed = new ArrayList<>();
+        for (RulItemSpec itemSpec : itemSpecs) {
+            List<RulItemSpecDeclaration> remaining = declarationsBySpec.getOrDefault(itemSpec.getItemSpecId(),
+                                                                                     List.of());
+            if (remaining.isEmpty()) {
+                removed.add(itemSpec);
+                continue;
+            }
+            Integer previousOwnerId = itemSpec.getPackage().getPackageId();
+            summary.summarize(itemSpec, remaining);
+            if (!previousOwnerId.equals(itemSpec.getPackage().getPackageId())) {
+                // RECORD_REF classes belong to the declaration of the owner
+                deleteItemApTypes.addAll(itemAptypeRepository.findByItemSpec(itemSpec));
+            }
+            RulItemSpec saved = itemSpecRepository.save(itemSpec);
+            List<RulItemSpecAssignDeclaration> assigns = remaining.stream()
+                    .flatMap(d -> assignsByDeclaration.getOrDefault(d.getItemSpecDeclarationId(), List.of()).stream())
+                    .toList();
+            syncAssignments(saved, remaining, assigns,
+                            assignmentsBySpec.getOrDefault(itemSpec.getItemSpecId(), List.of()), summary);
+        }
+        checkSpecsRemovable(removed);
+        deleteItemSpecs.addAll(removed);
         itemTypeSpecAssignRepository.flush();
+    }
+
+    /**
+     * The assignments of the specification: one per item type assigned by any declaration; the position
+     * and {@code view-after} from the owner's declaration of the pair, else from the winning one.
+     */
+    private void syncAssignments(final RulItemSpec itemSpec, final List<RulItemSpecDeclaration> declarations,
+                                 final List<RulItemSpecAssignDeclaration> assigns,
+                                 final List<RulItemTypeSpecAssign> assignments,
+                                 final PackageDeclarations summary) {
+        Map<Integer, Integer> rank = new HashMap<>();
+        List<RulItemSpecDeclaration> ordered = summary.ordered(declarations, RulItemSpecDeclaration::getRulPackage);
+        for (int i = 0; i < ordered.size(); i++) {
+            boolean owner = ordered.get(i).getPackageId().equals(itemSpec.getPackage().getPackageId());
+            rank.put(ordered.get(i).getItemSpecDeclarationId(), owner ? -1 : i);
+        }
+        Map<Integer, RulItemSpecAssignDeclaration> byItemType = new HashMap<>();
+        for (RulItemSpecAssignDeclaration assign : assigns) {
+            byItemType.merge(assign.getItemTypeId(), assign,
+                             (a, b) -> rank.get(a.getItemSpecDeclarationId()) <= rank.get(b.getItemSpecDeclarationId())
+                                     ? a : b);
+        }
+        Map<Integer, RulItemTypeSpecAssign> current = new HashMap<>();
+        assignments.forEach(a -> current.put(a.getItemType().getItemTypeId(), a));
+        for (RulItemSpecAssignDeclaration assign : byItemType.values()) {
+            RulItemTypeSpecAssign assignment = current.remove(assign.getItemTypeId());
+            // the owner's assignments keep their order; others follow them (postSpecsOrder renumbers)
+            boolean ownerAssigns = rank.get(assign.getItemSpecDeclarationId()) < 0;
+            int viewOrder = ownerAssigns ? assign.getPosition() : 1000 + assign.getPosition();
+            if (assignment == null) {
+                assignment = new RulItemTypeSpecAssign(assign.getItemType(), itemSpec, viewOrder);
+                logger.debug("Specification '{}' assigned to item type '{}'", itemSpec.getCode(),
+                             assign.getItemType().getCode());
+            } else if (ownerAssigns) {
+                assignment.setViewOrder(viewOrder);
+            }
+            assignment.setViewAfterSpecCode(assign.getViewAfterSpecCode());
+            itemTypeSpecAssignRepository.save(assignment);
+        }
+        // assignments no package declares any more
+        for (RulItemTypeSpecAssign removed : current.values()) {
+            long used = itemRepository.countByTypeAndSpec(removed.getItemType(), itemSpec)
+                    + apItemRepository.countByTypeAndSpec(removed.getItemType(), itemSpec)
+                    + apRevItemRepository.countByTypeAndSpec(removed.getItemType(), itemSpec);
+            if (used > 0) {
+                throw specInUse(itemSpec.getCode() + " / " + removed.getItemType().getCode(), used);
+            }
+            deleteSpecToTypeAssignments.add(removed);
+        }
+    }
+
+    /**
+     * Specifications to be removed: refused while items use them.
+     */
+    private void checkSpecsRemovable(final List<RulItemSpec> itemSpecs) {
+        for (RulItemSpec itemSpec : itemSpecs) {
+            long used = itemRepository.countBySpec(itemSpec) + apItemRepository.countBySpec(itemSpec)
+                    + apRevItemRepository.countBySpec(itemSpec);
+            if (used > 0) {
+                throw specInUse(itemSpec.getCode(), used);
+            }
+        }
+    }
+
+    private static AbstractException specInUse(final String codes, final long count) {
+        return new BusinessException("Specification is used by descriptions or entities: " + codes,
+                PackageCode.ITEM_SPEC_IN_USE)
+                .set("codes", codes)
+                .set("count", count);
+    }
+
+    private PackageDeclarations packageDeclarations() {
+        SysLanguage defaultLanguage = packageTexts.defaultLanguage();
+        return new PackageDeclarations(packageDependencyRepository.findAll(),
+                defaultLanguage != null ? defaultLanguage.getLanguageId() : null);
     }
 
     /**
@@ -443,6 +615,7 @@ public class ItemTypeUpdater {
 
         List<RulItemType> dbItemTypes = prepareForUpdate(xmlItemTypes, pkgCtx.getPackage());
         processItemTypes(dbItemTypes, xmlItemTypes, pkgCtx);
+        summarizeDeclaredItemTypes();
 
         // update specifications
         processItemSpecs(xmlItemSpecs, pkgCtx.getPackage());
@@ -484,6 +657,7 @@ public class ItemTypeUpdater {
                 itemAptypeRepository.flush();
             }
             itemTypeSpecAssignRepository.deleteByItemTypeIn(deleteItemTypes);
+            assignDeclarationRepository.deleteAll(assignDeclarationRepository.findByItemTypes(deleteItemTypes));
 
             itemTypeRepository.deleteAll(deleteItemTypes);
             itemTypeRepository.flush();
@@ -503,6 +677,10 @@ public class ItemTypeUpdater {
         }
 
         List<RulItemType> itemTypesAfterUpdate = new ArrayList<>();
+        RulPackage rulPackage = puc.getPackage();
+        Map<String, RulItemTypeDeclaration> oldDeclarations = new HashMap<>();
+        declarationRepository.findByRulPackage(rulPackage)
+                .forEach(d -> oldDeclarations.put(d.getItemType().getCode(), d));
 
         // prepare list of updated/new items
         if (itemTypes != null && CollectionUtils.isNotEmpty(itemTypes.getItemTypes())) {
@@ -512,7 +690,7 @@ public class ItemTypeUpdater {
             for (ItemType itemType : itemTypes.getItemTypes()) {
                 // check code duplicity
                 String itemTypeCode = itemType.getCode();
-                if (rulItemTypeCodes.contains(itemTypeCode)) {
+                if (!rulItemTypeCodes.add(itemTypeCode)) {
                     throw new SystemException("Duplicitní kód typu: " + itemTypeCode, BaseCode.ID_EXIST)
                             .set("code", itemTypeCode);
                 }
@@ -523,6 +701,20 @@ public class ItemTypeUpdater {
                     throw new SystemException("Incorrect data type: " + itemType.getDataType(), BaseCode.ID_NOT_EXIST)
                             .set("dataType", itemType.getDataType())
                             .set("code", itemTypeCode);
+                }
+
+                // an item type of another package: a declaration, which takes no position
+                if (isForeign(itemTypeCode, rulPackage)) {
+                    RulItemType foreignType = allItemTypesByCode.get(itemTypeCode);
+                    checkAgreement(itemType, newDataType, foreignType);
+                    // RECORD_REF classes stay with the owner; a declaration may repeat them
+                    if (!sameApTypes(itemType.getItemAptypes(), itemAptypeRepository.findByItemType(foreignType))) {
+                        throw conflict(itemTypeCode, "item-aptypes", foreignType);
+                    }
+                    declare(foreignType, rulPackage, oldDeclarations.remove(itemTypeCode), itemType.getName(),
+                            itemType.getShortcut(), descriptionOf(itemType), canBeOrderedOf(itemType),
+                            itemType.getStringLengthLimit(), viewDefinitionJson(itemType));
+                    continue;
                 }
 
                 // pouzijeme remove() - co zbyde bude smazano z DB
@@ -544,15 +736,12 @@ public class ItemTypeUpdater {
                 // now nextViewOrderPos is free and can be used
                 boolean modified;
                 if (rulItemType != null) {
+                    // declared by other packages too: the stored data must stay as they declare them
+                    if (hasOtherDeclarations(rulItemType, rulPackage)) {
+                        checkAgreement(itemType, newDataType, rulItemType);
+                    }
                     modified = updateDBItemType(rulItemType, itemType, newDataType);
                 } else {
-                    // check existance of same code in other package
-                    rulItemType = this.allItemTypesByCode.get(itemTypeCode);
-                    if (rulItemType != null) {
-                        throw new SystemException("Duplicitní kód typu v jiném balíčku: " + itemTypeCode,
-                                BaseCode.ID_EXIST)
-                                .set("code", itemTypeCode);
-                    }
                     modified = true;
                     rulItemType = prepareNewItemType(itemType, newDataType, puc);
                 }
@@ -573,14 +762,176 @@ public class ItemTypeUpdater {
                     rulItemType = itemTypeRepository.saveAndFlush(rulItemType);
                     allItemTypesByCode.put(rulItemType.getCode(), rulItemType);
                 }
+                declare(rulItemType, rulPackage, oldDeclarations.remove(itemTypeCode), rulItemType.getName(),
+                        rulItemType.getShortcut(), rulItemType.getDescription(), rulItemType.getCanBeOrdered(),
+                        rulItemType.getStringLengthLimit(), rulItemType.getViewDefinitionJson());
                 itemTypesAfterUpdate.add(rulItemType);
             }
 
-            processItemAptypesByItemTypes(itemTypesAfterUpdate, itemTypes.getItemTypes());
+            processItemAptypesByItemTypes(itemTypesAfterUpdate, ownXmlTypes(itemTypes, rulPackage));
         }
 
-        // delete unused item types
-        deleteItemTypes.addAll(origDBItemsByCode.values());
+        // declarations the package no longer has
+        declarationRepository.deleteAll(oldDeclarations.values());
+        declarationRepository.flush();
+        oldDeclarations.values().forEach(d -> declaredItemTypes.put(d.getItemTypeId(), d.getItemType()));
+
+        // own item types no longer declared: another package takes over, or they are removed
+        List<RulItemType> removed = new ArrayList<>();
+        for (RulItemType itemType : origDBItemsByCode.values()) {
+            if (declarationRepository.findByItemTypes(List.of(itemType)).isEmpty()) {
+                declaredItemTypes.remove(itemType.getItemTypeId());
+                removed.add(itemType);
+            } else {
+                // RECORD_REF classes belong to the declaration of the owner
+                deleteItemApTypes.addAll(itemAptypeRepository.findByItemType(itemType));
+            }
+        }
+        checkRemovable(removed, rulPackage);
+        deleteItemTypes.addAll(removed);
+    }
+
+    /**
+     * Creates or updates the declaration of the item type by the package.
+     */
+    private void declare(RulItemType itemType, RulPackage rulPackage, RulItemTypeDeclaration declaration,
+                         String name, String shortcut, String description, Boolean canBeOrdered,
+                         Integer stringLengthLimit, String viewDefinition) {
+        if (declaration == null) {
+            declaration = new RulItemTypeDeclaration();
+        }
+        declaration.setItemType(itemType);
+        declaration.setRulPackage(rulPackage);
+        declaration.setName(name);
+        declaration.setShortcut(shortcut);
+        declaration.setDescription(description);
+        declaration.setCanBeOrdered(canBeOrdered);
+        declaration.setStringLengthLimit(stringLengthLimit);
+        declaration.setViewDefinition(viewDefinition);
+        declarationRepository.save(declaration);
+        declaredItemTypes.put(itemType.getItemTypeId(), itemType);
+    }
+
+    private boolean hasOtherDeclarations(RulItemType itemType, RulPackage rulPackage) {
+        return declarationRepository.findByItemTypes(List.of(itemType)).stream()
+                .anyMatch(d -> !d.getPackageId().equals(rulPackage.getPackageId()));
+    }
+
+    /**
+     * Values deciding how data of the item type are stored must agree with the existing item type.
+     */
+    private void checkAgreement(ItemType xmlItemType, DataType dataType, RulItemType itemType) {
+        String code = xmlItemType.getCode();
+        if (DataType.fromId(itemType.getDataTypeId()) != dataType) {
+            throw conflict(code, "data-type", itemType);
+        }
+        if (!Objects.equals(itemType.getUseSpecification(), xmlItemType.getUseSpecification())) {
+            throw conflict(code, "use-specification", itemType);
+        }
+        if (dataType == DataType.STRUCTURED) {
+            String structuredType = itemType.getStructuredType() != null ? itemType.getStructuredType().getCode() : null;
+            if (!Objects.equals(structuredType, xmlItemType.getStructureType())) {
+                throw conflict(code, "structure-type", itemType);
+            }
+        }
+        if (dataType == DataType.JSON_TABLE) {
+            @SuppressWarnings("unchecked")
+            List<ElzaColumn> columns = (List<ElzaColumn>) itemType.getViewDefinition();
+            List<Column> xmlColumns = xmlItemType.getColumnsDefinition();
+            int size = columns != null ? columns.size() : 0;
+            if (size != (xmlColumns != null ? xmlColumns.size() : 0)
+                    || (size > 0 && !canUpdateColumns(columns, xmlColumns))) {
+                throw conflict(code, "columns-definitions", itemType);
+            }
+        }
+    }
+
+    private static AbstractException conflict(String code, String attribute, RulItemType itemType) {
+        return new BusinessException("Item type " + code + " is declared by another package with another "
+                + attribute, PackageCode.ITEM_TYPE_CONFLICT)
+                .set("code", code)
+                .set("attribute", attribute)
+                .set("otherPackageCode", itemType.getRulPackage().getCode());
+    }
+
+    /**
+     * Item types to be removed: refused while descriptions or entities use them, or specifications of
+     * other packages are assigned to them.
+     */
+    private void checkRemovable(List<RulItemType> itemTypes, RulPackage rulPackage) {
+        if (itemTypes.isEmpty()) {
+            return;
+        }
+        List<String> used = itemTypes.stream().filter(t -> countUsage(t) + apRevItemRepository.countByType(t) > 0)
+                .map(RulItemType::getCode).toList();
+        if (!used.isEmpty()) {
+            throw new BusinessException("Item types are used by descriptions or entities: " + used,
+                    PackageCode.ITEM_TYPE_IN_USE)
+                    .set("codes", String.join(", ", used));
+        }
+        String foreign = assignDeclarationRepository.findByItemTypes(itemTypes).stream()
+                .map(a -> a.getSpecDeclaration().getRulPackage())
+                .filter(p -> !p.getPackageId().equals(rulPackage.getPackageId()))
+                .map(RulPackage::getCode)
+                .distinct()
+                .collect(Collectors.joining(", "));
+        if (!foreign.isEmpty()) {
+            throw new BusinessException("Specifications of other packages are assigned to a removed item type",
+                    PackageCode.FOREIGN_DEPENDENCY)
+                    .set("foreignPackageCodes", foreign);
+        }
+    }
+
+    /**
+     * Owner, texts and values of item types whose declarations changed.
+     */
+    private void summarizeDeclaredItemTypes() {
+        if (declaredItemTypes.isEmpty()) {
+            return;
+        }
+        PackageDeclarations summary = packageDeclarations();
+        for (RulItemType itemType : declaredItemTypes.values()) {
+            summary.summarize(itemType, declarationRepository.findByItemTypes(List.of(itemType)));
+            RulItemType saved = itemTypeRepository.save(itemType);
+            allItemTypesByCode.put(saved.getCode(), saved);
+        }
+        itemTypeRepository.flush();
+    }
+
+    /**
+     * Removes the declarations of a deleted package: a specification or item type still declared by
+     * another package stays (owned by the winning declaration when the package owned it), the others are
+     * removed.
+     */
+    public void deletePackageDeclarations(RulPackage rulPackage) {
+        List<RulItemSpecDeclaration> specDeclarations = specDeclarationRepository.findByRulPackage(rulPackage);
+        Map<Integer, RulItemSpec> affectedSpecs = new LinkedHashMap<>();
+        specDeclarations.forEach(d -> affectedSpecs.put(d.getItemSpecId(), d.getItemSpec()));
+        assignDeclarationRepository.deleteAll(assignDeclarationRepository.findByDeclarations(specDeclarations));
+        specDeclarationRepository.deleteAll(specDeclarations);
+        specDeclarationRepository.flush();
+        resolveItemSpecs(affectedSpecs.values(), rulPackage);
+
+        List<RulItemTypeDeclaration> declarations = declarationRepository.findByRulPackage(rulPackage);
+        declarationRepository.deleteAll(declarations);
+        declarationRepository.flush();
+        List<RulItemType> removed = new ArrayList<>();
+        for (RulItemTypeDeclaration declaration : declarations) {
+            RulItemType itemType = declaration.getItemType();
+            boolean owned = itemType.getRulPackage().getPackageId().equals(rulPackage.getPackageId());
+            if (declarationRepository.findByItemTypes(List.of(itemType)).isEmpty()) {
+                removed.add(itemType);
+            } else {
+                if (owned) {
+                    deleteItemApTypes.addAll(itemAptypeRepository.findByItemType(itemType));
+                }
+                declaredItemTypes.put(itemType.getItemTypeId(), itemType);
+            }
+        }
+        checkRemovable(removed, rulPackage);
+        deleteItemTypes.addAll(removed);
+        summarizeDeclaredItemTypes();
+        cleanUp();
     }
 
     /**
@@ -610,6 +961,13 @@ public class ItemTypeUpdater {
                 int i2 = sortedPackages.indexOf(o2.getItemSpec().getPackage());
                 return Integer.compare(i1, i2);
             });
+
+            // specifications with view-after are moved right behind their anchor
+            ritsaList = AnchoredOrder.apply(ritsaList,
+                    a -> a.getItemSpec().getCode(),
+                    RulItemTypeSpecAssign::getViewAfterSpecCode,
+                    a -> logger.warn("Specification '{}' of item type '{}' should follow '{}', which is not a specification of this type; placed last",
+                                     a.getItemSpec().getCode(), rulItemType.getCode(), a.getViewAfterSpecCode()));
 
             // provede přečíslování
             for (int i = 0; i < ritsaList.size(); i++) {
@@ -892,19 +1250,13 @@ public class ItemTypeUpdater {
             modified = true;
         }
 
-        String description = itemType.getDescription() == null ? itemType.getName() : itemType.getDescription();
+        String description = descriptionOf(itemType);
         if (!Objects.equals(dbItemType.getDescription(), description)) {
             dbItemType.setDescription(description);
             modified = true;
         }
 
-        Boolean isValueUnique = itemType.getIsValueUnique() == null ? false : itemType.getIsValueUnique();
-        if (!Objects.equals(dbItemType.getIsValueUnique(), isValueUnique)) {
-            dbItemType.setIsValueUnique(isValueUnique);
-            modified = true;
-        }
-
-        Boolean canBeOrdered = itemType.getCanBeOrdered() == null ? false : itemType.getCanBeOrdered();
+        Boolean canBeOrdered = canBeOrderedOf(itemType);
         if (!Objects.equals(dbItemType.getCanBeOrdered(), canBeOrdered)) {
             dbItemType.setCanBeOrdered(canBeOrdered);
             modified = true;
@@ -941,6 +1293,38 @@ public class ItemTypeUpdater {
             }
         }
 
+        Object viewDefinition = viewDefinitionOf(itemType);
+        // compare previous and new view definition
+        if (!Objects.equals(viewDefinition, dbItemType.getViewDefinition())) {
+            dbItemType.setViewDefinition(viewDefinition);
+            modified = true;
+        }
+
+        return modified;
+    }
+
+    /**
+     * The RECORD_REF classes of a declaration equal those stored for the owner (both may be empty).
+     */
+    private static boolean sameApTypes(@Nullable List<ItemAptype> declared, List<RulItemAptype> stored) {
+        Set<String> declaredCodes = declared == null ? Set.of()
+                : declared.stream().map(ItemAptype::getRegisterType).collect(Collectors.toSet());
+        Set<String> storedCodes = stored.stream().map(a -> a.getApType().getCode()).collect(Collectors.toSet());
+        return declaredCodes.equals(storedCodes);
+    }
+
+    private static String descriptionOf(ItemType itemType) {
+        return itemType.getDescription() == null ? itemType.getName() : itemType.getDescription();
+    }
+
+    private static Boolean canBeOrderedOf(ItemType itemType) {
+        return itemType.getCanBeOrdered() == null ? false : itemType.getCanBeOrdered();
+    }
+
+    /**
+     * View definition of the XML item type: columns of a table, display type or mask.
+     */
+    private static Object viewDefinitionOf(ItemType itemType) {
         Object viewDefinition = null;
         if (itemType.getColumnsDefinition() != null) {
             List<ElzaColumn> elzaColumns = new ArrayList<>(itemType.getColumnsDefinition().size());
@@ -965,13 +1349,16 @@ public class ItemTypeUpdater {
         	stringViewDefinition.setMask(itemType.getMask());
         	viewDefinition = stringViewDefinition;
 		}
-        // compare previous and new view definition
-        if (!Objects.equals(viewDefinition, dbItemType.getViewDefinition())) {
-            dbItemType.setViewDefinition(viewDefinition);
-            modified = true;
-        }
+        return viewDefinition;
+    }
 
-        return modified;
+    /**
+     * View definition of the XML item type as stored (JSON).
+     */
+    private static String viewDefinitionJson(ItemType itemType) {
+        RulItemType stored = new RulItemType();
+        stored.setViewDefinition(viewDefinitionOf(itemType));
+        return stored.getViewDefinitionJson();
     }
 
     /**
@@ -984,26 +1371,29 @@ public class ItemTypeUpdater {
     private void convertRulItemSpec(final RulPackage rulPackage,
                                     final ItemSpec itemSpec,
                                     final RulItemSpec rulItemSpec) {
-        // check length code and shortcut
+        rulItemSpec.setName(itemSpec.getName());
+        rulItemSpec.setCode(itemSpec.getCode());
+        rulItemSpec.setDescription(itemSpec.getDescription());
+        rulItemSpec.setShortcut(itemSpec.getShortcut());
+        rulItemSpec.setPackage(rulPackage);
+        rulItemSpec.setCategory(categoryOf(itemSpec));
+    }
+
+    private static void checkSpecLength(final ItemSpec itemSpec) {
         if ((itemSpec.getCode() != null && itemSpec.getCode().length() > 50)
             || (itemSpec.getShortcut() != null && itemSpec.getShortcut().length() > 50)) {
             throw new SystemException("Item spec code or shortcut is too long", BaseCode.INVALID_LENGTH)
                 .set("iteSpec.code", itemSpec.getCode())
                 .set("iteSpec.shortcut", itemSpec.getShortcut());
         }
+    }
 
-        rulItemSpec.setName(itemSpec.getName());
-        rulItemSpec.setCode(itemSpec.getCode());
-        rulItemSpec.setDescription(itemSpec.getDescription());
-        rulItemSpec.setShortcut(itemSpec.getShortcut());
-        rulItemSpec.setPackage(rulPackage);
-
-        if (CollectionUtils.isNotEmpty(itemSpec.getCategories())) {
-            List<String> categories = itemSpec.getCategories().stream().map(Category::getValue).collect(Collectors.toList());
-            rulItemSpec.setCategory(StringUtils.join(categories, CATEGORY_SEPARATOR));
-        } else {
-            rulItemSpec.setCategory(null);
+    private static String categoryOf(final ItemSpec itemSpec) {
+        if (CollectionUtils.isEmpty(itemSpec.getCategories())) {
+            return null;
         }
+        List<String> categories = itemSpec.getCategories().stream().map(Category::getValue).collect(Collectors.toList());
+        return StringUtils.join(categories, CATEGORY_SEPARATOR);
     }
 
     /**
@@ -1143,4 +1533,9 @@ public class ItemTypeUpdater {
         return this.numDroppedCachedNode;
     }
 
+    /**
+     * Specification assigned to an item type in the imported XML, with its optional anchor.
+     */
+    private record XmlSpecAssignment(String specCode, String viewAfter) {
+    }
 }

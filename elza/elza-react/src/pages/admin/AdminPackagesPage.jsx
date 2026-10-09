@@ -7,6 +7,7 @@ import { UrlFactory } from 'actions/index.jsx';
 import './AdminPackagesPage.scss';
 import { AdminLayout } from '../shared/layout/AdminLayout';
 import { AdminPackagesListFn } from 'components/admin/AdminPackagesList';
+import { AdminPackagesAvailable } from 'components/admin/AdminPackagesAvailable';
 
 /**
  * Stránka pro správu importovaných balíčků
@@ -25,6 +26,7 @@ class AdminPackagesPage extends React.Component {
             <div>
                 <AdminPackagesListFn getExportUrl={UrlFactory.exportPackage} />
                 <AdminPackagesUpload />
+                <AdminPackagesAvailable />
             </div>
         );
 

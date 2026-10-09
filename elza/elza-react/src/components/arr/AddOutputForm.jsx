@@ -28,6 +28,8 @@ class AddOutputForm extends AbstractReactComponent {
     static propTypes = {
         create: PropTypes.bool,
         initData: PropTypes.object,
+        // pravidla AS: nabízí jen jejich výstupní filtry a předvyplní výchozí
+        ruleSetId: PropTypes.number,
         onSubmitForm: PropTypes.func.isRequired,
     };
 
@@ -59,13 +61,44 @@ class AddOutputForm extends AbstractReactComponent {
 
     componentDidMount() {
         this.props.dispatch(outputTypesFetchIfNeeded());
+        this.applyDefaultFilter();
     }
+
+    componentDidUpdate() {
+        this.applyDefaultFilter();
+    }
+
+    /**
+     * Výstupní filtry nabízené ve formuláři - při zadaných pravidlech jen filtry těchto pravidel.
+     */
+    getOutputFilters = () => {
+        const {outputFilters, ruleSetId} = this.props;
+        const data = outputFilters.data || [];
+        return ruleSetId ? data.filter(i => i.ruleSetId === ruleSetId) : data;
+    };
+
+    /**
+     * U nového výstupu po načtení filtrů předvyplní výchozí filtr pravidel (nastavení OUTPUT_DEFAULTS),
+     * pouze jednou, volbu uživatele nepřepisuje.
+     */
+    applyDefaultFilter = () => {
+        const {create, outputFilters, change} = this.props;
+        if (!create || this.defaultFilterApplied || !outputFilters.fetched || !outputFilters.data) {
+            return;
+        }
+        this.defaultFilterApplied = true;
+        const defaultFilter = this.getOutputFilters().find(i => i.defaultFilter);
+        if (defaultFilter) {
+            change('outputFilterId', defaultFilter.id);
+        }
+    };
 
     submitReduxForm = (values, dispatch) =>
         submitForm(AddOutputForm.validate, values, this.props, this.props.onSubmitForm, dispatch);
 
     render() {
-        const {create, handleSubmit, onClose, outputTypes, allTemplates, outputTypeId, submitting, outputFilters} = this.props;
+        const {create, handleSubmit, onClose, outputTypes, allTemplates, outputTypeId, submitting} = this.props;
+        const outputFilters = this.getOutputFilters();
 
         let templates = false;
         if (outputTypeId) {
@@ -129,8 +162,7 @@ class AddOutputForm extends AbstractReactComponent {
                             disabled={submitting}
                         >
                             <option key="-outputFilterId" />
-                            {outputFilters.data &&
-                            outputFilters.data.map(i => (
+                            {outputFilters.map(i => (
                                 <option key={i.id} value={i.id}>
                                     {i.name}
                                 </option>

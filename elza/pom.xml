@@ -63,6 +63,7 @@
         <module>elza-core</module>
         <module>elza-web</module>
         <module>package-cz-base</module>
+        <module>package-isaar-cpf</module>
         <module>rules-cz-zp2015</module>
         <module>rules-simple-dev</module>
         <module>dao-test-bench</module>
@@ -353,11 +354,6 @@
 			<dependency>
 			    <groupId>net.sf.jasperreports</groupId>
 			    <artifactId>jasperreports-barcode4j</artifactId>
-			    <version>${jasperreport.version}</version>
-			</dependency>			
-			<dependency>
-			    <groupId>net.sf.jasperreports</groupId>
-			    <artifactId>jasperreports-barbecue</artifactId>
 			    <version>${jasperreport.version}</version>
 			</dependency>			
 			<dependency>

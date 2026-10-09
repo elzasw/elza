@@ -1,0 +1,15 @@
+package isaarcpf;
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ItemSpec;
+import cz.tacr.elza.drools.model.item.IntItem;
+import cz.tacr.elza.drools.model.Part;
+import cz.tacr.elza.drools.model.PartType;
+
+rule "ISAAR 5.3.2: relationships of the class"
+when $it: ItemType(code == "REL_ENTITY")
+     $is: ItemSpec(code in ("RT_FATHER", "RT_MOTHER", "RT_HUSBAND", "RT_WIFE", "RT_PARTNER", "RT_BROTHER", "RT_SISTER", "RT_RELATIONS", "RT_GENUSMEMBER", "RT_ISMEMBER", "RT_EMPLOYER", "RT_OTHERNAME", "RT_COLLABORATOR", "ISAAR_RT_ASSOCIATED", "RT_RESIDENCE", "RT_PLACE", "RT_FUNCTION", "RT_ACTIVITYFIELD")) from $it.specs
+then
+    $it.setPossible();
+    $is.setPossible();
+end
+

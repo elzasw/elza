@@ -21,10 +21,6 @@ public class DaLevelView {
     @JoinColumn(name = "delete_change_id")
     private DaChange deleteChange;
 
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFund.class)
-    @JoinColumn(name = "fund_id", nullable = false)
-    private ArrFund fund;
-
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = DaLevelView.class)
     @JoinColumn(name = "parent_level_view_id")
     private DaLevelView parentLevelView;
@@ -65,14 +61,6 @@ public class DaLevelView {
 
     public void setDeleteChange(DaChange deleteChange) {
         this.deleteChange = deleteChange;
-    }
-
-    public ArrFund getFund() {
-        return fund;
-    }
-
-    public void setFund(ArrFund fund) {
-        this.fund = fund;
     }
 
     public DaLevelView getParentLevelView() {

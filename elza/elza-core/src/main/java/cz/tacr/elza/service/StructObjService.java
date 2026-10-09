@@ -30,6 +30,8 @@ import com.google.common.collect.Lists;
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.PackageTexts;
+import cz.tacr.elza.domain.TranslationEntityType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
@@ -98,6 +100,7 @@ public class StructObjService {
     private final StructObjInternalService structObjInternalService;
     private final PartTypeRepository partTypeRepository;
     private final DataService dataService;
+    private final PackageTexts packageTexts;
 
     @Autowired
     public StructObjService(final StructuredItemRepository structureItemRepository,
@@ -114,7 +117,8 @@ public class StructObjService {
                             final StaticDataService staticDataService,
                             final StructObjInternalService structObjInternalService,
                             final PartTypeRepository partTypeRepository,
-                            final DataService dataService) {
+                            final DataService dataService,
+                            final PackageTexts packageTexts) {
         this.structureItemRepository = structureItemRepository;
         this.structureExtensionRepository = structureExtensionRepository;
         this.structObjRepository = structureDataRepository;
@@ -130,6 +134,7 @@ public class StructObjService {
         this.structObjInternalService = structObjInternalService;
         this.partTypeRepository = partTypeRepository;
         this.dataService = dataService;
+        this.packageTexts = packageTexts;
     }
 
     /**
@@ -1347,7 +1352,8 @@ public class StructObjService {
     public List<SdoType> structuredTypeToSdoType(List<RulStructuredType> types) {
     	List<SdoType> result = new ArrayList<>(types.size());
     	types.forEach(t -> {
-    		SdoType type = new SdoType(t.getStructuredTypeId(), t.getName(), t.getCode(), t.getAnonymous());
+    		String name = packageTexts.name(TranslationEntityType.STRUCTURED_TYPE, t.getCode(), t.getName());
+    		SdoType type = new SdoType(t.getStructuredTypeId(), name, t.getCode(), t.getAnonymous());
     		result.add(type);
     	});
     	return result;

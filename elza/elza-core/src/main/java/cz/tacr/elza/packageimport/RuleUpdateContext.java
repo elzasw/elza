@@ -159,6 +159,13 @@ public class RuleUpdateContext {
         return puc.convertXmlStreamToObject(classObject, keyDirPath + fileName);
     }
 
+    /**
+     * @return true when the package contains the file in the directory of this rule set
+     */
+    public boolean containsFile(String fileName) {
+        return puc.getByteStream(keyDirPath + fileName) != null;
+    }
+
     public void addActionPhase2(RuleUpdateAction action) {
         actionsPhase2.add(action);
     }

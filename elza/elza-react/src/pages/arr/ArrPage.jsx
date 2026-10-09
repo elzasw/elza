@@ -808,10 +808,6 @@ class ArrPage extends ArrParentPage {
                                     {refType.viewOrder}
                                 </div>
                                 <div key="6">
-                                    <label>isValueUnique:</label>
-                                    {refType.isValueUnique ? this.props.intl.formatMessage(globalMessages.yes) : this.props.intl.formatMessage(globalMessages.no)}
-                                </div>
-                                <div key="7">
                                     <label>canBeOrdered:</label>
                                     {refType.canBeOrdered ? this.props.intl.formatMessage(globalMessages.yes) : this.props.intl.formatMessage(globalMessages.no)}
                                 </div>

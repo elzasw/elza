@@ -15,6 +15,8 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.ElzaTools;
 import cz.tacr.elza.common.db.HibernateUtils;
+import cz.tacr.elza.core.data.CoreMessage;
+import cz.tacr.elza.core.data.ValidationMessage;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ArrData;
@@ -30,7 +32,6 @@ import cz.tacr.elza.domain.vo.DataValidationResults;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApStateRepository;
-import cz.tacr.elza.service.ArrangementService;
 
 /**
  * Implementation of separate validator object
@@ -88,8 +89,9 @@ public class Validator {
 
         for (ArrDescItem descItem : descItemsOfType) {
             if (descItem.isUndefined() && !type.getIndefinable()) {
-                validationResults.createError(descItem, "U prvku popisu " + descItem.getItemType().getName()
-                        + " není možné nastavit hodnotu '" + ArrangementService.UNDEFINED + "'.", type.getPolicyTypeCode());
+                validationResults.createError(descItem, CoreMessage.ARR_UNDEFINED_NOT_ALLOWED.with(
+                        ValidationMessage.itemType(type.getCode()), CoreMessage.UNDEFINED_VALUE.with()).encode(),
+                        type.getPolicyTypeCode());
             }
         }
 
@@ -115,8 +117,8 @@ public class Validator {
                     if (extSpec == null) {
                         continue;
                     } else if (RulItemSpec.Type.IMPOSSIBLE.equals(extSpec.getType())) {
-                        validationResults.createErrorImpossible(descItem, "Prvek " + type.getName() + " se specifikací "
-                                + extSpec.getName() + " není možné evidovat u této jednotky archivního popisu.",
+                        validationResults.createErrorImpossible(descItem, CoreMessage.ARR_SPEC_IMPOSSIBLE.with(
+                                ValidationMessage.itemType(type.getCode()), ValidationMessage.itemSpec(extSpec.getCode())).encode(),
                                                                 extSpec.getPolicyTypeCode());
                     }
     
@@ -150,8 +152,8 @@ public class Validator {
         for (ArrDescItem descItem : descItemsOfType) {
             RulItemTypeExt rulDescItemTypeExt = extNodeTypes.get(descItem.getItemType().getItemTypeId());
             if (RulItemType.Type.IMPOSSIBLE.equals(rulDescItemTypeExt.getType())) {
-                validationResults.createErrorImpossible(descItem, "Prvek " + rulDescItemTypeExt.getName()
-                        + " není možné evidovat u této jednotky archivního popisu.", rulDescItemTypeExt.getPolicyTypeCode());
+                validationResults.createErrorImpossible(descItem, CoreMessage.ARR_ITEM_IMPOSSIBLE.with(
+                        ValidationMessage.itemType(rulDescItemTypeExt.getCode())).encode(), rulDescItemTypeExt.getPolicyTypeCode());
             }
         }
 
@@ -170,7 +172,8 @@ public class Validator {
 			final RulItemType type) {
 		if (!repeatable && CollectionUtils.size(descItems) > 1) {
 			validationResults.createError(descItems.iterator().next(),
-					"Atribut " + type.getName() + " není opakovatelný.", type.getPolicyTypeCode());
+					CoreMessage.ARR_ITEM_NOT_REPEATABLE.with( ValidationMessage.itemType(type.getCode())).encode(),
+					type.getPolicyTypeCode());
 		}
 	}
 
@@ -185,7 +188,8 @@ public class Validator {
                                         final RulItemSpec spec) {
         if (!repeatable && CollectionUtils.size(descItems) > 1) {
             validationResults.createError(descItems.iterator().next(),
-                    "Atribut " + spec.getName() + " není opakovatelný.", spec.getPolicyTypeCode());
+                    CoreMessage.ARR_SPEC_NOT_REPEATABLE.with( ValidationMessage.itemSpec(spec.getCode())).encode(),
+                    spec.getPolicyTypeCode());
         }
     }
 
@@ -218,12 +222,11 @@ public class Validator {
                 ArrData data = HibernateUtils.unproxy(descItem.getData());
                 RulItemType itemType = descItem.getItemType();
                 Integer itemTypeId = itemType.getItemTypeId();
-                String name = itemType.getName();
                 String policyTypeCode = extNodeTypes.get(itemTypeId).getPolicyTypeCode();
 
                 if (!extNodeTypes.containsKey(itemTypeId)) {
-                    validationResults.createError(descItem, "Prvek " + name + " není možný u této jednotky popisu.",
-                                                  policyTypeCode);
+                    validationResults.createError(descItem, CoreMessage.ARR_ITEM_NOT_ALLOWED.with(
+                            ValidationMessage.itemType(itemType.getCode())).encode(), policyTypeCode);
                     continue;
                 }
 
@@ -236,8 +239,9 @@ public class Validator {
                     }
                     // Kontrola stavu entity
                     if (apState.getDeleteChangeId() != null) {
-                        validationResults.createError(descItem, "Prvek " + name + " odkazuje na zneplatněnou entitu (id: "
-                                + apState.getAccessPointId() + ").",
+                        // the id as text: a number would be formatted with grouping
+                        validationResults.createError(descItem, CoreMessage.ARR_DELETED_ENTITY_REF.with(
+                                ValidationMessage.itemType(itemType.getCode()), String.valueOf(apState.getAccessPointId())).encode(),
                                                       policyTypeCode);
                     }
                 }

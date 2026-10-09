@@ -18,6 +18,7 @@ import cz.tacr.elza.aiprovider.client.vo.UsageInfo;
 import cz.tacr.elza.controller.vo.AiAccountUsageVO;
 import cz.tacr.elza.controller.vo.AiConversationCreateVO;
 import cz.tacr.elza.controller.vo.AiConversationDetailVO;
+import cz.tacr.elza.controller.vo.AiConversationUpdateVO;
 import cz.tacr.elza.controller.vo.AiConversationVO;
 import cz.tacr.elza.controller.vo.AiCustomerUsageVO;
 import cz.tacr.elza.controller.vo.AiProposalDecisionRequestVO;
@@ -129,7 +130,8 @@ public class AiProviderController implements AiproviderApi {
                         .name(param.getName())
                         .type(param.getType() == null ? null : param.getType().getValue())
                         .description(param.getDescription())
-                        .required(param.getRequired()));
+                        .required(param.getRequired())
+                        .alternativeGroup(param.getAlternativeGroup()));
             }
         }
         return vo;
@@ -149,6 +151,18 @@ public class AiProviderController implements AiproviderApi {
     @Override
     public ResponseEntity<List<AiConversationVO>> aiProviderListConversations(String contextType) {
         return ResponseEntity.ok(aiConversationService.listConversations(contextType));
+    }
+
+    @Override
+    public ResponseEntity<AiConversationVO> aiProviderUpdateConversation(Integer id,
+            AiConversationUpdateVO aiConversationUpdateVO) {
+        return ResponseEntity.ok(aiConversationService.renameConversation(id, aiConversationUpdateVO.getTitle()));
+    }
+
+    @Override
+    public ResponseEntity<Void> aiProviderDeleteConversation(Integer id) {
+        aiConversationService.deleteConversation(id);
+        return ResponseEntity.noContent().build();
     }
 
     @Override

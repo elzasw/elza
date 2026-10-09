@@ -46,8 +46,11 @@ tags:
     description: Digitální archivní objekty
   - name: user
     description: Nastavení přihlášeného uživatele
+  - name: languages
+    description: Jazyky
   - name: admin
     description: Administrativní funkce
+  - name: packages
 paths:
   /accesspoint:
     delete:
@@ -1671,6 +1674,19 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/PasswordPolicy'
+  /admin/restart:
+    post:
+      operationId: Admin_restart
+      description: |-
+        Restart the application: after the response, the application stops with the exit code
+        elza.restart.exitCode (3 by default), and the service manager starts it again. Without a
+        service manager the application only stops.
+      parameters: []
+      responses:
+        '202':
+          description: The request has been accepted for processing, but processing has not yet completed.
+      tags:
+        - admin
   /admin/user/{userId}/api-keys:
     get:
       operationId: Admin_listUserApiKeys
@@ -2881,6 +2897,62 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AiConversationDetail'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aiprovider
+    put:
+      operationId: AiProvider_updateConversation
+      description: Renames one of the current user's conversations.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: conversation id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiConversation'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aiprovider
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AiConversationUpdate'
+    delete:
+      operationId: AiProvider_deleteConversation
+      description: |-
+        Deletes one of the current user's conversations with all its exchanges,
+        events and proposal decisions (the provider keeps its own task records
+        under its retention policy). Refused while an exchange is still running
+        — cancel it first.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: conversation id
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
         '404':
           description: The server cannot find the requested resource.
           content:
@@ -5629,6 +5701,25 @@ paths:
                 $ref: '#/components/schemas/BaseException'
       tags:
         - io
+  /languages:
+    get:
+      operationId: Languages_listLanguages
+      description: |-
+        Returns all languages known to the installation with their usages.
+
+        Public URL: `GET /api/v1/languages`.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Language'
+      tags:
+        - languages
   /node/copyOlderSiblingAttribute:
     put:
       operationId: Node_copyOlderSiblingAttribute
@@ -5867,6 +5958,52 @@ paths:
                 $ref: '#/components/schemas/FsCreateDaoLinkResult'
       tags:
         - node
+  /packages/available:
+    get:
+      operationId: Packages_listAvailablePackages
+      description: Packages of the dpkg directory that are not installed, by code, and whether a restart is needed.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailablePackages'
+      tags:
+        - packages
+  /packages/available/{code}/mark:
+    post:
+      operationId: Packages_markPackage
+      description: |-
+        Mark a package of the dpkg directory for the import at the next start. Refused when the
+        package is installed, or when a package it requires is neither installed, marked nor in the
+        directory.
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+      tags:
+        - packages
+    delete:
+      operationId: Packages_unmarkPackage
+      description: Cancel the mark of a package. Refused when the package is installed.
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+      tags:
+        - packages
   /publication/types:
     get:
       operationId: PublicationTypeAdmin_listPublicationTypes
@@ -6267,9 +6404,9 @@ paths:
         Public URL: `GET /api/v1/rules/itemTypes`.
 
         Localized strings (`name`, `shortcut`, `description` on `ItemType` and
-        `ItemTypeSpec`, plus `name` on `ItemTableColumn`) honour the
-        `Accept-Language` request header when provided; otherwise the server
-        default language is used.
+        `ItemTypeSpec`) are in the language of the request: the `elza-lang`
+        cookie set by the client, else the first UI language of the
+        `Accept-Language` header, else the server default language.
 
         Replaces the legacy `GET /api/rule/descItemTypes`.
       parameters:
@@ -7014,6 +7151,16 @@ components:
           items:
             $ref: '#/components/schemas/AiRequest'
       description: 'Full conversation detail: the thread = requests in create order.'
+    AiConversationUpdate:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          maxLength: 250
+          description: New title of the conversation (shown in the history list).
+      description: Editable attributes of a conversation (the rename).
     AiCustomerUsage:
       type: object
       required:
@@ -7575,6 +7722,13 @@ components:
         required:
           type: boolean
           description: Whether the caller must supply it.
+        alternativeGroup:
+          type: string
+          description: |-
+            Alternatives group (provider protocol 0.16.0): parameters sharing a group
+            are alternatives — exactly one of them is supplied and the group as a
+            whole is required (each member's own `required` is false). The panel
+            uses it to tell whether a task can run in the current context.
       description: One typed parameter a task declares.
     AiTaskType:
       type: object
@@ -8292,6 +8446,80 @@ components:
           type: string
           description: value of the element
       description: Automatically generated elements of the description
+    AvailablePackage:
+      type: object
+      required:
+        - code
+        - name
+        - version
+        - dependencies
+        - state
+        - fileName
+      properties:
+        code:
+          type: string
+          description: Code of the package
+        name:
+          type: string
+          description: Name of the package
+        version:
+          type: integer
+          format: int32
+          description: Version of the package in the file
+        description:
+          type: string
+          description: Description of the package
+        dependencies:
+          type: array
+          items:
+            $ref: '#/components/schemas/AvailablePackageDependency'
+          description: Required packages
+        state:
+          allOf:
+            - $ref: '#/components/schemas/AvailablePackageState'
+          description: What happens with the package at the next start
+        fileName:
+          type: string
+          description: Name of the file in the dpkg directory
+      description: Package present in the dpkg directory of the working directory and not installed.
+    AvailablePackageDependency:
+      type: object
+      required:
+        - code
+        - minVersion
+      properties:
+        code:
+          type: string
+          description: Code of the required package
+        minVersion:
+          type: integer
+          format: int32
+          description: Minimal version of the required package
+      description: Package required by a package of the dpkg directory.
+    AvailablePackageState:
+      type: string
+      enum:
+        - CONFIGURED
+        - MARKED
+        - NOT_LOADED
+      description: |-
+        Why a package of the dpkg directory that is not installed will or will not be imported
+        at the next start.
+    AvailablePackages:
+      type: object
+      required:
+        - items
+        - restartRequired
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AvailablePackage'
+          description: Packages by code
+        restartRequired:
+          type: boolean
+          description: 'A restart is needed: packages are marked for the next start, or a package was imported since the start'
+      description: Packages of the dpkg directory that are not installed, with the restart state of the application.
     AvailablePublication:
       type: object
       required:
@@ -10748,6 +10976,34 @@ components:
       allOf:
         - $ref: '#/components/schemas/ItemViewDefinition'
       description: Column definitions for JSON_TABLE items.
+    Language:
+      type: object
+      required:
+        - tag
+        - code
+        - uiEnabled
+        - scopeEnabled
+        - defaultLanguage
+      properties:
+        tag:
+          type: string
+          description: BCP 47 tag, e.g. "cs", "en".
+        code:
+          type: string
+          description: ISO 639-2/B code, e.g. "cze", "eng".
+        uiEnabled:
+          type: boolean
+          description: The UI can be used in this language.
+        scopeEnabled:
+          type: boolean
+          description: The language can be chosen as the language of an entity scope.
+        defaultLanguage:
+          type: boolean
+          description: Default language of the installation (`elza.locale`).
+      description: |-
+        Language known to the installation (`sys_language`).
+        Display names are not part of the model; clients take them from CLDR
+        (`Intl.DisplayNames`) by `tag`.
     LinkType:
       type: string
       enum:

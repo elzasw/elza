@@ -267,6 +267,9 @@ public class DaService {
     private DaoLinkPolicy daoLinkPolicy;
     @Autowired
     private DaAipLinkStateResolver linkStateResolver;
+
+    @Autowired
+    private DaLinkCloser linkCloser;
     @Autowired
     private DaCommunicationLock communicationLock;
 
@@ -380,7 +383,7 @@ public class DaService {
         }
 
         DaChange change = createDaChange(aip, DaChangeType.AIP_INVALIDATE);
-        int unlinked = unlinkFromDescription(aip);
+        int unlinked = linkCloser.close(daLinkRepository.findByAipIdAndDeleteChangeIsNull(aip.getAipId()));
 
         List<DaAip> aips = List.of(aip);
         deleteDaoEntities(aips, change);
@@ -390,32 +393,6 @@ public class DaService {
         aipStateRepository.save(aipState);
         logger.info("AIP {} byl v DA CODE={} zneplatněn, počet odpojených vazeb na jednotky popisu: {}",
                     code, digitalRepository.getCode(), unlinked);
-    }
-
-    /**
-     * Closes every link of the AIP - of the whole package and of its parts - by a change of the
-     * unit of description it hangs on, so that the history of each unit records the removal.
-     *
-     * @return number of links closed
-     */
-    private int unlinkFromDescription(DaAip aip) {
-        List<ArrDaLink> links = daLinkRepository.findByAipIdAndDeleteChangeIsNull(aip.getAipId());
-        Map<Integer, ArrChange> changeByNode = new HashMap<>();
-        for (ArrDaLink link : links) {
-            ArrNode node = link.getNode();
-            ArrChange change = changeByNode.computeIfAbsent(node.getNodeId(),
-                    id -> arrangementInternalService.createChange(ArrChange.Type.DELETE_DAO_LINK, node));
-            link.setDeleteChange(change);
-            daLinkRepository.save(link);
-
-            ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFund(node.getFund());
-            if (fundVersion != null) {
-                eventNotificationService.publishEvent(new EventIdNodeIdInVersion(EventType.DAO_LINK_DELETE,
-                        fundVersion.getFundVersionId(), link.getDaoLinkId(),
-                        Collections.singletonList(node.getNodeId())));
-            }
-        }
-        return links.size();
     }
 
     private DaRemoteRepositorySync getDaRemoteRepositorySync(ArrDigitalRepository digitalRepository) {
@@ -458,11 +435,10 @@ public class DaService {
      *         processed AIP; AIPs without fund, without cached metadata or failing to process
      *         are absent
      */
-    public Map<Integer, List<String>> doCreateDaoStructure(List<Integer> aipIds, boolean forceUpdate,
-                                                           AipOutcomeSink sink) {
+    public Map<Integer, List<String>> doCreateDaoStructure(List<Integer> aipIds, AipOutcomeSink sink) {
         Map<Integer, List<String>> uuidsByAip = new LinkedHashMap<>();
         for (Integer aipId : aipIds) {
-            List<String> nodeUuids = rebuildOneAip(aipId, forceUpdate, sink);
+            List<String> nodeUuids = rebuildOneAip(aipId, sink);
             if (nodeUuids != null) {
                 uuidsByAip.put(aipId, nodeUuids);
             }
@@ -478,7 +454,7 @@ public class DaService {
      * @return the UUIDs offered for node matching, or null when the AIP was skipped or failed
      */
     @Nullable
-    private List<String> rebuildOneAip(Integer aipId, boolean forceUpdate, AipOutcomeSink sink) {
+    private List<String> rebuildOneAip(Integer aipId, AipOutcomeSink sink) {
         RebuildInput input = inTransaction(() -> readRebuildInput(aipId, sink));
         if (input == null) {
             return null;
@@ -494,8 +470,7 @@ public class DaService {
 
             Path unpacked = tempDir;
             AipPackageType type = packageType;
-            return inTransaction(() -> storeDaoStructure(input, metsType, type, premisComplexType, unpacked,
-                                                         forceUpdate, sink));
+            return inTransaction(() -> storeDaoStructure(input, metsType, type, premisComplexType, unpacked, sink));
         } catch (Exception e) {
             AipProblem problem = AipProblem.of(e);
             logger.error("Došlo k chybě při zpracování metadat pro AIP={} ({}), balíček {}{}: {}", aipId,
@@ -553,8 +528,7 @@ public class DaService {
     }
 
     private List<String> storeDaoStructure(RebuildInput input, MetsType metsType, AipPackageType packageType,
-                                           PremisComplexType premisComplexType, Path tempDir, boolean forceUpdate,
-                                           AipOutcomeSink sink) {
+                                           PremisComplexType premisComplexType, Path tempDir, AipOutcomeSink sink) {
         // The package was read in an earlier transaction; the AIP may have been invalidated since.
         // The invalidation holds the lock until it commits, so it is either seen here or waits for
         // the entities built below and closes them too.
@@ -563,7 +537,7 @@ public class DaService {
             sink.skipped(input.aip().getAipId(), AIP_INVALIDATED);
             return null;
         }
-        List<String> nodeUuids = createDaoStructure(input.aip(), metsType, premisComplexType, tempDir, forceUpdate);
+        List<String> nodeUuids = createDaoStructure(input.aip(), metsType, premisComplexType, tempDir);
 
         DaLocalCache localCache = daLocalCacheRepository.findById(input.localCacheId()).orElseThrow();
         if (localCache.getFilePathMetadata() != null && !localCache.getFilePath().equals(localCache.getFilePathMetadata())) {
@@ -645,8 +619,8 @@ public class DaService {
      * @return UUIDs the AIP offers for node matching, see {@link DaoProcessor#getNodeUuids()}
      */
     @Transactional
-    public List<String> createDaoStructure(DaAip aip, MetsType metsType, PremisComplexType premisComplexType, Path tempDir, boolean forceUpdate) {
-        DaoProcessor daoProcessor = applicationContext.getBean(DaoProcessor.class, aip, metsType, premisComplexType, tempDir, forceUpdate);
+    public List<String> createDaoStructure(DaAip aip, MetsType metsType, PremisComplexType premisComplexType, Path tempDir) {
+        DaoProcessor daoProcessor = applicationContext.getBean(DaoProcessor.class, aip, metsType, premisComplexType, tempDir);
         daoProcessor.process();
         return daoProcessor.getNodeUuids();
     }
@@ -2106,6 +2080,9 @@ public class DaService {
 
     /** See {@link #createChildNode(ArrNode, ArrChange, int)}; the new node gets the given UUID. */
     ArrNode createChildNode(ArrNode parentNode, ArrChange change, int position, String uuid) {
+        // checked here, inside the transaction creating the level: the level tree cache follows
+        // the change only after commit, through secured services, and cannot undo it
+        checkArrPermission(parentNode);
         ArrNode newNode = arrangementService.createNode(parentNode.getFund(), uuid, change);
 
         ArrLevel arrLevel = new ArrLevel();

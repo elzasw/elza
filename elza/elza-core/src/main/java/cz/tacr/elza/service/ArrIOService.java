@@ -52,8 +52,10 @@ import org.locationtech.jts.geom.Polygon;
 
 import cz.tacr.elza.common.FileDownload;
 import cz.tacr.elza.controller.vo.FilterNode;
+import cz.tacr.elza.core.data.CoreMessage;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.PackageTexts;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrChange;
@@ -91,6 +93,9 @@ public class ArrIOService {
 
     @Autowired
     private DescriptionItemService descriptionItemService;
+
+    @Autowired
+    private PackageTexts packageTexts;
 
     @Autowired
     private OutputService outputService;
@@ -446,13 +451,13 @@ public class ArrIOService {
         StaticDataProvider sdp = staticDataService.createProvider();
 
         List<String> columNames = new LinkedList<>();
-        columNames.add("Číslo záznamu");
-        columNames.add("Číslo JP");
+        columNames.add(packageTexts.text(CoreMessage.EXPORT_COL_RECORD_NUMBER));
+        columNames.add(packageTexts.text(CoreMessage.EXPORT_COL_NODE_NUMBER));
         columNames.add("UUID");
-        columNames.add("Atribut");
-        columNames.add("Specifikace");
-        columNames.add("Hodnota");
-        columNames.add("ID entity");
+        columNames.add(packageTexts.text(CoreMessage.EXPORT_COL_ITEM_TYPE));
+        columNames.add(packageTexts.text(CoreMessage.EXPORT_COL_SPEC));
+        columNames.add(packageTexts.text(CoreMessage.EXPORT_COL_VALUE));
+        columNames.add(packageTexts.text(CoreMessage.EXPORT_COL_ENTITY_ID));
 
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
         FileDownload.addContentDispositionAsAttachment(response, getExportFileName(version.getFund(), "-data"));
@@ -534,8 +539,8 @@ public class ArrIOService {
             orderedItemTypeMap.put(rulItemType.getItemTypeId(), rulItemType);
         }
         List<String> columNames = new ArrayList<>(orderedItemTypeMap.size() + 2);
-        columNames.add("Číslo záznamu");
-        columNames.add("Číslo JP");
+        columNames.add(packageTexts.text(CoreMessage.EXPORT_COL_RECORD_NUMBER));
+        columNames.add(packageTexts.text(CoreMessage.EXPORT_COL_NODE_NUMBER));
         columNames.add("UUID");
         for (RulItemType rulItemType : orderedItemTypeMap.values()) {
             if (rulItemType != null) {

@@ -10,9 +10,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -54,6 +56,7 @@ import cz.tacr.elza.controller.vo.RulTemplateVO;
 import cz.tacr.elza.controller.vo.TypeInfoVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.PackageTexts;
 import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -68,6 +71,7 @@ import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputFilter;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulPackageDependency;
+import cz.tacr.elza.domain.TranslationEntityType;
 import cz.tacr.elza.domain.RulPolicyType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulTemplate;
@@ -77,6 +81,7 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.packageimport.xml.SettingGridView;
+import cz.tacr.elza.packageimport.xml.SettingOutputDefaults;
 import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.ExportFilterRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -101,6 +106,9 @@ public class RuleController {
 
     @Autowired
     private ClientFactoryVO factoryVo;
+
+    @Autowired
+    private PackageTexts packageTexts;
 
     @Autowired
     private DataTypeRepository dataTypeRepository;
@@ -141,6 +149,11 @@ public class RuleController {
     @Autowired
     private SettingsService settingsService;
 
+    private RulArrangementExtensionVO createExtension(final RulArrangementExtension extension) {
+        return factoryVo.translateName(RulArrangementExtensionVO.newInstance(extension),
+                                       TranslationEntityType.ARRANGEMENT_EXTENSION);
+    }
+
     @Transactional
     @RequestMapping(value = "/getRuleSets", method = RequestMethod.GET)
     public List<RulRuleSetVO> getRuleSets() {
@@ -150,7 +163,9 @@ public class RuleController {
         return ruleSets.stream().map(rs -> {
             List<SettingGridView.ItemType> itemTypes = settingsService.getGridView(rs.getRuleSetId());
 
-            return RulRuleSetVO.newInstance(rs, itemTypes, sdp);
+            RulRuleSetVO vo = RulRuleSetVO.newInstance(rs, itemTypes, sdp);
+            vo.setName(packageTexts.name(TranslationEntityType.RULE_SET, vo.getCode(), vo.getName()));
+            return vo;
         }).collect(Collectors.toList());
     }
 
@@ -188,7 +203,9 @@ public class RuleController {
     @AuthMethod(permission = Permission.ADMIN)
     public List<PackageVO> getPackages() {
         List<RulPackage> packages = packageService.getPackages();
-        List<PackageVO> packageVO = packages.stream().map(i -> PackageVO.newInstance(i)).collect(Collectors.toList());
+        // a package marked for the next start is listed among the available packages
+        List<PackageVO> packageVO = packages.stream().filter(p -> !p.isPending())
+                .map(i -> PackageVO.newInstance(i)).collect(Collectors.toList());
         Map<Integer, PackageVO> packageVOMap = packageVO.stream().collect(Collectors.toMap(PackageVO::getPackageId, Function.identity()));
         List<RulPackageDependency> packagesDependencies = packageService.getPackagesDependencies();
         for (RulPackageDependency dependency : packagesDependencies) {
@@ -214,7 +231,17 @@ public class RuleController {
     @RequestMapping(value = "/outputFilters", method = RequestMethod.GET)
     public List<RulOutputFilterVO> getOutputFilters() {
         List<RulOutputFilter> outputFilters = outputFilterRepository.findAll();
-        return factoryVo.createOutputFilterList(outputFilters);
+        List<RulOutputFilterVO> result = factoryVo.createOutputFilterList(outputFilters);
+        // default filter code per rule set, null when the rule set has none
+        Map<Integer, Optional<String>> defaultCodes = new HashMap<>();
+        for (RulOutputFilterVO vo : result) {
+            Optional<String> defaultCode = defaultCodes.computeIfAbsent(vo.getRuleSetId(), ruleSetId -> {
+                SettingOutputDefaults defaults = settingsService.getOutputDefaults(ruleSetId);
+                return Optional.ofNullable(defaults != null ? defaults.outputFilterCode() : null);
+            });
+            vo.setDefaultFilter(defaultCode.map(c -> c.equals(vo.getCode())).orElse(false));
+        }
+        return result;
     }
 
     @RequestMapping(value = "/exportFilters", method = RequestMethod.GET)
@@ -280,6 +307,7 @@ public class RuleController {
      * @return seznam skupin
      */
     @RequestMapping(value = "/groups/{fundVersionId}", method = RequestMethod.GET)
+    @Transactional
     public List<GroupVO> getGroups(@PathVariable(value = "fundVersionId") final Integer fundVersionId) {
         ArrFundVersion fundVersion = fundVersionRepository.findById(fundVersionId)
                 .orElseThrow(version(fundVersionId));
@@ -293,7 +321,9 @@ public class RuleController {
 
         List<ItemType> ruleSystemItemTypes = new ArrayList<>(sdp.getItemTypes());
         for (GroupConfiguration configuration : viewConfig.getGroups()) {
-            GroupVO group = new GroupVO(configuration.getCode(), configuration.getName());
+            String groupName = packageTexts.name(TranslationEntityType.TYPE_GROUP,
+                    ruleCode + TranslationEntityType.CODE_SEPARATOR + configuration.getCode(), configuration.getName());
+            GroupVO group = new GroupVO(configuration.getCode(), groupName);
             List<TypeInfoVO> typeInfos = new ArrayList<>(configuration.getTypes().size());
             for (TypeInfo typeInfo : configuration.getTypes()) {
                 String code = typeInfo.getCode();
@@ -402,14 +432,14 @@ public class RuleController {
         result.setNodePolicyTypeIdsMap(nodeVisibleTypeIdsPolicy);
 
         final List<RulArrangementExtension> availableExtensions = ruleService.findArrangementExtensionsByFundVersionId(fundVersion.getFundVersionId());
-        result.setAvailableExtensions(availableExtensions.stream().map(i -> RulArrangementExtensionVO.newInstance(i)).collect(Collectors.toList()));
+        result.setAvailableExtensions(availableExtensions.stream().map(this::createExtension).collect(Collectors.toList()));
 
         final List<RulArrangementExtension> nodeExtensions = ruleService.findArrangementExtensionsByNodeId(fundVersion, node);
-        result.setNodeExtensions(nodeExtensions.stream().map(i -> RulArrangementExtensionVO.newInstance(i)).collect(Collectors.toList()));
+        result.setNodeExtensions(nodeExtensions.stream().map(this::createExtension).collect(Collectors.toList()));
 
         if(CollectionUtils.isNotEmpty(parentNodeIds)) {
         	final List<RulArrangementExtension> parentExtensions = ruleService.findArrangementExtensionsByNodeIds(parentNodeIds, fundVersion);
-        	result.setParentExtensions(parentExtensions.stream().map(i -> RulArrangementExtensionVO.newInstance(i)).collect(Collectors.toList()));
+        	result.setParentExtensions(parentExtensions.stream().map(this::createExtension).collect(Collectors.toList()));
         }
 
         return result;

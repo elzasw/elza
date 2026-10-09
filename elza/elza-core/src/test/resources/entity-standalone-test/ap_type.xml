@@ -1,0 +1,11 @@
+<ap-types>
+    <!-- the root is declared as the parent only; the rule set offers the person class as a root -->
+    <ap-type code="PERSON">
+        <name>Person or being</name>
+        <read-only>true</read-only>
+    </ap-type>
+    <ap-type code="PERSON_INDIVIDUAL" parent-ap-type="PERSON">
+        <name>Person</name>
+        <read-only>false</read-only>
+    </ap-type>
+</ap-types>

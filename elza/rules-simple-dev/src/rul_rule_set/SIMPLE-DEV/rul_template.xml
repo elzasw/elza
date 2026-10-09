@@ -9,9 +9,4 @@
         <engine>JASPER</engine>
         <directory>SRD_INVENTORY_JASPER</directory>
     </template>
-    <template code="SRD_INVENTORY_PDFTEMPLATE" output-type="SRD_INVENTORY" mime-type="application/pdf" extension="pdf">
-        <name>AP inventář PDF Template</name>
-        <engine>JASPER</engine>
-        <directory>SRD_INVENTORY_PDFTEMPLATE</directory>
-    </template>
 </templates>

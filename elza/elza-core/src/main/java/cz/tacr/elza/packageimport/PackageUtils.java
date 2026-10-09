@@ -16,23 +16,31 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.PackageCode;
+import cz.tacr.elza.packageimport.autoimport.PackageInfoWrapper;
+import cz.tacr.elza.packageimport.xml.PackageInfo;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.Unmarshaller;
+import jakarta.xml.bind.ValidationEventLocator;
 
 /**
  * Utils pro import balíčků.
@@ -115,7 +123,8 @@ public class PackageUtils {
      */
     public static <T> T convertXmlFileToObject(final Class<T> classObject, final Path xmlFile) throws IOException {
     	if (Files.exists(xmlFile)) { 
-    		return convertXmlStreamToObject(classObject, new ByteArrayInputStream(FileUtils.readFileToByteArray(xmlFile.toFile())));
+    		return convertXmlStreamToObject(classObject, new ByteArrayInputStream(FileUtils.readFileToByteArray(xmlFile.toFile())),
+                                            xmlFile.toString());
     	}
     	return null;
     }
@@ -128,13 +137,43 @@ public class PackageUtils {
      * @param <T>         typ pro převod
      */
     public static <T> T convertXmlStreamToObject(final Class<T> classObject, final ByteArrayInputStream xmlStream) {
+        return convertXmlStreamToObject(classObject, xmlStream, null);
+    }
+
+    /**
+     * Převod streamu souboru XML na třídu; neznámý nebo špatně umístěný element je chyba.
+     *
+     * @param fileName název souboru do chybové zprávy, může být null
+     */
+    public static <T> T convertXmlStreamToObject(final Class<T> classObject, final ByteArrayInputStream xmlStream,
+                                                 final String fileName) {
         if (xmlStream != null) {
+            // the first event stops reading: JAXB's default handler skips unknown elements silently, so a
+            // misplaced element (e.g. <category> without <categories>) would be lost without an error
+            List<String> events = new ArrayList<>(1);
             try {
                 JAXBContext jaxbContext = JAXBContext.newInstance(classObject);
                 Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+                unmarshaller.setEventHandler(event -> {
+                    ValidationEventLocator locator = event.getLocator();
+                    events.add(locator != null && locator.getLineNumber() > 0
+                            ? "line " + locator.getLineNumber() + ": " + event.getMessage()
+                            : event.getMessage());
+                    return false;
+                });
                 return (T) unmarshaller.unmarshal(xmlStream);
             } catch (Exception e) {
-                throw new SystemException("Nepodařilo se načíst objekt " + classObject.getSimpleName() + " ze streamu", e, PackageCode.PARSE_ERROR).set("class", classObject.toString());
+                SystemException se = new SystemException("Nepodařilo se načíst objekt " + classObject.getSimpleName()
+                        + (fileName != null ? " ze souboru " + fileName : " ze streamu") + (events.isEmpty() ? "" : ": " + events.get(0)),
+                        e, PackageCode.PARSE_ERROR);
+                se.set("class", classObject.toString());
+                if (fileName != null) {
+                    se.set("file", fileName);
+                }
+                if (!events.isEmpty()) {
+                    se.set("detail", events.get(0));
+                }
+                throw se;
             }
         }
         return null;
@@ -196,6 +235,18 @@ public class PackageUtils {
             for (int i=0; i<v; ++i) {
                 adj[i] = new LinkedList<>();
             }
+        }
+
+        /**
+         * Adds a vertex without edges (a package without dependencies that no package depends on); the
+         * order of vertices without edges between them is the order of their addition.
+         */
+        public void addVertex(T vv) {
+            Integer v = map.computeIfAbsent(vv, k -> map.size());
+            if (map.size() > V) {
+                throw new IllegalStateException("Graph has only " + V + " vertex");
+            }
+            reverseMap.put(v, vv);
         }
 
         public void addEdge(T vv, T ww) {
@@ -295,5 +346,62 @@ public class PackageUtils {
         System.out.println("Following is a Topological " +
                 "sort of the given graph");
         System.out.println(g.topologicalSort());
+    }
+
+    private static final Logger logger = LoggerFactory.getLogger(PackageUtils.class);
+
+    private static final String PACKAGE_XML = "package.xml";
+
+    /**
+     * Reads the description of a package from its ZIP file.
+     *
+     * @return the description with the path of the file, or {@code null} when the file holds no
+     *         {@code package.xml}
+     */
+    public static PackageInfoWrapper readPackageInfo(final Path path) throws IOException {
+        try (ZipFile zipFile = new ZipFile(path.toFile())) {
+            ZipEntry zipEntry = zipFile.getEntry(PACKAGE_XML);
+            if (zipEntry == null) {
+                return null;
+            }
+            try (InputStream is = zipFile.getInputStream(zipEntry)) {
+                ByteArrayInputStream bais = new ByteArrayInputStream(IOUtils.toByteArray(is));
+                PackageInfo packageInfo = convertXmlStreamToObject(PackageInfo.class, bais, path + "/" + PACKAGE_XML);
+                return new PackageInfoWrapper(packageInfo, path);
+            }
+        }
+    }
+
+    /**
+     * Reads the packages of a directory: the ZIP files by code, in the order of the file names; of
+     * two files of one package the one with the higher version. A file without a package
+     * description is skipped with an error in the log. A missing directory holds no packages.
+     */
+    public static Map<String, PackageInfoWrapper> readPackageDirectory(final Path dir) throws IOException {
+        Map<String, PackageInfoWrapper> packages = new LinkedHashMap<>();
+        if (!Files.isDirectory(dir)) {
+            return packages;
+        }
+        try (Stream<Path> paths = Files.list(dir)) {
+            for (Path path : paths.sorted().toList()) {
+                if (Files.isDirectory(path) || !path.getFileName().toString().endsWith("zip")) {
+                    continue;
+                }
+                logger.info("Reading package info: {}", path);
+                PackageInfoWrapper pkg = readPackageInfo(path);
+                if (pkg == null) {
+                    logger.error("Cannot read package info from file : {}. File is skipped.", path);
+                    continue;
+                }
+                PackageInfoWrapper other = packages.get(pkg.getCode());
+                if (other != null && other.getVersion() >= pkg.getVersion()) {
+                    logger.warn("Package {} version {} in file {} is not newer than file {}. File is skipped.",
+                                pkg.getCode(), pkg.getVersion(), path, other.getPath());
+                    continue;
+                }
+                packages.put(pkg.getCode(), pkg);
+            }
+        }
+        return packages;
     }
 }

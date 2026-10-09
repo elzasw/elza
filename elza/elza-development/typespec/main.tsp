@@ -3089,6 +3089,16 @@ namespace ElzaAPI.Admin {
     @route("info/logged-users")
     op loggedUsers(): LoggedUsers;
 
+    /**
+     * Restart the application: after the response, the application stops with the exit code
+     * elza.restart.exitCode (3 by default), and the service manager starts it again. Without a
+     * service manager the application only stops.
+     */
+    @route("restart")
+    @post op restart(): {
+        @Http.statusCode statusCode: 202;
+    };
+
     /** Seznam API klíčů daného uživatele (bez tajné hodnoty). Ve výchozím stavu jen aktivní. */
     @route("user/{userId}/api-keys")
     @get op listUserApiKeys(
@@ -4219,6 +4229,20 @@ model AiTaskParameter {
     description?: string;
     /** Whether the caller must supply it. */
     required?: boolean;
+    /**
+     * Alternatives group (provider protocol 0.16.0): parameters sharing a group
+     * are alternatives — exactly one of them is supplied and the group as a
+     * whole is required (each member's own `required` is false). The panel
+     * uses it to tell whether a task can run in the current context.
+     */
+    alternativeGroup?: string;
+}
+
+/** Editable attributes of a conversation (the rename). */
+model AiConversationUpdate {
+    /** New title of the conversation (shown in the history list). */
+    @maxLength(250)
+    title: string;
 }
 
 /** A quality/cost tier the provider offers. */
@@ -4303,6 +4327,38 @@ namespace ElzaAPI.AiProvider {
         /** context type code filter */
         @query contextType?: string;
     ): AiConversation[];
+
+    /**
+     * Renames one of the current user's conversations.
+     */
+    @route("/conversation/{id}")
+    @put op updateConversation(
+        /** conversation id */
+        @path id: integer;
+        @body body: AiConversationUpdate;
+    ): AiConversation | {
+        /** Id does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Deletes one of the current user's conversations with all its exchanges,
+     * events and proposal decisions (the provider keeps its own task records
+     * under its retention policy). Refused while an exchange is still running
+     * — cancel it first.
+     */
+    @route("/conversation/{id}")
+    @delete op deleteConversation(
+        /** conversation id */
+        @path id: integer;
+    ): {
+        @Http.statusCode statusCode: 204;
+    } | {
+        /** Id does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
 
     /**
      * Submits a follow-up exchange into an existing conversation (continues
@@ -4826,9 +4882,9 @@ namespace ElzaAPI.Rules {
      * Public URL: `GET /api/v1/rules/itemTypes`.
      *
      * Localized strings (`name`, `shortcut`, `description` on `ItemType` and
-     * `ItemTypeSpec`, plus `name` on `ItemTableColumn`) honour the
-     * `Accept-Language` request header when provided; otherwise the server
-     * default language is used.
+     * `ItemTypeSpec`) are in the language of the request: the `elza-lang`
+     * cookie set by the client, else the first UI language of the
+     * `Accept-Language` header, else the server default language.
      *
      * Replaces the legacy `GET /api/rule/descItemTypes`.
      */
@@ -4850,6 +4906,120 @@ namespace ElzaAPI.Rules {
      */
     @route("/partTypes")
     @get op listPartTypes(): PartType[];
+}
+
+/**
+ * Why a package of the dpkg directory that is not installed will or will not be imported
+ * at the next start.
+ */
+enum AvailablePackageState {
+    /** Listed in elza.packages.enabled (or required by a listed package): imported at the next start */
+    CONFIGURED,
+    /** Marked in the administration: imported at the next start */
+    MARKED,
+    /** Neither installed, listed nor marked: left alone */
+    NOT_LOADED,
+}
+
+/**
+ * Package required by a package of the dpkg directory.
+ */
+model AvailablePackageDependency {
+    /** Code of the required package */
+    code: string;
+    /** Minimal version of the required package */
+    minVersion: int32;
+}
+
+/**
+ * Package present in the dpkg directory of the working directory and not installed.
+ */
+model AvailablePackage {
+    /** Code of the package */
+    code: string;
+    /** Name of the package */
+    name: string;
+    /** Version of the package in the file */
+    version: int32;
+    /** Description of the package */
+    description?: string;
+    /** Required packages */
+    dependencies: AvailablePackageDependency[];
+    /** What happens with the package at the next start */
+    state: AvailablePackageState;
+    /** Name of the file in the dpkg directory */
+    fileName: string;
+}
+
+/**
+ * Packages of the dpkg directory that are not installed, with the restart state of the application.
+ */
+model AvailablePackages {
+    /** Packages by code */
+    items: AvailablePackage[];
+    /** A restart is needed: packages are marked for the next start, or a package was imported since the start */
+    restartRequired: boolean;
+}
+
+/**
+ * Packages of the dpkg directory of the working directory that are not installed, and marking
+ * them for the import at the next start. Administrators only.
+ */
+@tag("packages")
+@route("/packages")
+namespace ElzaAPI.Packages {
+    /**
+     * Packages of the dpkg directory that are not installed, by code, and whether a restart is needed.
+     */
+    @route("available")
+    @get op listAvailablePackages(): AvailablePackages;
+
+    /**
+     * Mark a package of the dpkg directory for the import at the next start. Refused when the
+     * package is installed, or when a package it requires is neither installed, marked nor in the
+     * directory.
+     */
+    @route("available/{code}/mark")
+    @post op markPackage(@path code: string): {
+        @Http.statusCode statusCode: 204;
+    };
+
+    /**
+     * Cancel the mark of a package. Refused when the package is installed.
+     */
+    @route("available/{code}/mark")
+    @delete op unmarkPackage(@path code: string): {
+        @Http.statusCode statusCode: 204;
+    };
+}
+
+/**
+ * Language known to the installation (`sys_language`).
+ * Display names are not part of the model; clients take them from CLDR
+ * (`Intl.DisplayNames`) by `tag`.
+ */
+model Language {
+    /** BCP 47 tag, e.g. "cs", "en". */
+    tag: string;
+    /** ISO 639-2/B code, e.g. "cze", "eng". */
+    code: string;
+    /** The UI can be used in this language. */
+    uiEnabled: boolean;
+    /** The language can be chosen as the language of an entity scope. */
+    scopeEnabled: boolean;
+    /** Default language of the installation (`elza.locale`). */
+    defaultLanguage: boolean;
+}
+
+@tag("languages")
+@route("/languages")
+namespace ElzaAPI.Languages {
+    /**
+     * Returns all languages known to the installation with their usages.
+     *
+     * Public URL: `GET /api/v1/languages`.
+     */
+    @get op listLanguages(): Language[];
 }
 
 /**
@@ -8153,6 +8323,7 @@ namespace ElzaAPI.Tasks {
     version: "1.0.0",
 })
 @tagMetadata("admin", #{description: "Administrativní funkce"})
+@tagMetadata("languages", #{description: "Jazyky"})
 @tagMetadata("user", #{description: "Nastavení přihlášeného uživatele"})
 @tagMetadata("daos", #{description: "Digitální archivní objekty"})
 @tagMetadata("externalsystems", #{description: "Externí systémy"})

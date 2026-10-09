@@ -68,6 +68,15 @@ public interface ApAccessPointRepository extends ElzaJpaRepository<ApAccessPoint
     @Query("SELECT s.accessPointId FROM ap_state s WHERE s.deleteChangeId IS NULL AND s.apType IN :apTypes")
     List<Integer> findActiveAccessPointIdsByApTypes(@Param("apTypes") Collection<ApType> apTypes);
 
+    @Query("SELECT s.accessPointId FROM ap_state s WHERE s.deleteChangeId IS NULL"
+            + " AND s.scope.rulRuleSet.ruleSetId = :ruleSetId")
+    List<Integer> findActiveAccessPointIdsByRuleSet(@Param("ruleSetId") Integer ruleSetId);
+
+    @Query("SELECT s.accessPointId FROM ap_state s WHERE s.deleteChangeId IS NULL AND s.apType IN :apTypes"
+            + " AND s.scope.rulRuleSet.ruleSetId = :ruleSetId")
+    List<Integer> findActiveAccessPointIdsByApTypesAndRuleSet(@Param("apTypes") Collection<ApType> apTypes,
+                                                              @Param("ruleSetId") Integer ruleSetId);
+
     @Modifying
     @Query("UPDATE ap_access_point SET state = cz.tacr.elza.domain.ApStateEnum.INIT WHERE state <> cz.tacr.elza.domain.ApStateEnum.INIT AND accessPointId IN :accessPointIds")
     void updateToInit(@Param("accessPointIds") Collection<Integer> accessPointIds);

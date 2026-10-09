@@ -1,7 +1,11 @@
 {
   "accesspoint.create.titleMessage": {
-    "defaultMessage": "First choose the subclass and scope of the new archival entity. The relevant attributes are shown according to the chosen subclass. Once the main part of the name is filled in, the archival entity can be created.",
-    "srcHash": "o_2XettCsbEL"
+    "defaultMessage": "First choose the scope, then the class of the new archival entity. The attributes of the chosen class are then shown. Once the main part of the name is filled in, the archival entity can be created.",
+    "srcHash": "22RpDMqj6Lod"
+  },
+  "accesspoint.create.titleMessageSingleScope": {
+    "defaultMessage": "First choose the class of the new archival entity. The attributes of the chosen class are then shown. Once the main part of the name is filled in, the archival entity can be created.",
+    "srcHash": "14BHlrcBHbPR"
   },
   "accesspoint.removeDuplicity": {
     "defaultMessage": "Remove the duplicate",
@@ -907,6 +911,22 @@
     "defaultMessage": "Scroll down",
     "srcHash": "diTqvnzq62es"
   },
+  "admin.logs.error.fileNotFound": {
+    "defaultMessage": "The log file {path} was not found.",
+    "srcHash": "8LUNHwlafmOR"
+  },
+  "admin.logs.error.load": {
+    "defaultMessage": "Error loading the log.",
+    "srcHash": "EB7bq9rz-An8"
+  },
+  "admin.logs.error.noPath": {
+    "defaultMessage": "Configuration error: the path to the log file is not set.",
+    "srcHash": "kZ-7BftnZQ4W"
+  },
+  "admin.logs.error.read": {
+    "defaultMessage": "Error reading the log file {path}.",
+    "srcHash": "YVPVQWW0dQTO"
+  },
   "admin.logs.loading": {
     "defaultMessage": "Loading…",
     "srcHash": "huKZrEM4ZxuE"
@@ -918,6 +938,66 @@
   "admin.packages.action.import": {
     "defaultMessage": "Import",
     "srcHash": "yTA6PZurxTjn"
+  },
+  "admin.packages.available.dependencies": {
+    "defaultMessage": "Required packages (minimal version)",
+    "srcHash": "2cR-WAXudg3q"
+  },
+  "admin.packages.available.empty": {
+    "defaultMessage": "Every package of the dpkg directory is loaded.",
+    "srcHash": "7NIaiTF5GVIg"
+  },
+  "admin.packages.available.file": {
+    "defaultMessage": "File",
+    "srcHash": "XuE2x3rNQQt-"
+  },
+  "admin.packages.available.mark": {
+    "defaultMessage": "Load at the next start",
+    "srcHash": "U9yc0xDfaVgW"
+  },
+  "admin.packages.available.restart": {
+    "defaultMessage": "Restart the application",
+    "srcHash": "NdHUWey_C2cD"
+  },
+  "admin.packages.available.restart.confirm": {
+    "defaultMessage": "The application stops and the service manager (systemd) starts it again; if the application does not run as a service, start it again by hand. Every user is disconnected. Continue?",
+    "srcHash": "o41YAycdVPRl"
+  },
+  "admin.packages.available.restart.imported": {
+    "defaultMessage": "A package was imported while the application runs; the search index registers its new fields only after a restart.",
+    "srcHash": "GYIz6CWdB0nB"
+  },
+  "admin.packages.available.restart.marked": {
+    "defaultMessage": "The marked packages are loaded at the next start of the application.",
+    "srcHash": "yVhMqPgMHeNc"
+  },
+  "admin.packages.available.restart.requested": {
+    "defaultMessage": "The restart has started. The application stops in a moment and starts again.",
+    "srcHash": "sPM-N26k8ry5"
+  },
+  "admin.packages.available.state": {
+    "defaultMessage": "At the next start",
+    "srcHash": "HRVOA6isRpUz"
+  },
+  "admin.packages.available.state.configured": {
+    "defaultMessage": "Loaded (configuration)",
+    "srcHash": "tu4P0_9gZETC"
+  },
+  "admin.packages.available.state.marked": {
+    "defaultMessage": "Loaded (marked)",
+    "srcHash": "tIu1hvIrxdkY"
+  },
+  "admin.packages.available.state.notLoaded": {
+    "defaultMessage": "Not loaded",
+    "srcHash": "is2PZCpvoBLv"
+  },
+  "admin.packages.available.title": {
+    "defaultMessage": "Packages in the dpkg directory that are not loaded",
+    "srcHash": "kxla5y81yNGl"
+  },
+  "admin.packages.available.unmark": {
+    "defaultMessage": "Cancel the mark",
+    "srcHash": "ZLutkqJVK7-G"
   },
   "admin.packages.message.delete.message": {
     "defaultMessage": "The package {0} was deleted successfully",
@@ -1319,6 +1399,10 @@
     "defaultMessage": "The passwords do not match",
     "srcHash": "1rOyiAy_40BR"
   },
+  "admin.userPicker.noMatch": {
+    "defaultMessage": "No user matches",
+    "srcHash": "V6A5s8LIhiba"
+  },
   "admin_packages_label_action": {
     "defaultMessage": "Action",
     "srcHash": "zI4C_P1sVn28"
@@ -1565,6 +1649,22 @@
     "defaultMessage": "Collapse panel",
     "srcHash": "hVRlVn5JBC8y"
   },
+  "aiAssistant.action.conversationMenu": {
+    "defaultMessage": "Conversation options",
+    "srcHash": "NSDd0Si7IptH"
+  },
+  "aiAssistant.action.copied": {
+    "defaultMessage": "Copied",
+    "srcHash": "hcVj8DGIGKBq"
+  },
+  "aiAssistant.action.copy": {
+    "defaultMessage": "Copy",
+    "srcHash": "icAZn-5O6k2x"
+  },
+  "aiAssistant.action.delete": {
+    "defaultMessage": "Delete",
+    "srcHash": "oe4iuqXX4rqm"
+  },
   "aiAssistant.action.expandPanel": {
     "defaultMessage": "Expand panel",
     "srcHash": "wPp1aA3CjF7g"
@@ -1581,6 +1681,14 @@
     "defaultMessage": "Model",
     "srcHash": "XixhTCPwIjm8"
   },
+  "aiAssistant.action.rename": {
+    "defaultMessage": "Rename",
+    "srcHash": "lDdbnIaYNyTV"
+  },
+  "aiAssistant.action.save": {
+    "defaultMessage": "Save",
+    "srcHash": "eKX-T2uH2Zl7"
+  },
   "aiAssistant.action.send": {
     "defaultMessage": "Send",
     "srcHash": "qmmhj7gqjJS4"
@@ -1588,6 +1696,10 @@
   "aiAssistant.action.settings": {
     "defaultMessage": "Settings",
     "srcHash": "4BNW7MyPieeu"
+  },
+  "aiAssistant.action.stop": {
+    "defaultMessage": "Stop",
+    "srcHash": "Dfuuuf5bl0J7"
   },
   "aiAssistant.activity.linkOpen": {
     "defaultMessage": "Show record",
@@ -1701,6 +1813,14 @@
     "defaultMessage": "Context:",
     "srcHash": "g-NS7D1rL5QJ"
   },
+  "aiAssistant.delete.confirm": {
+    "defaultMessage": "The conversation “{title}” will be deleted with all its answers. Continue?",
+    "srcHash": "c32VOtk_Fa2d"
+  },
+  "aiAssistant.delete.title": {
+    "defaultMessage": "Delete conversation",
+    "srcHash": "zVTRTodIRRxC"
+  },
   "aiAssistant.error.accountQuotaExceeded": {
     "defaultMessage": "Your credit limit for this period is exhausted.",
     "srcHash": "ULxSQM8vrYqj"
@@ -1749,6 +1869,14 @@
     "defaultMessage": "Superseded by a newer proposal",
     "srcHash": "DA45jq9z2d1Q"
   },
+  "aiAssistant.rename.label": {
+    "defaultMessage": "Title",
+    "srcHash": "EQAs0dy3Z5es"
+  },
+  "aiAssistant.rename.title": {
+    "defaultMessage": "Rename conversation",
+    "srcHash": "l_QJKskUwjD9"
+  },
   "aiAssistant.settings.fullWidthResponses": {
     "defaultMessage": "Full-width responses",
     "srcHash": "u04WWMytfMeS"
@@ -1764,6 +1892,26 @@
   "aiAssistant.state.thinking": {
     "defaultMessage": "AI is thinking…",
     "srcHash": "-N1FvyhY7A-b"
+  },
+  "aiAssistant.task.needsContext": {
+    "defaultMessage": "Not available in the current context",
+    "srcHash": "Q3D2wwW-kLR6"
+  },
+  "aiAssistant.task.needsEntity": {
+    "defaultMessage": "Requires an open archival entity",
+    "srcHash": "k6VRi-ArDSbE"
+  },
+  "aiAssistant.task.needsFund": {
+    "defaultMessage": "Requires an open fonds",
+    "srcHash": "aa2MHobNjQRv"
+  },
+  "aiAssistant.task.needsNode": {
+    "defaultMessage": "Requires an open unit of description",
+    "srcHash": "bzjI53vjzCtv"
+  },
+  "aiAssistant.task.needsNodeOrEntity": {
+    "defaultMessage": "Requires an open unit of description or archival entity",
+    "srcHash": "leIc5QLLag5s"
   },
   "aiAssistant.usage.accountHeading": {
     "defaultMessage": "Your account",
@@ -2294,8 +2442,8 @@
     "srcHash": "QJkW_O6qWoE2"
   },
   "aip.form.update.type.DbUpdate.hint": {
-    "defaultMessage": "Rebuilds the digital entities in ELZA from the already downloaded package; nothing is downloaded. It fails when it would have to remove an entity linked to a description unit.",
-    "srcHash": "GLHF_Zs8wSFE"
+    "defaultMessage": "Rebuilds the digital entities in ELZA from the already downloaded package; nothing is downloaded. Links to parts the package no longer contains are removed.",
+    "srcHash": "_ANh71miSfuB"
   },
   "aip.form.update.type.DownloadUpdate": {
     "defaultMessage": "Download the AIP again",
@@ -3238,8 +3386,8 @@
     "srcHash": "1sRUDB31F_YQ"
   },
   "ap.state.title.type": {
-    "defaultMessage": "Subclass",
-    "srcHash": "_jrDercTzKxJ"
+    "defaultMessage": "Entity class",
+    "srcHash": "vF8Ye4V_74q1"
   },
   "ap.stateHistory": {
     "defaultMessage": "State history",
@@ -5986,32 +6134,32 @@
     "srcHash": "M0pT0njvr6H0"
   },
   "dataType.UNITDATE.format": {
-    "defaultMessage": "<p><b>Date format</b></p><p>Century: 20. st. <i>or</i> 20.st. <i>or</i> 20st</p><p>Year: 1968</p><p>Month: 8.1968</p><p>Day: 21.8.1968</p><p>Hours, minutes, seconds: 21.8.1968 2:43 <i>or</i> 21.8.1968 8:23:31</p><p><b>Intervals</b></p><p>Years: 1968-1969</p><p>Combination: 8.1968-1969 <i>or</i> 21.8.1968 2:43-27.6.1989</p><p><b>Estimate</b></p><p>Defined by enclosing the value in round or square brackets:</p><p>E.g.: [16.8.1977] <i>or</i> [1990]-1992</p><p>When the '/' character is used to separate an interval, both from and to are treated as an estimate:</p><p>E.g.: 1985/1990</p>",
-    "srcHash": "eW59aBerEcN3"
+    "defaultMessage": "<p><b>Date format</b></p><p>Century: {century}</p><p>Year: {year}</p><p>Month: {month}</p><p>Day: {day}</p><p>Hours, minutes, seconds: {time}</p><p><b>Intervals</b></p><p>Years: {intervalYears}</p><p>Combined: {intervalCombined}</p><p><b>Estimate</b></p><p>Written by enclosing the value in round or square brackets:</p><p>For example: {estimateBrackets}</p><p>When '/' separates an interval, both ends are read as an estimate:</p><p>For example: {estimateSlash}</p>",
+    "srcHash": "WoVZ06OmVkIr"
   },
   "dataType.coordinates.format": {
     "defaultMessage": "<div><b>Loading coordinates from a file</b> in the<br />KML, GML or WKT format<br /><b>WGS84 system</b> (e.g. Mapy.cz)<br /><i>example: 49.5765442N, 14.3965617E</i><br /><b>WKT markup language</b><br /><i>examples: POINT (14.3965617 49.5765442)</i><br /><i>LINESTRING (14.3965528 49.5765909,14.4172300 49.5551484)</i><br /><i>POLYGON ((14.3828494 49.5976066,14.3829031 49.5971094,<br />14.3842817 49.5971546,14.3842281 49.5976379,<br />14.3828494 49.5976066))</i></div>",
     "srcHash": "eF7NJdW2to1P"
   },
   "dataType.unitdate.format": {
-    "defaultMessage": "<div><b>Date format</b><br />Century: 20. st. <i>or</i> 20.st. <i>or</i> 20st<br />Year: 1968<br />Month: 8.1968<br />Day: 21.8.1968<br />Hours, minutes, seconds: 21.8.1968 2:43 <i>or</i> 21.8.1968 8:23:31<br /><b>Intervals</b><br />Years: 1968-1969<br />Combinations: 8.1968-1969 <i>or</i> 21.8.1968 2:43-27.6.1989<br /><b>Estimate</b><br />Written by enclosing the value in round or square brackets:<br />For example: [16.8.1977] <i>or</i> [1990]-1992<br />When \"/\" is used to separate an interval, both ends are read as an estimate:<br />For example: 1985/1990</div>",
-    "srcHash": "xnAtbsKZetGY"
+    "defaultMessage": "<div><b>Date format</b><br />Century: {century}<br />Year: {year}<br />Month: {month}<br />Day: {day}<br />Hours, minutes, seconds: {time}<br /><b>Intervals</b><br />Years: {intervalYears}<br />Combined: {intervalCombined}<br /><b>Estimate</b><br />Written by enclosing the value in round or square brackets:<br />For example: {estimateBrackets}<br />When \"/\" is used to separate an interval, both ends are read as an estimate:<br />For example: {estimateSlash}</div>",
+    "srcHash": "VwQpdaTBw-V0"
   },
   "dataType.unitdate.format.century": {
-    "defaultMessage": "Century: 20. st. <i>or</i> 20.st. <i>or</i> 20st",
-    "srcHash": "pnH-szqQNR37"
+    "defaultMessage": "Century: {century}",
+    "srcHash": "iKtDJ1M4oiS7"
   },
   "dataType.unitdate.format.day": {
-    "defaultMessage": "Day: 21.8.1968",
-    "srcHash": "QtGB4sUeEReX"
+    "defaultMessage": "Day: {day}",
+    "srcHash": "gfNKglnjqV4H"
   },
   "dataType.unitdate.format.estimate.brackets": {
     "defaultMessage": "Defined by enclosing the value in round or square brackets:",
     "srcHash": "O7DuiUHQ9Sxd"
   },
   "dataType.unitdate.format.estimate.bracketsExample": {
-    "defaultMessage": "For example: [16.8.1977] <i>or</i> [1990]-1992",
-    "srcHash": "J_oEJsVE5e5u"
+    "defaultMessage": "For example: {estimateBrackets}",
+    "srcHash": "vVPKYj8O9nyV"
   },
   "dataType.unitdate.format.estimate.heading": {
     "defaultMessage": "Estimate",
@@ -6022,36 +6170,40 @@
     "srcHash": "wIiXpvjgfaRk"
   },
   "dataType.unitdate.format.estimate.slashExample": {
-    "defaultMessage": "For example: 1985/1990",
-    "srcHash": "cQz65spn-04-"
+    "defaultMessage": "For example: {estimateSlash}",
+    "srcHash": "0ALXjERBOJRZ"
   },
   "dataType.unitdate.format.heading": {
     "defaultMessage": "Date format",
     "srcHash": "awuEWz-ElkJG"
   },
   "dataType.unitdate.format.intervals.combined": {
-    "defaultMessage": "Combined: 8.1968-1969 <i>or</i> 21.8.1968 2:43-27.6.1989",
-    "srcHash": "UrWFTi-M6vtc"
+    "defaultMessage": "Combined: {intervalCombined}",
+    "srcHash": "p_xI63f8fyOU"
   },
   "dataType.unitdate.format.intervals.heading": {
     "defaultMessage": "Intervals",
     "srcHash": "Iw-A2gDo2i_3"
   },
   "dataType.unitdate.format.intervals.years": {
-    "defaultMessage": "Years: 1968-1969",
-    "srcHash": "y-nDxchCbXQf"
+    "defaultMessage": "Years: {intervalYears}",
+    "srcHash": "eTAdXMZeEhNR"
   },
   "dataType.unitdate.format.month": {
-    "defaultMessage": "Month: 8.1968",
-    "srcHash": "u1HsdOk6gNa7"
+    "defaultMessage": "Month: {month}",
+    "srcHash": "p3p2fSTX2Pi0"
+  },
+  "dataType.unitdate.format.or": {
+    "defaultMessage": "or",
+    "srcHash": "hKvRkJrrFeHY"
   },
   "dataType.unitdate.format.time": {
-    "defaultMessage": "Hours, minutes, seconds: 21.8.1968 2:43 <i>or</i> 21.8.1968 8:23:31",
-    "srcHash": "A9cmcmPkHlWU"
+    "defaultMessage": "Hours, minutes, seconds: {time}",
+    "srcHash": "O_C2J06FdK9M"
   },
   "dataType.unitdate.format.year": {
-    "defaultMessage": "Year: 1968",
-    "srcHash": "Z5zW1BerWdAy"
+    "defaultMessage": "Year: {year}",
+    "srcHash": "RXh1_OIy_QqB"
   },
   "deleted_entity_table_column_deleteDate": {
     "defaultMessage": "Deletion date",
@@ -6320,6 +6472,10 @@
   "exception.arr.EXISTS_NEWER_CHANGE": {
     "defaultMessage": "A newer change exists, the list needs to be reloaded",
     "srcHash": "jXlhE1xkqcN1"
+  },
+  "exception.arr.FUND_HAS_DA_LINKS": {
+    "defaultMessage": "The fund cannot be deleted because its description units have {count, plural, one {# active link} other {# active links}} to a digital archive. Remove the links first.",
+    "srcHash": "zaBRyN5XdMc8"
   },
   "exception.arr.FUND_NOT_FOUND": {
     "defaultMessage": "The archival fund does not exist.",
@@ -6597,6 +6753,10 @@
     "defaultMessage": "The validation schema was not found",
     "srcHash": "Mt7-YWJX3tMk"
   },
+  "exception.pkg.AP_TYPE_CONFLICT": {
+    "defaultMessage": "The class “{code}” is declared by another package with another parent ({otherParentCode})",
+    "srcHash": "5tqgW9RCJ29D"
+  },
   "exception.pkg.CIRCULAR_DEPENDENCY": {
     "defaultMessage": "Circular dependency",
     "srcHash": "giQQgfFkV64c"
@@ -6617,6 +6777,30 @@
     "defaultMessage": "The required packages were not found: {codes}",
     "srcHash": "pwkQJfvnX8zM"
   },
+  "exception.pkg.INVALID_ENTITY_RULE": {
+    "defaultMessage": "Invalid entity rules in the file “{file}”: {reason}",
+    "srcHash": "UnKVJIRAPDyh"
+  },
+  "exception.pkg.INVALID_TRANSLATION": {
+    "defaultMessage": "Invalid translation “{key}” in the file “{file}”: {reason}",
+    "srcHash": "2ia7ekwwoPP0"
+  },
+  "exception.pkg.ITEM_SPEC_CONFLICT": {
+    "defaultMessage": "Specification \"{code}\" belongs to package {otherPackageCode}; its entity classes cannot be declared",
+    "srcHash": "1NdlOi8FdkZr"
+  },
+  "exception.pkg.ITEM_SPEC_IN_USE": {
+    "defaultMessage": "Specifications \"{codes}\" cannot be removed, descriptions or entities use them ({count})",
+    "srcHash": "2ugxMYU4rDfS"
+  },
+  "exception.pkg.ITEM_TYPE_CONFLICT": {
+    "defaultMessage": "Item type \"{code}\" is declared by package {otherPackageCode} with another {attribute}",
+    "srcHash": "86Ju5wC3GxVv"
+  },
+  "exception.pkg.ITEM_TYPE_IN_USE": {
+    "defaultMessage": "Item types \"{codes}\" cannot be removed, descriptions or entities use them",
+    "srcHash": "92pBwa1vlOjV"
+  },
   "exception.pkg.MIN_DEPENDENCY": {
     "defaultMessage": "The minimum version of package {code} is not met: {version}.",
     "srcHash": "ePY5iK9u_eLf"
@@ -6633,9 +6817,17 @@
     "defaultMessage": "Error while parsing the XML file",
     "srcHash": "j9Xrpj5ZuZnR"
   },
+  "exception.pkg.PART_TYPE_IN_USE": {
+    "defaultMessage": "Part type \"{codes}\" cannot be removed, {count} parts of entities use it",
+    "srcHash": "8aa7bJu0rWMh"
+  },
   "exception.pkg.VERSION_APPLIED": {
     "defaultMessage": "Package {code} is already applied at version {version}",
     "srcHash": "NW8GVCeF9F0a"
+  },
+  "exception.reg.AP_TYPE_NOT_IN_RULE_SET": {
+    "defaultMessage": "The class “{apType}” cannot be used in the scope “{scope}” (rules {ruleSet})",
+    "srcHash": "aZOMnt5l4fjD"
   },
   "exception.reg.CANT_CHANGE_DELETED_AP": {
     "defaultMessage": "An invalidated archival entity cannot be changed",
@@ -7513,6 +7705,10 @@
     "defaultMessage": "Take over",
     "srcHash": "Zl25rJ2urUHA"
   },
+  "lang.picker.language": {
+    "defaultMessage": "Language",
+    "srcHash": "ARpdV1qvwAV4"
+  },
   "loggedUsers.title": {
     "defaultMessage": "Signed-in users",
     "srcHash": "Z4fQxDmHvFCP"
@@ -8070,8 +8266,8 @@
     "srcHash": "xxAzjqAuIzkG"
   },
   "registry.add.type": {
-    "defaultMessage": "Subclass",
-    "srcHash": "_jrDercTzKxJ"
+    "defaultMessage": "Entity class",
+    "srcHash": "vF8Ye4V_74q1"
   },
   "registry.addNewRegistry": {
     "defaultMessage": "New entity",
@@ -8088,6 +8284,14 @@
   "registry.allRevisionStates": {
     "defaultMessage": "All",
     "srcHash": "5C_lbtoov7Gn"
+  },
+  "registry.apTypePicker.chooseScopeFirst": {
+    "defaultMessage": "Choose a scope first",
+    "srcHash": "eT4nJ87G2Da-"
+  },
+  "registry.apTypePicker.noMatch": {
+    "defaultMessage": "No class matches",
+    "srcHash": "wWlw0qZPgYJo"
   },
   "registry.batchExport.action": {
     "defaultMessage": "Export to CSV",
@@ -8180,6 +8384,30 @@
   "registry.scopeClass": {
     "defaultMessage": "Scope",
     "srcHash": "K6XBwbqHYyDh"
+  },
+  "registry.state.approved": {
+    "defaultMessage": "Approved",
+    "srcHash": "iFSDFb-ftuYC"
+  },
+  "registry.state.invalid": {
+    "defaultMessage": "Invalidated",
+    "srcHash": "A88JPeoL7lCQ"
+  },
+  "registry.state.new": {
+    "defaultMessage": "New",
+    "srcHash": "FzR-6REK3Bz4"
+  },
+  "registry.state.replaced": {
+    "defaultMessage": "Replaced",
+    "srcHash": "FjQnXA8aI1SQ"
+  },
+  "registry.state.toAmend": {
+    "defaultMessage": "To be amended",
+    "srcHash": "WLbxDYwC64Yu"
+  },
+  "registry.state.toApprove": {
+    "defaultMessage": "Awaiting approval",
+    "srcHash": "PSfHpbgV7Rqf"
   },
   "registry.type": {
     "defaultMessage": "Entity class / subclass",

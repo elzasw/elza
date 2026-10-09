@@ -7,10 +7,12 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -57,6 +59,7 @@ import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.AiConversationRepository;
 import cz.tacr.elza.repository.AiExternalSystemRepository;
+import cz.tacr.elza.repository.AiProposalDecisionRepository;
 import cz.tacr.elza.repository.AiRequestEventRepository;
 import cz.tacr.elza.repository.AiRequestRepository;
 import cz.tacr.elza.security.UserDetail;
@@ -89,6 +92,9 @@ public class AiConversationService {
 
     @Autowired
     private AiRequestEventRepository aiRequestEventRepository;
+
+    @Autowired
+    private AiProposalDecisionRepository aiProposalDecisionRepository;
 
     @Autowired
     private AiExternalSystemRepository aiExternalSystemRepository;
@@ -160,8 +166,19 @@ public class AiConversationService {
             throw new BusinessException("Conversation has no exchanges", BaseCode.INVALID_STATE);
         }
         AiRequest last = requests.get(requests.size() - 1);
-        if (!"done".equals(last.getState())) {
+        if (!isTerminal(last.getState())) {
             throw new BusinessException("Previous exchange is not finished", BaseCode.INVALID_STATE);
+        }
+        // A stopped or failed exchange does not end the conversation (it used to
+        // dead-end here): the follow-up continues the provider-side thread from
+        // the last exchange that actually finished — an error/cancelled task
+        // has no output to chain; without any, a fresh chain starts.
+        AiRequest lastDone = null;
+        for (int i = requests.size() - 1; i >= 0; i--) {
+            if ("done".equals(requests.get(i).getState()) && requests.get(i).getTaskUid() != null) {
+                lastDone = requests.get(i);
+                break;
+            }
         }
 
         // A follow-up may move the user's context; when it carries one, it
@@ -184,8 +201,49 @@ public class AiConversationService {
         // exchange's task, and the provider chains it regardless of type.
         String taskType = vo.getTaskType() != null ? vo.getTaskType() : last.getTaskType();
         submitExchange(conversation, externalSystem, taskType, profile,
-                       vo.getUserInstructions(), vo.getParameters(), context, last.getTaskUid());
+                       vo.getUserInstructions(), vo.getParameters(), context,
+                       lastDone == null ? null : lastDone.getTaskUid());
         return getDetail(conversation, externalSystem);
+    }
+
+    /** Renames one of the current user's conversations (the history list title). */
+    @Transactional
+    public AiConversationVO renameConversation(final Integer conversationId, final String title) {
+        AiConversation conversation = loadOwnConversation(conversationId);
+        String trimmed = title == null ? "" : title.trim();
+        if (trimmed.isEmpty()) {
+            throw new BusinessException("Conversation title must not be empty", BaseCode.PROPERTY_IS_INVALID)
+                    .set("property", "title");
+        }
+        conversation.setTitle(trimmed.length() > 250 ? trimmed.substring(0, 250) : trimmed);
+        aiConversationRepository.save(conversation);
+        return toVO(conversation, loadExternalSystem(conversation));
+    }
+
+    /**
+     * Deletes one of the current user's conversations with its exchanges, their
+     * events and proposal decisions. The provider keeps its own task records
+     * (its retention policy, the metering copy) — this removes the user's view.
+     * Refused while an exchange is still running: the poller works on live
+     * requests by id and a vanished row would surface as a mystery there; the
+     * user cancels first.
+     */
+    @Transactional
+    public void deleteConversation(final Integer conversationId) {
+        AiConversation conversation = loadOwnConversation(conversationId);
+        List<AiRequest> requests = aiRequestRepository
+                .findByAiConversationIdOrderByCreateDateAsc(conversationId);
+        if (requests.stream().anyMatch(request -> !isTerminal(request.getState()))) {
+            throw new BusinessException("Conversation has a running exchange; cancel it first",
+                    BaseCode.INVALID_STATE);
+        }
+        List<Integer> requestIds = requests.stream().map(AiRequest::getAiRequestId).toList();
+        if (!requestIds.isEmpty()) {
+            aiProposalDecisionRepository.deleteByAiRequestIdIn(requestIds);
+            aiRequestEventRepository.deleteByAiRequestIdIn(requestIds);
+            aiRequestRepository.deleteByAiConversationId(conversationId);
+        }
+        aiConversationRepository.delete(conversation);
     }
 
     @Transactional
@@ -401,7 +459,49 @@ public class AiConversationService {
                     .findFirst()
                     .ifPresent(object -> parameters.put(declaredParam.getName(), object));
         }
+        requireDeclaredParameters(taskType, declared, parameters);
         return parameters;
+    }
+
+    /**
+     * Refuses a submission whose required parameters — or alternatives groups
+     * (provider protocol 0.16.0: exactly one member of a group) — could not be
+     * filled from the panel's context, before the provider is asked. The
+     * provider would fail the task at step time with the same conclusion, but
+     * only after the exchange was created; the readable refusal here is what
+     * the panel shows (and its runnability check mirrors this rule client-side,
+     * so a user normally never reaches it).
+     */
+    private static void requireDeclaredParameters(final String taskType,
+                                                  final List<TaskParameterInfo> declared,
+                                                  final Map<String, AiObject> parameters) {
+        List<String> missing = new ArrayList<>();
+        Map<String, List<TaskParameterInfo>> groups = new LinkedHashMap<>();
+        for (TaskParameterInfo param : declared) {
+            if (StringUtils.isNotBlank(param.getAlternativeGroup())) {
+                groups.computeIfAbsent(param.getAlternativeGroup(), key -> new ArrayList<>()).add(param);
+            } else if (Boolean.TRUE.equals(param.getRequired()) && !parameters.containsKey(param.getName())) {
+                missing.add(param.getName() + " (" + param.getType() + ")");
+            }
+        }
+        for (List<TaskParameterInfo> group : groups.values()) {
+            List<TaskParameterInfo> supplied = group.stream()
+                    .filter(param -> parameters.containsKey(param.getName())).toList();
+            if (supplied.size() > 1) {
+                // Two alternatives at hand (e.g. a level AND an entity in the
+                // context) — keep the first declared one, the task reviews one record.
+                for (TaskParameterInfo extra : supplied.subList(1, supplied.size())) {
+                    parameters.remove(extra.getName());
+                }
+            } else if (supplied.isEmpty()) {
+                missing.add(group.stream().map(param -> param.getName() + " (" + param.getType() + ")")
+                        .collect(Collectors.joining(" | ")));
+            }
+        }
+        if (!missing.isEmpty()) {
+            throw new BusinessException("Task " + taskType + " needs context the panel does not provide here: "
+                    + String.join(", ", missing), BaseCode.INVALID_STATE);
+        }
     }
 
     /**

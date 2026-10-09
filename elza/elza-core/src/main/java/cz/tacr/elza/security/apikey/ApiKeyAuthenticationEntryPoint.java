@@ -12,6 +12,8 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import cz.tacr.elza.core.data.PackageTexts;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -25,6 +27,12 @@ public class ApiKeyAuthenticationEntryPoint implements AuthenticationEntryPoint 
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    private final PackageTexts packageTexts;
+
+    public ApiKeyAuthenticationEntryPoint(PackageTexts packageTexts) {
+        this.packageTexts = packageTexts;
+    }
+
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
                          AuthenticationException authException) throws IOException {
@@ -34,7 +42,7 @@ public class ApiKeyAuthenticationEntryPoint implements AuthenticationEntryPoint 
 
         Map<String, String> body = new LinkedHashMap<>();
         body.put("code", failure.name());
-        body.put("message", failure.getMessage());
+        body.put("message", packageTexts.text(failure.getCoreMessage()));
 
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);

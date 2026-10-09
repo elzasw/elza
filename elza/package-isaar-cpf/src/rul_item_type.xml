@@ -1,0 +1,244 @@
+<item-types>
+    <!-- item types shared with CZ_BASE (CAM) by code, the same data types; ISAAR_* are own -->
+    <item-type code="NM_MAIN" data-type="STRING">
+        <name>Name (main part)</name>
+        <shortcut>Name</shortcut>
+        <description>ISAAR(CPF) 5.1.2: main part of the name (surname of a person, name of a body or place)</description>
+        <use-specification>false</use-specification>
+        <string-length-limit>250</string-length-limit>
+    </item-type>
+    <item-type code="NM_MINOR" data-type="STRING">
+        <name>Name (other part)</name>
+        <shortcut>Other part</shortcut>
+        <description>Other part of the name (forenames of a person, qualifier of a body)</description>
+        <use-specification>false</use-specification>
+        <string-length-limit>250</string-length-limit>
+    </item-type>
+    <item-type code="NM_TYPE" data-type="ENUM">
+        <name>Form of name</name>
+        <shortcut>Form</shortcut>
+        <description>ISAAR(CPF) 5.1.3-5.1.5: kind of a non-authorized form of the name</description>
+        <use-specification>true</use-specification>
+    </item-type>
+    <item-type code="NM_LANG" data-type="ENUM">
+        <name>Language of name</name>
+        <shortcut>Language</shortcut>
+        <description>Language of the form of the name</description>
+        <use-specification>true</use-specification>
+    </item-type>
+    <item-type code="NM_USED_FROM" data-type="UNITDATE">
+        <name>Name used from</name>
+        <shortcut>Used from</shortcut>
+        <description>Beginning of the use of the form of the name</description>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="NM_USED_TO" data-type="UNITDATE">
+        <name>Name used to</name>
+        <shortcut>Used to</shortcut>
+        <description>End of the use of the form of the name</description>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="IDN_TYPE" data-type="ENUM">
+        <name>Identifier type</name>
+        <shortcut>Id. type</shortcut>
+        <description>ISAAR(CPF) 5.1.6, 5.4.1: source of the identifier</description>
+        <use-specification>true</use-specification>
+    </item-type>
+    <item-type code="IDN_VALUE" data-type="STRING">
+        <name>Identifier</name>
+        <shortcut>Identifier</shortcut>
+        <description>Value of the identifier</description>
+        <use-specification>false</use-specification>
+        <string-length-limit>50</string-length-limit>
+    </item-type>
+    <item-type code="IDN_VALID_FROM" data-type="UNITDATE">
+        <name>Identifier valid from</name>
+        <shortcut>Valid from</shortcut>
+        <description>Beginning of the validity of the identifier</description>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="IDN_VALID_TO" data-type="UNITDATE">
+        <name>Identifier valid to</name>
+        <shortcut>Valid to</shortcut>
+        <description>End of the validity of the identifier</description>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="REL_ENTITY" data-type="RECORD_REF">
+        <name>Related entity</name>
+        <shortcut>Related</shortcut>
+        <description>ISAAR(CPF) 5.3: related entity; the specification is the category and kind of the relationship</description>
+        <use-specification>true</use-specification>
+    </item-type>
+    <item-type code="REL_BEGIN" data-type="UNITDATE">
+        <name>Relationship from</name>
+        <shortcut>From</shortcut>
+        <description>ISAAR(CPF) 5.3.4: beginning of the relationship</description>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="REL_END" data-type="UNITDATE">
+        <name>Relationship to</name>
+        <shortcut>To</shortcut>
+        <description>ISAAR(CPF) 5.3.4: end of the relationship</description>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="CRE_DATE" data-type="UNITDATE">
+        <name>Date of birth / establishment</name>
+        <shortcut>Beginning</shortcut>
+        <description>ISAAR(CPF) 5.2.1: beginning of existence</description>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="CRE_CLASS" data-type="ENUM">
+        <name>Kind of beginning</name>
+        <shortcut>Kind</shortcut>
+        <description>What the beginning of existence is (birth, establishment, first mention)</description>
+        <use-specification>true</use-specification>
+    </item-type>
+    <item-type code="EXT_DATE" data-type="UNITDATE">
+        <name>Date of death / dissolution</name>
+        <shortcut>End</shortcut>
+        <description>ISAAR(CPF) 5.2.1: end of existence</description>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="EXT_CLASS" data-type="ENUM">
+        <name>Kind of end</name>
+        <shortcut>Kind</shortcut>
+        <description>What the end of existence is (death, dissolution, last mention)</description>
+        <use-specification>true</use-specification>
+    </item-type>
+    <item-type code="EV_TYPE" data-type="ENUM">
+        <name>Event type</name>
+        <shortcut>Event</shortcut>
+        <description>Kind of a dated event in the existence of the entity</description>
+        <use-specification>true</use-specification>
+    </item-type>
+    <item-type code="EV_BEGIN" data-type="UNITDATE">
+        <name>Event from</name>
+        <shortcut>From</shortcut>
+        <description>Beginning of the event</description>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="EV_END" data-type="UNITDATE">
+        <name>Event to</name>
+        <shortcut>To</shortcut>
+        <description>End of the event</description>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="BRIEF_DESC" data-type="STRING">
+        <name>Abstract</name>
+        <shortcut>Abstract</shortcut>
+        <description>EAC-CPF abstract: one sentence about the entity</description>
+        <use-specification>false</use-specification>
+        <string-length-limit>250</string-length-limit>
+    </item-type>
+    <item-type code="HISTORY" data-type="TEXT">
+        <name>History</name>
+        <shortcut>History</shortcut>
+        <description>ISAAR(CPF) 5.2.2: history of the entity</description>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="GENEALOGY" data-type="TEXT">
+        <name>Genealogy</name>
+        <shortcut>Genealogy</shortcut>
+        <description>ISAAR(CPF) 5.2.7: genealogy of a family</description>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="CORP_STRUCTURE" data-type="TEXT">
+        <name>Internal structure</name>
+        <shortcut>Structure</shortcut>
+        <description>ISAAR(CPF) 5.2.7: internal structure of a corporate body</description>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="FOUNDING_NORMS" data-type="TEXT">
+        <name>Founding mandate</name>
+        <shortcut>Founding mandate</shortcut>
+        <description>ISAAR(CPF) 5.2.6: source of authority for the establishment</description>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="SCOPE_NORMS" data-type="TEXT">
+        <name>Mandates / sources of authority</name>
+        <shortcut>Mandates</shortcut>
+        <description>ISAAR(CPF) 5.2.6: mandates and sources of authority for functions and powers</description>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="SOURCE_INFO" data-type="TEXT">
+        <name>Sources</name>
+        <shortcut>Sources</shortcut>
+        <description>ISAAR(CPF) 5.4.8: sources consulted</description>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="SOURCE_LINK" data-type="URI_REF">
+        <name>Source link</name>
+        <shortcut>Link</shortcut>
+        <description>Link to a source</description>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="NOTE" data-type="TEXT">
+        <name>Note</name>
+        <shortcut>Note</shortcut>
+        <description>Note to the part</description>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="COORD_POINT" data-type="COORDINATES">
+        <name>Coordinates</name>
+        <shortcut>Coordinates</shortcut>
+        <description>Approximate location of the place (WGS 84)</description>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="GEO_ADMIN_CLASS" data-type="RECORD_REF">
+        <name>Part of (place)</name>
+        <shortcut>Part of</shortcut>
+        <description>The place this place belongs to</description>
+        <use-specification>false</use-specification>
+        <item-aptypes>
+            <item-aptype register-type="GEO"/>
+        </item-aptypes>
+    </item-type>
+    <item-type code="ISAAR_CORP_TYPE" data-type="ENUM">
+        <name>Type of corporate body</name>
+        <shortcut>Body type</shortcut>
+        <description>ISAAR(CPF) 5.2.4, EAC-CPF otherEntityType, RiC CorporateBodyType: kind of the corporate body</description>
+        <use-specification>true</use-specification>
+    </item-type>
+    <item-type code="ISAAR_LEGAL_STATUS" data-type="ENUM">
+        <name>Legal status</name>
+        <shortcut>Legal status</shortcut>
+        <description>ISAAR(CPF) 5.2.4, EAC-CPF legalStatus: legal form of the corporate body</description>
+        <use-specification>true</use-specification>
+    </item-type>
+    <item-type code="ISAAR_FAMILY_TYPE" data-type="ENUM">
+        <name>Type of family</name>
+        <shortcut>Family type</shortcut>
+        <description>RiC FamilyType: kind of the family</description>
+        <use-specification>true</use-specification>
+    </item-type>
+    <item-type code="ISAAR_PLACE_TYPE" data-type="ENUM">
+        <name>Type of place</name>
+        <shortcut>Place type</shortcut>
+        <description>EAC-CPF placeType (GeoNames feature classes): kind of the place</description>
+        <use-specification>true</use-specification>
+    </item-type>
+    <item-type code="ISAAR_CONCEPT_SCHEME" data-type="ENUM">
+        <name>Concept scheme</name>
+        <shortcut>Scheme</shortcut>
+        <description>What the concept is used for (occupation, function, subject)</description>
+        <use-specification>true</use-specification>
+    </item-type>
+    <item-type code="ISAAR_FUNCTIONS" data-type="TEXT">
+        <name>Functions, occupations and activities</name>
+        <shortcut>Functions</shortcut>
+        <description>ISAAR(CPF) 5.2.5: functions, occupations and activities as text; concepts are linked by relations</description>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="ISAAR_PLACES" data-type="TEXT">
+        <name>Places</name>
+        <shortcut>Places</shortcut>
+        <description>ISAAR(CPF) 5.2.3: places as text; places are linked by relations</description>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="ISAAR_GENERAL_CONTEXT" data-type="TEXT">
+        <name>General context</name>
+        <shortcut>Context</shortcut>
+        <description>ISAAR(CPF) 5.2.8: social, cultural, economic, political or historical context</description>
+        <use-specification>false</use-specification>
+    </item-type>
+</item-types>

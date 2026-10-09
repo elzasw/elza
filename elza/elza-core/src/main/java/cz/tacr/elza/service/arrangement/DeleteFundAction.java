@@ -3,9 +3,11 @@ package cz.tacr.elza.service.arrangement;
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.*;
+import cz.tacr.elza.service.da.DaAipReferenceResolver;
 import cz.tacr.elza.service.dms.DmsService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
@@ -192,6 +194,15 @@ public class DeleteFundAction {
     @Autowired
     private NodeCacheService nodeCacheService;
 
+    @Autowired
+    private ArrDaLinkRepository daLinkRepository;
+
+    @Autowired
+    private AipStateRepository aipStateRepository;
+
+    @Autowired
+    private DaAipReferenceResolver aipReferenceResolver;
+
     /**
      * Prepare fund deletion
      */
@@ -216,6 +227,14 @@ public class DeleteFundAction {
         if (rootNode == null) {
             throw new BusinessException("Version without root node", BaseCode.ID_NOT_EXIST)
                     .set("fundVersionId", fundVersion.getFundVersionId());
+        }
+
+        // active links to a digital archive block the deletion, deleted (historical) links do not
+        long activeDaLinks = daLinkRepository.countActiveByFund(fund);
+        if (activeDaLinks > 0) {
+            throw new BusinessException("Fund has active links to a digital archive", ArrangementCode.FUND_HAS_DA_LINKS)
+                    .set("fundId", fundId)
+                    .set("count", activeDaLinks);
         }
 
         // terminate all services - for all versions
@@ -442,7 +461,21 @@ public class DeleteFundAction {
         // TOOD: rewrite as criteria query
         daoPackageRepository.deleteByFund(fund);
 
+        unpairAips();
+
         em.flush();
+    }
+
+    /**
+     * AIPs paired with the fund stay in ELZA as if they were received without a matching fund.
+     */
+    private void unpairAips() {
+        List<DaAipState> aipStates = aipStateRepository.findByFund(fund);
+        if (!aipStates.isEmpty()) {
+            aipStates.forEach(aipReferenceResolver::releaseFund);
+            aipStateRepository.saveAll(aipStates);
+            logger.info("AIP states unpaired from fund {}: {}", fundId, aipStates.size());
+        }
     }
 
     /**

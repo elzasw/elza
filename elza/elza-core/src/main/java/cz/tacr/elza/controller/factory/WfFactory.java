@@ -21,6 +21,8 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.core.data.PackageTexts;
+import cz.tacr.elza.domain.TranslationEntityType;
 import cz.tacr.elza.domain.WfComment;
 import cz.tacr.elza.domain.WfIssue;
 import cz.tacr.elza.domain.WfIssueList;
@@ -43,15 +45,18 @@ public class WfFactory {
 
     // --- service ---
     private final IssueService issueService;
+    private final PackageTexts packageTexts;
 
     // --- constructor ---
 
     @Autowired
     public WfFactory(final PermissionRepository permissionRepository,
-                     final IssueDataService issueDataService, final IssueService issueService) {
+                     final IssueDataService issueDataService, final IssueService issueService,
+                     final PackageTexts packageTexts) {
         this.permissionRepository = permissionRepository;
         this.issueDataService = issueDataService;
         this.issueService = issueService;
+        this.packageTexts = packageTexts;
     }
 
     // --- methods ---
@@ -219,7 +224,11 @@ public class WfFactory {
      * @return seznam druhů připomínek
      */
     public List<WfIssueTypeVO> createIssueTypes(final List<WfIssueType> issueTypeList) {
-        return FactoryUtils.transformList(issueTypeList, WfIssueTypeVO::newInstance);
+        return FactoryUtils.transformList(issueTypeList, t -> {
+            WfIssueTypeVO vo = WfIssueTypeVO.newInstance(t);
+            vo.setName(packageTexts.name(TranslationEntityType.ISSUE_TYPE, vo.getCode(), vo.getName()));
+            return vo;
+        });
     }
 
     /**
@@ -228,6 +237,10 @@ public class WfFactory {
      * @return seznam stavů připomínek
      */
     public List<WfIssueStateVO> createIssueStates(final List<WfIssueState> issueStateList) {
-        return FactoryUtils.transformList(issueStateList, WfIssueStateVO::newInstance);
+        return FactoryUtils.transformList(issueStateList, s -> {
+            WfIssueStateVO vo = WfIssueStateVO.newInstance(s);
+            vo.setName(packageTexts.name(TranslationEntityType.ISSUE_STATE, vo.getCode(), vo.getName()));
+            return vo;
+        });
     }
 }

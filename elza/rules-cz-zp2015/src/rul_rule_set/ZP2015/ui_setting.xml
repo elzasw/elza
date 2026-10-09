@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <settings xmlns:ns2="fund-views" xmlns:ns3="type-groups" xmlns:ns4="allow-structure-types" 
-          xmlns:ns5="fund-issues" xmlns:ns6="grid-view">
+          xmlns:ns5="fund-issues" xmlns:ns6="grid-view" xmlns:ns7="output-defaults">
     <allow-structure-types settings-type="STRUCTURE_TYPES" entity-type="RULE">
         <ns4:type code="ZP2015_PACKET"/>
         <ns4:type code="ZP2015_ACCESS_COND_TYPE"/>
@@ -381,5 +381,9 @@
             <ns5:issue-type code="MINOR" color="#FFFF00"/>
         </ns5:issue-types>
     </fund-issues>
+
+    <output-defaults settings-type="OUTPUT_DEFAULTS" entity-type="RULE">
+        <ns7:output-filter code="ZP_ACCESS_RESTRICT"/>
+    </output-defaults>
 
 </settings>

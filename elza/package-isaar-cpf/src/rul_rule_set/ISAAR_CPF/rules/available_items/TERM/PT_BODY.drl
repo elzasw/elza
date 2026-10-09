@@ -1,0 +1,15 @@
+package isaarcpf;
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ItemSpec;
+import cz.tacr.elza.drools.model.item.IntItem;
+import cz.tacr.elza.drools.model.Part;
+import cz.tacr.elza.drools.model.PartType;
+
+rule "Scheme of the concept is required"
+when $it: ItemType(code == "ISAAR_CONCEPT_SCHEME")
+     $is: ItemSpec(code in ("ISAAR_CONCEPT_SCHEME_OCCUPATION", "ISAAR_CONCEPT_SCHEME_FUNCTION", "ISAAR_CONCEPT_SCHEME_SUBJECT", "ISAAR_CONCEPT_SCHEME_OTHER")) from $it.specs
+then
+    $it.setRequired();
+    $is.setPossible();
+end
+

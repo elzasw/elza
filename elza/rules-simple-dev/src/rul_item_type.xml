@@ -3,7 +3,6 @@
         <name>Způsob pořádání</name>
         <shortcut>Způsob pořádání</shortcut>
         <description>Způsob pořádání podle Základních pravidel 2015</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
     </item-type>
@@ -11,7 +10,6 @@
         <name>Úroveň popisu</name>
         <shortcut>Úroveň</shortcut>
         <description>ZP4.2.7 Úroveň popisu</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
     </item-type>
@@ -19,7 +17,6 @@
         <name>Typ složky</name>
         <shortcut>Typ složky</shortcut>
         <description>Počet evidenčních jednotek, uvádí se pro složku s uvedením EJ</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>true</use-specification>
     </item-type>
@@ -27,7 +24,6 @@
         <name>Typ archiválie</name>
         <shortcut>Typ arch.</shortcut>
         <description>Typ archiválie</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>true</use-specification>
     </item-type>
@@ -35,7 +31,6 @@
         <name>Počet evidenčních jednotek</name>
         <shortcut>Počet EJ</shortcut>
         <description>Počet evidenčních jednotek - ZP4.2.8</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
@@ -43,7 +38,6 @@
         <name>Délka filmového záznamu</name>
         <shortcut>Délka film. zázn.</shortcut>
         <description>ZP5.13.1 Délka filmového záznamu</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <display-type>DURATION</display-type>
@@ -52,7 +46,6 @@
         <name>Ukládací jednotka</name>
         <shortcut>Ukl. j.</shortcut>
         <description>ZP4.2.10 Ukládací jednotka a číslo</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
@@ -60,7 +53,6 @@
         <name>Omezení přístupnosti</name>
         <shortcut>Omez. příst.</shortcut>
         <description>Omezení přístupnosti desc</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
@@ -68,7 +60,6 @@
         <name>Další evidenční jednotky ve složce</name>
         <shortcut>Další EJ</shortcut>
         <description>Typ archiválie a počet pro složku manipulačního seznamu</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
     </item-type>
@@ -76,7 +67,6 @@
         <name>Referenční označení (pořadové číslo)</name>
         <shortcut>Ref. ozn.</shortcut>
         <description>ZP4.2.1 Referenční označení (pořadové číslo)</description>
-        <is-value-unique>true</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
@@ -84,7 +74,6 @@
         <name>Jiná označení - specifikace a hodnota</name>
         <shortcut>Jiná ozn.</shortcut>
         <description>ZP4.2.2 Jiná označení - specifikace a hodnota</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>true</use-specification>
     </item-type>
@@ -92,7 +81,6 @@
         <name>Jiná označení - Pořadové číslo</name>
         <shortcut>Poř. č.</shortcut>
         <description>ZP4.2.2 Jiná označení - Pořadové číslo</description>
-        <is-value-unique>true</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
@@ -100,7 +88,6 @@
         <name>Obsah, regest</name>
         <shortcut>Obsah</shortcut>
         <description>ZP4.2.3 Obsah, regest</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
@@ -109,7 +96,6 @@
         <name>Název jednotky popisu</name>
         <shortcut>Název</shortcut>
         <description>Název jednotky popisu</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
@@ -117,7 +103,6 @@
         <name>Tematický popis jednotky popisu</name>
         <shortcut>Tematický popis</shortcut>
         <description>Tematický popis jednotky popisu</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
@@ -125,7 +110,6 @@
         <name>Formální název jednotky popisu</name>
         <shortcut>Form. název</shortcut>
         <description>ZP4.2.4 Formální název jednotky popisu</description>
-        <is-value-unique>true</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
@@ -133,7 +117,6 @@
         <name>Datace prior vzniku jednotky popisu - strojově čitelný</name>
         <shortcut>Dat. vzniku - prior</shortcut>
         <description>ZP4.2.5 Datace vzniku jednotky popisu - strojově čitelný</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
@@ -141,7 +124,6 @@
         <name>Datace vzniku jednotky popisu - strojově čitelný</name>
         <shortcut>Dat. vzniku</shortcut>
         <description>ZP4.2.5 Datace vzniku jednotky popisu - strojově čitelný</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
@@ -149,7 +131,6 @@
         <name>Datace posterior vzniku jednotky popisu - strojově čitelný</name>
         <shortcut>Dat. vzniku - posterior</shortcut>
         <description>ZP4.2.5 Datace vzniku jednotky popisu - strojově čitelný</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
@@ -157,7 +138,6 @@
         <name>Datace vzniku jednotky popisu - Textový zápis</name>
         <shortcut>Dat. vzniku - Textově</shortcut>
         <description>ZP4.2.5 Datace vzniku jednotky popisu - strojově čitelný</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
@@ -165,7 +145,6 @@
         <name>Původce</name>
         <shortcut>Původce</shortcut>
         <description>ZP4.3.1 Odkaz na původce</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
@@ -173,7 +152,6 @@
         <name>Dějiny jednotky popisu</name>
         <shortcut>Dějiny jednotky popisu</shortcut>
         <description>ZP4.3.2 Dějiny jednotky popisu</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
@@ -181,7 +159,6 @@
         <name>Způsob uspořádání jednotky popisu</name>
         <shortcut>Způsob uspořádání jednotky popisu</shortcut>
         <description>ZP4.3.3 Způsob uspořádání jednotky popisu</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
@@ -189,7 +166,6 @@
         <name>Souřadnice - tvar a souřadnice</name>
         <shortcut>Souř.</shortcut>
         <description>ZP5.2.6 Souřadnice - tvar a souřadnice</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
@@ -197,7 +173,6 @@
         <name>Jazyk, písmo</name>
         <shortcut>Jazyk</shortcut>
         <description>ZP5.2.10 Jazyk, písmo</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
     </item-type>
@@ -205,7 +180,6 @@
         <name>Role entit (specifikace + hodnota)</name>
         <shortcut>Typ role</shortcut>
         <description>ZP5.3-5.6 Role entit (specifikace + hodnota)</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>true</use-specification>
         <item-aptypes>
@@ -216,7 +190,6 @@
         <name>Počet otisků původní a současný</name>
         <shortcut>Poč. ot.</shortcut>
         <description>ZP5.7.4 Počet otisků původní a současný</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
@@ -224,7 +197,6 @@
         <name>Legenda</name>
         <shortcut>Legenda</shortcut>
         <description>ZP5.11.1 Legenda</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
@@ -232,7 +204,6 @@
         <name>Rozsah archivního souboru</name>
         <shortcut>Rozsah souboru</shortcut>
         <description>Rozsah archivního souboru nebo jeho části</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
@@ -240,7 +211,6 @@
         <name>Číslo NAD</name>
         <shortcut>Číslo NAD</shortcut>
         <description>Číslo v evidenci NAD</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
@@ -248,7 +218,6 @@
         <name>Statistika</name>
         <shortcut>Stat.</shortcut>
         <description>Statistika</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <columns-definitions>
@@ -266,7 +235,6 @@
         <name>Statistika - extra</name>
         <shortcut>Stat.</shortcut>
         <description>Statistika</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <columns-definitions>
@@ -296,7 +264,6 @@
         <name>Příloha</name>
         <shortcut>Příloha</shortcut>
         <description>Příloha JP</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
@@ -304,7 +271,6 @@
         <name>Měřítko</name>
         <shortcut>Měř.</shortcut>
         <description>ZP5.2.5 Měřítko</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
@@ -312,7 +278,6 @@
         <name>Počet evidenčních jednotek zpřístupněných archivní pomůckou</name>
         <shortcut>Počet EJ</shortcut>
         <description>Počet evidenčních jednotek zpřístupněných archivní pomůckou (uvádí se v tiráži)</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
         <columns-definitions>
@@ -330,7 +295,6 @@
         <name>Typ obalu</name>
         <shortcut>Typ obalu</shortcut>
         <description>Typ obalu</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>true</use-specification>
     </item-type>
@@ -338,7 +302,6 @@
         <name>Prefix obalu</name>
         <shortcut>Prefix</shortcut>
         <description>Prefix pro obal</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
@@ -346,7 +309,6 @@
         <name>Číslo obalu</name>
         <shortcut>Č. obalu</shortcut>
         <description>Číslo obalu</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
@@ -354,7 +316,6 @@
         <name>Postfix obalu</name>
         <shortcut>Postfix</shortcut>
         <description>Postfix pro obal</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
@@ -362,7 +323,6 @@
         <name>Popis obalu</name>
         <shortcut>Popis obalu</shortcut>
         <description>Popis obalu</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
@@ -370,7 +330,6 @@
         <name>Název omezení</name>
         <shortcut>Název omezení</shortcut>
         <description>Název omezení</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
@@ -378,7 +337,6 @@
         <name>Popis omezení</name>
         <shortcut>Popis omezení</shortcut>
         <description>Popis omezení</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
@@ -387,7 +345,6 @@
         <name>String Date for migration</name>
         <shortcut>String Datum</shortcut>
         <description>ZP5.2.5 Datum</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
@@ -395,7 +352,6 @@
         <name>Datum</name>
         <shortcut>Datum</shortcut>
         <description>ZP5.2.5 Datum</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
@@ -404,7 +360,6 @@
         <name>Hlavní část</name>
         <shortcut>Hl. část</shortcut>
         <description>Hlavní část jména</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
@@ -412,7 +367,6 @@
         <name>Doplněk - textový</name>
         <shortcut>Doplněk</shortcut>
         <description>Textový doplněk ke jménu</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
@@ -420,7 +374,6 @@
         <name>Popis</name>
         <shortcut>Popis</shortcut>
         <description>Popis</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
@@ -428,7 +381,6 @@
         <name>Typ vztahu</name>
         <shortcut>Vztah</shortcut>
         <description>Typ vztahu</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>true</use-specification>
     </item-type>
@@ -436,7 +388,6 @@
         <name>Entita vztahu</name>
         <shortcut>Entita</shortcut>
         <description>Entita vztahu</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
         <item-aptypes>
@@ -446,8 +397,7 @@
     <item-type code="ODKAZ_OBECNY" data-type="URI_REF">
         <name>Odkaz obecný</name>
         <shortcut>Odkaz</shortcut>
-        <description><Odkaz></Odkaz></description>
-        <is-value-unique>false</is-value-unique>
+        <description>&lt;Odkaz&gt;</description>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
@@ -455,7 +405,6 @@
         <name>Zveřejněno</name>
         <shortcut>Zveřejněno</shortcut>
         <description>Zveřejněná jednotka popisu</description>
-        <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>

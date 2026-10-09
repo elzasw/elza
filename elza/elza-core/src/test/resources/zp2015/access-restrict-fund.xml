@@ -48,6 +48,13 @@
                             <de id="1046972" s="ZP2015_ACCESS_PERSONAL_DATA" t="ZP2015_RESTRICTED_ACCESS_REASON"/>
                             <de id="1046973" s="ZP2015_RESTRICTION_LIMITED" t="ZP2015_RESTRICTED_ACCESS_TYPE"/>
                         </so>
+                        <so asgn="true" cmpl="os. údaje použ. prvků s omez. bez variant" id="18549" uuid="4c1f6b2e-8d3a-4e57-9b0c-2a7e5d916f38" v="Použití prvků s omezením bez variant">
+                            <ds id="1046990" t="ZP2015_RESTRICTION_ACCESS_NAME">
+                                <v>Použití prvků s omezením bez variant</v>
+                            </ds>
+                            <de id="1046991" s="ZP2015_ACCESS_PERSONAL_DATA" t="ZP2015_RESTRICTED_ACCESS_REASON"/>
+                            <de id="1046992" s="ZP2015_RESTRICTION_LIMITED" t="ZP2015_RESTRICTED_ACCESS_TYPE"/>
+                        </so>
                     </sos>
                 </st>
             </sts>
@@ -114,6 +121,23 @@
                     </ds>
                     <ds id="1046979" t="ZP2015_CONTENT">
                         <v>Použití prvků s omezením - S OMEZENÍM</v>
+                    </ds>
+                    <ds id="1046982" t="ZP2015_NAME_PUBLIC">
+                        <v>Použití prvků s omezením - VEŘEJNÉ</v>
+                    </ds>
+                    <ds id="1046983" t="ZP2015_CONTENT_PUBLIC">
+                        <v>Použití prvků s omezením - VEŘEJNÉ</v>
+                    </ds>
+                </lvl>
+                <lvl id="234612" pid="234604">
+                    <de id="1046993" s="ZP2015_LEVEL_FOLDER" t="ZP2015_LEVEL_TYPE"/>
+                    <de id="1046994" s="ZP2015_FOLDER_UNITS" t="ZP2015_FOLDER_TYPE"/>
+                    <do soid="18549" id="1046995" t="ZP2015_RESTRICTION_ACCESS_SHARED"/>
+                    <ds id="1046996" t="ZP2015_NAME">
+                        <v>Použití prvků s omezením bez variant</v>
+                    </ds>
+                    <ds id="1046997" t="ZP2015_CONTENT">
+                        <v>Použití prvků s omezením bez variant</v>
                     </ds>
                 </lvl>
             </lvls>

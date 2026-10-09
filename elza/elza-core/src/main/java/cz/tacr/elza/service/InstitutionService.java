@@ -130,18 +130,35 @@ public class InstitutionService {
 
     /** Preferred-part DISPLAY_NAME of the AP, or {@code null} if it has none. */
     private String displayNameOf(final ApAccessPoint ap) {
-        ApIndex idx = indexRepository.findPreferredPartIndexByAccessPointAndIndexType(
-                ap, GroovyResult.DISPLAY_NAME);
+        return preferredIndexOf(ap, GroovyResult.DISPLAY_NAME);
+    }
+
+    /** Index of the preferred part of the AP, or {@code null} if it has none. */
+    private String preferredIndexOf(final ApAccessPoint ap, final String indexType) {
+        ApIndex idx = indexRepository.findPreferredPartIndexByAccessPointAndIndexType(ap, indexType);
         return idx != null ? idx.getIndexValue() : null;
     }
 
     /**
-     * Short name from the first PT_NAME part whose NM_TYPE spec is NT_ACRONYM
-     * (акronym/zkratka). Returns {@code null} if no such part exists.
+     * Short name: in CAM the first PT_NAME part whose NM_TYPE spec is NT_ACRONYM (acronym), otherwise
+     * the SHORT_NAME index of the preferred name (set by the index scripts of any framework). Returns
+     * {@code null} if there is neither.
      */
     private String shortNameOf(final ApAccessPoint ap) {
+        String acronym = camAcronymOf(ap);
+        if (acronym != null) {
+            return acronym;
+        }
+        return preferredIndexOf(ap, GroovyResult.SHORT_NAME);
+    }
+
+    private String camAcronymOf(final ApAccessPoint ap) {
         StaticDataProvider sdp = staticDataService.getData();
-        RulItemType nmType = sdp.getItemTypeByCode(ITEM_TYPE_NAME_FORM).getEntity();
+        cz.tacr.elza.core.data.ItemType nameForm = sdp.getItemTypeByCode(ITEM_TYPE_NAME_FORM);
+        if (nameForm == null) {
+            return null;
+        }
+        RulItemType nmType = nameForm.getEntity();
 
         List<ApItem> nmItems = itemRepository.findItemsByAccessPointIdAndItemTypeAndPartTypeCode(ap.getAccessPointId(), nmType, PART_TYPE_NAME);
 

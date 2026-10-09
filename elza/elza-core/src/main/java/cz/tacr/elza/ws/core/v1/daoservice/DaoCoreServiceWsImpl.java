@@ -473,14 +473,13 @@ public class DaoCoreServiceWsImpl {
             return;
         }
 
-        List<UISettings> impSettings = settingsService.getGlobalSettings(UISettings.SettingsType.DAO_LEVEL_IMPORT);
-        if (CollectionUtils.isEmpty(impSettings)) {
+        // several packages may state the setting, the one deepest in dependency order wins
+        UISettings s = settingsService.resolveGlobal(UISettings.SettingsType.DAO_LEVEL_IMPORT);
+        if (s == null) {
             logger.error("Missing settings: {}", UISettings.SettingsType.DAO_LEVEL_IMPORT);
             throw new SystemException("Missing settings: DAO_LEVEL_IMPORT", BaseCode.IMPORT_FAILED);
         }
-        Validate.isTrue(impSettings.size() == 1);
 
-        UISettings s = impSettings.get(0);
         LevelImportSettings lis = SettingDaoImportLevel.newInstance(s).getLevelImportSettings();
         prepareDaoLevels(impCtx, fund, lis, levelDaos, daoNodeUuidMap, daoLinkMap);
     }

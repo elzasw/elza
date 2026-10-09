@@ -90,6 +90,13 @@ public class RevisionFindingsBlockMapper implements AiBlockMapper {
             if (multiNode && finding.path("nodeId").isNumber()) {
                 md.append(" (JP ").append(finding.path("nodeId").asInt()).append(')');
             }
+            // An entity finding (protocol 0.16.0) is anchored by the access point
+            // and, when the model located it, the entity part it sits in.
+            boolean entityFinding = !finding.path("nodeId").isNumber() && finding.path("accessPointId").isNumber();
+            String sourcePartType = finding.path("sourcePartType").asText("");
+            if (entityFinding && !sourcePartType.isBlank()) {
+                md.append(" (část `").append(sourcePartType).append("`)");
+            }
             md.append('\n');
 
             String excerpt = finding.path("excerpt").asText("");
@@ -125,10 +132,14 @@ public class RevisionFindingsBlockMapper implements AiBlockMapper {
             }
 
             AiMarkdownBlockVO block = new AiMarkdownBlockVO().content(md.toString());
-            block.addFollowUpsItem(new AiFollowUpAction()
-                    .label("Připravit opravu")
-                    .taskType(ENHANCE_TASK_TYPE)
-                    .userInstructions(fixInstruction(order, category, excerpt)));
+            // The fix task proposes item operations on a description LEVEL; an
+            // entity finding has no acting task yet, so it carries no follow-up.
+            if (!entityFinding) {
+                block.addFollowUpsItem(new AiFollowUpAction()
+                        .label("Připravit opravu")
+                        .taskType(ENHANCE_TASK_TYPE)
+                        .userInstructions(fixInstruction(order, category, excerpt)));
+            }
             blocks.add(block);
         }
         return blocks;

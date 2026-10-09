@@ -1,11 +1,8 @@
 import { Field, Select, Switch, makeStyles, tokens } from '@fluentui/react-components';
 import { defineMessages, useIntl } from 'react-intl';
-import { Language, useUserSettings } from 'contexts/user';
-
-const languageOptions: Array<{ value: Language; nativeName: string }> = [
-    { value: 'cs', nativeName: 'Čeština' },
-    { value: 'en', nativeName: 'English' },
-];
+import { useUserSettings } from 'contexts/user';
+import { nativeLanguageName } from 'components/shared/lang/language';
+import { useLanguage } from 'components/shared/lang/useLanguage';
 
 const messages = defineMessages({
     language: {
@@ -47,20 +44,18 @@ export function DisplaySettings() {
     const { settings, update } = useUserSettings();
     const { formatMessage } = useIntl();
     const styles = useStyles();
+    const { current, offered, switchLanguage } = useLanguage();
 
     const experimentalFeaturesEnabled = !!settings.showExperimentalFeatures;
 
     return (
         <div className={styles.root}>
-            {experimentalFeaturesEnabled && (
+            {offered.length > 1 && (
                 <Field label={formatMessage(messages.language)} className={styles.languageField}>
-                    <Select
-                        value={settings.language ?? 'cs'}
-                        onChange={(_event, data) => update({ language: data.value as Language })}
-                    >
-                        {languageOptions.map(({ value, nativeName }) => (
-                            <option key={value} value={value}>
-                                {nativeName}
+                    <Select value={current} onChange={(_event, data) => switchLanguage(data.value)}>
+                        {offered.map((tag) => (
+                            <option key={tag} value={tag} lang={tag}>
+                                {nativeLanguageName(tag)}
                             </option>
                         ))}
                     </Select>

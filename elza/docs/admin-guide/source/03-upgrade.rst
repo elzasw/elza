@@ -38,7 +38,9 @@ Manually
 #. Replace the packages in the :file:`dpkg/` directory of the working
    directory with those of the new distribution (see
    :ref:`install-packages`). A new version of ELZA may require new
-   versions of the packages, so upgrade them together.
+   versions of the packages, so upgrade them together. A package the new
+   distribution adds is imported only when ``elza.packages.enabled``
+   lists it.
 #. Apply the configuration changes listed in the release notes.
 #. Start the application and watch the log until the application has
    started. The first start after an upgrade can take considerably longer

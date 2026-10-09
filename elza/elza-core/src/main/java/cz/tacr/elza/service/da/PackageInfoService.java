@@ -1,6 +1,7 @@
 package cz.tacr.elza.service.da;
 
 import com.lightcomp.kads.premis.PremisReaderWriter;
+import cz.tacr.elza.domain.ArrDaLink;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.DaAip;
@@ -11,6 +12,7 @@ import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.repository.AipRepository;
 import cz.tacr.elza.repository.AipStateRepository;
 import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ArrDaLinkRepository;
 import cz.tacr.elza.repository.DaChangeRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
@@ -33,7 +35,10 @@ import gov.loc.premis.v3.SignificantPropertiesComplexType;
 import gov.loc.premis.v3.StringPlusAuthority;
 import jakarta.transaction.Transactional;
 import jakarta.xml.bind.JAXBException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -43,6 +48,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.io.IOException;
@@ -68,6 +74,14 @@ public class PackageInfoService {
     private FundRepository fundRepository;
     @Autowired
     private DaAipReferenceResolver referenceResolver;
+    @Autowired
+    private DaAipLinkStateResolver linkStateResolver;
+    @Autowired
+    private ArrDaLinkRepository daLinkRepository;
+    @Autowired
+    private DaLinkCloser linkCloser;
+
+    private static final Logger logger = LoggerFactory.getLogger(PackageInfoService.class);
 
     @Transactional
     public DaAipState processPackageInfo(ArrDigitalRepository digitalRepository, File file) throws IOException, JAXBException {
@@ -137,9 +151,12 @@ public class PackageInfoService {
             aipStateRepository.save(oldAipState);
         }
 
-        // The references are codes of the originating system; what cannot be resolved is
-        // recorded as a problem of the AIP so the user can find and fix it.
-        referenceResolver.resolveReferences(aipState);
+        resolveReferences(aipState, oldAipState);
+        if (oldAipState != null && !Objects.equals(fundIdOf(oldAipState), fundIdOf(aipState))) {
+            closeLinksOutsideFund(daAip, aipState.getFund());
+        }
+        // links may have been closed above, and the new state starts without a link state
+        linkStateResolver.updateLinkState(aipState);
 
         for (Event event : eventList) {
             if (event.getOriginator() != null) {
@@ -151,6 +168,54 @@ public class PackageInfoService {
             }
         }
         return aipStateRepository.save(aipState);
+    }
+
+    /**
+     * Resolves the institution and the fund the package names; what cannot be resolved is recorded
+     * as a problem of the AIP so the user can find and fix it.
+     *
+     * A new version naming the same institution and fund stays where the AIP was, even if looking
+     * them up again would now give another answer (a renumbered fund, a second fund with the same
+     * number) - only the package itself moves an AIP. The same fund code under another institution
+     * is another fund, so the former fund is not found again by its code.
+     *
+     * @param previous the state of the previous version, null for a new AIP
+     */
+    private void resolveReferences(DaAipState aipState, @Nullable DaAipState previous) {
+        ArrFund formerFund = null;
+        if (previous != null) {
+            boolean sameInstitution = Objects.equals(previous.getInstitutionCode(), aipState.getInstitutionCode());
+            if (sameInstitution && Objects.equals(previous.getFundCode(), aipState.getFundCode())) {
+                aipState.setInstitution(previous.getInstitution());
+                aipState.setFund(previous.getFund());
+            } else if (!sameInstitution) {
+                formerFund = previous.getFund();
+            }
+        }
+        referenceResolver.resolveReferences(aipState, formerFund);
+    }
+
+    @Nullable
+    private static Integer fundIdOf(DaAipState aipState) {
+        return aipState.getFund() == null ? null : aipState.getFund().getFundId();
+    }
+
+    /**
+     * The new version of the package belongs to another fund, or to none ELZA knows. Its links
+     * outside that fund are closed - the package is no longer part of the description they are in.
+     * Where it goes in the new fund is decided as for a package received for the first time.
+     *
+     * @param fund the fund of the new version, null when it was not found
+     */
+    private void closeLinksOutsideFund(DaAip aip, @Nullable ArrFund fund) {
+        List<ArrDaLink> outside = daLinkRepository.findByAipIdAndDeleteChangeIsNull(aip.getAipId()).stream()
+                .filter(link -> fund == null || !fund.getFundId().equals(link.getNode().getFundId()))
+                .toList();
+        if (!outside.isEmpty()) {
+            int closed = linkCloser.close(outside);
+            logger.info("AIP {} moved to fund={}, links to the former fund closed: {}", aip.getCode(),
+                        fund == null ? null : fund.getFundId(), closed);
+        }
     }
 
     public String getFundCodeFromPackageInfoFile(File file) throws IOException, JAXBException {

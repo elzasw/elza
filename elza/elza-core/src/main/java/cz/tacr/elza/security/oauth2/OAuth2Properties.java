@@ -51,6 +51,33 @@ public class OAuth2Properties {
 
     private List<PermProperties> permissions;
 
+    /**
+     * Scope of the archival entities of users created from tokens.
+     */
+    private String userScope = "JWT_USERS";
+
+    /**
+     * Class of the archival entities of users created from tokens; it must be assignable in the rule
+     * set of {@link #userScope}.
+     */
+    private String userApType = "PERSON_INDIVIDUAL";
+
+    public String getUserScope() {
+        return userScope;
+    }
+
+    public void setUserScope(String userScope) {
+        this.userScope = userScope;
+    }
+
+    public String getUserApType() {
+        return userApType;
+    }
+
+    public void setUserApType(String userApType) {
+        this.userApType = userApType;
+    }
+
     public String getKeyUrl() {
         return keyUrl;
     }

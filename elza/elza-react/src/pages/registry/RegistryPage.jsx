@@ -31,8 +31,8 @@ import { AP_VIEW_SETTINGS, FOCUS_KEYS, MODAL_DIALOG_SIZE, urlEntity } from '../.
 import * as eidTypes from '../../actions/refTables/eidTypes';
 import ScopeLists from '../../components/arr/ScopeLists';
 import ApStateHistoryForm from '../../components/registry/ApStateHistoryForm';
-import ApStateChangeForm from '../../components/registry/ApStateChangeForm';
-import RevStateChangeForm from '../../components/registry/RevStateChangeForm';
+import ApStateChangeDialog from '../../components/registry/ApStateChangeDialog';
+import RevStateChangeDialog from '../../components/registry/RevStateChangeDialog';
 import RevMergeForm from '../../components/registry/RevMergeForm';
 import { WebApi } from '../../actions';
 import ApDetailPageWrapper from '../../components/registry/ApDetailPageWrapper';
@@ -88,7 +88,7 @@ class RegistryPage extends AbstractReactComponent {
         revisionActive: PropTypes.bool,
     };
 
-    state = { items: [] };
+    state = { items: [], createOpen: false, stateChangeOpen: false, revStateChangeOpen: false };
 
     componentDidMount() {
         this.initData();
@@ -198,43 +198,33 @@ class RegistryPage extends AbstractReactComponent {
     isFormItemValid = (item) => item['@class'] === '.ApItemEnumVO' ? item.specId !== undefined : item.value !== undefined;
 
     handleAddRegistry = () => {
-        const { dispatch, history, select = false } = this.props;
+        this.setState({ createOpen: true });
+    };
 
-        dispatch(
-            modalDialogShow(
-                this,
-                this.props.intl.formatMessage(registryMessages.addRegistry),
-                <CreateAccessPointModal
-                    initialValues={{}}
-                    onSubmit={formData => {
-                        if (!formData.partForm) {
-                            return Promise.reject('');
-                        }
-                        const data = {
-                            ...formData,
-                            partForm: {
-                                ...formData.partForm,
-                                items: formData.partForm.items.map(({ updatedItem }) => updatedItem).filter(this.isFormItemValid),
-                            },
-                        };
-                        const submitData = {
-                            partForm: data.partForm,
-                            accessPointId: null,
-                            languageCode: null,
-                            scopeId: data.scopeId,
-                            typeId: data.apType.id,
-                        };
-                        return WebApi.createAccessPoint(submitData).then((data) => {
-                            dispatch(modalDialogHide());
-                            this.props.dispatch(goToAe(history, data.id, false, !select));
-                            this.props.dispatch(registryListInvalidate());
-                        });
-                    }}
-                />,
-                MODAL_DIALOG_SIZE.LG,
-                () => { },
-            ),
-        );
+    handleCreateRegistry = formData => {
+        const { dispatch, history, select = false } = this.props;
+        if (!formData.partForm) {
+            return Promise.reject('');
+        }
+        const data = {
+            ...formData,
+            partForm: {
+                ...formData.partForm,
+                items: formData.partForm.items.map(({ updatedItem }) => updatedItem).filter(this.isFormItemValid),
+            },
+        };
+        const submitData = {
+            partForm: data.partForm,
+            accessPointId: null,
+            languageCode: null,
+            scopeId: data.scopeId,
+            typeId: data.apType.id,
+        };
+        return WebApi.createAccessPoint(submitData).then((data) => {
+            this.setState({ createOpen: false });
+            dispatch(goToAe(history, data.id, false, !select));
+            dispatch(registryListInvalidate());
+        });
     };
 
     handleDeleteRegistry = async () => {
@@ -439,39 +429,21 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     handleChangeApState = () => {
-        const {
-            dispatch,
-            history,
-            registryDetail: {
-                data: { id, typeId, scopeId, stateApproval, version, assignedTo },
-            },
-            select = false,
-            revisionActive,
-        } = this.props;
-        const form = (
-            <ApStateChangeForm
-                accessPointId={id}
-                initialValues={{
-                    state: stateApproval,
-                    typeId,
-                    scopeId,
-                    assignedTo,
-                }}
-                onSubmit={async (data) => {
-                    const finalData = {
-                        comment: data.comment,
-                        stateApproval: data.state,
-                        typeId: data.typeId,
-                        scopeId: data.scopeId !== '' ? parseInt(data.scopeId) : null,
-                    };
-                    await Api.accesspoints.accessPointChangeState(id, finalData, version, data?.assignedTo);
+        this.setState({ stateChangeOpen: true });
+    };
 
-                    dispatch(modalDialogHide());
-                    dispatch(goToAe(history, id, true, !select, revisionActive));
-                }}
-            />
-        );
-        dispatch(modalDialogShow(this, this.props.intl.formatMessage(registryMessages.changeState), form));
+    handleSubmitApState = async (data) => {
+        const { dispatch, history, registryDetail: { data: { id, version } }, select = false, revisionActive } = this.props;
+        const finalData = {
+            comment: data.comment,
+            stateApproval: data.state,
+            typeId: data.typeId,
+            scopeId: data.scopeId ?? null,
+        };
+        await Api.accesspoints.accessPointChangeState(id, finalData, version, data.assignedTo);
+
+        this.setState({ stateChangeOpen: false });
+        dispatch(goToAe(history, id, true, !select, revisionActive));
     };
 
     handleCreateRevision = async () => {
@@ -491,34 +463,17 @@ class RegistryPage extends AbstractReactComponent {
     };
 
     handleChangeStateRevision = () => {
-        const {
-            dispatch,
-            history,
-            registryDetail: {
-                data: { id, newTypeId, revStateApproval, version, assignedTo },
-            },
-            select = false,
-            revisionActive,
-        } = this.props;
-        const form = (
-            <RevStateChangeForm
-                accessPointId={id}
-                initialValues={{
-                    state: revStateApproval,
-                    typeId: newTypeId,
-                    assignedTo,
-                }}
-                onSubmit={async (data) => {
-                  const { assignedTo, ...state } = data;
-                    await dispatch(registryChangeStateRevision(id, version, state, history, select, assignedTo))
+        this.setState({ revStateChangeOpen: true });
+    };
 
-                    dispatch(modalDialogHide());
-                    dispatch(goToAe(history, id, true, !select, revisionActive));
-                    dispatch(registryListInvalidate());
-                }}
-            />
-        );
-        dispatch(modalDialogShow(this, this.props.intl.formatMessage(registryMessages.changeStateRevision), form));
+    handleSubmitRevState = async (data) => {
+        const { dispatch, history, registryDetail: { data: { id, version } }, select = false, revisionActive } = this.props;
+        const { assignedTo, ...state } = data;
+        await dispatch(registryChangeStateRevision(id, version, state, history, select, assignedTo));
+
+        this.setState({ revStateChangeOpen: false });
+        dispatch(goToAe(history, id, true, !select, revisionActive));
+        dispatch(registryListInvalidate());
     };
 
     handleMergeRevision = () => {
@@ -923,6 +878,41 @@ class RegistryPage extends AbstractReactComponent {
                     // rightPanel={rightPanel}
                     status={status}
                 />
+                {this.state.createOpen && (
+                    <CreateAccessPointModal
+                        title={this.props.intl.formatMessage(registryMessages.addRegistry)}
+                        onClose={() => this.setState({ createOpen: false })}
+                        onSubmit={this.handleCreateRegistry}
+                    />
+                )}
+                {this.state.stateChangeOpen && registryDetail.data && (
+                    <ApStateChangeDialog
+                        title={this.props.intl.formatMessage(registryMessages.changeState)}
+                        accessPointId={registryDetail.data.id}
+                        initialValues={{
+                            state: registryDetail.data.stateApproval,
+                            typeId: registryDetail.data.typeId,
+                            scopeId: registryDetail.data.scopeId,
+                            assignedTo: registryDetail.data.assignedTo,
+                        }}
+                        onClose={() => this.setState({ stateChangeOpen: false })}
+                        onSubmit={this.handleSubmitApState}
+                    />
+                )}
+                {this.state.revStateChangeOpen && registryDetail.data && (
+                    <RevStateChangeDialog
+                        title={this.props.intl.formatMessage(registryMessages.changeStateRevision)}
+                        accessPointId={registryDetail.data.id}
+                        scopeId={registryDetail.data.scopeId}
+                        initialValues={{
+                            state: registryDetail.data.revStateApproval,
+                            typeId: registryDetail.data.newTypeId,
+                            assignedTo: registryDetail.data.assignedTo,
+                        }}
+                        onClose={() => this.setState({ revStateChangeOpen: false })}
+                        onSubmit={this.handleSubmitRevState}
+                    />
+                )}
             </Shortcuts>
         );
     }

@@ -2,14 +2,18 @@ package cz.tacr.elza.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.controller.mapper.RulesMapper;
 import cz.tacr.elza.controller.vo.ItemTypeList;
 import cz.tacr.elza.controller.vo.PartType;
+import cz.tacr.elza.core.data.PackageTexts;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulPartType;
+import cz.tacr.elza.domain.SysLanguage;
+import cz.tacr.elza.domain.TranslationEntityType;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.StructObjService;
 
@@ -31,12 +35,15 @@ public class RulesController implements RulesApi {
     private final StructObjService structureService;
     private final RuleService ruleService;
     private final RulesMapper mapper;
+    private final PackageTexts packageTexts;
 
     @Autowired
-    public RulesController(StructObjService structureService, RuleService ruleService, RulesMapper mapper) {
+    public RulesController(StructObjService structureService, RuleService ruleService, RulesMapper mapper,
+                           PackageTexts packageTexts) {
     	this.structureService = structureService;
         this.ruleService = ruleService;
         this.mapper = mapper;
+        this.packageTexts = packageTexts;
     }
 
     /**
@@ -45,17 +52,17 @@ public class RulesController implements RulesApi {
      * all loaded rule sets by default, or only one when {@code ruleSetCode} is set.
      *
      * @param ruleSetCode When set, return only the item types available in this rule set (`RulRuleSet.code`). (optional)
-     * @param acceptLanguage Preferred language for localized strings (e.g. "cs", "en"). (optional)
+     * @param acceptLanguage Preferred language for localized strings; read with the language cookie by
+     *            {@link PackageTexts#requestLanguage()} (optional)
      * @return The request has succeeded. (status code 200)
      */
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<ItemTypeList> rulesListItemTypes(String ruleSetCode, String acceptLanguage) {
-        // TODO(localization): Accept-Language is currently accepted but
-        //  ignored. rul_item_type / rul_item_spec store name/shortcut/
-        //  description in the single language set at package-import time.
-        //  A translation layer is required before this header has any effect.
+        // names of item types and specifications are translated; column names of table views are not
+        SysLanguage language = packageTexts.requestLanguage();
         List<RulItemTypeExt> source = ruleService.getDescriptionItemTypesByRuleSet(ruleSetCode);
-        return ResponseEntity.ok(mapper.toItemTypeList(source));
+        return ResponseEntity.ok(mapper.toItemTypeList(source, language));
     }
 
     /**
@@ -65,6 +72,7 @@ public class RulesController implements RulesApi {
      * @return The request has succeeded. (status code 200)
      */
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<List<PartType>> rulesListPartTypes() {
     	List<RulPartType> partTypes = structureService.findPartTypes();
     	List<PartType> result = partTypes.stream()
@@ -72,7 +80,7 @@ public class RulesController implements RulesApi {
     	            PartType pt = new PartType();
     	            pt.setId(t.getPartTypeId());
     	            pt.setCode(t.getCode());
-    	            pt.setName(t.getName());
+    	            pt.setName(packageTexts.name(TranslationEntityType.PART_TYPE, t.getCode(), t.getName()));
     	            pt.setRepeatable(t.getRepeatable());
     	            pt.setChildPartId(t.getChildPart() != null ? t.getChildPart().getPartTypeId() : null);
     				return pt;

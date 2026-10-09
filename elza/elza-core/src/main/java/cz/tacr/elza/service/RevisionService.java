@@ -292,6 +292,7 @@ public class RevisionService {
         if (!nextApTypeId.equals(oldRevState.getTypeId())) {
             // dostáváme nový ApType
             nextType = sdp.getApTypeById(nextApTypeId);
+            accessPointService.checkApTypeInScope(nextType, state.getScope(), true);
         	// nelze změnit třídu pokud existuje platná ApBindingState
             List<ApBindingState> bindingStates = bindingStateRepository.findByAccessPoint(state.getAccessPoint());
             if (CollectionUtils.isNotEmpty(bindingStates)) {
@@ -530,7 +531,8 @@ public class RevisionService {
             }
         }
 
-        GroovyResult result = groovyService.processGroovy(revState.getTypeId(), part, childrenParts,
+        GroovyResult result = groovyService.processGroovy(revState.getRevision().getState().getScope(),
+                                                          revState.getTypeId(), part, childrenParts,
                                                           apItems, revItems, preferred);
         revisionPartService.updateRevIndexes(revPart, result);
     }

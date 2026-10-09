@@ -1,0 +1,11 @@
+<part-types>
+    <!-- declared by CZ_BASE too: same part type, English name -->
+    <part-type code="PT_NAME">
+        <name>Name</name>
+        <repeatable>true</repeatable>
+    </part-type>
+    <part-type code="PT_ENT_NOTE">
+        <name>Note</name>
+        <repeatable>false</repeatable>
+    </part-type>
+</part-types>

@@ -1,0 +1,30 @@
+package isaarcpf;
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ItemSpec;
+import cz.tacr.elza.drools.model.item.IntItem;
+import cz.tacr.elza.drools.model.Part;
+import cz.tacr.elza.drools.model.PartType;
+
+rule "ISAAR 5.2.3-5.2.7: places, functions, mandates and structure of a corporate body"
+when $it: ItemType(code in ("ISAAR_PLACES", "ISAAR_FUNCTIONS", "FOUNDING_NORMS", "SCOPE_NORMS", "CORP_STRUCTURE"))
+then
+    $it.setPossible();
+end
+
+rule "ISAAR 5.2.4: type of corporate body"
+when $it: ItemType(code == "ISAAR_CORP_TYPE")
+     $is: ItemSpec(code in ("ISAAR_CORP_TYPE_GOVERNMENT", "ISAAR_CORP_TYPE_TERRITORIAL", "ISAAR_CORP_TYPE_JUDICIAL", "ISAAR_CORP_TYPE_LEGISLATIVE", "ISAAR_CORP_TYPE_MILITARY", "ISAAR_CORP_TYPE_PARTY", "ISAAR_CORP_TYPE_RELIGIOUS", "ISAAR_CORP_TYPE_EDUCATION", "ISAAR_CORP_TYPE_HEALTH", "ISAAR_CORP_TYPE_CULTURE", "ISAAR_CORP_TYPE_BUSINESS", "ISAAR_CORP_TYPE_FINANCE", "ISAAR_CORP_TYPE_PROFESSIONAL", "ISAAR_CORP_TYPE_ASSOCIATION", "ISAAR_CORP_TYPE_FOUNDATION", "ISAAR_CORP_TYPE_INTERNATIONAL", "ISAAR_CORP_TYPE_CONFERENCE", "ISAAR_CORP_TYPE_OTHER")) from $it.specs
+then
+    $it.setPossible();
+    $is.setPossible();
+    $is.setRepeatable(true);
+end
+
+rule "ISAAR 5.2.4: legal status"
+when $it: ItemType(code == "ISAAR_LEGAL_STATUS")
+     $is: ItemSpec(code in ("ISAAR_LEGAL_STATUS_PUBLIC_LAW", "ISAAR_LEGAL_STATUS_PRIVATE_LAW", "ISAAR_LEGAL_STATUS_COMPANY", "ISAAR_LEGAL_STATUS_PARTNERSHIP", "ISAAR_LEGAL_STATUS_COOPERATIVE", "ISAAR_LEGAL_STATUS_ASSOCIATION", "ISAAR_LEGAL_STATUS_FOUNDATION", "ISAAR_LEGAL_STATUS_RELIGIOUS", "ISAAR_LEGAL_STATUS_SOLE_TRADER", "ISAAR_LEGAL_STATUS_NO_PERSONALITY", "ISAAR_LEGAL_STATUS_OTHER")) from $it.specs
+then
+    $it.setPossible();
+    $is.setPossible();
+end
+

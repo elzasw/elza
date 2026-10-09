@@ -74,16 +74,25 @@ function createBindings(accessPoint: ApAccessPointVO | undefined) {
     return bindingsMaps;
 }
 
-export function sortPart(items: RulPartTypeVO[], data: ApViewSettingRule | undefined) {
-    const parts = [...items];
-    if (data && data.partsOrder) {
-        parts.sort((a, b) => {
-            const aIndex = indexById(data.partsOrder, a.code, 'code') || 0;
-            const bIndex = indexById(data.partsOrder, b.code, 'code') || 0;
-            return aIndex - bIndex;
-        });
+/**
+ * Part types in the order of the rule set. When the rule set lists its part types, a part type it
+ * does not list is shown (at the end) only when the entity already has parts of it.
+ */
+export function sortPart(
+    items: RulPartTypeVO[],
+    data: ApViewSettingRule | undefined,
+    hasParts: (partTypeId: number) => boolean = () => true,
+) {
+    if (!data || !data.partsOrder || data.partsOrder.length === 0) {
+        return [...items];
     }
-    return parts;
+    const position = (partType: RulPartTypeVO) => {
+        const index = indexById(data.partsOrder, partType.code, 'code');
+        return index == null || index < 0 ? Number.MAX_SAFE_INTEGER : index;
+    };
+    return items
+        .filter(partType => position(partType) !== Number.MAX_SAFE_INTEGER || hasParts(partType.id))
+        .sort((a, b) => position(a) - position(b));
 }
 
 function sortPrefer(parts: ApPartVO[], preferredPart?: number) {
@@ -557,7 +566,8 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     }
 
     const sortedParts = detail.data && refTables.partTypes.items
-        ? sortPart(refTables.partTypes.items, apViewSettings.data?.rules[detail.data.ruleSetId])
+        ? sortPart(refTables.partTypes.items, apViewSettings.data?.rules[detail.data.ruleSetId],
+                   partTypeId => (groupedRevisionParts[partTypeId] || []).length > 0)
         : [];
 
     return (

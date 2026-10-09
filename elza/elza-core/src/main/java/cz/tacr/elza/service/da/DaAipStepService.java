@@ -77,8 +77,8 @@ public class DaAipStepService {
         AipOutcomeSink sink = actionService.sinkForItem(actionItemId, input.aipId());
         List<Integer> oneAip = List.of(input.aipId());
         switch (input.actionType()) {
-            case DB_UPDATE -> daService.doCreateDaoStructure(oneAip, false, sink);
-            case FORCE_UPDATE -> daService.doCreateDaoStructure(oneAip, true, sink);
+            // links of parts the package no longer has are closed either way, so the two do the same
+            case DB_UPDATE, FORCE_UPDATE -> daService.doCreateDaoStructure(oneAip, sink);
             case REMAP_REFERENCES -> daService.remapReferences(oneAip, sink);
             case CONNECT_TO_NODE, CREATE_NODES, CONNECT_LOGICAL_STRUCTURE, CREATE_NODES_AND_CONNECT ->
                     connectOneAip(actionItemId, input);

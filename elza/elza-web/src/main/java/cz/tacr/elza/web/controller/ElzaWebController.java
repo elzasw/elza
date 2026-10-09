@@ -151,6 +151,19 @@ public class ElzaWebController {
     @Value("${elza.integrationScriptUrl:}")
     private String integrationScriptUrl;
 
+    @Value("${elza.locale:cs}")
+    private String elzaLocale;
+
+    /**
+     * Language of the installation ({@code elza.locale} without region): the UI language of a user who
+     * did not choose one.
+     */
+    @ModelAttribute("defaultLanguage")
+    public String getDefaultLanguage() {
+        String language = java.util.Locale.forLanguageTag(elzaLocale).getLanguage();
+        return StringUtils.isNotEmpty(language) ? language : "cs";
+    }
+
     @ModelAttribute("integrationScriptUrl")
     public String getIntegrationScriptUrl() {
         return integrationScriptUrl;

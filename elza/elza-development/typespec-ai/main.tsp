@@ -76,7 +76,7 @@ using TypeSpec.OpenAPI;
  * `GET /ping`. See `SignatureAuth` and the companion `security.md`.
  */
 @service(#{ title: "Elza AI Provider API" })
-@info(#{ version: "0.15.0" })
+@info(#{ version: "0.16.0" })
 @server(
   "{endpoint}",
   "Provider-assigned base endpoint, e.g. https://ai.example.com/elza",
@@ -829,6 +829,16 @@ model RevisionConfig {
    * `cs`). Findings' human-readable texts are written in this language.
    */
   language?: string;
+
+  /**
+   * Branch runs (0.16.0): the levels **under review** among the supplied
+   * material — the `subject` plus levels pushed as context
+   * (`elza.archivalDescription` objects, full items + `allowedItemTypes`).
+   * Each listed level is reviewed in its own right and may be the `nodeId`
+   * of a finding; unlisted context levels (ancestors) are surroundings only.
+   * Omitted = the subject alone is under review (the unit check).
+   */
+  reviewedNodeIds?: int32[];
 }
 
 /** Revision config object. */
@@ -848,8 +858,26 @@ model RevisionConfigObject extends AiObject {
  * verifies the basis at a glance).
  */
 model RevisionFinding {
-  /** The reviewed level the finding concerns (`ArchivalDescription.nodeId`). */
-  nodeId: int32;
+  /**
+   * The reviewed level the finding concerns (`ArchivalDescription.nodeId`).
+   * Exactly one of `nodeId` / `accessPointId` is present (0.16.0: optional
+   * since findings may address an entity).
+   */
+  nodeId?: int32;
+
+  /**
+   * The reviewed archival entity the finding concerns
+   * (`ArchivalEntity.accessPointId`) — when the run's subject is an entity
+   * (0.16.0). Exactly one of `nodeId` / `accessPointId` is present.
+   */
+  accessPointId?: int32;
+
+  /**
+   * Entity findings only: the part type code (`RulPartType.code`) of the part
+   * the finding sits in — the item type alone does not locate an item in an
+   * entity's part tree (0.16.0).
+   */
+  sourcePartType?: string;
 
   /**
    * Check category the finding belongs to — one of the codes requested in
@@ -1581,6 +1609,15 @@ model SearchEntitiesParams {
   relatedTo?: EntityRelationFilter;
 
   /**
+   * 0-based offset of the returned window (0.16.0; default 0). Paging is
+   * meant for **listings** — a `relatedTo` or `typeCode` query enumerates a
+   * bounded ordered list (all entities related to X), where the next window
+   * is the right follow-up; a full-text hit list is still refined, not paged
+   * (see `SearchEntitiesResult.partial`).
+   */
+  from?: int32;
+
+  /**
    * Requested maximum number of hits; the client may cap it lower (the result
    * then reports `partial`). Omitted = the client's default.
    */
@@ -1619,13 +1656,21 @@ model SearchEntitiesResult {
   /** The matching entities as lightweight identities, best match first. */
   entities: ArchivalEntityInfo[];
 
+  /**
+   * 0-based index of `entities[0]` within the whole matching list (0.16.0) —
+   * echoes the request's `from`; with `totalCount` it says where the window
+   * sits and whether a next window exists.
+   */
+  from?: int32;
+
   /** Total matching entities (before capping). */
   totalCount: int64;
 
   /**
-   * True when the result is incomplete (a hit cap was reached). The tool does
-   * not page: refine the query (sharper terms, `typeCode`, `onlyMainPart`)
-   * instead of re-asking with the same terms.
+   * True when the result is incomplete (a hit cap was reached). A full-text
+   * hit list is refined (sharper terms, `typeCode`, `onlyMainPart`), not
+   * re-asked with the same terms; a **listing** (`relatedTo`, `typeCode`)
+   * is continued with the next window (`from` + the window size).
    */
   partial: boolean;
 }
@@ -2283,6 +2328,18 @@ model TaskParameterInfo {
    * required parameters are present.
    */
   required?: boolean;
+
+  /**
+   * Name of an alternatives group (0.16.0). Parameters of one task sharing a
+   * group are **alternatives**: the group as a whole is required — the caller
+   * supplies exactly one of them — while each member's own `required` is
+   * false. Lets a task accept several subject kinds (`elza.revision` reviews a
+   * description level *or* an archival entity) and lets a client tell from
+   * `/info` alone whether the task can run in its current context (one of the
+   * group's object types must be at hand) instead of learning it from a
+   * failed task. Absent = the parameter stands alone.
+   */
+  alternativeGroup?: string;
 }
 
 /** A task type supported by this provider. */

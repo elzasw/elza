@@ -24,6 +24,7 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.RulArrangementRule;
+import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulExtensionRule;
 import cz.tacr.elza.domain.RulPolicyType;
 import cz.tacr.elza.domain.vo.DataValidationResult;
@@ -101,6 +102,9 @@ public class ValidationRules extends Rules {
                              System.currentTimeMillis() - startTime);
 
                 StatelessKieSession ksession = createKieStatelessSession(path);
+                // messages with a key belong to the package of the rule
+                RulPackage rulPackage = sdp.getPackageById(rulPackageRule.getPackageId());
+                validationResults.setPackageCode(rulPackage != null ? rulPackage.getCode() : null);
                 ksession.setGlobal("dvResults", validationResults);
                 executeStateless(ksession, facts);
 
@@ -129,6 +133,8 @@ public class ValidationRules extends Rules {
                 logger.trace("Executing extension (workerId: {}), path: {}", Thread.currentThread().getId(), path);
 
                 StatelessKieSession ksession = createKieStatelessSession(path);
+                RulPackage rulPackage = rulExtensionRule.getPackage();
+                validationResults.setPackageCode(rulPackage != null ? rulPackage.getCode() : null);
                 ksession.setGlobal("dvResults", validationResults);
                 executeStateless(ksession, facts);
 

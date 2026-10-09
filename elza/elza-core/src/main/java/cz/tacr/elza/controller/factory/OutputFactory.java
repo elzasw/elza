@@ -29,6 +29,8 @@ import cz.tacr.elza.controller.vo.OutputType;
 import cz.tacr.elza.controller.vo.Scope;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.PackageTexts;
+import cz.tacr.elza.domain.TranslationEntityType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrData;
@@ -52,6 +54,9 @@ public class OutputFactory {
 
     @Autowired
     private StaticDataService staticDataService;
+
+    @Autowired
+    private PackageTexts packageTexts;
 
     @Autowired
     private ClientFactoryDO clientFactoryDO;
@@ -252,7 +257,7 @@ public class OutputFactory {
         OutputType vo = new OutputType();
         vo.setId(outputType.getOutputTypeId());
         vo.setCode(outputType.getCode());
-        vo.setName(outputType.getName());
+        vo.setName(packageTexts.name(TranslationEntityType.OUTPUT_TYPE, outputType.getCode(), outputType.getName()));
         return vo;
     }
 

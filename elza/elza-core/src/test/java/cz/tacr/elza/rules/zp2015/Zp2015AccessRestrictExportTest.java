@@ -82,6 +82,8 @@ public class Zp2015AccessRestrictExportTest {
     private static final String APPLIED_CHANGE = "ZP2015_APPLIED_RESTRICTION_CHANGE";
     private static final String NAME = "ZP2015_NAME";
     private static final String CONTENT = "ZP2015_CONTENT";
+    private static final String NAME_PUBLIC = "ZP2015_NAME_PUBLIC";
+    private static final String CONTENT_PUBLIC = "ZP2015_CONTENT_PUBLIC";
 
     @Autowired
     private HelperTestService helperTestService;
@@ -184,18 +186,43 @@ public class Zp2015AccessRestrictExportTest {
     }
 
     /**
-     * Restrictions of the name and content hide both items; the levels have no public variant
+     * The restriction of the name and content hides both items; the level has no public variant
      * which could replace them.
      */
     @Test
     void restrictedDescriptionIsHidden() {
-        ExportedFund fund = export(EXPORT_FILTER);
+        List<Item> items = export(EXPORT_FILTER).restrictedBy("Nepřístupné prvky název a obsah");
 
-        for (String restriction : List.of("Nepřístupné prvky název a obsah", "Použití prvků s omezením")) {
-            List<Item> items = fund.restrictedBy(restriction);
-            assertEquals(List.of(), values(items, NAME), restriction);
-            assertEquals(List.of(), values(items, CONTENT), restriction);
-        }
+        assertEquals(List.of(), values(items, NAME));
+        assertEquals(List.of(), values(items, CONTENT));
+    }
+
+    /**
+     * The use of restricted items replaces the name and content by their public variants, which
+     * are not exported themselves.
+     */
+    @Test
+    void limitedDescriptionIsReplacedByPublicVariants() {
+        List<Item> items = export(EXPORT_FILTER).restrictedBy("Použití prvků s omezením");
+
+        assertEquals(List.of("Použití prvků s omezením - VEŘEJNÉ"), values(items, NAME));
+        assertEquals(List.of("Použití prvků s omezením - VEŘEJNÉ"), values(items, CONTENT));
+        assertEquals(List.of(), values(items, NAME_PUBLIC));
+        assertEquals(List.of(), values(items, CONTENT_PUBLIC));
+    }
+
+    /**
+     * Without public variants the use of restricted items leaves the name and content as they are
+     * and marks nothing (#10083).
+     */
+    @Test
+    void limitedDescriptionWithoutVariantsIsKept() {
+        List<Item> items = export(EXPORT_FILTER).restrictedBy("Použití prvků s omezením bez variant");
+
+        assertEquals(List.of("Použití prvků s omezením bez variant"), values(items, NAME));
+        assertEquals(List.of("Použití prvků s omezením bez variant"), values(items, CONTENT));
+        assertEquals(List.of(), values(items, APPLIED));
+        assertEquals(List.of(), values(items, APPLIED_TEXT));
     }
 
     /**
@@ -211,7 +238,8 @@ public class Zp2015AccessRestrictExportTest {
     }
 
     /**
-     * Only the restricted folders are touched; root and series carry no applied restriction.
+     * Only the restricted folders are touched; root and series carry no applied restriction, nor
+     * does the folder with the use of restricted items but without public variants.
      */
     @Test
     void onlyRestrictedLevelsAreMarked() {
@@ -219,7 +247,7 @@ public class Zp2015AccessRestrictExportTest {
 
         long marked = fund.levels.stream().filter(l -> !values(l, APPLIED).isEmpty()).count();
         assertEquals(6, marked);
-        assertEquals(8, fund.levels.size());
+        assertEquals(9, fund.levels.size());
     }
 
     /**

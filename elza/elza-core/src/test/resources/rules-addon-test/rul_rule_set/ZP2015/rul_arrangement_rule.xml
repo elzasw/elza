@@ -7,4 +7,8 @@
         <rule-type>CONFORMITY_INFO</rule-type>
         <priority>200</priority>
     </arrangement-rule>
+    <arrangement-rule filename="ADT_ItemTypeFilter.drl">
+        <rule-type>ITEM_TYPE_FILTER</rule-type>
+        <priority>200</priority>
+    </arrangement-rule>
 </arrangement-rules>
