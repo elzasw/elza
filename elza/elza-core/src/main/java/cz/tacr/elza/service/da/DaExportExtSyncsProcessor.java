@@ -41,7 +41,7 @@ public class DaExportExtSyncsProcessor implements Runnable {
 
     private static final int QUEUE_CHECK_TIME_INTERVAL = 10000;
 
-    private static final int DOWNLOAD_CHECK_TIME_INTERVAL = 100;
+    private static final int TRANSFER_CHECK_TIME_INTERVAL = 100;
 
     private static final int DEFAULT_EXPORT_LIST_SIZE = 100;
 
@@ -87,8 +87,8 @@ public class DaExportExtSyncsProcessor implements Runnable {
                                     && transfer.getStatus().getState() != TransferState.FAILED
                                     && transfer.getStatus().getState() != TransferState.CANCELED) {
                                 try {
-                                    // wake up every minute to retry
-                                    lock.wait(DOWNLOAD_CHECK_TIME_INTERVAL);
+                                    // the upload runs in this process, so its state is cheap to read
+                                    lock.wait(TRANSFER_CHECK_TIME_INTERVAL);
                                 } catch (InterruptedException e) {
                                     logger.error(e.getMessage(), e);
                                     break;
@@ -104,8 +104,7 @@ public class DaExportExtSyncsProcessor implements Runnable {
 
                             while (!daService.ingestStatusFinished(digitalRepository, batchId)) {
                                 try {
-                                    // wake up every minute to retry
-                                    lock.wait(DOWNLOAD_CHECK_TIME_INTERVAL);
+                                    lock.wait(DaService.statusPollMillis(digitalRepository));
                                 } catch (InterruptedException e) {
                                     logger.error(e.getMessage(), e);
                                     break;

@@ -52,8 +52,6 @@ public class DaImportExtSyncsProcessor implements Runnable {
 
     private static final int QUEUE_CHECK_TIME_INTERVAL = 10000;
 
-    private static final int DOWNLOAD_CHECK_TIME_INTERVAL = 100;
-
     private static final int DEFAULT_IMPORT_LIST_SIZE = 100;
 
     private int importListSize = DEFAULT_IMPORT_LIST_SIZE;
@@ -112,7 +110,7 @@ public class DaImportExtSyncsProcessor implements Runnable {
 
             while (!daService.downloadStatusFinished(digitalRepository, batchId)) {
                 try {
-                    lock.wait(DOWNLOAD_CHECK_TIME_INTERVAL);
+                    lock.wait(DaService.statusPollMillis(digitalRepository));
                 } catch (InterruptedException e) {
                     logger.error(e.getMessage(), e);
                     break;

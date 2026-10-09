@@ -1319,4 +1319,15 @@
         </sql>
     </changeSet>
 
+    <changeSet id="20261009100000" author="ppy">
+        <!-- Pause between two questions whether the DA has finished a batch (a download it
+             prepares, an export it ingests), in seconds. Was a hard-coded 100 ms, which floods
+             the DA with status requests while it works. -->
+        <addColumn tableName="arr_digital_repository">
+            <column name="status_poll_interval" type="int" defaultValueNumeric="2">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

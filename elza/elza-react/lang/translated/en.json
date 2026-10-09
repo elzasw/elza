@@ -251,6 +251,14 @@
     "defaultMessage": "Digital archive",
     "srcHash": "iPgFLR6539C0"
   },
+  "admin.extSystem.daStatusPollInterval": {
+    "defaultMessage": "Batch status check interval (s)",
+    "srcHash": "wKwHzcumljpN"
+  },
+  "admin.extSystem.daStatusPollIntervalMin": {
+    "defaultMessage": "The interval must be at least 1 s",
+    "srcHash": "pAGZaSqCJn73"
+  },
   "admin.extSystem.daSyncDelay": {
     "defaultMessage": "Synchronization interval (s), 0 = no synchronization",
     "srcHash": "wXgprAUB_RPo"

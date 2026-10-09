@@ -353,6 +353,9 @@ class AdminExtSystemDetail extends AbstractReactComponent {
 
                                     <h4><FormattedMessage {...daSettingsMessages.syncDelay} /></h4>
                                     <span>{extSystem.syncDelay}</span>
+
+                                    <h4><FormattedMessage {...daSettingsMessages.statusPollInterval} /></h4>
+                                    <span>{extSystem.statusPollInterval}</span>
                                 </>
                             )}
                         </div>

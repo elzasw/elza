@@ -24,6 +24,9 @@ public class ArrDigitalRepository extends SysExternalSystem {
     /** Default interval of the synchronization with a DA repository, in seconds (5 minutes). */
     public static final int DEFAULT_SYNC_DELAY = 300;
 
+    /** Default pause between two questions about the state of a batch, in seconds. */
+    public static final int DEFAULT_STATUS_POLL_INTERVAL = 2;
+
     @Column(length = StringLength.LENGTH_1000)
     private String viewDaoUrl;
 
@@ -63,6 +66,13 @@ public class ArrDigitalRepository extends SysExternalSystem {
     @Column(nullable = false)
     private Integer syncDelay = DEFAULT_SYNC_DELAY;
 
+    /**
+     * Seconds between two questions whether the DA has finished a batch - a download it
+     * prepares or an export it ingests.
+     */
+    @Column(nullable = false)
+    private Integer statusPollInterval = DEFAULT_STATUS_POLL_INTERVAL;
+
     public ArrDigitalRepository() {
     }
 
@@ -77,6 +87,7 @@ public class ArrDigitalRepository extends SysExternalSystem {
 		this.downloadMethod = ardr.getDownloadMethod();
 		this.onReceived = ardr.getOnReceived();
 		this.syncDelay = ardr.getSyncDelay();
+		this.statusPollInterval = ardr.getStatusPollInterval();
     }
 
 	/**
@@ -173,6 +184,14 @@ public class ArrDigitalRepository extends SysExternalSystem {
 
     public void setSyncDelay(Integer syncDelay) {
         this.syncDelay = syncDelay;
+    }
+
+    public Integer getStatusPollInterval() {
+        return statusPollInterval;
+    }
+
+    public void setStatusPollInterval(Integer statusPollInterval) {
+        this.statusPollInterval = statusPollInterval;
     }
 
     @Override

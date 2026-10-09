@@ -45,6 +45,7 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
         expect(screen.getByRole('option', { name: 'Nic nedělat' })).toBeInTheDocument();
         expect(screen.getByRole('option', { name: 'Stáhnout metadata' })).toBeInTheDocument();
         expect(input(container, 'syncDelay')).not.toBeNull();
+        expect(input(container, 'statusPollInterval')).not.toBeNull();
     });
 
     it.each([DigitalRepositoryType.Filesystem, DigitalRepositoryType.Wsdl])(
@@ -57,6 +58,7 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
             expect(select(container, 'downloadMethod')).toBeNull();
             expect(select(container, 'onReceived')).toBeNull();
             expect(input(container, 'syncDelay')).toBeNull();
+            expect(input(container, 'statusPollInterval')).toBeNull();
         },
     );
 
@@ -90,6 +92,7 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
                     downloadMethod: DaDownloadMethod.Standard,
                     onReceived: DaOnReceivedAction.None,
                     syncDelay: 300,
+                    statusPollInterval: 2,
                 })}
                 onSubmitForm={onSubmitForm}
             />,
@@ -98,6 +101,7 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
         fireEvent.change(select(container, 'downloadMethod')!, { target: { value: DaDownloadMethod.FileTransfer } });
         fireEvent.change(select(container, 'onReceived')!, { target: { value: DaOnReceivedAction.DownloadMetadata } });
         fireEvent.change(input(container, 'syncDelay')!, { target: { value: '3600' } });
+        fireEvent.change(input(container, 'statusPollInterval')!, { target: { value: '5' } });
         fireEvent.click(screen.getByRole('button', { name: 'Upravit' }));
 
         await vi.waitFor(() => expect(onSubmitForm).toHaveBeenCalledTimes(1));
@@ -105,6 +109,28 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
             downloadMethod: DaDownloadMethod.FileTransfer,
             onReceived: DaOnReceivedAction.DownloadMetadata,
             syncDelay: 3600,
+            statusPollInterval: 5,
         });
+    });
+
+    it('odmítne interval dotazu na stav dávky pod 1 s', async () => {
+        const onSubmitForm = vi.fn().mockResolvedValue(undefined);
+        const { container } = renderWithProviders(
+            <ExtSystemForm
+                initialValues={repository(DigitalRepositoryType.Da, {
+                    id: 7,
+                    sendNotification: 'false',
+                    downloadMethod: DaDownloadMethod.Standard,
+                    onReceived: DaOnReceivedAction.None,
+                })}
+                onSubmitForm={onSubmitForm}
+            />,
+        );
+
+        fireEvent.change(input(container, 'statusPollInterval')!, { target: { value: '0' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Upravit' }));
+
+        expect(await screen.findByText('Interval musí být alespoň 1 s')).toBeInTheDocument();
+        expect(onSubmitForm).not.toHaveBeenCalled();
     });
 });

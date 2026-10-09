@@ -15,6 +15,10 @@ between the installed and the new version; see :doc:`/03-upgrade`.
 Upcoming version
 ================
 
+* Change: ELZA DA - while the digital archive prepares a download or
+  processes an exported package, ELZA asks for the state of the batch every
+  2 seconds instead of every 100 ms. The interval is a new setting of the DA
+  repository, *Batch status check interval (s)*, at least 1 second.
 * Fix: ELZA DA - a description unit with an attached AIP whose metadata
   were not downloaded yet could not be opened (``NullPointerException`` on
   ``parentDaoList``); it now shows the link of the AIP.
