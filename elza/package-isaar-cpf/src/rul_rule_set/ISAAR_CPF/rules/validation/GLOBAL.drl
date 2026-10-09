@@ -5,11 +5,14 @@ import cz.tacr.elza.drools.model.Part;
 import cz.tacr.elza.drools.model.PartType;
 global ApValidationErrors results;
 
+// Each error has a key (ISAAR_CPF/<KEY>) and its English text; translations/<lang>.xml
+// translates the key, the text is shown where no translation exists.
+
 rule "ISAAR 5.1.2: at least one name"
 when $ae: Ap( $aeParts : parts )
      not (Part(type == PartType.PT_NAME) from $aeParts)
 then
-    results.addError("The entity must have at least one name; the preferred name is the authorized form.");
+    results.addError("AT_LEAST_ONE_NAME", "The entity must have at least one name; the preferred name is the authorized form.");
 end
 
 rule "ISAAR: empty part"
@@ -17,7 +20,7 @@ when $ae: Ap( $aeParts : parts )
      $part: Part(items.isEmpty()) from $aeParts
      not $childPart: Part(parentPartId == $part.id, type == PartType.PT_REL) from $ae.parts
 then
-    results.addError("The entity has an empty part.");
+    results.addError("EMPTY_PART", "The entity has an empty part.");
 end
 
 rule "ISAAR 5.2: one description"
@@ -25,7 +28,7 @@ when $ae: Ap( $aeParts : parts )
      $part: Part(type == PartType.PT_BODY) from $aeParts
      $part2: Part(type == PartType.PT_BODY && this != $part) from $aeParts
 then
-    results.addError("The description of the entity is given more than once.");
+    results.addError("ONE_DESCRIPTION", "The description of the entity is given more than once.");
 end
 
 rule "ISAAR 5.2.1: one beginning of existence"
@@ -33,7 +36,7 @@ when $ae: Ap( $aeParts : parts )
      $part: Part(type == PartType.PT_CRE) from $aeParts
      $part2: Part(type == PartType.PT_CRE && this != $part) from $aeParts
 then
-    results.addError("The beginning of existence is given more than once.");
+    results.addError("ONE_BEGINNING_OF_EXISTENCE", "The beginning of existence is given more than once.");
 end
 
 rule "ISAAR 5.2.1: one end of existence"
@@ -41,5 +44,5 @@ when $ae: Ap( $aeParts : parts )
      $part: Part(type == PartType.PT_EXT) from $aeParts
      $part2: Part(type == PartType.PT_EXT && this != $part) from $aeParts
 then
-    results.addError("The end of existence is given more than once.");
+    results.addError("ONE_END_OF_EXISTENCE", "The end of existence is given more than once.");
 end

@@ -68,6 +68,7 @@ import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.controller.vo.ApSearchType;
 import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.PackageTexts;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.domain.ApAccessPoint;
@@ -154,6 +155,9 @@ public class ApController {
 
     @Autowired
     private StaticDataService staticDataService;
+
+    @Autowired
+    private PackageTexts packageTexts;
 
     @Autowired
     private RuleService ruleService;
@@ -701,7 +705,7 @@ public class ApController {
 
         ApAttributesInfoVO apAttributesInfoVO = new ApAttributesInfoVO();
         apAttributesInfoVO.setAttributes(result);
-        apAttributesInfoVO.setErrors(errors);
+        apAttributesInfoVO.setErrors(packageTexts.renderAll(errors));
 
         return apAttributesInfoVO;
     }

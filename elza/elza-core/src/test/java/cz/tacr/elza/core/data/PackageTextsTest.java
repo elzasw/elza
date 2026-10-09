@@ -2,6 +2,7 @@ package cz.tacr.elza.core.data;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
@@ -18,7 +19,9 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import cz.tacr.elza.core.ElzaLocale;
+import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.RulPackageDependency;
 import cz.tacr.elza.domain.RulTranslation;
 import cz.tacr.elza.domain.SysLanguage;
@@ -66,10 +69,25 @@ class PackageTextsTest {
                 row(other, "ITEM_TYPE", "T3", "name", en, "other"),
                 row(base, "ITEM_TYPE", "T3", "name", en, "base T3"),
                 row(base, "MESSAGE", "BASE/HELLO", "text", cs, "Ahoj {0}, je {1,number,integer} hodin."),
-                row(base, "MESSAGE", "BASE/HELLO", "text", en, "Hello {0}, it''s {1,number,integer} o''clock.")),
+                row(base, "MESSAGE", "BASE/HELLO", "text", en, "Hello {0}, it''s {1,number,integer} o''clock."),
+                row(base, "MESSAGE", "CORE/AP_DUPLICATE_KEY_VALUE", "text", en, "Overridden by BASE"),
+                row(base, "PART_TYPE", "PT_NAME", "name", en, "Name")),
                 List.of(base, addon, other),
-                List.of(dependency));
+                List.of(dependency),
+                CoreTranslations.load(List.of(cs, en)));
         lenient().when(sdp.getTranslations()).thenReturn(translations);
+
+        // reference data named by the arguments of validation messages
+        RulPartType partType = new RulPartType();
+        partType.setCode("PT_NAME");
+        partType.setName("Označení");
+        lenient().when(sdp.getPartTypeByCode("PT_NAME")).thenReturn(partType);
+        RulItemType rulItemType = new RulItemType();
+        rulItemType.setCode("T1");
+        rulItemType.setName("source");
+        ItemType itemType = mock(ItemType.class);
+        lenient().when(itemType.getEntity()).thenReturn(rulItemType);
+        lenient().when(sdp.getItemTypeByCode("T1")).thenReturn(itemType);
 
         ElzaLocale elzaLocale = mock(ElzaLocale.class);
         lenient().when(elzaLocale.getLocale()).thenReturn(Locale.forLanguageTag("cs-CZ"));
@@ -150,6 +168,134 @@ class PackageTextsTest {
         assertEquals("Ahoj Jana, je 7 hodin.", texts.message("BASE/HELLO", null, "Jana", 7));
         assertEquals("BASE/UNKNOWN", texts.message("BASE/UNKNOWN", en));
         assertEquals("NO_PREFIX", texts.message("NO_PREFIX", en));
+    }
+
+    /**
+     * A message stored by a validation: the translation row wins, then the text stored with the
+     * message (the text of the rule); a plain line is kept.
+     */
+    @Test
+    void storedMessageIsRenderedFromTranslationOrItsOwnText() {
+        String line = ValidationMessage.of("BASE/HELLO", "Default {0}", "Jana", 7).encode();
+        assertEquals("Hello Jana, it's 7 o'clock.", texts.render(line, en));
+        assertEquals("Ahoj Jana, je 7 hodin.", texts.render(line, cs));
+
+        line = ValidationMessage.of("BASE/ONLY_IN_RULE", "Only in the rule: {0}", "x").encode();
+        assertEquals("Only in the rule: x", texts.render(line, en));
+        assertEquals("Only in the rule: x", texts.render(line, null));
+        assertEquals("BASE/UNKNOWN", texts.render(ValidationMessage.of("BASE/UNKNOWN", null).encode(), en));
+
+        assertEquals("Plain {0} text", texts.render("Plain {0} text", en));
+        assertEquals("Broken {0", texts.render(ValidationMessage.of("BASE/BAD", "Broken {0", "x").encode(), en));
+
+        assertEquals("plain\nOnly in the rule: x\n",
+                     texts.renderLines("plain\n" + ValidationMessage.of("BASE/ONLY_IN_RULE", "Only in the rule: {0}", "x").encode() + "\n"));
+        assertNull(texts.renderLines(null));
+    }
+
+    /**
+     * A message of the core comes from the translations shipped with the core in the language,
+     * a package may override it, and without any translation the text of the code is shown.
+     * Arguments naming item types and part types are rendered as their names.
+     */
+    @Test
+    void coreMessageComesFromTheShippedTranslationsAndNamesItsArguments() {
+        ValidationMessage duplicate = CoreMessage.AP_DUPLICATE_KEY_VALUE.with();
+        assertEquals("CORE/AP_DUPLICATE_KEY_VALUE", duplicate.getKey());
+        assertEquals(CoreMessage.AP_DUPLICATE_KEY_VALUE.text(), duplicate.getText());
+        assertEquals("Overridden by BASE", texts.render(duplicate.encode(), en));
+        assertEquals("Overridden by BASE", texts.render(duplicate.encode(), enGb));
+        assertEquals("Duplicitní key value přístupového bodu.", texts.render(duplicate.encode(), cs));
+        assertEquals("Duplicate key value of the entity.", texts.render(duplicate.encode(), de));
+        assertEquals("Duplicate key value of the entity.", texts.render(duplicate.encode(), null));
+
+        String missing = CoreMessage.AP_MISSING_REQUIRED_ITEM.with(ValidationMessage.partType("PT_NAME"),
+                                                                   "T1", ValidationMessage.itemType("T1")).encode();
+        assertEquals("The part Name is missing the required item T1 - addon", texts.render(missing, en));
+        assertEquals("V části Označení chybí povinný typ prvku T1 - source", texts.render(missing, cs));
+
+        // an unknown reference is rendered as its code
+        String unknown = CoreMessage.AP_INVALID_ENTITY_REF.with(ValidationMessage.partType("PT_NOPE")).encode();
+        assertEquals("The part PT_NOPE refers to an invalidated entity", texts.render(unknown, en));
+
+        // a term of the core as an argument is rendered in the language too
+        String undefined = CoreMessage.ARR_UNDEFINED_NOT_ALLOWED
+                .with(ValidationMessage.itemType("T1"), CoreMessage.UNDEFINED_VALUE.with()).encode();
+        assertEquals("The item addon cannot have the value “undefined”.", texts.render(undefined, en));
+        assertEquals("U prvku popisu source není možné nastavit hodnotu „výjimka“.", texts.render(undefined, cs));
+    }
+
+    /**
+     * A message of the core built without the service (the validator of funds), its source text
+     * for the index, and the form stored in a column that cannot hold the encoded message.
+     */
+    @Test
+    void coreMessageHasASourceTextAndFitsAColumn() {
+        ValidationMessage missing = CoreMessage.ARR_MISSING_ITEM.with(ValidationMessage.itemType("T1"));
+        assertEquals("CORE/ARR_MISSING_ITEM", missing.getKey());
+        assertEquals("The item {0} must be filled in.", missing.getText());
+        assertEquals("The item T1 must be filled in.", missing.sourceText());
+        assertEquals("The item T1 must be filled in.", ValidationMessage.indexText(missing.encode()));
+        assertEquals("plain", ValidationMessage.indexText("plain"));
+        assertEquals("The item addon must be filled in.", texts.render(missing.encode(), en));
+        assertEquals("Prvek source musí být vyplněn.", texts.render(missing.encode(), cs));
+
+        String encoded = missing.encode();
+        assertEquals(encoded, missing.storable(encoded.length()));
+        assertEquals("The item T1 must be filled in.", missing.storable(encoded.length() - 1));
+        assertEquals("The item", missing.storable(8));
+        assertEquals("BASE/UNKNOWN", ValidationMessage.of("BASE/UNKNOWN", null).sourceText());
+    }
+
+    @Test
+    void messageIsEncodedAsOneLine() {
+        ValidationMessage message = ValidationMessage.of("BASE/KEY", "Text \"quoted\" {0}", "a\nb", null, 3);
+        String line = message.encode();
+        assertTrue(ValidationMessage.isEncoded(line));
+        assertEquals(-1, line.indexOf('\n'));
+        assertEquals(message, ValidationMessage.decode(line));
+        assertEquals(List.of("a\nb", "", 3), ValidationMessage.decode(line).getArgs());
+        assertNull(ValidationMessage.decode("plain"));
+        assertNull(ValidationMessage.decode("{\"key\":broken"));
+
+        assertEquals("BASE/KEY", ValidationMessage.qualify("BASE", "KEY"));
+        assertEquals("OTHER/KEY", ValidationMessage.qualify("BASE", "OTHER/KEY"));
+        assertEquals("KEY", ValidationMessage.qualify(null, "KEY"));
+    }
+
+    /**
+     * The objects of the rules and of the domain become references, references and nested
+     * messages survive the encoding, and a number keeps its digits under a bare placeholder.
+     */
+    @Test
+    void argumentsAreTypedAndRenderedByKind() {
+        RulItemType rulItemType = new RulItemType();
+        rulItemType.setCode("T1");
+        RulPartType partType = new RulPartType();
+        partType.setCode("PT_NAME");
+        ValidationMessage nested = ValidationMessage.of("BASE/HELLO", null, "Jana", 7);
+        ValidationMessage message = ValidationMessage.of("BASE/TYPED", "{0} | {1} | {2} | {3} | {4,number,integer} | {5}",
+                                                         rulItemType, partType, nested, 12383, 12383, true);
+
+        List<Object> args = message.getArgs();
+        assertEquals(ValidationMessage.itemType("T1"), args.get(0));
+        assertEquals(ValidationMessage.partType("PT_NAME"), args.get(1));
+        assertEquals(nested, args.get(2));
+        assertEquals(12383, args.get(3));
+        assertEquals(true, args.get(5));
+        String line = message.encode();
+        assertTrue(line.contains("{\"t\":\"ITEM_TYPE\",\"v\":\"T1\"}"), line);
+        assertEquals(message, ValidationMessage.decode(line));
+
+        assertEquals("addon | Name | Hello Jana, it's 7 o'clock. | 12383 | 12,383 | true", texts.render(line, en));
+        // Czech groups digits with a non-breaking space
+        assertEquals("source | Označení | Ahoj Jana, je 7 hodin. | 12383 | 12 383 | true", texts.render(line, cs));
+        assertEquals("T1 | PT_NAME | BASE/HELLO | 12383 | 12,383 | true", message.sourceText());
+
+        // an entity of a kind without a name here, or unknown: a translation row, else the code
+        assertEquals("Name", texts.name(ValidationMessage.partType("PT_NAME"), en));
+        assertEquals("PT_NOPE", texts.name(ValidationMessage.partType("PT_NOPE"), en));
+        assertEquals("X", texts.name(new ValidationMessage.Ref("NO_SUCH_KIND", "X"), en));
     }
 
     @Test

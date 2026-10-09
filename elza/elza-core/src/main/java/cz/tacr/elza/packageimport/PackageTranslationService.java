@@ -136,7 +136,8 @@ public class PackageTranslationService {
                 continue;
             }
             String source = sourceTexts.get(type, row.getEntityCode(), row.getField());
-            if (source == null) {
+            if (source == null && type != TranslationEntityType.MESSAGE) {
+                // a message without a source row is defined by a rule, with its text there
                 logger.warn("Package {}: translation of a missing text {}.{}.{} ({}) is kept as orphan",
                             rulPackage.getCode(), row.getEntityType(), row.getEntityCode(), row.getField(),
                             row.getLanguage().getTag());
@@ -208,7 +209,10 @@ public class PackageTranslationService {
             }
             String source = sourceTexts.get(type, row.getEntityCode(), row.getField());
             if (source == null) {
-                issues.add(issue(IssueKind.ORPHAN, row));
+                // a message without a source row is defined by a rule, with its text there
+                if (type != TranslationEntityType.MESSAGE) {
+                    issues.add(issue(IssueKind.ORPHAN, row));
+                }
             } else if (row.getSourceHash() != null && !row.getSourceHash().equals(sourceHash(source))) {
                 issues.add(issue(IssueKind.OUTDATED, row));
             }

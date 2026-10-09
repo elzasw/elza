@@ -288,22 +288,52 @@ caught; the groups below are complete for the mechanisms, not necessarily for ev
 | E3. Enum labels | `controller/vo/ExtAsyncQueueState`, `domain/ExtSyncsQueueItem` states, `DaSyncQueueItem` states ("Ke stažení", "Odesláno" ...) | 25 | the VOs serialize the enum constant, the client has its own labels - presumably dead; verify `value()` callers and delete |
 | F. Core resources | `script/groovy/createDid.groovy` (assert texts only), `exportDaTemplates/*.xml` (DA export samples, Czech by design) | - | - |
 
-*Three rules (proposal).*
-1. **Persisted findings carry a code, the client renders them** (A, A2). `arr_node_conformity_error` and
-   `arr_node_conformity_missing` get `message_code` (nullable) and `message_param` (the entity id of the
-   deleted-entity case); `description` stays for rule-owned messages and old rows. Codes:
-   `MISSING_REQUIRED`, `TYPE_IMPOSSIBLE`, `SPEC_IMPOSSIBLE`, `TYPE_NOT_ALLOWED`, `NOT_REPEATABLE`,
-   `UNDEFINED_NOT_ALLOWED`, `DELETED_ENTITY_REF`. The VOs expose the code; the client renders it with
-   the item type and specification names from its reference tables in the UI language (`messages.ts`),
-   falls back to `description`. The same for `ApValidationErrorsVO`: structured entries
-   `(code, partTypeCode, itemTypeCode, itemSpecCode)` beside the text. Rule-owned messages stay text;
-   `TranslationEntityType.MESSAGE` (2a.1) is the path to translate them when a package wants to. No
-   data migration: rows are rewritten by revalidation. Validation runs in workers without a request
-   language, so server-side rendering is not an option for this group.
-2. **Request-time texts come from a core catalog in the request language** (B, E1, E2): a resource
-   bundle `core-messages_<tag>.properties` (cs, en) read through a `CoreMessages` helper next to
-   `PackageTexts.requestLanguage()`; keys in code, no literals. About 60 keys (CSV headers 19, explorer
-   labels 4, AI block labels and reasons 27, API-key failures 6, password policy 1). This is the
+*Three rules.*
+1. **Validation messages: key + text in the rule, stored neutral, rendered by the server when read**
+   (A2 done 2026-10-09, A to follow). Decided with the user 2026-10-09 against the earlier proposal
+   (codes rendered by the client): package messages are customer-specific, so the client catalog can
+   never hold them, and "workers have no request language" is solved by rendering late, in the VO
+   factory, not by the client. The pattern is the one both halves of the code already use
+   (react-intl `{id, defaultMessage}`, Spring `getMessage(code, args, default, locale)`):
+   - a rule reports `results.addError("KEY", "text {0}", arg)`; core qualifies the key by the package
+     of the rule (`ModelValidationRules`), `ApValidationErrors.addError(key, text, args)`;
+   - core messages are the enum `CoreMessage` (`CORE/<KEY>`, the text in code is the developer's fallback,
+     may be English); their Czech and English texts ship in `elza-core/src/main/resources/translations/<tag>.xml`
+     in the package file format and form the lowest layer of `PackageTranslations` (`CoreTranslations`;
+     decided 2026-10-09 against a properties bundle - a third mechanism - and against a separate
+     package - must be distributed and can be left out by `elza.packages.enabled`); `CoreMessagesTest`
+     checks every message has a text in every shipped language;
+   - arguments are typed in the stored line (`{"t":"ITEM_SPEC","v":"CODE"}`, kinds = `TranslationEntityType`,
+     nested messages), domain and rule objects convert automatically, a bare `{n}` prints a number's digits
+     verbatim (identifiers), `{n,number}` formats by locale; no ICU4J for now (`ChoiceFormat` covers cs/en
+     plurals; `ValidationMessage.format` is the one place to switch);
+   - the message is stored as one JSON line `{"key","text","args"}` in the existing `error_description`
+     columns next to plain lines (no changeset, old rows unchanged, rewritten by revalidation) and
+     rendered by `PackageTexts.render` in `ApFactory.createValidationVO` / `renderValidationVO`,
+     `ApController.getAvailableItems`, the error texts of the VOs and `validateEntityAndFailOnError`;
+   - lookup: `rul_translation` row in the request language → core bundle → source (defining package's
+     own-language row, core's Czech bundle) → the stored text → the key. A package may override a core
+     message with a `MESSAGE` row of code `CORE/<KEY>`;
+   - no extraction from DRL or Java: the stored text is the fallback, and translations of messages
+     defined in rules are not hash-checked (a changed meaning changes the key). The Czech packages
+     (CAM 71, ZP2015 31 calls) keep `addError("text")` untouched - they are not translated by decision.
+   Pilot: ISAAR_CPF (5 messages, `translations/cs.xml`, package version 2) and the 10 core templates of
+   `RuleService`/`AccessPointService`. **Group A done 2026-10-09 with the same mechanism:** `Validator`
+   (7 templates → `ARR_*` keys, built statically by `ValidationMessage.core` because the validator is no
+   bean), `DataValidationResults.createMissingRequired` (2 keys) and the rule API
+   `createMissing(typeCode, key, text, policy, args)` / `createError(descItemId, key, text, policy, args)`
+   with the package set per rule file by `ValidationRules` (package rules and extension rules);
+   `arr_node_conformity_*.description` (1000 chars) stores the encoded line, or the source text when it
+   would not fit (`ValidationMessage.storable`); rendered in `ClientFactoryVO.createNodeConformity` (the
+   tree, the node panel, the fund validation list through `ArrangementService.createVersionValidationItems`)
+   and in the AI context; the full-text index gets the source text (`indexText`). ZP2015 and SIMPLE-DEV
+   keep plain texts. Covered by `AddonPackageTest` (keyed addon message, `translations/en.xml`, a core
+   message in both languages). The word for an undefined value is the nested term `CORE/UNDEFINED_VALUE`
+   (plan group D2 "výjimka" in messages - done; the stored value and tree titles are untouched).
+2. **Request-time texts come from the core catalog in the request language** (B, E1, E2): the same
+   `CoreMessage` enum and `translations/<tag>.xml` files of the core as rule 1, rendered right away with
+   `PackageTexts.render(message)` (no storage); keys in code, no literals. About 60 keys (CSV headers 19,
+   explorer labels 4, AI block labels and reasons 27, API-key failures 6, password policy 1). This is the
    "server catalog" option, limited to texts that are built inside a request and are not data.
 3. **Texts a package writes follow the package** (D1, D2): the text form of unit dates inside entity
    index names and outputs, the word for an undefined value in titles, default names and values
@@ -317,13 +347,11 @@ caught; the groups below are complete for the mechanisms, not necessarily for ev
 *Out of scope, documented as Czech modules:* D3 (the DA/AIP integration is the Czech national digital
 archive interface, like CAM), C (not shown), F. E3 is a cleanup.
 
-*Open for the user:* (1) agree with the three rules; (2) A2 in the same implementation step as A
-(recommended: the 2b exit criterion includes entity editing) or later; (3) DA/AIP and CAM declared
-Czech-only, no catalog for them; (4) unit dates - resolved by L2 (section 7): no language on funds,
-texts follow the user or the writing package. *Implementation step (after the decision):* 2
-changesets, `Validator`/`DataValidationResults`/`RuleService` codes, 3 VOs, client rendering, the
-`CoreMessages` catalog with the B/E1/E2 call sites, enum-label cleanup; tests for codes and both
-languages of the catalog. Estimate 2-3 days.
+*Open for the user:* (1) rule 1 agreed and implemented for entities and funds (above); rules 2 and 3
+still a proposal; (2) DA/AIP and CAM declared Czech-only, no catalog for them; (3) unit dates - resolved
+by L2 (section 7): no language on funds, texts follow the user or the writing package. *Remaining
+implementation:* the B/E1/E2 call sites through `CoreMessage` (rule 2), enum-label cleanup; tests
+for both languages. Estimate 1 day.
 
 ### L2 — unit-date text per language (found 2026-10-08, design agreed 2026-10-08)
 

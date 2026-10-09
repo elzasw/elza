@@ -8,11 +8,13 @@ import cz.tacr.elza.domain.vo.DataValidationResults;
 
 global DataValidationResults dvResults;
 
+// The message has a key (ADDON_TEST/ADT_001) translated in translations/en.xml; the text here
+// is shown where no translation exists.
 rule "ADT_001 A folder must carry the addon stage"
 when
     $activeLevel : ActiveLevel( $items: descItems )
     DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER") from $items
     not DescItem(type=="ADT_STAGE") from $items
 then
-    dvResults.createMissing("ADT_STAGE", "Addon stage is missing (rule ADT_001).", "ZP2015_POL_BASIC");
+    dvResults.createMissing("ADT_STAGE", "ADT_001", "Addon stage is missing (rule ADT_001).", "ZP2015_POL_BASIC");
 end

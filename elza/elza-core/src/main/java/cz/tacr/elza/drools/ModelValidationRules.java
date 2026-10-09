@@ -11,7 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.core.ResourcePathResolver;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.RulEntityRule;
+import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.drools.model.ModelValidation;
 
 @Component
@@ -21,6 +23,9 @@ public class ModelValidationRules extends Rules {
 
     @Autowired
     private ResourcePathResolver resourcePathResolver;
+
+    @Autowired
+    private StaticDataService staticDataService;
 
 
     public synchronized ModelValidation execute(final List<RulEntityRule> rules,
@@ -44,6 +49,9 @@ public class ModelValidationRules extends Rules {
             Path path = resourcePathResolver.getDroolFile(rule);
 
             StatelessKieSession ksession = createKieStatelessSession(path);
+            // messages with a key belong to the package of the rule
+            RulPackage rulPackage = staticDataService.getData().getPackageById(rule.getPackageId());
+            modelValidation.getApValidationErrors().setPackageCode(rulPackage != null ? rulPackage.getCode() : null);
             ksession.setGlobal("results", modelValidation.getApValidationErrors());
             executeStateless(ksession, facts);
         }

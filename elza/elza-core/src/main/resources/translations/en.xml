@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- English texts of the messages of the core (cz.tacr.elza.core.data.CoreMessage), see cs.xml. -->
+<translations lang="en">
+    <!-- entity validation: {0} part type, {1} item type code, {2} item type -->
+    <t type="MESSAGE" code="CORE/AP_MISSING_REQUIRED_ITEM" field="text">The part {0} is missing the required item {1} - {2}</t>
+    <t type="MESSAGE" code="CORE/AP_IMPOSSIBLE_ITEM" field="text">The part {0} contains the forbidden item {1} - {2}</t>
+    <t type="MESSAGE" code="CORE/AP_ITEM_NOT_REPEATABLE" field="text">The part {0} contains the item {1} - {2} more than once.</t>
+    <!-- {0} part type, {1} specification code, {2} specification -->
+    <t type="MESSAGE" code="CORE/AP_IMPOSSIBLE_SPEC" field="text">The part {0} contains the forbidden specification {1} - {2}</t>
+    <t type="MESSAGE" code="CORE/AP_RELATION_NOT_REPEATABLE" field="text">The part {0} contains the relation {1} - {2} more than once.</t>
+    <t type="MESSAGE" code="CORE/AP_IDENT_NOT_REPEATABLE" field="text">The part {0} contains the external identifier {1} - {2} more than once.</t>
+    <!-- {0} specification code, {1} specification -->
+    <t type="MESSAGE" code="CORE/AP_ENTITY_RELATION_NOT_REPEATABLE" field="text">The entity contains the relation {0} - {1} more than once.</t>
+    <!-- {0} part type, {1} index type, {2} index value -->
+    <t type="MESSAGE" code="CORE/AP_DUPLICATE_INDEX" field="text">The part {0} contains a duplicate index of type {1} with the value {2}</t>
+    <!-- {0} part type -->
+    <t type="MESSAGE" code="CORE/AP_INVALID_ENTITY_REF" field="text">The part {0} refers to an invalidated entity</t>
+    <t type="MESSAGE" code="CORE/AP_DUPLICATE_KEY_VALUE" field="text">Duplicate key value of the entity.</t>
+
+    <!-- fund validation: {0} item type -->
+    <t type="MESSAGE" code="CORE/ARR_MISSING_ITEM" field="text">The item {0} must be filled in.</t>
+    <t type="MESSAGE" code="CORE/ARR_ITEM_IMPOSSIBLE" field="text">The item {0} cannot be used at this unit of description.</t>
+    <t type="MESSAGE" code="CORE/ARR_ITEM_NOT_ALLOWED" field="text">The item {0} is not possible at this unit of description.</t>
+    <t type="MESSAGE" code="CORE/ARR_ITEM_NOT_REPEATABLE" field="text">The item {0} is not repeatable.</t>
+    <!-- {0} item type, {1} specification -->
+    <t type="MESSAGE" code="CORE/ARR_MISSING_SPEC" field="text">The item {0} with the specification {1} must be filled in.</t>
+    <t type="MESSAGE" code="CORE/ARR_SPEC_IMPOSSIBLE" field="text">The item {0} with the specification {1} cannot be used at this unit of description.</t>
+    <!-- {0} specification -->
+    <t type="MESSAGE" code="CORE/ARR_SPEC_NOT_REPEATABLE" field="text">The specification {0} is not repeatable.</t>
+    <!-- {0} item type, {1} the value -->
+    <t type="MESSAGE" code="CORE/ARR_UNDEFINED_NOT_ALLOWED" field="text">The item {0} cannot have the value “{1}”.</t>
+    <!-- {0} item type, {1} id of the entity -->
+    <t type="MESSAGE" code="CORE/ARR_DELETED_ENTITY_REF" field="text">The item {0} refers to an invalidated entity (id: {1}).</t>
+
+    <!-- terms used as arguments -->
+    <t type="MESSAGE" code="CORE/UNDEFINED_VALUE" field="text">undefined</t>
+</translations>

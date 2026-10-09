@@ -46,6 +46,18 @@ public class PackageTranslations {
     static PackageTranslations build(Collection<RulTranslation> rows,
                                      Collection<RulPackage> packages,
                                      Collection<RulPackageDependency> dependencies) {
+        return build(rows, packages, dependencies, List.of());
+    }
+
+    /**
+     * @param base
+     *            texts below every package: the translations shipped with the core
+     *            ({@link CoreTranslations}); a package row of the same text and language wins
+     */
+    static PackageTranslations build(Collection<RulTranslation> rows,
+                                     Collection<RulPackage> packages,
+                                     Collection<RulPackageDependency> dependencies,
+                                     Collection<RulTranslation> base) {
         Map<Integer, Integer> depth = dependencyDepth(dependencies);
         Map<Integer, String> packageCodes = new HashMap<>();
         packages.forEach(p -> packageCodes.put(p.getPackageId(), p.getCode()));
@@ -56,6 +68,10 @@ public class PackageTranslations {
         List<RulTranslation> ordered = rows.stream().sorted(precedence).toList();
 
         Map<Key, Map<Integer, String>> values = new HashMap<>();
+        for (RulTranslation row : base) {
+            Key key = new Key(row.getEntityType(), row.getEntityCode(), row.getField());
+            values.computeIfAbsent(key, k -> new HashMap<>()).put(row.getLanguageId(), row.getTextValue());
+        }
         for (RulTranslation row : ordered) {
             Key key = new Key(row.getEntityType(), row.getEntityCode(), row.getField());
             values.computeIfAbsent(key, k -> new HashMap<>()).put(row.getLanguageId(), row.getTextValue());

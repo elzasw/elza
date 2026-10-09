@@ -178,6 +178,18 @@ Upcoming version
   in further languages (:file:`translations/<lang>.xml`); the names are
   shown in the language of the user interface. The list of languages
   (``GET /api/v1/languages``) is available without login.
+* New: Validation messages of archival entities and of units of
+  description are shown in the language of the user interface: the
+  messages of the core (a missing required item, a forbidden item or
+  specification, an item given more than once, ...) in Czech and English,
+  the messages of a package's validation rules when the rule reports them
+  with a key and the package translates the key (ISAAR_CPF version 2 does
+  so into Czech). The messages of CZ_BASE and ZP2015 stay in Czech. The
+  Czech and English texts of the core messages ship with ELZA; a rules
+  package may override them or add a language
+  (:file:`translations/<lang>.xml`, rows with the code ``CORE/...``). A
+  record validated before the upgrade shows its stored texts until it is
+  validated again.
 * New: The language of the user interface is chosen in the user settings
   (no longer an experimental feature) and in the login dialog. Without a
   choice the interface is in the language of ``elza.locale``; the login

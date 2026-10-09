@@ -14,9 +14,12 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import cz.tacr.elza.core.ElzaLocale;
+import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.RulPartType;
+import cz.tacr.elza.domain.RulPolicyType;
 import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.domain.TranslationEntityType;
 import jakarta.servlet.http.Cookie;
@@ -251,6 +254,22 @@ public class PackageTexts {
      * @return formatted message; the key itself when the message is not defined
      */
     public String message(String key, SysLanguage language, Object... args) {
+        return message(key, null, language, args);
+    }
+
+    /**
+     * Message in a language, with its {@link MessageFormat} placeholders filled. The message is
+     * looked up in the translations (of the packages and of the core, {@link CoreTranslations});
+     * the source text is the text of the defining package in its own language, else the given
+     * pattern (the text the rule or the core was written with, stored with the message).
+     *
+     * @param key
+     *            {@code <PACKAGE>/<KEY>} or {@code CORE/<KEY>}
+     * @param defaultPattern
+     *            pattern used when the message is not defined anywhere, null for none
+     * @return formatted message; the key itself when nothing is known about the message
+     */
+    public String message(String key, String defaultPattern, SysLanguage language, Object... args) {
         StaticDataProvider sdp = staticDataService.getData();
         PackageTranslations translations = sdp.getTranslations();
 
@@ -270,7 +289,146 @@ public class PackageTexts {
                 return format(pattern, sdp.getSysLanguageById(definingPackage.getLanguageId()), args);
             }
         }
+        if (defaultPattern != null) {
+            // the language of the stored text is unknown: numbers follow the reader
+            return format(defaultPattern, language, args);
+        }
         return key;
+    }
+
+    /**
+     * Renders a line of an error description in the language of the current request: an encoded
+     * {@link ValidationMessage} as its text, any other line as it is.
+     */
+    public String render(String line) {
+        return render(line, requestLanguage());
+    }
+
+    /**
+     * @see #render(String)
+     */
+    public String render(String line, SysLanguage language) {
+        ValidationMessage message = ValidationMessage.decode(line);
+        if (message == null) {
+            return line;
+        }
+        return render(message, language, 0);
+    }
+
+    /**
+     * Renders a message in the language, see {@link #render(String, SysLanguage)}.
+     */
+    public String render(ValidationMessage message, SysLanguage language) {
+        return render(message, language, 0);
+    }
+
+    private String render(ValidationMessage message, SysLanguage language, int depth) {
+        return message(message.getKey(), message.getText(), language, resolveArgs(message.getArgs(), language, depth));
+    }
+
+    /**
+     * Renders every line of a list, see {@link #render(String)}.
+     *
+     * @return rendered lines, null for null
+     */
+    public List<String> renderAll(List<String> lines) {
+        if (lines == null) {
+            return null;
+        }
+        SysLanguage language = requestLanguage();
+        List<String> result = new ArrayList<>(lines.size());
+        for (String line : lines) {
+            result.add(render(line, language));
+        }
+        return result;
+    }
+
+    /**
+     * Renders every line of a text with lines separated by {@code \n}, see {@link #render(String)}.
+     *
+     * @return rendered text, null for null
+     */
+    public String renderLines(String text) {
+        if (text == null || !text.contains("{")) {
+            return text;
+        }
+        SysLanguage language = requestLanguage();
+        String[] lines = text.split("\n", -1);
+        StringBuilder result = new StringBuilder(text.length());
+        for (int i = 0; i < lines.length; i++) {
+            if (i > 0) {
+                result.append('\n');
+            }
+            result.append(render(lines[i], language));
+        }
+        return result.toString();
+    }
+
+    /** Nesting of messages in arguments is not rendered deeper than this. */
+    private static final int MAX_DEPTH = 3;
+
+    /**
+     * Arguments of a message with the references replaced by the names of the entities in the
+     * language and the nested messages by their texts.
+     */
+    private Object[] resolveArgs(List<Object> args, SysLanguage language, int depth) {
+        Object[] result = new Object[args.size()];
+        for (int i = 0; i < result.length; i++) {
+            Object arg = args.get(i);
+            if (arg instanceof ValidationMessage.Ref ref) {
+                result[i] = name(ref, language);
+            } else if (arg instanceof ValidationMessage nested) {
+                result[i] = depth < MAX_DEPTH ? render(nested, language, depth + 1) : nested.getKey();
+            } else {
+                result[i] = arg;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Name of a referenced entity in the language; its code when the entity does not exist or its
+     * kind has no name.
+     */
+    public String name(ValidationMessage.Ref ref, SysLanguage language) {
+        TranslationEntityType type = ref.entityType();
+        String code = ref.code();
+        if (type == null || StringUtils.isEmpty(code)) {
+            return code;
+        }
+        StaticDataProvider sdp = staticDataService.getData();
+        String sourceName = switch (type) {
+            case ITEM_TYPE -> {
+                ItemType itemType = sdp.getItemTypeByCode(code);
+                yield itemType != null ? itemType.getEntity().getName() : null;
+            }
+            case ITEM_SPEC -> {
+                RulItemSpec itemSpec = sdp.getItemSpecByCode(code);
+                yield itemSpec != null ? itemSpec.getName() : null;
+            }
+            case PART_TYPE -> {
+                RulPartType partType = sdp.getPartTypeByCode(code);
+                yield partType != null ? partType.getName() : null;
+            }
+            case AP_TYPE -> {
+                ApType apType = sdp.getApTypeByCode(code);
+                yield apType != null ? apType.getName() : null;
+            }
+            case RULE_SET -> {
+                RuleSet ruleSet = sdp.getRuleSetByCode(code);
+                yield ruleSet != null ? ruleSet.getEntity().getName() : null;
+            }
+            case POLICY_TYPE -> {
+                RulPolicyType policyType = sdp.getPolicyTypesMap().get(code);
+                yield policyType != null ? policyType.getName() : null;
+            }
+            default -> null;
+        };
+        if (sourceName == null) {
+            // the entity is unknown here: a translation row still names it, else the code
+            return text(type, code, TranslationEntityType.NAME, code, language);
+        }
+        return text(type, code, TranslationEntityType.NAME, sourceName, language);
     }
 
     private String translate(TranslationEntityType entityType, String entityCode, String field,
@@ -325,8 +483,11 @@ public class PackageTexts {
                 .orElse(null);
     }
 
+    /**
+     * @see ValidationMessage#format(String, Locale, Object...)
+     */
     private static String format(String pattern, SysLanguage language, Object... args) {
         Locale locale = language != null ? Locale.forLanguageTag(language.getTag()) : Locale.ROOT;
-        return new MessageFormat(pattern, locale).format(args);
+        return ValidationMessage.format(pattern, locale, args);
     }
 }
