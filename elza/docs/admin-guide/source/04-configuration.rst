@@ -76,8 +76,10 @@ Database and working directory
      - Locale used for sorting texts and for formatting and parsing dates
        in the application. Its language is also the language of the user
        interface for users who have not chosen one (Czech when the client
-       has no texts in that language), and the language of names from rules
-       packages in requests that name no language.
+       has no texts in that language), the language of names from rules
+       packages in requests that name no language, and the language a text
+       of a rules package falls back to when it has no translation into the
+       user's language (before the text as the package wrote it).
 
 The connection pool is set to 20 connections
 (``spring.datasource.hikari.maximumPoolSize``); raise it only together

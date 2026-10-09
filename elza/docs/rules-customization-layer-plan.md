@@ -146,6 +146,13 @@ Nothing blocks implementation. Decisions still open: A1 rule 3 (section 7) and R
   plurals; `ValidationMessage.format` is the one place to switch). Translations are loaded once into
   `PackageTranslations` with the static data - no per-message DB access. `RevisionFindingsBlockMapper`
   stays Czech by its own Javadoc (the findings' texts arrive from the AI in the run's language).
+  *Language chain (user, 2026-10-09):* the UI language → the same without region → the language of
+  the installation (`elza.locale`) → the text as its package wrote it, which counts as the text in
+  the package's own language at that language's place in the chain (an English reader of ISAAR_CPF
+  gets the rule's English before the Czech of a Czech installation); no language on funds or
+  scopes. An international package ships every language ELZA ships (ISAAR_CPF: messages in cs and
+  en; the Czech names of its own definitions are content work for when a Czech archive adopts it,
+  `translations/cs.xml`, ~160 strings), a national package its own language only.
 
 ## 3. Phases and order
 
