@@ -15,6 +15,10 @@ between the installed and the new version; see :doc:`/03-upgrade`.
 Upcoming version
 ================
 
+* Change: a rules package may declare its own part types of entities and
+  validate parts of them by its rules; such an entity used to fail its
+  validation. The dialogs of a part of such a type are titled by the name
+  of the part type.
 * Change: ELZA DA - a batch the digital archive prepares for download or
   processes after an export no longer stops the other communication with
   it. The batch waits in the new states *DA připravuje ke stažení* and

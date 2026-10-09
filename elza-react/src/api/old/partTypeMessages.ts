@@ -3,8 +3,9 @@ import { defineMessages } from "react-intl";
 /**
  * Titulky modálů pro zakládání a úpravu částí archivní entity.
  *
- * Klíče map jsou **hodnoty** enumu `PartType` (`PT_BODY`, …), ne jeho členy -
- * podle nich se vybírá za běhu. Id zůstávají čitelná.
+ * Klíče map jsou kódy typů částí CAM (`PT_BODY`, …) - podle nich se vybírá za
+ * běhu; `OTHER` je obecný titulek pro typ části jiného balíčku. Id zůstávají
+ * čitelná.
  *
  * Hodnota se předává do `modalDialogShow`, tedy mimo React strom, a musí být
  * řetězec - proto se formátuje přes `getIntl()`, ne přes `<FormattedMessage>`.
@@ -17,6 +18,7 @@ export const partCreateMessages = defineMessages({
     PT_IDENT: { id: "ap.part.create.IDENT", defaultMessage: "Nový identifikátor" },
     PT_NAME: { id: "ap.part.create.NAME", defaultMessage: "Nové označení" },
     PT_REL: { id: "ap.part.create.REL", defaultMessage: "Nový vztah" },
+    OTHER: { id: "ap.part.create.other", defaultMessage: "Nová část: {name}" },
 });
 
 export const partEditMessages = defineMessages({
@@ -27,4 +29,5 @@ export const partEditMessages = defineMessages({
     PT_IDENT: { id: "ap.part.edit.IDENT", defaultMessage: "Upravit identifikátor" },
     PT_NAME: { id: "ap.part.edit.NAME", defaultMessage: "Upravit označení" },
     PT_REL: { id: "ap.part.edit.REL", defaultMessage: "Upravit vztah" },
+    OTHER: { id: "ap.part.edit.other", defaultMessage: "Upravit část: {name}" },
 });

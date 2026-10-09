@@ -3257,6 +3257,10 @@
     "defaultMessage": "New relation",
     "srcHash": "BuwNSGvncy3R"
   },
+  "ap.part.create.other": {
+    "defaultMessage": "New part: {name}",
+    "srcHash": "z45uPYo-anct"
+  },
   "ap.part.edit.BODY": {
     "defaultMessage": "Edit the body",
     "srcHash": "tCqOmfkBALd4"
@@ -3284,6 +3288,10 @@
   "ap.part.edit.REL": {
     "defaultMessage": "Edit the relation",
     "srcHash": "mbkH7R_liDoK"
+  },
+  "ap.part.edit.other": {
+    "defaultMessage": "Edit part: {name}",
+    "srcHash": "yscCgBs1yW1G"
   },
   "ap.partEdit.uriRef.description": {
     "defaultMessage": "Name",

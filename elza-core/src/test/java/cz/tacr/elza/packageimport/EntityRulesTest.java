@@ -231,7 +231,7 @@ public class EntityRulesTest {
             assertEquals(List.of("available_items/PT_NAME.drl"),
                          filenames(sdp.getRuleSetByCode("ENT_TEST"), RulEntityRule.Kind.AVAILABLE_ITEMS, classes,
                                    "PT_NAME"));
-            assertEquals(List.of(),
+            assertEquals(List.of("validation/GLOBAL.drl"),
                          filenames(sdp.getRuleSetByCode("ENT_TEST"), RulEntityRule.Kind.VALIDATION, classes, null));
             // validation: all part types
             assertEquals(List.of("validation/GLOBAL.drl", "validation/PERSON/GLOBAL.drl",
@@ -440,6 +440,40 @@ public class EntityRulesTest {
                         + "<repeatable>true</repeatable></part-type></part-types>",
                 RULE_SET_DIR + PackageService.RULE_SET_PART_TYPE_XML,
                 "<part-types><part-type code=\"PT_NAME\"/></part-types>"));
+    }
+
+    /**
+     * A part type of the package has no constant in the Drools model: an entity with such a part is
+     * still built for validation, and the rules of the package see the part by its code (both
+     * {@code typeCode == "PT_ENT_NOTE"} and {@code type == PartType.of("PT_ENT_NOTE")}); the message
+     * names the part type (the same message of two parts is listed once).
+     */
+    @Test
+    @Order(13)
+    void aPartTypeOfThePackageIsValidatedByItsRules() {
+        Integer apId = txGet(() -> {
+            ApChange change = accessPointDataService.createChange(ApChange.Type.AP_CREATE);
+            ApState state = accessPointService.createAccessPoint(scope(scopeIds.get(1)), type("PERSON_INDIVIDUAL"),
+                                                                 ApState.StateApproval.NEW, change, null);
+            partService.createPart(partTypeRepository.findByCode("PT_ENT_NOTE"), state.getAccessPoint(), change, null);
+            return state.getAccessPointId();
+        });
+        assertEquals(List.of("The part Note is empty."), validationErrors(apId));
+
+        tx(() -> {
+            ApChange change = accessPointDataService.createChange(ApChange.Type.AP_UPDATE);
+            partService.createPart(partTypeRepository.findByCode("PT_ENT_NOTE"),
+                                   accessPointService.getAccessPointInternal(apId), change, null);
+        });
+        assertEquals(List.of("The entity has more than one note.", "The part Note is empty."), validationErrors(apId));
+    }
+
+    private List<String> validationErrors(Integer apId) {
+        return txGet(() -> {
+            ApState state = accessPointService.getStateInternal(apId);
+            List<String> errors = packageTexts.renderAll(ruleService.executeValidation(state, false).getErrors());
+            return errors.stream().sorted().toList();
+        });
     }
 
     /**

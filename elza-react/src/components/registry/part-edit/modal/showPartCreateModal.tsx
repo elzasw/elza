@@ -3,7 +3,6 @@ import { ApPartFormVO } from "../../../../api/ApPartFormVO";
 import { RulPartTypeVO } from '../../../../api/RulPartTypeVO';
 import { modalDialogShow } from '../../../../actions/global/modalDialog';
 import * as PartTypeInfo from '../../../../api/old/PartTypeInfo';
-import { PartType } from '../../../../api/generated/model';
 import { ApItemBitVO } from '../../../../api/ApItemBitVO';
 import { goToAe } from '../../../../actions/registry/registry';
 import { globalFundTreeInvalidate } from '../../../../actions/arr/globalFundTree';
@@ -27,8 +26,7 @@ export const showPartCreateModal = (
 ) => (dispatch: any) => dispatch(
     modalDialogShow(
         this,
-        // TODO: není rozmyšleno, kde brát skloňované popisky!
-        PartTypeInfo.getPartEditDialogLabel(partType.code as PartType, true),
+        PartTypeInfo.getPartEditDialogLabel(partType, true),
         ({ onClose }) => {
             const handleClose = () => onClose();
 

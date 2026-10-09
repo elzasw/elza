@@ -27,6 +27,11 @@ public class Part {
         return type;
     }
 
+    /** Code of the part type; for rules on part types without a constant: {@code typeCode == "PT_NOTE"}. */
+    public String getTypeCode() {
+        return type.getCode();
+    }
+
     public Integer getId() {
         return id;
     }
