@@ -239,17 +239,13 @@ questions (user): Q1 are reference entities exchanged with the central CAM syste
 inside CAM parts or extra parts? Q3 an extension activated per scope (`ap_scope_extension`, extension
 rules for entities of the scope) or a rule set inheriting CAM (Phase 6)? Q4 (R1) relations across
 frameworks (CAM entity to ISAAR entity, fund description referring to both, shared search).
+Given (user, 2026-10-09): the CAM exchange is bound to the CAM rules - only an entity described by
+them can be exported; the standard fixes the part types (the schema's `PartTypeXml`), so a part of
+another type ends the export with an exception, which is correct and stays. For reference: an extra
+item type is dropped by `ItemTypeMap.groovy`, an extra specification of a CAM item type drops the
+whole part from the export.
 
 **Remaining obstacles.**
-- CAM exchange with extra content (R2): the CAM standard fixes the part types (the schema's
-  `PartTypeXml`), so the exchange cannot carry a part of another type - this is a constraint on
-  CAM entities, not a gap of the exporter. Today an extra item type is dropped by
-  `ItemTypeMap.groovy` (safe), an extra specification of a CAM item type drops the whole part from
-  the export, and a part of a foreign type ends the export with an exception
-  (`PartTypeXml.fromValue`, `cam/v2/SearchFilterFactory` `:244`). R2 therefore keeps CAM entities
-  within CAM part types (the CAM rule set lists exactly the seven; the server-side check of a new
-  part against the rule set's part list, section 5 "Later, optional", would enforce it), or the
-  export refuses such an entity with a clear message.
 - Search boosts (`index-search` in the root `ui_setting.xml` of CZ_BASE) are global, not per rule set.
 
 **Known gaps found while building 2c.5a.**
