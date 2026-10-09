@@ -313,6 +313,16 @@ value with a small package depending on both. The part type is removed
 with the last package declaring it; the import is refused while parts of
 entities use it or rules of another package refer to it.
 
+A rule sees a part through its type. The seven part types of CAM are
+constants of the Drools model, ``Part(type == PartType.PT_NAME)``; a part
+type the package declares has no constant, and a rule compares its code,
+``Part(typeCode == "PT_NOTE")`` (or ``type == PartType.of("PT_NOTE")``).
+The core gives the CAM part types their meaning (the preferred name is a
+``PT_NAME`` part, ``PT_BODY`` carries the description of the entity,
+relations and identifiers are checked for repetition); a part of another
+type is validated by the rules of its rule set only, and the CAM exchange
+does not carry it.
+
 rul_rule_set.xml
 ================
 

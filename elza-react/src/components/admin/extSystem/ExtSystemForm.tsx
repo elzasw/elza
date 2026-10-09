@@ -159,6 +159,14 @@ export const daSettingsMessages = defineMessages({
         id: 'admin.extSystem.daSyncDelay',
         defaultMessage: 'Interval synchronizace (s), 0 = bez synchronizace',
     },
+    statusPollInterval: {
+        id: 'admin.extSystem.daStatusPollInterval',
+        defaultMessage: 'Interval dotazu na stav dávky (s)',
+    },
+    statusPollIntervalMin: {
+        id: 'admin.extSystem.daStatusPollIntervalMin',
+        defaultMessage: 'Interval musí být alespoň 1 s',
+    },
 });
 
 export const DA_DOWNLOAD_METHOD_MESSAGE: Record<string, MessageDescriptor> = {
@@ -195,6 +203,7 @@ type ExtSystemFormValues = {
     downloadMethod?: string;
     onReceived?: string;
     syncDelay?: number;
+    statusPollInterval?: number;
 };
 
 type Scope = {
@@ -257,6 +266,12 @@ function validate(values: ExtSystemFormValues) {
         requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.AiExternalSystem]);
     }
 
+    const errors: Record<string, string> = {};
+    // empty keeps the current value; zero would ask the DA without a pause
+    if (isDaRepository(values) && values.statusPollInterval != null && values.statusPollInterval < 1) {
+        errors.statusPollInterval = getIntl().formatMessage(daSettingsMessages.statusPollIntervalMin);
+    }
+
     return requiredFields.reduce((errors: Record<string, string>, name) => {
         // A stored boolean false (e.g. sendNotification) is a filled value, not a missing one.
         const value = (values as Record<string, unknown>)[name];
@@ -264,7 +279,7 @@ function validate(values: ExtSystemFormValues) {
             errors[name] = getIntl().formatMessage(globalMessages.validationRequired);
         }
         return errors;
-    }, {});
+    }, errors);
 }
 
 const INTERCHANGEABLE_TYPES: AP_EXT_SYSTEM_TYPE[][] = [
@@ -462,6 +477,13 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
                                 type="number"
                                 component={FormInputField}
                                 label={intl.formatMessage(daSettingsMessages.syncDelay)}
+                                parse={(v) => (v === '' || v == null ? undefined : Number(v))}
+                            />
+                            <Field
+                                name="statusPollInterval"
+                                type="number"
+                                component={FormInputField}
+                                label={intl.formatMessage(daSettingsMessages.statusPollInterval)}
                                 parse={(v) => (v === '' || v == null ? undefined : Number(v))}
                             />
                         </>

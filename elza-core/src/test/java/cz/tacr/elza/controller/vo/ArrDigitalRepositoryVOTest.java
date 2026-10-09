@@ -6,10 +6,12 @@ import cz.tacr.elza.api.DaDownloadMethod;
 import cz.tacr.elza.api.DaOnReceivedAction;
 import cz.tacr.elza.api.DigitalRepositoryType;
 import cz.tacr.elza.domain.ArrDigitalRepository;
+import cz.tacr.elza.exception.BusinessException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ArrDigitalRepositoryVOTest {
@@ -31,6 +33,7 @@ public class ArrDigitalRepositoryVOTest {
         vo.setDownloadMethod(DaDownloadMethod.FILE_TRANSFER);
         vo.setOnReceived(DaOnReceivedAction.DOWNLOAD_METADATA);
         vo.setSyncDelay(3600);
+        vo.setStatusPollInterval(5);
         return vo;
     }
 
@@ -80,6 +83,7 @@ public class ArrDigitalRepositoryVOTest {
         assertEquals(DaDownloadMethod.FILE_TRANSFER, entity.getDownloadMethod());
         assertEquals(DaOnReceivedAction.DOWNLOAD_METADATA, entity.getOnReceived());
         assertEquals(Integer.valueOf(3600), entity.getSyncDelay());
+        assertEquals(Integer.valueOf(5), entity.getStatusPollInterval());
     }
 
     @Test
@@ -88,12 +92,23 @@ public class ArrDigitalRepositoryVOTest {
         vo.setDownloadMethod(null);
         vo.setOnReceived(null);
         vo.setSyncDelay(null);
+        vo.setStatusPollInterval(null);
 
         ArrDigitalRepository entity = (ArrDigitalRepository) vo.createEntity(null);
 
         assertEquals(DaDownloadMethod.STANDARD, entity.getDownloadMethod());
         assertEquals(DaOnReceivedAction.NONE, entity.getOnReceived());
         assertEquals(Integer.valueOf(ArrDigitalRepository.DEFAULT_SYNC_DELAY), entity.getSyncDelay());
+        assertEquals(Integer.valueOf(ArrDigitalRepository.DEFAULT_STATUS_POLL_INTERVAL), entity.getStatusPollInterval());
+    }
+
+    /** Asking the DA without a pause is what the setting exists to prevent. */
+    @Test
+    void createEntity_da_statusPollIntervalBelowOneSecondIsRefused() {
+        ArrDigitalRepositoryVO vo = createVO(DigitalRepositoryType.DA);
+        vo.setStatusPollInterval(0);
+
+        assertThrows(BusinessException.class, () -> vo.createEntity(null));
     }
 
     @Test
@@ -116,6 +131,7 @@ public class ArrDigitalRepositoryVOTest {
         assertEquals(DaDownloadMethod.FILE_TRANSFER, vo.getDownloadMethod());
         assertEquals(DaOnReceivedAction.DOWNLOAD_METADATA, vo.getOnReceived());
         assertEquals(Integer.valueOf(3600), vo.getSyncDelay());
+        assertEquals(Integer.valueOf(5), vo.getStatusPollInterval());
     }
 
     @Test

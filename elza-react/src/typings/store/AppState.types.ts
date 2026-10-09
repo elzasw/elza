@@ -392,6 +392,7 @@ export interface ExternalSystem {
     downloadMethod?: string;
     onReceived?: string;
     syncDelay?: number;
+    statusPollInterval?: number;
 }
 
 type KMLExternalSystem = Omit<ExternalSystem, "username" | "password" | "elzaCode" | "publishOnlyApproved" | "userInfo" | "viewFileUrl" | "viewThumbnailUrl" | "sendNotification">;

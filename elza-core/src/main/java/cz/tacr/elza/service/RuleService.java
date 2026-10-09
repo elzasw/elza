@@ -1929,15 +1929,13 @@ public class RuleService {
     }
 
     /**
-     * Prepare list of part types
-     * 
-     * @param indexMap
-     * @return
+     * One model part per installed part type (the rules set the repeatability of its indices).
      */
     private List<ModelPart> createModelParts(Map<PartType, List<Index>> indexMap) {
         List<ModelPart> modelPartList = new ArrayList<>();
 
-        for(PartType partType : PartType.values()) {
+        for (RulPartType rulPartType : staticDataService.getData().getPartTypes()) {
+            PartType partType = PartType.of(rulPartType.getCode());
             List<Index> indices = indexMap.getOrDefault(partType, null);
             modelPartList.add(new ModelPart(partType, indices));
         }

@@ -55,11 +55,12 @@ const PROBLEM_TYPES = [
 ];
 
 const IMPORT_STATES = [
-    QueueItemState.ImportError, QueueItemState.ImportNew, QueueItemState.ImportOk, QueueItemState.Update,
+    QueueItemState.ImportError, QueueItemState.ImportNew, QueueItemState.DownloadRequested, QueueItemState.ImportOk,
+    QueueItemState.Update,
 ];
 
 const EXPORT_STATES = [
-    QueueItemState.ExportError, QueueItemState.ExportNew, QueueItemState.ExportOk,
+    QueueItemState.ExportError, QueueItemState.ExportNew, QueueItemState.ExportSent, QueueItemState.ExportOk,
 ];
 
 const LINK_STATES = [

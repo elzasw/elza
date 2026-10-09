@@ -251,6 +251,14 @@
     "defaultMessage": "Digital archive",
     "srcHash": "iPgFLR6539C0"
   },
+  "admin.extSystem.daStatusPollInterval": {
+    "defaultMessage": "Batch status check interval (s)",
+    "srcHash": "wKwHzcumljpN"
+  },
+  "admin.extSystem.daStatusPollIntervalMin": {
+    "defaultMessage": "The interval must be at least 1 s",
+    "srcHash": "pAGZaSqCJn73"
+  },
   "admin.extSystem.daSyncDelay": {
     "defaultMessage": "Synchronization interval (s), 0 = no synchronization",
     "srcHash": "wXgprAUB_RPo"
@@ -2573,6 +2581,10 @@
     "defaultMessage": "Institution not found",
     "srcHash": "Y5L6HoEz8FfT"
   },
+  "aip.queueState.DOWNLOAD_REQUESTED": {
+    "defaultMessage": "DA is preparing the download",
+    "srcHash": "atPmFfYZMYi7"
+  },
   "aip.queueState.EXPORT_ERROR": {
     "defaultMessage": "Export error",
     "srcHash": "I18TohzzMs46"
@@ -2584,6 +2596,10 @@
   "aip.queueState.EXPORT_OK": {
     "defaultMessage": "Exported",
     "srcHash": "s3DYqvujKbtp"
+  },
+  "aip.queueState.EXPORT_SENT": {
+    "defaultMessage": "Sent, DA is processing",
+    "srcHash": "-qVcElP-mASX"
   },
   "aip.queueState.IMPORT_ERROR": {
     "defaultMessage": "Download error",
@@ -3241,6 +3257,10 @@
     "defaultMessage": "New relation",
     "srcHash": "BuwNSGvncy3R"
   },
+  "ap.part.create.other": {
+    "defaultMessage": "New part: {name}",
+    "srcHash": "z45uPYo-anct"
+  },
   "ap.part.edit.BODY": {
     "defaultMessage": "Edit the body",
     "srcHash": "tCqOmfkBALd4"
@@ -3268,6 +3288,10 @@
   "ap.part.edit.REL": {
     "defaultMessage": "Edit the relation",
     "srcHash": "mbkH7R_liDoK"
+  },
+  "ap.part.edit.other": {
+    "defaultMessage": "Edit part: {name}",
+    "srcHash": "yscCgBs1yW1G"
   },
   "ap.partEdit.uriRef.description": {
     "defaultMessage": "Name",

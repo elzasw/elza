@@ -146,6 +146,21 @@ public class DaServiceLinkTest extends AbstractServiceTest {
                 "attaching where it already hangs must not create a second link"));
     }
 
+    /**
+     * An AIP can be attached as soon as its PACKAGE-INFO arrived, before any of its structure is
+     * stored; the unit of description must still show the link instead of failing.
+     */
+    @Test
+    public void anAipWithoutStructureIsListedOnItsNode() {
+        FundInfo fund = tx().execute(t -> createFund("F-da-link-no-structure"));
+        Integer aipId = tx().execute(t -> createAip(createRepository(false)).getAipId());
+
+        tx().executeWithoutResult(t -> daService.connectToJP(fund.getRootNodeId(), aipId));
+
+        assertEquals(1, tx().execute(t ->
+                daService.getDaoLinks(fund.getRootNodeId()).getItems()).size());
+    }
+
     @Test
     public void aSecondNodeIsRefusedWhenMultipleLinksIsOff() {
         FundInfo fund = tx().execute(t -> createFund("F-da-link-refused"));

@@ -1,6 +1,5 @@
 package cz.tacr.elza.service.da;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.EnumSet;
@@ -260,7 +259,7 @@ public class DaImportService {
 
     private Ead readEad(Path dir, String href) {
         try {
-            return daService.loadEadFile(dir, href.replace("/", File.separator));
+            return daService.loadEadFile(dir, href);
         } catch (AipProblemException e) {
             throw e;
         } catch (Exception e) {
