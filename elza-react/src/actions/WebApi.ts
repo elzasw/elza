@@ -2230,6 +2230,19 @@ export class UrlFactory {
     static exportIssueList(issueListId) {
         return serverContextPath + WebApiCls.issueUrl + `/issue_lists/${issueListId}/export`;
     }
+
+    static exportStructureDataCsv(fundId: number, structureTypeCode: string, search?: string, assignable?: boolean | string) {
+        const params = new URLSearchParams();
+        if (search) {
+            params.set('search', search);
+        }
+        if (assignable !== undefined && assignable !== null && assignable !== '') {
+            params.set('assignable', String(assignable));
+        }
+        const query = params.toString();
+        return `${serverContextPath}${WebApiCls.v1}/funds/sdo/${fundId}/export/${encodeURIComponent(structureTypeCode)}`
+            + (query ? '?' + query : '');
+    }
 }
 /**
  * Class that overrides the original WebApiCls and replaces them with methods,

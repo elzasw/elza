@@ -6,10 +6,14 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +25,8 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.repository.SobjVrequestRepository;
+import cz.tacr.elza.utils.CsvUtils;
+import io.restassured.response.Response;
 import cz.tacr.elza.test.controller.vo.DataInteger;
 import cz.tacr.elza.test.controller.vo.DataString;
 import cz.tacr.elza.test.controller.vo.Fund;
@@ -122,6 +128,47 @@ public class StructureControllerTest extends AbstractControllerTest {
         structureApi.sdoUpdateObjects(fund.getId(), STRUCTURE_TYPE_CODE, data);
 
         waitForValidationQueue();
+    }
+
+    @Test
+    public void exportCsvTest() throws IOException {
+        Fund fund = createFund(NAME_AS, CODE_AS);
+
+        StructuredObject so = structureApi.sdoCreateObject(fund.getId(), STRUCTURE_TYPE_CODE, null);
+        createStructureItemPacketNumber(fund, so);
+        createStructureItemPacketPrefix(fund, so);
+        createStructureItemPacketType(fund, so);
+        structureApi.sdoConfirm(fund.getId(), so.getId());
+        // a temporary object is not exported
+        structureApi.sdoCreateObject(fund.getId(), STRUCTURE_TYPE_CODE, null);
+        waitForValidationQueue();
+
+        String url = "/api/v1/funds/sdo/" + fund.getId() + "/export/" + STRUCTURE_TYPE_CODE;
+        List<CSVRecord> records = readCsv(get(url));
+        // header + one object
+        assertEquals(2, records.size());
+        CSVRecord header = records.get(0);
+        CSVRecord row = records.get(1);
+        assertEquals("ID", header.get(0));
+        assertEquals(String.valueOf(so.getId()), row.get(0));
+        assertTrue(StringUtils.isNotEmpty(row.get(1)), "value of the object");
+        // one column per used item type: number, prefix, packet type
+        assertEquals(4 + 3, header.size());
+        List<String> itemValues = row.toList().subList(4, row.size());
+        assertTrue(itemValues.contains(String.valueOf(NUMBER_VALUE_1)), itemValues.toString());
+        assertTrue(itemValues.contains(PREFIX_VALUE), itemValues.toString());
+
+        // the filter of the panel applies
+        assertEquals(2, readCsv(get(spec -> spec.queryParam("assignable", true), url)).size());
+        assertEquals(1, readCsv(get(spec -> spec.queryParam("assignable", false), url)).size());
+        assertEquals(1, readCsv(get(spec -> spec.queryParam("search", "no-such-value"), url)).size());
+    }
+
+    private static List<CSVRecord> readCsv(Response response) throws IOException {
+        try (CSVParser parser = CSVParser.parse(
+                new InputStreamReader(response.asInputStream(), CsvUtils.CSV_EXCEL_CHARSET), CsvUtils.CSV_EXCEL_FORMAT)) {
+            return parser.getRecords();
+        }
     }
 
     private void structureItemTest(final Fund fund) {

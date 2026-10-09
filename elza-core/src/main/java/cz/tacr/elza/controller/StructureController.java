@@ -1,15 +1,21 @@
 package cz.tacr.elza.controller;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.controller.config.ClientFactoryDO;
@@ -35,6 +41,9 @@ import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.StructObjService;
+import cz.tacr.elza.common.FileDownload;
+import cz.tacr.elza.utils.CsvUtils;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 
 @RestController
@@ -387,6 +396,34 @@ public class StructureController implements StructureApi {
 	            .collect(Collectors.toList()));
 
 	    return ResponseEntity.ok(result);
+    }
+
+    /**
+     * Export of the values of a structured data type in the fund to CSV (CZ Excel format),
+     * filtered like {@link #sdoFindStructObj}. The ID column is used by the CSV import
+     * of description items.
+     *
+     * @param fundId fund id
+     * @param structureTypeCode structure type code
+     * @param search text for filtering (optional)
+     * @param assignable assignable value (optional)
+     */
+    @GetMapping(value = "/funds/sdo/{fundId}/export/{structureTypeCode}", produces = "text/csv")
+    @Transactional
+    public void sdoExportCsv(HttpServletResponse response,
+                             @PathVariable("fundId") Integer fundId,
+                             @PathVariable("structureTypeCode") String structureTypeCode,
+                             @RequestParam(value = "search", required = false) String search,
+                             @RequestParam(value = "assignable", required = false) Boolean assignable) throws IOException {
+        ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFundId(fundId);
+        RulStructuredType structureType = structureService.getStructureTypeByCode(structureTypeCode);
+
+        MediaType mediaType = new MediaType("text", "csv", CsvUtils.CSV_EXCEL_CHARSET);
+        response.setHeader(HttpHeaders.CONTENT_TYPE, mediaType.toString());
+        FileDownload.addContentDispositionAsAttachment(response, structureTypeCode + "-" + fundId + ".csv");
+
+        structureService.exportStructureDataCsv(structureType, fundVersion.getFund(), search, assignable,
+                response.getOutputStream());
     }
 
     /**
