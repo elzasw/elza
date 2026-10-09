@@ -12,296 +12,107 @@ change, a step during the upgrade) name the configuration key and link to
 the relevant chapter. Before an upgrade, read the entries of all builds
 between the installed and the new version; see :doc:`/03-upgrade`.
 
-Upcoming version
-================
+3.4.9
+=====
 
-* Change: Import of description elements from CSV - the import of a fund
-  (Table view) and the batch import (*Administration → Import*) read the
-  same format: the node by UUID or ID, every data type (newly also
-  FORMATTED_TEXT, UNITID, DATE, BIT, COORDINATES as WKT, JSON_TABLE,
-  STRUCTURED and FILE_REF by ID), an optional byte order mark. The rows are
-  imported in parts of 1000, each with one change per fund; when a row
-  fails, the parts before it stay imported and the message names the last
-  imported row. A deleted node is refused, and so is a node of another
-  fund in the import of a fund. A test
-  run of a CSV batch checks the whole file without importing.
-* Change: a rules package may declare its own part types of entities and
-  validate parts of them by its rules; such an entity used to fail its
-  validation. The dialogs of a part of such a type are titled by the name
-  of the part type.
+Before the upgrade
+------------------
+
+* Change: The languages (``sys_language``) get a BCP 47 tag (``cs``,
+  ``en``, ...); the upgrade fills it for the languages delivered with ELZA.
+  **If languages were added to the database by hand, the upgrade stops**
+  with the message "sys_language contains rows without a tag"; find them
+  with ``SELECT * FROM sys_language WHERE tag IS NULL``, fill ``tag``
+  (e.g. ``UPDATE sys_language SET tag = 'hu' WHERE code = 'hun'``) and
+  start ELZA again. The language with code ``cze`` must not be deleted.
+* Change: Packages at startup - the packages loaded from :file:`dpkg/` are
+  the imported ones and those listed in the new key
+  ``elza.packages.enabled`` (with their dependencies); the other files of
+  the directory are skipped. Existing installations keep their packages
+  without a change of the configuration; a new installation sets the key
+  before the first start. The log of the start lists the imported and the
+  skipped packages. See :ref:`install-packages` and :doc:`/04-configuration`.
+* Change: Rules packages are read strictly - an unknown or misplaced
+  element stops the import of the package (the error names the file, the
+  line and the element), and entity rules in the old form are refused. The
+  packages delivered with ELZA are updated (CZ_BASE version 89). **A
+  package of your own or of a third party that imported before may now be
+  refused**; correct it and raise its version. Local changes of the
+  CZ_BASE scripts building entity names (patches of
+  :file:`rul_structure_extension*.xml`) must move to
+  :file:`rul_entity_rule.xml`.
+* New: Restart from the administration - the application exits with the
+  code of the new key ``elza.restart.exitCode`` (3 by default) and the
+  service manager starts it again; set ``Restart=on-failure`` in the
+  systemd unit. Without a service manager the application only stops. See
+  :doc:`/04-configuration`.
+
+New
+---
+
+* New: The language of the user interface (Czech, English) is chosen in
+  the user settings and in the login dialog. Without a choice the interface
+  is in the language of ``elza.locale``.
+* New: Validation messages of archival entities and units of description
+  are shown in the language of the user interface. The messages of CZ_BASE
+  and ZP2015 stay in Czech. A record validated before the upgrade shows its
+  stored texts until it is validated again.
+* New: Unit dates are accepted in Czech and English forms whatever the
+  language of the user interface (``20th century``, ``21 Aug 1968``,
+  ``500 BC``, ``1968-08-21``, ...).
+* New: Rules package ISAAR_CPF - description of archival entities according
+  to the international standard ISAAR(CPF), in English. It is delivered
+  with ELZA and imported when ``elza.packages.enabled`` lists it; a scope
+  uses it by choosing the rule set ``ISAAR_CPF``. Installations with CZ_BASE
+  see no change.
+* New: Package management - the administration lists the packages of
+  :file:`dpkg/` that are not loaded, lets the administrator mark a package
+  for the import at the next start and offers *Restart the application*.
+  See :ref:`install-packages`.
+* New: ELZA DA - *Administration → Fronta digitálního archivu* lists the
+  requests of the queue of a digital archive (waiting ones or the whole
+  history) and offers *Retry now*, *Cancel request* and *Repeat*. Requests
+  are never deleted.
+* New: ELZA DA - a new setting of the DA repository, *Batch status check
+  interval (s)*, default 2 seconds (before 100 ms).
+
+Changes
+-------
+
 * Change: ELZA DA - a batch the digital archive prepares for download or
   processes after an export no longer stops the other communication with
-  it. The batch waits in the new states *DA připravuje ke stažení* and
-  *Odesláno, DA zpracovává*, and ELZA asks about it once per *Batch status
-  check interval*; meanwhile the synchronization, downloads and exports go
-  on (one batch per direction and repository at a time). A batch in progress
-  survives a restart of ELZA. Only the digital archive ends a batch: with
-  its result, where each refused package shows the archive's reason and an
-  accepted one its new version, or with a permanent failure (HTTP 403/404).
-  A failure to reach the archive is retried with a growing interval (from
-  the status interval up to 5 minutes); a failed download is never given up.
-* New: ELZA DA - *Administration → Fronta digitálního archivu*
-  (``/admin/da/<id>/requests``) lists the requests of the queue of a digital
-  archive, newest first: the waiting ones, or the whole history including
-  finished, replaced and cancelled requests. It filters by state, direction,
-  AIP code, batch and failure, shows the batch, attempts, next attempt and
-  the message of each request, and over the selected requests offers *Retry
-  now*, *Cancel request* (only requests the archive has not received yet) and
-  *Repeat* (a failed download is requested again, a failed export sends a new
-  change package). Requests are never deleted.
-* Fix: ELZA DA - the files of a package are found where its root METS puts
-  them, not by their names. A package whose PREMIS file has another name
-  (``premis.xml``, ``RETENTION-METADATA.xml``) is no longer refused with
-  "Balíček neobsahuje soubor PREMIS.xml", a package without PREMIS is
-  processed too (file names are then taken from the package), and a
-  metadata package is refused when a file its METS refers to is missing.
-  The METS of the original SIP inside a representation can no longer be
-  taken for the METS of the package, and a component is downloaded by its
-  path in the package, so files of the same name are not confused.
-* Change: ELZA DA - while the digital archive prepares a download or
-  processes an exported package, ELZA asks for the state of the batch every
-  2 seconds instead of every 100 ms. The interval is a new setting of the DA
-  repository, *Batch status check interval (s)*, at least 1 second.
-* Fix: ELZA DA - a description unit with an attached AIP whose metadata
-  were not downloaded yet could not be opened (``NullPointerException`` on
-  ``parentDaoList``); it now shows the link of the AIP.
-* New: Package management - the administration lists the packages of
-  :file:`dpkg/` that are not loaded, with what the next start does with
-  each of them, and lets the administrator mark a package for the import at
-  the next start (or cancel the mark); a marked package appears among the
-  installed ones after the restart. The page reminds that a restart is
-  needed after a mark or an import during the run, and offers *Restart the
-  application*: the application exits with the code of the new key
-  ``elza.restart.exitCode`` (3 by default) and the service manager starts
-  it again (``Restart=on-failure`` in the systemd unit); without a service
-  manager it only stops. See :ref:`install-packages` and
-  :doc:`/04-configuration`.
-* Change: Packages at startup - the packages loaded from :file:`dpkg/`
-  are the imported ones and those listed in the new key
-  ``elza.packages.enabled`` (with their dependencies); the other files of
-  the directory are skipped, and a package deleted in the administration
-  stays deleted unless listed. Existing installations keep their packages
-  without a change of the configuration. A new installation sets the key
-  before the first start; on an empty database without the key every
-  package of the directory is imported, as before. The log of the start
-  lists the imported and the skipped packages. See
-  :ref:`install-packages` and :doc:`/04-configuration`.
-* Change: Rules packages - the files of a package are read strictly: an
-  unknown or misplaced element stops the import of the package (the error
-  names the file, the line and the element) instead of being skipped
-  silently. The packages delivered with ELZA are corrected. A package of
-  your own or of a third party that imported before may now be refused;
-  remove or correct the reported element and raise the version of the
-  package.
-* New: Rules packages - the package ISAAR_CPF describes archival entities
-  (persons, families, corporate bodies, places, concepts) according to the
-  international standard ISAAR(CPF), in English. It is delivered with ELZA
-  and imported when ``elza.packages.enabled`` lists it (or at the first
-  start of an empty database without the key); a scope uses it by choosing
-  the rule set ``ISAAR_CPF``. It shares classes, part types, item types and
-  specifications with CZ_BASE where the meaning is the same, so an
-  installation may run CZ_BASE, ISAAR_CPF or both; an existing Czech
-  installation that adds it sees a new rule set offered for scopes and no
-  change in its CAM scopes. The languages of a name are the ISO 639-2 list with
-  English names (486 languages), coded as in CZ_BASE (``LNG_`` plus the
-  bibliographic code).
-* Change: Archival entities - the class tree of a scope shows the classes
-  its rule set lists; a class whose parent the rule set does not list is
-  shown as a root. CZ_BASE lists no classes, so Czech installations see no
-  change.
-* Fix: A rules package without dependencies that no other package depends
-  on was skipped by the import at startup; packages are now imported in the
-  order of their dependencies, independent ones by code.
-* Change: Rules packages - a specification may be declared by several
-  packages with the same code, like item types; its texts follow the
-  language of the user, and it belongs to the item types all declaring
-  packages assign it to. A specification or its assignment to an item type
-  used by descriptions or entities can no longer be removed by a new
-  version of its package (before, the import failed on a database
-  constraint). The package export writes each specification once, also
-  specifications without an assignment.
-* Change: Unit dates are read in every supported language whatever the
-  language of the user interface, and shown in the language of the user
-  interface. Besides the Czech forms (``20. st.``, ``21.8.1968``,
-  ``31 př. n. l.``) the English forms are accepted: ``20th century``,
-  ``Aug 1968``, ``21 Aug 1968``, ``500 BC``, intervals written as
-  ``1968 – 1969`` or ``1968 - 1969``, and the ISO full date
-  ``1968-08-21``. In the English interface the dates of entities and
-  units of description are shown in the English forms; stored values,
-  indexes, titles and print outputs keep the Czech form for now. The forms
-  are defined once in :file:`unitdate/lexicon.json` of elza-core and
-  checked by the corpus :file:`unitdate/cases.json` on the server and in
-  the client. The format help of the date fields shows the examples of the
-  language of the user interface. The unit-date validation endpoint
-  ``/api/validate/unitDate`` is no longer called by the client.
-* Change: Rules packages - a rule set offers only the specifications
-  assigned by packages related to its own: the package itself, the
-  packages it depends on and the packages depending on it. A specification
-  that only an unrelated package assigns to a shared item type is not
-  offered by the rules, forms and item-type listing of the rule set, even
-  when a rule allows every specification of the item type. Installations
-  with CZ_BASE and ZP2015 and their addons see no change; an ISAAR_CPF
-  entity offers the languages of a name the package declares, a CAM entity
-  only CZ_BASE's 166.
-* Fix: Deleting a rules package that defines task types failed on a
-  database constraint; its task types are now deleted with it.
-* Fix: In a newly created database the 20th archival entity scope or
-  institution type collided with the initial ``GLOBAL`` scope or
-  ``DEFAULT`` institution type (identifier 1); the upgrade moves both
-  identifier sequences above the existing records.
-* Change: Rules packages - the script computing items of archival entities
-  is an entity rule of the rule set (kind ``AUTO_ITEMS`` in
-  :file:`rul_entity_rule.xml`, optionally per class; the most specific one
-  applies); before, it was an arrangement rule of type ``AUTO_ITEMS``. A
-  rule set without it computes no items. The upgrade removes the old rule;
-  CZ_BASE version 89 declares its unchanged ``AutoItems.groovy`` as the
-  entity rule. A package declaring ``AUTO_ITEMS`` in
-  :file:`rul_arrangement_rule.xml` is refused.
-* Change: Archival entities described by a rule set other than CAM (an
-  entity description package independent of CZ_BASE) are created, named
-  and validated without the CZ_BASE item types: the CAM checks of
-  relations and identifiers and the geographic checks apply only when the
-  CAM item types exist, users created from OAuth2 tokens get the class set by
-  ``elza.security.o-auth2.user-ap-type`` (default ``PERSON_INDIVIDUAL``) in
-  the scope ``user-scope`` (default ``JWT_USERS``). The short name of an
-  institution falls back to the ``SHORT_NAME`` index of the entity, and
-  the institution statistics list institutions without a short name under
-  their name (before they were left out).
-* Change: Rules packages - an item type may be declared by several packages
-  with the same code, like entity classes and part types; its texts follow
-  the language of the user. The data type and other values deciding how
-  values are stored must agree, otherwise the import is refused. An item
-  type used by descriptions or entities can no longer be removed by a new
-  version of its package (before, the import failed on a database
-  constraint). The package export writes the mask of ``STRING`` item types
-  and the structured type of ``STRUCTURED`` item types, which it omitted.
-* Change: Rules packages - the item type flag ``is-value-unique`` is
-  removed (column ``rul_item_type.is_value_unique``). ELZA never enforced
-  it; the element is ignored when a package still contains it.
-* Change: Rules packages - a part type of archival entities may be declared
-  by several packages with the same code, like entity classes; its name
-  follows the language of the user. An entity rule set lists the part
-  types it offers in :file:`rul_rule_set/<RS>/rul_part_type.xml`, in the
-  order in which the parts of an entity are shown, and the order of its
-  classes in :file:`rul_ap_type.xml` is the order of the class tree.
-  CZ_BASE version 89 lists its part types this way instead of the
-  ``parts-order`` UI setting of the CAM rule set; a local ``parts-order``
-  setting still applies to rule sets without the list. The entity detail
-  does not offer a part type that the rule set does not list; existing
-  parts of it stay visible. A part type used by parts of entities cannot be removed
-  by a new version of its package.
-* Change: Rules packages - the scripts building the names of parts of
-  archival entities are entity rules of the rule set (kind ``INDEX`` in
-  :file:`rul_entity_rule.xml`) and apply only to entities whose scope uses
-  the rule set; before, they were global structured types named by part
-  codes (``PT_NAME`` ...). The upgrade removes those structured types with
-  their definitions and extensions; CZ_BASE version 89, delivered with
-  ELZA, imports the same scripts as entity rules at the first start (names
-  are not regenerated). Local changes of the CZ_BASE scripts or added
-  scripts (patches of :file:`rul_structure_extension*.xml`) must move to
-  :file:`rul_entity_rule.xml`.
-* Change: Rules packages - an entity class may be declared by several
-  packages with the same code (for example a national and an international
-  entity description); the class exists once and its name follows the
-  language of the user. A package declaring a class with another parent
-  than another package is refused.
-* Change: Entity classes per scope - an entity rule set may declare the
-  classes it uses (:file:`rul_ap_type.xml` of rules packages). Entities of
-  a scope can only have the classes of its rule set; the server now also
-  refuses classes that cannot be assigned (read-only), which only the
-  client checked before. The CAM import of an entity of a class the rule
-  set of the target scope does not offer fails. The dialog of a new
-  archival entity asks for the scope first and offers the classes of its
-  rule set. Installations with CZ_BASE alone are not affected: its rule
-  set declares no classes and offers all.
-* Change: Rules packages - the rules of an entity rule set (CZ_BASE, rule
-  set ``CAM``) are declared in :file:`rul_entity_rule.xml` and run only for
-  entities whose scope uses the rule set. The upgrade removes the rules
-  stored in the old form and CZ_BASE version 89, delivered with ELZA,
-  imports them again at the first start. Packages with entity rules in the
-  old form (:file:`rul_arrangement_extension.xml` and
-  :file:`rul_extension_rule.xml` in an entity rule set) are refused and must
-  be converted; DRL files keep their names and paths, so local changes of
-  CZ_BASE rule files still apply.
-* New: Translations of rules packages - a package can carry texts of its
-  own and other packages' item types, specifications and other entities
-  in further languages (:file:`translations/<lang>.xml`); the names are
-  shown in the language of the user interface. The list of languages
-  (``GET /api/v1/languages``) is available without login.
-* New: Validation messages of archival entities and of units of
-  description are shown in the language of the user interface: the
-  messages of the core (a missing required item, a forbidden item or
-  specification, an item given more than once, ...) in Czech and English,
-  the messages of a package's validation rules when the rule reports them
-  with a key and the package translates the key (ISAAR_CPF version 2 does
-  so into Czech). The messages of CZ_BASE and ZP2015 stay in Czech. The
-  Czech and English texts of the core messages ship with ELZA; a rules
-  package may override them or add a language
-  (:file:`translations/<lang>.xml`, rows with the code ``CORE/...``). A
-  record validated before the upgrade shows its stored texts until it is
-  validated again. The same applies to the headers of the CSV exports of
-  a fund and of its issues, to the message of a refused API key and to
-  the reasons a proposal of the AI assistant cannot be applied.
-* New: The language of the user interface is chosen in the user settings
-  (no longer an experimental feature) and in the login dialog. Without a
-  choice the interface is in the language of ``elza.locale``; the login
-  dialog names the browser's language when it differs. The languages
-  offered are the UI languages of ``sys_language`` (``ui_enabled``) for
-  which the client has texts, today Czech and English.
-* Change: The languages (``sys_language``) get a BCP 47 tag (``cs``,
-  ``en``, ...). The upgrade fills it for the languages delivered with
-  ELZA. **If languages were added to the database by hand, the upgrade
-  stops** with the message "sys_language contains rows without a tag";
-  find them with ``SELECT * FROM sys_language WHERE tag IS NULL``, fill
-  ``tag`` (e.g. ``UPDATE sys_language SET tag = 'hu' WHERE code =
-  'hun'``) and start ELZA again. The language with code ``cze`` must not
-  be deleted: installed rules packages are assigned to it.
-* New: ELZA DA - taking over archival description from packages (AIP) by
-  the user: an import plan and its execution (levels, description
-  elements, attachments); automatic linking creates levels under the
-  matching level; content type and profile of the AIP from METS; dates
-  and formal titles taken over from EAD
-* New: ELZA DA - automatic placement of received AIPs that match no
-  description unit by UUID: the rules of the fund (rule type
-  ``DA_MATCH``) decide by the type and content of the package whether
-  and under which levels it is placed; the levels are found or created
-  and the package is imported below them. A match by UUID always takes
-  precedence. Applies to repositories with automatic metadata download
+  it and survives a restart of ELZA. A failure to reach the archive is
+  retried with a growing interval up to 5 minutes.
 * Change: ELZA DA - a new version of an attached AIP: a part the new
-  version no longer contains is detached from its description unit (the
-  update used to fail and the AIP stayed at its old content); a renamed
-  part keeps its link; a version naming another fund is detached from
-  the former fund and, with automatic metadata download, placed into the
-  new one; a version naming the same fund and institution keeps the fund of the AIP;
-  the same fund code under another institution is another fund. The
-  *Forced update* is no longer offered, the update from the stored
-  package does the same
-* New: 9963 - Password rules (minimum length, character groups,
-  validity), a required password change at the next login, accounts
-  whose password never expires, and recovering access to an account with
-  ``elza.security.recovery.username`` and
-  ``elza.security.recovery.password``. All rules are off after the
-  upgrade. **Turning the validity on makes every password not changed
-  since the upgrade expired at once**; see :doc:`/05-security`.
-* New: 9963 - Initial setup: while the database contains no user, the
-  application creates the first administrator instead of showing the
-  login. **Create the administrator right after the first start, before
-  the application is made available on the network**: until then, anyone
-  who opens the application can create it; see
-  :ref:`install-first-admin`. Users without a person (archival entity)
-  are allowed.
-* New: 9963 - Administrator from the configuration:
-  ``elza.security.admin.username`` and ``elza.security.admin.password``
-  are applied at every startup - a missing user is created as an
-  administrator, an existing user gets the configured password and is
-  activated if deactivated. While they are set, a password changed in the
-  application returns to the configured one and a deactivated account is
-  activated again at the next restart. Every outcome is logged; the
-  changes also go to the security audit log (``config_admin_*`` events);
-  see :ref:`install-admin-from-config`.
-* New: 7843 - Revalidation of dependent entities when a related entity is
-  invalidated
-* New: 7453 - Renaming of attachments
+  version no longer contains is detached, a version naming another fund is
+  moved to it. *Forced update* is no longer offered.
+* Change: 10029 - Import of description elements from CSV - the import of a
+  fund (Table view) and the batch import read the same format, support
+  more data types, import in parts of 1000 rows and offer a test run.
+* Change: OAuth2 users created from tokens get the entity class
+  ``elza.security.o-auth2.user-ap-type`` (default ``PERSON_INDIVIDUAL``) in
+  the scope ``elza.security.o-auth2.user-scope`` (default ``JWT_USERS``);
+  see :doc:`/05-security`.
+
+Fixes
+-----
+
+* Fix: ELZA DA - a package whose PREMIS file has another name, or no PREMIS
+  file, is no longer refused.
+* Fix: ELZA DA - a description unit with an attached AIP whose metadata
+  were not downloaded yet could not be opened.
+* Fix: A rules package without dependencies was skipped by the import at
+  startup.
+* Fix: Deleting a rules package that defines task types failed.
+* Fix: In a newly created database the 20th archival entity scope or
+  institution type could not be created (identifier collision).
+
+3.4.8
+=====
+
+Before the upgrade
+------------------
+
 * Change: 10028 - Storage of binary files (DMS). At the first start, the
   files in ``work/dms`` are moved once into the new structure
   ``dms/<year>/<month>/<block>/``. Deleted content is first moved to the
@@ -315,7 +126,42 @@ Upcoming version
   fund administrators (``ADD_ONLY``). With ``FULL_SYNC`` the application
   does not start; remove the setting from :file:`elza.yaml`.
 * Change: 10054 - REST API: the endpoints ``/api/admin/asyncRequests``
-  moved to ``/api/v1/admin/async-requests``
+  moved to ``/api/v1/admin/async-requests``; update scripts that call them.
+
+New
+---
+
+* New: 9963 - Password rules (minimum length, character groups,
+  validity), a required password change at the next login, accounts
+  whose password never expires, and recovering access to an account with
+  ``elza.security.recovery.username`` and
+  ``elza.security.recovery.password``. All rules are off after the
+  upgrade. **Turning the validity on makes every password not changed
+  since the upgrade expired at once**; see :doc:`/05-security`.
+* New: 9963 - Initial setup: while the database contains no user, the
+  application creates the first administrator instead of showing the
+  login. **Create the administrator right after the first start, before
+  the application is made available on the network**; see
+  :ref:`install-first-admin`.
+* New: 9963 - Administrator from the configuration:
+  ``elza.security.admin.username`` and ``elza.security.admin.password``
+  are applied at every startup - a missing user is created as an
+  administrator, an existing user gets the configured password and is
+  activated. While they are set, a password changed in the application
+  returns to the configured one at the next restart; see
+  :ref:`install-admin-from-config`.
+* New: ELZA DA - taking over archival description from packages (AIP) by
+  the user (levels, description elements, attachments).
+* New: ELZA DA - automatic placement of received AIPs that match no
+  description unit by UUID, decided by the rules of the fund (rule type
+  ``DA_MATCH``). Applies to repositories with automatic metadata download.
+* New: 7843 - Revalidation of dependent entities when a related entity is
+  invalidated
+* New: 7453 - Renaming of attachments
+
+Fixes
+-----
+
 * Fix: Structured types - error with an unsupported description element
   type
 
