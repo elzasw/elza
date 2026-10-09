@@ -2581,6 +2581,10 @@
     "defaultMessage": "Institution not found",
     "srcHash": "Y5L6HoEz8FfT"
   },
+  "aip.queueState.DOWNLOAD_REQUESTED": {
+    "defaultMessage": "DA is preparing the download",
+    "srcHash": "atPmFfYZMYi7"
+  },
   "aip.queueState.EXPORT_ERROR": {
     "defaultMessage": "Export error",
     "srcHash": "I18TohzzMs46"
@@ -2592,6 +2596,10 @@
   "aip.queueState.EXPORT_OK": {
     "defaultMessage": "Exported",
     "srcHash": "s3DYqvujKbtp"
+  },
+  "aip.queueState.EXPORT_SENT": {
+    "defaultMessage": "Sent, DA is processing",
+    "srcHash": "-qVcElP-mASX"
   },
   "aip.queueState.IMPORT_ERROR": {
     "defaultMessage": "Download error",

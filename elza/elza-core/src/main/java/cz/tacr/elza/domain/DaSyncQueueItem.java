@@ -80,6 +80,20 @@ public class DaSyncQueueItem {
     @Column(nullable = false)
     private Integer attemptCount = 0;
 
+    /**
+     * The batch the DA was asked for ({@link QueueItemState#DOWNLOAD_REQUESTED}) or was sent
+     * ({@link QueueItemState#EXPORT_SENT}); null before that.
+     */
+    @Column(length = StringLength.LENGTH_250)
+    private String batchId;
+
+    /**
+     * Not before this time is the item taken again: the next question about its batch, or the
+     * next attempt after a failure. Null = now. Lets the queue serve other items meanwhile.
+     */
+    @Column
+    private OffsetDateTime nextAttemptAt;
+
 
     public Integer getSyncQueueItemId() {
         return syncQueueItemId;
@@ -177,6 +191,22 @@ public class DaSyncQueueItem {
         this.attemptCount = attemptCount;
     }
 
+    public String getBatchId() {
+        return batchId;
+    }
+
+    public void setBatchId(String batchId) {
+        this.batchId = batchId;
+    }
+
+    public OffsetDateTime getNextAttemptAt() {
+        return nextAttemptAt;
+    }
+
+    public void setNextAttemptAt(OffsetDateTime nextAttemptAt) {
+        this.nextAttemptAt = nextAttemptAt;
+    }
+
     /**
      * State of the queue item; the client labels the states itself.
      */
@@ -186,11 +216,17 @@ public class DaSyncQueueItem {
 
         IMPORT_NEW,
 
+        /** The DA prepares the requested batch; the item waits for it. */
+        DOWNLOAD_REQUESTED,
+
         IMPORT_OK, // previously OK
 
         IMPORT_ERROR,
 
         EXPORT_NEW,
+
+        /** The DA received the change package and ingests it; the item waits for the result. */
+        EXPORT_SENT,
 
         EXPORT_OK,
 
