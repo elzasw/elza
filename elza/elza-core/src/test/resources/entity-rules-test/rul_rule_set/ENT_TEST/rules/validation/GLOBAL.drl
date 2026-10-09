@@ -1,0 +1,23 @@
+package drlenttest;
+import cz.tacr.elza.drools.model.ApValidationErrors;
+import cz.tacr.elza.drools.model.Ap;
+import cz.tacr.elza.drools.model.Part;
+import cz.tacr.elza.drools.model.PartType;
+global ApValidationErrors results;
+
+// PT_ENT_NOTE is a part type of this package: the model has no constant for it, the rules
+// compare its code (typeCode) or ask for its instance (PartType.of).
+
+rule "ENT_TEST: a note part has an item"
+when $ae: Ap( $aeParts : parts )
+     $part: Part(typeCode == "PT_ENT_NOTE", items.isEmpty()) from $aeParts
+then
+    results.addError("EMPTY_NOTE", "The part {0} is empty.", $part);
+end
+
+rule "ENT_TEST: at most one note"
+when $ae: Ap( $aeParts : parts )
+     Number(intValue > 1) from accumulate( Part(type == PartType.of("PT_ENT_NOTE")) from $aeParts, count(1) )
+then
+    results.addError("ONE_NOTE", "The entity has more than one note.");
+end
