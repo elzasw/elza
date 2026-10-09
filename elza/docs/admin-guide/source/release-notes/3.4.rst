@@ -75,6 +75,10 @@ New
   are never deleted.
 * New: ELZA DA - a new setting of the DA repository, *Batch status check
   interval (s)*, default 2 seconds (before 100 ms).
+* New: 10070 - Structured objects (storage units, access restrictions, ...)
+  are exported to CSV from the panel of the fund (three dots → *Export to
+  CSV*), with the filter of the panel applied. The ID column is the value
+  the CSV import of description elements expects.
 
 Changes
 -------

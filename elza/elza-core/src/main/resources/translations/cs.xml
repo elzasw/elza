@@ -38,7 +38,7 @@
     <!-- terms used as arguments -->
     <t type="MESSAGE" code="CORE/UNDEFINED_VALUE" field="text">výjimka</t>
 
-    <!-- headers of the CSV exports of a fund and of its issues -->
+    <!-- headers of the CSV exports of a fund, of its issues and of structured objects -->
     <t type="MESSAGE" code="CORE/EXPORT_COL_RECORD_NUMBER" field="text">Číslo záznamu</t>
     <t type="MESSAGE" code="CORE/EXPORT_COL_NODE_NUMBER" field="text">Číslo JP</t>
     <t type="MESSAGE" code="CORE/EXPORT_COL_ITEM_TYPE" field="text">Atribut</t>
@@ -53,6 +53,11 @@
     <t type="MESSAGE" code="CORE/ISSUES_COL_DATE" field="text">Datum</t>
     <t type="MESSAGE" code="CORE/ISSUES_COL_DESCRIPTION" field="text">Popis</t>
     <t type="MESSAGE" code="CORE/ISSUES_COL_COMMENTS" field="text">Komentáře</t>
+    <t type="MESSAGE" code="CORE/STRUCT_COL_ID" field="text">ID</t>
+    <t type="MESSAGE" code="CORE/STRUCT_COL_COMPLEMENT" field="text">Doplněk</t>
+    <t type="MESSAGE" code="CORE/STRUCT_COL_STATE" field="text">Stav</t>
+    <t type="MESSAGE" code="CORE/STRUCT_STATE_OPEN" field="text">Otevřený</t>
+    <t type="MESSAGE" code="CORE/STRUCT_STATE_CLOSED" field="text">Uzavřený</t>
 
     <!-- refused API-key authentication -->
     <t type="MESSAGE" code="CORE/API_KEY_MALFORMED_TOKEN" field="text">Token nemá platný tvar; použijte hodnotu, kterou vydal server.</t>
