@@ -37,4 +37,52 @@
 
     <!-- terms used as arguments -->
     <t type="MESSAGE" code="CORE/UNDEFINED_VALUE" field="text">výjimka</t>
+
+    <!-- headers of the CSV exports of a fund and of its issues -->
+    <t type="MESSAGE" code="CORE/EXPORT_COL_RECORD_NUMBER" field="text">Číslo záznamu</t>
+    <t type="MESSAGE" code="CORE/EXPORT_COL_NODE_NUMBER" field="text">Číslo JP</t>
+    <t type="MESSAGE" code="CORE/EXPORT_COL_ITEM_TYPE" field="text">Atribut</t>
+    <t type="MESSAGE" code="CORE/EXPORT_COL_SPEC" field="text">Specifikace</t>
+    <t type="MESSAGE" code="CORE/EXPORT_COL_VALUE" field="text">Hodnota</t>
+    <t type="MESSAGE" code="CORE/EXPORT_COL_ENTITY_ID" field="text">ID entity</t>
+    <t type="MESSAGE" code="CORE/ISSUES_COL_NUMBER" field="text">Číslo</t>
+    <t type="MESSAGE" code="CORE/ISSUES_COL_TYPE" field="text">Druh</t>
+    <t type="MESSAGE" code="CORE/ISSUES_COL_STATE" field="text">Stav</t>
+    <t type="MESSAGE" code="CORE/ISSUES_COL_USER" field="text">Uživatel</t>
+    <t type="MESSAGE" code="CORE/ISSUES_COL_USER_NAME" field="text">Jméno uživatele</t>
+    <t type="MESSAGE" code="CORE/ISSUES_COL_DATE" field="text">Datum</t>
+    <t type="MESSAGE" code="CORE/ISSUES_COL_DESCRIPTION" field="text">Popis</t>
+    <t type="MESSAGE" code="CORE/ISSUES_COL_COMMENTS" field="text">Komentáře</t>
+
+    <!-- refused API-key authentication -->
+    <t type="MESSAGE" code="CORE/API_KEY_MALFORMED_TOKEN" field="text">Token nemá platný tvar; použijte hodnotu, kterou vydal server.</t>
+    <t type="MESSAGE" code="CORE/API_KEY_UNKNOWN_KEY" field="text">Klíč s tímto identifikátorem neexistuje.</t>
+    <t type="MESSAGE" code="CORE/API_KEY_INVALID_SECRET" field="text">Tajná část tokenu neodpovídá.</t>
+    <t type="MESSAGE" code="CORE/API_KEY_EXPIRED" field="text">Platnost klíče vypršela. Vytvořte nový.</t>
+    <t type="MESSAGE" code="CORE/API_KEY_REVOKED" field="text">Klíč byl zrušen. Vytvořte nový.</t>
+    <t type="MESSAGE" code="CORE/API_KEY_USER_INACTIVE" field="text">Uživatel je neaktivní. Kontaktujte správce.</t>
+
+    <!-- why a proposal of the AI assistant cannot be applied: {0} item type, {1} specification code or value -->
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_RULES_FAILED" field="text">Nepodařilo se vyhodnotit pravidla pro jednotku popisu.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_NO_OPERATION" field="text">Návrh neobsahuje žádnou operaci.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_UNKNOWN_OPERATION" field="text">Neznámý druh operace návrhu.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_INCOMPLETE_OPERATION" field="text">Neúplná operace návrhu.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_UNKNOWN_ITEM_TYPE" field="text">Neznámý typ prvku popisu: {0}.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_ITEM_NOT_ALLOWED" field="text">Prvek „{0}“ nelze na této jednotce popisu použít.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_ITEM_NOT_REPEATABLE" field="text">Prvek „{0}“ není opakovatelný a jednotka popisu už jeho hodnotu obsahuje.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_TYPE_CHANGE" field="text">Návrh mění typ prvku popisu – takovou změnu nelze provést.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_UNKNOWN_CHANGED_ITEM_TYPE" field="text">Neznámý typ měněného prvku popisu.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_ITEM_GONE" field="text">Měněný prvek popisu už na jednotce popisu neexistuje.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_ITEM_CHANGED_MEANWHILE" field="text">Prvek popisu byl mezitím změněn – návrh neodpovídá jeho aktuální hodnotě.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_ITEM_READ_ONLY" field="text">Prvek popisu je pouze pro čtení.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_DATA_TYPE_NOT_PROPOSABLE" field="text">Prvek „{0}“ tohoto datového typu nelze návrhem upravovat.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_SPEC_MISSING" field="text">Návrh neuvádí specifikaci prvku „{0}“.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_SPEC_INVALID" field="text">Neplatná specifikace „{1}“ prvku „{0}“.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_ENTITY_REF_MISSING" field="text">Návrh neuvádí odkazovanou entitu prvku „{0}“.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_ENTITY_NOT_FOUND" field="text">Odkazovaná entita nebyla nalezena.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_VALUE_NOT_STORABLE" field="text">Hodnotu „{1}“ nelze uložit do prvku „{0}“.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_VALUE_MISSING" field="text">Návrh neobsahuje hodnotu prvku „{0}“.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_NODE_MISSING" field="text">Návrh neuvádí jednotku popisu.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_NODE_NOT_FOUND" field="text">Jednotka popisu nebyla nalezena.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_NODE_UNAVAILABLE" field="text">Jednotka popisu není dostupná.</t>
 </translations>

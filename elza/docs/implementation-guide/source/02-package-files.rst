@@ -786,9 +786,12 @@ text of a rule is not checked and a broken pattern is shown as it is.
 
 Messages of the core (``CORE/<KEY>``: the missing required item, the
 forbidden item or specification, an item given more than once, for
-entities ``AP_*`` and for units of description ``ARR_*``) are listed with
-their arguments in the enum ``cz.tacr.elza.core.data.CoreMessage``; the
-text in the code is the developer's fallback only. Their Czech and
+entities ``AP_*`` and for units of description ``ARR_*``; also the texts
+the server builds inside a request - the headers of the CSV exports, the
+body of a refused API key, the reasons a proposal of the AI assistant
+cannot be applied) are listed with their arguments in the enum
+``cz.tacr.elza.core.data.CoreMessage``; the text in the code is the
+developer's fallback only. Their Czech and
 English texts ship with the core in the same files a package would
 write, :file:`elza-core/src/main/resources/translations/cs.xml` and
 :file:`en.xml`, and lie below every package: a package overrides a text

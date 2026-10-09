@@ -4,6 +4,8 @@ import cz.tacr.elza.controller.vo.IssueNodeItem;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.core.data.CoreMessage;
+import cz.tacr.elza.core.data.PackageTexts;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.*;
@@ -52,6 +54,7 @@ public class IssueService {
     private final WfIssueListRepository issueListRepository;
     private final WfIssueRepository issueRepository;
     private final WfIssueStateRepository issueStateRepository;
+    private final PackageTexts packageTexts;
     private final WfIssueTypeRepository issueTypeRepository;
     private final PermissionRepository permissionRepository;
     private final IssueDataService issueDataService;
@@ -78,9 +81,11 @@ public class IssueService {
             WfIssueTypeRepository issueTypeRepository,
             PermissionRepository permissionRepository,
             ApIndexRepository indexRepository,
-            IssueDataService issueDataService) {
+            IssueDataService issueDataService,
+            PackageTexts packageTexts) {
         this.arrangementService = arrangementService;
         this.accessPointService = accessPointService;
+        this.packageTexts = packageTexts;
         this.levelTreeCacheService = levelTreeCacheService;
         this.eventNotificationService = eventNotificationService;
         this.commentRepository = commentRepository;
@@ -468,15 +473,15 @@ public class IssueService {
         DateTimeFormatter commentDateFormatter = DateTimeFormatter.ofPattern("d.M.u");
 
         String[] headers = new String[]{
-                "\u010C\u00EDslo JP",
-                "\u010C\u00EDslo",
-                "Druh",
-                "Stav",
-                "U\u017Eivatel",
-                "Jm\u00E9no u\u017Eivatele",
-                "Datum",
-                "Popis",
-                "Koment\u00E1\u0159e"
+                packageTexts.text(CoreMessage.EXPORT_COL_NODE_NUMBER),
+                packageTexts.text(CoreMessage.ISSUES_COL_NUMBER),
+                packageTexts.text(CoreMessage.ISSUES_COL_TYPE),
+                packageTexts.text(CoreMessage.ISSUES_COL_STATE),
+                packageTexts.text(CoreMessage.ISSUES_COL_USER),
+                packageTexts.text(CoreMessage.ISSUES_COL_USER_NAME),
+                packageTexts.text(CoreMessage.ISSUES_COL_DATE),
+                packageTexts.text(CoreMessage.ISSUES_COL_DESCRIPTION),
+                packageTexts.text(CoreMessage.ISSUES_COL_COMMENTS)
         };
 
         CSVPrinter printer = CSV_EXCEL_FORMAT.withHeader(headers).withQuoteMode(QuoteMode.NON_NUMERIC)

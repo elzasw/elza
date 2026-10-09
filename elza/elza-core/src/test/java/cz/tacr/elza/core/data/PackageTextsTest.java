@@ -247,6 +247,18 @@ class PackageTextsTest {
         assertEquals("BASE/UNKNOWN", ValidationMessage.of("BASE/UNKNOWN", null).sourceText());
     }
 
+    /** A text built inside a request (a header of a download) follows the language of the request. */
+    @Test
+    void requestTimeTextFollowsTheRequest() {
+        assertEquals("Číslo JP", texts.text(CoreMessage.EXPORT_COL_NODE_NUMBER));
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setCookies(new jakarta.servlet.http.Cookie(PackageTexts.LANGUAGE_COOKIE, "en"));
+        bind(request);
+        assertEquals("Unit of description number", texts.text(CoreMessage.EXPORT_COL_NODE_NUMBER));
+        assertEquals("The item “addon” cannot be used at this unit of description.",
+                     texts.text(CoreMessage.AI_PROPOSAL_ITEM_NOT_ALLOWED, ValidationMessage.itemType("T1")));
+    }
+
     @Test
     void messageIsEncodedAsOneLine() {
         ValidationMessage message = ValidationMessage.of("BASE/KEY", "Text \"quoted\" {0}", "a\nb", null, 3);

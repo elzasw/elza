@@ -330,11 +330,26 @@ caught; the groups below are complete for the mechanisms, not necessarily for ev
    keep plain texts. Covered by `AddonPackageTest` (keyed addon message, `translations/en.xml`, a core
    message in both languages). The word for an undefined value is the nested term `CORE/UNDEFINED_VALUE`
    (plan group D2 "výjimka" in messages - done; the stored value and tree titles are untouched).
-2. **Request-time texts come from the core catalog in the request language** (B, E1, E2): the same
-   `CoreMessage` enum and `translations/<tag>.xml` files of the core as rule 1, rendered right away with
-   `PackageTexts.render(message)` (no storage); keys in code, no literals. About 60 keys (CSV headers 19,
-   explorer labels 4, AI block labels and reasons 27, API-key failures 6, password policy 1). This is the
-   "server catalog" option, limited to texts that are built inside a request and are not data.
+2. **Request-time texts come from the core catalog in the request language** (B, E1, E2; done
+   2026-10-09): the same `CoreMessage` enum and `translations/<tag>.xml` files of the core as rule 1,
+   rendered right away with `PackageTexts.text(message, args)` (no storage). Sorted by *who owns the
+   state* (user's principle 2026-10-09: a text is a core text only when neither the UI nor a package can
+   own it):
+   - **core** - the headers of the CSV exports of a fund and of its issues (`ArrIOService`,
+     `IssueService`, 14 keys: a downloaded file), the 401 body of a refused API key (`ApiKeyFailure` →
+     `CoreMessage`, 6 keys: read by an integrator, not the UI), the reasons an AI proposal cannot be
+     applied (`AiProposalService`, 22 keys: evaluated against the rule set like validation; item types
+     passed as objects, rendered as names in the reader's language);
+   - **UI-owned, left to the client** - the explorer tree's structural nodes (the client already labels
+     them by `AipLevelType`, the server label is a fallback), the root nodes of the logical AIP tree
+     (`AipService` "Logická struktura" / "Bez logické struktury": `TreeNodeCustomGen` needs a kind for the
+     client to label; DA module is Czech-only by decision), the log viewer errors (`AdminOldController`:
+     a code on `LogVO` would do), the password rules (`PasswordPolicyService`: the client already renders
+     its own text from `rule` + `minLength`, the server text is only the exception detail);
+   - **kept Czech by its own decision** - `RevisionFindingsBlockMapper`: the findings' texts arrive from
+     the AI in the run's language, translating the label words alone would mix languages (its Javadoc).
+   Nothing in this group depends on which rule set is loaded, so nothing moves into a package; a package
+   may still override any `CORE/*` text.
 3. **Texts a package writes follow the package** (D1, D2): the text form of unit dates inside entity
    index names and outputs, the word for an undefined value in titles, default names and values
    written by imports are rendered in the language of the rules package whose script or template
@@ -347,11 +362,11 @@ caught; the groups below are complete for the mechanisms, not necessarily for ev
 *Out of scope, documented as Czech modules:* D3 (the DA/AIP integration is the Czech national digital
 archive interface, like CAM), C (not shown), F. E3 is a cleanup.
 
-*Open for the user:* (1) rule 1 agreed and implemented for entities and funds (above); rules 2 and 3
-still a proposal; (2) DA/AIP and CAM declared Czech-only, no catalog for them; (3) unit dates - resolved
-by L2 (section 7): no language on funds, texts follow the user or the writing package. *Remaining
-implementation:* the B/E1/E2 call sites through `CoreMessage` (rule 2), enum-label cleanup; tests
-for both languages. Estimate 1 day.
+*Open for the user:* (1) rules 1 and 2 agreed and implemented (above); rule 3 still a proposal;
+(2) DA/AIP and CAM declared Czech-only, no catalog for them; (3) unit dates - resolved by L2 (section
+7): no language on funds, texts follow the user or the writing package. *Remaining:* the UI-owned
+texts of rule 2 on the client side (a kind on `TreeNodeCustomGen`, a code on `LogVO`), the E3
+enum-label cleanup. Estimate half a day.
 
 ### L2 — unit-date text per language (found 2026-10-08, design agreed 2026-10-08)
 

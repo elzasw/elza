@@ -54,7 +54,56 @@ public enum CoreMessage {
 
     // terms used as arguments of other messages
     /** The word for a value marked as undefined ({@code ArrangementService.UNDEFINED}). */
-    UNDEFINED_VALUE(0, "undefined");
+    UNDEFINED_VALUE(0, "undefined"),
+
+    // headers of the CSV exports of a fund (ArrIOService) and of its issues (IssueService)
+    EXPORT_COL_RECORD_NUMBER(0, "Record number"),
+    EXPORT_COL_NODE_NUMBER(0, "Unit of description number"),
+    EXPORT_COL_ITEM_TYPE(0, "Item"),
+    EXPORT_COL_SPEC(0, "Specification"),
+    EXPORT_COL_VALUE(0, "Value"),
+    EXPORT_COL_ENTITY_ID(0, "Entity ID"),
+    ISSUES_COL_NUMBER(0, "Number"),
+    ISSUES_COL_TYPE(0, "Type"),
+    ISSUES_COL_STATE(0, "State"),
+    ISSUES_COL_USER(0, "User"),
+    ISSUES_COL_USER_NAME(0, "User name"),
+    ISSUES_COL_DATE(0, "Date"),
+    ISSUES_COL_DESCRIPTION(0, "Description"),
+    ISSUES_COL_COMMENTS(0, "Comments"),
+
+    // refused API-key authentication (ApiKeyFailure), the body of the 401 response
+    API_KEY_MALFORMED_TOKEN(0, "The token is malformed; use the value issued by the server."),
+    API_KEY_UNKNOWN_KEY(0, "No key with this identifier exists."),
+    API_KEY_INVALID_SECRET(0, "The secret part of the token does not match."),
+    API_KEY_EXPIRED(0, "The key has expired. Create a new one."),
+    API_KEY_REVOKED(0, "The key has been revoked. Create a new one."),
+    API_KEY_USER_INACTIVE(0, "The user is inactive. Contact the administrator."),
+
+    // why a proposal of the AI assistant cannot be applied (AiProposalService): {0} item type,
+    // {1} specification code or value
+    AI_PROPOSAL_RULES_FAILED(0, "The rules of the unit of description could not be evaluated."),
+    AI_PROPOSAL_NO_OPERATION(0, "The proposal contains no operation."),
+    AI_PROPOSAL_UNKNOWN_OPERATION(0, "Unknown kind of proposal operation."),
+    AI_PROPOSAL_INCOMPLETE_OPERATION(0, "Incomplete proposal operation."),
+    AI_PROPOSAL_UNKNOWN_ITEM_TYPE(1, "Unknown item type: {0}."),
+    AI_PROPOSAL_ITEM_NOT_ALLOWED(1, "The item “{0}” cannot be used at this unit of description."),
+    AI_PROPOSAL_ITEM_NOT_REPEATABLE(1, "The item “{0}” is not repeatable and the unit of description already has its value."),
+    AI_PROPOSAL_TYPE_CHANGE(0, "The proposal changes the type of the item – such a change cannot be made."),
+    AI_PROPOSAL_UNKNOWN_CHANGED_ITEM_TYPE(0, "Unknown type of the changed item."),
+    AI_PROPOSAL_ITEM_GONE(0, "The changed item no longer exists at the unit of description."),
+    AI_PROPOSAL_ITEM_CHANGED_MEANWHILE(0, "The item has been changed in the meantime – the proposal does not match its current value."),
+    AI_PROPOSAL_ITEM_READ_ONLY(0, "The item is read-only."),
+    AI_PROPOSAL_DATA_TYPE_NOT_PROPOSABLE(1, "The item “{0}” of this data type cannot be changed by a proposal."),
+    AI_PROPOSAL_SPEC_MISSING(1, "The proposal does not give the specification of the item “{0}”."),
+    AI_PROPOSAL_SPEC_INVALID(2, "Invalid specification “{1}” of the item “{0}”."),
+    AI_PROPOSAL_ENTITY_REF_MISSING(1, "The proposal does not give the referenced entity of the item “{0}”."),
+    AI_PROPOSAL_ENTITY_NOT_FOUND(0, "The referenced entity was not found."),
+    AI_PROPOSAL_VALUE_NOT_STORABLE(2, "The value “{1}” cannot be stored in the item “{0}”."),
+    AI_PROPOSAL_VALUE_MISSING(1, "The proposal contains no value of the item “{0}”."),
+    AI_PROPOSAL_NODE_MISSING(0, "The proposal does not name a unit of description."),
+    AI_PROPOSAL_NODE_NOT_FOUND(0, "The unit of description was not found."),
+    AI_PROPOSAL_NODE_UNAVAILABLE(0, "The unit of description is not available.");
 
     /** Code of the "package" of the core in the keys of its messages. */
     public static final String PACKAGE = ValidationMessage.CORE;

@@ -45,8 +45,10 @@ import cz.tacr.elza.controller.vo.AiProposalNodeVO;
 import cz.tacr.elza.controller.vo.AiProposalOperationVO;
 import cz.tacr.elza.controller.vo.AiRequestVO;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.core.data.CoreMessage;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.PackageTexts;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.AiConversation;
@@ -130,6 +132,8 @@ public class AiProposalService {
 
     @Autowired
     private EntityManager entityManager;
+    @Autowired
+    private PackageTexts packageTexts;
 
     @Autowired
     private AiRequestRepository aiRequestRepository;
@@ -455,11 +459,11 @@ public class AiProposalService {
             throw new BlockedException(nodeCtx.unavailableReason);
         }
         if (nodeCtx.extByTypeId == null) {
-            throw new BlockedException("Nepodařilo se vyhodnotit pravidla pro jednotku popisu.");
+            throw new BlockedException(packageTexts.text(CoreMessage.AI_PROPOSAL_RULES_FAILED));
         }
         List<ItemOperation> ops = operations(change);
         if (ops.isEmpty()) {
-            throw new BlockedException("Návrh neobsahuje žádnou operaci.");
+            throw new BlockedException(packageTexts.text(CoreMessage.AI_PROPOSAL_NO_OPERATION));
         }
         List<PreparedOp> prepared = new ArrayList<>(ops.size());
         for (ItemOperation op : ops) {
@@ -470,7 +474,7 @@ public class AiProposalService {
             } else if (op instanceof ItemOperationDelete delete) {
                 prepared.add(prepareDelete(nodeCtx, delete, sdp));
             } else {
-                throw new BlockedException("Neznámý druh operace návrhu.");
+                throw new BlockedException(packageTexts.text(CoreMessage.AI_PROPOSAL_UNKNOWN_OPERATION));
             }
         }
         return prepared;
@@ -480,23 +484,21 @@ public class AiProposalService {
                                   final StaticDataProvider sdp) {
         ProposedItemValue newItem = add.getNewItem();
         if (newItem == null || StringUtils.isBlank(newItem.getType())) {
-            throw new BlockedException("Neúplná operace návrhu.");
+            throw new BlockedException(packageTexts.text(CoreMessage.AI_PROPOSAL_INCOMPLETE_OPERATION));
         }
         ItemType itemType = sdp.getItemTypeByCode(newItem.getType());
         if (itemType == null) {
-            throw new BlockedException("Neznámý typ prvku popisu: " + newItem.getType() + ".");
+            throw new BlockedException(packageTexts.text(CoreMessage.AI_PROPOSAL_UNKNOWN_ITEM_TYPE, newItem.getType()));
         }
         RulItemTypeExt ext = nodeCtx.extByTypeId.get(itemType.getItemTypeId());
         if (ext == null || ext.getType() == RulItemType.Type.IMPOSSIBLE) {
-            throw new BlockedException("Prvek „" + displayName(itemType)
-                    + "“ nelze na této jednotce popisu použít.");
+            throw new BlockedException(packageTexts.text(CoreMessage.AI_PROPOSAL_ITEM_NOT_ALLOWED, itemType));
         }
         checkProposableDataType(itemType);
         boolean hasValue = nodeCtx.openItems.stream()
                 .anyMatch(item -> itemType.getItemTypeId().equals(item.getItemTypeId()));
         if (hasValue && Boolean.FALSE.equals(ext.getRepeatable())) {
-            throw new BlockedException("Prvek „" + displayName(itemType)
-                    + "“ není opakovatelný a jednotka popisu už jeho hodnotu obsahuje.");
+            throw new BlockedException(packageTexts.text(CoreMessage.AI_PROPOSAL_ITEM_NOT_REPEATABLE, itemType));
         }
         PreparedOp op = new PreparedOp();
         op.kind = KIND_ADD;
@@ -511,14 +513,14 @@ public class AiProposalService {
         ArrDescItem target = resolveAnchor(nodeCtx, update.getItemObjectId(), update.getCurrentValue());
         ProposedItemValue newItem = update.getNewItem();
         if (newItem == null) {
-            throw new BlockedException("Neúplná operace návrhu.");
+            throw new BlockedException(packageTexts.text(CoreMessage.AI_PROPOSAL_INCOMPLETE_OPERATION));
         }
         ItemType itemType = sdp.getItemTypeById(target.getItemTypeId());
         if (newItem.getType() != null && itemType != null && !newItem.getType().equals(itemType.getCode())) {
-            throw new BlockedException("Návrh mění typ prvku popisu – takovou změnu nelze provést.");
+            throw new BlockedException(packageTexts.text(CoreMessage.AI_PROPOSAL_TYPE_CHANGE));
         }
         if (itemType == null) {
-            throw new BlockedException("Neznámý typ měněného prvku popisu.");
+            throw new BlockedException(packageTexts.text(CoreMessage.AI_PROPOSAL_UNKNOWN_CHANGED_ITEM_TYPE));
         }
         checkProposableDataType(itemType);
         PreparedOp op = new PreparedOp();
@@ -548,29 +550,27 @@ public class AiProposalService {
     private ArrDescItem resolveAnchor(final NodeContext nodeCtx, final Integer itemObjectId,
                                       final String currentValue) {
         if (itemObjectId == null) {
-            throw new BlockedException("Neúplná operace návrhu.");
+            throw new BlockedException(packageTexts.text(CoreMessage.AI_PROPOSAL_INCOMPLETE_OPERATION));
         }
         ArrDescItem target = nodeCtx.openByObjectId.get(itemObjectId);
         if (target == null) {
-            throw new BlockedException("Měněný prvek popisu už na jednotce popisu neexistuje.");
+            throw new BlockedException(packageTexts.text(CoreMessage.AI_PROPOSAL_ITEM_GONE));
         }
         if (currentValue != null) {
             String live = target.getFulltextValue();
             if (live == null || !live.strip().equals(currentValue.strip())) {
-                throw new BlockedException(
-                        "Prvek popisu byl mezitím změněn – návrh neodpovídá jeho aktuální hodnotě.");
+                throw new BlockedException(packageTexts.text(CoreMessage.AI_PROPOSAL_ITEM_CHANGED_MEANWHILE));
             }
         }
         if (Boolean.TRUE.equals(target.getReadOnly())) {
-            throw new BlockedException("Prvek popisu je pouze pro čtení.");
+            throw new BlockedException(packageTexts.text(CoreMessage.AI_PROPOSAL_ITEM_READ_ONLY));
         }
         return target;
     }
 
     private void checkProposableDataType(final ItemType itemType) {
         if (!PROPOSABLE_TYPES.contains(itemType.getDataType())) {
-            throw new BlockedException("Prvek „" + displayName(itemType)
-                    + "“ tohoto datového typu nelze návrhem upravovat.");
+            throw new BlockedException(packageTexts.text(CoreMessage.AI_PROPOSAL_DATA_TYPE_NOT_PROPOSABLE, itemType));
         }
     }
 
@@ -593,12 +593,11 @@ public class AiProposalService {
             return null;
         }
         if (StringUtils.isBlank(newItem.getSpec())) {
-            throw new BlockedException("Návrh neuvádí specifikaci prvku „" + displayName(itemType) + "“.");
+            throw new BlockedException(packageTexts.text(CoreMessage.AI_PROPOSAL_SPEC_MISSING, itemType));
         }
         RulItemSpec spec = itemType.getItemSpecByCode(newItem.getSpec());
         if (spec == null) {
-            throw new BlockedException("Neplatná specifikace „" + newItem.getSpec()
-                    + "“ prvku „" + displayName(itemType) + "“.");
+            throw new BlockedException(packageTexts.text(CoreMessage.AI_PROPOSAL_SPEC_INVALID, itemType, newItem.getSpec()));
         }
         return entityManager.getReference(RulItemSpec.class, spec.getItemSpecId());
     }
@@ -644,26 +643,24 @@ public class AiProposalService {
                 case ENUM -> data = new ArrDataNull();
                 case RECORD_REF -> {
                     if (newItem.getAccessPointId() == null) {
-                        throw new BlockedException("Návrh neuvádí odkazovanou entitu prvku „"
-                                + displayName(itemType) + "“.");
+                        throw new BlockedException(packageTexts.text(CoreMessage.AI_PROPOSAL_ENTITY_REF_MISSING, itemType));
                     }
                     ApAccessPoint accessPoint = apAccessPointRepository
                             .findById(newItem.getAccessPointId()).orElse(null);
                     if (accessPoint == null) {
-                        throw new BlockedException("Odkazovaná entita nebyla nalezena.");
+                        throw new BlockedException(packageTexts.text(CoreMessage.AI_PROPOSAL_ENTITY_NOT_FOUND));
                     }
                     ArrDataRecordRef d = new ArrDataRecordRef();
                     d.setRecord(accessPoint);
                     data = d;
                 }
-                default -> throw new BlockedException("Prvek „" + displayName(itemType)
-                        + "“ tohoto datového typu nelze návrhem upravovat.");
+                default -> throw new BlockedException(
+                        packageTexts.text(CoreMessage.AI_PROPOSAL_DATA_TYPE_NOT_PROPOSABLE, itemType));
             }
         } catch (BlockedException e) {
             throw e;
         } catch (Exception e) {
-            throw new BlockedException("Hodnotu „" + value + "“ nelze uložit do prvku „"
-                    + displayName(itemType) + "“.");
+            throw new BlockedException(packageTexts.text(CoreMessage.AI_PROPOSAL_VALUE_NOT_STORABLE, itemType, value));
         }
         data.setDataType(dataType.getEntity());
         return data;
@@ -671,7 +668,7 @@ public class AiProposalService {
 
     private String requireValue(final String value, final ItemType itemType) {
         if (StringUtils.isBlank(value)) {
-            throw new BlockedException("Návrh neobsahuje hodnotu prvku „" + displayName(itemType) + "“.");
+            throw new BlockedException(packageTexts.text(CoreMessage.AI_PROPOSAL_VALUE_MISSING, itemType));
         }
         return value;
     }
@@ -698,17 +695,17 @@ public class AiProposalService {
         NodeContext ctx = new NodeContext();
         ctx.nodeId = nodeId;
         if (nodeId == null) {
-            ctx.unavailableReason = "Návrh neuvádí jednotku popisu.";
+            ctx.unavailableReason = packageTexts.text(CoreMessage.AI_PROPOSAL_NODE_MISSING);
             return ctx;
         }
         ctx.node = nodeRepository.findById(nodeId).orElse(null);
         if (ctx.node == null) {
-            ctx.unavailableReason = "Jednotka popisu nebyla nalezena.";
+            ctx.unavailableReason = packageTexts.text(CoreMessage.AI_PROPOSAL_NODE_NOT_FOUND);
             return ctx;
         }
         ctx.version = fundVersionRepository.findByFundIdAndLockChangeIsNull(ctx.node.getFundId());
         if (ctx.version == null || !canRead(ctx.version)) {
-            ctx.unavailableReason = "Jednotka popisu není dostupná.";
+            ctx.unavailableReason = packageTexts.text(CoreMessage.AI_PROPOSAL_NODE_UNAVAILABLE);
             return ctx;
         }
         ctx.openItems = descriptionItemService.findByNodeIdsAndDeleteChangeIsNull(List.of(nodeId));

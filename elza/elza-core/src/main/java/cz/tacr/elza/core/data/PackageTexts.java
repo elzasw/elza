@@ -322,6 +322,16 @@ public class PackageTexts {
         return render(message, language, 0);
     }
 
+    /**
+     * Text of a message of the core in the language of the current request: for texts built
+     * inside a request (headers of a download, labels of a tree, reasons shown to the user).
+     *
+     * @see CoreMessage#with(Object...)
+     */
+    public String text(CoreMessage message, Object... args) {
+        return render(message.with(args), requestLanguage(), 0);
+    }
+
     private String render(ValidationMessage message, SysLanguage language, int depth) {
         return message(message.getKey(), message.getText(), language, resolveArgs(message.getArgs(), language, depth));
     }
