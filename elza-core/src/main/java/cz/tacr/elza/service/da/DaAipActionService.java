@@ -200,7 +200,9 @@ public class DaAipActionService {
                 EnumSet.of(DaAipActionItemState.WAITING, DaAipActionItemState.RUNNING),
                 EnumSet.of(DaSyncQueueItem.QueueItemState.UPDATE,
                            DaSyncQueueItem.QueueItemState.IMPORT_NEW,
-                           DaSyncQueueItem.QueueItemState.EXPORT_NEW));
+                           DaSyncQueueItem.QueueItemState.DOWNLOAD_REQUESTED,
+                           DaSyncQueueItem.QueueItemState.EXPORT_NEW,
+                           DaSyncQueueItem.QueueItemState.EXPORT_SENT));
         if (orphaned.isEmpty()) {
             return 0;
         }

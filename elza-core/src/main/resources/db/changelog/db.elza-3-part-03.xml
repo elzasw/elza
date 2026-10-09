@@ -1330,4 +1330,15 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="20261009120000" author="ppy">
+        <!-- A batch the DA prepares or ingests no longer holds the queue: the item records the
+             batch (states DOWNLOAD_REQUESTED, EXPORT_SENT) and when it is to be taken again -
+             the next question about the batch, or the next attempt after a failure, with a
+             growing interval. Null = now. Survives a restart, so a batch is not lost. -->
+        <addColumn tableName="da_sync_queue_item">
+            <column name="batch_id" type="nvarchar(250)"/>
+            <column name="next_attempt_at" type="timestamp with time zone"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

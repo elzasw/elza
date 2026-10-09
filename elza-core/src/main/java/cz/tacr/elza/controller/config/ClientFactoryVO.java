@@ -2810,9 +2810,11 @@ public class ClientFactoryVO {
             case UPDATE -> { return QueueItemState.UPDATE; }
             case IMPORT_OK -> { return QueueItemState.IMPORT_OK; }
             case IMPORT_NEW -> { return QueueItemState.IMPORT_NEW; }
+            case DOWNLOAD_REQUESTED -> { return QueueItemState.DOWNLOAD_REQUESTED; }
             case EXPORT_ERROR -> { return QueueItemState.EXPORT_ERROR; }
             case EXPORT_OK -> { return QueueItemState.EXPORT_OK; }
             case EXPORT_NEW -> { return QueueItemState.EXPORT_NEW; }
+            case EXPORT_SENT -> { return QueueItemState.EXPORT_SENT; }
             default -> throw new BusinessException("Unrecognized queue item state", BaseCode.INVALID_STATE);
         }
     }

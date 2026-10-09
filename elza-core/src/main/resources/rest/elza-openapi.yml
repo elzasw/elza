@@ -2661,6 +2661,68 @@ paths:
               items:
                 type: integer
         description: Aip IDs
+  /aip/queue/retry-now:
+    post:
+      operationId: Aip_queueRetryNow
+      description: |-
+        Retry now: the waiting requests of the AIPs (downloads, exports, questions about a batch
+        the DA prepares) are taken on the next cycle of the queue, without the retry delay.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: integer
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aips
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: integer
+        description: Aip IDs
+  /aip/queue/withdraw:
+    post:
+      operationId: Aip_queueWithdraw
+      description: |-
+        Withdraws the requests of the AIPs the DA has not received yet (downloads not requested,
+        exports not sent). A request the DA already knows is left to finish.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: integer
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aips
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: integer
+        description: Aip IDs
   /aip/tree:
     post:
       operationId: Aip_tree
@@ -12182,9 +12244,11 @@ components:
       enum:
         - UPDATE
         - IMPORT_NEW
+        - DOWNLOAD_REQUESTED
         - IMPORT_OK
         - IMPORT_ERROR
         - EXPORT_NEW
+        - EXPORT_SENT
         - EXPORT_OK
         - EXPORT_ERROR
       description: Výčet stavů aktualizace AIPu

@@ -10,7 +10,6 @@ import cz.tacr.da.controller.vo.DownloadDownloadAips;
 import cz.tacr.da.controller.vo.DownloadDownloadStatus;
 import cz.tacr.da.controller.vo.IngestIngestResult;
 import cz.tacr.da.controller.vo.IngestIngestStatus;
-import cz.tacr.da.controller.vo.IngestPackageIngestSuccess;
 import cz.tacr.da.controller.vo.RequestState;
 import cz.tacr.da.controller.vo.UpdatedAips;
 import cz.tacr.da.controller.vo.UpdatedInfo;
@@ -162,6 +161,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.function.Supplier;
@@ -366,16 +366,16 @@ public class DaService {
      *
      * Requests still waiting for the AIP are withdrawn as well, whether ELZA knows the AIP or not: a
      * download would fetch the package again, or retry forever once the archive stops delivering it,
-     * and an export would send a change of a package that no longer exists. None of them is being
-     * carried out - the synchronization holds {@link DaCommunicationLock}, so a batch in flight was
-     * finished before it started.
+     * and an export would send a change of a package that no longer exists. A download the DA is
+     * preparing is withdrawn too - its batch is finished without it. An export the DA received is
+     * not: its result is still awaited and recorded.
      *
      * @param aip      null when ELZA does not know the AIP
      * @param aipState null when ELZA does not know the AIP or it is invalidated already
      */
     private void invalidateAip(String code, @Nullable DaAip aip, @Nullable DaAipState aipState,
                                ArrDigitalRepository digitalRepository) {
-        deactivateQueueItems(code, aip, digitalRepository, getQueueAllStates(), AIP_INVALIDATED);
+        deactivateQueueItems(code, aip, digitalRepository, getQueueWithdrawableStates(), AIP_INVALIDATED);
         if (aipState == null) {
             logger.info("AIP {} byl v DA CODE={} zneplatněn, v ELZA není aktivní, není co stahovat",
                         code, digitalRepository.getCode());
@@ -643,7 +643,8 @@ public class DaService {
      */
     private boolean isDownloadPending(DaAip aip, AipType requested) {
         DaSyncQueueItem pending = syncQueueItemRepository.findFirstByAipAndStateInAndActiveIsTrueOrderBySyncQueueItemIdDesc(aip,
-                List.of(DaSyncQueueItem.QueueItemState.IMPORT_NEW, DaSyncQueueItem.QueueItemState.UPDATE));
+                List.of(DaSyncQueueItem.QueueItemState.IMPORT_NEW, DaSyncQueueItem.QueueItemState.UPDATE,
+                        DaSyncQueueItem.QueueItemState.DOWNLOAD_REQUESTED));
         return pending != null && pending.getAipType() != null && rank(pending.getAipType()) >= rank(requested);
     }
 
@@ -1392,11 +1393,24 @@ public class DaService {
         return daoFileRepository.save(daoFile);
     }
 
+    /**
+     * The next batch of waiting items: due ones only, of one repository and one package form, and
+     * never of a repository that has a batch of the same direction in flight - one batch per
+     * direction at a time, so the DA is not asked for more than before.
+     *
+     * @param inFlightState the state of a batch in flight of this direction
+     */
     @Transactional
-    public List<DaSyncQueueItem> getNextItems(int pageSize, DaSyncQueueItem.QueueItemState... states) {
+    public List<DaSyncQueueItem> getNextItems(int pageSize, DaSyncQueueItem.QueueItemState inFlightState,
+                                              DaSyncQueueItem.QueueItemState... states) {
         Pageable pageable = PageRequest.of(0, pageSize);
 
-        Iterable<DaSyncQueueItem> syncQueueItemIterable = syncQueueItemRepository.findByStates(Arrays.asList(states), pageable);
+        List<Integer> busy = new ArrayList<>(syncQueueItemRepository.findRepositoriesWithState(inFlightState));
+        if (busy.isEmpty()) {
+            busy.add(-1); // NOT IN () is not valid SQL
+        }
+        Iterable<DaSyncQueueItem> syncQueueItemIterable = syncQueueItemRepository.findDueByStates(Arrays.asList(states),
+                OffsetDateTime.now(), busy, pageable);
         List<DaSyncQueueItem> syncQueueItemList = new ArrayList<>();
 
         if (syncQueueItemIterable.iterator().hasNext()) {
@@ -1413,6 +1427,161 @@ public class DaService {
         }
 
         return syncQueueItemList;
+    }
+
+    /**
+     * The active items of the batch in flight whose next question about it is due, or an empty
+     * list. Items of the batch that were withdrawn meanwhile are left out - the batch is finished
+     * without them.
+     */
+    @Transactional
+    public List<DaSyncQueueItem> getDueBatch(DaSyncQueueItem.QueueItemState inFlightState) {
+        List<DaSyncQueueItem> due = syncQueueItemRepository.findDueInFlight(inFlightState, OffsetDateTime.now(),
+                PageRequest.of(0, 1)).getContent();
+        if (due.isEmpty()) {
+            return List.of();
+        }
+        DaSyncQueueItem first = due.get(0);
+        if (first.getBatchId() == null) {
+            return List.of(first);
+        }
+        List<DaSyncQueueItem> batch = syncQueueItemRepository
+                .findByBatchIdAndStateAndActiveIsTrueOrderBySyncQueueItemId(first.getBatchId(), inFlightState);
+        // initialize what the processors read outside of this transaction
+        batch.forEach(item -> item.getDigitalRepository().getExternalSystemId());
+        return batch;
+    }
+
+    /**
+     * @return when the processor of the given states has to look at the queue again at the
+     *         latest, or null when no item waits for a time
+     */
+    @Transactional
+    public OffsetDateTime getEarliestAttempt(Collection<DaSyncQueueItem.QueueItemState> states) {
+        return syncQueueItemRepository.findEarliestAttempt(states);
+    }
+
+    /**
+     * The items were handed over to the DA as one batch: requested for download or sent for
+     * ingest. The first question about the batch is due after the status interval.
+     */
+    @Transactional
+    public void markBatch(Collection<DaSyncQueueItem> items, DaSyncQueueItem.QueueItemState state, String batchId,
+                          ArrDigitalRepository digitalRepository) {
+        OffsetDateTime now = OffsetDateTime.now();
+        for (DaSyncQueueItem item : items) {
+            item.setState(state);
+            item.setBatchId(batchId);
+            item.setDate(now);
+            item.setStateMessage(null);
+            item.setNextAttemptAt(now.plus(Duration.ofMillis(statusPollMillis(digitalRepository))));
+        }
+        syncQueueItemRepository.saveAll(items);
+    }
+
+    /** The DA still works on the batch; the next question is due after the status interval. */
+    @Transactional
+    public void scheduleNextCheck(Collection<DaSyncQueueItem> items, ArrDigitalRepository digitalRepository) {
+        OffsetDateTime next = OffsetDateTime.now().plus(Duration.ofMillis(statusPollMillis(digitalRepository)));
+        for (DaSyncQueueItem item : items) {
+            item.setNextAttemptAt(next);
+        }
+        syncQueueItemRepository.saveAll(items);
+    }
+
+    /**
+     * How long a processor with nothing to do sleeps: until the earliest waiting item is due,
+     * at most the given time.
+     */
+    static long idleMillis(@Nullable OffsetDateTime earliestAttempt, long max) {
+        if (earliestAttempt == null) {
+            return max;
+        }
+        long untilDue = Duration.between(OffsetDateTime.now(), earliestAttempt).toMillis();
+        return Math.max(50, Math.min(untilDue, max));
+    }
+
+    /**
+     * Delay before the next attempt after the given number of failures: the status interval,
+     * doubled with every failure, at most {@link #MAX_RETRY_DELAY}. A DA that is down for a while
+     * is not flooded, and "Zkusit znovu teď" takes the item at once.
+     */
+    static Duration retryDelay(ArrDigitalRepository digitalRepository, int failures) {
+        long base = statusPollMillis(digitalRepository);
+        int doublings = Math.min(Math.max(failures - 1, 0), 20);
+        return Duration.ofMillis(Math.min(base << doublings, MAX_RETRY_DELAY.toMillis()));
+    }
+
+    /** The repository of a queue item read in an earlier transaction, with its settings loaded. */
+    private ArrDigitalRepository repositoryOf(DaSyncQueueItem item) {
+        return externalSystemService.getDigitalRepository(item.getDigitalRepository().getExternalSystemId());
+    }
+
+    /**
+     * A transient failure of an exchange about the items: they keep their state and are tried
+     * again later, after a longer delay with every failure. The description says what failed;
+     * the number of attempts is added.
+     */
+    @Transactional
+    public void scheduleRetry(Collection<DaSyncQueueItem> items, String description) {
+        OffsetDateTime now = OffsetDateTime.now();
+        for (DaSyncQueueItem item : items) {
+            int attempts = (item.getAttemptCount() == null ? 0 : item.getAttemptCount()) + 1;
+            item.setAttemptCount(attempts);
+            item.setDate(now);
+            item.setNextAttemptAt(now.plus(retryDelay(repositoryOf(item), attempts)));
+            item.setStateMessage(StringUtils.abbreviate(description + " (pokusů: " + attempts + ")",
+                                                        STATE_MESSAGE_MAX_LENGTH));
+        }
+        syncQueueItemRepository.saveAll(items);
+    }
+
+    /**
+     * The DA gave the requested download batch up (the status answered 403/404, which the DA API
+     * defines as a permanent failure of the request). The package is still there, so the items
+     * return to waiting and a new batch is requested later - a download is never given up.
+     */
+    @Transactional
+    public void returnToPending(List<DaSyncQueueItem> items, Exception failure) {
+        for (DaSyncQueueItem item : items) {
+            boolean known = item.getAip() != null
+                    && aipStateRepository.findByDaAipAndDeleteChangeIsNull(item.getAip()) != null;
+            item.setState(known ? DaSyncQueueItem.QueueItemState.UPDATE : DaSyncQueueItem.QueueItemState.IMPORT_NEW);
+            item.setBatchId(null);
+        }
+        recordDownloadFailure(items, failure);
+    }
+
+    /**
+     * "Zkusit znovu teď": the waiting requests of the AIPs are taken on the next cycle of the
+     * queue, without the retry delay - a question about a batch in flight as well.
+     *
+     * @return the number of requests taken now
+     */
+    @Transactional
+    public int retryNow(Collection<Integer> aipIds) {
+        List<DaSyncQueueItem> items = syncQueueItemRepository.findActiveByAipsAndStates(aipIds, WAITING_STATES);
+        for (DaSyncQueueItem item : items) {
+            item.setNextAttemptAt(null);
+        }
+        syncQueueItemRepository.saveAll(items);
+        return items.size();
+    }
+
+    /**
+     * Withdraws the requests of the AIPs the DA has not received yet. A download already requested
+     * and an export already sent are left to finish - the DA works on them.
+     *
+     * @return the number of withdrawn requests
+     */
+    @Transactional
+    public int withdrawRequests(Collection<Integer> aipIds) {
+        List<DaSyncQueueItem> items = syncQueueItemRepository.findActiveByAipsAndStates(aipIds, UNDELIVERED_STATES);
+        for (DaSyncQueueItem item : items) {
+            deactivateQueueItems(item.getCode(), item.getAip(), item.getDigitalRepository(), List.of(item.getState()),
+                                 "Požadavek zrušil uživatel.");
+        }
+        return items.size();
     }
 
     @Transactional
@@ -1449,6 +1618,7 @@ public class DaService {
                 syncQueueItem.setState(state);
                 syncQueueItem.setStateMessage(StringUtils.abbreviate(stateMessage, STATE_MESSAGE_MAX_LENGTH));
                 syncQueueItem.setDate(now);
+                syncQueueItem.setNextAttemptAt(null);
             }
             syncQueueItemRepository.saveAll(syncQueueItemList);
         }
@@ -1457,9 +1627,9 @@ public class DaService {
     /**
      * Records a failed download of the package of the given queue items. Nothing of the package
      * arrived, so unlike a failure of the processing the items are not closed: they stay in
-     * their pending state, sent behind their peers by the raised attempt count, and are retried
-     * once the fresher items are served - nothing gives a download up, the DA holds the package
-     * and every retry may succeed. The failure is described on each item and as a problem of
+     * their state, sent behind their peers by the raised attempt count, and are retried after a
+     * delay growing with the failures ({@link #retryDelay}) - nothing gives a download up, the
+     * DA holds the package and every retry may succeed. The failure is described on each item and as a problem of
      * its AIP - an AIP the DA announced but ELZA could never download is created from what the
      * change carries, so the user finds it in the AIP list instead of only in the queue.
      */
@@ -1471,6 +1641,7 @@ public class DaService {
             int attempts = (syncQueueItem.getAttemptCount() == null ? 0 : syncQueueItem.getAttemptCount()) + 1;
             syncQueueItem.setAttemptCount(attempts);
             syncQueueItem.setDate(now);
+            syncQueueItem.setNextAttemptAt(now.plus(retryDelay(repositoryOf(syncQueueItem), attempts)));
             syncQueueItem.setStateMessage(StringUtils.abbreviate(
                     problem.description() + " (pokusů: " + attempts + ")", STATE_MESSAGE_MAX_LENGTH));
             recordAipProblem(syncQueueItem, problem);
@@ -1590,6 +1761,12 @@ public class DaService {
             Map<DaSyncQueueItem, AipProblem> failedItems = new LinkedHashMap<>();
 
             for (File aipDir : aipDirSet) {
+                if (!syncQueueItemMap.containsKey(aipDir.getName())) {
+                    // withdrawn while the DA prepared the batch (invalidated, superseded): its
+                    // package must not bring the AIP back
+                    logger.info("Balíček {} dávky už není požadován, přeskočen", aipDir.getName());
+                    continue;
+                }
                 DaAipState aipState;
                 try {
                     Path packageInfo = AipPackageFiles.packageInfo(aipDir.toPath());
@@ -1822,13 +1999,12 @@ public class DaService {
     private List<DaSyncQueueItem.QueueItemState> getQueueItemStates(DaSyncQueueItem.QueueItemState queueItemState) {
         List<DaSyncQueueItem.QueueItemState> queueItemStates = new ArrayList<>();
         switch (queueItemState) {
-            case IMPORT_NEW, IMPORT_OK, IMPORT_ERROR, UPDATE:
-                queueItemStates.add(DaSyncQueueItem.QueueItemState.IMPORT_NEW);
-                queueItemStates.add(DaSyncQueueItem.QueueItemState.IMPORT_OK);
-                queueItemStates.add(DaSyncQueueItem.QueueItemState.IMPORT_ERROR);
-                queueItemStates.add(DaSyncQueueItem.QueueItemState.UPDATE);
+            case IMPORT_NEW, DOWNLOAD_REQUESTED, IMPORT_OK, IMPORT_ERROR, UPDATE:
+                // a download in flight is superseded as well: the batch is finished without it
+                queueItemStates.addAll(getQueueImportStates());
                 break;
-            case EXPORT_NEW, EXPORT_OK, EXPORT_ERROR:
+            case EXPORT_NEW, EXPORT_SENT, EXPORT_OK, EXPORT_ERROR:
+                // an export the DA received is never withdrawn, its result is still awaited
                 queueItemStates.add(DaSyncQueueItem.QueueItemState.EXPORT_NEW);
                 queueItemStates.add(DaSyncQueueItem.QueueItemState.EXPORT_OK);
                 queueItemStates.add(DaSyncQueueItem.QueueItemState.EXPORT_ERROR);
@@ -1837,10 +2013,28 @@ public class DaService {
         return queueItemStates;
     }
 
+    /** Requests the DA has not received yet - the only ones a user may withdraw. */
+    private static final List<DaSyncQueueItem.QueueItemState> UNDELIVERED_STATES = List.of(
+            DaSyncQueueItem.QueueItemState.IMPORT_NEW,
+            DaSyncQueueItem.QueueItemState.UPDATE,
+            DaSyncQueueItem.QueueItemState.EXPORT_NEW);
+
+    /** Requests waiting for the queue, delivered to the DA or not. */
+    private static final List<DaSyncQueueItem.QueueItemState> WAITING_STATES = List.of(
+            DaSyncQueueItem.QueueItemState.IMPORT_NEW,
+            DaSyncQueueItem.QueueItemState.UPDATE,
+            DaSyncQueueItem.QueueItemState.DOWNLOAD_REQUESTED,
+            DaSyncQueueItem.QueueItemState.EXPORT_NEW,
+            DaSyncQueueItem.QueueItemState.EXPORT_SENT);
+
+    /** The longest pause between two attempts after failures. */
+    static final Duration MAX_RETRY_DELAY = Duration.ofMinutes(5);
+
     public static Collection<DaSyncQueueItem.QueueItemState> getQueueImportStates() {
         List<DaSyncQueueItem.QueueItemState> states = new ArrayList<>();
         states.add(DaSyncQueueItem.QueueItemState.UPDATE);
         states.add(DaSyncQueueItem.QueueItemState.IMPORT_NEW);
+        states.add(DaSyncQueueItem.QueueItemState.DOWNLOAD_REQUESTED);
         states.add(DaSyncQueueItem.QueueItemState.IMPORT_OK);
         states.add(DaSyncQueueItem.QueueItemState.IMPORT_ERROR);
         return states;
@@ -1852,9 +2046,17 @@ public class DaService {
         return states;
     }
 
+    /** Every state except the export the DA received - that one is awaited whatever happens. */
+    private static Collection<DaSyncQueueItem.QueueItemState> getQueueWithdrawableStates() {
+        List<DaSyncQueueItem.QueueItemState> states = new ArrayList<>(getQueueAllStates());
+        states.remove(DaSyncQueueItem.QueueItemState.EXPORT_SENT);
+        return states;
+    }
+
     public static Collection<DaSyncQueueItem.QueueItemState> getQueueExportStates() {
         List<DaSyncQueueItem.QueueItemState> states = new ArrayList<>();
         states.add(DaSyncQueueItem.QueueItemState.EXPORT_NEW);
+        states.add(DaSyncQueueItem.QueueItemState.EXPORT_SENT);
         states.add(DaSyncQueueItem.QueueItemState.EXPORT_OK);
         states.add(DaSyncQueueItem.QueueItemState.EXPORT_ERROR);
         return states;
@@ -1921,16 +2123,9 @@ public class DaService {
         return status.getState() == RequestState.FINISHED;
     }
 
-    public List<String> ingestResult(ArrDigitalRepository digitalRepository, String batchId) {
-        IngestIngestResult result = daConnector.ingestResult(digitalRepository, batchId);
-
-        if (result == null) {
-            return Collections.emptyList();
-        }
-
-        return result.getAccepted().stream()
-                .map(IngestPackageIngestSuccess::getAipId)
-                .collect(Collectors.toList());
+    @Nullable
+    public IngestIngestResult ingestResult(ArrDigitalRepository digitalRepository, String batchId) {
+        return daConnector.ingestResult(digitalRepository, batchId);
     }
 
     public DaUploadRequestImpl createDaUploadRequest(Path exportDir) {

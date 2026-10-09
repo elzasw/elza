@@ -221,10 +221,12 @@ export const daoTypeMessages = defineMessages({
 export const queueStateMessages = defineMessages({
     [QueueItemState.ImportError]: { id: "aip.queueState.IMPORT_ERROR", defaultMessage: "Chyba stažení" },
     [QueueItemState.ImportNew]:   { id: "aip.queueState.IMPORT_NEW",   defaultMessage: "Ke stažení" },
+    [QueueItemState.DownloadRequested]: { id: "aip.queueState.DOWNLOAD_REQUESTED", defaultMessage: "DA připravuje ke stažení" },
     [QueueItemState.ImportOk]:    { id: "aip.queueState.IMPORT_OK",    defaultMessage: "Aktualizováno/Staženo" },
     [QueueItemState.Update]:      { id: "aip.queueState.UPDATE",       defaultMessage: "K aktualizaci" },
     [QueueItemState.ExportError]: { id: "aip.queueState.EXPORT_ERROR", defaultMessage: "Chyba exportu" },
     [QueueItemState.ExportNew]:   { id: "aip.queueState.EXPORT_NEW",   defaultMessage: "K exportu" },
+    [QueueItemState.ExportSent]:  { id: "aip.queueState.EXPORT_SENT",  defaultMessage: "Odesláno, DA zpracovává" },
     [QueueItemState.ExportOk]:    { id: "aip.queueState.EXPORT_OK",    defaultMessage: "Exportováno" },
 });
 

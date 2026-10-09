@@ -15,6 +15,19 @@ between the installed and the new version; see :doc:`/03-upgrade`.
 Upcoming version
 ================
 
+* Change: ELZA DA - a batch the digital archive prepares for download or
+  processes after an export no longer stops the other communication with
+  it. The batch waits in the new states *DA připravuje ke stažení* and
+  *Odesláno, DA zpracovává*, and ELZA asks about it once per *Batch status
+  check interval*; meanwhile the synchronization, downloads and exports go
+  on (one batch per direction and repository at a time). A batch in progress
+  survives a restart of ELZA. Only the digital archive ends a batch: with
+  its result, where each refused package shows the archive's reason and an
+  accepted one its new version, or with a permanent failure (HTTP 403/404).
+  A failure to reach the archive is retried with a growing interval (from
+  the status interval up to 5 minutes); a failed download is never given up.
+  The REST API offers "retry now" and the withdrawal of requests the archive
+  has not received yet (``/aip/queue/retry-now``, ``/aip/queue/withdraw``).
 * Fix: ELZA DA - the files of a package are found where its root METS puts
   them, not by their names. A package whose PREMIS file has another name
   (``premis.xml``, ``RETENTION-METADATA.xml``) is no longer refused with
