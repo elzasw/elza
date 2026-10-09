@@ -2566,7 +2566,7 @@ public class DaService {
         if (CollectionUtils.isNotEmpty(partDaoLinks)) {
             for (ArrDaLink partDaoLink : partDaoLinks) {
                 Integer aipId = partDaoLink.getAip().getAipId();
-                Map<Integer, List<DaDao>> daoMap = aipDaoMap.get(aipId);
+                Map<Integer, List<DaDao>> daoMap = aipDaoMap.getOrDefault(aipId, Map.of());
                 Map<Integer, ArrDaLink> daoLinkMap = componentDaoLinks.stream()
                         .filter(d -> d.getAip().getAipId().equals(aipId))
                         .collect(Collectors.toMap(d -> d.getDaDao().getDaoId(), d -> d));
@@ -2578,11 +2578,12 @@ public class DaService {
         if (CollectionUtils.isNotEmpty(aipDaoLinks)) {
             for (ArrDaLink aipDaoLink : aipDaoLinks) {
                 Integer aipId = aipDaoLink.getAip().getAipId();
-                Map<Integer, List<DaDao>> daoMap = aipDaoMap.get(aipId);
+                Map<Integer, List<DaDao>> daoMap = aipDaoMap.getOrDefault(aipId, Map.of());
                 Map<Integer, ArrDaLink> daoLinkMap = componentDaoLinks.stream()
                         .filter(d -> d.getAip().getAipId().equals(aipId))
                         .collect(Collectors.toMap(d -> d.getDaDao().getDaoId(), d -> d));
-                List<DaDao> parentDaoList = aipParentDaoMap.get(aipId);
+                // an AIP linked before its metadata arrived has no structure yet, only the link itself
+                List<DaDao> parentDaoList = aipParentDaoMap.getOrDefault(aipId, List.of());
 
                 daoLinkList.add(createAipDaoLink(aipId, aipDaoLink, daoLinkMap, daoMap, parentDaoList));
             }

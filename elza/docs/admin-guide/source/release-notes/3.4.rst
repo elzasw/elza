@@ -15,6 +15,9 @@ between the installed and the new version; see :doc:`/03-upgrade`.
 Upcoming version
 ================
 
+* Fix: ELZA DA - a description unit with an attached AIP whose metadata
+  were not downloaded yet could not be opened (``NullPointerException`` on
+  ``parentDaoList``); it now shows the link of the AIP.
 * New: Package management - the administration lists the packages of
   :file:`dpkg/` that are not loaded, with what the next start does with
   each of them, and lets the administrator mark a package for the import at
