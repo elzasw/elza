@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<translations lang="en">
+    <t type="MESSAGE" code="ADDON_TEST/ADT_001" field="text">The addon stage is missing (rule ADT_001).</t>
+</translations>

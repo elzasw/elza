@@ -13,6 +13,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -39,7 +40,11 @@ import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.PackageTexts;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.data.ValidationMessage;
+import cz.tacr.elza.domain.ArrNodeConformityMissing;
+import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.dataexchange.input.DEImportParams;
 import cz.tacr.elza.dataexchange.input.DEImportService;
 import cz.tacr.elza.domain.ApScope;
@@ -131,6 +136,8 @@ public class AddonPackageTest {
 
     @Autowired
     private HelperTestService helperTestService;
+    @Autowired
+    private PackageTexts packageTexts;
     @Autowired
     private StaticDataService staticDataService;
     @Autowired
@@ -322,14 +329,36 @@ public class AddonPackageTest {
                                 "base decision must stand where the addon is silent");
 
                 ArrLevel folderLevel = levelRepository.findByNodeAndDeleteChangeIsNull(folder);
-                DataValidationResult missing = rulesExecutor.executeDescItemValidationRules(folderLevel, version)
-                        .stream()
+                List<DataValidationResult> folderResults = rulesExecutor.executeDescItemValidationRules(folderLevel, version);
+                DataValidationResult missing = folderResults.stream()
                         .filter(r -> ADDON_ITEM_TYPE.equals(r.getTypeCode()))
                         .findFirst()
                         .orElseThrow(() -> new AssertionError("addon validation rule did not fire on the folder"));
                 assertEquals(ValidationResultType.MISSING, missing.getResultType());
-                assertEquals(ADDON_MISSING_MESSAGE, missing.getMessage());
                 assertEquals("ZP2015_POL_BASIC", missing.getPolicyTypeCode());
+                // the message of the rule is stored with its key and rendered in the language of the reader
+                ValidationMessage message = ValidationMessage.decode(missing.getMessage());
+                assertNotNull(message, missing.getMessage());
+                assertEquals("ADDON_TEST/ADT_001", message.getKey());
+                assertEquals(ADDON_MISSING_MESSAGE, message.getText());
+                assertEquals("The addon stage is missing (rule ADT_001).", packageTexts.render(missing.getMessage(), language("en")));
+                assertEquals(ADDON_MISSING_MESSAGE, packageTexts.render(missing.getMessage(), language("cs")));
+
+                // the stored conformity rows: the rule's message with its key, and a message of the
+                // core (a required item of ZP2015 not filled in) naming the item type in the language
+                List<ArrNodeConformityMissing> stored = new ArrayList<>();
+                stored.addAll(ruleService.setConformityInfo(folderLevel.getLevelId(), version.getFundVersionId()).getMissingList());
+                stored.addAll(ruleService.setConformityInfo(levelRepository.findByNodeAndDeleteChangeIsNull(root).getLevelId(),
+                                                            version.getFundVersionId()).getMissingList());
+                assertTrue(stored.stream().anyMatch(m -> "ADDON_TEST/ADT_001".equals(keyOf(m.getDescription()))),
+                           "the addon message must be stored with its key");
+                ArrNodeConformityMissing required = stored.stream()
+                        .filter(m -> "CORE/ARR_MISSING_ITEM".equals(keyOf(m.getDescription())))
+                        .findFirst()
+                        .orElseThrow(() -> new AssertionError("no required item of ZP2015 is missing"));
+                String itemName = required.getItemType().getName();
+                assertEquals("The item " + itemName + " must be filled in.", packageTexts.render(required.getDescription(), language("en")));
+                assertEquals("Prvek " + itemName + " musí být vyplněn.", packageTexts.render(required.getDescription(), language("cs")));
 
                 ArrLevel rootLevel = levelRepository.findByNodeAndDeleteChangeIsNull(root);
                 assertTrue(rulesExecutor.executeDescItemValidationRules(rootLevel, version).stream()
@@ -477,6 +506,18 @@ public class AddonPackageTest {
 
     private static String outputFilterCode(SettingOutputDefaults defaults) {
         return defaults != null ? defaults.outputFilterCode() : null;
+    }
+
+    /** Key of a stored validation message, null for a plain text. */
+    private static String keyOf(String description) {
+        ValidationMessage message = ValidationMessage.decode(description);
+        return message != null ? message.getKey() : null;
+    }
+
+    private SysLanguage language(String tag) {
+        SysLanguage language = staticDataService.getData().getSysLanguageByTag(tag);
+        assertNotNull(language, tag);
+        return language;
     }
 
     private void tx(Runnable body) {

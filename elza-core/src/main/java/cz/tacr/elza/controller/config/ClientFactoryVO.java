@@ -1626,7 +1626,15 @@ public class ClientFactoryVO {
      */
     public NodeConformityVO createNodeConformity(final ArrNodeConformityExt nodeConformity) {
         Assert.notNull(nodeConformity, "Musí být vyplněno");
-        return NodeConformityVO.newInstance(nodeConformity);
+        NodeConformityVO result = NodeConformityVO.newInstance(nodeConformity);
+        // the descriptions are stored language-neutral, see ValidationMessage
+        if (result.getErrorList() != null) {
+            result.getErrorList().forEach(e -> e.setDescription(packageTexts.render(e.getDescription())));
+        }
+        if (result.getMissingList() != null) {
+            result.getMissingList().forEach(m -> m.setDescription(packageTexts.render(m.getDescription())));
+        }
+        return result;
     }
 
     /**

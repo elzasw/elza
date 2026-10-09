@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Czech texts of the messages of the core (cz.tacr.elza.core.data.CoreMessage), in the format
+     of the translation files of a rules package. A rules package overrides a text with a row of
+     the same code in its own translations/cs.xml. Patterns: java.text.MessageFormat, an
+     apostrophe is written ''. -->
+<translations lang="cs">
+    <!-- entity validation: {0} part type, {1} item type code, {2} item type -->
+    <t type="MESSAGE" code="CORE/AP_MISSING_REQUIRED_ITEM" field="text">V části {0} chybí povinný typ prvku {1} - {2}</t>
+    <t type="MESSAGE" code="CORE/AP_IMPOSSIBLE_ITEM" field="text">V části {0} je zakázaný prvek typu {1} - {2}</t>
+    <t type="MESSAGE" code="CORE/AP_ITEM_NOT_REPEATABLE" field="text">V části {0} je prvek {1} - {2} vícekrát.</t>
+    <!-- {0} part type, {1} specification code, {2} specification -->
+    <t type="MESSAGE" code="CORE/AP_IMPOSSIBLE_SPEC" field="text">V části {0} je zakázaná specifikace prvku {1} - {2}</t>
+    <t type="MESSAGE" code="CORE/AP_RELATION_NOT_REPEATABLE" field="text">V části {0} je vztah {1} - {2} vícekrát.</t>
+    <t type="MESSAGE" code="CORE/AP_IDENT_NOT_REPEATABLE" field="text">V části {0} je externí identifikátor {1} - {2} vícekrát.</t>
+    <!-- {0} specification code, {1} specification -->
+    <t type="MESSAGE" code="CORE/AP_ENTITY_RELATION_NOT_REPEATABLE" field="text">V entitě je vztah {0} - {1} vícekrát.</t>
+    <!-- {0} part type, {1} index type, {2} index value -->
+    <t type="MESSAGE" code="CORE/AP_DUPLICATE_INDEX" field="text">V části {0} je duplicitní index typu {1} hodnoty {2}</t>
+    <!-- {0} part type -->
+    <t type="MESSAGE" code="CORE/AP_INVALID_ENTITY_REF" field="text">V části {0} entita odkazuje na neplatnou entitu</t>
+    <t type="MESSAGE" code="CORE/AP_DUPLICATE_KEY_VALUE" field="text">Duplicitní key value přístupového bodu.</t>
+
+    <!-- fund validation: {0} item type -->
+    <t type="MESSAGE" code="CORE/ARR_MISSING_ITEM" field="text">Prvek {0} musí být vyplněn.</t>
+    <t type="MESSAGE" code="CORE/ARR_ITEM_IMPOSSIBLE" field="text">Prvek {0} není možné evidovat u této jednotky archivního popisu.</t>
+    <t type="MESSAGE" code="CORE/ARR_ITEM_NOT_ALLOWED" field="text">Prvek {0} není možný u této jednotky popisu.</t>
+    <t type="MESSAGE" code="CORE/ARR_ITEM_NOT_REPEATABLE" field="text">Atribut {0} není opakovatelný.</t>
+    <!-- {0} item type, {1} specification -->
+    <t type="MESSAGE" code="CORE/ARR_MISSING_SPEC" field="text">Prvek {0} se specifikací {1} musí být vyplněn.</t>
+    <t type="MESSAGE" code="CORE/ARR_SPEC_IMPOSSIBLE" field="text">Prvek {0} se specifikací {1} není možné evidovat u této jednotky archivního popisu.</t>
+    <!-- {0} specification -->
+    <t type="MESSAGE" code="CORE/ARR_SPEC_NOT_REPEATABLE" field="text">Atribut {0} není opakovatelný.</t>
+    <!-- {0} item type, {1} the value -->
+    <t type="MESSAGE" code="CORE/ARR_UNDEFINED_NOT_ALLOWED" field="text">U prvku popisu {0} není možné nastavit hodnotu „{1}“.</t>
+    <!-- {0} item type, {1} id of the entity -->
+    <t type="MESSAGE" code="CORE/ARR_DELETED_ENTITY_REF" field="text">Prvek {0} odkazuje na zneplatněnou entitu (id: {1}).</t>
+
+    <!-- terms used as arguments -->
+    <t type="MESSAGE" code="CORE/UNDEFINED_VALUE" field="text">výjimka</t>
+</translations>

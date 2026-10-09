@@ -52,11 +52,14 @@ import cz.tacr.elza.controller.vo.ap.item.ApItemTextVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemUnitdateVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemUriRefVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
+import cz.tacr.elza.core.data.CoreMessage;
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.PackageTexts;
 import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.RuleSetExtension;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.data.ValidationMessage;
 import cz.tacr.elza.core.rules.ItemTypeExtBuilder;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
@@ -184,6 +187,8 @@ public class RuleService {
     private EntityManager entityManager;
     @Autowired
 	private StaticDataService staticDataService;
+    @Autowired
+    private PackageTexts packageTexts;
 
     @Autowired
     private ArrangementInternalService arrangementInternalService;
@@ -454,18 +459,32 @@ public class RuleService {
         return result;
     }
 
+    /** Length of {@code arr_node_conformity_error.description} and {@code arr_node_conformity_missing.description}. */
+    private static final int CONFORMITY_DESCRIPTION_LENGTH = 1000;
+
+    /**
+     * Description stored in a conformity row: the message of the validation (an encoded
+     * {@link ValidationMessage} or a plain text), the source text of the message when the encoded
+     * form does not fit the column.
+     */
+    private static String conformityDescription(String message) {
+        ValidationMessage validationMessage = ValidationMessage.decode(message);
+        return validationMessage != null ? validationMessage.storable(CONFORMITY_DESCRIPTION_LENGTH) : message;
+    }
+
     private ArrNodeConformityError extractOrCreateConfError(List<ArrNodeConformityError> confPrevErrors,
                                                    DataValidationResult validationResult,
                                                    ArrNodeConformity conformityInfo) {
         Integer policyTypeId = validationResult.getPolicyType()!=null?validationResult.getPolicyType().getPolicyTypeId():null;
         Integer descItemId = validationResult.getDescItem()!=null?validationResult.getDescItem().getItemId():null;
+        String description = conformityDescription(validationResult.getMessage());
 
         for (int i = 0; i < confPrevErrors.size(); i++) {
             ArrNodeConformityError error = confPrevErrors.get(i);
             // compare existing DB object
             if (Objects.equals(policyTypeId, error.getPolicyTypeId()) &&
                     Objects.equals(descItemId, error.getDescItemId()) &&
-                    Objects.equals(validationResult.getMessage(), error.getDescription())) {
+                    Objects.equals(description, error.getDescription())) {
                 confPrevErrors.remove(i);
                 return error;
             }
@@ -475,7 +494,7 @@ public class RuleService {
         ArrNodeConformityError error = new ArrNodeConformityError();
         error.setNodeConformity(conformityInfo);
         error.setDescItem(validationResult.getDescItem());
-        error.setDescription(validationResult.getMessage());
+        error.setDescription(description);
         error.setPolicyType(validationResult.getPolicyType());
         return nodeConformityErrorRepository.save(error);
     }
@@ -486,6 +505,7 @@ public class RuleService {
         Integer policyTypeId = validationResult.getPolicyType()!=null?validationResult.getPolicyType().getPolicyTypeId():null;
         Integer itemTypeId = validationResult.getType() != null ? validationResult.getType().getItemTypeId() : null;
         Integer itemSpecId = validationResult.getSpec() != null ? validationResult.getSpec().getItemSpecId() : null;
+        String description = conformityDescription(validationResult.getMessage());
 
         for(int i=0; i<confPrevMissing.size(); i++) {
             ArrNodeConformityMissing missing = confPrevMissing.get(i);
@@ -493,7 +513,7 @@ public class RuleService {
             if (Objects.equals(policyTypeId, missing.getPolicyTypeId()) &&
                     Objects.equals(itemTypeId, missing.getItemTypeId()) &&
                     Objects.equals(itemSpecId, missing.getItemSpecId()) &&
-                    Objects.equals(validationResult.getMessage(), missing.getDescription())) {
+                    Objects.equals(description, missing.getDescription())) {
                 confPrevMissing.remove(i);
                 return missing;
             }
@@ -504,7 +524,7 @@ public class RuleService {
         missing.setNodeConformity(conformityInfo);
         missing.setItemType(validationResult.getType());
         missing.setItemSpec(validationResult.getSpec());
-        missing.setDescription(validationResult.getMessage());
+        missing.setDescription(description);
         missing.setPolicyType(validationResult.getPolicyType());
         return nodeConformityMissingRepository.save(missing);
     }
@@ -1515,7 +1535,8 @@ public class RuleService {
                             for (ApState state : stateList) {
                                 if (state.getDeleteChange() != null) {
                                     PartValidationIssues partValidationIssues = getPartValidationIssues(apValidationIssues, part.getId());
-                                    partValidationIssues.addErrorsItem("V části typu " + part.getType().value() + " entita odkazuje na neplatnou entitu");
+                                    partValidationIssues.addErrorsItem(CoreMessage.AP_INVALID_ENTITY_REF.with(
+                                            ValidationMessage.partType(part.getType().value())).encode());
                                 }
                             }
                         }
@@ -1534,9 +1555,9 @@ public class RuleService {
                     String key = parentId + ":" + index.getIndexType() + ":" + index.getValue();
                     if (!index.isRepeatable() && indexCount.get(key) > 1) {
                         PartValidationIssues partValidationIssues = getPartValidationIssues(apValidationIssues, index.getPart().getId());
-                        partValidationIssues.addErrorsItem("V části typu " + index.getPart().getType().value()
-                                + " je duplicitní index typu "
-                                + index.getIndexType() + " hodnoty " + index.getValue());
+                        partValidationIssues.addErrorsItem(CoreMessage.AP_DUPLICATE_INDEX.with(
+                                ValidationMessage.partType(index.getPart().getType().value()),
+                                index.getIndexType(), index.getValue()).encode());
                     }
                 }
             }
@@ -1567,6 +1588,17 @@ public class RuleService {
         return errors;
     }
 
+    /**
+     * Argument of a core message naming the part of the validated items; the part being created
+     * when the items are those of a form.
+     */
+    private static Object partTypeArg(final ModelAvailable availableResult, final Part part) {
+        Part validated = part != null ? part : availableResult.getPart();
+        return validated != null && validated.getType() != null
+                ? ValidationMessage.partType(validated.getType().value())
+                : "";
+    }
+
     private void validateRequiredItems(final ModelAvailable availableResult,
                                        final List<String> errors,
                                        final Part part) {
@@ -1574,9 +1606,8 @@ public class RuleService {
             if (itemType.getRequiredType().equals(RequiredType.REQUIRED)) {
                 AbstractItem item = availableResult.findItem(itemType.getItemType());
                 if (item == null) {
-                    String partType = part != null ? " typu " + part.getType().value() : "";
-                    errors.add("V části" + partType + " chybí povinný typ prvku "
-                            + itemType.getCode() + "-" + itemType.getItemType().getEntity().getName());
+                    errors.add(CoreMessage.AP_MISSING_REQUIRED_ITEM.with( partTypeArg(availableResult, part),
+                            itemType.getCode(), ValidationMessage.itemType(itemType.getCode())).encode());
                 }
             }
         }
@@ -1588,17 +1619,16 @@ public class RuleService {
         for (AbstractItem item : availableResult.getItems()) {
             ItemType itemType = availableResult.getItemType(item);
             if (itemType.getRequiredType().equals(RequiredType.IMPOSSIBLE)) {
-                String partType = part != null ? " typu " + part.getType().value() : "";
-                errors.add("V části" + partType + " je zakázaný prvek typu " + itemType.getCode() + "-" + itemType.getItemType().getEntity().getName());
+                errors.add(CoreMessage.AP_IMPOSSIBLE_ITEM.with( partTypeArg(availableResult, part),
+                        itemType.getCode(), ValidationMessage.itemType(itemType.getCode())).encode());
             } else if (item.getSpec() != null) {
                 ItemSpec itemSpec = itemType.getSpec(item.getSpec());
                 // specification must exist
                 Validate.notNull(itemSpec, "Data inconsistency, specification: %s", item.getSpec());
-                        
+
                 if (itemSpec.getRequiredType().equals(RequiredType.IMPOSSIBLE)) {
-                    String partType = part != null ? " typu " + part.getType().value() : "";
-                    errors.add("V části" + partType + " je zakázaná specifikace prvku " + itemSpec.getCode() + "-"
-                            + itemSpec.getItemSpec().getName());
+                    errors.add(CoreMessage.AP_IMPOSSIBLE_SPEC.with( partTypeArg(availableResult, part),
+                            itemSpec.getCode(), ValidationMessage.itemSpec(itemSpec.getCode())).encode());
                 }
             }
         }
@@ -1607,7 +1637,6 @@ public class RuleService {
     private void validateItemRepeatability(final ModelAvailable availableResult,
                                            final List<String> errors,
                                            final Part part) {
-        StaticDataProvider sdp = staticDataService.getData();
         Map<String, Integer> itemMap = new HashMap<>();
         for (AbstractItem item : availableResult.getItems()) {
             itemMap.put(item.getType(), itemMap.getOrDefault(item.getType(), 0) + 1);
@@ -1618,10 +1647,8 @@ public class RuleService {
                 ItemType itemType = availableResult.getItemType(entry.getKey());
                 if (itemType != null) {
                     if (!itemType.isRepeatable()) {
-                        RulItemType rulItemType = sdp.getItemTypeByCode(itemType.getCode()).getEntity();
-                        String partType = part != null ? " typu " + part.getType().value() : "";
-                        errors.add("V části" + partType + " je prvek " + itemType.getCode()
-                                + "-" + rulItemType.getName() + " vícekrát.");
+                        errors.add(CoreMessage.AP_ITEM_NOT_REPEATABLE.with( partTypeArg(availableResult, part),
+                                itemType.getCode(), ValidationMessage.itemType(itemType.getCode())).encode());
                     }
                 }
             }
@@ -1657,11 +1684,12 @@ public class RuleService {
                     if (itemSpec != null && !itemSpec.isRepeatable()) {
                         if (parent != null) {
                             PartValidationIssues partValidationIssues = getPartValidationIssues(apValidationIssues, parent.getId());
-                            partValidationIssues.addErrorsItem("V části typu " + parent.getType().value() + " je vztah "
-                                    + itemSpec.getCode() + "-" + itemSpec.getItemSpec().getName() + " vícekrát.");
+                            partValidationIssues.addErrorsItem(CoreMessage.AP_RELATION_NOT_REPEATABLE.with(
+                                    ValidationMessage.partType(parent.getType().value()),
+                                    itemSpec.getCode(), ValidationMessage.itemSpec(itemSpec.getCode())).encode());
                         } else {
-                        	apValidationIssues.addErrorsItem("V entitě je vztah " + itemSpec.getCode() + "-"
-                                    + itemSpec.getItemSpec().getName() + " vícekrát.");
+                            apValidationIssues.addErrorsItem(CoreMessage.AP_ENTITY_RELATION_NOT_REPEATABLE.with(
+                                    itemSpec.getCode(), ValidationMessage.itemSpec(itemSpec.getCode())).encode());
                         }
                     }
                 }
@@ -1681,9 +1709,9 @@ public class RuleService {
                 ItemSpec itemSpec = itemType.getSpec(item.getSpec());
 
                 if (itemSpec != null && !itemSpec.isRepeatable()) {
-                    errors.add("V části typu " + availableResult.getPart().getType().value() +
-                            " je externí identifikátor " + itemSpec.getCode() + "-" + itemSpec.getItemSpec().getName()
-                            + " vícekrát.");
+                    errors.add(CoreMessage.AP_IDENT_NOT_REPEATABLE.with(
+                            ValidationMessage.partType(availableResult.getPart().getType().value()),
+                            itemSpec.getCode(), ValidationMessage.itemSpec(itemSpec.getCode())).encode());
                 }
             }
         }

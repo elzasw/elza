@@ -76,6 +76,8 @@ import cz.tacr.elza.controller.vo.usage.OccurrenceVO;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.controller.vo.ApSearchType;
 import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.CoreMessage;
+import cz.tacr.elza.core.data.PackageTexts;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
@@ -243,6 +245,9 @@ public class AccessPointService {
 
     @Autowired
     private StaticDataService staticDataService;
+
+    @Autowired
+    private PackageTexts packageTexts;
 
     @Autowired
     private AccessPointDataService apDataService;
@@ -3616,7 +3621,7 @@ public class AccessPointService {
             }
         }
         if (!successfulGeneration) {
-            accessPointErrors.append("Duplicitní key value přístupového bodu.");
+            accessPointErrors.append(CoreMessage.AP_DUPLICATE_KEY_VALUE.with().encode());
         }
 
         // Prepare map of errors
@@ -4412,13 +4417,13 @@ public class AccessPointService {
         }
         final StringBuilder sb = new StringBuilder();
         if (validationIssues.getErrors() != null) {
-        	validationIssues.getErrors().forEach(e -> sb.append(e).append("\n"));
+        	validationIssues.getErrors().forEach(e -> sb.append(packageTexts.render(e)).append("\n"));
         }
         if (validationIssues.getPartErrors() != null) {
         	validationIssues.getPartErrors().forEach(e -> {
                 sb.append("Část ID: ").append(e.getId()).append("\n");
                 if (e.getErrors() != null) {
-                    e.getErrors().forEach(e2 -> sb.append(e2).append("\n"));
+                    e.getErrors().forEach(e2 -> sb.append(packageTexts.render(e2)).append("\n"));
                 }
             });
         }

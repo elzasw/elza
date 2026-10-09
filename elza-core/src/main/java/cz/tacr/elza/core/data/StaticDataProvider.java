@@ -771,7 +771,9 @@ public class StaticDataProvider {
             addDeclaredText(rows, declaration.getPackageId(), TranslationEntityType.ITEM_SPEC, code,
                             TranslationEntityType.DESCRIPTION, declaration.getDescription());
         }
-        this.translations = PackageTranslations.build(rows, packages, packageDependencyRepository.findAll());
+        // the texts shipped with the core lie below every package
+        this.translations = PackageTranslations.build(rows, packages, packageDependencyRepository.findAll(),
+                                                      CoreTranslations.load(sysLanguages));
     }
 
     /**

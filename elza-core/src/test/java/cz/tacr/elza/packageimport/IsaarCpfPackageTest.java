@@ -25,6 +25,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import jakarta.servlet.http.Cookie;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ContextConfiguration;
@@ -37,12 +41,15 @@ import cz.tacr.elza.controller.ApController;
 import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
+import cz.tacr.elza.controller.vo.ApValidationIssues;
+import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.vo.ap.item.ApItemAccessPointRefVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemEnumVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemStringVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.data.ValidationMessage;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApScope;
@@ -108,6 +115,8 @@ public class IsaarCpfPackageTest {
     private AccessPointController accessPointController;
     @Autowired
     private ApController apController;
+    @Autowired
+    private ApFactory apFactory;
     @Autowired
     private RuleService ruleService;
     @Autowired
@@ -210,6 +219,50 @@ public class IsaarCpfPackageTest {
         Map<String, RequiredType> personBody = available(isaarScope, "PERSON_INDIVIDUAL", "PT_BODY");
         assertTrue(personBody.get("ISAAR_CORP_TYPE") != RequiredType.POSSIBLE, String.valueOf(personBody.get("ISAAR_CORP_TYPE")));
         assertEquals(RequiredType.POSSIBLE, personBody.get("ISAAR_FUNCTIONS"));
+    }
+
+    /**
+     * A message of a rule and a message of the core are stored with their key and rendered in the
+     * language of the reader: the rule's English text, its Czech translation from the package, the
+     * core's bundle.
+     */
+    @Test
+    @Order(2)
+    void validationMessagesAreRenderedInTheLanguageOfTheReader() {
+        Integer museum = create(isaarScope, "PARTY_GROUP", "PT_NAME", string("NM_MAIN", "National Museum"));
+        addPart(museum, "PT_BODY", spec("ISAAR_CORP_TYPE", "ISAAR_CORP_TYPE_GOVERNMENT"));
+        addPart(museum, "PT_BODY", spec("ISAAR_CORP_TYPE", "ISAAR_CORP_TYPE_PARTY"));
+        try {
+            bindRequest("en");
+            ApValidationIssues issues = txGet(() -> accessPointController.accessPointValidateAccessPoint(museum, false).getBody());
+            assertEquals(List.of("The description of the entity is given more than once."), issues.getErrors());
+            bindRequest("cs");
+            issues = txGet(() -> accessPointController.accessPointValidateAccessPoint(museum, false).getBody());
+            assertEquals(List.of("Popis entity je uveden vícekrát."), issues.getErrors());
+
+            // stored with the entity as the key and the text of the rule, rendered when read
+            helperTestService.waitForWorkers();
+            tx(() -> {
+                ApAccessPoint ap = accessPointService.getAccessPointInternal(museum);
+                ValidationMessage stored = ValidationMessage.decode(ap.getErrorDescription().strip());
+                assertNotNull(stored, ap.getErrorDescription());
+                assertEquals("ISAAR_CPF/ONE_DESCRIPTION", stored.getKey());
+                assertEquals(List.of("Popis entity je uveden vícekrát."),
+                             apFactory.createValidationVO(ap).getErrors());
+            });
+
+            // a message of the core names the part and the item type
+            String partName = txGet(() -> staticDataService.getData().getPartTypeByCode("PT_NAME").getName());
+            String itemName = txGet(() -> itemTypeRepository.findOneByCode("NM_MAIN").getName());
+            bindRequest("en");
+            assertEquals(List.of("The part " + partName + " is missing the required item NM_MAIN - " + itemName),
+                         availableErrors(isaarScope, "PERSON_INDIVIDUAL", "PT_NAME"));
+            bindRequest("cs");
+            assertEquals(List.of("V části " + partName + " chybí povinný typ prvku NM_MAIN - " + itemName),
+                         availableErrors(isaarScope, "PERSON_INDIVIDUAL", "PT_NAME"));
+        } finally {
+            RequestContextHolder.resetRequestAttributes();
+        }
     }
 
     /** The package exports and imports again as it was. */
@@ -339,6 +392,27 @@ public class IsaarCpfPackageTest {
                 .filter(i -> GroovyResult.DISPLAY_NAME.equals(i.getIndexType())
                         && "PT_BODY".equals(i.getPart().getPartType().getCode()))
                 .map(ApIndex::getIndexValue).findFirst().orElse(null);
+    }
+
+    /** Errors of the form of a new entity, rendered in the language of the bound request. */
+    private List<String> availableErrors(Integer scopeId, String apType, String partType) {
+        return txGet(() -> {
+            ApAccessPointCreateVO form = new ApAccessPointCreateVO();
+            form.setTypeId(type(apType).getApTypeId());
+            form.setScopeId(scopeId);
+            ApPartFormVO partForm = new ApPartFormVO();
+            partForm.setPartTypeCode(partType);
+            partForm.setItems(List.of());
+            form.setPartForm(partForm);
+            return apController.getAvailableItems(form).getErrors();
+        });
+    }
+
+    /** Binds a request with the language cookie. */
+    private static void bindRequest(String language) {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setCookies(new Cookie(PackageTexts.LANGUAGE_COOKIE, language));
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
     }
 
     private Map<String, RequiredType> available(Integer scopeId, String apType, String partType) {

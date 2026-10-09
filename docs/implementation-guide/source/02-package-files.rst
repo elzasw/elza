@@ -750,14 +750,73 @@ shown when no translation into the reader's language exists. A
 translation into ``en-GB`` falls back to ``en`` and then to the source
 text.
 
-**Messages.** A message is defined by the translation file of its
-package's own language: ``ZP2015`` writing in Czech defines
-``ZP2015/UJ_012`` in :file:`translations/cs.xml`, and any package can
-translate it in a file of another language. The code starts with the code
-of the defining package. Arguments are ``java.text.MessageFormat``
-placeholders (``{0}``, ``{1,number,integer}``), formatted with the
-conventions of the language; an apostrophe is written ``''``. The import
-compiles every message and refuses a broken pattern.
+**Messages.** A message is a text with a key, ``<PACKAGE>/<KEY>``, that
+packages translate like any other text. A validation rule of an entity
+defines a message where it reports the error, with the key and the text
+in the language of the package::
+
+   results.addError("ONE_DESCRIPTION", "The description of the entity is given more than once.");
+   results.addError("CHRONO_MISMATCH", "Value {0} does not match the expected {1}",
+                    $item.getValue(), $expected.getValue());
+
+A validation rule of a fund does the same with the key and the text in
+place of the message::
+
+   dvResults.createMissing("ZP2015_UNIT_DATE", "NO_UNIT_DATE", "The unit date is missing.", "ZP2015_POL_BASIC");
+   dvResults.createError($descItem.getDescItemId(), "COUNT_TOO_LOW",
+                         "The count must be at least {0}.", "ZP2015_POL_BASIC", 2);
+
+The key is qualified by the code of the package the rule belongs to
+(``ISAAR_CPF/ONE_DESCRIPTION``); a key written with a prefix names a
+message of another package. The text is shown wherever no translation
+into the language of the reader exists, so a package needs no translation
+file for its own language. A message may also be defined by a translation
+file of the package's own language (``ZP2015/UJ_012`` in
+:file:`translations/cs.xml`); such a row wins over the text in the rule
+and carries the source hash for its translations. Any package can
+translate a message in a file of another language. A rule without a key,
+``results.addError("text")``, reports a plain text that is not translated
+- the form the Czech packages keep.
+
+Arguments are ``java.text.MessageFormat`` placeholders (``{0}``,
+``{1,number,integer}``), formatted with the conventions of the language;
+an apostrophe is written ``''``, in the rule as well. The import compiles
+every message of a translation file and refuses a broken pattern; the
+text of a rule is not checked and a broken pattern is shown as it is.
+
+Messages of the core (``CORE/<KEY>``: the missing required item, the
+forbidden item or specification, an item given more than once, for
+entities ``AP_*`` and for units of description ``ARR_*``) are listed with
+their arguments in the enum ``cz.tacr.elza.core.data.CoreMessage``; the
+text in the code is the developer's fallback only. Their Czech and
+English texts ship with the core in the same files a package would
+write, :file:`elza-core/src/main/resources/translations/cs.xml` and
+:file:`en.xml`, and lie below every package: a package overrides a text
+for a language with a ``MESSAGE`` row of that code, for example
+``<t type="MESSAGE" code="CORE/AP_MISSING_REQUIRED_ITEM" field="text">``,
+and a package adds a language the core does not ship the same way.
+
+**Arguments** of a message are kept as what they are: a text and a
+number are stored as such (a bare ``{0}`` prints a number's digits as
+they are, ``{0,number,integer}`` formats it in the reader's language), an
+item type, a specification, a part type, an entity class or another
+translated entity passed as the object itself (``$di``, ``$recordType``,
+``part.getType()``) is stored as a reference and rendered as the name of
+the entity in the language of the reader, and a message in the place of
+an argument is rendered as its text. A rule therefore writes::
+
+   dvResults.createMissing("ZP2015_RECORD_TYPE", "RECORD_TYPE_NOT_IN_PARENT",
+                           "The record type {0} is not in the parent level.", "ZP2015_POL_BASIC", $recordType);
+
+and the name of the specification follows the reader, not the author.
+
+The error is stored with the entity or the unit of description in a
+language-neutral form (key, text, arguments) and rendered in the language
+of the reader when read, so a record validated before a translation was
+imported shows the translation too, and a message that disappeared from
+its package still shows its text. A message of a unit of description
+whose encoded form does not fit its column (1000 characters) is stored
+as its source text instead.
 
 **The package's own language.** Texts of the package's own entities are in
 the entity files, so in the file of its own language rows translating them
@@ -777,8 +836,10 @@ for the type, an empty text, an unknown language, two files of one
 language, the same text twice in one file, a message or type-group code
 without its prefix, or a message that is not a valid pattern. A
 translation of an entity that does not exist is kept with a warning: the
-entity may come with the next version of its package. The translations
-are exported with the package and removed with it.
+entity may come with the next version of its package. A translation of a
+message without a defining row is kept without a warning: the message is
+defined by a rule. The translations are exported with the package and
+removed with it.
 
 **Outdated translations.** Each translation carries a hash of the source
 text it was made from, optionally written in the file:
@@ -794,8 +855,9 @@ source text. The export writes the hash, so an exported package keeps it.
 When the source text changes later (a new version of the package that
 defines the entity), the translation is reported as outdated - also after
 the translating package is imported again unchanged; it is still used
-until the translator updates it. Translations of type groups are not
-checked.
+until the translator updates it. Translations of type groups and of
+messages defined in rules are not checked: a rule that changes the
+meaning of its message changes the key.
 
 .. todo::
 

@@ -451,7 +451,7 @@ public class ApFactory {
         vo.setUuid(ap.getUuid());
         vo.setVersion(ap.getVersion());
         vo.setBindings(Collections.emptyList());
-        vo.setErrorDescription(ap.getErrorDescription());
+        vo.setErrorDescription(packageTexts.renderLines(ap.getErrorDescription()));
         vo.setRuleSetId(apState.getScope().getRuleSetId());
 
         vo.setState(ap.getState() == null ? null : ApStateVO.valueOf(ap.getState().name()));
@@ -498,7 +498,7 @@ public class ApFactory {
         vo.setUuid(uuid);
         vo.setVersion(version);
         vo.setBindings(Collections.emptyList());
-        vo.setErrorDescription(errorDescription);
+        vo.setErrorDescription(packageTexts.renderLines(errorDescription));
         vo.setRuleSetId(apState.getScope().getRuleSetId());
 
         vo.setState(state == null ? null : ApStateVO.valueOf(state.name()));
@@ -609,7 +609,7 @@ public class ApFactory {
         apPartVO.setId(part.getPartId());
         apPartVO.setTypeId(rulPartType.getPartTypeId());
         apPartVO.setState(part.getState() == null ? null : ApStateVO.valueOf(part.getState().name()));
-        apPartVO.setErrorDescription(part.getErrorDescription());
+        apPartVO.setErrorDescription(packageTexts.renderLines(part.getErrorDescription()));
         apPartVO.setValue(findDisplayIndexValue(part));
         apPartVO.setPartParentId(part.getParentPartId());
         apPartVO.setChangeType(ChangeType.ORIGINAL);
@@ -667,7 +667,7 @@ public class ApFactory {
         apPartVO.setId(part.getPartId());
         apPartVO.setTypeId(part.getPartType().getPartTypeId());
         apPartVO.setState(part.getState() == null ? null : ApStateVO.valueOf(part.getState().name()));
-        apPartVO.setErrorDescription(part.getErrorDescription());
+        apPartVO.setErrorDescription(packageTexts.renderLines(part.getErrorDescription()));
         apPartVO.setValue(CollectionUtils.isNotEmpty(indices) ? indices.get(0).getIndexValue() : null);
         apPartVO.setPartParentId(part.getParentPart() != null ? part.getParentPart().getPartId() : null);
         apPartVO.setItems(CollectionUtils.isNotEmpty(apItems) ? createItemsVO(apItems) : null);
@@ -1031,6 +1031,9 @@ public class ApFactory {
         return result;
     }
 
+    /**
+     * Validation issues stored with the entity, rendered in the language of the request.
+     */
     public ApValidationIssues createValidationVO(ApAccessPoint accessPoint) {
         List<ApPart> partList = partRepository.findValidPartByAccessPoint(accessPoint);
 
@@ -1038,7 +1041,7 @@ public class ApFactory {
         List<String> errors = new ArrayList<>();
 
         if (errorsArray != null) {
-            errors.addAll(Arrays.asList(errorsArray));
+            errors.addAll(packageTexts.renderAll(Arrays.asList(errorsArray)));
         }
 
         List<PartValidationIssues> partValidationErrorsVOList = new ArrayList<>();
@@ -1048,7 +1051,7 @@ public class ApFactory {
                 if (StringUtils.isNotEmpty(part.getErrorDescription())) {
                     String[] partErrorsArray = StringUtils.split(part.getErrorDescription(), "\n");
                     if (partErrorsArray != null) {
-                        List<String> partErrors = new ArrayList<>(Arrays.asList(partErrorsArray));
+                        List<String> partErrors = packageTexts.renderAll(Arrays.asList(partErrorsArray));
                         partValidationErrorsVOList.add(createVO(part.getPartId(), partErrors));
                     }
                 }
@@ -1056,6 +1059,22 @@ public class ApFactory {
         }
 
         return createVO(errors, partValidationErrorsVOList);
+    }
+
+    /**
+     * Issues of a validation just run, rendered in the language of the request (the validation
+     * writes the messages encoded, see {@link cz.tacr.elza.core.data.ValidationMessage}).
+     *
+     * @return a new object, the given one is not changed
+     */
+    public ApValidationIssues renderValidationVO(ApValidationIssues issues) {
+        List<PartValidationIssues> partIssues = new ArrayList<>();
+        if (issues.getPartErrors() != null) {
+            for (PartValidationIssues partIssue : issues.getPartErrors()) {
+                partIssues.add(createVO(partIssue.getId(), packageTexts.renderAll(partIssue.getErrors())));
+            }
+        }
+        return createVO(packageTexts.renderAll(issues.getErrors()), partIssues);
     }
 
     private PartValidationIssues createVO(final Integer id, final List<String> errors) {

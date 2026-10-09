@@ -44,6 +44,7 @@ import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.PackageTexts;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.data.StructType;
 import cz.tacr.elza.domain.ApIndex;
@@ -125,6 +126,8 @@ public class AiContextResolver {
 
     @Autowired
     private FundRepository fundRepository;
+    @Autowired
+    private PackageTexts packageTexts;
 
     @Autowired
     private FundVersionRepository fundVersionRepository;
@@ -907,7 +910,7 @@ public class AiContextResolver {
         List<NodeIssue> issues = new ArrayList<>();
         for (ArrNodeConformityError error : conformity.getErrorConformity()) {
             NodeIssue issue = new NodeIssue().kind(NodeIssueKind.INVALID_VALUE)
-                    .description(error.getDescription());
+                    .description(packageTexts.render(error.getDescription()));
             if (error.getPolicyType() != null) {
                 issue.policyType(error.getPolicyType().getCode());
             }
@@ -924,7 +927,7 @@ public class AiContextResolver {
         }
         for (ArrNodeConformityMissing missing : conformity.getMissingConformity()) {
             NodeIssue issue = new NodeIssue().kind(NodeIssueKind.MISSING)
-                    .description(missing.getDescription());
+                    .description(packageTexts.render(missing.getDescription()));
             if (missing.getPolicyType() != null) {
                 issue.policyType(missing.getPolicyType().getCode());
             }
