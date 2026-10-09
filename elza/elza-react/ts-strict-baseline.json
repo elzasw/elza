@@ -244,10 +244,6 @@
   "src/actions/registry/batchExportAccessPoints.ts": [
     "error TS7006: Parameter 'dispatch' implicitly has an 'any' type."
   ],
-  "src/api/old/ApPartInfo.tsx": [
-    "error TS7053: Element implicitly has an 'any' type because expression of type '\"@class\"' can't be used to index type 'ApPartVO'.",
-    "error TS7053: Element implicitly has an 'any' type because expression of type '\"@class\"' can't be used to index type 'ApPartVO'."
-  ],
   "src/components/AbstractReactComponent.tsx": [
     "error TS7006: Parameter 'nextProps' implicitly has an 'any' type.",
     "error TS7006: Parameter 'nextState' implicitly has an 'any' type.",
