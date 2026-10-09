@@ -1,6 +1,5 @@
 import { ApCreateTypeVO } from 'api/ApCreateTypeVO';
 import { ApViewSettings } from 'api/ApViewSettings';
-import { PartType } from "api/generated/model";
 import { getPartEditDialogLabel } from "api/old/PartTypeInfo";
 import { FormattedMessage } from 'react-intl';
 import { globalMessages } from 'components/shared/lang/messages';
@@ -87,7 +86,7 @@ const PartEditModal:FC<Props> = ({
     
     return <ModalDialogWrapper
         className='dialog-visible dialog-lg'
-        title={getPartEditDialogLabel(partType.code as PartType, createMode)}
+        title={getPartEditDialogLabel(partType, createMode)}
         onHide={handleClose}
     >
         <Form<RevisionApPartForm> 

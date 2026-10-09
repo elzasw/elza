@@ -47,11 +47,17 @@ public class DaServicePackageTypeTest {
     private static final String METS = """
             <?xml version="1.0" encoding="UTF-8"?>
             <mets xmlns="http://www.loc.gov/METS/"
+                  xmlns:xlink="http://www.w3.org/1999/xlink"
                   xmlns:csip="https://DILCIS.eu/XML/METS/CSIPExtensionMETS"
                   OBJID="8b58672e-7893-45c3-ab37-2b133389329d"
                   csip:CONTENTINFORMATIONTYPE="OTHER"
                   csip:OTHERCONTENTINFORMATIONTYPE="NSESSS"
                   PROFILE="https://stands.nacr.cz/da/2023/aip.xml">
+              <amdSec>
+                <digiprovMD ID="amd-1">
+                  <mdRef LOCTYPE="URL" MDTYPE="PREMIS" xlink:type="simple" xlink:href="metadata/preservation/PREMIS.xml"/>
+                </digiprovMD>
+              </amdSec>
               <structMap TYPE="LOGICAL"><div/></structMap>
             </mets>
             """;
@@ -61,7 +67,7 @@ public class DaServicePackageTypeTest {
 
     @Test
     void typeIsKept_whenThePackageFailsAfterItsMetsWasRead() throws IOException {
-        // METS only: reading PREMIS.xml fails after the METS has been read
+        // METS only: the PREMIS file it refers to is missing, which fails after the METS was read
         Path zip = zip(Map.of("aip/METS.xml", METS));
 
         DaAip aip = new DaAip();

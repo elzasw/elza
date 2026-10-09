@@ -20,14 +20,23 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static cz.tacr.elza.connector.DaConnector.FILE_TRANSFER_ERROR_CODE;
 import cz.tacr.elza.api.DaOnReceivedAction;
 import java.util.Map;
-import java.util.Set;
 import cz.tacr.elza.common.io.SpooledContent;
 
+/**
+ * Downloads packages from the DA.
+ *
+ * A download is two exchanges with the DA, each a short step under {@link DaCommunicationLock}:
+ * requesting a batch, after which its items wait as {@link DaSyncQueueItem.QueueItemState#DOWNLOAD_REQUESTED},
+ * and asking whether the batch is ready - once per status interval - until it is fetched and
+ * processed. While the DA prepares the batch, the lock is free for the synchronization and the
+ * exports. One batch per repository is in flight at a time.
+ */
 @Component
 public class DaImportExtSyncsProcessor implements Runnable {
 
@@ -50,11 +59,14 @@ public class DaImportExtSyncsProcessor implements Runnable {
 
     private final Object lock = new Object();
 
-    private static final int QUEUE_CHECK_TIME_INTERVAL = 10000;
-
-    private static final int DOWNLOAD_CHECK_TIME_INTERVAL = 100;
+    private static final long QUEUE_CHECK_TIME_INTERVAL = 10000;
 
     private static final int DEFAULT_IMPORT_LIST_SIZE = 100;
+
+    private static final List<DaSyncQueueItem.QueueItemState> QUEUE_STATES = List.of(
+            DaSyncQueueItem.QueueItemState.IMPORT_NEW,
+            DaSyncQueueItem.QueueItemState.UPDATE,
+            DaSyncQueueItem.QueueItemState.DOWNLOAD_REQUESTED);
 
     private int importListSize = DEFAULT_IMPORT_LIST_SIZE;
 
@@ -98,34 +110,122 @@ public class DaImportExtSyncsProcessor implements Runnable {
     }
 
     /**
-     * Obtains the package batch of the given queue items from the DA: requests its preparation,
-     * waits for it and downloads it. A failure anywhere here means nothing of the package
-     * arrived, so it closes no item: the items stay pending to be retried on a later cycle,
-     * the failure is recorded on them and on their AIPs, and null is returned.
+     * Asks the DA for a batch of the waiting items. A failure keeps them waiting, to be asked
+     * for again after a growing delay.
      *
-     * Must be called while holding {@link #lock}, which paces the polling for the batch.
+     * @return true when a batch was requested
      */
-    private SpooledContent obtainBatch(ArrDigitalRepository digitalRepository,
-                                       List<DaSyncQueueItem> syncQueueItemList, AipType aipType) {
+    boolean requestNextBatch() {
+        List<DaSyncQueueItem> items = daService.getNextItems(importListSize,
+                DaSyncQueueItem.QueueItemState.DOWNLOAD_REQUESTED,
+                DaSyncQueueItem.QueueItemState.UPDATE, DaSyncQueueItem.QueueItemState.IMPORT_NEW);
+        if (items.isEmpty()) {
+            return false;
+        }
+        ArrDigitalRepository digitalRepository = repositoryOf(items);
         try {
-            String batchId = daService.downloadAips(digitalRepository, syncQueueItemList, aipType);
+            String batchId = daService.downloadAips(digitalRepository, items, items.get(0).getAipType());
+            daService.markBatch(items, DaSyncQueueItem.QueueItemState.DOWNLOAD_REQUESTED, batchId, digitalRepository);
+            logger.debug("Requested download batch {} of {} item(s)", batchId, items.size());
+            return true;
+        } catch (Exception ex) {
+            logger.error("Failed to request a download batch of {} queue item(s), the items will be retried.",
+                         items.size(), ex);
+            daService.recordDownloadFailure(items, ex);
+            importListSize = 1;
+            return false;
+        }
+    }
 
-            while (!daService.downloadStatusFinished(digitalRepository, batchId)) {
-                try {
-                    lock.wait(DOWNLOAD_CHECK_TIME_INTERVAL);
-                } catch (InterruptedException e) {
-                    logger.error(e.getMessage(), e);
-                    break;
+    /**
+     * Asks the DA once about the batch in flight whose question is due, and fetches and processes
+     * it when it is ready.
+     *
+     * @return true when a batch was processed
+     */
+    boolean checkRequestedBatch() {
+        List<DaSyncQueueItem> batch = daService.getDueBatch(DaSyncQueueItem.QueueItemState.DOWNLOAD_REQUESTED);
+        if (batch.isEmpty()) {
+            return false;
+        }
+        ArrDigitalRepository digitalRepository = repositoryOf(batch);
+        String batchId = batch.get(0).getBatchId();
+        SpooledContent zip;
+        try {
+            if (!daService.downloadStatusFinished(digitalRepository, batchId)) {
+                daService.scheduleNextCheck(batch, digitalRepository);
+                return false;
+            }
+            zip = downloadBatch(digitalRepository, batchId);
+        } catch (Exception ex) {
+            if (DaRequestFailure.isPermanent(ex)) {
+                // the DA stopped preparing the batch; the packages are still there, ask again
+                logger.warn("The DA gave up download batch {}: {}; the items will be requested again.",
+                            batchId, DaRequestFailure.describe(ex));
+                daService.returnToPending(batch, ex);
+            } else {
+                logger.error("Failed to obtain download batch {}, it will be asked for again.", batchId, ex);
+                daService.recordDownloadFailure(batch, ex);
+            }
+            return false;
+        }
+        processBatch(digitalRepository, batch, zip);
+        return true;
+    }
+
+    /**
+     * Processes a downloaded batch. A package that arrived and failed is not retried - its items
+     * are closed with the problem, which is written on their AIPs as well.
+     */
+    private void processBatch(ArrDigitalRepository digitalRepository, List<DaSyncQueueItem> syncQueueItemList,
+                              SpooledContent zip) {
+        AipType aipType = syncQueueItemList.get(0).getAipType();
+        try {
+            try (zip; InputStream inputStream = zip.openStream()) {
+                daService.processPackageInfo(digitalRepository, inputStream, aipType, syncQueueItemList);
+            }
+
+            daService.updateAipToQueueItems(syncQueueItemList);
+
+            boolean autoProcess = digitalRepository.getOnReceived() == DaOnReceivedAction.DOWNLOAD_METADATA;
+            List<Integer> receivedAipIds = autoProcess && aipType == AipType.PACKAGE_INFO
+                    ? receivedAipIds(syncQueueItemList) : List.of();
+            if (aipType == AipType.METADATA_BASE || aipType == AipType.AIP_BASE) {
+                List<Integer> aipids = syncQueueItemList.stream().map(q -> q.getAip().getAipId()).toList();
+                Map<Integer, List<String>> uuidsByAip = daService.doCreateDaoStructure(aipids,
+                        actionService.sinkForQueueItems(syncQueueItemList));
+                if (autoProcess) {
+                    aipAutoLinkService.linkReceivedAips(uuidsByAip);
                 }
             }
 
-            return downloadBatch(digitalRepository, batchId);
+            daService.changeQueueItemsState(syncQueueItemList, DaSyncQueueItem.QueueItemState.IMPORT_OK);
+            actionService.completeFromQueue(syncQueueItemList, DaAipActionItemState.FINISHED, null);
+
+            // Enqueued only after the batch is saved as IMPORT_OK: the new queue
+            // item deactivates the AIP's previous items and a later save of the
+            // batch entities must not restore their active flag.
+            requestMetadataOfReceivedAips(receivedAipIds);
+
+            // pokud je vše v pořádku - maximální velikost dávky pro čtení
+            importListSize = DEFAULT_IMPORT_LIST_SIZE;
         } catch (Exception ex) {
-            logger.error("Failed to download the batch of {} queue item(s), the items will be retried.",
-                         syncQueueItemList.size(), ex);
-            daService.recordDownloadFailure(syncQueueItemList, ex);
-            return null;
+            // The package was in hand and its processing failed, so - unlike a failed
+            // download - the items are closed; the problem is written on their AIPs
+            // and their action items as well, because a terminal failure the user can
+            // only find in the queue is a failure they do not find.
+            AipProblem problem = AipProblem.of(ex);
+            daService.failQueueItems(problemPerItem(syncQueueItemList, problem),
+                                     DaSyncQueueItem.QueueItemState.IMPORT_ERROR);
+
+            logger.error("Failed to process item. ", ex);
+            // v případě chyby číst po 1 záznamu
+            importListSize = 1;
         }
+    }
+
+    private ArrDigitalRepository repositoryOf(List<DaSyncQueueItem> items) {
+        return externalSystemService.getDigitalRepository(items.get(0).getDigitalRepository().getExternalSystemId());
     }
 
     /**
@@ -165,6 +265,19 @@ public class DaImportExtSyncsProcessor implements Runnable {
                 .toList();
     }
 
+    /** One exchange with the DA: from reading the queue to saving what it brought. */
+    private boolean exchange(Supplier<Boolean> step) {
+        communicationLock.lock();
+        try {
+            return step.get();
+        } catch (Exception e) {
+            logger.error("DaImportExtSyncsProcessor - step failed", e);
+            return false;
+        } finally {
+            communicationLock.unlock();
+        }
+    }
+
     @Override
     public void run() {
         synchronized (lock) {
@@ -173,75 +286,11 @@ public class DaImportExtSyncsProcessor implements Runnable {
             SecurityContextHolder.setContext(userService.createSecurityContextSystem());
             try {
                 while (status == ThreadStatus.RUNNING) {
-                    // pokud true - pauza po ukončení práce procesoru
-                    boolean wait = true;
-                    List<DaSyncQueueItem> syncQueueItemList = null;
-                    // the batch is one exchange with the DA, from reading the queue to closing its items
-                    communicationLock.lock();
-                    try {
-                        syncQueueItemList = daService.getNextItems(importListSize, DaSyncQueueItem.QueueItemState.UPDATE, DaSyncQueueItem.QueueItemState.IMPORT_NEW);
-                        if (CollectionUtils.isNotEmpty(syncQueueItemList)) {
-                            DaSyncQueueItem firstQueueItem = syncQueueItemList.get(0);
-                            Integer digitalRepositoryId = firstQueueItem.getDigitalRepository().getExternalSystemId();
-                            AipType aipType = firstQueueItem.getAipType();
-                            ArrDigitalRepository digitalRepository = externalSystemService.getDigitalRepository(digitalRepositoryId);
-                            SpooledContent zip = obtainBatch(digitalRepository, syncQueueItemList, aipType);
-                            if (zip == null) {
-                                // download failed, the items stay pending for the next cycle;
-                                // v případě chyby číst po 1 záznamu
-                                importListSize = 1;
-                            } else {
-                                try (zip; InputStream inputStream = zip.openStream()) {
-                                    daService.processPackageInfo(digitalRepository, inputStream, aipType, syncQueueItemList);
-                                }
-
-                                daService.updateAipToQueueItems(syncQueueItemList);
-
-                                boolean autoProcess = digitalRepository.getOnReceived() == DaOnReceivedAction.DOWNLOAD_METADATA;
-                                List<Integer> receivedAipIds = autoProcess && aipType == AipType.PACKAGE_INFO
-                                        ? receivedAipIds(syncQueueItemList) : List.of();
-                                if (aipType == AipType.METADATA_BASE || aipType == AipType.AIP_BASE) {
-                                    List<Integer> aipids = syncQueueItemList.stream().map(q -> q.getAip().getAipId()).toList();
-                                    Map<Integer, List<String>> uuidsByAip = daService.doCreateDaoStructure(aipids,
-                                            actionService.sinkForQueueItems(syncQueueItemList));
-                                    if (autoProcess) {
-                                        aipAutoLinkService.linkReceivedAips(uuidsByAip);
-                                    }
-                                }
-
-                                daService.changeQueueItemsState(syncQueueItemList, DaSyncQueueItem.QueueItemState.IMPORT_OK);
-                                actionService.completeFromQueue(syncQueueItemList, DaAipActionItemState.FINISHED, null);
-
-                                // Enqueued only after the batch is saved as IMPORT_OK: the new queue
-                                // item deactivates the AIP's previous items and a later save of the
-                                // batch entities must not restore their active flag.
-                                requestMetadataOfReceivedAips(receivedAipIds);
-
-                                // pokud je vše v pořádku - maximální velikost dávky pro čtení
-                                importListSize = DEFAULT_IMPORT_LIST_SIZE;
-                                // pauza po ukončení práce procesoru není potřeba
-                                wait = false;
-                            }
-                        }
-                    } catch (Exception ex) {
-                        // The package was in hand and its processing failed, so - unlike a failed
-                        // download - the items are closed; the problem is written on their AIPs
-                        // and their action items as well, because a terminal failure the user can
-                        // only find in the queue is a failure they do not find.
-                        AipProblem problem = AipProblem.of(ex);
-                        daService.failQueueItems(problemPerItem(syncQueueItemList, problem),
-                                                 DaSyncQueueItem.QueueItemState.IMPORT_ERROR);
-
-                        logger.error("Failed to process item. ", ex);
-                        // v případě chyby číst po 1 záznamu
-                        importListSize = 1;
-                    } finally {
-                        communicationLock.unlock();
-                    }
-                    if (wait) {
+                    boolean processed = exchange(this::checkRequestedBatch);
+                    boolean requested = exchange(this::requestNextBatch);
+                    if (!processed && !requested) {
                         try {
-                            // wake up every minute to retry
-                            lock.wait(QUEUE_CHECK_TIME_INTERVAL);
+                            lock.wait(DaService.idleMillis(daService.getEarliestAttempt(QUEUE_STATES), QUEUE_CHECK_TIME_INTERVAL));
                         } catch (InterruptedException e) {
                             logger.error(e.getMessage(), e);
                             break;

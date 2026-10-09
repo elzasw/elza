@@ -192,11 +192,13 @@ public class AipRepositoryImpl implements AipRepositoryCustom {
         stateJoin.on(cb.isNull(stateJoin.get("deleteChange")));
         Join<DaAip, DaSyncQueueItem> importSyncJoin = aipRoot.join("syncQueueItems", JoinType.LEFT);
         importSyncJoin.on(cb.isTrue(importSyncJoin.get("active")), importSyncJoin.get("state").in(DaSyncQueueItem.QueueItemState.IMPORT_NEW,
+                DaSyncQueueItem.QueueItemState.DOWNLOAD_REQUESTED,
                 DaSyncQueueItem.QueueItemState.IMPORT_OK,
                 DaSyncQueueItem.QueueItemState.IMPORT_ERROR,
                 DaSyncQueueItem.QueueItemState.UPDATE));
         Join<DaAip, DaSyncQueueItem> exportSyncJoin = aipRoot.join("syncQueueItems", JoinType.LEFT);
         exportSyncJoin.on(cb.isTrue(exportSyncJoin.get("active")), exportSyncJoin.get("state").in(DaSyncQueueItem.QueueItemState.EXPORT_NEW,
+                DaSyncQueueItem.QueueItemState.EXPORT_SENT,
                 DaSyncQueueItem.QueueItemState.EXPORT_OK,
                 DaSyncQueueItem.QueueItemState.EXPORT_ERROR));
         Join<DaAipState, ApAccessPoint> oApJoin = stateJoin.join("originatorAccessPoint", JoinType.LEFT);

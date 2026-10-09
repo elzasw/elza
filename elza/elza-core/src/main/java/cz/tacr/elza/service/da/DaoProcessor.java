@@ -533,7 +533,7 @@ public class DaoProcessor {
             if (objectComplexType instanceof File file) {
                 for (ObjectIdentifierComplexType objectIdentifierComplexType : file.getObjectIdentifier()) {
                     if (objectIdentifierComplexType.getObjectIdentifierValue().equals(code)) {
-                        return file.getOriginalName().getValue();
+                        return file.getOriginalName() == null ? null : file.getOriginalName().getValue();
                     }
                 }
             }

@@ -11,7 +11,6 @@ import { ApViewSettings } from '../../../../api/ApViewSettings';
 import { sortItems } from '../../../../utils/partEdit';
 import PartEditModal from './PartEditModal';
 import { RefTablesState } from '../../../../typings/store';
-import { PartType } from '../../../../api/generated/model';
 import * as H from "history";
 import { getRevisionItems } from '../../revision';
 import { RevisionApPartForm } from '../form';
@@ -20,7 +19,7 @@ import { Api } from 'api';
 export const showPartEditModal = (
     part: ApPartVO | undefined,
     updatedPart: ApPartVO | undefined,
-    partType: PartType,
+    partType: string,
     apId: number,
     apVersion: number,
     apTypeId: number,
@@ -32,15 +31,16 @@ export const showPartEditModal = (
     revision: boolean,
     onUpdateFinish: () => void = () => { },
     select: boolean,
-) => (dispatch: any) => dispatch(
+) => (dispatch: any) => {
+    const modifiedPart = updatedPart ? updatedPart : part;
+    if (!modifiedPart) { throw "No part"; }
+    const partTypeId = modifiedPart.typeId;
+
+    return dispatch(
     modalDialogShow(
         this,
-        PartTypeInfo.getPartEditDialogLabel(partType, false),
+        PartTypeInfo.getPartEditDialogLabel(refTables.partTypes.itemsMap[partTypeId], false),
         ({ onClose }) => {
-            const modifiedPart = updatedPart ? updatedPart : part;
-            if (!modifiedPart) { throw "No part"; }
-
-            const partTypeId = modifiedPart.typeId; // objectById(refTables.partTypes.items, partType, 'code').id;
             // const partId = part ? part.id : updatedPart?.id as number;
             const parentPartId = modifiedPart.partParentId;
             const revParentPartId = modifiedPart.revPartParentId;
@@ -120,4 +120,5 @@ export const showPartEditModal = (
         },
         'dialog-lg',
     ),
-);
+    );
+};

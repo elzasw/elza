@@ -1241,6 +1241,10 @@ enum QueueItemState {
      */
     IMPORT_NEW,
     /**
+     * Stahuje se - DA připravuje dávku
+     */
+    DOWNLOAD_REQUESTED,
+    /**
      * Aktualizováno/Staženo
      */
     IMPORT_OK,
@@ -1252,6 +1256,10 @@ enum QueueItemState {
      * K exportu
      */
     EXPORT_NEW,
+    /**
+     * Odesláno - DA zpracovává změnový balíček
+     */
+    EXPORT_SENT,
     /**
      * Exportováno
      */
@@ -6618,6 +6626,44 @@ namespace ElzaAPI.Aip {
         @body data: DaAipActionVO;
        } | {
         /** Failed to delete complete AIPs */
+        @Http.statusCode statusCode: 500;
+        @body data: BaseException;
+       };
+
+    /**
+     * Retry now: the waiting requests of the AIPs (downloads, exports, questions about a batch
+     * the DA prepares) are taken on the next cycle of the queue, without the retry delay.
+     */
+    @route("/queue/retry-now")
+    @post op queueRetryNow(
+        /** Aip IDs */
+        @body aipIds: integer[];
+    ): {
+        /** Number of requests to be taken now */
+        @Http.statusCode statusCode: 200;
+        @header contentType: "application/json";
+        @body data: integer;
+       } | {
+        /** Failed to reschedule the requests */
+        @Http.statusCode statusCode: 500;
+        @body data: BaseException;
+       };
+
+    /**
+     * Withdraws the requests of the AIPs the DA has not received yet (downloads not requested,
+     * exports not sent). A request the DA already knows is left to finish.
+     */
+    @route("/queue/withdraw")
+    @post op queueWithdraw(
+        /** Aip IDs */
+        @body aipIds: integer[];
+    ): {
+        /** Number of withdrawn requests */
+        @Http.statusCode statusCode: 200;
+        @header contentType: "application/json";
+        @body data: integer;
+       } | {
+        /** Failed to withdraw the requests */
         @Http.statusCode statusCode: 500;
         @body data: BaseException;
        };
