@@ -1584,6 +1584,7 @@ public class DaService {
             item.setNextAttemptAt(null);
         }
         syncQueueItemRepository.saveAll(items);
+        applicationContext.publishEvent(new DaQueueChangedEvent());
     }
 
     /**
@@ -2027,6 +2028,9 @@ public class DaService {
         syncQueueItem.setAipType(aipType);
         syncQueueItem.setActive(active);
         syncQueueItem.setDate(OffsetDateTime.now());
+        if (active && WAITING_STATES.contains(queueItemState)) {
+            applicationContext.publishEvent(new DaQueueChangedEvent());
+        }
         return syncQueueItemRepository.save(syncQueueItem);
     }
 

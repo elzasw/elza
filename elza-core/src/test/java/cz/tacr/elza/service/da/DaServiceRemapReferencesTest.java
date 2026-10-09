@@ -81,6 +81,8 @@ public class DaServiceRemapReferencesTest {
 
         service = new DaService();
         setField(service, "aipRepository", aipRepository);
+        // queueing a request wakes the processors through an event
+        setField(service, "applicationContext", mock(org.springframework.context.ApplicationContext.class));
         setField(service, "aipStateRepository", aipStateRepository);
         setField(service, "syncQueueItemRepository", syncQueueItemRepository);
         setField(service, "referenceResolver", referenceResolver);
