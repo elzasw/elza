@@ -29,7 +29,7 @@ import {
 } from '@fluentui/react-icons';
 import { Api } from 'api';
 import { DaQueueActionResult, DaQueueDirection, DaQueueItemPage, DaQueueItemVO, QueueItemState } from 'elza-api';
-import { ReactNode, useMemo, useState } from 'react';
+import { MouseEvent, ReactNode, useMemo, useState } from 'react';
 import { FormattedMessage, useIntl } from 'react-intl';
 import { useDispatch } from 'react-redux';
 import { queueStateMessages } from '../../aip/messages';
@@ -343,7 +343,7 @@ export function DaQueueList({ repositoryId, repositorySelector }: Props) {
                                     >
                                         <TableSelectionCell
                                             checked={selected.has(item.id)}
-                                            onClick={e => {
+                                            onClick={(e: MouseEvent) => {
                                                 e.stopPropagation();
                                                 toggle(item.id);
                                             }}
@@ -366,7 +366,7 @@ export function DaQueueList({ repositoryId, repositorySelector }: Props) {
                                             {item.batchId && (
                                                 <Button appearance="transparent" size="small"
                                                         title={intl.formatMessage(messages.filterByBatch)}
-                                                        onClick={e => {
+                                                        onClick={(e: MouseEvent) => {
                                                             e.stopPropagation();
                                                             change({ batchId: item.batchId ?? '', all: true });
                                                         }}>
