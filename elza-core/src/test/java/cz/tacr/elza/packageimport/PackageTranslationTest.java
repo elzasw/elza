@@ -181,12 +181,13 @@ public class PackageTranslationTest {
         assertEquals("Content", text(TranslationEntityType.ITEM_TYPE, "SRD_TITLE", "shortcut", en));
         assertEquals("Arrangement method", text(TranslationEntityType.ITEM_TYPE, "SRD_ARRANGEMENT_TYPE", "name", en));
         assertEquals("Reference code (sequence number)", text(TranslationEntityType.ITEM_TYPE, "SRD_UNIT_ID", "name", en));
-        // no translation: source text
-        assertEquals("source", text(TranslationEntityType.ITEM_TYPE, "SRD_UNIT_DATE", "name", en));
-        // no language: source text
-        assertEquals("source", text(TranslationEntityType.ITEM_TYPE, "SRD_TITLE", "name", null));
         // a dependent package overrides a SIMPLE-DEV text in its source language
         assertEquals("Datace (doplněk)", text(TranslationEntityType.ITEM_TYPE, "SRD_UNIT_DATE", "name", language("cs")));
+        // no English translation: the Czech of the installation (elza.locale), i.e. the override
+        assertEquals("Datace (doplněk)", text(TranslationEntityType.ITEM_TYPE, "SRD_UNIT_DATE", "name", en));
+        // no language: source text
+        assertEquals("source", text(TranslationEntityType.ITEM_TYPE, "SRD_TITLE", "name", null));
+        assertEquals("source", text(TranslationEntityType.ITEM_TYPE, "SRD_UNIT_DATE", "name", null));
     }
 
     @Test
@@ -461,7 +462,9 @@ public class PackageTranslationTest {
 
         SysLanguage en = language("en");
         assertEquals("Content, abstract", text(TranslationEntityType.ITEM_TYPE, "SRD_TITLE", "name", en));
-        assertEquals("source", text(TranslationEntityType.ITEM_TYPE, "SRD_ARRANGEMENT_TYPE", "name", en));
+        // the addon's English name is gone; the base package's Czech override serves the installation language
+        assertEquals("Způsob pořádání", text(TranslationEntityType.ITEM_TYPE, "SRD_ARRANGEMENT_TYPE", "name", en));
+        assertEquals("source", text(TranslationEntityType.ITEM_TYPE, "SRD_ARRANGEMENT_TYPE", "name", null));
         assertEquals(GREETING, packageTexts.message(GREETING, en));
         tx(() -> assertEquals(13, translationRepository.findByRulPackage(packageRepository.findByCode(BASE_CODE)).size()));
     }

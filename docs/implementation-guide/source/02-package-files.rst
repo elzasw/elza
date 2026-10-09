@@ -745,10 +745,14 @@ tag (:file:`translations/en.xml`), so a translator works with one file.
    ========================= ==================================== ===========================
 
 The text stored with the entity is the source text, in the language of
-the package that defines it (``language`` in :file:`package.xml`); it is
-shown when no translation into the reader's language exists. A
-translation into ``en-GB`` falls back to ``en`` and then to the source
-text.
+the package that defines it (``language`` in :file:`package.xml`). A
+text is looked up in the reader's language, then in that language
+without its region (``en-GB`` → ``en``), then in the language of the
+installation (``elza.locale`` - the archive's language is a better
+guess than any other), and only then is the source text shown whatever
+its language. The source text counts as the text in the language of
+its package, so an English reader of an English package gets the
+package's own text before a Czech translation of a Czech installation.
 
 **Messages.** A message is a text with a key, ``<PACKAGE>/<KEY>``, that
 packages translate like any other text. A validation rule of an entity

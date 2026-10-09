@@ -68,9 +68,11 @@ class PackageTextsTest {
                 row(base, "ITEM_TYPE", "T2", "name", enGb, "british T2"),
                 row(other, "ITEM_TYPE", "T3", "name", en, "other"),
                 row(base, "ITEM_TYPE", "T3", "name", en, "base T3"),
+                row(base, "ITEM_TYPE", "T3", "name", cs, "český T3"),
                 row(base, "MESSAGE", "BASE/HELLO", "text", cs, "Ahoj {0}, je {1,number,integer} hodin."),
                 row(base, "MESSAGE", "BASE/HELLO", "text", en, "Hello {0}, it''s {1,number,integer} o''clock."),
                 row(base, "MESSAGE", "CORE/AP_DUPLICATE_KEY_VALUE", "text", en, "Overridden by BASE"),
+                row(other, "MESSAGE", "OTHER/HI", "text", cs, "Ahoj {0}"),
                 row(base, "PART_TYPE", "PT_NAME", "name", en, "Name")),
                 List.of(base, addon, other),
                 List.of(dependency),
@@ -120,6 +122,30 @@ class PackageTextsTest {
         assertEquals("source", text("T1", cs));
         assertEquals("source", text("T1", null));
         assertEquals("source", text("T9", en));
+    }
+
+    /**
+     * A language without a translation falls back to the language of the installation
+     * ({@code elza.locale}, Czech here) before the source text of the package; {@code null} still
+     * means the source text.
+     */
+    @Test
+    void installationLanguageComesBeforeThePackageSource() {
+        assertEquals("český T3", text("T3", de));
+        assertEquals("source", text("T3", null));
+        assertEquals("Ahoj Jana, je 7 hodin.", texts.message("BASE/HELLO", de, "Jana", 7));
+        assertEquals("Duplicitní key value přístupového bodu.",
+                     texts.render(CoreMessage.AP_DUPLICATE_KEY_VALUE.with().encode(), de));
+
+        // the text a rule was written with is the text in the language of its package (OTHER is
+        // English): an English reader gets it before the Czech of the installation, a German one
+        // the Czech, no language the text of the rule
+        String hi = ValidationMessage.of("OTHER/HI", "Hi {0}", "x").encode();
+        assertEquals("Hi x", texts.render(hi, en));
+        assertEquals("Hi x", texts.render(hi, enGb));
+        assertEquals("Ahoj x", texts.render(hi, cs));
+        assertEquals("Ahoj x", texts.render(hi, de));
+        assertEquals("Hi x", texts.render(hi, null));
     }
 
     @Test
@@ -206,7 +232,7 @@ class PackageTextsTest {
         assertEquals("Overridden by BASE", texts.render(duplicate.encode(), en));
         assertEquals("Overridden by BASE", texts.render(duplicate.encode(), enGb));
         assertEquals("Duplicitní key value přístupového bodu.", texts.render(duplicate.encode(), cs));
-        assertEquals("Duplicate key value of the entity.", texts.render(duplicate.encode(), de));
+        // without any translation (and no installation language) the text of the code is shown
         assertEquals("Duplicate key value of the entity.", texts.render(duplicate.encode(), null));
 
         String missing = CoreMessage.AP_MISSING_REQUIRED_ITEM.with(ValidationMessage.partType("PT_NAME"),
@@ -299,8 +325,9 @@ class PackageTextsTest {
         assertTrue(line.contains("{\"t\":\"ITEM_TYPE\",\"v\":\"T1\"}"), line);
         assertEquals(message, ValidationMessage.decode(line));
 
-        assertEquals("addon | Name | Hello Jana, it's 7 o'clock. | 12383 | 12,383 | true", texts.render(line, en));
-        // Czech groups digits with a non-breaking space
+        // BASE is a Czech package and the message has no translation, so its stored text is the Czech
+        // text: the number is formatted the Czech way (a non-breaking space) for every reader
+        assertEquals("addon | Name | Hello Jana, it's 7 o'clock. | 12383 | 12 383 | true", texts.render(line, en));
         assertEquals("source | Označení | Ahoj Jana, je 7 hodin. | 12383 | 12 383 | true", texts.render(line, cs));
         assertEquals("T1 | PT_NAME | BASE/HELLO | 12383 | 12,383 | true", message.sourceText());
 
@@ -361,7 +388,9 @@ class PackageTextsTest {
                 List.of(base, addon, other), List.of(dependency));
         lenient().when(sdp.getTranslations()).thenReturn(overridden);
         assertEquals("přejmenováno", text("T1", cs));
-        assertEquals("source", text("T1", en));
+        // no English text: the Czech of the installation, which is the override, not the stale source
+        assertEquals("přejmenováno", text("T1", en));
+        assertEquals("source", text("T1", null));
     }
 
     private static void bind(MockHttpServletRequest request) {

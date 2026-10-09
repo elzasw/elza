@@ -29,9 +29,10 @@ import jakarta.servlet.http.HttpServletRequest;
  * Resolves package-provided texts in a language.
  *
  * A text is looked up in the requested language, then in the same language without region
- * ({@code en-GB} -> {@code en}), and falls back to the source text - the text stored in the entity
- * itself, or for {@link TranslationEntityType#MESSAGE} the text in the source language of the
- * package that defines the message. A {@code null} language always gives the source text.
+ * ({@code en-GB} -> {@code en}), then in the language of the installation ({@code elza.locale}),
+ * and falls back to the source text - the text stored in the entity itself, or for
+ * {@link TranslationEntityType#MESSAGE} the text in the source language of the package that defines
+ * the message. A {@code null} language always gives the source text.
  *
  * <p>Methods without a language argument use the language of the current request, see
  * {@link #requestLanguage()}.
@@ -272,16 +273,21 @@ public class PackageTexts {
     public String message(String key, String defaultPattern, SysLanguage language, Object... args) {
         StaticDataProvider sdp = staticDataService.getData();
         PackageTranslations translations = sdp.getTranslations();
+        RulPackage definingPackage = findDefiningPackage(sdp, key);
 
         for (SysLanguage candidate : fallbackChain(language)) {
             String pattern = translations.get(TranslationEntityType.MESSAGE, key, TranslationEntityType.TEXT,
                                               candidate.getLanguageId());
+            if (pattern == null && defaultPattern != null && definingPackage != null
+                    && candidate.getLanguageId().equals(definingPackage.getLanguageId())) {
+                // the text the rule was written with is the text in the language of its package
+                pattern = defaultPattern;
+            }
             if (pattern != null) {
                 return format(pattern, candidate, args);
             }
         }
 
-        RulPackage definingPackage = findDefiningPackage(sdp, key);
         if (definingPackage != null) {
             String pattern = translations.get(TranslationEntityType.MESSAGE, key, TranslationEntityType.TEXT,
                                               definingPackage.getLanguageId());
@@ -454,13 +460,18 @@ public class PackageTexts {
     }
 
     /**
-     * The language and, for a tag with a region, the language without region.
+     * Languages a text is looked up in, in order: the language, for a tag with a region the
+     * language without region, then the language of the installation ({@code elza.locale}) - the
+     * archive's language is a better guess than the language the package was written in, which
+     * comes after the chain as the source text.
+     *
+     * @return empty for null (source texts)
      */
     private List<SysLanguage> fallbackChain(SysLanguage language) {
         if (language == null) {
             return List.of();
         }
-        List<SysLanguage> chain = new ArrayList<>(2);
+        List<SysLanguage> chain = new ArrayList<>(3);
         chain.add(language);
         String tag = language.getTag();
         int dash = tag.indexOf('-');
@@ -469,6 +480,10 @@ public class PackageTexts {
             if (base != null) {
                 chain.add(base);
             }
+        }
+        SysLanguage installation = defaultLanguage();
+        if (installation != null && !chain.contains(installation)) {
+            chain.add(installation);
         }
         return chain;
     }
