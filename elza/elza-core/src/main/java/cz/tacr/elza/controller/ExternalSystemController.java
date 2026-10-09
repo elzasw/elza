@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller;
 
+import java.util.Comparator;
 import java.util.List;
 
 import jakarta.transaction.Transactional;
@@ -11,7 +12,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.api.ApExternalSystemType;
+import cz.tacr.elza.controller.vo.DaQueueActionResult;
+import cz.tacr.elza.controller.vo.DaQueueDirection;
+import cz.tacr.elza.controller.vo.DaQueueItemPage;
+import cz.tacr.elza.controller.vo.DigitalRepositoryInfo;
 import cz.tacr.elza.controller.vo.DigitalRepositoryTestResult;
+import cz.tacr.elza.controller.vo.QueueItemState;
+import cz.tacr.elza.service.da.DaQueueService;
 import cz.tacr.elza.controller.vo.ExtSystemProperty;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ArrDigitalRepository;
@@ -43,6 +50,9 @@ public class ExternalSystemController implements ExternalsystemsApi {
     @Autowired
     DaConnector daConnector;
 
+    @Autowired
+    DaQueueService daQueueService;
+
     final UsrPermission.Permission reqPermissions[] = { UsrPermission.Permission.ADMIN,
             UsrPermission.Permission.AP_EXTERNAL_WR };
 
@@ -61,6 +71,51 @@ public class ExternalSystemController implements ExternalsystemsApi {
     	extSystemService.deleteBindingSync(extSys);
 
     	return ResponseEntity.ok().build();
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<List<DigitalRepositoryInfo>> externalSystemDigitalRepositories(
+            cz.tacr.elza.controller.vo.DigitalRepositoryType type) {
+        List<DigitalRepositoryInfo> repositories = extSystemService.findDigitalRepository().stream()
+                .filter(repository -> type == null || repository.getDigitalRepositoryType().name().equals(type.name()))
+                .sorted(Comparator.comparing(ArrDigitalRepository::getName, String.CASE_INSENSITIVE_ORDER))
+                .map(repository -> {
+                    DigitalRepositoryInfo info = new DigitalRepositoryInfo();
+                    info.setId(repository.getExternalSystemId());
+                    info.setCode(repository.getCode());
+                    info.setName(repository.getName());
+                    info.setType(cz.tacr.elza.controller.vo.DigitalRepositoryType.valueOf(
+                            repository.getDigitalRepositoryType().name()));
+                    return info;
+                })
+                .toList();
+        return ResponseEntity.ok(repositories);
+    }
+
+    @Override
+    public ResponseEntity<DaQueueItemPage> externalSystemDaQueue(Integer id, Boolean all, List<QueueItemState> states,
+                                                                 DaQueueDirection direction, String aipCode,
+                                                                 String batchId, Boolean failedOnly,
+                                                                 Integer from, Integer count) {
+        DaQueueService.Filter filter = new DaQueueService.Filter(Boolean.TRUE.equals(all), states, direction,
+                                                                 aipCode, batchId, Boolean.TRUE.equals(failedOnly));
+        return ResponseEntity.ok(daQueueService.find(id, filter, from == null ? 0 : from, count == null ? 50 : count));
+    }
+
+    @Override
+    public ResponseEntity<DaQueueActionResult> externalSystemDaQueueRetryNow(Integer id, List<Integer> itemIds) {
+        return ResponseEntity.ok(daQueueService.retryNow(id, itemIds));
+    }
+
+    @Override
+    public ResponseEntity<DaQueueActionResult> externalSystemDaQueueWithdraw(Integer id, List<Integer> itemIds) {
+        return ResponseEntity.ok(daQueueService.withdraw(id, itemIds));
+    }
+
+    @Override
+    public ResponseEntity<DaQueueActionResult> externalSystemDaQueueRepeat(Integer id, List<Integer> itemIds) {
+        return ResponseEntity.ok(daQueueService.repeat(id, itemIds));
     }
 
     @Override

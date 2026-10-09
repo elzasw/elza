@@ -11,8 +11,6 @@ import static java.util.stream.Collectors.toSet;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -53,10 +51,6 @@ import jakarta.transaction.Transactional.TxType;
 import jakarta.validation.constraints.NotNull;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
-import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -76,7 +70,6 @@ import org.springframework.util.ObjectUtils;
 import com.google.common.collect.Iterables;
 
 import cz.tacr.elza.common.ObjectListIterator;
-import cz.tacr.elza.common.UuidUtils;
 import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
@@ -113,17 +106,9 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.core.security.AuthParam.Type;
-import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataDecimal;
-import cz.tacr.elza.domain.ArrDataInteger;
-import cz.tacr.elza.domain.ArrDataNull;
-import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDataString;
-import cz.tacr.elza.domain.ArrDataText;
-import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDataUriRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
@@ -142,7 +127,6 @@ import cz.tacr.elza.domain.ArrRefTemplate;
 import cz.tacr.elza.domain.ArrRefTemplateMapSpec;
 import cz.tacr.elza.domain.ArrRefTemplateMapType;
 import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UIVisiblePolicy;
@@ -196,6 +180,7 @@ import cz.tacr.elza.service.eventnotification.events.EventFundImport;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.importcsv.ImportJobService;
+import cz.tacr.elza.service.imp.CsvDescItemsImporter;
 import cz.tacr.elza.websocket.UserEventPushService;
 
 /**
@@ -317,6 +302,9 @@ public class ArrangementService {
 
     @Autowired
     private ImportJobService importJobService;    
+
+    @Autowired
+    private CsvDescItemsImporter csvDescItemsImporter;
 
     @Lazy
     @Autowired
@@ -2584,8 +2572,20 @@ public class ArrangementService {
     public void importFundDataAsync(Integer fundId, String importType, String separator, Path csvPath, Integer initiatorId, UUID jobId) {
         Integer versionId = null;
         try (InputStream is = Files.newInputStream(csvPath)) {
-        	// self-invocation přes proxy, aby se otevřela @Transactional
-            versionId = self.importFundDataInternal(fundId, importType, separator, is);
+            if (!importType.equals(CSV_TYPE_NAME)) {
+                throw new BusinessException("Import type is not supported: " + importType, BaseCode.IMPORT_FAILED)
+                        .set("importType", importType);
+            }
+            // klient soubor převádí do UTF-8, transakce otevírá importér po dávkách
+            CsvDescItemsImporter.Result result = csvDescItemsImporter.importCsv(is, separator,
+                    DEFAULT_CSV_SEPARATOR, null, nodeFundId -> {
+                        if (!fundId.equals(nodeFundId)) {
+                            throw new BusinessException("The node belongs to another archival fund (fund ID "
+                                    + nodeFundId + ")", BaseCode.IMPORT_FAILED)
+                                    .set("fundId", nodeFundId);
+                        }
+                    }, false);
+            versionId = result.fundVersionIds().get(fundId);
             importJobService.markCompleted(jobId);
             notifyImportResult(initiatorId, new EventFundImport(EventType.IMPORT_FUND_COMPLETED, fundId, versionId, null));
         } catch (Exception e) {
@@ -2609,164 +2609,6 @@ public class ArrangementService {
             userEventPushService.push(initiatorId, event);
         } else {
             userEventPushService.push(UserEventPushService.ADMIN_TOPIC_ID, event);
-        }
-    }
-
-    @Transactional
-    public Integer importFundDataInternal(Integer fundId, String importType, String separator, InputStream is) {
-        ArrFund fund = fundRepository.getReferenceById(fundId);
-        ArrFundVersion version = arrangementInternalService.getOpenVersionByFund(fund);
-        if (importType.equals(CSV_TYPE_NAME)) {
-            importFundDataCsv(fund, separator, is);
-        } else {
-            logger.error("Required importType is not supported: {}", importType);
-        }
-        return version.getFundVersionId();
-    }
-
-    private void importFundDataCsv(ArrFund fund, String separator, InputStream is) {
-        ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFund(fund);
-        isValidAndOpenVersion(fundVersion);
-        // create change
-        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.IMPORT, null);
-        char delimiter = StringUtils.isEmpty(separator) ? DEFAULT_CSV_SEPARATOR : separator.charAt(0);
-
-        CSVFormat csvf = CSVFormat.EXCEL.builder()
-                .setDelimiter(delimiter)
-                .setIgnoreSurroundingSpaces(true)
-                .build();
-        try (InputStreamReader isr = new InputStreamReader(BOMInputStream.builder().setInputStream(is).get(), "UTF-8");
-            CSVParser parser = csvf.parse(isr)) {
-
-            MultipleItemChangeContext changeContext = descriptionItemService.createChangeContext(fundVersion.getFundVersionId());
-
-            ObjectListIterator.forEachPage((Iterable<CSVRecord>) parser, recs -> {
-                importFundBatch(fundVersion, change, recs, changeContext);
-            });
-
-            changeContext.flush();
-
-        } catch (IOException e) {
-            logger.error("Failed to read input file", e);
-            throw new BusinessException("Failed to process", e, BaseCode.IMPORT_FAILED);
-        }
-    }
-
-    // Future improvement: use batch updates
-    private void importFundBatch(ArrFundVersion fundVersion, ArrChange change, Collection<CSVRecord> recs,
-                                 MultipleItemChangeContext changeContext) {
-        StaticDataProvider sdp = this.staticDataService.getData();
-        List<ArrDescItem> createdItems = new ArrayList<>();
-        // prepare import data
-        for (CSVRecord rec : recs) {
-            Iterator<String> dataIter = rec.iterator();
-            String nodeId = dataIter.next();
-            ArrNode node;
-            if (UuidUtils.isUUID(nodeId)) {
-                node = arrangementInternalService.findNodeByUuid(nodeId);
-            } else if (StringUtils.isNumeric(nodeId)) {
-                node = nodeRepository.getOne(Integer.valueOf(nodeId));
-            } else {
-                throw new BusinessException(
-                        "Invalid node identifier on CSV row " + rec.getRecordNumber()
-                                + ": '" + nodeId + "'. Expected UUID or numeric ID."
-                                + " Check the CSV field separator.",
-                        BaseCode.IMPORT_FAILED)
-                        .set("row", rec.getRecordNumber())
-                        .set("value", nodeId);
-            }
-            // save node
-            node = descriptionItemService.saveNode(node, change);
-
-            while (dataIter.hasNext()) {
-                String itemTypeCode = dataIter.next();
-                ItemType itemType = sdp.getItemTypeByCode(itemTypeCode);
-                RulItemSpec itemSpec = null;
-                if (itemType.hasSpecifications()) {
-                    if (!dataIter.hasNext()) {
-                        throw new BusinessException("Missing specification for itemType: " + itemTypeCode,
-                                BaseCode.IMPORT_FAILED);
-                    }
-                    String itemSpecCode = dataIter.next();
-                    itemSpec = itemType.getItemSpecByCode(itemSpecCode);
-                }
-                ArrData data;
-                // prepare data
-                switch (itemType.getDataType()) {
-                case ENUM:
-                    data = new ArrDataNull();
-                    break;
-                case URI_REF: {
-                    ArrDataUriRef dataUriRef = new ArrDataUriRef();
-                    String url = dataIter.next();
-                    String descr = dataIter.next();
-                    dataUriRef.setSchema(ArrDataUriRef.createSchema(url));
-                    dataUriRef.setUriRefValue(url);
-                    if (StringUtils.isNotEmpty(descr)) {
-                    	dataUriRef.setDescription(descr);
-                    }
-                    data = dataUriRef;
-                }
-                break;
-                case STRING: {
-                    ArrDataString dataStr = new ArrDataString();
-                    String str = dataIter.next();
-                    dataStr.setStringValue(str);
-                    data = dataStr;
-                }
-                break;
-                case TEXT: {
-                    ArrDataText dataText = new ArrDataText();
-                    String str = dataIter.next();
-                    dataText.setTextValue(str);
-                    data = dataText;
-                }
-                break;
-                case INT: {
-                    ArrDataInteger dataInt = new ArrDataInteger();
-                    String str = dataIter.next();
-                    dataInt.setIntegerValue(Integer.parseInt(str));
-                    data = dataInt;
-                }
-                break;
-                case DECIMAL: {
-                    ArrDataDecimal dataDecimal = new ArrDataDecimal();
-                    String str = dataIter.next();
-                    dataDecimal.setValue(new BigDecimal(str));
-                    data = dataDecimal;
-                }
-                break;
-                case RECORD_REF: {
-                    ArrDataRecordRef dataRr = new ArrDataRecordRef();
-                    String str = dataIter.next();
-                    dataRr.setRecord(em.getReference(ApAccessPoint.class, Integer.parseInt(str)));
-                    data = dataRr;
-                }
-                break;
-                case UNITDATE: {
-                	String str = dataIter.next();
-                	ArrDataUnitdate dataUd = ArrDataUnitdate.valueOf(str);
-                	data = dataUd;
-                }
-                break;
-                default:
-                    throw new BusinessException("Import of data type '" + itemType.getDataType().getCode()
-                            + "' for itemType: " + itemTypeCode + " is not implemented.",
-                            BaseCode.IMPORT_FAILED);
-                }
-
-                ArrDescItem descItem = new ArrDescItem();
-                descItem.setCreateChange(change);
-                descItem.setData(data);
-                descItem.setNode(node);
-                descItem.setItemType(itemType.getEntity());
-                descItem.setItemSpec(itemSpec);
-
-                ArrDescItem createdItem = descriptionItemService.createDescriptionItemInBatch(descItem, node,
-                                                                                              fundVersion, change,
-                                                                                              changeContext);
-                createdItems.add(createdItem);
-            }
         }
     }
 

@@ -115,6 +115,8 @@ public class ImpBatchService {
     @Autowired
     private CsvDescItemsImporter csvImporter;
     @Autowired
+    private ArrangementService arrangementService;
+    @Autowired
     private IEventNotificationService eventNotificationService;
 
     /**
@@ -518,22 +520,26 @@ public class ImpBatchService {
     }
 
     /**
-     * Processes one item of a CSV batch: appends description items to nodes identified by UUID
-     * in the file. Dry-run is treated as a no-op for now - the format has no XSD to validate.
+     * Processes one item of a CSV batch: appends description items to the nodes named in the
+     * file, which may belong to several funds. The importer commits in chunks of its own, so a
+     * failed item may leave the chunks before the failing row imported. A dry run parses and
+     * resolves every row without writing.
      */
     private void processCsvItem(ImpItem item, ImpBatchDescCsv batch, boolean dryRun) {
-        if (dryRun) {
-            return;
-        }
         if (item.getDmsFile() == null) {
             throw new BusinessException("Source file is no longer stored in DMS", BaseCode.INVALID_STATE);
         }
 
         CsvDescItemsImporter.Result result;
         try (InputStream in = dmsService.newInputStream(item.getDmsFile())) {
-            result = csvImporter.importCsv(in, batch.getSeparator(), batch.getEncoding());
+            result = csvImporter.importCsv(in, batch.getSeparator(), ',', batch.getEncoding(),
+                    // write permission to every fund the file touches
+                    fundId -> arrangementService.getFundForImport(fundId), dryRun);
         } catch (IOException e) {
             throw new BusinessException("Failed to read the source file: " + e.getMessage(), BaseCode.INVALID_STATE);
+        }
+        if (dryRun) {
+            return;
         }
 
         ImpItem managed = itemRepository.findById(item.getItemId()).orElse(null);
@@ -541,16 +547,18 @@ public class ImpBatchService {
             return;
         }
         managed.setNodesUpdated(result.nodesUpdated());
+        List<ArrFund> touchedFunds = result.fundVersionIds().keySet().stream()
+                .map(fundRepository::getReferenceById)
+                .toList();
         // for the "open fund" icon in UI pick one representative fund (usually the only one)
-        ArrFund firstFund = result.touchedFunds().isEmpty() ? null : result.touchedFunds().iterator().next();
-        if (firstFund != null) {
-            managed.setFund(firstFund);
+        if (!touchedFunds.isEmpty()) {
+            managed.setFund(touchedFunds.get(0));
         }
         itemRepository.save(managed);
 
         // record one result row per touched fund so the operator can see every AS the item
         // changed - not only the first one
-        for (ArrFund fund : result.touchedFunds()) {
+        for (ArrFund fund : touchedFunds) {
             ImpItemResult r = new ImpItemResult();
             r.setItem(managed);
             r.setResultType(ImpResultType.ARR_CHANGE);

@@ -175,4 +175,15 @@ public class AipPackageFilesTest {
         assertEquals(false, DaService.isRootMets("aip-code/representations/submission/data/METS.xml"));
         assertEquals(false, DaService.isRootMets("aip-code/SIP-METS.xml"));
     }
+
+    @Test
+    void aPercentEncodedReferenceIsDecoded() throws Exception {
+        Path root = tempDir.resolve("aip-code");
+        Path file = write(root, "metadata/preservation/moje premis.xml", "<premis/>");
+
+        assertEquals(file, AipPackageFiles.referenced(root, "metadata/preservation/moje%20premis.xml"));
+        assertEquals("a+b c.pdf", AipPackageFiles.decodedHref("a+b%20c.pdf"));
+        assertNull(AipPackageFiles.decodedHref("plain.pdf"));
+        assertNull(AipPackageFiles.decodedHref("broken%2.pdf"));
+    }
 }
