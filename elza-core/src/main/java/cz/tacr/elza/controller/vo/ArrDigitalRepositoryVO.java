@@ -8,6 +8,8 @@ import cz.tacr.elza.api.DigitalRepositoryType;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.SysExternalSystem;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
 
 /**
  * VO pro externí systém - uložiště digitalizátů.
@@ -32,6 +34,8 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
     private DaOnReceivedAction onReceived;
 
     private Integer syncDelay;
+
+    private Integer statusPollInterval;
 
     public String getViewDaoUrl() {
         return viewDaoUrl;
@@ -105,6 +109,14 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
         this.syncDelay = syncDelay;
     }
 
+    public Integer getStatusPollInterval() {
+        return statusPollInterval;
+    }
+
+    public void setStatusPollInterval(Integer statusPollInterval) {
+        this.statusPollInterval = statusPollInterval;
+    }
+
     @Override
     public SysExternalSystem createEntity(ApScope scope) {
         ArrDigitalRepository entity = new ArrDigitalRepository();
@@ -147,6 +159,13 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
             if (syncDelay != null) {
                 entity.setSyncDelay(syncDelay);
             }
+            if (statusPollInterval != null) {
+                if (statusPollInterval < 1) {
+                    throw new BusinessException("Interval dotazu na stav dávky musí být alespoň 1 s",
+                            BaseCode.PROPERTY_IS_INVALID).set("statusPollInterval", statusPollInterval);
+                }
+                entity.setStatusPollInterval(statusPollInterval);
+            }
         }
 
         return entity;
@@ -175,6 +194,7 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
         vo.setDownloadMethod(src.getDownloadMethod());
         vo.setOnReceived(src.getOnReceived());
         vo.setSyncDelay(src.getSyncDelay());
+        vo.setStatusPollInterval(src.getStatusPollInterval());
         return vo;
     }
 }

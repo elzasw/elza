@@ -1854,6 +1854,15 @@ public class DaService {
         return daConnector.downloadAips(digitalRepository, downloadDownloadAips);
     }
 
+    /**
+     * @return how long to wait before asking the DA again whether it has finished a batch
+     */
+    public static long statusPollMillis(ArrDigitalRepository digitalRepository) {
+        Integer seconds = digitalRepository.getStatusPollInterval();
+        int interval = seconds == null ? ArrDigitalRepository.DEFAULT_STATUS_POLL_INTERVAL : Math.max(1, seconds);
+        return interval * 1000L;
+    }
+
     public boolean downloadStatusFinished(ArrDigitalRepository digitalRepository, String batchId) {
         DownloadDownloadStatus status = daConnector.downloadStatus(digitalRepository, batchId);
         return status.getState() == RequestState.FINISHED;
