@@ -41,6 +41,9 @@ Before the upgrade
   CZ_BASE scripts building entity names (patches of
   :file:`rul_structure_extension*.xml`) must move to
   :file:`rul_entity_rule.xml`.
+* Change: 10098 - Print templates with barcodes use the barcode4j library;
+  the barbecue library is removed. **Templates of your own with an element
+  of** ``kind="barbecue"`` **no longer compile** and must be changed.
 * New: Restart from the administration - the application exits with the
   code of the new key ``elza.restart.exitCode`` (3 by default) and the
   service manager starts it again; set ``Restart=on-failure`` in the
@@ -105,6 +108,9 @@ Fixes
   file, is no longer refused.
 * Fix: ELZA DA - a description unit with an attached AIP whose metadata
   were not downloaded yet could not be opened.
+* Fix: 10098 - Large outputs - generating cards and labels with a barcode
+  failed with "Error virtualizing object"; the barcodes are wider and
+  easier to read.
 * Fix: A rules package without dependencies was skipped by the import at
   startup.
 * Fix: Deleting a rules package that defines task types failed.
