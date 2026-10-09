@@ -29,7 +29,7 @@ import {
 } from '@fluentui/react-icons';
 import { Api } from 'api';
 import { DaQueueActionResult, DaQueueDirection, DaQueueItemPage, DaQueueItemVO, QueueItemState } from 'elza-api';
-import { MouseEvent, ReactNode, useMemo, useState } from 'react';
+import { MouseEvent, ReactNode, useEffect, useMemo, useState } from 'react';
 import { FormattedMessage, useIntl } from 'react-intl';
 import { useDispatch } from 'react-redux';
 import { queueStateMessages } from '../../aip/messages';
@@ -41,6 +41,9 @@ import { aipTypeMessages, directionMessages, messages } from './messages';
 
 /** How often the shown page is reloaded. */
 const REFRESH_MS = 5000;
+
+/** Typing into a text filter reloads the list only after this pause. */
+export const TYPING_DELAY_MS = 400;
 
 export const PAGE_SIZE = 50;
 
@@ -166,6 +169,8 @@ export function DaQueueList({ repositoryId, repositorySelector }: Props) {
     const [from, setFrom] = useState(0);
     const [selected, setSelected] = useState<Set<number>>(new Set());
     const [detailId, setDetailId] = useState<number>();
+    // what is typed into the text filters; it reaches the filter after a pause in typing
+    const [typed, setTyped] = useState({ aipCode: '', batchId: '' });
 
     const { data, failed, refresh } = usePolledData(() => load(repositoryId, filter, from), REFRESH_MS);
     const items = useMemo(() => data?.items ?? [], [data]);
@@ -178,6 +183,14 @@ export function DaQueueList({ repositoryId, repositorySelector }: Props) {
         // the new filter must not wait for the next interval
         setTimeout(refresh);
     };
+
+    useEffect(() => {
+        if (typed.aipCode === filter.aipCode && typed.batchId === filter.batchId) {
+            return undefined;
+        }
+        const timer = setTimeout(() => change({ aipCode: typed.aipCode, batchId: typed.batchId }), TYPING_DELAY_MS);
+        return () => clearTimeout(timer);
+    }, [typed]);
 
     const selectedItems = items.filter(item => selected.has(item.id));
     const toggle = (id: number) => setSelected(current => {
@@ -250,14 +263,14 @@ export function DaQueueList({ repositoryId, repositorySelector }: Props) {
                     <Input
                         aria-label={intl.formatMessage(messages.filterAipCode)}
                         placeholder={intl.formatMessage(messages.filterAipCode)}
-                        value={filter.aipCode}
-                        onChange={(_, { value }) => change({ aipCode: value })}
+                        value={typed.aipCode}
+                        onChange={(_, { value }) => setTyped(current => ({ ...current, aipCode: value }))}
                     />
                     <Input
                         aria-label={intl.formatMessage(messages.filterBatch)}
                         placeholder={intl.formatMessage(messages.filterBatch)}
-                        value={filter.batchId}
-                        onChange={(_, { value }) => change({ batchId: value })}
+                        value={typed.batchId}
+                        onChange={(_, { value }) => setTyped(current => ({ ...current, batchId: value }))}
                     />
                     <Checkbox
                         label={intl.formatMessage(messages.filterFailed)}
@@ -368,7 +381,9 @@ export function DaQueueList({ repositoryId, repositorySelector }: Props) {
                                                         title={intl.formatMessage(messages.filterByBatch)}
                                                         onClick={(e: MouseEvent) => {
                                                             e.stopPropagation();
-                                                            change({ batchId: item.batchId ?? '', all: true });
+                                                            const batchId = item.batchId ?? '';
+                                                            setTyped(current => ({ ...current, batchId }));
+                                                            change({ batchId, all: true });
                                                         }}>
                                                     {item.batchId}
                                                 </Button>

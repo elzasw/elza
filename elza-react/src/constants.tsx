@@ -360,6 +360,11 @@ export const urlAip = (aipId?: number): string => {
     return aipId ? `${URL_AIP}/${aipId}` : URL_AIP;
 }
 
+export const URL_ADMIN_DA = '/admin/da';
+
+/** Queue of the digital archive with the given external system id. */
+export const urlAdminDaQueue = (repositoryId: number): string => `${URL_ADMIN_DA}/${repositoryId}/requests`;
+
 export const urlAipExplorer = (aipId: number): string => {
     return `${URL_AIP}/${aipId}/explorer`;
 }

@@ -5,7 +5,8 @@ import {AREA_EXT_SYSTEM_DETAIL, extSystemDetailFetchIfNeeded} from 'actions/admi
 import {storeFromArea} from 'shared/utils';
 
 import './AdminExtSystemDetail.scss';
-import {AP_EXT_SYSTEM_TYPE, DigitalRepositoryType, JAVA_ATTR_CLASS} from '../../../constants';
+import {AP_EXT_SYSTEM_TYPE, DigitalRepositoryType, JAVA_ATTR_CLASS, urlAdminDaQueue} from '../../../constants';
+import {Link as RouterLink} from 'react-router-dom';
 import {WebApi} from 'actions/index.jsx';
 import {
     EXT_SYSTEM_CLASS,
@@ -32,6 +33,7 @@ const messages = defineMessages({
         defaultMessage: 'Prosím vyberte externí systém ze seznamu nebo vytvořte nový',
     },
     synchronize: { id: 'admin.extSystem.synchronize', defaultMessage: 'Synchronizovat' },
+    daQueue: { id: 'admin.extSystem.daQueue', defaultMessage: 'Fronta požadavků digitálního archivu' },
 });
 
 /**
@@ -407,6 +409,11 @@ class AdminExtSystemDetail extends AbstractReactComponent {
                                     defaultMessage="Vyzkoušet nastavení"
                                 />
                             </Button>
+                            {extSystem.digitalRepositoryType === DigitalRepositoryType.Da && (
+                                <RouterLink to={urlAdminDaQueue(extSystem.id)} style={{marginLeft: 8}}>
+                                    <FormattedMessage {...messages.daQueue} />
+                                </RouterLink>
+                            )}
                             {this.renderRepoTestResult(isFsRepo)}
                         </div>
                     )}
