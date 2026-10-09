@@ -7,7 +7,8 @@ import {objectById} from 'shared/utils';
 import {Button} from '../ui';
 import {Dropdown, DropdownButton, FormControl} from 'react-bootstrap';
 import {connect} from 'react-redux';
-import {WebApi} from '../../actions/WebApi';
+import {UrlFactory, WebApi} from '../../actions/WebApi';
+import {downloadFile} from '../../actions/global/download';
 import {
     AREA,
     DEFAULT_STRUCTURE_TYPE_MAX_SIZE,
@@ -97,6 +98,15 @@ class ArrStructurePanel extends AbstractReactComponent {
                 ),
             );
         });
+    };
+
+    /**
+     * Stažení hodnot v CSV - se stejným filtrem jako seznam, bez stránkování.
+     */
+    handleExportCsv = () => {
+        const {fundId, code} = this.props;
+        const {filter} = this.props.store;
+        this.props.dispatch(downloadFile(UrlFactory.exportStructureDataCsv(fundId, code, filter.text, filter.assignable)));
     };
 
     handleChangeSelection = checkedIndexes => {
@@ -536,8 +546,19 @@ class ArrStructurePanel extends AbstractReactComponent {
 
         return (
             <div className={'arr-structure-panel'}>
-                {!readMode && (
-                    <div className="actions">
+                <div className="actions">
+                    <DropdownButton
+                        variant="default"
+                        title={<Icon glyph="fa-ellipsis-h" />}
+                        id="arr-structure-panel-more"
+                        className="pull-right"
+                        align="end"
+                    >
+                        <Dropdown.Item eventKey="1" onClick={this.handleExportCsv}>
+                            {<FormattedMessage {...templateMessages.structureExportCsv} />}
+                        </Dropdown.Item>
+                    </DropdownButton>
+                    {!readMode && (<>
                         <DropdownButton
                             variant="default"
                             title={<Icon glyph="fa-plus-circle" />}
@@ -565,8 +586,8 @@ class ArrStructurePanel extends AbstractReactComponent {
                         <Button variant="default" onClick={this.handleExtensionsSettings} className={'pull-right'}>
                             <Icon glyph="fa-cogs" />
                         </Button>
-                    </div>
-                )}
+                    </>)}
+                </div>
                 <div className="filter flex">
                     <div>
                         <FormControl

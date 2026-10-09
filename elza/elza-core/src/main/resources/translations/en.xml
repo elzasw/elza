@@ -35,7 +35,7 @@
     <!-- terms used as arguments -->
     <t type="MESSAGE" code="CORE/UNDEFINED_VALUE" field="text">undefined</t>
 
-    <!-- headers of the CSV exports of a fund and of its issues -->
+    <!-- headers of the CSV exports of a fund, of its issues and of structured objects -->
     <t type="MESSAGE" code="CORE/EXPORT_COL_RECORD_NUMBER" field="text">Record number</t>
     <t type="MESSAGE" code="CORE/EXPORT_COL_NODE_NUMBER" field="text">Unit of description number</t>
     <t type="MESSAGE" code="CORE/EXPORT_COL_ITEM_TYPE" field="text">Item</t>
@@ -50,6 +50,11 @@
     <t type="MESSAGE" code="CORE/ISSUES_COL_DATE" field="text">Date</t>
     <t type="MESSAGE" code="CORE/ISSUES_COL_DESCRIPTION" field="text">Description</t>
     <t type="MESSAGE" code="CORE/ISSUES_COL_COMMENTS" field="text">Comments</t>
+    <t type="MESSAGE" code="CORE/STRUCT_COL_ID" field="text">ID</t>
+    <t type="MESSAGE" code="CORE/STRUCT_COL_COMPLEMENT" field="text">Complement</t>
+    <t type="MESSAGE" code="CORE/STRUCT_COL_STATE" field="text">State</t>
+    <t type="MESSAGE" code="CORE/STRUCT_STATE_OPEN" field="text">Open</t>
+    <t type="MESSAGE" code="CORE/STRUCT_STATE_CLOSED" field="text">Closed</t>
 
     <!-- refused API-key authentication -->
     <t type="MESSAGE" code="CORE/API_KEY_MALFORMED_TOKEN" field="text">The token is malformed; use the value issued by the server.</t>
