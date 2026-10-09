@@ -241,9 +241,15 @@ rules for entities of the scope) or a rule set inheriting CAM (Phase 6)? Q4 (R1)
 frameworks (CAM entity to ISAAR entity, fund description referring to both, shared search).
 
 **Remaining obstacles.**
-- CAM exchange with extra content (R2): extra item types are dropped by `ItemTypeMap.groovy` (safe);
-  an extra specification of a CAM item type drops the whole part from the export; an extra part type
-  crashes the export (`PartTypeXml.fromValue`, `cam/v2/SearchFilterFactory` `:244`).
+- CAM exchange with extra content (R2): the CAM standard fixes the part types (the schema's
+  `PartTypeXml`), so the exchange cannot carry a part of another type - this is a constraint on
+  CAM entities, not a gap of the exporter. Today an extra item type is dropped by
+  `ItemTypeMap.groovy` (safe), an extra specification of a CAM item type drops the whole part from
+  the export, and a part of a foreign type ends the export with an exception
+  (`PartTypeXml.fromValue`, `cam/v2/SearchFilterFactory` `:244`). R2 therefore keeps CAM entities
+  within CAM part types (the CAM rule set lists exactly the seven; the server-side check of a new
+  part against the rule set's part list, section 5 "Later, optional", would enforce it), or the
+  export refuses such an entity with a clear message.
 - Search boosts (`index-search` in the root `ui_setting.xml` of CZ_BASE) are global, not per rule set.
 
 **Known gaps found while building 2c.5a.**
