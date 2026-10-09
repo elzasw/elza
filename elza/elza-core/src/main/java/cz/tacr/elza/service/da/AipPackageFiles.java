@@ -1,6 +1,8 @@
 package cz.tacr.elza.service.da;
 
 import java.io.IOException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -98,11 +100,34 @@ final class AipPackageFiles {
      */
     static Path referenced(Path root, String href) {
         Path file = resolveInside(root, href);
+        String decoded = decodedHref(href);
+        if (!Files.isRegularFile(file) && decoded != null) {
+            file = resolveInside(root, decoded);
+        }
         if (!Files.isRegularFile(file)) {
             throw AipProblemException.metadata("Balíček neobsahuje soubor " + href + ", na který odkazuje METS.xml",
                                                href, null);
         }
         return file;
+    }
+
+    /**
+     * A METS reference is a URL, so a producer may write it percent-encoded (a space as %20);
+     * the package then carries the file under the decoded name.
+     *
+     * @return the decoded reference, or null when it has nothing encoded
+     */
+    @Nullable
+    static String decodedHref(String href) {
+        if (href.indexOf('%') < 0) {
+            return null;
+        }
+        try {
+            // '+' is a plus in a path, not a space as in a query
+            return URLDecoder.decode(href.replace("+", "%2B"), StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
     /** @return the paths of all files of the metadata sections of the METS (descriptive and administrative) */
