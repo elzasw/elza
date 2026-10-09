@@ -1,6 +1,6 @@
 # Rules-package customization layer and first internationalized version — plan
 
-Status as of 2026-10-08. Design record for extending rules packages without forks (addon packages,
+Status as of 2026-10-09. Design record for extending rules packages without forks (addon packages,
 customizations edited in the admin UI), for entity description frameworks beside CAM, and for the
 first internationalized version of ELZA (an English rule set based on ISAD(G)). Finished work is
 described for implementers in the implementation guide (`elza/docs/implementation-guide`, English
@@ -9,25 +9,18 @@ Line numbers refer to the `3.4.x` tree at the time of writing.
 
 ## 0. Next
 
-Direction agreed 2026-10-08: **A1 (texts built in core) as a decision record, then 2b
-`rules-en-isadg`.** The customization-layer pilots (Phase 1 rest, Phase 3) stay independent and can
+Status 2026-10-09. The customization-layer pilots (Phase 1 rest, Phase 3) stay independent and can
 be interleaved; 2c.6 (EAC-CPF export) and R2 (reference scope) wait for a concrete need and for the
 answers to R2's questions.
 
-1. **A1** — inventory done (section 7): three rules proposed (persisted findings as codes rendered
-   by the client; request-time texts from a core catalog in the request language; texts a package
-   writes in the package language). Waiting for the user's decision, then the implementation step.
-2. **2b** — `rules-en-isadg` (section 7); prerequisite 2c.5 met.
-3. Release gate of 3.4 (section 6): re-import of unchanged CZ_BASE 89 and ZP2015 on a PostgreSQL copy
+1. **2b** — `rules-en-isadg` (section 7); prerequisites met (2c.5, A1 rules 1 and 2).
+2. **L2 step 4** — the language rule for the remaining unit-date places (section 7), about 1.5 days.
+3. **A1 rule 3** — texts a package writes follow the package (section 7, proposal); done together
+   with 2b's print templates and index scripts.
+4. Release gate of 3.4 (section 6): re-import of unchanged CZ_BASE 89 and ZP2015 on a PostgreSQL copy
    after the four declaration migrations, `view_order` and spec order unchanged.
-4. Follow-up of 2c.5 (section 7): **L2** (unit-date text per language) - steps 1-3 done 2026-10-08
-   (shared lexicon and corpus, tolerant parsers on both sides, English rendering of request-time
-   texts); step 4 follows the language rule agreed 2026-10-08 - what a user sees follows the user,
-   what a package writes follows the package, everything else carries no language - and needs no
-   language on funds.
 
-Nothing blocks implementation. Decisions still open: the A1 record (section 7, four points for the
-user) and R2 Q1–Q4 (section 5).
+Nothing blocks implementation. Decisions still open: A1 rule 3 (section 7) and R2 Q1–Q4 (section 5).
 
 ## 1. Goals and principles
 
@@ -81,6 +74,8 @@ user) and R2 Q1–Q4 (section 5).
 | 2c.5b-d | package `package-isaar-cpf` (ISAAR_CPF, version 1, English): shared classes, part types, 31 shared item types + 8 own, 121 specifications, rules and scripts, UI settings; distribution and test wiring; `IsaarCpfPackageTest` (alone, entities, export round trip, with CZ_BASE in both orders); guide chapter 04 | `cb38e0e182`, `222ce99cec` |
 | L1-lang | ISAAR_CPF `NM_LANG`: the ISO 639-2 list with English names (486 languages; `LNG_` + bibliographic code as in CAM, `qaa-qtz` left out; 142 shared with CZ_BASE); generator committed (`package-isaar-cpf/generator/gen_isaar.py` with the LoC list `iso639-2.txt`); `IsaarCpfPackageTest` (486 for ISAAR, 166 for CAM, `LNG_aar` not in CAM, `LNG_0as` not in ISAAR); guide chapters 02 and 04, release notes. ISAAR_CPF stays version 1 (not released) | `ecd180c80d` |
 | strict-xml | package files read strictly: the first unmarshalling event stops the import, the error names the file, the line and the element (`PackageUtils.convertXmlStreamToObject`; before, JAXB skipped unknown elements silently). Fixed in the packages: CZ_BASE 280 `<category>` without `<categories>` (no CZ_BASE specification ever had a category; the 166 languages are grouped now), `<hierarchical>` in `ap_type.xml` (CZ_BASE, ISAAR_CPF, two test packages, `EntityRulesTest`), `<view-order>` on specifications (ZP2015, simple-dev), unescaped `<Odkaz>` in a simple-dev description; versions unchanged (CZ_BASE 89, simple-dev 43 open; ZP2015 only lost ignored elements). `PackageXmlFilesTest` reads every file of the delivered and test packages | `ecd180c80d` |
+| A1 rules 1-2 | validation messages of entities and funds translatable: a rule reports `results.addError("KEY", "text {0}", arg)` / `dvResults.createMissing(typeCode, "KEY", "text", policy, args)`, the key qualified by the rule's package; stored as one JSON line `{"key","text","args"}` in the existing `error_description` columns (typed arguments: numbers, references to item types / specifications / part types rendered as names in the reader's language, nested messages; `ValidationMessage`) and rendered when read (`PackageTexts.render`: `ApFactory`, `ApController`, `ClientFactoryVO.createNodeConformity`, the fund validation list, the AI context; the full-text index gets the source text); core messages are the enum `CoreMessage` with Czech and English shipped in `elza-core/src/main/resources/translations/{cs,en}.xml` (package file format, lowest layer of `PackageTranslations`, overridable by any package; `CoreMessagesTest`); request-time core texts through `PackageTexts.text(CoreMessage)`: CSV headers of the fund and issue exports, the 401 body of a refused API key, the reasons an AI proposal cannot be applied; ISAAR_CPF 2 with 5 keyed messages and `translations/cs.xml`; CZ_BASE and ZP2015 untouched; `IsaarCpfPackageTest`, `AddonPackageTest`, `PackageTextsTest`; guide chapter 02 "Messages" | `f3ff831704`, `a4f19b7541` |
+| A1 UI-owned, E3 | texts the client owns stay on the client: the logical AIP tree and the explorer label their virtual levels by `AipLevelType` (the server name is a fallback), the log viewer shows a message for `LogVO.error` (`NO_PATH`, `FILE_NOT_FOUND`, `READ_ERROR`) with the path; the dead Czech labels of the queue-state enums removed (`ExtAsyncQueueState`, `ExtSyncsQueueItem.ExtAsyncQueueState`, `DaSyncQueueItem.QueueItemState` - the client has its own) | with this row |
 
 **Decisions later steps build on.**
 - *Translations:* key `(entity_type, entity_code, field, language)`, rows owned by the contributing
@@ -136,15 +131,30 @@ user) and R2 Q1–Q4 (section 5).
   set (`rulesListItemTypes`, AI tool). `getAllDescriptionItemTypes` (no rule set) keeps every
   specification. Siblings are not related: a local package depending on CZ_BASE and ISAAR_CPF does
   not make CAM's specifications visible to ISAAR_CPF.
+- *Messages (A1 rules 1-2, user 2026-10-09):* sources live in code (DRL `addError("KEY", "text")`,
+  Java `CoreMessage`, react-intl `defaultMessage`); server-side translations always in the package
+  XML format - in the package for a package's texts, in `elza-core/src/main/resources/translations/`
+  for the core's - and client-side in `lang/translated/en.json`. A text is a core text only when
+  neither the client (it knows the code or type) nor a package (rule-set logic) can own it; server
+  artifacts (CSV headers, 401 bodies) and rule-evaluated reasons (validation, AI proposal blocked
+  reasons) are core. Validation results are stored language-neutral and rendered on the way out;
+  nothing is extracted from DRL or Java, a changed meaning changes the key, translations of messages
+  defined in rules are not hash-checked. Rejected: a properties bundle (a third mechanism), a separate
+  core-texts package (must be distributed, `elza.packages.enabled` can skip it), client-side
+  rendering of package messages (the client catalog cannot hold customer texts; the server renders
+  for the AI context, exception texts and outputs anyway), ICU4J for now (`ChoiceFormat` covers cs/en
+  plurals; `ValidationMessage.format` is the one place to switch). Translations are loaded once into
+  `PackageTranslations` with the static data - no per-message DB access. `RevisionFindingsBlockMapper`
+  stays Czech by its own Javadoc (the findings' texts arrive from the AI in the run's language).
 
 ## 3. Phases and order
 
 | Phase | Content | State |
 |---|---|---|
 | **2c. Entity description frameworks** | ISAAR_CPF package done (section 4); 2c.6 EAC-CPF export and R2 reference scope on demand | done for 2b |
-| **A1. Analysis: texts built in core** | decide per group of texts the Java code builds (validation messages, CSV headers) whether they belong to core, the rules or the client | **inventory done, decision pending** (section 7) |
-| **2b. First internationalized version** | `rules-en-isadg` referring to the ISAAR_CPF classes; core neutrality; texts written by packages in the package language | after A1 |
-| **2a.3 Remaining read sites** | tree titles, specification categories, further entity kinds, AI context; CSV exports after A1 | open, independent |
+| **A1. Texts built in core** | validation messages, request-time core texts, texts the client owns (section 7) | **done** (rules 1-2); rule 3 (texts a package writes) with 2b |
+| **2b. First internationalized version** | `rules-en-isadg` referring to the ISAAR_CPF classes; core neutrality; texts written by packages in the package language | next |
+| **2a.3 Remaining read sites** | tree titles, specification categories, further entity kinds, AI proposal rows | open, independent |
 | **2a.4 Translation template** | export of translatable texts with source, hash and state | on demand (first maintained translation) |
 | **1. Layer core (rest)** | revalidation requested by an addon, `PACKAGE` event on delete, settings export guard (section 6) | open, independent |
 | **3. Pilots** | settings composition; DPP and CT as file addons | after 1 |
@@ -267,202 +277,64 @@ specifications.
 
 ## 7. Localization and the internationalized version
 
-### A1 — texts built in core (inventory 2026-10-08, decision pending)
+### A1 — texts built in core
 
-*Method:* string literals with Czech diacritics in `elza-core/src/main/java` outside comments,
-logging and exception texts (exceptions reach the client as codes mapped in `messages.ts`): 284
-literals; plus core resources and init data. Texts without diacritics or in English are not
-caught; the groups below are complete for the mechanisms, not necessarily for every string.
+Rules 1 and 2 are done (section 2, rows "A1 rules 1-2" and "A1 UI-owned, E3"; decisions in section
+2; implementation guide chapter 02 "Messages"). What stays:
 
-| Group | Where (class:line) | Count | Reaches the user as |
-|---|---|---|---|
-| A. Node conformity (fund validation) | `validation/impl/Validator` `:91,118,153,172,187,225,239`, `domain/vo/DataValidationResults` `:126,128` - "Prvek X musí být vyplněn.", "... se specifikací Y není možné evidovat ...", "Atribut X není opakovatelný.", "... odkazuje na zneplatněnou entitu (id)" ... | 7 templates | stored in `arr_node_conformity_error.description`, `arr_node_conformity_missing.description`; `NodeConformityErrorVO(descItemObjectId, description, policyTypeId)`, `NodeConformityMissingVO(descItemTypeId, descItemSpecId, description, policyTypeId)`; the client prints `description` (`NodePanel.jsx:718,742`, `ErrorDisplay.tsx:43`). Rule-owned messages (`createMissing(typeCode, message, policy)` from DRL, 31 calls in ZP2015 `Validation.drl`) share the column. |
-| A2. Entity validation | `service/RuleService` `:1516-1684` - "V části X chybí povinný typ prvku ...", "... je zakázaná specifikace ...", "... je vztah ... vícekrát." ...; `AccessPointService:3619`, `PartService:70` (duplicate key value) | 9 templates | returned as `ApValidationErrorsVO` (strings); the duplicate-key text goes into the entity's error text |
-| B. CSV headers | `ArrIOService` `:449-455` (data export: "Číslo záznamu", "Číslo JP", "Atribut", "Specifikace", "Hodnota", "ID entity"), `:537-539` (grid export + item shortcuts), `IssueService` `:470-480` (issues: "Druh", "Stav", "Uživatel", "Popis", "Komentáře" ...) | 19 strings | downloaded files (`DEExportService` headers are English identifiers, fine) |
-| C. Data type names | `db.elza-init.xml` `:99-123` (`rul_data_type.name/description`: "Celé číslo", "Řetězec", "Datace" ...) | 12 rows | not read by the client (no `dataType.name` use in `elza-react`); only in server exception texts |
-| D1. Content: unit-date text | `domain/converter/UnitDateConverter` `:37-52` (" př. n. l.", "%d. st. př. n. l."; input regexes accept the Czech form), `print/item/convertors/UnitDatePrintConvertor` `:36-42` (months, "%d. století") | 7 constants | `ArrDataUnitdate.getFulltextValue()` (index), `GroovyItem.value`/`GroovyAppender` (entity indexes and display names stored in `ap_index`), `ArrItemUnitdateVO`/`ApItemUnitdateVO.value` (REST display), tree titles (`DescriptionItemServiceInternal:185`), print outputs, `ImportFromFund` |
-| D2. Content: values and names written by core | `DaoCoreServiceWsImpl:543` ("Importováno - <date>" as an item value of a node), `ArrangementService:2239` (default name "Šablona" of a reference template), `ArrangementService.UNDEFINED` = "výjimka" (tree titles `DescriptionItemServiceInternal:158`, validator text) | 3 | persisted content / titles |
-| D3. DA / AIP module | `service/da/*` (`DaService` `:200-2190`, `AipProblem`, `DaAipReferenceResolver`, `DaImportBuilder`, `DaImportPlanner`, `DaLevelItems`, `DaMatchResult`, `EadUnitdateParser`, `DidElementConverters`, `AipPackageType`, `DaAipStepService:137`), `domain/DaDao.DaoType` labels | ≈ 80 | AIP state and step messages persisted on the AIP and shown in the AIP pages; script errors of `DA_IMPORT`/`DA_MATCH` |
-| E1. AI module | `service/ai/AiProposalService` `:492-711` (why a proposal cannot be applied), `RevisionFindingsBlockMapper` `:41-155` (labels of the findings block: "Doporučení", "závažnost", severity words, action labels) | 27 | REST display, built in the request thread |
-| E2. Request-time labels | `DaoService:1038,1043`, `AipService:110,134` (explorer tree: "Logická struktura", "Balíček", "Bez logické struktury"), `security/apikey/ApiKeyFailure` `:8-13` (401 bodies), `PasswordPolicyService:80`, `AdminOldController:199,238` (log viewer) | 14 | REST display |
-| E3. Enum labels | `controller/vo/ExtAsyncQueueState`, `domain/ExtSyncsQueueItem` states, `DaSyncQueueItem` states ("Ke stažení", "Odesláno" ...) | 25 | the VOs serialize the enum constant, the client has its own labels - presumably dead; verify `value()` callers and delete |
-| F. Core resources | `script/groovy/createDid.groovy` (assert texts only), `exportDaTemplates/*.xml` (DA export samples, Czech by design) | - | - |
+- **Rule 3 (proposal): texts a package writes follow the package** (groups D1, D2 of the inventory
+  of 2026-10-08). The text form of unit dates inside entity index names and outputs, the word for an
+  undefined value in titles (`ArrangementService.UNDEFINED`; in messages it is already the term
+  `CORE/UNDEFINED_VALUE`), default names and values written by imports (`DaoCoreServiceWsImpl:543`
+  "Importováno - <date>", `ArrangementService:2239` "Šablona") are rendered in the language of the
+  rules package whose script or template writes them (`rul_package.language_id`: CAM and ZP2015
+  Czech, ISAAR_CPF and ISADG English) - never the UI language (background jobs write them without a
+  user) and never a language of the fund (L2 step 4). What a user sees at request time follows the
+  user; the DAO import value and the template name come from the rules or the client instead of
+  core. Done together with 2b's print templates and index scripts.
+- **Out of scope, Czech modules by decision:** the DA/AIP integration (`service/da/*`, ≈ 80 texts;
+  the Czech national digital archive interface, like CAM), data type names (`db.elza-init.xml`, not
+  shown to users), core resources (`createDid.groovy` asserts, the DA export samples).
 
-*Three rules.*
-1. **Validation messages: key + text in the rule, stored neutral, rendered by the server when read**
-   (A2 done 2026-10-09, A to follow). Decided with the user 2026-10-09 against the earlier proposal
-   (codes rendered by the client): package messages are customer-specific, so the client catalog can
-   never hold them, and "workers have no request language" is solved by rendering late, in the VO
-   factory, not by the client. The pattern is the one both halves of the code already use
-   (react-intl `{id, defaultMessage}`, Spring `getMessage(code, args, default, locale)`):
-   - a rule reports `results.addError("KEY", "text {0}", arg)`; core qualifies the key by the package
-     of the rule (`ModelValidationRules`), `ApValidationErrors.addError(key, text, args)`;
-   - core messages are the enum `CoreMessage` (`CORE/<KEY>`, the text in code is the developer's fallback,
-     may be English); their Czech and English texts ship in `elza-core/src/main/resources/translations/<tag>.xml`
-     in the package file format and form the lowest layer of `PackageTranslations` (`CoreTranslations`;
-     decided 2026-10-09 against a properties bundle - a third mechanism - and against a separate
-     package - must be distributed and can be left out by `elza.packages.enabled`); `CoreMessagesTest`
-     checks every message has a text in every shipped language;
-   - arguments are typed in the stored line (`{"t":"ITEM_SPEC","v":"CODE"}`, kinds = `TranslationEntityType`,
-     nested messages), domain and rule objects convert automatically, a bare `{n}` prints a number's digits
-     verbatim (identifiers), `{n,number}` formats by locale; no ICU4J for now (`ChoiceFormat` covers cs/en
-     plurals; `ValidationMessage.format` is the one place to switch);
-   - the message is stored as one JSON line `{"key","text","args"}` in the existing `error_description`
-     columns next to plain lines (no changeset, old rows unchanged, rewritten by revalidation) and
-     rendered by `PackageTexts.render` in `ApFactory.createValidationVO` / `renderValidationVO`,
-     `ApController.getAvailableItems`, the error texts of the VOs and `validateEntityAndFailOnError`;
-   - lookup: `rul_translation` row in the request language → core bundle → source (defining package's
-     own-language row, core's Czech bundle) → the stored text → the key. A package may override a core
-     message with a `MESSAGE` row of code `CORE/<KEY>`;
-   - no extraction from DRL or Java: the stored text is the fallback, and translations of messages
-     defined in rules are not hash-checked (a changed meaning changes the key). The Czech packages
-     (CAM 71, ZP2015 31 calls) keep `addError("text")` untouched - they are not translated by decision.
-   Pilot: ISAAR_CPF (5 messages, `translations/cs.xml`, package version 2) and the 10 core templates of
-   `RuleService`/`AccessPointService`. **Group A done 2026-10-09 with the same mechanism:** `Validator`
-   (7 templates → `ARR_*` keys, built statically by `ValidationMessage.core` because the validator is no
-   bean), `DataValidationResults.createMissingRequired` (2 keys) and the rule API
-   `createMissing(typeCode, key, text, policy, args)` / `createError(descItemId, key, text, policy, args)`
-   with the package set per rule file by `ValidationRules` (package rules and extension rules);
-   `arr_node_conformity_*.description` (1000 chars) stores the encoded line, or the source text when it
-   would not fit (`ValidationMessage.storable`); rendered in `ClientFactoryVO.createNodeConformity` (the
-   tree, the node panel, the fund validation list through `ArrangementService.createVersionValidationItems`)
-   and in the AI context; the full-text index gets the source text (`indexText`). ZP2015 and SIMPLE-DEV
-   keep plain texts. Covered by `AddonPackageTest` (keyed addon message, `translations/en.xml`, a core
-   message in both languages). The word for an undefined value is the nested term `CORE/UNDEFINED_VALUE`
-   (plan group D2 "výjimka" in messages - done; the stored value and tree titles are untouched).
-2. **Request-time texts come from the core catalog in the request language** (B, E1, E2; done
-   2026-10-09): the same `CoreMessage` enum and `translations/<tag>.xml` files of the core as rule 1,
-   rendered right away with `PackageTexts.text(message, args)` (no storage). Sorted by *who owns the
-   state* (user's principle 2026-10-09: a text is a core text only when neither the UI nor a package can
-   own it):
-   - **core** - the headers of the CSV exports of a fund and of its issues (`ArrIOService`,
-     `IssueService`, 14 keys: a downloaded file), the 401 body of a refused API key (`ApiKeyFailure` →
-     `CoreMessage`, 6 keys: read by an integrator, not the UI), the reasons an AI proposal cannot be
-     applied (`AiProposalService`, 22 keys: evaluated against the rule set like validation; item types
-     passed as objects, rendered as names in the reader's language);
-   - **UI-owned, left to the client** - the explorer tree's structural nodes (the client already labels
-     them by `AipLevelType`, the server label is a fallback), the root nodes of the logical AIP tree
-     (`AipService` "Logická struktura" / "Bez logické struktury": `TreeNodeCustomGen` needs a kind for the
-     client to label; DA module is Czech-only by decision), the log viewer errors (`AdminOldController`:
-     a code on `LogVO` would do), the password rules (`PasswordPolicyService`: the client already renders
-     its own text from `rule` + `minLength`, the server text is only the exception detail);
-   - **kept Czech by its own decision** - `RevisionFindingsBlockMapper`: the findings' texts arrive from
-     the AI in the run's language, translating the label words alone would mix languages (its Javadoc).
-   Nothing in this group depends on which rule set is loaded, so nothing moves into a package; a package
-   may still override any `CORE/*` text.
-3. **Texts a package writes follow the package** (D1, D2): the text form of unit dates inside entity
-   index names and outputs, the word for an undefined value in titles, default names and values
-   written by imports are rendered in the language of the rules package whose script or template
-   writes them (`rul_package.language_id`: CAM and ZP2015 Czech, ISAAR_CPF and ISADG English) - never
-   the UI language, because background jobs write them without a user, and never a language of the
-   fund (rule agreed 2026-10-08, section 7 L2 step 4). What a user sees at request time follows the
-   user (`PackageTexts.requestLanguage()`); the DAO import value and the template name come from the
-   rules or the client instead of core.
+### L2 — unit-date text per language
 
-*Out of scope, documented as Czech modules:* D3 (the DA/AIP integration is the Czech national digital
-archive interface, like CAM), C (not shown), F. E3 is a cleanup.
-
-*Open for the user:* (1) rules 1 and 2 agreed and implemented (above); rule 3 still a proposal;
-(2) DA/AIP and CAM declared Czech-only, no catalog for them; (3) unit dates - resolved by L2 (section
-7): no language on funds, texts follow the user or the writing package. *Remaining:* the UI-owned
-texts of rule 2 on the client side (a kind on `TreeNodeCustomGen`, a code on `LogVO`), the E3
-enum-label cleanup. Estimate half a day.
-
-### L2 — unit-date text per language (found 2026-10-08, design agreed 2026-10-08)
-
-*Finding.* The stored form of a unit date is language-neutral (`valueFrom`/`valueTo` ISO, `format`);
-only the text is Czech, in two places. Server: `UnitDateConverter` renders and parses one Czech form
-(" př. n. l.", "%d. st.", dates `d.M.u`; a negative year is accepted as BC too),
-`UnitDatePrintConvertor` prints Czech month names and "%d. století". Rendering reaches 14 files (REST
-`ArrItemUnitdateVO`/`ApItemUnitdateVO.value`, the fulltext index `ArrDataUnitdate.getFulltextValue`,
-`ap_index` through `GroovyItem`/`GroovyAppender`/`GroovyUnitdateFormatter`, tree titles,
-`DateRangeAction`, `ImportFromFund`, print), parsing 10 (item input through `ArrDataUnitdate`, search
-filters of nodes and entities, CAM search filters, `DrlUtils`, `ValidationController`). Client: the
-grammar `shared/datace/datace.pegjs` validates in five places (entity part forms, fund item forms,
-fund filter settings, search filters) and feeds the estimate conversion; it accepts the Czech century
-and a `bc ` prefix the server does not parse (and not " př. n. l."); `convertToEstimate` in
-`UnitdateField.tsx` splits the text on "-"; the format help `dataType.unitdate.format` is Czech only
-(no English translation in `en.json`); the generated parser says Peggy 2.0.1, which `package.json`
-does not declare (regenerated by hand); the server endpoint `ValidationController.validateUnitDate`
-and its client wrapper `WebApi.validateUnitdate` have no callers. The client never renders a date: it
-shows the server's `value`. `ApScope` already has a language (ISO 639-2); `ArrFund` has none.
+Steps 1-3 done 2026-10-08 (section 2, row "L2 (1-3)"): the stored form is language-neutral, the
+text is rendered per language from one lexicon shared by server and client. Open: step 4, the
+language rule for the remaining places.
 
 *Decisions (user, 2026-10-08).*
 1. **Parsing is language-independent, rendering is per language.** One tolerant parser on each side
    accepts every language's markers (BC, century, month names, date patterns) and the negative year
    whatever the UI language; rendering happens only on the server, in the language asked for.
 2. **One grammar, not one per language.** The language-dependent tokens form a lexicon shared by
-   both sides; the client keeps a single Peggy grammar. Adding a language adds tokens, not a parser.
+   both sides. Adding a language adds tokens, not a parser.
 3. **Unified by a shared lexicon and a shared corpus, not by shared code.** Rejected: ANTLR with Java
-   and TypeScript targets (one source, but a rewrite of the server parser and build plugins on both
-   sides for ~15 rules); server-only validation through the existing endpoint (grids and filters
-   would wait on the network for every keystroke, the estimate conversion would need a call too).
+   and TypeScript targets (a rewrite of the server parser and build plugins on both sides for ~15
+   rules); server-only validation through an endpoint (grids and filters would wait on the network
+   for every keystroke).
 
-*Design.*
-- **Lexicon** `elza-core/src/main/resources/unitdate/lexicon.json`: per language tag (`cs`, `en`)
-  the BC markers (prefix and suffix forms), century markers, month names (print, English input),
-  the date, year-month and date-time patterns, the interval and estimate delimiters; plus the
-  language-independent forms (negative year, ISO full date `u-MM-dd`). The server builds its
-  forms from the union over languages at class init (`UnitDateLexicon`, `UnitDateConverter.Form`)
-  and renders through the `render` templates of the language. The client imports the same file at
-  build time (`components/shared/unitdate/lexicon.ts`, relative path into elza-core; the Vite dev
-  server allows the directory): the lexicon is code, versioned with both sides, not installation
-  data - so no endpoint, no loading state, no stale copy. *Changed against the first design:* the
-  runtime endpoint was dropped for the build-time import.
-- **Corpus** `elza-core/src/main/resources/unitdate/cases.json`: inputs with the expected normalized
-  result (`valueFrom`, `valueTo`, `format`, estimates) or an expected error, covering every lexicon
-  form, both languages and the known divergences (`bc ` prefix, negative year).
-  `UnitDateConvertorTest` runs it; a vitest in elza-react reads the same file by relative path
-  (`../elza-core/src/main/resources/unitdate/`, no jar staleness) and runs it through the client
-  parser. The corpus is the drift guard.
-- **Server rendering.** `UnitDateConverter.convertToString(unitdate, language)`; the overload
-  without a language renders the default language of the lexicon (Czech) and is what package scripts
-  and core jobs call until step 4. Request-time texts (REST VOs, the item lists of the client) use
-  `PackageTexts.requestLanguage()`; the remaining places follow the rule of step 4 below.
-- **Client.** `components/shared/unitdate/parse.ts` mirrors the server algorithm step by step
-  (normalize, estimate interval, spaced delimiter, single part, legacy split; the same ordered forms
-  built from the lexicon) and produces the stored form, so the corpus asserts identical output.
-  *Changed against the first design:* the Peggy grammar is gone, not kept - PEG cannot apply the
-  lexicon's regular expressions at token boundaries without consuming input, and a hand-written
-  mirror of ~300 lines is one algorithm in two languages instead of two formalisms. `validateUnitDate`
-  keeps its signature; `convertToEstimate` rewrites the text from the spans of the parsed parts and
-  keeps the user's delimiters; the format help (three message sets: entity field, fund item form,
-  node form tooltip) carries only labels, the examples come from `examples.ts` per UI language and
-  `unitdate.test.ts` parses every one; the dead `WebApi.validateUnitdate` wrapper is removed.
-
-*Q1 - English forms (confirmed by the user 2026-10-08).* Rendering: year `1968`, BC `500 BC`, century
-`20th century` and `20th century BC`, year-month `Aug 1968`, date `21 Aug 1968`, date-time
-`21 Aug 1968 14:05`, interval `1968 – 1969` (en dash with spaces, as the Czech print output),
-estimate `[1968]`, estimated interval `1985/1990`. Month names because the numeric English forms
-collide with today's delimiters: `1968-08` reads as the year interval 1968 to 8, `8/1968` as an
-estimated interval, and `d/M/u` is ambiguous with `M/d/u` for users. Input additionally accepts the
-ISO full date `1968-08-21` (three groups, unambiguous), every Czech form, and the delimiters "-",
-" - ", " – ". Q2 (month names in print outputs) is covered by the lexicon.
-
-*Steps.* (1) lexicon, corpus, server parser built from the lexicon, corpus test; (2) client parser
-mirroring the server, estimate conversion, help texts, vitest with the corpus; (3) request-time
-texts in the UI language - all three done 2026-10-08 in one day; (4) the language rule for the
-remaining places, below - about 1.5 days.
-
-*Done (2026-10-08, Q1 confirmed, steps 1-3).* Lexicon and corpus (`unitdate/lexicon.json`,
-`unitdate/cases.json`, 93 cases); `UnitDateConverter` rebuilt on the lexicon with the same public
-API, `convertToString(unitdate, languageTag)` and the `beginToString`/`endToString` overloads;
-`UnitDateCorpusTest` (parse, render per language, rendered texts parse back) next to the untouched
-`UnitDateConvertorTest`; request-time texts in the UI language: `ApItemUnitdateVO` and
-`ArrItemUnitdateVO` take the language from `PackageTexts.requestLanguageTag()` (ApFactory,
-ClientFactoryVO, whose converter map became an instance map), `ApItemUnitdateVO.equalsValue`
-compares the stored form instead of the text (the text now depends on the request language);
-client parser, examples, help and tests as above. Behaviour changes beyond English: "0. st." is
-refused (the client already refused it, the server accepted a century 0); tokens of an interval are
-trimmed ("1968  -  1969"); markers are case-insensitive. Untouched so far: the search filter of
-entities compares the Czech text against the index (`ApStateSpecification`), the fulltext and
-`ap_index` texts, titles, `GroovyUnitdateFormatter`, `UnitDatePrintConvertor` (month names are in
-the lexicon already), and the legacy client renderer in `party/DatationField.jsx` (search form and
-bulk modifications) which still writes Czech text itself.
+*Where things are.* Lexicon `elza-core/src/main/resources/unitdate/lexicon.json` - per language tag
+the BC, century, month and date forms and the delimiters; the client imports it at build time by a
+relative path (code versioned with both sides, not installation data). Corpus `unitdate/cases.json`
+(93 cases) run by `UnitDateCorpusTest` and `unitdate.test.ts` - the drift guard. Server
+`UnitDateConverter.convertToString(unitdate, languageTag)`; the overload without a language renders
+Czech for package scripts and core jobs until step 4. Client `components/shared/unitdate/parse.ts`
+mirrors the server algorithm (the Peggy grammar is gone: PEG cannot apply the lexicon's regular
+expressions at token boundaries); the format help takes its examples from `examples.ts` per UI
+language. Request-time VOs (`ApItemUnitdateVO`, `ArrItemUnitdateVO`) render in the language of the
+request; `ApItemUnitdateVO.equalsValue` compares the stored form. English forms (confirmed
+2026-10-08): `1968`, `500 BC`, `20th century`, `20th century BC`, `Aug 1968`, `21 Aug 1968`,
+`21 Aug 1968 14:05`, `1968 – 1969`, `[1968]`, `1985/1990` - month names because the numeric English
+forms collide with the delimiters (`1968-08`, `8/1968`); input also accepts the ISO full date
+`1968-08-21`, every Czech form and the delimiters "-", " - ", " – ". Behaviour changes beyond
+English: "0. st." is refused, the tokens of an interval are trimmed, markers are case-insensitive.
 
 *Step 4 (rule agreed 2026-10-08, user): no language on funds.* The archivist knows the language of
-the description; the application needs no setting of its own. Three cases cover every remaining
-place:
+the description; the application needs no setting of its own. Remaining places: the entity search
+filter (`ApStateSpecification`, a text "contains" of the Czech form against the index), the fulltext
+and `ap_index` texts, tree titles, `GroovyUnitdateFormatter`, `UnitDatePrintConvertor` (month names
+are in the lexicon already), and the legacy client renderer in `party/DatationField.jsx` (search
+form and bulk modifications). Three cases cover them:
 - **What a user sees follows the user.** Done for item values, forms and filters. Tree titles are
   built on the server from the stored value, so they follow the request too - unless the level cache
   keeps the finished text; then it keeps the structured value and renders on the way out (check
@@ -477,9 +349,8 @@ place:
   default overload keeps Czech for callers without a package.
 - **Everything else carries no language.** The fulltext index (`ArrDataUnitdate.getFulltextValue`,
   the entity fulltext) holds the text in every language of the lexicon, so a search finds the date
-  whatever language the user typed it in. The entity date filter (`ApStateSpecification`, today a
-  text "contains" of the Czech form against the index) compares normalized ranges. `DateRangeAction`
-  and `ImportFromFund` store structured values and need no text.
+  whatever language the user typed it in. The entity date filter compares normalized ranges.
+  `DateRangeAction` and `ImportFromFund` store structured values and need no text.
 
 Dropped by the rule: `arr_fund.language_id`, the per-fund "description language", and the A1 open
 question on English funds. Step 4 is independent of 2b except the English print templates, which 2b
@@ -488,7 +359,7 @@ brings.
 **2a.3 Remaining read sites.** Tree titles (specification names in node titles,
 `DescriptionItemServiceInternal` `:164`); specification categories (kind `ITEM_SPEC_CATEGORY`); kinds
 `EXPORT_FILTER`, `OUTPUT_FILTER`, `STRUCTURED_TYPE_EXTENSION`, `EXTERNAL_ID_TYPE`, `INSTITUTION_TYPE`,
-`ACTION`; AI context and proposal rows; CSV exports after A1.
+`ACTION`; the item type names of AI proposal rows (`AiProposalService.displayName`).
 
 **2a.4 Translation template (on demand).** `PackageTranslationService.template(packageCode, tag,
 of)`: every translatable text with `src-hash`, the existing translation, the source text and state in
@@ -511,7 +382,8 @@ link, container, access point); rules with English messages (filter, available i
 mandatory elements at fonds level, new-level scenarios, validation, impact), policy types, fund
 validation; UI settings by the seven ISAD(G) areas; Czech translation file. Core neutrality:
 "Compute EJ" only for rule sets offering `ZP2015_INTRO_VYPOCET_EJ` (`FundTreeMain.jsx`),
-`createDid.groovy` with ISADG codes, core messages per A1. Test `IsadgPackageTest`; exit: an English
+`createDid.groovy` with ISADG codes; core messages are done (A1). Rule messages with keys and an
+English text, translated into Czech in `translations/cs.xml`. Test `IsadgPackageTest`; exit: an English
 user creates an ISADG fund, fills the mandatory elements, links a creator, validates, and sees no
 Czech text.
 
@@ -576,8 +448,10 @@ deletion; OpenAPI tag `customization` (ADMIN), admin page `/admin/customization`
 - Import: `packageimport/PackageService.java`, `ItemTypeUpdater.java`, `APTypeUpdater.java`,
   `PackageDeclarations.java`, `PackageTranslationService.java`, `PackageUtils.java`, `xml/*`.
 - Runtime: `core/data/StaticDataProvider.java`, `core/data/RuleSet.java`, `core/data/PackageTexts.java`,
-  `service/RuleService.java`, `service/GroovyService.java`, `service/AccessPointService.java`,
-  `controller/factory/ApFactory.java`, `domain/bridge/IndexConfigReaderImpl.java`.
+  `core/data/ValidationMessage.java`, `core/data/CoreMessage.java`, `core/data/CoreTranslations.java`
+  (+ `resources/translations/{cs,en}.xml`), `service/RuleService.java`, `service/GroovyService.java`,
+  `service/AccessPointService.java`, `controller/factory/ApFactory.java`,
+  `domain/bridge/IndexConfigReaderImpl.java`.
 - Schema: `elza-core/src/main/resources/db/changelog/db.elza-3-part-03.xml`.
 - Packages: `package-cz-base/`, `package-isaar-cpf/` (generated by `generator/gen_isaar.py`),
   `rules-cz-zp2015/`,
@@ -587,5 +461,6 @@ deletion; OpenAPI tag `customization` (ADMIN), admin page `/admin/customization`
 - Tests: `packageimport/EntityRulesTest.java` (`entity-rules-test`), `StandaloneFrameworkTest.java`
   (`entity-standalone-test`), `IsaarCpfPackageTest.java`, `rules/addon/AddonPackageTest.java`
   (`rules-addon-test`), `PackageTranslationTest` (`translation-addon-test`),
-  `PackageXmlFilesTest` (every package file read strictly), `search/IndexConfigReaderTest.java`,
-  `other/HelperTestService.java` (`deleteAllPackages`).
+  `PackageXmlFilesTest` (every package file read strictly), `core/data/PackageTextsTest`,
+  `core/data/CoreMessagesTest` (every core message in every shipped language),
+  `search/IndexConfigReaderTest.java`, `other/HelperTestService.java` (`deleteAllPackages`).
