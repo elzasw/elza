@@ -466,7 +466,7 @@ public class DaService {
             tempDir = unpack(input.zip());
             MetsType metsType = readMets(tempDir);
             packageType = AipPackageType.of(metsType);
-            PremisComplexType premisComplexType = readPremis(tempDir);
+            PremisComplexType premisComplexType = readPremis(tempDir, metsType);
 
             Path unpacked = tempDir;
             AipPackageType type = packageType;
@@ -564,7 +564,7 @@ public class DaService {
         try (ZipInputStream zipInputStream = new ZipInputStream((Files.newInputStream(zip)))) {
             ZipEntry entry;
             while ((entry = zipInputStream.getNextEntry()) != null) {
-                Path filePath = tempDir.resolve(entry.getName());
+                Path filePath = AipPackageFiles.resolveInside(tempDir, entry.getName());
                 if (entry.isDirectory()) {
                     Files.createDirectories(filePath);
                 } else {
@@ -576,35 +576,36 @@ public class DaService {
         return tempDir;
     }
 
-    MetsType readMets(Path tempDir) throws Exception {
-        try (Stream<Path> str = Files.walk(tempDir).filter(path -> path.toString().endsWith("METS.xml"))) {
-            Path mets = str.findFirst().orElseThrow(() -> AipProblemException.metadata("Balíček neobsahuje soubor METS.xml"));
-            return MetsReaderWriter.unmarshal(mets);
-        }
+    /**
+     * @param unpacked the directory a stored package was unpacked to
+     * @return the root METS of the package
+     */
+    MetsType readMets(Path unpacked) throws Exception {
+        return MetsReaderWriter.unmarshal(AipPackageFiles.mets(AipPackageFiles.packageRoot(unpacked)));
     }
 
     /**
-     * @return the first file of the given name anywhere in the unpacked package
-     * @throws AipProblemException when the package has no such file
+     * Reads every PREMIS file the root METS refers to, under whatever name, into one.
+     *
+     * Only the original names of the files are taken from PREMIS, and a file without one is
+     * named by its path, so a package without PREMIS is processed too; a PREMIS file the METS
+     * refers to but the package does not carry is an error of the package.
      */
-    private static Path findPackageFile(Path packageDir, String fileName) throws IOException {
-        try (Stream<Path> str = Files.walk(packageDir).filter(path -> path.toString().endsWith(fileName))) {
-            return str.findFirst().orElseThrow(() -> AipProblemException.metadata("Balíček neobsahuje soubor " + fileName));
+    private PremisComplexType readPremis(Path unpacked, MetsType mets) throws Exception {
+        Path root = AipPackageFiles.packageRoot(unpacked);
+        PremisComplexType premis = new PremisComplexType();
+        for (String href : AipPackageFiles.premisHrefs(mets)) {
+            premis.getObject().addAll(PremisReaderWriter.unmarshal(AipPackageFiles.referenced(root, href)).getObject());
         }
+        return premis;
     }
 
-    private PremisComplexType readPremis(Path tempDir) throws Exception {
-        try (Stream<Path> str = Files.walk(tempDir).filter(path -> path.toString().endsWith("PREMIS.xml"))) {
-            Path premis = str.findFirst().orElseThrow(() -> AipProblemException.metadata("Balíček neobsahuje soubor PREMIS.xml"));
-            return PremisReaderWriter.unmarshal(premis);
-        }
-    }
-
-    public Ead loadEadFile(Path tempDir, String filePath) throws IOException, JAXBException {
-        try (Stream<Path> str = Files.walk(tempDir).filter(path -> path.toString().endsWith(filePath))) {
-            Path ead = str.findFirst().orElseThrow(() -> AipProblemException.metadata("Balíček neobsahuje soubor " + filePath));
-            return EadReaderWriter.unmarshal(ead);
-        }
+    /**
+     * @param unpacked the directory a stored package was unpacked to
+     * @param href     the path of the EAD as the METS gives it
+     */
+    public Ead loadEadFile(Path unpacked, String href) throws IOException, JAXBException {
+        return EadReaderWriter.unmarshal(AipPackageFiles.referenced(AipPackageFiles.packageRoot(unpacked), href));
     }
 
     public DaAip findAipById(Integer aipId) {
@@ -1563,7 +1564,7 @@ public class DaService {
                 // is missing from it, which says nothing about what the DA did send instead -
                 // the names of the received entries are the only account of that.
                 logger.debug("Balíček dávky obsahuje položku {}", entry.getName());
-                Path filePath = tempDir.resolve(entry.getName());
+                Path filePath = AipPackageFiles.resolveInside(tempDir, entry.getName());
                 if (entry.isDirectory()) {
                     Files.createDirectories(filePath);
                 } else {
@@ -1591,15 +1592,14 @@ public class DaService {
             for (File aipDir : aipDirSet) {
                 DaAipState aipState;
                 try {
-                    Path packageInfo = findPackageFile(aipDir.toPath(), "PACKAGE-INFO.xml");
+                    Path packageInfo = AipPackageFiles.packageInfo(aipDir.toPath());
                     aipState = packageInfoService.processPackageInfo(digitalRepository, packageInfo.toFile());
                     // The load flags of the AIP are set by storing the package, so a package is
                     // stored only when it is what its type claims: a DA that answers a metadata
                     // request with less would otherwise be recorded as having delivered the
                     // metadata, and the AIP could never be asked for them again.
                     if (aipType != AipType.PACKAGE_INFO) {
-                        findPackageFile(aipDir.toPath(), "METS.xml");
-                        findPackageFile(aipDir.toPath(), "PREMIS.xml");
+                        checkMetadataFiles(aipDir.toPath());
                     }
                 } catch (Exception e) {
                     AipProblem problem = AipProblem.of(e);
@@ -1625,6 +1625,25 @@ public class DaService {
                 applicationContext.getBean(DaService.class)
                         .failQueueItems(failedItems, DaSyncQueueItem.QueueItemState.IMPORT_ERROR);
             }
+        }
+    }
+
+    /**
+     * A metadata package is complete when it has the root METS and every file of its metadata
+     * sections - the files are taken from the METS, so their names are whatever the package
+     * gives them.
+     */
+    static void checkMetadataFiles(Path root) {
+        Path metsFile = AipPackageFiles.mets(root);
+        MetsType mets;
+        try {
+            mets = MetsReaderWriter.unmarshal(metsFile);
+        } catch (Exception e) {
+            throw AipProblemException.metadata("Soubor METS.xml balíčku se nepodařilo přečíst: " + AipProblem.reason(e),
+                                               AipPackageFiles.METS, e);
+        }
+        for (String href : AipPackageFiles.metadataHrefs(mets)) {
+            AipPackageFiles.referenced(root, href);
         }
     }
 
@@ -2441,18 +2460,15 @@ public class DaService {
         try {
             Path zip = Paths.get(localCache.getFilePath());
 
-            // zip entry names use '/', the stored file name may use either separator
-            String filePath = daoFile.getFileName().replace(File.separator, "/");
-            String fileName = filePath.substring(filePath.lastIndexOf('/') + 1);
+            // the stored name is the original name of the file when PREMIS gives one
+            String storedName = daoFile.getFileName().replace(File.separator, "/");
+            String fileName = storedName.substring(storedName.lastIndexOf('/') + 1);
 
             // Only the requested entry leaves the package; the content is spooled to a temporary
             // file when large and released once the response body is written.
             SpooledContent content;
             try (ZipFile zipFile = new ZipFile(zip.toFile())) {
-                ZipEntry entry = zipFile.stream()
-                        .filter(e -> !e.isDirectory() && e.getName().endsWith(filePath))
-                        .findFirst()
-                        .orElseThrow(() -> AipProblemException.metadata("Balíček neobsahuje soubor " + filePath));
+                ZipEntry entry = componentEntry(zipFile, daoFile.getDao().getCode());
                 try (InputStream in = zipFile.getInputStream(entry)) {
                     content = SpooledContent.readFrom(in);
                 }
@@ -2469,6 +2485,46 @@ public class DaService {
         } catch (IOException e) {
             throw new IllegalStateException("Došlo k chybě při čtení souboru z cache", e);
         }
+    }
+
+    /**
+     * Finds a file of a stored package by the path its root METS gives it. The DAO of the file
+     * is coded by the ID the file has in the METS; its stored name may be the original name of
+     * the file, which need not be the name in the package, nor unique in it.
+     */
+    private static ZipEntry componentEntry(ZipFile zipFile, String daoCode) throws IOException {
+        ZipEntry metsEntry = zipFile.stream()
+                .filter(e -> !e.isDirectory() && isRootMets(e.getName()))
+                .findFirst()
+                .orElseThrow(() -> AipProblemException.metadata("Balíček neobsahuje soubor " + AipPackageFiles.METS));
+        String root = metsEntry.getName().substring(0, metsEntry.getName().length() - AipPackageFiles.METS.length());
+        MetsType mets;
+        try (InputStream in = zipFile.getInputStream(metsEntry)) {
+            mets = MetsReaderWriter.unmarshal(in);
+        } catch (JAXBException e) {
+            throw AipProblemException.metadata("Soubor METS.xml balíčku se nepodařilo přečíst: " + AipProblem.reason(e),
+                                               AipPackageFiles.METS, e);
+        }
+        String href = AipPackageFiles.hrefOf(mets, daoCode);
+        if (href == null) {
+            throw AipProblemException.metadata("METS.xml balíčku neobsahuje soubor " + daoCode);
+        }
+        String path = root + (href.startsWith("./") ? href.substring(2) : href);
+        ZipEntry entry = zipFile.getEntry(path);
+        if (entry == null || entry.isDirectory()) {
+            throw AipProblemException.metadata("Balíček neobsahuje soubor " + href + ", na který odkazuje METS.xml",
+                                               href, null);
+        }
+        return entry;
+    }
+
+    /** The root METS lies at the top of the package directory, which a stored package keeps. */
+    static boolean isRootMets(String entryName) {
+        if (!entryName.endsWith(AipPackageFiles.METS)) {
+            return false;
+        }
+        String dir = entryName.substring(0, entryName.length() - AipPackageFiles.METS.length());
+        return dir.isEmpty() || (dir.length() > 1 && dir.indexOf('/') == dir.length() - 1);
     }
 
     /**

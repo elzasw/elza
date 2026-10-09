@@ -15,6 +15,15 @@ between the installed and the new version; see :doc:`/03-upgrade`.
 Upcoming version
 ================
 
+* Fix: ELZA DA - the files of a package are found where its root METS puts
+  them, not by their names. A package whose PREMIS file has another name
+  (``premis.xml``, ``RETENTION-METADATA.xml``) is no longer refused with
+  "Balíček neobsahuje soubor PREMIS.xml", a package without PREMIS is
+  processed too (file names are then taken from the package), and a
+  metadata package is refused when a file its METS refers to is missing.
+  The METS of the original SIP inside a representation can no longer be
+  taken for the METS of the package, and a component is downloaded by its
+  path in the package, so files of the same name are not confused.
 * Change: ELZA DA - while the digital archive prepares a download or
   processes an exported package, ELZA asks for the state of the batch every
   2 seconds instead of every 100 ms. The interval is a new setting of the DA
