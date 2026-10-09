@@ -226,6 +226,29 @@ model FsRepo {
 }
 
 /**
+ * Kind of a digital repository.
+ */
+enum DigitalRepositoryType {
+    /** Repository reached over the legacy WSDL interface */
+    WSDL,
+    /** Repository on a file system served by ELZA */
+    FILESYSTEM,
+    /** Digital archive (DA API) */
+    DA,
+}
+
+/**
+ * A digital repository, as listed for choosing one.
+ */
+model DigitalRepositoryInfo {
+    /** External system ID */
+    id: integer;
+    code: string;
+    name: string;
+    type: DigitalRepositoryType;
+}
+
+/**
  * Direction of a request in the queue of a digital archive.
  */
 enum DaQueueDirection {
@@ -3656,6 +3679,15 @@ namespace ElzaAPI.ExternalSystem {
         @Http.statusCode statusCode: 404;
         @body data: BaseException;
     };
+
+    /**
+     * Digital repositories, optionally of one kind only, ordered by name.
+     */
+    @route("/digitalrepository")
+    @get op digitalRepositories(
+        /** Only repositories of this kind */
+        @query type?: DigitalRepositoryType;
+    ): DigitalRepositoryInfo[];
 
     /**
      * Requests in the queue of a digital archive, newest first. Available to administrators.

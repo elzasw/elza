@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller;
 
+import java.util.Comparator;
 import java.util.List;
 
 import jakarta.transaction.Transactional;
@@ -14,6 +15,7 @@ import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.controller.vo.DaQueueActionResult;
 import cz.tacr.elza.controller.vo.DaQueueDirection;
 import cz.tacr.elza.controller.vo.DaQueueItemPage;
+import cz.tacr.elza.controller.vo.DigitalRepositoryInfo;
 import cz.tacr.elza.controller.vo.DigitalRepositoryTestResult;
 import cz.tacr.elza.controller.vo.QueueItemState;
 import cz.tacr.elza.service.da.DaQueueService;
@@ -69,6 +71,26 @@ public class ExternalSystemController implements ExternalsystemsApi {
     	extSystemService.deleteBindingSync(extSys);
 
     	return ResponseEntity.ok().build();
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<List<DigitalRepositoryInfo>> externalSystemDigitalRepositories(
+            cz.tacr.elza.controller.vo.DigitalRepositoryType type) {
+        List<DigitalRepositoryInfo> repositories = extSystemService.findDigitalRepository().stream()
+                .filter(repository -> type == null || repository.getDigitalRepositoryType().name().equals(type.name()))
+                .sorted(Comparator.comparing(ArrDigitalRepository::getName, String.CASE_INSENSITIVE_ORDER))
+                .map(repository -> {
+                    DigitalRepositoryInfo info = new DigitalRepositoryInfo();
+                    info.setId(repository.getExternalSystemId());
+                    info.setCode(repository.getCode());
+                    info.setName(repository.getName());
+                    info.setType(cz.tacr.elza.controller.vo.DigitalRepositoryType.valueOf(
+                            repository.getDigitalRepositoryType().name()));
+                    return info;
+                })
+                .toList();
+        return ResponseEntity.ok(repositories);
     }
 
     @Override

@@ -53,6 +53,8 @@ public class DaAsyncQueueTest extends AbstractServiceTest {
     @Autowired
     private DaQueueService daQueueService;
     @Autowired
+    private cz.tacr.elza.controller.ExternalSystemController externalSystemController;
+    @Autowired
     private DaCommunicationLock communicationLock;
     @Autowired
     private DaSyncQueueItemRepository queueRepository;
@@ -350,5 +352,28 @@ public class DaAsyncQueueTest extends AbstractServiceTest {
 
         assertEquals(0, result.getDone());
         assertEquals(1, result.getSkipped());
+    }
+
+    /** The queue page lists digital archives through the typed endpoint, other repositories left out. */
+    @Test
+    void digitalRepositoriesAreListedByType() {
+        tx().executeWithoutResult(t -> {
+            ArrDigitalRepository fileSystem = new ArrDigitalRepository();
+            fileSystem.setCode("FS-ASYNC");
+            fileSystem.setName("Diskove uloziste");
+            fileSystem.setDigitalRepositoryType(DigitalRepositoryType.FILESYSTEM);
+            fileSystem.setSendNotification(false);
+            digitalRepositoryRepository.save(fileSystem);
+        });
+
+        List<cz.tacr.elza.controller.vo.DigitalRepositoryInfo> archives = externalSystemController
+                .externalSystemDigitalRepositories(cz.tacr.elza.controller.vo.DigitalRepositoryType.DA).getBody();
+        List<cz.tacr.elza.controller.vo.DigitalRepositoryInfo> all = externalSystemController
+                .externalSystemDigitalRepositories(null).getBody();
+
+        assertEquals(List.of("DA-ASYNC"), archives.stream().map(cz.tacr.elza.controller.vo.DigitalRepositoryInfo::getCode).toList());
+        assertEquals(cz.tacr.elza.controller.vo.DigitalRepositoryType.DA, archives.get(0).getType());
+        assertEquals(List.of("Diskove uloziste", "Testovaci digitalni archiv"),
+                     all.stream().map(cz.tacr.elza.controller.vo.DigitalRepositoryInfo::getName).toList());
     }
 }
