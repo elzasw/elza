@@ -68,9 +68,11 @@ public class AsyncAipWorker implements IAsyncWorker {
         // thread for whatever runs on it next.
         SecurityContext originalSecCtx = SecurityContextHolder.getContext();
         try {
-            if (request.getUserId() != null) {
-                SecurityContextHolder.setContext(userService.createSecurityContext(request.getUserId()));
-            }
+            // an action started by the built-in admin or by the system has no user; its steps
+            // still change funds and run through secured services
+            SecurityContextHolder.setContext(request.getUserId() != null
+                    ? userService.createSecurityContext(request.getUserId())
+                    : userService.createSecurityContextSystem());
             stepService.runStep(request.getAipActionItemId());
             success = true;
         } catch (Throwable t) {
