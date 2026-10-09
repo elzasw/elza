@@ -56,6 +56,10 @@ const messages = defineMessages({
         id: 'ribbon.action.admin.requestsQueue',
         defaultMessage: 'Fronta požadavků',
     },
+    daQueue: {
+        id: 'ribbon.action.admin.daQueue',
+        defaultMessage: 'Fronta digitálního archivu',
+    },
     showLogs: {
         id: 'ribbon.action.admin.showLogs',
         defaultMessage: 'Zobrazení logu',
@@ -129,6 +133,7 @@ export function AdminNav() {
         { to: '/admin/extSystem', glyph: 'fa-external-link', label: <FormattedMessage {...messages.externalSystems} />, visible: isSuperuser },
         { to: '/admin/backgroundProcesses', glyph: 'fa-list-alt', label: <FormattedMessage {...messages.backgroundProcesses} />, visible: isSuperuser },
         { to: '/admin/requestsQueue', glyph: 'fa-shopping-basket', label: <FormattedMessage {...messages.requestsQueue} />, visible: isSuperuser },
+        { to: '/admin/da', glyph: 'fa-exchange', label: <FormattedMessage {...messages.daQueue} />, visible: isSuperuser },
         { to: '/admin/logs', glyph: 'fa-file-text-o', label: <FormattedMessage {...messages.showLogs} />, visible: isSuperuser },
     ];
 

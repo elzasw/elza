@@ -62,6 +62,7 @@ import cz.tacr.elza.repository.DaDaoFileRepository;
 import cz.tacr.elza.repository.DaDaoRelationRepository;
 import cz.tacr.elza.repository.DaDaoRepository;
 import cz.tacr.elza.repository.DaLevelViewRepository;
+import cz.tacr.elza.repository.DaAipActionItemRepository;
 import cz.tacr.elza.repository.DaLocalCacheRepository;
 import cz.tacr.elza.repository.DaRemoteRepositorySyncRepository;
 import cz.tacr.elza.repository.DaSyncQueueItemRepository;
@@ -272,6 +273,8 @@ public class DaService {
     private DaLinkCloser linkCloser;
     @Autowired
     private DaCommunicationLock communicationLock;
+    @Autowired
+    private DaAipActionItemRepository aipActionItemRepository;
 
     /** Reads and writes what an action was asked to do; see {@link ConnectParams}. */
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -1552,36 +1555,88 @@ public class DaService {
         recordDownloadFailure(items, failure);
     }
 
+    /** Whether the request waits for the queue - delivered to the DA or not. */
+    static boolean isWaiting(DaSyncQueueItem item) {
+        return BooleanUtils.isTrue(item.getActive()) && WAITING_STATES.contains(item.getState());
+    }
+
+    /** Whether the request waits and the DA has not received it - only such can be cancelled. */
+    static boolean isUndelivered(DaSyncQueueItem item) {
+        return BooleanUtils.isTrue(item.getActive()) && UNDELIVERED_STATES.contains(item.getState());
+    }
+
+    /** Whether the request ended by an error and nothing newer replaced it. */
+    static boolean isFailed(DaSyncQueueItem item) {
+        return BooleanUtils.isTrue(item.getActive())
+                && (item.getState() == DaSyncQueueItem.QueueItemState.IMPORT_ERROR
+                    || item.getState() == DaSyncQueueItem.QueueItemState.EXPORT_ERROR);
+    }
+
     /**
-     * "Zkusit znovu teď": the waiting requests of the AIPs are taken on the next cycle of the
-     * queue, without the retry delay - a question about a batch in flight as well.
+     * "Zkusit znovu teď": the waiting requests are taken on the next cycle of the queue, without
+     * the retry delay - a question about a batch in flight as well.
      *
-     * @return the number of requests taken now
+     * @param items waiting requests ({@link #isWaiting})
      */
     @Transactional
-    public int retryNow(Collection<Integer> aipIds) {
-        List<DaSyncQueueItem> items = syncQueueItemRepository.findActiveByAipsAndStates(aipIds, WAITING_STATES);
+    public void retryNow(Collection<DaSyncQueueItem> items) {
         for (DaSyncQueueItem item : items) {
             item.setNextAttemptAt(null);
         }
         syncQueueItemRepository.saveAll(items);
-        return items.size();
     }
 
     /**
-     * Withdraws the requests of the AIPs the DA has not received yet. A download already requested
-     * and an export already sent are left to finish - the DA works on them.
+     * Cancels requests the DA has not received yet; their actions end skipped.
      *
-     * @return the number of withdrawn requests
+     * @param items undelivered requests ({@link #isUndelivered})
      */
     @Transactional
-    public int withdrawRequests(Collection<Integer> aipIds) {
-        List<DaSyncQueueItem> items = syncQueueItemRepository.findActiveByAipsAndStates(aipIds, UNDELIVERED_STATES);
+    public void withdraw(Collection<DaSyncQueueItem> items) {
         for (DaSyncQueueItem item : items) {
             deactivateQueueItems(item.getCode(), item.getAip(), item.getDigitalRepository(), List.of(item.getState()),
                                  "Požadavek zrušil uživatel.");
         }
-        return items.size();
+    }
+
+    /**
+     * Repeats failed requests. A download is requested again in the form that failed; it
+     * replaces the failed request, which stays in the history. An export sends a new change
+     * package built from the current description - the description may have been corrected
+     * since the DA refused the package.
+     *
+     * @param items failed requests ({@link #isFailed})
+     * @return the number of requests repeated
+     */
+    @Transactional
+    public int repeat(Collection<DaSyncQueueItem> items) {
+        int repeated = 0;
+        List<Integer> exportAipIds = new ArrayList<>();
+        for (DaSyncQueueItem item : items) {
+            if (item.getState() == DaSyncQueueItem.QueueItemState.EXPORT_ERROR) {
+                if (item.getAip() != null) {
+                    exportAipIds.add(item.getAip().getAipId());
+                }
+                continue;
+            }
+            DaAipState aipState = item.getAip() == null ? null
+                    : aipStateRepository.findByDaAipAndDeleteChangeIsNull(item.getAip());
+            if (item.getAip() != null && aipState == null) {
+                continue; // invalidated - nothing to download
+            }
+            createSyncQueueItem(item.getCode(), item.getAip(), item.getDigitalRepository(),
+                                aipState != null ? DaSyncQueueItem.QueueItemState.UPDATE
+                                                 : DaSyncQueueItem.QueueItemState.IMPORT_NEW,
+                                item.getAipVersion(), item.getAipType(), true);
+            repeated++;
+        }
+        if (!exportAipIds.isEmpty()) {
+            DaAipAction action = applicationContext.getBean(DaService.class).aipExportAip(exportAipIds);
+            repeated += (int) aipActionItemRepository.findByAipActionOrderByAipActionItemId(action).stream()
+                    .filter(i -> i.getState() != DaAipActionItemState.SKIPPED && i.getState() != DaAipActionItemState.ERROR)
+                    .count();
+        }
+        return repeated;
     }
 
     @Transactional
