@@ -455,6 +455,10 @@
     "defaultMessage": "Digital archive",
     "srcHash": "iPgFLR6539C0"
   },
+  "admin.extSystem.daQueue": {
+    "defaultMessage": "Digital archive request queue",
+    "srcHash": "zeuzMGQwHRZ-"
+  },
   "admin.extSystem.daStatusPollInterval": {
     "defaultMessage": "Batch status check interval (s)",
     "srcHash": "wKwHzcumljpN"

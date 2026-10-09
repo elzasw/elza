@@ -8,10 +8,7 @@ import { useEffect, useState } from 'react';
 import { FormattedMessage, useIntl } from 'react-intl';
 import { Redirect, useHistory, useParams } from 'react-router';
 import { AdminLayout } from '../shared/layout/AdminLayout';
-
-export const URL_ADMIN_DA = '/admin/da';
-
-export const urlAdminDaQueue = (repositoryId: number) => `${URL_ADMIN_DA}/${repositoryId}/requests`;
+import { urlAdminDaQueue } from '../../constants';
 
 /**
  * Queue of a digital archive: {@code /admin/da/<id>/requests}. Without an id the first digital

@@ -68,7 +68,8 @@ import {
     URL_NODE,
     URL_AIP,
     PUBLICATION,
-    URL_COMPONENT
+    URL_COMPONENT,
+    URL_ADMIN_DA
 } from '../constants.tsx';
 import AdminBackgroundProcessesPage from './admin/AdminBackgroundProcessesPage';
 import AdminDaQueuePage from './admin/AdminDaQueuePage';
@@ -301,8 +302,8 @@ class Layout extends AbstractReactComponent {
                                             <Route path="/admin/packages" component={AdminPackagesPage} />
                                             <Route path="/admin/backgroundProcesses" component={AdminBackgroundProcessesPage} />
                                             <Route path="/admin/requestsQueue" component={AdminRequestsQueuePage} />
-                                            <Route path="/admin/da/:daId/requests" component={AdminDaQueuePage} />
-                                            <Route path="/admin/da" component={AdminDaQueuePage} />
+                                            <Route path={URL_ADMIN_DA + "/:daId/requests"} component={AdminDaQueuePage} />
+                                            <Route path={URL_ADMIN_DA} component={AdminDaQueuePage} />
                                             <Route path="/admin/extSystem" component={AdminExtSystemPage} />
                                             <Route path="/admin/institution/:id" component={AdminInstitutionPage} />
                                             <Route path="/admin/institution" component={AdminInstitutionPage} />

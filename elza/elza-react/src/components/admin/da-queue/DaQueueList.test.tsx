@@ -105,4 +105,19 @@ describe('DaQueueList', () => {
         await waitFor(() => expect(api.externalSystemDaQueue).toHaveBeenLastCalledWith(
             7, true, undefined, undefined, undefined, 'd1', false, 0, 50));
     });
+
+    it('reloads after a pause in typing, not on every key', async () => {
+        serve([item(1, QueueItemState.Update)]);
+        renderWithProviders(<DaQueueList repositoryId={7} />);
+        await screen.findByText('aip-1');
+        const calls = api.externalSystemDaQueue.mock.calls.length;
+
+        fireEvent.change(screen.getByRole('textbox', { name: 'Kód AIP' }), { target: { value: 'ab' } });
+        fireEvent.change(screen.getByRole('textbox', { name: 'Kód AIP' }), { target: { value: 'abc' } });
+        expect(api.externalSystemDaQueue.mock.calls.length).toBe(calls);
+
+        await waitFor(() => expect(api.externalSystemDaQueue).toHaveBeenLastCalledWith(
+            7, false, undefined, undefined, 'abc', undefined, false, 0, 50));
+        expect(api.externalSystemDaQueue.mock.calls.length).toBe(calls + 1);
+    });
 });

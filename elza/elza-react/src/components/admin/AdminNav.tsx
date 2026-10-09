@@ -7,6 +7,7 @@ import * as perms from 'actions/user/Permission.jsx';
 import { useAppSelector } from 'utils/hooks/useAppSelector';
 import {
     URL_ADMIN_USER,
+    URL_ADMIN_DA,
     URL_ADMIN_GROUP,
     URL_ADMIN_FUND,
     URL_ADMIN_INSTITUTION,
@@ -133,7 +134,7 @@ export function AdminNav() {
         { to: '/admin/extSystem', glyph: 'fa-external-link', label: <FormattedMessage {...messages.externalSystems} />, visible: isSuperuser },
         { to: '/admin/backgroundProcesses', glyph: 'fa-list-alt', label: <FormattedMessage {...messages.backgroundProcesses} />, visible: isSuperuser },
         { to: '/admin/requestsQueue', glyph: 'fa-shopping-basket', label: <FormattedMessage {...messages.requestsQueue} />, visible: isSuperuser },
-        { to: '/admin/da', glyph: 'fa-exchange', label: <FormattedMessage {...messages.daQueue} />, visible: isSuperuser },
+        { to: URL_ADMIN_DA, glyph: 'fa-exchange', label: <FormattedMessage {...messages.daQueue} />, visible: isSuperuser },
         { to: '/admin/logs', glyph: 'fa-file-text-o', label: <FormattedMessage {...messages.showLogs} />, visible: isSuperuser },
     ];
 
