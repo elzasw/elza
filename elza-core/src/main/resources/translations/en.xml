@@ -34,4 +34,52 @@
 
     <!-- terms used as arguments -->
     <t type="MESSAGE" code="CORE/UNDEFINED_VALUE" field="text">undefined</t>
+
+    <!-- headers of the CSV exports of a fund and of its issues -->
+    <t type="MESSAGE" code="CORE/EXPORT_COL_RECORD_NUMBER" field="text">Record number</t>
+    <t type="MESSAGE" code="CORE/EXPORT_COL_NODE_NUMBER" field="text">Unit of description number</t>
+    <t type="MESSAGE" code="CORE/EXPORT_COL_ITEM_TYPE" field="text">Item</t>
+    <t type="MESSAGE" code="CORE/EXPORT_COL_SPEC" field="text">Specification</t>
+    <t type="MESSAGE" code="CORE/EXPORT_COL_VALUE" field="text">Value</t>
+    <t type="MESSAGE" code="CORE/EXPORT_COL_ENTITY_ID" field="text">Entity ID</t>
+    <t type="MESSAGE" code="CORE/ISSUES_COL_NUMBER" field="text">Number</t>
+    <t type="MESSAGE" code="CORE/ISSUES_COL_TYPE" field="text">Type</t>
+    <t type="MESSAGE" code="CORE/ISSUES_COL_STATE" field="text">State</t>
+    <t type="MESSAGE" code="CORE/ISSUES_COL_USER" field="text">User</t>
+    <t type="MESSAGE" code="CORE/ISSUES_COL_USER_NAME" field="text">User name</t>
+    <t type="MESSAGE" code="CORE/ISSUES_COL_DATE" field="text">Date</t>
+    <t type="MESSAGE" code="CORE/ISSUES_COL_DESCRIPTION" field="text">Description</t>
+    <t type="MESSAGE" code="CORE/ISSUES_COL_COMMENTS" field="text">Comments</t>
+
+    <!-- refused API-key authentication -->
+    <t type="MESSAGE" code="CORE/API_KEY_MALFORMED_TOKEN" field="text">The token is malformed; use the value issued by the server.</t>
+    <t type="MESSAGE" code="CORE/API_KEY_UNKNOWN_KEY" field="text">No key with this identifier exists.</t>
+    <t type="MESSAGE" code="CORE/API_KEY_INVALID_SECRET" field="text">The secret part of the token does not match.</t>
+    <t type="MESSAGE" code="CORE/API_KEY_EXPIRED" field="text">The key has expired. Create a new one.</t>
+    <t type="MESSAGE" code="CORE/API_KEY_REVOKED" field="text">The key has been revoked. Create a new one.</t>
+    <t type="MESSAGE" code="CORE/API_KEY_USER_INACTIVE" field="text">The user is inactive. Contact the administrator.</t>
+
+    <!-- why a proposal of the AI assistant cannot be applied: {0} item type, {1} specification code or value -->
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_RULES_FAILED" field="text">The rules of the unit of description could not be evaluated.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_NO_OPERATION" field="text">The proposal contains no operation.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_UNKNOWN_OPERATION" field="text">Unknown kind of proposal operation.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_INCOMPLETE_OPERATION" field="text">Incomplete proposal operation.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_UNKNOWN_ITEM_TYPE" field="text">Unknown item type: {0}.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_ITEM_NOT_ALLOWED" field="text">The item “{0}” cannot be used at this unit of description.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_ITEM_NOT_REPEATABLE" field="text">The item “{0}” is not repeatable and the unit of description already has its value.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_TYPE_CHANGE" field="text">The proposal changes the type of the item – such a change cannot be made.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_UNKNOWN_CHANGED_ITEM_TYPE" field="text">Unknown type of the changed item.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_ITEM_GONE" field="text">The changed item no longer exists at the unit of description.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_ITEM_CHANGED_MEANWHILE" field="text">The item has been changed in the meantime – the proposal does not match its current value.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_ITEM_READ_ONLY" field="text">The item is read-only.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_DATA_TYPE_NOT_PROPOSABLE" field="text">The item “{0}” of this data type cannot be changed by a proposal.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_SPEC_MISSING" field="text">The proposal does not give the specification of the item “{0}”.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_SPEC_INVALID" field="text">Invalid specification “{1}” of the item “{0}”.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_ENTITY_REF_MISSING" field="text">The proposal does not give the referenced entity of the item “{0}”.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_ENTITY_NOT_FOUND" field="text">The referenced entity was not found.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_VALUE_NOT_STORABLE" field="text">The value “{1}” cannot be stored in the item “{0}”.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_VALUE_MISSING" field="text">The proposal contains no value of the item “{0}”.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_NODE_MISSING" field="text">The proposal does not name a unit of description.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_NODE_NOT_FOUND" field="text">The unit of description was not found.</t>
+    <t type="MESSAGE" code="CORE/AI_PROPOSAL_NODE_UNAVAILABLE" field="text">The unit of description is not available.</t>
 </translations>
