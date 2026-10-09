@@ -13,6 +13,7 @@ import cz.tacr.elza.aiprovider.client.vo.ItemTypeDictionary;
 import cz.tacr.elza.aiprovider.client.vo.ItemTypeInfo;
 import cz.tacr.elza.aiprovider.client.vo.ItemTypeSpecInfo;
 import cz.tacr.elza.aiprovider.client.vo.StandardToolName;
+import cz.tacr.elza.core.data.PackageTexts;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.service.RuleService;
 
@@ -27,6 +28,9 @@ public class GetItemTypesTool implements AiTool {
 
     @Autowired
     private RuleService ruleService;
+
+    @Autowired
+    private PackageTexts packageTexts;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -52,11 +56,11 @@ public class GetItemTypesTool implements AiTool {
     private ItemTypeInfo toItemTypeInfo(final RulItemTypeExt src) {
         ItemTypeInfo info = new ItemTypeInfo()
                 .code(src.getCode())
-                .name(src.getName())
+                .name(packageTexts.name(src))
                 .dataType(DataType.fromValue(src.getDataType().getCode()));
         if (src.getRulItemSpecList() != null && !src.getRulItemSpecList().isEmpty()) {
             info.specs(src.getRulItemSpecList().stream()
-                    .map(spec -> new ItemTypeSpecInfo().code(spec.getCode()).name(spec.getName()))
+                    .map(spec -> new ItemTypeSpecInfo().code(spec.getCode()).name(packageTexts.name(spec)))
                     .toList());
         }
         return info;

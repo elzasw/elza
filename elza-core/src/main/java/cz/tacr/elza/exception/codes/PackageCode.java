@@ -62,4 +62,52 @@ public enum PackageCode implements ErrorCode {
      * Scenario nebyl nalezen
      */
     SCENARIO_NOT_FOUND,
+
+    /**
+     * Invalid row of a translation file: unknown type or field, duplicate key, wrong message code.
+     */
+    INVALID_TRANSLATION,
+
+    /**
+     * Invalid entity rules of a rule set: rules of an entity rule set in the old format, entity
+     * rules in a rule set of another type, a rule without a file.
+     */
+    INVALID_ENTITY_RULE,
+
+    /**
+     * An entity class is declared by another package with another parent.
+     */
+    AP_TYPE_CONFLICT,
+
+    /**
+     * A part type to be removed is used by parts of entities.
+     */
+    PART_TYPE_IN_USE,
+
+    /**
+     * An item type is declared by another package with another data type, use of specifications,
+     * structured type or columns, or a declaration of an item type of another package states RECORD_REF
+     * classes.
+     */
+    ITEM_TYPE_CONFLICT,
+
+    /**
+     * An item type to be removed is used by descriptions or entities.
+     */
+    ITEM_TYPE_IN_USE,
+
+    /**
+     * A declaration of a specification of another package states RECORD_REF classes.
+     */
+    ITEM_SPEC_CONFLICT,
+
+    /**
+     * A specification or its assignment to an item type to be removed is used by descriptions or entities.
+     */
+    ITEM_SPEC_IN_USE,
+
+    /**
+     * The package is installed: it cannot be marked for the import at the next start and a mark cannot be cancelled.
+     */
+    ALREADY_INSTALLED,
 }

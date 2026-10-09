@@ -618,7 +618,7 @@ public class AccessPointCacheService {
             if (part.getPartId().equals(accessPoint.getPreferredPartId())) {
                 entityRef.setLabel(ApFactory.findDisplayIndexValue(part.getIndices()));
             } else {
-                if (part.getPartTypeCode().equals(PartType.PT_BODY)) {
+                if (PartType.PT_BODY.value().equals(part.getPartTypeCode())) {
                     entityRef.setNote(ApFactory.findDisplayIndexValue(part.getIndices()));
                 }
             }

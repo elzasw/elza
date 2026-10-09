@@ -65,8 +65,6 @@ public class RulExtensionRule implements Comparable<RulExtensionRule> {
     @Column(name = "compatibility_rul_package")
     private Integer compatibilityRulPackage;
 
-    @Column(length = StringLength.LENGTH_250)
-    private String condition;
 
     /**
      * @return identifikátor entity
@@ -154,13 +152,6 @@ public class RulExtensionRule implements Comparable<RulExtensionRule> {
         this.compatibilityRulPackage = compatibilityRulPackage;
     }
 
-    public String getCondition() {
-        return condition;
-    }
-
-    public void setCondition(String condition) {
-        this.condition = condition;
-    }
 
     /**
      * Typy pravidel.

@@ -7,6 +7,8 @@ import java.util.Set;
 
 import org.apache.commons.lang3.Validate;
 
+import cz.tacr.elza.core.data.CoreMessage;
+import cz.tacr.elza.core.data.ValidationMessage;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
@@ -26,6 +28,9 @@ public class DataValidationResults {
 
     private Set<ArrDescItem> impossibleItems = new HashSet<>();
     private Set<RulItemType> requiredTypes = new HashSet<>();
+
+    /** Code of the package of the rules being executed, see {@link #setPackageCode(String)}. */
+    private String packageCode;
 
 
 	public List<DataValidationResult> getResults() {
@@ -123,14 +128,62 @@ public class DataValidationResults {
         result.setPolicyTypeCode(policyTypeCode);
 
         if (spec == null) {
-            result.setMessage("Prvek " + type.getName() + " musí být vyplněn.");
+            result.setMessage(CoreMessage.ARR_MISSING_ITEM.with(
+                    ValidationMessage.itemType(type.getCode())).encode());
         } else {
-            result.setMessage("Prvek " + type.getName() + " se specifikací " + spec.getName()
-                    + " musí být vyplněn.");
+            result.setMessage(CoreMessage.ARR_MISSING_SPEC.with(
+                    ValidationMessage.itemType(type.getCode()), ValidationMessage.itemSpec(spec.getCode())).encode());
         }
 
         results.add(result);
         return result;
+    }
+
+    /**
+     * Missing item reported by a rule with a translatable message, see
+     * {@link ValidationMessage}: the key is qualified by the package of the rule, the text is shown
+     * where no translation into the language of the reader exists.
+     *
+     * @param key
+     *            key of the message within the package, or a qualified key ({@code OTHER/KEY})
+     * @param text
+     *            {@link java.text.MessageFormat} pattern in the language of the package
+     */
+    public DataValidationResult createMissing(final String typeCode,
+                                              final String key,
+                                              final String text,
+                                              final String policyTypeCode,
+                                              final Object... args) {
+        return createMissing(typeCode, message(key, text, args), policyTypeCode);
+    }
+
+    /**
+     * Error reported by a rule with a translatable message, see
+     * {@link #createMissing(String, String, String, String, Object...)}.
+     */
+    public DataValidationResult createError(final Integer descItemId,
+                                            final String key,
+                                            final String text,
+                                            final String policyTypeCode,
+                                            final Object... args) {
+        return createError(descItemId, message(key, text, args), policyTypeCode);
+    }
+
+    private String message(final String key, final String text, final Object... args) {
+        return ValidationMessage.of(ValidationMessage.qualify(packageCode, key), text, args).encode();
+    }
+
+    /**
+     * @param packageCode
+     *            code of the package of the rules being executed; qualifies the keys of their
+     *            messages
+     */
+    public void setPackageCode(final String packageCode) {
+        this.packageCode = packageCode;
+    }
+
+    public String getPackageCode() {
+        return packageCode;
     }
 
     public DataValidationResult createMissing(final String typeCode,

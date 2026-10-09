@@ -48,11 +48,6 @@ public class ExtensionRule {
     @XmlAttribute(name="compatibility-rul-package")
     private Integer compatibilityRulPackage;
 
-    /**
-     * Stav.
-     */
-    @XmlElement(name="condition")
-    private String condition;
 
     public String getFilename() {
         return filename;
@@ -94,11 +89,5 @@ public class ExtensionRule {
         this.compatibilityRulPackage = compatibilityRulPackage;
     }
 
-    public String getCondition() {
-        return condition;
-    }
 
-    public void setCondition(String condition) {
-        this.condition = condition;
-    }
 }

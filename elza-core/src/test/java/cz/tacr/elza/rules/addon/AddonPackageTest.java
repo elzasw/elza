@@ -13,6 +13,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -39,7 +40,11 @@ import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.PackageTexts;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.data.ValidationMessage;
+import cz.tacr.elza.domain.ArrNodeConformityMissing;
+import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.dataexchange.input.DEImportParams;
 import cz.tacr.elza.dataexchange.input.DEImportService;
 import cz.tacr.elza.domain.ApScope;
@@ -56,6 +61,8 @@ import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulItemTypeSpecAssign;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.UISettings.EntityType;
+import cz.tacr.elza.domain.UISettings.SettingsType;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.DataValidationResult.ValidationResultType;
 import cz.tacr.elza.drools.RulesExecutor;
@@ -63,12 +70,14 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.PackageCode;
 import cz.tacr.elza.other.HelperTestService;
 import cz.tacr.elza.packageimport.PackageService;
+import cz.tacr.elza.packageimport.xml.SettingOutputDefaults;
 import cz.tacr.elza.repository.ArrangementRuleRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.ItemTypeSpecAssignRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.OutputFilterRepository;
 import cz.tacr.elza.repository.PackageRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.security.UserDetail;
@@ -78,6 +87,7 @@ import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.FundLevelService.AddLevelDirection;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.RuleService;
+import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.StartupService;
 import cz.tacr.elza.service.UserService;
 
@@ -86,16 +96,16 @@ import cz.tacr.elza.service.UserService;
  * "addon" path of the package importer.
  *
  * <p>The test package {@code rules-addon-test} declares a dependency on ZP2015 and contributes an
- * item type of its own, a specification attached to the ZP2015 item type {@code ZP2015_OTHER_ID},
- * and two rule files placed under {@code rul_rule_set/ZP2015/}. The importer registers such a
- * directory for a rule set the package does not own as an addon; its rules are stored against the
- * addon package and executed after the ZP2015 rules because of their higher priority, each rule
- * file in a session of its own. That ordering is what lets an addon both add to and override what
- * the base rules decided.
+ * item type of its own, a specification attached to the ZP2015 item type {@code ZP2015_OTHER_ID}
+ * and placed after one of its ZP2015 specifications ({@code view-after}), and rule files placed
+ * under {@code rul_rule_set/ZP2015/}. The importer registers such a directory for a rule set the
+ * package does not own as an addon; its rules are stored against the addon package and executed
+ * after the ZP2015 rules because of their higher priority, each rule file in a session of its own.
+ * That ordering is what lets an addon both add to and override what the base rules decided. An
+ * {@code ITEM_TYPE_FILTER} rule adds the addon item type to the rule set's list of item types.
  *
- * <p>One assertion records a current limit of the path rather than the desired behaviour: the
- * rule set's item-type filter does not see addon item types. (A rule-set {@code ui_setting.xml}
- * from a second package is refused by the importer as well; the test package ships none.)
+ * <p>A rule-set {@code ui_setting.xml} from a second package is still refused by the importer; the
+ * test package ships none.
  *
  * <p>Packages are imported once for the class and removed again afterwards, because the rule
  * packages are not among the tables the shared helper wipes and would otherwise stay visible to
@@ -117,11 +127,17 @@ public class AddonPackageTest {
     private static final String ADDON_ITEM_TYPE = "ADT_STAGE";
     private static final String ADDON_SPEC = "ADT_OTHERID_TEST";
     private static final String FOREIGN_ITEM_TYPE = "ZP2015_OTHER_ID";
+    /** ZP2015 specification the addon places its specification after (view-after). */
+    private static final String ANCHOR_SPEC = "ZP2015_OTHERID_SIG";
     private static final String OVERRIDDEN_ITEM_TYPE = "ZP2015_INTERNAL_NOTE";
     private static final String ADDON_MISSING_MESSAGE = "Addon stage is missing (rule ADT_001).";
+    private static final String BASE_DEFAULT_OUTPUT_FILTER = "ZP_ACCESS_RESTRICT";
+    private static final String ADDON_OUTPUT_FILTER = "ADT_FILTER";
 
     @Autowired
     private HelperTestService helperTestService;
+    @Autowired
+    private PackageTexts packageTexts;
     @Autowired
     private StaticDataService staticDataService;
     @Autowired
@@ -163,12 +179,18 @@ public class AddonPackageTest {
     @Autowired
     private UserService userService;
     @Autowired
+    private SettingsService settingsService;
+    @Autowired
+    private OutputFilterRepository outputFilterRepository;
+    @Autowired
     @Qualifier("transactionManager")
     private PlatformTransactionManager txManager;
 
     /** Number of ATTRIBUTE_TYPES and CONFORMITY_INFO rules ZP2015 has on its own. */
     private int baseAttributeRules;
     private int baseValidationRules;
+    /** Default output filter of ZP2015 before the addon was imported. */
+    private String baseDefaultOutputFilter;
 
     private ParInstitution institution;
 
@@ -185,6 +207,7 @@ public class AddonPackageTest {
         RuleSet base = staticDataService.getData().getRuleSetByCode(BASE_CODE);
         baseAttributeRules = base.getRulesByType(RuleType.ATTRIBUTE_TYPES).size();
         baseValidationRules = base.getRulesByType(RuleType.CONFORMITY_INFO).size();
+        tx(() -> baseDefaultOutputFilter = outputFilterCode(settingsService.getOutputDefaults(base.getRuleSetId())));
 
         helperTestService.loadPackage(ADDON_CODE, ADDON_DIR);
 
@@ -222,16 +245,32 @@ public class AddonPackageTest {
             assertEquals(BASE_CODE, otherIdEntity.getRulPackage().getCode(),
                          "attaching a specification must not change who owns the item type");
 
-            // Specifications are ordered by package (topological order), so the addon's comes last.
-            List<RulItemTypeSpecAssign> assignments = itemTypeSpecAssignRepository
-                    .findByItemTypeSorted(otherIdEntity);
-            assertEquals(ADDON_SPEC, assignments.get(assignments.size() - 1).getItemSpec().getCode());
+            assertSpecFollowsAnchor(otherIdEntity);
         });
+    }
+
+    /**
+     * The anchor survives a re-import of the package that owns the item type: the ordering pass
+     * runs over all item types on every import, so ZP2015 cannot push the addon spec back to the end.
+     */
+    @Test
+    @Order(2)
+    void specificationPositionSurvivesReimportOfTheBasePackage() {
+        Boolean testing = packageService.getTesting();
+        packageService.setTesting(true); // same version may be imported again
+        try {
+            helperTestService.loadPackage(BASE_CODE, "rules-cz-zp2015");
+        } finally {
+            packageService.setTesting(testing);
+        }
+        staticDataService.refreshForCurrentThread();
+
+        tx(() -> assertSpecFollowsAnchor(itemTypeRepository.findOneByCode(FOREIGN_ITEM_TYPE)));
     }
 
     /** Addon rules are appended to the ZP2015 rule set, run last, and are read from the addon's directory. */
     @Test
-    @Order(2)
+    @Order(3)
     void addonRulesRunAfterTheBaseRulesFromTheAddonPackageDirectory() {
         tx(() -> {
             RulPackage addon = addonPackage();
@@ -262,7 +301,7 @@ public class AddonPackageTest {
      * the root, and the addon validation rule reports its missing item in its own words.
      */
     @Test
-    @Order(3)
+    @Order(4)
     void addonRulesExtendAndOverrideAvailabilityAndValidateFolders() {
         TransactionTemplate template = new TransactionTemplate(txManager);
         template.executeWithoutResult(status -> {
@@ -290,14 +329,36 @@ public class AddonPackageTest {
                                 "base decision must stand where the addon is silent");
 
                 ArrLevel folderLevel = levelRepository.findByNodeAndDeleteChangeIsNull(folder);
-                DataValidationResult missing = rulesExecutor.executeDescItemValidationRules(folderLevel, version)
-                        .stream()
+                List<DataValidationResult> folderResults = rulesExecutor.executeDescItemValidationRules(folderLevel, version);
+                DataValidationResult missing = folderResults.stream()
                         .filter(r -> ADDON_ITEM_TYPE.equals(r.getTypeCode()))
                         .findFirst()
                         .orElseThrow(() -> new AssertionError("addon validation rule did not fire on the folder"));
                 assertEquals(ValidationResultType.MISSING, missing.getResultType());
-                assertEquals(ADDON_MISSING_MESSAGE, missing.getMessage());
                 assertEquals("ZP2015_POL_BASIC", missing.getPolicyTypeCode());
+                // the message of the rule is stored with its key and rendered in the language of the reader
+                ValidationMessage message = ValidationMessage.decode(missing.getMessage());
+                assertNotNull(message, missing.getMessage());
+                assertEquals("ADDON_TEST/ADT_001", message.getKey());
+                assertEquals(ADDON_MISSING_MESSAGE, message.getText());
+                assertEquals("The addon stage is missing (rule ADT_001).", packageTexts.render(missing.getMessage(), language("en")));
+                assertEquals(ADDON_MISSING_MESSAGE, packageTexts.render(missing.getMessage(), language("cs")));
+
+                // the stored conformity rows: the rule's message with its key, and a message of the
+                // core (a required item of ZP2015 not filled in) naming the item type in the language
+                List<ArrNodeConformityMissing> stored = new ArrayList<>();
+                stored.addAll(ruleService.setConformityInfo(folderLevel.getLevelId(), version.getFundVersionId()).getMissingList());
+                stored.addAll(ruleService.setConformityInfo(levelRepository.findByNodeAndDeleteChangeIsNull(root).getLevelId(),
+                                                            version.getFundVersionId()).getMissingList());
+                assertTrue(stored.stream().anyMatch(m -> "ADDON_TEST/ADT_001".equals(keyOf(m.getDescription()))),
+                           "the addon message must be stored with its key");
+                ArrNodeConformityMissing required = stored.stream()
+                        .filter(m -> "CORE/ARR_MISSING_ITEM".equals(keyOf(m.getDescription())))
+                        .findFirst()
+                        .orElseThrow(() -> new AssertionError("no required item of ZP2015 is missing"));
+                String itemName = required.getItemType().getName();
+                assertEquals("The item " + itemName + " must be filled in.", packageTexts.render(required.getDescription(), language("en")));
+                assertEquals("Prvek " + itemName + " musí být vyplněn.", packageTexts.render(required.getDescription(), language("cs")));
 
                 ArrLevel rootLevel = levelRepository.findByNodeAndDeleteChangeIsNull(root);
                 assertTrue(rulesExecutor.executeDescItemValidationRules(rootLevel, version).stream()
@@ -311,24 +372,58 @@ public class AddonPackageTest {
     }
 
     /**
-     * Records a limit of the addon path: the rule set's item-type filter is a single rule file of
-     * the owning package, so the addon item type stays invisible to the grid, search and AI
-     * dictionary. This is the behaviour to change next; the assertion flips then.
+     * The addon's ITEM_TYPE_FILTER rule adds its item type to the rule set's list of item types,
+     * which feeds the grid, search, the add-item dialog and the AI dictionary.
      */
     @Test
-    @Order(4)
-    void ruleSetItemTypeFilterDoesNotSeeAddonItemTypes() {
+    @Order(5)
+    void addonFilterRuleAddsItsItemTypeToTheRuleSet() {
         tx(() -> {
             RulRuleSet base = ruleSetRepository.findByCode(BASE_CODE);
             List<String> codes = ruleService.getItemTypeCodesByRuleSet(base);
-            assertTrue(codes.contains("ZP2015_NAME"), "sanity: base filter works");
-            assertFalse(codes.contains(ADDON_ITEM_TYPE), "addon item types are not part of the rule set filter yet");
+            assertTrue(codes.contains("ZP2015_NAME"), "the rule set's own filter still applies");
+            assertTrue(codes.contains(ADDON_ITEM_TYPE), "the addon filter rule adds its item type");
+            assertFalse(codes.contains("SRD_TITLE"), "item types named by no filter stay out");
+        });
+    }
+
+    /**
+     * OUTPUT_DEFAULTS is layered: the addon states it for ZP2015 next to ZP2015 itself (no
+     * OTHER_PACKAGE refusal) and wins with its own output filter.
+     */
+    @Test
+    @Order(6)
+    void addonOutputDefaultsReplaceTheBaseDefaultFilter() {
+        assertEquals(BASE_DEFAULT_OUTPUT_FILTER, baseDefaultOutputFilter, "ZP2015 states its default filter");
+        Integer ruleSetId = staticDataService.getData().getRuleSetByCode(BASE_CODE).getRuleSetId();
+        tx(() -> {
+            assertEquals(2, settingsService.getGlobalSettings(SettingsType.OUTPUT_DEFAULTS.toString(),
+                    EntityType.RULE, ruleSetId).size(), "both packages keep their own setting");
+            assertEquals(ADDON_OUTPUT_FILTER, outputFilterCode(settingsService.getOutputDefaults(ruleSetId)),
+                    "the addon setting wins");
+        });
+    }
+
+    /**
+     * Output filters are imported per rule set: the addon's filters in ZP2015 and in CAM both
+     * survive, the second rule set does not delete the filters of the first.
+     */
+    @Test
+    @Order(6)
+    void outputFiltersOfEveryRuleSetOfThePackageSurviveTheImport() {
+        Integer zp2015 = staticDataService.getData().getRuleSetByCode(BASE_CODE).getRuleSetId();
+        Integer cam = staticDataService.getData().getRuleSetByCode("CAM").getRuleSetId();
+        tx(() -> {
+            assertNotNull(outputFilterRepository.findByRuleSetIdAndCode(zp2015, ADDON_OUTPUT_FILTER));
+            assertNotNull(outputFilterRepository.findByRuleSetIdAndCode(cam, "ADT_CAM_FILTER"));
+            assertNotNull(outputFilterRepository.findByRuleSetIdAndCode(zp2015, BASE_DEFAULT_OUTPUT_FILTER),
+                    "filters of the base package are untouched");
         });
     }
 
     /** The base package is protected while an addon depends on it. */
     @Test
-    @Order(5)
+    @Order(7)
     void basePackageCannotBeDeletedWhileTheAddonDependsOnIt() {
         BusinessException ex = assertThrows(BusinessException.class, () -> packageService.deletePackage(BASE_CODE));
         assertEquals(PackageCode.FOREIGN_DEPENDENCY, ex.getErrorCode());
@@ -337,7 +432,7 @@ public class AddonPackageTest {
 
     /** Removing the addon takes its item type, specification, rules and files away and leaves ZP2015 as it was. */
     @Test
-    @Order(6)
+    @Order(8)
     void deletingTheAddonRestoresTheBaseRuleSet() {
         RulPackage addon = addonPackage();
 
@@ -358,9 +453,26 @@ public class AddonPackageTest {
         assertEquals(baseAttributeRules, base.getRulesByType(RuleType.ATTRIBUTE_TYPES).size());
         assertEquals(baseValidationRules, base.getRulesByType(RuleType.CONFORMITY_INFO).size());
         assertNotNull(packageRepository.findByCode(BASE_CODE));
+        tx(() -> {
+            assertEquals(BASE_DEFAULT_OUTPUT_FILTER,
+                    outputFilterCode(settingsService.getOutputDefaults(base.getRuleSetId())),
+                    "the default filter of ZP2015 applies again");
+            assertNull(outputFilterRepository.findByRuleSetIdAndCode(base.getRuleSetId(), ADDON_OUTPUT_FILTER));
+        });
     }
 
     // ---------------------------------------------------------------------------------------------
+
+    /** The addon spec sits right after its anchor, not at the end where its package would put it. */
+    private void assertSpecFollowsAnchor(RulItemType otherIdEntity) {
+        List<String> order = itemTypeSpecAssignRepository.findByItemTypeSorted(otherIdEntity).stream()
+                .map(a -> a.getItemSpec().getCode())
+                .toList();
+        int anchor = order.indexOf(ANCHOR_SPEC);
+        assertTrue(anchor >= 0, "anchor specification missing: " + order);
+        assertEquals(ADDON_SPEC, order.get(anchor + 1), "addon specification must follow its anchor: " + order);
+        assertNotEquals(ADDON_SPEC, order.get(order.size() - 1), "anchor must move the spec from the end");
+    }
 
     private RulPackage addonPackage() {
         RulPackage addon = packageRepository.findByCode(ADDON_CODE);
@@ -390,6 +502,22 @@ public class AddonPackageTest {
         // the tree cache must know the new node before it can become a parent or be evaluated
         levelTreeCacheService.invalidateFundVersion(version);
         return levels.stream().max(Comparator.comparing(ArrLevel::getLevelId)).orElseThrow().getNode();
+    }
+
+    private static String outputFilterCode(SettingOutputDefaults defaults) {
+        return defaults != null ? defaults.outputFilterCode() : null;
+    }
+
+    /** Key of a stored validation message, null for a plain text. */
+    private static String keyOf(String description) {
+        ValidationMessage message = ValidationMessage.decode(description);
+        return message != null ? message.getKey() : null;
+    }
+
+    private SysLanguage language(String tag) {
+        SysLanguage language = staticDataService.getData().getSysLanguageByTag(tag);
+        assertNotNull(language, tag);
+        return language;
     }
 
     private void tx(Runnable body) {

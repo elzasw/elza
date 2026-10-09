@@ -60,10 +60,12 @@ import cz.tacr.elza.config.rules.ViewConfiguration;
 import cz.tacr.elza.config.view.ViewTitles;
 import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.factory.WfFactory;
+import cz.tacr.elza.controller.vo.BaseCodeVo;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeDescItemsLiteVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemBitVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemCoordinatesVO;
@@ -84,6 +86,8 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUriRefVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
+import cz.tacr.elza.core.data.PackageTexts;
+import cz.tacr.elza.domain.TranslationEntityType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
@@ -172,12 +176,13 @@ import cz.tacr.elza.ws.types.v1.Items;
 @Service
 public class ClientFactoryVO {
 
-	static Map<cz.tacr.elza.core.data.DataType, Function<ArrData, ItemData>> dataConvertors = new HashMap<>();
-	static {
+	// an instance map: the unit-date converter renders in the language of the request
+	private final Map<cz.tacr.elza.core.data.DataType, Function<ArrData, ItemData>> dataConvertors = new HashMap<>();
+	{
 		dataConvertors.put(cz.tacr.elza.core.data.DataType.INT, ClientFactoryVO::convertInt);
 		dataConvertors.put(cz.tacr.elza.core.data.DataType.STRING, ClientFactoryVO::convertString);
 		dataConvertors.put(cz.tacr.elza.core.data.DataType.TEXT, ClientFactoryVO::convertText);
-		dataConvertors.put(cz.tacr.elza.core.data.DataType.UNITDATE, ClientFactoryVO::convertUnitdate);
+		dataConvertors.put(cz.tacr.elza.core.data.DataType.UNITDATE, this::convertUnitdate);
 		dataConvertors.put(cz.tacr.elza.core.data.DataType.UNITID, ClientFactoryVO::convertUnitid);
 		dataConvertors.put(cz.tacr.elza.core.data.DataType.FORMATTED_TEXT, ClientFactoryVO::convertFormattedText);
 		dataConvertors.put(cz.tacr.elza.core.data.DataType.COORDINATES, ClientFactoryVO::convertCoordinates);
@@ -197,6 +202,9 @@ public class ClientFactoryVO {
 
     @Autowired
     private DaoSyncService daoSyncService;
+
+    @Autowired
+    private PackageTexts packageTexts;
 
     @Autowired
     private ScopeRepository scopeRepository;
@@ -333,8 +341,11 @@ public class ClientFactoryVO {
      * @param arrData
      * @return
      */
-    private static ItemData convertUnitdate(ArrData arrData) {
-    	DataUnitdate data = new DataUnitdate(UnitDateConverter.convertToString(((ArrDataUnitdate) arrData)), DataType.UNITDATE);
+    private ItemData convertUnitdate(ArrData arrData) {
+        // the text follows the UI language of the request
+    	DataUnitdate data = new DataUnitdate(UnitDateConverter.convertToString((ArrDataUnitdate) arrData,
+    	                                                                       packageTexts.requestLanguageTag()),
+    	                                     DataType.UNITDATE);
         data.setDataId(arrData.getDataId());
         return data;
     }
@@ -547,7 +558,7 @@ public class ClientFactoryVO {
      */
     public RulTemplateVO createTemplate(final RulTemplate template) {
         Assert.notNull(template, "Šablona musí být vyplněna");
-        return RulTemplateVO.newInstance(template);
+        return translateName(RulTemplateVO.newInstance(template), TranslationEntityType.TEMPLATE);
     }
 
     /**
@@ -754,7 +765,9 @@ public class ClientFactoryVO {
      */
     public RulDescItemTypeDescItemsVO createDescItemTypeVO(final RulItemType itemType) {
         Assert.notNull(itemType, "Typ atributu musí být vyplněn");
-        return RulDescItemTypeDescItemsVO.newInstance(itemType);
+        RulDescItemTypeDescItemsVO result = RulDescItemTypeDescItemsVO.newInstance(itemType);
+        result.setName(packageTexts.name(itemType));
+        return result;
     }
 
     /**
@@ -795,7 +808,7 @@ public class ClientFactoryVO {
             case RECORD_REF:
                 return ArrItemRecordRefVO.newInstance(item, apFactory);
             case UNITDATE:
-            	return ArrItemUnitdateVO.newInstance(item);
+            	return ArrItemUnitdateVO.newInstance(item, packageTexts.requestLanguageTag());
             case UNITID:
             	return ArrItemUnitidVO.newInstance(item);
             case COORDINATES:
@@ -1429,7 +1442,7 @@ public class ClientFactoryVO {
      */
     public RulDescItemTypeExtVO createDescItemTypeExt(final RulItemTypeExt descItemType) {
         Assert.notNull(descItemType, "Typ atributu musí být vyplněn");
-        RulDescItemTypeExtVO descItemTypeVO = RulDescItemTypeExtVO.newInstance(descItemType);
+        RulDescItemTypeExtVO descItemTypeVO = translate(RulDescItemTypeExtVO.newInstance(descItemType));
         descItemTypeVO.setDataTypeId(descItemType.getDataType().getDataTypeId());
         descItemTypeVO.setItemSpecsTree(createTree(descItemType.getRulItemSpecList()));
         return descItemTypeVO;
@@ -1539,7 +1552,43 @@ public class ClientFactoryVO {
      * @return VO typů hodnot
      */
     public List<RulDescItemTypeExtVO> createDescItemTypeExtList(final List<RulItemTypeExt> descItemTypes) {
-        return descItemTypes.stream().map(i -> RulDescItemTypeExtVO.newInstance(i)).collect(Collectors.toList());
+        return descItemTypes.stream().map(i -> translate(RulDescItemTypeExtVO.newInstance(i))).collect(Collectors.toList());
+    }
+
+    /**
+     * Texts of an item type and its specifications in the language of the request.
+     */
+    private RulDescItemTypeExtVO translate(final RulDescItemTypeExtVO vo) {
+        String code = vo.getCode();
+        vo.setName(packageTexts.text(TranslationEntityType.ITEM_TYPE, code, TranslationEntityType.NAME, vo.getName()));
+        vo.setShortcut(packageTexts.text(TranslationEntityType.ITEM_TYPE, code, TranslationEntityType.SHORTCUT,
+                                         vo.getShortcut()));
+        vo.setDescription(packageTexts.text(TranslationEntityType.ITEM_TYPE, code, TranslationEntityType.DESCRIPTION,
+                                            vo.getDescription()));
+        if (vo.getDescItemSpecs() != null) {
+            for (RulDescItemSpecExtVO spec : vo.getDescItemSpecs()) {
+                String specCode = spec.getCode();
+                spec.setName(packageTexts.text(TranslationEntityType.ITEM_SPEC, specCode, TranslationEntityType.NAME,
+                                               spec.getName()));
+                spec.setShortcut(packageTexts.text(TranslationEntityType.ITEM_SPEC, specCode,
+                                                   TranslationEntityType.SHORTCUT, spec.getShortcut()));
+                spec.setDescription(packageTexts.text(TranslationEntityType.ITEM_SPEC, specCode,
+                                                      TranslationEntityType.DESCRIPTION, spec.getDescription()));
+            }
+        }
+        return vo;
+    }
+
+    /**
+     * Name of a package-provided entity in the language of the request.
+     *
+     * @param vo
+     *            value object created from the entity, with its code and source name
+     * @return the same object
+     */
+    public <T extends BaseCodeVo> T translateName(final T vo, final TranslationEntityType type) {
+        vo.setName(packageTexts.name(type, vo.getCode(), vo.getName()));
+        return vo;
     }
 
     /**
@@ -1577,7 +1626,15 @@ public class ClientFactoryVO {
      */
     public NodeConformityVO createNodeConformity(final ArrNodeConformityExt nodeConformity) {
         Assert.notNull(nodeConformity, "Musí být vyplněno");
-        return NodeConformityVO.newInstance(nodeConformity);
+        NodeConformityVO result = NodeConformityVO.newInstance(nodeConformity);
+        // the descriptions are stored language-neutral, see ValidationMessage
+        if (result.getErrorList() != null) {
+            result.getErrorList().forEach(e -> e.setDescription(packageTexts.render(e.getDescription())));
+        }
+        if (result.getMissingList() != null) {
+            result.getMissingList().forEach(m -> m.setDescription(packageTexts.render(m.getDescription())));
+        }
+        return result;
     }
 
     /**
@@ -1667,7 +1724,7 @@ public class ClientFactoryVO {
      * @return seznam VO
      */
     public List<RulPolicyTypeVO> createPolicyTypes(final List<RulPolicyType> policyTypes) {
-        return policyTypes.stream().map(i -> RulPolicyTypeVO.newInstance(i)).collect(Collectors.toList());
+        return policyTypes.stream().map(i -> createPolicyType(i)).collect(Collectors.toList());
     }
 
     /**
@@ -1678,7 +1735,7 @@ public class ClientFactoryVO {
      */
     public RulPolicyTypeVO createPolicyType(final RulPolicyType policyType) {
         Assert.notNull(policyType, "Typ oprávnění musí být vyplněno");
-        return RulPolicyTypeVO.newInstance(policyType);
+        return translateName(RulPolicyTypeVO.newInstance(policyType), TranslationEntityType.POLICY_TYPE);
     }
 
     /**
@@ -1688,7 +1745,7 @@ public class ClientFactoryVO {
      * @return seznam VO
      */
     public List<RulOutputTypeVO> createOutputTypes(final List<RulOutputType> outputTypes) {
-        return outputTypes.stream().map(i -> RulOutputTypeVO.newInstance(i)).collect(Collectors.toList());
+        return outputTypes.stream().map(i -> createOutputType(i)).collect(Collectors.toList());
     }
 
     /**
@@ -1699,7 +1756,7 @@ public class ClientFactoryVO {
      */
     public RulOutputTypeVO createOutputType(final RulOutputType outputType) {
         Assert.notNull(outputType, "Typ výstupu musí být vyplněno");
-        return RulOutputTypeVO.newInstance(outputType);
+        return translateName(RulOutputTypeVO.newInstance(outputType), TranslationEntityType.OUTPUT_TYPE);
     }
 
     public List<BulkActionRunVO> createBulkActionsList(final List<ArrBulkActionRun> bulkActions) {

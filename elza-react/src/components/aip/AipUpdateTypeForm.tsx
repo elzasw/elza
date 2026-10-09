@@ -52,13 +52,13 @@ const unavailableReason = (type: AipUpdateType, aips: AipDetailVO[]) => {
 };
 
 /**
- * Pořadí od nejčastější a nejbezpečnější volby po tu, která ruší napojení na popis.
+ * Pořadí od nejčastější volby. Vynucená aktualizace se nenabízí: sestavení z uloženého balíčku
+ * napojení na části, které balíček už nemá, uzavře samo, takže by dělala totéž.
  */
 const UPDATE_TYPES: AipUpdateType[] = [
     AipUpdateType.RemapReferences,
     AipUpdateType.DownloadUpdate,
     AipUpdateType.DbUpdate,
-    AipUpdateType.ForceUpdate,
 ];
 
 export function AipUpdateTypeForm({

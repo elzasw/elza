@@ -1,0 +1,62 @@
+{
+  "_comment": "Unit-date text forms shared by the server (cz.tacr.elza.domain.converter.UnitDateConverter) and the client (elza-react src/components/shared/unitdate). Parsing accepts every language's forms whatever the UI language; rendering follows the language asked for. Patterns are regular expressions valid in both Java and ECMAScript; MONTH stands for the alternation of the language's month names. Every input in unitdate/cases.json must parse the same way on both sides.",
+  "defaultLanguage": "cs",
+  "common": {
+    "intervalDelimiter": "-",
+    "intervalDelimiterAliases": ["–"],
+    "spacedIntervalDelimiter": " - ",
+    "estimateIntervalDelimiter": "/",
+    "estimateOpen": ["[", "("],
+    "estimateClose": ["]", ")"],
+    "year": "(\\d{1,4})",
+    "bcYear": "(\\d{1,5})",
+    "isoDate": "(\\d{4})-(\\d{2})-(\\d{2})",
+    "time": "(\\d{1,2}):(\\d{2})(?::(\\d{2}))?"
+  },
+  "languages": {
+    "cs": {
+      "bc": "\\s?př\\.\\s?n\\.\\s?l\\.",
+      "century": "(?:\\.\\s?st\\.|st)",
+      "yearMonth": "(\\d{1,2})\\.(\\d{1,5})",
+      "date": "(\\d{1,2})\\.(\\d{1,2})\\.(\\d{1,5})",
+      "months": ["leden", "únor", "březen", "duben", "květen", "červen", "červenec", "srpen", "září", "říjen", "listopad", "prosinec"],
+      "monthsShort": [],
+      "monthAliases": {},
+      "render": {
+        "year": "{y}",
+        "yearBc": "{y} př. n. l.",
+        "century": "{c}. st.",
+        "centuryBc": "{c}. st. př. n. l.",
+        "yearMonth": "{M}.{y}",
+        "date": "{d}.{M}.{y}",
+        "dateTime": "{d}.{M}.{y} {H}:{mm}:{ss}",
+        "bcSuffix": " př. n. l.",
+        "interval": "{from}-{to}",
+        "estimateInterval": "{from}/{to}",
+        "estimate": "[{x}]"
+      }
+    },
+    "en": {
+      "bc": "\\s?(?:BCE|BC|B\\.C\\.)",
+      "century": "(?:st|nd|rd|th)(?:\\s?century)?",
+      "yearMonth": "(MONTH)\\s+(\\d{1,5})",
+      "date": "(\\d{1,2})\\s+(MONTH)\\s+(\\d{1,5})",
+      "months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+      "monthsShort": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+      "monthAliases": {"Sept": 9},
+      "render": {
+        "year": "{y}",
+        "yearBc": "{y} BC",
+        "century": "{c}{ord} century",
+        "centuryBc": "{c}{ord} century BC",
+        "yearMonth": "{MMM} {y}",
+        "date": "{d} {MMM} {y}",
+        "dateTime": "{d} {MMM} {y} {H}:{mm}:{ss}",
+        "bcSuffix": " BC",
+        "interval": "{from} – {to}",
+        "estimateInterval": "{from}/{to}",
+        "estimate": "[{x}]"
+      }
+    }
+  }
+}

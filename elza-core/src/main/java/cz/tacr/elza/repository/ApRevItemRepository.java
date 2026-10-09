@@ -12,9 +12,19 @@ import org.springframework.stereotype.Repository;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApRevItem;
 import cz.tacr.elza.domain.ApRevPart;
+import cz.tacr.elza.domain.RulItemType;
 
 @Repository
 public interface ApRevItemRepository extends JpaRepository<ApRevItem, Integer> {
+
+    @Query("SELECT COUNT(i) FROM ApRevItem i WHERE i.itemSpec = ?1")
+    long countBySpec(cz.tacr.elza.domain.RulItemSpec itemSpec);
+
+    @Query("SELECT COUNT(i) FROM ApRevItem i WHERE i.itemType = ?1 AND i.itemSpec = ?2")
+    long countByTypeAndSpec(RulItemType itemType, cz.tacr.elza.domain.RulItemSpec itemSpec);
+
+    @Query("SELECT COUNT(i) FROM ApRevItem i WHERE i.itemType = ?1")
+    long countByType(RulItemType itemType);
 
     @Query("SELECT i FROM ApRevItem i WHERE i.part IN :parts AND i.deleteChange IS NULL")
     List<ApRevItem> findByParts(@Param("parts") Collection<ApRevPart> parts);

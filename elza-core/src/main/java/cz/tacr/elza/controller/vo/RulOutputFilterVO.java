@@ -16,6 +16,11 @@ public class RulOutputFilterVO {
 
     private Integer ruleSetId;
 
+    /**
+     * Filter preselected in the new output dialog of its rule set (setting OUTPUT_DEFAULTS).
+     */
+    private boolean defaultFilter;
+
     public RulOutputFilterVO() {
     }
 
@@ -74,5 +79,13 @@ public class RulOutputFilterVO {
 
     public void setRuleSetId(Integer ruleSetId) {
         this.ruleSetId = ruleSetId;
+    }
+
+    public boolean isDefaultFilter() {
+        return defaultFilter;
+    }
+
+    public void setDefaultFilter(boolean defaultFilter) {
+        this.defaultFilter = defaultFilter;
     }
 }

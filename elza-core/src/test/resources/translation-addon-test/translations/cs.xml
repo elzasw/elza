@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<translations lang="cs">
+    <t type="MESSAGE" code="TRANSLATION_TEST/GREETING" field="text">Dobrý den, {0}. Máte {1} zprávy.</t>
+    <!-- same-language override of a text of SIMPLE-DEV (both packages are Czech) -->
+    <t type="ITEM_TYPE" code="SRD_UNIT_DATE" field="name">Datace (doplněk)</t>
+</translations>

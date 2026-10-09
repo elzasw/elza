@@ -2427,14 +2427,12 @@
         <name>Primátor</name>
         <description>Primátor</description>
         <shortcut>Prim.</shortcut>
-        <view-order>1</view-order>
         <item-type-assign code="VZTAH_TYP"/>
     </item-spec>
     <item-spec code="VZTAH_TYP_TAJEMNIK">
         <name>Tajemník magistrátu</name>
         <description>Tajemník magistrátu</description>
         <shortcut>Taj. mag.</shortcut>
-        <view-order>2</view-order>
         <item-type-assign code="VZTAH_TYP"/>
     </item-spec>
 </item-specs>

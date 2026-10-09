@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.Nullable;
@@ -65,6 +66,9 @@ import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.PackageTexts;
+import cz.tacr.elza.domain.TranslationEntityType;
+import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.AccessPointItem;
@@ -109,7 +113,6 @@ import cz.tacr.elza.repository.ApRevPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.repository.vo.TypeRuleSet;
 import cz.tacr.elza.service.RevisionItemService;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
@@ -153,6 +156,8 @@ public class ApFactory {
 
     private final ElzaLocale elzaLocale;
 
+    private final PackageTexts packageTexts;
+
     @Autowired
     public ApFactory(final ApAccessPointRepository apRepository,
                      final ApStateRepository stateRepository,
@@ -170,7 +175,8 @@ public class ApFactory {
                      final RevisionItemService revisionItemService,
                      final AccessPointItemService apItemService,
                      final AccessPointConnectorService apConnectorService,
-                     final ElzaLocale elzaLocale) {
+                     final ElzaLocale elzaLocale,
+                     final PackageTexts packageTexts) {
         this.apRepository = apRepository;
         this.stateRepository = stateRepository;
         this.scopeRepository = scopeRepository;
@@ -188,6 +194,7 @@ public class ApFactory {
         this.apItemService = apItemService;
         this.accessPointConnectorService = apConnectorService;
         this.elzaLocale = elzaLocale;
+        this.packageTexts = packageTexts;
     }
 
     /**
@@ -263,12 +270,15 @@ public class ApFactory {
         return result;
     }
 
-    // TODO: odstranit
-    public Map<Integer, Integer> getTypeRuleSetMap() {
-        List<TypeRuleSet> typeRuleSets = apTypeRepository.findTypeRuleSets();
-        Map<Integer, Integer> result = new HashMap<>(typeRuleSets.size());
-        for (TypeRuleSet typeRuleSet : typeRuleSets) {
-            result.put(typeRuleSet.getTypeId(), typeRuleSet.getRuleSetId());
+    /**
+     * Rule set of each scope that has one.
+     */
+    public Map<Integer, Integer> getScopeRuleSetMap() {
+        Map<Integer, Integer> result = new HashMap<>();
+        for (ApScope scope : scopeRepository.findAll()) {
+            if (scope.getRuleSetId() != null) {
+                result.put(scope.getScopeId(), scope.getRuleSetId());
+            }
         }
         return result;
     }
@@ -441,7 +451,7 @@ public class ApFactory {
         vo.setUuid(ap.getUuid());
         vo.setVersion(ap.getVersion());
         vo.setBindings(Collections.emptyList());
-        vo.setErrorDescription(ap.getErrorDescription());
+        vo.setErrorDescription(packageTexts.renderLines(ap.getErrorDescription()));
         vo.setRuleSetId(apState.getScope().getRuleSetId());
 
         vo.setState(ap.getState() == null ? null : ApStateVO.valueOf(ap.getState().name()));
@@ -488,7 +498,7 @@ public class ApFactory {
         vo.setUuid(uuid);
         vo.setVersion(version);
         vo.setBindings(Collections.emptyList());
-        vo.setErrorDescription(errorDescription);
+        vo.setErrorDescription(packageTexts.renderLines(errorDescription));
         vo.setRuleSetId(apState.getScope().getRuleSetId());
 
         vo.setState(state == null ? null : ApStateVO.valueOf(state.name()));
@@ -599,7 +609,7 @@ public class ApFactory {
         apPartVO.setId(part.getPartId());
         apPartVO.setTypeId(rulPartType.getPartTypeId());
         apPartVO.setState(part.getState() == null ? null : ApStateVO.valueOf(part.getState().name()));
-        apPartVO.setErrorDescription(part.getErrorDescription());
+        apPartVO.setErrorDescription(packageTexts.renderLines(part.getErrorDescription()));
         apPartVO.setValue(findDisplayIndexValue(part));
         apPartVO.setPartParentId(part.getParentPartId());
         apPartVO.setChangeType(ChangeType.ORIGINAL);
@@ -657,7 +667,7 @@ public class ApFactory {
         apPartVO.setId(part.getPartId());
         apPartVO.setTypeId(part.getPartType().getPartTypeId());
         apPartVO.setState(part.getState() == null ? null : ApStateVO.valueOf(part.getState().name()));
-        apPartVO.setErrorDescription(part.getErrorDescription());
+        apPartVO.setErrorDescription(packageTexts.renderLines(part.getErrorDescription()));
         apPartVO.setValue(CollectionUtils.isNotEmpty(indices) ? indices.get(0).getIndexValue() : null);
         apPartVO.setPartParentId(part.getParentPart() != null ? part.getParentPart().getPartId() : null);
         apPartVO.setItems(CollectionUtils.isNotEmpty(apItems) ? createItemsVO(apItems) : null);
@@ -779,7 +789,7 @@ public class ApFactory {
                 item = new ApItemTextVO(apItem);
                 break;
             case UNITDATE:
-                item = new ApItemUnitdateVO(apItem);
+                item = new ApItemUnitdateVO(apItem, packageTexts.requestLanguageTag());
                 break;
             case UNITID:
                 item = new ApItemUnitidVO(apItem);
@@ -829,6 +839,107 @@ public class ApFactory {
      * @return List of root nodes which contains given types on proper parent path.
      */
     public List<ApTypeVO> createTypesWithHierarchy(Collection<ApType> types) {
+        return createTypesWithHierarchy(types, null);
+    }
+
+    /**
+     * Classes offered by a rule set as a tree of its members: the parent of a member is its nearest member
+     * ancestor, a member without one is a root; {@code addRecord} says whether the class can be assigned
+     * in the rule set. A rule set without members offers all classes with their parents.
+     *
+     * @param ruleSet
+     *            entity rule set; null for all classes, assignable when not read-only
+     */
+    public List<ApTypeVO> createTypesWithHierarchy(Collection<ApType> types, @Nullable RuleSet ruleSet) {
+        Predicate<ApType> member = null;
+        if (ruleSet != null) {
+            StaticDataProvider sdp = staticDataService.getData();
+            types = types.stream().filter(t -> ruleSet.offersApType(sdp.getApTypeById(t.getApTypeId()))).toList();
+            member = ruleSet.hasApTypeMembers() ? ruleSet::offersApType : null;
+        }
+        List<ApTypeVO> roots = createTypesWithHierarchyAll(types, member);
+        if (ruleSet != null) {
+            setAssignable(roots, ruleSet, staticDataService.getData());
+            sortByMemberOrder(roots, ruleSet.getApTypeOrder());
+        }
+        return roots;
+    }
+
+    /**
+     * Classes of an installation as the union of the trees of its entity rule sets (search without a
+     * scope): a rule set without members contributes all classes.
+     */
+    public List<ApTypeVO> createTypesOfRuleSets(Collection<ApType> types, Collection<RuleSet> ruleSets) {
+        List<RuleSet> withMembers = ruleSets.stream().filter(RuleSet::hasApTypeMembers).toList();
+        if (ruleSets.isEmpty() || withMembers.size() < ruleSets.size()) {
+            return createTypesWithHierarchyAll(types, null);
+        }
+        StaticDataProvider sdp = staticDataService.getData();
+        Predicate<ApType> member = t -> withMembers.stream().anyMatch(rs -> rs.offersApType(t));
+        List<ApType> offered = types.stream().filter(t -> member.test(sdp.getApTypeById(t.getApTypeId()))).toList();
+        return createTypesWithHierarchyAll(offered, member);
+    }
+
+    /**
+     * Orders the class tree as the rule set lists its classes: a class not placed (a grouping listed by
+     * another package) takes the place of its first placed descendant; classes at one level that are not
+     * placed keep their order.
+     */
+    private static void sortByMemberOrder(final List<ApTypeVO> roots, final List<Integer> order) {
+        if (order.isEmpty()) {
+            return;
+        }
+        Map<Integer, Integer> positions = new HashMap<>();
+        for (int i = 0; i < order.size(); i++) {
+            positions.put(order.get(i), i);
+        }
+        Map<Integer, Integer> ranks = new HashMap<>();
+        roots.forEach(vo -> rank(vo, positions, ranks));
+        sortByRank(roots, ranks);
+    }
+
+    private static int rank(final ApTypeVO vo, final Map<Integer, Integer> positions,
+                            final Map<Integer, Integer> ranks) {
+        int rank = positions.getOrDefault(vo.getId(), Integer.MAX_VALUE);
+        if (vo.getChildren() != null) {
+            for (ApTypeVO child : vo.getChildren()) {
+                rank = Math.min(rank, rank(child, positions, ranks));
+            }
+        }
+        ranks.put(vo.getId(), rank);
+        return rank;
+    }
+
+    private static void sortByRank(final List<ApTypeVO> types, final Map<Integer, Integer> ranks) {
+        if (types == null) {
+            return;
+        }
+        // stable sort: classes without a rank stay in their order
+        types.sort(Comparator.comparing(vo -> ranks.get(vo.getId())));
+        types.forEach(vo -> sortByRank(vo.getChildren(), ranks));
+    }
+
+    private static void setAssignable(final List<ApTypeVO> types, final RuleSet ruleSet, final StaticDataProvider sdp) {
+        if (types == null) {
+            return;
+        }
+        for (ApTypeVO vo : types) {
+            ApType type = sdp.getApTypeById(vo.getId());
+            vo.setAddRecord(ruleSet.offersApType(type) && ruleSet.isApTypeAssignable(type));
+            setAssignable(vo.getChildren(), ruleSet, sdp);
+        }
+    }
+
+    private List<ApTypeVO> createTypesWithHierarchyAll(Collection<ApType> types) {
+        return createTypesWithHierarchyAll(types, null);
+    }
+
+    /**
+     * @param member
+     *            classes shown; the parent of a class is its nearest ancestor that is shown. Null shows
+     *            all ancestors.
+     */
+    private List<ApTypeVO> createTypesWithHierarchyAll(Collection<ApType> types, @Nullable Predicate<ApType> member) {
         if (CollectionUtils.isEmpty(types)) {
             return Collections.emptyList();
         }
@@ -838,7 +949,7 @@ public class ApFactory {
         List<ApTypeVO> rootsVO = new ArrayList<>();
 
         for (ApType type : types) {
-            createTypeHierarchy(type, typeIdVOMap, rootsVO, staticData);
+            createTypeHierarchy(type, typeIdVOMap, rootsVO, staticData, member);
         }
 
         rootsVO.sort(Comparator.comparing(ApTypeVO::getId));
@@ -846,23 +957,28 @@ public class ApFactory {
     }
 
     /**
-     * Creates type with his parent hierarchy up to root.
+     * Creates type with its parent hierarchy up to the root, or up to the nearest shown ancestor.
      */
     private ApTypeVO createTypeHierarchy(ApType type,
                                          Map<Integer, ApTypeVO> typeIdVOMap,
                                          List<ApTypeVO> rootsVO,
-                                         StaticDataProvider staticData) {
+                                         StaticDataProvider staticData,
+                                         @Nullable Predicate<ApType> member) {
         ApTypeVO typeVO = typeIdVOMap.get(type.getApTypeId());
         if (typeVO != null) {
             return typeVO;
         }
 
         typeVO = ApTypeVO.newInstance(type, staticData);
+        typeVO.setName(packageTexts.name(TranslationEntityType.AP_TYPE, type.getCode(), typeVO.getName()));
         typeIdVOMap.put(typeVO.getId(), typeVO);
 
-        if (type.getParentApTypeId() != null) {
-            ApType parent = staticData.getApTypeById(type.getParentApTypeId());
-            ApTypeVO parentVO = createTypeHierarchy(parent, typeIdVOMap, rootsVO, staticData);
+        ApType parent = type.getParentApTypeId() != null ? staticData.getApTypeById(type.getParentApTypeId()) : null;
+        while (parent != null && member != null && !member.test(parent)) {
+            parent = parent.getParentApTypeId() != null ? staticData.getApTypeById(parent.getParentApTypeId()) : null;
+        }
+        if (parent != null) {
+            ApTypeVO parentVO = createTypeHierarchy(parent, typeIdVOMap, rootsVO, staticData, member);
             parentVO.addChild(typeVO);
             // TODO: parent names is needed/used on client?
             typeVO.addParent(parentVO.getName());
@@ -896,14 +1012,28 @@ public class ApFactory {
         result.setItemTypes(itemTypesSettings.size() > 0
                 ? SettingItemTypes.newInstance(itemTypesSettings.get(0)).getItemTypes()
                 : Collections.emptyList());
-        result.setPartsOrder(partsOrderSettings.size() > 0
-                ? SettingPartsOrder.newInstance(partsOrderSettings.get(0)).getParts()
-                : Collections.emptyList());
+        // the part types listed by the rule set (rul_part_type.xml), or the older parts-order setting
+        StaticDataProvider sdp = staticDataService.getData();
+        List<Integer> partTypeOrder = sdp.getRuleSetById(ruleRule.getRuleSetId()).getPartTypeOrder();
+        if (!partTypeOrder.isEmpty()) {
+            result.setPartsOrder(partTypeOrder.stream().map(id -> {
+                SettingPartsOrder.Part part = new SettingPartsOrder.Part();
+                part.setCode(sdp.getPartTypeById(id).getCode());
+                return part;
+            }).toList());
+        } else {
+            result.setPartsOrder(partsOrderSettings.size() > 0
+                    ? SettingPartsOrder.newInstance(partsOrderSettings.get(0)).getParts()
+                    : Collections.emptyList());
+        }
         result.setCode(ruleRule.getCode());
         result.setRuleSetId(ruleRule.getRuleSetId());
         return result;
     }
 
+    /**
+     * Validation issues stored with the entity, rendered in the language of the request.
+     */
     public ApValidationIssues createValidationVO(ApAccessPoint accessPoint) {
         List<ApPart> partList = partRepository.findValidPartByAccessPoint(accessPoint);
 
@@ -911,7 +1041,7 @@ public class ApFactory {
         List<String> errors = new ArrayList<>();
 
         if (errorsArray != null) {
-            errors.addAll(Arrays.asList(errorsArray));
+            errors.addAll(packageTexts.renderAll(Arrays.asList(errorsArray)));
         }
 
         List<PartValidationIssues> partValidationErrorsVOList = new ArrayList<>();
@@ -921,7 +1051,7 @@ public class ApFactory {
                 if (StringUtils.isNotEmpty(part.getErrorDescription())) {
                     String[] partErrorsArray = StringUtils.split(part.getErrorDescription(), "\n");
                     if (partErrorsArray != null) {
-                        List<String> partErrors = new ArrayList<>(Arrays.asList(partErrorsArray));
+                        List<String> partErrors = packageTexts.renderAll(Arrays.asList(partErrorsArray));
                         partValidationErrorsVOList.add(createVO(part.getPartId(), partErrors));
                     }
                 }
@@ -929,6 +1059,22 @@ public class ApFactory {
         }
 
         return createVO(errors, partValidationErrorsVOList);
+    }
+
+    /**
+     * Issues of a validation just run, rendered in the language of the request (the validation
+     * writes the messages encoded, see {@link cz.tacr.elza.core.data.ValidationMessage}).
+     *
+     * @return a new object, the given one is not changed
+     */
+    public ApValidationIssues renderValidationVO(ApValidationIssues issues) {
+        List<PartValidationIssues> partIssues = new ArrayList<>();
+        if (issues.getPartErrors() != null) {
+            for (PartValidationIssues partIssue : issues.getPartErrors()) {
+                partIssues.add(createVO(partIssue.getId(), packageTexts.renderAll(partIssue.getErrors())));
+            }
+        }
+        return createVO(packageTexts.renderAll(issues.getErrors()), partIssues);
     }
 
     private PartValidationIssues createVO(final Integer id, final List<String> errors) {

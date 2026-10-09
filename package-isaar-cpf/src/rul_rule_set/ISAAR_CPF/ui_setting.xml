@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<settings xmlns:ns9="item-types">
+    <item-types entity-type="RULE">
+        <ns9:item-type code="NM_MAIN">
+            <position>10</position>
+            <width>6</width>
+            <part-type>PT_NAME</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="NM_MINOR">
+            <position>20</position>
+            <width>6</width>
+            <part-type>PT_NAME</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="NM_TYPE">
+            <position>30</position>
+            <width>4</width>
+            <part-type>PT_NAME</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="NM_LANG">
+            <position>40</position>
+            <width>4</width>
+            <part-type>PT_NAME</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="NM_USED_FROM">
+            <position>50</position>
+            <width>2</width>
+            <part-type>PT_NAME</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="NM_USED_TO">
+            <position>60</position>
+            <width>2</width>
+            <part-type>PT_NAME</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="NOTE">
+            <position>70</position>
+            <width>12</width>
+            <part-type>PT_NAME</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="IDN_TYPE">
+            <position>10</position>
+            <width>4</width>
+            <part-type>PT_IDENT</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="IDN_VALUE">
+            <position>20</position>
+            <width>8</width>
+            <part-type>PT_IDENT</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="IDN_VALID_FROM">
+            <position>30</position>
+            <width>3</width>
+            <part-type>PT_IDENT</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="IDN_VALID_TO">
+            <position>40</position>
+            <width>3</width>
+            <part-type>PT_IDENT</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="NOTE">
+            <position>50</position>
+            <width>12</width>
+            <part-type>PT_IDENT</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="ISAAR_CORP_TYPE">
+            <position>10</position>
+            <width>6</width>
+            <part-type>PT_BODY</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="ISAAR_LEGAL_STATUS">
+            <position>20</position>
+            <width>6</width>
+            <part-type>PT_BODY</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="ISAAR_FAMILY_TYPE">
+            <position>30</position>
+            <width>6</width>
+            <part-type>PT_BODY</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="ISAAR_PLACE_TYPE">
+            <position>40</position>
+            <width>6</width>
+            <part-type>PT_BODY</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="ISAAR_CONCEPT_SCHEME">
+            <position>50</position>
+            <width>6</width>
+            <part-type>PT_BODY</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="COORD_POINT">
+            <position>60</position>
+            <width>6</width>
+            <part-type>PT_BODY</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="GEO_ADMIN_CLASS">
+            <position>70</position>
+            <width>6</width>
+            <part-type>PT_BODY</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="BRIEF_DESC">
+            <position>80</position>
+            <width>12</width>
+            <part-type>PT_BODY</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="HISTORY">
+            <position>90</position>
+            <width>12</width>
+            <part-type>PT_BODY</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="ISAAR_FUNCTIONS">
+            <position>100</position>
+            <width>12</width>
+            <part-type>PT_BODY</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="ISAAR_PLACES">
+            <position>110</position>
+            <width>12</width>
+            <part-type>PT_BODY</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="FOUNDING_NORMS">
+            <position>120</position>
+            <width>12</width>
+            <part-type>PT_BODY</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="SCOPE_NORMS">
+            <position>130</position>
+            <width>12</width>
+            <part-type>PT_BODY</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="CORP_STRUCTURE">
+            <position>140</position>
+            <width>12</width>
+            <part-type>PT_BODY</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="GENEALOGY">
+            <position>150</position>
+            <width>12</width>
+            <part-type>PT_BODY</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="ISAAR_GENERAL_CONTEXT">
+            <position>160</position>
+            <width>12</width>
+            <part-type>PT_BODY</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="SOURCE_INFO">
+            <position>170</position>
+            <width>12</width>
+            <part-type>PT_BODY</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="SOURCE_LINK">
+            <position>180</position>
+            <width>12</width>
+            <part-type>PT_BODY</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="NOTE">
+            <position>190</position>
+            <width>12</width>
+            <part-type>PT_BODY</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="CRE_CLASS">
+            <position>10</position>
+            <width>4</width>
+            <part-type>PT_CRE</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="CRE_DATE">
+            <position>20</position>
+            <width>4</width>
+            <part-type>PT_CRE</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="NOTE">
+            <position>30</position>
+            <width>12</width>
+            <part-type>PT_CRE</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="EXT_CLASS">
+            <position>10</position>
+            <width>4</width>
+            <part-type>PT_EXT</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="EXT_DATE">
+            <position>20</position>
+            <width>4</width>
+            <part-type>PT_EXT</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="NOTE">
+            <position>30</position>
+            <width>12</width>
+            <part-type>PT_EXT</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="EV_TYPE">
+            <position>10</position>
+            <width>4</width>
+            <part-type>PT_EVENT</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="ISAAR_LEGAL_STATUS">
+            <position>20</position>
+            <width>4</width>
+            <part-type>PT_EVENT</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="EV_BEGIN">
+            <position>30</position>
+            <width>2</width>
+            <part-type>PT_EVENT</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="EV_END">
+            <position>40</position>
+            <width>2</width>
+            <part-type>PT_EVENT</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="NOTE">
+            <position>50</position>
+            <width>12</width>
+            <part-type>PT_EVENT</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="REL_ENTITY">
+            <position>10</position>
+            <width>8</width>
+            <part-type>PT_REL</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="REL_BEGIN">
+            <position>20</position>
+            <width>2</width>
+            <part-type>PT_REL</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="REL_END">
+            <position>30</position>
+            <width>2</width>
+            <part-type>PT_REL</part-type>
+        </ns9:item-type>
+        <ns9:item-type code="NOTE">
+            <position>40</position>
+            <width>12</width>
+            <part-type>PT_REL</part-type>
+        </ns9:item-type>
+    </item-types>
+</settings>

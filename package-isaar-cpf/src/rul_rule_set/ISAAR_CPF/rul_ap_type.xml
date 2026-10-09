@@ -1,0 +1,7 @@
+<ap-types>
+    <ap-type code="PERSON_INDIVIDUAL"/>
+    <ap-type code="FAMILY"/>
+    <ap-type code="PARTY_GROUP"/>
+    <ap-type code="GEO"/>
+    <ap-type code="TERM"/>
+</ap-types>

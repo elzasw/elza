@@ -74,8 +74,12 @@ Database and working directory
    * - ``elza.locale``
      - ``cs``
      - Locale used for sorting texts and for formatting and parsing dates
-       in the application. It does not determine the language of the user
-       interface.
+       in the application. Its language is also the language of the user
+       interface for users who have not chosen one (Czech when the client
+       has no texts in that language), the language of names from rules
+       packages in requests that name no language, and the language a text
+       of a rules package falls back to when it has no translation into the
+       user's language (before the text as the package wrote it).
 
 The connection pool is set to 20 connections
 (``spring.datasource.hikari.maximumPoolSize``); raise it only together
@@ -405,10 +409,41 @@ Import
        funds in batches (*Import from a server folder*). Users can browse
        only its subdirectories. Without the setting, import from a server
        folder is disabled; upload from the browser works regardless.
+   * - ``elza.packages.enabled``
+     - (none)
+     - Codes of the packages to load from :file:`dpkg/` at startup besides
+       the packages already imported, for example ``[CZ_BASE, ZP2015]``;
+       the packages they depend on are loaded with them. A package of the
+       directory that is neither imported nor listed is skipped. Without
+       the key, an empty database imports every package of the directory.
+       See :ref:`install-packages`.
    * - ``elza.package.testing``
      - ``false``
      - Re-import a package with the same version as the imported one.
        For developing packages only.
+
+Restart from the administration
+===============================
+
+A Java process cannot restart itself. The restart offered in
+*Administration* > *Package management* stops the application with the
+exit code below after the response, and the service manager starts it
+again: systemd with ``Restart=on-failure`` (see :doc:`02-installation`)
+or a Windows service wrapper. Without a service manager the application
+only stops; the confirmation of the restart says so.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 16 54
+
+   * - Key
+     - Default
+     - Meaning
+   * - ``elza.restart.exitCode``
+     - ``3``
+     - Exit code of the restart from the administration. Change it only
+       when the service manager restarts on another code; the unit of
+       :doc:`02-installation` restarts on any code other than 0 and 143.
 
 Archival entities
 =================

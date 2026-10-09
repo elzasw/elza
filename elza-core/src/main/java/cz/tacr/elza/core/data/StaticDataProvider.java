@@ -3,10 +3,16 @@ package cz.tacr.elza.core.data;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -20,6 +26,15 @@ import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.RulArrangementExtension;
 import cz.tacr.elza.domain.RulArrangementRule;
 import cz.tacr.elza.domain.RulComponent;
+import cz.tacr.elza.domain.RulEntityRule;
+import cz.tacr.elza.domain.RulRuleSetApType;
+import cz.tacr.elza.domain.RulRuleSetPartType;
+import cz.tacr.elza.domain.RulApTypeDeclaration;
+import cz.tacr.elza.domain.RulPartTypeDeclaration;
+import cz.tacr.elza.domain.RulItemTypeDeclaration;
+import cz.tacr.elza.domain.RulItemSpecDeclaration;
+import cz.tacr.elza.domain.RulItemSpecAssignDeclaration;
+import cz.tacr.elza.domain.RulPackageDependency;
 import cz.tacr.elza.domain.RulExtensionRule;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
@@ -33,6 +48,8 @@ import cz.tacr.elza.domain.RulStructureExtensionDefinition;
 import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.domain.RulStructuredTypeExtension;
 import cz.tacr.elza.domain.SysLanguage;
+import cz.tacr.elza.domain.RulTranslation;
+import cz.tacr.elza.domain.TranslationEntityType;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApExternalIdTypeRepository;
@@ -41,14 +58,19 @@ import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.ArrangementExtensionRepository;
 import cz.tacr.elza.repository.ArrangementRuleRepository;
 import cz.tacr.elza.repository.ComponentRepository;
+import cz.tacr.elza.repository.EntityRuleRepository;
+import cz.tacr.elza.repository.RuleSetApTypeRepository;
+import cz.tacr.elza.repository.RuleSetPartTypeRepository;
 import cz.tacr.elza.repository.ExtensionRuleRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.ItemTypeSpecAssignRepository;
+import cz.tacr.elza.repository.PackageDependencyRepository;
 import cz.tacr.elza.repository.PackageRepository;
 import cz.tacr.elza.repository.PartTypeRepository;
 import cz.tacr.elza.repository.PolicyTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.repository.RulTranslationRepository;
 import cz.tacr.elza.repository.StructureDefinitionRepository;
 import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
 import cz.tacr.elza.repository.StructuredTypeExtensionRepository;
@@ -121,6 +143,10 @@ public class StaticDataProvider {
 
     private Map<String, SysLanguage> sysLanguageCodeMap;
 
+    private Map<String, SysLanguage> sysLanguageTagMap;
+
+    private PackageTranslations translations;
+
     private Map<Integer, ApTypeRoles> apTypeRolesIdMap;
 
     private Map<String, ApExternalSystem> apExternalSystemCodeMap = new HashMap<>();
@@ -191,6 +217,19 @@ public class StaticDataProvider {
     public SysLanguage getSysLanguageByCode(String code) {
         Validate.notEmpty(code);
         return sysLanguageCodeMap.get(code);
+    }
+
+    /**
+     * @param tag
+     *            BCP 47 tag, compared case-insensitively
+     */
+    public SysLanguage getSysLanguageByTag(String tag) {
+        Validate.notEmpty(tag);
+        return sysLanguageTagMap.get(tag.toLowerCase(Locale.ROOT));
+    }
+
+    public PackageTranslations getTranslations() {
+        return translations;
     }
 
     public List<StructType> getStructuredTypes() {
@@ -346,6 +385,7 @@ public class StaticDataProvider {
                      service.arrangementRuleRepository,
                      service.ruleSetExtRepository,
                      service.extensionRuleRepository,
+                     service.entityRuleRepository,
                      service.componentRepository);
         initStructuredTypes(service.structuredTypeRepository,
                             service.structureDefinitionRepository,
@@ -359,7 +399,106 @@ public class StaticDataProvider {
         initPartTypes(service.partTypeRepository);
         initApExternalSystems(service.apExternalSystemRepository);
         initPolicyTypes(service.policyTypeRepository);
+        List<RulApTypeDeclaration> apTypeDeclarations = service.apTypeDeclarationRepository.findAll();
+        List<RulItemSpecDeclaration> itemSpecDeclarations = service.itemSpecDeclarationRepository.findAll();
+        initTranslations(service.translationRepository, service.packageDependencyRepository, apTypeDeclarations,
+                         service.partTypeDeclarationRepository.findAll(),
+                         service.itemTypeDeclarationRepository.findAll(),
+                         itemSpecDeclarations);
+        initRuleSetApTypes(service.ruleSetApTypeRepository, service.ruleSetPartTypeRepository,
+                           service.packageDependencyRepository, apTypeDeclarations);
+        initRuleSetItemSpecs(service.packageDependencyRepository.findAll(), itemSpecDeclarations,
+                             service.itemSpecAssignDeclarationRepository.findAll());
         self = this;
+    }
+
+    /**
+     * Member classes and part types of the rule sets; when several packages state one class in one
+     * rule set, the package deeper in dependency order wins (ties by package code), as for
+     * translations. Display order: packages from the owner in dependency order, each in its file
+     * order.
+     */
+    private void initRuleSetApTypes(RuleSetApTypeRepository ruleSetApTypeRepository,
+                                    RuleSetPartTypeRepository ruleSetPartTypeRepository,
+                                    PackageDependencyRepository packageDependencyRepository,
+                                    List<RulApTypeDeclaration> apTypeDeclarations) {
+        Map<Integer, Integer> depth = PackageTranslations.dependencyDepth(packageDependencyRepository.findAll());
+        // a later package overrides assignable; the position stays where the class was first listed
+        Comparator<RulRuleSetApType> precedence = Comparator
+                .comparing((RulRuleSetApType m) -> depth.getOrDefault(m.getPackageId(), 0))
+                .thenComparing(m -> packageIdMap.get(m.getPackageId()).getCode())
+                .thenComparing(RulRuleSetApType::getPosition, Comparator.nullsLast(Comparator.naturalOrder()))
+                .thenComparing(RulRuleSetApType::getRuleSetApTypeId);
+        Map<Integer, Map<Integer, Boolean>> membersByRuleSet = new HashMap<>();
+        ruleSetApTypeRepository.findAll().stream().sorted(precedence).forEach(m -> membersByRuleSet
+                .computeIfAbsent(m.getRuleSetId(), k -> new LinkedHashMap<>())
+                .put(m.getApTypeId(), m.getAssignable()));
+        Comparator<RulRuleSetPartType> partPrecedence = Comparator
+                .comparing((RulRuleSetPartType m) -> depth.getOrDefault(m.getPackageId(), 0))
+                .thenComparing(m -> packageIdMap.get(m.getPackageId()).getCode())
+                .thenComparing(RulRuleSetPartType::getPosition);
+        Map<Integer, Set<Integer>> partsByRuleSet = new HashMap<>();
+        ruleSetPartTypeRepository.findAll().stream().sorted(partPrecedence).forEach(m -> partsByRuleSet
+                .computeIfAbsent(m.getRuleSetId(), k -> new LinkedHashSet<>()).add(m.getPartTypeId()));
+        // read-only of the classes as the package of each rule set declares them
+        Map<Integer, Map<Integer, Boolean>> readOnlyByPackage = new HashMap<>();
+        for (RulApTypeDeclaration declaration : apTypeDeclarations) {
+            readOnlyByPackage.computeIfAbsent(declaration.getPackageId(), k -> new HashMap<>())
+                    .put(declaration.getApTypeId(), declaration.getReadOnly());
+        }
+        for (RuleSet ruleSet : ruleSets) {
+            ruleSet.setApTypeMembers(membersByRuleSet.getOrDefault(ruleSet.getRuleSetId(), Map.of()));
+            ruleSet.setPartTypeOrder(new ArrayList<>(partsByRuleSet.getOrDefault(ruleSet.getRuleSetId(), Set.of())));
+            ruleSet.setDeclaredReadOnly(readOnlyByPackage.getOrDefault(
+                    ruleSet.getEntity().getPackage().getPackageId(), Map.of()));
+        }
+    }
+
+    /**
+     * Specifications each rule set sees: those assigned to an item type by a package related to the
+     * package of the rule set - the package itself, the packages it depends on and the packages
+     * depending on it, both transitively ({@link PackageRelations#relatedPackages}). An assignment
+     * nobody declares (data older than the declarations) is seen by every rule set. Only item types
+     * with a hidden specification are stored on the rule set.
+     */
+    private void initRuleSetItemSpecs(List<RulPackageDependency> dependencies,
+                                      List<RulItemSpecDeclaration> itemSpecDeclarations,
+                                      List<RulItemSpecAssignDeclaration> assignDeclarations) {
+        Map<Integer, Set<Integer>> related = PackageRelations.relatedPackages(dependencies);
+        Map<Integer, RulItemSpecDeclaration> declarationById = createLookup(itemSpecDeclarations,
+                RulItemSpecDeclaration::getItemSpecDeclarationId);
+        // item type id -> specification id -> packages assigning the specification to the item type
+        Map<Integer, Map<Integer, Set<Integer>>> assigningPackages = new HashMap<>();
+        for (RulItemSpecAssignDeclaration assign : assignDeclarations) {
+            RulItemSpecDeclaration declaration = declarationById.get(assign.getItemSpecDeclarationId());
+            Validate.notNull(declaration, "Assignment declaration without its specification declaration, id: %d",
+                             assign.getItemSpecAssignDeclarationId());
+            assigningPackages.computeIfAbsent(assign.getItemTypeId(), k -> new HashMap<>())
+                    .computeIfAbsent(declaration.getItemSpecId(), k -> new HashSet<>())
+                    .add(declaration.getPackageId());
+        }
+        for (RuleSet ruleSet : ruleSets) {
+            Integer packageId = ruleSet.getEntity().getPackage().getPackageId();
+            Set<Integer> relatedPackages = related.getOrDefault(packageId, Set.of(packageId));
+            Map<Integer, List<CachedItemSpec>> visibleByType = new HashMap<>();
+            for (ItemType itemType : itemTypes) {
+                Map<Integer, Set<Integer>> packagesBySpec = assigningPackages.get(itemType.getItemTypeId());
+                if (packagesBySpec == null) {
+                    continue;
+                }
+                List<CachedItemSpec> visible = new ArrayList<>(itemType.getItemSpecs().size());
+                for (CachedItemSpec itemSpec : itemType.getItemSpecs()) {
+                    Set<Integer> packages = packagesBySpec.get(itemSpec.getItemSpecId());
+                    if (packages == null || !Collections.disjoint(packages, relatedPackages)) {
+                        visible.add(itemSpec);
+                    }
+                }
+                if (visible.size() < itemType.getItemSpecs().size()) {
+                    visibleByType.put(itemType.getItemTypeId(), Collections.unmodifiableList(visible));
+                }
+            }
+            ruleSet.setItemSpecs(visibleByType);
+        }
     }
 
     private void initPolicyTypes(PolicyTypeRepository policyTypeRepository) {
@@ -375,6 +514,7 @@ public class StaticDataProvider {
                               ArrangementRuleRepository arrangementRuleRepository,
                               ArrangementExtensionRepository extRepository,
                               ExtensionRuleRepository extensionRuleRepository,
+                              EntityRuleRepository entityRuleRepository,
                               ComponentRepository componentRepository) {
         // find all components 
         //  - this allows to initialize all rules using components
@@ -390,6 +530,9 @@ public class StaticDataProvider {
         Map<Integer, List<RulExtensionRule>> extRulesByExtId = dbExtRules.stream()
                 .collect(Collectors.groupingBy(RulExtensionRule::getArrangementExtensionId));
 
+        Map<Integer, List<RulEntityRule>> entityRulesByRuleSetId = entityRuleRepository.findAllFetchOrderByPriority()
+                .stream().collect(Collectors.groupingBy(RulEntityRule::getRuleSetId));
+
         List<RulArrangementRule> dbRules = arrangementRuleRepository.findAll();
         Map<Integer, List<RulArrangementRule>> dbRulesByRulesetId = dbRules.stream()
                 .collect(Collectors.groupingBy(RulArrangementRule::getRuleSetId));
@@ -400,7 +543,8 @@ public class StaticDataProvider {
                                                                                              Collections.emptyList());
                     List<RulArrangementExtension> exts = ruleSetExtsById.getOrDefault(rs.getRuleSetId(), Collections
                             .emptyList());
-                    return new RuleSet(rs, dbRulesPerSet, exts, extRulesByExtId, dbExtRules);
+                    return new RuleSet(rs, dbRulesPerSet, exts, extRulesByExtId,
+                            entityRulesByRuleSetId.getOrDefault(rs.getRuleSetId(), Collections.emptyList()));
                 })
                 .collect(Collectors.toList());
         this.ruleSets = Collections.unmodifiableList(ruleSets);
@@ -585,6 +729,72 @@ public class StaticDataProvider {
         this.sysLanguages = Collections.unmodifiableList(languages);
         this.sysLanguageIdMap = createLookup(languages, SysLanguage::getLanguageId);
         this.sysLanguageCodeMap = createLookup(languages, SysLanguage::getCode);
+        this.sysLanguageTagMap = createLookup(languages, l -> l.getTag().toLowerCase(Locale.ROOT));
+    }
+
+    /**
+     * Translations of package texts; the names of class declarations are texts of the classes in the
+     * languages of the declaring packages.
+     */
+    private void initTranslations(RulTranslationRepository translationRepository,
+                                  PackageDependencyRepository packageDependencyRepository,
+                                  List<RulApTypeDeclaration> apTypeDeclarations,
+                                  List<RulPartTypeDeclaration> partTypeDeclarations,
+                                  List<RulItemTypeDeclaration> itemTypeDeclarations,
+                                  List<RulItemSpecDeclaration> itemSpecDeclarations) {
+        List<RulTranslation> rows = new ArrayList<>(translationRepository.findAllFetchPackageAndLanguage());
+        for (RulApTypeDeclaration declaration : apTypeDeclarations) {
+            addDeclaredText(rows, declaration.getPackageId(), TranslationEntityType.AP_TYPE,
+                            apTypeIdMap.get(declaration.getApTypeId()).getCode(), TranslationEntityType.NAME,
+                            declaration.getName());
+        }
+        for (RulPartTypeDeclaration declaration : partTypeDeclarations) {
+            addDeclaredText(rows, declaration.getPackageId(), TranslationEntityType.PART_TYPE,
+                            partTypeIdMap.get(declaration.getPartTypeId()).getCode(), TranslationEntityType.NAME,
+                            declaration.getName());
+        }
+        for (RulItemTypeDeclaration declaration : itemTypeDeclarations) {
+            String code = itemTypeIdMap.get(declaration.getItemTypeId()).getCode();
+            addDeclaredText(rows, declaration.getPackageId(), TranslationEntityType.ITEM_TYPE, code,
+                            TranslationEntityType.NAME, declaration.getName());
+            addDeclaredText(rows, declaration.getPackageId(), TranslationEntityType.ITEM_TYPE, code,
+                            TranslationEntityType.SHORTCUT, declaration.getShortcut());
+            addDeclaredText(rows, declaration.getPackageId(), TranslationEntityType.ITEM_TYPE, code,
+                            TranslationEntityType.DESCRIPTION, declaration.getDescription());
+        }
+        for (RulItemSpecDeclaration declaration : itemSpecDeclarations) {
+            String code = itemSpecIdMap.get(declaration.getItemSpecId()).getCode();
+            addDeclaredText(rows, declaration.getPackageId(), TranslationEntityType.ITEM_SPEC, code,
+                            TranslationEntityType.NAME, declaration.getName());
+            addDeclaredText(rows, declaration.getPackageId(), TranslationEntityType.ITEM_SPEC, code,
+                            TranslationEntityType.SHORTCUT, declaration.getShortcut());
+            addDeclaredText(rows, declaration.getPackageId(), TranslationEntityType.ITEM_SPEC, code,
+                            TranslationEntityType.DESCRIPTION, declaration.getDescription());
+        }
+        // the texts shipped with the core lie below every package
+        this.translations = PackageTranslations.build(rows, packages, packageDependencyRepository.findAll(),
+                                                      CoreTranslations.load(sysLanguages));
+    }
+
+    /**
+     * Text of a declaration as a text in the language of the declaring package.
+     */
+    private void addDeclaredText(List<RulTranslation> rows, Integer packageId, TranslationEntityType type,
+                                 String code, String field, String text) {
+        RulPackage rulPackage = packageIdMap.get(packageId);
+        SysLanguage language = rulPackage != null && rulPackage.getLanguageId() != null
+                ? getSysLanguageById(rulPackage.getLanguageId()) : null;
+        if (language == null) {
+            return;
+        }
+        RulTranslation row = new RulTranslation();
+        row.setRulPackage(rulPackage);
+        row.setEntityType(type.name());
+        row.setEntityCode(code);
+        row.setField(field);
+        row.setLanguage(language);
+        row.setTextValue(text);
+        rows.add(row);
     }
 
     public static <K, V> Map<K, V> createLookup(Collection<V> values, Function<V, K> keyMapping) {

@@ -37,6 +37,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.common.FactoryUtils;
+import cz.tacr.elza.common.UuidUtils;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.BulkActionRunState;
@@ -87,6 +88,7 @@ import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.AdminPermissionUpdateMode;
+import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.ArrangementService.FindFundVersionsResult;
 import cz.tacr.elza.service.DaoService;
@@ -115,6 +117,9 @@ public class FundController implements FundsApi {
 
     @Autowired
     private ArrangementService arrangementService;
+
+    @Autowired
+    private ArrangementInternalService arrangementInternalService;
 
     @Autowired
     private AccessPointService accessPointService;
@@ -260,7 +265,12 @@ public class FundController implements FundsApi {
     public ResponseEntity<FundDetail> fundGetFund(@PathVariable("id") String id) {
         Validate.notNull(id, "Musí být zadáno id AS");
 
-        ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(Integer.valueOf(id));
+        // the fund UUID is the UUID of its root node; resolved without a permission check,
+        // the secured read below checks it
+        Integer fundId = UuidUtils.isUUID(id)
+                ? arrangementInternalService.getOpenVersionByString(id).getFundId()
+                : Integer.valueOf(id);
+        ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(fundId);
         if (fundVersion == null) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}

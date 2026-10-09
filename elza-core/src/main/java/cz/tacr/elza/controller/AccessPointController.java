@@ -439,7 +439,7 @@ public class AccessPointController implements AccesspointsApi {
         accessPointService.checkPermissionForRead(apState);
         ApValidationIssues validationIssues = accessPointService.validate(accessPoint, apState, true, includeRevision);
 
-        return ResponseEntity.ok(validationIssues);
+        return ResponseEntity.ok(apFactory.renderValidationVO(validationIssues));
     }
 
     /**

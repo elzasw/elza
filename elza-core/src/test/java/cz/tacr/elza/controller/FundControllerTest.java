@@ -115,6 +115,10 @@ public class FundControllerTest extends AbstractControllerTest {
         assertNotNull(fundDetail);
         assertEquals(fund.getId(), fundDetail.getId());
 
+        // the fund UUID is accepted as well
+        FundDetail byUuid = fundsApi.fundGetFund(fundDetail.getUuid());
+        assertEquals(fund.getId(), byUuid.getId());
+
         deleteFund(fund.getId());
     }
 

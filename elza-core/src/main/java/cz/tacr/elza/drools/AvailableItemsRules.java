@@ -10,7 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.core.ResourcePathResolver;
-import cz.tacr.elza.domain.RulExtensionRule;
+import cz.tacr.elza.domain.RulArrangementRule;
+import cz.tacr.elza.domain.RulEntityRule;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.drools.model.Ap;
 import cz.tacr.elza.drools.model.ItemType;
@@ -26,12 +27,12 @@ public class AvailableItemsRules extends Rules {
     private ResourcePathResolver resourcePathResolver;
 
 
-    public synchronized ModelAvailable execute(final List<RulExtensionRule> rules,
+    public synchronized ModelAvailable execute(final List<RulEntityRule> rules,
                                                final ModelAvailable modelAvailable) throws Exception {
         Ap ap = modelAvailable.getAp();
         logger.debug("Executing rules for AccessPoint, accessPointId: {}", ap.getId());
 
-        for (RulExtensionRule rule : rules) {
+        for (RulEntityRule rule : rules) {
             Path path = resourcePathResolver.getDroolFile(rule);
             KieSession kSession = createKieSession(path);
             kSession.insert(ap);
@@ -50,16 +51,38 @@ public class AvailableItemsRules extends Rules {
         return modelAvailable;
     }
 
+    /**
+     * Runs the item type filter of the rule set (if any) and then the given filter rules,
+     * each in its own session over the same item types.
+     *
+     * @param rulRuleSet
+     *            rule set
+     * @param filterRules
+     *            rules of type {@link RulArrangementRule.RuleType#ITEM_TYPE_FILTER} of the rule
+     *            set, sorted by priority
+     * @param itemTypeList
+     *            item types to evaluate
+     * @return the evaluated item types
+     */
     public synchronized List<ItemType> execute(final RulRuleSet rulRuleSet,
+                                               final List<RulArrangementRule> filterRules,
                                                List<ItemType> itemTypeList) throws Exception {
-        Path path = resourcePathResolver.getDroolFile(rulRuleSet);
+        if (rulRuleSet.getItemTypeComponent() != null) {
+            fireAll(resourcePathResolver.getDroolFile(rulRuleSet), itemTypeList);
+        }
+        for (RulArrangementRule filterRule : filterRules) {
+            fireAll(resourcePathResolver.getDroolFile(filterRule), itemTypeList);
+        }
+        return itemTypeList;
+    }
+
+    private void fireAll(final Path path, final List<ItemType> itemTypeList) throws Exception {
         KieSession kSession = createKieSession(path);
         for (ItemType itemType : itemTypeList) {
             kSession.insert(itemType);
         }
         kSession.fireAllRules();
         kSession.dispose();
-        return itemTypeList;
     }
 
 }

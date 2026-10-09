@@ -518,7 +518,6 @@ public class Zp2015DaImportBuildTest {
                     .filter(d -> d.getCode().equals(divId)).findFirst().orElseThrow();
             DaLevelView view = new DaLevelView();
             view.setLabel(label);
-            view.setFund(nodeRepository.findById(rootNodeId).orElseThrow().getFund());
             view.setCreateChange(dao.getCreateChange());
             levelViewRepository.save(view);
             dao.setLevelView(view);

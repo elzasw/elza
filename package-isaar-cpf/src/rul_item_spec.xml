@@ -1,0 +1,3646 @@
+<item-specs>
+    <!-- specifications shared with CZ_BASE (CAM) by code (English texts, the same classes of related
+         entities); ISAAR_* are own -->
+    <item-spec code="NT_EQUIV">
+        <name>Parallel form</name>
+        <description>Form of name: parallel form</description>
+        <shortcut>Parallel form</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_TRANSLATED">
+        <name>Translated form</name>
+        <description>Form of name: translated form</description>
+        <shortcut>Translated form</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_OTHERRULES">
+        <name>Form by other rules</name>
+        <description>Form of name: form by other rules</description>
+        <shortcut>Form by other rules</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_ALIAS">
+        <name>Alias / nickname</name>
+        <description>Form of name: alias / nickname</description>
+        <shortcut>Alias / nickname</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_PSEUDONYM">
+        <name>Pseudonym</name>
+        <description>Form of name: pseudonym</description>
+        <shortcut>Pseudonym</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_ACRONYM">
+        <name>Acronym / abbreviation</name>
+        <description>Form of name: acronym / abbreviation</description>
+        <shortcut>Acronym / abbreviation</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_FORMER">
+        <name>Former form</name>
+        <description>Form of name: former form</description>
+        <shortcut>Former form</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_NATIV">
+        <name>Birth name</name>
+        <description>Form of name: birth name</description>
+        <shortcut>Birth name</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_HISTORICAL">
+        <name>Historical form</name>
+        <description>Form of name: historical form</description>
+        <shortcut>Historical form</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="NT_RELIGIOUS">
+        <name>Religious name</name>
+        <description>Form of name: religious name</description>
+        <shortcut>Religious name</shortcut>
+        <item-type-assign code="NM_TYPE"/>
+    </item-spec>
+    <item-spec code="LNG_eng">
+        <name>English</name>
+        <description>Language: English</description>
+        <shortcut>English</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_cze">
+        <name>Czech</name>
+        <description>Language: Czech</description>
+        <shortcut>Czech</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ger">
+        <name>German</name>
+        <description>Language: German</description>
+        <shortcut>German</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_fre">
+        <name>French</name>
+        <description>Language: French</description>
+        <shortcut>French</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_spa">
+        <name>Spanish</name>
+        <description>Language: Spanish</description>
+        <shortcut>Spanish</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ita">
+        <name>Italian</name>
+        <description>Language: Italian</description>
+        <shortcut>Italian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_lat">
+        <name>Latin</name>
+        <description>Language: Latin</description>
+        <shortcut>Latin</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_pol">
+        <name>Polish</name>
+        <description>Language: Polish</description>
+        <shortcut>Polish</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_slo">
+        <name>Slovak</name>
+        <description>Language: Slovak</description>
+        <shortcut>Slovak</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_rus">
+        <name>Russian</name>
+        <description>Language: Russian</description>
+        <shortcut>Russian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_hun">
+        <name>Hungarian</name>
+        <description>Language: Hungarian</description>
+        <shortcut>Hungarian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_dut">
+        <name>Dutch</name>
+        <description>Language: Dutch</description>
+        <shortcut>Dutch</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_por">
+        <name>Portuguese</name>
+        <description>Language: Portuguese</description>
+        <shortcut>Portuguese</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_swe">
+        <name>Swedish</name>
+        <description>Language: Swedish</description>
+        <shortcut>Swedish</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_gre">
+        <name>Greek</name>
+        <description>Language: Greek</description>
+        <shortcut>Greek</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ukr">
+        <name>Ukrainian</name>
+        <description>Language: Ukrainian</description>
+        <shortcut>Ukrainian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_abk">
+        <name>Abkhazian</name>
+        <description>Language: Abkhazian</description>
+        <shortcut>Abkhazian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ace">
+        <name>Achinese</name>
+        <description>Language: Achinese</description>
+        <shortcut>Achinese</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ach">
+        <name>Acoli</name>
+        <description>Language: Acoli</description>
+        <shortcut>Acoli</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ada">
+        <name>Adangme</name>
+        <description>Language: Adangme</description>
+        <shortcut>Adangme</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ady">
+        <name>Adyghe</name>
+        <description>Language: Adyghe; Adygei</description>
+        <shortcut>Adyghe</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_aar">
+        <name>Afar</name>
+        <description>Language: Afar</description>
+        <shortcut>Afar</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_afh">
+        <name>Afrihili</name>
+        <description>Language: Afrihili</description>
+        <shortcut>Afrihili</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_afr">
+        <name>Afrikaans</name>
+        <description>Language: Afrikaans</description>
+        <shortcut>Afrikaans</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_afa">
+        <name>Afro-Asiatic languages</name>
+        <description>Language: Afro-Asiatic languages</description>
+        <shortcut>Afro-Asiatic languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ain">
+        <name>Ainu</name>
+        <description>Language: Ainu</description>
+        <shortcut>Ainu</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_aka">
+        <name>Akan</name>
+        <description>Language: Akan</description>
+        <shortcut>Akan</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_akk">
+        <name>Akkadian</name>
+        <description>Language: Akkadian</description>
+        <shortcut>Akkadian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_alb">
+        <name>Albanian</name>
+        <description>Language: Albanian</description>
+        <shortcut>Albanian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ale">
+        <name>Aleut</name>
+        <description>Language: Aleut</description>
+        <shortcut>Aleut</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_alg">
+        <name>Algonquian languages</name>
+        <description>Language: Algonquian languages</description>
+        <shortcut>Algonquian languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tut">
+        <name>Altaic languages</name>
+        <description>Language: Altaic languages</description>
+        <shortcut>Altaic languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_amh">
+        <name>Amharic</name>
+        <description>Language: Amharic</description>
+        <shortcut>Amharic</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_anp">
+        <name>Angika</name>
+        <description>Language: Angika</description>
+        <shortcut>Angika</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_apa">
+        <name>Apache languages</name>
+        <description>Language: Apache languages</description>
+        <shortcut>Apache languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ara">
+        <name>Arabic</name>
+        <description>Language: Arabic</description>
+        <shortcut>Arabic</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_arg">
+        <name>Aragonese</name>
+        <description>Language: Aragonese</description>
+        <shortcut>Aragonese</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_arp">
+        <name>Arapaho</name>
+        <description>Language: Arapaho</description>
+        <shortcut>Arapaho</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_arw">
+        <name>Arawak</name>
+        <description>Language: Arawak</description>
+        <shortcut>Arawak</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_arm">
+        <name>Armenian</name>
+        <description>Language: Armenian</description>
+        <shortcut>Armenian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_rup">
+        <name>Aromanian</name>
+        <description>Language: Aromanian; Arumanian; Macedo-Romanian</description>
+        <shortcut>Aromanian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_art">
+        <name>Artificial languages</name>
+        <description>Language: Artificial languages</description>
+        <shortcut>Artificial languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_asm">
+        <name>Assamese</name>
+        <description>Language: Assamese</description>
+        <shortcut>Assamese</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ast">
+        <name>Asturian</name>
+        <description>Language: Asturian; Bable; Leonese; Asturleonese</description>
+        <shortcut>Asturian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ath">
+        <name>Athapascan languages</name>
+        <description>Language: Athapascan languages</description>
+        <shortcut>Athapascan languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_aus">
+        <name>Australian languages</name>
+        <description>Language: Australian languages</description>
+        <shortcut>Australian languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_map">
+        <name>Austronesian languages</name>
+        <description>Language: Austronesian languages</description>
+        <shortcut>Austronesian languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ava">
+        <name>Avaric</name>
+        <description>Language: Avaric</description>
+        <shortcut>Avaric</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ave">
+        <name>Avestan</name>
+        <description>Language: Avestan</description>
+        <shortcut>Avestan</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_awa">
+        <name>Awadhi</name>
+        <description>Language: Awadhi</description>
+        <shortcut>Awadhi</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_aym">
+        <name>Aymara</name>
+        <description>Language: Aymara</description>
+        <shortcut>Aymara</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_aze">
+        <name>Azerbaijani</name>
+        <description>Language: Azerbaijani</description>
+        <shortcut>Azerbaijani</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ban">
+        <name>Balinese</name>
+        <description>Language: Balinese</description>
+        <shortcut>Balinese</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_bat">
+        <name>Baltic languages</name>
+        <description>Language: Baltic languages</description>
+        <shortcut>Baltic languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_bal">
+        <name>Baluchi</name>
+        <description>Language: Baluchi</description>
+        <shortcut>Baluchi</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_bam">
+        <name>Bambara</name>
+        <description>Language: Bambara</description>
+        <shortcut>Bambara</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_bai">
+        <name>Bamileke languages</name>
+        <description>Language: Bamileke languages</description>
+        <shortcut>Bamileke languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_bad">
+        <name>Banda languages</name>
+        <description>Language: Banda languages</description>
+        <shortcut>Banda languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_bnt">
+        <name>Bantu languages</name>
+        <description>Language: Bantu languages</description>
+        <shortcut>Bantu languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_bas">
+        <name>Basa</name>
+        <description>Language: Basa</description>
+        <shortcut>Basa</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_bak">
+        <name>Bashkir</name>
+        <description>Language: Bashkir</description>
+        <shortcut>Bashkir</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_baq">
+        <name>Basque</name>
+        <description>Language: Basque</description>
+        <shortcut>Basque</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_btk">
+        <name>Batak languages</name>
+        <description>Language: Batak languages</description>
+        <shortcut>Batak languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_bej">
+        <name>Beja</name>
+        <description>Language: Beja; Bedawiyet</description>
+        <shortcut>Beja</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_bel">
+        <name>Belarusian</name>
+        <description>Language: Belarusian</description>
+        <shortcut>Belarusian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_bem">
+        <name>Bemba</name>
+        <description>Language: Bemba</description>
+        <shortcut>Bemba</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ben">
+        <name>Bengali</name>
+        <description>Language: Bengali</description>
+        <shortcut>Bengali</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ber">
+        <name>Berber languages</name>
+        <description>Language: Berber languages</description>
+        <shortcut>Berber languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_bho">
+        <name>Bhojpuri</name>
+        <description>Language: Bhojpuri</description>
+        <shortcut>Bhojpuri</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_bih">
+        <name>Bihari languages</name>
+        <description>Language: Bihari languages</description>
+        <shortcut>Bihari languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_bik">
+        <name>Bikol</name>
+        <description>Language: Bikol</description>
+        <shortcut>Bikol</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_bin">
+        <name>Bini</name>
+        <description>Language: Bini; Edo</description>
+        <shortcut>Bini</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_bis">
+        <name>Bislama</name>
+        <description>Language: Bislama</description>
+        <shortcut>Bislama</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_byn">
+        <name>Blin</name>
+        <description>Language: Blin; Bilin</description>
+        <shortcut>Blin</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_zbl">
+        <name>Blissymbols</name>
+        <description>Language: Blissymbols; Blissymbolics; Bliss</description>
+        <shortcut>Blissymbols</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_bos">
+        <name>Bosnian</name>
+        <description>Language: Bosnian</description>
+        <shortcut>Bosnian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_bra">
+        <name>Braj</name>
+        <description>Language: Braj</description>
+        <shortcut>Braj</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_bre">
+        <name>Breton</name>
+        <description>Language: Breton</description>
+        <shortcut>Breton</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_bug">
+        <name>Buginese</name>
+        <description>Language: Buginese</description>
+        <shortcut>Buginese</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_bul">
+        <name>Bulgarian</name>
+        <description>Language: Bulgarian</description>
+        <shortcut>Bulgarian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_bua">
+        <name>Buriat</name>
+        <description>Language: Buriat</description>
+        <shortcut>Buriat</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_bur">
+        <name>Burmese</name>
+        <description>Language: Burmese</description>
+        <shortcut>Burmese</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_cad">
+        <name>Caddo</name>
+        <description>Language: Caddo</description>
+        <shortcut>Caddo</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_cat">
+        <name>Catalan</name>
+        <description>Language: Catalan; Valencian</description>
+        <shortcut>Catalan</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_cau">
+        <name>Caucasian languages</name>
+        <description>Language: Caucasian languages</description>
+        <shortcut>Caucasian languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ceb">
+        <name>Cebuano</name>
+        <description>Language: Cebuano</description>
+        <shortcut>Cebuano</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_cel">
+        <name>Celtic languages</name>
+        <description>Language: Celtic languages</description>
+        <shortcut>Celtic languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_cai">
+        <name>Central American Indian languages</name>
+        <description>Language: Central American Indian languages</description>
+        <shortcut>Central American Indian languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_khm">
+        <name>Central Khmer</name>
+        <description>Language: Central Khmer</description>
+        <shortcut>Central Khmer</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_chg">
+        <name>Chagatai</name>
+        <description>Language: Chagatai</description>
+        <shortcut>Chagatai</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_cmc">
+        <name>Chamic languages</name>
+        <description>Language: Chamic languages</description>
+        <shortcut>Chamic languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_cha">
+        <name>Chamorro</name>
+        <description>Language: Chamorro</description>
+        <shortcut>Chamorro</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_che">
+        <name>Chechen</name>
+        <description>Language: Chechen</description>
+        <shortcut>Chechen</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_chr">
+        <name>Cherokee</name>
+        <description>Language: Cherokee</description>
+        <shortcut>Cherokee</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_chy">
+        <name>Cheyenne</name>
+        <description>Language: Cheyenne</description>
+        <shortcut>Cheyenne</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_chb">
+        <name>Chibcha</name>
+        <description>Language: Chibcha</description>
+        <shortcut>Chibcha</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_nya">
+        <name>Chichewa</name>
+        <description>Language: Chichewa; Chewa; Nyanja</description>
+        <shortcut>Chichewa</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_chi">
+        <name>Chinese</name>
+        <description>Language: Chinese</description>
+        <shortcut>Chinese</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_chn">
+        <name>Chinook jargon</name>
+        <description>Language: Chinook jargon</description>
+        <shortcut>Chinook jargon</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_chp">
+        <name>Chipewyan</name>
+        <description>Language: Chipewyan; Dene Suline</description>
+        <shortcut>Chipewyan</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_cho">
+        <name>Choctaw</name>
+        <description>Language: Choctaw</description>
+        <shortcut>Choctaw</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_chu">
+        <name>Church Slavic</name>
+        <description>Language: Church Slavic; Old Slavonic; Church Slavonic; Old Bulgarian; Old Church Slavonic</description>
+        <shortcut>Church Slavic</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_chk">
+        <name>Chuukese</name>
+        <description>Language: Chuukese</description>
+        <shortcut>Chuukese</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_chv">
+        <name>Chuvash</name>
+        <description>Language: Chuvash</description>
+        <shortcut>Chuvash</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_nwc">
+        <name>Classical Newari</name>
+        <description>Language: Classical Newari; Old Newari; Classical Nepal Bhasa</description>
+        <shortcut>Classical Newari</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_syc">
+        <name>Classical Syriac</name>
+        <description>Language: Classical Syriac</description>
+        <shortcut>Classical Syriac</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_cop">
+        <name>Coptic</name>
+        <description>Language: Coptic</description>
+        <shortcut>Coptic</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_cor">
+        <name>Cornish</name>
+        <description>Language: Cornish</description>
+        <shortcut>Cornish</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_cos">
+        <name>Corsican</name>
+        <description>Language: Corsican</description>
+        <shortcut>Corsican</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_cre">
+        <name>Cree</name>
+        <description>Language: Cree</description>
+        <shortcut>Cree</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_mus">
+        <name>Creek</name>
+        <description>Language: Creek</description>
+        <shortcut>Creek</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_crp">
+        <name>Creoles and pidgins</name>
+        <description>Language: Creoles and pidgins</description>
+        <shortcut>Creoles and pidgins</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_cpe">
+        <name>Creoles and pidgins, English based</name>
+        <description>Language: Creoles and pidgins, English based</description>
+        <shortcut>Creoles and pidgins, English based</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_cpf">
+        <name>Creoles and pidgins, French-based</name>
+        <description>Language: Creoles and pidgins, French-based</description>
+        <shortcut>Creoles and pidgins, French-based</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_cpp">
+        <name>Creoles and pidgins, Portuguese-based</name>
+        <description>Language: Creoles and pidgins, Portuguese-based</description>
+        <shortcut>Creoles and pidgins, Portuguese-based</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_crh">
+        <name>Crimean Tatar</name>
+        <description>Language: Crimean Tatar; Crimean Turkish</description>
+        <shortcut>Crimean Tatar</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_hrv">
+        <name>Croatian</name>
+        <description>Language: Croatian</description>
+        <shortcut>Croatian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_cus">
+        <name>Cushitic languages</name>
+        <description>Language: Cushitic languages</description>
+        <shortcut>Cushitic languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_dak">
+        <name>Dakota</name>
+        <description>Language: Dakota</description>
+        <shortcut>Dakota</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_dan">
+        <name>Danish</name>
+        <description>Language: Danish</description>
+        <shortcut>Danish</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_dar">
+        <name>Dargwa</name>
+        <description>Language: Dargwa</description>
+        <shortcut>Dargwa</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_del">
+        <name>Delaware</name>
+        <description>Language: Delaware</description>
+        <shortcut>Delaware</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_din">
+        <name>Dinka</name>
+        <description>Language: Dinka</description>
+        <shortcut>Dinka</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_div">
+        <name>Divehi</name>
+        <description>Language: Divehi; Dhivehi; Maldivian</description>
+        <shortcut>Divehi</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_doi">
+        <name>Dogri</name>
+        <description>Language: Dogri</description>
+        <shortcut>Dogri</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_dra">
+        <name>Dravidian languages</name>
+        <description>Language: Dravidian languages</description>
+        <shortcut>Dravidian languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_dua">
+        <name>Duala</name>
+        <description>Language: Duala</description>
+        <shortcut>Duala</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_dum">
+        <name>Dutch, Middle (ca.1050-1350)</name>
+        <description>Language: Dutch, Middle (ca.1050-1350)</description>
+        <shortcut>Dutch, Middle (ca.1050-1350)</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_dyu">
+        <name>Dyula</name>
+        <description>Language: Dyula</description>
+        <shortcut>Dyula</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_dzo">
+        <name>Dzongkha</name>
+        <description>Language: Dzongkha</description>
+        <shortcut>Dzongkha</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_frs">
+        <name>Eastern Frisian</name>
+        <description>Language: Eastern Frisian</description>
+        <shortcut>Eastern Frisian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_efi">
+        <name>Efik</name>
+        <description>Language: Efik</description>
+        <shortcut>Efik</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_egy">
+        <name>Egyptian (Ancient)</name>
+        <description>Language: Egyptian (Ancient)</description>
+        <shortcut>Egyptian (Ancient)</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_eka">
+        <name>Ekajuk</name>
+        <description>Language: Ekajuk</description>
+        <shortcut>Ekajuk</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_elx">
+        <name>Elamite</name>
+        <description>Language: Elamite</description>
+        <shortcut>Elamite</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_enm">
+        <name>English, Middle (1100-1500)</name>
+        <description>Language: English, Middle (1100-1500)</description>
+        <shortcut>English, Middle (1100-1500)</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ang">
+        <name>English, Old (ca.450-1100)</name>
+        <description>Language: English, Old (ca.450-1100)</description>
+        <shortcut>English, Old (ca.450-1100)</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_myv">
+        <name>Erzya</name>
+        <description>Language: Erzya</description>
+        <shortcut>Erzya</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_epo">
+        <name>Esperanto</name>
+        <description>Language: Esperanto</description>
+        <shortcut>Esperanto</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_est">
+        <name>Estonian</name>
+        <description>Language: Estonian</description>
+        <shortcut>Estonian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ewe">
+        <name>Ewe</name>
+        <description>Language: Ewe</description>
+        <shortcut>Ewe</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ewo">
+        <name>Ewondo</name>
+        <description>Language: Ewondo</description>
+        <shortcut>Ewondo</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_fan">
+        <name>Fang</name>
+        <description>Language: Fang</description>
+        <shortcut>Fang</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_fat">
+        <name>Fanti</name>
+        <description>Language: Fanti</description>
+        <shortcut>Fanti</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_fao">
+        <name>Faroese</name>
+        <description>Language: Faroese</description>
+        <shortcut>Faroese</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_fij">
+        <name>Fijian</name>
+        <description>Language: Fijian</description>
+        <shortcut>Fijian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_fil">
+        <name>Filipino</name>
+        <description>Language: Filipino; Pilipino</description>
+        <shortcut>Filipino</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_fin">
+        <name>Finnish</name>
+        <description>Language: Finnish</description>
+        <shortcut>Finnish</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_fiu">
+        <name>Finno-Ugrian languages</name>
+        <description>Language: Finno-Ugrian languages</description>
+        <shortcut>Finno-Ugrian languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_fon">
+        <name>Fon</name>
+        <description>Language: Fon</description>
+        <shortcut>Fon</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_frm">
+        <name>French, Middle (ca.1400-1600)</name>
+        <description>Language: French, Middle (ca.1400-1600)</description>
+        <shortcut>French, Middle (ca.1400-1600)</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_fro">
+        <name>French, Old (842-ca.1400)</name>
+        <description>Language: French, Old (842-ca.1400)</description>
+        <shortcut>French, Old (842-ca.1400)</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_fur">
+        <name>Friulian</name>
+        <description>Language: Friulian</description>
+        <shortcut>Friulian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ful">
+        <name>Fulah</name>
+        <description>Language: Fulah</description>
+        <shortcut>Fulah</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_gaa">
+        <name>Ga</name>
+        <description>Language: Ga</description>
+        <shortcut>Ga</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_gla">
+        <name>Gaelic</name>
+        <description>Language: Gaelic; Scottish Gaelic</description>
+        <shortcut>Gaelic</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_car">
+        <name>Galibi Carib</name>
+        <description>Language: Galibi Carib</description>
+        <shortcut>Galibi Carib</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_glg">
+        <name>Galician</name>
+        <description>Language: Galician</description>
+        <shortcut>Galician</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_lug">
+        <name>Ganda</name>
+        <description>Language: Ganda</description>
+        <shortcut>Ganda</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_gay">
+        <name>Gayo</name>
+        <description>Language: Gayo</description>
+        <shortcut>Gayo</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_gba">
+        <name>Gbaya</name>
+        <description>Language: Gbaya</description>
+        <shortcut>Gbaya</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_gez">
+        <name>Geez</name>
+        <description>Language: Geez</description>
+        <shortcut>Geez</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_geo">
+        <name>Georgian</name>
+        <description>Language: Georgian</description>
+        <shortcut>Georgian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_gmh">
+        <name>German, Middle High (ca.1050-1500)</name>
+        <description>Language: German, Middle High (ca.1050-1500)</description>
+        <shortcut>German, Middle High (ca.1050-1500)</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_goh">
+        <name>German, Old High (ca.750-1050)</name>
+        <description>Language: German, Old High (ca.750-1050)</description>
+        <shortcut>German, Old High (ca.750-1050)</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_gem">
+        <name>Germanic languages</name>
+        <description>Language: Germanic languages</description>
+        <shortcut>Germanic languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_gil">
+        <name>Gilbertese</name>
+        <description>Language: Gilbertese</description>
+        <shortcut>Gilbertese</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_gon">
+        <name>Gondi</name>
+        <description>Language: Gondi</description>
+        <shortcut>Gondi</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_gor">
+        <name>Gorontalo</name>
+        <description>Language: Gorontalo</description>
+        <shortcut>Gorontalo</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_got">
+        <name>Gothic</name>
+        <description>Language: Gothic</description>
+        <shortcut>Gothic</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_grb">
+        <name>Grebo</name>
+        <description>Language: Grebo</description>
+        <shortcut>Grebo</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_grc">
+        <name>Greek, Ancient (to 1453)</name>
+        <description>Language: Greek, Ancient (to 1453)</description>
+        <shortcut>Greek, Ancient (to 1453)</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_grn">
+        <name>Guarani</name>
+        <description>Language: Guarani</description>
+        <shortcut>Guarani</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_guj">
+        <name>Gujarati</name>
+        <description>Language: Gujarati</description>
+        <shortcut>Gujarati</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_gwi">
+        <name>Gwich'in</name>
+        <description>Language: Gwich'in</description>
+        <shortcut>Gwich'in</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_hai">
+        <name>Haida</name>
+        <description>Language: Haida</description>
+        <shortcut>Haida</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_hat">
+        <name>Haitian</name>
+        <description>Language: Haitian; Haitian Creole</description>
+        <shortcut>Haitian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_hau">
+        <name>Hausa</name>
+        <description>Language: Hausa</description>
+        <shortcut>Hausa</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_haw">
+        <name>Hawaiian</name>
+        <description>Language: Hawaiian</description>
+        <shortcut>Hawaiian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_heb">
+        <name>Hebrew</name>
+        <description>Language: Hebrew</description>
+        <shortcut>Hebrew</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_her">
+        <name>Herero</name>
+        <description>Language: Herero</description>
+        <shortcut>Herero</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_hil">
+        <name>Hiligaynon</name>
+        <description>Language: Hiligaynon</description>
+        <shortcut>Hiligaynon</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_him">
+        <name>Himachali languages</name>
+        <description>Language: Himachali languages; Western Pahari languages</description>
+        <shortcut>Himachali languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_hin">
+        <name>Hindi</name>
+        <description>Language: Hindi</description>
+        <shortcut>Hindi</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_hmo">
+        <name>Hiri Motu</name>
+        <description>Language: Hiri Motu</description>
+        <shortcut>Hiri Motu</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_hit">
+        <name>Hittite</name>
+        <description>Language: Hittite</description>
+        <shortcut>Hittite</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_hmn">
+        <name>Hmong</name>
+        <description>Language: Hmong; Mong</description>
+        <shortcut>Hmong</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_hup">
+        <name>Hupa</name>
+        <description>Language: Hupa</description>
+        <shortcut>Hupa</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_iba">
+        <name>Iban</name>
+        <description>Language: Iban</description>
+        <shortcut>Iban</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ice">
+        <name>Icelandic</name>
+        <description>Language: Icelandic</description>
+        <shortcut>Icelandic</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ido">
+        <name>Ido</name>
+        <description>Language: Ido</description>
+        <shortcut>Ido</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ibo">
+        <name>Igbo</name>
+        <description>Language: Igbo</description>
+        <shortcut>Igbo</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ijo">
+        <name>Ijo languages</name>
+        <description>Language: Ijo languages</description>
+        <shortcut>Ijo languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ilo">
+        <name>Iloko</name>
+        <description>Language: Iloko</description>
+        <shortcut>Iloko</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_smn">
+        <name>Inari Sami</name>
+        <description>Language: Inari Sami</description>
+        <shortcut>Inari Sami</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_inc">
+        <name>Indic languages</name>
+        <description>Language: Indic languages</description>
+        <shortcut>Indic languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ine">
+        <name>Indo-European languages</name>
+        <description>Language: Indo-European languages</description>
+        <shortcut>Indo-European languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ind">
+        <name>Indonesian</name>
+        <description>Language: Indonesian</description>
+        <shortcut>Indonesian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_inh">
+        <name>Ingush</name>
+        <description>Language: Ingush</description>
+        <shortcut>Ingush</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ina">
+        <name>Interlingua (International Auxiliary Language Association)</name>
+        <description>Language: Interlingua (International Auxiliary Language Association)</description>
+        <shortcut>Interlingua</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ile">
+        <name>Interlingue</name>
+        <description>Language: Interlingue; Occidental</description>
+        <shortcut>Interlingue</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_iku">
+        <name>Inuktitut</name>
+        <description>Language: Inuktitut</description>
+        <shortcut>Inuktitut</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ipk">
+        <name>Inupiaq</name>
+        <description>Language: Inupiaq</description>
+        <shortcut>Inupiaq</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ira">
+        <name>Iranian languages</name>
+        <description>Language: Iranian languages</description>
+        <shortcut>Iranian languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_gle">
+        <name>Irish</name>
+        <description>Language: Irish</description>
+        <shortcut>Irish</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_mga">
+        <name>Irish, Middle (900-1200)</name>
+        <description>Language: Irish, Middle (900-1200)</description>
+        <shortcut>Irish, Middle (900-1200)</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_sga">
+        <name>Irish, Old (to 900)</name>
+        <description>Language: Irish, Old (to 900)</description>
+        <shortcut>Irish, Old (to 900)</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_iro">
+        <name>Iroquoian languages</name>
+        <description>Language: Iroquoian languages</description>
+        <shortcut>Iroquoian languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_jpn">
+        <name>Japanese</name>
+        <description>Language: Japanese</description>
+        <shortcut>Japanese</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_jav">
+        <name>Javanese</name>
+        <description>Language: Javanese</description>
+        <shortcut>Javanese</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_jrb">
+        <name>Judeo-Arabic</name>
+        <description>Language: Judeo-Arabic</description>
+        <shortcut>Judeo-Arabic</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_jpr">
+        <name>Judeo-Persian</name>
+        <description>Language: Judeo-Persian</description>
+        <shortcut>Judeo-Persian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_kbd">
+        <name>Kabardian</name>
+        <description>Language: Kabardian</description>
+        <shortcut>Kabardian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_kab">
+        <name>Kabyle</name>
+        <description>Language: Kabyle</description>
+        <shortcut>Kabyle</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_kac">
+        <name>Kachin</name>
+        <description>Language: Kachin; Jingpho</description>
+        <shortcut>Kachin</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_kal">
+        <name>Kalaallisut</name>
+        <description>Language: Kalaallisut; Greenlandic</description>
+        <shortcut>Kalaallisut</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_xal">
+        <name>Kalmyk</name>
+        <description>Language: Kalmyk; Oirat</description>
+        <shortcut>Kalmyk</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_kam">
+        <name>Kamba</name>
+        <description>Language: Kamba</description>
+        <shortcut>Kamba</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_kan">
+        <name>Kannada</name>
+        <description>Language: Kannada</description>
+        <shortcut>Kannada</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_kau">
+        <name>Kanuri</name>
+        <description>Language: Kanuri</description>
+        <shortcut>Kanuri</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_kaa">
+        <name>Kara-Kalpak</name>
+        <description>Language: Kara-Kalpak</description>
+        <shortcut>Kara-Kalpak</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_krc">
+        <name>Karachay-Balkar</name>
+        <description>Language: Karachay-Balkar</description>
+        <shortcut>Karachay-Balkar</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_krl">
+        <name>Karelian</name>
+        <description>Language: Karelian</description>
+        <shortcut>Karelian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_kar">
+        <name>Karen languages</name>
+        <description>Language: Karen languages</description>
+        <shortcut>Karen languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_kas">
+        <name>Kashmiri</name>
+        <description>Language: Kashmiri</description>
+        <shortcut>Kashmiri</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_csb">
+        <name>Kashubian</name>
+        <description>Language: Kashubian</description>
+        <shortcut>Kashubian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_kaw">
+        <name>Kawi</name>
+        <description>Language: Kawi</description>
+        <shortcut>Kawi</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_kaz">
+        <name>Kazakh</name>
+        <description>Language: Kazakh</description>
+        <shortcut>Kazakh</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_kha">
+        <name>Khasi</name>
+        <description>Language: Khasi</description>
+        <shortcut>Khasi</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_khi">
+        <name>Khoisan languages</name>
+        <description>Language: Khoisan languages</description>
+        <shortcut>Khoisan languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_kho">
+        <name>Khotanese</name>
+        <description>Language: Khotanese; Sakan</description>
+        <shortcut>Khotanese</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_kik">
+        <name>Kikuyu</name>
+        <description>Language: Kikuyu; Gikuyu</description>
+        <shortcut>Kikuyu</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_kmb">
+        <name>Kimbundu</name>
+        <description>Language: Kimbundu</description>
+        <shortcut>Kimbundu</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_kin">
+        <name>Kinyarwanda</name>
+        <description>Language: Kinyarwanda</description>
+        <shortcut>Kinyarwanda</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_kir">
+        <name>Kirghiz</name>
+        <description>Language: Kirghiz; Kyrgyz</description>
+        <shortcut>Kirghiz</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tlh">
+        <name>Klingon</name>
+        <description>Language: Klingon; tlhIngan-Hol</description>
+        <shortcut>Klingon</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_kom">
+        <name>Komi</name>
+        <description>Language: Komi</description>
+        <shortcut>Komi</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_kon">
+        <name>Kongo</name>
+        <description>Language: Kongo</description>
+        <shortcut>Kongo</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_kok">
+        <name>Konkani</name>
+        <description>Language: Konkani</description>
+        <shortcut>Konkani</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_kor">
+        <name>Korean</name>
+        <description>Language: Korean</description>
+        <shortcut>Korean</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_kos">
+        <name>Kosraean</name>
+        <description>Language: Kosraean</description>
+        <shortcut>Kosraean</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_kpe">
+        <name>Kpelle</name>
+        <description>Language: Kpelle</description>
+        <shortcut>Kpelle</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_kro">
+        <name>Kru languages</name>
+        <description>Language: Kru languages</description>
+        <shortcut>Kru languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_kua">
+        <name>Kuanyama</name>
+        <description>Language: Kuanyama; Kwanyama</description>
+        <shortcut>Kuanyama</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_kum">
+        <name>Kumyk</name>
+        <description>Language: Kumyk</description>
+        <shortcut>Kumyk</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_kur">
+        <name>Kurdish</name>
+        <description>Language: Kurdish</description>
+        <shortcut>Kurdish</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_kru">
+        <name>Kurukh</name>
+        <description>Language: Kurukh</description>
+        <shortcut>Kurukh</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_kut">
+        <name>Kutenai</name>
+        <description>Language: Kutenai</description>
+        <shortcut>Kutenai</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_lad">
+        <name>Ladino</name>
+        <description>Language: Ladino</description>
+        <shortcut>Ladino</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_lah">
+        <name>Lahnda</name>
+        <description>Language: Lahnda</description>
+        <shortcut>Lahnda</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_lam">
+        <name>Lamba</name>
+        <description>Language: Lamba</description>
+        <shortcut>Lamba</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_day">
+        <name>Land Dayak languages</name>
+        <description>Language: Land Dayak languages</description>
+        <shortcut>Land Dayak languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_lao">
+        <name>Lao</name>
+        <description>Language: Lao</description>
+        <shortcut>Lao</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_lav">
+        <name>Latvian</name>
+        <description>Language: Latvian</description>
+        <shortcut>Latvian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_lez">
+        <name>Lezghian</name>
+        <description>Language: Lezghian</description>
+        <shortcut>Lezghian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_lim">
+        <name>Limburgan</name>
+        <description>Language: Limburgan; Limburger; Limburgish</description>
+        <shortcut>Limburgan</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_lin">
+        <name>Lingala</name>
+        <description>Language: Lingala</description>
+        <shortcut>Lingala</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_lit">
+        <name>Lithuanian</name>
+        <description>Language: Lithuanian</description>
+        <shortcut>Lithuanian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_jbo">
+        <name>Lojban</name>
+        <description>Language: Lojban</description>
+        <shortcut>Lojban</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_nds">
+        <name>Low German</name>
+        <description>Language: Low German; Low Saxon; German, Low; Saxon, Low</description>
+        <shortcut>Low German</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_dsb">
+        <name>Lower Sorbian</name>
+        <description>Language: Lower Sorbian</description>
+        <shortcut>Lower Sorbian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_loz">
+        <name>Lozi</name>
+        <description>Language: Lozi</description>
+        <shortcut>Lozi</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_lub">
+        <name>Luba-Katanga</name>
+        <description>Language: Luba-Katanga</description>
+        <shortcut>Luba-Katanga</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_lua">
+        <name>Luba-Lulua</name>
+        <description>Language: Luba-Lulua</description>
+        <shortcut>Luba-Lulua</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_lui">
+        <name>Luiseno</name>
+        <description>Language: Luiseno</description>
+        <shortcut>Luiseno</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_smj">
+        <name>Lule Sami</name>
+        <description>Language: Lule Sami</description>
+        <shortcut>Lule Sami</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_lun">
+        <name>Lunda</name>
+        <description>Language: Lunda</description>
+        <shortcut>Lunda</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_luo">
+        <name>Luo (Kenya and Tanzania)</name>
+        <description>Language: Luo (Kenya and Tanzania)</description>
+        <shortcut>Luo (Kenya and Tanzania)</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_lus">
+        <name>Lushai</name>
+        <description>Language: Lushai</description>
+        <shortcut>Lushai</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ltz">
+        <name>Luxembourgish</name>
+        <description>Language: Luxembourgish; Letzeburgesch</description>
+        <shortcut>Luxembourgish</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_mac">
+        <name>Macedonian</name>
+        <description>Language: Macedonian</description>
+        <shortcut>Macedonian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_mad">
+        <name>Madurese</name>
+        <description>Language: Madurese</description>
+        <shortcut>Madurese</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_mag">
+        <name>Magahi</name>
+        <description>Language: Magahi</description>
+        <shortcut>Magahi</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_mai">
+        <name>Maithili</name>
+        <description>Language: Maithili</description>
+        <shortcut>Maithili</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_mak">
+        <name>Makasar</name>
+        <description>Language: Makasar</description>
+        <shortcut>Makasar</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_mlg">
+        <name>Malagasy</name>
+        <description>Language: Malagasy</description>
+        <shortcut>Malagasy</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_may">
+        <name>Malay</name>
+        <description>Language: Malay</description>
+        <shortcut>Malay</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_mal">
+        <name>Malayalam</name>
+        <description>Language: Malayalam</description>
+        <shortcut>Malayalam</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_mlt">
+        <name>Maltese</name>
+        <description>Language: Maltese</description>
+        <shortcut>Maltese</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_mnc">
+        <name>Manchu</name>
+        <description>Language: Manchu</description>
+        <shortcut>Manchu</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_mdr">
+        <name>Mandar</name>
+        <description>Language: Mandar</description>
+        <shortcut>Mandar</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_man">
+        <name>Mandingo</name>
+        <description>Language: Mandingo</description>
+        <shortcut>Mandingo</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_mni">
+        <name>Manipuri</name>
+        <description>Language: Manipuri</description>
+        <shortcut>Manipuri</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_mno">
+        <name>Manobo languages</name>
+        <description>Language: Manobo languages</description>
+        <shortcut>Manobo languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_glv">
+        <name>Manx</name>
+        <description>Language: Manx</description>
+        <shortcut>Manx</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_mao">
+        <name>Maori</name>
+        <description>Language: Maori</description>
+        <shortcut>Maori</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_arn">
+        <name>Mapudungun</name>
+        <description>Language: Mapudungun; Mapuche</description>
+        <shortcut>Mapudungun</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_mar">
+        <name>Marathi</name>
+        <description>Language: Marathi</description>
+        <shortcut>Marathi</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_chm">
+        <name>Mari</name>
+        <description>Language: Mari</description>
+        <shortcut>Mari</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_mah">
+        <name>Marshallese</name>
+        <description>Language: Marshallese</description>
+        <shortcut>Marshallese</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_mwr">
+        <name>Marwari</name>
+        <description>Language: Marwari</description>
+        <shortcut>Marwari</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_mas">
+        <name>Masai</name>
+        <description>Language: Masai</description>
+        <shortcut>Masai</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_myn">
+        <name>Mayan languages</name>
+        <description>Language: Mayan languages</description>
+        <shortcut>Mayan languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_men">
+        <name>Mende</name>
+        <description>Language: Mende</description>
+        <shortcut>Mende</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_mic">
+        <name>Mi'kmaq</name>
+        <description>Language: Mi'kmaq; Micmac</description>
+        <shortcut>Mi'kmaq</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_min">
+        <name>Minangkabau</name>
+        <description>Language: Minangkabau</description>
+        <shortcut>Minangkabau</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_mwl">
+        <name>Mirandese</name>
+        <description>Language: Mirandese</description>
+        <shortcut>Mirandese</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_moh">
+        <name>Mohawk</name>
+        <description>Language: Mohawk</description>
+        <shortcut>Mohawk</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_mdf">
+        <name>Moksha</name>
+        <description>Language: Moksha</description>
+        <shortcut>Moksha</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_mkh">
+        <name>Mon-Khmer languages</name>
+        <description>Language: Mon-Khmer languages</description>
+        <shortcut>Mon-Khmer languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_lol">
+        <name>Mongo</name>
+        <description>Language: Mongo</description>
+        <shortcut>Mongo</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_mon">
+        <name>Mongolian</name>
+        <description>Language: Mongolian</description>
+        <shortcut>Mongolian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_cnr">
+        <name>Montenegrin</name>
+        <description>Language: Montenegrin</description>
+        <shortcut>Montenegrin</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_mos">
+        <name>Mossi</name>
+        <description>Language: Mossi</description>
+        <shortcut>Mossi</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_mul">
+        <name>Multiple languages</name>
+        <description>Language: Multiple languages</description>
+        <shortcut>Multiple languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_mun">
+        <name>Munda languages</name>
+        <description>Language: Munda languages</description>
+        <shortcut>Munda languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_nqo">
+        <name>N'Ko</name>
+        <description>Language: N'Ko</description>
+        <shortcut>N'Ko</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_nah">
+        <name>Nahuatl languages</name>
+        <description>Language: Nahuatl languages</description>
+        <shortcut>Nahuatl languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_nau">
+        <name>Nauru</name>
+        <description>Language: Nauru</description>
+        <shortcut>Nauru</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_nav">
+        <name>Navajo</name>
+        <description>Language: Navajo; Navaho</description>
+        <shortcut>Navajo</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ndo">
+        <name>Ndonga</name>
+        <description>Language: Ndonga</description>
+        <shortcut>Ndonga</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_nap">
+        <name>Neapolitan</name>
+        <description>Language: Neapolitan</description>
+        <shortcut>Neapolitan</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_new">
+        <name>Nepal Bhasa</name>
+        <description>Language: Nepal Bhasa; Newar; Newari</description>
+        <shortcut>Nepal Bhasa</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_nep">
+        <name>Nepali</name>
+        <description>Language: Nepali</description>
+        <shortcut>Nepali</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_nia">
+        <name>Nias</name>
+        <description>Language: Nias</description>
+        <shortcut>Nias</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_nic">
+        <name>Niger-Kordofanian languages</name>
+        <description>Language: Niger-Kordofanian languages</description>
+        <shortcut>Niger-Kordofanian languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ssa">
+        <name>Nilo-Saharan languages</name>
+        <description>Language: Nilo-Saharan languages</description>
+        <shortcut>Nilo-Saharan languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_niu">
+        <name>Niuean</name>
+        <description>Language: Niuean</description>
+        <shortcut>Niuean</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_zxx">
+        <name>No linguistic content</name>
+        <description>Language: No linguistic content; Not applicable</description>
+        <shortcut>No linguistic content</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_nog">
+        <name>Nogai</name>
+        <description>Language: Nogai</description>
+        <shortcut>Nogai</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_non">
+        <name>Norse, Old</name>
+        <description>Language: Norse, Old</description>
+        <shortcut>Norse, Old</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_nai">
+        <name>North American Indian languages</name>
+        <description>Language: North American Indian languages</description>
+        <shortcut>North American Indian languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_nde">
+        <name>North Ndebele</name>
+        <description>Language: North Ndebele</description>
+        <shortcut>North Ndebele</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_frr">
+        <name>Northern Frisian</name>
+        <description>Language: Northern Frisian</description>
+        <shortcut>Northern Frisian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_sme">
+        <name>Northern Sami</name>
+        <description>Language: Northern Sami</description>
+        <shortcut>Northern Sami</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_nor">
+        <name>Norwegian</name>
+        <description>Language: Norwegian</description>
+        <shortcut>Norwegian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_nob">
+        <name>Norwegian Bokmål</name>
+        <description>Language: Norwegian Bokmål</description>
+        <shortcut>Norwegian Bokmål</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_nno">
+        <name>Norwegian Nynorsk</name>
+        <description>Language: Norwegian Nynorsk</description>
+        <shortcut>Norwegian Nynorsk</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_nub">
+        <name>Nubian languages</name>
+        <description>Language: Nubian languages</description>
+        <shortcut>Nubian languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_nym">
+        <name>Nyamwezi</name>
+        <description>Language: Nyamwezi</description>
+        <shortcut>Nyamwezi</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_nyn">
+        <name>Nyankole</name>
+        <description>Language: Nyankole</description>
+        <shortcut>Nyankole</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_nyo">
+        <name>Nyoro</name>
+        <description>Language: Nyoro</description>
+        <shortcut>Nyoro</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_nzi">
+        <name>Nzima</name>
+        <description>Language: Nzima</description>
+        <shortcut>Nzima</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_oci">
+        <name>Occitan (post 1500)</name>
+        <description>Language: Occitan (post 1500)</description>
+        <shortcut>Occitan (post 1500)</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_arc">
+        <name>Official Aramaic (700-300 BCE)</name>
+        <description>Language: Official Aramaic (700-300 BCE); Imperial Aramaic (700-300 BCE)</description>
+        <shortcut>Official Aramaic (700-300 BCE)</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_oji">
+        <name>Ojibwa</name>
+        <description>Language: Ojibwa</description>
+        <shortcut>Ojibwa</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ori">
+        <name>Oriya</name>
+        <description>Language: Oriya</description>
+        <shortcut>Oriya</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_orm">
+        <name>Oromo</name>
+        <description>Language: Oromo</description>
+        <shortcut>Oromo</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_osa">
+        <name>Osage</name>
+        <description>Language: Osage</description>
+        <shortcut>Osage</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_oss">
+        <name>Ossetian</name>
+        <description>Language: Ossetian; Ossetic</description>
+        <shortcut>Ossetian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_oto">
+        <name>Otomian languages</name>
+        <description>Language: Otomian languages</description>
+        <shortcut>Otomian languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_pal">
+        <name>Pahlavi</name>
+        <description>Language: Pahlavi</description>
+        <shortcut>Pahlavi</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_pau">
+        <name>Palauan</name>
+        <description>Language: Palauan</description>
+        <shortcut>Palauan</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_pli">
+        <name>Pali</name>
+        <description>Language: Pali</description>
+        <shortcut>Pali</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_pam">
+        <name>Pampanga</name>
+        <description>Language: Pampanga; Kapampangan</description>
+        <shortcut>Pampanga</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_pag">
+        <name>Pangasinan</name>
+        <description>Language: Pangasinan</description>
+        <shortcut>Pangasinan</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_pan">
+        <name>Panjabi</name>
+        <description>Language: Panjabi; Punjabi</description>
+        <shortcut>Panjabi</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_pap">
+        <name>Papiamento</name>
+        <description>Language: Papiamento</description>
+        <shortcut>Papiamento</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_paa">
+        <name>Papuan languages</name>
+        <description>Language: Papuan languages</description>
+        <shortcut>Papuan languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_nso">
+        <name>Pedi</name>
+        <description>Language: Pedi; Sepedi; Northern Sotho</description>
+        <shortcut>Pedi</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_per">
+        <name>Persian</name>
+        <description>Language: Persian</description>
+        <shortcut>Persian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_peo">
+        <name>Persian, Old (ca.600-400 B.C.)</name>
+        <description>Language: Persian, Old (ca.600-400 B.C.)</description>
+        <shortcut>Persian, Old (ca.600-400 B.C.)</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_phi">
+        <name>Philippine languages</name>
+        <description>Language: Philippine languages</description>
+        <shortcut>Philippine languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_phn">
+        <name>Phoenician</name>
+        <description>Language: Phoenician</description>
+        <shortcut>Phoenician</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_pon">
+        <name>Pohnpeian</name>
+        <description>Language: Pohnpeian</description>
+        <shortcut>Pohnpeian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_pra">
+        <name>Prakrit languages</name>
+        <description>Language: Prakrit languages</description>
+        <shortcut>Prakrit languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_pro">
+        <name>Provençal, Old (to 1500)</name>
+        <description>Language: Provençal, Old (to 1500); Occitan, Old (to 1500)</description>
+        <shortcut>Provençal, Old (to 1500)</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_pus">
+        <name>Pushto</name>
+        <description>Language: Pushto; Pashto</description>
+        <shortcut>Pushto</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_que">
+        <name>Quechua</name>
+        <description>Language: Quechua</description>
+        <shortcut>Quechua</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_raj">
+        <name>Rajasthani</name>
+        <description>Language: Rajasthani</description>
+        <shortcut>Rajasthani</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_rap">
+        <name>Rapanui</name>
+        <description>Language: Rapanui</description>
+        <shortcut>Rapanui</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_rar">
+        <name>Rarotongan</name>
+        <description>Language: Rarotongan; Cook Islands Maori</description>
+        <shortcut>Rarotongan</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_roa">
+        <name>Romance languages</name>
+        <description>Language: Romance languages</description>
+        <shortcut>Romance languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_rum">
+        <name>Romanian</name>
+        <description>Language: Romanian; Moldavian; Moldovan</description>
+        <shortcut>Romanian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_roh">
+        <name>Romansh</name>
+        <description>Language: Romansh</description>
+        <shortcut>Romansh</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_rom">
+        <name>Romany</name>
+        <description>Language: Romany</description>
+        <shortcut>Romany</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_run">
+        <name>Rundi</name>
+        <description>Language: Rundi</description>
+        <shortcut>Rundi</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_sal">
+        <name>Salishan languages</name>
+        <description>Language: Salishan languages</description>
+        <shortcut>Salishan languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_sam">
+        <name>Samaritan Aramaic</name>
+        <description>Language: Samaritan Aramaic</description>
+        <shortcut>Samaritan Aramaic</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_smi">
+        <name>Sami languages</name>
+        <description>Language: Sami languages</description>
+        <shortcut>Sami languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_smo">
+        <name>Samoan</name>
+        <description>Language: Samoan</description>
+        <shortcut>Samoan</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_sad">
+        <name>Sandawe</name>
+        <description>Language: Sandawe</description>
+        <shortcut>Sandawe</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_sag">
+        <name>Sango</name>
+        <description>Language: Sango</description>
+        <shortcut>Sango</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_san">
+        <name>Sanskrit</name>
+        <description>Language: Sanskrit</description>
+        <shortcut>Sanskrit</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_sat">
+        <name>Santali</name>
+        <description>Language: Santali</description>
+        <shortcut>Santali</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_srd">
+        <name>Sardinian</name>
+        <description>Language: Sardinian</description>
+        <shortcut>Sardinian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_sas">
+        <name>Sasak</name>
+        <description>Language: Sasak</description>
+        <shortcut>Sasak</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_sco">
+        <name>Scots</name>
+        <description>Language: Scots</description>
+        <shortcut>Scots</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_sel">
+        <name>Selkup</name>
+        <description>Language: Selkup</description>
+        <shortcut>Selkup</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_sem">
+        <name>Semitic languages</name>
+        <description>Language: Semitic languages</description>
+        <shortcut>Semitic languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_srp">
+        <name>Serbian</name>
+        <description>Language: Serbian</description>
+        <shortcut>Serbian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_srr">
+        <name>Serer</name>
+        <description>Language: Serer</description>
+        <shortcut>Serer</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_shn">
+        <name>Shan</name>
+        <description>Language: Shan</description>
+        <shortcut>Shan</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_sna">
+        <name>Shona</name>
+        <description>Language: Shona</description>
+        <shortcut>Shona</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_iii">
+        <name>Sichuan Yi</name>
+        <description>Language: Sichuan Yi; Nuosu</description>
+        <shortcut>Sichuan Yi</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_scn">
+        <name>Sicilian</name>
+        <description>Language: Sicilian</description>
+        <shortcut>Sicilian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_sid">
+        <name>Sidamo</name>
+        <description>Language: Sidamo</description>
+        <shortcut>Sidamo</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_sgn">
+        <name>Sign Languages</name>
+        <description>Language: Sign Languages</description>
+        <shortcut>Sign Languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_bla">
+        <name>Siksika</name>
+        <description>Language: Siksika</description>
+        <shortcut>Siksika</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_snd">
+        <name>Sindhi</name>
+        <description>Language: Sindhi</description>
+        <shortcut>Sindhi</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_sin">
+        <name>Sinhala</name>
+        <description>Language: Sinhala; Sinhalese</description>
+        <shortcut>Sinhala</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_sit">
+        <name>Sino-Tibetan languages</name>
+        <description>Language: Sino-Tibetan languages</description>
+        <shortcut>Sino-Tibetan languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_sio">
+        <name>Siouan languages</name>
+        <description>Language: Siouan languages</description>
+        <shortcut>Siouan languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_sms">
+        <name>Skolt Sami</name>
+        <description>Language: Skolt Sami</description>
+        <shortcut>Skolt Sami</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_den">
+        <name>Slave (Athapascan)</name>
+        <description>Language: Slave (Athapascan)</description>
+        <shortcut>Slave (Athapascan)</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_sla">
+        <name>Slavic languages</name>
+        <description>Language: Slavic languages</description>
+        <shortcut>Slavic languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_slv">
+        <name>Slovenian</name>
+        <description>Language: Slovenian</description>
+        <shortcut>Slovenian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_sog">
+        <name>Sogdian</name>
+        <description>Language: Sogdian</description>
+        <shortcut>Sogdian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_som">
+        <name>Somali</name>
+        <description>Language: Somali</description>
+        <shortcut>Somali</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_son">
+        <name>Songhai languages</name>
+        <description>Language: Songhai languages</description>
+        <shortcut>Songhai languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_snk">
+        <name>Soninke</name>
+        <description>Language: Soninke</description>
+        <shortcut>Soninke</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_wen">
+        <name>Sorbian languages</name>
+        <description>Language: Sorbian languages</description>
+        <shortcut>Sorbian languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_sot">
+        <name>Sotho, Southern</name>
+        <description>Language: Sotho, Southern</description>
+        <shortcut>Sotho, Southern</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_sai">
+        <name>South American Indian languages</name>
+        <description>Language: South American Indian languages</description>
+        <shortcut>South American Indian languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_nbl">
+        <name>South Ndebele</name>
+        <description>Language: South Ndebele</description>
+        <shortcut>South Ndebele</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_alt">
+        <name>Southern Altai</name>
+        <description>Language: Southern Altai</description>
+        <shortcut>Southern Altai</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_sma">
+        <name>Southern Sami</name>
+        <description>Language: Southern Sami</description>
+        <shortcut>Southern Sami</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_srn">
+        <name>Sranan Tongo</name>
+        <description>Language: Sranan Tongo</description>
+        <shortcut>Sranan Tongo</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_zgh">
+        <name>Standard Moroccan Tamazight</name>
+        <description>Language: Standard Moroccan Tamazight</description>
+        <shortcut>Standard Moroccan Tamazight</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_suk">
+        <name>Sukuma</name>
+        <description>Language: Sukuma</description>
+        <shortcut>Sukuma</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_sux">
+        <name>Sumerian</name>
+        <description>Language: Sumerian</description>
+        <shortcut>Sumerian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_sun">
+        <name>Sundanese</name>
+        <description>Language: Sundanese</description>
+        <shortcut>Sundanese</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_sus">
+        <name>Susu</name>
+        <description>Language: Susu</description>
+        <shortcut>Susu</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_swa">
+        <name>Swahili</name>
+        <description>Language: Swahili</description>
+        <shortcut>Swahili</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ssw">
+        <name>Swati</name>
+        <description>Language: Swati</description>
+        <shortcut>Swati</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_gsw">
+        <name>Swiss German</name>
+        <description>Language: Swiss German; Alemannic; Alsatian</description>
+        <shortcut>Swiss German</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_syr">
+        <name>Syriac</name>
+        <description>Language: Syriac</description>
+        <shortcut>Syriac</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tgl">
+        <name>Tagalog</name>
+        <description>Language: Tagalog</description>
+        <shortcut>Tagalog</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tah">
+        <name>Tahitian</name>
+        <description>Language: Tahitian</description>
+        <shortcut>Tahitian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tai">
+        <name>Tai languages</name>
+        <description>Language: Tai languages</description>
+        <shortcut>Tai languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tgk">
+        <name>Tajik</name>
+        <description>Language: Tajik</description>
+        <shortcut>Tajik</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tmh">
+        <name>Tamashek</name>
+        <description>Language: Tamashek</description>
+        <shortcut>Tamashek</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tam">
+        <name>Tamil</name>
+        <description>Language: Tamil</description>
+        <shortcut>Tamil</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tat">
+        <name>Tatar</name>
+        <description>Language: Tatar</description>
+        <shortcut>Tatar</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tel">
+        <name>Telugu</name>
+        <description>Language: Telugu</description>
+        <shortcut>Telugu</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ter">
+        <name>Tereno</name>
+        <description>Language: Tereno</description>
+        <shortcut>Tereno</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tet">
+        <name>Tetum</name>
+        <description>Language: Tetum</description>
+        <shortcut>Tetum</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tha">
+        <name>Thai</name>
+        <description>Language: Thai</description>
+        <shortcut>Thai</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tib">
+        <name>Tibetan</name>
+        <description>Language: Tibetan</description>
+        <shortcut>Tibetan</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tig">
+        <name>Tigre</name>
+        <description>Language: Tigre</description>
+        <shortcut>Tigre</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tir">
+        <name>Tigrinya</name>
+        <description>Language: Tigrinya</description>
+        <shortcut>Tigrinya</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tem">
+        <name>Timne</name>
+        <description>Language: Timne</description>
+        <shortcut>Timne</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tiv">
+        <name>Tiv</name>
+        <description>Language: Tiv</description>
+        <shortcut>Tiv</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_dgr">
+        <name>Tlicho</name>
+        <description>Language: Tlicho; Dogrib</description>
+        <shortcut>Tlicho</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tli">
+        <name>Tlingit</name>
+        <description>Language: Tlingit</description>
+        <shortcut>Tlingit</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tpi">
+        <name>Tok Pisin</name>
+        <description>Language: Tok Pisin</description>
+        <shortcut>Tok Pisin</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tkl">
+        <name>Tokelau</name>
+        <description>Language: Tokelau</description>
+        <shortcut>Tokelau</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tog">
+        <name>Tonga (Nyasa)</name>
+        <description>Language: Tonga (Nyasa)</description>
+        <shortcut>Tonga (Nyasa)</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ton">
+        <name>Tonga (Tonga Islands)</name>
+        <description>Language: Tonga (Tonga Islands)</description>
+        <shortcut>Tonga (Tonga Islands)</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tsi">
+        <name>Tsimshian</name>
+        <description>Language: Tsimshian</description>
+        <shortcut>Tsimshian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tso">
+        <name>Tsonga</name>
+        <description>Language: Tsonga</description>
+        <shortcut>Tsonga</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tsn">
+        <name>Tswana</name>
+        <description>Language: Tswana</description>
+        <shortcut>Tswana</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tum">
+        <name>Tumbuka</name>
+        <description>Language: Tumbuka</description>
+        <shortcut>Tumbuka</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tup">
+        <name>Tupi languages</name>
+        <description>Language: Tupi languages</description>
+        <shortcut>Tupi languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tur">
+        <name>Turkish</name>
+        <description>Language: Turkish</description>
+        <shortcut>Turkish</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ota">
+        <name>Turkish, Ottoman (1500-1928)</name>
+        <description>Language: Turkish, Ottoman (1500-1928)</description>
+        <shortcut>Turkish, Ottoman (1500-1928)</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tuk">
+        <name>Turkmen</name>
+        <description>Language: Turkmen</description>
+        <shortcut>Turkmen</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tvl">
+        <name>Tuvalu</name>
+        <description>Language: Tuvalu</description>
+        <shortcut>Tuvalu</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_tyv">
+        <name>Tuvinian</name>
+        <description>Language: Tuvinian</description>
+        <shortcut>Tuvinian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_twi">
+        <name>Twi</name>
+        <description>Language: Twi</description>
+        <shortcut>Twi</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_udm">
+        <name>Udmurt</name>
+        <description>Language: Udmurt</description>
+        <shortcut>Udmurt</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_uga">
+        <name>Ugaritic</name>
+        <description>Language: Ugaritic</description>
+        <shortcut>Ugaritic</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_uig">
+        <name>Uighur</name>
+        <description>Language: Uighur; Uyghur</description>
+        <shortcut>Uighur</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_umb">
+        <name>Umbundu</name>
+        <description>Language: Umbundu</description>
+        <shortcut>Umbundu</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_mis">
+        <name>Uncoded languages</name>
+        <description>Language: Uncoded languages</description>
+        <shortcut>Uncoded languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_und">
+        <name>Undetermined</name>
+        <description>Language: Undetermined</description>
+        <shortcut>Undetermined</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_hsb">
+        <name>Upper Sorbian</name>
+        <description>Language: Upper Sorbian</description>
+        <shortcut>Upper Sorbian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_urd">
+        <name>Urdu</name>
+        <description>Language: Urdu</description>
+        <shortcut>Urdu</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_uzb">
+        <name>Uzbek</name>
+        <description>Language: Uzbek</description>
+        <shortcut>Uzbek</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_vai">
+        <name>Vai</name>
+        <description>Language: Vai</description>
+        <shortcut>Vai</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ven">
+        <name>Venda</name>
+        <description>Language: Venda</description>
+        <shortcut>Venda</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_vie">
+        <name>Vietnamese</name>
+        <description>Language: Vietnamese</description>
+        <shortcut>Vietnamese</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_vol">
+        <name>Volapük</name>
+        <description>Language: Volapük</description>
+        <shortcut>Volapük</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_vot">
+        <name>Votic</name>
+        <description>Language: Votic</description>
+        <shortcut>Votic</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_wak">
+        <name>Wakashan languages</name>
+        <description>Language: Wakashan languages</description>
+        <shortcut>Wakashan languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_wln">
+        <name>Walloon</name>
+        <description>Language: Walloon</description>
+        <shortcut>Walloon</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_war">
+        <name>Waray</name>
+        <description>Language: Waray</description>
+        <shortcut>Waray</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_was">
+        <name>Washo</name>
+        <description>Language: Washo</description>
+        <shortcut>Washo</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_wel">
+        <name>Welsh</name>
+        <description>Language: Welsh</description>
+        <shortcut>Welsh</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_fry">
+        <name>Western Frisian</name>
+        <description>Language: Western Frisian</description>
+        <shortcut>Western Frisian</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_wal">
+        <name>Wolaitta</name>
+        <description>Language: Wolaitta; Wolaytta</description>
+        <shortcut>Wolaitta</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_wol">
+        <name>Wolof</name>
+        <description>Language: Wolof</description>
+        <shortcut>Wolof</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_xho">
+        <name>Xhosa</name>
+        <description>Language: Xhosa</description>
+        <shortcut>Xhosa</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_sah">
+        <name>Yakut</name>
+        <description>Language: Yakut</description>
+        <shortcut>Yakut</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_yao">
+        <name>Yao</name>
+        <description>Language: Yao</description>
+        <shortcut>Yao</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_yap">
+        <name>Yapese</name>
+        <description>Language: Yapese</description>
+        <shortcut>Yapese</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_yid">
+        <name>Yiddish</name>
+        <description>Language: Yiddish</description>
+        <shortcut>Yiddish</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_yor">
+        <name>Yoruba</name>
+        <description>Language: Yoruba</description>
+        <shortcut>Yoruba</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_ypk">
+        <name>Yupik languages</name>
+        <description>Language: Yupik languages</description>
+        <shortcut>Yupik languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_znd">
+        <name>Zande languages</name>
+        <description>Language: Zande languages</description>
+        <shortcut>Zande languages</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_zap">
+        <name>Zapotec</name>
+        <description>Language: Zapotec</description>
+        <shortcut>Zapotec</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_zza">
+        <name>Zaza</name>
+        <description>Language: Zaza; Dimili; Dimli; Kirdki; Kirmanjki; Zazaki</description>
+        <shortcut>Zaza</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_zen">
+        <name>Zenaga</name>
+        <description>Language: Zenaga</description>
+        <shortcut>Zenaga</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_zha">
+        <name>Zhuang</name>
+        <description>Language: Zhuang; Chuang</description>
+        <shortcut>Zhuang</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_zul">
+        <name>Zulu</name>
+        <description>Language: Zulu</description>
+        <shortcut>Zulu</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="LNG_zun">
+        <name>Zuni</name>
+        <description>Language: Zuni</description>
+        <shortcut>Zuni</shortcut>
+        <item-type-assign code="NM_LANG"/>
+    </item-spec>
+    <item-spec code="VIAF">
+        <name>VIAF</name>
+        <description>Identifier type: VIAF</description>
+        <shortcut>VIAF</shortcut>
+        <item-type-assign code="IDN_TYPE"/>
+    </item-spec>
+    <item-spec code="LCNAF">
+        <name>Library of Congress Name Authority File</name>
+        <description>Identifier type: Library of Congress Name Authority File</description>
+        <shortcut>Library of Congress Name Authority File</shortcut>
+        <item-type-assign code="IDN_TYPE"/>
+    </item-spec>
+    <item-spec code="ORCID_ID">
+        <name>ORCID</name>
+        <description>Identifier type: ORCID</description>
+        <shortcut>ORCID</shortcut>
+        <item-type-assign code="IDN_TYPE"/>
+    </item-spec>
+    <item-spec code="ISO3166_2">
+        <name>ISO 3166-1 alpha-2</name>
+        <description>Identifier type: ISO 3166-1 alpha-2</description>
+        <shortcut>ISO 3166-1 alpha-2</shortcut>
+        <item-type-assign code="IDN_TYPE"/>
+    </item-spec>
+    <item-spec code="ISO3166_3">
+        <name>ISO 3166-1 alpha-3</name>
+        <description>Identifier type: ISO 3166-1 alpha-3</description>
+        <shortcut>ISO 3166-1 alpha-3</shortcut>
+        <item-type-assign code="IDN_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_ISNI">
+        <name>ISNI</name>
+        <description>Identifier type: ISNI</description>
+        <shortcut>ISNI</shortcut>
+        <item-type-assign code="IDN_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_WIKIDATA">
+        <name>Wikidata</name>
+        <description>Identifier type: Wikidata</description>
+        <shortcut>Wikidata</shortcut>
+        <item-type-assign code="IDN_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_GND">
+        <name>GND</name>
+        <description>Identifier type: GND</description>
+        <shortcut>GND</shortcut>
+        <item-type-assign code="IDN_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_GEONAMES">
+        <name>GeoNames</name>
+        <description>Identifier type: GeoNames</description>
+        <shortcut>GeoNames</shortcut>
+        <item-type-assign code="IDN_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_TGN">
+        <name>Getty TGN</name>
+        <description>Identifier type: Getty TGN</description>
+        <shortcut>Getty TGN</shortcut>
+        <item-type-assign code="IDN_TYPE"/>
+    </item-spec>
+    <item-spec code="CRC_BIRTH">
+        <name>Birth</name>
+        <description>Kind of beginning: birth</description>
+        <shortcut>Birth</shortcut>
+        <item-type-assign code="CRE_CLASS"/>
+    </item-spec>
+    <item-spec code="CRC_RISE">
+        <name>Establishment</name>
+        <description>Kind of beginning: establishment</description>
+        <shortcut>Establishment</shortcut>
+        <item-type-assign code="CRE_CLASS"/>
+    </item-spec>
+    <item-spec code="CRC_FIRSTWMENTION">
+        <name>First written mention</name>
+        <description>Kind of beginning: first written mention</description>
+        <shortcut>First written mention</shortcut>
+        <item-type-assign code="CRE_CLASS"/>
+    </item-spec>
+    <item-spec code="EXC_DEATH">
+        <name>Death</name>
+        <description>Kind of end: death</description>
+        <shortcut>Death</shortcut>
+        <item-type-assign code="EXT_CLASS"/>
+    </item-spec>
+    <item-spec code="EXC_EXTINCTION">
+        <name>Dissolution</name>
+        <description>Kind of end: dissolution</description>
+        <shortcut>Dissolution</shortcut>
+        <item-type-assign code="EXT_CLASS"/>
+    </item-spec>
+    <item-spec code="EXC_LASTWMENTION">
+        <name>Last written mention</name>
+        <description>Kind of end: last written mention</description>
+        <shortcut>Last written mention</shortcut>
+        <item-type-assign code="EXT_CLASS"/>
+    </item-spec>
+    <item-spec code="ET_JOB">
+        <name>Occupation / office</name>
+        <description>Event: occupation / office</description>
+        <shortcut>Occupation / office</shortcut>
+        <item-type-assign code="EV_TYPE"/>
+    </item-spec>
+    <item-spec code="ET_MEMBERSHIP">
+        <name>Membership</name>
+        <description>Event: membership</description>
+        <shortcut>Membership</shortcut>
+        <item-type-assign code="EV_TYPE"/>
+    </item-spec>
+    <item-spec code="ET_STUDY">
+        <name>Study</name>
+        <description>Event: study</description>
+        <shortcut>Study</shortcut>
+        <item-type-assign code="EV_TYPE"/>
+    </item-spec>
+    <item-spec code="ET_AWARD">
+        <name>Award</name>
+        <description>Event: award</description>
+        <shortcut>Award</shortcut>
+        <item-type-assign code="EV_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_ET_LEGAL_STATUS">
+        <name>Change of legal status</name>
+        <description>Event: change of legal status</description>
+        <shortcut>Change of legal status</shortcut>
+        <item-type-assign code="EV_TYPE"/>
+    </item-spec>
+    <item-spec code="RT_FATHER">
+        <name>Father</name>
+        <description>Relationship (family): father</description>
+        <shortcut>Father</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_MOTHER">
+        <name>Mother</name>
+        <description>Relationship (family): mother</description>
+        <shortcut>Mother</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_HUSBAND">
+        <name>Husband</name>
+        <description>Relationship (family): husband</description>
+        <shortcut>Husband</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_WIFE">
+        <name>Wife</name>
+        <description>Relationship (family): wife</description>
+        <shortcut>Wife</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_PARTNER">
+        <name>Partner</name>
+        <description>Relationship (family): partner</description>
+        <shortcut>Partner</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_BROTHER">
+        <name>Brother</name>
+        <description>Relationship (family): brother</description>
+        <shortcut>Brother</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_SISTER">
+        <name>Sister</name>
+        <description>Relationship (family): sister</description>
+        <shortcut>Sister</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_RELATIONS">
+        <name>Other family relationship</name>
+        <description>Relationship (family): other family relationship</description>
+        <shortcut>Other family relationship</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_GENUSMEMBER">
+        <name>Member of family</name>
+        <description>Relationship (family): member of family</description>
+        <shortcut>Member of family</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_SUPCORP">
+        <name>Superior body</name>
+        <description>Relationship (hierarchical): superior body</description>
+        <shortcut>Superior body</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_ISPART">
+        <name>Part of</name>
+        <description>Relationship (hierarchical): part of</description>
+        <shortcut>Part of</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_ISMEMBER">
+        <name>Member of</name>
+        <description>Relationship (hierarchical): member of</description>
+        <shortcut>Member of</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_EMPLOYER">
+        <name>Employer</name>
+        <description>Relationship (hierarchical): employer</description>
+        <shortcut>Employer</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_FOUNDER">
+        <name>Founder</name>
+        <description>Relationship (hierarchical): founder</description>
+        <shortcut>Founder</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_OWNER">
+        <name>Owner</name>
+        <description>Relationship (hierarchical): owner</description>
+        <shortcut>Owner</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_PREDECESSOR">
+        <name>Predecessor</name>
+        <description>Relationship (temporal): predecessor</description>
+        <shortcut>Predecessor</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_SUCCESSOR">
+        <name>Successor</name>
+        <description>Relationship (temporal): successor</description>
+        <shortcut>Successor</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_OTHERNAME">
+        <name>Other identity of the same entity</name>
+        <description>Relationship (identity): other identity of the same entity</description>
+        <shortcut>Other identity of the same entity</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_COLLABORATOR">
+        <name>Collaborator</name>
+        <description>Relationship (associative): collaborator</description>
+        <shortcut>Collaborator</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_RESIDENCE">
+        <name>Seat / residence</name>
+        <description>Relationship (place): seat / residence</description>
+        <shortcut>Seat / residence</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="GEO"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_PLACE">
+        <name>Place</name>
+        <description>Relationship (place): place</description>
+        <shortcut>Place</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="GEO"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_GEOSCOPE">
+        <name>Jurisdiction / geographic scope</name>
+        <description>Relationship (place): jurisdiction / geographic scope</description>
+        <shortcut>Jurisdiction / geographic scope</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="GEO"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_FUNCTION">
+        <name>Function / occupation</name>
+        <description>Relationship (concept): function / occupation</description>
+        <shortcut>Function / occupation</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="TERM"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_ACTIVITYFIELD">
+        <name>Field of activity</name>
+        <description>Relationship (concept): field of activity</description>
+        <shortcut>Field of activity</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="TERM"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_SUPTERM">
+        <name>Broader concept</name>
+        <description>Relationship (concept): broader concept</description>
+        <shortcut>Broader concept</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="TERM"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="RT_RELATEDTERM">
+        <name>Related concept</name>
+        <description>Relationship (concept): related concept</description>
+        <shortcut>Related concept</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="TERM"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="ISAAR_RT_ASSOCIATED">
+        <name>Associated entity</name>
+        <description>Relationship (associative): associated entity</description>
+        <shortcut>Associated entity</shortcut>
+        <item-type-assign code="REL_ENTITY"/>
+        <item-aptypes>
+            <item-aptype register-type="PERSON"/>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="DYNASTY"/>
+            <item-aptype register-type="GEO"/>
+        </item-aptypes>
+    </item-spec>
+    <item-spec code="ISAAR_CORP_TYPE_GOVERNMENT">
+        <name>Government or public administration body</name>
+        <description>Type of corporate body: government or public administration body</description>
+        <shortcut>Government or public administration body</shortcut>
+        <item-type-assign code="ISAAR_CORP_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_CORP_TYPE_TERRITORIAL">
+        <name>Territorial self-government</name>
+        <description>Type of corporate body: territorial self-government</description>
+        <shortcut>Territorial self-government</shortcut>
+        <item-type-assign code="ISAAR_CORP_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_CORP_TYPE_JUDICIAL">
+        <name>Court or judicial body</name>
+        <description>Type of corporate body: court or judicial body</description>
+        <shortcut>Court or judicial body</shortcut>
+        <item-type-assign code="ISAAR_CORP_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_CORP_TYPE_LEGISLATIVE">
+        <name>Legislative body</name>
+        <description>Type of corporate body: legislative body</description>
+        <shortcut>Legislative body</shortcut>
+        <item-type-assign code="ISAAR_CORP_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_CORP_TYPE_MILITARY">
+        <name>Military or security body</name>
+        <description>Type of corporate body: military or security body</description>
+        <shortcut>Military or security body</shortcut>
+        <item-type-assign code="ISAAR_CORP_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_CORP_TYPE_PARTY">
+        <name>Political party</name>
+        <description>Type of corporate body: political party</description>
+        <shortcut>Political party</shortcut>
+        <item-type-assign code="ISAAR_CORP_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_CORP_TYPE_RELIGIOUS">
+        <name>Religious body</name>
+        <description>Type of corporate body: religious body</description>
+        <shortcut>Religious body</shortcut>
+        <item-type-assign code="ISAAR_CORP_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_CORP_TYPE_EDUCATION">
+        <name>Educational or research institution</name>
+        <description>Type of corporate body: educational or research institution</description>
+        <shortcut>Educational or research institution</shortcut>
+        <item-type-assign code="ISAAR_CORP_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_CORP_TYPE_HEALTH">
+        <name>Health or social-care institution</name>
+        <description>Type of corporate body: health or social-care institution</description>
+        <shortcut>Health or social-care institution</shortcut>
+        <item-type-assign code="ISAAR_CORP_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_CORP_TYPE_CULTURE">
+        <name>Cultural or heritage institution</name>
+        <description>Type of corporate body: cultural or heritage institution</description>
+        <shortcut>Cultural or heritage institution</shortcut>
+        <item-type-assign code="ISAAR_CORP_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_CORP_TYPE_BUSINESS">
+        <name>Business enterprise</name>
+        <description>Type of corporate body: business enterprise</description>
+        <shortcut>Business enterprise</shortcut>
+        <item-type-assign code="ISAAR_CORP_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_CORP_TYPE_FINANCE">
+        <name>Financial institution</name>
+        <description>Type of corporate body: financial institution</description>
+        <shortcut>Financial institution</shortcut>
+        <item-type-assign code="ISAAR_CORP_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_CORP_TYPE_PROFESSIONAL">
+        <name>Professional, trade or labour organisation</name>
+        <description>Type of corporate body: professional, trade or labour organisation</description>
+        <shortcut>Professional, trade or labour organisation</shortcut>
+        <item-type-assign code="ISAAR_CORP_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_CORP_TYPE_ASSOCIATION">
+        <name>Association or club</name>
+        <description>Type of corporate body: association or club</description>
+        <shortcut>Association or club</shortcut>
+        <item-type-assign code="ISAAR_CORP_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_CORP_TYPE_FOUNDATION">
+        <name>Foundation or charitable body</name>
+        <description>Type of corporate body: foundation or charitable body</description>
+        <shortcut>Foundation or charitable body</shortcut>
+        <item-type-assign code="ISAAR_CORP_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_CORP_TYPE_INTERNATIONAL">
+        <name>International or umbrella organisation</name>
+        <description>Type of corporate body: international or umbrella organisation</description>
+        <shortcut>International or umbrella organisation</shortcut>
+        <item-type-assign code="ISAAR_CORP_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_CORP_TYPE_CONFERENCE">
+        <name>Conference or meeting</name>
+        <description>Type of corporate body: conference or meeting</description>
+        <shortcut>Conference or meeting</shortcut>
+        <item-type-assign code="ISAAR_CORP_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_CORP_TYPE_OTHER">
+        <name>Other / not determined</name>
+        <description>Type of corporate body: other / not determined</description>
+        <shortcut>Other / not determined</shortcut>
+        <item-type-assign code="ISAAR_CORP_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_LEGAL_STATUS_PUBLIC_LAW">
+        <name>Public-law body</name>
+        <description>Legal status: public-law body</description>
+        <shortcut>Public-law body</shortcut>
+        <item-type-assign code="ISAAR_LEGAL_STATUS"/>
+    </item-spec>
+    <item-spec code="ISAAR_LEGAL_STATUS_PRIVATE_LAW">
+        <name>Private-law body</name>
+        <description>Legal status: private-law body</description>
+        <shortcut>Private-law body</shortcut>
+        <item-type-assign code="ISAAR_LEGAL_STATUS"/>
+    </item-spec>
+    <item-spec code="ISAAR_LEGAL_STATUS_COMPANY">
+        <name>Company with share capital</name>
+        <description>Legal status: company with share capital</description>
+        <shortcut>Company with share capital</shortcut>
+        <item-type-assign code="ISAAR_LEGAL_STATUS"/>
+    </item-spec>
+    <item-spec code="ISAAR_LEGAL_STATUS_PARTNERSHIP">
+        <name>Partnership</name>
+        <description>Legal status: partnership</description>
+        <shortcut>Partnership</shortcut>
+        <item-type-assign code="ISAAR_LEGAL_STATUS"/>
+    </item-spec>
+    <item-spec code="ISAAR_LEGAL_STATUS_COOPERATIVE">
+        <name>Cooperative</name>
+        <description>Legal status: cooperative</description>
+        <shortcut>Cooperative</shortcut>
+        <item-type-assign code="ISAAR_LEGAL_STATUS"/>
+    </item-spec>
+    <item-spec code="ISAAR_LEGAL_STATUS_ASSOCIATION">
+        <name>Association</name>
+        <description>Legal status: association</description>
+        <shortcut>Association</shortcut>
+        <item-type-assign code="ISAAR_LEGAL_STATUS"/>
+    </item-spec>
+    <item-spec code="ISAAR_LEGAL_STATUS_FOUNDATION">
+        <name>Foundation</name>
+        <description>Legal status: foundation</description>
+        <shortcut>Foundation</shortcut>
+        <item-type-assign code="ISAAR_LEGAL_STATUS"/>
+    </item-spec>
+    <item-spec code="ISAAR_LEGAL_STATUS_RELIGIOUS">
+        <name>Religious legal person</name>
+        <description>Legal status: religious legal person</description>
+        <shortcut>Religious legal person</shortcut>
+        <item-type-assign code="ISAAR_LEGAL_STATUS"/>
+    </item-spec>
+    <item-spec code="ISAAR_LEGAL_STATUS_SOLE_TRADER">
+        <name>Sole trader</name>
+        <description>Legal status: sole trader</description>
+        <shortcut>Sole trader</shortcut>
+        <item-type-assign code="ISAAR_LEGAL_STATUS"/>
+    </item-spec>
+    <item-spec code="ISAAR_LEGAL_STATUS_NO_PERSONALITY">
+        <name>No legal personality</name>
+        <description>Legal status: no legal personality</description>
+        <shortcut>No legal personality</shortcut>
+        <item-type-assign code="ISAAR_LEGAL_STATUS"/>
+    </item-spec>
+    <item-spec code="ISAAR_LEGAL_STATUS_OTHER">
+        <name>Other</name>
+        <description>Legal status: other</description>
+        <shortcut>Other</shortcut>
+        <item-type-assign code="ISAAR_LEGAL_STATUS"/>
+    </item-spec>
+    <item-spec code="ISAAR_FAMILY_TYPE_FAMILY">
+        <name>Family</name>
+        <description>Type of family: family</description>
+        <shortcut>Family</shortcut>
+        <item-type-assign code="ISAAR_FAMILY_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_FAMILY_TYPE_DYNASTY">
+        <name>Dynasty / royal house</name>
+        <description>Type of family: dynasty / royal house</description>
+        <shortcut>Dynasty / royal house</shortcut>
+        <item-type-assign code="ISAAR_FAMILY_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_FAMILY_TYPE_HOUSE">
+        <name>Noble house / lineage</name>
+        <description>Type of family: noble house / lineage</description>
+        <shortcut>Noble house / lineage</shortcut>
+        <item-type-assign code="ISAAR_FAMILY_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_FAMILY_TYPE_CLAN">
+        <name>Clan / tribe</name>
+        <description>Type of family: clan / tribe</description>
+        <shortcut>Clan / tribe</shortcut>
+        <item-type-assign code="ISAAR_FAMILY_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_FAMILY_TYPE_BRANCH">
+        <name>Branch of a family</name>
+        <description>Type of family: branch of a family</description>
+        <shortcut>Branch of a family</shortcut>
+        <item-type-assign code="ISAAR_FAMILY_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_PLACE_TYPE_ADMINISTRATIVE">
+        <name>Administrative division</name>
+        <description>Type of place: administrative division</description>
+        <shortcut>Administrative division</shortcut>
+        <item-type-assign code="ISAAR_PLACE_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_PLACE_TYPE_AREA">
+        <name>Area</name>
+        <description>Type of place: area</description>
+        <shortcut>Area</shortcut>
+        <item-type-assign code="ISAAR_PLACE_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_PLACE_TYPE_WATER">
+        <name>Body of water</name>
+        <description>Type of place: body of water</description>
+        <shortcut>Body of water</shortcut>
+        <item-type-assign code="ISAAR_PLACE_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_PLACE_TYPE_ELEVATION">
+        <name>Land elevation</name>
+        <description>Type of place: land elevation</description>
+        <shortcut>Land elevation</shortcut>
+        <item-type-assign code="ISAAR_PLACE_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_PLACE_TYPE_POPULATED">
+        <name>Populated place</name>
+        <description>Type of place: populated place</description>
+        <shortcut>Populated place</shortcut>
+        <item-type-assign code="ISAAR_PLACE_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_PLACE_TYPE_ROAD">
+        <name>Road or railroad</name>
+        <description>Type of place: road or railroad</description>
+        <shortcut>Road or railroad</shortcut>
+        <item-type-assign code="ISAAR_PLACE_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_PLACE_TYPE_SPOT">
+        <name>Spot, building or farm</name>
+        <description>Type of place: spot, building or farm</description>
+        <shortcut>Spot, building or farm</shortcut>
+        <item-type-assign code="ISAAR_PLACE_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_PLACE_TYPE_UNDERSEA">
+        <name>Undersea</name>
+        <description>Type of place: undersea</description>
+        <shortcut>Undersea</shortcut>
+        <item-type-assign code="ISAAR_PLACE_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_PLACE_TYPE_VEGETATION">
+        <name>Vegetation</name>
+        <description>Type of place: vegetation</description>
+        <shortcut>Vegetation</shortcut>
+        <item-type-assign code="ISAAR_PLACE_TYPE"/>
+    </item-spec>
+    <item-spec code="ISAAR_CONCEPT_SCHEME_OCCUPATION">
+        <name>Occupation</name>
+        <description>Concept scheme: occupation</description>
+        <shortcut>Occupation</shortcut>
+        <item-type-assign code="ISAAR_CONCEPT_SCHEME"/>
+    </item-spec>
+    <item-spec code="ISAAR_CONCEPT_SCHEME_FUNCTION">
+        <name>Function / activity</name>
+        <description>Concept scheme: function / activity</description>
+        <shortcut>Function / activity</shortcut>
+        <item-type-assign code="ISAAR_CONCEPT_SCHEME"/>
+    </item-spec>
+    <item-spec code="ISAAR_CONCEPT_SCHEME_SUBJECT">
+        <name>Subject</name>
+        <description>Concept scheme: subject</description>
+        <shortcut>Subject</shortcut>
+        <item-type-assign code="ISAAR_CONCEPT_SCHEME"/>
+    </item-spec>
+    <item-spec code="ISAAR_CONCEPT_SCHEME_OTHER">
+        <name>Other</name>
+        <description>Concept scheme: other</description>
+        <shortcut>Other</shortcut>
+        <item-type-assign code="ISAAR_CONCEPT_SCHEME"/>
+    </item-spec>
+</item-specs>

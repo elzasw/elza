@@ -262,8 +262,8 @@
 		</band>
 		<band height="30" splitType="Prevent">
 			<element kind="textField" uuid="b5ee0b4d-18bb-4beb-b7c8-34e8007d2f4d" x="0" y="0" width="455" height="30" pdfEncoding="Cp1250" textAdjust="StretchHeight" bookmarkLevel="1" printInFirstWholeBand="true" style="Heading 1">
-				<expression><![CDATA["IV. Tematický popis a obsah archivního souboru"]]></expression>
-				<anchorNameExpression><![CDATA["IV. Tematický popis a obsah archivního souboru"]]></anchorNameExpression>
+				<expression><![CDATA["IV. Obsah a tematický popis archivního souboru"]]></expression>
+				<anchorNameExpression><![CDATA["IV. Obsah a tematický popis archivního souboru"]]></anchorNameExpression>
 			</element>
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 		</band>
@@ -271,7 +271,7 @@
 			<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_CONTENT" ))]]></printWhenExpression>
 			<element kind="textField" uuid="0477089d-2344-4b11-945b-44f339f1f0b4" positionType="Float" x="0" y="0" width="455" height="25" markup="none" pdfEncoding="Cp1250" textAdjust="StretchHeight" removeLineWhenBlank="true" style="Heading 3">
 				<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_CONTENT" ))]]></printWhenExpression>
-				<expression><![CDATA["Tematický popis:"]]></expression>
+				<expression><![CDATA["Obsah a tematický popis:"]]></expression>
 				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				<box bottomPadding="7" style="Heading 3"/>

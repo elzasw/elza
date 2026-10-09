@@ -259,9 +259,9 @@ public class StructTypeExtensionUpdater
 
 	public void run(PackageContext ruc) {
         StructureExtensions xmlExtensions = PackageUtils.convertXmlStreamToObject(StructureExtensions.class,
-        		ruc.getByteStream(PackageService.STRUCTURE_EXTENSION_XML));
+        		ruc.getByteStream(PackageService.STRUCTURE_EXTENSION_XML), PackageService.STRUCTURE_EXTENSION_XML);
         StructureExtensionDefinitions xmlExtDefs = PackageUtils.convertXmlStreamToObject(StructureExtensionDefinitions.class,
-        		ruc.getByteStream(PackageService.STRUCTURE_EXTENSION_DEFINITION_XML));
+        		ruc.getByteStream(PackageService.STRUCTURE_EXTENSION_DEFINITION_XML), PackageService.STRUCTURE_EXTENSION_DEFINITION_XML);
 
         procExtensions(xmlExtensions, ruc.getPackage(), ruc.getStructuredTypes());
         procExtDefs(xmlExtDefs, ruc);

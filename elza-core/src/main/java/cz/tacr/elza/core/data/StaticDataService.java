@@ -18,14 +18,24 @@ import cz.tacr.elza.repository.ArrangementExtensionRepository;
 import cz.tacr.elza.repository.ArrangementRuleRepository;
 import cz.tacr.elza.repository.ComponentRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
+import cz.tacr.elza.repository.EntityRuleRepository;
+import cz.tacr.elza.repository.RuleSetApTypeRepository;
+import cz.tacr.elza.repository.RuleSetPartTypeRepository;
+import cz.tacr.elza.repository.ApTypeDeclarationRepository;
+import cz.tacr.elza.repository.PartTypeDeclarationRepository;
+import cz.tacr.elza.repository.ItemTypeDeclarationRepository;
+import cz.tacr.elza.repository.ItemSpecAssignDeclarationRepository;
+import cz.tacr.elza.repository.ItemSpecDeclarationRepository;
 import cz.tacr.elza.repository.ExtensionRuleRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.ItemTypeSpecAssignRepository;
+import cz.tacr.elza.repository.PackageDependencyRepository;
 import cz.tacr.elza.repository.PackageRepository;
 import cz.tacr.elza.repository.PartTypeRepository;
 import cz.tacr.elza.repository.PolicyTypeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.repository.RulTranslationRepository;
 import cz.tacr.elza.repository.StructureDefinitionRepository;
 import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
 import cz.tacr.elza.repository.StructuredTypeExtensionRepository;
@@ -99,11 +109,31 @@ public class StaticDataService {
 
     final ExtensionRuleRepository extensionRuleRepository;
 
+    final EntityRuleRepository entityRuleRepository;
+
+    final RuleSetApTypeRepository ruleSetApTypeRepository;
+
+    final RuleSetPartTypeRepository ruleSetPartTypeRepository;
+
+    final ApTypeDeclarationRepository apTypeDeclarationRepository;
+
+    final PartTypeDeclarationRepository partTypeDeclarationRepository;
+
+    final ItemTypeDeclarationRepository itemTypeDeclarationRepository;
+
+    final ItemSpecDeclarationRepository itemSpecDeclarationRepository;
+
+    final ItemSpecAssignDeclarationRepository itemSpecAssignDeclarationRepository;
+
     final ArrangementRuleRepository arrangementRuleRepository;
 
     final ComponentRepository componentRepository;
 
     final PolicyTypeRepository policyTypeRepository;
+
+    final PackageDependencyRepository packageDependencyRepository;
+
+    final RulTranslationRepository translationRepository;
     
     final ApplicationContext context;
 
@@ -113,6 +143,14 @@ public class StaticDataService {
                              final ArrangementRuleRepository arrangementRuleRepository,
                              final ArrangementExtensionRepository ruleSetExtRepository,
                              final ExtensionRuleRepository extensionRuleRepository,
+                             final EntityRuleRepository entityRuleRepository,
+                             final RuleSetApTypeRepository ruleSetApTypeRepository,
+                             final RuleSetPartTypeRepository ruleSetPartTypeRepository,
+                             final ApTypeDeclarationRepository apTypeDeclarationRepository,
+                             final PartTypeDeclarationRepository partTypeDeclarationRepository,
+                             final ItemTypeDeclarationRepository itemTypeDeclarationRepository,
+                             final ItemSpecDeclarationRepository itemSpecDeclarationRepository,
+                             final ItemSpecAssignDeclarationRepository itemSpecAssignDeclarationRepository,
                              final ItemTypeRepository itemTypeRepository,
                              final ItemSpecRepository itemSpecRepository,
                              final ItemTypeSpecAssignRepository itemTypeSpecAssignRepository,
@@ -128,13 +166,23 @@ public class StaticDataService {
                              final PartTypeRepository partTypeRepository,
                              final ApExternalSystemRepository apExternalSystemRepository,
                              final ComponentRepository componentRepository,
-                             final PolicyTypeRepository policyTypeRepository, 
+                             final PolicyTypeRepository policyTypeRepository,
+                             final PackageDependencyRepository packageDependencyRepository,
+                             final RulTranslationRepository translationRepository,
                              final ApplicationContext context) {
         this.em = em;
         this.ruleSetRepository = ruleSetRepository;
         this.arrangementRuleRepository = arrangementRuleRepository;
         this.ruleSetExtRepository = ruleSetExtRepository;
         this.extensionRuleRepository = extensionRuleRepository;
+        this.entityRuleRepository = entityRuleRepository;
+        this.ruleSetApTypeRepository = ruleSetApTypeRepository;
+        this.ruleSetPartTypeRepository = ruleSetPartTypeRepository;
+        this.apTypeDeclarationRepository = apTypeDeclarationRepository;
+        this.partTypeDeclarationRepository = partTypeDeclarationRepository;
+        this.itemTypeDeclarationRepository = itemTypeDeclarationRepository;
+        this.itemSpecDeclarationRepository = itemSpecDeclarationRepository;
+        this.itemSpecAssignDeclarationRepository = itemSpecAssignDeclarationRepository;
         this.itemTypeRepository = itemTypeRepository;
         this.itemSpecRepository = itemSpecRepository;
         this.itemTypeSpecAssignRepository = itemTypeSpecAssignRepository;
@@ -151,6 +199,8 @@ public class StaticDataService {
         this.apExternalSystemRepository = apExternalSystemRepository;
         this.componentRepository = componentRepository;
         this.policyTypeRepository = policyTypeRepository;
+        this.packageDependencyRepository = packageDependencyRepository;
+        this.translationRepository = translationRepository;
         this.context = context;
     }
 

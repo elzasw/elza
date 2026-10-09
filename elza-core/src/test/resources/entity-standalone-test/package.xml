@@ -1,0 +1,7 @@
+<package>
+  <code>ENTITY_STANDALONE_TEST</code>
+  <name>Standalone entity framework test package</name>
+  <version>1</version>
+  <description>An entity description without CZ_BASE (StandaloneFrameworkTest)</description>
+  <language>en</language>
+</package>

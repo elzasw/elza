@@ -1,0 +1,8 @@
+package drlenttest;
+import cz.tacr.elza.drools.model.ItemType;
+
+rule "ENT_TEST: the minor name part is required, the main name is not set by this rule set"
+when $it: ItemType(code == "NM_MINOR")
+then
+    $it.setRequired();
+end

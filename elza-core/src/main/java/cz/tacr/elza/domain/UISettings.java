@@ -130,7 +130,8 @@ public class UISettings {
      * Check if other settings is same.
      */
     public boolean isSameSettings(UISettings other) {
-        return settingsType == other.settingsType && entityType == other.entityType && Objects.equals(entityId, other.entityId);
+        return Objects.equals(settingsType, other.settingsType) && entityType == other.entityType
+                && Objects.equals(entityId, other.entityId);
     }
 
     /**
@@ -189,9 +190,10 @@ public class UISettings {
         FUND_TEMPLATES(true, EntityType.FUND),
 
         /**
-         * nastavení pro automatizaci importu dao
+         * nastavení pro automatizaci importu dao; globální nastavení může uvést více balíčků,
+         * platí balíček nejhlouběji v pořadí závislostí
          */
-        DAO_LEVEL_IMPORT(true, EntityType.FUND),
+        DAO_LEVEL_IMPORT(true, EntityType.FUND, true),
 
         /**
          * oblíbené specifikace u typu atributu
@@ -266,7 +268,13 @@ public class UISettings {
         /**
          * List of pinned search node filters
          */
-        SEARCH_NODE_FILTERS(true, null);
+        SEARCH_NODE_FILTERS(true, null),
+
+        /**
+         * Výchozí hodnoty dialogu nového výstupu (výstupní filtr). Nastavení může uvést více
+         * balíčků, platí nastavení balíčku nejhlouběji v pořadí závislostí.
+         */
+        OUTPUT_DEFAULTS(false, EntityType.RULE, true);
 
         /**
          * If settings can be global or has to be defined on some entity.
@@ -278,13 +286,41 @@ public class UISettings {
          */
         private final EntityType entityType;
 
+        /**
+         * Several packages may state the setting for the same entity; the package deepest in
+         * dependency order wins (SettingsService.resolveGlobal).
+         */
+        private final boolean layered;
+
         SettingsType() {
             this(true, null);
         }
 
         SettingsType(boolean global, EntityType entityType) {
+            this(global, entityType, false);
+        }
+
+        SettingsType(boolean global, EntityType entityType, boolean layered) {
             this.global = global;
             this.entityType = entityType;
+            this.layered = layered;
+        }
+
+        public boolean isLayered() {
+            return layered;
+        }
+
+        /**
+         * @return true for a layered type of the given name; false for other names, including
+         *         the prefixed STRUCT_TYPE_&lt;CODE&gt;
+         */
+        public static boolean isLayered(String settingsType) {
+            for (SettingsType value : values()) {
+                if (value.name().equals(settingsType)) {
+                    return value.layered;
+                }
+            }
+            return false;
         }
 
         public EntityType getEntityType() {

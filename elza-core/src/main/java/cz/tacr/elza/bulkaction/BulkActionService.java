@@ -43,6 +43,8 @@ import cz.tacr.elza.controller.vo.FundsActionGroupResult;
 import cz.tacr.elza.controller.vo.FundsActionSkipped;
 import cz.tacr.elza.controller.vo.MultiFundActionResult;
 import cz.tacr.elza.controller.vo.SearchParams;
+import cz.tacr.elza.core.data.PackageTexts;
+import cz.tacr.elza.domain.TranslationEntityType;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrBulkActionNode;
@@ -101,6 +103,9 @@ public class BulkActionService {
 
     @Autowired
     ApplicationContext appCtx;
+
+    @Autowired
+    private PackageTexts packageTexts;
 
     @Autowired
     private FundVersionRepository fundVersionRepository;
@@ -321,7 +326,8 @@ public class BulkActionService {
                     new FundsActionGroup()
                             .ruleSetId(ruleSet.getRuleSetId())
                             .ruleSetCode(ruleSet.getCode())
-                            .ruleSetName(ruleSet.getName())
+                            .ruleSetName(packageTexts.name(TranslationEntityType.RULE_SET, ruleSet.getCode(),
+                                                           ruleSet.getName()))
                             .fundCount(0)
                             .actions(new ArrayList<>()));
         }

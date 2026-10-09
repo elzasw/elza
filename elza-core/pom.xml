@@ -155,10 +155,6 @@
         </dependency>
         <dependency>
             <groupId>net.sf.jasperreports</groupId>
-            <artifactId>jasperreports-barbecue</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>net.sf.jasperreports</groupId>
             <artifactId>jasperreports-fonts</artifactId>
         </dependency>
 
@@ -432,6 +428,10 @@
             <testResource>
                 <directory>${basedir}/../package-cz-base/src</directory>
                 <targetPath>${basedir}/target/test-classes/package-cz-base</targetPath>
+            </testResource>
+            <testResource>
+                <directory>${basedir}/../package-isaar-cpf/src</directory>
+                <targetPath>${basedir}/target/test-classes/package-isaar-cpf</targetPath>
             </testResource>
             <testResource>
                 <directory>${basedir}/../rules-simple-dev/src</directory>
@@ -739,6 +739,7 @@
                                 <modelNameMapping>AiConversation=AiConversationVO</modelNameMapping>
                                 <modelNameMapping>AiConversationDetail=AiConversationDetailVO</modelNameMapping>
                                 <modelNameMapping>AiConversationCreate=AiConversationCreateVO</modelNameMapping>
+                                <modelNameMapping>AiConversationUpdate=AiConversationUpdateVO</modelNameMapping>
                                 <modelNameMapping>AiRequest=AiRequestVO</modelNameMapping>
                                 <modelNameMapping>AiRequestCreate=AiRequestCreateVO</modelNameMapping>
                                 <modelNameMapping>AiRequestEvent=AiRequestEventVO</modelNameMapping>

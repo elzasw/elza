@@ -134,6 +134,12 @@ public class ApplicationSecurity {
 
     public static final String SETUP_PATTERN = "/api/v1/setup/**";
 
+    /**
+     * Languages of the application, public: the language picker on the login page needs them before
+     * the user signs in. Lists only tags and usage flags.
+     */
+    public static final String LANGUAGES_PATTERN = "/api/v1/languages";
+
     @Autowired
     private ApplicationContext applicationContext;
 
@@ -393,6 +399,7 @@ public class ApplicationSecurity {
     				.requestMatchers(PERMIT_ALL_PATTERNS).permitAll()
     				// first-run setup, open only while no user exists (SetupService)
     				.requestMatchers(AntPathRequestMatcher.antMatcher(SETUP_PATTERN)).permitAll()
+    				.requestMatchers(AntPathRequestMatcher.antMatcher(LANGUAGES_PATTERN)).permitAll()
     				// Explicitly require auth for SSO
     			    .requestMatchers(AntPathRequestMatcher.antMatcher(AUTHENTICATE_SSO)).authenticated()
     			    .requestMatchers(AntPathRequestMatcher.antMatcher(AUTHENTICATE_SSO_JSON)).authenticated()

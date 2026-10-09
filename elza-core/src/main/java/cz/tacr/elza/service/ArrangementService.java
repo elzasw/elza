@@ -108,6 +108,7 @@ import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.controller.vo.ApSearchType;
 import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.PackageTexts;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
@@ -235,6 +236,8 @@ public class ArrangementService {
     protected FundRegisterScopeRepository fundRegisterScopeRepository;
     @Autowired
     private LevelTreeCacheService levelTreeCacheService;
+    @Autowired
+    private PackageTexts packageTexts;
     @Autowired
     private RuleService ruleService;
     @Autowired
@@ -1834,11 +1837,11 @@ public class ArrangementService {
             }
 
             for (ArrNodeConformityError error : conformity.getErrorConformity()) {
-                descriptions.add(error.getDescription());
+                descriptions.add(packageTexts.render(error.getDescription()));
             }
 
             for (ArrNodeConformityMissing missing : conformity.getMissingConformity()) {
-                descriptions.add(missing.getDescription());
+                descriptions.add(packageTexts.render(missing.getDescription()));
             }
 
             description = StringUtils.join(descriptions, " ");

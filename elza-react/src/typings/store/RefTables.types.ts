@@ -86,6 +86,8 @@ interface OutputFilterData {
     code?: string;
     packageId?: number;
     ruleSetId?: number;
+    /** preselected in the new output dialog of its rule set (setting OUTPUT_DEFAULTS) */
+    defaultFilter?: boolean;
 }
 
 // interface OutputFilters {

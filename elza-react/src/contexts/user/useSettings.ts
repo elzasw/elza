@@ -133,7 +133,8 @@ export function useSearchNodeFilters(fundId: number) {
     return [value, setValue] as const;
 }
 
-export type Language = 'cs' | 'en';
+/** BCP 47 tag of a UI language (`cs`, `en`). */
+export type Language = string;
 
 export interface UserSettingsData {
     compact?: boolean;
@@ -171,6 +172,11 @@ function subscribe(listener: () => void) {
 }
 
 function getSnapshot() {
+    return snapshot;
+}
+
+/** Current user settings, for code outside React (startup). */
+export function getUserSettings(): UserSettingsData {
     return snapshot;
 }
 

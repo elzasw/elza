@@ -1,0 +1,20 @@
+package isaarcpf;
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ItemSpec;
+import cz.tacr.elza.drools.model.item.IntItem;
+import cz.tacr.elza.drools.model.Part;
+import cz.tacr.elza.drools.model.PartType;
+
+rule "ISAAR 5.2: description of the entity"
+when $it: ItemType(code in ("BRIEF_DESC", "HISTORY", "ISAAR_GENERAL_CONTEXT", "SOURCE_INFO"))
+then
+    $it.setPossible();
+end
+
+rule "ISAAR 5.4.8: links to sources"
+when $it: ItemType(code in ("SOURCE_LINK"))
+then
+    $it.setPossible();
+    $it.setRepeatable(true);
+end
+

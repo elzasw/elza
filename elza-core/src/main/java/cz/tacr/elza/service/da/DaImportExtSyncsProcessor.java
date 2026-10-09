@@ -7,11 +7,13 @@ import cz.tacr.elza.api.DaDownloadMethod;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.DaSyncQueueItem;
 import cz.tacr.elza.service.ExternalSystemService;
+import cz.tacr.elza.service.UserService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -41,6 +43,8 @@ public class DaImportExtSyncsProcessor implements Runnable {
     private DaAipActionService actionService;
     @Autowired
     private DaCommunicationLock communicationLock;
+    @Autowired
+    private UserService userService;
 
     private volatile Thread asyncThread = null;
 
@@ -125,9 +129,11 @@ public class DaImportExtSyncsProcessor implements Runnable {
     }
 
     /**
-     * Requests the metadata package of the AIPs that have just been received (queue items in
-     * state IMPORT_NEW) - the repository is configured to download metadata automatically. The
-     * metadata import later attaches the AIP to its node.
+     * Requests the metadata package of the AIPs whose PACKAGE-INFO has just been received - the
+     * repository is configured to download metadata automatically. The metadata import later
+     * attaches the AIP to its node. AIPs that cannot or need not be asked are skipped by
+     * {@link DaService#createDaoStructure(List)}: without a fund, with the metadata stored, or
+     * with a download waiting.
      */
     private void requestMetadataOfReceivedAips(List<Integer> receivedAipIds) {
         if (!receivedAipIds.isEmpty()) {
@@ -148,12 +154,13 @@ public class DaImportExtSyncsProcessor implements Runnable {
     }
 
     /**
-     * @return ids of the AIPs the batch has just received (queue items in state IMPORT_NEW
-     *         whose PACKAGE-INFO created the AIP)
+     * @return ids of the AIPs the batch has received PACKAGE-INFO of - new ones as well as new
+     *         versions of known ones: a new version may name a fund the previous one did not, and
+     *         then it has to be placed like a package received for the first time
      */
     private static List<Integer> receivedAipIds(List<DaSyncQueueItem> syncQueueItemList) {
         return syncQueueItemList.stream()
-                .filter(q -> q.getState() == DaSyncQueueItem.QueueItemState.IMPORT_NEW && q.getAip() != null)
+                .filter(q -> q.getAip() != null)
                 .map(q -> q.getAip().getAipId())
                 .toList();
     }
@@ -161,6 +168,9 @@ public class DaImportExtSyncsProcessor implements Runnable {
     @Override
     public void run() {
         synchronized (lock) {
+            // the import creates levels and listeners of their events (e.g. the level tree cache)
+            // read the fund version through secured services
+            SecurityContextHolder.setContext(userService.createSecurityContextSystem());
             try {
                 while (status == ThreadStatus.RUNNING) {
                     // pokud true - pauza po ukončení práce procesoru
@@ -192,7 +202,7 @@ public class DaImportExtSyncsProcessor implements Runnable {
                                         ? receivedAipIds(syncQueueItemList) : List.of();
                                 if (aipType == AipType.METADATA_BASE || aipType == AipType.AIP_BASE) {
                                     List<Integer> aipids = syncQueueItemList.stream().map(q -> q.getAip().getAipId()).toList();
-                                    Map<Integer, List<String>> uuidsByAip = daService.doCreateDaoStructure(aipids, false,
+                                    Map<Integer, List<String>> uuidsByAip = daService.doCreateDaoStructure(aipids,
                                             actionService.sinkForQueueItems(syncQueueItemList));
                                     if (autoProcess) {
                                         aipAutoLinkService.linkReceivedAips(uuidsByAip);
@@ -240,6 +250,8 @@ public class DaImportExtSyncsProcessor implements Runnable {
                 }
             } catch (Exception e) {
                 logger.error("DaImportExtSyncsProcessor - processor thread error", e);
+            } finally {
+                SecurityContextHolder.clearContext();
             }
             status = ThreadStatus.STOPPED;
             lock.notifyAll();

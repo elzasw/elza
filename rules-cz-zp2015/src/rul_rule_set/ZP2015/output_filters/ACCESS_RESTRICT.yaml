@@ -330,9 +330,7 @@ defs:
        itemSpec: ZP2015_RESTRICTION_LIMITED
     result:
       hiddenItems:
-        - itemType: ZP2015_NAME
         - itemType: ZP2015_NAME_PUBLIC
-        - itemType: ZP2015_CONTENT
         - itemType: ZP2015_CONTENT_PUBLIC
       replaceItems:
         - source:

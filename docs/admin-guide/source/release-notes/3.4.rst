@@ -15,6 +15,197 @@ between the installed and the new version; see :doc:`/03-upgrade`.
 Upcoming version
 ================
 
+* New: Package management - the administration lists the packages of
+  :file:`dpkg/` that are not loaded, with what the next start does with
+  each of them, and lets the administrator mark a package for the import at
+  the next start (or cancel the mark); a marked package appears among the
+  installed ones after the restart. The page reminds that a restart is
+  needed after a mark or an import during the run, and offers *Restart the
+  application*: the application exits with the code of the new key
+  ``elza.restart.exitCode`` (3 by default) and the service manager starts
+  it again (``Restart=on-failure`` in the systemd unit); without a service
+  manager it only stops. See :ref:`install-packages` and
+  :doc:`/04-configuration`.
+* Change: Packages at startup - the packages loaded from :file:`dpkg/`
+  are the imported ones and those listed in the new key
+  ``elza.packages.enabled`` (with their dependencies); the other files of
+  the directory are skipped, and a package deleted in the administration
+  stays deleted unless listed. Existing installations keep their packages
+  without a change of the configuration. A new installation sets the key
+  before the first start; on an empty database without the key every
+  package of the directory is imported, as before. The log of the start
+  lists the imported and the skipped packages. See
+  :ref:`install-packages` and :doc:`/04-configuration`.
+* Change: Rules packages - the files of a package are read strictly: an
+  unknown or misplaced element stops the import of the package (the error
+  names the file, the line and the element) instead of being skipped
+  silently. The packages delivered with ELZA are corrected. A package of
+  your own or of a third party that imported before may now be refused;
+  remove or correct the reported element and raise the version of the
+  package.
+* New: Rules packages - the package ISAAR_CPF describes archival entities
+  (persons, families, corporate bodies, places, concepts) according to the
+  international standard ISAAR(CPF), in English. It is delivered with ELZA
+  and imported when ``elza.packages.enabled`` lists it (or at the first
+  start of an empty database without the key); a scope uses it by choosing
+  the rule set ``ISAAR_CPF``. It shares classes, part types, item types and
+  specifications with CZ_BASE where the meaning is the same, so an
+  installation may run CZ_BASE, ISAAR_CPF or both; an existing Czech
+  installation that adds it sees a new rule set offered for scopes and no
+  change in its CAM scopes. The languages of a name are the ISO 639-2 list with
+  English names (486 languages), coded as in CZ_BASE (``LNG_`` plus the
+  bibliographic code).
+* Change: Archival entities - the class tree of a scope shows the classes
+  its rule set lists; a class whose parent the rule set does not list is
+  shown as a root. CZ_BASE lists no classes, so Czech installations see no
+  change.
+* Fix: A rules package without dependencies that no other package depends
+  on was skipped by the import at startup; packages are now imported in the
+  order of their dependencies, independent ones by code.
+* Change: Rules packages - a specification may be declared by several
+  packages with the same code, like item types; its texts follow the
+  language of the user, and it belongs to the item types all declaring
+  packages assign it to. A specification or its assignment to an item type
+  used by descriptions or entities can no longer be removed by a new
+  version of its package (before, the import failed on a database
+  constraint). The package export writes each specification once, also
+  specifications without an assignment.
+* Change: Unit dates are read in every supported language whatever the
+  language of the user interface, and shown in the language of the user
+  interface. Besides the Czech forms (``20. st.``, ``21.8.1968``,
+  ``31 př. n. l.``) the English forms are accepted: ``20th century``,
+  ``Aug 1968``, ``21 Aug 1968``, ``500 BC``, intervals written as
+  ``1968 – 1969`` or ``1968 - 1969``, and the ISO full date
+  ``1968-08-21``. In the English interface the dates of entities and
+  units of description are shown in the English forms; stored values,
+  indexes, titles and print outputs keep the Czech form for now. The forms
+  are defined once in :file:`unitdate/lexicon.json` of elza-core and
+  checked by the corpus :file:`unitdate/cases.json` on the server and in
+  the client. The format help of the date fields shows the examples of the
+  language of the user interface. The unit-date validation endpoint
+  ``/api/validate/unitDate`` is no longer called by the client.
+* Change: Rules packages - a rule set offers only the specifications
+  assigned by packages related to its own: the package itself, the
+  packages it depends on and the packages depending on it. A specification
+  that only an unrelated package assigns to a shared item type is not
+  offered by the rules, forms and item-type listing of the rule set, even
+  when a rule allows every specification of the item type. Installations
+  with CZ_BASE and ZP2015 and their addons see no change; an ISAAR_CPF
+  entity offers the languages of a name the package declares, a CAM entity
+  only CZ_BASE's 166.
+* Fix: Deleting a rules package that defines task types failed on a
+  database constraint; its task types are now deleted with it.
+* Fix: In a newly created database the 20th archival entity scope or
+  institution type collided with the initial ``GLOBAL`` scope or
+  ``DEFAULT`` institution type (identifier 1); the upgrade moves both
+  identifier sequences above the existing records.
+* Change: Rules packages - the script computing items of archival entities
+  is an entity rule of the rule set (kind ``AUTO_ITEMS`` in
+  :file:`rul_entity_rule.xml`, optionally per class; the most specific one
+  applies); before, it was an arrangement rule of type ``AUTO_ITEMS``. A
+  rule set without it computes no items. The upgrade removes the old rule;
+  CZ_BASE version 89 declares its unchanged ``AutoItems.groovy`` as the
+  entity rule. A package declaring ``AUTO_ITEMS`` in
+  :file:`rul_arrangement_rule.xml` is refused.
+* Change: Archival entities described by a rule set other than CAM (an
+  entity description package independent of CZ_BASE) are created, named
+  and validated without the CZ_BASE item types: the CAM checks of
+  relations and identifiers and the geographic checks apply only when the
+  CAM item types exist, users created from OAuth2 tokens get the class set by
+  ``elza.security.o-auth2.user-ap-type`` (default ``PERSON_INDIVIDUAL``) in
+  the scope ``user-scope`` (default ``JWT_USERS``). The short name of an
+  institution falls back to the ``SHORT_NAME`` index of the entity, and
+  the institution statistics list institutions without a short name under
+  their name (before they were left out).
+* Change: Rules packages - an item type may be declared by several packages
+  with the same code, like entity classes and part types; its texts follow
+  the language of the user. The data type and other values deciding how
+  values are stored must agree, otherwise the import is refused. An item
+  type used by descriptions or entities can no longer be removed by a new
+  version of its package (before, the import failed on a database
+  constraint). The package export writes the mask of ``STRING`` item types
+  and the structured type of ``STRUCTURED`` item types, which it omitted.
+* Change: Rules packages - the item type flag ``is-value-unique`` is
+  removed (column ``rul_item_type.is_value_unique``). ELZA never enforced
+  it; the element is ignored when a package still contains it.
+* Change: Rules packages - a part type of archival entities may be declared
+  by several packages with the same code, like entity classes; its name
+  follows the language of the user. An entity rule set lists the part
+  types it offers in :file:`rul_rule_set/<RS>/rul_part_type.xml`, in the
+  order in which the parts of an entity are shown, and the order of its
+  classes in :file:`rul_ap_type.xml` is the order of the class tree.
+  CZ_BASE version 89 lists its part types this way instead of the
+  ``parts-order`` UI setting of the CAM rule set; a local ``parts-order``
+  setting still applies to rule sets without the list. The entity detail
+  does not offer a part type that the rule set does not list; existing
+  parts of it stay visible. A part type used by parts of entities cannot be removed
+  by a new version of its package.
+* Change: Rules packages - the scripts building the names of parts of
+  archival entities are entity rules of the rule set (kind ``INDEX`` in
+  :file:`rul_entity_rule.xml`) and apply only to entities whose scope uses
+  the rule set; before, they were global structured types named by part
+  codes (``PT_NAME`` ...). The upgrade removes those structured types with
+  their definitions and extensions; CZ_BASE version 89, delivered with
+  ELZA, imports the same scripts as entity rules at the first start (names
+  are not regenerated). Local changes of the CZ_BASE scripts or added
+  scripts (patches of :file:`rul_structure_extension*.xml`) must move to
+  :file:`rul_entity_rule.xml`.
+* Change: Rules packages - an entity class may be declared by several
+  packages with the same code (for example a national and an international
+  entity description); the class exists once and its name follows the
+  language of the user. A package declaring a class with another parent
+  than another package is refused.
+* Change: Entity classes per scope - an entity rule set may declare the
+  classes it uses (:file:`rul_ap_type.xml` of rules packages). Entities of
+  a scope can only have the classes of its rule set; the server now also
+  refuses classes that cannot be assigned (read-only), which only the
+  client checked before. The CAM import of an entity of a class the rule
+  set of the target scope does not offer fails. The dialog of a new
+  archival entity asks for the scope first and offers the classes of its
+  rule set. Installations with CZ_BASE alone are not affected: its rule
+  set declares no classes and offers all.
+* Change: Rules packages - the rules of an entity rule set (CZ_BASE, rule
+  set ``CAM``) are declared in :file:`rul_entity_rule.xml` and run only for
+  entities whose scope uses the rule set. The upgrade removes the rules
+  stored in the old form and CZ_BASE version 89, delivered with ELZA,
+  imports them again at the first start. Packages with entity rules in the
+  old form (:file:`rul_arrangement_extension.xml` and
+  :file:`rul_extension_rule.xml` in an entity rule set) are refused and must
+  be converted; DRL files keep their names and paths, so local changes of
+  CZ_BASE rule files still apply.
+* New: Translations of rules packages - a package can carry texts of its
+  own and other packages' item types, specifications and other entities
+  in further languages (:file:`translations/<lang>.xml`); the names are
+  shown in the language of the user interface. The list of languages
+  (``GET /api/v1/languages``) is available without login.
+* New: Validation messages of archival entities and of units of
+  description are shown in the language of the user interface: the
+  messages of the core (a missing required item, a forbidden item or
+  specification, an item given more than once, ...) in Czech and English,
+  the messages of a package's validation rules when the rule reports them
+  with a key and the package translates the key (ISAAR_CPF version 2 does
+  so into Czech). The messages of CZ_BASE and ZP2015 stay in Czech. The
+  Czech and English texts of the core messages ship with ELZA; a rules
+  package may override them or add a language
+  (:file:`translations/<lang>.xml`, rows with the code ``CORE/...``). A
+  record validated before the upgrade shows its stored texts until it is
+  validated again. The same applies to the headers of the CSV exports of
+  a fund and of its issues, to the message of a refused API key and to
+  the reasons a proposal of the AI assistant cannot be applied.
+* New: The language of the user interface is chosen in the user settings
+  (no longer an experimental feature) and in the login dialog. Without a
+  choice the interface is in the language of ``elza.locale``; the login
+  dialog names the browser's language when it differs. The languages
+  offered are the UI languages of ``sys_language`` (``ui_enabled``) for
+  which the client has texts, today Czech and English.
+* Change: The languages (``sys_language``) get a BCP 47 tag (``cs``,
+  ``en``, ...). The upgrade fills it for the languages delivered with
+  ELZA. **If languages were added to the database by hand, the upgrade
+  stops** with the message "sys_language contains rows without a tag";
+  find them with ``SELECT * FROM sys_language WHERE tag IS NULL``, fill
+  ``tag`` (e.g. ``UPDATE sys_language SET tag = 'hu' WHERE code =
+  'hun'``) and start ELZA again. The language with code ``cze`` must not
+  be deleted: installed rules packages are assigned to it.
 * New: ELZA DA - taking over archival description from packages (AIP) by
   the user: an import plan and its execution (levels, description
   elements, attachments); automatic linking creates levels under the
@@ -26,6 +217,15 @@ Upcoming version
   and under which levels it is placed; the levels are found or created
   and the package is imported below them. A match by UUID always takes
   precedence. Applies to repositories with automatic metadata download
+* Change: ELZA DA - a new version of an attached AIP: a part the new
+  version no longer contains is detached from its description unit (the
+  update used to fail and the AIP stayed at its old content); a renamed
+  part keeps its link; a version naming another fund is detached from
+  the former fund and, with automatic metadata download, placed into the
+  new one; a version naming the same fund and institution keeps the fund of the AIP;
+  the same fund code under another institution is another fund. The
+  *Forced update* is no longer offered, the update from the stored
+  package does the same
 * New: 9963 - Password rules (minimum length, character groups,
   validity), a required password change at the next login, accounts
   whose password never expires, and recovering access to an account with

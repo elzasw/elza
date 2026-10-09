@@ -36,11 +36,6 @@ export interface RulDescItemTypeVO {
     description: string;
 
     /**
-     * je hodnota unikátní?
-     */
-    isValueUnique: boolean;
-
-    /**
      * může se řadit?
      */
     canBeOrdered: boolean;

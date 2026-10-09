@@ -463,6 +463,7 @@ public class CamService {
 
         state.setDeleteChange(apChange);
         stateRepository.save(state);
+        accessPointService.checkApTypeInScope(type, state.getScope(), false);
         ApState stateNew = accessPointService.copyState(state, apChange);
         stateNew.setApType(type);
         stateNew.setStateApproval(ApState.StateApproval.NEW);

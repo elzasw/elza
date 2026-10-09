@@ -40,6 +40,13 @@ public class RulItemTypeSpecAssign {
     @Column(name="item_spec_view_order", nullable = false)
     private Integer viewOrder;
 
+    /**
+     * Code of the specification of the same item type this one is placed right after, or null
+     * for the default position (after the specifications of the packages it depends on).
+     */
+    @Column(name = "view_after_spec_code", length = 50)
+    private String viewAfterSpecCode;
+
     protected RulItemTypeSpecAssign() {
     }
 
@@ -121,5 +128,12 @@ public class RulItemTypeSpecAssign {
         this.viewOrder = viewOrder;
     }
 
+    public String getViewAfterSpecCode() {
+        return viewAfterSpecCode;
+    }
+
+    public void setViewAfterSpecCode(final String viewAfterSpecCode) {
+        this.viewAfterSpecCode = viewAfterSpecCode;
+    }
 
 }

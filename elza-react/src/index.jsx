@@ -21,6 +21,7 @@ import EventEmitter from 'events';
 
 import './websocketActions.jsx';
 import { storeRestoreFromStorage } from 'actions/store/store.jsx';
+import { initLanguage } from 'components/shared/lang/language';
 import { storeSave } from 'actions/store/storeEx.jsx';
 import { Exception} from 'components/shared';
 import { defineMessages } from 'react-intl';
@@ -93,6 +94,8 @@ if (!String.prototype.startsWith) {
 }
 
 Moment.locale(window.navigator.language || 'cs-CZ');
+// before the first request: the server returns names from rules packages in this language
+initLanguage();
 // momentLocalizer();
 
 // Načtení dat z local storage = vrácení aplikace do předchozího stavu

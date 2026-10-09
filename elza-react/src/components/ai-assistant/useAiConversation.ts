@@ -164,6 +164,55 @@ export function useAiConversation({ externalSystemCode, getContext }: UseAiConve
         [externalSystemCode, getContext]
     );
 
+    // Stop a running exchange: best effort on the provider (incurred usage is
+    // kept); the pushed/refetched final state ("cancelled") clears pending.
+    const cancel = useCallback(async (requestId: number) => {
+        try {
+            const { data: request } = await Api.aiprovider.aiProviderCancelRequest(requestId);
+            setDetail((previous) => {
+                if (previous === null || !previous.requests.some((existing) => existing.id === request.id)) {
+                    return previous;
+                }
+                return {
+                    ...previous,
+                    requests: previous.requests.map((existing) => (existing.id === request.id ? request : existing)),
+                };
+            });
+        } catch (cancelError) {
+            setError(extractErrorMessage(cancelError));
+        }
+    }, []);
+
+    const renameConversation = useCallback(async (id: number, title: string) => {
+        setError(null);
+        try {
+            const { data: conversation } = await Api.aiprovider.aiProviderUpdateConversation(id, { title });
+            setDetail((previous) =>
+                previous === null || previous.conversation.id !== id ? previous : { ...previous, conversation });
+            return true;
+        } catch (renameError) {
+            setError(extractErrorMessage(renameError));
+            return false;
+        }
+    }, []);
+
+    // Deleting the open conversation leaves the panel on a fresh one.
+    const deleteConversation = useCallback(async (id: number) => {
+        setError(null);
+        try {
+            await Api.aiprovider.aiProviderDeleteConversation(id);
+            if (conversationIdRef.current === id) {
+                conversationIdRef.current = null;
+                setDetail(null);
+                setPending(false);
+            }
+            return true;
+        } catch (deleteError) {
+            setError(extractErrorMessage(deleteError));
+            return false;
+        }
+    }, []);
+
     // Synchronous counterpart of the websocket push: an endpoint that returns
     // the refreshed request snapshot (e.g. a proposal decision) applies it
     // directly, without waiting for the push round-trip.
@@ -181,5 +230,8 @@ export function useAiConversation({ externalSystemCode, getContext }: UseAiConve
 
     const requests = detail?.requests ?? [];
 
-    return { requests, pending, error, send, activeConversationId, openConversation, newConversation, replaceRequest };
+    return {
+        requests, pending, error, send, cancel, activeConversationId, openConversation, newConversation,
+        replaceRequest, renameConversation, deleteConversation,
+    };
 }

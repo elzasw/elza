@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.ValidationMessage;
 import cz.tacr.elza.domain.ArrCachedNode;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataUnitdate;
@@ -153,14 +154,14 @@ public class ArrCachedNodeBridge implements TypeBridge<ArrCachedNode> {
         	if (conformityErrors.getErrorList() != null) {
         		for (ArrNodeConformityError error : conformityErrors.getErrorList()) {
         			if (StringUtils.isNotBlank(error.getDescription())) {
-        				document.addValue(ArrCachedNodeBinder.CONFORMITY_ERROR, error.getDescription());
+        				document.addValue(ArrCachedNodeBinder.CONFORMITY_ERROR, ValidationMessage.indexText(error.getDescription()));
         			}
         		}
         	}
         	if (conformityErrors.getMissingList() != null) {
 				for (ArrNodeConformityMissing missing : conformityErrors.getMissingList()) {
 					if (StringUtils.isNotBlank(missing.getDescription())) {
-						document.addValue(ArrCachedNodeBinder.CONFORMITY_MISSING, missing.getDescription());
+						document.addValue(ArrCachedNodeBinder.CONFORMITY_MISSING, ValidationMessage.indexText(missing.getDescription()));
 					}
 				}
 			}

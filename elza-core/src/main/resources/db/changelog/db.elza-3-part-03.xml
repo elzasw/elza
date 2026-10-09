@@ -778,4 +778,545 @@
         </insert>
     </changeSet>
 
+    <changeSet id="20261006100000" author="ppy">
+        <!-- Level views are shared by all AIPs with the same logical structure, they do not belong to a fund -->
+        <dropForeignKeyConstraint baseTableName="da_level_view" constraintName="fk_da_level_view_arr_fund"/>
+        <dropColumn tableName="da_level_view" columnName="fund_id"/>
+    </changeSet>
+
+    <changeSet id="20261006140000" author="ppy">
+        <!-- A package may place its specification right after a given specification of the item
+             type (view-after in <item-type-assign>). The anchor is stored as a code, so it survives
+             re-imports of the package that owns the anchor. -->
+        <addColumn tableName="rul_item_type_spec_assign">
+            <column name="view_after_spec_code" type="nvarchar(50)"/>
+        </addColumn>
+        <!-- One assignment per item type and specification. Nothing prevented duplicates so far;
+             any found are dropped first, keeping the oldest row. -->
+        <sql>
+            DELETE FROM rul_item_type_spec_assign WHERE item_type_spec_assign_id NOT IN (
+                SELECT keep_id FROM (
+                    SELECT MIN(item_type_spec_assign_id) AS keep_id FROM rul_item_type_spec_assign
+                     GROUP BY item_type_id, item_spec_id) k)
+        </sql>
+        <addUniqueConstraint tableName="rul_item_type_spec_assign"
+                             columnNames="item_type_id, item_spec_id"
+                             constraintName="ux_rul_item_type_spec_assign"/>
+    </changeSet>
+
+    <changeSet id="20261007100000" author="ppy">
+        <!-- Languages get a BCP 47 tag - the key used by translation files, Accept-Language and
+             the client. Filled for the rows of db.elza-init.xml; the next changeset refuses to run
+             while a row is left without a tag. -->
+        <addColumn tableName="sys_language">
+            <column name="tag" type="nvarchar(10)"/>
+            <!-- The UI can be used in this language -->
+            <column name="ui_enabled" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <!-- The language can be chosen as the language of an entity scope -->
+            <column name="scope_enabled" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <update tableName="sys_language"><column name="tag" value="cs"/><column name="ui_enabled" valueBoolean="true"/><where>code = 'cze'</where></update>
+        <update tableName="sys_language"><column name="tag" value="en"/><column name="ui_enabled" valueBoolean="true"/><where>code = 'eng'</where></update>
+        <update tableName="sys_language"><column name="tag" value="de"/><where>code = 'ger'</where></update>
+        <update tableName="sys_language"><column name="tag" value="ru"/><where>code = 'rus'</where></update>
+        <update tableName="sys_language"><column name="tag" value="la"/><where>code = 'lat'</where></update>
+        <update tableName="sys_language"><column name="tag" value="sk"/><where>code = 'slo'</where></update>
+        <update tableName="sys_language"><column name="tag" value="pl"/><where>code = 'pol'</where></update>
+        <update tableName="sys_language"><column name="tag" value="it"/><where>code = 'ita'</where></update>
+        <update tableName="sys_language"><column name="tag" value="fr"/><where>code = 'fre'</where></update>
+        <update tableName="sys_language"><column name="tag" value="es"/><where>code = 'spa'</where></update>
+        <update tableName="sys_language"><column name="tag" value="he"/><where>code = 'heb'</where></update>
+    </changeSet>
+
+    <changeSet id="20261007100100" author="ppy">
+        <!-- A language added outside the changelog has no tag. Fill sys_language.tag of such a row
+             (BCP 47, e.g. 'hu') before starting ELZA again. -->
+        <preConditions onFail="HALT" onFailMessage="sys_language contains rows without a tag; set sys_language.tag (BCP 47, e.g. 'hu') for them and start ELZA again">
+            <sqlCheck expectedResult="0">SELECT count(*) FROM sys_language WHERE tag IS NULL</sqlCheck>
+        </preConditions>
+        <addNotNullConstraint tableName="sys_language" columnName="tag" columnDataType="nvarchar(10)"/>
+        <addUniqueConstraint tableName="sys_language" columnNames="tag" constraintName="ux_sys_language_tag"/>
+
+        <!-- Source language of the texts a package defines (<language> in package.xml) -->
+        <addColumn tableName="rul_package">
+            <column name="language_id" type="int"/>
+        </addColumn>
+        <sql>UPDATE rul_package SET language_id = (SELECT language_id FROM sys_language WHERE tag = 'cs')</sql>
+        <addNotNullConstraint tableName="rul_package" columnName="language_id" columnDataType="int"/>
+        <addForeignKeyConstraint baseTableName="rul_package" baseColumnNames="language_id"
+                                 constraintName="fk_rul_package_sys_language"
+                                 referencedTableName="sys_language" referencedColumnNames="language_id"/>
+
+        <!-- One translated piece of text: field of the entity entity_type/entity_code in a language,
+             contributed by a package. Keys are codes, so rows survive re-imports of the package that
+             defines the entity. -->
+        <createTable tableName="rul_translation">
+            <column name="translation_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_rul_translation" nullable="false"/>
+            </column>
+            <column name="package_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_translation_rul_package"
+                             referencedTableName="rul_package" referencedColumnNames="package_id"/>
+            </column>
+            <column name="entity_type" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="entity_code" type="nvarchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="field" type="nvarchar(30)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="language_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_translation_sys_language"
+                             referencedTableName="sys_language" referencedColumnNames="language_id"/>
+            </column>
+            <column name="text_value" type="${type.text}">
+                <constraints nullable="false"/>
+            </column>
+            <!-- Short hash of the source text the translation was made from; a different hash of
+                 the current source text means the translation is outdated -->
+            <column name="source_hash" type="nvarchar(20)"/>
+        </createTable>
+        <addUniqueConstraint tableName="rul_translation"
+                             columnNames="entity_type, entity_code, field, language_id, package_id"
+                             constraintName="ux_rul_translation"/>
+        <createIndex tableName="rul_translation" indexName="ix_rul_translation_package">
+            <column name="package_id"/>
+        </createIndex>
+        <insert tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="rul_translation|translation_id"/>
+            <column name="next_val" value="0"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="20261007120000" author="ppy">
+        <!-- Entity rules get their own table instead of arrangement extensions with extension
+             rules keyed by a condition string. A rule belongs to its rule set. -->
+        <createTable tableName="rul_entity_rule">
+            <column name="entity_rule_id" type="int">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="rule_set_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_entity_rule_rule_set"
+                             referencedTableName="rul_rule_set" referencedColumnNames="rule_set_id"/>
+            </column>
+            <column name="package_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_entity_rule_package"
+                             referencedTableName="rul_package" referencedColumnNames="package_id"/>
+            </column>
+            <column name="component_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_entity_rule_component"
+                             referencedTableName="rul_component" referencedColumnNames="component_id"/>
+            </column>
+            <column name="kind" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <!-- Entity class with its subclasses; null = all classes -->
+            <column name="ap_type_id" type="int">
+                <constraints foreignKeyName="fk_rul_entity_rule_ap_type"
+                             referencedTableName="ap_type" referencedColumnNames="ap_type_id"/>
+            </column>
+            <!-- Part type; null = all parts -->
+            <column name="part_type_id" type="int">
+                <constraints foreignKeyName="fk_rul_entity_rule_part_type"
+                             referencedTableName="rul_part_type" referencedColumnNames="part_type_id"/>
+            </column>
+            <column name="priority" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="compatibility_rul_package" type="int"/>
+        </createTable>
+        <createIndex tableName="rul_entity_rule" indexName="ix_rul_entity_rule_rule_set">
+            <column name="rule_set_id"/>
+        </createIndex>
+        <insert tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="rul_entity_rule|entity_rule_id"/>
+            <column name="next_val" value="0"/>
+        </insert>
+        <!-- Entity rules in the old form - arrangement extensions of ENTITY rule sets with their
+             extension rules - are removed; the new version of the package imports the rules.
+             Data are migrated on PostgreSQL only (test databases start empty). -->
+        <sql dbms="postgresql">
+            DELETE FROM arr_node_extension WHERE arrangement_extension_id IN (
+                SELECT e.arrangement_extension_id FROM rul_arrangement_extension e
+                JOIN rul_rule_set r ON r.rule_set_id = e.rule_set_id WHERE r.rule_type = 'ENTITY');
+            WITH deleted_rules AS (
+                DELETE FROM rul_extension_rule WHERE arrangement_extension_id IN (
+                    SELECT e.arrangement_extension_id FROM rul_arrangement_extension e
+                    JOIN rul_rule_set r ON r.rule_set_id = e.rule_set_id WHERE r.rule_type = 'ENTITY')
+                RETURNING component_id)
+            DELETE FROM rul_component WHERE component_id IN (SELECT component_id FROM deleted_rules);
+            DELETE FROM rul_arrangement_extension WHERE rule_set_id IN (
+                SELECT rule_set_id FROM rul_rule_set WHERE rule_type = 'ENTITY');
+        </sql>
+        <!-- The condition was used only by entity rules -->
+        <dropColumn tableName="rul_extension_rule" columnName="condition"/>
+    </changeSet>
+
+    <changeSet id="20261007150000" author="ppy">
+        <!-- Entity classes used by an entity rule set, declared by the owner of the rule set or by
+             a package contributing to it; assignable overrides ap_type.read_only for the rule set.
+             A rule set without rows offers all classes. -->
+        <createTable tableName="rul_rule_set_ap_type">
+            <column name="rule_set_ap_type_id" type="int">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="rule_set_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_rule_set_ap_type_rule_set"
+                             referencedTableName="rul_rule_set" referencedColumnNames="rule_set_id"/>
+            </column>
+            <column name="ap_type_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_rule_set_ap_type_ap_type"
+                             referencedTableName="ap_type" referencedColumnNames="ap_type_id"/>
+            </column>
+            <column name="package_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_rule_set_ap_type_package"
+                             referencedTableName="rul_package" referencedColumnNames="package_id"/>
+            </column>
+            <column name="assignable" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="rul_rule_set_ap_type" columnNames="rule_set_id, ap_type_id, package_id"
+                             constraintName="ux_rul_rule_set_ap_type"/>
+        <insert tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="rul_rule_set_ap_type|rule_set_ap_type_id"/>
+            <column name="next_val" value="0"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="20261007180000" author="ppy">
+        <!-- An entity class may be declared by several packages: ap_type stays one row (one id and
+             code); each declaring package states its name (in the package's language), parent and
+             read-only here. ap_type.package_id, name and read_only summarize the declarations. -->
+        <createTable tableName="rul_ap_type_declaration">
+            <column name="ap_type_declaration_id" type="int">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="ap_type_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_ap_type_declaration_ap_type"
+                             referencedTableName="ap_type" referencedColumnNames="ap_type_id"/>
+            </column>
+            <column name="package_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_ap_type_declaration_package"
+                             referencedTableName="rul_package" referencedColumnNames="package_id"/>
+            </column>
+            <column name="name" type="nvarchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="parent_ap_type_id" type="int">
+                <constraints foreignKeyName="fk_rul_ap_type_declaration_parent"
+                             referencedTableName="ap_type" referencedColumnNames="ap_type_id"/>
+            </column>
+            <column name="read_only" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="rul_ap_type_declaration" columnNames="ap_type_id, package_id"
+                             constraintName="ux_rul_ap_type_declaration"/>
+        <!-- every existing class is declared by its current package -->
+        <sql>
+            INSERT INTO rul_ap_type_declaration
+                (ap_type_declaration_id, ap_type_id, package_id, name, parent_ap_type_id, read_only)
+            SELECT ap_type_id, ap_type_id, package_id, name, parent_ap_type_id, read_only FROM ap_type
+        </sql>
+        <insert tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="rul_ap_type_declaration|ap_type_declaration_id"/>
+            <column name="next_val" value="0"/>
+        </insert>
+        <sql>
+            UPDATE db_hibernate_sequences SET next_val =
+                (SELECT coalesce(max(ap_type_declaration_id), 0) + 20 FROM rul_ap_type_declaration)
+            WHERE sequence_name = 'rul_ap_type_declaration|ap_type_declaration_id'
+        </sql>
+    </changeSet>
+
+    <changeSet id="20261007200000" author="ppy">
+        <!-- Scripts building names and indexes of entity parts become entity rules of kind INDEX
+             (rul_entity_rule), bound to the rule set. The structured types named by part type codes,
+             with their definitions and extensions, were used only for them and are removed; the new
+             version of the package (CZ_BASE 89) imports the scripts as entity rules. Data are
+             migrated on PostgreSQL only (test databases start empty). -->
+        <sql dbms="postgresql">
+            DELETE FROM arr_fund_structure_extension WHERE structured_type_extension_id IN (
+                SELECT e.structured_type_extension_id FROM rul_structured_type_extension e
+                JOIN rul_structured_type t ON t.structured_type_id = e.structured_type_id
+                JOIN rul_part_type p ON p.code = t.code);
+            WITH deleted AS (
+                DELETE FROM rul_structure_extension_definition WHERE structured_type_extension_id IN (
+                    SELECT e.structured_type_extension_id FROM rul_structured_type_extension e
+                    JOIN rul_structured_type t ON t.structured_type_id = e.structured_type_id
+                    JOIN rul_part_type p ON p.code = t.code)
+                RETURNING component_id)
+            DELETE FROM rul_component WHERE component_id IN (SELECT component_id FROM deleted);
+            DELETE FROM rul_structured_type_extension WHERE structured_type_id IN (
+                SELECT t.structured_type_id FROM rul_structured_type t JOIN rul_part_type p ON p.code = t.code);
+            WITH deleted AS (
+                DELETE FROM rul_structure_definition WHERE structured_type_id IN (
+                    SELECT t.structured_type_id FROM rul_structured_type t JOIN rul_part_type p ON p.code = t.code)
+                RETURNING component_id)
+            DELETE FROM rul_component WHERE component_id IN (SELECT component_id FROM deleted);
+            DELETE FROM rul_structured_type WHERE structured_type_id IN (
+                SELECT t.structured_type_id FROM rul_structured_type t JOIN rul_part_type p ON p.code = t.code);
+        </sql>
+    </changeSet>
+
+    <changeSet id="20261008100000" author="ppy">
+        <!-- A part type may be declared by several packages: rul_part_type stays one row per code;
+             each declaring package states its name (in the package's language), child part and
+             repeatable here; rul_part_type holds the values of the winning declaration. -->
+        <createTable tableName="rul_part_type_declaration">
+            <column name="part_type_declaration_id" type="int">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="part_type_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_part_type_declaration_part_type"
+                             referencedTableName="rul_part_type" referencedColumnNames="part_type_id"/>
+            </column>
+            <column name="package_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_part_type_declaration_package"
+                             referencedTableName="rul_package" referencedColumnNames="package_id"/>
+            </column>
+            <column name="name" type="nvarchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="child_part_id" type="int">
+                <constraints foreignKeyName="fk_rul_part_type_declaration_child"
+                             referencedTableName="rul_part_type" referencedColumnNames="part_type_id"/>
+            </column>
+            <column name="repeatable" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="rul_part_type_declaration" columnNames="part_type_id, package_id"
+                             constraintName="ux_rul_part_type_declaration"/>
+        <!-- every existing part type is declared by its current package -->
+        <sql>
+            INSERT INTO rul_part_type_declaration
+                (part_type_declaration_id, part_type_id, package_id, name, child_part_id, repeatable)
+            SELECT part_type_id, part_type_id, package_id, name, child_part_id, coalesce(repeatable, true)
+            FROM rul_part_type
+        </sql>
+        <insert tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="rul_part_type_declaration|part_type_declaration_id"/>
+            <column name="next_val" value="0"/>
+        </insert>
+        <sql>
+            UPDATE db_hibernate_sequences SET next_val =
+                (SELECT coalesce(max(part_type_declaration_id), 0) + 20 FROM rul_part_type_declaration)
+            WHERE sequence_name = 'rul_part_type_declaration|part_type_declaration_id'
+        </sql>
+    </changeSet>
+
+    <changeSet id="20261008110000" author="ppy">
+        <!-- Order of the classes and part types an entity rule set offers: position in the file of
+             the declaring package; existing members get their position at the next package import. -->
+        <addColumn tableName="rul_rule_set_ap_type">
+            <column name="position" type="int"/>
+        </addColumn>
+        <createTable tableName="rul_rule_set_part_type">
+            <column name="rule_set_part_type_id" type="int">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="rule_set_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_rule_set_part_type_rule_set"
+                             referencedTableName="rul_rule_set" referencedColumnNames="rule_set_id"/>
+            </column>
+            <column name="part_type_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_rule_set_part_type_part_type"
+                             referencedTableName="rul_part_type" referencedColumnNames="part_type_id"/>
+            </column>
+            <column name="package_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_rule_set_part_type_package"
+                             referencedTableName="rul_package" referencedColumnNames="package_id"/>
+            </column>
+            <column name="position" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="rul_rule_set_part_type" columnNames="rule_set_id, part_type_id, package_id"
+                             constraintName="ux_rul_rule_set_part_type"/>
+        <insert tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="rul_rule_set_part_type|rule_set_part_type_id"/>
+            <column name="next_val" value="0"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="20261008120000" author="ppy">
+        <!-- rul_item_type.is_value_unique was never enforced nor used; packages may still contain the
+             element is-value-unique, the import ignores it -->
+        <dropColumn tableName="rul_item_type" columnName="is_value_unique"/>
+    </changeSet>
+
+    <changeSet id="20261008130000" author="ppy">
+        <!-- An item type may be declared by several packages: rul_item_type stays one row per code
+             and keeps the values deciding how data are stored; each declaring package states its
+             texts (in the package's language) and the other values here. -->
+        <createTable tableName="rul_item_type_declaration">
+            <column name="item_type_declaration_id" type="int">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="item_type_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_item_type_declaration_item_type"
+                             referencedTableName="rul_item_type" referencedColumnNames="item_type_id"/>
+            </column>
+            <column name="package_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_item_type_declaration_package"
+                             referencedTableName="rul_package" referencedColumnNames="package_id"/>
+            </column>
+            <column name="name" type="nvarchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="shortcut" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="${type.text}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="can_be_ordered" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+            <column name="string_length_limit" type="int"/>
+            <column name="view_definition" type="${type.text}"/>
+        </createTable>
+        <addUniqueConstraint tableName="rul_item_type_declaration" columnNames="item_type_id, package_id"
+                             constraintName="ux_rul_item_type_declaration"/>
+        <!-- every existing item type is declared by its current package -->
+        <sql>
+            INSERT INTO rul_item_type_declaration
+                (item_type_declaration_id, item_type_id, package_id, name, shortcut, description,
+                 can_be_ordered, string_length_limit, view_definition)
+            SELECT item_type_id, item_type_id, package_id, name, shortcut, description,
+                   can_be_ordered, string_length_limit, view_definition
+            FROM rul_item_type
+        </sql>
+        <insert tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="rul_item_type_declaration|item_type_declaration_id"/>
+            <column name="next_val" value="0"/>
+        </insert>
+        <sql>
+            UPDATE db_hibernate_sequences SET next_val =
+                (SELECT coalesce(max(item_type_declaration_id), 0) + 20 FROM rul_item_type_declaration)
+            WHERE sequence_name = 'rul_item_type_declaration|item_type_declaration_id'
+        </sql>
+    </changeSet>
+
+    <changeSet id="20261008140000" author="ppy">
+        <!-- The script computing items of an entity (AUTO_ITEMS) becomes an entity rule (rul_entity_rule),
+             like the index scripts; the arrangement rules of this type are removed and the new version
+             of the package (CZ_BASE 89) imports the script as an entity rule. Data are migrated on
+             PostgreSQL only (test databases start empty). -->
+        <sql dbms="postgresql">
+            WITH deleted AS (
+                DELETE FROM rul_arrangement_rule WHERE rule_type = 'AUTO_ITEMS'
+                RETURNING component_id)
+            DELETE FROM rul_component WHERE component_id IN (SELECT component_id FROM deleted);
+        </sql>
+    </changeSet>
+
+    <changeSet id="20261008150000" author="ppy">
+        <!-- db.elza-init inserts the GLOBAL scope and the DEFAULT institution type with id 1 and leaves
+             their sequences at 1. The pooled id generator (allocation 20) then hands out -18 .. 1, so the
+             20th scope or institution type created in a fresh database collides with id 1. The sequences
+             start above the highest existing id. -->
+        <sql>
+            UPDATE db_hibernate_sequences SET next_val = (SELECT coalesce(max(scope_id), 0) + 20 FROM ap_scope)
+            WHERE sequence_name = 'ap_scope|scope_id'
+              AND next_val &lt; (SELECT coalesce(max(scope_id), 0) + 20 FROM ap_scope);
+            UPDATE db_hibernate_sequences SET next_val =
+                (SELECT coalesce(max(institution_type_id), 0) + 20 FROM par_institution_type)
+            WHERE sequence_name = 'par_institution_type|institution_type_id'
+              AND next_val &lt; (SELECT coalesce(max(institution_type_id), 0) + 20 FROM par_institution_type);
+        </sql>
+    </changeSet>
+
+    <changeSet id="20261008160000" author="ppy">
+        <!-- A specification may be declared by several packages: rul_item_spec stays one row per code;
+             each declaring package states its texts (in the package's language) and category, and the
+             item types it assigns the specification to. rul_item_type_spec_assign holds the union of
+             the assignments. -->
+        <createTable tableName="rul_item_spec_declaration">
+            <column name="item_spec_declaration_id" type="int">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="item_spec_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_item_spec_declaration_item_spec"
+                             referencedTableName="rul_item_spec" referencedColumnNames="item_spec_id"/>
+            </column>
+            <column name="package_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_item_spec_declaration_package"
+                             referencedTableName="rul_package" referencedColumnNames="package_id"/>
+            </column>
+            <column name="name" type="nvarchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="shortcut" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="${type.text}">
+                <constraints nullable="false"/>
+            </column>
+            <column name="category" type="nvarchar(1000)"/>
+        </createTable>
+        <addUniqueConstraint tableName="rul_item_spec_declaration" columnNames="item_spec_id, package_id"
+                             constraintName="ux_rul_item_spec_declaration"/>
+        <createTable tableName="rul_item_spec_assign_declaration">
+            <column name="item_spec_assign_declaration_id" type="int">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="item_spec_declaration_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_item_spec_assign_decl_declaration"
+                             referencedTableName="rul_item_spec_declaration"
+                             referencedColumnNames="item_spec_declaration_id"/>
+            </column>
+            <column name="item_type_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_rul_item_spec_assign_decl_item_type"
+                             referencedTableName="rul_item_type" referencedColumnNames="item_type_id"/>
+            </column>
+            <column name="position" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="view_after_spec_code" type="nvarchar(50)"/>
+        </createTable>
+        <addUniqueConstraint tableName="rul_item_spec_assign_declaration"
+                             columnNames="item_spec_declaration_id, item_type_id"
+                             constraintName="ux_rul_item_spec_assign_declaration"/>
+        <!-- every existing specification and assignment is declared by the package of the specification -->
+        <sql>
+            INSERT INTO rul_item_spec_declaration
+                (item_spec_declaration_id, item_spec_id, package_id, name, shortcut, description, category)
+            SELECT item_spec_id, item_spec_id, package_id, name, shortcut, description, category
+            FROM rul_item_spec
+        </sql>
+        <sql>
+            INSERT INTO rul_item_spec_assign_declaration
+                (item_spec_assign_declaration_id, item_spec_declaration_id, item_type_id, position,
+                 view_after_spec_code)
+            SELECT item_type_spec_assign_id, item_spec_id, item_type_id, item_spec_view_order,
+                   view_after_spec_code
+            FROM rul_item_type_spec_assign
+        </sql>
+        <insert tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="rul_item_spec_declaration|item_spec_declaration_id"/>
+            <column name="next_val" value="0"/>
+        </insert>
+        <insert tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="rul_item_spec_assign_declaration|item_spec_assign_declaration_id"/>
+            <column name="next_val" value="0"/>
+        </insert>
+        <sql>
+            UPDATE db_hibernate_sequences SET next_val =
+                (SELECT coalesce(max(item_spec_declaration_id), 0) + 20 FROM rul_item_spec_declaration)
+            WHERE sequence_name = 'rul_item_spec_declaration|item_spec_declaration_id';
+            UPDATE db_hibernate_sequences SET next_val =
+                (SELECT coalesce(max(item_spec_assign_declaration_id), 0) + 20 FROM rul_item_spec_assign_declaration)
+            WHERE sequence_name = 'rul_item_spec_assign_declaration|item_spec_assign_declaration_id';
+        </sql>
+    </changeSet>
+
 </databaseChangeLog>

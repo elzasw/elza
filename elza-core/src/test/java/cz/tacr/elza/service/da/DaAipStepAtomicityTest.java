@@ -172,7 +172,7 @@ public class DaAipStepAtomicityTest extends AbstractTest {
             }
         };
 
-        daService.doCreateDaoStructure(List.of(ids[1], ids[2]), false, observing);
+        daService.doCreateDaoStructure(List.of(ids[1], ids[2]), observing);
 
         assertTrue(firstWasAlreadyCommitted[0],
                    "the outcome of the first AIP has to be committed before the second is started");
@@ -224,7 +224,7 @@ public class DaAipStepAtomicityTest extends AbstractTest {
         };
 
         try {
-            daService.doCreateDaoStructure(List.of(ids[1], ids[2]), false, failingOnSecond);
+            daService.doCreateDaoStructure(List.of(ids[1], ids[2]), failingOnSecond);
         } catch (RuntimeException expected) {
             // the failure of one AIP is allowed to surface; what matters is what survives it
         }

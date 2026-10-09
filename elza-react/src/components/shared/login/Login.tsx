@@ -25,6 +25,7 @@ import { AppState } from 'typings/store';
 import { useAppSelector, useAppThunkDispatch } from 'utils/hooks';
 import { isAutoSsoLoginSuppressed, suppressAutoSsoLogin } from 'utils/loginMethod';
 import { Api } from 'api';
+import { LanguagePicker } from 'components/shared/lang/LanguagePicker';
 import { SetupWizard } from './SetupWizard';
 
 // Id převzatých hlášek jsou z legacy katalogu beze změny.
@@ -536,7 +537,16 @@ export const Login = () => {
                                 <Spinner label={intl.formatMessage(messages.signingIn)} />
                             </div>
                         </DialogContent>
-                        <DialogActions className={mergeClasses(styles.fade, isAwaitingLogin && styles.faded)}>
+                        <DialogActions
+                            position="start"
+                            className={mergeClasses(styles.fade, isAwaitingLogin && styles.faded)}
+                        >
+                            <LanguagePicker />
+                        </DialogActions>
+                        <DialogActions
+                            position="end"
+                            className={mergeClasses(styles.fade, isAwaitingLogin && styles.faded)}
+                        >
                             <Button type="submit" appearance="primary" disabled={isAwaitingLogin}>
                                 <FormattedMessage {...messages.login} />
                             </Button>

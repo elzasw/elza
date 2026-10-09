@@ -1,35 +1,19 @@
 package cz.tacr.elza.controller.vo;
 
-
+/**
+ * State of a queue item of an external system as shown to the client, which labels the states
+ * itself ({@code api/ExtAsyncQueueState.ts}).
+ */
 public enum ExtAsyncQueueState {
-
-    UPDATE("Aktualizováno"),
-
-    UPDATE_DEFERRED("Odloženo (čeká na náhradu)"),
-
-    IMPORT_NEW("Ke stažení"),
-
-    IMPORT_OK("Staženo"), // předchozí OK
-
-    EXPORT_NEW("K odeslání"),
-
-    EXPORT_NEED_CONFIRM("Čeká na potvrzení"),
-
-    EXPORT_OK("Odesláno"),
-
-    EXPORT_CANCELLED("Zrušeno uživatelem"),
-
-    ERROR("Chyba");
-
-    private String value;
-
-    ExtAsyncQueueState(String value) {
-        this.value = value;
-    }
-
-    public String value() {
-        return value;
-    }
+    UPDATE,
+    UPDATE_DEFERRED,
+    IMPORT_NEW,
+    IMPORT_OK,
+    EXPORT_NEW,
+    EXPORT_NEED_CONFIRM,
+    EXPORT_OK,
+    EXPORT_CANCELLED,
+    ERROR;
 
     public static ExtAsyncQueueState fromValue(String v) {
         return valueOf(v);
@@ -62,5 +46,4 @@ public enum ExtAsyncQueueState {
         }
         return null;
     }
-
 }

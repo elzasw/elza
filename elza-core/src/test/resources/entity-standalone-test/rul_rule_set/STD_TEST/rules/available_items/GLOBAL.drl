@@ -1,0 +1,20 @@
+package drlstdtest;
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.Part;
+import cz.tacr.elza.drools.model.PartType;
+
+rule "STD_TEST: name"
+when
+    Part(type == PartType.PT_NAME)
+    $it: ItemType(code == "NM_MAIN")
+then
+    $it.setRequired();
+end
+
+rule "STD_TEST: note in the other parts"
+when
+    Part(type != PartType.PT_NAME)
+    $it: ItemType(code == "NOTE")
+then
+    $it.setRequired();
+end

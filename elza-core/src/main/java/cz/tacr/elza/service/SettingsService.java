@@ -2,6 +2,7 @@ package cz.tacr.elza.service;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import cz.tacr.elza.core.data.PackageTranslations;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UISettings.EntityType;
@@ -31,11 +34,13 @@ import cz.tacr.elza.packageimport.xml.SettingIndexSearch;
 import cz.tacr.elza.packageimport.xml.SettingItemTypes;
 import cz.tacr.elza.packageimport.xml.SettingMenu;
 import cz.tacr.elza.packageimport.xml.SettingNodeSearch;
+import cz.tacr.elza.packageimport.xml.SettingOutputDefaults;
 import cz.tacr.elza.packageimport.xml.SettingPartsOrder;
 import cz.tacr.elza.packageimport.xml.SettingRecord;
 import cz.tacr.elza.packageimport.xml.SettingStructTypeSettings;
 import cz.tacr.elza.packageimport.xml.SettingStructureTypes;
 import cz.tacr.elza.packageimport.xml.SettingTypeGroups;
+import cz.tacr.elza.repository.PackageDependencyRepository;
 import cz.tacr.elza.repository.SettingsRepository;
 import jakarta.validation.constraints.NotNull;
 
@@ -52,6 +57,9 @@ public class SettingsService {
 
     @Autowired
     private StaticDataService staticDataService;
+
+    @Autowired
+    private PackageDependencyRepository packageDependencyRepository;
 
 	static interface SettingConvertor {
 
@@ -196,6 +204,9 @@ public class SettingsService {
         settingsConvertors.add(new SettingConvertorSimple<>(UISettings.SettingsType.SEARCH_NODE_FILTERS,
                 SettingNodeSearch::newInstance,
                 SettingNodeSearch.class));
+        settingsConvertors.add(new SettingConvertorSimple<>(UISettings.SettingsType.OUTPUT_DEFAULTS,
+                SettingOutputDefaults::newInstance,
+                SettingOutputDefaults.class));
         settingsConvertors.add(new StructTypeSettingsConvertor());
 
 		// default convertor
@@ -331,6 +342,51 @@ public class SettingsService {
 
     public List<UISettings> getGlobalSettings(String settingsType, EntityType entityType, Integer entityId) {
         return settingsRepository.findByUserAndSettingsTypeAndEntityTypeAndEntityId(null, settingsType, entityType, entityId);
+    }
+
+    /**
+     * Global setting of a layered type for the entity: when several packages state it, the package
+     * deepest in dependency order wins, ties by package code (as for translations and rule-set
+     * members). A global setting without a package (stored locally) wins over all packages.
+     *
+     * @return winning setting, null when no package states it
+     */
+    public UISettings resolveGlobal(SettingsType settingsType, EntityType entityType, Integer entityId) {
+        return resolve(getGlobalSettings(settingsType.toString(), entityType, entityId));
+    }
+
+    /**
+     * Global setting of a layered type not bound to an entity, see
+     * {@link #resolveGlobal(SettingsType, EntityType, Integer)}.
+     */
+    public UISettings resolveGlobal(SettingsType settingsType) {
+        return resolve(getGlobalSettings(settingsType));
+    }
+
+    private UISettings resolve(List<UISettings> candidates) {
+        if (candidates.isEmpty()) {
+            return null;
+        }
+        if (candidates.size() == 1) {
+            return candidates.get(0);
+        }
+        StaticDataProvider sdp = staticDataService.getData();
+        Map<Integer, Integer> depth = PackageTranslations.dependencyDepth(packageDependencyRepository.findAll());
+        Comparator<UISettings> precedence = Comparator
+                .comparing((UISettings s) -> s.getPackageId() == null ? Integer.MAX_VALUE
+                        : depth.getOrDefault(s.getPackageId(), 0))
+                .thenComparing(s -> s.getPackageId() == null ? "" : sdp.getPackageById(s.getPackageId()).getCode());
+        return candidates.stream().max(precedence).orElseThrow();
+    }
+
+    /**
+     * Defaults of the new output dialog for the rule set.
+     *
+     * @return winning setting, null when no package states it
+     */
+    public SettingOutputDefaults getOutputDefaults(Integer ruleSetId) {
+        UISettings uis = resolveGlobal(SettingsType.OUTPUT_DEFAULTS, EntityType.RULE, ruleSetId);
+        return uis != null ? SettingOutputDefaults.newInstance(uis) : null;
     }
 
     /**

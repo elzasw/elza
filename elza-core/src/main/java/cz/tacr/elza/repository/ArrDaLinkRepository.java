@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ArrDaLink;
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.DaDao;
 
@@ -48,4 +49,7 @@ public interface ArrDaLinkRepository extends JpaRepository<ArrDaLink, Integer> {
             " WHERE dl.nodeId = :nodeId" +
             " AND dl.deleteChange is null")
     List<ArrDaLink> findByNodeIdAndDeleteChangeIsNullFetchAip(@Param("nodeId") Integer nodeId);
+
+    @Query("SELECT COUNT(dl) FROM arr_da_link dl JOIN dl.node n WHERE n.fund = :fund AND dl.deleteChange IS NULL")
+    long countActiveByFund(@Param("fund") ArrFund fund);
 }

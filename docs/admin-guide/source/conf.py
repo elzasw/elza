@@ -31,7 +31,7 @@ html_title = f'ELZA {version}'
 
 # Links to the Czech documentation (rules, methodics, user guide).
 # intersphinx_mapping = {
-#     'cs': ('https://<elza-doc-url>/3.4/', None),
+#     'cs': (f'https://docs.lightcomp.cz/elza/cs/{version}/', None),
 # }
 
 latex_documents = [

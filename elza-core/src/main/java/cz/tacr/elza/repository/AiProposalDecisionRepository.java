@@ -16,4 +16,6 @@ public interface AiProposalDecisionRepository extends JpaRepository<AiProposalDe
     List<AiProposalDecision> findByAiRequestId(Integer aiRequestId);
 
     Optional<AiProposalDecision> findByAiRequestIdAndChangeKey(Integer aiRequestId, String changeKey);
+    /** Removes the decisions of several requests (the conversation delete). */
+    void deleteByAiRequestIdIn(java.util.Collection<Integer> aiRequestIds);
 }

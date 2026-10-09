@@ -18,6 +18,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.NotImplementedException;
@@ -51,11 +52,14 @@ import cz.tacr.elza.controller.vo.ap.item.ApItemTextVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemUnitdateVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemUriRefVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
+import cz.tacr.elza.core.data.CoreMessage;
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.PackageTexts;
 import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.RuleSetExtension;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.data.ValidationMessage;
 import cz.tacr.elza.core.rules.ItemTypeExtBuilder;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
@@ -92,6 +96,7 @@ import cz.tacr.elza.domain.ArrNodeExtension;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.RulArrangementExtension;
+import cz.tacr.elza.domain.RulArrangementRule;
 import cz.tacr.elza.domain.RulComponent;
 import cz.tacr.elza.domain.RulExportFilter;
 import cz.tacr.elza.domain.RulExtensionRule;
@@ -109,7 +114,8 @@ import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.drools.AvailableItemsRules;
-import cz.tacr.elza.drools.DrlType;
+import cz.tacr.elza.domain.RulEntityRule;
+import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.drools.ModelValidationRules;
 import cz.tacr.elza.drools.RulesExecutor;
 import cz.tacr.elza.drools.model.Ap;
@@ -181,6 +187,8 @@ public class RuleService {
     private EntityManager entityManager;
     @Autowired
 	private StaticDataService staticDataService;
+    @Autowired
+    private PackageTexts packageTexts;
 
     @Autowired
     private ArrangementInternalService arrangementInternalService;
@@ -451,18 +459,32 @@ public class RuleService {
         return result;
     }
 
+    /** Length of {@code arr_node_conformity_error.description} and {@code arr_node_conformity_missing.description}. */
+    private static final int CONFORMITY_DESCRIPTION_LENGTH = 1000;
+
+    /**
+     * Description stored in a conformity row: the message of the validation (an encoded
+     * {@link ValidationMessage} or a plain text), the source text of the message when the encoded
+     * form does not fit the column.
+     */
+    private static String conformityDescription(String message) {
+        ValidationMessage validationMessage = ValidationMessage.decode(message);
+        return validationMessage != null ? validationMessage.storable(CONFORMITY_DESCRIPTION_LENGTH) : message;
+    }
+
     private ArrNodeConformityError extractOrCreateConfError(List<ArrNodeConformityError> confPrevErrors,
                                                    DataValidationResult validationResult,
                                                    ArrNodeConformity conformityInfo) {
         Integer policyTypeId = validationResult.getPolicyType()!=null?validationResult.getPolicyType().getPolicyTypeId():null;
         Integer descItemId = validationResult.getDescItem()!=null?validationResult.getDescItem().getItemId():null;
+        String description = conformityDescription(validationResult.getMessage());
 
         for (int i = 0; i < confPrevErrors.size(); i++) {
             ArrNodeConformityError error = confPrevErrors.get(i);
             // compare existing DB object
             if (Objects.equals(policyTypeId, error.getPolicyTypeId()) &&
                     Objects.equals(descItemId, error.getDescItemId()) &&
-                    Objects.equals(validationResult.getMessage(), error.getDescription())) {
+                    Objects.equals(description, error.getDescription())) {
                 confPrevErrors.remove(i);
                 return error;
             }
@@ -472,7 +494,7 @@ public class RuleService {
         ArrNodeConformityError error = new ArrNodeConformityError();
         error.setNodeConformity(conformityInfo);
         error.setDescItem(validationResult.getDescItem());
-        error.setDescription(validationResult.getMessage());
+        error.setDescription(description);
         error.setPolicyType(validationResult.getPolicyType());
         return nodeConformityErrorRepository.save(error);
     }
@@ -483,6 +505,7 @@ public class RuleService {
         Integer policyTypeId = validationResult.getPolicyType()!=null?validationResult.getPolicyType().getPolicyTypeId():null;
         Integer itemTypeId = validationResult.getType() != null ? validationResult.getType().getItemTypeId() : null;
         Integer itemSpecId = validationResult.getSpec() != null ? validationResult.getSpec().getItemSpecId() : null;
+        String description = conformityDescription(validationResult.getMessage());
 
         for(int i=0; i<confPrevMissing.size(); i++) {
             ArrNodeConformityMissing missing = confPrevMissing.get(i);
@@ -490,7 +513,7 @@ public class RuleService {
             if (Objects.equals(policyTypeId, missing.getPolicyTypeId()) &&
                     Objects.equals(itemTypeId, missing.getItemTypeId()) &&
                     Objects.equals(itemSpecId, missing.getItemSpecId()) &&
-                    Objects.equals(validationResult.getMessage(), missing.getDescription())) {
+                    Objects.equals(description, missing.getDescription())) {
                 confPrevMissing.remove(i);
                 return missing;
             }
@@ -501,7 +524,7 @@ public class RuleService {
         missing.setNodeConformity(conformityInfo);
         missing.setItemType(validationResult.getType());
         missing.setItemSpec(validationResult.getSpec());
-        missing.setDescription(validationResult.getMessage());
+        missing.setDescription(description);
         missing.setPolicyType(validationResult.getPolicyType());
         return nodeConformityMissingRepository.save(missing);
     }
@@ -863,8 +886,7 @@ public class RuleService {
 
         ArrLevel level = levelRepository.findByNode(node, version.getLockChange());
 
-        // TODO: Limit itemTypes to itemTypes defined in given RuleSet
-		List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes();
+        List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes(version.getRuleSetId());
 
         return rulesExecutor.executeDescItemTypesRules(level, rulDescItemTypeExtList, version);
     }
@@ -889,37 +911,40 @@ public class RuleService {
      * When {@code ruleSetCode} is {@code null} all loaded item types are
      * returned; an unknown rule set yields an empty list. The scoping uses the
      * rule set's availability rules, so it reflects the item types the rule set
-     * can use (POSSIBLE/REQUIRED), not necessarily every code ever stored.
+     * can use (POSSIBLE/REQUIRED), not necessarily every code ever stored; the
+     * specifications are those the rule set sees.
      */
     @Transactional
     public List<RulItemTypeExt> getDescriptionItemTypesByRuleSet(final String ruleSetCode) {
-        List<RulItemTypeExt> all = getAllDescriptionItemTypes();
         if (ruleSetCode == null) {
-            return all;
+            return getAllDescriptionItemTypes();
         }
         RulRuleSet ruleSet = ruleSetRepository.findByCode(ruleSetCode);
         if (ruleSet == null) {
             return Collections.emptyList();
         }
         Set<String> codes = new HashSet<>(getItemTypeCodesByRuleSet(ruleSet));
-        return all.stream()
+        return getRulesetDescriptionItemTypes(ruleSet.getRuleSetId()).stream()
                 .filter(itemType -> codes.contains(itemType.getCode()))
                 .toList();
     }
 
     /**
-	 * Získání typů atributů se specifikacemi pro pravidla
-	 *
-	 * @return typy hodnot atributů
-	 */
-	private List<RulItemTypeExt> getRulesetDescriptionItemTypes() {
-		StaticDataProvider sdp = staticDataService.getData();
+     * Item types for the rules of a rule set, each with the specifications the rule set sees
+     * ({@link RuleSet#getItemSpecs(cz.tacr.elza.core.data.ItemType)}).
+     *
+     * @param ruleSetId
+     *            rule set, null for every specification
+     * @return item types, all impossible
+     */
+    private List<RulItemTypeExt> getRulesetDescriptionItemTypes(@Nullable final Integer ruleSetId) {
+        StaticDataProvider sdp = staticDataService.getData();
 
-		ItemTypeExtBuilder builder = new ItemTypeExtBuilder();
+        ItemTypeExtBuilder builder = new ItemTypeExtBuilder(ruleSetId != null ? sdp.getRuleSetById(ruleSetId) : null);
         builder.add(sdp.getItemTypes());
 
-		return builder.getResult();
-	}
+        return builder.getResult();
+    }
 
     /**
      * Vrací typy atributu.
@@ -929,7 +954,7 @@ public class RuleService {
      */
     public List<RulItemTypeExt> getOutputItemTypes(final ArrOutput output) {
         RulOutputType outputType = output.getOutputType();
-        List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes();
+        List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes(outputType.getRuleSetId());
 
         List<RulItemTypeAction> itemTypeActions = itemTypeActionRepository.findAll();
         Map<Integer, RulItemType> itemTypeMap = new HashMap<>();
@@ -1191,7 +1216,7 @@ public class RuleService {
     public List<RulItemTypeExt> getStructureItemTypesInternal(final Integer structTypeId,
                                                               final ArrFundVersion fundVersion,
                                                               final List<ArrStructuredItem> structureItems) {
-        List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes();
+        List<RulItemTypeExt> rulDescItemTypeExtList = getRulesetDescriptionItemTypes(fundVersion.getRuleSetId());
         return rulesExecutor.executeStructureItemTypesRules(structTypeId, rulDescItemTypeExtList, fundVersion,
                                                             structureItems);
     }
@@ -1290,7 +1315,7 @@ public class RuleService {
             modelItems.add(ai);
         }
 
-        List<ItemType> modelItemTypes = createModelItemTypes();
+        List<ItemType> modelItemTypes = createModelItemTypes(ruleSet);
 
         Part parentPart = null;
         if(partForm.getParentPartId() != null) {
@@ -1445,7 +1470,7 @@ public class RuleService {
         }
 
         for (Part part : ap.getParts()) {
-            ModelAvailable modelAvailable = new ModelAvailable(ap, part, part.getItems(), createModelItemTypes());
+            ModelAvailable modelAvailable = new ModelAvailable(ap, part, part.getItems(), createModelItemTypes(ruleSet));
             ModelAvailable availableResult = executeAvailable(part.getType(), modelAvailable, ruleSet);
 
             // validace možných itemů
@@ -1510,7 +1535,8 @@ public class RuleService {
                             for (ApState state : stateList) {
                                 if (state.getDeleteChange() != null) {
                                     PartValidationIssues partValidationIssues = getPartValidationIssues(apValidationIssues, part.getId());
-                                    partValidationIssues.addErrorsItem("V části typu " + part.getType().value() + " entita odkazuje na neplatnou entitu");
+                                    partValidationIssues.addErrorsItem(CoreMessage.AP_INVALID_ENTITY_REF.with(
+                                            ValidationMessage.partType(part.getType().value())).encode());
                                 }
                             }
                         }
@@ -1529,9 +1555,9 @@ public class RuleService {
                     String key = parentId + ":" + index.getIndexType() + ":" + index.getValue();
                     if (!index.isRepeatable() && indexCount.get(key) > 1) {
                         PartValidationIssues partValidationIssues = getPartValidationIssues(apValidationIssues, index.getPart().getId());
-                        partValidationIssues.addErrorsItem("V části typu " + index.getPart().getType().value()
-                                + " je duplicitní index typu "
-                                + index.getIndexType() + " hodnoty " + index.getValue());
+                        partValidationIssues.addErrorsItem(CoreMessage.AP_DUPLICATE_INDEX.with(
+                                ValidationMessage.partType(index.getPart().getType().value()),
+                                index.getIndexType(), index.getValue()).encode());
                     }
                 }
             }
@@ -1562,6 +1588,17 @@ public class RuleService {
         return errors;
     }
 
+    /**
+     * Argument of a core message naming the part of the validated items; the part being created
+     * when the items are those of a form.
+     */
+    private static Object partTypeArg(final ModelAvailable availableResult, final Part part) {
+        Part validated = part != null ? part : availableResult.getPart();
+        return validated != null && validated.getType() != null
+                ? ValidationMessage.partType(validated.getType().value())
+                : "";
+    }
+
     private void validateRequiredItems(final ModelAvailable availableResult,
                                        final List<String> errors,
                                        final Part part) {
@@ -1569,9 +1606,8 @@ public class RuleService {
             if (itemType.getRequiredType().equals(RequiredType.REQUIRED)) {
                 AbstractItem item = availableResult.findItem(itemType.getItemType());
                 if (item == null) {
-                    String partType = part != null ? " typu " + part.getType().value() : "";
-                    errors.add("V části" + partType + " chybí povinný typ prvku "
-                            + itemType.getCode() + "-" + itemType.getItemType().getEntity().getName());
+                    errors.add(CoreMessage.AP_MISSING_REQUIRED_ITEM.with( partTypeArg(availableResult, part),
+                            itemType.getCode(), ValidationMessage.itemType(itemType.getCode())).encode());
                 }
             }
         }
@@ -1583,17 +1619,16 @@ public class RuleService {
         for (AbstractItem item : availableResult.getItems()) {
             ItemType itemType = availableResult.getItemType(item);
             if (itemType.getRequiredType().equals(RequiredType.IMPOSSIBLE)) {
-                String partType = part != null ? " typu " + part.getType().value() : "";
-                errors.add("V části" + partType + " je zakázaný prvek typu " + itemType.getCode() + "-" + itemType.getItemType().getEntity().getName());
+                errors.add(CoreMessage.AP_IMPOSSIBLE_ITEM.with( partTypeArg(availableResult, part),
+                        itemType.getCode(), ValidationMessage.itemType(itemType.getCode())).encode());
             } else if (item.getSpec() != null) {
                 ItemSpec itemSpec = itemType.getSpec(item.getSpec());
                 // specification must exist
                 Validate.notNull(itemSpec, "Data inconsistency, specification: %s", item.getSpec());
-                        
+
                 if (itemSpec.getRequiredType().equals(RequiredType.IMPOSSIBLE)) {
-                    String partType = part != null ? " typu " + part.getType().value() : "";
-                    errors.add("V části" + partType + " je zakázaná specifikace prvku " + itemSpec.getCode() + "-"
-                            + itemSpec.getItemSpec().getName());
+                    errors.add(CoreMessage.AP_IMPOSSIBLE_SPEC.with( partTypeArg(availableResult, part),
+                            itemSpec.getCode(), ValidationMessage.itemSpec(itemSpec.getCode())).encode());
                 }
             }
         }
@@ -1602,7 +1637,6 @@ public class RuleService {
     private void validateItemRepeatability(final ModelAvailable availableResult,
                                            final List<String> errors,
                                            final Part part) {
-        StaticDataProvider sdp = staticDataService.getData();
         Map<String, Integer> itemMap = new HashMap<>();
         for (AbstractItem item : availableResult.getItems()) {
             itemMap.put(item.getType(), itemMap.getOrDefault(item.getType(), 0) + 1);
@@ -1613,10 +1647,8 @@ public class RuleService {
                 ItemType itemType = availableResult.getItemType(entry.getKey());
                 if (itemType != null) {
                     if (!itemType.isRepeatable()) {
-                        RulItemType rulItemType = sdp.getItemTypeByCode(itemType.getCode()).getEntity();
-                        String partType = part != null ? " typu " + part.getType().value() : "";
-                        errors.add("V části" + partType + " je prvek " + itemType.getCode()
-                                + "-" + rulItemType.getName() + " vícekrát.");
+                        errors.add(CoreMessage.AP_ITEM_NOT_REPEATABLE.with( partTypeArg(availableResult, part),
+                                itemType.getCode(), ValidationMessage.itemType(itemType.getCode())).encode());
                     }
                 }
             }
@@ -1624,6 +1656,10 @@ public class RuleService {
 
     }
 
+    /**
+     * CAM rule written in Java: a relation of a non-repeatable kind (specification of REL_ENTITY) is
+     * listed once per entity or parent part. Entities of other frameworks have no REL_ENTITY.
+     */
     private void validateRelationRepeatabilitySpecs(ModelAvailable availableResult, Map<Integer, Map<String, Relation>> relationMap, ApValidationIssues apValidationIssues) {
         StaticDataProvider sdp = staticDataService.getData();
         if (availableResult.getPart().getType().equals(PartType.PT_REL)) {
@@ -1631,17 +1667,16 @@ public class RuleService {
             Integer key = parent != null ? parent.getId() : -1;
             Map<String, Relation> simpleRelationMap = relationMap.get(key);
 
-            // Co dela cela kontrola nize a proc neni v pravidlech?
             cz.tacr.elza.core.data.ItemType itemTypeRelEntity = sdp.getItemTypeByCode(REL_ENTITY);
-            if (itemTypeRelEntity == null) {
-                Validate.notNull(itemTypeRelEntity, "Chybi itemType " + REL_ENTITY);
+            if (itemTypeRelEntity == null || simpleRelationMap == null) {
+                return;
             }
 
             // ?? muze vratit vice item stejneho typu
             AbstractItem item = availableResult.findItem(itemTypeRelEntity);
             if (item != null) {
                 Relation simpleRelation = simpleRelationMap.get(item.getSpec());
-                if (simpleRelation.getRelationCount() > 1) {
+                if (simpleRelation != null && simpleRelation.getRelationCount() > 1) {
                     // Uplatni se jen pri vetsim poctu vztahu
                     ItemType itemType = availableResult.getItemType(item);
                     ItemSpec itemSpec = itemType.getSpec(item.getSpec());
@@ -1649,11 +1684,12 @@ public class RuleService {
                     if (itemSpec != null && !itemSpec.isRepeatable()) {
                         if (parent != null) {
                             PartValidationIssues partValidationIssues = getPartValidationIssues(apValidationIssues, parent.getId());
-                            partValidationIssues.addErrorsItem("V části typu " + parent.getType().value() + " je vztah "
-                                    + itemSpec.getCode() + "-" + itemSpec.getItemSpec().getName() + " vícekrát.");
+                            partValidationIssues.addErrorsItem(CoreMessage.AP_RELATION_NOT_REPEATABLE.with(
+                                    ValidationMessage.partType(parent.getType().value()),
+                                    itemSpec.getCode(), ValidationMessage.itemSpec(itemSpec.getCode())).encode());
                         } else {
-                        	apValidationIssues.addErrorsItem("V entitě je vztah " + itemSpec.getCode() + "-"
-                                    + itemSpec.getItemSpec().getName() + " vícekrát.");
+                            apValidationIssues.addErrorsItem(CoreMessage.AP_ENTITY_RELATION_NOT_REPEATABLE.with(
+                                    itemSpec.getCode(), ValidationMessage.itemSpec(itemSpec.getCode())).encode());
                         }
                     }
                 }
@@ -1667,23 +1703,31 @@ public class RuleService {
         if (availableResult.getPart().getType().equals(PartType.PT_IDENT)) {
             // TODO: itemu muze byt vice??
             AbstractItem item = availableResult.findItem(IDN_TYPE);
-            if (item != null && identMap.get(item.getSpec()) > 1) {
+            Integer count = item != null ? identMap.get(item.getSpec()) : null;
+            if (count != null && count > 1) {
                 ItemType itemType = availableResult.getItemType(item);
                 ItemSpec itemSpec = itemType.getSpec(item.getSpec());
 
                 if (itemSpec != null && !itemSpec.isRepeatable()) {
-                    errors.add("V části typu " + availableResult.getPart().getType().value() +
-                            " je externí identifikátor " + itemSpec.getCode() + "-" + itemSpec.getItemSpec().getName()
-                            + " vícekrát.");
+                    errors.add(CoreMessage.AP_IDENT_NOT_REPEATABLE.with(
+                            ValidationMessage.partType(availableResult.getPart().getType().value()),
+                            itemSpec.getCode(), ValidationMessage.itemSpec(itemSpec.getCode())).encode());
                 }
             }
         }
         return errors;
     }
 
+    /**
+     * CAM model of a geographic entity (class GEO_UNIT); none when the CAM item types it reads are not
+     * installed (a GEO_UNIT class of another framework).
+     */
     @Nullable
     private GeoModel createGeoModel(final Ap ap) {
-        if (ap.getAeType().equals(GEO_UNIT)) {
+        StaticDataProvider sdp = staticDataService.getData();
+        boolean camItemTypes = Stream.of(GEO_ADMIN_CLASS, GEO_TYPE, IDN_TYPE, IDN_VALUE)
+                .allMatch(code -> sdp.getItemTypeByCode(code) != null);
+        if (camItemTypes && ap.getAeType().equals(GEO_UNIT)) {
             Integer parentGeoId = findParentGeoId(ap);
             String country = findEntityCountry(ap);
             if (parentGeoId != null) {
@@ -1869,12 +1913,17 @@ public class RuleService {
         return null;
     }
 
-    private List<ItemType> createModelItemTypes() {
+    /**
+     * Item types for the entity rules of a rule set, each with the specifications the rule set sees
+     * ({@link RuleSet#getItemSpecs(cz.tacr.elza.core.data.ItemType)}). Every item type is offered;
+     * the rules decide which ones are possible.
+     */
+    private List<ItemType> createModelItemTypes(final RuleSet ruleSet) {
         StaticDataProvider sdp = staticDataService.getData();
         Collection<cz.tacr.elza.core.data.ItemType> itemTypes = sdp.getItemTypes();
         List<ItemType> modelItemTypes = new ArrayList<>(itemTypes.size());
         for (cz.tacr.elza.core.data.ItemType itemType : itemTypes) {
-            modelItemTypes.add(new ItemType(itemType));
+            modelItemTypes.add(new ItemType(itemType, ruleSet.getItemSpecs(itemType)));
         }
         return modelItemTypes;
     }
@@ -1902,24 +1951,10 @@ public class RuleService {
     private ModelAvailable executeAvailable(@NotNull final PartType partType,
                                             @NotNull final ModelAvailable modelAvailable,
                                             @NotNull final RuleSet ruleSet) {
-        StaticDataProvider sdp = staticDataService.getData();
-        DrlType drlType = DrlType.AVAILABLE_ITEMS;
-
-        Ap ae = modelAvailable.getAp();
-        ApType aeType = sdp.getApTypeByCode(ae.getAeType());
-
-        // prepare list of rule codes
-        ApType aeTypeProcess = aeType;
-        ArrayList<String> executeDrls = new ArrayList<>();
-        while (aeTypeProcess != null) {
-            executeDrls.add(drlType.value() + "/" + aeTypeProcess.getCode() + "/" + partType.value());
-            executeDrls.add(drlType.value() + "/" + aeTypeProcess.getCode());
-            aeTypeProcess = aeTypeProcess.getParentApType();
-        }
-        executeDrls.add(drlType.value() + "/" + partType.value());
-        executeDrls.add(drlType.value());
-
-        List<RulExtensionRule> rules = prepareExtRuleList(executeDrls, ruleSet);
+        RulPartType rulPartType = staticDataService.getData().getPartTypeByCode(partType.value());
+        List<RulEntityRule> rules = ruleSet.getEntityRules(RulEntityRule.Kind.AVAILABLE_ITEMS,
+                                                           apTypeIds(modelAvailable.getAp()),
+                                                           rulPartType != null ? rulPartType.getPartTypeId() : null);
 
         try {
             availableItemsRules.execute(rules, modelAvailable);
@@ -1932,28 +1967,9 @@ public class RuleService {
 
     private ModelValidation executeValidation(@NotNull final ModelValidation modelValidation,
                                               @NotNull final RuleSet ruleSet) {
-        StaticDataProvider sdp = staticDataService.getData();
-        DrlType drlType = DrlType.VALIDATION;
-
-        Ap ae = modelValidation.getAp();
-        ApType aeType = sdp.getApTypeByCode(ae.getAeType());
-
-        // prepare list of rule codes
-        ApType aeTypeProcess = aeType;
-        ArrayList<String> executeDrls = new ArrayList<>();
-        while (aeTypeProcess != null) {
-            for (PartType partType : PartType.values()) {
-                executeDrls.add(drlType.value() + "/" + aeTypeProcess.getCode() + "/" + partType.value());
-            }
-            executeDrls.add(drlType.value() + "/" + aeTypeProcess.getCode());
-            aeTypeProcess = aeTypeProcess.getParentApType();
-        }
-        for (PartType partType : PartType.values()) {
-            executeDrls.add(drlType.value() + "/" + partType.value());
-        }
-        executeDrls.add(drlType.value());
-
-        List<RulExtensionRule> rules = prepareExtRuleList(executeDrls, ruleSet);
+        // validation rules of all part types
+        List<RulEntityRule> rules = ruleSet.getEntityRules(RulEntityRule.Kind.VALIDATION,
+                                                           apTypeIds(modelValidation.getAp()), null);
 
         try {
             modelValidationRules.execute(rules, modelValidation);
@@ -1964,18 +1980,16 @@ public class RuleService {
         return modelValidation;
     }
 
-    private List<RulExtensionRule> prepareExtRuleList(@NotNull final ArrayList<String> executeDrls,
-                                                      @NotNull final RuleSet ruleSet) {
-        // add in reverse order
-        List<RulExtensionRule> rules = new ArrayList<>(executeDrls.size());
-        for (int pos = executeDrls.size() - 1; pos >= 0; pos--) {
-            String condition = executeDrls.get(pos);
-            List<RulExtensionRule> rulExtensionRule = ruleSet.getExtByCondition(condition);
-            if (rulExtensionRule != null) {
-                rules.addAll(rulExtensionRule);
-            }
+    /**
+     * Ids of the entity's class and its parents, from the class up to the root.
+     */
+    private List<Integer> apTypeIds(final Ap ap) {
+        StaticDataProvider sdp = staticDataService.getData();
+        List<Integer> ids = new ArrayList<>();
+        for (ApType apType = sdp.getApTypeByCode(ap.getAeType()); apType != null; apType = apType.getParentApType()) {
+            ids.add(apType.getApTypeId());
         }
-        return rules;
+        return ids;
     }
 
     public RulItemSpec getItemSpecById(final Integer specId) {
@@ -1995,8 +2009,11 @@ public class RuleService {
         List<String> itemTypeCodes = new ArrayList<>();
         List<ItemType> itemTypeList = null;
         try {
-            if (rulRuleSet.getItemTypeComponent() != null) {
-                itemTypeList = availableItemsRules.execute(rulRuleSet, createModelItemTypes());
+            // own filter of the rule set, then filters contributed by other packages
+            RuleSet ruleSet = staticDataService.getData().getRuleSetById(rulRuleSet.getRuleSetId());
+            List<RulArrangementRule> filterRules = ruleSet.getRulesByType(RulArrangementRule.RuleType.ITEM_TYPE_FILTER);
+            if (rulRuleSet.getItemTypeComponent() != null || !filterRules.isEmpty()) {
+                itemTypeList = availableItemsRules.execute(rulRuleSet, filterRules, createModelItemTypes(ruleSet));
             }
         } catch (Exception e) {
             throw new SystemException(e);

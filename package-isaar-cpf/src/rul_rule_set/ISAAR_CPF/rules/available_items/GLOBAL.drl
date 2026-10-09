@@ -1,0 +1,14 @@
+package isaarcpf;
+import cz.tacr.elza.drools.model.ItemType;
+import cz.tacr.elza.drools.model.ItemSpec;
+import cz.tacr.elza.drools.model.item.IntItem;
+import cz.tacr.elza.drools.model.Part;
+import cz.tacr.elza.drools.model.PartType;
+
+rule "ISAAR: a note may be added to any part"
+when $it: ItemType(code in ("NOTE"))
+then
+    $it.setPossible();
+    $it.setRepeatable(true);
+end
+

@@ -193,10 +193,13 @@ public class AdminOldController {
     @AuthMethod(permission = Permission.ADMIN)
     public LogVO getLogs(@RequestParam(name = "lineCount", required = false, defaultValue = "1000") Integer lineCount) {
         List<String> lines = new ArrayList<>(lineCount);
+        LogVO result = new LogVO();
+        result.setPath(logFilePath);
 
         try {
             if (StringUtils.isBlank(logFilePath)) {
-                lines.add("Chyba konfigurace, není nastavena cesta k souboru logu.");
+                // the client shows the message for the code
+                result.setError(LogVO.Error.NO_PATH);
             } else {
                 try (FileInputStream fileInputStream = new FileInputStream(new File(logFilePath))) {
                     FileChannel channel = fileInputStream.getChannel();
@@ -232,16 +235,13 @@ public class AdminOldController {
                 }
             }
         } catch (FileNotFoundException e) {
-            lines.add("Soubor logu " + logFilePath + " nebyl nalezen.");
+            result.setError(LogVO.Error.FILE_NOT_FOUND);
             logger.error("Soubor logu " + logFilePath + " nebyl nalezen.", e);
         } catch (IOException e) {
-            lines.add("Chyba při čtení souboru logu " + logFilePath + ".");
+            result.setError(LogVO.Error.READ_ERROR);
             logger.error("Chyba při čtení souboru logu " + logFilePath + ".", e);
         }
 
-//        logger.info("Z logu načteno " + lineCount + " řádek.");
-
-        LogVO result = new LogVO();
         Collections.reverse(lines);
         result.setLines(lines);
         result.setLineCount(lines.size());

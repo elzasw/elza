@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<translations lang="en">
+    <t type="ITEM_TYPE" code="SRD_LEVEL_TYPE" field="name">Level of description</t>
+    <t type="ITEM_TYPE" code="SRD_LEVEL_TYPE" field="shortcut">Level</t>
+    <t type="ITEM_TYPE" code="SRD_LEVEL_TYPE" field="description">ZP4.2.7 Level of description</t>
+    <t type="ITEM_TYPE" code="SRD_TITLE" field="name">Content, abstract</t>
+    <t type="ITEM_TYPE" code="SRD_TITLE" field="shortcut">Content</t>
+    <t type="ITEM_TYPE" code="SRD_UNIT_ID" field="name">Reference code (sequence number)</t>
+    <t type="ITEM_TYPE" code="SRD_UNIT_ID" field="shortcut">Ref. code</t>
+    <t type="ITEM_SPEC" code="SRD_LEVEL_ROOT" field="name">Fonds</t>
+    <t type="ITEM_SPEC" code="SRD_LEVEL_ROOT" field="shortcut">Fonds</t>
+    <t type="ITEM_SPEC" code="SRD_LEVEL_SERIES" field="name">Series</t>
+    <t type="ITEM_SPEC" code="SRD_LEVEL_SERIES" field="shortcut">Series</t>
+    <t type="ITEM_SPEC" code="SRD_LEVEL_FOLDER" field="name">File</t>
+    <t type="ITEM_SPEC" code="SRD_LEVEL_FOLDER" field="shortcut">File</t>
+</translations>

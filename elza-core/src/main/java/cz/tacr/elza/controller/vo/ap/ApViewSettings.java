@@ -9,7 +9,10 @@ import java.util.Map;
 public class ApViewSettings {
 
     private Map<Integer, ApViewSettingsRule> rules;
-    private Map<Integer, Integer> typeRuleSetMap;
+    /**
+     * Rule set of each scope: the view settings of an entity are those of the rule set of its scope.
+     */
+    private Map<Integer, Integer> scopeRuleSetMap;
 
     public Map<Integer, ApViewSettingsRule> getRules() {
         return rules;
@@ -19,12 +22,12 @@ public class ApViewSettings {
         this.rules = rules;
     }
 
-    public Map<Integer, Integer> getTypeRuleSetMap() {
-        return typeRuleSetMap;
+    public Map<Integer, Integer> getScopeRuleSetMap() {
+        return scopeRuleSetMap;
     }
 
-    public void setTypeRuleSetMap(final Map<Integer, Integer> typeRuleSetMap) {
-        this.typeRuleSetMap = typeRuleSetMap;
+    public void setScopeRuleSetMap(final Map<Integer, Integer> scopeRuleSetMap) {
+        this.scopeRuleSetMap = scopeRuleSetMap;
     }
 
     public static class ApViewSettingsRule {

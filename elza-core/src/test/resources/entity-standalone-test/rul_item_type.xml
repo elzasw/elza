@@ -1,0 +1,13 @@
+<item-types>
+    <item-type code="NM_MAIN" data-type="STRING">
+        <name>Name</name>
+        <shortcut>Name</shortcut>
+        <use-specification>false</use-specification>
+        <string-length-limit>250</string-length-limit>
+    </item-type>
+    <item-type code="NOTE" data-type="TEXT">
+        <name>Note</name>
+        <shortcut>Note</shortcut>
+        <use-specification>false</use-specification>
+    </item-type>
+</item-types>

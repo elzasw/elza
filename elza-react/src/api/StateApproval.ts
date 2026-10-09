@@ -3,6 +3,19 @@
  */
 
 import { ApStateApproval } from "elza-api";
+import { defineMessages } from "react-intl";
+import { getIntl } from "components/shared/lang/intlInstance";
+
+// Funkce vrací text do datové struktury (options selectu), ne do JSX,
+// proto sdílená instance.
+const messages = defineMessages({
+    new: { id: "registry.state.new", defaultMessage: "Nová" },
+    toApprove: { id: "registry.state.toApprove", defaultMessage: "Ke schválení" },
+    approved: { id: "registry.state.approved", defaultMessage: "Schválená" },
+    toAmend: { id: "registry.state.toAmend", defaultMessage: "K doplnění" },
+    invalid: { id: "registry.state.invalid", defaultMessage: "Zneplatněná" },
+    replaced: { id: "registry.state.replaced", defaultMessage: "Nahrazená" },
+});
 
 export enum StateApproval {
     NEW = 'NEW',
@@ -24,20 +37,20 @@ export const StateApprovalCaption = (value: StateApproval | StateApprovalEx | Ap
     switch (value) {
         case StateApproval.NEW:
         case ApStateApproval.New:
-            return 'Nová';
+            return getIntl().formatMessage(messages.new);
         case StateApproval.TO_APPROVE:
         case ApStateApproval.ToApprove:
-            return 'Ke schválení';
+            return getIntl().formatMessage(messages.toApprove);
         case StateApproval.APPROVED:
         case ApStateApproval.Approved:
-            return "Schválená";
+            return getIntl().formatMessage(messages.approved);
         case StateApproval.TO_AMEND:
         case ApStateApproval.ToAmend:
-            return "K doplnění";
+            return getIntl().formatMessage(messages.toAmend);
         case StateApprovalEx.INVALID:
-            return "Zneplatněná";
+            return getIntl().formatMessage(messages.invalid);
         case StateApprovalEx.REPLACED:
-            return "Nahrazená";
+            return getIntl().formatMessage(messages.replaced);
         default:
             console.warn('Nepřeložená hodnota', value);
             return '?';

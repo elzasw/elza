@@ -97,7 +97,7 @@ public class DaServicePackageTypeTest {
         setField(service, "txManager", mock(PlatformTransactionManager.class));
 
         Map<Integer, String> failed = new ConcurrentHashMap<>();
-        service.doCreateDaoStructure(List.of(AIP_ID), false, new AipOutcomeSink() {
+        service.doCreateDaoStructure(List.of(AIP_ID), new AipOutcomeSink() {
             @Override
             public void record(Integer aipId, DaAipActionItemState state, @Nullable String message) {
                 if (state == DaAipActionItemState.ERROR) {

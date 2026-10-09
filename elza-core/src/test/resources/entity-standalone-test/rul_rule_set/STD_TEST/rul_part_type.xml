@@ -1,0 +1,5 @@
+<part-types>
+    <part-type code="PT_NAME"/>
+    <part-type code="PT_BODY"/>
+    <part-type code="PT_REL"/>
+</part-types>

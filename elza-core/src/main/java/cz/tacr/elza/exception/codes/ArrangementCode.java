@@ -212,5 +212,10 @@ public enum ArrangementCode implements ErrorCode {
      * Hodnota atributu nemá otevřenou verzi - byla již smazána (obvykle jiným
      * požadavkem nebo uživatelem) a klient pracuje s neaktuálními daty.
      */
-    DESC_ITEM_NOT_FOUND
+    DESC_ITEM_NOT_FOUND,
+
+    /**
+     * The fund cannot be deleted while its nodes have active links to a digital archive.
+     */
+    FUND_HAS_DA_LINKS
 }
