@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -47,16 +48,19 @@ import cz.tacr.elza.ElzaCoreMain;
 import cz.tacr.elza.api.AipLinkState;
 import cz.tacr.elza.api.AipType;
 import cz.tacr.elza.api.DigitalRepositoryType;
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.dataexchange.input.DEImportParams;
 import cz.tacr.elza.dataexchange.input.DEImportService;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrDaLink;
+import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.DaAip;
 import cz.tacr.elza.domain.DaAipState;
 import cz.tacr.elza.domain.DaChange;
@@ -76,10 +80,12 @@ import cz.tacr.elza.repository.DaLevelViewRepository;
 import cz.tacr.elza.repository.DaLocalCacheRepository;
 import cz.tacr.elza.repository.DaSyncQueueItemRepository;
 import cz.tacr.elza.repository.DigitalRepositoryRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ArrangementService;
@@ -100,7 +106,8 @@ import gov.loc.mets.v1_11.schema.StructMapType;
  * The automatic processing of received packages of loose files ("Volné soubory") in a ZP2015
  * fund: a package matching no unit of description by UUID is placed by the DA_MATCH script under
  * the series "Importováno" and a series per storage unit (or per day of import), and imported
- * there by the DA_IMPORT script.
+ * there by the DA_IMPORT script. The series "Importováno" is created with a restriction of access
+ * (not published until the user reviews it), which the user lifts and no later package restores.
  *
  * The scenarios build on each other and run in order. Setup and cleanup follow
  * {@link Zp2015DaImportBuildTest}.
@@ -169,6 +176,10 @@ public class Zp2015DaLooseFilesPlacementTest {
     private DaAipAutoLinkService autoLinkService;
     @Autowired
     private DaAipLinkStateResolver linkStateResolver;
+    @Autowired
+    private FundVersionRepository fundVersionRepository;
+    @Autowired
+    private StructuredItemRepository structuredItemRepository;
 
     private Integer rootNodeId;
     private Integer itemA;
@@ -226,8 +237,15 @@ public class Zp2015DaLooseFilesPlacementTest {
         tx().executeWithoutResult(status -> {
             ArrNode imported = onlyChild(rootNodeId);
             assertEquals(IMPORTED, name(imported));
+            ArrStructuredObject restriction = restriction(imported)
+                    .orElseThrow(() -> new AssertionError("the new series of imports is marked as not published"));
+            assertEquals("ZP2015_ACCESS_COND", restriction.getStructuredType().getCode());
+            assertEquals(List.of("ZP2015_RESTRICTED_ACCESS_REASON:ZP2015_ACCESS_PROC_STATE",
+                                 "ZP2015_RESTRICTED_ACCESS_TYPE:ZP2015_RESTRICTION_ARCHDESC2"),
+                         structuredItems(restriction), "reason: state of processing, extent: hidden unit");
             ArrNode storage = onlyChild(imported.getNodeId());
             assertEquals("samostatně 1", name(storage), "the series is named by the <container> of the package");
+            assertTrue(restriction(storage).isEmpty(), "only the series of imports is hidden, the rest with it");
             ArrNode item = onlyChild(storage.getNodeId());
             assertEquals("Posudek vojáka; 1938; 5030", name(item));
             assertEquals(uuid(FOLDER_B), item.getUuid(), "the item takes the UUID of its div");
@@ -253,6 +271,7 @@ public class Zp2015DaLooseFilesPlacementTest {
             ArrNode imported = onlyChild(rootNodeId);
             List<ArrNode> series = children(imported.getNodeId());
             assertEquals(2, series.size(), "the series Importováno is shared");
+            assertEquals(1, restrictionItems(imported).size(), "the found series is not marked again");
             assertEquals(LocalDate.now().toString(), name(series.get(1)));
             ArrNode item = onlyChild(series.get(1).getNodeId());
             assertEquals("Digitální fotografie 3", name(item));
@@ -267,6 +286,28 @@ public class Zp2015DaLooseFilesPlacementTest {
 
     @Test
     @Order(3)
+    void restrictionLiftedByTheUser_isNotRestoredByTheNextPackage() throws Exception {
+        tx().executeWithoutResult(status -> {
+            ArrNode imported = onlyChild(rootNodeId);
+            ArrDescItem restriction = restrictionItems(imported).get(0);
+            ArrFundVersion version = fundVersionRepository.findByFundIdAndLockChangeIsNull(imported.getFund().getFundId());
+            descriptionItemService.deleteDescriptionItem(restriction.getDescItemObjectId(), imported.getVersion(),
+                                                         imported.getNodeId(), version.getFundVersionId(), false);
+        });
+        Integer aipId = storedAip("a", Zp2015DaLooseFilesPlanTest.EAD_A, Zp2015DaLooseFilesPlanTest.LOOSE_FILES);
+
+        assertEquals(1, receive(aipId));
+
+        tx().executeWithoutResult(status -> {
+            ArrNode imported = onlyChild(rootNodeId);
+            assertTrue(restrictionItems(imported).isEmpty(),
+                       "the series was found, not created - what the user lifted stays lifted");
+            assertEquals(2, children(imported.getNodeId()).size());
+        });
+    }
+
+    @Test
+    @Order(4)
     void samePackageAgain_withoutUuids_findsItsItemBySourceId() throws Exception {
         Integer aipId = storedAip("a", Zp2015DaLooseFilesPlanTest.EAD_A, Zp2015DaLooseFilesPlanTest.LOOSE_FILES);
 
@@ -283,7 +324,7 @@ public class Zp2015DaLooseFilesPlacementTest {
     }
 
     @Test
-    @Order(4)
+    @Order(5)
     void samePackageAgain_withUuids_isMatchedByUuid() throws Exception {
         Integer aipId = storedAip("b", Zp2015DaLooseFilesPlanTest.EAD_B, Zp2015DaLooseFilesPlanTest.LOOSE_FILES);
 
@@ -299,7 +340,7 @@ public class Zp2015DaLooseFilesPlacementTest {
     }
 
     @Test
-    @Order(5)
+    @Order(6)
     void packageOfAnotherType_isLeftToTheUser() throws Exception {
         Integer aipId = storedAip("a", Zp2015DaLooseFilesPlanTest.EAD_A, "NSESSS");
 
@@ -433,6 +474,27 @@ public class Zp2015DaLooseFilesPlacementTest {
                 .filter(i -> i.getItemType().getCode().equals("ZP2015_NAME"))
                 .findFirst().orElseThrow();
         return name.getData().getFulltextValue();
+    }
+
+    /** The restrictions of access of the level (ZP2015_RESTRICTION_ACCESS_INLINE). */
+    private List<ArrDescItem> restrictionItems(ArrNode node) {
+        return descriptionItemService.findByNodeIdsAndDeleteChangeIsNull(List.of(node.getNodeId())).stream()
+                .filter(i -> i.getItemType().getCode().equals("ZP2015_RESTRICTION_ACCESS_INLINE"))
+                .toList();
+    }
+
+    /** The structured object of the first restriction of access of the level. */
+    private Optional<ArrStructuredObject> restriction(ArrNode node) {
+        return restrictionItems(node).stream().findFirst()
+                .map(i -> ((ArrDataStructureRef) HibernateUtils.unproxy(i.getData())).getStructuredObject());
+    }
+
+    /** Items of the structured object as "type:specification", sorted. */
+    private List<String> structuredItems(ArrStructuredObject structObj) {
+        return structuredItemRepository.findByStructuredObjectAndDeleteChangeIsNull(structObj).stream()
+                .map(i -> i.getItemType().getCode() + ":" + i.getItemSpec().getCode())
+                .sorted()
+                .toList();
     }
 
     private static String uuid(String divId) {
