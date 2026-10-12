@@ -2,7 +2,9 @@ package cz.tacr.elza.packageimport.xml;
 
 import static cz.tacr.elza.domain.ApCachedAccessPoint.FIELD_ACCESSPOINT_ID;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.INDEX;
+import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.PREFIX_PREF;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.PREF_INDEX;
+import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.SEPARATOR;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -110,6 +112,43 @@ public class SettingIndexSearch extends Setting {
         return null;
     }
 
+    /**
+     * Item fields searched by the text search in the area - the configured fields other than the
+     * entity id and the index fields ({@code index}, {@code pref_index}, {@code <part type>_index}).
+     *
+     * @param area null - any part: all item fields; {@code pref} - the preferred part: the fields
+     *             {@code pref_<item type>}; a part type code in lower case - names of the part type:
+     *             the fields {@code pref_<item type>} and the fields of the part type
+     *             ({@code part-type})
+     * @return fields in the order of the configuration
+     */
+    public List<Field> searchedItemFields(@Nullable String area) {
+        List<Field> result = new ArrayList<>();
+        if (fields == null) {
+            return result;
+        }
+        String prefPrefix = PREFIX_PREF + SEPARATOR;
+        for (Field field : fields) {
+            String name = field.getName();
+            if (name.equals(FIELD_ACCESSPOINT_ID) || name.equals(INDEX) || name.endsWith(SEPARATOR + INDEX)) {
+                continue;
+            }
+            boolean pref = name.startsWith(prefPrefix);
+            boolean searched;
+            if (area == null) {
+                searched = true;
+            } else if (area.equals(PREFIX_PREF)) {
+                searched = pref;
+            } else {
+                searched = pref || area.equalsIgnoreCase(field.getPartType());
+            }
+            if (searched) {
+                result.add(field);
+            }
+        }
+        return result;
+    }
+
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "field", namespace = "index-search")
     public static class Field {
@@ -131,6 +170,10 @@ public class SettingIndexSearch extends Setting {
 
         @XmlAttribute(name = "transliterate")
         private Boolean transliterate;
+
+        /** Part type holding the item, for the search in names of a part type. */
+        @XmlAttribute(name = "part-type")
+        private String partType;
 
         static Field of(String name, Float boost, Float boostExact, Float boostTransExact,
                         Float boostFulltext, Boolean transliterate) {
@@ -190,6 +233,14 @@ public class SettingIndexSearch extends Setting {
 
         public void setTransliterate(Boolean transliterate) {
             this.transliterate = transliterate;
+        }
+
+        public String getPartType() {
+            return partType;
+        }
+
+        public void setPartType(String partType) {
+            this.partType = partType;
         }
     }
 }

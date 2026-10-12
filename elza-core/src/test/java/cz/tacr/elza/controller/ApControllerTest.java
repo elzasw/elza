@@ -5,6 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.awaitility.Awaitility.await;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -136,6 +139,35 @@ public class ApControllerTest extends AbstractControllerTest {
     public void findAccessPoint() {
         List<ApAccessPointVO> records = findRecord(null, 0, 10, null, null, ApSearchType.FULLTEXT);
         assertNotNull(records);
+    }
+
+    /**
+     * The text search looks in the names (index fields) and in the item fields of the search
+     * configuration (CZ_BASE: nm_main, nm_minor), see SettingIndexSearch.searchedItemFields.
+     */
+    @Test
+    public void findAccessPointByNameText() {
+        ApTypeVO type = getApType(STRUCT_AP_TYPE);
+        Integer scopeId = getAllScopes().iterator().next().getId();
+        List<ApItemVO> items = new ArrayList<>();
+        items.add(buildApItem(NM_MAIN, null, "Qwzyxadam", null, null));
+        items.add(buildApItem(NM_SUP_GEN, null, "Brnokrut", null, null));
+
+        ApAccessPointCreateVO ap = new ApAccessPointCreateVO();
+        ap.setTypeId(type.getId());
+        ap.setScopeId(scopeId);
+        ap.setPartForm(createPartFormVO(null, ptName.getCode(), null, items));
+        ApAccessPointVO accessPoint = createAccessPoint(ap);
+        try {
+            await().atMost(10, SECONDS).pollInterval(100, MILLISECONDS).untilAsserted(() -> {
+                List<ApAccessPointVO> found = findRecord("qwzyxadam", 0, 10, null, null, ApSearchType.FULLTEXT);
+                assertTrue(found.stream().anyMatch(r -> r.getId().equals(accessPoint.getId())),
+                        "entity found by a word of its main name");
+            });
+            assertTrue(findRecord("zzqqnotthere", 0, 10, null, null, ApSearchType.FULLTEXT).isEmpty());
+        } finally {
+            deleteAccessPoint(accessPoint.getId());
+        }
     }
 
 

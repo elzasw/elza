@@ -712,10 +712,10 @@ back.
 ui_setting.xml: index-search
 ============================
 
-Weights of the fields of the entity index in the search of entities. The
-setting is global (in the root :file:`ui_setting.xml` of the package): one
-search covers entities of all scopes, whatever rules describe them, and
-ranks them on one scale.
+Fields of the entity index the text search of entities looks in, and their
+weights. The setting is global (in the root :file:`ui_setting.xml` of the
+package): one search covers entities of all scopes, whatever rules describe
+them, and ranks them on one scale.
 
 .. code-block:: xml
 
@@ -723,7 +723,7 @@ ranks them on one scale.
        <index-search>
            <ns10:field name="pref_nm_main" boost="50.0" boost-exact="250.0"
                        boost-trans-exact="200.0" boost-fulltext="200.0" transliterate="true"/>
-           <ns10:field name="nm_main" boost="10.0" boost-exact="50.0"
+           <ns10:field name="nm_main" part-type="PT_NAME" boost="10.0" boost-exact="50.0"
                        boost-trans-exact="40.0" transliterate="true"/>
        </index-search>
    </settings>
@@ -733,13 +733,25 @@ ranks them on one scale.
 the preferred part. ``boost`` - weight of a match by wildcard;
 ``boost-exact`` and ``boost-trans-exact`` - weight of an exact match, as
 written and transliterated; ``boost-fulltext`` - weight of a match of the
-whole search text; ``transliterate`` - the field is indexed also without
-diacritics (takes effect after reindexing).
+whole search text (an index field without it gets four times ``boost``, an
+item field none); ``transliterate`` - the field is indexed also without
+diacritics (takes effect after reindexing); ``part-type`` - the part type
+holding the item, see below.
 
 The application states the fields every entity has: ``accessPointId``,
 ``index`` and ``pref_index`` (the names produced by ``INDEX`` entity rules).
 A package states the fields of its own item and part types and may override
 these.
+
+**What the search looks in.** Besides the entity id and the names
+(``index`` fields), the text search looks in every item field of the
+configuration, so an item of the framework's own rules becomes searchable
+by stating it here. The area of the search narrows the item fields: the
+preferred names look only in the ``pref_`` fields; the names of all parts
+look in the ``pref_`` fields and the fields whose ``part-type`` is
+``PT_NAME``; all parts look in every item field. The index of the entities
+is built at startup from the installed item types, so the field of an item
+type installed later is searched after a restart.
 
 **Several packages, one configuration.** Each package keeps its own
 fields; a field stated by several packages is taken, as a whole, from the

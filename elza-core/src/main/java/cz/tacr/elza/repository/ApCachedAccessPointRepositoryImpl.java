@@ -8,7 +8,6 @@ import static cz.tacr.elza.domain.ArrDescItem.REL_AP_ID;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.AP_TYPE_ID;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.INDEX;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.NM_MAIN;
-import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.NM_MINOR;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.PREFIX_PREF;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.PREF_INDEX;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.SCOPE_ID;
@@ -31,6 +30,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.search.engine.backend.metamodel.IndexDescriptor;
 import org.hibernate.search.engine.search.predicate.SearchPredicate;
 import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesStep;
 import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
@@ -405,12 +405,37 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
         // Boost on pref_index_analyzed - BM25 field-length normalization favors shorter preferred names
         addFullTextFieldBoost(factory, bool, PREF_INDEX, searchLower);
 
-        // Boost on pref_nm_main_analyzed
-        addFullTextFieldBoost(factory, bool, PREFIX_PREF + SEPARATOR + NM_MAIN, searchLower);
+        // Boost on item fields stating boost-fulltext (CZ_BASE: pref_nm_main_analyzed)
+        for (SettingIndexSearch.Field field : searchedItemFields(partTypeCode)) {
+            if (field.getBoostFulltext() != null) {
+                addFullTextFieldBoost(factory, bool, field.getName(), searchLower);
+            }
+        }
 
         if (StringUtils.isEmpty(partTypeCode) || !partTypeCode.equals(PREFIX_PREF)) {
             addFullTextFieldBoost(factory, bool, INDEX, searchLower);
         }
+    }
+
+    /**
+     * Item fields of the search configuration searched in the area that exist in the index; the
+     * index schema is built at startup, so a field of an item type installed later is skipped until
+     * the restart.
+     *
+     * @param partTypeCode area, see {@link SettingIndexSearch#searchedItemFields(String)}
+     */
+    private List<SettingIndexSearch.Field> searchedItemFields(@Nullable String partTypeCode) {
+        IndexDescriptor descriptor = Search.mapping(entityManager.getEntityManagerFactory())
+                .indexedEntity(ApCachedAccessPoint.class).indexManager().descriptor();
+        List<SettingIndexSearch.Field> result = new ArrayList<>();
+        for (SettingIndexSearch.Field field : settingsService.getIndexSearch().searchedItemFields(partTypeCode)) {
+            if (descriptor.field(addDataPrefix(field.getName())).isPresent()) {
+                result.add(field);
+            } else {
+                log.debug("Search field '{}' is not in the index, skipped", field.getName());
+            }
+        }
+        return result;
     }
 
     /**
@@ -454,28 +479,22 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
         BooleanPredicateClausesStep<?> bool = factory.bool();
 
         String fieldName = "";
-        String itemFieldName = "";
         if (StringUtils.isNotEmpty(partTypeCode)) {
         	fieldName = partTypeCode + SEPARATOR;
-        	if (partTypeCode.equals(PREFIX_PREF)) {
-        		// pref_
-                itemFieldName = partTypeCode + SEPARATOR;
-            }
         }
 
         // boost o accessPointId
-        boostExactQuery(factory, bool, FIELD_ACCESSPOINT_ID, value, false); 
+        boostExactQuery(factory, bool, FIELD_ACCESSPOINT_ID, value, false);
 
         if (StringUtils.isEmpty(partTypeCode) || !partTypeCode.equals(PREFIX_PREF)) {
-            // boost o preferované indexi a jména
+            // boost o preferovaný index
 	        boostWildcardQuery(factory, bool, PREF_INDEX, value, true, true);
-	        boostWildcardQuery(factory, bool, PREFIX_PREF + SEPARATOR + NM_MAIN, value, true, true);
-	        boostWildcardQuery(factory, bool, PREFIX_PREF + SEPARATOR + NM_MINOR, value, true, true);
         }
 
-        // boost hlavního a minor jména
-        boostWildcardQuery(factory, bool, itemFieldName + NM_MAIN, value, true, true);
-        boostWildcardQuery(factory, bool, itemFieldName + NM_MINOR, value, true, true);
+        // item fields of the configuration (CZ_BASE: names nm_main, nm_minor)
+        for (SettingIndexSearch.Field field : searchedItemFields(partTypeCode)) {
+            boostWildcardQuery(factory, bool, field.getName(), value, true, true);
+        }
 
         // index
         fieldName += INDEX;

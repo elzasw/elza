@@ -74,7 +74,6 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
     //public static final String SORT = "sort";
 
     public static final String NM_MAIN = "nm_main";
-    public static final String NM_MINOR = "nm_minor";
 
     static Properties names = null;
     private Map<String, IndexFieldReference<String>> fields;
