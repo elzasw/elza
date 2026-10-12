@@ -1,0 +1,39 @@
+package ISADG;
+
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulItemSpecExt;
+
+rule "The number of the container is required"
+no-loop
+when
+    $itemType : RulItemTypeExt(code == "ISADG_CONTAINER_NUMBER")
+then
+    $itemType.setType(RulItemType.Type.REQUIRED);
+end
+
+rule "The kind of the container is recommended"
+no-loop
+when
+    $itemType : RulItemTypeExt(code == "ISADG_CONTAINER_KIND")
+then
+    $itemType.setType(RulItemType.Type.RECOMMENDED);
+end
+
+rule "Prefix, postfix and location are possible"
+no-loop
+when
+    $itemType : RulItemTypeExt(code in ("ISADG_CONTAINER_PREFIX", "ISADG_CONTAINER_POSTFIX", "ISADG_CONTAINER_LOCATION"))
+then
+    $itemType.setType(RulItemType.Type.POSSIBLE);
+end
+
+rule "Kinds of container"
+no-loop
+when
+    $itemType : RulItemTypeExt(code == "ISADG_CONTAINER_KIND")
+    $itemSpec : RulItemSpecExt() from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end

@@ -1,0 +1,70 @@
+package ISADG;
+
+import cz.tacr.elza.drools.model.DescItem;
+import cz.tacr.elza.drools.model.DescItemChange;
+import cz.tacr.elza.domain.vo.RelatedNodeDirection;
+import cz.tacr.elza.domain.vo.NodeTypeOperation;
+
+global java.util.Set results;
+
+rule "The unit is validated again after every operation"
+when
+then
+    results.add(RelatedNodeDirection.NODE);
+end
+
+rule "A changed level or container affects the units below"
+when
+    DescItem( type in ("ISADG_LEVEL", "ISADG_CONTAINER") )
+    NodeTypeOperation( this == NodeTypeOperation.SAVE_DESC_ITEM )
+then
+    results.add(RelatedNodeDirection.DESCENDANTS);
+end
+
+rule "Added or removed dates affect the units below"
+when
+    DescItem( type == "ISADG_DATE", change in (DescItemChange.CREATE, DescItemChange.DELETE) )
+    NodeTypeOperation( this == NodeTypeOperation.SAVE_DESC_ITEM )
+then
+    results.add(RelatedNodeDirection.DESCENDANTS);
+end
+
+rule "A created unit affects its parent and siblings"
+when
+    NodeTypeOperation( this == NodeTypeOperation.CREATE_NODE )
+then
+    results.add(RelatedNodeDirection.PARENT);
+    results.add(RelatedNodeDirection.SIBLINGS);
+end
+
+rule "A deleted unit affects its parent and siblings"
+when
+    NodeTypeOperation( this == NodeTypeOperation.DELETE_NODE )
+then
+    results.add(RelatedNodeDirection.PARENT);
+    results.add(RelatedNodeDirection.SIBLINGS);
+end
+
+rule "A unit moved under the same parent affects its siblings"
+when
+    NodeTypeOperation( this in (NodeTypeOperation.DISCONNECT_NODE_LOCAL, NodeTypeOperation.CONNECT_NODE_LOCAL) )
+then
+    results.add(RelatedNodeDirection.SIBLINGS);
+end
+
+rule "A unit moved away affects its old parent and siblings"
+when
+    NodeTypeOperation( this == NodeTypeOperation.DISCONNECT_NODE )
+then
+    results.add(RelatedNodeDirection.PARENT);
+    results.add(RelatedNodeDirection.SIBLINGS);
+end
+
+rule "A unit moved in affects its new parent, siblings and the units below"
+when
+    NodeTypeOperation( this == NodeTypeOperation.CONNECT_NODE )
+then
+    results.add(RelatedNodeDirection.PARENT);
+    results.add(RelatedNodeDirection.SIBLINGS);
+    results.add(RelatedNodeDirection.DESCENDANTS);
+end

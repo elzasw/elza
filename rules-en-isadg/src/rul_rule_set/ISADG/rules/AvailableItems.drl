@@ -1,0 +1,220 @@
+package ISADG;
+
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulItemSpecExt;
+import cz.tacr.elza.drools.model.ActiveLevel;
+import cz.tacr.elza.drools.model.Level;
+import cz.tacr.elza.drools.model.DescItem;
+
+// Order of evaluation: salience 100 sets the defaults (policy, repeatability, the level), the rules
+// without salience offer the elements, salience -100 decides what is required or recommended.
+
+rule "Default policy of the items"
+salience 100
+no-loop
+when
+    $itemType : RulItemTypeExt()
+then
+    $itemType.setPolicyTypeCode("ISADG_POL_BASIC");
+end
+
+rule "Default policy of the specifications"
+salience 100
+no-loop
+when
+    $itemType : RulItemTypeExt()
+    $itemSpec : RulItemSpecExt() from $itemType.rulItemSpecList
+then
+    $itemSpec.setPolicyTypeCode("ISADG_POL_BASIC");
+end
+
+rule "An element is given once unless said otherwise"
+salience 100
+no-loop
+when
+    $itemType : RulItemTypeExt(code in ("ISADG_LEVEL", "ISADG_REFERENCE_CODE", "ISADG_TITLE", "ISADG_DATE", "ISADG_DATE_BULK", "ISADG_DATE_TEXT", "ISADG_EXTENT", "ISADG_DIMENSIONS", "ISADG_SCALE", "ISADG_DURATION", "ISADG_BIOGHIST", "ISADG_CUSTODHIST", "ISADG_ACQINFO", "ISADG_SCOPE_CONTENT", "ISADG_APPRAISAL", "ISADG_ACCRUALS", "ISADG_ARRANGEMENT", "ISADG_ACCESS_CONDITIONS", "ISADG_ACCESS_STATUS", "ISADG_ACCESS_OPEN_DATE", "ISADG_REPRODUCTION_CONDITIONS", "ISADG_SCRIPT", "ISADG_PHYSTECH", "ISADG_FINDING_AIDS", "ISADG_ORIGINALS_LOC", "ISADG_COPIES_LOC", "ISADG_RELATED_MATERIAL", "ISADG_BIBLIOGRAPHY", "ISADG_INTERNAL_NOTE", "ISADG_PROCESS_INFO", "ISADG_RULES", "ISADG_DESCRIPTION_DATE"))
+then
+    $itemType.setRepeatable(false);
+end
+
+rule "Elements given several times"
+salience 100
+no-loop
+when
+    $itemType : RulItemTypeExt(code in ("ISADG_OTHER_ID", "ISADG_EXTENT_QUANTITY", "ISADG_MATERIAL_TYPE", "ISADG_CREATOR", "ISADG_LANGUAGE", "ISADG_RELATED_LINK", "ISADG_NOTE", "ISADG_ARCHIVIST", "ISADG_CONTAINER", "ISADG_DAO_LINK", "ISADG_ACCESS_POINT"))
+then
+    $itemType.setRepeatable(true);
+end
+
+rule "ISAD(G) 3.1.4: the level of description is required"
+salience 100
+no-loop
+when
+    $itemType : RulItemTypeExt(code == "ISADG_LEVEL")
+then
+    $itemType.setType(RulItemType.Type.REQUIRED);
+end
+
+rule "ISAD(G) 3.1.4: the root of the fonds is a fonds"
+no-loop
+when
+    $itemType : RulItemTypeExt(code == "ISADG_LEVEL")
+    ActiveLevel( parent == null )
+    $itemSpec : RulItemSpecExt(code == "ISADG_LEVEL_FONDS") from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.REQUIRED);
+end
+
+rule "ISAD(G) 3.1.4: below a fonds"
+no-loop
+when
+    $itemType : RulItemTypeExt(code == "ISADG_LEVEL")
+    ActiveLevel( parent != null && $parentItems : parent.ownDescItems )
+    DescItem( type == "ISADG_LEVEL" && specCode == "ISADG_LEVEL_FONDS" ) from $parentItems
+    $itemSpec : RulItemSpecExt(code in ("ISADG_LEVEL_SUBFONDS", "ISADG_LEVEL_SERIES", "ISADG_LEVEL_FILE", "ISADG_LEVEL_ITEM")) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+rule "ISAD(G) 3.1.4: below a subfonds"
+no-loop
+when
+    $itemType : RulItemTypeExt(code == "ISADG_LEVEL")
+    ActiveLevel( parent != null && $parentItems : parent.ownDescItems )
+    DescItem( type == "ISADG_LEVEL" && specCode == "ISADG_LEVEL_SUBFONDS" ) from $parentItems
+    $itemSpec : RulItemSpecExt(code in ("ISADG_LEVEL_SERIES", "ISADG_LEVEL_FILE", "ISADG_LEVEL_ITEM")) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+rule "ISAD(G) 3.1.4: below a series"
+no-loop
+when
+    $itemType : RulItemTypeExt(code == "ISADG_LEVEL")
+    ActiveLevel( parent != null && $parentItems : parent.ownDescItems )
+    DescItem( type == "ISADG_LEVEL" && specCode == "ISADG_LEVEL_SERIES" ) from $parentItems
+    $itemSpec : RulItemSpecExt(code in ("ISADG_LEVEL_SERIES", "ISADG_LEVEL_SUBSERIES", "ISADG_LEVEL_FILE", "ISADG_LEVEL_ITEM")) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+rule "ISAD(G) 3.1.4: below a subseries"
+no-loop
+when
+    $itemType : RulItemTypeExt(code == "ISADG_LEVEL")
+    ActiveLevel( parent != null && $parentItems : parent.ownDescItems )
+    DescItem( type == "ISADG_LEVEL" && specCode == "ISADG_LEVEL_SUBSERIES" ) from $parentItems
+    $itemSpec : RulItemSpecExt(code in ("ISADG_LEVEL_SUBSERIES", "ISADG_LEVEL_FILE", "ISADG_LEVEL_ITEM")) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+rule "ISAD(G) 3.1.4: below a file"
+no-loop
+when
+    $itemType : RulItemTypeExt(code == "ISADG_LEVEL")
+    ActiveLevel( parent != null && $parentItems : parent.ownDescItems )
+    DescItem( type == "ISADG_LEVEL" && specCode == "ISADG_LEVEL_FILE" ) from $parentItems
+    $itemSpec : RulItemSpecExt(code in ("ISADG_LEVEL_FILE", "ISADG_LEVEL_ITEM")) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+rule "ISAD(G) 3.1.4: below a item"
+no-loop
+when
+    $itemType : RulItemTypeExt(code == "ISADG_LEVEL")
+    ActiveLevel( parent != null && $parentItems : parent.ownDescItems )
+    DescItem( type == "ISADG_LEVEL" && specCode == "ISADG_LEVEL_ITEM" ) from $parentItems
+    $itemSpec : RulItemSpecExt(code in ("ISADG_LEVEL_ITEM")) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+rule "The elements of ISAD(G) are possible at every level"
+no-loop
+when
+    $itemType : RulItemTypeExt(code in ("ISADG_REFERENCE_CODE", "ISADG_OTHER_ID", "ISADG_TITLE", "ISADG_DATE", "ISADG_DATE_BULK", "ISADG_DATE_TEXT", "ISADG_EXTENT", "ISADG_EXTENT_QUANTITY", "ISADG_MATERIAL_TYPE", "ISADG_DIMENSIONS", "ISADG_CREATOR", "ISADG_BIOGHIST", "ISADG_CUSTODHIST", "ISADG_ACQINFO", "ISADG_SCOPE_CONTENT", "ISADG_APPRAISAL", "ISADG_ACCRUALS", "ISADG_ARRANGEMENT", "ISADG_ACCESS_CONDITIONS", "ISADG_ACCESS_STATUS", "ISADG_ACCESS_OPEN_DATE", "ISADG_REPRODUCTION_CONDITIONS", "ISADG_LANGUAGE", "ISADG_SCRIPT", "ISADG_PHYSTECH", "ISADG_FINDING_AIDS", "ISADG_ORIGINALS_LOC", "ISADG_COPIES_LOC", "ISADG_RELATED_MATERIAL", "ISADG_RELATED_LINK", "ISADG_BIBLIOGRAPHY", "ISADG_NOTE", "ISADG_INTERNAL_NOTE", "ISADG_PROCESS_INFO", "ISADG_ARCHIVIST", "ISADG_RULES", "ISADG_DESCRIPTION_DATE", "ISADG_DAO_LINK", "ISADG_ACCESS_POINT"))
+then
+    $itemType.setType(RulItemType.Type.POSSIBLE);
+end
+
+rule "Every specification of a vocabulary is possible"
+no-loop
+when
+    $itemType : RulItemTypeExt(code in ("ISADG_OTHER_ID", "ISADG_EXTENT_QUANTITY", "ISADG_MATERIAL_TYPE", "ISADG_ACCESS_STATUS", "ISADG_LANGUAGE", "ISADG_ACCESS_POINT"))
+    $itemSpec : RulItemSpecExt() from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
+rule "Scale for maps, plans and technical drawings"
+no-loop
+when
+    $activeLevel : ActiveLevel()
+    DescItem( type == "ISADG_MATERIAL_TYPE" && specCode in ("ISADG_MATERIAL_MAPS", "ISADG_MATERIAL_DRAWINGS") ) from $activeLevel.ownDescItems
+    $itemType : RulItemTypeExt(code == "ISADG_SCALE")
+then
+    $itemType.setType(RulItemType.Type.POSSIBLE);
+end
+
+rule "Duration for sound recordings and moving images"
+no-loop
+when
+    $activeLevel : ActiveLevel()
+    DescItem( type == "ISADG_MATERIAL_TYPE" && specCode in ("ISADG_MATERIAL_SOUND", "ISADG_MATERIAL_MOVING_IMAGES") ) from $activeLevel.ownDescItems
+    $itemType : RulItemTypeExt(code == "ISADG_DURATION")
+then
+    $itemType.setType(RulItemType.Type.POSSIBLE);
+end
+
+rule "A container below the root"
+no-loop
+when
+    ActiveLevel( parent != null )
+    $itemType : RulItemTypeExt(code == "ISADG_CONTAINER")
+then
+    $itemType.setType(RulItemType.Type.POSSIBLE);
+    $itemType.setPolicyTypeCode("ISADG_POL_CONTAINER");
+end
+
+rule "ISAD(G) I.12: the essential elements are required at the fonds"
+salience -100
+no-loop
+when
+    ActiveLevel( parent == null )
+    $itemType : RulItemTypeExt(code in ("ISADG_REFERENCE_CODE", "ISADG_TITLE", "ISADG_DATE", "ISADG_EXTENT", "ISADG_CREATOR"))
+then
+    $itemType.setType(RulItemType.Type.REQUIRED);
+end
+
+rule "ISAD(G) 3.1.2: the title is required at every level"
+salience -100
+no-loop
+when
+    ActiveLevel( parent != null )
+    $itemType : RulItemTypeExt(code == "ISADG_TITLE")
+then
+    $itemType.setType(RulItemType.Type.REQUIRED);
+end
+
+rule "ISAD(G) 3.1.1, 3.1.3: the reference code and the dates are recommended below the fonds"
+salience -100
+no-loop
+when
+    ActiveLevel( parent != null )
+    $itemType : RulItemTypeExt(code in ("ISADG_REFERENCE_CODE", "ISADG_DATE"))
+then
+    $itemType.setType(RulItemType.Type.RECOMMENDED);
+end
+
+rule "The reference code has its own policy"
+salience -100
+no-loop
+when
+    $itemType : RulItemTypeExt(code == "ISADG_REFERENCE_CODE")
+then
+    $itemType.setPolicyTypeCode("ISADG_POL_REFERENCE_CODE");
+end

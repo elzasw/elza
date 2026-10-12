@@ -46,6 +46,12 @@
 					<version>${project.parent.version}</version>
 					<type>zip</type>
 				</dependency>
+				<dependency>
+					<groupId>cz.tacr.elza</groupId>
+					<artifactId>rules-en-isadg</artifactId>
+					<version>${project.parent.version}</version>
+					<type>zip</type>
+				</dependency>
 			</dependencies>
 			<build>
 				<plugins>

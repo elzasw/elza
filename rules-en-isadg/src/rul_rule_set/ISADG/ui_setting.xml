@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<settings xmlns:ns2="fund-views" xmlns:ns3="type-groups" xmlns:ns4="allow-structure-types"
+          xmlns:ns5="fund-issues" xmlns:ns6="grid-view">
+    <allow-structure-types settings-type="STRUCTURE_TYPES" entity-type="RULE">
+        <ns4:type code="ISADG_CONTAINER"/>
+    </allow-structure-types>
+    <fund-views settings-type="FUND_VIEW" entity-type="RULE">
+        <ns2:default>
+            <title>&lt;Not set&gt;</title>
+            <strict-mode>true</strict-mode>
+            <tree separator="; ">
+                <item type="ISADG_REFERENCE_CODE" />
+                <item type="ISADG_TITLE" />
+                <item type="ISADG_DATE" />
+            </tree>
+            <accordion-left separator="; ">
+                <item type="ISADG_REFERENCE_CODE" />
+                <item type="ISADG_TITLE" />
+                <item type="ISADG_DATE" />
+            </accordion-left>
+            <accordion-right>
+                <item type="ISADG_LEVEL" />
+                <item type="ISADG_CONTAINER" />
+            </accordion-right>
+            <hierarchy type-code="ISADG_LEVEL" default-separator="|">
+                <level spec-code="ISADG_LEVEL_FONDS">
+                    <icon>fa-sitemap</icon>
+                </level>
+                <level spec-code="ISADG_LEVEL_SUBFONDS">
+                    <icon>fa-sitemap</icon>
+                </level>
+                <level spec-code="ISADG_LEVEL_SERIES">
+                    <icon>ez-serie</icon>
+                </level>
+                <level spec-code="ISADG_LEVEL_SUBSERIES">
+                    <icon>ez-serie</icon>
+                </level>
+                <level spec-code="ISADG_LEVEL_FILE">
+                    <icon>fa-folder-o</icon>
+                </level>
+                <level spec-code="ISADG_LEVEL_ITEM">
+                    <icon>fa-file-text-o</icon>
+                </level>
+            </hierarchy>
+        </ns2:default>
+    </fund-views>
+    <type-groups settings-type="TYPE_GROUPS" entity-type="RULE">
+        <ns3:default>
+            <group code="01_IDENTITY">
+                <name>Identity statement</name>
+                <type code="ISADG_LEVEL" width="1"/>
+                <type code="ISADG_REFERENCE_CODE" width="1"/>
+                <type code="ISADG_OTHER_ID" width="2"/>
+                <type code="ISADG_TITLE" width="0"/>
+                <type code="ISADG_DATE" width="1"/>
+                <type code="ISADG_DATE_BULK" width="1"/>
+                <type code="ISADG_DATE_TEXT" width="2"/>
+                <type code="ISADG_EXTENT" width="0"/>
+                <type code="ISADG_EXTENT_QUANTITY" width="1"/>
+                <type code="ISADG_MATERIAL_TYPE" width="2"/>
+                <type code="ISADG_DIMENSIONS" width="1"/>
+                <type code="ISADG_SCALE" width="1"/>
+                <type code="ISADG_DURATION" width="1"/>
+            </group>
+            <group code="02_CONTEXT">
+                <name>Context</name>
+                <type code="ISADG_CREATOR" width="0"/>
+                <type code="ISADG_BIOGHIST" width="0"/>
+                <type code="ISADG_CUSTODHIST" width="0"/>
+                <type code="ISADG_ACQINFO" width="0"/>
+            </group>
+            <group code="03_CONTENT">
+                <name>Content and structure</name>
+                <type code="ISADG_SCOPE_CONTENT" width="0"/>
+                <type code="ISADG_APPRAISAL" width="0"/>
+                <type code="ISADG_ACCRUALS" width="0"/>
+                <type code="ISADG_ARRANGEMENT" width="0"/>
+            </group>
+            <group code="04_ACCESS">
+                <name>Conditions of access and use</name>
+                <type code="ISADG_ACCESS_STATUS" width="1"/>
+                <type code="ISADG_ACCESS_OPEN_DATE" width="1"/>
+                <type code="ISADG_ACCESS_CONDITIONS" width="0"/>
+                <type code="ISADG_REPRODUCTION_CONDITIONS" width="0"/>
+                <type code="ISADG_LANGUAGE" width="1"/>
+                <type code="ISADG_SCRIPT" width="1"/>
+                <type code="ISADG_PHYSTECH" width="0"/>
+                <type code="ISADG_FINDING_AIDS" width="0"/>
+            </group>
+            <group code="05_ALLIED">
+                <name>Allied materials</name>
+                <type code="ISADG_ORIGINALS_LOC" width="0"/>
+                <type code="ISADG_COPIES_LOC" width="0"/>
+                <type code="ISADG_RELATED_MATERIAL" width="0"/>
+                <type code="ISADG_RELATED_LINK" width="0"/>
+                <type code="ISADG_BIBLIOGRAPHY" width="0"/>
+            </group>
+            <group code="06_NOTES">
+                <name>Notes</name>
+                <type code="ISADG_NOTE" width="0"/>
+                <type code="ISADG_INTERNAL_NOTE" width="0"/>
+            </group>
+            <group code="07_CONTROL">
+                <name>Description control</name>
+                <type code="ISADG_ARCHIVIST" width="2"/>
+                <type code="ISADG_PROCESS_INFO" width="0"/>
+                <type code="ISADG_RULES" width="0"/>
+                <type code="ISADG_DESCRIPTION_DATE" width="1"/>
+            </group>
+            <group code="08_CONTAINER">
+                <name>Container</name>
+                <type code="ISADG_CONTAINER" width="1"/>
+                <type code="ISADG_CONTAINER_KIND" width="1"/>
+                <type code="ISADG_CONTAINER_PREFIX" width="1"/>
+                <type code="ISADG_CONTAINER_NUMBER" width="1"/>
+                <type code="ISADG_CONTAINER_POSTFIX" width="1"/>
+                <type code="ISADG_CONTAINER_LOCATION" width="2"/>
+            </group>
+            <group code="09_ACCESS_POINTS">
+                <name>Access points and digital objects</name>
+                <type code="ISADG_ACCESS_POINT" width="0"/>
+                <type code="ISADG_DAO_LINK" width="0"/>
+            </group>
+            <group code="10_FINDING_AID">
+                <name>Finding aid</name>
+                <type code="ISADG_FA_TITLE" width="0"/>
+                <type code="ISADG_FA_KIND" width="1"/>
+                <type code="ISADG_FA_AUTHOR" width="0"/>
+                <type code="ISADG_FA_DATE" width="1"/>
+                <type code="ISADG_FA_LANGUAGE" width="1"/>
+                <type code="ISADG_FA_NOTE" width="0"/>
+                <type code="ISADG_ATTACHMENT" width="2"/>
+            </group>
+        </ns3:default>
+    </type-groups>
+    <grid-view settings-type="GRID_VIEW" entity-type="RULE">
+        <ns6:item-type code="ISADG_REFERENCE_CODE">
+            <show-default>true</show-default>
+            <width>100</width>
+        </ns6:item-type>
+        <ns6:item-type code="ISADG_LEVEL">
+            <show-default>true</show-default>
+            <width>100</width>
+        </ns6:item-type>
+        <ns6:item-type code="ISADG_TITLE">
+            <show-default>true</show-default>
+            <width>250</width>
+        </ns6:item-type>
+        <ns6:item-type code="ISADG_DATE">
+            <show-default>true</show-default>
+            <width>100</width>
+        </ns6:item-type>
+        <ns6:item-type code="ISADG_MATERIAL_TYPE">
+            <show-default>true</show-default>
+            <width>150</width>
+        </ns6:item-type>
+        <ns6:item-type code="ISADG_CONTAINER">
+            <show-default>true</show-default>
+            <width>100</width>
+        </ns6:item-type>
+        <ns6:item-type code="ISADG_CREATOR">
+            <show-default>true</show-default>
+            <width>180</width>
+        </ns6:item-type>
+    </grid-view>
+    <fund-issues settings-type="FUND_ISSUES" entity-type="RULE">
+        <ns5:issue-states>
+            <ns5:issue-state code="RESOLVED" icon="fa-check"/>
+            <ns5:issue-state code="REJECTED" icon="fa-times"/>
+            <ns5:issue-state code="INVALID" icon="fa-minus"/>
+        </ns5:issue-states>
+        <ns5:issue-types>
+            <ns5:issue-type code="IMPORTANT" color="#CF2A28"/>
+            <ns5:issue-type code="RECOMMENDED" color="#FE9900"/>
+            <ns5:issue-type code="MINOR" color="#FFFF00"/>
+        </ns5:issue-types>
+    </fund-issues>
+</settings>

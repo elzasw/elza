@@ -434,6 +434,10 @@
                 <targetPath>${basedir}/target/test-classes/package-isaar-cpf</targetPath>
             </testResource>
             <testResource>
+                <directory>${basedir}/../rules-en-isadg/src</directory>
+                <targetPath>${basedir}/target/test-classes/rules-en-isadg</targetPath>
+            </testResource>
+            <testResource>
                 <directory>${basedir}/../rules-simple-dev/src</directory>
                 <targetPath>${basedir}/target/test-classes/rules-simple-dev</targetPath>
             </testResource>

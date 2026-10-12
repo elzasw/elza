@@ -1,0 +1,14 @@
+<structure-definitions>
+    <structure-definition structure-type="ISADG_CONTAINER" filename="Container.drl">
+        <def-type>ATTRIBUTE_TYPES</def-type>
+        <priority>100</priority>
+    </structure-definition>
+    <structure-definition structure-type="ISADG_CONTAINER" filename="Container.groovy">
+        <def-type>SERIALIZED_VALUE</def-type>
+        <priority>100</priority>
+    </structure-definition>
+    <structure-definition structure-type="ISADG_CONTAINER" filename="Container-parse.groovy">
+        <def-type>PARSE_VALUE</def-type>
+        <priority>100</priority>
+    </structure-definition>
+</structure-definitions>

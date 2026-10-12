@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<settings xmlns:ns7="structure-type-settings" xmlns:ns10="dao-import-level">
+    <favorite-item-specs code="ISADG_LANGUAGE">
+        <favorite-item>LNG_eng</favorite-item>
+        <favorite-item>LNG_fre</favorite-item>
+        <favorite-item>LNG_ger</favorite-item>
+        <favorite-item>LNG_spa</favorite-item>
+        <favorite-item>LNG_lat</favorite-item>
+    </favorite-item-specs>
+    <favorite-item-specs code="ISADG_FA_LANGUAGE">
+        <favorite-item>LNG_eng</favorite-item>
+        <favorite-item>LNG_fre</favorite-item>
+        <favorite-item>LNG_ger</favorite-item>
+        <favorite-item>LNG_spa</favorite-item>
+        <favorite-item>LNG_lat</favorite-item>
+    </favorite-item-specs>
+    <structure-type-settings code="STRUCT_TYPE_ISADG_CONTAINER">
+      <ns7:property code="prefixSeparator"> </ns7:property>
+      <ns7:property code="postfixSeparator"> </ns7:property>
+    </structure-type-settings>
+    <dao-import-level-settings settings-type="DAO_LEVEL_IMPORT" entity-type="FUND">
+      <ns10:default>
+        <scenario>Series</scenario>
+        <desc-item-type>ISADG_TITLE</desc-item-type>
+      </ns10:default>
+    </dao-import-level-settings>
+</settings>
