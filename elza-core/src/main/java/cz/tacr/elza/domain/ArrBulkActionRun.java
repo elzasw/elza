@@ -29,6 +29,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import cz.tacr.elza.bulkaction.generator.result.Result;
 
@@ -43,7 +45,13 @@ import cz.tacr.elza.bulkaction.generator.result.Result;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class ArrBulkActionRun {
 
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    /**
+     * The result holds entities of the description (CopyActionResult) whose
+     * data reach java.time values (ArrDataDate, DmsFile.createdAt).
+     */
+    private static final ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new JavaTimeModule())
+            .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 
     public static final String TABLE_NAME = "arr_bulk_action_run";
 
