@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -50,6 +51,10 @@ import cz.tacr.elza.service.AipService;
  * The digital archive reports an AIP as invalidated: the package no longer exists for it, so it has
  * to disappear from ELZA - from the archival description it was attached to, from the AIP list and
  * from the queue - while what happened stays readable in the history.
+ *
+ * The test holds {@link DaCommunicationLock} like the synchronization does over its commit, so the
+ * processors running in the application do not take the requests it creates before the
+ * invalidation withdraws them.
  */
 public class DaServiceInvalidatedAipTest extends AbstractServiceTest {
 
@@ -79,25 +84,36 @@ public class DaServiceInvalidatedAipTest extends AbstractServiceTest {
     private DigitalRepositoryRepository digitalRepositoryRepository;
     @Autowired
     private DaLocalCacheRepository localCacheRepository;
+    @Autowired
+    private DaCommunicationLock communicationLock;
 
     private TransactionTemplate tx() {
         return new TransactionTemplate(txManager);
     }
 
+    @BeforeEach
+    public void holdTheQueue() {
+        communicationLock.lock();
+    }
+
     @AfterEach
     public void deleteCreatedRows() {
-        tx().executeWithoutResult(t -> {
-            localCacheRepository.deleteAll();
-            syncQueueItemRepository.deleteAll();
-            actionItemRepository.deleteAll();
-            actionRepository.deleteAll();
-            daLinkRepository.deleteAll();
-            daoRepository.deleteAll();
-            aipStateRepository.deleteAll();
-            changeRepository.deleteAll();
-            aipRepository.deleteAll();
-            digitalRepositoryRepository.deleteAll();
-        });
+        try {
+            tx().executeWithoutResult(t -> {
+                localCacheRepository.deleteAll();
+                syncQueueItemRepository.deleteAll();
+                actionItemRepository.deleteAll();
+                actionRepository.deleteAll();
+                daLinkRepository.deleteAll();
+                daoRepository.deleteAll();
+                aipStateRepository.deleteAll();
+                changeRepository.deleteAll();
+                aipRepository.deleteAll();
+                digitalRepositoryRepository.deleteAll();
+            });
+        } finally {
+            communicationLock.unlock();
+        }
     }
 
     private ArrDigitalRepository createRepository() {
