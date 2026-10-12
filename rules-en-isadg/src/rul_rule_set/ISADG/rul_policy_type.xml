@@ -1,0 +1,11 @@
+<policy-types>
+    <policy-type code="ISADG_POL_BASIC">
+        <name>Basic</name>
+    </policy-type>
+    <policy-type code="ISADG_POL_REFERENCE_CODE">
+        <name>Reference codes</name>
+    </policy-type>
+    <policy-type code="ISADG_POL_CONTAINER">
+        <name>Containers</name>
+    </policy-type>
+</policy-types>

@@ -322,6 +322,9 @@ existing installation unless it is listed. The distribution contains:
 - ``ISAAR_CPF`` - entity description according to the international
   standard ISAAR(CPF), in English; for installations outside the Czech
   practice or alongside ``CZ_BASE``.
+- ``ISADG`` - archival description of fonds according to the international
+  standard ISAD(G), in English; needs ``ISAAR_CPF`` for creators and access
+  points. See the user guide.
 
 Set the key before the first start. On an empty database without the
 key, ELZA imports every package of the directory. The log of the start

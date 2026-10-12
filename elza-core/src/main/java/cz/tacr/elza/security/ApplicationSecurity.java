@@ -130,7 +130,7 @@ public class ApplicationSecurity {
      * @see cz.tacr.elza.web.controller.ElzaWebController (elza-web)
      */
     public static final String[] PERMIT_ALL_PATTERNS = {"/", "/res/**", "/static/**", 
-    		"/fund/**", "/node/**", "/entity/**", "/admin/**", "/aip/**", "/h2-console/**" };
+    		"/fund/**", "/node/**", "/entity/**", "/admin/**", "/aip/**", "/da/**", "/h2-console/**" };
 
     public static final String SETUP_PATTERN = "/api/v1/setup/**";
 

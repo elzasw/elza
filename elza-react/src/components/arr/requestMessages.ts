@@ -16,6 +16,8 @@ export const requestMessages = defineMessages({
     outputNoSelectionMessage: { id: "arr.output.noSelection.message", defaultMessage: "Prosím vyberte výstup ze seznamu nebo vytvořte nový. Pro vytvoření výstupu je potřeba povolit úpravy." },
     outputNoSelectionTitle: { id: "arr.output.noSelection.title", defaultMessage: "Není vybrán výstup" },
     outputOutputFilter: { id: "arr.output.outputFilter", defaultMessage: "Výstupní filtr" },
+    // stejný text jako volba v detailu výstupu (OutputDefinition)
+    outputNoFilter: { id: "arr.output.form.outputFilterPlaceholder", defaultMessage: "Bez filtru" },
     outputOutputType: { id: "arr.output.outputType", defaultMessage: "Typ výstupu" },
     outputTemplate: { id: "arr.output.template", defaultMessage: "Šablona" },
     requestActionStoreAndSend: { id: "arr.request.action.storeAndSend", defaultMessage: "Uložit a odeslat" },

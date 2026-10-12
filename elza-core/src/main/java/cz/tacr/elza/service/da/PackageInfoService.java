@@ -119,7 +119,7 @@ public class PackageInfoService {
                 }
             }
         }
-        DaAip daAip = aipRepository.findByCode(aipCode);
+        DaAip daAip = aipRepository.findByDigitalRepositoryAndCode(digitalRepository, aipCode);
         DaAipState oldAipState = null;
         if (daAip == null) {
             daChange.setType(DaChangeType.AIP_CREATE);

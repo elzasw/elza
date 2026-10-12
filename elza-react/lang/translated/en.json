@@ -2293,6 +2293,10 @@
     "defaultMessage": "Content type",
     "srcHash": "6zvdoABI4nl8"
   },
+  "aip.col.digitalRepositoryCode": {
+    "defaultMessage": "Digital archive code",
+    "srcHash": "mgGEbmg2AzxH"
+  },
   "aip.col.exportState": {
     "defaultMessage": "Export state",
     "srcHash": "Z6AadsdMdPep"
@@ -2468,6 +2472,18 @@
   "aip.detail.title": {
     "defaultMessage": "AIP detail",
     "srcHash": "dNE8MdYQimxe"
+  },
+  "aip.entry.aipList": {
+    "defaultMessage": "Open the AIP list",
+    "srcHash": "6fQkWE_tebXg"
+  },
+  "aip.entry.failed": {
+    "defaultMessage": "AIP “{aipCode}” of the digital archive “{repositoryCode}” could not be looked up: {message}",
+    "srcHash": "iPnlEm205ORT"
+  },
+  "aip.entry.notFound": {
+    "defaultMessage": "AIP “{aipCode}” of the digital archive “{repositoryCode}” is not in ELZA. If the archive delivered it only recently, it may still be waiting in the download queue.",
+    "srcHash": "NpQwAHWjsp8I"
   },
   "aip.explorer.back": {
     "defaultMessage": "Back to the list",

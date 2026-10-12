@@ -78,6 +78,11 @@ New
   are never deleted.
 * New: ELZA DA - a new setting of the DA repository, *Batch status check
   interval (s)*, default 2 seconds (before 100 ms).
+* New: ELZA DA - entry URL ``<ELZA_URL>/da/<DA_CODE>/aip/<AIP_ID>``
+  opens an AIP by its identifier in the digital archive. It goes to the
+  linked description unit, or to the package in its fund. See
+  :doc:`/07-integrations`. The AIP list can be filtered by the code of
+  the digital archive.
 * New: 10070 - Structured objects (storage units, access restrictions, ...)
   are exported to CSV from the panel of the fund (three dots → *Export to
   CSV*), with the filter of the panel applied. The ID column is the value
@@ -86,6 +91,24 @@ New
 Changes
 -------
 
+* Change: The persistent sort in the context menu of the tree and the
+  refresh of the tree after it follow the rules of the fund: the action is
+  recognised by its kind, not by a fixed name, so every rules package names
+  its own. *Compute and visualise EJ* is offered only for funds whose rules
+  have the action (ZP2015). The persistent sort is not offered for a run
+  over several funds, whatever the rules call it.
+* Change: REST API - the bulk actions of a fund version are listed by
+  ``GET /api/v1/action/fund-version/{fundVersionId}`` with the kind of each
+  action (``type``), and the persistent sort is run by
+  ``POST /api/v1/action/fund-version/{fundVersionId}/persistent-sort``,
+  which finds the sort of the rules of the fund itself. The endpoint
+  ``POST /api/action/queue/persistentSort/{versionId}/{code}`` is removed.
+* Change: The description of a unit sent to a WSDL digital repository or a
+  digitization front desk with a linked digital object (the DID of the DAO
+  web services) carries the identifier of the unit only. The script
+  :file:`groovy/createDid.groovy` in the working directory, which added the
+  title, the reference code and the date, is no longer read and can be
+  deleted; it had not worked since 2020.
 * Change: ELZA DA - a batch the digital archive prepares for download or
   processes after an export no longer stops the other communication with
   it and survives a restart of ELZA. A failure to reach the archive is
@@ -104,6 +127,11 @@ Changes
 Fixes
 -----
 
+* Fix: A failed persistent sort or *Compute and visualise EJ* is reported;
+  before, only a finished or interrupted run was. The tree refreshed after
+  the action is the tree of its fund, not of the fund shown at that moment.
+* Fix: The persistent sort on the page of bulk actions keeps the direction
+  and the specification of the run it starts from.
 * Fix: ELZA DA - a package whose PREMIS file has another name, or no PREMIS
   file, is no longer refused.
 * Fix: ELZA DA - a description unit with an attached AIP whose metadata

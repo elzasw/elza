@@ -1,0 +1,51 @@
+package ISADG;
+
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulItemSpecExt;
+
+rule "Required items of the finding aid"
+no-loop
+when
+    $itemType : RulItemTypeExt(code in ("ISADG_FA_TITLE", "ISADG_FA_KIND", "ISADG_FA_DATE"))
+then
+    $itemType.setType(RulItemType.Type.REQUIRED);
+    $itemType.setRepeatable(false);
+end
+
+rule "The language of the finding aid is required, several are possible"
+no-loop
+when
+    $itemType : RulItemTypeExt(code == "ISADG_FA_LANGUAGE")
+then
+    $itemType.setType(RulItemType.Type.REQUIRED);
+    $itemType.setRepeatable(true);
+end
+
+rule "Recommended items of the finding aid"
+no-loop
+when
+    $itemType : RulItemTypeExt(code == "ISADG_FA_AUTHOR")
+then
+    $itemType.setType(RulItemType.Type.RECOMMENDED);
+    $itemType.setRepeatable(false);
+end
+
+rule "Possible items of the finding aid"
+no-loop
+when
+    $itemType : RulItemTypeExt(code in ("ISADG_FA_NOTE", "ISADG_ATTACHMENT"))
+then
+    $itemType.setType(RulItemType.Type.POSSIBLE);
+    $itemType.setRepeatable(true);
+end
+
+rule "Every kind and language of the finding aid"
+no-loop
+when
+    $itemType : RulItemTypeExt(code in ("ISADG_FA_KIND", "ISADG_FA_LANGUAGE"))
+    $itemSpec : RulItemSpecExt() from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end

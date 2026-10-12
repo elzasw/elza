@@ -161,7 +161,9 @@ class AddOutputForm extends AbstractReactComponent {
                             name={'outputFilterId'}
                             disabled={submitting}
                         >
-                            <option key="-outputFilterId" />
+                            <option key="-outputFilterId" value="">
+                                {this.props.intl.formatMessage(requestMessages.outputNoFilter)}
+                            </option>
                             {outputFilters.map(i => (
                                 <option key={i.id} value={i.id}>
                                     {i.name}

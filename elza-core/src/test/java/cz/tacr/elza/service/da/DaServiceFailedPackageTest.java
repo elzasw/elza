@@ -167,7 +167,7 @@ public class DaServiceFailedPackageTest {
                                    AipType.PACKAGE_INFO, new ArrayList<>(List.of(syncQueueItem)));
 
         verify(aipRepository, never()).save(any(DaAip.class));
-        verify(aipRepository, never()).findByCode(anyString());
+        verify(aipRepository, never()).findByDigitalRepositoryAndCode(any(), anyString());
         ArgumentCaptor<AipProblem> problem = ArgumentCaptor.forClass(AipProblem.class);
         verify(referenceResolver).recordProblem(any(DaAipState.class), problem.capture());
         assertEquals(AipProblemType.METADATA_ERROR, problem.getValue().type());

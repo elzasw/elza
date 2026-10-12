@@ -26,6 +26,7 @@ import { FC, useEffect, useState } from "react";
 import "./ExplorerDetail.scss";
 import { Button,  } from "@fluentui/react-components";
 import {  findNodeByUUID,  } from "../utils";
+import { aipCodeForms } from "../../aipCode";
 import {  useExplorerContext } from "../ExplorerContext";
 import { useSelector } from "react-redux";
 import { storeFromArea } from "shared/utils";
@@ -85,7 +86,10 @@ const ExplorerDetail: FC<{selected?: string;}> = ({selected}) => {
 
     useEffect(() => {
         if (selected && structure.data && structureOfThis) {
-            const result = findNodeByUUID(structure.data, selected);
+            // the address may carry the part in another form than the package stores it
+            const result = aipCodeForms(selected)
+                .map(form => findNodeByUUID(structure.data, form))
+                .find(hit => hit?.node);
             if (result && result.node) {
                 setSelectedItem(result.node);
             }

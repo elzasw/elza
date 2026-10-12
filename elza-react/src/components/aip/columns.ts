@@ -10,6 +10,8 @@ export type AipColumnDef = {
     valueType: AipValueType;
     minWidth: number;
     idealWidth: number;
+    /** The column is offered in the column selector and the filter but not shown at first. */
+    hiddenByDefault?: boolean;
 };
 
 /**
@@ -41,6 +43,9 @@ export const aipColumns: Record<AipFieldName, AipColumnDef> = {
     [AipFieldName.CompleteAipLoad]: {key: "completeAipLoad", message: messages.completeAipLoad, valueType: "bool", minWidth: 70, idealWidth: 130},
     [AipFieldName.ProblemType]: {key: "problemType", message: messages.problemType, valueType: "problemType", minWidth: 70, idealWidth: 130},
     [AipFieldName.LinkState]: {key: "linkState", message: messages.linkState, valueType: "linkState", minWidth: 70, idealWidth: 130},
+    [AipFieldName.DigitalRepositoryCode]: {key: "digitalRepositoryCode", message: messages.digitalRepositoryCode, valueType: "text", minWidth: 60, idealWidth: 90,
+        // most installations have a single digital archive
+        hiddenByDefault: true},
 };
 
 /**
@@ -69,6 +74,7 @@ const COLUMN_ORDER: AipFieldName[] = [
     AipFieldName.ExportState,
     AipFieldName.CompleteAipLoad,
     AipFieldName.ProblemType,
+    AipFieldName.DigitalRepositoryCode,
 ];
 
 export type AipColumn = AipColumnDef & {field: AipFieldName};

@@ -5,6 +5,8 @@
 import * as types from 'actions/constants/ActionTypes';
 import {WebApi} from 'actions/index';
 import {indexById} from 'stores/app/utils';
+import {Api} from 'api';
+import {isPersistentSortAction} from 'components/arr/bulkActions';
 import {ActionState} from '../../constants';
 import { defineMessages } from 'react-intl';
 import { getIntl } from 'components/shared/lang/intlInstance';
@@ -98,7 +100,7 @@ export function fundActionFetchConfigIfNeeded(versionId) {
             } = funds[index];
             if (currentDataKey !== versionId || (!isFetching && !fetched)) {
                 dispatch(fundActionConfigRequest(versionId, versionId));
-                WebApi.getBulkActions(versionId).then(data =>
+                Api.funds.bulkActionGetFundVersionActions(versionId).then(({data}) =>
                     dispatch(fundActionConfigReceive(versionId, versionId, data)),
                 );
             }
@@ -227,7 +229,13 @@ export function fundActionFormChange(versionId, data) {
     };
 }
 
-export function fundActionFormSubmit(versionId, code, config) {
+/**
+ * Runs the action of the form over its units.
+ *
+ * @param sortSettings how to sort, when the action of the form is the persistent sort
+ *            (PersistentSortRequest without nodeIds)
+ */
+export function fundActionFormSubmit(versionId, sortSettings) {
     return (dispatch, getState) => {
         const {
             arrRegion: {funds},
@@ -240,8 +248,8 @@ export function fundActionFormSubmit(versionId, code, config) {
             } = funds[index];
             if (isFormVisible) {
                 const nodeIds = form.nodes.map(node => node.id);
-                if (code === 'PERZISTENTNI_RAZENI') {
-                    WebApi.queuePersistentSortByIds(versionId, form.code, nodeIds, config);
+                if (isPersistentSortAction(funds[index], form.code)) {
+                    Api.funds.bulkActionQueuePersistentSort(versionId, {...sortSettings, nodeIds});
                 } else {
                     WebApi.queueBulkActionWithIds(versionId, form.code, nodeIds);
                 }

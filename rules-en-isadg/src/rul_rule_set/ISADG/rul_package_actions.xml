@@ -1,0 +1,15 @@
+<package-actions>
+    <package-action filename="ISADG_FUND_VALIDATION.yaml">
+        <action-recommendeds>
+            <action-recommended output-type="ISADG_FINDING_AID" />
+        </action-recommendeds>
+    </package-action>
+    <package-action filename="ISADG_GENERATOR_REFERENCE_CODE.yaml">
+        <action-recommendeds>
+            <action-recommended output-type="ISADG_FINDING_AID" />
+        </action-recommendeds>
+    </package-action>
+    <!-- The persistent sort is recognised by its kind (!PersistentSort), so the file may have any
+         name; a file name is unique across the installation, which rules out ZP2015's. -->
+    <package-action filename="ISADG_PERSISTENT_SORT.yaml" />
+</package-actions>

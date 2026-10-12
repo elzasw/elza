@@ -156,9 +156,6 @@ public class DaoSyncService {
     private UserService userService;
 
     @Autowired
-    private GroovyScriptService groovyScriptService;
-
-    @Autowired
     FundLevelService fundLevelService;
 
     @Lazy
@@ -419,7 +416,7 @@ public class DaoSyncService {
                 List<DaoSyncRequest> list = daos.stream().map(dao -> createDaoSyncRequest(node, dao)).collect(toList());
 
                 Dids dids = new Dids();
-                dids.getDid().add(groovyScriptService.createDid(node));
+                dids.getDid().add(WSHelper.createDid(node));
 
                 DaosSyncRequest daosSyncRequest = createDaosSyncRequest(fundVersion, list, dids);
                 DaosSyncResponse daosSyncResponse = wsClient.syncDaos(daosSyncRequest, digitalRepository);
@@ -448,7 +445,7 @@ public class DaoSyncService {
         Dids dids = new Dids();
         List<ArrNode> arrNodes = arrDaoLinks.stream().map(ArrLegacyDaoLink::getNode).collect(toList());
         if (CollectionUtils.isNotEmpty(arrNodes)) {
-            dids.getDid().addAll(groovyScriptService.createDids(arrNodes));
+            dids.getDid().addAll(arrNodes.stream().map(WSHelper::createDid).toList());
         }
 
         return createDaosSyncRequest(fundVersion, list, dids);

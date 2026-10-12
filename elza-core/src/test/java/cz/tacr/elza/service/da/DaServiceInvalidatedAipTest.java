@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -50,6 +51,10 @@ import cz.tacr.elza.service.AipService;
  * The digital archive reports an AIP as invalidated: the package no longer exists for it, so it has
  * to disappear from ELZA - from the archival description it was attached to, from the AIP list and
  * from the queue - while what happened stays readable in the history.
+ *
+ * The test holds {@link DaCommunicationLock} like the synchronization does over its commit, so the
+ * processors running in the application do not take the requests it creates before the
+ * invalidation withdraws them.
  */
 public class DaServiceInvalidatedAipTest extends AbstractServiceTest {
 
@@ -79,30 +84,45 @@ public class DaServiceInvalidatedAipTest extends AbstractServiceTest {
     private DigitalRepositoryRepository digitalRepositoryRepository;
     @Autowired
     private DaLocalCacheRepository localCacheRepository;
+    @Autowired
+    private DaCommunicationLock communicationLock;
 
     private TransactionTemplate tx() {
         return new TransactionTemplate(txManager);
     }
 
+    @BeforeEach
+    public void holdTheQueue() {
+        communicationLock.lock();
+    }
+
     @AfterEach
     public void deleteCreatedRows() {
-        tx().executeWithoutResult(t -> {
-            localCacheRepository.deleteAll();
-            syncQueueItemRepository.deleteAll();
-            actionItemRepository.deleteAll();
-            actionRepository.deleteAll();
-            daLinkRepository.deleteAll();
-            daoRepository.deleteAll();
-            aipStateRepository.deleteAll();
-            changeRepository.deleteAll();
-            aipRepository.deleteAll();
-            digitalRepositoryRepository.deleteAll();
-        });
+        try {
+            tx().executeWithoutResult(t -> {
+                localCacheRepository.deleteAll();
+                syncQueueItemRepository.deleteAll();
+                actionItemRepository.deleteAll();
+                actionRepository.deleteAll();
+                daLinkRepository.deleteAll();
+                daoRepository.deleteAll();
+                aipStateRepository.deleteAll();
+                changeRepository.deleteAll();
+                aipRepository.deleteAll();
+                digitalRepositoryRepository.deleteAll();
+            });
+        } finally {
+            communicationLock.unlock();
+        }
     }
 
     private ArrDigitalRepository createRepository() {
+        return createRepository("DA-INVALIDATED");
+    }
+
+    private ArrDigitalRepository createRepository(String code) {
         ArrDigitalRepository repository = new ArrDigitalRepository();
-        repository.setCode("DA-INVALIDATED");
+        repository.setCode(code);
         repository.setName("Testovaci digitalni archiv");
         repository.setDigitalRepositoryType(DigitalRepositoryType.DA);
         repository.setSendNotification(false);
@@ -186,6 +206,23 @@ public class DaServiceInvalidatedAipTest extends AbstractServiceTest {
         assertThrows(ObjectNotFoundException.class, () -> aipService.getAip(aipId));
     }
 
+    /**
+     * The code of an AIP is unique only within its digital archive: an invalidation another archive
+     * reports for the same code concerns a different AIP and leaves this one alone.
+     */
+    @Test
+    public void invalidationFromAnotherArchiveKeepsTheAip() {
+        Integer repositoryId = tx().execute(t -> createRepository().getExternalSystemId());
+        Integer aipId = tx().execute(t -> createAip(digitalRepositoryRepository.findById(repositoryId).orElseThrow()));
+        Integer otherRepositoryId = tx().execute(t -> createRepository("DA-OTHER").getExternalSystemId());
+
+        sync(otherRepositoryId, update("2", true));
+
+        tx().executeWithoutResult(t -> assertNotNull(
+                aipStateRepository.findByDaAipAndDeleteChangeIsNull(aipRepository.findById(aipId).orElseThrow()),
+                "the AIP of the first archive keeps its state"));
+    }
+
     /** An export waiting to be sent is dropped together with the package prepared for it. */
     @Test
     public void pendingExportIsDropped() throws IOException {
@@ -229,7 +266,8 @@ public class DaServiceInvalidatedAipTest extends AbstractServiceTest {
         sync(repositoryId, update("1", true));
 
         tx().executeWithoutResult(t -> {
-            assertNull(aipRepository.findByCode(CODE));
+            assertNull(aipRepository.findByDigitalRepositoryAndCode(
+                    digitalRepositoryRepository.findById(repositoryId).orElseThrow(), CODE));
             assertTrue(syncQueueItemRepository.findAll().isEmpty(), "nothing is queued for download");
         });
     }

@@ -26,31 +26,27 @@ public class DaImportPlan {
         private final String label;
         private final DaImportResult.Decision decision;
         private final List<DaLevelItems.MatchKey> matchBy;
-        private final List<DaLevelItems.Item> items;
+        private final List<DaItems.Item> items;
+        private final List<DaItems.Item> createdItems;
         private final boolean attachOwnEntity;
         private final boolean attachWholeAip;
         private final List<Node> children = new ArrayList<>();
 
         Node(String divId, @Nullable String label, DaImportResult.Decision decision,
              List<DaLevelItems.MatchKey> matchBy,
-             List<DaLevelItems.Item> items) {
-            this(divId, label, decision, matchBy, items, false);
-        }
-
-        Node(String divId, @Nullable String label, DaImportResult.Decision decision,
-             List<DaLevelItems.MatchKey> matchBy,
-             List<DaLevelItems.Item> items, boolean attachOwnEntity) {
-            this(divId, label, decision, matchBy, items, attachOwnEntity, false);
+             List<DaItems.Item> items, List<DaItems.Item> createdItems) {
+            this(divId, label, decision, matchBy, items, createdItems, false, false);
         }
 
         private Node(@Nullable String divId, @Nullable String label, DaImportResult.Decision decision,
-                     List<DaLevelItems.MatchKey> matchBy, List<DaLevelItems.Item> items, boolean attachOwnEntity,
-                     boolean attachWholeAip) {
+                     List<DaLevelItems.MatchKey> matchBy, List<DaItems.Item> items, List<DaItems.Item> createdItems,
+                     boolean attachOwnEntity, boolean attachWholeAip) {
             this.divId = divId;
             this.label = label;
             this.decision = decision;
             this.matchBy = List.copyOf(matchBy);
             this.items = List.copyOf(items);
+            this.createdItems = List.copyOf(createdItems);
             this.attachOwnEntity = attachOwnEntity;
             this.attachWholeAip = attachWholeAip;
         }
@@ -60,9 +56,10 @@ public class DaImportPlan {
          *
          * @param attachWholeAip whether the whole package is linked to the level
          */
-        static Node chainLevel(String label, List<DaLevelItems.MatchKey> matchBy, List<DaLevelItems.Item> items,
-                               boolean attachWholeAip) {
-            return new Node(null, label, DaImportResult.Decision.LEVEL, matchBy, items, false, attachWholeAip);
+        static Node chainLevel(String label, List<DaLevelItems.MatchKey> matchBy, List<DaItems.Item> items,
+                               List<DaItems.Item> createdItems, boolean attachWholeAip) {
+            return new Node(null, label, DaImportResult.Decision.LEVEL, matchBy, items, createdItems, false,
+                            attachWholeAip);
         }
 
         /** Whether the level is a level of the chain a package is placed under, standing for no div. */
@@ -105,8 +102,18 @@ public class DaImportPlan {
         }
 
         /** Items of the level; empty for an attachment. */
-        public List<DaLevelItems.Item> getItems() {
+        public List<DaItems.Item> getItems() {
             return items;
+        }
+
+        /**
+         * Items the level gets only when it is created, not when an existing level is found;
+         * empty for an attachment.
+         *
+         * @see DaLevelItems#whenCreated()
+         */
+        public List<DaItems.Item> getCreatedItems() {
+            return createdItems;
         }
 
         public List<Node> getChildren() {
@@ -169,7 +176,7 @@ public class DaImportPlan {
         for (Node root : roots) {
             result.addRoot(root.getDecision() == DaImportResult.Decision.LEVEL
                     ? new Node(root.getDivId(), root.getLabel(), root.getDecision(), root.getMatchBy(),
-                               root.getItems(), true)
+                               root.getItems(), root.getCreatedItems(), true, false)
                     : root);
         }
         return result;

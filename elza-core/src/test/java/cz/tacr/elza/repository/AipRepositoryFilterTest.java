@@ -142,6 +142,8 @@ public class AipRepositoryFilterTest extends AbstractTest {
 
         assertNotNull(aipRepository.findAipsByFilter(
                 params(text(AipFieldName.FUND_CODE, OperationTextType.IS_NULL, null))));
+        assertNotNull(aipRepository.findAipsByFilter(
+                params(text(AipFieldName.DIGITAL_REPOSITORY_CODE, OperationTextType.EQ, "DA"))));
     }
 
     /**

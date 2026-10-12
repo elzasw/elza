@@ -95,6 +95,52 @@ Every package therefore uses its own code prefix (``ZP2015_``, ``SRD_``,
 ``ADT_``), including packages that customize another package (see
 :doc:`03-customization`).
 
+.. _base-vocabulary:
+
+Base parts and items
+====================
+
+A few part types and item types of archival entities are a shared base: the
+application has logic of its own for them, so every entity description
+framework uses them under these codes. They are declared by CZ_BASE; a
+framework either depends on CZ_BASE or declares the same codes itself, as
+ISAAR_CPF does (see *Part types shared by packages* and *Item types shared
+by packages* in :doc:`02-package-files`). A framework adds its own part and
+item types next to them freely; only these codes carry built-in logic.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 18 82
+
+   * - Code
+     - What the application does with it
+   * - ``PT_NAME``
+     - Name. A new entity is created with a part of this type, and the
+       preferred name of an entity has to be a part of this type (an entity
+       whose preferred part is of another type is rejected). The search area
+       *names* searches the names of these parts.
+   * - ``PT_BODY``
+     - Description. The display name of this part (``DISPLAY_NAME`` from
+       the ``INDEX`` rule) is the description of the entity in lists and in
+       the export of entities.
+   * - ``PT_CRE``, ``PT_EXT``
+     - Creation and extinction; sections of the export of entities.
+   * - ``NM_MAIN``
+     - Main part of a name: the search option *only the main part of the
+       name* searches it; the name of a user created from an OAuth2 token
+       is stored in it.
+   * - ``NM_MINOR``
+     - Minor part of a name; a column of the export of entities.
+   * - ``CRE_DATE``, ``EXT_DATE``
+     - Dates of creation and extinction; the search filters by these dates
+       read them.
+
+Everything else the application shows or searches comes from the rules of
+the framework: the names of parts from its ``INDEX`` rules, the searched
+item fields from its ``index-search`` setting (:ref:`index-search`). The
+exchange with the CAM system and the import of the former party format work
+with the CAM codes only.
+
 Rule sets and rules
 ===================
 

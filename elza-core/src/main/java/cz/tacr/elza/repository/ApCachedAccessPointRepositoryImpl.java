@@ -8,8 +8,8 @@ import static cz.tacr.elza.domain.ArrDescItem.REL_AP_ID;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.AP_TYPE_ID;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.INDEX;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.NM_MAIN;
-import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.NM_MINOR;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.PREFIX_PREF;
+import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.PREF_INDEX;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.SCOPE_ID;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.SEPARATOR;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.STATE;
@@ -30,6 +30,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.search.engine.backend.metamodel.IndexDescriptor;
 import org.hibernate.search.engine.search.predicate.SearchPredicate;
 import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesStep;
 import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
@@ -54,7 +55,6 @@ import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPartType;
-import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.converter.UnitDateConverter;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
@@ -109,7 +109,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 				.where(predicate)
                 .sort(f -> f.composite(b -> {
                     b.add(f.score());
-                    b.add(f.field(DATA + SEPARATOR + PREFIX_PREF + SEPARATOR + INDEX + SORTABLE).asc());
+                    b.add(f.field(DATA + SEPARATOR + PREF_INDEX + SORTABLE).asc());
                 }))
                 .fetch(from, count);
 
@@ -128,7 +128,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 		                .where(predicate)
 		                .sort(f -> f.composite(b -> {
 		                    b.add(f.score());
-		                    b.add(f.field(DATA + SEPARATOR + PREFIX_PREF + SEPARATOR + INDEX + SORTABLE).asc());
+		                    b.add(f.field(DATA + SEPARATOR + PREF_INDEX + SORTABLE).asc());
 		                }))
 		                .fetch(0, scoreLimit);
 		            StringBuilder sb = new StringBuilder("Score details (rank: entityId=score):\n");
@@ -403,14 +403,39 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
         String searchLower = search.toLowerCase();
 
         // Boost on pref_index_analyzed - BM25 field-length normalization favors shorter preferred names
-        addFullTextFieldBoost(factory, bool, PREFIX_PREF + SEPARATOR + INDEX, searchLower);
+        addFullTextFieldBoost(factory, bool, PREF_INDEX, searchLower);
 
-        // Boost on pref_nm_main_analyzed
-        addFullTextFieldBoost(factory, bool, PREFIX_PREF + SEPARATOR + NM_MAIN, searchLower);
+        // Boost on item fields stating boost-fulltext (CZ_BASE: pref_nm_main_analyzed)
+        for (SettingIndexSearch.Field field : searchedItemFields(partTypeCode)) {
+            if (field.getBoostFulltext() != null) {
+                addFullTextFieldBoost(factory, bool, field.getName(), searchLower);
+            }
+        }
 
         if (StringUtils.isEmpty(partTypeCode) || !partTypeCode.equals(PREFIX_PREF)) {
             addFullTextFieldBoost(factory, bool, INDEX, searchLower);
         }
+    }
+
+    /**
+     * Item fields of the search configuration searched in the area that exist in the index; the
+     * index schema is built at startup, so a field of an item type installed later is skipped until
+     * the restart.
+     *
+     * @param partTypeCode area, see {@link SettingIndexSearch#searchedItemFields(String)}
+     */
+    private List<SettingIndexSearch.Field> searchedItemFields(@Nullable String partTypeCode) {
+        IndexDescriptor descriptor = Search.mapping(entityManager.getEntityManagerFactory())
+                .indexedEntity(ApCachedAccessPoint.class).indexManager().descriptor();
+        List<SettingIndexSearch.Field> result = new ArrayList<>();
+        for (SettingIndexSearch.Field field : settingsService.getIndexSearch().searchedItemFields(partTypeCode)) {
+            if (descriptor.field(addDataPrefix(field.getName())).isPresent()) {
+                result.add(field);
+            } else {
+                log.debug("Search field '{}' is not in the index, skipped", field.getName());
+            }
+        }
+        return result;
     }
 
     /**
@@ -454,28 +479,22 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
         BooleanPredicateClausesStep<?> bool = factory.bool();
 
         String fieldName = "";
-        String itemFieldName = "";
         if (StringUtils.isNotEmpty(partTypeCode)) {
         	fieldName = partTypeCode + SEPARATOR;
-        	if (partTypeCode.equals(PREFIX_PREF)) {
-        		// pref_
-                itemFieldName = partTypeCode + SEPARATOR;
-            }
         }
 
         // boost o accessPointId
-        boostExactQuery(factory, bool, FIELD_ACCESSPOINT_ID, value, false); 
+        boostExactQuery(factory, bool, FIELD_ACCESSPOINT_ID, value, false);
 
         if (StringUtils.isEmpty(partTypeCode) || !partTypeCode.equals(PREFIX_PREF)) {
-            // boost o preferované indexi a jména
-	        boostWildcardQuery(factory, bool, PREFIX_PREF + SEPARATOR + INDEX, value, true, true);
-	        boostWildcardQuery(factory, bool, PREFIX_PREF + SEPARATOR + NM_MAIN, value, true, true);
-	        boostWildcardQuery(factory, bool, PREFIX_PREF + SEPARATOR + NM_MINOR, value, true, true);
+            // boost o preferovaný index
+	        boostWildcardQuery(factory, bool, PREF_INDEX, value, true, true);
         }
 
-        // boost hlavního a minor jména
-        boostWildcardQuery(factory, bool, itemFieldName + NM_MAIN, value, true, true);
-        boostWildcardQuery(factory, bool, itemFieldName + NM_MINOR, value, true, true);
+        // item fields of the configuration (CZ_BASE: names nm_main, nm_minor)
+        for (SettingIndexSearch.Field field : searchedItemFields(partTypeCode)) {
+            boostWildcardQuery(factory, bool, field.getName(), value, true, true);
+        }
 
         // index
         fieldName += INDEX;
@@ -576,31 +595,12 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
      */
     @Nullable
     private SettingIndexSearch.Field getFieldSearchConfigByName(String name) {
-    	SettingIndexSearch sis = getElzaSearchConfig();
-        if (sis == null || CollectionUtils.isEmpty(sis.getFields())) {
-            return null;
-        }
-        for (SettingIndexSearch.Field field : sis.getFields()) {
-            if (field.getName().equals(name)) {
-                return field;
-            }
-        }
-        return null;
-    }
-
-    @Nullable
-    private SettingIndexSearch getElzaSearchConfig() {
-        UISettings.SettingsType indexSearch = UISettings.SettingsType.INDEX_SEARCH;
-        List<UISettings> uiSettings = settingsService.getGlobalSettings(indexSearch.toString(), indexSearch.getEntityType());
-        if (CollectionUtils.isNotEmpty(uiSettings)) {
-            return SettingIndexSearch.newInstance(uiSettings.get(0));
-        }
-        return null;
+    	return settingsService.getIndexSearch().findField(name);
     }
 
     private void logSearchConfig() {
-        SettingIndexSearch sis = getElzaSearchConfig();
-        if (sis == null || CollectionUtils.isEmpty(sis.getFields())) {
+        SettingIndexSearch sis = settingsService.getIndexSearch();
+        if (CollectionUtils.isEmpty(sis.getFields())) {
             log.trace("Search config (INDEX_SEARCH): not configured or no fields defined");
             return;
         }

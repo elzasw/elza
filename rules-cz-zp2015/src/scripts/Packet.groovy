@@ -40,22 +40,20 @@ void generate()
         }
     }
 
-    // Packet number
+    // Range start - part of the sort value, so that the range "9-10" differs
+    // from the packet "10" in the duplicate check and sorts between 9 and 10
     String startNumber = toStringValue("ZP2015_PACKET_START_NUMBER");
     if(StringUtils.isNotBlank(startNumber)) {
         valueBuilder.append(startNumber).append("-");
+        appendNumber(sortValueBuilder, startNumber);
+        sortValueBuilder.append("-");
     }
 
     // Packet number
     String number = toStringValue("ZP2015_PACKET_NUMBER");
     if(StringUtils.isNotBlank(number)) {
-        // append zeroes
-        int addZeros = packetLeadingZeros - number.length();
-        if (addZeros > 0) {
-            sortValueBuilder.append(StringUtils.repeat("0", addZeros));
-        }
         valueBuilder.append(number);
-        sortValueBuilder.append(number);
+        appendNumber(sortValueBuilder, number);
     }
     
     // Postfix
@@ -85,6 +83,15 @@ void generate()
     result.setValue(valueBuilder.toString().trim());
     result.setSortValue(sortValueBuilder.toString().trim());
     result.setComplement(complementBuilder.toString().trim());
+}
+
+// Appends the number with leading zeros, so that it sorts numerically
+void appendNumber(StringBuilder sb, String number) {
+    int addZeros = packetLeadingZeros - number.length();
+    if (addZeros > 0) {
+        sb.append(StringUtils.repeat("0", addZeros));
+    }
+    sb.append(number);
 }
 
 String toStringValue(String itemTypeCode) {

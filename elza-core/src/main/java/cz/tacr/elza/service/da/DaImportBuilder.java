@@ -19,10 +19,14 @@ import org.springframework.stereotype.Service;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrStructuredItem;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.DaAip;
 import cz.tacr.elza.domain.DaDao;
 import cz.tacr.elza.domain.DaDaoRelation;
@@ -38,6 +42,7 @@ import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.RuleService;
+import cz.tacr.elza.service.StructObjService;
 import cz.tacr.elza.service.arrangement.MultipleItemChangeContext;
 import jakarta.transaction.Transactional;
 
@@ -53,8 +58,11 @@ import jakarta.transaction.Transactional;
  * type and name of a group of the file plan) - such a level is shared with other packages; it
  * gets the items it has none of yet, a different value of an item it has is kept and reported;</li>
  * <li>otherwise a new last child, with the UUID of the div - so that the next version of the
- * package is matched to it - unless that UUID is taken elsewhere in the fund.</li>
+ * package is matched to it - unless that UUID is taken elsewhere in the fund; only a new level
+ * gets the items planned for its creation ({@link DaLevelItems#whenCreated()}).</li>
  * </ol>
+ * A structured item ({@link DaItems#structuredItem(String)}) gets its structured object created
+ * with it, in the fund of the level.
  * A level of the chain a received package is placed under stands for no div: it is found by its
  * match key, or created with a new UUID; the whole package is linked to it when the plan says so.
  *
@@ -84,12 +92,14 @@ public class DaImportBuilder {
     private final DescriptionItemService descriptionItemService;
     private final ArrangementInternalService arrangementInternalService;
     private final RuleService ruleService;
+    private final StructObjService structObjService;
 
     public DaImportBuilder(DaService daService, LevelRepository levelRepository, NodeRepository nodeRepository,
                            DaDaoRepository daoRepository, DaDaoRelationRepository daoRelationRepository,
                            FundVersionRepository fundVersionRepository,
                            DescriptionItemService descriptionItemService,
-                           ArrangementInternalService arrangementInternalService, RuleService ruleService) {
+                           ArrangementInternalService arrangementInternalService, RuleService ruleService,
+                           StructObjService structObjService) {
         this.daService = daService;
         this.levelRepository = levelRepository;
         this.nodeRepository = nodeRepository;
@@ -99,6 +109,7 @@ public class DaImportBuilder {
         this.descriptionItemService = descriptionItemService;
         this.arrangementInternalService = arrangementInternalService;
         this.ruleService = ruleService;
+        this.structObjService = structObjService;
     }
 
     /**
@@ -251,8 +262,12 @@ public class DaImportBuilder {
             Integer maxPosition = levelRepository.findMaxPositionUnderParent(parent);
             ArrNode level = daService.createChildNode(parent, change, maxPosition == null ? 1 : maxPosition + 1, uuid);
 
-            List<ArrDescItem> items = new ArrayList<>(node.getItems().size());
-            for (DaLevelItems.Item item : node.getItems()) {
+            List<ArrDescItem> items = new ArrayList<>(node.getItems().size() + node.getCreatedItems().size());
+            for (DaItems.Item item : node.getItems()) {
+                items.add(createItem(level, item));
+            }
+            // what only a new level gets - a found level is not given it again (see enrich)
+            for (DaItems.Item item : node.getCreatedItems()) {
                 items.add(createItem(level, item));
             }
             siblings.add(new Child(level, items));
@@ -264,21 +279,23 @@ public class DaImportBuilder {
         /**
          * A level shared with other packages gets the items it has none of yet. A different value
          * of an item it has is kept - which value is right is for the user to decide - and
-         * reported.
+         * reported. The items planned only for the creation of the level are not given.
          */
         private void enrich(DaImportPlan.Node node, Child sibling) {
             Map<Integer, List<ArrDescItem>> existing = sibling.items().stream()
                     .collect(Collectors.groupingBy(ArrDescItem::getItemTypeId));
-            Map<Integer, List<DaLevelItems.Item>> planned = node.getItems().stream()
+            Map<Integer, List<DaItems.Item>> planned = node.getItems().stream()
                     .collect(Collectors.groupingBy(i -> i.itemType().getItemTypeId()));
             boolean added = false;
-            for (Map.Entry<Integer, List<DaLevelItems.Item>> entry : planned.entrySet()) {
+            for (Map.Entry<Integer, List<DaItems.Item>> entry : planned.entrySet()) {
                 List<ArrDescItem> present = existing.get(entry.getKey());
                 if (CollectionUtils.isEmpty(present)) {
-                    for (DaLevelItems.Item item : entry.getValue()) {
+                    for (DaItems.Item item : entry.getValue()) {
                         sibling.items().add(createItem(sibling.node(), item));
                     }
                     added = true;
+                } else if (entry.getValue().stream().anyMatch(i -> i.structured() != null)) {
+                    // a structured object has no value before it is created - the item the level has is kept
                 } else if (!values(present).equals(plannedValues(entry.getValue()))) {
                     RulItemType itemType = entry.getValue().get(0).itemType();
                     conflicts.add("Úroveň '" + StringUtils.defaultString(node.getLabel(), node.getDivId())
@@ -291,12 +308,42 @@ public class DaImportBuilder {
             }
         }
 
-        private ArrDescItem createItem(ArrNode node, DaLevelItems.Item item) {
+        private ArrDescItem createItem(ArrNode node, DaItems.Item item) {
             ArrDescItem descItem = new ArrDescItem();
             descItem.setItemType(item.itemType());
             descItem.setItemSpec(item.itemSpec());
-            descItem.setData(item.data());
+            descItem.setData(data(node.getFund(), item));
             return descriptionItemService.createDescriptionItemInBatch(descItem, node, version, change, changeContext);
+        }
+
+        /** The data of a planned item; a structured item gets its structured object created first. */
+        private ArrData data(ArrFund fund, DaItems.Item item) {
+            if (item.structured() == null) {
+                return item.data();
+            }
+            ArrDataStructureRef ref = (ArrDataStructureRef) item.data();
+            ref.setStructuredObject(createStructObj(fund, item.structured()));
+            return ref;
+        }
+
+        /**
+         * A new structured object with the planned items - of an anonymous type, which is all
+         * the script may plan ({@link DaItems#structuredItem(String)}); its value is generated
+         * after the import, as for an object created by the user.
+         */
+        private ArrStructuredObject createStructObj(ArrFund fund, DaItemGroup group) {
+            List<ArrStructuredItem> items = new ArrayList<>(group.getItems().size());
+            Map<Integer, Integer> positions = new HashMap<>();
+            for (DaItems.Item item : group.getItems()) {
+                ArrStructuredItem structItem = new ArrStructuredItem();
+                structItem.setItemType(item.itemType());
+                structItem.setItemSpec(item.itemSpec());
+                structItem.setData(data(fund, item));
+                structItem.setPosition(positions.merge(item.itemType().getItemTypeId(), 1, Integer::sum));
+                items.add(structItem);
+            }
+            return structObjService.createStructObj(fund, change, group.getStructuredType(),
+                                                    ArrStructuredObject.State.OK, null, items);
         }
 
         private boolean sameValues(DaImportPlan.Node node, Child sibling) {
@@ -354,7 +401,7 @@ public class DaImportBuilder {
         return items.stream().map(i -> value(i.getItemSpecId(), i.getData())).sorted().toList();
     }
 
-    private static List<String> plannedValues(List<DaLevelItems.Item> items) {
+    private static List<String> plannedValues(List<DaItems.Item> items) {
         return items.stream()
                 .map(i -> value(i.itemSpec() == null ? null : i.itemSpec().getItemSpecId(), i.data()))
                 .sorted().toList();

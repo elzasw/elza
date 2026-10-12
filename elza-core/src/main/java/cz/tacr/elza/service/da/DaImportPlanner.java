@@ -142,7 +142,7 @@ public class DaImportPlanner {
         for (int i = 0; i < levels.size(); i++) {
             DaMatchLevel level = levels.get(i);
             chain.add(DaImportPlan.Node.chainLevel(level.label(), level.getMatchBy(), level.getItems(),
-                                                   linkWhole && i == levels.size() - 1));
+                                                   level.getCreatedItems(), linkWhole && i == levels.size() - 1));
         }
         return Optional.of(DaImportPlan.placement(chain, below));
     }
@@ -193,7 +193,7 @@ public class DaImportPlanner {
                     : childrenOf(structMap.getDiv(), startUuid);
             for (DivType div : divs) {
                 plan.addRoot(new DaImportPlan.Node(div.getID(), StringUtils.trimToNull(div.getLABEL()),
-                        DaImportResult.Decision.LEVEL, List.of(), List.of()));
+                        DaImportResult.Decision.LEVEL, List.of(), List.of(), List.of()));
             }
         }
         return plan;
@@ -322,7 +322,7 @@ public class DaImportPlanner {
 
         private DaImportPlan.Node node(DaImportLevel level, DaImportResult result) {
             return new DaImportPlan.Node(level.getId(), level.getLabel(), result.getDecision(), result.getMatchBy(),
-                    result.getItems());
+                    result.getItems(), result.getCreatedItems());
         }
 
         private void hang(DaImportPlan plan, @Nullable DaImportPlan.Node parentNode, DaImportPlan.Node node) {

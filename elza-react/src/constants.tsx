@@ -94,8 +94,8 @@ export enum DisplayType {
     DURATION = 'DURATION',
 }
 
-//konkrétrní kód akce pro perzistentní řazení v balíčku ZP2015
-export const PERSISTENT_SORT_CODE = 'PERZISTENTNI_RAZENI';
+// Code of the ZP2015 action computing and visualising the storage units (EJ); the tree menu offers
+// it only for funds whose rule set has it.
 export const ZP2015_INTRO_VYPOCET_EJ = 'ZP2015_INTRO_VYPOCET_EJ';
 
 export const ELZA_SCHEME_NODE = 'elza-node';
@@ -214,6 +214,8 @@ export const URL_ADMIN_INSTITUTION = `${URL_ADMIN}/institution`;
 export const URL_ADMIN_IMPORT = `${URL_ADMIN}/import`;
 
 export const URL_AIP = '/aip';
+/** Entry URL of another application: an AIP by the digital archive code and its id there. */
+export const URL_DA = '/da';
 export const URL_COMPONENT = '/component';
 
 // Used to create version part of arr/fund page url

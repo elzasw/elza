@@ -1,0 +1,10 @@
+<package>
+  <code>ISADG</code>
+  <name>ISAD(G) archival description</name>
+  <version>1</version>
+  <description>Archival description of fonds according to ISAD(G), in English; creators and access points are ISAAR(CPF) entities.</description>
+  <language>en</language>
+  <dependencies>
+    <dependency code="ISAAR_CPF" min-version="2" />
+  </dependencies>
+</package>

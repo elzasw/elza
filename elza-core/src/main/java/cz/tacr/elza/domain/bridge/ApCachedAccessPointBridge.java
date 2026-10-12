@@ -11,7 +11,6 @@ import static cz.tacr.elza.domain.bridge.LuceneAnalyzerConfigurer.ANALYZED;
 import static cz.tacr.elza.domain.bridge.LuceneAnalyzerConfigurer.NOT_ANALYZED;
 import static cz.tacr.elza.domain.bridge.LuceneAnalyzerConfigurer.SORTABLE;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -39,13 +38,11 @@ import cz.tacr.elza.domain.ApStateEnum;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.packageimport.xml.SettingIndexSearch;
 import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cache.CachedPart;
-import jakarta.annotation.Nullable;
 
 public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint> {
 
@@ -68,6 +65,8 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
     public static final String PREFIX_PREF = "pref";
     public static final String SEPARATOR = "_";
     public static final String INDEX = "index";
+    /** Index field of the preferred part. */
+    public static final String PREF_INDEX = PREFIX_PREF + SEPARATOR + INDEX;
 
     public static final String USERNAME = "username";
 
@@ -75,7 +74,6 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
     //public static final String SORT = "sort";
 
     public static final String NM_MAIN = "nm_main";
-    public static final String NM_MINOR = "nm_minor";
 
     static Properties names = null;
     private Map<String, IndexFieldReference<String>> fields;
@@ -218,8 +216,8 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
                 if (index.getIndexType().equals(DISPLAY_NAME)) {
 
                     if (part.getPartId().equals(cachedAccessPoint.getPreferredPartId())) {
-                        addField(name + SEPARATOR + PREFIX_PREF + SEPARATOR + INDEX, index.getIndexValue().toLowerCase(), document, name);
-                        addSortField(name + SEPARATOR + PREFIX_PREF + SEPARATOR + INDEX, index.getIndexValue().toLowerCase(), document);
+                        addField(name + SEPARATOR + PREF_INDEX, index.getIndexValue().toLowerCase(), document, name);
+                        addSortField(name + SEPARATOR + PREF_INDEX, index.getIndexValue().toLowerCase(), document);
                     }
 
                     addField(name + SEPARATOR + part.getPartTypeCode().toLowerCase() + SEPARATOR + INDEX, index.getIndexValue().toLowerCase(), document, name);
@@ -266,45 +264,20 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
     }
 
     private boolean isFieldForTransliteration(String name, String prefixName) {
-        boolean transliterate = false;
-
         name = StringUtils.removeStart(name, prefixName + SEPARATOR);
 
-        if (settingIndexSearch != null) {
-            SettingIndexSearch.Field fieldSearchConfig = getFieldSearchConfigByName(settingIndexSearch.getFields(), name);
-            if (fieldSearchConfig != null && fieldSearchConfig.getTransliterate() != null) {
-                transliterate = fieldSearchConfig.getTransliterate();
-            }
-        }
-
-        return transliterate;
+        SettingIndexSearch.Field fieldSearchConfig = settingIndexSearch.findField(name);
+        return fieldSearchConfig != null && Boolean.TRUE.equals(fieldSearchConfig.getTransliterate());
     }
 
-    @Nullable
-    private SettingIndexSearch.Field getFieldSearchConfigByName(List<SettingIndexSearch.Field> fields, String name) {
-        if (CollectionUtils.isNotEmpty(fields)) {
-            for (SettingIndexSearch.Field field : fields) {
-                if (field.getName().equals(name)) {
-                    return field;
-                }
-            }
-        }
-        return null;
-    }
-
-    @Nullable
+    /**
+     * Search configuration merged from the core and all packages, read once at startup.
+     */
     private static SettingIndexSearch getElzaSearchConfig() {
         if (settingsService == null) {
             log.error("Search configuration is not set");
             throw new IllegalStateException("Not initialized");
         }
-
-        UISettings.SettingsType indexSearch = UISettings.SettingsType.INDEX_SEARCH;
-        List<UISettings> uiSettings = settingsService.getGlobalSettings(indexSearch.toString(), indexSearch
-                .getEntityType());
-        if (CollectionUtils.isNotEmpty(uiSettings)) {
-            return SettingIndexSearch.newInstance(uiSettings.get(0));
-        }
-        return null;
+        return settingsService.loadIndexSearch();
     }
 }

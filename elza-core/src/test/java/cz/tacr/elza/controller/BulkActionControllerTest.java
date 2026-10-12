@@ -14,6 +14,8 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -137,6 +139,36 @@ public class BulkActionControllerTest extends AbstractControllerTest {
         Assertions.assertTrue(unit, "Hromadna akce " + BULK_ACTION_GENERATOR_UNIT + " neni v seznamu");
         Assertions.assertTrue(serial, "Hromadna akce " + BULK_ACTION_SERIAL_NUMBER_GENERATOR + " neni v seznamu");
         Assertions.assertTrue(fa, "Hromadna akce " + BULK_ACTION_FUND_VALIDATION + " neni v seznamu");
+    }
+
+    /**
+     * Order 1 — the actions of the fund with their kinds (the YAML tags) in the REST API, and the
+     * persistent sort refused for SIMPLE-DEV, whose rules have none.
+     *
+     * <p><b>Assumes:</b> any fund state (no mutation performed).
+     * <br><b>Leaves:</b> fund unchanged.
+     */
+    @Test
+    @Order(1)
+    public void getFundVersionActionsWithKindsTest() {
+        List<cz.tacr.elza.test.controller.vo.BulkAction> actions = fundsApi.bulkActionGetFundVersionActions(fundVersionId);
+
+        Assertions.assertEquals(5, actions.size());
+        Assertions.assertEquals(cz.tacr.elza.test.controller.vo.BulkActionType.SERIAL_NUMBER_GENERATOR,
+                                actions.stream()
+                                        .filter(a -> BULK_ACTION_SERIAL_NUMBER_GENERATOR.equals(a.getCode()))
+                                        .findFirst().orElseThrow().getType());
+        Assertions.assertTrue(actions.stream()
+                .noneMatch(a -> a.getType() == cz.tacr.elza.test.controller.vo.BulkActionType.PERSISTENT_SORT));
+
+        cz.tacr.elza.test.controller.vo.PersistentSortRequest request = new cz.tacr.elza.test.controller.vo.PersistentSortRequest()
+                .nodeIds(List.of(1))
+                .itemTypeCode("SRD_TITLE")
+                .asc(true)
+                .sortChildren(false);
+        HttpClientErrorException ex = Assertions.assertThrows(HttpClientErrorException.class,
+                () -> fundsApi.bulkActionQueuePersistentSort(fundVersionId, request));
+        Assertions.assertEquals(HttpStatus.NOT_FOUND.value(), ex.getStatusCode().value());
     }
 
     private List<BulkActionRunVO> getBulkActionList(final int versionId) {

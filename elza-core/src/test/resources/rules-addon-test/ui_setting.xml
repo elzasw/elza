@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<settings xmlns:ns10="index-search">
+    <!-- composed per field: replaces nm_main of CZ_BASE, adds the field of the addon item type -->
+    <index-search>
+        <ns10:field name="nm_main" boost="12.0" boost-exact="60.0" transliterate="true"/>
+        <ns10:field name="adt_stage" boost="2.0" transliterate="false"/>
+    </index-search>
+</settings>

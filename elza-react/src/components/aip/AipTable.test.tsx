@@ -77,6 +77,16 @@ beforeAll(() => {
 });
 
 describe('AipTable', () => {
+    it('kód digitálního archivu se na začátku nezobrazuje', () => {
+        renderWithProviders(
+            <AipTable filterDisabled hiddenValues={onlyColumns('code', 'digitalRepositoryCode')} />,
+            { preloadedState: storeWithRows([aip({ digitalRepositoryCode: 'DAMO' })]) },
+        );
+
+        expect(screen.getByText('AIP-1')).toBeInTheDocument();
+        expect(screen.queryByText('DAMO')).not.toBeInTheDocument();
+    });
+
     it('vypíše dohledaný fond a AIP bez problému', () => {
         render([aip()]);
 

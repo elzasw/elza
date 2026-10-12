@@ -13,6 +13,9 @@ public class EventIdInVersion extends EventVersion {
      */
     private Integer entityId;
 
+    /** Kind of the bulk action of a BULK_ACTION_STATE_CHANGE event (BulkActionConfig.getType), else null. */
+    private String actionType;
+
     public EventIdInVersion(final EventType eventType, final Integer versionId, final Integer entityId) {
         super(eventType, versionId);
         this.entityId = entityId;
@@ -24,5 +27,13 @@ public class EventIdInVersion extends EventVersion {
 
     public void setEntityId(final Integer entityId) {
         this.entityId = entityId;
+    }
+
+    public String getActionType() {
+        return actionType;
+    }
+
+    public void setActionType(final String actionType) {
+        this.actionType = actionType;
     }
 }

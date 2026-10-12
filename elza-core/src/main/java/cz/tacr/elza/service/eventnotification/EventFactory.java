@@ -81,6 +81,24 @@ public class EventFactory {
         return eventIdInVersion;
     }
 
+    /**
+     * Event BULK_ACTION_STATE_CHANGE of the run.
+     *
+     * @param actionType kind of the action of the run
+     *            ({@link cz.tacr.elza.bulkaction.BulkActionConfig#getType()}); the client and the
+     *            tree cache key on it, not on the code
+     */
+    public static EventIdInVersion createBulkActionStateEvent(final ArrBulkActionRun bulkActionRun,
+                                                              @Nullable final String actionType) {
+        EventIdInVersion event = createIdInVersionEvent(EventType.BULK_ACTION_STATE_CHANGE,
+                                                        bulkActionRun.getFundVersion(),
+                                                        bulkActionRun.getBulkActionRunId(),
+                                                        bulkActionRun.getBulkActionCode(),
+                                                        bulkActionRun.getState());
+        event.setActionType(actionType);
+        return event;
+    }
+
     public static EventStringInVersion createStringInVersionEvent(final EventType eventType,
                                                                   final Integer versionId,
                                                                   final String entityString) {

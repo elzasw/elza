@@ -1,0 +1,173 @@
+package ISADG;
+
+import cz.tacr.elza.drools.model.Level;
+import cz.tacr.elza.drools.model.NewLevel;
+import cz.tacr.elza.drools.model.DescItem;
+import cz.tacr.elza.drools.model.NewLevelApproach;
+
+global cz.tacr.elza.drools.model.NewLevelApproaches results;
+
+// The name of a scenario is its identifier (the DAO_LEVEL_IMPORT setting names one); the names
+// are the English names of the levels.
+
+rule "Fonds"
+when
+    NewLevel( parent == null )
+then
+    NewLevelApproach approach = results.create("Fonds");
+    approach.addDescItem("ISADG_LEVEL", "ISADG_LEVEL_FONDS");
+end
+
+rule "Subfonds below a fonds"
+when
+    NewLevel( parent != null && $items : parent.ownDescItems )
+    DescItem( type == "ISADG_LEVEL" && specCode == "ISADG_LEVEL_FONDS" ) from $items
+then
+    NewLevelApproach approach = results.create("Subfonds");
+    approach.addDescItem("ISADG_LEVEL", "ISADG_LEVEL_SUBFONDS");
+end
+
+rule "Series below a fonds"
+when
+    NewLevel( parent != null && $items : parent.ownDescItems )
+    DescItem( type == "ISADG_LEVEL" && specCode == "ISADG_LEVEL_FONDS" ) from $items
+then
+    NewLevelApproach approach = results.create("Series");
+    approach.addDescItem("ISADG_LEVEL", "ISADG_LEVEL_SERIES");
+end
+
+rule "File below a fonds"
+when
+    NewLevel( parent != null && $items : parent.ownDescItems )
+    DescItem( type == "ISADG_LEVEL" && specCode == "ISADG_LEVEL_FONDS" ) from $items
+then
+    NewLevelApproach approach = results.create("File");
+    approach.addDescItem("ISADG_LEVEL", "ISADG_LEVEL_FILE");
+end
+
+rule "Item below a fonds"
+when
+    NewLevel( parent != null && $items : parent.ownDescItems )
+    DescItem( type == "ISADG_LEVEL" && specCode == "ISADG_LEVEL_FONDS" ) from $items
+then
+    NewLevelApproach approach = results.create("Item");
+    approach.addDescItem("ISADG_LEVEL", "ISADG_LEVEL_ITEM");
+end
+
+rule "Series below a subfonds"
+when
+    NewLevel( parent != null && $items : parent.ownDescItems )
+    DescItem( type == "ISADG_LEVEL" && specCode == "ISADG_LEVEL_SUBFONDS" ) from $items
+then
+    NewLevelApproach approach = results.create("Series");
+    approach.addDescItem("ISADG_LEVEL", "ISADG_LEVEL_SERIES");
+end
+
+rule "File below a subfonds"
+when
+    NewLevel( parent != null && $items : parent.ownDescItems )
+    DescItem( type == "ISADG_LEVEL" && specCode == "ISADG_LEVEL_SUBFONDS" ) from $items
+then
+    NewLevelApproach approach = results.create("File");
+    approach.addDescItem("ISADG_LEVEL", "ISADG_LEVEL_FILE");
+end
+
+rule "Item below a subfonds"
+when
+    NewLevel( parent != null && $items : parent.ownDescItems )
+    DescItem( type == "ISADG_LEVEL" && specCode == "ISADG_LEVEL_SUBFONDS" ) from $items
+then
+    NewLevelApproach approach = results.create("Item");
+    approach.addDescItem("ISADG_LEVEL", "ISADG_LEVEL_ITEM");
+end
+
+rule "Series below a series"
+when
+    NewLevel( parent != null && $items : parent.ownDescItems )
+    DescItem( type == "ISADG_LEVEL" && specCode == "ISADG_LEVEL_SERIES" ) from $items
+then
+    NewLevelApproach approach = results.create("Series");
+    approach.addDescItem("ISADG_LEVEL", "ISADG_LEVEL_SERIES");
+end
+
+rule "Subseries below a series"
+when
+    NewLevel( parent != null && $items : parent.ownDescItems )
+    DescItem( type == "ISADG_LEVEL" && specCode == "ISADG_LEVEL_SERIES" ) from $items
+then
+    NewLevelApproach approach = results.create("Subseries");
+    approach.addDescItem("ISADG_LEVEL", "ISADG_LEVEL_SUBSERIES");
+end
+
+rule "File below a series"
+when
+    NewLevel( parent != null && $items : parent.ownDescItems )
+    DescItem( type == "ISADG_LEVEL" && specCode == "ISADG_LEVEL_SERIES" ) from $items
+then
+    NewLevelApproach approach = results.create("File");
+    approach.addDescItem("ISADG_LEVEL", "ISADG_LEVEL_FILE");
+end
+
+rule "Item below a series"
+when
+    NewLevel( parent != null && $items : parent.ownDescItems )
+    DescItem( type == "ISADG_LEVEL" && specCode == "ISADG_LEVEL_SERIES" ) from $items
+then
+    NewLevelApproach approach = results.create("Item");
+    approach.addDescItem("ISADG_LEVEL", "ISADG_LEVEL_ITEM");
+end
+
+rule "Subseries below a subseries"
+when
+    NewLevel( parent != null && $items : parent.ownDescItems )
+    DescItem( type == "ISADG_LEVEL" && specCode == "ISADG_LEVEL_SUBSERIES" ) from $items
+then
+    NewLevelApproach approach = results.create("Subseries");
+    approach.addDescItem("ISADG_LEVEL", "ISADG_LEVEL_SUBSERIES");
+end
+
+rule "File below a subseries"
+when
+    NewLevel( parent != null && $items : parent.ownDescItems )
+    DescItem( type == "ISADG_LEVEL" && specCode == "ISADG_LEVEL_SUBSERIES" ) from $items
+then
+    NewLevelApproach approach = results.create("File");
+    approach.addDescItem("ISADG_LEVEL", "ISADG_LEVEL_FILE");
+end
+
+rule "Item below a subseries"
+when
+    NewLevel( parent != null && $items : parent.ownDescItems )
+    DescItem( type == "ISADG_LEVEL" && specCode == "ISADG_LEVEL_SUBSERIES" ) from $items
+then
+    NewLevelApproach approach = results.create("Item");
+    approach.addDescItem("ISADG_LEVEL", "ISADG_LEVEL_ITEM");
+end
+
+rule "File below a file"
+when
+    NewLevel( parent != null && $items : parent.ownDescItems )
+    DescItem( type == "ISADG_LEVEL" && specCode == "ISADG_LEVEL_FILE" ) from $items
+then
+    NewLevelApproach approach = results.create("File");
+    approach.addDescItem("ISADG_LEVEL", "ISADG_LEVEL_FILE");
+end
+
+rule "Item below a file"
+when
+    NewLevel( parent != null && $items : parent.ownDescItems )
+    DescItem( type == "ISADG_LEVEL" && specCode == "ISADG_LEVEL_FILE" ) from $items
+then
+    NewLevelApproach approach = results.create("Item");
+    approach.addDescItem("ISADG_LEVEL", "ISADG_LEVEL_ITEM");
+end
+
+rule "Item below a item"
+when
+    NewLevel( parent != null && $items : parent.ownDescItems )
+    DescItem( type == "ISADG_LEVEL" && specCode == "ISADG_LEVEL_ITEM" ) from $items
+then
+    NewLevelApproach approach = results.create("Item");
+    approach.addDescItem("ISADG_LEVEL", "ISADG_LEVEL_ITEM");
+end
+

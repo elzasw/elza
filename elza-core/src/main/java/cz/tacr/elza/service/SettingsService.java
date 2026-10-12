@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import cz.tacr.elza.core.data.PackageTranslations;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UISettings.EntityType;
 import cz.tacr.elza.domain.UISettings.SettingsType;
@@ -41,6 +42,7 @@ import cz.tacr.elza.packageimport.xml.SettingStructTypeSettings;
 import cz.tacr.elza.packageimport.xml.SettingStructureTypes;
 import cz.tacr.elza.packageimport.xml.SettingTypeGroups;
 import cz.tacr.elza.repository.PackageDependencyRepository;
+import cz.tacr.elza.repository.PackageRepository;
 import cz.tacr.elza.repository.SettingsRepository;
 import jakarta.validation.constraints.NotNull;
 
@@ -60,6 +62,15 @@ public class SettingsService {
 
     @Autowired
     private PackageDependencyRepository packageDependencyRepository;
+
+    @Autowired
+    private PackageRepository packageRepository;
+
+    /** Merged search configuration and the static data it was computed for. */
+    private record IndexSearchCache(StaticDataProvider sdp, SettingIndexSearch indexSearch) {
+    }
+
+    private volatile IndexSearchCache indexSearchCache;
 
 	static interface SettingConvertor {
 
@@ -371,12 +382,57 @@ public class SettingsService {
             return candidates.get(0);
         }
         StaticDataProvider sdp = staticDataService.getData();
+        return candidates.stream().max(precedence(packageId -> sdp.getPackageById(packageId).getCode()))
+                .orElseThrow();
+    }
+
+    /**
+     * Order of the global settings of one layered type, lowest precedence first: packages by depth
+     * in dependency order, ties by package code, a setting without a package last.
+     */
+    private Comparator<UISettings> precedence(Function<Integer, String> packageCode) {
         Map<Integer, Integer> depth = PackageTranslations.dependencyDepth(packageDependencyRepository.findAll());
-        Comparator<UISettings> precedence = Comparator
+        return Comparator
                 .comparing((UISettings s) -> s.getPackageId() == null ? Integer.MAX_VALUE
                         : depth.getOrDefault(s.getPackageId(), 0))
-                .thenComparing(s -> s.getPackageId() == null ? "" : sdp.getPackageById(s.getPackageId()).getCode());
-        return candidates.stream().max(precedence).orElseThrow();
+                .thenComparing(s -> s.getPackageId() == null ? "" : packageCode.apply(s.getPackageId()));
+    }
+
+    /**
+     * Search configuration of the entity index: the core fields ({@link SettingIndexSearch#coreDefaults()})
+     * and the fields stated by every package. A field stated by several packages is taken from the
+     * package deepest in dependency order (ties by package code); a setting without a package
+     * (stored locally) wins over all packages. The configuration is cached for the current static
+     * data, so an import or removal of a package takes effect after its commit.
+     *
+     * @return merged configuration, never null
+     */
+    public SettingIndexSearch getIndexSearch() {
+        StaticDataProvider sdp = staticDataService.getData();
+        IndexSearchCache cache = indexSearchCache;
+        if (cache == null || cache.sdp() != sdp) {
+            cache = new IndexSearchCache(sdp, loadIndexSearch());
+            indexSearchCache = cache;
+        }
+        return cache.indexSearch();
+    }
+
+    /**
+     * Search configuration read from the database without static data (for the index bridge, which
+     * runs outside of a request), see {@link #getIndexSearch()}.
+     *
+     * @return merged configuration, never null
+     */
+    public SettingIndexSearch loadIndexSearch() {
+        Map<Integer, String> packageCodes = packageRepository.findAll().stream()
+                .collect(Collectors.toMap(RulPackage::getPackageId, RulPackage::getCode));
+        List<SettingIndexSearch> layers = new ArrayList<>();
+        layers.add(SettingIndexSearch.coreDefaults());
+        getGlobalSettings(SettingsType.INDEX_SEARCH).stream()
+                .sorted(precedence(packageCodes::get))
+                .map(SettingIndexSearch::newInstance)
+                .forEach(layers::add);
+        return SettingIndexSearch.merge(layers);
     }
 
     /**

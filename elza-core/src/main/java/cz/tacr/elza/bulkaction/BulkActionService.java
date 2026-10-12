@@ -17,6 +17,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import jakarta.transaction.Transactional;
 import jakarta.transaction.Transactional.TxType;
 
@@ -35,8 +37,11 @@ import org.springframework.util.CollectionUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import cz.tacr.elza.bulkaction.generator.PersistentSortConfig;
+import cz.tacr.elza.bulkaction.generator.PersistentSortRunConfig;
 import cz.tacr.elza.controller.vo.AbstractFilter;
 import cz.tacr.elza.controller.vo.BulkAction;
+import cz.tacr.elza.controller.vo.BulkActionType;
 import cz.tacr.elza.controller.vo.BulkActionRunVO;
 import cz.tacr.elza.controller.vo.FundsActionGroup;
 import cz.tacr.elza.controller.vo.FundsActionGroupResult;
@@ -65,6 +70,7 @@ import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.PackageCode;
 import cz.tacr.elza.repository.ActionRepository;
 import cz.tacr.elza.repository.BulkActionNodeRepository;
@@ -90,8 +96,6 @@ public class BulkActionService {
      * Počet hromadných akcí v listu MAX_BULK_ACTIONS_LIST.
      */
     public static final int MAX_BULK_ACTIONS_LIST = 100;
-
-    public static final String PERSISTENT_SORT_CODE = "PERZISTENTNI_RAZENI";
 
     /** Důvod přeskočení: fond nemá otevřenou verzi. */
     public static final String SKIP_NO_OPEN_VERSION = "NO_OPEN_VERSION";
@@ -174,6 +178,48 @@ public class BulkActionService {
                                   final List<Integer> inputNodeIds,
                                   final Object runConfig) {
         return queueInternal(userId, bulkActionCode, fundVersionId, inputNodeIds, runConfig, null);
+    }
+
+    /**
+     * Queues the persistent sort of the rule set of the version - its action of the kind
+     * {@link PersistentSortConfig#TYPE}, whatever the rule set names its file.
+     *
+     * @param userId        user who runs the action
+     * @param fundVersionId version of the fund
+     * @param inputNodeIds  units whose children are sorted
+     * @param runConfig     how to sort
+     * @return the queued run
+     * @throws ObjectNotFoundException the rule set of the version has no persistent sort
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_BA_ALL, UsrPermission.Permission.FUND_BA})
+    public ArrBulkActionRun queuePersistentSort(final Integer userId,
+                                                @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
+                                                final List<Integer> inputNodeIds,
+                                                final PersistentSortRunConfig runConfig) {
+        Assert.notNull(runConfig, "Nastavení musí být vyplněno");
+        ArrFundVersion version = fundVersionRepository.findById(fundVersionId)
+                .orElseThrow(version(fundVersionId));
+        BulkActionConfig sort = findActionOfType(version.getRuleSet(), PersistentSortConfig.TYPE);
+        if (sort == null) {
+            throw new ObjectNotFoundException("Pravidla verze AS nemají perzistentní řazení", PackageCode.CODE_NOT_FOUND)
+                    .setId(fundVersionId)
+                    .set("ruleSet", version.getRuleSet().getCode());
+        }
+        return queueInternal(userId, sort.getCode(), fundVersionId, inputNodeIds, runConfig, null);
+    }
+
+    /**
+     * The action of the kind in the rule set, null when the rule set has none.
+     */
+    @Nullable
+    private BulkActionConfig findActionOfType(final RulRuleSet ruleSet, final String type) {
+        for (RulAction action : actionRepository.findByRuleSet(ruleSet)) {
+            BulkActionConfig config = bulkActionConfigManager.get(action.getCode());
+            if (config != null && type.equals(config.getType())) {
+                return config;
+            }
+        }
+        return null;
     }
 
     /**
@@ -405,16 +451,28 @@ public class BulkActionService {
         List<BulkAction> actions = new ArrayList<>();
         for (RulAction action : actionRepository.findByRuleSet(ruleSet)) {
             BulkActionConfig config = bulkActionConfigManager.get(action.getCode());
-            if (config == null || PERSISTENT_SORT_CODE.equals(config.getCode())) {
+            // the persistent sort needs its run configuration; recognised by its kind, every rule set
+            // names its own action
+            if (config == null || PersistentSortConfig.TYPE.equals(config.getType())) {
                 continue;
             }
-            actions.add(new BulkAction()
-                    .code(config.getCode())
-                    .name(config.getName())
-                    .description(config.getDescription())
-                    .fastAction(false));
+            // in the multi-fund mode no action is fast
+            actions.add(toBulkAction(config).fastAction(false));
         }
         return actions;
+    }
+
+    /**
+     * The action as the REST API describes it, with its kind.
+     */
+    public static BulkAction toBulkAction(final BulkActionConfig config) {
+        String type = config.getType();
+        return new BulkAction()
+                .code(config.getCode())
+                .name(config.getName())
+                .description(config.getDescription())
+                .fastAction(config.isFastAction())
+                .type(type == null ? null : BulkActionType.fromValue(type));
     }
 
     private boolean isActionInRuleSet(final RulRuleSet ruleSet, final String bulkActionCode) {

@@ -258,7 +258,7 @@ public class UISettings {
         /**
          * Nastavení vyhledávání v indexech.
          */
-        INDEX_SEARCH(true, null),
+        INDEX_SEARCH(true, null, true),
 
         /**
          * Nastavení pro menu

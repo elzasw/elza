@@ -23,6 +23,7 @@ export const messages = defineMessages({
     completeAipLoad:  { id: "aip.col.completeAipLoad",  defaultMessage: "Načtený kompletní AIP" },
     problemType:      { id: "aip.col.problemType",      defaultMessage: "Problém" },
     linkState:        { id: "aip.col.linkState",        defaultMessage: "Napojení" },
+    digitalRepositoryCode: { id: "aip.col.digitalRepositoryCode", defaultMessage: "Kód digitálního archivu" },
 });
 
 /**

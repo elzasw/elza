@@ -1,0 +1,5 @@
+<output-types>
+    <output-type code="ISADG_FINDING_AID" filename="Output_FindingAid.drl">
+        <name>Finding aid</name>
+    </output-type>
+</output-types>

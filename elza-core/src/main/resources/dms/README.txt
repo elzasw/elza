@@ -22,6 +22,10 @@ Special names:
                     purged automatically after the retention period
                     (elza.dms.trashRetentionDays, default 30 days).
                     Within retention the delete is reversible.
+  _migrating/       files of the old flat layout that the migration
+                    could not assign to any dms_file row (ORPHAN in
+                    the report). Never purged automatically; review
+                    them and delete them by hand.
   _migration-*.txt  reports from the migration off the old flat
                     layout; keep them for later analysis.
   *.tmp             a write in progress. Orphan *.tmp files older

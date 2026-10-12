@@ -36,11 +36,16 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import cz.tacr.elza.bulkaction.BulkActionService;
+import cz.tacr.elza.bulkaction.generator.PersistentSortRunConfig;
 import cz.tacr.elza.common.FactoryUtils;
 import cz.tacr.elza.common.UuidUtils;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.BulkAction;
+import cz.tacr.elza.controller.vo.BulkActionRun;
 import cz.tacr.elza.controller.vo.BulkActionRunState;
+import cz.tacr.elza.controller.vo.BulkActionType;
+import cz.tacr.elza.controller.vo.PersistentSortRequest;
 import cz.tacr.elza.controller.vo.CreateFund;
 import cz.tacr.elza.controller.vo.FundsActionGroupRequest;
 import cz.tacr.elza.controller.vo.FundsActionGroupResult;
@@ -245,6 +250,38 @@ public class FundController implements FundsApi {
                 .map(run -> toFundsChangeRun(run))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(runs);
+    }
+
+    // GET /action/fund-version/{fundVersionId}
+    @Override
+    @Transactional
+    public ResponseEntity<List<BulkAction>> bulkActionGetFundVersionActions(@PathVariable("fundVersionId") Integer fundVersionId) {
+        List<BulkAction> actions = bulkActionService.getBulkActions(fundVersionId).stream()
+                .filter(Objects::nonNull)
+                .map(BulkActionService::toBulkAction)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(actions);
+    }
+
+    // POST /action/fund-version/{fundVersionId}/persistent-sort
+    @Override
+    @Transactional
+    public ResponseEntity<BulkActionRun> bulkActionQueuePersistentSort(@PathVariable("fundVersionId") Integer fundVersionId,
+                                                                       @RequestBody PersistentSortRequest request) {
+        Validate.notEmpty(request.getNodeIds(), "Pro spuštění řazení je vyžadována alespoň jedna jednotka");
+        Validate.isTrue(StringUtils.isNotBlank(request.getItemTypeCode()), "Musí být vyplněn typ prvku popisu");
+        PersistentSortRunConfig runConfig = new PersistentSortRunConfig();
+        runConfig.setAsc(request.getAsc());
+        runConfig.setSortChildren(request.getSortChildren());
+        runConfig.setItemTypeCode(request.getItemTypeCode());
+        runConfig.setItemSpecCode(request.getItemSpecCode());
+
+        UsrUser user = userService.getLoggedUser();
+        Integer userId = user == null ? null : user.getUserId();
+        ArrBulkActionRun run = bulkActionService.queuePersistentSort(userId, fundVersionId, request.getNodeIds(), runConfig);
+        return ResponseEntity.ok(new BulkActionRun(run.getBulkActionRunId(), fundVersionId, run.getBulkActionCode(),
+                BulkActionRunState.fromValue(run.getState().name()))
+                .type(BulkActionType.PERSISTENT_SORT));
     }
 
     private FundsChangeRun toFundsChangeRun(final ArrBulkActionRun run) {

@@ -632,6 +632,18 @@ Bulk actions, defined in YAML files in :file:`rul_rule_set/<RS>/bulk_actions/`.
 for which the action is recommended before the output is generated;
 ``action-item-types`` - item types the action fills.
 
+The file name is the code of the action and is unique across the
+installation, so two packages cannot share one. Where ELZA treats an
+action specially - the persistent sort (``!PersistentSort``) refreshes the
+tree, has its own dialog and is left out of a run over several funds - it
+recognises the action by its kind, the YAML tag without ``!``, not by the
+file name. The kinds are ``FundValidation``, ``SerialNumberGenerator``,
+``UnitIdGenerator``, ``SealUnitId``, ``TestDataGenerator``, ``MultiAction``,
+``MoveDescItem``, ``ContentMigration`` and ``PersistentSort``; the parts of
+``!MultiAction`` (``!DateRange``, ``!UnitCount``, ...) are not actions of
+their own. The kind is ``type`` of the action in the REST API
+(``BulkActionType``).
+
 rul_structure_type.xml and rul_structure_definition.xml
 =======================================================
 
@@ -706,6 +718,59 @@ filter of the package it builds on, or removes it with an empty
 ``<output-defaults settings-type="OUTPUT_DEFAULTS" entity-type="RULE"/>``.
 Deleting the customization brings the default of the customized package
 back.
+
+.. _index-search:
+
+ui_setting.xml: index-search
+============================
+
+Fields of the entity index the text search of entities looks in, and their
+weights. The setting is global (in the root :file:`ui_setting.xml` of the
+package): one search covers entities of all scopes, whatever rules describe
+them, and ranks them on one scale.
+
+.. code-block:: xml
+
+   <settings xmlns:ns10="index-search">
+       <index-search>
+           <ns10:field name="pref_nm_main" boost="50.0" boost-exact="250.0"
+                       boost-trans-exact="200.0" boost-fulltext="200.0" transliterate="true"/>
+           <ns10:field name="nm_main" part-type="PT_NAME" boost="10.0" boost-exact="50.0"
+                       boost-trans-exact="40.0" transliterate="true"/>
+       </index-search>
+   </settings>
+
+``name`` (required, attribute) - field of the index: an item type code or
+``<part type>_index`` in lower case (any part), prefixed by ``pref_`` for
+the preferred part. ``boost`` - weight of a match by wildcard;
+``boost-exact`` and ``boost-trans-exact`` - weight of an exact match, as
+written and transliterated; ``boost-fulltext`` - weight of a match of the
+whole search text (an index field without it gets four times ``boost``, an
+item field none); ``transliterate`` - the field is indexed also without
+diacritics (takes effect after reindexing); ``part-type`` - the part type
+holding the item, see below.
+
+The application states the fields every entity has: ``accessPointId``,
+``index`` and ``pref_index`` (the names produced by ``INDEX`` entity rules).
+A package states the fields of its own item and part types and may override
+these.
+
+**What the search looks in.** Besides the entity id and the names
+(``index`` fields), the text search looks in every item field of the
+configuration, so an item of the framework's own rules becomes searchable
+by stating it here. The area of the search narrows the item fields: the
+preferred names look only in the ``pref_`` fields; the names of all parts
+look in the ``pref_`` fields and the fields whose ``part-type`` is
+``PT_NAME``; all parts look in every item field. The index of the entities
+is built at startup from the installed item types, so the field of an item
+type installed later is searched after a restart.
+
+**Several packages, one configuration.** Each package keeps its own
+fields; a field stated by several packages is taken, as a whole, from the
+package that depends on the other (packages without a dependency between
+them are ordered by code). Deleting the package brings the fields of the
+others back. The index bridge reads the configuration at startup, so a
+change of ``transliterate`` needs a restart and reindexing.
 
 .. _translation-files:
 

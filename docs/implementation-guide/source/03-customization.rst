@@ -225,7 +225,8 @@ set:
    rule-set :file:`ui_setting.xml` in an addon is refused when the
    customized package already defines the same setting. Only
    ``output-defaults`` (:ref:`output-defaults`) and the global
-   ``dao-import-level-settings`` are composed so far.
+   ``dao-import-level-settings`` and ``index-search`` (:ref:`index-search`)
+   are composed so far.
 
 Rules for a part of a fund
 ==========================

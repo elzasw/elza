@@ -1,0 +1,18 @@
+<arrangement-rules>
+    <arrangement-rule filename="Validation.drl">
+        <rule-type>CONFORMITY_INFO</rule-type>
+        <priority>100</priority>
+    </arrangement-rule>
+    <arrangement-rule filename="NewLevel.drl">
+        <rule-type>NEW_LEVEL</rule-type>
+        <priority>100</priority>
+    </arrangement-rule>
+    <arrangement-rule filename="ChangeImpact.drl">
+        <rule-type>CONFORMITY_IMPACT</rule-type>
+        <priority>100</priority>
+    </arrangement-rule>
+    <arrangement-rule filename="AvailableItems.drl">
+        <rule-type>ATTRIBUTE_TYPES</rule-type>
+        <priority>100</priority>
+    </arrangement-rule>
+</arrangement-rules>

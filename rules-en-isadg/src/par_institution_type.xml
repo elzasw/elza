@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<institution-types>
+    <institution-type code="ISADG_ARCHIVE">
+        <name>Archive</name>
+    </institution-type>
+    <institution-type code="ISADG_LIBRARY">
+        <name>Library</name>
+    </institution-type>
+    <institution-type code="ISADG_MUSEUM">
+        <name>Museum</name>
+    </institution-type>
+    <institution-type code="ISADG_OTHER_INSTITUTION">
+        <name>Other institution</name>
+    </institution-type>
+</institution-types>

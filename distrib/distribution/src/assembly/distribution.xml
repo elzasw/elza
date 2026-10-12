@@ -17,6 +17,7 @@
 				<include>cz.tacr.elza:package-cz-base</include>
 				<include>cz.tacr.elza:package-isaar-cpf</include>
 				<include>cz.tacr.elza:rules-cz-zp2015</include>
+				<include>cz.tacr.elza:rules-en-isadg</include>
 			</includes>
 			<useTransitiveDependencies>false</useTransitiveDependencies>
 			<unpack>false</unpack>

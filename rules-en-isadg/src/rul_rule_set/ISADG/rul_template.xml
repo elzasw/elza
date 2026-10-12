@@ -1,0 +1,7 @@
+<templates>
+    <template code="ISADG_FINDING_AID_XML" output-type="ISADG_FINDING_AID" mime-type="application/xml" extension="xml">
+        <name>XML (ELZA data exchange)</name>
+        <engine>DE_XML</engine>
+        <directory>FINDING_AID_XML</directory>
+    </template>
+</templates>

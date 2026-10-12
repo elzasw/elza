@@ -1341,4 +1341,13 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="20261012120000" author="ppy" runInTransaction="false">
+        <!-- DMS storage migration to dms/<yyyy>/<MM>/<block>/<id>.<ext> (#10028), replacing the
+             migration of changeset 20260918120000: that one parked every legacy file with
+             a four-digit id (1000-9999) in dms/_migrating/ and marked its row MISSING. This one
+             is idempotent: it migrates the flat layout and moves the parked files to their
+             storage_path. -->
+        <customChange class="cz.tacr.elza.dbchangelog.DbChangeset20261012120000"/>
+    </changeSet>
+
 </databaseChangeLog>

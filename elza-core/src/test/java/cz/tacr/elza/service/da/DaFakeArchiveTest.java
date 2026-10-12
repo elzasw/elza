@@ -226,7 +226,7 @@ public class DaFakeArchiveTest extends AbstractServiceTest {
 
         assertEquals(QueueItemState.IMPORT_OK, done.getState(), done.getStateMessage());
         assertEquals(1, requests.get("/download/result/d1").get());
-        tx().executeWithoutResult(t -> assertTrue(aipRepository.findByCode(AIP_CODE) != null,
+        tx().executeWithoutResult(t -> assertTrue(aipRepository.findByDigitalRepositoryAndCode(repository, AIP_CODE) != null,
                                                   "the AIP of the received PACKAGE-INFO exists"));
     }
 

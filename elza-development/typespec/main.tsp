@@ -1372,6 +1372,10 @@ model LinkedNodeVO {
      * Typ napojení - celý balíček, část, nebo komponenta
      */
     linkType?: LinkType;
+    /**
+     * Kód napojené části AIPu (logické úrovně, reprezentace, souboru); chybí u napojení celého AIPu
+     */
+    daoCode?: string;
 }
 
 /**
@@ -1448,6 +1452,10 @@ model AipDetailVO {
      * Id digitálního repozitáře
      */
     digitalRepositoryId: integer;
+    /**
+     * Kód digitálního repozitáře
+     */
+    digitalRepositoryCode: string;
     /**
      * Verze AIPu
      */
@@ -2297,7 +2305,8 @@ enum AipFieldName {
     problemType,
     importState,
     exportState,
-    linkState
+    linkState,
+    digitalRepositoryCode
 }
 
 /**
@@ -4829,6 +4838,66 @@ model BulkAction {
     description?: string;
     /** Příznak rychlé akce */
     fastAction: boolean;
+    /**
+     * Druh akce - značka YAML jejího nastavení bez "!". Klient rozpoznává zvláštní akce
+     * (perzistentní řazení) podle druhu, ne podle kódu: kód je název souboru a každá pravidla
+     * pojmenují svůj. Chybí u akce, jejíž nastavení nejde načíst.
+     */
+    type?: BulkActionType;
+}
+
+/**
+ * Seznam hromadných akcí. Uvnitř namespace `ElzaAPI.BulkAction` by název `BulkAction` označoval
+ * namespace, ne model.
+ */
+alias BulkActionList = BulkAction[];
+
+/**
+ * Druh hromadné akce - značka YAML jejího nastavení bez "!" (`!PersistentSort` -> `PersistentSort`).
+ * Části `!MultiAction` (`!DateRange`, `!UnitCount`, ...) nejsou samostatné akce, a tak ani druhy.
+ */
+enum BulkActionType {
+    FundValidation,
+    SerialNumberGenerator,
+    UnitIdGenerator,
+    SealUnitId,
+    TestDataGenerator,
+    MultiAction,
+    MoveDescItem,
+    ContentMigration,
+    PersistentSort,
+}
+
+/**
+ * Naplánovaný běh hromadné akce nad jedním fondem.
+ */
+model BulkActionRun {
+    /** Identifikátor běhu */
+    id: integer;
+    /** Identifikátor verze fondu */
+    fundVersionId: integer;
+    /** Kód hromadné akce */
+    code: string;
+    /** Druh hromadné akce */
+    type?: BulkActionType;
+    /** Stav běhu */
+    state: BulkActionRunState;
+}
+
+/**
+ * Spuštění perzistentního řazení: seřadí potomky vybraných jednotek podle hodnoty prvku popisu.
+ */
+model PersistentSortRequest {
+    /** Jednotky, jejichž potomci se řadí */
+    nodeIds: integer[];
+    /** Kód typu prvku popisu, podle kterého se řadí */
+    itemTypeCode: string;
+    /** Kód specifikace prvku popisu (u prvků se specifikací) */
+    itemSpecCode?: string;
+    /** Řadit vzestupně */
+    asc: boolean;
+    /** Řadit i nižší úrovně */
+    sortChildren: boolean;
 }
 
 /**
@@ -4975,6 +5044,34 @@ namespace ElzaAPI.BulkAction {
     @get op getFundsChangeRuns(
         @path fundsChangeId: integer;
     ): FundsChangeRun[];
+
+    /**
+     * Vrátí hromadné akce pravidel verze fondu (oprávnění ke čtení fondu).
+     */
+    @route("/fund-version/{fundVersionId}")
+    @get op getFundVersionActions(
+        /** Identifikátor verze fondu */
+        @path fundVersionId: integer;
+    ): BulkActionList | {
+        /** Verze neexistuje */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Naplánuje perzistentní řazení pravidel verze fondu - akci druhu `PersistentSort`, ať se
+     * jmenuje jakkoli (oprávnění spouštět hromadné akce fondu).
+     */
+    @route("/fund-version/{fundVersionId}/persistent-sort")
+    @post op queuePersistentSort(
+        /** Identifikátor verze fondu */
+        @path fundVersionId: integer;
+        @body body: PersistentSortRequest;
+    ): BulkActionRun | {
+        /** Verze neexistuje nebo její pravidla nemají perzistentní řazení */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
 }
 
 @tag("descitems")

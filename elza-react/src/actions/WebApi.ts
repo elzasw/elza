@@ -545,13 +545,6 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.actionUrl + '/queue/' + versionId + '/' + code, null, nodeIds);
     }
 
-    queuePersistentSortByIds(versionId: number, code: string, nodeIds: number[], config) {
-        return AjaxUtils.ajaxPost(WebApiCls.actionUrl + '/queue/persistentSort/' + versionId + '/' + code, null, {
-            nodeIds,
-            ...config,
-        });
-    }
-
     versionValidate(versionId: number, showAll = false) {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/validateVersion/' + versionId + '/' + showAll, null);
     }

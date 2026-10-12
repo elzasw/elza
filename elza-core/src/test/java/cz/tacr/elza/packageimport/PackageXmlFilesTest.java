@@ -65,7 +65,7 @@ class PackageXmlFilesTest {
     /** delivered packages (their src directories) and the packages of the tests */
     private static final List<Path> PACKAGES = List.of(Paths.get("..", "package-cz-base", "src"),
             Paths.get("..", "package-isaar-cpf", "src"), Paths.get("..", "rules-cz-zp2015", "src"),
-            Paths.get("..", "rules-simple-dev", "src"), Paths.get("src", "test", "resources", "entity-rules-test"),
+            Paths.get("..", "rules-simple-dev", "src"), Paths.get("..", "rules-en-isadg", "src"), Paths.get("src", "test", "resources", "entity-rules-test"),
             Paths.get("src", "test", "resources", "entity-standalone-test"),
             Paths.get("src", "test", "resources", "rules-addon-test"),
             Paths.get("src", "test", "resources", "translation-addon-test"));

@@ -1,0 +1,69 @@
+package ISADG;
+
+import cz.tacr.elza.drools.model.Level;
+import cz.tacr.elza.drools.model.ActiveLevel;
+import cz.tacr.elza.drools.model.DescItem;
+import cz.tacr.elza.domain.vo.DataValidationResults;
+
+global DataValidationResults dvResults;
+
+// Messages are keyed (ISADG/<KEY>); translations/cs.xml carries the Czech texts.
+
+function int rank(String level) {
+    if ("ISADG_LEVEL_FONDS".equals(level)) return 1;
+    if ("ISADG_LEVEL_SUBFONDS".equals(level)) return 2;
+    if ("ISADG_LEVEL_SERIES".equals(level)) return 3;
+    if ("ISADG_LEVEL_SUBSERIES".equals(level)) return 4;
+    if ("ISADG_LEVEL_FILE".equals(level)) return 5;
+    if ("ISADG_LEVEL_ITEM".equals(level)) return 6;
+    return 0;
+}
+
+// A level fits below the parent's level when it ranks lower; from the series down a level may also
+// nest in its own kind; a subfonds fits only directly below the fonds.
+function boolean fitsBelow(String child, String parent) {
+    int c = rank(child);
+    int p = rank(parent);
+    if (c == 0 || p == 0) return true;
+    if ("ISADG_LEVEL_SUBFONDS".equals(child)) return p == 1;
+    if (c > p) return true;
+    return c == p && c >= 3;
+}
+
+rule "ISAD(G) 3.1.4: the root of the fonds is a fonds"
+when
+    $activeLevel : ActiveLevel( parent == null )
+    not DescItem( type == "ISADG_LEVEL" && specCode == "ISADG_LEVEL_FONDS" ) from $activeLevel.ownDescItems
+then
+    dvResults.createMissing("ISADG_LEVEL", "ROOT_IS_FONDS", "The root of the fonds must have the level Fonds (ISAD(G) 3.1.4).", "ISADG_POL_BASIC");
+end
+
+rule "ISAD(G) 3.1.4: the level fits below the level of the parent"
+when
+    $activeLevel : ActiveLevel( parent != null && $parent : parent )
+    DescItem( type == "ISADG_LEVEL" && $child : specCode ) from $activeLevel.ownDescItems
+    Level( $parentItems : ownDescItems ) from $parent
+    DescItem( type == "ISADG_LEVEL" && $parentLevel : specCode ) from $parentItems
+    eval( !fitsBelow($child, $parentLevel) )
+then
+    dvResults.createMissing("ISADG_LEVEL", "LEVEL_ORDER", "The level of description does not fit below the level of the parent unit (ISAD(G) 3.1.4).", "ISADG_POL_BASIC");
+end
+
+rule "ISAD(G) 3.1.3: the dates lie within the dates of the parent"
+when
+    $activeLevel : ActiveLevel( $ownItems : ownDescItems && parent != null && $parent : parent )
+    $date : DescItem( type == "ISADG_DATE" ) from $ownItems
+    Level( $parentItems : descItems ) from $parent
+    DescItem( type == "ISADG_DATE" && (normalizedFrom > $date.normalizedFrom || normalizedTo < $date.normalizedTo) ) from $parentItems
+then
+    dvResults.createMissing("ISADG_DATE", "DATE_OUTSIDE_PARENT", "The dates of creation lie outside the dates of the parent unit (ISAD(G) 3.1.3).", "ISADG_POL_BASIC");
+end
+
+rule "Every file or item at the end of a branch is in a container"
+when
+    $activeLevel : ActiveLevel( !hasChildren )
+    DescItem( type == "ISADG_LEVEL" && specCode in ("ISADG_LEVEL_FILE", "ISADG_LEVEL_ITEM") ) from $activeLevel.ownDescItems
+    not ( $level : Level( $items : descItems ) and DescItem( type == "ISADG_CONTAINER" ) from $items )
+then
+    dvResults.createMissing("ISADG_CONTAINER", "CONTAINER_MISSING", "The unit and the units above it have no container.", "ISADG_POL_CONTAINER");
+end

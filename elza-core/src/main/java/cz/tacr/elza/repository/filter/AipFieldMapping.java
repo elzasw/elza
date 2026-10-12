@@ -12,6 +12,7 @@ import java.util.Map;
 
 import cz.tacr.elza.controller.vo.AipFieldName;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.DaAip;
 import cz.tacr.elza.domain.DaAipState;
@@ -47,7 +48,8 @@ public enum AipFieldMapping {
     PROBLEM_TYPE     (AipJoin.STATE,           "problemType",     ENUM),
     IMPORT_STATE     (AipJoin.IMPORT_SYNC,     "state",           ENUM),
     EXPORT_STATE     (AipJoin.EXPORT_SYNC,     "state",           ENUM),
-    LINK_STATE       (AipJoin.STATE,           "linkState",       ENUM);
+    LINK_STATE       (AipJoin.STATE,           "linkState",       ENUM),
+    DIGITAL_REPOSITORY_CODE(AipJoin.DIGITAL_REPOSITORY, "code",    TEXT);
 
     /**
      * Join of the AIP query a field is reached through, with the entity it leads to.
@@ -59,7 +61,8 @@ public enum AipFieldMapping {
         EXPORT_SYNC(DaSyncQueueItem.class),
         ORIGINATOR_AP(ApAccessPoint.class),
         INSTITUTION_AP(ApAccessPoint.class),
-        FUND(ArrFund.class);
+        FUND(ArrFund.class),
+        DIGITAL_REPOSITORY(ArrDigitalRepository.class);
 
         private final Class<?> entityClass;
 

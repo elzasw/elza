@@ -61,6 +61,7 @@ import cz.tacr.elza.ws.types.v1.DaoIdentifiers;
 import cz.tacr.elza.ws.types.v1.DaosSyncRequest;
 import cz.tacr.elza.ws.types.v1.DaosSyncResponse;
 import cz.tacr.elza.ws.types.v1.DestructionRequest;
+import cz.tacr.elza.ws.core.v1.WSHelper;
 import cz.tacr.elza.ws.types.v1.Did;
 import cz.tacr.elza.ws.types.v1.DigitizationRequest;
 import cz.tacr.elza.ws.types.v1.Materials;
@@ -116,9 +117,6 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
     @Autowired
     @Qualifier("transactionManager")
     protected PlatformTransactionManager txManager;
-
-    @Autowired
-    private GroovyScriptService groovyScriptService;
 
     @Autowired
     private DaoDigitizationRequestNodeRepository daoDigitizationRequestNodeRepository;
@@ -213,7 +211,7 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
         if (CollectionUtils.isNotEmpty(daoLinks)) {
             final ArrLegacyDaoLink arrDaoLink = daoLinks.iterator().next();
             final ArrNode arrNode = arrDaoLink.getNode();
-            final Did did = groovyScriptService.createDid(arrNode);
+            final Did did = WSHelper.createDid(arrNode);
             daoLinked.setDid(did);
         }
         return daoLinked;
@@ -283,7 +281,7 @@ public class RequestQueueService implements ListenableFutureCallback<RequestQueu
         Materials materials = new Materials();
         List<ArrDigitizationRequestNode> digitizationRequestNodes = daoDigitizationRequestNodeRepository.findByDigitizationRequest(request);
         for (ArrDigitizationRequestNode arrDigitizationRequestNode : digitizationRequestNodes) {
-            final Did did = groovyScriptService.createDid(arrDigitizationRequestNode.getNode());
+            final Did did = WSHelper.createDid(arrDigitizationRequestNode.getNode());
             materials.getDid().add(did);
         }
         digitizationRequest.setMaterials(materials);

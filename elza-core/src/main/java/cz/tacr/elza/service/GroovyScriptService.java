@@ -2,38 +2,26 @@ package cz.tacr.elza.service;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.Validate;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import com.google.common.eventbus.Subscribe;
 
-import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
-import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.groovy.GroovyAe;
 import cz.tacr.elza.groovy.GroovyGenCtx;
@@ -42,10 +30,7 @@ import cz.tacr.elza.groovy.GroovyPart;
 import cz.tacr.elza.groovy.GroovyResult;
 import cz.tacr.elza.service.cache.AccessPointCacheProvider;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
-import cz.tacr.elza.service.cache.NodeCacheService;
-import cz.tacr.elza.service.cache.RestoredNode;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
-import cz.tacr.elza.ws.types.v1.Did;
 import cz.tacr.elza.service.da.DaImportLevel;
 import cz.tacr.elza.service.da.DaImportPackage;
 import cz.tacr.elza.service.da.DaImportResult;
@@ -64,12 +49,7 @@ public class GroovyScriptService {
 
     private static final Logger LOG = LoggerFactory.getLogger(GroovyScriptService.class);
 
-    // groovy script pro vytvoření DID
-    private final GroovyScriptFile createDidScriptFile;
-
     private final StaticDataService staticDataService;
-
-    private final NodeCacheService nodeCacheService;
 
     private static final String ENTITA = "AE";
     private static final String PART = "PART";
@@ -96,49 +76,8 @@ public class GroovyScriptService {
     }
 
     @Autowired
-    public GroovyScriptService(ResourcePathResolver resourcePathResolver,
-                               NodeCacheService nodeCacheService,
-                               StaticDataService staticDataService,
-                               @Value("classpath:/script/groovy/createDid.groovy") Resource createDidScriptSource) {
-        this.nodeCacheService = nodeCacheService;
+    public GroovyScriptService(StaticDataService staticDataService) {
         this.staticDataService = staticDataService;
-        try {
-            Path groovyDir = resourcePathResolver.getGroovyDir(); // TODO: Move initialization to startup service
-            Files.createDirectories(groovyDir);
-
-            this.createDidScriptFile = GroovyScriptFile.create(createDidScriptSource, groovyDir);
-        } catch (Throwable t) {
-            throw new SystemException("Failed to initialize groovy scripts", t);
-        }
-    }
-
-    /**
-     * Zavolá script pro vytvoření did z node.
-     *
-     * @param arrNode zdrojové node
-     * @return vytvořená instance node
-     */
-    public Did createDid(final ArrNode arrNode) {
-        Map<String, Object> input = new HashMap<>();
-        RestoredNode cachedNode = nodeCacheService.getNode(arrNode.getNodeId());
-        input.put("CACHED_NODE", cachedNode);
-        input.put("NODE", arrNode);
-
-        return (Did) createDidScriptFile.evaluate(input);
-    }
-
-    public List<Did> createDids(final Collection<ArrNode> arrNodes) {
-        Map<String, Object> input = new HashMap<>();
-
-        Set<Integer> nodeIds = arrNodes.stream().map(ArrNode::getNodeId).collect(Collectors.toSet());
-        Map<Integer, RestoredNode> nodes = nodeCacheService.getNodes(nodeIds);
-        List<Did> result = new ArrayList<>();
-        for (RestoredNode value : nodes.values()) {
-            input.put("CACHED_NODE", value);
-            input.put("NODE", value.getNode());
-            result.add((Did) createDidScriptFile.evaluate(input));
-        }
-        return result;
     }
 
     /**
@@ -318,20 +257,6 @@ public class GroovyScriptService {
             GroovyClassLoader loader = shell.getClassLoader();
             GroovyCodeSource source = new GroovyCodeSource(scriptFile);
             return loader.parseClass(source, false);
-        }
-
-        public static GroovyScriptFile create(Resource resource, Path destDir) throws IOException {
-            String fileName = resource.getFilename();
-            Validate.notBlank(fileName);
-
-            File scriptFile = destDir.resolve(fileName).toFile();
-
-            long resourceLM = resource.lastModified();
-            if (!scriptFile.exists() || resourceLM > scriptFile.lastModified()) {
-                FileUtils.copyInputStreamToFile(resource.getInputStream(), scriptFile);
-                scriptFile.setLastModified(resourceLM);
-            }
-            return new GroovyScriptFile(scriptFile);
         }
     }
 

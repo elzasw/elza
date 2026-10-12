@@ -249,7 +249,7 @@ public class Zp2015DaImportBuildTest {
     void firstImport_createsTheLevels_andAttachesTheComponents() throws Exception {
         MetsType mets = mets(ids -> { });
         DaImportBuilder.Outcome outcome = importPackage("aip-first", mets, ead(ids -> { }));
-        firstAipId = aipRepository.findByCode("aip-first").getAipId();
+        firstAipId = tx().execute(status -> firstAip()).getAipId();
 
         assertEquals(3, outcome.created());
         assertEquals(1, outcome.attached(), "the document's own part, with its file and its components");
@@ -275,7 +275,7 @@ public class Zp2015DaImportBuildTest {
     @Test
     @Order(2)
     void samePackageAgain_matchesByUuid_andCreatesNothing() throws Exception {
-        DaAip aip = tx().execute(status -> aipRepository.findByCode("aip-first"));
+        DaAip aip = tx().execute(status -> firstAip());
         DaImportPlan plan = plan(mets(ids -> { }), ead(ids -> { }));
 
         DaImportBuilder.Outcome outcome = tx().execute(status -> builder.build(
@@ -592,6 +592,11 @@ public class Zp2015DaImportBuildTest {
     private DaImportPlan plan(MetsType mets, Ead ead) {
         return tx().execute(status -> planner.plan(mets, ead, "metadata/descriptive/pruvodka.xml", ruleSetId,
                 new DaImportPackage("NSESSS", "https://stands.nacr.cz/da/2023/aip.xml", false)).orElseThrow());
+    }
+
+    /** The AIP of the first import, in the digital archive {@link #createAip} puts every AIP into. */
+    private DaAip firstAip() {
+        return aipRepository.findByDigitalRepositoryAndCode(digitalRepositoryRepository.findAll().get(0), "aip-first");
     }
 
     /**

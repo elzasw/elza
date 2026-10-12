@@ -5,20 +5,10 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.lang3.StringUtils;
-
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataNull;
-import cz.tacr.elza.domain.ArrDataString;
-import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.enumeration.StringLength;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
 
 /**
  * A level a script plans: its items and the key by which an existing level is recognized as
@@ -26,17 +16,14 @@ import cz.tacr.elza.exception.codes.BaseCode;
  * the package) and the DA_MATCH script ({@link DaMatchLevel}, a level the package is placed
  * under).
  *
- * The script names item types and specifications by code; they are resolved and the values are
- * read here, so a wrong code fails at once with the script named, and a value not written the
- * way it can be read fails with the file, the unit and the element named.
+ * The items ({@link #item}) are those of the level: a created level gets them all, a level found
+ * by the match key gets those it has none of yet. What a found level must not get again - what
+ * the user is meant to remove, e.g. a restriction of access on a new series - is planned with
+ * {@link #whenCreated()}.
  *
  * @param <T> the concrete class, so that the calls can be chained
  */
-public abstract class DaLevelItems<T extends DaLevelItems<T>> {
-
-    /** One item of the level; the data are not stored yet. */
-    public record Item(RulItemType itemType, @Nullable RulItemSpec itemSpec, ArrData data) {
-    }
+public abstract class DaLevelItems<T extends DaLevelItems<T>> extends DaItems<T> {
 
     /**
      * One part of the key by which an existing level is recognized: the items of the type - and
@@ -56,21 +43,12 @@ public abstract class DaLevelItems<T extends DaLevelItems<T>> {
         }
     }
 
-    private final StaticDataProvider sdp;
-    private final String scriptName;
-    private final String eadHref;
-
     private final List<MatchKey> matchBy = new ArrayList<>();
-    private final List<Item> items = new ArrayList<>();
+    private DaItemGroup createdItems;
 
     DaLevelItems(StaticDataProvider sdp, String scriptName, @Nullable String eadHref) {
-        this.sdp = sdp;
-        this.scriptName = scriptName;
-        this.eadHref = eadHref;
+        super(sdp, scriptName, eadHref);
     }
-
-    /** What the level is, for the messages - e.g. the div it stands for. */
-    protected abstract String subject();
 
     @SuppressWarnings("unchecked")
     private T self() {
@@ -86,7 +64,7 @@ public abstract class DaLevelItems<T extends DaLevelItems<T>> {
      */
     public T matchBy(String... itemTypeCodes) {
         for (String itemTypeCode : itemTypeCodes) {
-            matchBy.add(new MatchKey(resolveType(itemTypeCode), null));
+            matchBy.add(new MatchKey(resolveKeyType(itemTypeCode), null));
         }
         return self();
     }
@@ -97,115 +75,40 @@ public abstract class DaLevelItems<T extends DaLevelItems<T>> {
      * the user may add to.
      */
     public T matchBySpec(String itemTypeCode, String itemSpecCode) {
-        RulItemType itemType = resolveType(itemTypeCode);
+        RulItemType itemType = resolveKeyType(itemTypeCode);
         matchBy.add(new MatchKey(itemType, resolveSpec(itemType, itemSpecCode)));
         return self();
     }
 
-    /** An item without a value - an item type of data type ENUM, e.g. the level type. */
-    public T item(String itemTypeCode, String itemSpecCode) {
+    /** An item type the level can be recognized by: one with a value to compare. */
+    private RulItemType resolveKeyType(String itemTypeCode) {
         RulItemType itemType = resolveType(itemTypeCode);
-        requireDataType(itemType, DataType.ENUM);
-        return add(itemType, itemSpecCode, new ArrDataNull());
+        if (DataType.fromId(itemType.getDataTypeId()) == DataType.STRUCTURED) {
+            throw scriptError("prvek popisu " + itemTypeCode + " je strukturovaný, podle něj nelze úroveň hledat");
+        }
+        return itemType;
     }
 
     /**
-     * An item with the given text, e.g. the name of the level taken from the div. Blank text adds
-     * no item.
+     * Items the level gets only when it is created - not when an existing level is found by the
+     * match key, which gets only the items it lacks of those planned with {@link #item}. For what
+     * the user is meant to review and remove, e.g. a restriction of access on a new series: once
+     * the user removes it, the next package does not bring it back. Every call returns the same
+     * group.
      */
-    public T item(String itemTypeCode, @Nullable String itemSpecCode, @Nullable String text) {
-        if (StringUtils.isBlank(text)) {
-            return self();
+    public DaItemGroup whenCreated() {
+        if (createdItems == null) {
+            createdItems = group(subject(), null);
         }
-        RulItemType itemType = resolveType(itemTypeCode);
-        DataType dataType = requireDataType(itemType, DataType.STRING, DataType.TEXT);
-        ArrData data;
-        if (dataType == DataType.TEXT) {
-            data = new ArrDataText(text.strip());
-        } else {
-            String value = StringUtils.normalizeSpace(text);
-            if (value.length() > StringLength.LENGTH_1000) {
-                // the text comes from the package (a label, a value of the EAD) - a problem of the package
-                throw AipProblemException.metadata("Balíček obsahuje u " + subject() + " hodnotu prvku popisu "
-                        + itemTypeCode + " delší než " + StringLength.LENGTH_1000 + " znaků.", eadHref, null);
-            }
-            data = new ArrDataString(value);
-        }
-        return add(itemType, itemSpecCode, data);
-    }
-
-    /**
-     * An item with the value of the element, read according to the profile of EAD. An element
-     * carrying no value adds no item.
-     */
-    public T item(String itemTypeCode, @Nullable String itemSpecCode, DaImportElement element) {
-        RulItemType itemType = resolveType(itemTypeCode);
-        RulItemSpec itemSpec = resolveSpec(itemType, itemSpecCode);
-        ArrData data;
-        try {
-            data = DidElementConverters.convert(element.getSource(),
-                                                new DidElementConverters.Mapping(itemType, itemSpec));
-        } catch (EadContentException e) {
-            throw AipProblemException.metadata("Inherentní archivní popis v souboru '" + eadHref
-                    + "' obsahuje u jednotky popisu '" + element.getUnitId() + "' element " + element
-                    + ", který nelze převzít: " + e.getMessage() + ".", eadHref, e);
-        }
-        if (data != null) {
-            items.add(new Item(itemType, itemSpec, data));
-        }
-        return self();
-    }
-
-    private T add(RulItemType itemType, @Nullable String itemSpecCode, ArrData data) {
-        RulItemSpec itemSpec = resolveSpec(itemType, itemSpecCode);
-        data.setDataType(DataType.fromId(itemType.getDataTypeId()).getEntity());
-        items.add(new Item(itemType, itemSpec, data));
-        return self();
-    }
-
-    private RulItemType resolveType(String itemTypeCode) {
-        ItemType itemType = sdp.getItemTypeByCode(itemTypeCode);
-        if (itemType == null) {
-            throw scriptError("neznámý prvek popisu " + itemTypeCode);
-        }
-        return itemType.getEntity();
-    }
-
-    @Nullable
-    private RulItemSpec resolveSpec(RulItemType itemType, @Nullable String itemSpecCode) {
-        if (itemSpecCode == null) {
-            if (Boolean.TRUE.equals(itemType.getUseSpecification())) {
-                throw scriptError("prvek popisu " + itemType.getCode() + " vyžaduje specifikaci");
-            }
-            return null;
-        }
-        RulItemSpec itemSpec = sdp.getItemTypeByCode(itemType.getCode()).getItemSpecByCode(itemSpecCode);
-        if (itemSpec == null) {
-            throw scriptError("specifikace " + itemSpecCode + " nepatří k prvku popisu " + itemType.getCode());
-        }
-        return itemSpec;
-    }
-
-    private DataType requireDataType(RulItemType itemType, DataType... allowed) {
-        DataType dataType = DataType.fromId(itemType.getDataTypeId());
-        for (DataType a : allowed) {
-            if (a == dataType) {
-                return dataType;
-            }
-        }
-        throw scriptError("prvek popisu " + itemType.getCode() + " má datový typ " + dataType
-                + ", do kterého nelze zapsat tuto hodnotu");
-    }
-
-    SystemException scriptError(String reason) {
-        return new SystemException("Skript " + scriptName + " u " + subject() + ": " + reason, BaseCode.INVALID_STATE);
+        return createdItems;
     }
 
     List<MatchKey> getMatchBy() {
         return matchBy;
     }
 
-    List<Item> getItems() {
-        return items;
+    /** Items the level gets only when it is created; none without {@link #whenCreated()}. */
+    List<Item> getCreatedItems() {
+        return createdItems == null ? List.of() : createdItems.getItems();
     }
 }

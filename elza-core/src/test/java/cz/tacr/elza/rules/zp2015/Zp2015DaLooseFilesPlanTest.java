@@ -32,7 +32,7 @@ import cz.tacr.elza.service.da.DaImportPackage;
 import cz.tacr.elza.service.da.DaImportPlan;
 import cz.tacr.elza.service.da.DaImportPlanner;
 import cz.tacr.elza.service.da.DaImportResult;
-import cz.tacr.elza.service.da.DaLevelItems;
+import cz.tacr.elza.service.da.DaItems;
 import cz.tacr.elza.utils.EadReaderWriter;
 import gov.loc.mets.v1_11.schema.MetsType;
 
@@ -126,6 +126,46 @@ public class Zp2015DaLooseFilesPlanTest {
         assertEquals(DaImportResult.Decision.ATTACH, item.getChildren().get(0).getDecision());
     }
 
+    @Test
+    void placement_marksTheSeriesOfImportsAsNotPublished_onlyWhenCreated() throws Exception {
+        DaImportPlan plan = placement("b", EAD_B);
+
+        DaImportPlan.Node imported = plan.getRoots().get(0);
+        assertTrue(imported.isChainLevel());
+        assertEquals("Importováno", string(imported, "ZP2015_NAME"));
+        assertEquals(List.of("ZP2015_LEVEL_TYPE", "ZP2015_NAME"),
+                     imported.getItems().stream().map(i -> i.itemType().getCode()).toList(),
+                     "the restriction is no ordinary item - a found series must not get it again");
+        assertEquals(1, imported.getCreatedItems().size());
+        DaItems.Item restriction = imported.getCreatedItems().get(0);
+        assertEquals("ZP2015_RESTRICTION_ACCESS_INLINE", restriction.itemType().getCode());
+        assertEquals("ZP2015_ACCESS_COND", restriction.structured().getStructuredType().getCode());
+        assertEquals(List.of("ZP2015_RESTRICTED_ACCESS_REASON:ZP2015_ACCESS_PROC_STATE",
+                             "ZP2015_RESTRICTED_ACCESS_TYPE:ZP2015_RESTRICTION_ARCHDESC2"),
+                     restriction.structured().getItems().stream()
+                             .map(i -> i.itemType().getCode() + ":" + i.itemSpec().getCode()).toList());
+
+        DaImportPlan.Node storage = imported.getChildren().get(0);
+        assertEquals("samostatně 1", string(storage, "ZP2015_NAME"));
+        assertTrue(storage.getCreatedItems().isEmpty(), "only the series of imports is hidden, the rest with it");
+    }
+
+    /** The plan placing the package, as the automatic processing makes it. */
+    private DaImportPlan placement(String sample, String eadHref) throws Exception {
+        MetsType mets;
+        try (InputStream is = getClass().getResourceAsStream(DIR + sample + "/METS.xml")) {
+            mets = MetsReaderWriter.unmarshal(is);
+        }
+        Ead ead;
+        String eadFile = eadHref.substring(eadHref.lastIndexOf('/') + 1);
+        try (InputStream is = getClass().getResourceAsStream(DIR + sample + "/" + eadFile)) {
+            ead = EadReaderWriter.unmarshal(is);
+        }
+        return new TransactionTemplate(txManager).execute(status -> planner
+                .planPlacement(mets, ead, eadHref, ruleSetId, new DaImportPackage(LOOSE_FILES, PROFILE, false))
+                .orElseThrow());
+    }
+
     private DaImportPlan plan(String sample, String eadHref) throws Exception {
         MetsType mets;
         try (InputStream is = getClass().getResourceAsStream(DIR + sample + "/METS.xml")) {
@@ -141,7 +181,7 @@ public class Zp2015DaLooseFilesPlanTest {
                 .orElseThrow());
     }
 
-    private static DaLevelItems.Item item(DaImportPlan.Node node, String itemTypeCode) {
+    private static DaItems.Item item(DaImportPlan.Node node, String itemTypeCode) {
         return node.getItems().stream()
                 .filter(i -> i.itemType().getCode().equals(itemTypeCode))
                 .findFirst()

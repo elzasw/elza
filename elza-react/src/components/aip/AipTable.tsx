@@ -107,7 +107,8 @@ const AipTable: FC<AipTableProps> = ({onAipSelect, onExplore, filterDisabled, in
         })
     );
 
-    const [columns, setColumns] = useState<TableColumnDefinition<AipDetailVO>[]>(columnsDef);
+    const [columns, setColumns] = useState<TableColumnDefinition<AipDetailVO>[]>(
+        () => columnsDef.filter(col => !findColDefByKey(String(col.columnId))?.hiddenByDefault));
 
     /** Sloupce maji i skladane klice ("fund.name"), ktere na AipDetailVO primo nejsou. */
     const rawValue = (item: AipDetailVO, key: string): any => (item as Record<string, any>)[key];

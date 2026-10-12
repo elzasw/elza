@@ -41,6 +41,7 @@ import cz.tacr.elza.exception.codes.ErrorCode;
 import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.StructObjService;
+import cz.tacr.elza.ws.types.v1.Did;
 import cz.tacr.elza.ws.types.v1.ErrorDescription;
 import cz.tacr.elza.ws.types.v1.FundIdentifiers;
 import cz.tacr.elza.ws.types.v1.ItemEnum;
@@ -63,6 +64,20 @@ public class WSHelper {
 
     @Autowired
     StructObjService structObjService;
+
+    /**
+     * The description of a unit (DID) sent to a WSDL digital repository or a digitization front
+     * desk: the identifier of the unit only. The title, the reference code and the date were
+     * added by the script {@code createDid.groovy} of the working directory until 3.4.9; it had
+     * not worked since 2020 and was removed.
+     */
+    public static Did createDid(final ArrNode node) {
+        Validate.notNull(node, "The unit of description must be given");
+        Validate.notBlank(node.getUuid(), "The unit of description %s has no UUID", node.getNodeId());
+        Did did = new Did();
+        did.setIdentifier(node.getUuid());
+        return did;
+    }
 
     public Integer getFundId(FundIdentifiers fundInfo) {
         Objects.requireNonNull(fundInfo);
