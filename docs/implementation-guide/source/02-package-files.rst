@@ -635,9 +635,14 @@ for which the action is recommended before the output is generated;
 The file name is the code of the action and is unique across the
 installation, so two packages cannot share one. Where ELZA treats an
 action specially - the persistent sort (``!PersistentSort``) refreshes the
-tree and has its own dialog - it recognises the action by its kind (the
-YAML tag), not by the file name; the kind is ``type`` of the action in the
-REST API.
+tree, has its own dialog and is left out of a run over several funds - it
+recognises the action by its kind, the YAML tag without ``!``, not by the
+file name. The kinds are ``FundValidation``, ``SerialNumberGenerator``,
+``UnitIdGenerator``, ``SealUnitId``, ``TestDataGenerator``, ``MultiAction``,
+``MoveDescItem``, ``ContentMigration`` and ``PersistentSort``; the parts of
+``!MultiAction`` (``!DateRange``, ``!UnitCount``, ...) are not actions of
+their own. The kind is ``type`` of the action in the REST API
+(``BulkActionType``).
 
 rul_structure_type.xml and rul_structure_definition.xml
 =======================================================

@@ -48,7 +48,6 @@ import cz.tacr.elza.service.da.AsyncAipExecutor;
 import cz.tacr.elza.service.da.DaAipActionService;
 import cz.tacr.elza.asynchactions.nodevalid.AsyncNodeExecutor;
 import cz.tacr.elza.bulkaction.AsyncBulkActionWorker;
-import cz.tacr.elza.bulkaction.BulkActionConfigManager;
 import cz.tacr.elza.bulkaction.BulkActionHelperService;
 import cz.tacr.elza.controller.vo.AsyncRequestInfo;
 import cz.tacr.elza.controller.vo.AsyncType;
@@ -76,8 +75,6 @@ import cz.tacr.elza.repository.ExportRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.OutputRepository;
-import cz.tacr.elza.service.eventnotification.EventFactory;
-import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.output.AsyncOutputGeneratorWorker;
 import cz.tacr.elza.service.publication.AsyncExportGeneratorWorker;
 
@@ -129,15 +126,10 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     @Autowired
     private BulkActionRunRepository bulkActionRepository;
 
-    @Autowired
-    private BulkActionConfigManager bulkActionConfigManager;
-
     private OutputRepository outputRepository;
 
     private ExportRepository exportRepository;
     
-    @Autowired
-    private IEventNotificationService eventNotificationService;
 
     @Autowired
     private ApAccessPointRepository accessPointRepository;
@@ -260,7 +252,8 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     @Transactional
     public void enqueue(final ArrFundVersion fundVersion,
                         final ArrBulkActionRun bulkActionRun) {
-        eventPublishBulkAction(bulkActionRun);
+        // the only publisher of the event, it adds the kind of the action
+        appCtx.getBean(BulkActionHelperService.class).eventPublishBulkAction(bulkActionRun);
         ArrAsyncRequest request = ArrAsyncRequest.create(fundVersion, bulkActionRun, 1);
         dispatchRequest(request);
     }
@@ -604,25 +597,6 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     private void stopAll() {
         asyncExecutors.values().forEach(AsyncExecutor::stop);
-    }
-
-    /**
-     * Event publish bulk action.
-     *
-     * @param bulkActionRun the bulk action run
-     */
-    @Transactional(Transactional.TxType.MANDATORY)
-    public void eventPublishBulkAction(final ArrBulkActionRun bulkActionRun) {
-        eventNotificationService.publishEvent(
-                EventFactory.createIdInVersionEvent(
-                        EventType.BULK_ACTION_STATE_CHANGE,
-                        bulkActionRun.getFundVersion(),
-                        bulkActionRun.getBulkActionRunId(),
-                        bulkActionRun.getBulkActionCode(),
-                        bulkActionRun.getState(),
-                        bulkActionConfigManager.getType(bulkActionRun.getBulkActionCode())
-                )
-        );
     }
 
     private static class AsyncBulkExecutor extends AsyncExecutor {

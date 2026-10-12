@@ -24,13 +24,14 @@ import {
     fundTreeNodesExpand,
 } from 'actions/arr/fundTree.jsx';
 import {fundSelectSubNode} from 'actions/arr/node.jsx';
-import {createFundRoot, getParentNode, getNodeChildren, getPersistentSortAction, hasBulkAction} from './ArrUtils.jsx';
+import {createFundRoot, getParentNode, getNodeChildren} from './ArrUtils.jsx';
+import {getPersistentSortAction, hasBulkAction} from './bulkActions';
 import {fundActionFetchConfigIfNeeded} from 'actions/arr/fundAction.jsx';
 import {contextMenuHide, contextMenuShow} from 'actions/global/contextMenu.jsx';
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx';
 import {modalDialogShow} from 'actions/global/modalDialog.jsx';
 import {FOCUS_KEYS} from '../../constants.tsx';
-import PersistentSortDialog from './PersisetntSortDialog';
+import {PersistentSortDialog} from './PersistentSortDialog';
 import {WebApi} from '../../actions/WebApi';
 import {getFundVersion, JAVA_ATTR_CLASS, urlFundGrid, ZP2015_INTRO_VYPOCET_EJ} from '../../constants';
 import {Link} from 'react-router-dom';
@@ -45,11 +46,16 @@ class FundTreeMain extends React.Component {
         this.trySetFocus(this.props);
     }
 
-    UNSAFE_componentWillReceiveProps(nextProps) {
-        const {versionId, expandedIds} = nextProps;
+    componentDidUpdate(prevProps) {
+        // only on new props, as componentWillReceiveProps did: trySetFocus updates the state
+        if (prevProps === this.props) {
+            return;
+        }
+        // the requests are no-ops while the data is loaded
+        const {versionId, expandedIds} = this.props;
         this.requestFundTreeData(versionId, expandedIds);
         this.requestBulkActions(versionId);
-        this.trySetFocus(nextProps);
+        this.trySetFocus(this.props);
     }
 
     trySetFocus = props => {
@@ -157,7 +163,7 @@ class FundTreeMain extends React.Component {
             modalDialogShow(
                 this,
                 this.props.intl.formatMessage(arrPanelMessages.functionsPersistentSort),
-                <PersistentSortDialog versionId={fund.versionId} fund={fund} node={node} />,
+                <PersistentSortDialog versionId={fund.versionId} ruleSetId={fund.activeVersion.ruleSetId} node={node} />,
             ),
         );
     };

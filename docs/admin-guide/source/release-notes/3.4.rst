@@ -95,7 +95,14 @@ Changes
   refresh of the tree after it follow the rules of the fund: the action is
   recognised by its kind, not by a fixed name, so every rules package names
   its own. *Compute and visualise EJ* is offered only for funds whose rules
-  have the action (ZP2015).
+  have the action (ZP2015). The persistent sort is not offered for a run
+  over several funds, whatever the rules call it.
+* Change: REST API - the bulk actions of a fund version are listed by
+  ``GET /api/v1/action/fund-version/{fundVersionId}`` with the kind of each
+  action (``type``), and the persistent sort is run by
+  ``POST /api/v1/action/fund-version/{fundVersionId}/persistent-sort``,
+  which finds the sort of the rules of the fund itself. The endpoint
+  ``POST /api/action/queue/persistentSort/{versionId}/{code}`` is removed.
 * Change: The description of a unit sent to a WSDL digital repository or a
   digitization front desk with a linked digital object (the DID of the DAO
   web services) carries the identifier of the unit only. The script
@@ -120,6 +127,11 @@ Changes
 Fixes
 -----
 
+* Fix: A failed persistent sort or *Compute and visualise EJ* is reported;
+  before, only a finished or interrupted run was. The tree refreshed after
+  the action is the tree of its fund, not of the fund shown at that moment.
+* Fix: The persistent sort on the page of bulk actions keeps the direction
+  and the specification of the run it starts from.
 * Fix: ELZA DA - a package whose PREMIS file has another name, or no PREMIS
   file, is no longer refused.
 * Fix: ELZA DA - a description unit with an attached AIP whose metadata

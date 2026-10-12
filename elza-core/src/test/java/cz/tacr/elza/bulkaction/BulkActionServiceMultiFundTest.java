@@ -23,6 +23,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+import cz.tacr.elza.bulkaction.generator.PersistentSortConfig;
+import cz.tacr.elza.bulkaction.generator.PersistentSortRunConfig;
 import cz.tacr.elza.core.data.PackageTexts;
 import cz.tacr.elza.controller.vo.FundsActionGroupResult;
 import cz.tacr.elza.controller.vo.MultiFundActionResult;
@@ -36,6 +38,7 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.repository.ActionRepository;
 import cz.tacr.elza.repository.BulkActionNodeRepository;
 import cz.tacr.elza.repository.BulkActionRunRepository;
@@ -57,6 +60,8 @@ import cz.tacr.elza.service.UserService;
 class BulkActionServiceMultiFundTest {
 
     private static final String ACTION_CODE = "ContentMigration";
+
+    private static final String SORT_CODE = "ISADG_PERSISTENT_SORT";
 
     @Mock
     private FundVersionRepository fundVersionRepository;
@@ -127,20 +132,27 @@ class BulkActionServiceMultiFundTest {
         return c;
     }
 
+    private BulkActionConfig sortConfig() {
+        BulkActionConfig c = config(SORT_CODE);
+        when(c.getType()).thenReturn(PersistentSortConfig.TYPE);
+        return c;
+    }
+
     @Test
     void groupFundsByRuleSet_splitsByRuleSetSkipsNoOpenVersionAndExcludesPersistentSort() {
         RulRuleSet rsA = ruleSet(100, "ZP2015", "Pravidla ZP2015");
         RulAction actionMig = action(ACTION_CODE);
-        RulAction actionSort = action(BulkActionService.PERSISTENT_SORT_CODE);
+        // the persistent sort of a rule set other than ZP2015: recognised by its kind, not its code
+        RulAction actionSort = action(SORT_CODE);
         BulkActionConfig configMig = config(ACTION_CODE);
-        BulkActionConfig configSort = config(BulkActionService.PERSISTENT_SORT_CODE);
+        BulkActionConfig configSort = sortConfig();
 
         // funds 1 and 2 have open versions in rule set A; fund 3 has none -> skipped
         when(fundVersionRepository.findByFundIdsAndLockChangeIsNull(any()))
                 .thenReturn(Arrays.asList(openVersion(1, 10, rsA), openVersion(2, 20, rsA)));
         when(actionRepository.findByRuleSet(rsA)).thenReturn(Arrays.asList(actionMig, actionSort));
         when(bulkActionConfigManager.get(ACTION_CODE)).thenReturn(configMig);
-        when(bulkActionConfigManager.get(BulkActionService.PERSISTENT_SORT_CODE)).thenReturn(configSort);
+        when(bulkActionConfigManager.get(SORT_CODE)).thenReturn(configSort);
 
         FundsActionGroupResult result = service.groupFundsByRuleSet(Arrays.asList(1, 2, 3), null);
 
@@ -256,5 +268,49 @@ class BulkActionServiceMultiFundTest {
             assertThat(run.getFundsChange()).isNotNull();
             assertThat(run.getFundsChange().getFundsChangeId()).isEqualTo(99);
         });
+    }
+
+    @Test
+    void queuePersistentSort_queuesTheSortOfTheRuleSetWhateverItsCode() {
+        RulRuleSet rs = ruleSet(100, "ISADG", "ISAD(G)");
+        RulAction actionMig = action(ACTION_CODE);
+        RulAction actionSort = action(SORT_CODE);
+        BulkActionConfig configMig = config(ACTION_CODE);
+        BulkActionConfig configSort = sortConfig();
+        ArrFundVersion v10 = openVersion(10, 10, rs);
+
+        when(fundVersionRepository.findById(10)).thenReturn(Optional.of(v10));
+        when(fundVersionRepository.getOneCheckExist(10)).thenReturn(v10);
+        when(actionRepository.findByRuleSet(rs)).thenReturn(List.of(actionMig, actionSort));
+        when(bulkActionConfigManager.get(ACTION_CODE)).thenReturn(configMig);
+        when(bulkActionConfigManager.get(SORT_CODE)).thenReturn(configSort);
+        when(arrangementInternalService.createChange(any())).thenReturn(new ArrChange());
+        when(nodeRepository.findById(any())).thenAnswer(inv -> {
+            ArrNode n = new ArrNode();
+            n.setNodeId(inv.getArgument(0));
+            return Optional.of(n);
+        });
+
+        service.queuePersistentSort(1, 10, List.of(10000), new PersistentSortRunConfig());
+
+        ArgumentCaptor<ArrBulkActionRun> runCaptor = ArgumentCaptor.forClass(ArrBulkActionRun.class);
+        verify(asyncRequestService).enqueue(any(ArrFundVersion.class), runCaptor.capture());
+        assertThat(runCaptor.getValue().getBulkActionCode()).isEqualTo(SORT_CODE);
+    }
+
+    @Test
+    void queuePersistentSort_ruleSetWithoutSort_throwsNotFound() {
+        RulRuleSet rs = ruleSet(100, "SIMPLE", "Bez řazení");
+        RulAction actionMig = action(ACTION_CODE);
+        BulkActionConfig configMig = config(ACTION_CODE);
+        ArrFundVersion v10 = openVersion(10, 10, rs);
+
+        when(fundVersionRepository.findById(10)).thenReturn(Optional.of(v10));
+        when(actionRepository.findByRuleSet(rs)).thenReturn(List.of(actionMig));
+        when(bulkActionConfigManager.get(ACTION_CODE)).thenReturn(configMig);
+
+        assertThatThrownBy(() -> service.queuePersistentSort(1, 10, List.of(10000), new PersistentSortRunConfig()))
+                .isInstanceOf(ObjectNotFoundException.class);
+        verify(asyncRequestService, never()).enqueue(any(ArrFundVersion.class), any(ArrBulkActionRun.class));
     }
 }

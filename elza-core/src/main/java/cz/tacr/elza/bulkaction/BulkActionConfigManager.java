@@ -5,7 +5,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -61,6 +64,14 @@ public class BulkActionConfigManager {
     private final ActionRepository actionRepository;
 
     private final ResourcePathResolver resourcePathResolver;
+
+    /**
+     * Kinds of the actions by the configuration class: the YAML tag without "!". The kind is what the
+     * client and the core key on (BulkActionVO.type, BulkAction.type of the REST API, the event
+     * BULK_ACTION_STATE_CHANGE), never the code, which is the file name and unique per installation.
+     * The values are the enum BulkActionType of the REST API (BulkActionKindsTest).
+     */
+    private static final Map<Class<? extends BaseActionConfig>, String> KINDS = createKinds();
 
     /**
      * Mapa konfigurací hromadných akcí.
@@ -127,6 +138,22 @@ public class BulkActionConfigManager {
     }
 
     /**
+     * Kind of the configuration class (its YAML tag without "!"), null for a class without a tag
+     * (a broken action).
+     */
+    @Nullable
+    public static String getKind(final Class<? extends BulkActionConfig> configClass) {
+        return KINDS.get(configClass);
+    }
+
+    /**
+     * All kinds of actions, in the order of registration.
+     */
+    public static Collection<String> getKinds() {
+        return Collections.unmodifiableCollection(KINDS.values());
+    }
+
+    /**
      * Gets bulk action.
      *
      * @param code
@@ -175,6 +202,20 @@ public class BulkActionConfigManager {
         return config;
     }
 
+    private static Map<Class<? extends BaseActionConfig>, String> createKinds() {
+        Map<Class<? extends BaseActionConfig>, String> kinds = new LinkedHashMap<>();
+        kinds.put(FundValidationConfig.class, "FundValidation");
+        kinds.put(SerialNumberConfig.class, "SerialNumberGenerator");
+        kinds.put(GenerateUnitIdConfig.class, "UnitIdGenerator");
+        kinds.put(SealUnitIdConfig.class, "SealUnitId");
+        kinds.put(TestDataConfig.class, "TestDataGenerator");
+        kinds.put(MultiActionConfig.class, "MultiAction");
+        kinds.put(MoveDescItemConfig.class, "MoveDescItem");
+        kinds.put(ContentMigrationConfig.class, "ContentMigration");
+        kinds.put(PersistentSortConfig.class, PersistentSortConfig.TYPE);
+        return Collections.unmodifiableMap(kinds);
+    }
+
     /**
      * Create yaml loader
      *
@@ -183,23 +224,16 @@ public class BulkActionConfigManager {
     private static Yaml prepareYamlLoader() {
         Constructor yamlCtor = new Constructor(new LoaderOptions());
 
-        // Register type descriptors
-        yamlCtor.addTypeDescription(new TypeDescription(FundValidationConfig.class, "!FundValidation"));
+        // Register type descriptors: the actions by their kinds
+        KINDS.forEach((configClass, kind) -> yamlCtor.addTypeDescription(new TypeDescription(configClass, "!" + kind)));
+        // the parts of !MultiAction, not actions of their own
         yamlCtor.addTypeDescription(new TypeDescription(ItemGeneratorConfig.class, "!ItemGenerator"));
         yamlCtor.addTypeDescription(new TypeDescription(StorageOrderGeneratorConfig.class, "!StorageOrderGenerator"));
-        yamlCtor.addTypeDescription(new TypeDescription(SerialNumberConfig.class, "!SerialNumberGenerator"));
-        yamlCtor.addTypeDescription(new TypeDescription(GenerateUnitIdConfig.class, "!UnitIdGenerator"));
-        yamlCtor.addTypeDescription(new TypeDescription(SealUnitIdConfig.class, "!SealUnitId"));
-        yamlCtor.addTypeDescription(new TypeDescription(TestDataConfig.class, "!TestDataGenerator"));
-        yamlCtor.addTypeDescription(new TypeDescription(MultiActionConfig.class, "!MultiAction"));
         yamlCtor.addTypeDescription(new TypeDescription(DateRangeConfig.class, "!DateRange"));
         yamlCtor.addTypeDescription(new TypeDescription(TextAggregationConfig.class, "!TextAggregation"));
         yamlCtor.addTypeDescription(new TypeDescription(CopyConfig.class, "!Copy"));
         yamlCtor.addTypeDescription(new TypeDescription(NodeCountConfig.class, "!NodeCount"));
         yamlCtor.addTypeDescription(new TypeDescription(UnitCountConfig.class, "!UnitCount"));
-        yamlCtor.addTypeDescription(new TypeDescription(MoveDescItemConfig.class, "!MoveDescItem"));
-        yamlCtor.addTypeDescription(new TypeDescription(ContentMigrationConfig.class, "!ContentMigration"));
-        yamlCtor.addTypeDescription(new TypeDescription(PersistentSortConfig.class, "!PersistentSort"));
         yamlCtor.addTypeDescription(new TypeDescription(DeleteItemConfig.class, "!DeleteItem"));
         yamlCtor.addTypeDescription(new TypeDescription(AccessPointAggregationConfig.class, "!AccessPointAggregation"));
         yamlCtor.addTypeDescription(new TypeDescription(SizeCounterConfig.class, "!SizeCounter"));

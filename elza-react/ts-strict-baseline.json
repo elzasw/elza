@@ -9,7 +9,6 @@
     "error TS7006: Parameter 'assignable' implicitly has an 'any' type.",
     "error TS7006: Parameter 'code' implicitly has an 'any' type.",
     "error TS7006: Parameter 'columns' implicitly has an 'any' type.",
-    "error TS7006: Parameter 'config' implicitly has an 'any' type.",
     "error TS7006: Parameter 'createDescItem' implicitly has an 'any[]' type.",
     "error TS7006: Parameter 'createItems' implicitly has an 'any' type.",
     "error TS7006: Parameter 'data' implicitly has an 'any' type.",

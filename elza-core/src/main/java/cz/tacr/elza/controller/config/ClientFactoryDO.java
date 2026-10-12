@@ -27,7 +27,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.FilterTools;
-import cz.tacr.elza.bulkaction.generator.PersistentSortRunConfig;
 import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.DataBit;
@@ -47,7 +46,6 @@ import cz.tacr.elza.controller.vo.DataUnitid;
 import cz.tacr.elza.controller.vo.DataUriRef;
 import cz.tacr.elza.controller.vo.ItemData;
 import cz.tacr.elza.controller.vo.NodeItem;
-import cz.tacr.elza.controller.vo.PersistentSortConfigVO;
 import cz.tacr.elza.controller.vo.StructuredObjectItem;
 import cz.tacr.elza.controller.vo.UISettingsVO;
 import cz.tacr.elza.controller.vo.UpdateFund;
@@ -1111,10 +1109,5 @@ public class ClientFactoryDO {
             return Collections.emptyList();
         }
         return settings.stream().map(UISettingsVO::createEntity).collect(Collectors.toList());
-    }
-
-    public PersistentSortRunConfig createPersistentSortRunConfig(final PersistentSortConfigVO configVO) {
-        Assert.notNull(configVO, "Nastavení musí být vyplněno");
-        return configVO.createEntity();
     }
 }

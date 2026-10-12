@@ -29,11 +29,11 @@ import {
 } from 'actions/arr/fundAction';
 import * as perms from 'actions/user/Permission';
 import {ActionState, urlFundActions, getFundVersion, NEW} from '../../constants.tsx';
-import {isPersistentSortAction} from 'components/arr/ArrUtils.jsx';
+import {isPersistentSortAction} from 'components/arr/bulkActions';
 import {actionStateTranslation} from '../../actions/arr/fundAction';
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './FundActionPageKeymap';
-import PersistentSortForm from '../../components/arr/PersistentSortForm';
+import {PersistentSortForm} from '../../components/arr/PersistentSortForm';
 import {descItemTypesFetchIfNeeded} from '../../actions/refTables/descItemTypes';
 import { WebApi } from 'actions/WebApi.ts';
 
@@ -41,7 +41,7 @@ const AREA = "FUND_ACTION";
 
 class FundActionPage extends ArrParentPage {
     area = AREA;
-    refForm = null;
+    persistentSortForm = React.createRef();
     static contextTypes = {shortcuts: PropTypes.object};
     static childContextTypes = {shortcuts: PropTypes.object.isRequired};
 
@@ -174,17 +174,30 @@ class FundActionPage extends ArrParentPage {
         if (form.code !== '' && form.nodes && form.nodes.length > 0) {
             if (isPersistentSortAction(fund, form.code)) {
                 //zavolá metodu FundActionPage#submitPersistentSortForm
-                this.refForm.submit();
+                this.persistentSortForm.current?.submit();
             } else {
-                this.props.dispatch(fundActionFormSubmit(versionId, form.code));
+                this.props.dispatch(fundActionFormSubmit(versionId));
             }
         }
     }
 
-    submitPersistentSortForm = (versionId, values) => {
+    submitPersistentSortForm = settings => {
         const fund = this.getActiveFund(this.props);
-        return this.props.dispatch(fundActionFormSubmit(versionId, fund.fundAction.form.code, values));
+        return this.props.dispatch(fundActionFormSubmit(fund.versionId, settings));
     };
+
+    /**
+     * Sort settings of the shown run, parsed once per run: a new object would reset the form and
+     * lose what the user changed.
+     */
+    getPersistentSortSettings(detail) {
+        const config = detail && detail.data ? detail.data.config : undefined;
+        if (config !== this.persistentSortConfig) {
+            this.persistentSortConfig = config;
+            this.persistentSortSettings = config ? JSON.parse(config) : undefined;
+        }
+        return this.persistentSortSettings;
+    }
 
     handleRibbonInterruptAction() {
         const fund = this.getActiveFund(this.props);
@@ -507,11 +520,10 @@ class FundActionPage extends ArrParentPage {
                             {isPersistentSortAction(fund, form.code) && [
                                 <h2>{<FormattedMessage {...arrPageMessages.functionsConfiguration} />}</h2>,
                                 <PersistentSortForm
-                                    initialValues={detail.data && detail.data.config && JSON.parse(detail.data.config)}
+                                    initialSettings={this.getPersistentSortSettings(detail)}
                                     onSubmit={this.submitPersistentSortForm}
-                                    ref={ref => (this.refForm = ref)}
-                                    versionId={versionId}
-                                    fund={fund}
+                                    formApiRef={this.persistentSortForm}
+                                    ruleSetId={fund.activeVersion.ruleSetId}
                                 />,
                             ]}
                         </div>

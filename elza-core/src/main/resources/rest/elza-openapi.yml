@@ -832,6 +832,68 @@ paths:
                 $ref: '#/components/schemas/BaseException'
       tags:
         - accesspoints
+  /action/fund-version/{fundVersionId}:
+    get:
+      operationId: BulkAction_getFundVersionActions
+      description: Vrátí hromadné akce pravidel verze fondu (oprávnění ke čtení fondu).
+      parameters:
+        - name: fundVersionId
+          in: path
+          required: true
+          description: Identifikátor verze fondu
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BulkAction'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - funds
+  /action/fund-version/{fundVersionId}/persistent-sort:
+    post:
+      operationId: BulkAction_queuePersistentSort
+      description: |-
+        Naplánuje perzistentní řazení pravidel verze fondu - akci druhu `PersistentSort`, ať se
+        jmenuje jakkoli (oprávnění spouštět hromadné akce fondu).
+      parameters:
+        - name: fundVersionId
+          in: path
+          required: true
+          description: Identifikátor verze fondu
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkActionRun'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - funds
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersistentSortRequest'
   /action/funds-change/{fundsChangeId}:
     get:
       operationId: BulkAction_getFundsChangeRuns
@@ -8924,7 +8986,40 @@ components:
         fastAction:
           type: boolean
           description: Příznak rychlé akce
+        type:
+          allOf:
+            - $ref: '#/components/schemas/BulkActionType'
+          description: |-
+            Druh akce - značka YAML jejího nastavení bez "!". Klient rozpoznává zvláštní akce
+            (perzistentní řazení) podle druhu, ne podle kódu: kód je název souboru a každá pravidla
+            pojmenují svůj. Chybí u akce, jejíž nastavení nejde načíst.
       description: Hromadná akce, kterou lze spustit nad fondem.
+    BulkActionRun:
+      type: object
+      required:
+        - id
+        - fundVersionId
+        - code
+        - state
+      properties:
+        id:
+          type: integer
+          description: Identifikátor běhu
+        fundVersionId:
+          type: integer
+          description: Identifikátor verze fondu
+        code:
+          type: string
+          description: Kód hromadné akce
+        type:
+          allOf:
+            - $ref: '#/components/schemas/BulkActionType'
+          description: Druh hromadné akce
+        state:
+          allOf:
+            - $ref: '#/components/schemas/BulkActionRunState'
+          description: Stav běhu
+      description: Naplánovaný běh hromadné akce nad jedním fondem.
     BulkActionRunState:
       type: string
       enum:
@@ -8936,6 +9031,21 @@ components:
         - INTERRUPTED
         - OUTDATED
       description: Stav běhu hromadné akce.
+    BulkActionType:
+      type: string
+      enum:
+        - FundValidation
+        - SerialNumberGenerator
+        - UnitIdGenerator
+        - SealUnitId
+        - TestDataGenerator
+        - MultiAction
+        - MoveDescItem
+        - ContentMigration
+        - PersistentSort
+      description: |-
+        Druh hromadné akce - značka YAML jejího nastavení bez "!" (`!PersistentSort` -> `PersistentSort`).
+        Části `!MultiAction` (`!DateRange`, `!UnitCount`, ...) nejsou samostatné akce, a tak ani druhy.
     ConnectionType:
       type: string
       enum:
@@ -12315,6 +12425,32 @@ components:
           format: int32
           description: Minimal number of character groups (lowercase, uppercase, digits, other), 1–4
       description: Password policy. For each rule, null or a value <= 0 means the rule is off.
+    PersistentSortRequest:
+      type: object
+      required:
+        - nodeIds
+        - itemTypeCode
+        - asc
+        - sortChildren
+      properties:
+        nodeIds:
+          type: array
+          items:
+            type: integer
+          description: Jednotky, jejichž potomci se řadí
+        itemTypeCode:
+          type: string
+          description: Kód typu prvku popisu, podle kterého se řadí
+        itemSpecCode:
+          type: string
+          description: Kód specifikace prvku popisu (u prvků se specifikací)
+        asc:
+          type: boolean
+          description: Řadit vzestupně
+        sortChildren:
+          type: boolean
+          description: Řadit i nižší úrovně
+      description: 'Spuštění perzistentního řazení: seřadí potomky vybraných jednotek podle hodnoty prvku popisu.'
     PublicationDetail:
       type: object
       required:

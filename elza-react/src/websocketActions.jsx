@@ -7,17 +7,10 @@ import { addToastrDanger, addToastrSuccess } from 'components/shared/toastr/Toas
 import {} from 'components/shared';
 import { FormattedMessage, defineMessages } from "react-intl";
 
-// Id jsou převzatá z legacy katalogu beze změny; sortFailed v katalogu chyběl,
-// takže se v toastru vypisovalo "[klíč]".
+// Id jsou převzatá z legacy katalogu beze změny.
 const messages = defineMessages({
     importSuccess: { id: "ribbon.action.arr.dataGrid.import.success", defaultMessage: "Import byl dokončen" },
     importFailed: { id: "ribbon.action.arr.dataGrid.import.failed", defaultMessage: "Import selhal" },
-    sortSuccess: { id: "arr.functions.persistentSort.sortSuccess", defaultMessage: "Seřazení proběhlo úspěšně" },
-    sortInterrupted: { id: "arr.functions.persistentSort.sortInterrupted", defaultMessage: "Seřazení bylo přerušeno" },
-    sortFailed: { id: "arr.functions.persistentSort.sortFailed", defaultMessage: "Seřazení selhalo" },
-    ejSuccess: { id: "arr.functions.computeAndVizualizeEJ.success", defaultMessage: "Výpočet a vizualizace EJ proběhlo úspěšně" },
-    ejInterrupted: { id: "arr.functions.computeAndVizualizeEJ.interrupted", defaultMessage: "Výpočet a vizualizace EJ bylo přerušeno" },
-    ejError: { id: "arr.functions.computeAndVizualizeEJ.error", defaultMessage: "Výpočet a vizualizace EJ selhalo" },
 });
 
 import {
@@ -27,7 +20,6 @@ import {
     changeDeleteLevel,
     changeFiles,
     changeFund,
-    changeFundAction,
     changeFundRecord,
     changeIndexingFinished,
     changeInstitution,
@@ -62,11 +54,7 @@ import {
 import { reloadUserDetail } from 'actions/user/userDetail';
 import { fundVersionApproved } from 'actions/arr/fund.jsx';
 import { fundDataGridRefreshRows } from 'actions/arr/fundDataGrid';
-import { fundTreeFetch } from 'actions/arr/fundTree';
-import { fundTreeInvalidate } from 'actions/arr/fundTree';
-import * as types from 'actions/constants/ActionTypes';
-import { fundNodeSubNodeFulltextSearch } from 'actions/arr/node';
-import { PERSISTENT_SORT_TYPE, ZP2015_INTRO_VYPOCET_EJ } from './constants.tsx';
+import { bulkActionStateChanged } from 'actions/arr/bulkActionStateChanged';
 import * as issuesActions from 'actions/arr/issues';
 import URLParse from 'url-parse';
 
@@ -352,52 +340,7 @@ function deleteLevelChange(value) {
  * Změna hromadných akcí.
  */
 function fundActionActionChange(value) {
-    // the persistent sort and the EJ computation have their own handling; the sort is recognised by
-    // its kind (every rule set names its own action), the EJ computation by its ZP2015 code
-    if (value.actionType === PERSISTENT_SORT_TYPE) {
-        processPersistentSort(value);
-    } else if (value.code === ZP2015_INTRO_VYPOCET_EJ) {
-        processVisualizeEJ(value);
-    }
-    store.dispatch(changeFundAction(value.versionId, value.entityId));
-}
-
-function processPersistentSort(value) {
-    if (value.state === 'FINISHED') {
-        const fund = getFund();
-
-        if (fund) {
-            store.dispatch(fundTreeInvalidate(fund.versionId))
-            //Přenačtení nodeForm
-            store.dispatch(fundNodeSubNodeFulltextSearch(undefined));
-        }
-        store.dispatch(addToastrSuccess(<FormattedMessage {...messages.sortSuccess} />));
-    } else if (value.state === 'INTERRUPTED') {
-        store.dispatch(addToastrDanger(<FormattedMessage {...messages.sortInterrupted} />));
-    } else if (value.state === 'FAILED') {
-        store.dispatch(addToastrDanger(<FormattedMessage {...messages.sortFailed} />));
-    }
-}
-
-function processVisualizeEJ(value) {
-    if (value.state === 'FINISHED') {
-        const fund = getFund();
-        if (fund) {
-            store.dispatch(fundTreeFetch(types.FUND_TREE_AREA_MAIN, fund.versionId, null, fund.fundTree.expandedIds));
-            //Přenačtení nodeForm
-            store.dispatch(fundNodeSubNodeFulltextSearch(undefined));
-        }
-        store.dispatch(addToastrSuccess(<FormattedMessage {...messages.ejSuccess} />));
-    } else if (value.state === 'INTERRUPTED') {
-        store.dispatch(addToastrDanger(<FormattedMessage {...messages.ejInterrupted} />));
-    } else if (value.state === 'FAILED') {
-        store.dispatch(addToastrDanger(<FormattedMessage {...messages.ejError} />));
-    }
-}
-
-function getFund() {
-    let state = store.getState();
-    return state.arrRegion.activeIndex != null ? state.arrRegion.funds[state.arrRegion.activeIndex] : null;
+    store.dispatch(bulkActionStateChanged(value));
 }
 
 /**

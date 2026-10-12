@@ -32,7 +32,6 @@ import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.OutputItemConnector;
 import cz.tacr.elza.service.OutputServiceInternal;
 import cz.tacr.elza.service.eventnotification.EventFactory;
-import cz.tacr.elza.service.eventnotification.events.EventType;
 
 /**
  * Pomocá třída pro zpracovávání požadavků při vykonávání hromadných akcí
@@ -114,16 +113,8 @@ public class BulkActionHelperService {
      */
     @Transactional(Transactional.TxType.MANDATORY)
     public void eventPublishBulkAction(final ArrBulkActionRun bulkActionRun) {
-        eventNotificationService.publishEvent(
-                EventFactory.createIdInVersionEvent(
-                        EventType.BULK_ACTION_STATE_CHANGE,
-                        bulkActionRun.getFundVersion(),
-                        bulkActionRun.getBulkActionRunId(),
-                        bulkActionRun.getBulkActionCode(),
-                        bulkActionRun.getState(),
-                        bulkActionConfigManager.getType(bulkActionRun.getBulkActionCode())
-                )
-        );
+        eventNotificationService.publishEvent(EventFactory.createBulkActionStateEvent(bulkActionRun,
+                bulkActionConfigManager.getType(bulkActionRun.getBulkActionCode())));
     }
 
     /**
