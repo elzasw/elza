@@ -1372,6 +1372,10 @@ model LinkedNodeVO {
      * Typ napojení - celý balíček, část, nebo komponenta
      */
     linkType?: LinkType;
+    /**
+     * Kód napojené části AIPu (logické úrovně, reprezentace, souboru); chybí u napojení celého AIPu
+     */
+    daoCode?: string;
 }
 
 /**
@@ -1448,6 +1452,10 @@ model AipDetailVO {
      * Id digitálního repozitáře
      */
     digitalRepositoryId: integer;
+    /**
+     * Kód digitálního repozitáře
+     */
+    digitalRepositoryCode: string;
     /**
      * Verze AIPu
      */
@@ -2297,7 +2305,8 @@ enum AipFieldName {
     problemType,
     importState,
     exportState,
-    linkState
+    linkState,
+    digitalRepositoryCode
 }
 
 /**

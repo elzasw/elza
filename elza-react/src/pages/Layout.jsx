@@ -22,6 +22,7 @@ import {
     AdminRequestsQueuePage,
     AdminUserPage,
     AipPage,
+    AipEntryPage,
     AipExplorerPage,
     ArrAipExplorerPage,
     ArrAipConnectPage,
@@ -67,6 +68,7 @@ import {
     URL_FUND,
     URL_NODE,
     URL_AIP,
+    URL_DA,
     PUBLICATION,
     URL_COMPONENT,
     URL_ADMIN_DA
@@ -284,6 +286,7 @@ class Layout extends AbstractReactComponent {
                                     <Route path={URL_ENTITY} component={RegistryPage} />
                                     <Route path={URL_ENTITY_CREATE} component={EntityCreatePage} />
 
+                                    <Route path={URL_DA + "/:repositoryCode/aip/:aipCode"} component={AipEntryPage} />
                                     <Route path={URL_AIP + "/:id/explorer"} component={AipExplorerPage} />
                                     <Route path={URL_AIP + "/:id"} component={AipPage} />
                                     <Route path={URL_AIP} component={AipPage} />

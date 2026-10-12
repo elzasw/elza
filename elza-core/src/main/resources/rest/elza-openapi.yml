@@ -8069,6 +8069,7 @@ components:
         - aipId
         - code
         - digitalRepositoryId
+        - digitalRepositoryCode
       properties:
         aipId:
           type: integer
@@ -8079,6 +8080,9 @@ components:
         digitalRepositoryId:
           type: integer
           description: Id digitálního repozitáře
+        digitalRepositoryCode:
+          type: string
+          description: Kód digitálního repozitáře
         aipVersion:
           type: string
           description: Verze AIPu
@@ -8215,6 +8219,7 @@ components:
         - importState
         - exportState
         - linkState
+        - digitalRepositoryCode
       description: |-
         AIP specific field names.
 
@@ -11342,6 +11347,9 @@ components:
           allOf:
             - $ref: '#/components/schemas/LinkType'
           description: Typ napojení - celý balíček, část, nebo komponenta
+        daoCode:
+          type: string
+          description: Kód napojené části AIPu (logické úrovně, reprezentace, souboru); chybí u napojení celého AIPu
     LoggedUser:
       type: object
       required:

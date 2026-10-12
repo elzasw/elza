@@ -214,6 +214,8 @@ export const URL_ADMIN_INSTITUTION = `${URL_ADMIN}/institution`;
 export const URL_ADMIN_IMPORT = `${URL_ADMIN}/import`;
 
 export const URL_AIP = '/aip';
+/** Entry URL of another application: an AIP by the digital archive code and its id there. */
+export const URL_DA = '/da';
 export const URL_COMPONENT = '/component';
 
 // Used to create version part of arr/fund page url

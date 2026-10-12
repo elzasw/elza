@@ -78,6 +78,11 @@ New
   are never deleted.
 * New: ELZA DA - a new setting of the DA repository, *Batch status check
   interval (s)*, default 2 seconds (before 100 ms).
+* New: ELZA DA - entry URL ``<ELZA_URL>/da/<DA_CODE>/aip/<AIP_ID>``
+  opens an AIP by its identifier in the digital archive. It goes to the
+  linked description unit, or to the package in its fund. See
+  :doc:`/07-integrations`. The AIP list can be filtered by the code of
+  the digital archive.
 * New: 10070 - Structured objects (storage units, access restrictions, ...)
   are exported to CSV from the panel of the fund (three dots → *Export to
   CSV*), with the filter of the panel applied. The ID column is the value

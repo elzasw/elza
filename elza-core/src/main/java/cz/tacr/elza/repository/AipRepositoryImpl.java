@@ -205,6 +205,7 @@ public class AipRepositoryImpl implements AipRepositoryCustom {
         Join<DaAipState, ParInstitution> instJoin = stateJoin.join("institution", JoinType.LEFT);
         Join<ParInstitution, ApAccessPoint> instApJoin = instJoin.join("accessPoint", JoinType.LEFT);
         Join<DaAipState, ArrFund> fundJoin = stateJoin.join("fund", JoinType.LEFT);
+        Join<DaAip, ArrDigitalRepository> repositoryJoin = aipRoot.join("digitalRepository", JoinType.INNER);
 
         Joins joins = new Joins();
         joins.byJoin.put(AipJoin.AIP, aipRoot);
@@ -214,6 +215,7 @@ public class AipRepositoryImpl implements AipRepositoryCustom {
         joins.byJoin.put(AipJoin.ORIGINATOR_AP, oApJoin);
         joins.byJoin.put(AipJoin.INSTITUTION_AP, instApJoin);
         joins.byJoin.put(AipJoin.FUND, fundJoin);
+        joins.byJoin.put(AipJoin.DIGITAL_REPOSITORY, repositoryJoin);
         return joins;
     }
 

@@ -2684,6 +2684,7 @@ public class ClientFactoryVO {
         vo.setAipId(src.getAipId());
         vo.setCode(src.getCode());
         vo.setDigitalRepositoryId(src.getDigitalRepository().getExternalSystemId());
+        vo.setDigitalRepositoryCode(src.getDigitalRepository().getCode());
 
         if (state != null) {
             vo.setAipVersion(state.getAipVersion());
@@ -2790,6 +2791,9 @@ public class ClientFactoryVO {
         LinkedNodeVO vo = new LinkedNodeVO(daoLink.getDaoLinkId(), treeNode.getId(), treeNode.getName());
         if (daoLink.getLinkType() != null) {
             vo.setLinkType(mapArrDaoLink(daoLink.getLinkType()));
+        }
+        if (daoLink instanceof ArrDaLink daLink && daLink.getDaDao() != null) {
+            vo.setDaoCode(daLink.getDaDao().getCode());
         }
         return vo;
     }

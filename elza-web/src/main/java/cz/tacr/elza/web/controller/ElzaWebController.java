@@ -277,6 +277,16 @@ public class ElzaWebController {
         return "web";
     }
 
+    /**
+     * Entry URL {@code /da/<repository code>/aip/<AIP id in the archive>}; the client resolves it
+     * after sign-in, so an unknown AIP gets a page instead of an error.
+     */
+    @RequestMapping(value = "/da/**", method = RequestMethod.GET)
+    public String daPage(final HttpServletRequest request, final Model model) {
+        initDefaults(request, model);
+        return "web";
+    }
+
     @RequestMapping(value = "/component", method = RequestMethod.GET)
     public String componentPage(final HttpServletRequest request, final Model model) {
         initDefaults(request, model);

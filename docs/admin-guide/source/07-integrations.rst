@@ -180,6 +180,22 @@ Records can be opened directly by a URL:
 ``<ELZA_URL>/entity/<EXT_SYSTEM_CODE>-<EXT_ID>``
    An archival entity by its identifier in an external system, for
    example ``/entity/CAM-100``.
+``<ELZA_URL>/da/<DA_CODE>/aip/<AIP_ID>``
+   An AIP by the code of its digital archive (the code of the external
+   system in ELZA) and the identifier the digital archive gave it, not
+   the ELZA ID. A UUID is accepted with or without the ``uuid-``
+   prefix. When exactly one description unit is linked to the AIP (or
+   to a part of it), the URL opens that unit. Otherwise it opens the
+   package in its fund, where the linked units are listed and the
+   package can be linked. An AIP whose fund ELZA does not know opens in
+   the AIP list. If ELZA has not received the AIP yet, the user gets a
+   message saying so.
+
+   The optional ``?part=<ID>`` selects a part of the package, for
+   example a level of its logical structure: the URL then opens the
+   unit linked to that part, or the unit linked to the whole package
+   when the part has none of its own. Otherwise the part is selected in
+   the structure of the package.
 
 Another application can ask ELZA to create a new archival entity:
 

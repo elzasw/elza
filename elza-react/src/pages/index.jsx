@@ -34,4 +34,5 @@ export {default as PageLayout} from 'pages/shared/layout/PageLayout.jsx';
 
 export {default as AipPage} from 'pages/aip/AipPage';
 export {default as AipExplorerPage} from 'pages/aip/AipExplorerPage';
+export {default as AipEntryPage} from 'pages/aip/AipEntryPage';
 export {default as ArrPublicationPage} from 'pages/arr/ArrPublicationPage';
