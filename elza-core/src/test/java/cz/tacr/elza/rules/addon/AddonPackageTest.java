@@ -70,6 +70,7 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.PackageCode;
 import cz.tacr.elza.other.HelperTestService;
 import cz.tacr.elza.packageimport.PackageService;
+import cz.tacr.elza.packageimport.xml.SettingIndexSearch;
 import cz.tacr.elza.packageimport.xml.SettingOutputDefaults;
 import cz.tacr.elza.repository.ArrangementRuleRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
@@ -405,6 +406,26 @@ public class AddonPackageTest {
     }
 
     /**
+     * INDEX_SEARCH is composed per field: core defaults, CZ_BASE's own fields, and the addon,
+     * which replaces one CZ_BASE field and adds the field of its item type.
+     */
+    @Test
+    @Order(6)
+    void addonIndexSearchFieldsComposeWithCoreAndBase() {
+        tx(() -> {
+            SettingIndexSearch sis = settingsService.getIndexSearch();
+            assertEquals(100.0f, sis.findField("accessPointId").getBoostExact(), "core default");
+            assertEquals(800.0f, sis.findField("pref_index").getBoostFulltext(), "core default");
+            assertEquals(50.0f, sis.findField("pref_nm_main").getBoost(), "field of CZ_BASE");
+            assertEquals(12.0f, sis.findField("nm_main").getBoost(), "the addon replaces the CZ_BASE field");
+            assertNull(sis.findField("nm_main").getBoostTransExact(), "the field is replaced as a whole");
+            assertEquals(2.0f, sis.findField("adt_stage").getBoost(), "field of the addon");
+            assertEquals(sis.getFields().size(), settingsService.loadIndexSearch().getFields().size(),
+                    "the cached and the loaded configuration agree");
+        });
+    }
+
+    /**
      * Output filters are imported per rule set: the addon's filters in ZP2015 and in CAM both
      * survive, the second rule set does not delete the filters of the first.
      */
@@ -458,6 +479,9 @@ public class AddonPackageTest {
                     outputFilterCode(settingsService.getOutputDefaults(base.getRuleSetId())),
                     "the default filter of ZP2015 applies again");
             assertNull(outputFilterRepository.findByRuleSetIdAndCode(base.getRuleSetId(), ADDON_OUTPUT_FILTER));
+            SettingIndexSearch sis = settingsService.getIndexSearch();
+            assertEquals(10.0f, sis.findField("nm_main").getBoost(), "the CZ_BASE field applies again");
+            assertNull(sis.findField("adt_stage"));
         });
     }
 

@@ -10,6 +10,7 @@ import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.INDEX;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.NM_MAIN;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.NM_MINOR;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.PREFIX_PREF;
+import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.PREF_INDEX;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.SCOPE_ID;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.SEPARATOR;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.STATE;
@@ -54,7 +55,6 @@ import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPartType;
-import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.converter.UnitDateConverter;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
@@ -109,7 +109,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 				.where(predicate)
                 .sort(f -> f.composite(b -> {
                     b.add(f.score());
-                    b.add(f.field(DATA + SEPARATOR + PREFIX_PREF + SEPARATOR + INDEX + SORTABLE).asc());
+                    b.add(f.field(DATA + SEPARATOR + PREF_INDEX + SORTABLE).asc());
                 }))
                 .fetch(from, count);
 
@@ -128,7 +128,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 		                .where(predicate)
 		                .sort(f -> f.composite(b -> {
 		                    b.add(f.score());
-		                    b.add(f.field(DATA + SEPARATOR + PREFIX_PREF + SEPARATOR + INDEX + SORTABLE).asc());
+		                    b.add(f.field(DATA + SEPARATOR + PREF_INDEX + SORTABLE).asc());
 		                }))
 		                .fetch(0, scoreLimit);
 		            StringBuilder sb = new StringBuilder("Score details (rank: entityId=score):\n");
@@ -403,7 +403,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
         String searchLower = search.toLowerCase();
 
         // Boost on pref_index_analyzed - BM25 field-length normalization favors shorter preferred names
-        addFullTextFieldBoost(factory, bool, PREFIX_PREF + SEPARATOR + INDEX, searchLower);
+        addFullTextFieldBoost(factory, bool, PREF_INDEX, searchLower);
 
         // Boost on pref_nm_main_analyzed
         addFullTextFieldBoost(factory, bool, PREFIX_PREF + SEPARATOR + NM_MAIN, searchLower);
@@ -468,7 +468,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 
         if (StringUtils.isEmpty(partTypeCode) || !partTypeCode.equals(PREFIX_PREF)) {
             // boost o preferované indexi a jména
-	        boostWildcardQuery(factory, bool, PREFIX_PREF + SEPARATOR + INDEX, value, true, true);
+	        boostWildcardQuery(factory, bool, PREF_INDEX, value, true, true);
 	        boostWildcardQuery(factory, bool, PREFIX_PREF + SEPARATOR + NM_MAIN, value, true, true);
 	        boostWildcardQuery(factory, bool, PREFIX_PREF + SEPARATOR + NM_MINOR, value, true, true);
         }
@@ -576,31 +576,12 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
      */
     @Nullable
     private SettingIndexSearch.Field getFieldSearchConfigByName(String name) {
-    	SettingIndexSearch sis = getElzaSearchConfig();
-        if (sis == null || CollectionUtils.isEmpty(sis.getFields())) {
-            return null;
-        }
-        for (SettingIndexSearch.Field field : sis.getFields()) {
-            if (field.getName().equals(name)) {
-                return field;
-            }
-        }
-        return null;
-    }
-
-    @Nullable
-    private SettingIndexSearch getElzaSearchConfig() {
-        UISettings.SettingsType indexSearch = UISettings.SettingsType.INDEX_SEARCH;
-        List<UISettings> uiSettings = settingsService.getGlobalSettings(indexSearch.toString(), indexSearch.getEntityType());
-        if (CollectionUtils.isNotEmpty(uiSettings)) {
-            return SettingIndexSearch.newInstance(uiSettings.get(0));
-        }
-        return null;
+    	return settingsService.getIndexSearch().findField(name);
     }
 
     private void logSearchConfig() {
-        SettingIndexSearch sis = getElzaSearchConfig();
-        if (sis == null || CollectionUtils.isEmpty(sis.getFields())) {
+        SettingIndexSearch sis = settingsService.getIndexSearch();
+        if (CollectionUtils.isEmpty(sis.getFields())) {
             log.trace("Search config (INDEX_SEARCH): not configured or no fields defined");
             return;
         }

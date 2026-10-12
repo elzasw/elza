@@ -707,6 +707,47 @@ filter of the package it builds on, or removes it with an empty
 Deleting the customization brings the default of the customized package
 back.
 
+.. _index-search:
+
+ui_setting.xml: index-search
+============================
+
+Weights of the fields of the entity index in the search of entities. The
+setting is global (in the root :file:`ui_setting.xml` of the package): one
+search covers entities of all scopes, whatever rules describe them, and
+ranks them on one scale.
+
+.. code-block:: xml
+
+   <settings xmlns:ns10="index-search">
+       <index-search>
+           <ns10:field name="pref_nm_main" boost="50.0" boost-exact="250.0"
+                       boost-trans-exact="200.0" boost-fulltext="200.0" transliterate="true"/>
+           <ns10:field name="nm_main" boost="10.0" boost-exact="50.0"
+                       boost-trans-exact="40.0" transliterate="true"/>
+       </index-search>
+   </settings>
+
+``name`` (required, attribute) - field of the index: an item type code or
+``<part type>_index`` in lower case (any part), prefixed by ``pref_`` for
+the preferred part. ``boost`` - weight of a match by wildcard;
+``boost-exact`` and ``boost-trans-exact`` - weight of an exact match, as
+written and transliterated; ``boost-fulltext`` - weight of a match of the
+whole search text; ``transliterate`` - the field is indexed also without
+diacritics (takes effect after reindexing).
+
+The application states the fields every entity has: ``accessPointId``,
+``index`` and ``pref_index`` (the names produced by ``INDEX`` entity rules).
+A package states the fields of its own item and part types and may override
+these.
+
+**Several packages, one configuration.** Each package keeps its own
+fields; a field stated by several packages is taken, as a whole, from the
+package that depends on the other (packages without a dependency between
+them are ordered by code). Deleting the package brings the fields of the
+others back. The index bridge reads the configuration at startup, so a
+change of ``transliterate`` needs a restart and reindexing.
+
 .. _translation-files:
 
 translations/<lang>.xml

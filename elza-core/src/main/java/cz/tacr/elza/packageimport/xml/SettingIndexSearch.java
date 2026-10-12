@@ -1,5 +1,9 @@
 package cz.tacr.elza.packageimport.xml;
 
+import static cz.tacr.elza.domain.ApCachedAccessPoint.FIELD_ACCESSPOINT_ID;
+import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.INDEX;
+import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.PREF_INDEX;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.tacr.elza.domain.UISettings;
@@ -12,8 +16,12 @@ import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
+import jakarta.annotation.Nullable;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "index-search", namespace = "index-search")
@@ -56,6 +64,52 @@ public class SettingIndexSearch extends Setting {
         return sis;
     }
 
+    /**
+     * Fields every entity has whatever rules describe it: the entity id and the names produced by
+     * the index rules of its parts (any part and the preferred one). A package states the fields of
+     * its own item and part types and may override these.
+     */
+    public static SettingIndexSearch coreDefaults() {
+        SettingIndexSearch sis = new SettingIndexSearch();
+        sis.fields = List.of(
+                Field.of(FIELD_ACCESSPOINT_ID, null, 100.0f, null, null, false),
+                Field.of(PREF_INDEX, 10.0f, 50.0f, 40.0f, 800.0f, true),
+                Field.of(INDEX, 1.0f, 30.0f, 20.0f, 50.0f, true));
+        return sis;
+    }
+
+    /**
+     * Merges the layers; a field of a later layer replaces the field of the same name as a whole.
+     *
+     * @param layers configurations, lowest precedence first
+     */
+    public static SettingIndexSearch merge(List<SettingIndexSearch> layers) {
+        Map<String, Field> fields = new LinkedHashMap<>();
+        for (SettingIndexSearch layer : layers) {
+            if (layer.fields != null) {
+                layer.fields.forEach(field -> fields.put(field.getName(), field));
+            }
+        }
+        SettingIndexSearch sis = new SettingIndexSearch();
+        sis.fields = new ArrayList<>(fields.values());
+        return sis;
+    }
+
+    /**
+     * @return configuration of the field, null when not configured
+     */
+    @Nullable
+    public Field findField(String name) {
+        if (fields != null) {
+            for (Field field : fields) {
+                if (field.getName().equals(name)) {
+                    return field;
+                }
+            }
+        }
+        return null;
+    }
+
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "field", namespace = "index-search")
     public static class Field {
@@ -77,6 +131,18 @@ public class SettingIndexSearch extends Setting {
 
         @XmlAttribute(name = "transliterate")
         private Boolean transliterate;
+
+        static Field of(String name, Float boost, Float boostExact, Float boostTransExact,
+                        Float boostFulltext, Boolean transliterate) {
+            Field field = new Field();
+            field.name = name;
+            field.boost = boost;
+            field.boostExact = boostExact;
+            field.boostTransExact = boostTransExact;
+            field.boostFulltext = boostFulltext;
+            field.transliterate = transliterate;
+            return field;
+        }
 
         public String getName() {
             return name;
