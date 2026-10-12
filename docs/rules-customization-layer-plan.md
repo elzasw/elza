@@ -3,7 +3,7 @@
 Status as of 2026-10-12. Design record for extending rules packages without forks (addon packages,
 customizations edited in the admin UI), for entity description frameworks beside CAM, and for the
 first internationalized version of ELZA (an English rule set based on ISAD(G)). Finished work is
-described for implementers in the implementation guide (`elza/docs/implementation-guide`, English
+described for implementers in the implementation guide (`docs/implementation-guide`, English
 only) and in the release notes; this plan keeps the decisions later steps build on and the open work.
 Line numbers refer to the `3.4.x` tree at the time of writing.
 
@@ -504,7 +504,7 @@ drift.
 Open without a recommendation: the ISADG name of the Czech "formal title" (ZP 4.2.4), dropped in
 the table; whether `ISADG_ARCHIVIST` stays (3.7.1 is a text in the standard).
 
-**Package shape.** Module `elza/rules-en-isadg` (package and rule set `ISADG`, `<language>en`,
+**Package shape.** Module `rules-en-isadg` (package and rule set `ISADG`, `<language>en`,
 dependency `ISAAR_CPF` min 2); no arrangement extensions, no `DA_IMPORT`/`DA_MATCH` (the Czech
 national DA), no labels, no older-aid output in version 1. Rules: `ItemTypeFilter.drl`,
 `AvailableItems.drl` (ZP2015's salience-100 preamble, everything possible at every level, required

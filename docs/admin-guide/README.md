@@ -7,7 +7,7 @@ naming its source file here and the elza commit it was synchronised
 with, for example:
 
 ```
-.. Zdroj: elza/docs/admin-guide/source/04-configuration.rst, elza 743f2a76be
+.. Zdroj: docs/admin-guide/source/04-configuration.rst, elza 354eda0dc3
 ```
 
 Changes still to be translated are listed by

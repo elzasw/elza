@@ -1,4 +1,4 @@
-# Generates elza/package-isaar-cpf from data tables (step 2c.5b/c). Regenerate rather than hand-edit:
+# Generates package-isaar-cpf from data tables (step 2c.5b/c). Regenerate rather than hand-edit:
 #   python generator/gen_isaar.py   (from any directory; writes the module this file lives in)
 # iso639-2.txt is the ISO 639-2 code list of the Library of Congress
 # (https://www.loc.gov/standards/iso639-2/ISO-639-2_utf-8.txt, BOM removed).

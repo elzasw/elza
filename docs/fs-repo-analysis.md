@@ -21,7 +21,7 @@ image cache, the resolved structural items (C1–C7, C9), the findings (N1, N3, 
 frontend items (D1–D7) with the `VirtualList` replacement, and the design iterations behind the
 link model all live in this file's git history, in the changesets, and in `da-migration.md`.
 Finding ids are never reused or renumbered, so a reference from a commit message or from the other
-document keeps resolving — `git log -p --follow -- elza/docs/fs-repo-analysis.md` is the way to read one back.*
+document keeps resolving — `git log -p --follow -- docs/fs-repo-analysis.md` is the way to read one back.*
 
 ---
 
