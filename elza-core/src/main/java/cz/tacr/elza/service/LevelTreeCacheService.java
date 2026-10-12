@@ -72,6 +72,7 @@ import cz.tacr.elza.controller.vo.nodes.ArrNodeExtendVO;
 import cz.tacr.elza.controller.vo.nodes.NodeDataParamVO;
 import cz.tacr.elza.controller.vo.nodes.NodeDataVO;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.bulkaction.generator.PersistentSortConfig;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
@@ -887,7 +888,9 @@ private void processEvent(AbstractEventSimple event) {
 
             EventIdInVersion bulkActionStateChangeEvent = (EventIdInVersion) event;
             if (bulkActionStateChangeEvent.getState().equals(ArrBulkActionRun.State.FINISHED.toString())) {
-                if (bulkActionStateChangeEvent.getCode().equals("PERZISTENTNI_RAZENI")) {
+                // the persistent sort changes the order of the levels; recognised by its kind, every rule set
+                // names its own file
+                if (PersistentSortConfig.TYPE.equals(bulkActionStateChangeEvent.getActionType())) {
                     refreshFundVersion(bulkActionStateChangeEvent.getVersionId());
                         }
             }

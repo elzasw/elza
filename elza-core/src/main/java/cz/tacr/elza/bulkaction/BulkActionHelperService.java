@@ -120,7 +120,8 @@ public class BulkActionHelperService {
                         bulkActionRun.getFundVersion(),
                         bulkActionRun.getBulkActionRunId(),
                         bulkActionRun.getBulkActionCode(),
-                        bulkActionRun.getState()
+                        bulkActionRun.getState(),
+                        bulkActionConfigManager.getType(bulkActionRun.getBulkActionCode())
                 )
         );
     }

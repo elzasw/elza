@@ -94,8 +94,11 @@ export enum DisplayType {
     DURATION = 'DURATION',
 }
 
-//konkrétrní kód akce pro perzistentní řazení v balíčku ZP2015
-export const PERSISTENT_SORT_CODE = 'PERZISTENTNI_RAZENI';
+// Kind of the bulk action of the persistent sort (BulkActionVO.type: the configuration class without
+// "Config"). Every rule set names its own action file; the client keys on the kind.
+export const PERSISTENT_SORT_TYPE = 'PersistentSort';
+// Code of the ZP2015 action computing and visualising the storage units (EJ); the tree menu offers
+// it only for funds whose rule set has it.
 export const ZP2015_INTRO_VYPOCET_EJ = 'ZP2015_INTRO_VYPOCET_EJ';
 
 export const ELZA_SCHEME_NODE = 'elza-node';

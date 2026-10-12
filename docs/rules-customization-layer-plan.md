@@ -12,16 +12,16 @@ Line numbers refer to the `3.4.x` tree at the time of writing.
 Status 2026-10-12. 2b (`rules-en-isadg`): step 1, the walking skeleton, is done (section 2, row
 "2b step 1"; section 7, "Step 1 done"): the package, its generator, the test next to CZ_BASE and
 ZP2015, the user guide with nine chapters written. The skeleton found two places that block an
-ISADG fund in a Czech installation - the persistent sort recognised by a file name and the pinned
-search filters as one global setting - and one it closed (institution types). The customization-layer
-pilots (Phase 1 rest, Phase 3) stay independent and can be interleaved; 2c.6 (EAC-CPF export) and
-R2 (reference scope) wait for a concrete need and for the answers to R2's questions.
+ISADG fund in a Czech installation; the persistent sort (D9 part 2) is resolved the same day, the
+pinned search filters as one global setting remain; institution types are closed. The
+customization-layer pilots (Phase 1 rest, Phase 3) stay independent and can be interleaved; 2c.6
+(EAC-CPF export) and R2 (reference scope) wait for a concrete need and for the answers to R2's
+questions.
 
 1. **The UI pass of the skeleton** (user): an ISADG fund described in the user interface of a dev
    installation; what breaks goes into the core places of section 7.
-2. **2b step 2** (section 7, about 1.5 days): the persistent sort by kind with the gated EJ menu
-   item (D9 part 2), the pinned search filters per rule set, the container generator, the
-   citation script.
+2. **2b step 2** (section 7, about 1 day): the pinned search filters per rule set, the container
+   generator, the citation script.
 3. **2b steps 3-4** (section 7, about 6 days): L2 step 4 with the EAD3 template; PDF, the
    remaining core places, implementation guide chapter 05, user guide chapter 9 and part II,
    release notes.
@@ -30,8 +30,8 @@ R2 (reference scope) wait for a concrete need and for the answers to R2's questi
 5. Release gate of 3.4 (section 6): re-import of unchanged CZ_BASE 89 and ZP2015 on a PostgreSQL copy
    after the four declaration migrations, `view_order` and spec order unchanged.
 
-Decisions still open: D9 part 2 (the proposal in section 7), A1 rule 3 (section 7) and R2 Q1-Q4
-(section 5). D4 is built as proposed; a change is cheap while the package is unreleased.
+Decisions still open: A1 rule 3 (section 7) and R2 Q1-Q4 (section 5).
+D4 is built as proposed; a change is cheap while the package is unreleased.
 
 ## 1. Goals and principles
 
@@ -92,6 +92,7 @@ Decisions still open: D9 part 2 (the proposal in section 7), A1 rule 3 (section 
 | search fields, base vocabulary | the text search looks in every item field of `index-search` instead of fixed `nm_main`/`nm_minor` (`SettingIndexSearch.searchedItemFields`; area *names* by the new attribute `part-type`, CZ_BASE marks `nm_main`/`nm_minor` `PT_NAME`; fields missing from the index schema skipped until restart); weights unchanged for CZ_BASE. Decision (user, 2026-10-12): no part roles - the part types `PT_NAME`, `PT_BODY`, `PT_CRE`, `PT_EXT` and the items `NM_MAIN`, `NM_MINOR`, `CRE_DATE`, `EXT_DATE` are a base vocabulary with built-in logic, documented in guide 01 "Base parts and items"; a framework depends on CZ_BASE or declares them. `SettingIndexSearchTest` | with this row |
 | D9 part 1 (core place 2 of 2b) | closed by removal (user, 2026-10-12): the DID sent to a WSDL digital repository or a digitization front desk (link notification, DAO and digitization requests, WS `getDid`) carries the identifier only - `WSHelper.createDid`; the script `createDid.groovy`, its copy into the working directory and the Groovy DID methods are removed, no rule type. The script had not compiled since 2020 (the converter class and the `Did` accessors renamed) and nothing missed it; the WSDL repository infrastructure stays, its future is Phase 4 of `da-migration.md`. Release notes 3.4.9 "Changes"; `DaoCoreServiceTest` | with this row |
 | 2b step 1 | the walking skeleton of `rules-en-isadg` (package `ISADG` 1, rule set `ISADG`, depends on ISAAR_CPF 2): `generator/gen_isadg.py` writes the whole module from tables - 55 item types in the seven areas plus the container, the digital object, the access point and the finding aid; 539 specifications (6 levels, 9 units of measure, 15 kinds of material, 3 access statuses, 6 kinds of container, 7 roles of access points, 4 kinds of finding aid, the 486 ISO 639-2 languages of ISAAR_CPF shared by code and assigned to two items); the structured container with its DRL and Groovy; `ItemTypeFilter`, `AvailableItems` (level × area, the material-type gating of D4), `NewLevel` (scenarios named by the level, by the parent's level), `Validation` (root is a fonds, order of levels, dates within the parent, container at the end of a branch; keyed messages, Czech in `translations/cs.xml`), `ChangeImpact`, `Output_FindingAid`; 3 policy types; actions (validation, reference-code generator, persistent sort under its own name); UI settings (FUND_VIEW with icons per level, TYPE_GROUPS by area, GRID_VIEW, FUND_ISSUES, STRUCTURE_TYPES; DAO_LEVEL_IMPORT, favourite languages); institution types; wiring (root pom, core test resource, distribution, `elza.yaml`, admin guide "Loading the packages", `PackageXmlFilesTest`); `IsadgPackageTest` (vocabulary; a fonds built by the scenarios; availability by level; the validation rules rendered in en and cs; next to CZ_BASE and ZP2015); user guide `docs/user-guide` (Sphinx like the other guides, chapters 1-9 on ISADG written, 10-12 on ISAAR_CPF as scoped stubs; builds with `-W`). Found: two blocking core places and one closed, section 7 | with this row |
+| D9 part 2 | bulk actions recognised by their kind, not by the file name: `BulkActionConfig.getType()` (the configuration class without `Config`; `PersistentSortConfig.TYPE`), `BulkActionVO.type` (and `fastAction`, never filled before), `EventIdInVersion.actionType` on `BULK_ACTION_STATE_CHANGE` events from both publishers, `LevelTreeCacheService` refreshes the tree on the kind; client: `PERSISTENT_SORT_TYPE`, the helpers `getPersistentSortAction`, `isPersistentSortAction`, `hasBulkAction` in `ArrUtils`, the tree loads the fund's actions (`fundActionFetchConfigIfNeeded`) and offers the persistent sort only when the rule set has one and "Compute and visualise EJ" only when it has `ZP2015_INTRO_VYPOCET_EJ`; the actions page and the sort form take the code from the fund's list. ISADG keeps `ISADG_PERSISTENT_SORT.yaml`. `IsadgPackageTest` (kinds of the ISADG actions); guide 02 "rul_package_actions.xml"; release notes; `ts:strict-check` clean | with this row |
 
 **Decisions later steps build on.**
 - *Translations:* key `(entity_type, entity_code, field, language)`, rows owned by the contributing
@@ -176,7 +177,7 @@ Decisions still open: D9 part 2 (the proposal in section 7), A1 rule 3 (section 
 |---|---|---|
 | **2c. Entity description frameworks** | ISAAR_CPF package done (section 4); 2c.6 EAC-CPF export and R2 reference scope on demand | done for 2b |
 | **A1. Texts built in core** | validation messages, request-time core texts, texts the client owns (section 7) | **done** (rules 1-2); rule 3 (texts a package writes) with 2b |
-| **2b. First internationalized version** | `rules-en-isadg` referring to the ISAAR_CPF classes; core neutrality; texts written by packages in the package language | step 1 (walking skeleton) done 2026-10-12; next: the UI pass and the two blocking core places (section 7) |
+| **2b. First internationalized version** | `rules-en-isadg` referring to the ISAAR_CPF classes; core neutrality; texts written by packages in the package language | step 1 (walking skeleton) and D9 part 2 done 2026-10-12; next: the UI pass and the pinned search filters per rule set (section 7) |
 | **2a.3 Remaining read sites** | tree titles, specification categories, further entity kinds, AI proposal rows | open, independent |
 | **2a.4 Translation template** | export of translatable texts with source, hash and state | on demand (first maintained translation) |
 | **1. Layer core (rest)** | revalidation requested by an addon, `PACKAGE` event on delete, settings export guard (section 6) | open, independent |
@@ -401,9 +402,9 @@ ZP2015 EAD template, the PDF content page).
 
 Reviewed against ZP2015 351, SIMPLE-DEV 43 and ISAAR_CPF 2 on 2026-10-12; step 1, the walking
 skeleton, built the same day (section 2, row "2b step 1"; "Step 1 done" below). Decisions D1-D8
-are taken (D4 built as proposed), D9 part 1 is closed, D9 part 2 is open and blocking. The mapping
-and the package shape below are what the package is; the core places and the next steps are the
-open work.
+are taken (D4 built as proposed) and D9 is closed (part 1 by removal, part 2 done the same day).
+The mapping and the package shape below are what the package is; the core places and the next
+steps are the open work.
 
 **What ZP2015 teaches.** ZP chapter 4, the common elements (group `06_ZP2015_CH4`), is ISAD(G)
 area 3 almost one to one. The bulk of ZP2015 - 138 item types, 409 specifications, the 7,191-line
@@ -439,15 +440,9 @@ drift.
   way); script as text in version 1.
 - *D8* one output type `ISADG_FINDING_AID` with EAD3 (FreeMarker, `validation-schema`), PDF
   (Jasper) and XML (engine `DE_XML`).
-- *D9 part 1* closed: the DID of the DAO web services carries the identifier only, no rule-set
-  script (section 2). *Part 2, open:* the persistent sort is recognised by the action code
-  `PERZISTENTNI_RAZENI` - the YAML file name - on the client (`constants.tsx:98`,
-  `PersistentSortForm.jsx`) and in `LevelTreeCacheService:890` (tree refresh after the sort).
-  Proposal: the server tells the kind of each bulk action (`BulkActionVO.type` from the YAML
-  class), the client takes the fund's action of that kind from its list (`fund.bulkActions`), the
-  refresh keys on the kind; the same list hides "Compute and visualise EJ" (`FundTreeMain.jsx:123`,
-  `websocketActions.jsx:358`) when the fund has no `ZP2015_INTRO_VYPOCET_EJ`. About half a day;
-  until then ISADG ships `PERZISTENTNI_RAZENI.yaml` under that name.
+- *D9* closed: part 1 by removal (the DID of the DAO web services carries the identifier only),
+  part 2 done (section 2): bulk actions recognised by their kind, the tree menu gated by the
+  fund's actions.
 - *D4, built as proposed in step 1 - extent and medium.* In the standard the element is one text
   ("128 boxes (12.5 linear metres)", "2 maps; 7 photographs"). ZP2015 types the material
   (`ZP2015_UNIT_TYPE`, 53 kinds) with a count, sums the counts up the tree (`!UnitCount`) and prints
@@ -532,15 +527,8 @@ the scenario *name*), pinned search filters, favourite languages. Wiring: root `
 
 **Core and client places that assume ZP2015** (grep 2026-10-12 and the walking skeleton; nothing
 keys on level or arrangement types):
-- *Blocking for ISADG funds:* the persistent sort (D9 part 2). The action code is the YAML file
-  name, `rul_action.filename` is unique across the installation, so a second rule set cannot ship
-  `PERZISTENTNI_RAZENI.yaml` next to ZP2015 (found by `IsadgPackageTest`); ISADG ships
-  `ISADG_PERSISTENT_SORT.yaml`, which the tree menu (`constants.tsx:98`, `PersistentSortForm.jsx`)
-  and the tree refresh (`LevelTreeCacheService:890`) do not recognise. Fix: the server tells the
-  kind of each bulk action (`BulkActionVO.type` from the YAML class), the client takes the fund's
-  action of that kind from `fund.bulkActions`, the refresh keys on the kind; the same list hides
-  "Compute and visualise EJ" (`FundTreeMain.jsx:123`, `websocketActions.jsx:358`) for funds without
-  `ZP2015_INTRO_VYPOCET_EJ`. About half a day.
+- Done (D9 part 2, section 2): the persistent sort and the EJ menu item follow the actions of the
+  fund's rule set; the action is recognised by its kind, every rule set names its own file.
 - *Blocking for the search of ISADG funds:* the pinned search filters (`node-search-settings`,
   `SEARCH_NODE_FILTERS`) are one global setting that names the item types of one rule set; a second
   package is refused (`OTHER_PACKAGE`, found by the test), so ISADG ships none and an ISADG fund
@@ -577,9 +565,9 @@ entity pickers) - the user does it; what breaks goes into the list above.
    ISADG fund with a series, a file and an item; the elements of the seven areas; a container; a
    creator and an access point from an ISAAR_CPF scope; the validation panel; the output. Findings
    into the list above.
-2. **The two blocking core places, 1 day:** the persistent sort by kind with the gated EJ menu
-   item (D9 part 2) and the pinned search filters per rule set. Then the container generator
-   action (`!ItemGenerator`, after `GENEROVANI_UKL_JEDNOTEK.yaml`) and the citation script.
+2. **The pinned search filters per rule set, half a day** (the remaining blocking core place); then
+   the container generator action (`!ItemGenerator`, after `GENEROVANI_UKL_JEDNOTEK.yaml`) and the
+   citation script.
 3. **L2 step 4 and the EAD3 template, 3.5 days:** English unit dates in index names and outputs
    are a prerequisite of the template; the template is validated against the schema in the test.
 4. **PDF, the remaining core places, the guides, 2.5 days:** the Jasper finding aid; implementation

@@ -40,13 +40,5 @@ fonds:
 - *Validation of the description* (:doc:`08-validation`);
 - *Generator of reference codes* (:doc:`03-levels`);
 - *Persistent sort* - sorts the units of a branch by a chosen element,
-  permanently, for example the files of a series by their dates. In
-  version 1 the action exists but the tree menu does not offer it for an
-  ISAD(G) fonds yet; see the todo below.
-
-.. todo::
-
-   The persistent sort in the tree menu and the refresh of the tree after
-   it recognise the action by a fixed name that only one rule set of an
-   installation can use. Once ELZA recognises the sort by its kind, the
-   menu offers it for ISAD(G) fonds as well.
+  permanently, for example the files of a series by their dates; also in
+  the context menu of a unit in the tree.

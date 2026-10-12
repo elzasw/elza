@@ -91,6 +91,11 @@ New
 Changes
 -------
 
+* Change: The persistent sort in the context menu of the tree and the
+  refresh of the tree after it follow the rules of the fund: the action is
+  recognised by its kind, not by a fixed name, so every rules package names
+  its own. *Compute and visualise EJ* is offered only for funds whose rules
+  have the action (ZP2015).
 * Change: The description of a unit sent to a WSDL digital repository or a
   digitization front desk with a linked digital object (the DID of the DAO
   web services) carries the identifier of the unit only. The script

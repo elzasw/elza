@@ -17,6 +17,8 @@ public class BulkActionVO {
     private String description;
 
     private boolean fastAction;
+    /** Kind of the action (the configuration class without "Config"), e.g. "PersistentSort". */
+    private String type;
 
     public String getCode() {
         return code;
@@ -49,12 +51,22 @@ public class BulkActionVO {
     public void setFastAction(boolean fastAction) {
         this.fastAction = fastAction;
     }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
     
     public static BulkActionVO newInstance(final BulkActionConfig bulkAction) {
     	BulkActionVO result = new BulkActionVO();
     	result.setName(bulkAction.getName());
     	result.setCode(bulkAction.getCode());
     	result.setDescription(bulkAction.getDescription());
+    	result.setFastAction(bulkAction.isFastAction());
+    	result.setType(bulkAction.getType());
     	return result;
     }
 }

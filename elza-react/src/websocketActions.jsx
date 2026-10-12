@@ -66,7 +66,7 @@ import { fundTreeFetch } from 'actions/arr/fundTree';
 import { fundTreeInvalidate } from 'actions/arr/fundTree';
 import * as types from 'actions/constants/ActionTypes';
 import { fundNodeSubNodeFulltextSearch } from 'actions/arr/node';
-import { PERSISTENT_SORT_CODE, ZP2015_INTRO_VYPOCET_EJ } from './constants.tsx';
+import { PERSISTENT_SORT_TYPE, ZP2015_INTRO_VYPOCET_EJ } from './constants.tsx';
 import * as issuesActions from 'actions/arr/issues';
 import URLParse from 'url-parse';
 
@@ -352,8 +352,9 @@ function deleteLevelChange(value) {
  * Změna hromadných akcí.
  */
 function fundActionActionChange(value) {
-    //speciální handling eventu pro hromadnou akci "PERZISTENTNI_RAZENI"
-    if (value.code === PERSISTENT_SORT_CODE) {
+    // the persistent sort and the EJ computation have their own handling; the sort is recognised by
+    // its kind (every rule set names its own action), the EJ computation by its ZP2015 code
+    if (value.actionType === PERSISTENT_SORT_TYPE) {
         processPersistentSort(value);
     } else if (value.code === ZP2015_INTRO_VYPOCET_EJ) {
         processVisualizeEJ(value);

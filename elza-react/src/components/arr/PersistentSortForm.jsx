@@ -13,7 +13,7 @@ import { fundFormMessages } from './fundFormMessages';
 import {connect} from 'react-redux';
 import {WebApi} from '../../actions/WebApi';
 import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes.jsx';
-import {PERSISTENT_SORT_CODE} from '../../constants.tsx';
+import {getPersistentSortAction} from './ArrUtils.jsx';
 import {modalDialogHide} from '../../actions/global/modalDialog';
 import {refRulDataTypesFetchIfNeeded} from '../../actions/refTables/rulDataTypes';
 import FormInputField from '../shared/form/FormInputField';
@@ -28,9 +28,11 @@ const transformSubmitData = values => {
     };
 };
 
-const handleSubmit = (values, dispatch, versionId, id) => {
+const handleSubmit = (values, dispatch, versionId, id, fund) => {
     dispatch(modalDialogHide());
-    return WebApi.queuePersistentSortByIds(versionId, PERSISTENT_SORT_CODE, [id], transformSubmitData(values));
+    // the persistent sort of the rule set of the fund; the menu offers the dialog only when it exists
+    const action = getPersistentSortAction(fund);
+    return WebApi.queuePersistentSortByIds(versionId, action.code, [id], transformSubmitData(values));
 };
 
 const DIRECTION = {
@@ -184,7 +186,7 @@ export default connect(
             onSubmit: (values, dispatch) =>
                 props.onSubmit
                     ? props.onSubmit(props.versionId, transformSubmitData(values))
-                    : handleSubmit(values, dispatch, props.versionId, props.node.id),
+                    : handleSubmit(values, dispatch, props.versionId, props.node.id, props.fund),
             validate: validate,
             initialValues: transformedInitialValues,
             enableReinitialize: true,

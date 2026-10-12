@@ -5,6 +5,7 @@
 import * as types from 'actions/constants/ActionTypes';
 import {WebApi} from 'actions/index';
 import {indexById} from 'stores/app/utils';
+import {isPersistentSortAction} from 'components/arr/ArrUtils.jsx';
 import {ActionState} from '../../constants';
 import { defineMessages } from 'react-intl';
 import { getIntl } from 'components/shared/lang/intlInstance';
@@ -240,7 +241,7 @@ export function fundActionFormSubmit(versionId, code, config) {
             } = funds[index];
             if (isFormVisible) {
                 const nodeIds = form.nodes.map(node => node.id);
-                if (code === 'PERZISTENTNI_RAZENI') {
+                if (isPersistentSortAction(funds[index], code)) {
                     WebApi.queuePersistentSortByIds(versionId, form.code, nodeIds, config);
                 } else {
                     WebApi.queueBulkActionWithIds(versionId, form.code, nodeIds);

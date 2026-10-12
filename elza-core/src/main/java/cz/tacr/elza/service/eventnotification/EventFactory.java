@@ -66,9 +66,24 @@ public class EventFactory {
                                                           final Integer entityId,
                                                           @Nullable final String code,
                                                           @Nullable final ArrBulkActionRun.State state) {
+        return createIdInVersionEvent(eventType, version, entityId, code, state, null);
+    }
+
+    /**
+     * @param actionType kind of the bulk action of a BULK_ACTION_STATE_CHANGE event
+     *            ({@link cz.tacr.elza.bulkaction.BulkActionConfig#getType()}); the client and the
+     *            tree cache key on it, not on the code
+     */
+    public static EventIdInVersion createIdInVersionEvent(final EventType eventType,
+                                                          final ArrFundVersion version,
+                                                          final Integer entityId,
+                                                          @Nullable final String code,
+                                                          @Nullable final ArrBulkActionRun.State state,
+                                                          @Nullable final String actionType) {
         Assert.notNull(version, "Verze AS musí být vyplněna");
 
         EventIdInVersion eventIdInVersion = new EventIdInVersion(eventType, version.getFundVersionId(), entityId);
+        eventIdInVersion.setActionType(actionType);
 
         if (state != null) {
             eventIdInVersion.setState(state.toString());

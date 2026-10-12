@@ -24,14 +24,15 @@ import {
     fundTreeNodesExpand,
 } from 'actions/arr/fundTree.jsx';
 import {fundSelectSubNode} from 'actions/arr/node.jsx';
-import {createFundRoot, getParentNode, getNodeChildren} from './ArrUtils.jsx';
+import {createFundRoot, getParentNode, getNodeChildren, getPersistentSortAction, hasBulkAction} from './ArrUtils.jsx';
+import {fundActionFetchConfigIfNeeded} from 'actions/arr/fundAction.jsx';
 import {contextMenuHide, contextMenuShow} from 'actions/global/contextMenu.jsx';
 import {canSetFocus, focusWasSet, isFocusFor} from 'actions/global/focus.jsx';
 import {modalDialogShow} from 'actions/global/modalDialog.jsx';
 import {FOCUS_KEYS} from '../../constants.tsx';
 import PersistentSortDialog from './PersisetntSortDialog';
 import {WebApi} from '../../actions/WebApi';
-import {getFundVersion, JAVA_ATTR_CLASS, urlFundGrid} from '../../constants';
+import {getFundVersion, JAVA_ATTR_CLASS, urlFundGrid, ZP2015_INTRO_VYPOCET_EJ} from '../../constants';
 import {Link} from 'react-router-dom';
 import { showQuoteModal, messages as quoteMessages } from './quote';
 
@@ -40,12 +41,14 @@ class FundTreeMain extends React.Component {
     componentDidMount() {
         const {versionId, expandedIds} = this.props;
         this.requestFundTreeData(versionId, expandedIds);
+        this.requestBulkActions(versionId);
         this.trySetFocus(this.props);
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
         const {versionId, expandedIds} = nextProps;
         this.requestFundTreeData(versionId, expandedIds);
+        this.requestBulkActions(versionId);
         this.trySetFocus(nextProps);
     }
 
@@ -84,6 +87,11 @@ class FundTreeMain extends React.Component {
         this.props.dispatch(fundTreeFetchIfNeeded(types.FUND_TREE_AREA_MAIN, versionId, expandedIds));
     };
 
+    /** The bulk actions of the rule set of the fund decide what the context menu of a unit offers. */
+    requestBulkActions = versionId => {
+        this.props.dispatch(fundActionFetchConfigIfNeeded(versionId));
+    };
+
     handleQuote = ({id}) => () => {
         const { fund } = this.props;
         const { dispatch } = this.props;
@@ -114,12 +122,12 @@ class FundTreeMain extends React.Component {
                 <Dropdown.Item onClick={this.handleQuote(node)}>
                     <FormattedMessage {...quoteMessages.quoteTitle}/>
                 </Dropdown.Item>
-                {!readMode && (
+                {!readMode && getPersistentSortAction(fund) && (
                     <Dropdown.Item onClick={() => this.handleOpenPersistentSortDialog(node)}>
                         {<FormattedMessage {...arrPanelMessages.functionsPersistentSort} />}
                     </Dropdown.Item>
                 )}
-                {!readMode && (
+                {!readMode && hasBulkAction(fund, ZP2015_INTRO_VYPOCET_EJ) && (
                     <Dropdown.Item onClick={() => this.computeAndVizualizeEJ(node)}>
                         {<FormattedMessage {...arrPanelMessages.functionsComputeAndVizualizeEJ} />}
                     </Dropdown.Item>
@@ -158,7 +166,7 @@ class FundTreeMain extends React.Component {
         const {fund} = this.props;
         this.props.dispatch(contextMenuHide());
 
-        WebApi.queueBulkActionWithIds(fund.versionId, 'ZP2015_INTRO_VYPOCET_EJ', [node.id]);
+        WebApi.queueBulkActionWithIds(fund.versionId, ZP2015_INTRO_VYPOCET_EJ, [node.id]);
     };
 
     /**

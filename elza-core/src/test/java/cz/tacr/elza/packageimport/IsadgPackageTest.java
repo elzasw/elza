@@ -31,8 +31,11 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import cz.tacr.elza.ElzaCoreMain;
+import cz.tacr.elza.bulkaction.BulkActionConfigManager;
+import cz.tacr.elza.bulkaction.generator.PersistentSortConfig;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
+import cz.tacr.elza.controller.vo.BulkActionVO;
 import cz.tacr.elza.controller.vo.Institution;
 import cz.tacr.elza.controller.vo.ap.item.ApItemStringVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
@@ -142,6 +145,8 @@ public class IsadgPackageTest {
     @Autowired
     private PackageTexts packageTexts;
     @Autowired
+    private BulkActionConfigManager bulkActionConfigManager;
+    @Autowired
     private ClientFactoryDO factoryDO;
     @Autowired
     @Qualifier("transactionManager")
@@ -192,6 +197,11 @@ public class IsadgPackageTest {
             List<String> codes = ruleService.getItemTypeCodesByRuleSet(sdp.getRuleSetByCode(CODE).getEntity());
             assertTrue(codes.contains("ISADG_TITLE") && codes.contains("ISADG_CONTAINER"), codes.toString());
             assertFalse(codes.contains("NM_MAIN"), "items of entities are not items of the fonds");
+            // the persistent sort is recognised by its kind, so the rule set names its file freely
+            assertEquals(PersistentSortConfig.TYPE, bulkActionConfigManager.getType("ISADG_PERSISTENT_SORT"));
+            assertEquals(PersistentSortConfig.TYPE,
+                         BulkActionVO.newInstance(bulkActionConfigManager.get("ISADG_PERSISTENT_SORT")).getType());
+            assertEquals("FundValidation", bulkActionConfigManager.getType("ISADG_FUND_VALIDATION"));
         });
     }
 

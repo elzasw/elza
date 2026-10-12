@@ -2,6 +2,7 @@
  * Utility pro pořádání.
  */
 import {getSetFromIdsList, indexById, getMapFromList} from 'stores/app/utils';
+import {PERSISTENT_SORT_TYPE} from '../../constants.tsx';
 import React from 'react';
 import {dateTimeToString} from 'components/Utils';
 import {} from 'components/shared';
@@ -571,4 +572,29 @@ export const getNodeChildren = (node, nodes) => {
         }
     }
     return childNodes;
+}
+
+/**
+ * Bulk actions of the rule set of the fund, as loaded by fundActionFetchConfigIfNeeded; empty until
+ * loaded.
+ */
+export function getFundBulkActions(fund) {
+    const config = fund && fund.fundAction && fund.fundAction.config;
+    return config && config.data ? config.data : [];
+}
+
+/** The persistent sort of the rule set of the fund - the action of the kind PersistentSort - or null. */
+export function getPersistentSortAction(fund) {
+    return getFundBulkActions(fund).find(action => action.type === PERSISTENT_SORT_TYPE) || null;
+}
+
+/** Whether the code names the persistent sort of the fund. */
+export function isPersistentSortAction(fund, code) {
+    const action = getPersistentSortAction(fund);
+    return action != null && action.code === code;
+}
+
+/** Whether the rule set of the fund offers the bulk action of the code. */
+export function hasBulkAction(fund, code) {
+    return getFundBulkActions(fund).some(action => action.code === code);
 }

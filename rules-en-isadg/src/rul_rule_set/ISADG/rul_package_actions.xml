@@ -9,9 +9,7 @@
             <action-recommended output-type="ISADG_FINDING_AID" />
         </action-recommendeds>
     </package-action>
-    <!-- The client and the tree cache recognise the persistent sort by the file name
-         PERZISTENTNI_RAZENI.yaml, but a file name is unique across the installation, so a second
-         rule set cannot use it next to ZP2015. Until the sort is recognised by its kind (plan 2b,
-         D9 part 2) the action is listed under its own name and is not offered by the tree menu. -->
+    <!-- The persistent sort is recognised by its kind (!PersistentSort), so the file may have any
+         name; a file name is unique across the installation, which rules out ZP2015's. -->
     <package-action filename="ISADG_PERSISTENT_SORT.yaml" />
 </package-actions>

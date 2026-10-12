@@ -48,6 +48,7 @@ import cz.tacr.elza.service.da.AsyncAipExecutor;
 import cz.tacr.elza.service.da.DaAipActionService;
 import cz.tacr.elza.asynchactions.nodevalid.AsyncNodeExecutor;
 import cz.tacr.elza.bulkaction.AsyncBulkActionWorker;
+import cz.tacr.elza.bulkaction.BulkActionConfigManager;
 import cz.tacr.elza.bulkaction.BulkActionHelperService;
 import cz.tacr.elza.controller.vo.AsyncRequestInfo;
 import cz.tacr.elza.controller.vo.AsyncType;
@@ -127,6 +128,9 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     @Autowired
     private BulkActionRunRepository bulkActionRepository;
+
+    @Autowired
+    private BulkActionConfigManager bulkActionConfigManager;
 
     private OutputRepository outputRepository;
 
@@ -615,7 +619,8 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
                         bulkActionRun.getFundVersion(),
                         bulkActionRun.getBulkActionRunId(),
                         bulkActionRun.getBulkActionCode(),
-                        bulkActionRun.getState()
+                        bulkActionRun.getState(),
+                        bulkActionConfigManager.getType(bulkActionRun.getBulkActionCode())
                 )
         );
     }

@@ -28,7 +28,8 @@ import {
     fundActionFormSubmit,
 } from 'actions/arr/fundAction';
 import * as perms from 'actions/user/Permission';
-import {ActionState, PERSISTENT_SORT_CODE, urlFundActions, getFundVersion, NEW} from '../../constants.tsx';
+import {ActionState, urlFundActions, getFundVersion, NEW} from '../../constants.tsx';
+import {isPersistentSortAction} from 'components/arr/ArrUtils.jsx';
 import {actionStateTranslation} from '../../actions/arr/fundAction';
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './FundActionPageKeymap';
@@ -171,7 +172,7 @@ class FundActionPage extends ArrParentPage {
         } = fund;
 
         if (form.code !== '' && form.nodes && form.nodes.length > 0) {
-            if (form.code === PERSISTENT_SORT_CODE) {
+            if (isPersistentSortAction(fund, form.code)) {
                 //zavolá metodu FundActionPage#submitPersistentSortForm
                 this.refForm.submit();
             } else {
@@ -181,7 +182,8 @@ class FundActionPage extends ArrParentPage {
     }
 
     submitPersistentSortForm = (versionId, values) => {
-        return this.props.dispatch(fundActionFormSubmit(versionId, PERSISTENT_SORT_CODE, values));
+        const fund = this.getActiveFund(this.props);
+        return this.props.dispatch(fundActionFormSubmit(versionId, fund.fundAction.form.code, values));
     };
 
     handleRibbonInterruptAction() {
@@ -502,7 +504,7 @@ class FundActionPage extends ArrParentPage {
                                 onAddNode={this.handleFormNodesAdd}
                                 onDeleteNode={this.handleFormNodeDelete}
                             />
-                            {form.code === PERSISTENT_SORT_CODE && [
+                            {isPersistentSortAction(fund, form.code) && [
                                 <h2>{<FormattedMessage {...arrPageMessages.functionsConfiguration} />}</h2>,
                                 <PersistentSortForm
                                     initialValues={detail.data && detail.data.config && JSON.parse(detail.data.config)}

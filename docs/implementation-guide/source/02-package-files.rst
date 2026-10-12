@@ -632,6 +632,13 @@ Bulk actions, defined in YAML files in :file:`rul_rule_set/<RS>/bulk_actions/`.
 for which the action is recommended before the output is generated;
 ``action-item-types`` - item types the action fills.
 
+The file name is the code of the action and is unique across the
+installation, so two packages cannot share one. Where ELZA treats an
+action specially - the persistent sort (``!PersistentSort``) refreshes the
+tree and has its own dialog - it recognises the action by its kind (the
+YAML tag), not by the file name; the kind is ``type`` of the action in the
+REST API.
+
 rul_structure_type.xml and rul_structure_definition.xml
 =======================================================
 
