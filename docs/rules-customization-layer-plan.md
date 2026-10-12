@@ -1,6 +1,6 @@
 # Rules-package customization layer and first internationalized version — plan
 
-Status as of 2026-10-09. Design record for extending rules packages without forks (addon packages,
+Status as of 2026-10-12. Design record for extending rules packages without forks (addon packages,
 customizations edited in the admin UI), for entity description frameworks beside CAM, and for the
 first internationalized version of ELZA (an English rule set based on ISAD(G)). Finished work is
 described for implementers in the implementation guide (`elza/docs/implementation-guide`, English
@@ -9,18 +9,28 @@ Line numbers refer to the `3.4.x` tree at the time of writing.
 
 ## 0. Next
 
-Status 2026-10-09. The customization-layer pilots (Phase 1 rest, Phase 3) stay independent and can
-be interleaved; 2c.6 (EAC-CPF export) and R2 (reference scope) wait for a concrete need and for the
-answers to R2's questions.
+Status 2026-10-12. 2b (`rules-en-isadg`) is designed (section 7, "2b - design and the next step");
+of its decisions D1-D3 and D5-D8 are taken, D9 part 1 is closed, D4 has a proposal with a sample
+and D9 part 2 a proposal. The order of work follows the rule "the most problematic part first": the
+coupling of core and client to ZP2015 - the only arrangement rule set ever used - is the uncertain
+part, so a walking skeleton of the package comes before any template or vocabulary polish. The
+customization-layer pilots (Phase 1 rest, Phase 3) stay independent and can be interleaved; 2c.6
+(EAC-CPF export) and R2 (reference scope) wait for a concrete need and for the answers to R2's
+questions.
 
-1. **2b** — `rules-en-isadg` (section 7); prerequisites met (2c.5, A1 rules 1 and 2).
-2. **L2 step 4** — the language rule for the remaining unit-date places (section 7), about 1.5 days.
-3. **A1 rule 3** — texts a package writes follow the package (section 7, proposal); done together
+1. **2b step 1 - the walking skeleton** (section 7, about 2 days): generator, package with the
+   decided shape and D4 as proposed, minimal rules, UI settings, wiring, the test next to CZ_BASE
+   and ZP2015, an ISADG fund described in the UI of a dev installation; every place that breaks
+   is fixed before step 2.
+2. **2b steps 2-4** (section 7, about 8 days): rules; L2 step 4 with the EAD3 template; PDF, the
+   core places with D9 part 2, guide chapter 05, release notes.
+3. **A1 rule 3** - texts a package writes follow the package (section 7, proposal); done together
    with 2b's print templates and index scripts.
 4. Release gate of 3.4 (section 6): re-import of unchanged CZ_BASE 89 and ZP2015 on a PostgreSQL copy
    after the four declaration migrations, `view_order` and spec order unchanged.
 
-Nothing blocks implementation. Decisions still open: A1 rule 3 (section 7) and R2 Q1–Q4 (section 5).
+Decisions still open: D4 (built as proposed unless changed), D9 part 2, A1 rule 3 (section 7) and
+R2 Q1-Q4 (section 5). None blocks step 1.
 
 ## 1. Goals and principles
 
@@ -79,6 +89,7 @@ Nothing blocks implementation. Decisions still open: A1 rule 3 (section 7) and R
 | A1 UI-owned, E3 | texts the client owns stay on the client: the logical AIP tree and the explorer label their virtual levels by `AipLevelType` (the server name is a fallback), the log viewer shows a message for `LogVO.error` (`NO_PATH`, `FILE_NOT_FOUND`, `READ_ERROR`) with the path; the dead Czech labels of the queue-state enums removed (`ExtAsyncQueueState`, `ExtSyncsQueueItem.ExtAsyncQueueState`, `DaSyncQueueItem.QueueItemState` - the client has its own) | with this row |
 | search config | `index-search` composed per field (`SettingsService.getIndexSearch`, cached per static data; `loadIndexSearch` for the index bridge at startup): core defaults `accessPointId`, `index`, `pref_index` (`SettingIndexSearch.coreDefaults`), then the fields of every package, a field stated by several packages taken from the deepest in dependency order; before, the importer refused `index-search` from a second package (the type was not layered). CZ_BASE states only its own fields. Kept global, not per rule set: one search ranks entities of all rule sets on one scale. Guide: `02-package-files` "index-search"; `AddonPackageTest` | with this row |
 | search fields, base vocabulary | the text search looks in every item field of `index-search` instead of fixed `nm_main`/`nm_minor` (`SettingIndexSearch.searchedItemFields`; area *names* by the new attribute `part-type`, CZ_BASE marks `nm_main`/`nm_minor` `PT_NAME`; fields missing from the index schema skipped until restart); weights unchanged for CZ_BASE. Decision (user, 2026-10-12): no part roles - the part types `PT_NAME`, `PT_BODY`, `PT_CRE`, `PT_EXT` and the items `NM_MAIN`, `NM_MINOR`, `CRE_DATE`, `EXT_DATE` are a base vocabulary with built-in logic, documented in guide 01 "Base parts and items"; a framework depends on CZ_BASE or declares them. `SettingIndexSearchTest` | with this row |
+| D9 part 1 (core place 2 of 2b) | closed by removal (user, 2026-10-12): the DID sent to a WSDL digital repository or a digitization front desk (link notification, DAO and digitization requests, WS `getDid`) carries the identifier only - `WSHelper.createDid`; the script `createDid.groovy`, its copy into the working directory and the Groovy DID methods are removed, no rule type. The script had not compiled since 2020 (the converter class and the `Did` accessors renamed) and nothing missed it; the WSDL repository infrastructure stays, its future is Phase 4 of `da-migration.md`. Release notes 3.4.9 "Changes"; `DaoCoreServiceTest` | with this row |
 
 **Decisions later steps build on.**
 - *Translations:* key `(entity_type, entity_code, field, language)`, rows owned by the contributing
@@ -163,7 +174,7 @@ Nothing blocks implementation. Decisions still open: A1 rule 3 (section 7) and R
 |---|---|---|
 | **2c. Entity description frameworks** | ISAAR_CPF package done (section 4); 2c.6 EAC-CPF export and R2 reference scope on demand | done for 2b |
 | **A1. Texts built in core** | validation messages, request-time core texts, texts the client owns (section 7) | **done** (rules 1-2); rule 3 (texts a package writes) with 2b |
-| **2b. First internationalized version** | `rules-en-isadg` referring to the ISAAR_CPF classes; core neutrality; texts written by packages in the package language | next |
+| **2b. First internationalized version** | `rules-en-isadg` referring to the ISAAR_CPF classes; core neutrality; texts written by packages in the package language | design and order in section 7 (2026-10-12); next: the walking skeleton |
 | **2a.3 Remaining read sites** | tree titles, specification categories, further entity kinds, AI proposal rows | open, independent |
 | **2a.4 Translation template** | export of translatable texts with source, hash and state | on demand (first maintained translation) |
 | **1. Layer core (rest)** | revalidation requested by an addon, `PACKAGE` event on delete, settings export guard (section 6) | open, independent |
@@ -384,18 +395,173 @@ never the UI language and with no language on funds; core texts without a packag
 package; prerequisite: scripts using names as identifiers switch to codes (`PT_IDENT.groovy`, the
 ZP2015 EAD template, the PDF content page).
 
-**2b `rules-en-isadg`.** Module `elza/rules-en-isadg` (package and rule set `ISADG`, prefix `ISADG_`)
-from the `rules-simple-dev` skeleton, no dependency on CZ_BASE; one item type per ISAD(G) element, no
-STRUCTURED types (identity, context with `ISADG_CREATOR` referring to the ISAAR_CPF classes, content
-and structure, access and use with an own `ISADG_LANGUAGE`, allied materials, notes and control, DAO
-link, container, access point); rules with English messages (filter, available items with the
-mandatory elements at fonds level, new-level scenarios, validation, impact), policy types, fund
-validation; UI settings by the seven ISAD(G) areas; Czech translation file. Core neutrality:
-"Compute EJ" only for rule sets offering `ZP2015_INTRO_VYPOCET_EJ` (`FundTreeMain.jsx`),
-`createDid.groovy` with ISADG codes; core messages are done (A1). Rule messages with keys and an
-English text, translated into Czech in `translations/cs.xml`. Test `IsadgPackageTest`; exit: an English
-user creates an ISADG fund, fills the mandatory elements, links a creator, validates, and sees no
-Czech text.
+### 2b — `rules-en-isadg`: design and the next step
+
+Reviewed against ZP2015 351, SIMPLE-DEV 43 and ISAAR_CPF 2 on 2026-10-12. The mechanisms 2b needs
+are done (sections 2 and 4); this section is the content design and the order of work. Decisions
+D1-D3 and D5-D8 are taken and D9 part 1 is closed (section 2); open are D4, with a proposal and a
+sample below, and D9 part 2.
+
+**What ZP2015 teaches.** ZP chapter 4, the common elements (group `06_ZP2015_CH4`), is ISAD(G)
+area 3 almost one to one. The bulk of ZP2015 - 138 item types, 409 specifications, the 7,191-line
+availability matrix *unit type × element*, the EJ computation, the structured access restrictions,
+the DA scripts, 12 templates - is Czech practice or ZP chapter 5 and is not carried over; an addon
+brings such detail later (Phase 3 mechanisms). ISADG is therefore a *level × area* matrix: about
+43 item types, ~15 availability rules, ~10 validation rules, 6 new-level scenarios. SIMPLE-DEV is a
+skeleton of the files, not of the content (Czech, CZ_BASE-dependent). The package is generated from
+tables (`rules-en-isadg/generator/gen_isadg.py`, as ISAAR_CPF is), so the filter rule, the type
+groups, the grid, the pinned filters and `translations/cs.xml` come from one table and cannot
+drift.
+
+**Decisions (user, 2026-10-12).**
+- *D1* ISADG depends on ISAAR_CPF (`item-aptypes` of a RECORD_REF must name declared classes,
+  `ItemTypeUpdater:1439`); `elza.packages.enabled` lists ISADG, the import pulls ISAAR_CPF in.
+- *D2* the six ISAD(G) levels. `NewLevel.drl` offers only the allowed children (fonds at the root;
+  subfonds under fonds; series under fonds, subfonds, series; subseries under series, subseries;
+  file under series, subseries, file; item under series, subseries, file, item); `Validation.drl`
+  checks what scenarios cannot guard - a level changed later, an imported fund: the root is a
+  fonds, a child's level ranks below its parent's. ZP2015 guards its hierarchy in the scenarios
+  only; the reference-code generator and the EAD template assume it.
+- *D3* a structured storage unit from the start: `ISADG_CONTAINER` after SIMPLE-DEV's `SRD_PACKET`
+  (kind, prefix, number, postfix, location; ~200 lines of DRL and Groovy), the generator action
+  (`GENEROVANI_UKL_JEDNOTEK.yaml` as the model), `ISADG_POL_CONTAINER`, the validation "every leaf
+  branch has a container".
+- *D5* access as text, a status (open, restricted, closed) and an opening date; structured
+  restrictions later as an addon, they follow local legislation.
+- *D6* one `ISADG_ACCESS_POINT` (RECORD_REF to the five ISAAR classes, the role as specification:
+  subject, place, person, family, corporate body, author, other) for the index terms of EAD
+  `controlaccess`; the creator stays its own item `ISADG_CREATOR`.
+- *D7* the ISO 639-2 `LNG_*` specifications shared by code with ISAAR_CPF and assigned to
+  `ISADG_LANGUAGE` and `ISADG_FA_LANGUAGE` (CZ_BASE assigns them to four item types the same
+  way); script as text in version 1.
+- *D8* one output type `ISADG_FINDING_AID` with EAD3 (FreeMarker, `validation-schema`), PDF
+  (Jasper) and XML (engine `DE_XML`).
+- *D9 part 1* closed: the DID of the DAO web services carries the identifier only, no rule-set
+  script (section 2). *Part 2, open:* the persistent sort is recognised by the action code
+  `PERZISTENTNI_RAZENI` - the YAML file name - on the client (`constants.tsx:98`,
+  `PersistentSortForm.jsx`) and in `LevelTreeCacheService:890` (tree refresh after the sort).
+  Proposal: the server tells the kind of each bulk action (`BulkActionVO.type` from the YAML
+  class), the client takes the fund's action of that kind from its list (`fund.bulkActions`), the
+  refresh keys on the kind; the same list hides "Compute and visualise EJ" (`FundTreeMain.jsx:123`,
+  `websocketActions.jsx:358`) when the fund has no `ZP2015_INTRO_VYPOCET_EJ`. About half a day;
+  until then ISADG ships `PERZISTENTNI_RAZENI.yaml` under that name.
+- *D4, open - extent and medium.* In the standard the element is one text ("128 boxes (12.5 linear
+  metres)", "2 maps; 7 photographs"). ZP2015 types the material (`ZP2015_UNIT_TYPE`, 53 kinds) with
+  a count, sums the counts up the tree (`!UnitCount`) and prints the totals in the finding aid;
+  the size of one item has its own items (`ZP2015_AMOUNT`: a DECIMAL whose specification is the
+  unit). Proposal keeping the standard's text and ZP2015's precision: `ISADG_EXTENT` (TEXT, the
+  statement as it prints); `ISADG_EXTENT_QUANTITY` (DECIMAL with the unit as specification,
+  repeatable: linear metres, boxes, folders, volumes, items, sheets, pages, minutes, bytes - later
+  summed per unit by a `!UnitCount` configuration for the finding aid's statistics);
+  `ISADG_MATERIAL_TYPE` (ENUM, repeatable; the "more specifically defined types": ~15 base kinds -
+  textual records, registers and official books, manuscripts, printed matter, maps and plans,
+  technical drawings, graphic material, photographs, sound recordings, moving images, electronic
+  records, seals, coins and medals, three-dimensional objects, other - extensible by an addon,
+  which could carry the 53 kinds of ZP2015); detail items offered by the material type
+  (`ISADG_DIMENSIONS`, `ISADG_SCALE` for maps and drawings, `ISADG_DURATION` for sound and
+  moving images; more by addons, ZP chapter 5 being the Czech example). Sample: the fonds - extent
+  "128 boxes (12.5 linear metres)", quantity 12.5 [linear metres] and 128 [boxes]; a file - level
+  file, title "Correspondence with the town council", dates 1921-1924, material type textual
+  records, extent "1 folder (45 leaves)", quantity 45 [sheets], container box 12; a map in it -
+  level item, material type maps and plans, scale "1:2880", dimensions "62 × 48 cm", quantity 1
+  [items]. Step 1 builds this proposal; the generator makes a change cheap while the package is
+  unreleased.
+
+**Mapping.** Codes `ISADG_` + the ISAD(G) term; names and messages English.
+
+| ISAD(G) | ZP2015 | ISADG (data type) |
+|---|---|---|
+| 3.1.1 Reference code | `ZP2015_UNIT_ID` (UNITID) + `!UnitIdGenerator` | `ISADG_REFERENCE_CODE` (UNITID), generator; country and repository codes from the institution in outputs |
+| - other identifiers | `ZP2015_OTHER_ID` (24 specs), `ZP2015_SERIAL_NUMBER`, `ZP2015_INV_CISLO` | `ISADG_OTHER_ID` (STRING; specs former reference code, accession number, other) |
+| 3.1.2 Title | `ZP2015_NAME`, `ZP2015_FORMAL_TITLE`, `*_PUBLIC` | `ISADG_TITLE` (STRING); formal and supplied titles not distinguished |
+| 3.1.3 Dates | `ZP2015_UNIT_DATE`, `_BULK`, `_TEXT`, `_PRE`, `_POST`, `ZP2015_DATE_OTHER` (25 specs) | `ISADG_DATE` (UNITDATE, creation), `ISADG_DATE_BULK` (UNITDATE), `ISADG_DATE_TEXT` (STRING) |
+| 3.1.4 Level | `ZP2015_LEVEL_TYPE` (6: soubor, dílčí list, série, složka, jednotlivost, část) + `ZP2015_FOLDER_TYPE` | `ISADG_LEVEL` (ENUM: `FONDS`, `SUBFONDS`, `SERIES`, `SUBSERIES`, `FILE`, `ITEM`) - D2 |
+| 3.1.5 Extent and medium | `ZP2015_UNIT_TYPE` (53), `_UNIT_COUNT`, `_EXTRA_UNITS`, `_UNIT_COUNT_ITEM`, EJ computation, `ZP2015_COLL_EXTENT_LENGTH`, `ZP2015_SIZE_*`, `ZP2015_AMOUNT` | `ISADG_EXTENT` (TEXT), `ISADG_EXTENT_QUANTITY` (DECIMAL, unit as specification, repeatable), `ISADG_MATERIAL_TYPE` (ENUM, extensible), detail items `ISADG_DIMENSIONS`, `ISADG_SCALE`, `ISADG_DURATION` - D4 |
+| 3.2.1 Creator | `ZP2015_ORIGINATOR` (CAM classes), `ZP2015_ORIGINATOR_SIMPLE` | `ISADG_CREATOR` (RECORD_REF: `PERSON_INDIVIDUAL`, `FAMILY`, `PARTY_GROUP`) - D1 |
+| 3.2.2 Administrative / biographical history | - (CAM entity; `ZP2015_INTRO` aggregates it) | `ISADG_BIOGHIST` (TEXT); later aggregation from the ISAAR entity (`!AccessPointAggregation`) |
+| 3.2.3 Archival history | `ZP2015_UNIT_HIST` | `ISADG_CUSTODHIST` (TEXT) |
+| 3.2.4 Immediate source of acquisition | `ZP2015_UNIT_SOURCE` | `ISADG_ACQINFO` (TEXT) |
+| 3.3.1 Scope and content | `ZP2015_CONTENT`, `ZP2015_UNIT_CONTENT` | `ISADG_SCOPE_CONTENT` (TEXT) |
+| 3.3.2 Appraisal, destruction, scheduling | - | `ISADG_APPRAISAL` (TEXT) |
+| 3.3.3 Accruals | `ZP2015_FUTURE_UNITS` | `ISADG_ACCRUALS` (TEXT) |
+| 3.3.4 System of arrangement | `ZP2015_UNIT_ARR` | `ISADG_ARRANGEMENT` (TEXT) |
+| 3.4.1 Conditions governing access | `ZP2015_UNIT_ACCESS` + `ZP2015_RESTRICTION_ACCESS_*`, publication events, two structured types, export and output filter `ZP_ACCESS_RESTRICT` | `ISADG_ACCESS_CONDITIONS` (TEXT), `ISADG_ACCESS_STATUS` (ENUM: open, restricted, closed), `ISADG_ACCESS_OPEN_DATE` (DATE) - D5 |
+| 3.4.2 Conditions governing reproduction | `ZP2015_UNIT_COPY_RIGHTS`, `ZP2015_UNIT_INFO_RIGHTS` | `ISADG_REPRODUCTION_CONDITIONS` (TEXT) |
+| 3.4.3 Language / scripts | `ZP2015_LANGUAGE`, `ZP2015_MAJOR_LANG` (CZ_BASE, `LNG_*`), `ZP2015_WRITING` | `ISADG_LANGUAGE` (ENUM, the 486 `LNG_*` of ISAAR_CPF shared by code), `ISADG_SCRIPT` (STRING; ISO 15924 later) - D7 |
+| 3.4.4 Physical characteristics, technical requirements | `ZP2015_UNIT_CURRENT_STATUS`, `ZP2015_UNIT_DAMAGE_TYPE` | `ISADG_PHYSTECH` (TEXT) |
+| 3.4.5 Finding aids | - (the output itself) | `ISADG_FINDING_AIDS` (TEXT) |
+| 3.5.1 Existence and location of originals | `ZP2015_COPY_SOURCE` | `ISADG_ORIGINALS_LOC` (TEXT) |
+| 3.5.2 Existence and location of copies | `ZP2015_EXISTING_COPY`, `ZP2015_DAO_ID` | `ISADG_COPIES_LOC` (TEXT) |
+| 3.5.3 Related units of description | `ZP2015_RELATED_UNITS`, `_RELATED_UNITS_LINK`, `ZP2015_ITEM_LINK` | `ISADG_RELATED_MATERIAL` (TEXT), `ISADG_RELATED_LINK` (URI_REF) |
+| 3.5.4 Publication note | `ZP2015_EDITION`, `ZP2015_SOURCES` | `ISADG_BIBLIOGRAPHY` (TEXT) |
+| 3.6.1 Note | `ZP2015_NOTE`, `ZP2015_INTERNAL_NOTE` | `ISADG_NOTE` (TEXT), `ISADG_INTERNAL_NOTE` (TEXT) |
+| 3.7.1 Archivist's note | `ZP2015_ARRANGER` (RECORD_REF), `_ARRANGEMENT_INFO`, `_ARRANGER_TEXT` | `ISADG_PROCESS_INFO` (TEXT), `ISADG_ARCHIVIST` (RECORD_REF `PERSON_INDIVIDUAL`) |
+| 3.7.2 Rules or conventions | `ZP2015_ARRANGE_RULES` | `ISADG_RULES` (TEXT) |
+| 3.7.3 Date(s) of descriptions | `ZP2015_DESCRIPTION_DATE` (TEXT) | `ISADG_DESCRIPTION_DATE` (TEXT) |
+| EAD container, physloc | `ZP2015_STORAGE_ID` (STRUCTURED `ZP2015_PACKET`: type, prefix, number, postfix, metrage, 5 location items), `ZP2015_ITEM_ORDER` | `ISADG_CONTAINER` (STRUCTURED `ISADG_CONTAINER`: kind, prefix, number, postfix, location) - D3 |
+| EAD dao | `ZP2015_DAO_LINK`, `ZP2015_DAO_ID`, `ZP2015_AIP_ID` | `ISADG_DAO_LINK` (URI_REF) |
+| EAD controlaccess | `ZP2015_ENTITY_ROLE` (83 specs), `_AP_REF`, `_GEO_REF`, `_LEGALACT_REF` | `ISADG_ACCESS_POINT` (RECORD_REF to the five ISAAR classes; specs subject, place, person, family, corporate body, author, other); never the creator, which is `ISADG_CREATOR` - D6 |
+| finding aid (output items) | `ZP2015_FINDING_AID_ID`, `_OUTPUT_TYPE`, `_FINDING_AID_DATE`, `_UNIT_COUNT_SUM`, `_UNIT_COUNT_TABLE`, `_UNITS_AMOUNT`, `_RELEASE_DATE_PLACE`, `_APPROVED_BY`, `_EDITOR`, `_DATE_RANGE`, `_ATTACHMENT`, `_ORIGINATOR_SIMPLE`, `ZP2015_ARCHDESC_LANG` | `ISADG_FA_TITLE` (STRING), `ISADG_FA_KIND` (ENUM: inventory, catalogue, guide, list), `ISADG_FA_AUTHOR` (TEXT), `ISADG_FA_DATE` (DATE), `ISADG_FA_LANGUAGE` (ENUM `LNG_*`), `ISADG_FA_NOTE` (TEXT), `ISADG_ATTACHMENT` (FILE_REF) - D8 |
+| not carried over | `ZP2015_NAD`, `_ZNACKA_FONDU`, dílčí list (`LEVEL_SECTION`, `DilciListy.drl`), `_ARRANGEMENT_TYPE`, `_UNIT_SUBTYPE`, `_UNIT_EXT_TYPE`, `_AGENDA_TYPE`, `_RECORD_TYPE`, chapter-5 items (~45), `_PUBLISHED`, `_INVALID_RECORD`, `_CONNECTED_RECORD`, `_NOT_FOUND`, `_ALTERNATIVE_DESCRIPTION_INLINE`, `_ITEM_TITLE_REF`, `_AWARD_*`, `_ENTITY_ROLE_TEXT`, all 8 extensions, older-aid output, labels, migrations, test-data generator | Czech practice or ZP chapter 5; an addon on ISADG can add them later |
+
+Open without a recommendation: the ISADG name of the Czech "formal title" (ZP 4.2.4), dropped in
+the table; whether `ISADG_ARCHIVIST` stays (3.7.1 is a text in the standard).
+
+**Package shape.** Module `elza/rules-en-isadg` (package and rule set `ISADG`, `<language>en`,
+dependency `ISAAR_CPF` min 2); no arrangement extensions, no `DA_IMPORT`/`DA_MATCH` (the Czech
+national DA), no labels, no older-aid output in version 1. Rules: `ItemTypeFilter.drl`,
+`AvailableItems.drl` (ZP2015's salience-100 preamble, everything possible at every level, required
+by level, the material-type gating of D4), `Validation.drl` (the six essential elements of ISAD(G)
+at the fonds - reference code, title, dates, level, extent, creator; level and title everywhere; a
+date inside the parent's range; the hierarchy of D2; the container of D3), `NewLevel.drl`,
+`ChangeImpact.drl` (ZP2015's with the codes replaced), `Output_FindingAid.drl`, a citation Groovy;
+messages keyed, Czech in `translations/cs.xml`. Policy types `ISADG_POL_BASIC`,
+`ISADG_POL_REFERENCE_CODE`, `ISADG_POL_CONTAINER`. Actions: `!FundValidation`, `!UnitIdGenerator`
+(`levelTypeCode: ISADG_LEVEL`, `extraDelimiterAfter: ISADG_LEVEL_SERIES`), persistent sort, the
+container generator. Templates: EAD3 from the skeleton of `INVENTAR_EAD/index.ftl` (control,
+archdesc, the `dsc` recursion, the level mapping at lines 439-464 - ISADG levels are EAD level
+values one to one), PDF from `SRD_INVENTORY_JASPER` (236 lines), XML free. UI settings of the rule
+set: FUND_VIEW (tree `ISADG_REFERENCE_CODE ISADG_TITLE ISADG_DATE`, icons per level), TYPE_GROUPS by
+the seven areas plus Finding aid, Access points, Container, GRID_VIEW, FUND_ISSUES (ZP2015's block),
+STRUCTURE_TYPES, OUTPUT_DEFAULTS; of the package: DAO_LEVEL_IMPORT (its `<scenario>` is matched by
+the scenario *name*), pinned search filters, favourite languages. Wiring: root `pom.xml`,
+`elza-core/pom.xml` test resource, `distrib/distribution/pom.xml` and `distribution.xml`,
+`elza.yaml`, admin guide "Loading the packages".
+
+**Core and client places that assume ZP2015** (grep 2026-10-12; nothing keys on level or
+arrangement types): the EJ menu item and the persistent sort (D9 part 2); `ArrangementService:201`
+fixed links by `ZP2015_ITEM_LINK` (tolerant: no type, no links; later by the URI schema
+`elza-node`); `ReportServiceQuery:355-379` finding-aid columns of the outputs report (left joins,
+empty for ISADG; later the output type's items); `DaImportPlanner.ruleSetLabel` Czech text →
+`CoreMessage`; `DataGridImportDialog.tsx:102` sample CSV with ZP2015 codes → generic;
+`AbstractTest` loads CZ_BASE and SIMPLE-DEV, `IsadgPackageTest` loads ISAAR_CPF and ISADG after
+`deleteAllPackages()`. Accepted limits of version 1: NEW_LEVEL scenario names are texts a rule
+writes and the identifier `DAO_LEVEL_IMPORT` matches - not translatable (A1 rule 3), a Czech user
+sees English scenario names; Czech names of the 486 languages come from CZ_BASE when installed,
+otherwise the generator copies them into `cs.xml`.
+
+**Next step and order (recommendation 2026-10-12: the most problematic part first).** The
+uncertain part of 2b is not the vocabulary but the coupling. ZP2015 is the only arrangement rule
+set ever used in practice (SIMPLE-DEV is its Czech copy), so the places where core and client
+assume it are known only as far as a grep sees them - the list above - and the flows the grep
+cannot see (fund creation, the tree, the forms, the grid, outputs, the AI dictionary, export and
+import, publication) have never run on a second rule set. That surfaces only with a real one in a
+real installation, and it is cheaper to find before the templates and the vocabulary are polished.
+1. **Walking skeleton, 2 days.** The generator and the package with the decided shape (the 43 item
+   types, levels, container, access, languages, access points, output items), the filter rule,
+   minimal availability and new-level rules, the UI settings, the wiring, `IsadgPackageTest`
+   loading ISADG next to CZ_BASE and ZP2015, and an ISADG fund created and described in the UI of
+   a dev installation. Everything the skeleton breaks goes into the list above and is fixed
+   before templates are written. D4 goes in as proposed.
+2. **Rules, 2 days.** The hierarchy (D2), the essential elements, the container (D3), the
+   material-type gating (D4); keyed messages, `cs.xml`.
+3. **L2 step 4 and the EAD3 template, 3.5 days.** English unit dates in index names and outputs
+   are a prerequisite of the template, so they go together; the template is validated against the
+   schema in the test.
+4. **PDF, core places with D9 part 2, guide chapter 05 and release notes, 2.5 days.**
+Exit: an English user creates an ISADG fund, fills the essential elements, links an ISAAR
+creator, validates, generates the EAD and the PDF, and sees no Czech text; the same installation
+keeps a ZP2015 fund working.
 
 ## 8. Later phases — design notes
 
