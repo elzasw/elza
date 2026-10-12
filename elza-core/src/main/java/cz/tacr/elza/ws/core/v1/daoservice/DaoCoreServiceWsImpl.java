@@ -68,7 +68,6 @@ import cz.tacr.elza.service.DaoSyncService.MatchedScenario;
 import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.DescriptionItemServiceInternal;
 import cz.tacr.elza.service.FundLevelService;
-import cz.tacr.elza.service.GroovyScriptService;
 import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.arrangement.DesctItemProvider;
 import cz.tacr.elza.service.arrangement.MultipleItemChangeContext;
@@ -83,6 +82,7 @@ import cz.tacr.elza.ws.types.v1.DaoLinks;
 import cz.tacr.elza.ws.types.v1.DaoPackage;
 import cz.tacr.elza.ws.types.v1.DaoPackages;
 import cz.tacr.elza.ws.types.v1.Daoset;
+import cz.tacr.elza.ws.core.v1.WSHelper;
 import cz.tacr.elza.ws.types.v1.Did;
 import cz.tacr.elza.ws.types.v1.File;
 import cz.tacr.elza.ws.types.v1.FolderGroup;
@@ -104,9 +104,6 @@ public class DaoCoreServiceWsImpl {
 
     @Autowired
     private DaoBatchInfoRepository daoBatchInfoRepository;
-
-    @Autowired
-    private GroovyScriptService groovyScriptService;
 
     @Autowired
     private ArrLegacyDaoLinkRepository legacyDaoLinkRepository;
@@ -393,7 +390,7 @@ public class DaoCoreServiceWsImpl {
         final ArrNode arrNode = arrangementInternalService.findNodeByUuid(didIdentifier);
         Validate.notNull(arrNode, "Node ID=" + didIdentifier + " wasn't found.");
 
-        return groovyScriptService.createDid(arrNode);
+        return WSHelper.createDid(arrNode);
     }
 
     /**

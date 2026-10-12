@@ -91,6 +91,12 @@ New
 Changes
 -------
 
+* Change: The description of a unit sent to a WSDL digital repository or a
+  digitization front desk with a linked digital object (the DID of the DAO
+  web services) carries the identifier of the unit only. The script
+  :file:`groovy/createDid.groovy` in the working directory, which added the
+  title, the reference code and the date, is no longer read and can be
+  deleted; it had not worked since 2020.
 * Change: ELZA DA - a batch the digital archive prepares for download or
   processes after an export no longer stops the other communication with
   it and survives a restart of ELZA. A failure to reach the archive is

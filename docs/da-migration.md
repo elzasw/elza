@@ -81,6 +81,11 @@ rows with genuine preservation metadata. Identify genuine WSDL repositories by
 - **If it is still used**, build the conversion machinery here (it was never built — the original
   Phase 2 turned out to have an empty input set).
 
+*2026-10-12:* the DID of the DAO web services (the notification of a link, the DAO and
+digitization requests, `getDid`) carries the identifier of the unit only. The script
+`createDid.groovy` that added the title, the reference code and the date had not compiled since
+2020 and was removed (user decision); that nobody missed it in six years is a hint for the audit.
+
 **Audit first** — count `arr_dao` records per repository type (classified by
 `digital_repository_type`), identify edge cases: orphaned records, NULL foreign keys, invalid
 JSON in `attributes`.
