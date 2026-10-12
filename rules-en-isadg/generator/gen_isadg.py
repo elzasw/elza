@@ -1,4 +1,4 @@
-# Generates elza/rules-en-isadg from data tables (plan step 2b). Regenerate rather than hand-edit:
+# Generates rules-en-isadg from data tables (plan step 2b). Regenerate rather than hand-edit:
 #   python generator/gen_isadg.py   (from any directory; writes the module this file lives in)
 # The item types, the specifications, the filter rule, the type groups, the grid, the pinned
 # filters and translations/cs.xml come from the tables below, so they cannot drift apart.
