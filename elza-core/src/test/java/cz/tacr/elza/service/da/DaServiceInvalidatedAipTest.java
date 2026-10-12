@@ -101,8 +101,12 @@ public class DaServiceInvalidatedAipTest extends AbstractServiceTest {
     }
 
     private ArrDigitalRepository createRepository() {
+        return createRepository("DA-INVALIDATED");
+    }
+
+    private ArrDigitalRepository createRepository(String code) {
         ArrDigitalRepository repository = new ArrDigitalRepository();
-        repository.setCode("DA-INVALIDATED");
+        repository.setCode(code);
         repository.setName("Testovaci digitalni archiv");
         repository.setDigitalRepositoryType(DigitalRepositoryType.DA);
         repository.setSendNotification(false);
@@ -186,6 +190,23 @@ public class DaServiceInvalidatedAipTest extends AbstractServiceTest {
         assertThrows(ObjectNotFoundException.class, () -> aipService.getAip(aipId));
     }
 
+    /**
+     * The code of an AIP is unique only within its digital archive: an invalidation another archive
+     * reports for the same code concerns a different AIP and leaves this one alone.
+     */
+    @Test
+    public void invalidationFromAnotherArchiveKeepsTheAip() {
+        Integer repositoryId = tx().execute(t -> createRepository().getExternalSystemId());
+        Integer aipId = tx().execute(t -> createAip(digitalRepositoryRepository.findById(repositoryId).orElseThrow()));
+        Integer otherRepositoryId = tx().execute(t -> createRepository("DA-OTHER").getExternalSystemId());
+
+        sync(otherRepositoryId, update("2", true));
+
+        tx().executeWithoutResult(t -> assertNotNull(
+                aipStateRepository.findByDaAipAndDeleteChangeIsNull(aipRepository.findById(aipId).orElseThrow()),
+                "the AIP of the first archive keeps its state"));
+    }
+
     /** An export waiting to be sent is dropped together with the package prepared for it. */
     @Test
     public void pendingExportIsDropped() throws IOException {
@@ -229,7 +250,8 @@ public class DaServiceInvalidatedAipTest extends AbstractServiceTest {
         sync(repositoryId, update("1", true));
 
         tx().executeWithoutResult(t -> {
-            assertNull(aipRepository.findByCode(CODE));
+            assertNull(aipRepository.findByDigitalRepositoryAndCode(
+                    digitalRepositoryRepository.findById(repositoryId).orElseThrow(), CODE));
             assertTrue(syncQueueItemRepository.findAll().isEmpty(), "nothing is queued for download");
         });
     }

@@ -330,7 +330,7 @@ public class DaService {
                 .map(UpdatedInfo::getAipId)
                 .toList();
 
-        List<DaAip> aipList = aipRepository.findByCodeIn(aipCodes);
+        List<DaAip> aipList = aipRepository.findByDigitalRepositoryAndCodeIn(digitalRepository, aipCodes);
         Map<String, DaAip> aipMap = aipList.stream()
                 .collect(Collectors.toMap(DaAip::getCode, a -> a));
         Map<DaAip, DaAipState> stateMap = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList).stream()
@@ -1643,13 +1643,19 @@ public class DaService {
     @Transactional
     public void updateAipToQueueItems(List<DaSyncQueueItem> syncQueueItemList) {
         if (CollectionUtils.isNotEmpty(syncQueueItemList)) {
-            List<String> codes = syncQueueItemList.stream().map(DaSyncQueueItem::getCode).collect(Collectors.toList());
-            Map<String, DaAip> aipMap = aipRepository.findByCodeIn(codes).stream()
-                    .collect(Collectors.toMap(DaAip::getCode, aip -> aip));
-            for (DaSyncQueueItem syncQueueItem : syncQueueItemList) {
-                DaAip aip = aipMap.getOrDefault(syncQueueItem.getCode(), null);
-                syncQueueItem.setAip(aip);
-            }
+            // an AIP code is unique only within its digital archive; grouped by id, as the
+            // repository may be an uninitialized proxy and its hashCode reads its fields
+            Map<Integer, List<DaSyncQueueItem>> byRepository = syncQueueItemList.stream()
+                    .collect(Collectors.groupingBy(item -> item.getDigitalRepository().getExternalSystemId()));
+            byRepository.values().forEach(items -> {
+                List<String> codes = items.stream().map(DaSyncQueueItem::getCode).toList();
+                Map<String, DaAip> aipMap = aipRepository
+                        .findByDigitalRepositoryAndCodeIn(items.get(0).getDigitalRepository(), codes).stream()
+                        .collect(Collectors.toMap(DaAip::getCode, aip -> aip));
+                for (DaSyncQueueItem syncQueueItem : items) {
+                    syncQueueItem.setAip(aipMap.get(syncQueueItem.getCode()));
+                }
+            });
             syncQueueItemRepository.saveAll(syncQueueItemList);
         }
     }
@@ -1716,7 +1722,8 @@ public class DaService {
     private void recordAipProblem(DaSyncQueueItem syncQueueItem, AipProblem problem) {
         DaAip aip = syncQueueItem.getAip() != null
                 ? syncQueueItem.getAip()
-                : aipRepository.findByCode(syncQueueItem.getCode());
+                : aipRepository.findByDigitalRepositoryAndCode(syncQueueItem.getDigitalRepository(),
+                                                               syncQueueItem.getCode());
         DaAipState aipState;
         if (aip == null) {
             aip = new DaAip();
