@@ -382,7 +382,8 @@ Users create and revoke their own keys in their user settings (category
 key is shown only once, when it is created; ELZA stores only its hash.
 Administrators can list and revoke the keys of other users. Keys can be
 created and revoked only after an interactive login, not with another
-API key.
+API key. A request authenticated by an API key cannot change passwords
+or other login credentials of any user either; it is rejected with 403.
 
 The key is sent in a header:
 

@@ -143,9 +143,14 @@ exists.
 
 A key must not be usable to escalate into permanent access, so
 `UserService.requireInteractiveAuth()` answers `403` for a key-authenticated
-request on all key management operations (own and admin) and on the password
-policy update. Revoking a key that belongs to someone else through the "my"
-endpoint returns `404`, so users cannot probe for other users' keys. The
+request on all key management operations (own and admin), on the password
+policy update and on every write of login credentials: a password change (own
+or another user's) and setting or removing an authentication of a user when
+it is created or edited. The credential check sits in `UserService` (`updateAuth`,
+`changePasswordPrivate`, removal in `changeUser`), so every path that writes
+credentials is covered, not only the current endpoints.
+
+Revoking a key that belongs to someone else through the "my" endpoint returns `404`, so users cannot probe for other users' keys. The
 built-in default user (no `usr_user` row) cannot own keys; its listing is
 empty.
 
@@ -175,12 +180,6 @@ The React UI never uses API keys; it logs in through `login`.
 
 ## Open work
 
-- **Password and credential changes are not blocked for key-authenticated
-  requests.** `requireInteractiveAuth()` guards only key management and the
-  password policy update; `PUT /api/user/password`,
-  `PUT /api/user/{userId}/password` and user edits that change
-  authentication data do not call it, so a leaked key of an administrator can
-  set passwords. Add the check there (`UserController` / `UserService`).
 - **`securitySchemes` in the OpenAPI contract:** `elza-openapi.yml` declares
   no `apiKey` scheme (`in: header`, `name: X-API-Key`), so generated
   documentation and clients do not know how to authenticate.

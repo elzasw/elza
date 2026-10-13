@@ -1259,6 +1259,7 @@ public class UserService {
         }
 
         if (removeAuthentications.size() > 0) {
+            requireInteractiveAuth();
             authenticationRepository.deleteAll(removeAuthentications);
         }
 
@@ -1389,6 +1390,7 @@ public class UserService {
                             final UsrAuthentication.AuthType authType,
                             final String value,
                             final UsrAuthentication authentication) {
+        requireInteractiveAuth();
         authentication.setUser(user);
         authentication.setAuthType(authType);
         if (authType == UsrAuthentication.AuthType.PASSWORD) {
@@ -1454,6 +1456,7 @@ public class UserService {
                                           @NotEmpty final String newPassword,
                                           @Nullable final Boolean changeRequired,
                                           @Nullable final Boolean neverExpire) {
+        requireInteractiveAuth();
         UsrAuthentication authentication = findAuthentication(user, UsrAuthentication.AuthType.PASSWORD);
         if (authentication == null) {
             throw new BusinessException("Uživatel nemá povolené přihlášení heslem", BaseCode.INVALID_STATE);
@@ -1665,13 +1668,17 @@ public class UserService {
 
     /**
      * Rejects the current request when it was authenticated by an API key. Used by operations
-     * that must never be reachable through a machine credential — password change, API-key
-     * management. The check has no effect when the caller is not logged in (that is caught by
-     * standard authorization).
+     * that must never be reachable through a machine credential — API-key management and every
+     * write of login credentials (password change, setting or removing an authentication of a
+     * user, also when creating one), so that a key cannot be turned into permanent access. The
+     * check has no effect when the caller is not logged in (startup and first-run setup; a
+     * request without login is caught by standard authorization).
      */
     public void requireInteractiveAuth() {
-        UserDetail detail = getLoggedUserDetail();
-        if (detail != null && detail.getAuthenticationMethod() == AuthenticationMethod.API_KEY) {
+        // not getLoggedUserDetail(): it fails for the anonymous request of the first-run setup
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getDetails() instanceof UserDetail detail
+                && detail.getAuthenticationMethod() == AuthenticationMethod.API_KEY) {
             throw new AccessDeniedException(
                     "Tato operace není přípustná při přihlášení API klíčem",
                     Collections.emptyList());

@@ -88,10 +88,24 @@ public class ApiKeyControllerTest extends AbstractControllerTest {
         AdminInfo info = adminByKey.adminInfo();
         assertNotNull(info);
 
-        // 3) Revoke the key
+        // 3) A key must not change login credentials: own password, another user's password
+        UserController.ChangePassword ownPassword = new UserController.ChangePassword();
+        ownPassword.setOldPassword(USR_PSWD);
+        ownPassword.setNewPassword("changed-by-key");
+        put(spec -> spec.header(ApiKeyProperties.DEFAULT_HEADER_NAME, token).body(ownPassword),
+            CHANGE_PASSWORD_USER, HttpStatus.FORBIDDEN);
+        UserController.ChangePassword otherPassword = new UserController.ChangePassword();
+        otherPassword.setNewPassword("changed-by-key");
+        put(spec -> spec.header(ApiKeyProperties.DEFAULT_HEADER_NAME, token).body(otherPassword)
+                .pathParam("userId", owner.getId()),
+            CHANGE_PASSWORD, HttpStatus.FORBIDDEN);
+        // the password is unchanged
+        login(USR_NAME, USR_PSWD);
+
+        // 4) Revoke the key
         userApi.apiKeysRevoke(keyPk);
 
-        // 4) The same call now fails — a revoked key is not accepted anymore.
+        // 5) The same call now fails — a revoked key is not accepted anymore.
         HttpClientErrorException ex = assertThrows(HttpClientErrorException.class, adminByKey::adminInfo);
         assertEquals(HttpStatus.UNAUTHORIZED.value(), ex.getStatusCode().value());
     }
