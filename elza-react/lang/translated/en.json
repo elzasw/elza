@@ -8385,6 +8385,10 @@
     "defaultMessage": "System",
     "srcHash": "YXO4Du8RKZTK"
   },
+  "publication.error.title": {
+    "defaultMessage": "Error message",
+    "srcHash": "LsvOIxfwdqnc"
+  },
   "publication.state.FETCHED": {
     "defaultMessage": "Fetched",
     "srcHash": "Kfq47bGGJOHQ"
@@ -8505,6 +8509,10 @@
     "defaultMessage": "New publication system",
     "srcHash": "Iq-OuY10Pc1a"
   },
+  "publication.table.error.hint": {
+    "defaultMessage": "Click to show the full message",
+    "srcHash": "Wa5ukmmwe7wr"
+  },
   "publication.table.menu.copy": {
     "defaultMessage": "Copy to...",
     "srcHash": "TrAUJO6JN4TZ"
@@ -8516,6 +8524,10 @@
   "publication.table.menu.download": {
     "defaultMessage": "Download",
     "srcHash": "xxAzjqAuIzkG"
+  },
+  "publication.table.menu.error": {
+    "defaultMessage": "Show error",
+    "srcHash": "NpDaypnO5HHo"
   },
   "registry.add.type": {
     "defaultMessage": "Entity class",

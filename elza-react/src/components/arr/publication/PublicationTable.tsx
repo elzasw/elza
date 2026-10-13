@@ -19,6 +19,7 @@ import {
     TableHeaderCell,
     TableRow,
     TableSelectionCell,
+    Link,
     Tooltip,
     useTableColumnSizing_unstable,
     useTableFeatures,
@@ -27,7 +28,7 @@ import {
     createTableColumn,
     mergeClasses,
 } from '@fluentui/react-components';
-import { MoreHorizontalRegular, ArrowDownloadRegular, CopyRegular, DeleteRegular } from '@fluentui/react-icons';
+import { MoreHorizontalRegular, ArrowDownloadRegular, CopyRegular, DeleteRegular, ErrorCircleRegular } from '@fluentui/react-icons';
 import { defineMessages, FormattedMessage, useIntl } from 'react-intl';
 import { tableMessages } from "components/shared/lang/tableMessages";
 import { PublicationDetail, PublicationType, PublicationStateInternal } from 'elza-api';
@@ -39,12 +40,18 @@ import Pagination from 'components/shared/pagination/Pagination';
 import { Api } from 'api/api';
 import { downloadBlob } from 'actions/global/download';
 import { useTableStyles } from './styles';
+import { PublicationErrorDialog } from './PublicationErrorDialog';
 
 const messages = defineMessages({
     menuDownload: { id: 'publication.table.menu.download', defaultMessage: 'Stáhnout' },
     menuCopy:     { id: 'publication.table.menu.copy',     defaultMessage: 'Kopírovat do...' },
     menuDelete:   { id: 'publication.table.menu.delete',   defaultMessage: 'Odstranit' },
+    menuError:    { id: 'publication.table.menu.error',    defaultMessage: 'Zobrazit chybu' },
+    errorHint:    { id: 'publication.table.error.hint',    defaultMessage: 'Kliknutím zobrazíte celou zprávu' },
 });
+
+/** Longer messages are cut in the tooltip; the dialog always shows the full text. */
+const ERROR_TOOLTIP_MAX_LENGTH = 500;
 
 const DEFAULT_PAGE_SIZE = 25;
 
@@ -73,6 +80,7 @@ function PublicationTable({ fundId, publicationTypes }: Props) {
     const [items, setItems] = useState<PublicationDetail[]>([]);
     const [totalCount, setTotalCount] = useState(0);
     const [refreshToken, setRefreshToken] = useState(0);
+    const [errorDetail, setErrorDetail] = useState<PublicationDetail | null>(null);
     useEffect(() => {
         (async () => {
             const {data} = await Api.publication.fundPublicationListFundPublications(fundId, undefined, from, pageSize);
@@ -99,6 +107,30 @@ function PublicationTable({ fundId, publicationTypes }: Props) {
                     return (
                         <Tooltip content={dateTimeStr} relationship="label" appearance="inverted">
                             <span>{dateStr}</span>
+                        </Tooltip>
+                    );
+                }
+                if (def.key === 'errorMessage' && item.errorMessage) {
+                    const message = item.errorMessage;
+                    const shortened = message.length > ERROR_TOOLTIP_MAX_LENGTH
+                        ? `${message.substring(0, ERROR_TOOLTIP_MAX_LENGTH)}…`
+                        : message;
+                    return (
+                        <Tooltip
+                            content={{
+                                className: classes.errorTooltip,
+                                children: <>{shortened}<div className={classes.errorTooltipHint}>{formatMessage(messages.errorHint)}</div></>,
+                            }}
+                            relationship="description"
+                            appearance="inverted"
+                        >
+                            <Link
+                                as="button"
+                                className={classes.errorLink}
+                                onClick={(e: MouseEvent) => { e.stopPropagation(); setErrorDetail(item); }}
+                            >
+                                {message}
+                            </Link>
                         </Tooltip>
                     );
                 }
@@ -296,6 +328,9 @@ function PublicationTable({ fundId, publicationTypes }: Props) {
                                                             </Menu>
                                                         );
                                                 })()}
+                                                <MenuItem disabled={!item.errorMessage} icon={<ErrorCircleRegular />} onClick={() => setErrorDetail(item)}>
+                                                    <FormattedMessage {...messages.menuError} />
+                                                </MenuItem>
                                                 <MenuItem icon={<DeleteRegular />} onClick={() => handleDelete(item)}>
                                                     <FormattedMessage {...messages.menuDelete} />
                                                 </MenuItem>
@@ -315,6 +350,7 @@ function PublicationTable({ fundId, publicationTypes }: Props) {
                 onPageChange={(nextFrom) => setFrom(nextFrom)}
                 onPageSizeChange={(newPageSize) => { setPageSize(newPageSize); setFrom(0); }}
             />
+            <PublicationErrorDialog publication={errorDetail} onClose={() => setErrorDetail(null)} />
         </div>
     );
 };
