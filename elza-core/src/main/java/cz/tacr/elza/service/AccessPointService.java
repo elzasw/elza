@@ -4437,6 +4437,10 @@ public class AccessPointService {
     /**
      * Lock AccessPoint for write access
      *
+     * An access point has to be locked explicitly before it is modified. The lock is taken
+     * at the beginning of the transaction, before any change happens; the ApAccessPoint row
+     * is the lock object for the whole entity (its states, parts and items).
+     *
      * @param accessPoint
      */
     public void lockWrite(ApAccessPoint accessPoint) {

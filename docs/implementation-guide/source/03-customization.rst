@@ -274,4 +274,4 @@ allows it again where the extension is active.
    of the customized package; contributing UI settings other than
    ``output-defaults`` for the customized rule set; extending a structured type of another package; removing a
    scenario of a new unit of description; renaming codes. See the
-   development plan :file:`docs/rules-customization-layer-plan.md`.
+   design document :file:`docs/design/rules-customization-layer.md`.
