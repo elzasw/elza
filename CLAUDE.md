@@ -96,8 +96,8 @@ mvn exec:exec -Pnpm-install
 # Start backend (in elza-web/)
 mvn spring-boot:run
 
-# Start frontend dev server (in elza-react/, Node.js v17+)
-mvn exec:exec -Pfrontend-dev-legacy
+# Start frontend dev server (in elza-react/, Node.js 20+; runs `npm start`)
+mvn exec:exec -Pfrontend-dev
 
 # Release build with React
 mvn -Prelease install
