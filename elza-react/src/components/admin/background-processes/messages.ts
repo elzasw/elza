@@ -25,6 +25,7 @@ export const messages = defineMessages({
     runningThreads: {id: 'admin.bulk.title.runningThreads', defaultMessage: 'Běžící vlákna'},
     noRunningThread: {id: 'admin.bulk.title.noRunningThread', defaultMessage: 'Neběží žádné vlákno'},
     beginTime: {id: 'admin.bulk.title.beginTime', defaultMessage: 'Běží od {0}'},
+    starting: {id: 'admin.bulk.title.starting', defaultMessage: 'Spouští se'},
     requestId: {id: 'admin.bulk.title.requestId', defaultMessage: 'ID fronty #{0}'},
     currentId: {id: 'admin.bulk.title.currentId', defaultMessage: 'ID vazby #{0}'},
     queueEmpty: {id: 'admin.bulk.detail.queue.empty', defaultMessage: 'Ve frontě nejsou žádné požadavky'},

@@ -179,6 +179,10 @@
     "defaultMessage": "Running threads",
     "srcHash": "jRrMV0X_4DcG"
   },
+  "admin.bulk.title.starting": {
+    "defaultMessage": "Starting",
+    "srcHash": "5wFN76sQIPQ9"
+  },
   "admin.bulk.title.totalThreadCount": {
     "defaultMessage": "Threads in total",
     "srcHash": "LhV5444RkALK"

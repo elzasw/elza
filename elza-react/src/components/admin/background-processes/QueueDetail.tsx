@@ -75,14 +75,14 @@ function RunningThreads({queue}: {queue: AsyncRequestInfo}) {
                 return (
                     <div className={styles.threadRow} key={thread.requestId ?? index}>
                         <span>
-                            <FormattedMessage
-                                {...messages.beginTime}
-                                values={{
-                                    0: beginTime
-                                        ? intl.formatDate(beginTime, {dateStyle: 'short', timeStyle: 'short'})
-                                        : thread.beginTime,
-                                }}
-                            />
+                            {beginTime ? (
+                                <FormattedMessage
+                                    {...messages.beginTime}
+                                    values={{0: intl.formatDate(beginTime, {dateStyle: 'short', timeStyle: 'short'})}}
+                                />
+                            ) : (
+                                <FormattedMessage {...messages.starting} />
+                            )}
                         </span>
                         <span>
                             <FormattedMessage {...messages.requestId} values={{0: thread.requestId}} />
