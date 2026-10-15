@@ -6,10 +6,10 @@ import { useEffect } from 'react';
 import type { MouseEvent } from 'react';
 import { Dropdown } from 'react-bootstrap';
 import { FormattedMessage } from 'react-intl';
-import FundTreeLazy from './FundTreeLazy';
-import { createFundRoot, getParentNode } from './ArrUtils';
-import { nodeMessages } from './nodeMessages';
-import { FUND_TREE_AREA_MOVEMENTS_RIGHT } from 'actions/constants/ActionTypes';
+import FundTreeLazy from '../FundTreeLazy';
+import { createFundRoot, getParentNode } from '../ArrUtils';
+import { nodeMessages } from '../nodeMessages';
+import { FUND_TREE_AREA_MOVEMENTS_LEFT } from 'actions/constants/ActionTypes';
 import {
     fundTreeCollapse,
     fundTreeFetchIfNeeded,
@@ -44,9 +44,13 @@ interface Props {
     multipleSelection: boolean;
 }
 
-export type FundTreeMovementsRightProps = Props;
+export type FundTreeMovementsLeftProps = Props;
 
-export function FundTreeMovementsRight(props: Props) {
+function unFocus() {
+    window.getSelection()?.removeAllRanges();
+}
+
+export function FundTreeMovementsLeft(props: Props) {
     const {
         fund,
         versionId,
@@ -65,7 +69,7 @@ export function FundTreeMovementsRight(props: Props) {
     // fundTreeFetchIfNeeded decides from these tree store values whether to load the tree,
     // so the check runs again whenever one of them changes.
     useEffect(() => {
-        dispatch(fundTreeFetchIfNeeded(FUND_TREE_AREA_MOVEMENTS_RIGHT, versionId, expandedIds, undefined));
+        dispatch(fundTreeFetchIfNeeded(FUND_TREE_AREA_MOVEMENTS_LEFT, versionId, expandedIds, undefined));
     }, [
         dispatch,
         versionId,
@@ -81,26 +85,26 @@ export function FundTreeMovementsRight(props: Props) {
     ]);
 
     function handleFulltextChange(value: string) {
-        dispatch(fundTreeFulltextChange(FUND_TREE_AREA_MOVEMENTS_RIGHT, versionId, value));
+        dispatch(fundTreeFulltextChange(FUND_TREE_AREA_MOVEMENTS_LEFT, versionId, value));
     }
 
     function handleFulltextSearch() {
-        dispatch(fundTreeFulltextSearch(FUND_TREE_AREA_MOVEMENTS_RIGHT, versionId));
+        dispatch(fundTreeFulltextSearch(FUND_TREE_AREA_MOVEMENTS_LEFT, versionId));
     }
 
     function handleFulltextPrevItem() {
-        dispatch(fundTreeFulltextPrevItem(FUND_TREE_AREA_MOVEMENTS_RIGHT, versionId));
+        dispatch(fundTreeFulltextPrevItem(FUND_TREE_AREA_MOVEMENTS_LEFT, versionId));
     }
 
     function handleFulltextNextItem() {
-        dispatch(fundTreeFulltextNextItem(FUND_TREE_AREA_MOVEMENTS_RIGHT, versionId));
+        dispatch(fundTreeFulltextNextItem(FUND_TREE_AREA_MOVEMENTS_LEFT, versionId));
     }
 
     function handleOpenCloseNode(node: TreeNodeVO, expand: boolean) {
         if (expand) {
-            dispatch(fundTreeNodeExpand(FUND_TREE_AREA_MOVEMENTS_RIGHT, node));
+            dispatch(fundTreeNodeExpand(FUND_TREE_AREA_MOVEMENTS_LEFT, node));
         } else {
-            dispatch(fundTreeNodeCollapse(FUND_TREE_AREA_MOVEMENTS_RIGHT, versionId, node));
+            dispatch(fundTreeNodeCollapse(FUND_TREE_AREA_MOVEMENTS_LEFT, versionId, node));
         }
     }
 
@@ -119,8 +123,8 @@ export function FundTreeMovementsRight(props: Props) {
             </ul>
         );
 
-        dispatch(fundTreeFocusNode(FUND_TREE_AREA_MOVEMENTS_RIGHT, versionId, node));
-        dispatch(contextMenuShow(FundTreeMovementsRight, menu, { x: e.clientX, y: e.clientY }));
+        dispatch(fundTreeFocusNode(FUND_TREE_AREA_MOVEMENTS_LEFT, versionId, node));
+        dispatch(contextMenuShow(FundTreeMovementsLeft, menu, { x: e.clientX, y: e.clientY }));
     }
 
     function handleShowInForm(node: TreeNodeVO) {
@@ -132,14 +136,17 @@ export function FundTreeMovementsRight(props: Props) {
     /**
      * Klik na uzel.
      */
-    function handleNodeClick(node: TreeNodeVO, ensureItemVisible: boolean) {
+    function handleNodeClick(node: TreeNodeVO, ensureItemVisible: boolean, e: MouseEvent) {
+        if (e.shiftKey) {
+            unFocus();
+        }
         dispatch(
             fundTreeSelectNode(
-                FUND_TREE_AREA_MOVEMENTS_RIGHT,
+                FUND_TREE_AREA_MOVEMENTS_LEFT,
                 versionId,
                 node.id,
-                false,
-                false,
+                e.ctrlKey,
+                e.shiftKey,
                 null,
                 ensureItemVisible
             )
@@ -150,7 +157,7 @@ export function FundTreeMovementsRight(props: Props) {
      * Zabalení stromu
      */
     function handleCollapse() {
-        dispatch(fundTreeCollapse(FUND_TREE_AREA_MOVEMENTS_RIGHT, versionId, fund));
+        dispatch(fundTreeCollapse(FUND_TREE_AREA_MOVEMENTS_LEFT, versionId, fund));
     }
 
     return (
