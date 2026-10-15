@@ -25,6 +25,7 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.CloseShieldOutputStream;
 import org.apache.commons.lang3.Validate;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.io.RandomAccessReadBufferedFile;
@@ -483,7 +484,9 @@ public class DmsService {
         try {
             try (FileOutputStream fos = new FileOutputStream(tmp.toFile());
                  DigestOutputStream dos = new DigestOutputStream(new BufferedOutputStream(fos), digest)) {
-                dataProvider.accept(dos);
+                // The provider may close its stream (e.g. to finish a Base64 encoder);
+                // the shield keeps the descriptor open for the fsync below.
+                dataProvider.accept(CloseShieldOutputStream.wrap(dos));
                 dos.flush();
                 fos.getFD().sync();
             }
