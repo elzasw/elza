@@ -99,6 +99,13 @@ function HistoryProbe(): null {
     return null;
 }
 
+function currentUrl(): string {
+    if (!testHistory) {
+        throw new Error('Historie routeru není zachycena');
+    }
+    return testHistory.location.pathname + testHistory.location.search;
+}
+
 function currentSearch(): string {
     if (!testHistory) {
         throw new Error('Historie routeru není zachycena');
@@ -106,15 +113,25 @@ function currentSearch(): string {
     return testHistory.location.search;
 }
 
-function createStoreWithFund(options?: { left?: number[]; right?: number; versionId?: number }): TestStore {
+interface StoreOptions {
+    left?: number[];
+    right?: number;
+    versionId?: number;
+    /** A locked version, set on the tab the way getFundFromFundAndVersion does. */
+    lockDate?: string;
+}
+
+function createStoreWithFund(options?: StoreOptions): TestStore {
     const base = createTestStore().getState() as { arrRegion: object };
     const versionId = options?.versionId ?? VERSION_ID;
+    const lockDate = options?.lockDate ?? null;
     const fund: TestFund = fundInitState({
         id: FUND_ID,
         versionId,
         name: 'Fond Testovací',
-        closed: false,
-        activeVersion: { id: versionId, lockDate: null, issues: [] },
+        closed: lockDate != null,
+        lockDate,
+        activeVersion: { id: versionId, lockDate, issues: [] },
     });
     const leftSelectedIds: Record<number, boolean> = {};
     options?.left?.forEach((nodeId) => {
@@ -205,11 +222,14 @@ afterEach(() => {
     vi.restoreAllMocks();
 });
 
-async function renderPage(route: string, store: TestStore) {
+const MOVEMENTS_PATH = `${URL_FUND}/:id/${MOVEMENTS}`;
+const VERSION_MOVEMENTS_PATH = `${URL_FUND}/:id/v/:versionId/${MOVEMENTS}`;
+
+async function renderPage(route: string, store: TestStore, path = MOVEMENTS_PATH) {
     const result = renderWithProviders(
         <ShortcutsProvider>
             <HistoryProbe />
-            <Route path={`${URL_FUND}/:id/${MOVEMENTS}`} component={ArrMovementsPage} />
+            <Route path={path} component={ArrMovementsPage} />
         </ShortcutsProvider>,
         { store, route }
     );
@@ -344,5 +364,56 @@ describe('ArrMovementsPage – výběr ve stromech a URL', () => {
         expect(urlChanges).toEqual([]);
         expect(nodeElement(container, 'left', 'Spis 1')).toHaveClass('active');
         expect(nodeElement(container, 'right', 'Série B')).toHaveClass('active');
+    });
+
+    it('neplatné l z URL výběr vlevo nemění a URL jedním přepsáním srovná se skutečným výběrem', async () => {
+        const store = createStoreWithFund({ left: [2] });
+        const selectActions = spyOnSelectActions(store);
+        await renderPage(`/fund/${FUND_ID}/movements?l=abc&r=3`, store);
+
+        expect(selectActions()).toEqual([{ area: types.FUND_TREE_AREA_MOVEMENTS_RIGHT, nodeId: 3 }]);
+        expect(activeFund(store).fundTreeMovementsLeft.selectedIds).toEqual({ 2: true });
+        expect(activeFund(store).fundTreeMovementsRight.selectedId).toBe(3);
+        expect(urlChanges).toEqual([{ search: '?l=2&r=3', action: 'REPLACE' }]);
+    });
+
+    it('uzel z URL, který server ve stromu nevrátí (smazaný), z výběru vypadne a z URL zmizí l', async () => {
+        const store = createStoreWithFund();
+        await renderPage(`/fund/${FUND_ID}/movements?l=99`, store);
+
+        expect(activeFund(store).fundTreeMovementsLeft.selectedIds).toEqual({});
+        expect(currentSearch()).toBe('');
+        expect(urlChanges).toEqual([{ search: '', action: 'REPLACE' }]);
+        // the missing node is asked for once, not again after every response
+        expect(treeRequests.filter((request) => request.includeIds.includes(99))).toHaveLength(1);
+    });
+
+    it('v uzavřené verzi z cesty /v/:versionId vybere uzel z URL a adresu ponechá', async () => {
+        const closedVersionId = 6;
+        server.use(
+            http.get(`/api/arrangement/getFund/${FUND_ID}`, () =>
+                HttpResponse.json({
+                    id: FUND_ID,
+                    name: 'Fond Testovací',
+                    versions: [
+                        { id: VERSION_ID, lockDate: null },
+                        { id: closedVersionId, lockDate: '2026-01-01T00:00:00' },
+                    ],
+                })
+            )
+        );
+        const store = createStoreWithFund({ versionId: closedVersionId, lockDate: '2026-01-01T00:00:00' });
+        const { container } = await renderPage(
+            `/fund/${FUND_ID}/v/${closedVersionId}/movements?l=4`,
+            store,
+            VERSION_MOVEMENTS_PATH
+        );
+
+        expect(activeFund(store)).toMatchObject({ versionId: closedVersionId, closed: true });
+        expect(activeFund(store).fundTreeMovementsLeft.selectedIds).toEqual({ 4: true });
+        expect(treeRequests).toContainEqual(expect.objectContaining({ versionId: closedVersionId, includeIds: [4] }));
+        expect(currentUrl()).toBe(`/fund/${FUND_ID}/v/${closedVersionId}/movements?l=4`);
+        expect(urlChanges).toEqual([]);
+        expect(nodeElement(container, 'left', 'Spis 1')).toHaveClass('active');
     });
 });

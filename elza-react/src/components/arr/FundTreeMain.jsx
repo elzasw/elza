@@ -117,6 +117,8 @@ class FundTreeMain extends React.Component {
 
         const dataGridUrl = urlFundGrid(fund.id, getFundVersion(fund), undefined, node.id);
         const movementsUrl = urlFundMovements(fund.id, getFundVersion(fund), node.id);
+        // the server refuses moves in a closed version
+        const isMoveAllowed = !readMode && !fund.closed;
 
         const menu = (
             <ul className="dropdown-menu">
@@ -126,7 +128,7 @@ class FundTreeMain extends React.Component {
                 <Dropdown.Item as={Link} to={dataGridUrl} onClick={() => this.props.dispatch(contextMenuHide())}>
                     {<FormattedMessage {...arrPanelMessages.fundTreeActionOpenInDataGrid} />}
                 </Dropdown.Item>
-                {!readMode && (
+                {isMoveAllowed && (
                     <Dropdown.Item as={Link} to={movementsUrl} onClick={() => this.props.dispatch(contextMenuHide())}>
                         {<FormattedMessage {...arrPanelMessages.fundTreeActionMove} />}
                     </Dropdown.Item>

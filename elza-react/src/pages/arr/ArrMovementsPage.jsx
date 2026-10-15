@@ -30,7 +30,7 @@ function getSelectedNodeIds(fund) {
     const leftSelectedIds = Object.keys(fund.fundTreeMovementsLeft.selectedIds);
     const isSingleLeftSelection = leftSelectedIds.length === 1;
     return {
-        leftNodeId: isSingleLeftSelection ? parseInt(leftSelectedIds[0]) : undefined,
+        leftNodeId: isSingleLeftSelection ? parseInt(leftSelectedIds[0], 10) : undefined,
         rightNodeId: fund.fundTreeMovementsRight.selectedId ?? undefined,
     };
 }
