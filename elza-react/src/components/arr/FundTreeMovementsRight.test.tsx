@@ -53,6 +53,7 @@ type TestFund = Fund & { fundTreeMovementsRight: MovementsTree };
 interface TestState {
     arrRegion: { funds: TestFund[] };
     contextMenu: { visible: boolean; menu: unknown; position: { x: number; y: number } | null };
+    router: { navigateTo: string | null; method: string | null };
 }
 
 function treeNode(id: number, depth: number, name: string, hasChildren: boolean): TreeNodeVO {
@@ -259,7 +260,7 @@ describe('FundTreeMovementsRight', () => {
         expect(movementsTree(store).expandedIds).toEqual({ 1: true });
     });
 
-    it('pravé tlačítko zaměří uzel a zobrazí prázdné kontextové menu na pozici kurzoru', async () => {
+    it('pravé tlačítko zaměří uzel a v menu na pozici kurzoru nabídne zobrazení JP ve formuláři v Pořádání', async () => {
         const { store } = await renderTree();
 
         const label = nodeElement('Série B').querySelector('.node-label');
@@ -272,13 +273,17 @@ describe('FundTreeMovementsRight', () => {
         const { contextMenu } = store.getState() as TestState;
         expect(contextMenu.visible).toBe(true);
         expect(contextMenu.position).toEqual({ x: 30, y: 40 });
-        const menu = contextMenu.menu;
-        expect(isValidElement(menu)).toBe(true);
-        if (isValidElement<{ className?: string; children?: unknown }>(menu)) {
-            expect(menu.type).toBe('ul');
-            expect(menu.props.className).toBe('dropdown-menu');
-            expect(menu.props.children).toBeUndefined();
+        if (!isValidElement(contextMenu.menu)) {
+            throw new Error('Kontextové menu není element');
         }
+
+        renderWithProviders(contextMenu.menu, { store });
+        fireEvent.click(screen.getByText('Zobrazit ve formuláři JP'));
+
+        const state = store.getState() as TestState;
+        expect(state.contextMenu.visible).toBe(false);
+        expect(state.router.navigateTo).toMatch(/\/node\/3$/);
+        expect(state.router.method).toBe('REPLACE');
         expect(treeRequests).toHaveLength(1);
     });
 

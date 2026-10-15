@@ -4,7 +4,11 @@
 
 import { useEffect } from 'react';
 import type { MouseEvent } from 'react';
+import { Dropdown } from 'react-bootstrap';
+import { FormattedMessage } from 'react-intl';
 import FundTreeLazy from './FundTreeLazy';
+import { createFundRoot, getParentNode } from './ArrUtils';
+import { nodeMessages } from './nodeMessages';
 import { FUND_TREE_AREA_MOVEMENTS_RIGHT } from 'actions/constants/ActionTypes';
 import {
     fundTreeCollapse,
@@ -18,7 +22,8 @@ import {
     fundTreeNodeExpand,
     fundTreeSelectNode,
 } from 'actions/arr/fundTree';
-import { contextMenuShow } from 'actions/global/contextMenu';
+import { fundSelectSubNode } from 'actions/arr/node';
+import { contextMenuHide, contextMenuShow } from 'actions/global/contextMenu';
 import type { Fund } from 'typings/store';
 import type { TreeNodeVO } from 'typings/Outputs';
 import { useAppThunkDispatch } from 'utils/hooks';
@@ -106,10 +111,22 @@ export function FundTreeMovementsRight(props: Props) {
         e.preventDefault();
         e.stopPropagation();
 
-        const menu = <ul className="dropdown-menu"></ul>;
+        const menu = (
+            <ul className="dropdown-menu">
+                <Dropdown.Item onClick={() => handleShowInForm(node)}>
+                    <FormattedMessage {...nodeMessages.fundBulkModificationsActionOpen} />
+                </Dropdown.Item>
+            </ul>
+        );
 
         dispatch(fundTreeFocusNode(FUND_TREE_AREA_MOVEMENTS_RIGHT, versionId, node));
         dispatch(contextMenuShow(FundTreeMovementsRight, menu, { x: e.clientX, y: e.clientY }));
+    }
+
+    function handleShowInForm(node: TreeNodeVO) {
+        dispatch(contextMenuHide());
+        const parentNode = getParentNode(node, nodes) ?? createFundRoot(fund);
+        dispatch(fundSelectSubNode(versionId, node.id, parentNode, false, null, true, undefined, undefined, true));
     }
 
     /**

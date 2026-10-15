@@ -7,6 +7,8 @@ import {indexById} from '../../stores/app/utils';
 import {connect} from 'react-redux';
 import {getNodeParent, getNodeParents} from '../../components/arr/ArrUtils';
 import {moveNodes} from '../../actions/arr/nodes';
+import {fundTreeSelectNode} from '../../actions/arr/fundTree';
+import * as types from '../../actions/constants/ActionTypes';
 
 import ArrParentPage from './ArrParentPage';
 
@@ -15,7 +17,7 @@ import { FormattedMessage } from 'react-intl';
 import { arrPageMessages } from './messages';
 import {FundTreeMovementsLeft, FundTreeMovementsRight, Ribbon} from '../../components/index';
 import {Button} from '../../components/ui';
-import {urlFundMovements, getFundVersion} from "../../constants";
+import {urlFundMovements, getFundVersion, fundMovementsSearch, parseFundMovementsSearch} from "../../constants";
 
 /**
  * Stránka archivních pomůcek.
@@ -23,8 +25,19 @@ import {urlFundMovements, getFundVersion} from "../../constants";
 
 const AREA = "ARR_MOVEMENTS";
 
+/** The left tree selects several nodes; only a single one can be expressed in the URL. */
+function getSelectedNodeIds(fund) {
+    const leftSelectedIds = Object.keys(fund.fundTreeMovementsLeft.selectedIds);
+    const isSingleLeftSelection = leftSelectedIds.length === 1;
+    return {
+        leftNodeId: isSingleLeftSelection ? parseInt(leftSelectedIds[0]) : undefined,
+        rightNodeId: fund.fundTreeMovementsRight.selectedId ?? undefined,
+    };
+}
+
 const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
     area = AREA;
+    selectionFromUrlAppliedToVersionId = null;
 
     constructor(props) {
         super(props, 'fa-page');
@@ -35,6 +48,60 @@ const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
     componentDidMount() {
         super.componentDidMount()
         this.resolveUrls()
+        this.syncSelectionWithUrl(this.props.location.search);
+    }
+
+    componentDidUpdate(prevProps) {
+        this.syncSelectionWithUrl(prevProps.location.search);
+    }
+
+    /**
+     * Keeps the query (?l=…&r=…) and the selection in the movements trees in sync. A changed query is applied
+     * to the trees once the fund from the URL is active; after that every selection change is written back.
+     * The query is applied again when the fund version changes, because resolving the URL can replace a tab
+     * restored with an outdated version by a fresh one with empty trees.
+     */
+    syncSelectionWithUrl(prevSearch) {
+        if (this.props.location.search !== prevSearch) {
+            this.selectionFromUrlAppliedToVersionId = null;
+        }
+
+        const fund = this.getActiveFund(this.props);
+        const isUrlFundActive = fund != null && this.isCurrentFundActive();
+        if (!isUrlFundActive) {
+            return;
+        }
+
+        const isSelectionFromUrlApplied = this.selectionFromUrlAppliedToVersionId === fund.versionId;
+        if (!isSelectionFromUrlApplied) {
+            this.selectionFromUrlAppliedToVersionId = fund.versionId;
+            this.applySelectionFromUrl(fund);
+        } else {
+            this.writeSelectionToUrl(fund);
+        }
+    }
+
+    applySelectionFromUrl(fund) {
+        const {dispatch, location} = this.props;
+        const urlSelection = parseFundMovementsSearch(location.search);
+        const selection = getSelectedNodeIds(fund);
+
+        if (urlSelection.leftNodeId != null && urlSelection.leftNodeId !== selection.leftNodeId) {
+            dispatch(fundTreeSelectNode(types.FUND_TREE_AREA_MOVEMENTS_LEFT, fund.versionId, urlSelection.leftNodeId, false, false, null, true));
+        }
+        if (urlSelection.rightNodeId != null && urlSelection.rightNodeId !== selection.rightNodeId) {
+            dispatch(fundTreeSelectNode(types.FUND_TREE_AREA_MOVEMENTS_RIGHT, fund.versionId, urlSelection.rightNodeId, false, false, null, true));
+        }
+    }
+
+    writeSelectionToUrl(fund) {
+        const {history, location} = this.props;
+        const {leftNodeId, rightNodeId} = getSelectedNodeIds(fund);
+        const search = fundMovementsSearch(leftNodeId, rightNodeId);
+
+        if (search !== location.search) {
+            history.replace({...location, search});
+        }
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {

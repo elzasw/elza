@@ -7361,6 +7361,10 @@
     "defaultMessage": "Download CSV",
     "srcHash": "1LaqY8gF6JE1"
   },
+  "fundTree.action.move": {
+    "defaultMessage": "Move",
+    "srcHash": "730fZgopGFE4"
+  },
   "fundTree.action.open": {
     "defaultMessage": "Open in the current tab",
     "srcHash": "aVnnU1TSMXvq"

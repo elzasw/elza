@@ -307,8 +307,38 @@ export const urlFundPublication = (fundId: number, versionId?: number) => {
     return fundSub(fundId, versionId, PUBLICATION);
 }
 
-export const urlFundMovements = (fundId: number, versionId?: number) => {
-    return fundSub(fundId, versionId, MOVEMENTS);
+const MOVEMENTS_LEFT_PARAM = "l";
+const MOVEMENTS_RIGHT_PARAM = "r";
+
+/** Movements page of a fund; leftNodeId / rightNodeId select a node in the left (source) / right (target) tree. */
+export const urlFundMovements = (fundId: number, versionId?: number, leftNodeId?: number, rightNodeId?: number) => {
+    return fundSub(fundId, versionId, MOVEMENTS) + fundMovementsSearch(leftNodeId, rightNodeId);
+}
+
+export const fundMovementsSearch = (leftNodeId?: number, rightNodeId?: number) => {
+    const query = new URLSearchParams();
+    if (leftNodeId != null) {
+        query.set(MOVEMENTS_LEFT_PARAM, String(leftNodeId));
+    }
+    if (rightNodeId != null) {
+        query.set(MOVEMENTS_RIGHT_PARAM, String(rightNodeId));
+    }
+    const search = query.toString();
+    return search ? "?" + search : "";
+}
+
+const parseNodeId = (value: string | null) => {
+    const nodeId = Number(value);
+    const isValidNodeId = value != null && Number.isInteger(nodeId) && nodeId > 0;
+    return isValidNodeId ? nodeId : undefined;
+}
+
+export const parseFundMovementsSearch = (search: string) => {
+    const query = new URLSearchParams(search);
+    return {
+        leftNodeId: parseNodeId(query.get(MOVEMENTS_LEFT_PARAM)),
+        rightNodeId: parseNodeId(query.get(MOVEMENTS_RIGHT_PARAM)),
+    };
 }
 
 export const urlFundOutputs = (fundId: number, versionId?: number, outputId?: number) => {

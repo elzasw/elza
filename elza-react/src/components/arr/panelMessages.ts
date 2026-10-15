@@ -46,6 +46,7 @@ export const arrPanelMessages = defineMessages({
     structureModalSettingsExtensions: { id: "arr.structure.modal.settings.extensions", defaultMessage: "Rozšíření" },
     structureModalSettingsNoResults: { id: "arr.structure.modal.settings.noResults", defaultMessage: "Nejsou dostupná žádná rozšíření" },
     syncNodesChildrenNodes: { id: "arr.syncNodes.childrenNodes", defaultMessage: "Včetně podřízených" },
+    fundTreeActionMove: { id: "fundTree.action.move", defaultMessage: "Přesunout" },
     fundTreeActionOpenInDataGrid: { id: "fundTree.action.openInDataGrid", defaultMessage: "Otevřít v tabulce" },
     fundTreeActionOpenInNewTab: { id: "fundTree.action.openInNewTab", defaultMessage: "Otevřít v nové záložce" },
     fundTreeCollapseAll: { id: "fundTree.collapseAll", defaultMessage: "Sbalit vše" },
