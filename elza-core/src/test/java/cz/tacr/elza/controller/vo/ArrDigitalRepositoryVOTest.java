@@ -112,6 +112,47 @@ public class ArrDigitalRepositoryVOTest {
     }
 
     @Test
+    void createEntity_da_keepsFileTransferSettings() {
+        ArrDigitalRepositoryVO vo = createVO(DigitalRepositoryType.DA);
+        vo.setFileTransferUrl(" https://ft.example/transfer ");
+        vo.setFileTransferType(" GetMetadata_ELZA ");
+
+        ArrDigitalRepository entity = (ArrDigitalRepository) vo.createEntity(null);
+
+        assertEquals("https://ft.example/transfer", entity.getFileTransferUrl());
+        assertEquals("GetMetadata_ELZA", entity.getFileTransferType());
+
+        ArrDigitalRepositoryVO copy = ArrDigitalRepositoryVO.newInstance(entity);
+        assertEquals("https://ft.example/transfer", copy.getFileTransferUrl());
+        assertEquals("GetMetadata_ELZA", copy.getFileTransferType());
+    }
+
+    /** An emptied field returns the repository to the derived endpoint and no type. */
+    @Test
+    void createEntity_da_blankFileTransferSettingsAreCleared() {
+        ArrDigitalRepositoryVO vo = createVO(DigitalRepositoryType.DA);
+        vo.setFileTransferUrl("  ");
+        vo.setFileTransferType("");
+
+        ArrDigitalRepository entity = (ArrDigitalRepository) vo.createEntity(null);
+
+        assertNull(entity.getFileTransferUrl());
+        assertNull(entity.getFileTransferType());
+    }
+
+    @Test
+    void createEntity_otherType_ignoresFileTransferSettings() {
+        ArrDigitalRepositoryVO vo = createVO(DigitalRepositoryType.WSDL);
+        vo.setFileTransferUrl("https://ft.example/transfer");
+        vo.setFileTransferType("GetMetadata_ELZA");
+
+        ArrDigitalRepository entity = (ArrDigitalRepository) vo.createEntity(null);
+
+        assertNull(entity.getFileTransferUrl());
+        assertNull(entity.getFileTransferType());
+    }
+
+    @Test
     void createEntity_da_zeroSyncDelayDisablesSynchronization() {
         ArrDigitalRepositoryVO vo = createVO(DigitalRepositoryType.DA);
         vo.setSyncDelay(0);

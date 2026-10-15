@@ -459,6 +459,18 @@
     "defaultMessage": "Digital archive",
     "srcHash": "iPgFLR6539C0"
   },
+  "admin.extSystem.daFileTransferType": {
+    "defaultMessage": "File Transfer download request type",
+    "srcHash": "o7xK0GHTaht5"
+  },
+  "admin.extSystem.daFileTransferUrl": {
+    "defaultMessage": "File Transfer URL",
+    "srcHash": "3ygcpKeNu9Zm"
+  },
+  "admin.extSystem.daFileTransferUrlDerived": {
+    "defaultMessage": "{url} (derived from URL)",
+    "srcHash": "gzn62uQ5-tUB"
+  },
   "admin.extSystem.daQueue": {
     "defaultMessage": "Digital archive request queue",
     "srcHash": "zeuzMGQwHRZ-"

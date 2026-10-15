@@ -1350,4 +1350,15 @@
         <customChange class="cz.tacr.elza.dbchangelog.DbChangeset20261012120000"/>
     </changeSet>
 
+    <changeSet id="20261015120000" author="ppy">
+        <!-- File Transfer settings of a DA repository. file_transfer_url overrides the endpoint
+             derived from url (url + /ws/ft); file_transfer_type is sent as GenericDataType#type
+             with a download request, so the DA can route it to a specific handler.
+             Null = derived endpoint, no type. -->
+        <addColumn tableName="arr_digital_repository">
+            <column name="file_transfer_url" type="nvarchar(1000)"/>
+            <column name="file_transfer_type" type="nvarchar(250)"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

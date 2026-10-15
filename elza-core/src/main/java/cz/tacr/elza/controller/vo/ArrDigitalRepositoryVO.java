@@ -2,6 +2,8 @@ package cz.tacr.elza.controller.vo;
 
 import static cz.tacr.elza.service.dao.FileSystemRepoService.FILE_URI_PREFIX;
 
+import org.apache.commons.lang3.StringUtils;
+
 import cz.tacr.elza.api.DaDownloadMethod;
 import cz.tacr.elza.api.DaOnReceivedAction;
 import cz.tacr.elza.api.DigitalRepositoryType;
@@ -36,6 +38,10 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
     private Integer syncDelay;
 
     private Integer statusPollInterval;
+
+    private String fileTransferUrl;
+
+    private String fileTransferType;
 
     public String getViewDaoUrl() {
         return viewDaoUrl;
@@ -117,6 +123,22 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
         this.statusPollInterval = statusPollInterval;
     }
 
+    public String getFileTransferUrl() {
+        return fileTransferUrl;
+    }
+
+    public void setFileTransferUrl(String fileTransferUrl) {
+        this.fileTransferUrl = fileTransferUrl;
+    }
+
+    public String getFileTransferType() {
+        return fileTransferType;
+    }
+
+    public void setFileTransferType(String fileTransferType) {
+        this.fileTransferType = fileTransferType;
+    }
+
     @Override
     public SysExternalSystem createEntity(ApScope scope) {
         ArrDigitalRepository entity = new ArrDigitalRepository();
@@ -166,6 +188,9 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
                 }
                 entity.setStatusPollInterval(statusPollInterval);
             }
+            // an empty value means the default (derived endpoint, no type)
+            entity.setFileTransferUrl(StringUtils.trimToNull(fileTransferUrl));
+            entity.setFileTransferType(StringUtils.trimToNull(fileTransferType));
         }
 
         return entity;
@@ -195,6 +220,8 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
         vo.setOnReceived(src.getOnReceived());
         vo.setSyncDelay(src.getSyncDelay());
         vo.setStatusPollInterval(src.getStatusPollInterval());
+        vo.setFileTransferUrl(src.getFileTransferUrl());
+        vo.setFileTransferType(src.getFileTransferType());
         return vo;
     }
 }

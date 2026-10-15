@@ -5,7 +5,7 @@ import {AREA_EXT_SYSTEM_DETAIL, extSystemDetailFetchIfNeeded} from 'actions/admi
 import {storeFromArea} from 'shared/utils';
 
 import './AdminExtSystemDetail.scss';
-import {AP_EXT_SYSTEM_TYPE, DigitalRepositoryType, JAVA_ATTR_CLASS, urlAdminDaQueue} from '../../../constants';
+import {AP_EXT_SYSTEM_TYPE, DaDownloadMethod, DigitalRepositoryType, JAVA_ATTR_CLASS, urlAdminDaQueue} from '../../../constants';
 import {Link as RouterLink} from 'react-router-dom';
 import {WebApi} from 'actions/index.jsx';
 import {
@@ -18,6 +18,7 @@ import {
     daSettingsMessages,
     DA_DOWNLOAD_METHOD_MESSAGE,
     DA_ON_RECEIVED_MESSAGE,
+    deriveFileTransferUrl,
 } from './ExtSystemForm';
 import { Api } from 'api';
 import { Button } from '@fluentui/react-components';
@@ -343,6 +344,23 @@ class AdminExtSystemDetail extends AbstractReactComponent {
                                     <span>
                                         {DA_DOWNLOAD_METHOD_MESSAGE[extSystem.downloadMethod] && (
                                             <FormattedMessage {...DA_DOWNLOAD_METHOD_MESSAGE[extSystem.downloadMethod]} />
+                                        )}
+                                    </span>
+
+                                    {extSystem.downloadMethod === DaDownloadMethod.FileTransfer && extSystem.fileTransferType && (
+                                        <>
+                                            <h4><FormattedMessage {...daSettingsMessages.fileTransferType} /></h4>
+                                            <span>{extSystem.fileTransferType}</span>
+                                        </>
+                                    )}
+
+                                    <h4><FormattedMessage {...daSettingsMessages.fileTransferUrl} /></h4>
+                                    <span>
+                                        {extSystem.fileTransferUrl || (
+                                            <FormattedMessage
+                                                {...daSettingsMessages.fileTransferUrlDerived}
+                                                values={{ url: deriveFileTransferUrl(extSystem.url) }}
+                                            />
                                         )}
                                     </span>
 

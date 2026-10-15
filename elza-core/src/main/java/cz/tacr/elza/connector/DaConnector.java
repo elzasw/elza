@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.Map;
 import org.springframework.context.event.EventListener;
 
-import cz.tacr.elza.api.DaDownloadMethod;
 import cz.tacr.elza.service.event.ArrDigitalRepositoryEvent;
 import cz.tacr.elza.controller.vo.DigitalRepositoryTestResult;
 import org.apache.commons.lang3.StringUtils;
@@ -94,9 +93,16 @@ public class DaConnector {
         }
     }
 
+    /**
+     * Downloads the prepared batch over File Transfer. The request carries the batch id and,
+     * when the repository configures one, a type the DA can use to pick its download handler.
+     */
     public void downloadFileTransfer(ArrDigitalRepository digitalRepository, String batchId, Path downloadDir) {
         GenericDataType genericDataType = new GenericDataType();
         genericDataType.setId(batchId);
+        if (StringUtils.isNotBlank(digitalRepository.getFileTransferType())) {
+            genericDataType.setType(digitalRepository.getFileTransferType());
+        }
         DownloadRequest downloadRequest = new DwnldRequestImpl(downloadDir, genericDataType);
         getFileTransferClient(digitalRepository).downloadSync(downloadRequest);
     }
@@ -143,11 +149,7 @@ public class DaConnector {
 
         DaInstance daInstance;
         try {
-            daInstance = new DaInstance(digitalRepository.getUrl(),
-                    digitalRepository.getApiKeyId(),
-                    digitalRepository.getApiKeyValue(),
-                    digitalRepository.getUsername(),
-                    digitalRepository.getPassword());
+            daInstance = createInstance(digitalRepository);
         } catch (RuntimeException e) {
             result.setMessage("Invalid configuration: " + e.getMessage());
             return result;
@@ -162,10 +164,9 @@ public class DaConnector {
             } else {
                 message.append("; no AIP available");
             }
-            if (digitalRepository.getDownloadMethod() == DaDownloadMethod.FILE_TRANSFER) {
-                message.append(". File Transfer endpoint ").append(daInstance.getFileTransferUrl())
-                        .append(" is not covered by this test");
-            }
+            // exports always go over File Transfer, downloads only with the FILE_TRANSFER method
+            message.append(". File Transfer endpoint ").append(daInstance.getFileTransferUrl())
+                    .append(" is not covered by this test");
             result.setMessage(message.toString());
         } catch (ApiException e) {
             result.setMessage("DA API call failed: HTTP " + e.getCode()
@@ -207,17 +208,22 @@ public class DaConnector {
             // use cache instanceMap
             DaInstance daInstance = instanceMap.get(digitalRepository.getExternalSystemId());
             if (daInstance == null) {
-                daInstance = new DaInstance(digitalRepository.getUrl(),
-                        digitalRepository.getApiKeyId(),
-                        digitalRepository.getApiKeyValue(),
-                        digitalRepository.getUsername(),
-                        digitalRepository.getPassword());
+                daInstance = createInstance(digitalRepository);
                 instanceMap.put(digitalRepository.getExternalSystemId(), daInstance);
             }
             return daInstance;
         } else {
             throw new IllegalArgumentException("Externí systém není typu DA");
         }
+    }
+
+    private static DaInstance createInstance(ArrDigitalRepository digitalRepository) {
+        return new DaInstance(digitalRepository.getUrl(),
+                digitalRepository.getFileTransferUrl(),
+                digitalRepository.getApiKeyId(),
+                digitalRepository.getApiKeyValue(),
+                digitalRepository.getUsername(),
+                digitalRepository.getPassword());
     }
 
 }

@@ -73,6 +73,19 @@ public class ArrDigitalRepository extends SysExternalSystem {
     @Column(nullable = false)
     private Integer statusPollInterval = DEFAULT_STATUS_POLL_INTERVAL;
 
+    /**
+     * File Transfer endpoint of a DA repository; null = {@code url} + {@code /ws/ft}.
+     */
+    @Column(length = StringLength.LENGTH_1000)
+    private String fileTransferUrl;
+
+    /**
+     * Value of {@code GenericDataType#type} sent with a File Transfer download request;
+     * null = no type, the DA identifies the request by the batch id only.
+     */
+    @Column(length = StringLength.LENGTH_250)
+    private String fileTransferType;
+
     public ArrDigitalRepository() {
     }
 
@@ -88,6 +101,8 @@ public class ArrDigitalRepository extends SysExternalSystem {
 		this.onReceived = ardr.getOnReceived();
 		this.syncDelay = ardr.getSyncDelay();
 		this.statusPollInterval = ardr.getStatusPollInterval();
+		this.fileTransferUrl = ardr.getFileTransferUrl();
+		this.fileTransferType = ardr.getFileTransferType();
     }
 
 	/**
@@ -192,6 +207,22 @@ public class ArrDigitalRepository extends SysExternalSystem {
 
     public void setStatusPollInterval(Integer statusPollInterval) {
         this.statusPollInterval = statusPollInterval;
+    }
+
+    public String getFileTransferUrl() {
+        return fileTransferUrl;
+    }
+
+    public void setFileTransferUrl(String fileTransferUrl) {
+        this.fileTransferUrl = fileTransferUrl;
+    }
+
+    public String getFileTransferType() {
+        return fileTransferType;
+    }
+
+    public void setFileTransferType(String fileTransferType) {
+        this.fileTransferType = fileTransferType;
     }
 
     @Override

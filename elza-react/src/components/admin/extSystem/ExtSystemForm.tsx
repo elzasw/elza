@@ -167,7 +167,27 @@ export const daSettingsMessages = defineMessages({
         id: 'admin.extSystem.daStatusPollIntervalMin',
         defaultMessage: 'Interval musí být alespoň 1 s',
     },
+    fileTransferUrl: {
+        id: 'admin.extSystem.daFileTransferUrl',
+        defaultMessage: 'File Transfer URL',
+    },
+    fileTransferUrlDerived: {
+        id: 'admin.extSystem.daFileTransferUrlDerived',
+        defaultMessage: '{url} (odvozeno z URL)',
+    },
+    fileTransferType: {
+        id: 'admin.extSystem.daFileTransferType',
+        defaultMessage: 'Typ požadavku File Transfer při stahování',
+    },
 });
+
+const FILE_TRANSFER_PATH = '/ws/ft';
+
+/** File Transfer endpoint the server derives from the repository URL when none is configured. */
+export function deriveFileTransferUrl(url?: string): string | undefined {
+    const base = url?.trim().replace(/\/+$/, '');
+    return base ? base + FILE_TRANSFER_PATH : undefined;
+}
 
 export const DA_DOWNLOAD_METHOD_MESSAGE: Record<string, MessageDescriptor> = {
     [DaDownloadMethod.Standard]: daSettingsMessages.downloadMethodStandard,
@@ -204,6 +224,8 @@ type ExtSystemFormValues = {
     onReceived?: string;
     syncDelay?: number;
     statusPollInterval?: number;
+    fileTransferUrl?: string;
+    fileTransferType?: string;
 };
 
 type Scope = {
@@ -459,6 +481,22 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
                                     </option>
                                 ))}
                             </Field>
+                            {values.downloadMethod === DaDownloadMethod.FileTransfer && (
+                                <Field
+                                    name="fileTransferType"
+                                    type="text"
+                                    component={FormInputField}
+                                    label={intl.formatMessage(daSettingsMessages.fileTransferType)}
+                                />
+                            )}
+                            {/* exports always go over File Transfer, so the endpoint is offered for any method */}
+                            <Field
+                                name="fileTransferUrl"
+                                type="text"
+                                component={FormInputField}
+                                label={intl.formatMessage(daSettingsMessages.fileTransferUrl)}
+                                placeholder={deriveFileTransferUrl(values.url)}
+                            />
                             <Field
                                 name="onReceived"
                                 type="select"
