@@ -138,7 +138,10 @@ export function moveNodes(direction, versionId, nodes, nodesParent, dest, destPa
         dispatch(fundMoveStart(versionId));
         return moveFunction(direction)(versionId, nodes, nodesParent, dest, destParent).then(() => {
             dispatch(fundMoveFinish(versionId));
-            dispatch(fundSelectSubNode(versionId, nodeTab.selectedSubNodeId, nextNodeParent));
+            // the movements page opened directly by URL has no node tab
+            if (nodeTab) {
+                dispatch(fundSelectSubNode(versionId, nodeTab.selectedSubNodeId, nextNodeParent));
+            }
         });
     };
 }
