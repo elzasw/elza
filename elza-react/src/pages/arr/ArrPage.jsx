@@ -1139,6 +1139,7 @@ class ArrPage extends ArrParentPage {
                     versionId={activeFund.versionId}
                     showEditPermissions={this.getHasEditPermissions()}
                     {...activeFund.fundTree}
+                    readMode={readMode}
                     actionAddons={
                         <Button
                             onClick={() => {
