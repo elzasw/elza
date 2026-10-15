@@ -7,8 +7,8 @@ import type { MouseEvent } from 'react';
 import { Dropdown } from 'react-bootstrap';
 import { FormattedMessage } from 'react-intl';
 import FundTreeLazy from '../FundTreeLazy';
-import { createFundRoot, getParentNode } from '../ArrUtils';
 import { nodeMessages } from '../nodeMessages';
+import { showNodeInForm } from './showNodeInForm';
 import { FUND_TREE_AREA_MOVEMENTS_RIGHT } from 'actions/constants/ActionTypes';
 import {
     fundTreeCollapse,
@@ -22,7 +22,6 @@ import {
     fundTreeNodeExpand,
     fundTreeSelectNode,
 } from 'actions/arr/fundTree';
-import { fundSelectSubNode } from 'actions/arr/node';
 import { contextMenuHide, contextMenuShow } from 'actions/global/contextMenu';
 import type { Fund } from 'typings/store';
 import type { TreeNodeVO } from 'typings/Outputs';
@@ -125,8 +124,7 @@ export function FundTreeMovementsRight(props: Props) {
 
     function handleShowInForm(node: TreeNodeVO) {
         dispatch(contextMenuHide());
-        const parentNode = getParentNode(node, nodes) ?? createFundRoot(fund);
-        dispatch(fundSelectSubNode(versionId, node.id, parentNode, false, null, true, undefined, undefined, true));
+        dispatch(showNodeInForm(versionId, node, nodes, fund));
     }
 
     /**
