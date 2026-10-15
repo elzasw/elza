@@ -27,7 +27,7 @@ Before the upgrade
   upgraded to 3.4.8 or 3.4.9 and is the only move for older ones. Files
   that no database row claims stay in ``dms/_migrating/``; nothing is
   deleted. **Before the upgrade, back up the database and the dms
-  directory from the same moment** (see :doc:`/09-backup`); **after it,
+  directory from the same moment** (see :doc:`/10-backup`); **after it,
   read the report** ``dms/_migration-<date>-<time>.txt``: ``MISSING``
   rows have no file, ``ORPHAN`` files have no row, ``FAILED`` rows could
   not be moved and must be put in place by hand.
@@ -209,7 +209,7 @@ Before the upgrade
   and a new regular consistency check runs (``elza.dms.check.cron``).
   **Before the upgrade, back up the database and the dms directory from
   the same moment**; returning to an older version requires restoring
-  both. See :doc:`/09-backup`.
+  both. See :doc:`/10-backup`.
 * Removed: The ``FULL_SYNC`` mode of
   ``elza.webservice.fonds.adminPermissionMode`` - the web service only adds
   fund administrators (``ADD_ONLY``). With ``FULL_SYNC`` the application
@@ -463,7 +463,7 @@ Fixes
   external system settings at the first start
 * New: Health and metrics available on a separate management port
   (default ``8081`` on ``127.0.0.1``), fix of the LDAP health check, see
-  :doc:`/08-monitoring`
+  :doc:`/09-monitoring`
 * New: Monitoring of the task scheduler - metrics and settings
   ``elza.monitoring.scheduler.*``
 * Fix: 9594 - Digital entities - preview of files with a special
@@ -503,7 +503,7 @@ Fixes
 * New: Bulk actions over several funds - selection of funds by a filter
   evaluated on the server, reworked dialog for starting bulk actions
 * New: Health monitoring and Prometheus metrics of the processing queue
-  (see :doc:`/08-monitoring`)
+  (see :doc:`/09-monitoring`)
 * Fix: Cache records are deleted in batches (stability and performance)
 
 3.4.0-RC-1

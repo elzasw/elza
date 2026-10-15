@@ -62,4 +62,4 @@ Data fixes for old versions
 ===========================
 
 Errors when upgrading old 2.x installations are described in
-:doc:`11-legacy-upgrades`.
+:doc:`12-legacy-upgrades`.

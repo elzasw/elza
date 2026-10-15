@@ -60,7 +60,7 @@ The binary distribution is a ZIP file containing:
   embedded web server,
 - :file:`server/config/elza.yaml` - a sample configuration,
 - :file:`server/config/csc-metrics.json` - the list of metrics reported
-  to a supervision service (see :doc:`08-monitoring`),
+  to a supervision service (see :doc:`09-monitoring`),
 - :file:`packages/` - the base packages: ``package-cz-base`` (code
   lists) and ``rules-cz-zp2015`` (description rules ZP2015),
 - :file:`data/all-institutions-import.xml` - the list of accredited
@@ -119,7 +119,7 @@ The working directory contains:
 - :file:`dms/` - binary files (attachments, outputs, publications,
   import batches). Its structure is managed by ELZA and must not be
   modified by hand; it is backed up together with the database (see
-  :doc:`09-backup`).
+  :doc:`10-backup`).
 - :file:`dpkg/` - packages loaded at startup (see :ref:`install-packages`).
 - :file:`log/` - log files, when configured as in the sample
   configuration.
@@ -361,6 +361,6 @@ Next steps
 ----------
 
 - Set up the reverse proxy and HTTPS: :doc:`06-reverse-proxy`.
-- Set up backups: :doc:`09-backup`.
-- Connect the monitoring: :doc:`08-monitoring`.
+- Set up backups: :doc:`10-backup`.
+- Connect the monitoring: :doc:`09-monitoring`.
 - Configure authentication (LDAP, Kerberos, ...): :doc:`05-security`.

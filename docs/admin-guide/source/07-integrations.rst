@@ -10,7 +10,7 @@ classes are:
 - **archival entity systems** - CAM and systems with the same interface,
   for sharing archival entities (see :ref:`integrations-cam`),
 - **digital repositories** - repositories of digital objects and digital
-  archives (AIP),
+  archives (AIP) (see :doc:`08-digital-repositories`),
 - **GIS systems** - map servers for displaying and editing coordinates
   (see :ref:`integrations-gis`),
 - **AI providers** - the service behind the AI assistant.
@@ -20,9 +20,7 @@ managed in the *Archival funds* module (*Publication systems management*).
 
 .. todo::
 
-   Digital repositories and the digital archive (AIP synchronisation,
-   download modes, file-system repositories), AI providers and
-   publication systems: settings and their meaning.
+   AI providers and publication systems: settings and their meaning.
 
 .. _integrations-cam:
 
@@ -65,7 +63,7 @@ CAM. The former setting in :file:`elza.yaml`
 the external systems during the upgrade to 3.4.
 
 The state of the synchronisation queue can be monitored with the metrics
-described in :doc:`08-monitoring`.
+described in :doc:`09-monitoring`.
 
 Changing CAM to CAM complete
 ----------------------------

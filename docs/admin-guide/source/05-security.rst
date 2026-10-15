@@ -264,7 +264,7 @@ entered; create the ELZA users with the same names as in the domain. When
 the domain rejects the password, the internal password is tried.
 
 With Active Directory configured, the health check (see
-:doc:`08-monitoring`) also checks the connection to the domain controller.
+:doc:`09-monitoring`) also checks the connection to the domain controller.
 
 Kerberos (SPNEGO)
 =================
@@ -466,4 +466,4 @@ minutes of inactivity), which can be changed with
 sessions at a time; logging in an eleventh time ends the oldest one.
 
 The monitoring endpoints do not require authentication and must stay
-reachable only locally (see :doc:`08-monitoring`).
+reachable only locally (see :doc:`09-monitoring`).

@@ -4,7 +4,7 @@ How Elza stores managed binary files on disk: attachments (`ArrFile`),
 generated outputs (`ArrOutputFile`), publication exports (`arr_export.file_id`)
 and import batch sources (`imp_item.dms_id`). Every such file has one
 `dms_file` row. The administrator's view is in the admin guide
-(`02-installation.rst`, `04-configuration.rst`, `09-backup.rst`); the
+(`02-installation.rst`, `04-configuration.rst`, `10-backup.rst`); the
 operator-facing summary is `dms/README.txt`.
 
 Code: `cz.tacr.elza.service.dms` — `DmsStorageLayout` (path rules),
