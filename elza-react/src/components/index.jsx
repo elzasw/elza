@@ -61,7 +61,7 @@ export {default as AddNodeCross} from 'components/arr/AddNodeCross';
 export {AdminPackagesListFn} from 'components/admin/AdminPackagesList';
 export {default as AdminExtSystemList} from 'components/admin/extSystem/AdminExtSystemList';
 export {default as AdminExtSystemListItem} from 'components/admin/extSystem/AdminExtSystemListItem';
-export {default as AdminExtSystemDetail} from 'components/admin/extSystem/AdminExtSystemDetail';
+export {AdminExtSystemDetail} from 'components/admin/extSystem/AdminExtSystemDetail';
 export {default as ExtSystemForm} from 'components/admin/extSystem/ExtSystemForm';
 export {default as AdminLogsDetail} from 'components/admin/AdminLogsDetail';
 export {default as AdminPackagesUpload} from 'components/admin/AdminPackagesUpload';

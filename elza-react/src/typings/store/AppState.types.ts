@@ -385,6 +385,9 @@ export interface ExternalSystem {
     elzaCode?: string;
     publishOnlyApproved?: boolean;
     userInfo?: unknown;
+    scope?: number | null;
+    digitalRepositoryType?: string;
+    viewDaoUrl?: string;
     viewFileUrl?: string;
     viewThumbnailUrl?: string;
     sendNotification?: boolean;
