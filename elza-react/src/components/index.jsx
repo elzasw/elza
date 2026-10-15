@@ -53,8 +53,8 @@ export {ArrDaos} from 'components/arr/ArrDaos';
 export {ArrDao} from 'components/arr/ArrDao';
 export {default as ArrFundPanel} from 'components/arr/ArrFundPanel';
 export {default as FundTreeMain} from 'components/arr/FundTreeMain';
-export {default as FundTreeMovementsLeft} from 'components/arr/FundTreeMovementsLeft';
-export {default as FundTreeMovementsRight} from 'components/arr/FundTreeMovementsRight';
+export {FundTreeMovementsLeft} from 'components/arr/FundTreeMovementsLeft';
+export {FundTreeMovementsRight} from 'components/arr/FundTreeMovementsRight';
 export {default as FundTreeDaos} from 'components/arr/FundTreeDaos';
 export {default as AddNodeCross} from 'components/arr/AddNodeCross';
 

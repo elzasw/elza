@@ -2,11 +2,10 @@
  * Strom AS.
  */
 
-import React from 'react';
-import {connect} from 'react-redux';
-import {AbstractReactComponent} from 'components/shared';
+import { useEffect } from 'react';
+import type { MouseEvent } from 'react';
 import FundTreeLazy from './FundTreeLazy';
-import * as types from 'actions/constants/ActionTypes';
+import { FUND_TREE_AREA_MOVEMENTS_LEFT } from 'actions/constants/ActionTypes';
 import {
     fundTreeCollapse,
     fundTreeFetchIfNeeded,
@@ -18,127 +17,143 @@ import {
     fundTreeNodeCollapse,
     fundTreeNodeExpand,
     fundTreeSelectNode,
-} from '../../actions/arr/fundTree.jsx';
-import {contextMenuShow} from 'actions/global/contextMenu.jsx';
+} from 'actions/arr/fundTree';
+import { contextMenuShow } from 'actions/global/contextMenu';
+import type { Fund } from 'typings/store';
+import type { TreeNodeVO } from 'typings/Outputs';
+import { useAppThunkDispatch } from 'utils/hooks';
 
-class FundTreeMovementsLeft extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
+// Besides fund and versionId, the props are the tree store slice, forwarded to FundTreeLazy as a whole;
+// only the fields read here are typed.
+interface Props {
+    fund: Fund;
+    versionId: number;
+    expandedIds: Record<number, boolean>;
+    selectedId?: number | null;
+    selectedIds: Record<number, boolean>;
+    nodes: TreeNodeVO[];
+    fetched: boolean;
+    isFetching: boolean;
+    dirty: boolean;
+    fetchingIncludeIds: Record<number, boolean>;
+    multipleSelection: boolean;
+}
 
-        this.bindMethods(
-            'handleNodeClick',
-            'handleContextMenu',
-            'handleCollapse',
-            'handleFulltextChange',
-            'handleFulltextSearch',
-            'handleFulltextPrevItem',
-            'handleFulltextNextItem',
-        );
+export type FundTreeMovementsLeftProps = Props;
+
+function unFocus() {
+    window.getSelection()?.removeAllRanges();
+}
+
+export function FundTreeMovementsLeft(props: Props) {
+    const {
+        fund,
+        versionId,
+        expandedIds,
+        selectedId,
+        selectedIds,
+        nodes,
+        fetched,
+        isFetching,
+        dirty,
+        fetchingIncludeIds,
+        multipleSelection,
+    } = props;
+    const dispatch = useAppThunkDispatch();
+
+    // fundTreeFetchIfNeeded decides from these tree store values whether to load the tree,
+    // so the check runs again whenever one of them changes.
+    useEffect(() => {
+        dispatch(fundTreeFetchIfNeeded(FUND_TREE_AREA_MOVEMENTS_LEFT, versionId, expandedIds, undefined));
+    }, [
+        dispatch,
+        versionId,
+        expandedIds,
+        selectedId,
+        selectedIds,
+        nodes,
+        fetched,
+        isFetching,
+        dirty,
+        fetchingIncludeIds,
+        multipleSelection,
+    ]);
+
+    function handleFulltextChange(value: string) {
+        dispatch(fundTreeFulltextChange(FUND_TREE_AREA_MOVEMENTS_LEFT, versionId, value));
     }
 
-    componentDidMount() {
-        const {versionId, expandedIds} = this.props;
-        this.requestFundTreeData(versionId, expandedIds);
+    function handleFulltextSearch() {
+        dispatch(fundTreeFulltextSearch(FUND_TREE_AREA_MOVEMENTS_LEFT, versionId));
     }
 
-    UNSAFE_componentWillReceiveProps(nextProps) {
-        const {versionId, expandedIds} = nextProps;
-        this.requestFundTreeData(versionId, expandedIds);
+    function handleFulltextPrevItem() {
+        dispatch(fundTreeFulltextPrevItem(FUND_TREE_AREA_MOVEMENTS_LEFT, versionId));
     }
 
-    requestFundTreeData(versionId, expandedIds) {
-        this.props.dispatch(fundTreeFetchIfNeeded(types.FUND_TREE_AREA_MOVEMENTS_LEFT, versionId, expandedIds));
+    function handleFulltextNextItem() {
+        dispatch(fundTreeFulltextNextItem(FUND_TREE_AREA_MOVEMENTS_LEFT, versionId));
     }
 
-    handleFulltextChange(value) {
-        this.props.dispatch(fundTreeFulltextChange(types.FUND_TREE_AREA_MOVEMENTS_LEFT, this.props.versionId, value));
-    }
-
-    handleFulltextSearch() {
-        this.props.dispatch(fundTreeFulltextSearch(types.FUND_TREE_AREA_MOVEMENTS_LEFT, this.props.versionId));
-    }
-
-    handleFulltextPrevItem() {
-        this.props.dispatch(fundTreeFulltextPrevItem(types.FUND_TREE_AREA_MOVEMENTS_LEFT, this.props.versionId));
-    }
-
-    handleFulltextNextItem() {
-        this.props.dispatch(fundTreeFulltextNextItem(types.FUND_TREE_AREA_MOVEMENTS_LEFT, this.props.versionId));
+    function handleOpenCloseNode(node: TreeNodeVO, expand: boolean) {
+        if (expand) {
+            dispatch(fundTreeNodeExpand(FUND_TREE_AREA_MOVEMENTS_LEFT, node));
+        } else {
+            dispatch(fundTreeNodeCollapse(FUND_TREE_AREA_MOVEMENTS_LEFT, versionId, node));
+        }
     }
 
     /**
      * Zobrazení kontextového menu pro daný uzel.
-     * @param node {Object} uzel
-     * @param e {Object} event
      */
-    handleContextMenu(node, e) {
+    function handleContextMenu(node: TreeNodeVO, e: MouseEvent) {
         e.preventDefault();
         e.stopPropagation();
 
         const menu = <ul className="dropdown-menu"></ul>;
 
-        this.props.dispatch(fundTreeFocusNode(types.FUND_TREE_AREA_MOVEMENTS_LEFT, this.props.versionId, node));
-        this.props.dispatch(contextMenuShow(this, menu, {x: e.clientX, y: e.clientY}));
+        dispatch(fundTreeFocusNode(FUND_TREE_AREA_MOVEMENTS_LEFT, versionId, node));
+        dispatch(contextMenuShow(FundTreeMovementsLeft, menu, { x: e.clientX, y: e.clientY }));
     }
 
     /**
      * Klik na uzel.
-     * @param node {Object} uzel
-     * @param e {Object} event
      */
-    handleNodeClick(node, ensureItemVisible, e) {
-        e.shiftKey && this.unFocus();
-        this.props.dispatch(
+    function handleNodeClick(node: TreeNodeVO, ensureItemVisible: boolean, e: MouseEvent) {
+        if (e.shiftKey) {
+            unFocus();
+        }
+        dispatch(
             fundTreeSelectNode(
-                types.FUND_TREE_AREA_MOVEMENTS_LEFT,
-                this.props.versionId,
+                FUND_TREE_AREA_MOVEMENTS_LEFT,
+                versionId,
                 node.id,
                 e.ctrlKey,
                 e.shiftKey,
                 null,
-                ensureItemVisible,
-            ),
+                ensureItemVisible
+            )
         );
-    }
-
-    unFocus() {
-        if (document.selection) {
-            document.selection.empty();
-        } else {
-            window.getSelection().removeAllRanges();
-        }
     }
 
     /**
      * Zabalení stromu
      */
-    handleCollapse() {
-        this.props.dispatch(
-            fundTreeCollapse(types.FUND_TREE_AREA_MOVEMENTS_LEFT, this.props.versionId, this.props.fund),
-        );
+    function handleCollapse() {
+        dispatch(fundTreeCollapse(FUND_TREE_AREA_MOVEMENTS_LEFT, versionId, fund));
     }
 
-    render() {
-        return (
-            <FundTreeLazy
-                {...this.props}
-                onOpenCloseNode={(node, expand) => {
-                    expand
-                        ? this.props.dispatch(fundTreeNodeExpand(types.FUND_TREE_AREA_MOVEMENTS_LEFT, node))
-                        : this.props.dispatch(
-                              fundTreeNodeCollapse(types.FUND_TREE_AREA_MOVEMENTS_LEFT, this.props.versionId, node),
-                          );
-                }}
-                onContextMenu={this.handleContextMenu}
-                onNodeClick={this.handleNodeClick}
-                onCollapse={this.handleCollapse}
-                onFulltextChange={this.handleFulltextChange}
-                onFulltextSearch={this.handleFulltextSearch}
-                onFulltextPrevItem={this.handleFulltextPrevItem}
-                onFulltextNextItem={this.handleFulltextNextItem}
-            />
-        );
-    }
+    return (
+        <FundTreeLazy
+            {...props}
+            onOpenCloseNode={handleOpenCloseNode}
+            onContextMenu={handleContextMenu}
+            onNodeClick={handleNodeClick}
+            onCollapse={handleCollapse}
+            onFulltextChange={handleFulltextChange}
+            onFulltextSearch={handleFulltextSearch}
+            onFulltextPrevItem={handleFulltextPrevItem}
+            onFulltextNextItem={handleFulltextNextItem}
+        />
+    );
 }
-
-export default connect()(FundTreeMovementsLeft);
