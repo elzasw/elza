@@ -856,7 +856,7 @@ class FundDataGridClass extends AbstractReactComponent {
                         this.handleEdit(row, rowIndex, col, colIndex);
                     }}
                 >
-                    {<FormattedMessage {...globalMessages.save} />}
+                    {<FormattedMessage {...globalMessages.edit} />}
                 </Dropdown.Item>
             </ul>
         );
