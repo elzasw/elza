@@ -61,6 +61,7 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
             expect(input(container, 'statusPollInterval')).toBeNull();
             expect(input(container, 'fileTransferUrl')).toBeNull();
             expect(input(container, 'apiKeyId')).toBeNull();
+            expect(select(container, 'tlsVerify')).toBeNull();
         },
     );
 
@@ -98,6 +99,27 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
         fireEvent.click(screen.getByRole('button', { name: 'Upravit' }));
 
         await vi.waitFor(() => expect(onSubmitForm).toHaveBeenCalledTimes(1));
+    });
+
+    it('ověření TLS certifikátu je výchozí a lze ho vypnout', async () => {
+        const onSubmitForm = vi.fn().mockResolvedValue(undefined);
+        const { container } = renderWithProviders(
+            <ExtSystemForm
+                initialValues={repository(DigitalRepositoryType.Da, {
+                    id: 7,
+                    downloadMethod: DaDownloadMethod.Standard,
+                    onReceived: DaOnReceivedAction.None,
+                })}
+                onSubmitForm={onSubmitForm}
+            />,
+        );
+
+        expect(select(container, 'tlsVerify')!.value).toBe('true');
+        fireEvent.change(select(container, 'tlsVerify')!, { target: { value: 'false' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Upravit' }));
+
+        await vi.waitFor(() => expect(onSubmitForm).toHaveBeenCalledTimes(1));
+        expect(onSubmitForm.mock.calls[0][0]).toMatchObject({ tlsVerify: false });
     });
 
     it('nabízí API klíč digitálního archivu', async () => {

@@ -82,6 +82,14 @@ ApiKey - ID, ApiKey - value
 Username, Password
    Credentials for File Transfer (HTTP Basic). Without a username, File
    Transfer connects without authentication.
+Verify TLS certificate
+   *Yes* (the default) - the certificate of the archive is verified for
+   the REST API and File Transfer alike. *No* - any certificate is
+   trusted and its host name is not checked, for internal servers with a
+   self-signed certificate. The connection is then not protected against
+   a man-in-the-middle; prefer adding the certificate of the archive to
+   the Java truststore of ELZA. The result of *Test configuration* says
+   when the certificate is not verified.
 FileURL
    Address of the component viewer of the archive. ELZA opens it in a
    frame when a user views a linked digital object. The other URL fields

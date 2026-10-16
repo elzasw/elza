@@ -179,6 +179,18 @@ export const daSettingsMessages = defineMessages({
         id: 'admin.extSystem.daFileTransferType',
         defaultMessage: 'Typ požadavku File Transfer při stahování',
     },
+    tlsVerify: {
+        id: 'admin.extSystem.daTlsVerify',
+        defaultMessage: 'Ověřovat TLS certifikát',
+    },
+    tlsVerifyTrue: {
+        id: 'admin.extSystem.daTlsVerify.true',
+        defaultMessage: 'Ano',
+    },
+    tlsVerifyFalse: {
+        id: 'admin.extSystem.daTlsVerify.false',
+        defaultMessage: 'Ne - důvěřovat jakémukoli certifikátu (např. self-signed)',
+    },
 });
 
 const FILE_TRANSFER_PATH = '/ws/ft';
@@ -226,6 +238,7 @@ type ExtSystemFormValues = {
     statusPollInterval?: number;
     fileTransferUrl?: string;
     fileTransferType?: string;
+    tlsVerify?: boolean;
 };
 
 type Scope = {
@@ -504,6 +517,18 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
                                 label={intl.formatMessage(daSettingsMessages.fileTransferUrl)}
                                 placeholder={deriveFileTransferUrl(values.url)}
                             />
+                            {/* an unset value is shown and saved as the server default: verify */}
+                            <Field
+                                name="tlsVerify"
+                                type="select"
+                                component={FormInputField}
+                                label={intl.formatMessage(daSettingsMessages.tlsVerify)}
+                                format={(v?: boolean) => (v === false ? 'false' : 'true')}
+                                parse={(v: string) => v !== 'false'}
+                            >
+                                <option value="true">{intl.formatMessage(daSettingsMessages.tlsVerifyTrue)}</option>
+                                <option value="false">{intl.formatMessage(daSettingsMessages.tlsVerifyFalse)}</option>
+                            </Field>
                             <Field
                                 name="onReceived"
                                 type="select"

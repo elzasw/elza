@@ -86,6 +86,13 @@ public class ArrDigitalRepository extends SysExternalSystem {
     @Column(length = StringLength.LENGTH_250)
     private String fileTransferType;
 
+    /**
+     * Whether the TLS certificate of a DA repository is verified, for the REST API and File
+     * Transfer alike; false trusts any certificate (internal servers with a self-signed one).
+     */
+    @Column(nullable = false)
+    private Boolean tlsVerify = Boolean.TRUE;
+
     public ArrDigitalRepository() {
     }
 
@@ -103,6 +110,7 @@ public class ArrDigitalRepository extends SysExternalSystem {
 		this.statusPollInterval = ardr.getStatusPollInterval();
 		this.fileTransferUrl = ardr.getFileTransferUrl();
 		this.fileTransferType = ardr.getFileTransferType();
+		this.tlsVerify = ardr.getTlsVerify();
     }
 
 	/**
@@ -223,6 +231,14 @@ public class ArrDigitalRepository extends SysExternalSystem {
 
     public void setFileTransferType(String fileTransferType) {
         this.fileTransferType = fileTransferType;
+    }
+
+    public Boolean getTlsVerify() {
+        return tlsVerify;
+    }
+
+    public void setTlsVerify(Boolean tlsVerify) {
+        this.tlsVerify = tlsVerify;
     }
 
     @Override

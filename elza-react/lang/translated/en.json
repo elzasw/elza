@@ -487,6 +487,18 @@
     "defaultMessage": "Synchronization interval (s), 0 = no synchronization",
     "srcHash": "wXgprAUB_RPo"
   },
+  "admin.extSystem.daTlsVerify": {
+    "defaultMessage": "Verify TLS certificate",
+    "srcHash": "LB2UuaEVmxmg"
+  },
+  "admin.extSystem.daTlsVerify.false": {
+    "defaultMessage": "No - trust any certificate (e.g. self-signed)",
+    "srcHash": "hjsneuGT7Api"
+  },
+  "admin.extSystem.daTlsVerify.true": {
+    "defaultMessage": "Yes",
+    "srcHash": "HFtwBBU9Smvu"
+  },
   "admin.extSystem.delete.confirm": {
     "defaultMessage": "Do you really want to delete this external system?",
     "srcHash": "7dPCsQ_XYM1e"

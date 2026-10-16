@@ -398,6 +398,7 @@ export interface ExternalSystem {
     statusPollInterval?: number;
     fileTransferUrl?: string;
     fileTransferType?: string;
+    tlsVerify?: boolean;
 }
 
 type KMLExternalSystem = Omit<ExternalSystem, "username" | "password" | "elzaCode" | "publishOnlyApproved" | "userInfo" | "viewFileUrl" | "viewThumbnailUrl" | "sendNotification">;

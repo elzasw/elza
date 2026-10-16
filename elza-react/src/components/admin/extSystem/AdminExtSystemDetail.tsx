@@ -359,6 +359,15 @@ export function AdminExtSystemDetail() {
                                     )}
                                 </span>
 
+                                <h4><FormattedMessage {...daSettingsMessages.tlsVerify} /></h4>
+                                <span>
+                                    <FormattedMessage
+                                        {...(extSystem.tlsVerify === false
+                                            ? daSettingsMessages.tlsVerifyFalse
+                                            : daSettingsMessages.tlsVerifyTrue)}
+                                    />
+                                </span>
+
                                 <h4><FormattedMessage {...daSettingsMessages.onReceived} /></h4>
                                 <span>
                                     {DA_ON_RECEIVED_MESSAGE[extSystem.onReceived!] && (

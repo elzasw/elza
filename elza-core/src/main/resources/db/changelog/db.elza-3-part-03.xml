@@ -1361,4 +1361,21 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="20261016120000" author="ppy">
+        <!-- Whether the TLS certificate of a DA is verified (REST API and File Transfer).
+             Existing DA repositories keep their behaviour: the REST client skipped the check
+             exactly when an API key was set. New repositories verify. -->
+        <addColumn tableName="arr_digital_repository">
+            <column name="tls_verify" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <sql>
+            UPDATE arr_digital_repository SET tls_verify = false
+            WHERE digital_repository_type = 'DA'
+              AND external_system_id IN (SELECT external_system_id FROM sys_external_system
+                                         WHERE api_key_id IS NOT NULL AND api_key_value IS NOT NULL)
+        </sql>
+    </changeSet>
+
 </databaseChangeLog>

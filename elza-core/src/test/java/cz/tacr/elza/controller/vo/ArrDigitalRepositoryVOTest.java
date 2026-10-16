@@ -146,6 +146,25 @@ public class ArrDigitalRepositoryVOTest {
     }
 
     @Test
+    void createEntity_da_tlsVerifyDefaultsToTrue() {
+        ArrDigitalRepository entity = (ArrDigitalRepository) createVO(DigitalRepositoryType.DA)
+                .createEntity(null);
+
+        assertTrue(entity.getTlsVerify());
+    }
+
+    @Test
+    void createEntity_da_keepsSkippedTlsVerification() {
+        ArrDigitalRepositoryVO vo = createVO(DigitalRepositoryType.DA);
+        vo.setTlsVerify(false);
+
+        ArrDigitalRepository entity = (ArrDigitalRepository) vo.createEntity(null);
+
+        assertFalse(entity.getTlsVerify());
+        assertFalse(ArrDigitalRepositoryVO.newInstance(entity).getTlsVerify());
+    }
+
+    @Test
     void createEntity_da_keepsFileTransferSettings() {
         ArrDigitalRepositoryVO vo = createVO(DigitalRepositoryType.DA);
         vo.setFileTransferUrl(" https://ft.example/transfer ");

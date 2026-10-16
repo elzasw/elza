@@ -167,6 +167,9 @@ public class DaConnector {
             // exports always go over File Transfer, downloads only with the FILE_TRANSFER method
             message.append(". File Transfer endpoint ").append(daInstance.getFileTransferUrl())
                     .append(" is not covered by this test");
+            if (Boolean.FALSE.equals(digitalRepository.getTlsVerify())) {
+                message.append(". The TLS certificate is not verified");
+            }
             result.setMessage(message.toString());
         } catch (ApiException e) {
             result.setMessage("DA API call failed: HTTP " + e.getCode()
@@ -223,7 +226,8 @@ public class DaConnector {
                 digitalRepository.getApiKeyId(),
                 digitalRepository.getApiKeyValue(),
                 digitalRepository.getUsername(),
-                digitalRepository.getPassword());
+                digitalRepository.getPassword(),
+                !Boolean.FALSE.equals(digitalRepository.getTlsVerify()));
     }
 
 }

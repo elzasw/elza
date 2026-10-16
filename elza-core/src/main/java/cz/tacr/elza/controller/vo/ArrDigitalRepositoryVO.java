@@ -43,6 +43,8 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
 
     private String fileTransferType;
 
+    private Boolean tlsVerify;
+
     public String getViewDaoUrl() {
         return viewDaoUrl;
     }
@@ -139,6 +141,14 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
         this.fileTransferType = fileTransferType;
     }
 
+    public Boolean getTlsVerify() {
+        return tlsVerify;
+    }
+
+    public void setTlsVerify(Boolean tlsVerify) {
+        this.tlsVerify = tlsVerify;
+    }
+
     @Override
     public SysExternalSystem createEntity(ApScope scope) {
         ArrDigitalRepository entity = new ArrDigitalRepository();
@@ -196,6 +206,9 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
             // an empty value means the default (derived endpoint, no type)
             entity.setFileTransferUrl(StringUtils.trimToNull(fileTransferUrl));
             entity.setFileTransferType(StringUtils.trimToNull(fileTransferType));
+            if (tlsVerify != null) {
+                entity.setTlsVerify(tlsVerify);
+            }
         }
 
         return entity;
@@ -227,6 +240,7 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
         vo.setStatusPollInterval(src.getStatusPollInterval());
         vo.setFileTransferUrl(src.getFileTransferUrl());
         vo.setFileTransferType(src.getFileTransferType());
+        vo.setTlsVerify(src.getTlsVerify());
         return vo;
     }
 }
