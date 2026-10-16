@@ -1,7 +1,6 @@
 import {
     Button,
     Checkbox,
-    Combobox,
     Field,
     Input,
     Menu,
@@ -10,7 +9,6 @@ import {
     MenuList,
     MenuPopover,
     MenuTrigger,
-    Option,
 } from '@fluentui/react-components';
 import { DeleteRegular } from '@fluentui/react-icons';
 import { useEffect, useState } from 'react';
@@ -28,6 +26,7 @@ const messages = defineMessages({
     labelCode: { id: 'publication.system.label.code', defaultMessage: 'Kód' },
     labelStoredCount: { id: 'publication.system.label.storedCount', defaultMessage: 'Počet uložených exportů' },
     labelFilter: { id: 'publication.system.label.filter', defaultMessage: 'Filtr' },
+    noFilter: { id: 'arr.output.form.outputFilterPlaceholder', defaultMessage: 'Bez filtru' },
     labelConnectionType: { id: 'publication.system.label.connectionType', defaultMessage: 'Typ připojení' },
     labelPermExport: { id: 'publication.system.label.permExport', defaultMessage: 'Oprávnění pro export' },
     labelPermPublication: { id: 'publication.system.label.permPublication', defaultMessage: 'Oprávnění pro publikaci' },
@@ -185,20 +184,30 @@ export function PublicationSystemDetail({ value, onSave, onToggleActive, onRemov
                                     const selectedFilter = exportFilters.find((f) => f.code === input.value);
                                     return (
                                         <Field label={formatMessage(messages.labelFilter)}>
-                                            <Combobox
-                                                disabled={isInactive}
-                                                placeholder="—"
-                                                value={selectedFilter?.name ?? input.value ?? ''}
-                                                selectedOptions={input.value ? [input.value] : []}
-                                                onOptionSelect={(_, data) => input.onChange(data.optionValue ?? '')}
-                                                onBlur={input.onBlur}
-                                            >
-                                                {exportFilters.map((filter) => (
-                                                    <Option key={filter.code} value={filter.code}>
-                                                        {filter.name}
-                                                    </Option>
-                                                ))}
-                                            </Combobox>
+                                            <div>
+                                                <Menu>
+                                                    <MenuTrigger disableButtonEnhancement>
+                                                        <MenuButton disabled={isInactive}>
+                                                            {selectedFilter?.name ?? formatMessage(messages.noFilter)}
+                                                        </MenuButton>
+                                                    </MenuTrigger>
+                                                    <MenuPopover>
+                                                        <MenuList>
+                                                            <MenuItem onClick={() => input.onChange(undefined)}>
+                                                                {formatMessage(messages.noFilter)}
+                                                            </MenuItem>
+                                                            {exportFilters.map((filter) => (
+                                                                <MenuItem
+                                                                    key={filter.code}
+                                                                    onClick={() => input.onChange(filter.code)}
+                                                                >
+                                                                    {filter.name}
+                                                                </MenuItem>
+                                                            ))}
+                                                        </MenuList>
+                                                    </MenuPopover>
+                                                </Menu>
+                                            </div>
                                         </Field>
                                     );
                                 }}
