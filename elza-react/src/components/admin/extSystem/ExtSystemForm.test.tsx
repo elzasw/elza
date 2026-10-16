@@ -60,6 +60,7 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
             expect(input(container, 'syncDelay')).toBeNull();
             expect(input(container, 'statusPollInterval')).toBeNull();
             expect(input(container, 'fileTransferUrl')).toBeNull();
+            expect(input(container, 'apiKeyId')).toBeNull();
         },
     );
 
@@ -67,9 +68,24 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
         const onSubmitForm = vi.fn().mockResolvedValue(undefined);
         const { container } = renderWithProviders(
             <ExtSystemForm
+                initialValues={repository(DigitalRepositoryType.Wsdl, { id: 7, sendNotification: false })}
+                onSubmitForm={onSubmitForm}
+            />,
+        );
+
+        expect(select(container, 'sendNotification')).not.toBeNull();
+        fireEvent.change(input(container, 'name')!, { target: { value: 'Repozitář WSDL' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Upravit' }));
+
+        await vi.waitFor(() => expect(onSubmitForm).toHaveBeenCalledTimes(1));
+    });
+
+    it('zasílání upozornění nabízí jen pro WSDL, digitální archiv se uloží bez něj', async () => {
+        const onSubmitForm = vi.fn().mockResolvedValue(undefined);
+        const { container } = renderWithProviders(
+            <ExtSystemForm
                 initialValues={repository(DigitalRepositoryType.Da, {
                     id: 7,
-                    sendNotification: false,
                     downloadMethod: DaDownloadMethod.Standard,
                     onReceived: DaOnReceivedAction.None,
                 })}
@@ -77,10 +93,32 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
             />,
         );
 
-        fireEvent.change(select(container, 'downloadMethod')!, { target: { value: DaDownloadMethod.FileTransfer } });
+        expect(select(container, 'sendNotification')).toBeNull();
+        fireEvent.change(input(container, 'name')!, { target: { value: 'Archiv' } });
         fireEvent.click(screen.getByRole('button', { name: 'Upravit' }));
 
         await vi.waitFor(() => expect(onSubmitForm).toHaveBeenCalledTimes(1));
+    });
+
+    it('nabízí API klíč digitálního archivu', async () => {
+        const onSubmitForm = vi.fn().mockResolvedValue(undefined);
+        const { container } = renderWithProviders(
+            <ExtSystemForm
+                initialValues={repository(DigitalRepositoryType.Da, {
+                    id: 7,
+                    downloadMethod: DaDownloadMethod.Standard,
+                    onReceived: DaOnReceivedAction.None,
+                })}
+                onSubmitForm={onSubmitForm}
+            />,
+        );
+
+        fireEvent.change(input(container, 'apiKeyId')!, { target: { value: 'elza' } });
+        fireEvent.change(input(container, 'apiKeyValue')!, { target: { value: 'secret' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Upravit' }));
+
+        await vi.waitFor(() => expect(onSubmitForm).toHaveBeenCalledTimes(1));
+        expect(onSubmitForm.mock.calls[0][0]).toMatchObject({ apiKeyId: 'elza', apiKeyValue: 'secret' });
     });
 
     it('odešle zvolené hodnoty', async () => {

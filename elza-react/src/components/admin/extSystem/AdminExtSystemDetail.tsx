@@ -315,7 +315,10 @@ export function AdminExtSystemDetail() {
                                 <FieldValue extSystem={extSystem} field="viewDaoUrl" />
                                 <FieldValue extSystem={extSystem} field="viewFileUrl" />
                                 <FieldValue extSystem={extSystem} field="viewThumbnailUrl" />
-
+                            </>
+                        )}
+                        {extSystem.digitalRepositoryType === DigitalRepositoryType.Wsdl && (
+                            <>
                                 <h4><FormattedMessage {...fieldMessages.sendNotification} /></h4>
                                 <span>
                                     {extSystem.sendNotification

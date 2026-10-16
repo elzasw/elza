@@ -266,6 +266,12 @@ function isDaRepository(values: ExtSystemFormValues) {
         && values.digitalRepositoryType === DigitalRepositoryType.Da;
 }
 
+/** Notifications about linked objects are sent only to a WSDL repository. */
+function isWsdlRepository(values: ExtSystemFormValues) {
+    return values[JAVA_ATTR_CLASS] === EXT_SYSTEM_CLASS.ArrDigitalRepository
+        && values.digitalRepositoryType === DigitalRepositoryType.Wsdl;
+}
+
 function validate(values: ExtSystemFormValues) {
     const classJ = values[JAVA_ATTR_CLASS];
     let requiredFields = [...REQUIRED_FIELDS.abstractExtSystem];
@@ -275,7 +281,7 @@ function validate(values: ExtSystemFormValues) {
     } else if (classJ === EXT_SYSTEM_CLASS.ArrDigitalRepository) {
         requiredFields = requiredFields.concat(
             REQUIRED_FIELDS[EXT_SYSTEM_CLASS.ArrDigitalRepository]
-                .filter((name) => !(name === 'sendNotification' && isFilesystemRepository(values))),
+                .filter((name) => !(name === 'sendNotification' && !isWsdlRepository(values))),
         );
         if (isDaRepository(values)) {
             requiredFields = requiredFields.concat(REQUIRED_FIELDS.daRepository);
@@ -315,6 +321,7 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
     const classJ = values[JAVA_ATTR_CLASS];
     const isFsRepo = isFilesystemRepository(values);
     const isDaRepo = isDaRepository(values);
+    const isWsdlRepo = isWsdlRepository(values);
     const allowedApTypes = isUpdate
         ? INTERCHANGEABLE_TYPES.find((group) => group.includes(values.type as AP_EXT_SYSTEM_TYPE)) ?? [values.type]
         : Object.values(AP_EXT_SYSTEM_TYPE);
@@ -436,7 +443,7 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
                             />
                         </>
                     )}
-                    {!isFsRepo && (
+                    {isWsdlRepo && (
                         <Field
                             name="sendNotification"
                             type="select"
@@ -567,7 +574,8 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
             )}
             {(classJ === EXT_SYSTEM_CLASS.ApExternalSystem ||
                 classJ === EXT_SYSTEM_CLASS.GisExternalSystem ||
-                classJ === EXT_SYSTEM_CLASS.AiExternalSystem) && (
+                classJ === EXT_SYSTEM_CLASS.AiExternalSystem ||
+                isDaRepo) && (
                 <>
                     <Field
                         name="apiKeyId"

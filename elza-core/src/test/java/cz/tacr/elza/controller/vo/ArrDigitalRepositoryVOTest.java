@@ -111,6 +111,40 @@ public class ArrDigitalRepositoryVOTest {
         assertThrows(BusinessException.class, () -> vo.createEntity(null));
     }
 
+    /** Notifications about linked objects are sent only to a WSDL repository. */
+    @Test
+    void createEntity_da_doesNotSendNotifications() {
+        ArrDigitalRepository entity = (ArrDigitalRepository) createVO(DigitalRepositoryType.DA)
+                .createEntity(null);
+
+        assertFalse(entity.getSendNotification());
+    }
+
+    @Test
+    void createEntity_da_keepsApiKey() {
+        ArrDigitalRepositoryVO vo = createVO(DigitalRepositoryType.DA);
+        vo.setApiKeyId(" elza ");
+        vo.setApiKeyValue("secret");
+
+        ArrDigitalRepository entity = (ArrDigitalRepository) vo.createEntity(null);
+
+        assertEquals("elza", entity.getApiKeyId());
+        assertEquals("secret", entity.getApiKeyValue());
+    }
+
+    /** An empty key would sign the requests to the DA API with an empty secret. */
+    @Test
+    void createEntity_da_blankApiKeyIsCleared() {
+        ArrDigitalRepositoryVO vo = createVO(DigitalRepositoryType.DA);
+        vo.setApiKeyId("");
+        vo.setApiKeyValue("  ");
+
+        ArrDigitalRepository entity = (ArrDigitalRepository) vo.createEntity(null);
+
+        assertNull(entity.getApiKeyId());
+        assertNull(entity.getApiKeyValue());
+    }
+
     @Test
     void createEntity_da_keepsFileTransferSettings() {
         ArrDigitalRepositoryVO vo = createVO(DigitalRepositoryType.DA);

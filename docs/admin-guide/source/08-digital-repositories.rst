@@ -75,14 +75,17 @@ File Transfer URL
    the URL as ``<URL>/ws/ft``; the form shows the derived address as a
    hint, and the detail of the repository shows the address in use.
    Fill it in only when the archive runs File Transfer elsewhere.
+ApiKey - ID, ApiKey - value
+   API key for the REST API. With both filled in, ELZA signs every request
+   with the key (``Authorization: NDA-HMAC-SHA256``); without them, the
+   requests carry no authentication.
 Username, Password
    Credentials for File Transfer (HTTP Basic). Without a username, File
    Transfer connects without authentication.
 FileURL
    Address of the component viewer of the archive. ELZA opens it in a
-   frame when a user views a linked digital object. Other URL fields
-   (*DaoURL*, *ThumbnailURL*) and *Send notifications* are not used by a
-   digital archive.
+   frame when a user views a linked digital object. The other URL fields
+   (*DaoURL*, *ThumbnailURL*) are not used by a digital archive.
 
 The button *Test configuration* in the detail of the repository asks the
 REST API for the first changed AIP and reports whether the archive

@@ -164,7 +164,9 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
             entity.setViewDaoUrl(viewDaoUrl);
             entity.setViewFileUrl(viewFileUrl);
             entity.setViewThumbnailUrl(viewThumbnailUrl);
-            entity.setSendNotification(sendNotification);
+            // notifications about linked objects exist only for a WSDL repository
+            entity.setSendNotification(digitalRepositoryType == DigitalRepositoryType.WSDL
+                    ? sendNotification : Boolean.FALSE);
         }
         if (multipleLinks != null) {
             entity.setMultipleLinks(multipleLinks);
@@ -188,6 +190,9 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
                 }
                 entity.setStatusPollInterval(statusPollInterval);
             }
+            // an empty key would sign the API requests with an empty secret; no key = no signature
+            entity.setApiKeyId(StringUtils.trimToNull(getApiKeyId()));
+            entity.setApiKeyValue(StringUtils.trimToNull(getApiKeyValue()));
             // an empty value means the default (derived endpoint, no type)
             entity.setFileTransferUrl(StringUtils.trimToNull(fileTransferUrl));
             entity.setFileTransferType(StringUtils.trimToNull(fileTransferType));

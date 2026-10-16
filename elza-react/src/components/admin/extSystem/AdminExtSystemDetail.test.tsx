@@ -56,6 +56,8 @@ describe('AdminExtSystemDetail', () => {
 
         expect(await screen.findByText('http://da:8096/ws/ft (odvozeno z URL)')).toBeInTheDocument();
         expect(screen.getByText('GetMetadata_ELZA')).toBeInTheDocument();
+        // notifications are sent only to a WSDL repository
+        expect(screen.queryByText('Zasílání upozornění')).toBeNull();
     });
 
     it('shows a configured File Transfer endpoint as it is', async () => {
