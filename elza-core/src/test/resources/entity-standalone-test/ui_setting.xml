@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<settings xmlns:ns10="index-search">
+    <!-- the whole search text against the common name (REAL_NAME) of the preferred name -->
+    <index-search>
+        <ns10:field name="pref_real_name" index-type="REAL_NAME" boost-exact="10000.0" boost-trans-exact="8000.0" boost-fulltext="400.0"/>
+    </index-search>
+</settings>

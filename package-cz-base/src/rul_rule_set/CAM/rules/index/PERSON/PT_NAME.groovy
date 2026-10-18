@@ -39,6 +39,12 @@ static GroovyResult generate(final GroovyPart part) {
     complGeo.add("NM_SUP_GEO")
     shortName.addStr(complGeo.build()).withSeparator(" ").withPrefix("(").withPostfix(")")
 
+    // the name as commonly used: forename surname, no degrees, no supplements
+    GroovyAppender realName = GroovyUtils.createAppender(part)
+    realName.add("NM_MINOR")
+    realName.add("NM_MAIN").withSeparator(" ")
+    result.addIndex("REAL_NAME", realName.build());
+
     result.addIndex("SHORT_NAME", shortName.build());
     return result
 }

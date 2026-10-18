@@ -137,9 +137,9 @@ item types next to them freely; only these codes carry built-in logic.
 
 Everything else the application shows or searches comes from the rules of
 the framework: the names of parts from its ``INDEX`` rules, the searched
-item fields from its ``index-search`` setting (:ref:`index-search`). The
-exchange with the CAM system and the import of the former party format work
-with the CAM codes only.
+item fields and the indexes matched as a whole from its ``index-search``
+setting (:ref:`index-search`). The exchange with the CAM system and the
+import of the former party format work with the CAM codes only.
 
 Rule sets and rules
 ===================

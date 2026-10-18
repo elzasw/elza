@@ -11,13 +11,13 @@ import static cz.tacr.elza.domain.bridge.LuceneAnalyzerConfigurer.ANALYZED;
 import static cz.tacr.elza.domain.bridge.LuceneAnalyzerConfigurer.NOT_ANALYZED;
 import static cz.tacr.elza.domain.bridge.LuceneAnalyzerConfigurer.SORTABLE;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilter;
-import org.apache.lucene.util.ArrayUtil;
 import org.hibernate.search.engine.backend.document.DocumentElement;
 import org.hibernate.search.engine.backend.document.IndexFieldReference;
 import org.hibernate.search.mapper.pojo.bridge.TypeBridge;
@@ -70,13 +70,21 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
 
     public static final String USERNAME = "username";
 
-    //public static final String TRANS = "trans";
-    //public static final String SORT = "sort";
+    /**
+     * Suffix of the field of an index type named by the search configuration ({@code index-type}):
+     * {@code data_<field name>_ix} holds the exact form of the index value, {@code _ix_trans} the
+     * transliterated exact form and {@code _ix_analyzed} the tokenized value.
+     */
+    public static final String INDEX_TYPE_FIELD = "_ix";
+    public static final String TRANS = "_trans";
 
     public static final String NM_MAIN = "nm_main";
 
     static Properties names = null;
     private Map<String, IndexFieldReference<String>> fields;
+
+    /** Fields of the configuration by index type, see {@link SettingIndexSearch#indexTypeFields(String)}. */
+    private static Map<String, List<SettingIndexSearch.Field>> indexTypeFields = Map.of();
 
     public ApCachedAccessPointBridge(Map<String, IndexFieldReference<String>> fields) {
         this.fields = fields;
@@ -88,8 +96,24 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
             throw new IllegalArgumentException("settingsService is null");
         }
         ApCachedAccessPointBridge.settingsService = settingsService;
-        ApCachedAccessPointBridge.settingIndexSearch = getElzaSearchConfig();
         ApCachedAccessPointBridge.accessPointCacheService = accessPointCacheService;
+        refreshSearchConfig();
+    }
+
+    /**
+     * Reads the search configuration: at the start and after a package import or removal, which
+     * may change the fields (a package upgraded at the start comes after {@link #init}). Entities
+     * indexed before the change keep their fields until they are reindexed. Does nothing before
+     * {@link #init}.
+     */
+    public static void refreshSearchConfig() {
+        if (settingsService == null) {
+            return;
+        }
+        SettingIndexSearch config = getElzaSearchConfig();
+        ApCachedAccessPointBridge.settingIndexSearch = config;
+        ApCachedAccessPointBridge.indexTypeFields = config.indexTypeFields(null).stream()
+                .collect(Collectors.groupingBy(SettingIndexSearch.Field::getIndexType));
     }
 
     @Override
@@ -211,20 +235,43 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
     }
 
     private void addIndexFields(String name, CachedPart part, CachedAccessPoint cachedAccessPoint, DocumentElement document) {
-        if (CollectionUtils.isNotEmpty(part.getIndices())) {
-            for (ApIndex index : part.getIndices()) {
-                if (index.getIndexType().equals(DISPLAY_NAME)) {
+        if (CollectionUtils.isEmpty(part.getIndices())) {
+            return;
+        }
+        boolean preferredPart = part.getPartId().equals(cachedAccessPoint.getPreferredPartId());
+        for (ApIndex index : part.getIndices()) {
+            if (index.getIndexType().equals(DISPLAY_NAME)) {
 
-                    if (part.getPartId().equals(cachedAccessPoint.getPreferredPartId())) {
-                        addField(name + SEPARATOR + PREF_INDEX, index.getIndexValue().toLowerCase(), document, name);
-                        addSortField(name + SEPARATOR + PREF_INDEX, index.getIndexValue().toLowerCase(), document);
-                    }
+                if (preferredPart) {
+                    addField(name + SEPARATOR + PREF_INDEX, index.getIndexValue().toLowerCase(), document, name);
+                    addSortField(name + SEPARATOR + PREF_INDEX, index.getIndexValue().toLowerCase(), document);
+                }
 
-                    addField(name + SEPARATOR + part.getPartTypeCode().toLowerCase() + SEPARATOR + INDEX, index.getIndexValue().toLowerCase(), document, name);
-                    addField(name + SEPARATOR + INDEX, index.getIndexValue().toLowerCase(), document, name);
+                addField(name + SEPARATOR + part.getPartTypeCode().toLowerCase() + SEPARATOR + INDEX, index.getIndexValue().toLowerCase(), document, name);
+                addField(name + SEPARATOR + INDEX, index.getIndexValue().toLowerCase(), document, name);
+            }
+
+            for (SettingIndexSearch.Field field : indexTypeFields.getOrDefault(index.getIndexType(), List.of())) {
+                if (!field.preferredPartOnly() || preferredPart) {
+                    addIndexTypeField(name + SEPARATOR + field.getName(), index.getIndexValue(), document);
                 }
             }
         }
+    }
+
+    /**
+     * Field of an index type named by the search configuration: the whole value in the exact form
+     * and in the transliterated exact form (see {@link IndexValueNormalizer}), and tokenized.
+     */
+    private void addIndexTypeField(String name, String value, DocumentElement document) {
+        String exact = IndexValueNormalizer.exact(value);
+        if (exact.isEmpty()) {
+            return;
+        }
+        String base = name + INDEX_TYPE_FIELD;
+        document.addValue(base, exact);
+        document.addValue(base + TRANS, IndexValueNormalizer.transliteratedExact(value));
+        document.addValue(base + ANALYZED, value);
     }
 
     /**
@@ -253,14 +300,7 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
     }
 
     private String removeDiacritic(String value) {
-        char[] chars = new char[512];
-        final int maxSizeNeeded = 4 * value.length();
-        if (chars.length < maxSizeNeeded) {
-            chars = new char[ArrayUtil.oversize(maxSizeNeeded, Character.BYTES)];
-        }
-        ASCIIFoldingFilter.foldToASCII(value.toCharArray(), 0, chars, 0, value.length());
-
-        return String.valueOf(chars).trim();
+        return IndexValueNormalizer.removeDiacritics(value).trim();
     }
 
     private boolean isFieldForTransliteration(String name, String prefixName) {

@@ -37,3 +37,4 @@ Administrators and users are served by the guides in `docs/admin-guide`, `docs/u
 | [password-policy.md](password-policy.md) | Password policy, forced change, access recovery |
 | [api-keys.md](api-keys.md) | Personal API keys |
 | [ai-task-events.md](ai-task-events.md) | AI provider task events and the per-user push |
+| [entity-real-name-index.md](entity-real-name-index.md) | Entity search: the `REAL_NAME` index of names and the search fields of an index type (`index-search`) |

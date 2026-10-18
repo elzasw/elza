@@ -9,6 +9,9 @@
         <ns10:field name="pt_name_index" boost="3.0" boost-exact="6.0" boost-trans-exact="5.4" transliterate="true"/>
         <ns10:field name="pref_nm_main" boost="50.0" boost-exact="250.0" boost-trans-exact="200.0" boost-fulltext="200.0" transliterate="true"/>
         <ns10:field name="pref_nm_minor" boost="4.0" boost-exact="8.0" boost-trans-exact="7.2" transliterate="true"/>
+        <!-- REAL_NAME: the name as commonly used; the whole search text is matched against the whole name -->
+        <ns10:field name="pref_real_name" index-type="REAL_NAME" boost-exact="1000.0" boost-trans-exact="800.0" boost-fulltext="400.0"/>
+        <ns10:field name="real_name" index-type="REAL_NAME" boost-exact="300.0" boost-trans-exact="240.0" boost-fulltext="100.0"/>
         <ns10:field name="nm_main" part-type="PT_NAME" boost="10.0" boost-exact="50.0" boost-trans-exact="40.0" transliterate="true"/>
         <ns10:field name="nm_minor" part-type="PT_NAME" boost="1.0" boost-exact="2.0" boost-trans-exact="1.8" transliterate="true"/>
     </index-search>
