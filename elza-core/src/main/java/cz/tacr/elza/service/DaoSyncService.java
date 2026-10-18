@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import cz.tacr.elza.common.db.HibernateUtils;
 import jakarta.persistence.EntityManager;
@@ -57,6 +58,7 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.DigitizationCode;
+import cz.tacr.elza.exception.codes.ErrorCode;
 import cz.tacr.elza.exception.codes.PackageCode;
 import cz.tacr.elza.repository.ArrLegacyDaoLinkRepository;
 import cz.tacr.elza.repository.DaoFileRepository;
@@ -100,6 +102,14 @@ public class DaoSyncService {
     private static final Logger logger = LoggerFactory.getLogger(DaoSyncService.class);
 
     public final static String ELZA_SCENARIO = "_ELZA_SCENARIO";
+
+    /**
+     * Codes of the conversion failures of a stored scenario item whose item type or
+     * specification is not in the current rules.
+     */
+    private static final Set<ErrorCode> UNKNOWN_IN_RULES = Set.of(ArrangementCode.ITEM_TYPE_NOT_FOUND,
+                                                                  ArrangementCode.ITEM_SPEC_NOT_FOUND,
+                                                                  ArrangementCode.ITEM_SPEC_FOUND);
 
     /**
      * Velikost dávky pro synchronizaci.
@@ -235,9 +245,25 @@ public class DaoSyncService {
 
             // prepare old items
             List<ArrDescItem> prevScenarioItems = new ArrayList<>();
+            List<String> skippedItems = new ArrayList<>();
             for (Object item : getFiltredItems(items, filtredScenario)) {
-                ArrDescItem descItem = prepare(item);
+                ArrDescItem descItem;
+                try {
+                    descItem = prepare(item);
+                } catch (BusinessException e) {
+                    if (!UNKNOWN_IN_RULES.contains(e.getErrorCode())) {
+                        throw e;
+                    }
+                    // The stored item uses a type or specification the rules no longer have.
+                    // No item on the node can match it, so there is nothing to remove for it.
+                    skippedItems.add(e.getMessage());
+                    continue;
+                }
                 prevScenarioItems.add(descItem);
+            }
+            if (!skippedItems.isEmpty()) {
+                logger.warn("Stored scenario items unknown to the rules were skipped, nodeId: {}, scenario: {}, items: {}",
+                            level.getNodeId(), filtredScenario, skippedItems);
             }
 
             List<ArrDescItem> dbItems = descriptionItemService.findByNodeAndDeleteChangeIsNull(level.getNode());
