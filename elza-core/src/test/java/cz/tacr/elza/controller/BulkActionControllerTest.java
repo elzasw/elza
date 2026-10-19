@@ -23,6 +23,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.awaitility.Awaitility.await;
+
 /**
  * Tests of bulk-action controller (running SRD_GENERATOR_UNIT_ID,
  * SRD_FUND_VALIDATION, SRD_GENERATOR_SERIAL_NUMBER, interrupt flow).
@@ -214,22 +218,7 @@ public class BulkActionControllerTest extends AbstractControllerTest {
 
         post((spec) -> spec.pathParam("versionId", fundVersionId).pathParam("code", BULK_ACTION_SERIAL_NUMBER_GENERATOR).body(Collections.singletonList(next.getId())), BULK_ACTION_QUEUE);
 
-		while (true) {
-            logger.info("Čekání na dokončení asynchronních operací...");
-            helperTestService.waitForWorkers();
-			Thread.sleep(1000);
-
-			BulkActionRunVO stateVo = getBulkActionState(fundVersionId, BULK_ACTION_SERIAL_NUMBER_GENERATOR);
-			Assertions.assertNotNull(stateVo);
-			State state = stateVo.getState();
-			logger.info("Received state: " + state);
-
-			Assertions.assertTrue(state != State.ERROR);
-			if (state == State.FINISHED) {
-				logger.info("Async action finished");
-				break;
-			}
-		}
+        awaitFinished(fundVersionId, BULK_ACTION_SERIAL_NUMBER_GENERATOR);
     }
 
     /**
@@ -257,40 +246,26 @@ public class BulkActionControllerTest extends AbstractControllerTest {
      * @param code verze archivní kod hromadné akce hromadné akce
      * @return stav
      */
-    private BulkActionRunVO runBulkAction(final int fundVersionId, final String code) throws InterruptedException {
-        BulkActionRunVO state;
-
+    private BulkActionRunVO runBulkAction(final int fundVersionId, final String code) {
         get((spec) -> spec.pathParam("versionId", fundVersionId).pathParam("code", code), BULK_ACTION_QUEUE);
+        return awaitFinished(fundVersionId, code);
+    }
 
-        int counter = 6;
-
-        boolean hasResult = false;
-        do {
-            counter--;
-
-            logger.info("Čekání na dokončení asynchronních operací...");
-            helperTestService.waitForWorkers();
-            Thread.sleep(5000);
-
-            state = getBulkActionState(fundVersionId, code);
-
-            if (counter >= 0) {
-                if (state != null) {
-                    if (state.getState().equals(State.FINISHED)) {
-                        hasResult = true;
-                    } else if (state.getState().equals(State.ERROR)) {
+    /**
+     * Polls the latest run of the bulk action until it is FINISHED; fails on ERROR or after 30 s.
+     */
+    private BulkActionRunVO awaitFinished(final int fundVersionId, final String code) {
+        helperTestService.waitForWorkers();
+        return await("bulk action " + code)
+                .atMost(30, SECONDS)
+                .pollInterval(100, MILLISECONDS)
+                .until(() -> {
+                    BulkActionRunVO state = getBulkActionState(fundVersionId, code);
+                    if (state != null && state.getState() == State.ERROR) {
                         Assertions.fail("Bulk action failed, code: " + code + " error: " + state.getError());
                     }
-                }
-            } else {
-                hasResult = true;
-            }
-
-        } while (!hasResult);
-
-        Assertions.assertTrue(counter >= 0, "Čas překročen");
-
-        return state;
+                    return state;
+                }, state -> state != null && state.getState() == State.FINISHED);
     }
 
     private BulkActionRunVO getBulkAction(final int id) {

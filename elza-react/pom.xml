@@ -90,8 +90,15 @@
                         </goals>
                         <configuration>
                             <executable>npm</executable>
+                            <!-- prefer-offline installs from the npm cache without revalidating
+                                 package metadata against the registry; no-audit and no-fund skip
+                                 two more registry requests. The lock file pins exact versions, so the
+                                 result is the same, only without the network round trips. -->
                             <arguments>
                                 <argument>ci</argument>
+                                <argument>--prefer-offline</argument>
+                                <argument>--no-audit</argument>
+                                <argument>--no-fund</argument>
                             </arguments>
                         </configuration>
                     </execution>
