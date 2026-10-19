@@ -12,6 +12,23 @@ change, a step during the upgrade) name the configuration key and link to
 the relevant chapter. Before an upgrade, read the entries of all builds
 between the installed and the new version; see :doc:`/03-upgrade`.
 
+3.4.11
+======
+
+Changes
+-------
+
+* Change: 9800 - The text search of archival entities puts the entity
+  whose name is typed the way it is commonly used first ("Petr Pytelka",
+  "Československá akademie věd"). The names of CZ_BASE entities get the
+  index ``REAL_NAME`` - the name without supplements and degrees, a person
+  as forename and surname - and the whole search text is matched against
+  it whatever the order of the words and the diacritics. After the upgrade
+  the CZ_BASE entities are regenerated in the background (the queue of
+  entity validation); the ranking improves as the run proceeds. A rules
+  package states such a field in ``index-search`` with ``index-type``, see
+  the implementation guide.
+
 3.4.10
 ======
 
@@ -73,16 +90,6 @@ Changes
 * Change: The text search of archival entities searches the name elements
   that the rules packages list for the search (with ``ISAAR_CPF`` its
   names as well); the search with CZ_BASE does not change.
-* Change: 9800 - The text search of archival entities puts the entity
-  whose name is typed the way it is commonly used first ("Petr Pytelka",
-  "Československá akademie věd"). The names of CZ_BASE entities get the
-  index ``REAL_NAME`` - the name without supplements and degrees, a person
-  as forename and surname - and the whole search text is matched against
-  it whatever the order of the words and the diacritics. After the upgrade
-  the CZ_BASE entities are regenerated in the background (the queue of
-  entity validation); the ranking improves as the run proceeds. A rules
-  package states such a field in ``index-search`` with ``index-type``, see
-  the implementation guide.
 * Change: 9970 - The dialog of a new output offers *No filter* as the
   empty choice of the output filter.
 
