@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -12,6 +14,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import cz.tacr.elza.controller.vo.AiDisplayBlockVO;
 import cz.tacr.elza.controller.vo.AiFollowUpAction;
 import cz.tacr.elza.controller.vo.AiMarkdownBlockVO;
+import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.RulPartType;
 
 /**
  * Renders an {@code elza.revisionFindings} result block (the advisory findings
@@ -30,12 +36,46 @@ import cz.tacr.elza.controller.vo.AiMarkdownBlockVO;
  * localizing the few label words separately from the finding texts would only
  * produce mixed-language output. Category/severity/action codes are open sets —
  * an unknown code is shown raw rather than dropped.
+ *
+ * <p>Element and part references arrive as rule-set codes
+ * ({@code sourceItemType}, {@code targetItemType}, {@code sourcePartType}) —
+ * the protocol's vocabulary, which the provider never resolves. They are shown
+ * by their configured NAME (the archivist reads "Fyzický stav jednotky popisu",
+ * not {@code ZP2015_UNIT_CURRENT_STATUS}); a code the rule set does not know
+ * is shown raw in backticks rather than dropped. The names are the rule set's
+ * source-language names (no request-language translation), consistent with the
+ * Czech labels above — see the localization note in tasks/elza-revision.md §5.
  */
 @Component
 public class RevisionFindingsBlockMapper implements AiBlockMapper {
 
     /** Task type of the "prepare the fix" follow-up exchange. */
     static final String ENHANCE_TASK_TYPE = "elza.enhanceDescription";
+
+    /** Item-type code → display name; {@code null} when unknown. */
+    private final UnaryOperator<String> itemTypeName;
+
+    /** Part-type code → display name; {@code null} when unknown. */
+    private final UnaryOperator<String> partTypeName;
+
+    @Autowired
+    public RevisionFindingsBlockMapper(final StaticDataService staticDataService) {
+        this(code -> {
+            StaticDataProvider sdp = staticDataService.getData();
+            ItemType itemType = sdp.getItemTypeByCode(code);
+            return itemType == null ? null : itemType.getEntity().getName();
+        }, code -> {
+            RulPartType partType = staticDataService.getData().getPartTypeByCode(code);
+            return partType == null ? null : partType.getName();
+        });
+    }
+
+    /** Resolver-injecting constructor (tests run without the static data). */
+    RevisionFindingsBlockMapper(final UnaryOperator<String> itemTypeName,
+                                final UnaryOperator<String> partTypeName) {
+        this.itemTypeName = itemTypeName;
+        this.partTypeName = partTypeName;
+    }
 
     private static final Map<String, String> CATEGORY_LABELS = Map.of(
             "hidden_data", "Skryté strukturované údaje",
@@ -95,7 +135,7 @@ public class RevisionFindingsBlockMapper implements AiBlockMapper {
             boolean entityFinding = !finding.path("nodeId").isNumber() && finding.path("accessPointId").isNumber();
             String sourcePartType = finding.path("sourcePartType").asText("");
             if (entityFinding && !sourcePartType.isBlank()) {
-                md.append(" (část `").append(sourcePartType).append("`)");
+                md.append(" (část ").append(named(partTypeName, sourcePartType)).append(')');
             }
             md.append('\n');
 
@@ -111,7 +151,7 @@ public class RevisionFindingsBlockMapper implements AiBlockMapper {
 
             String sourceItemType = finding.path("sourceItemType").asText("");
             if (!sourceItemType.isBlank()) {
-                md.append("- Zdrojový prvek: `").append(sourceItemType).append("`\n");
+                md.append("- Zdrojový prvek: ").append(named(itemTypeName, sourceItemType)).append('\n');
             }
             String action = label(ACTION_LABELS, finding.path("action").asText(""));
             String targetItemType = finding.path("targetItemType").asText("");
@@ -119,7 +159,7 @@ public class RevisionFindingsBlockMapper implements AiBlockMapper {
                 md.append("- Doporučení: ");
                 md.append(action.isBlank() ? "—" : action);
                 if (!targetItemType.isBlank()) {
-                    md.append(" do prvku `").append(targetItemType).append('`');
+                    md.append(" do prvku ").append(named(itemTypeName, targetItemType));
                 }
                 md.append('\n');
             }
@@ -161,6 +201,16 @@ public class RevisionFindingsBlockMapper implements AiBlockMapper {
         }
         instruction.append('.');
         return instruction.toString();
+    }
+
+    /**
+     * A rule-set code rendered by its configured name; a code the rule set does
+     * not know (another rule set's element, a model slip) stays visible as the
+     * raw code in backticks.
+     */
+    private static String named(final UnaryOperator<String> names, final String code) {
+        String name = names.apply(code);
+        return name == null || name.isBlank() ? "`" + code + "`" : name;
     }
 
     /** The label for a code; an unknown code (the sets are open) is shown raw. */

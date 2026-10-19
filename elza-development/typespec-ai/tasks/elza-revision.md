@@ -138,8 +138,21 @@ the typed `elza.revisionFindings` result onto the existing MARKDOWN display
 block — no new UI). The structured **„AI doporučení"** triage cards
 (*Přijmout* → creates a `WfIssue`, *Odmítnout*) and the automatic
 `RevisionFinding → WfIssue` conversion are a later, additive step reading the
-same typed block. The planned `WfIssue` mapping for that step (existing issue
-types, no package change):
+same typed block.
+
+**Localization of the display — an accepted limitation.** The markdown
+rendering uses fixed Czech labels (category, severity, action, „Zdrojový
+prvek", „Jistota") and shows the element and part references
+(`sourceItemType`, `targetItemType`, `sourcePartType`) by their rule-set
+names in the package's source language — the request language
+(`Accept-Language` → package translations) is not applied. The finding texts
+themselves arrive in `RevisionConfig.language`, so a Czech run reads
+uniformly Czech, which is what the pilot needs. A non-Czech deployment needs
+the labels in the message bundle and the names resolved through the package
+translations (`PackageTexts`), i.e. the mapper takes the request locale.
+
+The planned `WfIssue` mapping for that step (existing issue types, no package
+change):
 
 | severity | `WfIssueType` |
 |---|---|
