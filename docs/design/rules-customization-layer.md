@@ -149,8 +149,12 @@ framework: [entity-framework-research.md](entity-framework-research.md) and
 - *Language chain:* the UI language → the same without region → the language of the installation
   (`elza.locale`) → the text as its package wrote it, which counts as the text in the package's own
   language at that language's place in the chain (an English reader of ISAAR_CPF gets the rule's
-  English before the Czech of a Czech installation). No language on funds or scopes. An
-  international package ships every language ELZA ships; a national package its own language only.
+  English before the Czech of a Czech installation). The source texts of entities and declarations
+  join `PackageTranslations` as rows in the package's language when static data loads; the names
+  of type groups live in editable UI settings, so `RuleController.getGroups` passes the package of
+  the rule set and the name takes that language's place at read time. No language on funds or
+  scopes. An international package ships every language ELZA ships; a national package its own
+  language only.
 - *Texts a package writes follow the package* (proposal, not built). Names stored as text
   (structured object values, entity indexes and key values, auto items, outputs, the fulltext index
   of ENUM values, the text form of unit dates in index names and outputs) are written by the scripts

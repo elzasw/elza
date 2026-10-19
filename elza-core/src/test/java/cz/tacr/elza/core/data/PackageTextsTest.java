@@ -73,7 +73,8 @@ class PackageTextsTest {
                 row(base, "MESSAGE", "BASE/HELLO", "text", en, "Hello {0}, it''s {1,number,integer} o''clock."),
                 row(base, "MESSAGE", "CORE/AP_DUPLICATE_KEY_VALUE", "text", en, "Overridden by BASE"),
                 row(other, "MESSAGE", "OTHER/HI", "text", cs, "Ahoj {0}"),
-                row(base, "PART_TYPE", "PT_NAME", "name", en, "Name")),
+                row(base, "PART_TYPE", "PT_NAME", "name", en, "Name"),
+                row(other, "TYPE_GROUP", "R/CONTENT", "name", cs, "Obsah")),
                 List.of(base, addon, other),
                 List.of(dependency),
                 CoreTranslations.load(List.of(cs, en)));
@@ -146,6 +147,33 @@ class PackageTextsTest {
         assertEquals("Ahoj x", texts.render(hi, cs));
         assertEquals("Ahoj x", texts.render(hi, de));
         assertEquals("Hi x", texts.render(hi, null));
+    }
+
+    /**
+     * A source name kept outside the translations (a type group) counts as the text in the language
+     * of the package that wrote it: an English reader of an English package gets it before the Czech
+     * of the installation, a Czech reader of the same package the Czech translation.
+     */
+    @Test
+    void sourceNameOfAPackageStandsAtItsLanguage() {
+        lenient().when(sdp.getPackageById(12)).thenReturn(other);
+        lenient().when(sdp.getPackageById(10)).thenReturn(base);
+
+        bind(withCookie("en"));
+        assertEquals("Content", texts.name(TranslationEntityType.TYPE_GROUP, "R/CONTENT", "Content", 12));
+        assertEquals("Obsah", texts.name(TranslationEntityType.TYPE_GROUP, "R/CONTENT", "Content", 10),
+                     "a Czech package: the installation's Czech comes first");
+        assertEquals("Obsah", texts.name(TranslationEntityType.TYPE_GROUP, "R/CONTENT", "Content", null));
+        assertEquals("Other", texts.name(TranslationEntityType.TYPE_GROUP, "R/OTHER", "Other", 12));
+
+        bind(withCookie("cs"));
+        assertEquals("Obsah", texts.name(TranslationEntityType.TYPE_GROUP, "R/CONTENT", "Content", 12));
+    }
+
+    private static MockHttpServletRequest withCookie(String tag) {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setCookies(new jakarta.servlet.http.Cookie(PackageTexts.LANGUAGE_COOKIE, tag));
+        return request;
     }
 
     @Test

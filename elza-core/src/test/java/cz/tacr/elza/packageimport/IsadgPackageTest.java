@@ -25,11 +25,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import cz.tacr.elza.ElzaCoreMain;
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
@@ -65,6 +68,7 @@ import cz.tacr.elza.domain.RulItemSpecExt;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.TranslationEntityType;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.DirectionLevel;
@@ -218,6 +222,44 @@ public class IsadgPackageTest {
             assertNull(bulkActionConfigManager.getType("ISADG_GENERATOR_REFERENCE_CODE"),
                        "the reference code is assigned by the archivist, not generated");
         });
+    }
+
+    /**
+     * The English texts of the package reach an English reader of a Czech installation, the Czech
+     * translation a Czech one - for the declared item types as for the other packaged entities and
+     * for the type groups of the UI settings.
+     */
+    @Test
+    @Order(1)
+    void textsFollowTheReaderInACzechInstallation() {
+        tx(() -> {
+            StaticDataProvider sdp = staticDataService.getData();
+            Integer groupsPackageId = sdp.getRuleSetByCode(CODE).getEntity().getPackage().getPackageId();
+            try {
+                bindLanguage("en");
+                assertEquals("Title", packageTexts.name(sdp.getItemType("ISADG_TITLE")));
+                assertEquals("Containers", packageTexts.name(TranslationEntityType.STRUCTURED_TYPE,
+                                                             "ISADG_CONTAINER", "?"));
+                assertEquals("Containers", packageTexts.name(TranslationEntityType.POLICY_TYPE,
+                                                             "ISADG_POL_CONTAINER", "?"));
+                assertEquals("Content and structure", packageTexts.name(TranslationEntityType.TYPE_GROUP,
+                        "ISADG/03_CONTENT", "Content and structure", groupsPackageId));
+
+                bindLanguage("cs");
+                assertEquals("Ukládací jednotky", packageTexts.name(TranslationEntityType.STRUCTURED_TYPE,
+                                                                    "ISADG_CONTAINER", "?"));
+                assertEquals("Obsah a struktura", packageTexts.name(TranslationEntityType.TYPE_GROUP,
+                        "ISADG/03_CONTENT", "Content and structure", groupsPackageId));
+            } finally {
+                RequestContextHolder.resetRequestAttributes();
+            }
+        });
+    }
+
+    private static void bindLanguage(String tag) {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setCookies(new jakarta.servlet.http.Cookie(PackageTexts.LANGUAGE_COOKIE, tag));
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
     }
 
     /** The root is a fonds; each level offers the scenarios of the levels allowed below it. */

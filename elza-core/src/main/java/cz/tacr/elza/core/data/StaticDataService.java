@@ -71,7 +71,8 @@ public class StaticDataService {
 
     /* managed components */
 
-    private final EntityManager em;
+    /** Package visibility: the provider reads the source texts of packaged entities with it. */
+    final EntityManager em;
 
     /* repository with package visibility for initialization */
 

@@ -76,6 +76,7 @@ import cz.tacr.elza.repository.StructureExtensionDefinitionRepository;
 import cz.tacr.elza.repository.StructuredTypeExtensionRepository;
 import cz.tacr.elza.repository.StructuredTypeRepository;
 import cz.tacr.elza.repository.SysLanguageRepository;
+import jakarta.persistence.EntityManager;
 
 public class StaticDataProvider {
 
@@ -401,7 +402,8 @@ public class StaticDataProvider {
         initPolicyTypes(service.policyTypeRepository);
         List<RulApTypeDeclaration> apTypeDeclarations = service.apTypeDeclarationRepository.findAll();
         List<RulItemSpecDeclaration> itemSpecDeclarations = service.itemSpecDeclarationRepository.findAll();
-        initTranslations(service.translationRepository, service.packageDependencyRepository, apTypeDeclarations,
+        initTranslations(service.em, service.translationRepository, service.packageDependencyRepository,
+                         apTypeDeclarations,
                          service.partTypeDeclarationRepository.findAll(),
                          service.itemTypeDeclarationRepository.findAll(),
                          itemSpecDeclarations);
@@ -734,9 +736,13 @@ public class StaticDataProvider {
 
     /**
      * Translations of package texts; the names of class declarations are texts of the classes in the
-     * languages of the declaring packages.
+     * languages of the declaring packages, the texts of other packaged entities are texts in the
+     * language of the owning package. Without such a row a language later in the fallback chain
+     * (the installation language) would win over the text the package wrote in the requested
+     * language.
      */
-    private void initTranslations(RulTranslationRepository translationRepository,
+    private void initTranslations(EntityManager em,
+                                  RulTranslationRepository translationRepository,
                                   PackageDependencyRepository packageDependencyRepository,
                                   List<RulApTypeDeclaration> apTypeDeclarations,
                                   List<RulPartTypeDeclaration> partTypeDeclarations,
@@ -771,10 +777,43 @@ public class StaticDataProvider {
             addDeclaredText(rows, declaration.getPackageId(), TranslationEntityType.ITEM_SPEC, code,
                             TranslationEntityType.DESCRIPTION, declaration.getDescription());
         }
+        addEntitySourceTexts(em, rows);
         // the texts shipped with the core lie below every package
         this.translations = PackageTranslations.build(rows, packages, packageDependencyRepository.findAll(),
                                                       CoreTranslations.load(sysLanguages));
     }
+
+    /**
+     * Texts of the packaged entities without declarations (rule sets, structured types, policy
+     * types, ...) as texts in the languages of their owning packages. Package import skips a
+     * translation of an own entity into the package's source language, so these rows do not meet a
+     * row of the same package and language; a source-language row of a dependent package still
+     * wins by dependency order.
+     */
+    private void addEntitySourceTexts(EntityManager em, List<RulTranslation> rows) {
+        for (TranslationEntityType type : TranslationEntityType.values()) {
+            if (type.getEntityName() == null || DECLARED_TYPES.contains(type)) {
+                continue;
+            }
+            // entity name and fields come from TranslationEntityType, never from package data
+            String where = type == TranslationEntityType.TEMPLATE ? " WHERE e.deleted = false" : "";
+            for (String field : type.getFields()) {
+                List<Object[]> result = em
+                        .createQuery("SELECT e.code, e." + field + ", e.rulPackage.packageId FROM "
+                                + type.getEntityName() + " e" + where, Object[].class)
+                        .getResultList();
+                for (Object[] r : result) {
+                    if (r[1] != null) {
+                        addDeclaredText(rows, (Integer) r[2], type, (String) r[0], field, (String) r[1]);
+                    }
+                }
+            }
+        }
+    }
+
+    /** Kinds whose texts come from declarations, see {@link #initTranslations}. */
+    private static final Set<TranslationEntityType> DECLARED_TYPES = Set.of(TranslationEntityType.AP_TYPE,
+            TranslationEntityType.PART_TYPE, TranslationEntityType.ITEM_TYPE, TranslationEntityType.ITEM_SPEC);
 
     /**
      * Text of a declaration as a text in the language of the declaring package.

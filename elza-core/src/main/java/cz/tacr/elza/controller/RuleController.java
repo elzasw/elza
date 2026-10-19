@@ -320,9 +320,12 @@ public class RuleController {
         StaticDataProvider sdp = staticDataService.getData();
 
         List<ItemType> ruleSystemItemTypes = new ArrayList<>(sdp.getItemTypes());
+        // group names are written by the package of the rule set
+        Integer groupsPackageId = sdp.getRuleSetByCode(ruleCode).getEntity().getPackage().getPackageId();
         for (GroupConfiguration configuration : viewConfig.getGroups()) {
             String groupName = packageTexts.name(TranslationEntityType.TYPE_GROUP,
-                    ruleCode + TranslationEntityType.CODE_SEPARATOR + configuration.getCode(), configuration.getName());
+                    ruleCode + TranslationEntityType.CODE_SEPARATOR + configuration.getCode(), configuration.getName(),
+                    groupsPackageId);
             GroupVO group = new GroupVO(configuration.getCode(), groupName);
             List<TypeInfoVO> typeInfos = new ArrayList<>(configuration.getTypes().size());
             for (TypeInfo typeInfo : configuration.getTypes()) {
