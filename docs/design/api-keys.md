@@ -121,11 +121,13 @@ is a core message rendered in the request language.
 | `REVOKED` | create a new key; revocation is a deliberate action |
 | `USER_INACTIVE` | contact the administrator |
 
-Each attempt is written to the SIEM log (`SiemAuditLogger`, authentication
-type `API_KEY`): success with user, source IP and `keyId`; failure with source
+Attempts are written to the SIEM log (`SiemAuditLogger`, authentication
+type `API_KEY`): success with user, source IP and `keyId`, at most once per
+hour per key and address (see [siem-log.md](siem-log.md)); every failure with source
 IP, `keyId` when known, and the failure code — never the secret. Key creation
-and revocation are audited too (`api_key_created`, `api_key_revoked`: actor,
-owner, `keyId`, expiry). The application log has only a DEBUG line per
+and revocation are audited too (`api_key_create`, `api_key_revoke`:
+`srcuser` = actor, `dstuser` = owner, `key_id`, expiry; see
+[siem-log.md](siem-log.md)). The application log has only a DEBUG line per
 rejection.
 
 ## Permissions and limits

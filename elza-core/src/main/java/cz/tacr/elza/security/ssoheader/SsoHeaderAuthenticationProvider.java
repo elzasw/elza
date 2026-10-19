@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -42,7 +43,7 @@ public class SsoHeaderAuthenticationProvider implements AuthenticationProvider {
 		
 		// Why credentials is empty?
 		if (!Objects.equals(authentication.getCredentials(), SsoHeaderAuthenticationFilter.SSO_CREDENTIALS)) {
-			siemAuditLogger.loginFailed(username, sourceIp, "INVALID_CREDENTIALS");
+			siemAuditLogger.loginFailed(username, sourceIp, AuthenticationType.SSO_HEADER, "INVALID_CREDENTIALS", null);
 			throw new BadCredentialsException("Neplatné credentials, username: "+username);
 		}
 
@@ -59,7 +60,10 @@ public class SsoHeaderAuthenticationProvider implements AuthenticationProvider {
 			siemAuditLogger.loginSuccess(username, sourceIp, AuthenticationType.SSO_HEADER);
 			return ret;
 		} catch (UsernameNotFoundException e) {
-			siemAuditLogger.loginFailed(username, sourceIp, "INVALID_USERNAME");
+			siemAuditLogger.loginFailed(username, sourceIp, AuthenticationType.SSO_HEADER, "INVALID_USERNAME", null);
+			throw e;
+		} catch (LockedException e) {
+			siemAuditLogger.loginFailed(username, sourceIp, AuthenticationType.SSO_HEADER, "INACTIVE_USER", null);
 			throw e;
 		}
 	}

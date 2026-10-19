@@ -34,7 +34,8 @@ Administrators and users are served by the guides in `docs/admin-guide`, `docs/u
 | [rules-customization-layer.md](rules-customization-layer.md) | Rules-package customization layer, entity frameworks, internationalized version |
 | [entity-framework-research.md](entity-framework-research.md) | Research: agent types and vocabularies in ISAAR(CPF), EAC-CPF, RiC; source notes in [research/entity-frameworks](research/entity-frameworks) |
 | [isaar-cpf-cam-comparison.md](isaar-cpf-cam-comparison.md) | ISAAR(CPF) / EAC-CPF compared with CAM (CZ_BASE) |
-| [password-policy.md](password-policy.md) | Password policy, forced change, access recovery |
+| [password-policy.md](password-policy.md) | Password policy, forced change, users with a password from the configuration |
 | [api-keys.md](api-keys.md) | Personal API keys |
+| [siem-log.md](siem-log.md) | Security audit log for a SIEM: field schema, client address behind a proxy |
 | [ai-task-events.md](ai-task-events.md) | AI provider task events and the per-user push |
 | [entity-real-name-index.md](entity-real-name-index.md) | Entity search: the `REAL_NAME` index of names and the search fields of an index type (`index-search`) |

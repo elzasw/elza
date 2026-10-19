@@ -15,6 +15,54 @@ between the installed and the new version; see :doc:`/03-upgrade`.
 3.4.11
 ======
 
+Before the upgrade
+------------------
+
+* Change: 10146 - Security audit log (``elza.siemLogFile``): the field
+  names follow the OSSEC/Wazuh schema (``srcuser``, ``dstuser``,
+  ``srcip``, ``result``, ``reason``, ``msg``, ...), fields without meaning
+  for a SIEM (``LOG_FILE``, ``SIEM_LOG_FILE``, ``@version``,
+  ``logger_name``, ``thread_name``, ``level_value``) are removed and the
+  events are identified by ``event_type`` and ``action`` (e.g. a login is
+  ``user_login`` with ``result`` ``success`` or ``failed``). **The format
+  is not compatible with the previous one; adjust the decoders and rules
+  of the SIEM system.** See :doc:`/05-security`.
+* Change: 10146 - Behind a reverse proxy, the security audit log records
+  the address of the client (``srcip``) when
+  ``elza.security.acceptForwardedHeaders`` is enabled. **The proxy must
+  replace the header** ``X-Forwarded-For`` **with the address of the
+  client** (NGINX ``$remote_addr``, Apache
+  ``RequestHeader unset X-Forwarded-For early``); otherwise a client can
+  choose the logged address. See :ref:`reverse-proxy-client-address`.
+* Change: 10146 - The administrator from the configuration
+  (``elza.security.admin.username`` / ``.password``) is replaced by the list
+  ``elza.security.override`` of user names and passwords. A missing user is
+  created as an administrator without a password in the database; a listed
+  user logs in with their own password or with the configured one, which is
+  no longer written to the database. **With** ``elza.security.admin.*``
+  **set, the application does not start**; move the entry to
+  ``elza.security.override``. See :ref:`install-users-from-config`.
+* Removed: 10146 - Recovering access with ``elza.security.recovery.username``
+  and ``elza.security.recovery.password``; the keys are ignored. Access is
+  recovered with ``elza.security.override``, whose use is written to the
+  security audit log; see :doc:`/05-security`. **Remove the recovery keys
+  from** :file:`elza.yaml`.
+
+New
+---
+
+* New: 10146 - Security audit log - new events: logout, password change,
+  creation, activation, deactivation and renaming of users (including the first
+  administrator of the initial setup), changes of permissions of users
+  and groups, group membership, creation and deletion of groups, creation
+  (including an import) and deletion of archival funds and deletion of
+  their history. A failed
+  login states the method (``authentication_type``) and a stable reason
+  (``INVALID_USERNAME``, ``INVALID_PASSWORD``, ``INACTIVE_USER``, ...); a
+  rejected JWT is logged as well. A login with the password from
+  ``elza.security.override`` is logged as ``OVERRIDE``, and every startup
+  records the users with such a password (``override_active``).
+
 Changes
 -------
 
@@ -28,6 +76,10 @@ Changes
   entity validation); the ranking improves as the run proceeds. A rules
   package states such a field in ``index-search`` with ``index-type``, see
   the implementation guide.
+* Change: 10146 - Security audit log - a successful login with a JWT or an
+  API key, which is checked on every request, is logged at most once per
+  hour for the same key (or user) and address; failures are always
+  logged.
 
 3.4.10
 ======

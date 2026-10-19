@@ -3,6 +3,7 @@ package cz.tacr.elza.security.ldap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -96,8 +97,17 @@ public class ActiveDirectoryUserDetailProvider implements AuthenticationProvider
 		    var response = prepareDetails(authentication, adResponse);
 		    siemAuditLogger.loginSuccess(authentication.getName(), sourceIp, AuthenticationType.ACTIVE_DIRECTORY);
 			return response;
+	    } catch (UsernameNotFoundException e) {
+	    	siemAuditLogger.loginFailed(authentication.getName(), sourceIp, AuthenticationType.ACTIVE_DIRECTORY,
+	    			"INVALID_USERNAME", null);
+		    throw e;
+	    } catch (LockedException e) {
+	    	siemAuditLogger.loginFailed(authentication.getName(), sourceIp, AuthenticationType.ACTIVE_DIRECTORY,
+	    			"INACTIVE_USER", null);
+		    throw e;
 	    } catch (AuthenticationException e) {
-	    	siemAuditLogger.loginFailed(authentication.getName(), sourceIp, e.getMessage());
+	    	siemAuditLogger.loginFailed(authentication.getName(), sourceIp, AuthenticationType.ACTIVE_DIRECTORY,
+	    			"AUTHENTICATION_ERROR", e.getMessage());
 		    throw e;
 	    }
 	}

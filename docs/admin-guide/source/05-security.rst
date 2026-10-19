@@ -40,15 +40,14 @@ Until then, anyone who can reach the application can create the first
 administrator, so create it before the application is made available on
 the network. Once any user exists, the setup is closed for good.
 
-An administrator can also be set in the configuration with
-``elza.security.admin.username`` and ``elza.security.admin.password``;
-see :ref:`install-admin-from-config`. They are applied at every startup:
-a missing user is created as an administrator, an existing user gets the
-configured password and is activated if deactivated (its permissions do
-not change). The password is in plain text, and while the keys are set, a
-password changed in the application returns to the configured one and a
-deactivated account is activated again at the next restart; remove the
-keys once they are no longer needed.
+Users can also be set in the configuration, in the list
+``elza.security.override``; see :ref:`install-users-from-config`. It is
+applied at every startup: a missing user is created as an administrator
+without a password in the database, a deactivated user is activated, and
+the password of an existing user in the database does not change. A
+listed user logs in with their own password or with the configured one.
+The configured password is in plain text and valid next to the user's
+own; remove the entry once it is no longer needed.
 
 The default user
 ================
@@ -193,54 +192,21 @@ Recovering access to an account
 -------------------------------
 
 When an administrator has forgotten their password and no other
-administrator can set a new one, a temporary recovery password can be set
-in the configuration:
+administrator can set a new one, access is recovered with the users from
+the configuration (see :ref:`install-users-from-config`):
 
-.. code-block:: yaml
+1. Add the user with a temporary password to ``elza.security.override``
+   in :file:`elza.yaml` and restart ELZA. A deactivated user is activated;
+   the user's own password in the database does not change.
+2. Log in with the temporary password and change the password in the
+   application.
+3. Remove the entry from :file:`elza.yaml` and restart ELZA. Until then the
+   temporary password works next to the new one.
 
-   elza:
-     security:
-       recovery:
-         username: jan.novak
-         password: a-temporary-password
-
-.. list-table::
-   :header-rows: 1
-   :widths: 36 18 46
-
-   * - Key
-     - Default
-     - Meaning
-   * - ``elza.security.recovery.username``
-     - (none)
-     - The user who may log in with the recovery password.
-   * - ``elza.security.recovery.password``
-     - (none)
-     - The recovery password, as plain text. Recovery is active only when
-       both keys are set.
-
-Procedure:
-
-1. Set both keys in :file:`elza.yaml` and restart ELZA.
-2. Log in as the user with the recovery password. The application asks
-   for a new password at once.
-3. Enter the recovery password as the old password and set a new
-   password.
-4. Remove both keys from :file:`elza.yaml` and restart ELZA.
-
-While recovery is active, ELZA logs a warning at startup and at each login
-with the recovery password, and the user's own password keeps working as
-well. Recovery works only for users who have an internal password; it
-does not apply to the default user, whose password is changed in the
-configuration (``elza.security.defaultPassword``). Never leave recovery
-configured longer than needed.
-
-Access can also be recovered with ``elza.security.admin.username`` and
-``elza.security.admin.password`` (see :ref:`install-admin-from-config`).
-The difference: recovery only allows a temporary login and makes the
-user set a new password, while ``elza.security.admin.*`` sets the
-configured password itself - and creates the user as an administrator if
-it does not exist.
+The security audit log records that the temporary password is active
+(``override_active``) and every login with it (``authentication_type``
+``OVERRIDE``). The default user is not recovered this way; its password
+is set in the configuration (``elza.security.defaultPassword``).
 
 Active Directory
 ================
@@ -419,24 +385,150 @@ Security audit log
 ==================
 
 With ``elza.siemLogFile`` set (see :doc:`04-configuration`), ELZA writes
-authentication and account events to a separate log in JSON, one event per line,
-suitable for a SIEM system:
+authentication, account and fund events to a separate log in JSON, one event per line,
+suitable for a SIEM system. Field names follow the OSSEC/Wazuh schema, so
+the built-in rules of such a SIEM can use them. Every event contains:
 
-- ``login_success`` - the user, the method (``PASSWORD``,
-  ``ACTIVE_DIRECTORY``, ``KERBEROS``, ``SSO_HEADER``, ``JWT``,
-  ``API_KEY``) and the source address,
-- ``login_failed`` - the user name, the source address and the reason,
-- ``api_key_created`` and ``api_key_revoked`` - who created or revoked
-  which key of which user,
-- ``config_admin_user_created``, ``config_admin_password_set`` and
-  ``config_admin_user_activated`` - the user created, its password set or
-  its account activated at startup from ``elza.security.admin.*`` (the
-  actor is ``configuration``),
-- ``config_admin_failed`` - ``elza.security.admin.*`` could not be
-  applied, with the user and the reason.
+.. list-table::
+   :header-rows: 1
+   :widths: 25 75
+
+   * - Field
+     - Meaning
+   * - ``timestamp``
+     - Time of the event (ISO 8601).
+   * - ``program_name``
+     - Always ``elza``.
+   * - ``log_type``
+     - ``secure`` for authentication, ``audit`` for changes of users and
+       their access.
+   * - ``event_type``, ``action``
+     - Kind of the event and the operation, see the table below.
+   * - ``result``
+     - ``success`` or ``failed``.
+   * - ``srcuser``
+     - Who performed the action: the logged-in user, or ``configuration``
+       for changes made from ``elza.security.override``, ``setup`` for the
+       first administrator created in the initial setup dialog, ``system``
+       for a user created automatically on the first JWT login.
+   * - ``dstuser``
+     - Whom the action concerns; the same as ``srcuser`` for a login.
+   * - ``srcip``
+     - Source address of the request; missing for events outside a
+       request (startup).
+   * - ``reason``
+     - Reason of the failure (only with ``result`` = ``failed``).
+   * - ``msg``
+     - Short description in English, e.g. ``User martin logged in from IP
+       192.168.1.10.``
+   * - ``details``
+     - Optional technical description of a failure in English, e.g. the
+       reason a JWT was rejected.
+   * - ``dstgroup``
+     - Code of the group the action concerns (permissions and groups).
+   * - ``permission``, ``permission_target``
+     - Changed permission (e.g. ``FUND_ARR``) and the entity it applies
+       to as ``type:id`` (``fund:123``, ``node:456``, ``scope:5``,
+       ``user:7``, ``group:3``, ``issue_list:9``); no target for a global
+       permission.
+
+Events:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 22 22 56
+
+   * - ``event_type``
+     - ``action``
+     - Description
+   * - ``user_login``
+     - ``login``
+     - Login of a user, successful or failed. ``authentication_type`` holds
+       the method (``PASSWORD``, ``ACTIVE_DIRECTORY``, ``KERBEROS``,
+       ``SSO_HEADER``, ``JWT``, ``API_KEY``, ``OVERRIDE`` for the password
+       from ``elza.security.override``), ``key_id`` the public id of an
+       API key; both are present also for a failure. ``reason`` of a
+       failure: ``INVALID_USERNAME`` (no such user in ELZA),
+       ``INVALID_PASSWORD``, ``INACTIVE_USER``, ``INVALID_CREDENTIALS``
+       (SSO header), ``INVALID_TOKEN`` / ``TOKEN_DECODING_FAILED`` (JWT),
+       the API-key codes listed above, or ``AUTHENTICATION_ERROR`` for an
+       unexpected error with its description in ``details``. A failed
+       API-key or JWT login has no ``srcuser``.
+       A JWT and an API key are checked on every request, so their
+       successful login is logged at most once per hour for the same key
+       (or user) and address; failures are always logged.
+   * - ``user_logout``
+     - ``logout``
+     - Logout of a user. Expiry of a session is not logged.
+   * - ``api_key_create``
+     - ``create_api_key``
+     - An API key was created; ``key_id`` and ``expire_date``.
+   * - ``api_key_revoke``
+     - ``revoke_api_key``
+     - An API key was revoked (by its owner or an administrator); ``key_id``.
+   * - ``user_create``
+     - ``create_user``
+     - A user was created by an administrator (UI, REST, SOAP), in the
+       initial setup, automatically on the first JWT login, or at startup
+       from ``elza.security.override``.
+   * - ``password_change``
+     - ``change_password``
+     - A password was changed by the user (``srcuser`` = ``dstuser``) or by
+       an administrator. A change by the user fails with ``reason`` =
+       ``OLD_PASSWORD_MISMATCH`` when the old password does not match.
+   * - ``user_activate``
+     - ``activate_user``
+     - An account was activated by an administrator or at startup from
+       ``elza.security.override``. Logged only when the state changes.
+   * - ``user_rename``
+     - ``rename_user``
+     - A user was renamed by an administrator; ``dstuser`` is the new name,
+       ``old_username`` the previous one.
+   * - ``override_active``
+     - ``enable_override``
+     - Written at every startup for each user in
+       ``elza.security.override``: the configured password is valid for
+       the user (``dstuser``) next to their own.
+   * - ``user_disable``
+     - ``disable_user``
+     - An account was deactivated by an administrator. Logged only when
+       the state changes.
+   * - ``permission_grant``, ``permission_revoke``, ``permission_change``
+     - ``grant_permission``, ``revoke_permission``, ``change_permission``
+     - A permission of a user (``dstuser``) or of a group (``dstgroup``)
+       was granted, revoked or edited, by an administrator, through SOAP,
+       when copying permissions, to the author of a new fund, or from the
+       token of the identity provider (JWT, ``srcuser`` = ``system``; only
+       real changes are logged).
+   * - ``group_member_add``, ``group_member_remove``
+     - ``add_group_member``, ``remove_group_member``
+     - A user was added to or removed from a group.
+   * - ``group_create``, ``group_delete``
+     - ``create_group``, ``delete_group``
+     - A group was created or deleted. Deleting a group takes its
+       permissions from all its members; this is not logged per member.
+   * - ``fund_create``
+     - ``create_fund``
+     - An archival fund was created, by hand or by an import
+       (``fund_import`` = ``true``); ``fund_id`` and ``fund_name``.
+   * - ``fund_delete``
+     - ``delete_fund``
+     - An archival fund was deleted with all its data; ``fund_id`` and
+       ``fund_name``.
+   * - ``fund_history_delete``
+     - ``delete_fund_history``
+     - The history of an archival fund (old versions and changes) was
+       deleted; ``fund_id`` and ``fund_name``.
+   * - ``config_admin``
+     - ``apply_config_admin``
+     - A user from ``elza.security.override`` could not be applied (always
+       ``failed``).
 
 The log is rotated daily and kept for 90 days. Behind a reverse proxy,
-the source address is the address of the proxy.
+``srcip`` is the address of the client only with
+``elza.security.acceptForwardedHeaders`` enabled and the proxy set up as
+described in :ref:`reverse-proxy-client-address`; otherwise it is the
+address of the proxy.
 
 Other settings
 ==============
@@ -451,7 +543,8 @@ Other settings
    * - ``elza.security.acceptForwardedHeaders``
      - ``false``
      - Accept ``X-Forwarded-*`` headers from a reverse proxy; required
-       when ELZA runs under a path (see :doc:`06-reverse-proxy`).
+       when ELZA runs under a path and for the address of the client in
+       the security audit log (see :doc:`06-reverse-proxy`).
    * - ``elza.security.logoutUrl``
      - (none)
      - Address the browser opens after logging out, for example the

@@ -3,10 +3,16 @@ package cz.tacr.elza.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,11 +24,14 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.UserCode;
 import cz.tacr.elza.repository.UserRepository;
+import cz.tacr.elza.security.OverrideProperties;
+import cz.tacr.elza.security.OverrideProperties.OverrideUser;
 import cz.tacr.elza.security.SiemAuditLogger;
 import cz.tacr.elza.security.SiemAuditLogger.ConfigAdminAction;
 
 /**
- * {@link SetupService}: the first administrator is created only while no user exists.
+ * {@link SetupService}: the first administrator is created only while no user exists;
+ * the users from elza.security.override are applied at every startup.
  */
 class SetupServiceTest {
 
@@ -32,18 +41,24 @@ class SetupServiceTest {
     private SetupService setupService;
     private UserRepository userRepository;
     private UserService userService;
+    private PasswordPolicyService passwordPolicyService;
     private SiemAuditLogger siemAuditLogger;
+    private OverrideProperties overrideProperties;
 
     @BeforeEach
     void setUp() {
         setupService = new SetupService();
         userRepository = mock(UserRepository.class);
         userService = mock(UserService.class);
+        passwordPolicyService = mock(PasswordPolicyService.class);
         siemAuditLogger = mock(SiemAuditLogger.class);
+        overrideProperties = new OverrideProperties();
         ReflectionTestUtils.setField(setupService, "userRepository", userRepository);
         ReflectionTestUtils.setField(setupService, "userService", userService);
+        ReflectionTestUtils.setField(setupService, "passwordPolicyService", passwordPolicyService);
         ReflectionTestUtils.setField(setupService, "txManager", mock(PlatformTransactionManager.class));
         ReflectionTestUtils.setField(setupService, "siemAuditLogger", siemAuditLogger);
+        ReflectionTestUtils.setField(setupService, "overrideProperties", overrideProperties);
     }
 
     @Test
@@ -62,6 +77,7 @@ class SetupServiceTest {
         setupService.createAdmin(" " + USERNAME + " ", PASSWORD);
 
         verify(userService).createInitialAdmin(USERNAME, PASSWORD);
+        verify(siemAuditLogger).initialAdminCreated(USERNAME);
     }
 
     @Test
@@ -74,97 +90,120 @@ class SetupServiceTest {
         verify(userService, never()).createInitialAdmin(any(), any());
     }
 
-    private void configureAdmin(final String username, final String password) {
-        ReflectionTestUtils.setField(setupService, "configAdminUsername", username);
-        ReflectionTestUtils.setField(setupService, "configAdminPassword", password);
+    private void configureOverride(final String... usernameAndPassword) {
+        List<OverrideUser> users = new ArrayList<>();
+        for (int i = 0; i < usernameAndPassword.length; i += 2) {
+            OverrideUser user = new OverrideUser();
+            user.setUsername(usernameAndPassword[i]);
+            user.setPassword(usernameAndPassword[i + 1]);
+            users.add(user);
+        }
+        overrideProperties.setOverride(users);
     }
 
-    @Test
-    void missingConfiguredAdminIsCreatedEvenWhenOtherUsersExist() {
-        when(userRepository.count()).thenReturn(5L);
-        when(userRepository.findByUsername(USERNAME)).thenReturn(null);
-        configureAdmin(" " + USERNAME + " ", PASSWORD);
-
-        setupService.applyAdminFromConfiguration();
-
-        verify(userService).createInitialAdmin(USERNAME, PASSWORD);
-        verify(userService, never()).applyConfiguredPassword(any(), any());
-        verify(siemAuditLogger).configAdminApplied(USERNAME, ConfigAdminAction.USER_CREATED);
-    }
-
-    private UsrUser givenUser(final boolean active) {
+    private UsrUser givenUser(final String username, final boolean active) {
         UsrUser user = new UsrUser();
-        user.setUsername(USERNAME);
+        user.setUsername(username);
         user.setActive(active);
-        when(userRepository.findByUsername(USERNAME)).thenReturn(user);
+        when(userRepository.findByUsername(username)).thenReturn(user);
         return user;
     }
 
     @Test
-    void existingConfiguredAdminGetsThePassword() {
-        UsrUser user = givenUser(true);
-        when(userService.applyConfiguredPassword(user, PASSWORD)).thenReturn(true);
-        configureAdmin(USERNAME, PASSWORD);
+    void missingOverrideUserIsCreatedWithoutPassword() {
+        when(userRepository.findByUsername(USERNAME)).thenReturn(null);
+        configureOverride(" " + USERNAME + " ", PASSWORD);
 
-        setupService.applyAdminFromConfiguration();
+        setupService.applyOverrideFromConfiguration();
 
-        verify(userService).applyConfiguredPassword(user, PASSWORD);
-        verify(userService, never()).createInitialAdmin(any(), any());
-        // an active user is not written
-        verify(userRepository, never()).save(any());
-        verify(siemAuditLogger).configAdminApplied(USERNAME, ConfigAdminAction.PASSWORD_SET);
-        verify(siemAuditLogger, never()).configAdminApplied(USERNAME, ConfigAdminAction.USER_ACTIVATED);
+        verify(userService).createInitialAdmin(eq(USERNAME), isNull());
+        verify(siemAuditLogger).overrideActive(USERNAME);
+        verify(siemAuditLogger).configAdminApplied(USERNAME, ConfigAdminAction.USER_CREATED);
     }
 
     @Test
-    void inactiveConfiguredAdminIsActivated() {
-        UsrUser user = givenUser(false);
-        configureAdmin(USERNAME, PASSWORD);
+    void existingActiveOverrideUserIsNotChanged() {
+        givenUser(USERNAME, true);
+        configureOverride(USERNAME, PASSWORD);
 
-        setupService.applyAdminFromConfiguration();
+        setupService.applyOverrideFromConfiguration();
+
+        verify(userService, never()).createInitialAdmin(any(), any());
+        verify(userRepository, never()).save(any());
+        verify(siemAuditLogger).overrideActive(USERNAME);
+        verify(siemAuditLogger, never()).configAdminApplied(any(), any());
+    }
+
+    @Test
+    void inactiveOverrideUserIsActivated() {
+        UsrUser user = givenUser(USERNAME, false);
+        configureOverride(USERNAME, PASSWORD);
+
+        setupService.applyOverrideFromConfiguration();
 
         assertThat(user.getActive()).isTrue();
         verify(userRepository).save(user);
-        verify(userService).applyConfiguredPassword(user, PASSWORD);
         verify(siemAuditLogger).configAdminApplied(USERNAME, ConfigAdminAction.USER_ACTIVATED);
-        // the password was already the configured one
-        verify(siemAuditLogger, never()).configAdminApplied(USERNAME, ConfigAdminAction.PASSWORD_SET);
     }
 
     @Test
-    void unchangedConfiguredAdminWritesNoAuditEvent() {
-        givenUser(true);
-        configureAdmin(USERNAME, PASSWORD);
+    void allOverrideUsersAreApplied() {
+        givenUser(USERNAME, true);
+        when(userRepository.findByUsername("druhy")).thenReturn(null);
+        configureOverride(USERNAME, PASSWORD, "druhy", "Jine-Heslo-1");
 
-        setupService.applyAdminFromConfiguration();
+        setupService.applyOverrideFromConfiguration();
 
-        verify(siemAuditLogger, never()).configAdminApplied(any(), any());
+        verify(siemAuditLogger).overrideActive(USERNAME);
+        verify(siemAuditLogger).overrideActive("druhy");
+        verify(userService).createInitialAdmin(eq("druhy"), isNull());
+    }
+
+    @Test
+    void failureOfOneOverrideUserDoesNotStopTheOthers() {
+        when(userRepository.findByUsername(any())).thenReturn(null);
+        when(userService.createInitialAdmin(eq("admin"), any()))
+                .thenThrow(new BusinessException("x", UserCode.USERNAME_EXISTS));
+        configureOverride("admin", PASSWORD, USERNAME, PASSWORD);
+
+        setupService.applyOverrideFromConfiguration();
+
+        verify(siemAuditLogger).configAdminFailed("admin", "x");
+        verify(siemAuditLogger).configAdminApplied(USERNAME, ConfigAdminAction.USER_CREATED);
+    }
+
+    @Test
+    void weakOverridePasswordIsOnlyReported() {
+        when(userRepository.findByUsername(USERNAME)).thenReturn(null);
+        doThrow(new BusinessException("x", UserCode.PASSWORD_POLICY_VIOLATION)).when(passwordPolicyService).validate(any());
+        configureOverride(USERNAME, "a");
+
+        setupService.applyOverrideFromConfiguration();
+
+        verify(userService).createInitialAdmin(eq(USERNAME), isNull());
         verify(siemAuditLogger, never()).configAdminFailed(any(), any());
     }
 
     @Test
-    void incompleteConfigurationIsIgnored() {
-        configureAdmin(USERNAME, null);
-        setupService.applyAdminFromConfiguration();
-        configureAdmin(" ", PASSWORD);
-        setupService.applyAdminFromConfiguration();
+    void removedAdminConfigurationStopsTheStartup() {
+        ReflectionTestUtils.setField(setupService, "legacyAdminUsername", USERNAME);
 
+        assertThatThrownBy(() -> setupService.applyOverrideFromConfiguration())
+                .isInstanceOf(IllegalStateException.class);
         verify(userRepository, never()).findByUsername(any());
-        verify(userService, never()).createInitialAdmin(any(), any());
-        verify(userService, never()).applyConfiguredPassword(any(), any());
     }
 
     @Test
-    void failureOfConfiguredAdminDoesNotStopTheStartup() {
-        configureAdmin("admin", PASSWORD);
-        when(userService.createInitialAdmin(any(), any()))
-                .thenThrow(new BusinessException("x", UserCode.USERNAME_EXISTS));
+    void incompleteOrDuplicateOverrideStopsTheStartup() {
+        configureOverride(USERNAME, null);
+        assertThatThrownBy(() -> setupService.applyOverrideFromConfiguration())
+                .isInstanceOf(IllegalStateException.class);
 
-        setupService.applyAdminFromConfiguration();
+        configureOverride(USERNAME, PASSWORD, " " + USERNAME, PASSWORD);
+        assertThatThrownBy(() -> setupService.applyOverrideFromConfiguration())
+                .isInstanceOf(IllegalStateException.class);
 
-        verify(userService).createInitialAdmin("admin", PASSWORD);
-        verify(siemAuditLogger).configAdminFailed("admin", "x");
-        verify(siemAuditLogger, never()).configAdminApplied(any(), any());
+        verify(userRepository, never()).findByUsername(any());
     }
 
     @Test

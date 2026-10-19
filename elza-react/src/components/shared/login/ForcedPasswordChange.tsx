@@ -22,8 +22,8 @@ const PasswordForm = PasswordFormUntyped as unknown as ComponentType<{
 }>;
 
 /**
- * Non-dismissible password change after a login with an expired password,
- * a password change required by the administrator, or a recovery login.
+ * Non-dismissible password change after a login with an expired password
+ * or a password change required by the administrator.
  * Closes itself once the reloaded user detail no longer requires the change.
  */
 export function ForcedPasswordChange() {

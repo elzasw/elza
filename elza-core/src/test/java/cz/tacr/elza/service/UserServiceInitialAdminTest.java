@@ -24,8 +24,8 @@ import cz.tacr.elza.repository.PermissionRepository;
 import cz.tacr.elza.repository.UserRepository;
 
 /**
- * {@link UserService#createInitialAdmin}: the first administrator has no access point,
- * a password checked by the policy and the ADMIN permission.
+ * {@link UserService#createInitialAdmin}: the administrator has no access point, a password
+ * checked by the policy (none for a user from elza.security.override) and the ADMIN permission.
  */
 class UserServiceInitialAdminTest {
 
@@ -80,6 +80,19 @@ class UserServiceInitialAdminTest {
         verify(permissionRepository).save(permission.capture());
         assertThat(permission.getValue().getPermission()).isEqualTo(UsrPermission.Permission.ADMIN);
         assertThat(permission.getValue().getUser()).isSameAs(user);
+    }
+
+    @Test
+    void createsAdministratorWithoutPassword() {
+        UsrUser user = userService.createInitialAdmin(USERNAME, null);
+
+        assertThat(user.getUsername()).isEqualTo(USERNAME);
+        verify(authenticationRepository, never()).save(any());
+        verify(passwordPolicyService, never()).validate(any());
+
+        ArgumentCaptor<UsrPermission> permission = ArgumentCaptor.forClass(UsrPermission.class);
+        verify(permissionRepository).save(permission.capture());
+        assertThat(permission.getValue().getPermission()).isEqualTo(UsrPermission.Permission.ADMIN);
     }
 
     @Test
