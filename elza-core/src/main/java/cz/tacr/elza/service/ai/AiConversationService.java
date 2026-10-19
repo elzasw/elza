@@ -152,7 +152,7 @@ public class AiConversationService {
         aiConversationRepository.save(conversation);
 
         submitExchange(conversation, externalSystem, vo.getTaskType(), vo.getProfile(),
-                       vo.getUserInstructions(), vo.getParameters(), vo.getContext(), null, vo.getScope());
+                       vo.getUserInstructions(), vo.getParameters(), vo.getContext(), null, vo.getScope(), null);
         return getDetail(conversation, externalSystem);
     }
 
@@ -182,10 +182,21 @@ public class AiConversationService {
             }
         }
 
+        // A continuation (provider contract 0.18.0) resumes the last finished
+        // exchange's work where it stopped — a branch check at its price limit:
+        // it reuses that exchange's task type and parameters and the stored
+        // context, and echoes the provider's token; the request's own type,
+        // parameters, context and scope are ignored (the provider continues the
+        // same run with the same configuration).
+        boolean continuation = StringUtils.isNotBlank(vo.getContinuation());
+        if (continuation && lastDone == null) {
+            throw new BusinessException("A continuation needs a finished exchange to continue",
+                    BaseCode.INVALID_STATE);
+        }
         // A follow-up may move the user's context; when it carries one, it
         // replaces the conversation's stored context, otherwise the stored one
         // is reused for this exchange.
-        List<AiContextObjectVO> context = vo.getContext();
+        List<AiContextObjectVO> context = continuation ? null : vo.getContext();
         if (context != null) {
             conversation.setContextType(primaryContextType(context));
             conversation.setContext(serializeContext(context));
@@ -200,10 +211,18 @@ public class AiConversationService {
         // submits elza.enhanceDescription into a revision thread); the exchange
         // still continues the conversation — parentTaskId stays the previous
         // exchange's task, and the provider chains it regardless of type.
-        String taskType = vo.getTaskType() != null ? vo.getTaskType() : last.getTaskType();
+        String taskType = continuation ? lastDone.getTaskType()
+                : vo.getTaskType() != null ? vo.getTaskType() : last.getTaskType();
+        List<AiContextObjectVO> parameters = continuation ? deserializeContext(lastDone.getParameters())
+                : vo.getParameters();
+        if (continuation) {
+            logger.info("AI conversation {} continues exchange {} (task {}) with the provider's continuation",
+                    conversationId, lastDone.getAiRequestId(), lastDone.getTaskUid());
+        }
         submitExchange(conversation, externalSystem, taskType, profile,
-                       vo.getUserInstructions(), vo.getParameters(), context,
-                       lastDone == null ? null : lastDone.getTaskUid(), vo.getScope());
+                       vo.getUserInstructions(), parameters, context,
+                       lastDone == null ? null : lastDone.getTaskUid(),
+                       continuation ? null : vo.getScope(), continuation ? vo.getContinuation() : null);
         return getDetail(conversation, externalSystem);
     }
 
@@ -332,7 +351,7 @@ public class AiConversationService {
     private void submitExchange(final AiConversation conversation, final AiExternalSystem externalSystem,
                                 final String taskType, final String profile, final String userInstructions,
                                 final List<AiContextObjectVO> parameters, final List<AiContextObjectVO> context,
-                                final String parentTaskUid, final String scope) {
+                                final String parentTaskUid, final String scope, final String continuation) {
         AiRequest request = new AiRequest();
         request.setAiConversationId(conversation.getAiConversationId());
         request.setRequestId(UUID.randomUUID().toString());
@@ -367,6 +386,7 @@ public class AiConversationService {
                 .context(resolvedContext)
                 .tools(toolRegistry.toolNames())
                 .parentTaskId(parentTaskUid)
+                .continuation(continuation)
                 .metadata(metadata);
         addEvent(request, AiRequestEvent.TYPE_SUBMIT, toJson(submitTask));
 

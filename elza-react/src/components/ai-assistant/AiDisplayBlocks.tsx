@@ -183,6 +183,7 @@ export function AiDisplayBlocks({ blocks, requestId, onRequestUpdate, onClarify,
                                         key={actionIndex}
                                         size="small"
                                         disabled={!!followUpDisabled}
+                                        title={action.reason ?? undefined}
                                         onClick={() => onFollowUp!(action)}
                                     >
                                         {action.label}

@@ -842,6 +842,11 @@
                             <configOptions>
                                 <useJakartaEe>true</useJakartaEe>
                                 <library>restclient</library>
+                                <!-- Kontrakt providera roste aditivne: neznamy kod enumu
+                                     (novy ObjectType v resultTypes, novy stav ulohy) se
+                                     mapuje na UNKNOWN_DEFAULT_OPEN_API misto vyjimky pri
+                                     parsovani odpovedi. -->
+                                <enumUnknownDefaultCase>true</enumUnknownDefaultCase>
                             </configOptions>
                         </configuration>
                     </execution>

@@ -76,7 +76,7 @@ using TypeSpec.OpenAPI;
  * `GET /ping`. See `SignatureAuth` and the companion `security.md`.
  */
 @service(#{ title: "Elza AI Provider API" })
-@info(#{ version: "0.17.0" })
+@info(#{ version: "0.18.0" })
 @server(
   "{endpoint}",
   "Provider-assigned base endpoint, e.g. https://ai.example.com/elza",
@@ -174,6 +174,10 @@ model SignedRequest {
  *   `elza.enhanceDescription`. Strictly propose-only — the client validates
  *   every change deterministically and the user confirms it; nothing is ever
  *   applied automatically.
+ * - `elza.taskSuggestion` — a follow-up task the provider proposes as the
+ *   conversation's next exchange (payload `TaskSuggestion`): the one mechanism
+ *   by which a task asks the user to decide the next step — rendered as an
+ *   action the user may run, never run automatically. Introduced in 0.18.0.
  */
 enum ObjectType {
   /** Free text; payload `TextPayload`. */
@@ -208,6 +212,9 @@ enum ObjectType {
 
   /** Proposed changes to the description items of arrangement levels; payload `NodeUpdateProposals`. */
   nodeUpdateProposals: "elza.nodeUpdateProposals",
+
+  /** A follow-up task proposed as the conversation's next exchange; payload `TaskSuggestion`. */
+  taskSuggestion: "elza.taskSuggestion",
 }
 
 /**
@@ -1212,6 +1219,63 @@ model NodeUpdateProposalsObject extends AiObject {
   data: NodeUpdateProposals;
 }
 
+/**
+ * Payload of `elza.taskSuggestion` — a follow-up the provider proposes as the
+ * conversation's next exchange. THE one mechanism by which a task asks the user
+ * to decide the next step (0.18.0): the client renders the suggestion as an
+ * action (a button under the answer); running it submits a new task of
+ * `taskType` with `userInstructions` as the instruction and `parentTaskId` =
+ * the suggesting task, with the client's current context. Never run
+ * automatically; several suggestions on one task offer a choice, doing nothing
+ * declines them all. A client that does not implement the type ignores the
+ * block (the rest of the output stands on its own).
+ *
+ * Producers: `elza.chat` when the archivist asked for a change to the record
+ * and the assistant drafted the concrete new value or link — the suggested task
+ * is `elza.enhanceDescription` with the drafted change as its instruction (chat
+ * itself never writes); `elza.revision` when a branch run stopped at a run
+ * limit with levels left unchecked (a `continuation`, below). Other producers
+ * may follow (a clarifying choice in chat, a check's per-finding fix).
+ *
+ * **Continuation.** A suggestion carrying `continuation` resumes the suggesting
+ * task's own work where it stopped — a branch check that hit the price limit of
+ * one task continues with the next part. The token is opaque to the client: the
+ * follow-up echoes it verbatim in `SubmitTask.continuation`, with
+ * `parentTaskId` = the suggesting task, the same `taskType` and the same
+ * parameters the parent ran with (the provider resumes the parent's run; the
+ * follow-up's own parameters only have to name the same subject). The provider
+ * accepts a continuation only while the parent's output carries a suggestion
+ * with exactly that token and no other follow-up has used it — a failed or
+ * cancelled attempt frees it again; otherwise the submit is refused with
+ * `INVALID_CONTINUATION`. Each part is its own task, billed and limited on its
+ * own, and may suggest continuing again. A suggestion without `continuation`
+ * is a plain next exchange.
+ */
+model TaskSuggestion {
+  /** Task type of the suggested follow-up — one the provider offers on `GET /info`. */
+  taskType: TaskType;
+
+  /** Short action label for the button, in the task's output language. */
+  label: string;
+
+  /** The instruction the follow-up submits as `userInstructions`; complete on its own. */
+  userInstructions: string;
+
+  /** Why this step is suggested — one sentence the client may show next to the action. */
+  reason?: string;
+
+  /** Opaque resume token (see above); absent for a plain next exchange. */
+  continuation?: string;
+}
+
+/** Task-suggestion object — a proposed next step for the user to run. */
+model TaskSuggestionObject extends AiObject {
+  @invisible(Lifecycle)
+  objectType: ObjectType.taskSuggestion;
+
+  data: TaskSuggestion;
+}
+
 // ---------------------------------------------------------------------------
 // Task model
 // ---------------------------------------------------------------------------
@@ -1228,6 +1292,10 @@ model NodeUpdateProposalsObject extends AiObject {
  *   back as an `elza.text` result; declares no parameters. No archival semantics —
  *   exists so both sides can validate the full protocol loop (auth, submit, poll,
  *   typed output, usage metering) cheaply before any real scenario.
+ * - `elza.chat` — the archival assistant: a free-form question (with the
+ *   archivist's working context) answered as `elza.markdown` with the
+ *   `elza.docCitations` it relied on; read-only — a drafted change to the record
+ *   is handed over as an `elza.taskSuggestion` for `elza.enhanceDescription`.
  * - `elza.revision` — advisory semantic and language check of archival
  *   description ("AI obsahová kontrola popisu"): finds what formal (rule-based)
  *   validation cannot — structured facts hidden in free text, misuse of
@@ -1949,6 +2017,15 @@ model SubmitTask {
    * and be within the retention window.
    */
   parentTaskId?: string;
+
+  /**
+   * Resumes the parent task's own work where it stopped: the `continuation`
+   * token of an `elza.taskSuggestion` in the parent's output, echoed verbatim
+   * (see `TaskSuggestion`). Requires `parentTaskId` = the suggesting task and
+   * the parent's own task type; refused with `INVALID_CONTINUATION` when the
+   * parent's output offers no such token or another follow-up already used it.
+   */
+  continuation?: string;
 
   /** Audit/attribution facts about the task; not task data (see `parameters` and `context`). */
   metadata?: TaskMetadata;

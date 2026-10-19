@@ -3854,9 +3854,10 @@ model AiDisplayBlock {
 
 /**
  * One server-suggested follow-up: the button label and the exchange it
- * submits. The same shape a future provider-emitted `elza.taskSuggestion`
- * result block maps onto — today the server composes these itself (per check
- * finding).
+ * submits. Two producers: the server composes one per check finding ("prepare
+ * the fix"), and the provider's `elza.taskSuggestion` result blocks (provider
+ * contract 0.18.0 — chat handing over a drafted edit, a stopped branch check
+ * offering its next part) map onto it one to one.
  */
 model AiFollowUpAction {
     /** Button label, in the deployment's language. */
@@ -3865,6 +3866,16 @@ model AiFollowUpAction {
     taskType?: string;
     /** The seeded user instruction the follow-up submits. */
     userInstructions: string;
+    /** Why the step is suggested — one sentence shown as the button's tooltip. */
+    reason?: string;
+    /**
+     * Opaque provider token of a follow-up that RESUMES the previous exchange's
+     * work where it stopped (a branch check at its price limit). The client
+     * echoes it verbatim in `AiRequestCreate.continuation`; such a follow-up
+     * reuses the previous exchange's task type, parameters and the stored
+     * context — the provider continues the same run.
+     */
+    continuation?: string;
 }
 
 /** Plain-text answer — `content` is rendered verbatim, never parsed as markdown. */
@@ -4363,6 +4374,14 @@ model AiRequestCreate {
     context?: AiContextObject[];
     /** The run's scope for `elza.revision` (see `AiConversationCreate.scope`); omitted = the unit check. */
     scope?: string;
+    /**
+     * The `continuation` of an `AiFollowUpAction` the previous exchange offered:
+     * this exchange resumes that exchange's work where it stopped. The server
+     * reuses the previous finished exchange's task type and parameters and the
+     * conversation's stored context (`taskType`, `parameters`, `context` and
+     * `scope` of this request are ignored) and echoes the token to the provider.
+     */
+    continuation?: string;
 }
 
 /** One step of an exchange's log — the transparency view ("what was sent/received"). */

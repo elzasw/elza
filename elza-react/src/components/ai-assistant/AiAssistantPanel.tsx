@@ -831,7 +831,7 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
                                             requestId={request.id}
                                             onRequestUpdate={replaceRequest}
                                             onClarify={(text) => setDraft(text)}
-                                            onFollowUp={(action) => send(action.userInstructions, action.taskType ?? undefined, activeProfileCode)}
+                                            onFollowUp={(action) => send(action.userInstructions, action.taskType ?? undefined, activeProfileCode, undefined, action.continuation ?? undefined)}
                                             followUpDisabled={pending}
                                         />
                                         {answerText(request.blocks) && (

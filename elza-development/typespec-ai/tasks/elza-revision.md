@@ -210,6 +210,18 @@ three scopes from `kontrola-popisu.md` phase in as:
   (0.16.0) naming context levels under review, the `subject` as the window's
   anchor — stays for an Elza-selected set of levels. Design and decisions:
   elza-ai-provider `doc/user-feedback.md` §4 (decision 4), §5.1.
+  **Continuation (0.18.0).** A run that stops with levels left — at the
+  provider's price limit of one task, or because its page budget cut the
+  pull — offers an `elza.taskSuggestion` (the same task, label *Pokračovat
+  v kontrole (další část)*) whose `continuation` token anchors the resume
+  point on the last checked level. The client submits the follow-up with
+  `parentTaskId` = the stopped task, the token in `SubmitTask.continuation`
+  and the same `subject` (the config is the continued run's); the provider
+  pulls from the anchor (`from` = its position), verifies it is still there
+  (an edited tree fails `INVALID_INPUT`), checks the levels after it in
+  windows under a fresh price limit, and may offer again. Each part is its
+  own task — its own summary + findings, usage and events. A budget stop
+  offers no continuation.
 - **Entity check** (0.16.0): the same task over one `elza.archivalEntity`
   (`entity` parameter) — the categories read naturally on an entity (hidden
   data in the free-text history, a contradiction between relation datings and

@@ -25,6 +25,9 @@ import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import cz.tacr.elza.aiprovider.ApiClient;
 import cz.tacr.elza.exception.SystemException;
 
@@ -65,7 +68,16 @@ public class ApiClientAiProvider extends ApiClient {
 
         // buildRestClientBuilder registers the Jackson converter with the same
         // ObjectMapper config the generated client uses (typed AiObject subtypes).
-        return buildRestClientBuilder(createDefaultObjectMapper(null))
+        // The provider's contract grows additively and promises that a client
+        // ignores an object type it does not implement — this build keeps that
+        // promise: a result block of an unknown objectType deserializes to null
+        // (skipped by the block mappers, logged) instead of failing the poll of
+        // the whole task, and an unknown enum code (a new ObjectType in GET /info
+        // resultTypes, a new task state) maps to the generated
+        // UNKNOWN_DEFAULT_OPEN_API case (enumUnknownDefaultCase in the pom).
+        ObjectMapper mapper = createDefaultObjectMapper(null)
+                .configure(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE, false);
+        return buildRestClientBuilder(mapper)
                 .requestFactory(requestFactory)
                 .requestInterceptor(new SigningInterceptor(keyId, secret, acceptLanguage))
                 .build();
