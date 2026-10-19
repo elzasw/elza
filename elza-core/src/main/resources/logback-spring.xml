@@ -77,10 +77,21 @@
         </rollingPolicy>
 
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <!-- Context properties (LOG_FILE, SIEM_LOG_FILE, HOSTNAME) carry no information
+                 for a SIEM; its agent records the log location and host itself. -->
+            <includeContext>false</includeContext>
+            <!-- Field names follow the OSSEC/Wazuh schema, see SiemAuditLogger -->
+            <fieldNames>
+                <timestamp>timestamp</timestamp>
+                <message>msg</message>
+                <version>[ignore]</version>
+                <logger>[ignore]</logger>
+                <thread>[ignore]</thread>
+                <levelValue>[ignore]</levelValue>
+            </fieldNames>
             <customFields>
                 {
-                  "application": "elza",
-                  "log_type": "siem"
+                  "program_name": "elza"
                 }
             </customFields>
         </encoder>

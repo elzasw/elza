@@ -43,8 +43,8 @@ public class UserDetail {
     private AuthenticationMethod authenticationMethod = AuthenticationMethod.SESSION;
 
     /**
-     * The user logged in with a password that must be changed (expired, required by
-     * the administrator, or a recovery login).
+     * The user logged in with a password that must be changed (expired or required by
+     * the administrator).
      */
     private boolean needChangePassword;
 

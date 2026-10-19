@@ -168,6 +168,7 @@ import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
 import cz.tacr.elza.repository.vo.UsedItemTypeVO;
 import cz.tacr.elza.security.AuthorizationRequest;
+import cz.tacr.elza.security.SiemAuditLogger;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.arrangement.DeleteFundAction;
 import cz.tacr.elza.service.arrangement.DeleteFundHistoryAction;
@@ -238,6 +239,8 @@ public class ArrangementService {
     private FundVersionRepository fundVersionRepository;
     @Autowired
     private FundRepository fundRepository;
+    @Autowired
+    private SiemAuditLogger siemAuditLogger;
     @Autowired
     private ChangeRepository changeRepository;
     @Autowired
@@ -670,7 +673,7 @@ public class ArrangementService {
                               final String unitdate,
                               final String mark,
                               final Boolean managed) {
-        ArrFund fund = createFund(name, internalCode, institution, fundNumber, unitdate, mark, managed);
+        ArrFund fund = createFund(name, internalCode, institution, fundNumber, unitdate, mark, managed, false);
 
         eventNotificationService
                 .publishEvent(EventFactory.createIdEvent(EventType.FUND_CREATE, fund.getFundId()));
@@ -964,7 +967,8 @@ public class ArrangementService {
                               final Integer fundNumber,
                               final String unitdate,
                               final String mark,
-                              final Boolean managed) {
+                              final Boolean managed,
+                              final boolean imported) {
         ArrFund fund = new ArrFund();
         fund.setCreateDate(LocalDateTime.now());
         fund.setName(name);
@@ -974,7 +978,9 @@ public class ArrangementService {
         fund.setUnitdate(unitdate);
         fund.setMark(mark);
         fund.setManaged(managed);
-        return fundRepository.save(fund);
+        ArrFund saved = fundRepository.save(fund);
+        siemAuditLogger.fundCreated(UserService.loggedUsername(), saved.getFundId(), name, imported);
+        return saved;
     }
 
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_CREATE, UsrPermission.Permission.FUND_VER_WR})
@@ -1066,8 +1072,10 @@ public class ArrangementService {
     public void deleteFund(final Integer fundId) {
         Validate.notNull(fundId, "Nebyl vyplněn identifikátor AS");
 
+        String fundName = fundRepository.findById(fundId).map(ArrFund::getName).orElse(null);
         DeleteFundAction dfa = appCtx.getBean(DeleteFundAction.class);
         dfa.run(fundId);
+        siemAuditLogger.fundDeleted(UserService.loggedUsername(), fundId, fundName);
     }
 
     /**
@@ -1080,8 +1088,10 @@ public class ArrangementService {
     public void deleteFundHistory(final Integer fundId) {
         Validate.notNull(fundId, "Nebyl vyplněn identifikátor AS");
 
+        String fundName = fundRepository.findById(fundId).map(ArrFund::getName).orElse(null);
         DeleteFundHistoryAction dfa = appCtx.getBean(DeleteFundHistoryAction.class);
         dfa.run(fundId);
+        siemAuditLogger.fundHistoryDeleted(UserService.loggedUsername(), fundId, fundName);
     }
 
     /**

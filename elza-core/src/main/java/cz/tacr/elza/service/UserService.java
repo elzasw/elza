@@ -1,7 +1,5 @@
 package cz.tacr.elza.service;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,7 +17,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.Nullable;
-import jakarta.annotation.PostConstruct;
 
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotEmpty;
@@ -91,6 +88,9 @@ import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.repository.WfIssueListRepository;
 import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.security.Sha256Support;
+import cz.tacr.elza.security.OverrideProperties;
+import cz.tacr.elza.security.SiemAuditLogger;
+import cz.tacr.elza.security.SiemAuditLogger.PermissionAction;
 import cz.tacr.elza.security.AuthenticationMethod;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.security.UserPermission;
@@ -166,14 +166,11 @@ public class UserService {
     @Autowired
     private PasswordPolicyService passwordPolicyService;
 
-    /**
-     * Break-glass login of a user who forgot the password; both properties must be set.
-     */
-    @Value("${elza.security.recovery.username:#{null}}")
-    private String recoveryUsername;
+    @Autowired
+    private SiemAuditLogger siemAuditLogger;
 
-    @Value("${elza.security.recovery.password:#{null}}")
-    private String recoveryPassword;
+    @Autowired
+    private OverrideProperties overrideProperties;
 
     /**
      * Cache pro nakešování oprávnění uživatele.
@@ -287,14 +284,6 @@ public class UserService {
                         return calcUserPermission(user);
                     }
                 });
-    }
-
-    @PostConstruct
-    void warnRecoveryActive() {
-        if (isRecoveryConfigured()) {
-            logger.warn("Recovery přihlášení je aktivní pro uživatele {} — po použití odstraňte volbu z konfigurace!",
-                        recoveryUsername);
-        }
     }
 
     /**
@@ -498,6 +487,7 @@ public class UserService {
         if (CollectionUtils.isNotEmpty(result.permissionsUpdate)) {
             result.permissionsUpdate = permissionRepository.saveAll(result.permissionsUpdate);
         }
+        logPermissionChanges(user, group, result);
 
         if (logger.isDebugEnabled()) {
             logger.debug("changePermission - results, user: {}, group: {}, type: {}, permissions: [new: {}, deleted: {}, updated: {}, unchanged: {}]",
@@ -513,8 +503,38 @@ public class UserService {
     }
 
     /**
+     * Writes the applied changes of permissions of a user or a group to the SIEM log.
+     */
+    private void logPermissionChanges(final UsrUser user, final UsrGroup group, final ChangedPermissionResult result) {
+        String actor = loggedUsername();
+        String username = user != null ? user.getUsername() : null;
+        String groupCode = group != null ? group.getCode() : null;
+        result.permissionsAdd.forEach(p -> siemAuditLogger.permissionChanged(actor, PermissionAction.GRANT,
+                username, groupCode, p.getPermission().name(), permissionTarget(p)));
+        result.permissionsDelete.forEach(p -> siemAuditLogger.permissionChanged(actor, PermissionAction.REVOKE,
+                username, groupCode, p.getPermission().name(), permissionTarget(p)));
+        result.permissionsUpdate.forEach(p -> siemAuditLogger.permissionChanged(actor, PermissionAction.CHANGE,
+                username, groupCode, p.getPermission().name(), permissionTarget(p)));
+    }
+
+    /**
+     * Entity a permission applies to, as "type:id" for the SIEM log; null for a global permission.
+     */
+    private static String permissionTarget(final UsrPermission permission) {
+        return switch (permission.getPermission().getType()) {
+            case FUND -> "fund:" + permission.getFundId();
+            case NODE -> "node:" + permission.getNodeId();
+            case SCOPE -> "scope:" + permission.getScopeId();
+            case USER -> "user:" + permission.getUserControlId();
+            case GROUP -> "group:" + permission.getGroupControlId();
+            case ISSUE_LIST -> "issue_list:" + permission.getIssueListId();
+            case ALL -> null;
+        };
+    }
+
+    /**
      * Validate permission object
-     * 
+     *
      * @param permission
      */
     private void validatePermission(UsrPermission permission) {
@@ -1072,7 +1092,9 @@ public class UserService {
         item.setGroup(group);
         item.setUser(user);
 
-        return groupUserRepository.save(item);
+        UsrGroupUser result = groupUserRepository.save(item);
+        siemAuditLogger.groupMemberAdded(loggedUsername(), user.getUsername(), group.getCode());
+        return result;
     }
 
     /**
@@ -1112,6 +1134,7 @@ public class UserService {
 
         // delete all relations
       	groupUserRepository.deleteAll(items);
+        siemAuditLogger.groupMemberRemoved(loggedUsername(), user.getUsername(), group.getCode());
 
         invalidateCache(user);
         changeUserEvent(user);
@@ -1141,6 +1164,7 @@ public class UserService {
         group.setDescription(description);
 
         groupRepository.save(group);
+        siemAuditLogger.groupCreated(loggedUsername(), group.getCode());
         createGroupEvent(group);
         return group;
     }
@@ -1170,6 +1194,7 @@ public class UserService {
         permissionRepository.deleteByGroup(group);
         groupUserRepository.deleteByGroup(group);
         groupRepository.delete(group);
+        siemAuditLogger.groupDeleted(loggedUsername(), group.getCode());
         deleteGroupEvent(group);
         return group;
     }
@@ -1221,7 +1246,8 @@ public class UserService {
         Set<UsrAuthentication> removeAuthentications = new HashSet<>(authTypeMap.values());
         Set<UsrAuthentication> changeAuthentications = new HashSet<>();
 
-        if (!Objects.equals(user.getUsername(), username)) {
+        String oldUsername = user.getUsername();
+        if (!Objects.equals(oldUsername, username)) {
             UsrAuthentication authType = authTypeMap.get(UsrAuthentication.AuthType.PASSWORD);
             if (authType != null) { // kontrola jen pokud uživatel má autentizaci heslem
                 String newPassword = valuesMap.get(UsrAuthentication.AuthType.PASSWORD);
@@ -1252,6 +1278,9 @@ public class UserService {
             }
             updateAuth(user, authType, value, usrAuthentication);
             changeAuthentications.add(usrAuthentication);
+            if (authType == UsrAuthentication.AuthType.PASSWORD) {
+                siemAuditLogger.passwordChanged(loggedUsername(), user.getUsername());
+            }
         }
 
         if (changeAuthentications.size() > 0) {
@@ -1264,20 +1293,26 @@ public class UserService {
         }
 
         userRepository.save(user);
+        if (!Objects.equals(oldUsername, username)) {
+            siemAuditLogger.userRenamed(loggedUsername(), oldUsername, username);
+        }
 
         changeUserEvent(user);
         return user;
     }
 
     /**
-     * Creates the first administrator: a user without an access point, with a password
+     * Creates an administrator: a user without an access point, with a password
      * and the ADMIN permission.
      *
-     * Used only by the first-run setup ({@link SetupService}), which has checked that no
-     * user exists; there is no logged user to authorize the call.
+     * Used only by {@link SetupService} - the first-run setup, which has checked that no
+     * user exists, and the users from elza.security.override; there is no logged user to
+     * authorize the call.
      *
      * @param username username
-     * @param password password (plaintext), checked against the password policy
+     * @param password password (plaintext), checked against the password policy; null for a
+     *                 user from elza.security.override, who logs in with the password from the
+     *                 configuration
      * @return created user
      */
     @Transactional(value = Transactional.TxType.MANDATORY)
@@ -1292,9 +1327,11 @@ public class UserService {
         user.setCreatedAt(OffsetDateTime.now());
         user = userRepository.save(user);
 
-        UsrAuthentication authentication = new UsrAuthentication();
-        updateAuth(user, UsrAuthentication.AuthType.PASSWORD, password, authentication);
-        authenticationRepository.save(authentication);
+        if (password != null) {
+            UsrAuthentication authentication = new UsrAuthentication();
+            updateAuth(user, UsrAuthentication.AuthType.PASSWORD, password, authentication);
+            authenticationRepository.save(authentication);
+        }
 
         UsrPermission permission = new UsrPermission();
         permission.setUser(user);
@@ -1305,35 +1342,14 @@ public class UserService {
         return user;
     }
 
-    /**
-     * Sets the password from the configuration (elza.security.admin.password) to an existing
-     * user; adds the password authentication when the user has none. Only the password changes,
-     * not the permissions or the state of the user.
-     *
-     * Used only by {@link SetupService} at startup; there is no logged user to authorize the call.
-     *
-     * @param user     existing user
-     * @param password password (plaintext), checked against the password policy
-     * @return false when the user already has this password - nothing is written, so the
-     *         validity of the password does not restart at every startup
-     */
-    @Transactional(value = Transactional.TxType.MANDATORY)
-    public boolean applyConfiguredPassword(final UsrUser user, final String password) {
-        UsrAuthentication authentication = authenticationRepository.findByUserAndAuthType(user,
-                UsrAuthentication.AuthType.PASSWORD);
-        // a hash in the old format is rewritten, which also converts it to the current one
-        if (authentication != null && authentication.getAuthValue().startsWith("{")
-                && encoder.matches(password, authentication.getAuthValue())) {
-            return false;
-        }
-        if (authentication == null) {
-            authentication = new UsrAuthentication();
-        }
-        updateAuth(user, UsrAuthentication.AuthType.PASSWORD, password, authentication);
-        authentication.setChangeRequired(false);
-        authenticationRepository.save(authentication);
-        changeUserEvent(user);
-        return true;
+    /** Whether elza.security.override lists the user. */
+    public boolean isOverrideUser(final String username) {
+        return overrideProperties.contains(username);
+    }
+
+    /** Whether the password is the one elza.security.override sets for the user. */
+    public boolean matchesOverridePassword(final String username, final String password) {
+        return overrideProperties.matches(username, password);
     }
 
     /**
@@ -1382,6 +1398,7 @@ public class UserService {
             }
         }
 
+        siemAuditLogger.userCreated(loggedUsername(), user.getUsername());
         createUserEvent(user);
         return user;
     }
@@ -1414,11 +1431,16 @@ public class UserService {
                                   @NotEmpty final String newPassword) {
         if (oldPassword != null) {
             UsrAuthentication authentication = findAuthentication(user, UsrAuthentication.AuthType.PASSWORD);
-            if (authentication == null) {
+            boolean overrideUser = isOverrideUser(user.getUsername());
+            if (authentication == null && !overrideUser) {
                 throw new BusinessException("Uživatel nemá povolené přihlášení heslem", BaseCode.INVALID_STATE);
             }
 
-            if (!matchesPassword(oldPassword, authentication.getAuthValue(), user.getUsername())) {
+            boolean matches = (authentication != null
+                    && matchesPassword(oldPassword, authentication.getAuthValue(), user.getUsername()))
+                    || (overrideUser && matchesOverridePassword(user.getUsername(), oldPassword));
+            if (!matches) {
+                siemAuditLogger.passwordChangeFailed(user.getUsername(), "OLD_PASSWORD_MISMATCH");
                 throw new BusinessException("Původní heslo se neshoduje", UserCode.PASSWORD_NOT_MATCH);
             }
         }
@@ -1459,9 +1481,14 @@ public class UserService {
         requireInteractiveAuth();
         UsrAuthentication authentication = findAuthentication(user, UsrAuthentication.AuthType.PASSWORD);
         if (authentication == null) {
-            throw new BusinessException("Uživatel nemá povolené přihlášení heslem", BaseCode.INVALID_STATE);
-        }
-        if (authentication.getAuthenticationId() == null) {
+            if (!isOverrideUser(user.getUsername())) {
+                throw new BusinessException("Uživatel nemá povolené přihlášení heslem", BaseCode.INVALID_STATE);
+            }
+            // a user created from elza.security.override has no password row until the first change
+            authentication = new UsrAuthentication();
+            authentication.setUser(user);
+            authentication.setAuthType(UsrAuthentication.AuthType.PASSWORD);
+        } else if (authentication.getAuthenticationId() == null) {
             throw new BusinessException("Heslo výchozího uživatele je definováno v konfiguraci", BaseCode.INVALID_STATE);
         }
         authentication.setAuthValue(encodeNewPassword(newPassword));
@@ -1471,8 +1498,21 @@ public class UserService {
             authentication.setNeverExpire(neverExpire);
         }
         authenticationRepository.save(authentication);
+        siemAuditLogger.passwordChanged(loggedUsername(), user.getUsername());
         changeUserEvent(user);
         return user;
+    }
+
+    /**
+     * Name of the user performing the current request for the SIEM log; "system" for a system
+     * security context (no principal), null without a security context.
+     */
+    static String loggedUsername() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) {
+            return null;
+        }
+        return StringUtils.isNotEmpty(auth.getName()) ? auth.getName() : SiemAuditLogger.SYSTEM_USER;
     }
 
     /**
@@ -1521,29 +1561,6 @@ public class UserService {
         return encodePassword(password);
     }
 
-    private boolean isRecoveryConfigured() {
-        return StringUtils.isNotEmpty(recoveryUsername) && StringUtils.isNotEmpty(recoveryPassword);
-    }
-
-    /**
-     * Checks whether the credentials match the configured recovery pair
-     * (elza.security.recovery.*). Never applies to the configured default user.
-     *
-     * @param username username
-     * @param password raw password
-     * @return true if this is a recovery login
-     */
-    public boolean isRecoveryPassword(final String username, final String password) {
-        if (!isRecoveryConfigured() || !recoveryUsername.equals(username)) {
-            return false;
-        }
-        if (allowDefaultUser && username.equalsIgnoreCase(defaultUsername)) {
-            return false;
-        }
-        return MessageDigest.isEqual(recoveryPassword.getBytes(StandardCharsets.UTF_8),
-                                     password.getBytes(StandardCharsets.UTF_8));
-    }
-
     /**
      * Whether the user must change the password (required by the administrator or expired).
      *
@@ -1556,19 +1573,12 @@ public class UserService {
     /**
      * Ověření hesla.
      *
-     * Accepts also the recovery password (elza.security.recovery.*).
-     *
      * @param password       raw heslo
      * @param encodePassword očekáváný hash hesla
      * @param username       uživatel pro kterého hash ověřujeme
      * @return true - heslo je OK
      */
     public boolean matchesPassword(final String password, final String encodePassword, final String username) {
-        if (isRecoveryPassword(username, password)) {
-            logger.warn("Recovery přihlášení je aktivní pro uživatele {} — po použití odstraňte volbu z konfigurace!",
-                        username);
-            return true;
-        }
         if (!encodePassword.startsWith("{")) {
             // zpětná kompatibilita
             logger.warn("Uživatel {} používá starý mechanismus ukládání hashe hesla. Prosím, prověďte změnu hesla pro zvýšení bezpečnosti!", username);
@@ -2013,8 +2023,12 @@ public class UserService {
     @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITY})
     public UsrUser changeActive(@AuthParam(type = AuthParam.Type.USER) @NotNull final UsrUser user,
                                 @NotNull final Boolean active) {
+        boolean changed = !active.equals(user.getActive());
         user.setActive(active);
         userRepository.save(user);
+        if (changed) {
+            siemAuditLogger.userActiveChanged(loggedUsername(), user.getUsername(), active);
+        }
 
         changeUserEvent(user);
         return user;

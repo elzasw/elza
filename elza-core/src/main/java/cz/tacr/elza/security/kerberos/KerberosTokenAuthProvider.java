@@ -74,11 +74,11 @@ public class KerberosTokenAuthProvider implements AuthenticationProvider {
 			LOG.warn("Kerberos ticket of principal '{}' is valid, but ELZA has no user '{}'. "
 					+ "Create the user in ELZA to allow Windows (Kerberos) sign-in.",
 					username, username.split("@")[0]);
-			siemAuditLogger.loginFailed(username, sourceIp, "INVALID_USERNAME");
+			siemAuditLogger.loginFailed(username, sourceIp, AuthenticationType.KERBEROS, "INVALID_USERNAME", null);
 			throw e;
 		} catch (LockedException e) {
 			LOG.warn("Kerberos ticket of principal '{}' is valid, but the ELZA user is not active.", username);
-			siemAuditLogger.loginFailed(username, sourceIp, "INACTIVE_USER");
+			siemAuditLogger.loginFailed(username, sourceIp, AuthenticationType.KERBEROS, "INACTIVE_USER", null);
 			throw e;
 		}
 	}

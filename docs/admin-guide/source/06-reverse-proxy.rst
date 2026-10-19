@@ -58,7 +58,7 @@ NGINX
      location / {
        proxy_pass http://localhost:8080;
        proxy_set_header Host $host;
-       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+       proxy_set_header X-Forwarded-For $remote_addr;
        proxy_set_header X-Forwarded-Proto $scheme;
 
        # WebSocket
@@ -70,6 +70,39 @@ NGINX
 
 ``client_max_body_size`` has to allow the largest upload permitted by
 ELZA (``elza.upload.max_request_size``, 100 MB by default).
+
+.. _reverse-proxy-client-address:
+
+Address of the client
+=====================
+
+Behind a proxy, ELZA sees every request coming from the proxy. To record
+the address of the real client in the security audit log (``srcip``, see
+:doc:`05-security`), enable the forwarded headers:
+
+.. code-block:: yaml
+
+   elza:
+     security:
+       acceptForwardedHeaders: true
+
+ELZA then takes the client address from the first value of
+``X-Forwarded-For``. The proxy must therefore **replace** this header
+with the address of the client, not append to it; otherwise a client can
+send its own ``X-Forwarded-For`` and choose the address that is logged.
+
+- NGINX: ``proxy_set_header X-Forwarded-For $remote_addr;`` (as in the
+  example above), not ``$proxy_add_x_forwarded_for``.
+- Apache HTTPD: ``mod_proxy`` appends the client address to the header
+  itself, so remove the header sent by the client first:
+
+  .. code-block:: apache
+
+     RequestHeader unset X-Forwarded-For early
+
+When there are more proxies in a row (e.g. a load balancer in front of
+the web server), the first one has to set the header and the others have
+to pass it unchanged.
 
 ELZA under a path
 =================

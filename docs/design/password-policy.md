@@ -1,8 +1,9 @@
 # Password policy
 
 Password age tracking, a configurable password policy (strength + expiry), a
-required password change at login, recovery of a locked-out administrator,
-and transparent re-hashing of legacy password hashes. The administrator's
+required password change at login, users with a password from the
+configuration (also used to recover a locked-out administrator), and
+transparent re-hashing of legacy password hashes. The administrator's
 view is in the administration guide, `admin-guide/source/05-security.rst`.
 
 Design constraint: ELZA is not a banking application. The goal is a modest
@@ -121,25 +122,41 @@ policy changes, and "never expires" would need a sentinel date.
 - Policy administration: `GET`/`PUT /admin/password-policy` (OpenAPI schema
   `PasswordPolicy`), permission `USR_PERM`.
 
-## Administrator recovery
+## Users from the configuration
 
-For an administrator who forgot the password when no other administrator can
-reset it. `elza.security.recovery.username` + `.password` (plain text, both
-required, unset by default) — a transient break-glass mirroring the
-`defaultPassword` pattern.
+`elza.security.override` is a list of user names with plain-text passwords
+(`OverrideProperties`). It serves automated deployments (an administrator
+exists without the setup dialog) and recovering a locked-out administrator,
+with one mechanism.
 
-- The check is in `UserService.matchesPassword`, whose two callers — password
-  login and the old-password check of the self change — are exactly where
-  recovery must apply. The comparison is constant-time; it never applies to the
-  default user's name.
-- A recovery login gets `needChangePassword = true`, so the forced-change
-  dialog opens at once; the recovery password is accepted as the old password
-  and the new one goes through the normal funnel.
-- A WARN is logged at startup and on each use while the option is set.
-- Works only for users that already have a PASSWORD row (SAML2-only accounts
-  are managed by their IdP).
-- Procedure: set the options → restart → log in → change the password in the
-  forced dialog → remove the options → restart.
+- **At startup** (`SetupService.applyOverrideFromConfiguration`): a missing
+  user is created as an administrator **without a `PASSWORD` row**
+  (`UserService.createInitialAdmin(username, null)`), a deactivated one is
+  activated; the password and permissions of an existing user are not
+  touched. An invalid list (missing name or password, a user twice) and the
+  removed `elza.security.admin.*` stop the startup; a failure of one user is
+  logged and the others are applied. The configured password is not stored,
+  so the password policy is not enforced on it - a violation is only a WARN.
+- **Login** (`PasswordAutheticationProvider`): the user's own password from
+  the database **or** the configured one; one is enough. The own password is
+  tried first and wins for the audit (`PASSWORD`), the configured one is
+  logged as `OVERRIDE`. A login with the configured password sets no
+  `needChangePassword` - it does not expire. The configured password never
+  applies to the default user (no `usr_user` row).
+- **Own password change** (`UserService.changePassword(user, old, new)`):
+  the configured password is accepted as the old one; a listed user without
+  a `PASSWORD` row gets one with the first change.
+- The configured password is checked outside `UserService.matchesPassword`
+  (`isOverrideUser` / `matchesOverridePassword`), so the hash check stays
+  free of configuration logic and every use of the configured password is
+  visible in the audit log (`override_active` at every startup, `OVERRIDE`
+  logins; see [siem-log.md](siem-log.md)).
+- A user removed from the list keeps only their own password; one created
+  from the list who never set it cannot log in until an administrator sets
+  one.
+
+Recovery procedure: add the user with a temporary password → restart → log
+in → change the password → remove the entry → restart.
 
 ## Frontend
 
@@ -168,12 +185,8 @@ administrator via `GET /api/v1/setup` and `POST /api/v1/setup/admin`.
   key — the first user is created before the application is exposed on the
   network. The emptiness check and the creation run under one lock in one
   transaction.
-- `elza.security.admin.username` / `.password` are applied at every startup
-  (`SetupService.applyAdminFromConfiguration`): a missing user is created as
-  an administrator, an existing one gets the password (nothing is written when
-  it already matches, so `valid_from` does not restart), a deactivated one is
-  activated; permissions of an existing user are not changed. Outcomes are
-  logged, changes and failures also to the SIEM log (`config_admin_*`).
+- `elza.security.override` can create administrators at startup as well; see
+  "Users from the configuration".
 - The first administrator has **no access point** (an empty database has no
   packages, hence no access point types); `usr_user.access_point_id` is
   nullable and user loading/search use left joins. Regular users are still

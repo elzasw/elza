@@ -18,15 +18,17 @@ import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.UserCode;
 import cz.tacr.elza.repository.UserRepository;
+import cz.tacr.elza.security.OverrideProperties;
+import cz.tacr.elza.security.OverrideProperties.OverrideUser;
 import cz.tacr.elza.security.SiemAuditLogger;
 import cz.tacr.elza.security.SiemAuditLogger.ConfigAdminAction;
 
 /**
- * First-run setup and the administrator from the configuration.
+ * First-run setup and the users from the configuration.
  *
  * While the database contains no user, the setup dialog creates the first administrator;
  * it is available without login, to anyone, until the first user exists. Independently,
- * the administrator configured in elza.security.admin.* is applied at every startup.
+ * the users configured in elza.security.override are applied at every startup.
  */
 @Service
 public class SetupService {
@@ -46,78 +48,86 @@ public class SetupService {
     @Autowired
     private SiemAuditLogger siemAuditLogger;
 
+    @Autowired
+    private OverrideProperties overrideProperties;
+
+    @Autowired
+    private PasswordPolicyService passwordPolicyService;
+
+    // only to detect the removed configuration
     @Value("${elza.security.admin.username:#{null}}")
-    private String configAdminUsername;
+    private String legacyAdminUsername;
 
     @Value("${elza.security.admin.password:#{null}}")
-    private String configAdminPassword;
+    private String legacyAdminPassword;
 
     /**
-     * What applying the configured administrator changed.
+     * What applying a user from the configuration changed.
      */
-    private record ConfigAdminResult(boolean created, boolean passwordChanged, boolean activated) {
+    private record OverrideResult(boolean created, boolean activated) {
     }
 
     /**
-     * Applies the administrator from the configuration (elza.security.admin.*) at every
-     * startup: a missing user is created as an administrator; an existing user gets the
-     * configured password when it differs and is activated when it is inactive.
-     *
-     * Every outcome is logged (never the password); the changes and a failure also go to
-     * the security audit log. A failure does not stop the startup.
+     * Applies elza.security.override at every startup: a missing user is created as an
+     * administrator without a password in the database, a deactivated one is activated.
+     * A configuration error (also the removed elza.security.admin.*) stops the startup;
+     * a failure of one user is logged and the others are applied.
      */
     @EventListener(ApplicationReadyEvent.class)
-    public void applyAdminFromConfiguration() {
-        boolean hasUsername = StringUtils.isNotBlank(configAdminUsername);
-        boolean hasPassword = StringUtils.isNotEmpty(configAdminPassword);
-        if (!hasUsername && !hasPassword) {
-            return;
+    public void applyOverrideFromConfiguration() {
+        if (legacyAdminUsername != null || legacyAdminPassword != null) {
+            throw new IllegalStateException("Volba elza.security.admin již není podporována, "
+                    + "použijte elza.security.override (seznam username/password).");
         }
-        if (!hasUsername || !hasPassword) {
-            logger.warn("Volba elza.security.admin není úplná (chybí {}), nepoužije se.",
-                        hasUsername ? "password" : "username");
-            return;
+        overrideProperties.validate();
+        for (OverrideUser user : overrideProperties.getOverride()) {
+            applyOverrideUser(user.getUsername().trim(), user.getPassword());
         }
-        String username = configAdminUsername.trim();
-        logger.info("Používá se administrátor z konfigurace (elza.security.admin): {}.", username);
+    }
+
+    private void applyOverrideUser(final String username, final String password) {
+        logger.warn("Pro uživatele {} platí heslo z konfigurace (elza.security.override).", username);
+        siemAuditLogger.overrideActive(username);
         try {
-            ConfigAdminResult result;
+            OverrideResult result;
             // same lock as createAdmin, so it cannot race with the setup dialog
             synchronized (this) {
                 result = new TransactionTemplate(txManager).execute(tx -> {
+                    warnIfPolicyViolated(username, password);
                     UsrUser user = userRepository.findByUsername(username);
                     if (user == null) {
-                        userService.createInitialAdmin(username, configAdminPassword);
-                        return new ConfigAdminResult(true, false, false);
+                        userService.createInitialAdmin(username, null);
+                        return new OverrideResult(true, false);
                     }
-                    boolean passwordChanged = userService.applyConfiguredPassword(user, configAdminPassword);
                     boolean activated = !Boolean.TRUE.equals(user.getActive());
                     if (activated) {
                         user.setActive(true);
                         userRepository.save(user);
                     }
-                    return new ConfigAdminResult(false, passwordChanged, activated);
+                    return new OverrideResult(false, activated);
                 });
             }
             if (result.created()) {
-                logger.info("Administrátor {} byl vytvořen z konfigurace (elza.security.admin).", username);
+                logger.info("Administrátor {} byl vytvořen z konfigurace (elza.security.override).", username);
                 siemAuditLogger.configAdminApplied(username, ConfigAdminAction.USER_CREATED);
             }
-            if (result.passwordChanged()) {
-                logger.info("Heslo uživatele {} bylo nastaveno z konfigurace (elza.security.admin).", username);
-                siemAuditLogger.configAdminApplied(username, ConfigAdminAction.PASSWORD_SET);
-            }
             if (result.activated()) {
-                logger.info("Uživatel {} byl aktivován podle konfigurace (elza.security.admin).", username);
+                logger.info("Uživatel {} byl aktivován podle konfigurace (elza.security.override).", username);
                 siemAuditLogger.configAdminApplied(username, ConfigAdminAction.USER_ACTIVATED);
             }
-            if (!result.created() && !result.passwordChanged() && !result.activated()) {
-                logger.info("Uživatel {} odpovídá konfiguraci (elza.security.admin), beze změny.", username);
-            }
         } catch (RuntimeException e) {
-            logger.error("Administrátora {} z konfigurace (elza.security.admin) se nepodařilo použít: {}",
+            logger.error("Uživatele {} z konfigurace (elza.security.override) se nepodařilo použít: {}",
                          username, e.getMessage(), e);
             siemAuditLogger.configAdminFailed(username, e.getMessage());
+        }
+    }
+
+    /** The password is not stored, so the policy is not enforced; a violation is only reported. */
+    private void warnIfPolicyViolated(final String username, final String password) {
+        try {
+            passwordPolicyService.validate(password);
+        } catch (BusinessException e) {
+            logger.warn("Heslo uživatele {} v elza.security.override nesplňuje pravidla pro hesla.", username);
         }
     }
 
@@ -151,5 +161,6 @@ public class SetupService {
             userService.createInitialAdmin(username.trim(), password);
         });
         logger.info("Úvodní nastavení: vytvořen první administrátor {}.", username.trim());
+        siemAuditLogger.initialAdminCreated(username.trim());
     }
 }

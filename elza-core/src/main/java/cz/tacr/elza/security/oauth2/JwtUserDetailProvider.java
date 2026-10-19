@@ -14,6 +14,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContext;
@@ -113,20 +114,22 @@ public class JwtUserDetailProvider implements AuthenticationProvider {
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         BearerTokenAuthenticationToken bearer = (BearerTokenAuthenticationToken) authentication;
 
-        Jwt jwt;
-        try {
-            jwt = this.jwtDecoder.decode(bearer.getToken());
-        } catch (BadJwtException failed) {
-            throw new InvalidBearerTokenException(failed.getMessage(), failed);
-        } catch (JwtException failed) {
-            throw new AuthenticationServiceException(failed.getMessage(), failed);
-        }
-
         String sourceIp = null;
 	    if (authentication.getDetails() instanceof WebAuthenticationDetails) {
 	    	var details = (WebAuthenticationDetails)authentication.getDetails();
 	        sourceIp = details.getRemoteAddress();
-	    }		
+	    }
+
+        Jwt jwt;
+        try {
+            jwt = this.jwtDecoder.decode(bearer.getToken());
+        } catch (BadJwtException failed) {
+            siemAuditLogger.jwtLoginFailed(sourceIp, "INVALID_TOKEN", failed.getMessage());
+            throw new InvalidBearerTokenException(failed.getMessage(), failed);
+        } catch (JwtException failed) {
+            siemAuditLogger.jwtLoginFailed(sourceIp, "TOKEN_DECODING_FAILED", failed.getMessage());
+            throw new AuthenticationServiceException(failed.getMessage(), failed);
+        }
 
         AbstractAuthenticationToken token = this.jwtAuthenticationConverter.convert(jwt);
 
@@ -136,8 +139,12 @@ public class JwtUserDetailProvider implements AuthenticationProvider {
         
         	siemAuditLogger.loginSuccess(token.getName(), sourceIp, AuthenticationType.JWT);
         	return token;
+        } catch (LockedException e) {
+			siemAuditLogger.loginFailed(token.getName(), sourceIp, AuthenticationType.JWT, "INACTIVE_USER", null);
+			throw new AuthenticationServiceException(e.getMessage(), e);
         } catch (Exception e) {
-			siemAuditLogger.loginFailed(token.getName(), sourceIp, e.getMessage());
+			siemAuditLogger.loginFailed(token.getName(), sourceIp, AuthenticationType.JWT,
+					"AUTHENTICATION_ERROR", e.getMessage());
 			throw new AuthenticationServiceException(e.getMessage(), e);
 		}
     }

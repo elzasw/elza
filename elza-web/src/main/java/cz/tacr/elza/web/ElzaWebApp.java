@@ -12,6 +12,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.MultipartConfigFactory;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -19,6 +20,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
+import org.springframework.core.Ordered;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.util.unit.DataSize;
@@ -28,7 +30,7 @@ import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 
 import cz.tacr.elza.ElzaCore;
-import jakarta.servlet.Filter;
+import jakarta.servlet.DispatcherType;
 import jakarta.servlet.MultipartConfigElement;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
@@ -123,7 +125,7 @@ public class ElzaWebApp {
     }
 
     /**
-     * Allow to accept forwarded headers (X-Forwarded-Prefix, X-Forwarded-Host,...)
+     * Allow to accept forwarded headers (X-Forwarded-Prefix, X-Forwarded-Host, X-Forwarded-For,...)
      *
      * This option should be used when Elza is running behind gateway
      *
@@ -131,9 +133,14 @@ public class ElzaWebApp {
      */
     @Bean
     @ConditionalOnProperty(prefix = "elza.security", name = "acceptForwardedHeaders", havingValue = "true")
-    public Filter forwardedHeaderFilter() {
+    public FilterRegistrationBean<ForwardedHeaderFilter> forwardedHeaderFilter() {
         logger.info("Initializing ForwardedHeaderFilter (acceptForwardedHeaders=true)");
-        return new ForwardedHeaderFilter();
+        FilterRegistrationBean<ForwardedHeaderFilter> registration = new FilterRegistrationBean<>(new ForwardedHeaderFilter());
+        // Must run before Spring Security: it records the client address of a login (SIEM log)
+        // and builds redirects from the request.
+        registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
+        registration.setDispatcherTypes(DispatcherType.REQUEST, DispatcherType.ASYNC, DispatcherType.ERROR);
+        return registration;
     }
 
     @Bean
