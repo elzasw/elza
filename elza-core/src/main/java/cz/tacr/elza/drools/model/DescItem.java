@@ -1,5 +1,7 @@
 package cz.tacr.elza.drools.model;
 
+import java.util.function.BooleanSupplier;
+
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -78,6 +80,14 @@ public class DescItem {
     private boolean readOnly;
 
     private ArrDataUnitdate unitDate;
+
+    /**
+     * Answers whether another unit of the fund carries the same value; set for UNITID items only.
+     * The query behind it runs just when a rule asks, and once per item.
+     */
+    private BooleanSupplier duplicateInFundCheck;
+
+    private Boolean duplicateInFund;
 
     /**
      * Object item id
@@ -239,6 +249,21 @@ public class DescItem {
 
     public void setUnitDate(final ArrDataUnitdate unitDate) {
         this.unitDate = unitDate;
+    }
+
+    public void setDuplicateInFundCheck(final BooleanSupplier check) {
+        this.duplicateInFundCheck = check;
+    }
+
+    /**
+     * Whether another unit of description of the fund carries the same value. Answered for items
+     * of the data type UNITID (identifiers); any other item is never a duplicate.
+     */
+    public boolean isDuplicateInFund() {
+        if (duplicateInFund == null) {
+            duplicateInFund = duplicateInFundCheck != null && duplicateInFundCheck.getAsBoolean();
+        }
+        return duplicateInFund;
     }
 
     public Long getNormalizedFrom() {

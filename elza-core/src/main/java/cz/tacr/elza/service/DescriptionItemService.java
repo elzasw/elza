@@ -1359,6 +1359,21 @@ public class DescriptionItemService {
     	return dataService.findItemsWithData(descItemRepository.findByNodeIdsAndDeleteChange(nodeIds, deleteChange));
     }
 
+    /**
+     * Whether another unit of description of the fund version carries the same UNITID value of the
+     * item type. The open version counts live items and levels, a closed version those at its lock
+     * change.
+     */
+    public boolean isUnitIdUsedByOtherNode(final ArrFundVersion version, final Integer nodeId,
+                                           final Integer itemTypeId, final String value) {
+        ArrChange lockChange = version.getLockChange();
+        long count = lockChange == null
+                ? descItemRepository.countOpenUnitIdInOtherNodes(version.getFundId(), itemTypeId, value, nodeId)
+                : descItemRepository.countUnitIdInOtherNodesAtChange(version.getFundId(), itemTypeId, value, nodeId,
+                                                                     lockChange);
+        return count > 0;
+    }
+
     public List<ArrDescItem> findByNodeAndDeleteChangeIsNull(ArrNode node) {
     	return dataService.findItemsWithData(descItemRepository.findByNodeAndDeleteChangeIsNull(node));
     }

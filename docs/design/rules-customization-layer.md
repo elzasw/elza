@@ -319,12 +319,28 @@ pinned filters and `translations/cs.xml` come from one table and cannot drift.
   (Jasper) and XML (engine `DE_XML`).
 - *D9* bulk actions recognised by their kind and the DID carrying the identifier only (section 2):
   nothing in core keys on ZP2015's action file names or on a DID script.
+- *D10 the reference code is assigned, not generated.* ISAD(G) 3.1.1 asks for "a specific local
+  reference code, control number, or other unique identifier" and prescribes no form; the archives
+  checked (TNA, Archives nationales, Bundesarchiv, Swiss BAR, Nationaal Archief, Polish state
+  archives, Riksarkivet, PARES, NAA, NARA) and the tools AtoM and ArchivesSpace assign alphanumeric
+  codes once and keep them, none derives them from the position in the tree
+  ([research/isadg/reference-codes.md](research/isadg/reference-codes.md)). ZP2015's positional
+  numbering (`!UnitIdGenerator`: `1/15/2//1//10/1-1`, digits only, `//` after the series) is the
+  Czech rule 4.2.1; on an ISADG fonds it would refuse the code the standard requires on the root
+  ("Root node has unit id"), number a subseries like a file and delete a manual code, since nothing
+  seals values without `!SealUnitId`. ISADG therefore ships no numbering action. The data type stays
+  UNITID (core's identifier string, EAD `<unitid>`); the code is REQUIRED on the fonds and
+  RECOMMENDED below; `Validation.drl` reports a value carried by two units of the fonds through the
+  core fact `DescItem.duplicateInFund` (answered lazily for UNITID items by one lookup, index
+  `ix_arr_data_unitid_unit_value`); a replaced code goes to `ISADG_OTHER_ID_FORMER`, EAD
+  `<unitid localtype="former">`. Positional numbering for ISADG is an addon candidate once the
+  generator learns a root code, letter prefixes and nested subseries.
 
 **Mapping.** Codes `ISADG_` + the ISAD(G) term; names and messages English.
 
 | ISAD(G) | ZP2015 | ISADG (data type) |
 |---|---|---|
-| 3.1.1 Reference code | `ZP2015_UNIT_ID` (UNITID) + `!UnitIdGenerator` | `ISADG_REFERENCE_CODE` (UNITID), generator; country and repository codes from the institution in outputs |
+| 3.1.1 Reference code | `ZP2015_UNIT_ID` (UNITID) + `!UnitIdGenerator` | `ISADG_REFERENCE_CODE` (UNITID) assigned by the archivist, unique in the fonds - D10; country and repository codes from the institution in outputs |
 | - other identifiers | `ZP2015_OTHER_ID` (24 specs), `ZP2015_SERIAL_NUMBER`, `ZP2015_INV_CISLO` | `ISADG_OTHER_ID` (STRING; specs former reference code, accession number, other) |
 | 3.1.2 Title | `ZP2015_NAME`, `ZP2015_FORMAL_TITLE`, `*_PUBLIC` | `ISADG_TITLE` (STRING); formal and supplied titles not distinguished |
 | 3.1.3 Dates | `ZP2015_UNIT_DATE`, `_BULK`, `_TEXT`, `_PRE`, `_POST`, `ZP2015_DATE_OTHER` (25 specs) | `ISADG_DATE` (UNITDATE, creation), `ISADG_DATE_BULK` (UNITDATE), `ISADG_DATE_TEXT` (STRING) |
@@ -363,11 +379,12 @@ national DA), no labels, no older-aid output in version 1. Rules: `ItemTypeFilte
 `AvailableItems.drl` (everything possible at every level, required by level, the material-type
 gating of D4), `Validation.drl` (the six essential elements of ISAD(G) at the fonds - reference code,
 title, dates, level, extent, creator; level and title everywhere; a date inside the parent's range;
-the hierarchy of D2; the container of D3), `NewLevel.drl` (scenarios named by the level),
+the hierarchy of D2; a reference code unique in the fonds, D10; the container of D3), `NewLevel.drl`
+(scenarios named by the level),
 `ChangeImpact.drl`, `Output_FindingAid.drl`, a citation Groovy; messages keyed, Czech in
 `translations/cs.xml`. Policy types `ISADG_POL_BASIC`, `ISADG_POL_REFERENCE_CODE`,
-`ISADG_POL_CONTAINER`. Actions: `!FundValidation`, `!UnitIdGenerator` (`levelTypeCode: ISADG_LEVEL`,
-`extraDelimiterAfter: ISADG_LEVEL_SERIES`), persistent sort, the container generator. Templates:
+`ISADG_POL_CONTAINER`. Actions: `!FundValidation`, persistent sort, the container generator; no
+numbering of reference codes (D10). Templates:
 EAD3 from the skeleton of ZP2015's `INVENTAR_EAD/index.ftl` (control, archdesc, the `dsc` recursion;
 ISADG levels are EAD level values one to one), PDF from `SRD_INVENTORY_JASPER`, XML. UI settings of
 the rule set: FUND_VIEW (tree `ISADG_REFERENCE_CODE ISADG_TITLE ISADG_DATE`, icons per level),
@@ -516,6 +533,9 @@ through aliases.
   access point, validation, output); findings into section 4.
 - Pinned search filters per rule set (the remaining blocking core place).
 - ISADG container generator action (`!ItemGenerator`) and the citation script.
+- Positional numbering of ISADG reference codes as an addon (D10): the generator needs a root code,
+  letter prefixes and nested subseries first; a check that a child's code extends the parent's
+  belongs to the same addon, since it is one convention among several.
 - Unit dates in the remaining places (section 2, "Rule for the remaining places") - prerequisite of
   the EAD3 template; then the EAD3 template validated against the schema in a test.
 - PDF finding aid (Jasper); implementation guide chapter "International archival description

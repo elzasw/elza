@@ -38,7 +38,6 @@ The actions of the rule set run on a selected branch or on the whole
 fonds:
 
 - *Validation of the description* (:doc:`08-validation`);
-- *Generator of reference codes* (:doc:`03-levels`);
 - *Persistent sort* - sorts the units of a branch by a chosen element,
   permanently, for example the files of a series by their dates; also in
   the context menu of a unit in the tree.

@@ -1424,4 +1424,13 @@
         </sql>
     </changeSet>
 
+    <changeSet id="20261019150000" author="ppy">
+        <!-- Validation answers whether another unit of the fund carries the same UNITID value
+             (Drools fact DescItem.duplicateInFund, one lookup by value per UNITID item of the
+             validated unit when a rule asks). -->
+        <createIndex tableName="arr_data_unitid" indexName="ix_arr_data_unitid_unit_value">
+            <column name="unit_value"/>
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

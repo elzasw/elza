@@ -30,6 +30,9 @@ The rule set reports:
   lie outside the dates of the parent unit (ISAD(G) 3.1.3).* The dates of
   a series contain the dates of its files; widen the dates of the parent
   or correct the unit.
+- **The reference code is unique in the fonds.** *The reference code is
+  not unique in the fonds (ISAD(G) 3.1.1).* Reported on every unit that
+  carries the code; change the code of one of them (:doc:`03-levels`).
 - **Every file or item at the end of a branch is in a container.** *The
   unit and the units above it have no container.* A container on a
   parent counts (:doc:`05-containers`).
@@ -46,16 +49,9 @@ the unit - for a branch that is not processed yet, or where the rule does
 not apply:
 
 - **Basic** - the elements and the hierarchy;
-- **Reference codes** - the reference codes (recommended below the fonds);
+- **Reference codes** - the reference codes (recommended below the fonds,
+  unique in the fonds);
 - **Containers** - the containers at the end of the branches.
 
 Switching a policy off hides its findings; it does not change the
 description.
-
-Generating reference codes
---------------------------
-
-The bulk action *Generator of reference codes* fills the reference codes
-of a branch by the position of the units (:doc:`03-levels`). Run it after
-the hierarchy is settled; moving units afterwards changes their position
-but not their codes, and the validation does not report the difference.

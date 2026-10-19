@@ -65,5 +65,5 @@ The next steps
   the files and items.
 - Put files and items into containers (:doc:`05-containers`) and link the
   creators and the access points (:doc:`06-creators-and-access-points`).
-- Run the validation of the whole fonds and generate the reference codes
-  (:doc:`08-validation`).
+- Assign the reference codes (:doc:`03-levels`) and run the validation of
+  the whole fonds (:doc:`08-validation`).

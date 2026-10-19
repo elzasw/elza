@@ -21,9 +21,9 @@ Identity statement
 ------------------
 
 =====  ===========================  ================================================================
-3.1.1  Reference code               Identifies the unit within the fonds; the generator numbers the
-                                    units by their position (:doc:`03-levels`). Country and
-                                    repository codes are added in outputs.
+3.1.1  Reference code               Identifies the unit within the fonds, in the convention of
+                                    the archive; unique in the fonds (:doc:`03-levels`). Country
+                                    and repository codes are added in outputs.
 \      Other identifier             A former reference code, an accession number or another
                                     identifier; choose the kind. Repeatable.
 3.1.2  Title                        Formal or supplied title of the unit.

@@ -59,6 +59,16 @@ then
     dvResults.createMissing("ISADG_DATE", "DATE_OUTSIDE_PARENT", "The dates of creation lie outside the dates of the parent unit (ISAD(G) 3.1.3).", "ISADG_POL_BASIC");
 end
 
+// The code is assigned by the archivist in the convention of the archive; core answers whether
+// another unit of the fonds carries the same value (DescItem.duplicateInFund, UNITID items only).
+rule "ISAD(G) 3.1.1: the reference code is unique in the fonds"
+when
+    $activeLevel : ActiveLevel()
+    $code : DescItem( type == "ISADG_REFERENCE_CODE" && duplicateInFund ) from $activeLevel.ownDescItems
+then
+    dvResults.createError($code.getDescItemId(), "REFERENCE_CODE_DUPLICATE", "The reference code is not unique in the fonds (ISAD(G) 3.1.1).", "ISADG_POL_REFERENCE_CODE");
+end
+
 rule "Every file or item at the end of a branch is in a container"
 when
     $activeLevel : ActiveLevel( !hasChildren )

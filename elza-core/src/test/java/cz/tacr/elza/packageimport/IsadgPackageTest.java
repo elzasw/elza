@@ -3,6 +3,7 @@ package cz.tacr.elza.packageimport;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
@@ -41,6 +42,7 @@ import cz.tacr.elza.controller.vo.Institution;
 import cz.tacr.elza.controller.vo.ap.item.ApItemStringVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemEnumVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
 import cz.tacr.elza.core.data.PackageTexts;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -85,7 +87,8 @@ import cz.tacr.elza.service.UserService;
 /**
  * The ISAD(G) archival description package ISADG: its rule set next to its dependency ISAAR_CPF, a
  * fonds built by the scenarios of the levels and described by the rules, the validation of the
- * hierarchy and the containers, and the same installation with CZ_BASE and ZP2015.
+ * hierarchy, the reference codes and the containers, and the same installation with CZ_BASE and
+ * ZP2015.
  *
  * <p>Packages stay installed across test classes, so the class removes all of them first and at the
  * end; later test classes import the packages they need again.
@@ -203,6 +206,8 @@ public class IsadgPackageTest {
             assertEquals(BulkActionType.PERSISTENT_SORT,
                          BulkActionService.toBulkAction(bulkActionConfigManager.get("ISADG_PERSISTENT_SORT")).getType());
             assertEquals("FundValidation", bulkActionConfigManager.getType("ISADG_FUND_VALIDATION"));
+            assertNull(bulkActionConfigManager.getType("ISADG_GENERATOR_REFERENCE_CODE"),
+                       "the reference code is assigned by the archivist, not generated");
         });
     }
 
@@ -282,9 +287,29 @@ public class IsadgPackageTest {
         });
     }
 
-    /** CZ_BASE and ZP2015 in the same installation: a Czech fonds next to the ISAD(G) one. */
+    /** The reference code is any text the archivist assigns; two units of the fonds must not share it. */
     @Test
     @Order(5)
+    void referenceCodeIsUniqueInTheFonds() {
+        tx(() -> {
+            setReferenceCode(seriesId, "S 1");
+            setReferenceCode(fileId, "S 1");
+            setReferenceCode(itemId, "S 1/1");
+            assertEquals(List.of("ISADG/REFERENCE_CODE_DUPLICATE"), keys(seriesId), "reported on both units");
+            assertEquals(List.of("ISADG/REFERENCE_CODE_DUPLICATE"), keys(fileId));
+            assertEquals(List.of("ISADG/CONTAINER_MISSING"), keys(itemId), "a code of its own is not reported");
+
+            DataValidationResult duplicate = results(fileId).get(0);
+            assertNotNull(duplicate.getDescItemId(), "the finding points at the item with the code");
+            assertEquals("ISADG_POL_REFERENCE_CODE", duplicate.getPolicyTypeCode());
+            assertEquals("The reference code is not unique in the fonds (ISAD(G) 3.1.1).",
+                         packageTexts.render(duplicate.getMessage(), staticDataService.getData().getSysLanguageByTag("en")));
+        });
+    }
+
+    /** CZ_BASE and ZP2015 in the same installation: a Czech fonds next to the ISAD(G) one. */
+    @Test
+    @Order(6)
     void worksNextToCzBaseAndZp2015() {
         helperTestService.loadPackage("CZ_BASE", "package-cz-base");
         helperTestService.loadPackage("ZP2015", "rules-cz-zp2015");
@@ -338,6 +363,17 @@ public class IsadgPackageTest {
         ArrNode node = nodeRepository.findById(nodeId).orElseThrow();
         descriptionItemService.updateDescriptionItem(changed, node.getVersion(), nodeId, version.getFundVersionId(), true,
                                                      false);
+        levelTreeCacheService.invalidateFundVersion(version);
+    }
+
+    private void setReferenceCode(Integer nodeId, String value) {
+        Integer typeId = itemTypeRepository.findOneByCode("ISADG_REFERENCE_CODE").getItemTypeId();
+        ArrItemUnitidVO vo = new ArrItemUnitidVO();
+        vo.setItemTypeId(typeId);
+        vo.setValue(value);
+        ArrDescItem item = factoryDO.createDescItem(vo, typeId);
+        ArrNode node = nodeRepository.findById(nodeId).orElseThrow();
+        descriptionItemService.createDescriptionItem(item, nodeId, node.getVersion(), version.getFundVersionId());
         levelTreeCacheService.invalidateFundVersion(version);
     }
 

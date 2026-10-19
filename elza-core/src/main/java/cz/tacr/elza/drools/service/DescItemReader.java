@@ -85,6 +85,10 @@ public class DescItemReader {
 			return;
 		}
 
+        // a UNITID value is compared with the other units of the version only when a rule asks
+        UnitIdDuplicateChecker duplicateChecker = (nodeId, itemTypeId, value) -> descItemService
+                .isUnitIdUsedByOtherNode(version, nodeId, itemTypeId, value);
+
         Map<Integer, List<ArrDescItem>> descItemsMap = null;
 		Map<Integer, RestoredNode> cachedNodes = null;
 
@@ -96,7 +100,8 @@ public class DescItemReader {
             	var cachedNode = cachedNodes.get(level.getNodeId());
             	
                 List<ArrDescItem> levelDescItems = cachedNode.getDescItems();
-                List<DescItem> items = ModelFactory.createDescItems(levelDescItems, descItemFactory, structItemRepos, apProvider);
+                List<DescItem> items = ModelFactory.createDescItems(levelDescItems, descItemFactory, structItemRepos, apProvider,
+                                                                   duplicateChecker);
                 level.setDescItems(items);
                 
                 var inhItems = cachedNode.getInhibitedItems();
@@ -111,7 +116,8 @@ public class DescItemReader {
 
             for (Level level : levels) {
                 List<ArrDescItem> levelDescItems = descItemsMap.get(level.getNodeId());
-                List<DescItem> items = ModelFactory.createDescItems(levelDescItems, descItemFactory, structItemRepos, apProvider);
+                List<DescItem> items = ModelFactory.createDescItems(levelDescItems, descItemFactory, structItemRepos, apProvider,
+                                                                   duplicateChecker);
                 level.setDescItems(items);
             }
         }

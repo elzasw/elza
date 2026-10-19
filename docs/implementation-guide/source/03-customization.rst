@@ -172,7 +172,10 @@ Validation (``CONFORMITY_INFO``)
    Uses the global ``DataValidationResults dvResults``; for example
    ``dvResults.createMissing("ADT_STAGE", "Addon stage is missing (rule ADT_001).", "ZP2015_POL_BASIC")``.
    The message is shown to archivists as written, so write it in the
-   language of the installation.
+   language of the installation. A ``DescItem`` of the data type
+   ``UNITID`` also answers ``string`` (its value) and ``duplicateInFund``
+   (another unit of the fonds carries the same value); the lookup behind
+   ``duplicateInFund`` runs only when a rule asks for it.
 
 New units of description (``NEW_LEVEL``)
    Uses the global ``NewLevelApproaches results``; ``results.create(name)``

@@ -31,7 +31,7 @@ Administrators and users are served by the guides in `docs/admin-guide`, `docs/u
 | [da-async-queue.md](da-async-queue.md) | Asynchronous download and export queue of the digital archive |
 | [dms-storage.md](dms-storage.md) | DMS file storage: layout, trash, consistency |
 | [db-statement-timeouts.md](db-statement-timeouts.md) | Database statement timeouts (proposal) |
-| [rules-customization-layer.md](rules-customization-layer.md) | Rules-package customization layer, entity frameworks, internationalized version |
+| [rules-customization-layer.md](rules-customization-layer.md) | Rules-package customization layer, entity frameworks, internationalized version; source notes in [research/isadg](research/isadg) |
 | [entity-framework-research.md](entity-framework-research.md) | Research: agent types and vocabularies in ISAAR(CPF), EAC-CPF, RiC; source notes in [research/entity-frameworks](research/entity-frameworks) |
 | [isaar-cpf-cam-comparison.md](isaar-cpf-cam-comparison.md) | ISAAR(CPF) / EAC-CPF compared with CAM (CZ_BASE) |
 | [password-policy.md](password-policy.md) | Password policy, forced change, users with a password from the configuration |

@@ -4,11 +4,8 @@
             <action-recommended output-type="ISADG_FINDING_AID" />
         </action-recommendeds>
     </package-action>
-    <package-action filename="ISADG_GENERATOR_REFERENCE_CODE.yaml">
-        <action-recommendeds>
-            <action-recommended output-type="ISADG_FINDING_AID" />
-        </action-recommendeds>
-    </package-action>
+    <!-- No generator of reference codes: ISAD(G) 3.1.1 prescribes no form for the code, the
+         archivist assigns it and the validation keeps it unique in the fonds. -->
     <!-- The persistent sort is recognised by its kind (!PersistentSort), so the file may have any
          name; a file name is unique across the installation, which rules out ZP2015's. -->
     <package-action filename="ISADG_PERSISTENT_SORT.yaml" />

@@ -54,11 +54,14 @@ Reference codes
 ---------------
 
 The reference code (ISAD(G) 3.1.1) identifies the unit within the fonds.
-The bulk action *Generator of reference codes* numbers the units of the
-selected branch by their position: the numbers of the levels are joined
-with a slash, with an extra delimiter after the series, so that a file
-inside the second series reads like ``2/1`` and an item inside it
-``2/1/3``. A former reference code is kept in *Other identifier* with the
-kind *Former reference code*; the generator does not overwrite it. The
-country and repository codes that ISAD(G) puts in front of the local
-reference code are added by the outputs from the institution of the fonds.
+The standard prescribes no form for it, and ELZA takes the code as the
+archivist assigns it, in the convention of the archive: the letters and
+numbers of the fonds, a running number within the fonds, a series code
+with the number of the file, or a code that extends the code of the
+parent, such as ``F 7``, ``F 7/12`` and ``F 7/12/3``. Assign the codes
+once the arrangement is settled and keep them; a unit moved later keeps
+its code. A code that is given up is kept in *Other identifier* with the
+kind *Former reference code*. The validation reports a code carried by
+two units of the fonds (:doc:`08-validation`). The country and repository
+codes that ISAD(G) puts in front of the local reference code are added by
+the outputs from the institution of the fonds.

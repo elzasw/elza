@@ -15,7 +15,7 @@ ISAAR_ISO = os.path.normpath(ROOT + '../package-isaar-cpf/generator/iso639-2.txt
 CZ_BASE_SPECS = os.path.normpath(ROOT + '../package-cz-base/src/rul_item_spec.xml')
 
 PACKAGE = 'ISADG'
-VERSION = 1
+VERSION = 2
 
 
 def write(path, text):
@@ -571,25 +571,14 @@ write(RS + 'rul_package_actions.xml', '''<package-actions>
             <action-recommended output-type="ISADG_FINDING_AID" />
         </action-recommendeds>
     </package-action>
-    <package-action filename="ISADG_GENERATOR_REFERENCE_CODE.yaml">
-        <action-recommendeds>
-            <action-recommended output-type="ISADG_FINDING_AID" />
-        </action-recommendeds>
-    </package-action>
+    <!-- No generator of reference codes: ISAD(G) 3.1.1 prescribes no form for the code, the
+         archivist assigns it and the validation keeps it unique in the fonds. -->
     <!-- The persistent sort is recognised by its kind (!PersistentSort), so the file may have any
          name; a file name is unique across the installation, which rules out ZP2015's. -->
     <package-action filename="ISADG_PERSISTENT_SORT.yaml" />
 </package-actions>
 ''')
 write(RS + 'bulk_actions/ISADG_FUND_VALIDATION.yaml', '!FundValidation\nname: Validation of the description\n')
-write(RS + 'bulk_actions/ISADG_GENERATOR_REFERENCE_CODE.yaml', '''!UnitIdGenerator
-name: Generator of reference codes
-itemType: ISADG_REFERENCE_CODE
-previousIdCode: ISADG_OTHER_ID
-previousIdSpecCode: ISADG_OTHER_ID_FORMER
-levelTypeCode: ISADG_LEVEL
-extraDelimiterAfter: ISADG_LEVEL_SERIES
-''')
 write(RS + 'bulk_actions/ISADG_PERSISTENT_SORT.yaml', '!PersistentSort\nname: Persistent sort\nfastAction: true\n')
 write(RS + 'rules/ItemTypeFilter.drl', '''package ISADG;
 
@@ -876,6 +865,16 @@ then
     dvResults.createMissing("ISADG_DATE", "DATE_OUTSIDE_PARENT", "The dates of creation lie outside the dates of the parent unit (ISAD(G) 3.1.3).", "ISADG_POL_BASIC");
 end
 
+// The code is assigned by the archivist in the convention of the archive; core answers whether
+// another unit of the fonds carries the same value (DescItem.duplicateInFund, UNITID items only).
+rule "ISAD(G) 3.1.1: the reference code is unique in the fonds"
+when
+    $activeLevel : ActiveLevel()
+    $code : DescItem( type == "ISADG_REFERENCE_CODE" && duplicateInFund ) from $activeLevel.ownDescItems
+then
+    dvResults.createError($code.getDescItemId(), "REFERENCE_CODE_DUPLICATE", "The reference code is not unique in the fonds (ISAD(G) 3.1.1).", "ISADG_POL_REFERENCE_CODE");
+end
+
 rule "Every file or item at the end of a branch is in a container"
 when
     $activeLevel : ActiveLevel( !hasChildren )
@@ -889,6 +888,7 @@ messages_cs = [
     ('ROOT_IS_FONDS', 'Kořen archivního souboru musí mít úroveň Fond (ISAD(G) 3.1.4).'),
     ('LEVEL_ORDER', 'Úroveň popisu neodpovídá úrovni nadřazené jednotky popisu (ISAD(G) 3.1.4).'),
     ('DATE_OUTSIDE_PARENT', 'Datace vzniku leží mimo dataci nadřazené jednotky popisu (ISAD(G) 3.1.3).'),
+    ('REFERENCE_CODE_DUPLICATE', 'Referenční označení není v archivním souboru jedinečné (ISAD(G) 3.1.1).'),
     ('CONTAINER_MISSING', 'Jednotka popisu ani jednotky nad ní nemají ukládací jednotku.'),
 ]
 
