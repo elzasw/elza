@@ -1,0 +1,90 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<ns2:edx xmlns:ns2="http://elza.tacr.cz/schema/v2">
+    <aps>
+        <ap>
+            <ape id="ap-person" t="PERSON_INDIVIDUAL"/>
+            <frgs>
+                <frg fid="ap-person-name" t="PT_NAME">
+                    <ds t="NM_MAIN">
+                        <v>Novák</v>
+                    </ds>
+                    <ds t="NM_MINOR">
+                        <v>Jan</v>
+                    </ds>
+                </frg>
+            </frgs>
+        </ap>
+    </aps>
+    <fs>
+        <s rule="ZP2015">
+            <fi ic="in1" n="LC-TEST-ead_export"/>
+            <lvls>
+                <lvl id="1">
+                    <de s="ZP2015_ARRANGEMENT_INV" t="ZP2015_ARRANGEMENT_TYPE"/>
+                    <de s="ZP2015_LEVEL_ROOT" t="ZP2015_LEVEL_TYPE"/>
+                    <ds t="ZP2015_NAME">
+                        <v>EAD export TEST ELZA</v>
+                    </ds>
+                </lvl>
+                <lvl id="2" pid="1">
+                    <de s="ZP2015_LEVEL_SERIES" t="ZP2015_LEVEL_TYPE"/>
+                    <ds t="ZP2015_NAME">
+                        <v>Série</v>
+                    </ds>
+                    <dt t="ZP2015_UNIT_DATE">
+                        <d f="1950" to="1960" fmt="Y-Y"/>
+                    </dt>
+                </lvl>
+                <lvl id="3" pid="2">
+                    <de s="ZP2015_LEVEL_ITEM" t="ZP2015_LEVEL_TYPE"/>
+                    <de s="ZP2015_UNIT_TYP_ELE" t="ZP2015_UNIT_TYPE"/>
+                    <ds t="ZP2015_NAME">
+                        <v>Elench</v>
+                    </ds>
+                    <dt s="ZP2015_DATE_DISPATCH" t="ZP2015_DATE_OTHER">
+                        <d f="1955" to="1955" fmt="Y"/>
+                    </dt>
+                    <dt s="ZP2015_DATE_DELIVERY" t="ZP2015_DATE_OTHER">
+                        <d f="1956" to="1956" fmt="Y"/>
+                    </dt>
+                    <dt s="ZP2015_DATE_PROCESSING" t="ZP2015_DATE_OTHER">
+                        <d f="1957" to="1957" fmt="Y"/>
+                    </dt>
+                    <dt s="ZP2015_DATE_CLOSING" t="ZP2015_DATE_OTHER">
+                        <d f="1958" to="1958" fmt="Y"/>
+                    </dt>
+                    <da s="ZP2015_ENTITY_ROLE_28" t="ZP2015_ENTITY_ROLE" apid="ap-person"/>
+                    <da s="ZP2015_ENTITY_ROLE_89" t="ZP2015_ENTITY_ROLE" apid="ap-person"/>
+                    <ds s="ZP2015_ENTITY_ROLE_1" t="ZP2015_ENTITY_ROLE_TEXT">
+                        <v>Jan Novák (prokurista)</v>
+                    </ds>
+                    <ds s="ZP2015_ENTITY_ROLE_66" t="ZP2015_ENTITY_ROLE_TEXT">
+                        <v>Josef Svoboda</v>
+                    </ds>
+                    <ds t="ZP2015_ITEM_MAT_BAREVNOST">
+                        <v>modrá</v>
+                    </ds>
+                    <ds t="ZP2015_EXERQUE">
+                        <v>praenomen et nomen</v>
+                    </ds>
+                    <ds t="ZP2015_WRITING">
+                        <v>těsnopis</v>
+                    </ds>
+                    <ds t="ZP2015_SCALE_NUMERICAL">
+                        <v>1:200</v>
+                    </ds>
+                    <ds s="ZP2015_OTHERID_PERSONAL_ID" t="ZP2015_OTHER_ID">
+                        <v>OC-12</v>
+                    </ds>
+                    <ds s="ZP2015_OTHERID_CJ" t="ZP2015_OTHER_ID">
+                        <v>MV-2022/34-2</v>
+                    </ds>
+                </lvl>
+                <lvl id="4" pid="1">
+                    <de s="ZP2015_LEVEL_FOLDER" t="ZP2015_LEVEL_TYPE"/>
+                    <de s="ZP2015_FOLDER_LOGICAL" t="ZP2015_FOLDER_TYPE"/>
+                </lvl>
+            </lvls>
+        </s>
+    </fs>
+</ns2:edx>

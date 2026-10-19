@@ -38,4 +38,5 @@ Administrators and users are served by the guides in `docs/admin-guide`, `docs/u
 | [api-keys.md](api-keys.md) | Personal API keys |
 | [siem-log.md](siem-log.md) | Security audit log for a SIEM: field schema, client address behind a proxy |
 | [ai-task-events.md](ai-task-events.md) | AI provider task events and the per-user push |
+| [ead3-export.md](ead3-export.md) | EAD3 export against the Czech EAD3 profile: decisions, remaining gaps and proposed changes (partly a proposal) |
 | [entity-real-name-index.md](entity-real-name-index.md) | Entity search: the `REAL_NAME` index of names and the search fields of an index type (`index-search`) |
