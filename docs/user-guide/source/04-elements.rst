@@ -52,8 +52,8 @@ Identity statement
                                     the material type is maps and plans or technical drawings.
 \      Duration (minutes)           Offered when the material type is sound recordings or moving
                                     images.
-3.1.4  Level of description         Fonds, subfonds, series, subseries, file or item
-                                    (:doc:`03-levels`).
+3.1.4  Level of description         Fonds or collection, subfonds, series, subseries, file or
+                                    item (:doc:`03-levels`).
 =====  ===========================  ================================================================
 
 A sample. The fonds *Smith family papers*: extent "128 boxes (12.5 linear

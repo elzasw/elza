@@ -10,6 +10,9 @@ global cz.tacr.elza.drools.model.NewLevelApproaches results;
 // The name of a scenario is its identifier (the DAO_LEVEL_IMPORT setting names one); the names
 // are the English names of the levels.
 
+// The only root scenario: a new fonds gets it without a choice, since fund creation applies a
+// scenario only when there is exactly one. An artificial collection is made by changing the level
+// of the root to Collection.
 rule "Fonds"
 when
     NewLevel( parent == null )
@@ -52,6 +55,51 @@ when
 then
     NewLevelApproach approach = results.create("Item");
     approach.addDescItem("ISADG_LEVEL", "ISADG_LEVEL_ITEM");
+end
+
+rule "Subfonds below a collection"
+when
+    NewLevel( parent != null && $items : parent.ownDescItems )
+    DescItem( type == "ISADG_LEVEL" && specCode == "ISADG_LEVEL_COLLECTION" ) from $items
+then
+    NewLevelApproach approach = results.create("Subfonds");
+    approach.addDescItem("ISADG_LEVEL", "ISADG_LEVEL_SUBFONDS");
+end
+
+rule "Series below a collection"
+when
+    NewLevel( parent != null && $items : parent.ownDescItems )
+    DescItem( type == "ISADG_LEVEL" && specCode == "ISADG_LEVEL_COLLECTION" ) from $items
+then
+    NewLevelApproach approach = results.create("Series");
+    approach.addDescItem("ISADG_LEVEL", "ISADG_LEVEL_SERIES");
+end
+
+rule "File below a collection"
+when
+    NewLevel( parent != null && $items : parent.ownDescItems )
+    DescItem( type == "ISADG_LEVEL" && specCode == "ISADG_LEVEL_COLLECTION" ) from $items
+then
+    NewLevelApproach approach = results.create("File");
+    approach.addDescItem("ISADG_LEVEL", "ISADG_LEVEL_FILE");
+end
+
+rule "Item below a collection"
+when
+    NewLevel( parent != null && $items : parent.ownDescItems )
+    DescItem( type == "ISADG_LEVEL" && specCode == "ISADG_LEVEL_COLLECTION" ) from $items
+then
+    NewLevelApproach approach = results.create("Item");
+    approach.addDescItem("ISADG_LEVEL", "ISADG_LEVEL_ITEM");
+end
+
+rule "Subfonds below a subfonds"
+when
+    NewLevel( parent != null && $items : parent.ownDescItems )
+    DescItem( type == "ISADG_LEVEL" && specCode == "ISADG_LEVEL_SUBFONDS" ) from $items
+then
+    NewLevelApproach approach = results.create("Subfonds");
+    approach.addDescItem("ISADG_LEVEL", "ISADG_LEVEL_SUBFONDS");
 end
 
 rule "Series below a subfonds"

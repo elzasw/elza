@@ -26,6 +26,9 @@
                 <level spec-code="ISADG_LEVEL_FONDS">
                     <icon>fa-sitemap</icon>
                 </level>
+                <level spec-code="ISADG_LEVEL_COLLECTION">
+                    <icon>fa-archive</icon>
+                </level>
                 <level spec-code="ISADG_LEVEL_SUBFONDS">
                     <icon>fa-sitemap</icon>
                 </level>

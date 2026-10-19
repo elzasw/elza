@@ -19,8 +19,8 @@ The rule set reports:
 - **Missing recommended elements.** The reference code and the dates of
   creation below the fonds. A recommended element missing is a reminder,
   not an error.
-- **The root is a fonds.** *The root of the fonds must have the level
-  Fonds (ISAD(G) 3.1.4).*
+- **The root is a fonds or a collection.** *The root must have the level
+  Fonds or Collection (ISAD(G) 3.1.4).*
 - **The level fits below the parent's level.** *The level of description
   does not fit below the level of the parent unit (ISAD(G) 3.1.4).*
   Reported when a level was changed or a unit moved so that, for
@@ -33,9 +33,10 @@ The rule set reports:
 - **The reference code is unique in the fonds.** *The reference code is
   not unique in the fonds (ISAD(G) 3.1.1).* Reported on every unit that
   carries the code; change the code of one of them (:doc:`03-levels`).
-- **Every file or item at the end of a branch is in a container.** *The
-  unit and the units above it have no container.* A container on a
-  parent counts (:doc:`05-containers`).
+- **A file or item without a container next to one with a container.**
+  *The unit has no container, while a neighbouring unit has one.* A
+  container on a parent counts; where no neighbour has a container,
+  nothing is reported (:doc:`05-containers`).
 
 The messages are shown in the language of the user interface: the
 English texts above, or their Czech translation.
@@ -51,7 +52,7 @@ not apply:
 - **Basic** - the elements and the hierarchy;
 - **Reference codes** - the reference codes (recommended below the fonds,
   unique in the fonds);
-- **Containers** - the containers at the end of the branches.
+- **Containers** - a container missing next to a unit that has one.
 
 Switching a policy off hides its findings; it does not change the
 description.

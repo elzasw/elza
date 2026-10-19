@@ -5,16 +5,20 @@ The six levels
 --------------
 
 ISAD(G) describes a fonds as a hierarchy. The rule set uses the six levels
-of the standard; every unit of description carries one of them in the
-element *Level of description*.
+of the standard and, for an artificial assemblage, the collection; every
+unit of description carries one of them in the element *Level of
+description*.
 
 ===========  ================================================================
 Level        What it is
 ===========  ================================================================
 Fonds        The whole of the records of one creator. The root of the
-             description is always a fonds.
+             description is a fonds or a collection.
+Collection   An artificial assemblage of documents brought together on some
+             common characteristic without regard to their provenance; a
+             root like the fonds.
 Subfonds     A subdivision of a fonds for records of an organisational unit
-             or a major function; only directly below the fonds.
+             or a major function. A subfonds may contain subfonds.
 Series       Records kept together because they result from the same
              activity or have the same form. A series may contain series.
 Subseries    A subdivision of a series. A subseries may contain subseries.
@@ -30,8 +34,8 @@ What may be below what
 The scenarios offered when you add a unit follow the hierarchy of the
 standard:
 
-- below a **fonds**: subfonds, series, file, item;
-- below a **subfonds**: series, file, item;
+- below a **fonds** or a **collection**: subfonds, series, file, item;
+- below a **subfonds**: subfonds, series, file, item;
 - below a **series**: series, subseries, file, item;
 - below a **subseries**: subseries, file, item;
 - below a **file**: file, item;
@@ -48,7 +52,8 @@ example when a file turns out to be a series. The validation then checks
 that the unit still fits below its parent and that the units below it
 still fit below the unit; a unit out of place is reported with
 *The level of description does not fit below the level of the parent unit*
-(:doc:`08-validation`). The root always keeps the level fonds.
+(:doc:`08-validation`). A new fonds is created with the level fonds on its
+root; the root may be changed to a collection and to nothing else.
 
 Reference codes
 ---------------

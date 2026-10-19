@@ -8,9 +8,19 @@ import cz.tacr.elza.domain.RulItemSpecExt;
 rule "Required items of the finding aid"
 no-loop
 when
-    $itemType : RulItemTypeExt(code in ("ISADG_FA_TITLE", "ISADG_FA_KIND", "ISADG_FA_DATE"))
+    $itemType : RulItemTypeExt(code in ("ISADG_FA_TITLE", "ISADG_FA_DATE"))
 then
     $itemType.setType(RulItemType.Type.REQUIRED);
+    $itemType.setRepeatable(false);
+end
+
+// The kind of a finding aid is a national typology, not an element of the standard or of EAD.
+rule "The kind of the finding aid is possible"
+no-loop
+when
+    $itemType : RulItemTypeExt(code == "ISADG_FA_KIND")
+then
+    $itemType.setType(RulItemType.Type.POSSIBLE);
     $itemType.setRepeatable(false);
 end
 

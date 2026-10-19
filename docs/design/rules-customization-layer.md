@@ -288,15 +288,25 @@ pinned filters and `translations/cs.xml` come from one table and cannot drift.
 **Decisions.**
 - *D1* ISADG depends on ISAAR_CPF (`item-aptypes` of a RECORD_REF must name declared classes,
   checked in `ItemTypeUpdater`); `elza.packages.enabled` lists ISADG, the import pulls ISAAR_CPF in.
-- *D2* the six ISAD(G) levels. `NewLevel.drl` offers only the allowed children (fonds at the root;
-  subfonds under fonds; series under fonds, subfonds, series; subseries under series, subseries;
-  file under series, subseries, file; item under series, subseries, file, item); `Validation.drl`
-  checks what scenarios cannot guard - a level changed later, an imported fund: the root is a
-  fonds, a child's level ranks below its parent's. ZP2015 guards its hierarchy in the scenarios
-  only; the reference-code generator and the EAD template assume it.
+- *D2* the six ISAD(G) levels and the collection. `ISADG_LEVEL_COLLECTION` is a root like the fonds:
+  the standard's glossary term for an artificial assemblage, offered by EAD, AtoM and ArchivesSpace
+  alike. `NewLevel.drl` offers only the allowed children (fonds at the root, the only root scenario,
+  because fund creation applies a scenario only when there is exactly one - a collection is made by
+  changing the level of the root; subfonds under fonds, collection and subfonds, since ISAD(G) 3.1.4
+  speaks of "first level sub-fonds, second level sub-fonds"; series under fonds, collection,
+  subfonds, series; subseries under series, subseries; file under series, subseries, file; item
+  under series, subseries, file, item); `Validation.drl` checks what scenarios cannot guard - a
+  level changed later, an imported fund: the root is a fonds or a collection, a child's level ranks
+  below its parent's or equals it from the subfonds down. ZP2015 guards its hierarchy in the
+  scenarios only; the reference-code generator and the EAD template assume it.
 - *D3* a structured storage unit from the start: `ISADG_CONTAINER` after SIMPLE-DEV's `SRD_PACKET`
-  (kind, prefix, number, postfix, location), a generator action (`GENEROVANI_UKL_JEDNOTEK.yaml` as
-  the model), `ISADG_POL_CONTAINER`, the validation "every leaf branch has a container".
+  (kind, prefix, number, postfix, location; "Box 12-13" is the number 12 with the postfix "-13"), a
+  generator action (`GENEROVANI_UKL_JEDNOTEK.yaml` as the model), `ISADG_POL_CONTAINER`. Possible at
+  every level, the root included: a one-box collection carries its container at the top, as the top
+  containers of ArchivesSpace do. ISAD(G) has no container element and the British, Dutch and
+  Australian conventions keep the location outside the finding aid, so ZP2015's "every leaf branch
+  has a container" is not carried over; `Validation.drl` reports a file or item without a container
+  only when a sibling has one.
 - *D4 extent and medium.* In the standard the element is one text ("128 boxes (12.5 linear
   metres)"). ZP2015 types the material (`ZP2015_UNIT_TYPE`, 53 kinds) with a count, sums the counts
   up the tree (`!UnitCount`) and prints the totals; the size of one item has its own items. ISADG
@@ -344,7 +354,7 @@ pinned filters and `translations/cs.xml` come from one table and cannot drift.
 | - other identifiers | `ZP2015_OTHER_ID` (24 specs), `ZP2015_SERIAL_NUMBER`, `ZP2015_INV_CISLO` | `ISADG_OTHER_ID` (STRING; specs former reference code, accession number, other) |
 | 3.1.2 Title | `ZP2015_NAME`, `ZP2015_FORMAL_TITLE`, `*_PUBLIC` | `ISADG_TITLE` (STRING); formal and supplied titles not distinguished |
 | 3.1.3 Dates | `ZP2015_UNIT_DATE`, `_BULK`, `_TEXT`, `_PRE`, `_POST`, `ZP2015_DATE_OTHER` (25 specs) | `ISADG_DATE` (UNITDATE, creation), `ISADG_DATE_BULK` (UNITDATE), `ISADG_DATE_TEXT` (STRING) |
-| 3.1.4 Level | `ZP2015_LEVEL_TYPE` (6: soubor, dílčí list, série, složka, jednotlivost, část) + `ZP2015_FOLDER_TYPE` | `ISADG_LEVEL` (ENUM: `FONDS`, `SUBFONDS`, `SERIES`, `SUBSERIES`, `FILE`, `ITEM`) - D2 |
+| 3.1.4 Level | `ZP2015_LEVEL_TYPE` (6: soubor, dílčí list, série, složka, jednotlivost, část) + `ZP2015_FOLDER_TYPE` | `ISADG_LEVEL` (ENUM: `FONDS`, `COLLECTION`, `SUBFONDS`, `SERIES`, `SUBSERIES`, `FILE`, `ITEM`) - D2 |
 | 3.1.5 Extent and medium | `ZP2015_UNIT_TYPE` (53), `_UNIT_COUNT`, `_EXTRA_UNITS`, `_UNIT_COUNT_ITEM`, EJ computation, `ZP2015_COLL_EXTENT_LENGTH`, `ZP2015_SIZE_*`, `ZP2015_AMOUNT` | `ISADG_EXTENT` (TEXT), `ISADG_EXTENT_QUANTITY` (DECIMAL, unit as specification, repeatable), `ISADG_MATERIAL_TYPE` (ENUM, extensible), detail items `ISADG_DIMENSIONS`, `ISADG_SCALE`, `ISADG_DURATION` - D4 |
 | 3.2.1 Creator | `ZP2015_ORIGINATOR` (CAM classes), `ZP2015_ORIGINATOR_SIMPLE` | `ISADG_CREATOR` (RECORD_REF: `PERSON_INDIVIDUAL`, `FAMILY`, `PARTY_GROUP`) - D1 |
 | 3.2.2 Administrative / biographical history | - (CAM entity; `ZP2015_INTRO` aggregates it) | `ISADG_BIOGHIST` (TEXT); later aggregation from the ISAAR entity (`!AccessPointAggregation`) |
@@ -370,7 +380,7 @@ pinned filters and `translations/cs.xml` come from one table and cannot drift.
 | EAD container, physloc | `ZP2015_STORAGE_ID` (STRUCTURED `ZP2015_PACKET`: type, prefix, number, postfix, metrage, 5 location items), `ZP2015_ITEM_ORDER` | `ISADG_CONTAINER` (STRUCTURED `ISADG_CONTAINER`: kind, prefix, number, postfix, location) - D3 |
 | EAD dao | `ZP2015_DAO_LINK`, `ZP2015_DAO_ID`, `ZP2015_AIP_ID` | `ISADG_DAO_LINK` (URI_REF) |
 | EAD controlaccess | `ZP2015_ENTITY_ROLE` (83 specs), `_AP_REF`, `_GEO_REF`, `_LEGALACT_REF` | `ISADG_ACCESS_POINT` (RECORD_REF to the five ISAAR classes; specs subject, place, person, family, corporate body, author, other); never the creator, which is `ISADG_CREATOR` - D6 |
-| finding aid (output items) | `ZP2015_FINDING_AID_ID`, `_OUTPUT_TYPE`, `_FINDING_AID_DATE`, `_UNIT_COUNT_SUM`, `_UNIT_COUNT_TABLE`, `_UNITS_AMOUNT`, `_RELEASE_DATE_PLACE`, `_APPROVED_BY`, `_EDITOR`, `_DATE_RANGE`, `_ATTACHMENT`, `_ORIGINATOR_SIMPLE`, `ZP2015_ARCHDESC_LANG` | `ISADG_FA_TITLE` (STRING), `ISADG_FA_KIND` (ENUM: inventory, catalogue, guide, list), `ISADG_FA_AUTHOR` (TEXT), `ISADG_FA_DATE` (DATE), `ISADG_FA_LANGUAGE` (ENUM `LNG_*`), `ISADG_FA_NOTE` (TEXT), `ISADG_ATTACHMENT` (FILE_REF) - D8 |
+| finding aid (output items) | `ZP2015_FINDING_AID_ID`, `_OUTPUT_TYPE`, `_FINDING_AID_DATE`, `_UNIT_COUNT_SUM`, `_UNIT_COUNT_TABLE`, `_UNITS_AMOUNT`, `_RELEASE_DATE_PLACE`, `_APPROVED_BY`, `_EDITOR`, `_DATE_RANGE`, `_ATTACHMENT`, `_ORIGINATOR_SIMPLE`, `ZP2015_ARCHDESC_LANG` | `ISADG_FA_TITLE` (STRING), `ISADG_FA_KIND` (ENUM: inventory, catalogue, guide, list; possible, not required - the typology is ZP2015's `ZP2015_OUTPUT_TYPE`, no element of the standard or of EAD), `ISADG_FA_AUTHOR` (TEXT), `ISADG_FA_DATE` (DATE), `ISADG_FA_LANGUAGE` (ENUM `LNG_*`), `ISADG_FA_NOTE` (TEXT), `ISADG_ATTACHMENT` (FILE_REF) - D8 |
 | not carried over | `ZP2015_NAD`, `_ZNACKA_FONDU`, dílčí list (`LEVEL_SECTION`, `DilciListy.drl`), `_ARRANGEMENT_TYPE`, `_UNIT_SUBTYPE`, `_UNIT_EXT_TYPE`, `_AGENDA_TYPE`, `_RECORD_TYPE`, chapter-5 items (~45), `_PUBLISHED`, `_INVALID_RECORD`, `_CONNECTED_RECORD`, `_NOT_FOUND`, `_ALTERNATIVE_DESCRIPTION_INLINE`, `_ITEM_TITLE_REF`, `_AWARD_*`, `_ENTITY_ROLE_TEXT`, all 8 extensions, older-aid output, labels, migrations, test-data generator | Czech practice or ZP chapter 5; an addon on ISADG can add them later |
 
 **Package shape.** Module `rules-en-isadg` (package and rule set `ISADG`, `<language>en`,
@@ -379,8 +389,9 @@ national DA), no labels, no older-aid output in version 1. Rules: `ItemTypeFilte
 `AvailableItems.drl` (everything possible at every level, required by level, the material-type
 gating of D4), `Validation.drl` (the six essential elements of ISAD(G) at the fonds - reference code,
 title, dates, level, extent, creator; level and title everywhere; a date inside the parent's range;
-the hierarchy of D2; a reference code unique in the fonds, D10; the container of D3), `NewLevel.drl`
-(scenarios named by the level),
+the hierarchy of D2 with a fonds or a collection at the root; a reference code unique in the fonds,
+D10; a container missing next to a unit that has one, D3), `NewLevel.drl` (scenarios named by the
+level),
 `ChangeImpact.drl`, `Output_FindingAid.drl`, a citation Groovy; messages keyed, Czech in
 `translations/cs.xml`. Policy types `ISADG_POL_BASIC`, `ISADG_POL_REFERENCE_CODE`,
 `ISADG_POL_CONTAINER`. Actions: `!FundValidation`, persistent sort, the container generator; no
@@ -536,6 +547,8 @@ through aliases.
 - Positional numbering of ISADG reference codes as an addon (D10): the generator needs a root code,
   letter prefixes and nested subseries first; a check that a child's code extends the parent's
   belongs to the same addon, since it is one convention among several.
+- Fund creation with a choice among several root scenarios (core and client), so that a collection
+  is created as one instead of by changing the level of the root (D2).
 - Unit dates in the remaining places (section 2, "Rule for the remaining places") - prerequisite of
   the EAD3 template; then the EAD3 template validated against the schema in a test.
 - PDF finding aid (Jasper); implementation guide chapter "International archival description

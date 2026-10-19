@@ -19,7 +19,8 @@ Creating a fonds
 
 In the archival description, create a new fonds: give it a name, the
 institution and the rule set *ISAD(G) archival description*. ELZA creates
-the fonds with its root unit of description, which is the **fonds** level
+the fonds with its root unit of description at the **fonds** level; for an
+artificial collection change the level of the root to *Collection*
 (:doc:`03-levels`). The name of the fonds is the name of the record in
 ELZA; the title of the fonds as an element of the description
 (:doc:`04-elements`) is filled on the root unit.
