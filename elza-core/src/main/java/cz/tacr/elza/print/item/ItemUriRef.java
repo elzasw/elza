@@ -16,6 +16,8 @@ public class ItemUriRef extends AbstractItem {
 
     private Node node = null;
 
+    private boolean nodeResolved = false;
+
     private final ArrNode linkedNode;
 
     private final ItemConvertorContext context;
@@ -44,11 +46,15 @@ public class ItemUriRef extends AbstractItem {
         return description;
     }
 
+    /**
+     * @return the linked unit of description, null for an external link or a deleted target
+     */
     public Node getNode() {
-        if (node == null) {
+        if (!nodeResolved) {
             if (linkedNode != null) {
                 node = context.getNode(linkedNode);
             }
+            nodeResolved = true;
         }
         return node;
 

@@ -125,6 +125,23 @@ public interface NodeRepository extends ElzaJpaRepository<ArrNode, Integer>, Nod
     List<NodeIdFundVersionIdInfo> findNodeIdFundversionIdByAccessPointId(@Param(value = "accessPointId") Integer accessPointId);
 
     /**
+     * Active nodes of open fund versions whose active URI-REF item links to one of the given
+     * nodes. The referring nodes may belong to any fund.
+     *
+     * @param linkedNodeIds ids of the link targets
+     * @return pairs of the referring node and the open version of its fund
+     */
+    @Query("SELECT DISTINCT new cz.tacr.elza.domain.projection.NodeIdFundVersionIdInfo(d.nodeId, fv.fundVersionId) " +
+            "FROM arr_item i " +
+            "JOIN arr_data_uri_ref ur ON i.dataId = ur.dataId " +
+            "JOIN arr_desc_item d ON i.itemId = d.itemId " +
+            "JOIN arr_node n ON n.nodeId = d.nodeId " +
+            "JOIN arr_level l ON n.nodeId = l.nodeId AND l.deleteChange is null " +
+            "JOIN arr_fund_version fv ON n.fund = fv.fund AND fv.lockChange IS NULL " +
+            "WHERE i.deleteChange IS NULL AND ur.nodeId IN :linkedNodeIds")
+    List<NodeIdFundVersionIdInfo> findNodeIdFundversionIdByLinkedNodeIds(@Param(value = "linkedNodeIds") Collection<Integer> linkedNodeIds);
+
+    /**
      * @return vrací seznam dvojic nodeId a fundVersionId podle ruleCodes
      */
     @Query("SELECT new cz.tacr.elza.domain.projection.NodeIdFundVersionIdInfo(n.nodeId, fv.fundVersionId) " + 

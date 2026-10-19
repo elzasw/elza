@@ -115,6 +115,9 @@ public class RevertingChangesService {
     private ArrangementService arrangementService;
 
     @Autowired
+    private RuleService ruleService;
+
+    @Autowired
     private IEventNotificationService eventNotificationService;
 
     @Autowired
@@ -515,6 +518,11 @@ public class RevertingChangesService {
 
         sw.start("syncing nodes");
         nodeCacheService.syncNodes(nodeIdsChange);
+        sw.stop();
+
+        sw.start("revalidating referring nodes");
+        // reverted levels may delete or restore link targets, also of links from other funds
+        ruleService.revalidateNodesWithNodeRef(nodeIdsChange);
         sw.stop();
 
         sw.start("publishing changes");

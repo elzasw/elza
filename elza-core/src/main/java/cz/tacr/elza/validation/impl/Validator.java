@@ -11,6 +11,7 @@ import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.ElzaTools;
@@ -21,6 +22,7 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataUriRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemSpecExt;
@@ -54,10 +56,16 @@ public class Validator {
     
     final Map<Integer, ApState> apStatesMap;
 
+    /**
+     * Nodes linked by URI-REF items of the validated node that have no active level
+     */
+    final Set<Integer> deletedLinkedNodeIds;
+
     public Validator(final List<RulItemTypeExt> requiredItemTypes,
                      final List<ArrDescItem> descItems,
                      final DescItemFactory descItemFactory,
-                     final Map<Integer, ApState> apStatesMap) {
+                     final Map<Integer, ApState> apStatesMap,
+                     final Set<Integer> deletedLinkedNodeIds) {
         this.requiredItemTypes = requiredItemTypes;
         if (descItems == null) {
             this.descItems = Collections.emptyList();
@@ -66,6 +74,7 @@ public class Validator {
         }
 		this.descItemFactory = descItemFactory;
         this.apStatesMap = apStatesMap;
+        this.deletedLinkedNodeIds = deletedLinkedNodeIds;
 	}
 
 	public DataValidationResults getValidationResults() {
@@ -242,6 +251,22 @@ public class Validator {
                         // the id as text: a number would be formatted with grouping
                         validationResults.createError(descItem, CoreMessage.ARR_DELETED_ENTITY_REF.with(
                                 ValidationMessage.itemType(itemType.getCode()), String.valueOf(apState.getAccessPointId())).encode(),
+                                                      policyTypeCode);
+                    }
+                }
+
+                // A link to a unit of description is broken when its target is deleted, or when
+                // it is not resolved at all: deleting a level clears the target of the links to it.
+                if (data instanceof ArrDataUriRef
+                        && DescItemFactory.ELZA_NODE.equals(((ArrDataUriRef) data).getSchema())) {
+                    ArrDataUriRef dataUriRef = (ArrDataUriRef) data;
+                    Integer linkedNodeId = dataUriRef.getNodeId();
+                    if (linkedNodeId == null || deletedLinkedNodeIds.contains(linkedNodeId)) {
+                        String linkLabel = StringUtils.isNotBlank(dataUriRef.getDescription())
+                                ? dataUriRef.getDescription()
+                                : dataUriRef.getUriRefValue();
+                        validationResults.createError(descItem, CoreMessage.ARR_BROKEN_NODE_REF.with(
+                                ValidationMessage.itemType(itemType.getCode()), linkLabel).encode(),
                                                       policyTypeCode);
                     }
                 }
