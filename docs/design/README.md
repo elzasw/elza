@@ -24,7 +24,7 @@ Administrators and users are served by the guides in `docs/admin-guide`, `docs/u
 | Document | Topic |
 |---|---|
 | [versioning.md](versioning.md) | Versioning of the archival description: changes, fund versions, instances |
-| [da-migration.md](da-migration.md) | Link model of digital objects (`arr_dao_link` hierarchy), removing the `arr_dao` family |
+| [da-migration.md](da-migration.md) | Link model of digital objects (`arr_dao_link` hierarchy), switching a WSDL repository to the digital archive (link conversion, what replaces the import scenarios), removing the `arr_dao` family |
 | [fs-repo-analysis.md](fs-repo-analysis.md) | Filesystem repository: invariants and decisions |
 | [da-aip-new-version.md](da-aip-new-version.md) | What happens when the digital archive reports a new version of an AIP |
 | [da-aip-matching.md](da-aip-matching.md) | Automatic placement of received AIPs (`DA_MATCH`, `DA_IMPORT`) |
