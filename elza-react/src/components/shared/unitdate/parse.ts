@@ -255,13 +255,15 @@ const compareParts = (a: DateTimeParts, b: DateTimeParts) =>
     a.year - b.year || a.month - b.month || a.day - b.day || a.hour - b.hour || a.minute - b.minute || a.second - b.second;
 
 /**
- * Brackets of an estimate to square brackets, aliases of the interval delimiter (en dash) to the
- * delimiter, surrounding white space removed. Every replacement keeps the length, so offsets in the
- * result are offsets in the trimmed input.
+ * No-break spaces to plain spaces, brackets of an estimate to square brackets, aliases of the
+ * interval delimiter (en dash) to the delimiter, surrounding white space removed. Every replacement
+ * keeps the length, so offsets in the result are offsets in the trimmed input.
  */
 function normalize(input: string): string {
     const { common } = lexicon;
-    let result = input.trim();
+    let result = input;
+    common.spaceAliases.forEach(space => (result = result.split(space).join(' ')));
+    result = result.trim();
     common.estimateOpen.forEach(open => (result = result.split(open).join('[')));
     common.estimateClose.forEach(close => (result = result.split(close).join(']')));
     common.intervalDelimiterAliases.forEach(alias => (result = result.split(alias).join(common.intervalDelimiter)));
