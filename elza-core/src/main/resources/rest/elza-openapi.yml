@@ -4,6 +4,7 @@ info:
   version: 1.0.0
 tags:
   - name: setup
+  - name: packages
   - name: import-batches
     description: Import batches (administration)
   - name: institution
@@ -50,7 +51,6 @@ tags:
     description: Jazyky
   - name: admin
     description: Administrativní funkce
-  - name: packages
 paths:
   /accesspoint:
     delete:
@@ -2885,6 +2885,47 @@ paths:
                 $ref: '#/components/schemas/BaseException'
       tags:
         - aips
+  /aiprovider/branch-size:
+    get:
+      operationId: AiProvider_getBranchSize
+      description: |-
+        Size of the branch under a description level, for the confirmation of
+        *Kontrola větve* (the `scope = branch` run of `elza.revision`): how many
+        levels the provider will download and check. Counted from the open
+        version's tree cache under the user's fund read permission; a level the
+        user cannot read, or that does not exist, is answered with 404.
+      parameters:
+        - name: fundId
+          in: query
+          required: true
+          description: "`ArrFund.fundId` of the level's fund."
+          schema:
+            type: integer
+            format: int32
+          explode: false
+        - name: nodeId
+          in: query
+          required: true
+          description: '`ArrNode.nodeId` of the level.'
+          schema:
+            type: integer
+            format: int32
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiBranchSize'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aiprovider
   /aiprovider/conversation:
     post:
       operationId: AiProvider_createConversation
@@ -7237,6 +7278,24 @@ components:
             - $ref: '#/components/schemas/AiContextObject'
           description: Navigation target — reuses the UI-context vocabulary (`AiContextType` codes).
       description: One object an activity touched, renderable as a navigation link.
+    AiBranchSize:
+      type: object
+      required:
+        - levels
+      properties:
+        levels:
+          type: integer
+          format: int32
+          description: Levels in the whole subtree under the level (the level itself excluded).
+      description: |-
+        The user's usage/credit balance at the AI provider — the data behind "how
+        much have I spent". The provider serves it from the same state its
+        submit-time budget check uses, so the displayed balance never disagrees
+        with a quota refusal. Both members are optional: a provider without credit
+        accounting returns an empty object.Size of the branch under a description level — what *Kontrola větve* will
+        download and check (the provider pulls the subtree through its
+        `getArchivalBranch` tool, paged, and checks it in windows). Shown in the
+        confirmation before the run; a level without subordinate levels has 0.
     AiCitation:
       type: object
       required:
@@ -7397,6 +7456,13 @@ components:
           items:
             $ref: '#/components/schemas/AiContextObject'
           description: Supplementary context objects; Elza resolves them into the provider's `context`.
+        scope:
+          type: string
+          description: |-
+            `elza.revision` only — the run's scope: `branch` = the provider downloads the
+            whole subtree under the subject level (the `getArchivalBranch` tool, paged) and
+            checks it in windows inside one task (*Kontrola větve*); omitted = the unit check
+            of the subject alone. Carried into the synthesized `elza.revisionConfig`.
       description: 'Starts a conversation: creates the thread and submits its first exchange.'
     AiConversationDetail:
       type: object
@@ -7901,6 +7967,9 @@ components:
           items:
             $ref: '#/components/schemas/AiContextObject'
           description: Supplementary context objects (see `AiConversationCreate.context`).
+        scope:
+          type: string
+          description: The run's scope for `elza.revision` (see `AiConversationCreate.scope`); omitted = the unit check.
       description: Follow-up exchange submitted into an existing conversation.
     AiRequestEvent:
       type: object
@@ -8061,12 +8130,6 @@ components:
           allOf:
             - $ref: '#/components/schemas/AiCustomerUsage'
           description: Subscriber-level usage state (the outer cap).
-      description: |-
-        The user's usage/credit balance at the AI provider — the data behind "how
-        much have I spent". The provider serves it from the same state its
-        submit-time budget check uses, so the displayed balance never disagrees
-        with a quota refusal. Both members are optional: a provider without credit
-        accounting returns an empty object.
     AipConnectBlockedVO:
       type: object
       required:

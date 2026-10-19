@@ -769,6 +769,7 @@
                                 <modelNameMapping>AiAccountUsage=AiAccountUsageVO</modelNameMapping>
                                 <modelNameMapping>AiCustomerUsage=AiCustomerUsageVO</modelNameMapping>
                                 <modelNameMapping>AiUsageBalance=AiUsageBalanceVO</modelNameMapping>
+                                <modelNameMapping>AiBranchSize=AiBranchSizeVO</modelNameMapping>
                                 <modelNameMapping>AiMyKey=AiMyKeyVO</modelNameMapping>
                                 <modelNameMapping>AiMyKeyUpdate=AiMyKeyUpdateVO</modelNameMapping>
                                 <modelNameMapping>AiProviderInfo=AiProviderInfoVO</modelNameMapping>

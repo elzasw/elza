@@ -204,3 +204,43 @@ the provider's tool description now teaches the model that.)
   (`/dev-console/`) submits tasks with any `tools` list and shows the pending
   `ToolCall`s + lets you paste results — the same loop these executors serve;
   its task inspector shows the stored transcript including the tool rounds.
+
+## `getArchivalBranch` — one request downloads a part of a fund (0.17.0)
+
+The branch read tool exists for the tasks that work on a branch rather than a
+unit (the branch check of `elza.revision`; later branch indexing and
+overviews). The decision behind it (2026-10-19): on the Provider–Elza
+interface **one request downloads the related part of the fund**, and the
+iteration over the material happens on the Model–Provider interface; the
+provider knows in advance whether it needs the list of units on one level or
+the whole hierarchy, so the query says which.
+
+- **Arguments** `GetArchivalBranchParams`: `nodeId`; `view` — `flat` (the
+  direct children, in arrangement order) or `deep` (the whole subtree,
+  depth-first in arrangement order); `from` (0-based offset into the ordered
+  list); `maxNodes` (the requested window size).
+- **Result** `GetArchivalBranchResult`: `fundId`, `ruleSetCode`, `nodes`
+  (full `ArchivalDescription` payloads — items, `parentId`, `depth`,
+  `referenceMark`, `title`, issues, `allowedItemTypes`), `from`,
+  `totalCount`. The level itself is not included (the caller has it). The
+  allowed types always travel: the rule evaluation behind them costs
+  milliseconds per level, and the provider renders them as the *exceptions*
+  to the rule set's dictionary (what is NOT permitted on the level), since a
+  rule set such as ZP2015 forbids almost nothing — listing the near-complete
+  dictionary under every level would cost thousands of tokens per unit.
+- **Safety limit**: the executor caps a window at its own maximum
+  (`GetArchivalBranchTool.MAX_NODES`, 200) whatever the provider asks, cuts the
+  window out of the tree cache's ordered id list first and loads only the
+  windowed levels (items, titles, issues in batch), so the cost is
+  proportional to the window, never to the branch; `from` + `totalCount` let
+  the provider page on. A level with thousands of units is never handed over
+  whole.
+- **Permissions**: the conversation owner's fund read permission, enforced in
+  the executor (the poller thread has no security context); a missing level
+  and an unreadable one get the same error.
+- **Provider side**: `RevisionBranchRun` pulls `deep` pages against a
+  task-local page budget (`ai-provider.revision.branch-max-pages` ×
+  `branch-page-size`), windows the pulled levels
+  (`ai-provider.revision.window-size`) and reports the branch as truncated
+  when the budget is spent. The chat does not expose the tool yet (N5 step 3
+  decides whether overviews need it or a deterministic branch summary).

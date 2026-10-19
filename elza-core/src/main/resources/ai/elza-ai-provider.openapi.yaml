@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Elza AI Provider API
-  version: 0.16.0
+  version: 0.17.0
   description: |-
     Elza AI Provider API.
 
@@ -1497,6 +1497,12 @@ components:
       allOf:
         - $ref: '#/components/schemas/AiObject'
       description: Archival outline object.
+    BranchView:
+      type: string
+      enum:
+        - flat
+        - deep
+      description: Which part of the tree under a level `getArchivalBranch` returns.
     CustomerUsageInfo:
       type: object
       required:
@@ -1813,6 +1819,72 @@ components:
       allOf:
         - $ref: '#/components/schemas/AiObject'
       description: Fund information object.
+    GetArchivalBranchParams:
+      type: object
+      required:
+        - nodeId
+        - view
+      properties:
+        nodeId:
+          type: integer
+          format: int32
+          description: The level whose branch to return (`ArrNode.nodeId`).
+        view:
+          allOf:
+            - $ref: '#/components/schemas/BranchView'
+          description: '`flat` = the direct children; `deep` = the whole subtree.'
+        from:
+          type: integer
+          format: int32
+          description: 0-based offset into the ordered node list (default 0 = from the first node).
+        maxNodes:
+          type: integer
+          format: int32
+          description: |-
+            Requested maximum nodes in this window. The client caps it at its own
+            limit — the safety limit against enormous levels — and reports the window
+            it actually returned (`from`, `nodes.length`, `totalCount`), so the caller
+            pages on from there.
+      description: |-
+        Arguments of the `getArchivalBranch` tool: one level and which part of the
+        tree under it to return. The level itself is not part of the result — the
+        caller has it already (as the task's subject, as context, or from
+        `getArchivalDescription`).
+    GetArchivalBranchResult:
+      type: object
+      required:
+        - fundId
+        - nodes
+        - from
+        - totalCount
+      properties:
+        fundId:
+          type: integer
+          format: int32
+          description: Fund the branch belongs to — scopes follow-up searches.
+        ruleSetCode:
+          type: string
+          description: Rule set of the fund (`RulRuleSet.code`) — resolves the items' type/spec codes.
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ArchivalDescription'
+          description: "The window's nodes, in arrangement order (`deep`: depth-first), items included."
+        from:
+          type: integer
+          format: int32
+          description: 0-based index of `nodes[0]` within the whole ordered list.
+        totalCount:
+          type: integer
+          format: int32
+          description: Size of the whole ordered list (all nodes of the view, before windowing).
+      description: |-
+        Result of the `getArchivalBranch` tool: one window of the ordered node list
+        under the level, every node with its complete items and its
+        `allowedItemTypes` — the same model the client sends as
+        `elza.archivalDescription` context (`parentId`, `depth` and `referenceMark`
+        carry the hierarchy). `from + nodes.length < totalCount` means more
+        remains: ask for the next window.
     GetArchivalDescriptionParams:
       type: object
       properties:
@@ -2910,6 +2982,7 @@ components:
         - searchEntities
         - getArchivalDescription
         - searchFunds
+        - getArchivalBranch
       description: |-
         Standard tools — the **closed, contract-owned** set of tools a client can
         execute locally on the provider's request during `awaiting_tools`. The set is
@@ -2961,6 +3034,16 @@ components:
         `FundInfo` carries `rootNodeId` — the entry point for browsing the fund
         with `getArchivalDescription`. Executed under the requesting user's fund
         read permissions.
+        - `getArchivalBranch` — download a part of a fund in one request: the
+        direct children of a level (`flat`) or its whole subtree in arrangement
+        order (`deep`), every node with its complete description items.
+        Arguments `GetArchivalBranchParams`, result `GetArchivalBranchResult`.
+        The provider pulls the material of a branch-wide task (`elza.revision`
+        with `scope = branch`; later branch indexing and overviews) and iterates
+        over it with the model on its own side; the client caps the nodes per
+        call and reports the window position, so a level with thousands of units
+        is never handed over whole and the provider pages deliberately. Executed
+        under the requesting user's fund read permissions.
     StructuredObjectInfo:
       type: object
       required:

@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button, Textarea, Spinner, ProgressBar, makeStyles, mergeClasses, tokens, Badge, Tooltip, Menu, MenuTrigger, MenuPopover, MenuList, MenuItem, MenuItemCheckbox, MenuItemRadio, MenuDivider, Dialog, DialogSurface, DialogBody, DialogTitle, DialogContent, DialogActions, Field, Input } from "@fluentui/react-components";
 import { SendRegular, FolderRegular, DocumentRegular, PersonRegular, AppsRegular, AddRegular, SparkleRegular, HistoryRegular, ChevronLeftRegular, ChevronRightRegular, SettingsRegular, ChevronDownRegular, MoneyRegular, StopRegular, CopyRegular, CheckmarkRegular, MoreHorizontalRegular, EditRegular, DeleteRegular } from "@fluentui/react-icons";
-import { AiConversation, AiContextType, AiDisplayBlock, AiTaskType } from "elza-api";
+import { AiConversation, AiContextNode, AiContextType, AiDisplayBlock, AiTaskType } from "elza-api";
+import { Api } from "api";
 import { useUserSettings } from "contexts/user";
 import type { AiContext, AiContextSegmentLabel } from "./useCurrentAiContext";
 import { FormattedMessage, useIntl, IntlShape } from "react-intl";
@@ -49,6 +50,11 @@ const PARAMETER_CONTEXT: Record<string, AiContextType[]> = {
 };
 // Parameter types the server synthesizes without any context.
 const SYNTHESIZED_PARAMETERS = new Set(["elza.revisionConfig"]);
+
+/** The content check; its branch form runs over the subtree under the selected level. */
+const BRANCH_TASK_TYPE = "elza.revision";
+/** `AiConversationCreate.scope` / `AiRequestCreate.scope` of the branch run. */
+const BRANCH_SCOPE = "branch";
 
 /** `reason` names the missing context when the task is not runnable. */
 interface TaskAvailability {
@@ -481,6 +487,36 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
     const [renameValue, setRenameValue] = useState("");
     const [deleteTarget, setDeleteTarget] = useState<AiConversation | null>(null);
 
+    // Kontrola větve: the check over the whole subtree under the selected
+    // level (elza.revision with scope=branch — the provider downloads the
+    // branch through getArchivalBranch and checks it in windows inside one
+    // run). Offered beside the unit check whenever a level is in context; the
+    // size of the branch is shown and confirmed before anything is paid for.
+    const branchTask = quickTasks.find(task => task.code === BRANCH_TASK_TYPE);
+    const branchNode = context?.objects.find(
+        (object): object is AiContextNode => object.type === AiContextType.Node
+    );
+    const [branchDialog, setBranchDialog] = useState<{ levels: number } | { failed: true } | null>(null);
+    const [branchLoading, setBranchLoading] = useState(false);
+    const openBranchDialog = async () => {
+        if (!branchNode || branchNode.fundId == null) return;
+        setBranchLoading(true);
+        try {
+            const { data } = await Api.aiprovider.aiProviderGetBranchSize(branchNode.fundId, branchNode.nodeId);
+            setBranchDialog({ levels: data.levels });
+        } catch {
+            setBranchDialog({ failed: true });
+        } finally {
+            setBranchLoading(false);
+        }
+    };
+    const startBranchCheck = () => {
+        setBranchDialog(null);
+        send(intl.formatMessage(aiAssistantMessages.branchCheck), BRANCH_TASK_TYPE, activeProfileCode, BRANCH_SCOPE);
+    };
+    const branchFailed = branchDialog !== null && "failed" in branchDialog;
+    const branchLevels = branchDialog !== null && !("failed" in branchDialog) ? branchDialog.levels : null;
+
     // The conversation's CURRENT mode — a follow-up may switch the task type
     // (the "fix this finding" handoff), so the badge tracks the last exchange.
     const currentTaskType = requests[requests.length - 1]?.taskType;
@@ -904,6 +940,17 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
                                     </Tooltip>
                                 );
                             })}
+                            {branchTask && branchNode && (
+                                <button
+                                    type="button"
+                                    className={mergeClasses(styles.quickBubble, branchLoading && styles.quickBubbleDisabled)}
+                                    title={branchTask.description}
+                                    disabled={branchLoading}
+                                    onClick={openBranchDialog}
+                                >
+                                    <FormattedMessage {...aiAssistantMessages.branchCheck} />
+                                </button>
+                            )}
                         </div>
                     )}
                     <div className={styles.contextBar}>
@@ -1071,6 +1118,36 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
                             </Button>
                             <Button appearance="primary" onClick={submitDelete}>
                                 <FormattedMessage {...aiAssistantMessages.delete} />
+                            </Button>
+                        </DialogActions>
+                    </DialogBody>
+                </DialogSurface>
+            </Dialog>
+            <Dialog open={branchDialog !== null} onOpenChange={(_event, data) => { if (!data.open) setBranchDialog(null); }}>
+                <DialogSurface>
+                    <DialogBody>
+                        <DialogTitle>
+                            <FormattedMessage {...aiAssistantMessages.branchTitle} />
+                        </DialogTitle>
+                        <DialogContent>
+                            {branchFailed ? (
+                                <FormattedMessage {...aiAssistantMessages.branchLoadFailed} />
+                            ) : branchLevels === 0 ? (
+                                <FormattedMessage {...aiAssistantMessages.branchEmpty} />
+                            ) : branchLevels !== null ? (
+                                <FormattedMessage {...aiAssistantMessages.branchConfirm} values={{ levels: branchLevels }} />
+                            ) : null}
+                        </DialogContent>
+                        <DialogActions>
+                            <Button appearance="secondary" onClick={() => setBranchDialog(null)}>
+                                <FormattedMessage {...aiAssistantMessages.cancel} />
+                            </Button>
+                            <Button
+                                appearance="primary"
+                                disabled={branchLevels === null || branchLevels === 0}
+                                onClick={startBranchCheck}
+                            >
+                                <FormattedMessage {...aiAssistantMessages.branchStart} />
                             </Button>
                         </DialogActions>
                     </DialogBody>

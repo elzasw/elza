@@ -76,7 +76,7 @@ using TypeSpec.OpenAPI;
  * `GET /ping`. See `SignatureAuth` and the companion `security.md`.
  */
 @service(#{ title: "Elza AI Provider API" })
-@info(#{ version: "0.16.0" })
+@info(#{ version: "0.17.0" })
 @server(
   "{endpoint}",
   "Provider-assigned base endpoint, e.g. https://ai.example.com/elza",
@@ -1338,6 +1338,16 @@ enum TaskState {
  *   `FundInfo` carries `rootNodeId` — the entry point for browsing the fund
  *   with `getArchivalDescription`. Executed under the requesting user's fund
  *   read permissions.
+ * - `getArchivalBranch` — download a part of a fund in one request: the
+ *   direct children of a level (`flat`) or its whole subtree in arrangement
+ *   order (`deep`), every node with its complete description items.
+ *   Arguments `GetArchivalBranchParams`, result `GetArchivalBranchResult`.
+ *   The provider pulls the material of a branch-wide task (`elza.revision`
+ *   with `scope = branch`; later branch indexing and overviews) and iterates
+ *   over it with the model on its own side; the client caps the nodes per
+ *   call and reports the window position, so a level with thousands of units
+ *   is never handed over whole and the provider pages deliberately. Executed
+ *   under the requesting user's fund read permissions.
  */
 enum StandardToolName {
   getItemTypes,
@@ -1346,6 +1356,7 @@ enum StandardToolName {
   searchEntities,
   getArchivalDescription,
   searchFunds,
+  getArchivalBranch,
 }
 
 /** A pending call of a client-declared tool (present while `awaiting_tools`). */
@@ -1797,6 +1808,65 @@ model SearchFundsResult {
 
   /** Total matching funds (before windowing). */
   totalCount: int64;
+}
+
+/** Which part of the tree under a level `getArchivalBranch` returns. */
+enum BranchView {
+  /** The level's direct children only, in arrangement order — the list of units on one level. */
+  flat,
+
+  /** The whole subtree under the level, depth-first in arrangement order — the full hierarchy. */
+  deep,
+}
+
+/**
+ * Arguments of the `getArchivalBranch` tool: one level and which part of the
+ * tree under it to return. The level itself is not part of the result — the
+ * caller has it already (as the task's subject, as context, or from
+ * `getArchivalDescription`).
+ */
+model GetArchivalBranchParams {
+  /** The level whose branch to return (`ArrNode.nodeId`). */
+  nodeId: int32;
+
+  /** `flat` = the direct children; `deep` = the whole subtree. */
+  view: BranchView;
+
+  /** 0-based offset into the ordered node list (default 0 = from the first node). */
+  from?: int32;
+
+  /**
+   * Requested maximum nodes in this window. The client caps it at its own
+   * limit — the safety limit against enormous levels — and reports the window
+   * it actually returned (`from`, `nodes.length`, `totalCount`), so the caller
+   * pages on from there.
+   */
+  maxNodes?: int32;
+}
+
+/**
+ * Result of the `getArchivalBranch` tool: one window of the ordered node list
+ * under the level, every node with its complete items and its
+ * `allowedItemTypes` — the same model the client sends as
+ * `elza.archivalDescription` context (`parentId`, `depth` and `referenceMark`
+ * carry the hierarchy). `from + nodes.length < totalCount` means more
+ * remains: ask for the next window.
+ */
+model GetArchivalBranchResult {
+  /** Fund the branch belongs to — scopes follow-up searches. */
+  fundId: int32;
+
+  /** Rule set of the fund (`RulRuleSet.code`) — resolves the items' type/spec codes. */
+  ruleSetCode?: string;
+
+  /** The window's nodes, in arrangement order (`deep`: depth-first), items included. */
+  nodes: ArchivalDescription[];
+
+  /** 0-based index of `nodes[0]` within the whole ordered list. */
+  from: int32;
+
+  /** Size of the whole ordered list (all nodes of the view, before windowing). */
+  totalCount: int32;
 }
 
 /**

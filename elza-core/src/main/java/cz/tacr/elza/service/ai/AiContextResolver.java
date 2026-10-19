@@ -383,6 +383,48 @@ public class AiContextResolver {
         return buildArchivalDescriptionPayload(version, nodeId, false);
     }
 
+    /**
+     * Builds the payloads of several levels of one version in one batch — items,
+     * titles and issues loaded once for the whole list — in the given order;
+     * a level absent from the version's tree is skipped. Serves the
+     * {@code getArchivalBranch} tool, whose windows hold up to hundreds of
+     * levels. Every level carries its allowed item types (a rule evaluation per
+     * level — milliseconds) and its enriched entity references, like a task
+     * subject.
+     */
+    public List<ArchivalDescription> buildArchivalDescriptions(final ArrFundVersion version,
+                                                               final List<Integer> nodeIds) {
+        List<ArchivalDescription> result = new ArrayList<>();
+        if (nodeIds == null || nodeIds.isEmpty()) {
+            return result;
+        }
+        Map<Integer, TreeNode> treeMap = levelTreeCacheService.getVersionTreeCache(version);
+        StaticDataProvider sdp = staticDataService.getData();
+        Map<Integer, List<ArrDescItem>> itemsByNode = loadItems(version, nodeIds);
+        Map<Integer, ArrNode> nodesById = nodeRepository.findAllById(nodeIds).stream()
+                .collect(Collectors.toMap(ArrNode::getNodeId, n -> n));
+        Map<Integer, String> titlesByNode = loadTitles(version, nodeIds);
+        Map<Integer, List<NodeIssue>> issuesByNode = loadIssues(version, nodeIds, sdp);
+        for (Integer nodeId : nodeIds) {
+            TreeNode treeNode = treeMap.get(nodeId);
+            if (treeNode == null) {
+                logger.info("AI branch node {} not found in fund {} open version; skipped",
+                        nodeId, version.getFundId());
+                continue;
+            }
+            ArchivalDescription level = buildArchivalDescription(nodeId, false, nodesById.get(nodeId), treeNode,
+                    itemsByNode.getOrDefault(nodeId, List.of()), sdp,
+                    titlesByNode.get(nodeId), issuesByNode.getOrDefault(nodeId, List.of()));
+            if (level == null) {
+                continue;
+            }
+            level.setAllowedItemTypes(allowedItemTypes(version, nodeId));
+            enrichEntityRefs(level);
+            result.add(level);
+        }
+        return result;
+    }
+
     /** Builds one level's {@code ArchivalDescription} payload, loading its own pieces. */
     private ArchivalDescription buildArchivalDescriptionPayload(final ArrFundVersion version, final Integer nodeId,
                                                                 final boolean focus) {
@@ -1014,6 +1056,25 @@ public class AiContextResolver {
             info.institution(toInstitutionInfo(fund.getInstitution()));
         }
         return info;
+    }
+
+    /**
+     * The number of levels in the whole subtree under a level of the fund's
+     * open version (the level itself excluded) — what a branch run of
+     * {@code elza.revision} will download and check, shown to the user before
+     * the run. Empty when the fund has no open version, the logged user cannot
+     * read it, or the level is not in the version's tree.
+     */
+    public Optional<Integer> countBranchLevels(final Integer fundId, final Integer nodeId) {
+        ArrFundVersion version = resolveReadableOpenVersion(fundId);
+        if (version == null || nodeId == null) {
+            return Optional.empty();
+        }
+        TreeNode treeNode = levelTreeCacheService.getVersionTreeCache(version).get(nodeId);
+        if (treeNode == null) {
+            return Optional.empty();
+        }
+        return Optional.of(GetArchivalBranchTool.subtreeIds(treeNode).size());
     }
 
     /** Resolves a fund's open version, or {@code null} when missing or not readable. */

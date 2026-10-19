@@ -123,7 +123,7 @@ export function useAiConversation({ externalSystemCode, getContext }: UseAiConve
     }, [websocketConnected, refetch]);
 
     const send = useCallback(
-        async (userInstructions: string, taskType?: string, profile?: string) => {
+        async (userInstructions: string, taskType?: string, profile?: string, scope?: string) => {
             setError(null);
             setPending(true);
             const currentContext = getContext?.() ?? null;
@@ -140,6 +140,7 @@ export function useAiConversation({ externalSystemCode, getContext }: UseAiConve
                         profile,
                         userInstructions,
                         context: currentContext?.objects,
+                        scope,
                     });
                     conversationIdRef.current = fresh.conversation.id;
                     setDetail(fresh);
@@ -153,7 +154,7 @@ export function useAiConversation({ externalSystemCode, getContext }: UseAiConve
                     // server reuses the conversation's previous type.
                     const { data: fresh } = await Api.aiprovider.aiProviderCreateRequest(
                         conversationIdRef.current,
-                        { taskType, userInstructions, profile, context: currentContext?.objects });
+                        { taskType, userInstructions, profile, context: currentContext?.objects, scope });
                     setDetail(fresh);
                 }
             } catch (sendError) {

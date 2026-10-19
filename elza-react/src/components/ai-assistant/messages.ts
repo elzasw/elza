@@ -21,6 +21,30 @@ export const aiAssistantMessages = defineMessages({
         id: "aiAssistant.action.stop",
         defaultMessage: "Zastavit",
     },
+    branchCheck: {
+        id: "aiAssistant.action.branchCheck",
+        defaultMessage: "Kontrola větve",
+    },
+    branchTitle: {
+        id: "aiAssistant.branch.title",
+        defaultMessage: "Kontrola větve",
+    },
+    branchConfirm: {
+        id: "aiAssistant.branch.confirm",
+        defaultMessage: "Větev pod vybranou jednotkou popisu má {levels, plural, one {# podřízenou úroveň} few {# podřízené úrovně} other {# podřízených úrovní}}. Kontrola je stáhne a projde po oknech v jednom běhu; kdykoli ji můžete zastavit. Spustit?",
+    },
+    branchEmpty: {
+        id: "aiAssistant.branch.empty",
+        defaultMessage: "Vybraná jednotka popisu nemá žádné podřízené úrovně.",
+    },
+    branchLoadFailed: {
+        id: "aiAssistant.branch.loadFailed",
+        defaultMessage: "Velikost větve se nepodařilo zjistit.",
+    },
+    branchStart: {
+        id: "aiAssistant.branch.start",
+        defaultMessage: "Spustit",
+    },
     copy: {
         id: "aiAssistant.action.copy",
         defaultMessage: "Kopírovat",

@@ -1885,6 +1885,10 @@
     "defaultMessage": "Select a report...",
     "srcHash": "ecrUhpCIacEx"
   },
+  "aiAssistant.action.branchCheck": {
+    "defaultMessage": "Branch check",
+    "srcHash": "pOhi8OG7QW78"
+  },
   "aiAssistant.action.cancel": {
     "defaultMessage": "Cancel",
     "srcHash": "bHfYpLCt8F6P"
@@ -2024,6 +2028,26 @@
   "aiAssistant.block.unsupported": {
     "defaultMessage": "Unsupported content type.",
     "srcHash": "kqb8iHc_uQ8i"
+  },
+  "aiAssistant.branch.confirm": {
+    "defaultMessage": "The branch under the selected description unit has {levels, plural, one {# subordinate level} other {# subordinate levels}}. The check downloads them and goes through them window by window in one run; you can stop it at any time. Start?",
+    "srcHash": "zxLguBx1QMYI"
+  },
+  "aiAssistant.branch.empty": {
+    "defaultMessage": "The selected description unit has no subordinate levels.",
+    "srcHash": "3StU_ZrKMUzm"
+  },
+  "aiAssistant.branch.loadFailed": {
+    "defaultMessage": "The size of the branch could not be determined.",
+    "srcHash": "l5O-05emNuRq"
+  },
+  "aiAssistant.branch.start": {
+    "defaultMessage": "Start",
+    "srcHash": "vxF0us80z5om"
+  },
+  "aiAssistant.branch.title": {
+    "defaultMessage": "Branch check",
+    "srcHash": "pOhi8OG7QW78"
   },
   "aiAssistant.context.accessPoint": {
     "defaultMessage": "Access point",
