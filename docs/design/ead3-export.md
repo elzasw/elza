@@ -9,7 +9,7 @@ remain (bug 10164 and its dependencies).
 | Producer | Code | Used for |
 |---|---|---|
 | Finding aid / output export | FreeMarker template `rules-cz-zp2015/src/rul_rule_set/ZP2015/templates/INVENTAR_EAD/index.ftl`, model `cz.tacr.elza.print.*` (`OutputModel`, `Node`, `Record`, `Dao`) | Templates `ZP2015_INVENTAR_EAD`, `ZP2015_MANIP_SEZNAM_EAD`, `ZP2015_STARSI_POMUCKA_1958_EAD` (`rul_template.xml`), validated against `ead3.xsd` |
-| Change package for the digital archive | `DaService.createEad` copies `elza-core/src/main/resources/exportDaTemplates/EAD-CONTEXT.xml` | `metadata/descriptive/EAD-CONTEXT.xml` of every exported AIP |
+| Change package for the digital archive | `DaEadContextGenerator`, called from `DaService.createEad`, renders the same template in the contextual mode | `metadata/descriptive/EAD-CONTEXT.xml` of every exported AIP |
 
 The profile is the Sphinx document in `ead3doc.git` (`doc/source`); chapter names below refer to it.
 
@@ -18,15 +18,46 @@ Restricted data are handled by the optional output filter `ZP_ACCESS_RESTRICT`
 name/content for their public variants. The template itself does not use the profile's
 `audience` model.
 
-`Zp2015EadExportTest` generates the EAD output for the fixture fund
-`zp2015/ead-export-fund.xml` and checks the mappings below; the generator validates every output
-against `ead3.xsd`.
+`Zp2015EadExportTest` generates the EAD output and the contextual description for the fixture
+fund `zp2015/ead-export-fund.xml` and checks the mappings below; both are validated against
+`ead3.xsd`.
+
+## Contextual description of an AIP
+
+The change package that ELZA sends to the digital archive carries the contextual archival
+description of the AIP (`EAD-CONTEXT.xml`). It is produced by the finding-aid template, so both
+forms of the description stay consistent:
+
+- The template runs with `eadContext = true` and an output model built for an unsaved output
+  (`OutputGeneratorFactory.createOutputModel`); the output's fund comes from the linked units, its
+  type from the template.
+- Content: the fund root (`archdesc level="fonds"`), the path to every unit linked to the AIP and
+  the whole subtree of each linked unit (the output model adds ancestors and subtrees of the
+  output nodes). Ancestors are context, not partially described levels, so no `otherfindaid` is
+  written.
+- A linked unit has `<dao identifier="…" coverage="whole">`: the METS ID of the linked part of the
+  AIP, or the AIP code for a link to the whole AIP. There is no `href`; the description is inside
+  the package it refers to.
+- The EAD namespace is the default namespace and `cam` keeps its prefix, as the profile requires
+  for packages of the digital archive. The result is validated against `ead3.xsd` before it is
+  written; a failure stops the export of that AIP with a message.
+- The units of an AIP must belong to one fund, the description has one `archdesc`.
+- The template is looked up by code (`ZP2015_INVENTAR_EAD`); a fund of other rules cannot be
+  exported until it has a template of its own.
+
+ZAF does not validate the content of `EAD-CONTEXT.xml` in a change package (profile
+`SIP_CHANGE`); its prepared rules for a contextual description (`EARK_CONTEXTUAL_DESC`) are not
+active. The output follows those rules where ELZA has the data.
 
 ## Decisions in the finding-aid export
 
-- **Level identifiers.** Every level has `id="uuid-<node uuid>"` (the profile's meaningless
-  identifier) and keeps `base="https://archdesc.nacr.cz/dids/<node uuid>"`. The profile spells the
-  URI with `http://`; the existing form is kept because consumers may already store it.
+- **Level identifiers.** Every level has `id="uuid-<node uuid>"`, the profile's meaningless
+  identifier. The URI form (`base`) is not written; `id` is the identifier for new finding aids.
+- **Links to the digital archive.** A unit linked to an AIP has
+  `<dao href="aip:<AIP code>" identifier="…" coverage="whole">` with the identifier as in the
+  contextual description. `daotype` is `derived` when the unit has a storage unit
+  (`ZP2015_STORAGE_ID`, a digitised analogue record), otherwise `borndigital`. Links hidden by the
+  output filter (`hiddenDao`) are not written.
 - **Empty `<did>`.** A level whose `<did>` would stay empty gets
   `<unitid localtype="ID" label="identifikátor jednotky popisu">uuid-…</unitid>`; an empty `<did>`
   is invalid and would fail the XSD validation of the whole output.
@@ -52,7 +83,6 @@ Ordered by impact.
 
 | # | Finding | Profile chapter |
 |---|---|---|
-| A1 | The change package for the DA always contains the same static sample `EAD-CONTEXT.xml` (fund "Rektorát Univerzity Karlovy", fixed UUIDs) instead of the contextual description of the AIP (`DaService.createEad`). | Inherentní a kontextuální popis v AIPu |
 | A2 | Without the output filter, restricted values are exported as public: `ZP2015_CONTENT` goes to `<scopecontent>` without `audience`, `ZP2015_CONTENT_PUBLIC` is ignored, `ZP2015_APPLIED_RESTRICTION` (`ABSTRACT`, `ARCHENTITY`, `DAO`) and unpublished levels are not marked. Whether a file is "public" depends only on whether the user picked the filter; the file does not say which it is. | Omezení přístupu a podmínky zveřejnění |
 | A3 | `ZP2015_NAME_PUBLIC` is written with `audience="external"`; the profile forbids `external` on description elements — the public variant has no `audience`, the restricted one `audience="internal"`. | Možnosti zveřejnění jednotky popisu |
 
@@ -66,7 +96,7 @@ Ordered by impact.
 | B8 | Roles 91 (autor předlohy) and 92 (autor hudebního aranžmá) fall back to `ENTITY`; the profile has no value for them. Date type `DISCUSSION` (jednání) is written without `localtype` for the same reason. | Definice rolí, Jiné datace |
 | B9 | Links to other units (`ZP2015_RELATED_UNITS_LINK`, `ZP2015_ITEM_LINK`); the profile writes them as `<relatedmaterial><archref><ref target="uuid-…">`. | Související vlastní JP |
 | B10 | Record references `ZP2015_GEO_REF`, `ZP2015_AP_REF`, `ZP2015_LEGALACT_REF` produce no `<relation>`. | Role entit |
-| B11 | DAOs from the digital archive as links to the AIP (`href="aip:<AIP id>"`, `daotype="borndigital"`); `print.Dao` is built only from legacy DAO links and filesystem links. `ZP2015_DAO_LINK` is not exported. | Odkaz na digitální objekt |
+| B11 | `ZP2015_DAO_LINK` (URI of a digitised copy) is not exported. | Odkaz na digitální objekt |
 | B12 | Range in bytes (`spaceoccupied`, `unittype=byte`); bm come from parsing the string `ZP2015_UNITS_AMOUNT` although `ZP2015_COLL_EXTENT_LENGTH` is a decimal. | Rozsah zpřístupněných archiválií |
 
 ### C. Format differences
@@ -105,13 +135,10 @@ The restriction state per level is already computed for the filter (`OutputModel
 `restrictedNodeIds`); expose it on `print.Node` (e.g. `node.restrictions`) instead of re-deriving it
 in FreeMarker.
 
-### 2. Change package EAD for the digital archive (A1) — bugs 10133, 10157
+### 2. Change package for the digital archive — bugs 10133, 10157, 10134
 
-Generate `EAD-CONTEXT.xml` from the archival description of the units linked to the AIP: the path
-from the fund root to each linked unit, `id="uuid-…"` on every level, default namespace with the
-fixed `cam` prefix (profile "Inherentní a kontextuální popis v AIPu"), `<dao identifier="…" coverage="whole">`
-pointing to the described part of the package. Reuse the same mapping as the finding-aid export
-so that both producers stay consistent.
+The contextual description is done (see above). Open: the PREMIS event of creating it
+(NMET2, CZDAP-IPM0002, bug 10134) and the NA's review of the content.
 
 ### 3. Remaining template fixes (C8) — bug 10165
 
@@ -120,7 +147,6 @@ dropped silently, it may carry information the structured items do not have.
 
 ### 4. Model additions in `elza-core` (B9–B12, C7) — bug 10167
 
-- `print.Dao` for DA links: AIP code and `aip:` href, daotype from the AIP (born-digital vs digitised), coverage.
 - URI_REF items resolved to the target node UUID when the target is in the same fund → `archref`.
 - Record references → `<relation>`.
 - `Record.exportData(CAM_SCHEMA_2025)` via the v2 builder; template parameter decides v1/v2.
@@ -155,5 +181,6 @@ Questions for the profile authors (NA):
   `PRINT_NUMBER`, `RESOLUTION_ID`, `INVALID_UNITID` (now `JINE`).
 - Where output-level intro texts belong in a ZP2013 finding aid (proposal in 5).
 - Whether a complete (unfiltered) export with `audience` marks is acceptable for exchange, or only the public form.
-- `http://` vs `https://` in `base`.
+- Review of the contextual description in the change package: scope (path from the root and the
+  linked subtrees), `dao identifier` = METS ID of the linked part or the AIP code.
 - Profile example in "Pomůcky k části archivního souboru" still shows `MightExist`.

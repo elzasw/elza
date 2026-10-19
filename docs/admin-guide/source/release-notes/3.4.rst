@@ -80,6 +80,19 @@ Changes
   API key, which is checked on every request, is logged at most once per
   hour for the same key (or user) and address; failures are always
   logged.
+* Change: 10133 - Digital archive: the change package carries the
+  contextual archival description of the AIP (``EAD-CONTEXT.xml``) from
+  ELZA - the fund root, the path to the units linked to the AIP and their
+  subtrees - instead of a fixed sample. An AIP linked to units of more than
+  one fund is not exported; the export reports it. See
+  :doc:`/08-digital-repositories`.
+* Change: 10165 - EAD output of the ZP2015 rules follows the Czech EAD3
+  profile ``CZ_EAD3_PROFILE_20260501`` (new and corrected mappings, roles
+  of entities given as text are written as weak entities). Units are
+  identified by ``id="uuid-…"``; **the URI in** ``base``
+  **(https://archdesc.nacr.cz/dids/…) is no longer written** - adjust
+  systems that read it. Units linked to the digital archive refer to the
+  AIP (``dao href="aip:…"``).
 
 3.4.10
 ======

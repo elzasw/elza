@@ -57,6 +57,7 @@ import cz.tacr.elza.dataexchange.output.sections.StructObjectInfoLoader;
 import cz.tacr.elza.dataexchange.output.writer.StructObjectInfo;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.ArrDaLink;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrFsLink;
 import cz.tacr.elza.domain.ArrLegacyDaoLink;
@@ -154,6 +155,12 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
      * Collection of nodes which cannot be published
      */
     final Set<Integer> restrictedNodeIds = new HashSet<>();
+
+    /**
+     * Nodes whose digital objects are hidden by the output filter. Links to the digital archive
+     * are not in the node cache, so the filter cannot remove them from the cached node.
+     */
+    private final Set<Integer> daoHiddenNodeIds = new HashSet<>();
 
     /**
      * Restriction items for each level
@@ -588,14 +595,37 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                 } else if (daoLink instanceof ArrFsLink fsLink) {
                     dao = new Dao(fsLink);
                 } else {
-                    // da vazby v node cache nejsou, do výstupů se nedostanou
+                    // da vazby v node cache nejsou, načítají se níže
                     continue;
                 }
                 node.addDao(dao);
             }
         }
+        addDaLinks(nodes);
 
         return nodes;
+    }
+
+    /**
+     * Adds links to the digital archive. They are not part of the node cache and are read
+     * directly; digital objects hidden by the output filter are skipped.
+     */
+    private void addDaLinks(List<Node> nodes) {
+        Map<Integer, Node> nodeMap = new HashMap<>();
+        for (Node node : nodes) {
+            Integer arrNodeId = node.getNodeId().getArrNodeId();
+            if (!daoHiddenNodeIds.contains(arrNodeId)) {
+                nodeMap.put(arrNodeId, node);
+            }
+        }
+        if (nodeMap.isEmpty()) {
+            return;
+        }
+        List<ArrDaLink> daLinks = outputContext.getDaLinkRepository()
+                .findAipLinksByNodeIdsAndFetchAip(nodeMap.keySet());
+        for (ArrDaLink daLink : daLinks) {
+            nodeMap.get(daLink.getNodeId()).addDao(new Dao(daLink));
+        }
     }
 
     /**
@@ -709,6 +739,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         // hidden Dao
         if (rule.isHiddenDao()) {
             filter.hideDao();
+            daoHiddenNodeIds.add(nodeId.getArrNodeId());
             changed = true;
         }
 

@@ -1,5 +1,8 @@
 <#ftl output_format="XML" ns_prefixes={"ead":"http://ead3.archivists.org/schema/", "cam":"http://cam.tacr.cz/2019"}><#noautoesc><?xml version="1.0" encoding="UTF-8"?></#noautoesc>
 <ead:ead xmlns:ead="http://ead3.archivists.org/schema/" xmlns:cam="http://cam.tacr.cz/2019">
+<#-- eadContext: contextual description of an AIP in a change package for the digital archive
+     (DaEadContextGenerator); the output is not a finding aid -->
+<#assign eadContext = eadContext!false>
 
 <#-- Seznam mapování typů dle 5.9 -->
 <#assign unitTypeMapping = { 
@@ -448,7 +451,7 @@
       <#local otherlevel=node.getSingleItem("ZP2015_LEVEL_TYPE").specification.code>
       <#break>
     </#switch>
-<${tagname} level="${level}"<#if level=="otherlevel"> otherlevel="${otherlevel}"</#if> id="uuid-${node.uuid}" base="https://archdesc.nacr.cz/dids/${node.uuid}">
+<${tagname} level="${level}"<#if level=="otherlevel"> otherlevel="${otherlevel}"</#if> id="uuid-${node.uuid}">
     <#-- ${node.depth} -->
     <@writeNode node />
     <#if node.depth==1 && nodes?api.hasNext()>
@@ -492,7 +495,7 @@
 <#-- Zápis jednoho uzlu -->
 <#macro writeNode node>
   <@writeDid node />
-  <#if !node.nodeId.published>
+  <#if !eadContext && !node.nodeId.published>
   <ead:otherfindaid localtype="MIGHT_EXIST"><ead:p>Pro úroveň popisu existují nebo vzniknou další archivní pomůcky.</ead:p></ead:otherfindaid>
   </#if>
   <#-- Elements outside did -->
@@ -983,13 +986,19 @@ ${didContent}<#if !didContent?markup_string?contains("<ead:")>
   </#if>
 
   <#list node.daos as dao>
+  <#if dao.aipCode?has_content>
+  <#-- Link to the digital archive: identifier is the linked part of the AIP (or the AIP itself);
+       a finding aid also refers to the package by href, the contextual description lives inside it -->
+  <ead:dao daotype="<#if hasStorageid>derived<#else>borndigital</#if>"<#if !eadContext> href="aip:${dao.aipCode}"</#if> identifier="${dao.code}" coverage="whole" />
+  <#else>
   <ead:dao daotype="${daotype}" identifier="${dao.code}">
   <#if (dao.label?length>0&&dao.attachment)>
     <#-- Popis jen v případě DAO jako příloha, tj. netvoří přímo jednotku popisu -->
     <ead:descriptivenote><ead:p>${dao.label}</ead:p></ead:descriptivenote>
   </#if>
   </ead:dao>
-  </#list>  
+  </#if>
+  </#list>
 </#macro>
 
 <#-- Zápis charakteristiky 3.3 -->

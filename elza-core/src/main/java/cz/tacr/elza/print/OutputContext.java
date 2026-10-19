@@ -108,6 +108,10 @@ public class OutputContext {
         return apDataService;
     }
 
+    public ArrDaLinkRepository getDaLinkRepository() {
+        return daLinkRepository;
+    }
+
     /**
      * Shared access point provider for the whole output - keeps referenced entities cached
      * across nodes so they are not reloaded and deserialized for every reference.

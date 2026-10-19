@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -41,13 +42,31 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.dataexchange.input.DEImportParams;
 import cz.tacr.elza.dataexchange.input.DEImportService;
 import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ArrDaLink;
+import cz.tacr.elza.domain.ArrDaoLink;
+import cz.tacr.elza.domain.ArrDigitalRepository;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.DaAip;
+import cz.tacr.elza.domain.DaAipState;
+import cz.tacr.elza.domain.DaChange;
+import cz.tacr.elza.domain.DaChangeType;
+import cz.tacr.elza.domain.DaDao;
+import cz.tacr.elza.api.DigitalRepositoryType;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.other.HelperTestService;
 import cz.tacr.elza.packageimport.PackageService;
+import cz.tacr.elza.repository.AipRepository;
+import cz.tacr.elza.repository.AipStateRepository;
+import cz.tacr.elza.repository.ArrDaLinkRepository;
+import cz.tacr.elza.repository.DaChangeRepository;
+import cz.tacr.elza.repository.DaDaoRepository;
+import cz.tacr.elza.repository.DigitalRepositoryRepository;
 import cz.tacr.elza.repository.FundRepository;
+import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.OutputFileRepository;
 import cz.tacr.elza.repository.OutputRepository;
@@ -58,6 +77,9 @@ import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.StartupService;
 import cz.tacr.elza.service.UserService;
+import cz.tacr.elza.service.ArrangementInternalService;
+import cz.tacr.elza.service.da.DaEadContextGenerator;
+import cz.tacr.elza.service.da.DaService;
 import cz.tacr.elza.service.dms.DmsService;
 import cz.tacr.elza.service.output.OutputRequestStatus;
 
@@ -110,8 +132,33 @@ public class Zp2015EadExportTest {
     private OutputFileRepository outputFileRepository;
     @Autowired
     private PlatformTransactionManager transactionManager;
+    @Autowired
+    private LevelRepository levelRepository;
+    @Autowired
+    private DigitalRepositoryRepository digitalRepositoryRepository;
+    @Autowired
+    private AipRepository aipRepository;
+    @Autowired
+    private AipStateRepository aipStateRepository;
+    @Autowired
+    private DaChangeRepository daChangeRepository;
+    @Autowired
+    private DaDaoRepository daDaoRepository;
+    @Autowired
+    private ArrDaLinkRepository daLinkRepository;
+    @Autowired
+    private DaService daService;
+    @Autowired
+    private ArrangementInternalService arrangementInternalService;
+    @Autowired
+    private DaEadContextGenerator eadContextGenerator;
+
+    /** AIP linked as a whole to the series and by its part to the item. */
+    private static final String AIP_CODE = "0f8f6e3a-2b7c-4d6e-9a1b-3c5d7e9f1a2b";
+    private static final String AIP_PART = "uuid-5b0e8c2d-4f6a-4b8c-9d0e-1f2a3b4c5d6e";
 
     private Document ead;
+    private Document contextEad;
     private XPath xpath;
 
     @BeforeAll
@@ -133,6 +180,7 @@ public class Zp2015EadExportTest {
                 .orElseThrow(() -> new AssertionError("Fund not imported: " + FUND_NAME));
 
         TransactionTemplate tt = new TransactionTemplate(transactionManager);
+        DaAip aip = tt.execute(status -> linkAip(fundVersionRepository.findByFundIdAndLockChangeIsNull(fund.getFundId())));
         int outputId = tt.execute(status -> {
             ArrFundVersion version = fundVersionRepository.findByFundIdAndLockChangeIsNull(fund.getFundId());
             assertNotNull(version, "Fund has no open version");
@@ -162,6 +210,22 @@ public class Zp2015EadExportTest {
             }
         });
 
+        contextEad = tt.execute(status -> {
+            try {
+                Path file = Files.createTempFile("EAD-CONTEXT", ".xml");
+                try {
+                    eadContextGenerator.write(aipRepository.findById(aip.getAipId()).orElseThrow(), file);
+                    DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+                    dbf.setNamespaceAware(true);
+                    return dbf.newDocumentBuilder().parse(file.toFile());
+                } finally {
+                    Files.delete(file);
+                }
+            } catch (Exception e) {
+                throw new AssertionError("Cannot generate contextual EAD", e);
+            }
+        });
+
         xpath = XPathFactory.newInstance().newXPath();
         xpath.setNamespaceContext(new NamespaceContext() {
             @Override
@@ -186,6 +250,15 @@ public class Zp2015EadExportTest {
     void unloadRules() {
         try {
             helperTestService.waitForWorkers();
+            // the shared helper does not know the tables of the digital archive
+            new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
+                daLinkRepository.deleteAll();
+                aipStateRepository.deleteAll();
+                daDaoRepository.deleteAll();
+                daChangeRepository.deleteAll();
+                aipRepository.deleteAll();
+                digitalRepositoryRepository.deleteAll();
+            });
             helperTestService.deleteTables(false);
             packageService.deletePackage("ZP2015");
             staticDataService.refreshForCurrentThread();
@@ -256,7 +329,7 @@ public class Zp2015EadExportTest {
         for (Element level : elements("//ead:archdesc | //ead:c")) {
             String id = level.getAttribute("id");
             assertEquals(true, id.matches("uuid-[0-9a-f-]{36}"), "Level id: " + id);
-            assertEquals("https://archdesc.nacr.cz/dids/" + id.substring(5), level.getAttribute("base"));
+            assertEquals(false, level.hasAttribute("base"));
         }
     }
 
@@ -272,7 +345,91 @@ public class Zp2015EadExportTest {
                         .toList());
     }
 
+    /** A finding aid refers to the AIP by href, the identifier names the linked part. */
+    @Test
+    void findingAidRefersToAip() {
+        assertEquals(List.of("borndigital|aip:" + AIP_CODE + "|" + AIP_CODE + "|whole"),
+                daos(ead, "//ead:c[@level='series']/ead:did/ead:dao"));
+        assertEquals(List.of("borndigital|aip:" + AIP_CODE + "|" + AIP_PART + "|whole"),
+                daos(ead, item() + "/ead:did/ead:dao"));
+    }
+
+    /**
+     * The contextual description holds the fund root, the path to the linked units and their
+     * subtrees, written in the default namespace; the dao has no href, it lives inside the package.
+     */
+    @Test
+    void contextualDescription() {
+        Element root = contextEad.getDocumentElement();
+        assertEquals(EAD_NS, root.getNamespaceURI());
+        assertEquals(null, root.getPrefix());
+        assertEquals(List.of("fonds"), values(contextEad, "/ead:ead/ead:archdesc/@level"));
+        assertEquals(List.of("series", "item"), values(contextEad, "//ead:c/@level"));
+        assertEquals(List.of("borndigital||" + AIP_CODE + "|whole"),
+                daos(contextEad, "//ead:c[@level='series']/ead:did/ead:dao"));
+        assertEquals(List.of("borndigital||" + AIP_PART + "|whole"),
+                daos(contextEad, "//ead:c[@level='item']/ead:did/ead:dao"));
+        assertEquals(List.of(), values(contextEad, "//ead:otherfindaid"));
+    }
+
     /* helpers */
+
+    /**
+     * Links an AIP to the first series as a whole and by its part to the item below it.
+     */
+    private DaAip linkAip(ArrFundVersion version) {
+        ArrDigitalRepository repository = new ArrDigitalRepository();
+        repository.setCode("DA-EAD");
+        repository.setName("Digitalni archiv");
+        repository.setDigitalRepositoryType(DigitalRepositoryType.DA);
+        repository.setSendNotification(false);
+        digitalRepositoryRepository.save(repository);
+
+        DaAip aip = new DaAip();
+        aip.setCode(AIP_CODE);
+        aip.setDigitalRepository(repository);
+        aipRepository.save(aip);
+
+        DaChange daChange = new DaChange();
+        daChange.setChangeDate(LocalDateTime.now());
+        daChange.setDaAip(aip);
+        daChange.setType(DaChangeType.AIP_CREATE);
+        daChangeRepository.save(daChange);
+
+        DaAipState state = new DaAipState();
+        state.setDaAip(aip);
+        state.setCreateChange(daChange);
+        state.setAipVersion("1");
+        aipStateRepository.save(state);
+
+        DaDao part = daService.createDaDao(aip, daChange, AIP_PART, "dokument:Dokument", DaDao.DaoType.LOGICAL);
+
+        ArrNode series = levelRepository
+                .findByParentNodeAndDeleteChangeIsNullOrderByPositionAsc(version.getRootNode()).get(0).getNode();
+        ArrNode item = levelRepository
+                .findByParentNodeAndDeleteChangeIsNullOrderByPositionAsc(series).get(0).getNode();
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK);
+        link(aip, null, series, ArrDaoLink.LinkType.AIP, change);
+        link(aip, part, item, ArrDaoLink.LinkType.PART_AIP, change);
+        return aip;
+    }
+
+    private void link(DaAip aip, DaDao part, ArrNode node, ArrDaoLink.LinkType type, ArrChange change) {
+        ArrDaLink link = new ArrDaLink();
+        link.setAip(aip);
+        link.setDaDao(part);
+        link.setNode(node);
+        link.setLinkType(type);
+        link.setCreateChange(change);
+        daLinkRepository.save(link);
+    }
+
+    private List<String> daos(Document doc, String expression) {
+        return elements(doc, expression).stream()
+                .map(e -> e.getAttribute("daotype") + "|" + e.getAttribute("href") + "|"
+                        + e.getAttribute("identifier") + "|" + e.getAttribute("coverage"))
+                .toList();
+    }
 
     private static String item() {
         return "//ead:c[@level='item']";
@@ -286,8 +443,12 @@ public class Zp2015EadExportTest {
     }
 
     private List<String> values(String expression) {
+        return values(ead, expression);
+    }
+
+    private List<String> values(Document doc, String expression) {
         try {
-            NodeList nodes = (NodeList) xpath.evaluate(expression, ead, XPathConstants.NODESET);
+            NodeList nodes = (NodeList) xpath.evaluate(expression, doc, XPathConstants.NODESET);
             List<String> result = new ArrayList<>();
             for (int i = 0; i < nodes.getLength(); i++) {
                 result.add(nodes.item(i).getTextContent().trim());
@@ -299,8 +460,12 @@ public class Zp2015EadExportTest {
     }
 
     private List<Element> elements(String expression) {
+        return elements(ead, expression);
+    }
+
+    private List<Element> elements(Document doc, String expression) {
         try {
-            NodeList nodes = (NodeList) xpath.evaluate(expression, ead, XPathConstants.NODESET);
+            NodeList nodes = (NodeList) xpath.evaluate(expression, doc, XPathConstants.NODESET);
             List<Element> result = new ArrayList<>();
             for (int i = 0; i < nodes.getLength(); i++) {
                 result.add((Element) nodes.item(i));
