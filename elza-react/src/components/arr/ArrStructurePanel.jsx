@@ -349,9 +349,14 @@ class ArrStructurePanel extends AbstractReactComponent {
     };
 
     renderContextMenu = () => {
-        const {filter} = this.props.store;
+        const {filter, rows} = this.props.store;
         const {coordinates, node, focusable} = this.state.contextMenu;
+        const {checkedIndexes} = this.state;
         const {readMode} = this.props;
+
+        const selectedRows = node ? [node] : (checkedIndexes || []).map(index => rows[index]).filter(Boolean);
+        const canChangeToClosed = selectedRows.some(row => row.assignable);
+        const canChangeToOpen = selectedRows.some(row => !row.assignable);
 
         const menuParts = [];
 
@@ -368,7 +373,7 @@ class ArrStructurePanel extends AbstractReactComponent {
                 </div>,
             );
         } else {
-            if (node && node.assignable) {
+            if (canChangeToClosed) {
                 menuParts.push(
                     <div
                         key="changeToClosed"
@@ -380,7 +385,8 @@ class ArrStructurePanel extends AbstractReactComponent {
                         {<FormattedMessage {...templateMessages.structureItemContextMenuChangeToClosed} />}
                     </div>,
                 );
-            } else {
+            }
+            if (canChangeToOpen) {
                 menuParts.push(
                     <div
                         key="changeToOpen"
