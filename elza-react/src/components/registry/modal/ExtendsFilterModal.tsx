@@ -73,6 +73,7 @@ type Props = {
 
 const ExtendsFilterModal = ({
     handleSubmit,
+    change,
     onClose,
     submitting,
     onSubmit,
@@ -266,6 +267,14 @@ const ExtendsFilterModal = ({
                     component={FormInputField}
                     label={intl.formatMessage(filterMessages.extendsType)}
                     items={itemTypes}
+                    onChange={(_event, newItemType, previousItemType) => {
+                        const isItemTypeChanged = newItemType?.id !== previousItemType?.id;
+                        if (isItemTypeChanged) {
+                            change('itemSpec', undefined);
+                            change('value', undefined);
+                            change('obj', undefined);
+                        }
+                    }}
                     disabled={submitting}
                 />
                 {itemSpecs && (
