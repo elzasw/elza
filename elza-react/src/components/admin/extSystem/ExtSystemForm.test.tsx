@@ -59,6 +59,9 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
             expect(select(container, 'onReceived')).toBeNull();
             expect(input(container, 'syncDelay')).toBeNull();
             expect(input(container, 'statusPollInterval')).toBeNull();
+            expect(input(container, 'fileTransferUrl')).toBeNull();
+            expect(input(container, 'apiKeyId')).toBeNull();
+            expect(select(container, 'tlsVerify')).toBeNull();
         },
     );
 
@@ -66,9 +69,24 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
         const onSubmitForm = vi.fn().mockResolvedValue(undefined);
         const { container } = renderWithProviders(
             <ExtSystemForm
+                initialValues={repository(DigitalRepositoryType.Wsdl, { id: 7, sendNotification: false })}
+                onSubmitForm={onSubmitForm}
+            />,
+        );
+
+        expect(select(container, 'sendNotification')).not.toBeNull();
+        fireEvent.change(input(container, 'name')!, { target: { value: 'Repozitář WSDL' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Upravit' }));
+
+        await vi.waitFor(() => expect(onSubmitForm).toHaveBeenCalledTimes(1));
+    });
+
+    it('zasílání upozornění nabízí jen pro WSDL, digitální archiv se uloží bez něj', async () => {
+        const onSubmitForm = vi.fn().mockResolvedValue(undefined);
+        const { container } = renderWithProviders(
+            <ExtSystemForm
                 initialValues={repository(DigitalRepositoryType.Da, {
                     id: 7,
-                    sendNotification: false,
                     downloadMethod: DaDownloadMethod.Standard,
                     onReceived: DaOnReceivedAction.None,
                 })}
@@ -76,10 +94,53 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
             />,
         );
 
-        fireEvent.change(select(container, 'downloadMethod')!, { target: { value: DaDownloadMethod.FileTransfer } });
+        expect(select(container, 'sendNotification')).toBeNull();
+        fireEvent.change(input(container, 'name')!, { target: { value: 'Archiv' } });
         fireEvent.click(screen.getByRole('button', { name: 'Upravit' }));
 
         await vi.waitFor(() => expect(onSubmitForm).toHaveBeenCalledTimes(1));
+    });
+
+    it('ověření TLS certifikátu je výchozí a lze ho vypnout', async () => {
+        const onSubmitForm = vi.fn().mockResolvedValue(undefined);
+        const { container } = renderWithProviders(
+            <ExtSystemForm
+                initialValues={repository(DigitalRepositoryType.Da, {
+                    id: 7,
+                    downloadMethod: DaDownloadMethod.Standard,
+                    onReceived: DaOnReceivedAction.None,
+                })}
+                onSubmitForm={onSubmitForm}
+            />,
+        );
+
+        expect(select(container, 'tlsVerify')!.value).toBe('true');
+        fireEvent.change(select(container, 'tlsVerify')!, { target: { value: 'false' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Upravit' }));
+
+        await vi.waitFor(() => expect(onSubmitForm).toHaveBeenCalledTimes(1));
+        expect(onSubmitForm.mock.calls[0][0]).toMatchObject({ tlsVerify: false });
+    });
+
+    it('nabízí API klíč digitálního archivu', async () => {
+        const onSubmitForm = vi.fn().mockResolvedValue(undefined);
+        const { container } = renderWithProviders(
+            <ExtSystemForm
+                initialValues={repository(DigitalRepositoryType.Da, {
+                    id: 7,
+                    downloadMethod: DaDownloadMethod.Standard,
+                    onReceived: DaOnReceivedAction.None,
+                })}
+                onSubmitForm={onSubmitForm}
+            />,
+        );
+
+        fireEvent.change(input(container, 'apiKeyId')!, { target: { value: 'elza' } });
+        fireEvent.change(input(container, 'apiKeyValue')!, { target: { value: 'secret' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Upravit' }));
+
+        await vi.waitFor(() => expect(onSubmitForm).toHaveBeenCalledTimes(1));
+        expect(onSubmitForm.mock.calls[0][0]).toMatchObject({ apiKeyId: 'elza', apiKeyValue: 'secret' });
     });
 
     it('odešle zvolené hodnoty', async () => {
@@ -110,6 +171,55 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
             onReceived: DaOnReceivedAction.DownloadMetadata,
             syncDelay: 3600,
             statusPollInterval: 5,
+        });
+    });
+
+    it('nabízí File Transfer URL s endpointem odvozeným z URL', () => {
+        const { container } = renderWithProviders(
+            <ExtSystemForm
+                initialValues={repository(DigitalRepositoryType.Da, { url: 'http://da:8096/' })}
+                onSubmitForm={vi.fn()}
+            />,
+        );
+
+        expect(input(container, 'fileTransferUrl')!.placeholder).toBe('http://da:8096/ws/ft');
+    });
+
+    it('typ požadavku File Transfer nabízí jen při stahování přes File Transfer', () => {
+        const { container } = renderWithProviders(
+            <ExtSystemForm
+                initialValues={repository(DigitalRepositoryType.Da, { downloadMethod: DaDownloadMethod.Standard })}
+                onSubmitForm={vi.fn()}
+            />,
+        );
+
+        expect(input(container, 'fileTransferType')).toBeNull();
+        fireEvent.change(select(container, 'downloadMethod')!, { target: { value: DaDownloadMethod.FileTransfer } });
+        expect(input(container, 'fileTransferType')).not.toBeNull();
+    });
+
+    it('odešle nastavení File Transfer', async () => {
+        const onSubmitForm = vi.fn().mockResolvedValue(undefined);
+        const { container } = renderWithProviders(
+            <ExtSystemForm
+                initialValues={repository(DigitalRepositoryType.Da, {
+                    id: 7,
+                    sendNotification: 'false',
+                    downloadMethod: DaDownloadMethod.FileTransfer,
+                    onReceived: DaOnReceivedAction.None,
+                })}
+                onSubmitForm={onSubmitForm}
+            />,
+        );
+
+        fireEvent.change(input(container, 'fileTransferUrl')!, { target: { value: 'https://ft.example/transfer' } });
+        fireEvent.change(input(container, 'fileTransferType')!, { target: { value: 'GetMetadata_ELZA' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Upravit' }));
+
+        await vi.waitFor(() => expect(onSubmitForm).toHaveBeenCalledTimes(1));
+        expect(onSubmitForm.mock.calls[0][0]).toMatchObject({
+            fileTransferUrl: 'https://ft.example/transfer',
+            fileTransferType: 'GetMetadata_ELZA',
         });
     });
 

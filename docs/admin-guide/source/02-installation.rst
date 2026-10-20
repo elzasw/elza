@@ -60,7 +60,7 @@ The binary distribution is a ZIP file containing:
   embedded web server,
 - :file:`server/config/elza.yaml` - a sample configuration,
 - :file:`server/config/csc-metrics.json` - the list of metrics reported
-  to a supervision service (see :doc:`08-monitoring`),
+  to a supervision service (see :doc:`09-monitoring`),
 - :file:`packages/` - the base packages: ``package-cz-base`` (code
   lists) and ``rules-cz-zp2015`` (description rules ZP2015),
 - :file:`data/all-institutions-import.xml` - the list of accredited
@@ -119,7 +119,7 @@ The working directory contains:
 - :file:`dms/` - binary files (attachments, outputs, publications,
   import batches). Its structure is managed by ELZA and must not be
   modified by hand; it is backed up together with the database (see
-  :doc:`09-backup`).
+  :doc:`10-backup`).
 - :file:`dpkg/` - packages loaded at startup (see :ref:`install-packages`).
 - :file:`log/` - log files, when configured as in the sample
   configuration.
@@ -212,7 +212,7 @@ administrator: a user with a password and the administrator permission.
    Until the first administrator exists, anyone who opens the application
    can create it. Create the administrator right after the first start,
    before the application is made available on the network, or set it in
-   the configuration (see :ref:`install-admin-from-config`).
+   the configuration (see :ref:`install-users-from-config`).
 
 After *Create administrator*, the application logs in as the new
 administrator. The password must meet the password rules (see
@@ -225,30 +225,41 @@ created as usual, with a person.
 
 .. _install-admin-from-config:
 
-Administrator from the configuration
-------------------------------------
+.. _install-users-from-config:
 
-An administrator can also be set in the configuration. When both keys
-below are set, ELZA applies them at every startup, whether or not the
-database contains users:
+Users from the configuration
+----------------------------
+
+Users can also be set in the configuration, as a list of user names and
+passwords in ``elza.security.override``. ELZA applies the list at every
+startup, whether or not the database contains users:
 
 - If no user of this name exists, it is created as an administrator: a
-  user without a person, with the password and the administrator
-  permission. On an empty database, the *Initial setup* dialog is then
-  not shown.
-- If the user exists, it gets the configured password, and a deactivated
-  user is activated. Its permissions do not change; a user without a
-  password login gets one. When the user already has this password,
-  nothing is written, so the validity of the password does not restart
-  at every startup.
+  user without a person, with the administrator permission and **without
+  a password in the database**. On an empty database, the *Initial setup*
+  dialog is then not shown.
+- If the user exists, its password and permissions in the database do not
+  change; a deactivated user is activated.
+
+A listed user logs in with their own password (from the database, if they
+have one) **or** with the configured password; one of them is enough. A
+login with the configured password does not require a password change,
+and the configured password does not expire. The user can change their
+password in the application; the configured password keeps working as
+long as the user is listed. Once the user is removed from the list, only
+their own password works - a user created from the list who never set
+one cannot log in until an administrator sets a password. The configured
+password never applies to the default user.
 
 .. code-block:: yaml
 
    elza:
      security:
-       admin:
-         username: jan.novak
-         password: a-password
+       override:
+         - username: jan.novak
+           password: a-password
+         - username: petr.svoboda
+           password: another-password
 
 .. list-table::
    :header-rows: 1
@@ -257,33 +268,33 @@ database contains users:
    * - Key
      - Default
      - Meaning
-   * - ``elza.security.admin.username``
+   * - ``elza.security.override[].username``
      - (none)
-     - User name of the administrator.
-   * - ``elza.security.admin.password``
+     - User name.
+   * - ``elza.security.override[].password``
      - (none)
-     - Password of the administrator, as plain text. It must meet the
-       password rules.
+     - Password, as plain text. It is not stored in the database; a
+       password that does not meet the password rules is only reported as
+       a warning in the application log.
 
-Every startup with the keys set writes its outcome to the application
-log (the password itself is never logged): the user created, the
-password set, the account activated, or that the user already matches
-the configuration. Only one of the two keys set is logged as a warning
-and nothing is applied. If the keys cannot be applied (for example the
-password does not meet the rules, or the name is the name of the default
-user while the default user is enabled), ELZA logs an error and starts
-anyway. With ``elza.siemLogFile`` set, the changes and the failure are
-also written to the security audit log (see :doc:`05-security`).
+An entry without a user name or a password, a user listed twice, or the
+removed keys ``elza.security.admin.username`` / ``.password`` stop the
+startup with an error. If one user cannot be applied (for example its
+name is the name of the default user while the default user is enabled),
+ELZA logs an error, applies the others and starts anyway.
 
-A database user named like the default user gets the password, but it
-has no effect while the default user is enabled.
+Every startup writes a warning for each listed user to the application
+log (the password itself is never logged). With ``elza.siemLogFile`` set,
+the security audit log records that the configured password is active
+(``override_active``), the user created or activated, a failure, and
+every login with the configured password (``authentication_type``
+``OVERRIDE``); see :doc:`05-security`.
 
 .. warning::
 
-   The password is stored in plain text. While the keys are set, a
-   password changed in the application returns to the configured one at
-   the next restart, and a deactivated account is activated again. Remove both keys from :file:`elza.yaml` once they are
-   no longer needed, for example after the first start.
+   The password is stored in plain text and is valid next to the user's
+   own password. Remove the entry from :file:`elza.yaml` once it is no
+   longer needed, for example after the first start.
 
 Default user
 ------------
@@ -361,6 +372,6 @@ Next steps
 ----------
 
 - Set up the reverse proxy and HTTPS: :doc:`06-reverse-proxy`.
-- Set up backups: :doc:`09-backup`.
-- Connect the monitoring: :doc:`08-monitoring`.
+- Set up backups: :doc:`10-backup`.
+- Connect the monitoring: :doc:`09-monitoring`.
 - Configure authentication (LDAP, Kerberos, ...): :doc:`05-security`.

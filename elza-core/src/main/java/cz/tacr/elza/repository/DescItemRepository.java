@@ -66,6 +66,34 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
                                                         @Param("type") RulItemType type,
                                                         @Param("values") Collection<String> values);
 
+    /**
+     * Number of open UNITID items of the item type that carry the value in other nodes of the fund.
+     * Only nodes with a live level count, so a deleted unit does not block its code.
+     */
+    @Query("SELECT count(i) FROM arr_desc_item i JOIN i.node n, arr_data_unitid d, arr_level l"
+            + " WHERE d.dataId = i.data.dataId AND l.nodeId = n.nodeId AND l.deleteChange IS NULL"
+            + " AND n.fundId = :fundId AND i.deleteChange IS NULL AND i.itemTypeId = :itemTypeId"
+            + " AND d.unitId = :value AND n.nodeId <> :nodeId")
+    long countOpenUnitIdInOtherNodes(@Param("fundId") Integer fundId,
+                                     @Param("itemTypeId") Integer itemTypeId,
+                                     @Param("value") String value,
+                                     @Param("nodeId") Integer nodeId);
+
+    /**
+     * The same count for a closed fund version: the items and levels that existed at its lock change.
+     */
+    @Query("SELECT count(i) FROM arr_desc_item i JOIN i.node n, arr_data_unitid d, arr_level l"
+            + " WHERE d.dataId = i.data.dataId AND l.nodeId = n.nodeId"
+            + " AND l.createChange < :change AND (l.deleteChange IS NULL OR l.deleteChange > :change)"
+            + " AND n.fundId = :fundId"
+            + " AND i.createChange < :change AND (i.deleteChange IS NULL OR i.deleteChange > :change)"
+            + " AND i.itemTypeId = :itemTypeId AND d.unitId = :value AND n.nodeId <> :nodeId")
+    long countUnitIdInOtherNodesAtChange(@Param("fundId") Integer fundId,
+                                         @Param("itemTypeId") Integer itemTypeId,
+                                         @Param("value") String value,
+                                         @Param("nodeId") Integer nodeId,
+                                         @Param("change") ArrChange change);
+
 	@Query("SELECT i FROM arr_desc_item i WHERE i.node in (?1) AND i.createChange < ?2 AND (i.deleteChange > ?2 OR i.deleteChange IS NULL)")
     List<ArrDescItem> findByNodesAndDeleteChange(Collection<ArrNode> nodes, ArrChange deleteChange);
 

@@ -13,10 +13,12 @@ to one of them; a unit kept in several containers has the element several
 times.
 
 A unit inherits the container of the units above it: a file in box 12
-does not need the element on each of its items. The validation reports a
-file or an item at the end of a branch that is in no container, neither
-its own nor an inherited one (:doc:`08-validation`); series and the fonds
-need none.
+does not need the element on each of its items, and a one-box collection
+carries its container on the root. ISAD(G) has no container element and
+many archives keep the location outside the finding aid, so containers
+are not demanded. The validation reports only a file or an item at the
+end of a branch that has no container, own or inherited, while a
+neighbouring unit has one (:doc:`08-validation`).
 
 The value of a container
 ------------------------

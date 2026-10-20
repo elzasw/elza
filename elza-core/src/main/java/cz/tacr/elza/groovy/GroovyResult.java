@@ -11,6 +11,12 @@ public class GroovyResult {
     public static final String DISPLAY_NAME_LOWER = "DISPLAY_NAME_LOWER";
     public static final String SORT_NAME = "SORT_NAME";
     public static final String SHORT_NAME = "SHORT_NAME";
+    /**
+     * The name as it is commonly used: without supplements and degrees, a person in the natural
+     * order of the words. The exact match of a search text, see the {@code index-type} fields of the
+     * search configuration.
+     */
+    public static final String REAL_NAME = "REAL_NAME";
 
     private GroovyKeyValue keyValue;
 

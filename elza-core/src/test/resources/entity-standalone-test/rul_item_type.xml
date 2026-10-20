@@ -5,6 +5,18 @@
         <use-specification>false</use-specification>
         <string-length-limit>250</string-length-limit>
     </item-type>
+    <item-type code="STD_MINOR" data-type="STRING">
+        <name>Other part of the name</name>
+        <shortcut>Other part</shortcut>
+        <use-specification>false</use-specification>
+        <string-length-limit>250</string-length-limit>
+    </item-type>
+    <item-type code="STD_SUP" data-type="STRING">
+        <name>Supplement of the name</name>
+        <shortcut>Supplement</shortcut>
+        <use-specification>false</use-specification>
+        <string-length-limit>250</string-length-limit>
+    </item-type>
     <item-type code="NOTE" data-type="TEXT">
         <name>Note</name>
         <shortcut>Note</shortcut>

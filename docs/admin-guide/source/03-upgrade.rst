@@ -2,7 +2,7 @@
 Upgrading
 =========
 
-Before every upgrade, read the :doc:`12-release-notes` of all builds
+Before every upgrade, read the :doc:`13-release-notes` of all builds
 between the installed and the new one. Entries that name a configuration
 key or an upgrade step may require an action before or after the
 upgrade.
@@ -24,14 +24,14 @@ upgrades unattended outside working hours. See
 https://get.lightcomp.com/elza/.
 
 The script backs up the database only; back up the :file:`dms` directory
-as well (see :doc:`09-backup`).
+as well (see :doc:`10-backup`).
 
 Manually
 --------
 
 #. Back up the database and the :file:`dms` directory of the working
    directory from the same moment, ideally with the application stopped.
-   See :doc:`09-backup`.
+   See :doc:`10-backup`.
 #. Stop the application.
 #. Replace the JAR file (on Linux, point the symbolic link to the new
    file).
@@ -69,7 +69,7 @@ After the first start:
 #. Rebuild the search index with *Rebuild indexes* in the administration.
 
 Older 2.x installations may need data fixes before the upgrade; see
-:doc:`11-legacy-upgrades`.
+:doc:`12-legacy-upgrades`.
 
 Upgrading from 1.x and 0.x
 ==========================

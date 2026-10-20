@@ -1350,4 +1350,87 @@
         <customChange class="cz.tacr.elza.dbchangelog.DbChangeset20261012120000"/>
     </changeSet>
 
+    <changeSet id="20261015120000" author="ppy">
+        <!-- File Transfer settings of a DA repository. file_transfer_url overrides the endpoint
+             derived from url (url + /ws/ft); file_transfer_type is sent as GenericDataType#type
+             with a download request, so the DA can route it to a specific handler.
+             Null = derived endpoint, no type. -->
+        <addColumn tableName="arr_digital_repository">
+            <column name="file_transfer_url" type="nvarchar(1000)"/>
+            <column name="file_transfer_type" type="nvarchar(250)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20261016120000" author="ppy">
+        <!-- Whether the TLS certificate of a DA is verified (REST API and File Transfer).
+             Existing DA repositories keep their behaviour: the REST client skipped the check
+             exactly when an API key was set. New repositories verify. -->
+        <addColumn tableName="arr_digital_repository">
+            <column name="tls_verify" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <sql>
+            UPDATE arr_digital_repository SET tls_verify = false
+            WHERE digital_repository_type = 'DA'
+              AND external_system_id IN (SELECT external_system_id FROM sys_external_system
+                                         WHERE api_key_id IS NOT NULL AND api_key_value IS NOT NULL)
+        </sql>
+    </changeSet>
+
+    <changeSet id="20261019120000" author="ppy">
+        <!-- Validation reports a link to a unit of description (URI-REF elza-node://) whose
+             target is deleted (no active level) or unresolved as an error of the referring node.
+             Drops the validation state of such referring nodes in open fund versions, so the
+             startup validates them again (it queues nodes without arr_node_conformity). -->
+        <sql>
+            DELETE FROM arr_node_conformity_error WHERE node_conformity_id IN (
+                SELECT nc.node_conformity_id FROM arr_node_conformity nc
+                JOIN arr_fund_version fv ON fv.fund_version_id = nc.fund_version_id AND fv.lock_change_id IS NULL
+                WHERE nc.node_id IN (
+                    SELECT di.node_id FROM arr_desc_item di
+                    JOIN arr_item i ON i.item_id = di.item_id AND i.delete_change_id IS NULL
+                    JOIN arr_data_uri_ref ur ON ur.data_id = i.data_id
+                    WHERE ur.uri_ref_value LIKE 'elza-node://%'
+                      AND (ur.node_id IS NULL
+                           OR NOT EXISTS (SELECT 1 FROM arr_level l
+                                          WHERE l.node_id = ur.node_id AND l.delete_change_id IS NULL))))
+        </sql>
+        <sql>
+            DELETE FROM arr_node_conformity_missing WHERE node_conformity_id IN (
+                SELECT nc.node_conformity_id FROM arr_node_conformity nc
+                JOIN arr_fund_version fv ON fv.fund_version_id = nc.fund_version_id AND fv.lock_change_id IS NULL
+                WHERE nc.node_id IN (
+                    SELECT di.node_id FROM arr_desc_item di
+                    JOIN arr_item i ON i.item_id = di.item_id AND i.delete_change_id IS NULL
+                    JOIN arr_data_uri_ref ur ON ur.data_id = i.data_id
+                    WHERE ur.uri_ref_value LIKE 'elza-node://%'
+                      AND (ur.node_id IS NULL
+                           OR NOT EXISTS (SELECT 1 FROM arr_level l
+                                          WHERE l.node_id = ur.node_id AND l.delete_change_id IS NULL))))
+        </sql>
+        <sql>
+            DELETE FROM arr_node_conformity WHERE node_conformity_id IN (
+                SELECT nc.node_conformity_id FROM arr_node_conformity nc
+                JOIN arr_fund_version fv ON fv.fund_version_id = nc.fund_version_id AND fv.lock_change_id IS NULL
+                WHERE nc.node_id IN (
+                    SELECT di.node_id FROM arr_desc_item di
+                    JOIN arr_item i ON i.item_id = di.item_id AND i.delete_change_id IS NULL
+                    JOIN arr_data_uri_ref ur ON ur.data_id = i.data_id
+                    WHERE ur.uri_ref_value LIKE 'elza-node://%'
+                      AND (ur.node_id IS NULL
+                           OR NOT EXISTS (SELECT 1 FROM arr_level l
+                                          WHERE l.node_id = ur.node_id AND l.delete_change_id IS NULL))))
+        </sql>
+    </changeSet>
+
+    <changeSet id="20261019150000" author="ppy">
+        <!-- Validation answers whether another unit of the fund carries the same UNITID value
+             (Drools fact DescItem.duplicateInFund, one lookup by value per UNITID item of the
+             validated unit when a rule asks). -->
+        <createIndex tableName="arr_data_unitid" indexName="ix_arr_data_unitid_unit_value">
+            <column name="unit_value"/>
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

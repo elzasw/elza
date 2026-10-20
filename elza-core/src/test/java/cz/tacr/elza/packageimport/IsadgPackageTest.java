@@ -3,6 +3,7 @@ package cz.tacr.elza.packageimport;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
@@ -24,11 +25,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import cz.tacr.elza.ElzaCoreMain;
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
@@ -36,14 +40,19 @@ import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.bulkaction.generator.PersistentSortConfig;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
+import cz.tacr.elza.controller.vo.ArrStructureDataVO;
 import cz.tacr.elza.controller.vo.BulkActionType;
 import cz.tacr.elza.controller.vo.Institution;
 import cz.tacr.elza.controller.vo.ap.item.ApItemStringVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemEnumVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemIntVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStructureVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
 import cz.tacr.elza.core.data.PackageTexts;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.data.StructType;
 import cz.tacr.elza.core.data.ValidationMessage;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApType;
@@ -51,12 +60,15 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrStructuredItem;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemSpecExt;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.TranslationEntityType;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.DirectionLevel;
@@ -80,12 +92,14 @@ import cz.tacr.elza.service.InstitutionService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.StartupService;
+import cz.tacr.elza.service.StructObjService;
 import cz.tacr.elza.service.UserService;
 
 /**
  * The ISAD(G) archival description package ISADG: its rule set next to its dependency ISAAR_CPF, a
  * fonds built by the scenarios of the levels and described by the rules, the validation of the
- * hierarchy and the containers, and the same installation with CZ_BASE and ZP2015.
+ * hierarchy, the reference codes and the containers, and the same installation with CZ_BASE and
+ * ZP2015.
  *
  * <p>Packages stay installed across test classes, so the class removes all of them first and at the
  * end; later test classes import the packages they need again.
@@ -137,6 +151,8 @@ public class IsadgPackageTest {
     private ItemTypeSpecAssignRepository itemTypeSpecAssignRepository;
     @Autowired
     private DescriptionItemService descriptionItemService;
+    @Autowired
+    private StructObjService structObjService;
     @Autowired
     private LevelTreeCacheService levelTreeCacheService;
     @Autowired
@@ -203,7 +219,47 @@ public class IsadgPackageTest {
             assertEquals(BulkActionType.PERSISTENT_SORT,
                          BulkActionService.toBulkAction(bulkActionConfigManager.get("ISADG_PERSISTENT_SORT")).getType());
             assertEquals("FundValidation", bulkActionConfigManager.getType("ISADG_FUND_VALIDATION"));
+            assertNull(bulkActionConfigManager.getType("ISADG_GENERATOR_REFERENCE_CODE"),
+                       "the reference code is assigned by the archivist, not generated");
         });
+    }
+
+    /**
+     * The English texts of the package reach an English reader of a Czech installation, the Czech
+     * translation a Czech one - for the declared item types as for the other packaged entities and
+     * for the type groups of the UI settings.
+     */
+    @Test
+    @Order(1)
+    void textsFollowTheReaderInACzechInstallation() {
+        tx(() -> {
+            StaticDataProvider sdp = staticDataService.getData();
+            Integer groupsPackageId = sdp.getRuleSetByCode(CODE).getEntity().getPackage().getPackageId();
+            try {
+                bindLanguage("en");
+                assertEquals("Title", packageTexts.name(sdp.getItemType("ISADG_TITLE")));
+                assertEquals("Containers", packageTexts.name(TranslationEntityType.STRUCTURED_TYPE,
+                                                             "ISADG_CONTAINER", "?"));
+                assertEquals("Containers", packageTexts.name(TranslationEntityType.POLICY_TYPE,
+                                                             "ISADG_POL_CONTAINER", "?"));
+                assertEquals("Content and structure", packageTexts.name(TranslationEntityType.TYPE_GROUP,
+                        "ISADG/03_CONTENT", "Content and structure", groupsPackageId));
+
+                bindLanguage("cs");
+                assertEquals("Ukládací jednotky", packageTexts.name(TranslationEntityType.STRUCTURED_TYPE,
+                                                                    "ISADG_CONTAINER", "?"));
+                assertEquals("Obsah a struktura", packageTexts.name(TranslationEntityType.TYPE_GROUP,
+                        "ISADG/03_CONTENT", "Content and structure", groupsPackageId));
+            } finally {
+                RequestContextHolder.resetRequestAttributes();
+            }
+        });
+    }
+
+    private static void bindLanguage(String tag) {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setCookies(new jakarta.servlet.http.Cookie(PackageTexts.LANGUAGE_COOKIE, tag));
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
     }
 
     /** The root is a fonds; each level offers the scenarios of the levels allowed below it. */
@@ -224,6 +280,9 @@ public class IsadgPackageTest {
             assertEquals(List.of("File", "Item"), scenarios(fileId));
             itemId = addChild(fileId, "Item");
             assertEquals(List.of("Item"), scenarios(itemId));
+            Integer subfondsId = addChild(rootId, "Subfonds");
+            assertEquals(List.of("Subfonds", "Series", "File", "Item"), scenarios(subfondsId),
+                         "a subfonds nests in a subfonds (ISAD(G) 3.1.4)");
             levelTreeCacheService.invalidateFundVersion(version);
         });
     }
@@ -237,8 +296,8 @@ public class IsadgPackageTest {
             for (String essential : ESSENTIAL) {
                 assertEquals(RulItemType.Type.REQUIRED, root.get(essential), essential);
             }
-            assertEquals(RulItemType.Type.IMPOSSIBLE, root.get("ISADG_CONTAINER"), "no container at the fonds");
-            assertEquals(List.of("ISADG_LEVEL_FONDS"), specs(rootId, "ISADG_LEVEL"));
+            assertEquals(RulItemType.Type.POSSIBLE, root.get("ISADG_CONTAINER"), "a one-box collection keeps its container at the top");
+            assertEquals(List.of("ISADG_LEVEL_FONDS", "ISADG_LEVEL_COLLECTION"), specs(rootId, "ISADG_LEVEL"));
 
             Map<String, RulItemType.Type> file = available(fileId);
             assertEquals(RulItemType.Type.REQUIRED, file.get("ISADG_TITLE"));
@@ -265,7 +324,7 @@ public class IsadgPackageTest {
         tx(() -> {
             assertEquals(List.of(), keys(rootId), "the fonds has nothing to report");
             assertEquals(List.of(), keys(seriesId), "a series needs no container");
-            assertEquals(List.of("ISADG/CONTAINER_MISSING"), keys(itemId), "the item at the end of the branch has no container");
+            assertEquals(List.of(), keys(itemId), "no container is demanded while no neighbour has one");
 
             // a series turned into a fonds does not fit below the fonds
             setLevel(seriesId, "ISADG_LEVEL_FONDS");
@@ -273,18 +332,52 @@ public class IsadgPackageTest {
             setLevel(seriesId, "ISADG_LEVEL_SERIES");
             assertEquals(List.of(), keys(seriesId));
 
+            // the root is a fonds or a collection, nothing else
+            setLevel(rootId, "ISADG_LEVEL_COLLECTION");
+            assertEquals(List.of(), keys(rootId), "an artificial collection is a root like a fonds");
+            setLevel(rootId, "ISADG_LEVEL_SERIES");
+            assertEquals(List.of("ISADG/ROOT_LEVEL"), keys(rootId));
+            setLevel(rootId, "ISADG_LEVEL_FONDS");
+
+            // a container is demanded where a neighbour has one
+            Integer boxedItemId = addChild(fileId, "Item");
+            addContainer(boxedItemId, 12);
+            assertEquals(List.of(), keys(boxedItemId));
+            assertEquals(List.of("ISADG/CONTAINER_MISSING"), keys(itemId), "the item next to the boxed one has no container");
+
             StaticDataProvider sdp = staticDataService.getData();
             String line = results(itemId).get(0).getMessage();
-            assertEquals("The unit and the units above it have no container.",
+            assertEquals("The unit has no container, while a neighbouring unit has one.",
                          packageTexts.render(line, sdp.getSysLanguageByTag("en")));
-            assertEquals("Jednotka popisu ani jednotky nad ní nemají ukládací jednotku.",
+            assertEquals("Jednotka popisu nemá ukládací jednotku, sousední jednotka ji má.",
                          packageTexts.render(line, sdp.getSysLanguageByTag("cs")));
+        });
+    }
+
+    /** The reference code is any text the archivist assigns; two units of the fonds must not share it. */
+    @Test
+    @Order(5)
+    void referenceCodeIsUniqueInTheFonds() {
+        tx(() -> {
+            setReferenceCode(seriesId, "S 1");
+            setReferenceCode(fileId, "S 1");
+            setReferenceCode(itemId, "S 1/1");
+            assertEquals(List.of("ISADG/REFERENCE_CODE_DUPLICATE"), keys(seriesId), "reported on both units");
+            assertEquals(List.of("ISADG/REFERENCE_CODE_DUPLICATE"), keys(fileId));
+            assertEquals(List.of("ISADG/CONTAINER_MISSING"), keys(itemId),
+                         "a code of its own is not reported; the container finding next to the boxed item stays");
+
+            DataValidationResult duplicate = results(fileId).get(0);
+            assertNotNull(duplicate.getDescItemId(), "the finding points at the item with the code");
+            assertEquals("ISADG_POL_REFERENCE_CODE", duplicate.getPolicyTypeCode());
+            assertEquals("The reference code is not unique in the fonds (ISAD(G) 3.1.1).",
+                         packageTexts.render(duplicate.getMessage(), staticDataService.getData().getSysLanguageByTag("en")));
         });
     }
 
     /** CZ_BASE and ZP2015 in the same installation: a Czech fonds next to the ISAD(G) one. */
     @Test
-    @Order(5)
+    @Order(6)
     void worksNextToCzBaseAndZp2015() {
         helperTestService.loadPackage("CZ_BASE", "package-cz-base");
         helperTestService.loadPackage("ZP2015", "rules-cz-zp2015");
@@ -338,6 +431,41 @@ public class IsadgPackageTest {
         ArrNode node = nodeRepository.findById(nodeId).orElseThrow();
         descriptionItemService.updateDescriptionItem(changed, node.getVersion(), nodeId, version.getFundVersionId(), true,
                                                      false);
+        levelTreeCacheService.invalidateFundVersion(version);
+    }
+
+    private void setReferenceCode(Integer nodeId, String value) {
+        Integer typeId = itemTypeRepository.findOneByCode("ISADG_REFERENCE_CODE").getItemTypeId();
+        ArrItemUnitidVO vo = new ArrItemUnitidVO();
+        vo.setItemTypeId(typeId);
+        vo.setValue(value);
+        ArrDescItem item = factoryDO.createDescItem(vo, typeId);
+        ArrNode node = nodeRepository.findById(nodeId).orElseThrow();
+        descriptionItemService.createDescriptionItem(item, nodeId, node.getVersion(), version.getFundVersionId());
+        levelTreeCacheService.invalidateFundVersion(version);
+    }
+
+    /** Creates a container with the number and puts the unit into it. */
+    private void addContainer(Integer nodeId, int number) {
+        StructType structType = staticDataService.getData().getStructuredTypeByCode("ISADG_CONTAINER");
+        ArrStructuredObject container = structObjService.createStructObj(version.getFund(), structType.getStructuredType(),
+                                                                         ArrStructuredObject.State.OK);
+        Integer numberTypeId = itemTypeRepository.findOneByCode("ISADG_CONTAINER_NUMBER").getItemTypeId();
+        ArrItemIntVO numberVo = new ArrItemIntVO();
+        numberVo.setItemTypeId(numberTypeId);
+        numberVo.setPosition(1);
+        numberVo.setValue(number);
+        ArrStructuredItem numberItem = factoryDO.createStructureItem(numberVo, numberTypeId);
+        structObjService.createStructureItem(numberItem, container.getStructuredObjectId(), version.getFundVersionId());
+
+        Integer containerTypeId = itemTypeRepository.findOneByCode("ISADG_CONTAINER").getItemTypeId();
+        ArrItemStructureVO vo = new ArrItemStructureVO();
+        vo.setItemTypeId(containerTypeId);
+        vo.setValue(container.getStructuredObjectId());
+        vo.setStructureData(ArrStructureDataVO.newInstance(container));
+        ArrDescItem item = factoryDO.createDescItem(vo, containerTypeId);
+        ArrNode node = nodeRepository.findById(nodeId).orElseThrow();
+        descriptionItemService.createDescriptionItem(item, nodeId, node.getVersion(), version.getFundVersionId());
         levelTreeCacheService.invalidateFundVersion(version);
     }
 

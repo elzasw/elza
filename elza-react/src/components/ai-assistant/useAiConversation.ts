@@ -123,7 +123,7 @@ export function useAiConversation({ externalSystemCode, getContext }: UseAiConve
     }, [websocketConnected, refetch]);
 
     const send = useCallback(
-        async (userInstructions: string, taskType?: string, profile?: string) => {
+        async (userInstructions: string, taskType?: string, profile?: string, scope?: string, continuation?: string) => {
             setError(null);
             setPending(true);
             const currentContext = getContext?.() ?? null;
@@ -140,6 +140,7 @@ export function useAiConversation({ externalSystemCode, getContext }: UseAiConve
                         profile,
                         userInstructions,
                         context: currentContext?.objects,
+                        scope,
                     });
                     conversationIdRef.current = fresh.conversation.id;
                     setDetail(fresh);
@@ -150,10 +151,15 @@ export function useAiConversation({ externalSystemCode, getContext }: UseAiConve
                     // referenced objects' current state). A follow-up may carry its
                     // own taskType (the "fix this finding" handoff submits
                     // elza.enhanceDescription into a revision thread); omitted, the
-                    // server reuses the conversation's previous type.
+                    // server reuses the conversation's previous type. A continuation
+                    // (a suggested "next part" of a stopped branch check) resumes the
+                    // previous exchange: the server reuses its type, parameters and
+                    // the stored context, so no context travels with it.
                     const { data: fresh } = await Api.aiprovider.aiProviderCreateRequest(
                         conversationIdRef.current,
-                        { taskType, userInstructions, profile, context: currentContext?.objects });
+                        continuation
+                            ? { userInstructions, profile, continuation }
+                            : { taskType, userInstructions, profile, context: currentContext?.objects, scope });
                     setDetail(fresh);
                 }
             } catch (sendError) {

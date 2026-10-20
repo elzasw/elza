@@ -131,15 +131,15 @@
     <entity-rule filename="index/PT_EXT.groovy" kind="INDEX" part-type="PT_EXT" priority="100" compatibility-rul-package="71"/>
     <entity-rule filename="index/PT_IDENT.groovy" kind="INDEX" part-type="PT_IDENT" priority="100" compatibility-rul-package="71"/>
     <entity-rule filename="index/PT_REL.groovy" kind="INDEX" part-type="PT_REL" priority="100" compatibility-rul-package="71"/>
-    <entity-rule filename="index/ARTWORK/PT_NAME.groovy" kind="INDEX" ap-type="ARTWORK" part-type="PT_NAME" priority="100" compatibility-rul-package="64"/>
-    <entity-rule filename="index/EVENT/PT_NAME.groovy" kind="INDEX" ap-type="EVENT" part-type="PT_NAME" priority="100" compatibility-rul-package="64"/>
-    <entity-rule filename="index/FAMILY/PT_NAME.groovy" kind="INDEX" ap-type="FAMILY" part-type="PT_NAME" priority="100" compatibility-rul-package="64"/>
-    <entity-rule filename="index/FAMILY_BRANCH/PT_NAME.groovy" kind="INDEX" ap-type="FAMILY_BRANCH" part-type="PT_NAME" priority="100" compatibility-rul-package="64"/>
-    <entity-rule filename="index/FICTIVE_DYNASTY/PT_NAME.groovy" kind="INDEX" ap-type="FICTIVE_DYNASTY" part-type="PT_NAME" priority="100" compatibility-rul-package="64"/>
-    <entity-rule filename="index/GEO/PT_NAME.groovy" kind="INDEX" ap-type="GEO" part-type="PT_NAME" priority="100" compatibility-rul-package="64"/>
-    <entity-rule filename="index/PARTY_GROUP/PT_NAME.groovy" kind="INDEX" ap-type="PARTY_GROUP" part-type="PT_NAME" priority="100" compatibility-rul-package="64"/>
-    <entity-rule filename="index/PERSON/PT_NAME.groovy" kind="INDEX" ap-type="PERSON" part-type="PT_NAME" priority="100" compatibility-rul-package="64"/>
-    <entity-rule filename="index/TERM/PT_NAME.groovy" kind="INDEX" ap-type="TERM" part-type="PT_NAME" priority="100" compatibility-rul-package="64"/>
+    <entity-rule filename="index/ARTWORK/PT_NAME.groovy" kind="INDEX" ap-type="ARTWORK" part-type="PT_NAME" priority="100" compatibility-rul-package="91"/>
+    <entity-rule filename="index/EVENT/PT_NAME.groovy" kind="INDEX" ap-type="EVENT" part-type="PT_NAME" priority="100" compatibility-rul-package="91"/>
+    <entity-rule filename="index/FAMILY/PT_NAME.groovy" kind="INDEX" ap-type="FAMILY" part-type="PT_NAME" priority="100" compatibility-rul-package="91"/>
+    <entity-rule filename="index/FAMILY_BRANCH/PT_NAME.groovy" kind="INDEX" ap-type="FAMILY_BRANCH" part-type="PT_NAME" priority="100" compatibility-rul-package="91"/>
+    <entity-rule filename="index/FICTIVE_DYNASTY/PT_NAME.groovy" kind="INDEX" ap-type="FICTIVE_DYNASTY" part-type="PT_NAME" priority="100" compatibility-rul-package="91"/>
+    <entity-rule filename="index/GEO/PT_NAME.groovy" kind="INDEX" ap-type="GEO" part-type="PT_NAME" priority="100" compatibility-rul-package="91"/>
+    <entity-rule filename="index/PARTY_GROUP/PT_NAME.groovy" kind="INDEX" ap-type="PARTY_GROUP" part-type="PT_NAME" priority="100" compatibility-rul-package="91"/>
+    <entity-rule filename="index/PERSON/PT_NAME.groovy" kind="INDEX" ap-type="PERSON" part-type="PT_NAME" priority="100" compatibility-rul-package="91"/>
+    <entity-rule filename="index/TERM/PT_NAME.groovy" kind="INDEX" ap-type="TERM" part-type="PT_NAME" priority="100" compatibility-rul-package="91"/>
     <!-- items computed from the whole entity -->
     <entity-rule filename="AutoItems.groovy" kind="AUTO_ITEMS" priority="100"/>
 </entity-rules>

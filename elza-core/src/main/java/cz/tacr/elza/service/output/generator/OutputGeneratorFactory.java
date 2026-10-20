@@ -10,6 +10,8 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.fund.FundTreeProvider;
 import cz.tacr.elza.dataexchange.output.DEExportService;
 import cz.tacr.elza.domain.RulTemplate.Engine;
+import cz.tacr.elza.print.OutputContext;
+import cz.tacr.elza.print.OutputModel;
 import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApIndexRepository;
@@ -19,6 +21,7 @@ import cz.tacr.elza.repository.ArrFsLinkRepository;
 import cz.tacr.elza.repository.ArrLegacyDaoLinkRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
+import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.DataService;
 import cz.tacr.elza.service.dms.DmsService;
 import cz.tacr.elza.service.StructObjService;
@@ -132,6 +135,22 @@ public class OutputGeneratorFactory {
                 institutionRepository, apStateRepository, bindingRepository, itemRepository,
                 bindingStateRepository, indexRepository, em, dmsService,
                 legacyDaoLinkRepository, fsLinkRepository, exportConfig, structObjService,
+                dataService);
+    }
+
+    /**
+     * Creates an output model outside the output generation, e.g. for the contextual EAD of an AIP.
+     * The model is initialized by {@link OutputModel#init} inside a transaction.
+     */
+    public OutputModel createOutputModel() {
+        OutputContext outputContext = applicationContext.getBean(OutputContext.class);
+        StructuredObjectRepository structObjRepos = applicationContext.getBean(StructuredObjectRepository.class);
+        return new OutputModel(outputContext, staticDataService, elzaLocale,
+                fundRepository, fundTreeProvider,
+                nodeCacheService, institutionRepository, apStateRepository,
+                bindingRepository, null, structObjRepos, itemRepository,
+                bindingStateRepository, indexRepository,
+                legacyDaoLinkRepository, fsLinkRepository, exportConfig, structObjService, em,
                 dataService);
     }
 

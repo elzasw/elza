@@ -41,9 +41,14 @@ import org.springframework.transaction.support.TransactionTemplate;
 import cz.tacr.elza.ElzaCoreMain;
 import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
+import cz.tacr.elza.controller.vo.ApValidationIssues;
+import cz.tacr.elza.controller.vo.ap.item.ApItemStringVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.RulEntityRule;
 import cz.tacr.elza.drools.model.ItemType;
@@ -68,10 +73,12 @@ import cz.tacr.elza.service.GroovyService;
 import cz.tacr.elza.domain.RulApTypeDeclaration;
 import cz.tacr.elza.domain.TranslationEntityType;
 import cz.tacr.elza.repository.ApTypeDeclarationRepository;
+import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import java.util.Set;
 import java.util.stream.Collectors;
 import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.controller.AccessPointController;
 import cz.tacr.elza.controller.ApController;
 import cz.tacr.elza.controller.vo.ApTypeVO;
 import cz.tacr.elza.domain.ApChange;
@@ -137,6 +144,10 @@ public class EntityRulesTest {
     private RuleService ruleService;
     @Autowired
     private AccessPointService accessPointService;
+    @Autowired
+    private AccessPointController accessPointController;
+    @Autowired
+    private ApIndexRepository indexRepository;
     @Autowired
     private AccessPointDataService accessPointDataService;
     @Autowired
@@ -758,6 +769,72 @@ public class EntityRulesTest {
         StaticDataProvider sdp = staticDataService.getData();
         return new GroovyPart(sdp, sdp.getApTypeByCode(apType), sdp.getPartTypeByCode(partType), true,
                               new GroovyItems(), List.of());
+    }
+
+    /**
+     * CZ_BASE names carry the REAL_NAME index: the name as commonly used, a person as forename and
+     * surname, a corporate body with its unit, without supplements and degrees. Two names of one
+     * entity may share it (R_UNQ_002), unlike the display name.
+     */
+    @Test
+    @Order(13)
+    void camNamesHaveTheRealName() {
+        Integer camScope = scopeIds.get(0);
+        Integer personId = txGet(() -> accessPointService.createAccessPoint(scope(camScope), type("PERSON_INDIVIDUAL"),
+                nameForm(string("NM_MAIN", "Pytelka"), string("NM_MINOR", "Petr"), string("NM_DEGREE_PRE", "Ing."),
+                         string("NM_SUP_CHRO", "1975-"))).getAccessPointId());
+        Integer bodyId = txGet(() -> accessPointService.createAccessPoint(scope(camScope), type("ORGANIZATION"),
+                nameForm(string("NM_MAIN", "Československá akademie věd"),
+                         string("NM_MINOR", "Kabinet pedagogických věd"), string("NM_SUP_GEO", "Praha")))
+                .getAccessPointId());
+        tx(() -> {
+            assertEquals("Petr Pytelka", preferredIndex(personId, GroovyResult.REAL_NAME));
+            assertEquals("Pytelka, Petr, Ing. (1975-)", preferredIndex(personId, GroovyResult.DISPLAY_NAME));
+            assertEquals("Pytelka, Petr, Ing.", preferredIndex(personId, GroovyResult.SHORT_NAME));
+            assertEquals("Československá akademie věd. Kabinet pedagogických věd",
+                         preferredIndex(bodyId, GroovyResult.REAL_NAME));
+            assertEquals("Československá akademie věd. Kabinet pedagogických věd (Praha)",
+                         preferredIndex(bodyId, GroovyResult.DISPLAY_NAME));
+        });
+
+        // a variant name differing in the supplement only shares the real name without a duplicate-index error
+        tx(() -> {
+            ApAccessPoint ap = accessPointService.getAccessPointInternal(personId);
+            accessPointController.accessPointCreatePart(personId,
+                    nameForm(string("NM_MAIN", "Pytelka"), string("NM_MINOR", "Petr"), string("NM_SUP_GEN", "archivář")),
+                    ap.getVersion());
+        });
+        tx(() -> {
+            ApAccessPoint ap = accessPointService.getAccessPointInternal(personId);
+            List<String> realNames = indexRepository
+                    .findByPartsAndIndexType(partService.findPartsByAccessPoint(ap), GroovyResult.REAL_NAME)
+                    .stream().map(ApIndex::getIndexValue).toList();
+            assertEquals(List.of("Petr Pytelka", "Petr Pytelka"), realNames);
+            ApValidationIssues issues = ruleService.executeValidation(accessPointService.getStateInternal(ap), false);
+            List<String> partErrors = issues.getPartErrors() == null ? List.of()
+                    : issues.getPartErrors().stream().flatMap(p -> p.getErrors().stream()).toList();
+            assertTrue(partErrors.stream().noneMatch(e -> e.contains(GroovyResult.REAL_NAME)), partErrors.toString());
+        });
+    }
+
+    private String preferredIndex(Integer apId, String indexType) {
+        ApAccessPoint ap = accessPointService.getAccessPointInternal(apId);
+        ApIndex index = indexRepository.findPreferredPartIndexByAccessPointAndIndexType(ap, indexType);
+        return index != null ? index.getIndexValue() : null;
+    }
+
+    private ApPartFormVO nameForm(ApItemVO... items) {
+        ApPartFormVO form = new ApPartFormVO();
+        form.setPartTypeCode("PT_NAME");
+        form.setItems(new ArrayList<>(List.of(items)));
+        return form;
+    }
+
+    private ApItemVO string(String itemType, String value) {
+        ApItemStringVO item = new ApItemStringVO();
+        item.setTypeId(staticDataService.getData().getItemTypeByCode(itemType).getItemTypeId());
+        item.setValue(value);
+        return item;
     }
 
     @Test

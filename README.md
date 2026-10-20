@@ -1,220 +1,178 @@
-# ELZA - Elektronické zpracování archiválií
+# ELZA - Electronic Processing of Archival Materials
 
-## Sestavení a spuštění
+ELZA (*Elektronické zpracování archiválií*) is an archival management system for
+the arrangement and description of archival funds: the hierarchy of units of
+description, entity registries (persons, corporate bodies, places, ...), finding
+aids and other outputs, digital archival objects and integration with digital
+archives. It is used by Czech archives; the core is language-neutral and the
+rules of description come from importable packages.
 
-Předpokládané softwarové vybavení:
+The backend is Java 17 / Spring Boot 3 with PostgreSQL + PostGIS, the user
+interface is React / TypeScript.
 
-* [Git 1.9+](https://git-scm.com/download/win)
-* [JDK 17+](https://adoptium.net/temurin/releases/?version=17)
-* [Apache Maven 3.2.+](https://maven.apache.org/download.cgi)
-* [Node.js 20.11.0+](https://nodejs.org/)
+## Documentation
 
-### Získání zdrojových kódů
-Příkaz:
-```
-git clone https://elza-developer@bitbucket.org/tacr/elza-release.git
-```
+| Where | For whom |
+|---|---|
+| [docs/admin-guide](docs/admin-guide) | administrators: installation, upgrade, configuration, security, backup, release notes |
+| [docs/user-guide](docs/user-guide) | users of the international rule set (ISAD(G), ISAAR(CPF)) |
+| [docs/implementation-guide](docs/implementation-guide) | authors of rules packages and their customizations |
+| [docs/design](docs/design) | developers: design records and their rationale |
 
-### Sestavení vč dokumentace
-Příkaz:
-```
-mvn -Pjdoc,skiptest -Dmaven.javadoc.skip=false package
-```
-Ve složce /target/apidocs se nachází Javadoc dokumentace, otevřete index.html.
-Pro sestavení dokumentace včetně UML diagramů modelu použijte profil jdocuml (je potřeba mít nainstalován Graphviz a v PATH spustitelný dot).
+The guides are Sphinx projects; each folder has a README on how to build it.
+The Czech documentation is maintained separately (elza-doc).
 
+## Repository layout
 
-### Sestavení a spuštění embed (finální UI - React), určeno pro vývoj
+| Module | Content |
+|---|---|
+| `elza-core` | backend: business logic, REST/WebSocket API, Liquibase migrations, OpenAPI spec |
+| `elza-web` | Spring Boot entry point (`cz.tacr.elza.web.ElzaWebApp`), development configuration in `elza-web/config` |
+| `elza-react` | user interface (React, TypeScript, Vite) |
+| `elza-ws-api` | SOAP/WSDL interfaces |
+| `package-cz-base`, `package-isaar-cpf` | base packages: code lists and entity description (CAM, ISAAR(CPF)) |
+| `rules-cz-zp2015`, `rules-en-isadg`, `rules-simple-dev` | rules of archival description (ZP2015, ISAD(G), a minimal rule set for development) |
+| `elza-development` | development material: TypeSpec API sources, demo data, database update samples |
+| `dao-test-bench` | test counterpart of a digital-object repository (DAO test bench) |
+| `distrib` | distribution: executable JAR, WAR, ZIP distribution, Docker image |
 
-* Nastavení připojení k DB
-V projektu elza-web je nutné v adresáři config založit soubor elza.yaml s připojením k databázi.
-Podrobnosti o nastavení viz sekce 'Databázové připojení'.
+## Prerequisites
 
-* Přeložení projektu (root celého projektu) (pokud již nebylo přeloženo kvůli dokumentaci - sekce 'Sestavení vč dokumentace')
-mvn install -Pskiptest
+* [Git](https://git-scm.com/)
+* [JDK 17](https://adoptium.net/temurin/releases/?version=17)
+* [Apache Maven 3.9+](https://maven.apache.org/download.cgi)
+* [Node.js 20+](https://nodejs.org/) - only for the user interface
+* [PostgreSQL](https://www.postgresql.org/) with the [PostGIS](https://postgis.net/) extension
 
-* Aktualizace NPM balíčků (v adresáři elza-react)
-```
-mvn exec:exec -Pnpm-install
-```
+## Database
 
-* Spuštění aplikačního serveru (v adresáři elza-web)
-```
-mvn spring-boot:run
-```
+Create an empty database and enable PostGIS in it:
 
-* Spuštění serveru pro frontend (v adresáři elza-react, NodeJS do v16) 
-```
-mvn exec:exec -Pfrontend-dev
-```
-* Spuštění serveru pro frontend (v adresáři elza-react, NodeJS v17+) 
-```
-mvn exec:exec -Pfrontend-dev-legacy
-```
-
-Po sestavení dojde ke spuštění embedded aplikačního serveru Tomcat.
-Uživatelské rozhraní najdete na adrese http://localhost:8080 - není možné přistupovat z jiného počítače (sestavte a zprovozněte war v Tomcat).
-
-#### Nastavení dev serveru klienta
-V projektu elza-react pokud vytvoříme soubor `.env.development.local` máme možnost v něm konfigurovat dev server klienta.
-Výchozí konfig
-```
-ENDPOINT=http://localhost:8080
-``` 
-`ENDPOINT` - kam bude komunikovat proxy pro vývoj klienta
-
-
-Pokud server neběží v rootu (běží např na /elza) je možné přenastavit adresu v souboru .rescriptsrc:
-        } else {
-            config.output.publicPath = '/elza';  // Doplněný prefix
-            return config;
-        }
-Současně je nutné pro vývoj upravit v souboru public/index.html a to změnit: var serverContextPath = "/elza";
-
-
-### Release sestavení a spuštění war v Tomcat
-V projektu elza-web je nutné v adresáři config založit soubor elza.yaml s připojením k databázi.
-Podrobnosti o nastavení viz sekce 'Databázové připojení'.
-Pro release v souboru elza-web/config/elza.yaml zakomentovat radek: buildType: DEV
-[Deaktivovat maven blokování externích úložišť HTTP](https://stackoverflow.com/questions/67001968/how-to-disable-maven-blocking-external-http-repositories)
-```
-mvn -Prelease install
-```
-
-Sestavenou webovou aplikaci najdete v `distrib/elza-war/target/elza.war`.
-Proveďte standardním způsobem deploy na aplikační server Tomcat verze 8.0.
-
-### Spuštění v IDE (UI - React), určeno pro vývoj
-Importujte projekt maven.
-Pro spuštění jádra aplikace obsahující rest služby spusťte `cz.tacr.elza.ElzaCore`.
-Pro spuštění uživatelského rozhranní spusťte `cz.tacr.elza.ElzaWebApp`.
-Pro spuštění serveru pro frontend spusťte příkaz (v modulu elza-react):
-```
-mvn exec:exec -Pfrontend-dev
-```
-Uživatelské rozhranní najdete na adrese http://localhost:3000.
-
-Nastavení spuštění serveru pro IntelliJ Idea (označené hodnoty nutno explicitně nastavit):
-![IntelliJ Idea](idea.png)
-
-Pro spuštění se speciální konfigurací lze použít parametry:  `--spring.config.location=classpath:/elza.yaml,file:./config-small/elza.yaml`
-První elza.yaml se načte přímo z aplikace a druhý z cesty.
-
-### Sestavení instalátoru aplikace
-* Stáhněte aplikaci Inno Setup z odkazu http://www.jrsoftware.org/download.php/is-unicode.exe a nainstalujte (všechny volby ponechte výchozí). Aplikace se nainstaluje do umístění c:\Program Files (x86)\Inno Setup 5\.
-* Připravte si nainstalované lokální JRE (64-bit) a rozbalený Apache Tomcat, na které je nutné se odkázat při spuštění sestavení instalátoru. JRE a Tomcat se v rámci sestavení přidají do instalátoru a budou využívány pro běh aplikace.
-* V projektu ELZA (v kořenovém adresáři) spusťte soubor ```build_instalator.bat``` nebo ručně pomocí příkazu (u obou variant je potřeba upravit cesty, aby odpovídaly reálnému umístění adresářů).
-    ```
-    mvn clean install -Pskiptest,release,build-instalator -Djre.path="c:/Program Files/Java/jre1.8.0_131/" -Dtomcat.path="c:/apache-tomcat/"
-    ```
-* Předchozím krokem dojde k sestavení aplikace a vytvoření instalátoru. Výsledný soubor instalátoru se uloží do umístění `distrib\elza-install\elza-exe\target\ELZA-<verze aplikace>.exe`
-
-## Konfigurace a logování
-
-Aplikace je konfigurována pomocí souboru `elza.yaml`. Umístění konfiguračních souborů:
-
-* war Tomcat `webapps/elza/WEB-INF/classes`
-* embed načítá v aktuální cestě nebo složce config
-
-### Výchozí uživatel
-
-Pro zakázání výchozího uživatele s právy administrátora je potřeba přidat do konfiguračního souboru `elza.security.allowDefaultUser:false`. Při použití šablony stačí pouze smazat `#`.
-
-```
-elza:
-    data:
-        url: jdbc:postgresql://server/databaze
-        username: uzivatel
-        password: heslo
-    security:
-        allowDefaultUser:false
-```
-
-### Pracovní adresář
-
-Úmístění pracovního adresáře elzy lze změnit pomocí parametru `elza.workingDir`
-```
-elza:
-    data:
-        url: jdbc:postgresql://server/databaze
-        username: uzivatel
-        password: heslo
-    workingDir: C:\Elza\work
-```
-
-Pod pracovním adresářem vzniká podadresář `dms/`, do kterého Elza ukládá
-všechny binární soubory: přílohy archivních souborů, vygenerované výstupy,
-publikační exporty a zdrojové soubory importních dávek. Struktura je
-`dms/<rok>/<měsíc>/<blok>/<id>.<přípona>` a nesmí se ručně upravovat —
-autoritativní cestu drží sloupec `dms_file.storage_path` a jakákoli změna
-mimo aplikaci se projeví buď jako osiřelý soubor, nebo jako chybějící obsah
-u existujícího řádku. Adresář `dms/_trash/<datum>/` obsahuje soubory
-čekající na fyzické smazání (viz `elza.dms.trashRetentionDays`); dokud
-jsou v koši, je smazání vratné.
-
-Databáze a `${elza.workingDir}/dms` tvoří jeden celek a musí se zálohovat i
-obnovovat společně. Doporučený postup je zálohovat nejdřív databázi
-(`pg_dump`), pak `dms/`, nebo obojí se zastavenou aplikací. Před každou
-aktualizací pořiďte zálohu obojího z jednoho okamžiku — návrat na starší
-verzi po proběhlé migraci úložiště (viz [`docs/dms-storage.md`](docs/dms-storage.md))
-vyžaduje obnovu obou z doby *před* aktualizací; starší verze by soubory
-uspořádané v novém stromě nenašla.
-
-### Databázový server
-Je vyžadován PostgreSQL s rozšířením [PostGIS](http://postgis.net/).
-Po instalaci je nutné rozšíření zprovoznit přes ```psql``` nebo PgAdmin.
-Následující příkaz zprovozní rozšíření nad vybranou databází.
 ```
 CREATE EXTENSION postgis;
 ```
 
-### Databázové připojení
-Do konfigurace vložte nastavení datového zdroje. Při prvním připojení se datové struktury vytvoří automaticky.
+The application creates and upgrades the schema itself (Liquibase) at startup.
+Use a dedicated database user, not a superuser; details are in the
+administration guide, chapter *Installation*.
+
+## Building
 
 ```
-elza:
-    data:
-        url: jdbc:postgresql://server/databaze
-        username: uzivatel
-        password: heslo
+mvn install -Pskiptest
 ```
 
-### Logování událostí
-V aplikačním serveru Tomcat ve složce logs jsou archivovány logy rozdělené po jednotlivých dnech.
+builds all modules without tests. A plain `mvn install` also runs the backend
+tests and the frontend tests (Vitest); `-DskipTests` or `-Pskiptest` skips both.
 
-* `elza-stdout-...` standardní informace událostí v aplikaci
-* `elza-stderr-...` chybové hlášeí v aplikaci
-
-### Nastavení úrovně logování
-Nastavení se provádí v souboru `elza.yaml`. Pro různé balíčky a třídy jdou nastavit odlišné úrovně logování. Standardně
-je nastaveno logování na úroveň INFO. 
-
-Toto nastavení zapne logování volání metod na kontrolerech:
+Release build, including the production build of the user interface:
 
 ```
-logging:
-  level:
-    cz.tacr.elza: DEBUG
+mvn -Prelease install
 ```
 
-Nastaveni logovani do souboru pro embed server
+It produces:
+
+* `distrib/elza-tomcat/target/elza-tomcat.jar` - the application with an embedded web server (`java -jar elza-tomcat.jar`),
+* `distrib/elza-war/target/elza-<version>.war` - for deployment to an external Tomcat 10,
+* a ZIP distribution in `distrib/distribution/target` - the JAR, a sample configuration, the base packages and the list of institutions.
+
+Installing and running these is described in the administration guide.
+
+Some dependencies come from repositories served over plain HTTP. Maven 3.8.1+
+blocks those by default; if the build cannot resolve them, see
+[how to allow HTTP repositories](https://stackoverflow.com/questions/67001968/how-to-disable-maven-blocking-external-http-repositories).
+
+Javadoc: `mvn -Pjdoc,skiptest -Dmaven.javadoc.skip=false package` writes it to
+`target/apidocs`; the profile `jdocuml` adds UML diagrams of the model
+(needs [Graphviz](https://graphviz.org/) with `dot` on the `PATH`).
+
+## Running for development
+
+1. **Configuration.** Copy `elza-web/config/elza.yaml.template` to
+   `elza-web/config/elza.yaml` and set the database connection:
+
+   ```yaml
+   elza:
+     data:
+       url: jdbc:postgresql://localhost/elza
+       user: elza
+       pass: secret
+   ```
+
+   The template keeps `buildType: DEV` for development. All configuration keys
+   are described in the administration guide, chapter *Configuration*.
+
+2. **Build** once: `mvn install -Pskiptest` (in the root).
+
+3. **Backend** (in `elza-web`):
+
+   ```
+   mvn spring-boot:run
+   ```
+
+   The server listens on http://localhost:8080. In an IDE run the main class
+   `cz.tacr.elza.web.ElzaWebApp` from the module `elza-web` with the working
+   directory `elza-web`, so that `config/elza.yaml` is found.
+
+4. **User interface** (in `elza-react`): install the npm packages once, then
+   start the Vite dev server:
+
+   ```
+   mvn exec:exec -Pnpm-install
+   mvn exec:exec -Pfrontend-dev
+   ```
+
+   `frontend-dev` runs `npm start` (the dev server plus a watching type check);
+   `npm run dev` starts the dev server alone. The user interface is at
+   http://localhost:3000; API calls and WebSocket are proxied to the backend.
+
+   The dev server reads `elza-react/.env.development.local`:
+
+   ```
+   ENDPOINT=http://localhost:8080
+   ```
+
+   `ENDPOINT` is the backend the proxy talks to (default
+   `http://localhost:8080`). `KERBEROS=true` makes the proxy sign in to a
+   backend protected by Kerberos (SPNEGO); `KERBEROS_SERVICE` overrides the
+   service name.
+
+5. **Packages.** An empty database has no rules. Import at least
+   `package-cz-base/target/package-cz-base-<version>.zip` and
+   `rules-cz-zp2015/target/rules-cz-zp2015-<version>.zip` in *Administration >
+   Package management*, or copy the ZIP files to the `dpkg/` subdirectory of
+   the working directory, which is loaded at every start. Then import the
+   institutions (`package-cz-base/src/all-institutions-import.xml`, *Archival
+   entity import* in the *Archival entities* module) to be able to create
+   funds. The international packages (`package-isaar-cpf`, `rules-en-isadg`)
+   and the rules of automatic loading are described in the administration
+   guide, *Loading the packages*.
+
+On an empty database the application offers the creation of the first
+administrator.
+
+## Tests
+
+* Backend: `mvn -pl elza-core test` (a single class: `-Dtest=ClassName`).
+* Frontend (in `elza-react`): `npm test`, `npm run test:watch`,
+  `npm run test:coverage`; see [elza-react/README.md](elza-react/README.md).
+
+## Development conventions
+
+* Database changes only through Liquibase changesets in `elza-core`
+  (`src/main/resources/db/changelog`).
+* REST API changes start in the OpenAPI spec
+  `elza-core/src/main/resources/rest/elza-openapi.yml`; the TypeScript client in
+  `elza-react/src/api/generated` is generated from it and is never edited by hand.
+* Design decisions are recorded in [docs/design](docs/design).
+
+## Setting the version
 
 ```
-logging:
-  file: ${elza.workingDir}/log/elza.log
+mvn -U versions:set -DnewVersion=3.0-SNAPSHOT
 ```
 
-### Import balíčku cz-base a balíčku s pravidly
-Po přeložení spuštění je potřeba naimportovat 
-- balíček cz-base - soubor package-cz-base/target/elza-package-cz-base-?.zip
-- základní pravidla - soubor rules-cz-zp2015/target/elza-rules-cz-zp2015-?.zip
+## License
 
-### Import institucí
-Aby bylo možné vytvářen archivní fondy, je nutné importovat instituci v sekci Osoby - soubor elza-core/src/test/resources/institution-import.xml
-
-Importovat je možné též instituce archivů ze souboru `package-cz-base/src/all-institutions-import.xml`
-
-# Nastavení verze
-To set other version it is possible to use maven:
-mvn -U "versions:set" "-DnewVersion=3.0-SNAPSHOT"
-
+See [LICENSE.txt](LICENSE.txt) and [NOTICE](NOTICE).

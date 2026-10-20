@@ -78,70 +78,65 @@ public class ApiClientDa extends ApiClient {
         return lower.contains("json") || lower.contains("xml") || lower.startsWith("text/");
     }
 
+    /**
+     * @param apiKey    API key id; with {@code apiValue} every request is signed (NDA-HMAC-SHA256),
+     *                  without them the requests carry no authentication
+     * @param tlsVerify false = trust any server certificate and skip the host name check
+     *                  (internal servers with a self-signed certificate)
+     */
     public ApiClientDa(@NotNull final String url,
                        final String apiKey,
-                       final String apiValue) {
+                       final String apiValue,
+                       final boolean tlsVerify) {
         super();
+        setBasePath(url);
+        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        if (!tlsVerify) {
+            trustAnyCertificate(builder);
+        }
+        if (apiKey != null && apiValue != null) {
+            builder.addInterceptor(chain -> signRequest(chain, apiKey, apiValue));
+        }
+        builder.addInterceptor(RESPONSE_LOGGING_INTERCEPTOR);
+        setHttpClient(builder.build());
+    }
+
+    private static void trustAnyCertificate(final OkHttpClient.Builder builder) {
         try {
-            if (apiKey == null || apiValue == null) {
-                daInit(url);
-            } else {
-                daInit(url, apiKey, apiValue);
-            }
+            X509TrustManager trustManager = new NoCheckTrustManager();
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, new TrustManager[] { trustManager }, null);
+            SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+            builder.sslSocketFactory(sslSocketFactory, trustManager)
+                    .hostnameVerifier((hostname, session) -> true);
         } catch (GeneralSecurityException gse) {
             throw new SystemException("Failed to initialize SSL client", gse);
         }
     }
 
-    protected void daInit(final String url) {
-        setBasePath(url);
-        OkHttpClient.Builder builder = new OkHttpClient.Builder()
-                .addInterceptor(RESPONSE_LOGGING_INTERCEPTOR);
-        OkHttpClient httpClient = builder.build();
-        setHttpClient(httpClient);
-    }
+    private Response signRequest(Interceptor.Chain chain, final String apiKey, final String apiValue)
+            throws IOException {
+        chain = chain
+                .withConnectTimeout(CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS)
+                .withReadTimeout(CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS)
+                .withWriteTimeout(CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS);
 
-    protected void daInit(final String url, final String apiKey, final String apiValue)
-            throws GeneralSecurityException {
-        setBasePath(url);
-
-        X509TrustManager trustManager = new NoCheckTrustManager();
-        SSLContext sslContext = SSLContext.getInstance("TLS");
-        sslContext.init(null,
-                        new TrustManager[] { trustManager },
-                        null);
-        SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
-
-        OkHttpClient.Builder builder = new OkHttpClient.Builder()
-                .sslSocketFactory(sslSocketFactory, trustManager)
-                .addInterceptor(new Interceptor() {
-            @Override
-            public Response intercept(Chain chain) throws IOException {
-                chain = chain
-                        .withConnectTimeout(CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS)
-                        .withReadTimeout(CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS)
-                        .withWriteTimeout(CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS);
-
-                Request request = chain.request();
-                String xNdaDate = OffsetDateTime.now(ZoneOffset.UTC).format(X_NDA_DATE_FORMATTER);
-                String dataToHash = getHost(request) + request.method() + "/" + String.join("/", request.url().pathSegments()) + StringUtils.defaultString(request.url().query()) + xNdaDate;
-                String signature = computeHmac(apiValue, dataToHash);
-                if (log.isDebugEnabled()) {
-                    log.debug("Data to hash: {}", dataToHash);
-                            log.debug("Authorization NDA-HMAC-SHA256 (KeyId={}, KeyValue={}), Signature={}", apiKey,
-                                      apiValue,
-                                      signature);
-                }
-                String authorization = "NDA-HMAC-SHA256 KeyId=" + apiKey + ",Signature=" + signature;
-                Request newRequest = request.newBuilder()
-                        .addHeader(X_NDA_DATE, xNdaDate)
-                        .addHeader(AUTHORIZATION, authorization)
-                        .build();
-                return chain.proceed(newRequest);
-            }
-        }).addInterceptor(RESPONSE_LOGGING_INTERCEPTOR);
-        OkHttpClient httpClient = builder.build();
-        setHttpClient(httpClient);
+        Request request = chain.request();
+        String xNdaDate = OffsetDateTime.now(ZoneOffset.UTC).format(X_NDA_DATE_FORMATTER);
+        String dataToHash = getHost(request) + request.method() + "/" + String.join("/", request.url().pathSegments()) + StringUtils.defaultString(request.url().query()) + xNdaDate;
+        String signature = computeHmac(apiValue, dataToHash);
+        if (log.isDebugEnabled()) {
+            log.debug("Data to hash: {}", dataToHash);
+            log.debug("Authorization NDA-HMAC-SHA256 (KeyId={}, KeyValue={}), Signature={}", apiKey,
+                      apiValue,
+                      signature);
+        }
+        String authorization = "NDA-HMAC-SHA256 KeyId=" + apiKey + ",Signature=" + signature;
+        Request newRequest = request.newBuilder()
+                .addHeader(X_NDA_DATE, xNdaDate)
+                .addHeader(AUTHORIZATION, authorization)
+                .build();
+        return chain.proceed(newRequest);
     }
 
     private String getHost(final Request request) {

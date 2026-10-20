@@ -53,15 +53,15 @@ export {ArrDaos} from 'components/arr/ArrDaos';
 export {ArrDao} from 'components/arr/ArrDao';
 export {default as ArrFundPanel} from 'components/arr/ArrFundPanel';
 export {default as FundTreeMain} from 'components/arr/FundTreeMain';
-export {default as FundTreeMovementsLeft} from 'components/arr/FundTreeMovementsLeft';
-export {default as FundTreeMovementsRight} from 'components/arr/FundTreeMovementsRight';
+export {FundTreeMovementsLeft} from 'components/arr/movements/FundTreeMovementsLeft';
+export {FundTreeMovementsRight} from 'components/arr/movements/FundTreeMovementsRight';
 export {default as FundTreeDaos} from 'components/arr/FundTreeDaos';
 export {default as AddNodeCross} from 'components/arr/AddNodeCross';
 
 export {AdminPackagesListFn} from 'components/admin/AdminPackagesList';
 export {default as AdminExtSystemList} from 'components/admin/extSystem/AdminExtSystemList';
 export {default as AdminExtSystemListItem} from 'components/admin/extSystem/AdminExtSystemListItem';
-export {default as AdminExtSystemDetail} from 'components/admin/extSystem/AdminExtSystemDetail';
+export {AdminExtSystemDetail} from 'components/admin/extSystem/AdminExtSystemDetail';
 export {default as ExtSystemForm} from 'components/admin/extSystem/ExtSystemForm';
 export {default as AdminLogsDetail} from 'components/admin/AdminLogsDetail';
 export {default as AdminPackagesUpload} from 'components/admin/AdminPackagesUpload';

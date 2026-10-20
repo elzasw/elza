@@ -8,6 +8,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +37,7 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.ErrorCode;
 import cz.tacr.elza.service.ArrangementInternalService;
@@ -198,8 +200,8 @@ public class WSHelper {
             logger.debug("Finding structured object, uuid: {}", srcItem.getValue());
             ArrStructuredObject structuredObject = structObjService.getExistingStructObj(srcItem.getValue());
             // Validate type of structured object
-            Validate.isTrue(structuredObject.getStructuredTypeId() == itemType.getEntity().getStructuredTypeId(),
-                            "Structured object (%i) has unexpected type, exptected: %i, real type: %i",
+            Validate.isTrue(Objects.equals(structuredObject.getStructuredTypeId(), itemType.getEntity().getStructuredTypeId()),
+                            "Structured object (%d) has unexpected type, expected: %d, real type: %d",
                             structuredObject.getStructuredObjectId(),
                             itemType.getEntity().getStructuredTypeId(),
                             structuredObject.getStructuredTypeId());
@@ -216,22 +218,46 @@ public class WSHelper {
         trgItem.setData(data);
     }
 
-    private ItemType prepareItem(ArrItem trgItem, String type, String spec, Boolean readOnly) {
+    /**
+     * Resolve the item type and specification codes of a received item.
+     *
+     * Failures are reported as {@link BusinessException} with an {@link ArrangementCode}
+     * and the offending codes in the message, because the message and the code are what
+     * {@link #prepareException(String, Exception)} passes to the web service client.
+     */
+    ItemType prepareItem(ArrItem trgItem, String type, String spec, Boolean readOnly) {
+        if (StringUtils.isEmpty(type)) {
+            throw new BusinessException("Item type code is missing", ArrangementCode.ITEM_TYPE_NOT_FOUND)
+                    .set("id", type);
+        }
         StaticDataProvider sdp = staticDataService.getData();
         ItemType itemType = sdp.getItemTypeByCode(type);
-        Validate.notNull(itemType, "Item type not found: {}", type);
+        if (itemType == null) {
+            throw new BusinessException("Item type not found: " + type, ArrangementCode.ITEM_TYPE_NOT_FOUND)
+                    .set("id", type);
+        }
 
         trgItem.setItemType(itemType.getEntity());
         trgItem.setReadOnly(readOnly==null?false:readOnly);
 
         if (itemType.hasSpecifications()) {
-            Validate.notNull(spec, "Missing specification for item type: %s", type);
+            if (StringUtils.isEmpty(spec)) {
+                throw new BusinessException("Missing specification for item type: " + type,
+                        ArrangementCode.ITEM_SPEC_NOT_FOUND)
+                        .set("itemType", type);
+            }
             RulItemSpec itemSpec = itemType.getItemSpecByCode(spec);
-            Validate.notNull(itemSpec, "Cannot find specification for item type: %s, spec code: %s", type, spec);
+            if (itemSpec == null) {
+                throw new BusinessException("Cannot find specification for item type: " + type + ", spec code: " + spec,
+                        ArrangementCode.ITEM_SPEC_NOT_FOUND)
+                        .set("itemType", type).set("spec", spec);
+            }
 
             trgItem.setItemSpec(itemSpec);
-        } else {
-            Validate.isTrue(spec == null, "Item type cannot have specification: %s, value: %s", type, spec);
+        } else if (spec != null) {
+            throw new BusinessException("Item type cannot have specification: " + type + ", value: " + spec,
+                    ArrangementCode.ITEM_SPEC_FOUND)
+                    .set("itemType", type).set("spec", spec);
         }
         return itemType;
     }

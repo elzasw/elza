@@ -15,7 +15,7 @@ ISAAR_ISO = os.path.normpath(ROOT + '../package-isaar-cpf/generator/iso639-2.txt
 CZ_BASE_SPECS = os.path.normpath(ROOT + '../package-cz-base/src/rul_item_spec.xml')
 
 PACKAGE = 'ISADG'
-VERSION = 1
+VERSION = 2
 
 
 def write(path, text):
@@ -235,13 +235,16 @@ REPEATABLE = ['ISADG_OTHER_ID', 'ISADG_EXTENT_QUANTITY', 'ISADG_MATERIAL_TYPE', 
 
 # ---------------------------------------------------------------- specifications
 # (code, English name, Czech name, item types, classes of RECORD_REF)
-levels = [('FONDS', 'Fonds', 'Fond'), ('SUBFONDS', 'Subfonds', 'Dílčí fond'), ('SERIES', 'Series', 'Série'),
-          ('SUBSERIES', 'Subseries', 'Podsérie'), ('FILE', 'File', 'Spis'), ('ITEM', 'Item', 'Jednotlivost')]
+levels = [('FONDS', 'Fonds', 'Fond'), ('COLLECTION', 'Collection', 'Sbírka'), ('SUBFONDS', 'Subfonds', 'Dílčí fond'),
+          ('SERIES', 'Series', 'Série'), ('SUBSERIES', 'Subseries', 'Podsérie'), ('FILE', 'File', 'Spis'),
+          ('ITEM', 'Item', 'Jednotlivost')]
 LEVEL = {v: 'ISADG_LEVEL_' + v for v, n, c in levels}
-# allowed children by the level of the parent (D2): a level may nest in its own kind from the series down
+# allowed children by the level of the parent (D2): a collection is a root like a fonds; a level may
+# nest in its own kind from the subfonds down (ISAD(G) 3.1.4: "first level sub-fonds, second level sub-fonds")
 CHILDREN = {
     'FONDS': ['SUBFONDS', 'SERIES', 'FILE', 'ITEM'],
-    'SUBFONDS': ['SERIES', 'FILE', 'ITEM'],
+    'COLLECTION': ['SUBFONDS', 'SERIES', 'FILE', 'ITEM'],
+    'SUBFONDS': ['SUBFONDS', 'SERIES', 'FILE', 'ITEM'],
     'SERIES': ['SERIES', 'SUBSERIES', 'FILE', 'ITEM'],
     'SUBSERIES': ['SUBSERIES', 'FILE', 'ITEM'],
     'FILE': ['FILE', 'ITEM'],
@@ -571,25 +574,14 @@ write(RS + 'rul_package_actions.xml', '''<package-actions>
             <action-recommended output-type="ISADG_FINDING_AID" />
         </action-recommendeds>
     </package-action>
-    <package-action filename="ISADG_GENERATOR_REFERENCE_CODE.yaml">
-        <action-recommendeds>
-            <action-recommended output-type="ISADG_FINDING_AID" />
-        </action-recommendeds>
-    </package-action>
+    <!-- No generator of reference codes: ISAD(G) 3.1.1 prescribes no form for the code, the
+         archivist assigns it and the validation keeps it unique in the fonds. -->
     <!-- The persistent sort is recognised by its kind (!PersistentSort), so the file may have any
          name; a file name is unique across the installation, which rules out ZP2015's. -->
     <package-action filename="ISADG_PERSISTENT_SORT.yaml" />
 </package-actions>
 ''')
 write(RS + 'bulk_actions/ISADG_FUND_VALIDATION.yaml', '!FundValidation\nname: Validation of the description\n')
-write(RS + 'bulk_actions/ISADG_GENERATOR_REFERENCE_CODE.yaml', '''!UnitIdGenerator
-name: Generator of reference codes
-itemType: ISADG_REFERENCE_CODE
-previousIdCode: ISADG_OTHER_ID
-previousIdSpecCode: ISADG_OTHER_ID_FORMER
-levelTypeCode: ISADG_LEVEL
-extraDelimiterAfter: ISADG_LEVEL_SERIES
-''')
 write(RS + 'bulk_actions/ISADG_PERSISTENT_SORT.yaml', '!PersistentSort\nname: Persistent sort\nfastAction: true\n')
 write(RS + 'rules/ItemTypeFilter.drl', '''package ISADG;
 
@@ -663,14 +655,14 @@ then
     $itemType.setType(RulItemType.Type.REQUIRED);
 end
 
-rule "ISAD(G) 3.1.4: the root of the fonds is a fonds"
+rule "ISAD(G) 3.1.4: the root is a fonds or a collection"
 no-loop
 when
     $itemType : RulItemTypeExt(code == "ISADG_LEVEL")
     ActiveLevel( parent == null )
-    $itemSpec : RulItemSpecExt(code == "ISADG_LEVEL_FONDS") from $itemType.rulItemSpecList
+    $itemSpec : RulItemSpecExt(code in ("ISADG_LEVEL_FONDS", "ISADG_LEVEL_COLLECTION")) from $itemType.rulItemSpecList
 then
-    $itemSpec.setType(RulItemSpec.Type.REQUIRED);
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
 
 ''' % (q([c for c in LEVEL_ITEMS if c not in REPEATABLE]), q([c for c in REPEATABLE if c in LEVEL_ITEMS]))]
@@ -725,10 +717,9 @@ then
     $itemType.setType(RulItemType.Type.POSSIBLE);
 end
 
-rule "A container below the root"
+rule "A container at every level, the root included"
 no-loop
 when
-    ActiveLevel( parent != null )
     $itemType : RulItemTypeExt(code == "ISADG_CONTAINER")
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
@@ -790,6 +781,9 @@ global cz.tacr.elza.drools.model.NewLevelApproaches results;
 // The name of a scenario is its identifier (the DAO_LEVEL_IMPORT setting names one); the names
 // are the English names of the levels.
 
+// The only root scenario: a new fonds gets it without a choice, since fund creation applies a
+// scenario only when there is exactly one. An artificial collection is made by changing the level
+// of the root to Collection.
 rule "Fonds"
 when
     NewLevel( parent == null )
@@ -828,6 +822,7 @@ global DataValidationResults dvResults;
 
 function int rank(String level) {
     if ("ISADG_LEVEL_FONDS".equals(level)) return 1;
+    if ("ISADG_LEVEL_COLLECTION".equals(level)) return 1;
     if ("ISADG_LEVEL_SUBFONDS".equals(level)) return 2;
     if ("ISADG_LEVEL_SERIES".equals(level)) return 3;
     if ("ISADG_LEVEL_SUBSERIES".equals(level)) return 4;
@@ -836,23 +831,31 @@ function int rank(String level) {
     return 0;
 }
 
-// A level fits below the parent's level when it ranks lower; from the series down a level may also
-// nest in its own kind; a subfonds fits only directly below the fonds.
+// A level fits below the parent's level when it ranks lower; from the subfonds down a level may also
+// nest in its own kind (ISAD(G) 3.1.4: "first level sub-fonds, second level sub-fonds").
 function boolean fitsBelow(String child, String parent) {
     int c = rank(child);
     int p = rank(parent);
     if (c == 0 || p == 0) return true;
-    if ("ISADG_LEVEL_SUBFONDS".equals(child)) return p == 1;
     if (c > p) return true;
-    return c == p && c >= 3;
+    return c == p && c >= 2;
 }
 
-rule "ISAD(G) 3.1.4: the root of the fonds is a fonds"
+// Whether the level carries a container of its own.
+function boolean hasContainer(Level level) {
+    if (level == null || level.getDescItems() == null) return false;
+    for (DescItem item : level.getDescItems()) {
+        if ("ISADG_CONTAINER".equals(item.getType())) return true;
+    }
+    return false;
+}
+
+rule "ISAD(G) 3.1.4: the root is a fonds or a collection"
 when
     $activeLevel : ActiveLevel( parent == null )
-    not DescItem( type == "ISADG_LEVEL" && specCode == "ISADG_LEVEL_FONDS" ) from $activeLevel.ownDescItems
+    not DescItem( type == "ISADG_LEVEL" && specCode in ("ISADG_LEVEL_FONDS", "ISADG_LEVEL_COLLECTION") ) from $activeLevel.ownDescItems
 then
-    dvResults.createMissing("ISADG_LEVEL", "ROOT_IS_FONDS", "The root of the fonds must have the level Fonds (ISAD(G) 3.1.4).", "ISADG_POL_BASIC");
+    dvResults.createMissing("ISADG_LEVEL", "ROOT_LEVEL", "The root must have the level Fonds or Collection (ISAD(G) 3.1.4).", "ISADG_POL_BASIC");
 end
 
 rule "ISAD(G) 3.1.4: the level fits below the level of the parent"
@@ -876,20 +879,34 @@ then
     dvResults.createMissing("ISADG_DATE", "DATE_OUTSIDE_PARENT", "The dates of creation lie outside the dates of the parent unit (ISAD(G) 3.1.3).", "ISADG_POL_BASIC");
 end
 
-rule "Every file or item at the end of a branch is in a container"
+// The code is assigned by the archivist in the convention of the archive; core answers whether
+// another unit of the fonds carries the same value (DescItem.duplicateInFund, UNITID items only).
+rule "ISAD(G) 3.1.1: the reference code is unique in the fonds"
+when
+    $activeLevel : ActiveLevel()
+    $code : DescItem( type == "ISADG_REFERENCE_CODE" && duplicateInFund ) from $activeLevel.ownDescItems
+then
+    dvResults.createError($code.getDescItemId(), "REFERENCE_CODE_DUPLICATE", "The reference code is not unique in the fonds (ISAD(G) 3.1.1).", "ISADG_POL_REFERENCE_CODE");
+end
+
+// ISAD(G) has no container element and many conventions keep the location outside the finding aid,
+// so a container is demanded only where a neighbour of the unit has one.
+rule "A file or item without a container next to one with a container"
 when
     $activeLevel : ActiveLevel( !hasChildren )
     DescItem( type == "ISADG_LEVEL" && specCode in ("ISADG_LEVEL_FILE", "ISADG_LEVEL_ITEM") ) from $activeLevel.ownDescItems
     not ( $level : Level( $items : descItems ) and DescItem( type == "ISADG_CONTAINER" ) from $items )
+    eval( hasContainer($activeLevel.getSiblingBefore()) || hasContainer($activeLevel.getSiblingAfter()) )
 then
-    dvResults.createMissing("ISADG_CONTAINER", "CONTAINER_MISSING", "The unit and the units above it have no container.", "ISADG_POL_CONTAINER");
+    dvResults.createMissing("ISADG_CONTAINER", "CONTAINER_MISSING", "The unit has no container, while a neighbouring unit has one.", "ISADG_POL_CONTAINER");
 end
 ''')
 messages_cs = [
-    ('ROOT_IS_FONDS', 'Kořen archivního souboru musí mít úroveň Fond (ISAD(G) 3.1.4).'),
+    ('ROOT_LEVEL', 'Kořen musí mít úroveň Fond nebo Sbírka (ISAD(G) 3.1.4).'),
     ('LEVEL_ORDER', 'Úroveň popisu neodpovídá úrovni nadřazené jednotky popisu (ISAD(G) 3.1.4).'),
     ('DATE_OUTSIDE_PARENT', 'Datace vzniku leží mimo dataci nadřazené jednotky popisu (ISAD(G) 3.1.3).'),
-    ('CONTAINER_MISSING', 'Jednotka popisu ani jednotky nad ní nemají ukládací jednotku.'),
+    ('REFERENCE_CODE_DUPLICATE', 'Referenční označení není v archivním souboru jedinečné (ISAD(G) 3.1.1).'),
+    ('CONTAINER_MISSING', 'Jednotka popisu nemá ukládací jednotku, sousední jednotka ji má.'),
 ]
 
 # ---------------------------------------------------------------- impact of changes
@@ -976,9 +993,19 @@ import cz.tacr.elza.domain.RulItemSpecExt;
 rule "Required items of the finding aid"
 no-loop
 when
-    $itemType : RulItemTypeExt(code in ("ISADG_FA_TITLE", "ISADG_FA_KIND", "ISADG_FA_DATE"))
+    $itemType : RulItemTypeExt(code in ("ISADG_FA_TITLE", "ISADG_FA_DATE"))
 then
     $itemType.setType(RulItemType.Type.REQUIRED);
+    $itemType.setRepeatable(false);
+end
+
+// The kind of a finding aid is a national typology, not an element of the standard or of EAD.
+rule "The kind of the finding aid is possible"
+no-loop
+when
+    $itemType : RulItemTypeExt(code == "ISADG_FA_KIND")
+then
+    $itemType.setType(RulItemType.Type.POSSIBLE);
     $itemType.setRepeatable(false);
 end
 
@@ -1052,7 +1079,7 @@ placed = [c for g in groups for c, w in g[3]]
 assert sorted(placed) == sorted(item_codes), set(item_codes) ^ set(placed)
 grid = [('ISADG_REFERENCE_CODE', 100), ('ISADG_LEVEL', 100), ('ISADG_TITLE', 250), ('ISADG_DATE', 100),
         ('ISADG_MATERIAL_TYPE', 150), ('ISADG_CONTAINER', 100), ('ISADG_CREATOR', 180)]
-icons = {'FONDS': 'fa-sitemap', 'SUBFONDS': 'fa-sitemap', 'SERIES': 'ez-serie', 'SUBSERIES': 'ez-serie',
+icons = {'FONDS': 'fa-sitemap', 'COLLECTION': 'fa-archive', 'SUBFONDS': 'fa-sitemap', 'SERIES': 'ez-serie', 'SUBSERIES': 'ez-serie',
          'FILE': 'fa-folder-o', 'ITEM': 'fa-file-text-o'}
 u = ['<?xml version="1.0" encoding="UTF-8" standalone="yes"?>',
      '<settings xmlns:ns2="fund-views" xmlns:ns3="type-groups" xmlns:ns4="allow-structure-types"',

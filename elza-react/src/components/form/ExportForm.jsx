@@ -15,6 +15,7 @@ import { globalMessages } from 'components/shared/lang/messages';
 // Id jsou převzatá z legacy katalogu beze změny.
 const messages = defineMessages({
     exportFilter: { id: 'export.exportFilter', defaultMessage: 'Exportní filtr' },
+    noFilter: { id: 'arr.output.form.outputFilterPlaceholder', defaultMessage: 'Bez filtru' },
     includeUUID: { id: 'export.includeUUID', defaultMessage: 'Exportovat UUID' },
     includeAccessPoints: { id: 'export.includeAccessPoints', defaultMessage: 'Exportovat entity' },
     includeDaos: {
@@ -74,7 +75,9 @@ class ExportForm extends AbstractReactComponent {
                                     type="select"
                                     label={this.props.intl.formatMessage(messages.exportFilter)}
                                 >
-                                    <option key="blankName" />
+                                    <option key="blankName" value="">
+                                        {this.props.intl.formatMessage(messages.noFilter)}
+                                    </option>
                                     {exportFilters.data && exportFilters.data.map((i, index) => {
                                         return (
                                             <option key={index + 'name'} value={i.id}>

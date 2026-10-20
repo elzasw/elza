@@ -138,8 +138,21 @@ the typed `elza.revisionFindings` result onto the existing MARKDOWN display
 block — no new UI). The structured **„AI doporučení"** triage cards
 (*Přijmout* → creates a `WfIssue`, *Odmítnout*) and the automatic
 `RevisionFinding → WfIssue` conversion are a later, additive step reading the
-same typed block. The planned `WfIssue` mapping for that step (existing issue
-types, no package change):
+same typed block.
+
+**Localization of the display — an accepted limitation.** The markdown
+rendering uses fixed Czech labels (category, severity, action, „Zdrojový
+prvek", „Jistota") and shows the element and part references
+(`sourceItemType`, `targetItemType`, `sourcePartType`) by their rule-set
+names in the package's source language — the request language
+(`Accept-Language` → package translations) is not applied. The finding texts
+themselves arrive in `RevisionConfig.language`, so a Czech run reads
+uniformly Czech, which is what the pilot needs. A non-Czech deployment needs
+the labels in the message bundle and the names resolved through the package
+translations (`PackageTexts`), i.e. the mapper takes the request locale.
+
+The planned `WfIssue` mapping for that step (existing issue types, no package
+change):
 
 | severity | `WfIssueType` |
 |---|---|
@@ -177,15 +190,38 @@ three scopes from `kontrola-popisu.md` phase in as:
   input tokens), interactive, panel-native — the cheapest end-to-end exercise
   of the whole chain (typed input → findings → validation → triage →
   evaluation).
-- **v2 — Kontrola větve**: a window of levels of one subtree (siblings stay
-  together) — the `subject` is the window's anchor (its common parent or
-  first level), the other levels of the window travel as context in full and
-  `config.reviewedNodeIds` (0.16.0) names every level under review; plus the
-  branch outline; adds `wrong_level`, `duplicate`, `inconsistency`. One
-  conversation, one `ai_request` per window, driven sequentially by Elza
-  (estimate + confirm first, stop/resume, aggregated summary — design:
-  elza-ai-provider `doc/feedback-soa-plzen-2026-10.md` §3.3); `requestId`
-  idempotency means a crashed run re-polls paid windows.
+- **v2 — Kontrola větve** (0.17.0, the *pulling* run): ONE task over the
+  subtree under a level. The client submits the level as `subject` with
+  `config.scope = "branch"` and offers `getArchivalBranch`; the provider
+  downloads the subtree through that tool (`view = deep`, paged — the client
+  caps a page at its own safety limit and reports `from`/`totalCount`, the
+  provider pages on against a task-local page budget), checks the pulled
+  levels in windows of full levels (each window: the levels as reviewed
+  units, their in-branch ancestors and the branch outline as context; adds
+  `wrong_level`, `duplicate`, `inconsistency`), emits every window's
+  findings as a `partial_findings` task event (so a Stop keeps what was
+  found), polls the cancel flag between windows, and returns one aggregated
+  `elza.revisionFindings` preceded by an `elza.markdown` summary (levels,
+  windows, counts per severity; a note when the page budget cut the branch
+  short). Elza shows the branch size (`GET /aiprovider/branch-size`) and
+  asks for confirmation before submitting; Stop = cancel. The findings'
+  `nodeId`s are levels Elza served through the tool, which validation rule 1
+  of §5 must accept as reviewed. The *push* form — `config.reviewedNodeIds`
+  (0.16.0) naming context levels under review, the `subject` as the window's
+  anchor — stays for an Elza-selected set of levels. Design and decisions:
+  elza-ai-provider `doc/user-feedback.md` §4 (decision 4), §5.1.
+  **Continuation (0.18.0).** A run that stops with levels left — at the
+  provider's price limit of one task, or because its page budget cut the
+  pull — offers an `elza.taskSuggestion` (the same task, label *Pokračovat
+  v kontrole (další část)*) whose `continuation` token anchors the resume
+  point on the last checked level. The client submits the follow-up with
+  `parentTaskId` = the stopped task, the token in `SubmitTask.continuation`
+  and the same `subject` (the config is the continued run's); the provider
+  pulls from the anchor (`from` = its position), verifies it is still there
+  (an edited tree fails `INVALID_INPUT`), checks the levels after it in
+  windows under a fresh price limit, and may offer again. Each part is its
+  own task — its own summary + findings, usage and events. A budget stop
+  offers no continuation.
 - **Entity check** (0.16.0): the same task over one `elza.archivalEntity`
   (`entity` parameter) — the categories read naturally on an entity (hidden
   data in the free-text history, a contradiction between relation datings and

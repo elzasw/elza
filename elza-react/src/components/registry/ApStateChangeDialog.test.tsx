@@ -74,7 +74,8 @@ describe('ApStateChangeDialog', () => {
         renderDialog(StateApproval.NEW);
 
         expect(await screen.findByRole('dialog')).toBeInTheDocument();
-        expect(screen.getByRole('combobox', { name: /Oblast/ })).toHaveTextContent('ISAAR-CPF');
+        // the dialog shows a spinner until the next states are loaded
+        expect(await screen.findByRole('combobox', { name: /Oblast/ })).toHaveTextContent('ISAAR-CPF');
         expect(screen.getByRole('combobox', { name: /Stav/ })).toHaveTextContent('Nová');
         expect(screen.getByRole('combobox', { name: /Přiděleno/ })).toBeInTheDocument();
         expect(document.querySelector('.modal, .form-control, .form-group, .btn')).toBeNull();
@@ -84,6 +85,8 @@ describe('ApStateChangeDialog', () => {
         const onSubmit = vi.fn();
         renderDialog(StateApproval.NEW, onSubmit);
 
+        // last participants are requested only once the form is rendered after the next states
+        await screen.findByRole('combobox', { name: /Přiděleno/ });
         fireEvent.click(await screen.findByRole('button', { name: 'Pepa (pepa)' }));
         await waitFor(() => expect(screen.getByRole('combobox', { name: /Přiděleno/ })).toHaveValue('Pepa (pepa)'));
 

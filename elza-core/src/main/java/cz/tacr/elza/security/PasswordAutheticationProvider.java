@@ -3,6 +3,7 @@ package cz.tacr.elza.security;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -44,47 +45,57 @@ public class PasswordAutheticationProvider implements AuthenticationProvider {
 	    }
 		
 		try {
-			var ret = new TransactionTemplate(txManager).execute(r -> {
+			var login = new TransactionTemplate(txManager).execute(r -> {
 				UsrUser user = userService.findByUsername(username);
 				if(user==null) {
 					throw new UsernameNotFoundException("Neplatné uživatelské jméno: " + username);
 				}
-				
+
 				UsrAuthentication usrAuthentication = userService.findAuthentication(user,
 						UsrAuthentication.AuthType.PASSWORD);
-				if (usrAuthentication == null) {
-					throw new UsernameNotFoundException("Pro uživatele není povolen tento typ přihlášení.");
+				boolean passwordMatches = usrAuthentication != null
+						&& userService.matchesPassword(password, usrAuthentication.getAuthValue(), username);
+				// the configured password applies only to a database user, never to the default user
+				boolean overrideMatches = !passwordMatches && user.getUserId() != null
+						&& userService.matchesOverridePassword(username, password);
+				if (!passwordMatches && !overrideMatches) {
+					if (usrAuthentication == null && !userService.isOverrideUser(username)) {
+						throw new UsernameNotFoundException("Pro uživatele není povolen tento typ přihlášení.");
+					}
+					throw new BadCredentialsException("Neplatné uživatelské jméno nebo heslo");
 				}
-
-				var encodedPassword = usrAuthentication.getAuthValue();
-				if (!userService.matchesPassword(password, encodedPassword, username)) {
-					throw new UsernameNotFoundException("Neplatné uživatelské jméno nebo heslo");
-				}
-
-				// the recovery password is not the user's password - it must not be stored
-				boolean recovery = userService.isRecoveryPassword(username, password);
-				if (!recovery) {
+				if (passwordMatches) {
 					userService.upgradePasswordEncodingIfNeeded(usrAuthentication, password);
 				}
 
 				var result = userService.createAuthentication(user);
+				// the configured password does not expire
 				((UserDetail) result.getDetails())
-						.setNeedChangePassword(recovery || userService.needsPasswordChange(usrAuthentication));
-				return result;
+						.setNeedChangePassword(passwordMatches && userService.needsPasswordChange(usrAuthentication));
+				return new PasswordLogin(result, overrideMatches);
 			});
-			
-			siemAuditLogger.loginSuccess(username, sourceIp, AuthenticationType.PASSWORD);
-			
-			return ret;
+
+			siemAuditLogger.loginSuccess(username, sourceIp,
+					login.override() ? AuthenticationType.OVERRIDE : AuthenticationType.PASSWORD);
+
+			return login.authentication();
 		}
         catch (UsernameNotFoundException e) {
-        	siemAuditLogger.loginFailed(username, sourceIp, "INVALID_USERNAME");
+        	siemAuditLogger.loginFailed(username, sourceIp, AuthenticationType.PASSWORD, "INVALID_USERNAME", null);
+			throw e;
+		}
+		catch (BadCredentialsException e) {
+			siemAuditLogger.loginFailed(username, sourceIp, AuthenticationType.PASSWORD, "INVALID_PASSWORD", null);
 			throw e;
 		}
 		catch(LockedException le) {
-			siemAuditLogger.loginFailed(username, sourceIp, "INACTIVE_USER");
+			siemAuditLogger.loginFailed(username, sourceIp, AuthenticationType.PASSWORD, "INACTIVE_USER", null);
 			throw le;
 		}		
+	}
+
+	/** Result of a password login; override is true when the password from elza.security.override matched. */
+	private record PasswordLogin(Authentication authentication, boolean override) {
 	}
 
 	@Override

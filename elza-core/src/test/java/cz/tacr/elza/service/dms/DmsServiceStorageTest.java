@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -123,6 +124,30 @@ public class DmsServiceStorageTest extends AbstractTest {
         Path resolved = dmsService.getFilePath(legacy);
         assertEquals(legacyPath, resolved,
                 "getFilePath falls back to dms/<id> when storagePath is NULL");
+    }
+
+    @Test
+    void create_providerClosesStream_fileIsWritten() throws IOException {
+        DmsFile file = plainDms("closed.txt", "text/plain");
+        byte[] content = "provider closes the stream".getBytes(StandardCharsets.UTF_8);
+
+        txTemplate().executeWithoutResult(status -> {
+            try {
+                dmsService.createFile(file, os -> {
+                    try (os) {
+                        os.write(content);
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
+                });
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
+
+        assertEquals(content.length, file.getFileSize().longValue());
+        assertEquals(sha256Hex(content), file.getChecksum());
+        assertEquals(content.length, Files.size(dmsRoot().resolve(file.getStoragePath())));
     }
 
     @Test

@@ -3,6 +3,7 @@ package cz.tacr.elza.service.output.generator;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -88,8 +89,6 @@ public class FreemarkerOutputGenerator extends DmsOutputGenerator {
 
     @Override
     protected void generate(OutputStream os) throws IOException {
-        Template template = loadTemplate();
-
         // prepare data model
         Map<String, Object> dataModel = new HashMap<>();
         dataModel.put("output", outputModel);
@@ -97,15 +96,23 @@ public class FreemarkerOutputGenerator extends DmsOutputGenerator {
         // generate output
         OutputStreamWriter writter = new OutputStreamWriter(os, StandardCharsets.UTF_8);
         try {
-            template.process(dataModel, writter);
+            process(params.getTemplateDir(), dataModel, writter);
         } catch (TemplateException e) {
             throw new ProcessException(params.getOutputId(), "Failed to generate output from Freemarker template", e);
         }
     }
 
-    private Template loadTemplate() throws IOException {
-        Path templateDir = params.getTemplateDir();
+    /**
+     * Processes {@code index.ftl} from the template directory with the given data model.
+     */
+    public static void process(Path templateDir, Map<String, Object> dataModel, Writer writer)
+            throws IOException, TemplateException {
+        Template template = loadTemplate(templateDir);
+        template.process(dataModel, writer);
+        writer.flush();
+    }
 
+    private static Template loadTemplate(Path templateDir) throws IOException {
         Configuration cfg = new Configuration(Configuration.VERSION_2_3_30);
         cfg.setAPIBuiltinEnabled(true);
 

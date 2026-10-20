@@ -11,6 +11,14 @@ then
     $it.setRequired();
 end
 
+rule "STD_TEST: other part and supplement of the name"
+when
+    Part(type == PartType.PT_NAME)
+    $it: ItemType(code in ("STD_MINOR", "STD_SUP"))
+then
+    $it.setPossible();
+end
+
 rule "STD_TEST: note in the other parts"
 when
     Part(type != PartType.PT_NAME)

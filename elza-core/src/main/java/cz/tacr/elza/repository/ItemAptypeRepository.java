@@ -70,4 +70,8 @@ public interface ItemAptypeRepository extends ElzaJpaRepository<RulItemAptype, I
     void deleteByItemSpec(RulItemSpec itemSpec);
 
     void deleteByItemType(RulItemType itemType);
+
+    void deleteByItemSpecIn(Collection<RulItemSpec> itemSpecs);
+
+    void deleteByItemTypeIn(Collection<RulItemType> itemTypes);
 }

@@ -6,6 +6,12 @@
         <shortcut>Fonds</shortcut>
         <item-type-assign code="ISADG_LEVEL"/>
     </item-spec>
+    <item-spec code="ISADG_LEVEL_COLLECTION">
+        <name>Collection</name>
+        <description>Level of description: Collection</description>
+        <shortcut>Collection</shortcut>
+        <item-type-assign code="ISADG_LEVEL"/>
+    </item-spec>
     <item-spec code="ISADG_LEVEL_SUBFONDS">
         <name>Subfonds</name>
         <description>Level of description: Subfonds</description>

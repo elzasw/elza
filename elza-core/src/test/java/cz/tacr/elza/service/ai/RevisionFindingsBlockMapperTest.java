@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
@@ -25,7 +26,15 @@ import cz.tacr.elza.controller.vo.AiMarkdownBlockVO;
  */
 public class RevisionFindingsBlockMapperTest {
 
-    private final RevisionFindingsBlockMapper mapper = new RevisionFindingsBlockMapper();
+    /** The rule-set names the production mapper reads from the static data. */
+    private static final Map<String, String> ITEM_TYPE_NAMES = Map.of(
+            "ZP2015_UNIT_CONTENT", "Obsah jednotky popisu",
+            "ZP2015_RESTRICTION_ACCESS_INLINE", "Omezení přístupnosti");
+    private static final Map<String, String> PART_TYPE_NAMES = Map.of(
+            "PT_BODY", "Tělo");
+
+    private final RevisionFindingsBlockMapper mapper =
+            new RevisionFindingsBlockMapper(ITEM_TYPE_NAMES::get, PART_TYPE_NAMES::get);
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private List<AiDisplayBlockVO> blocks(final String json) {
@@ -67,8 +76,10 @@ public class RevisionFindingsBlockMapperTest {
         assertTrue(md.contains("závažnost vysoká"), "severity is labeled");
         assertTrue(md.contains("> nepřístupné do roku 2030"), "excerpt is quoted verbatim");
         assertTrue(md.contains("Omezení přístupnosti je zapsáno ve volném textu."));
-        assertTrue(md.contains("`ZP2015_UNIT_CONTENT`"), "source item code shown");
-        assertTrue(md.contains("přesunout do prvku `ZP2015_RESTRICTION_ACCESS_INLINE`"), "action + target element");
+        // Elements are shown by their configured names, never by rule-set codes.
+        assertTrue(md.contains("Zdrojový prvek: Obsah jednotky popisu"), "source element named");
+        assertFalse(md.contains("ZP2015_UNIT_CONTENT"), "the code itself is not shown");
+        assertTrue(md.contains("přesunout do prvku Omezení přístupnosti"), "action + target element named");
         assertTrue(md.contains("Jistota: 85 %"));
         // A single-unit check does not repeat the node id on every finding.
         assertFalse(md.contains("JP 42"));
@@ -119,11 +130,26 @@ public class RevisionFindingsBlockMapperTest {
         String md = markdown("""
             {"findings":[{
               "nodeId": 7, "category": "future_check", "severity": "high",
-              "excerpt": "q", "explanation": "e", "action": "future_action"
+              "excerpt": "q", "explanation": "e", "action": "future_action",
+              "sourceItemType": "OTHER_RULESET_ELEMENT"
             }]}""");
 
         assertTrue(md.contains("future_check"), "unknown category shown raw, not dropped");
         assertTrue(md.contains("future_action"), "unknown action shown raw, not dropped");
+        // An element code the rule set cannot name stays visible as the code.
+        assertTrue(md.contains("Zdrojový prvek: `OTHER_RULESET_ELEMENT`"), "unknown element code shown raw");
+    }
+
+    @Test
+    public void entityFindingNamesThePart() {
+        String md = markdown("""
+            {"findings":[{
+              "accessPointId": 34163, "category": "contradiction", "severity": "medium",
+              "sourcePartType": "PT_BODY", "excerpt": "do roku 1445", "explanation": "e"
+            }]}""");
+
+        assertTrue(md.contains("(část Tělo)"), "part shown by its configured name");
+        assertFalse(md.contains("PT_BODY"));
     }
 
     @Test

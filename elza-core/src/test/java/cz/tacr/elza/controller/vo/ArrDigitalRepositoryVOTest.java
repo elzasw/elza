@@ -111,6 +111,100 @@ public class ArrDigitalRepositoryVOTest {
         assertThrows(BusinessException.class, () -> vo.createEntity(null));
     }
 
+    /** Notifications about linked objects are sent only to a WSDL repository. */
+    @Test
+    void createEntity_da_doesNotSendNotifications() {
+        ArrDigitalRepository entity = (ArrDigitalRepository) createVO(DigitalRepositoryType.DA)
+                .createEntity(null);
+
+        assertFalse(entity.getSendNotification());
+    }
+
+    @Test
+    void createEntity_da_keepsApiKey() {
+        ArrDigitalRepositoryVO vo = createVO(DigitalRepositoryType.DA);
+        vo.setApiKeyId(" elza ");
+        vo.setApiKeyValue("secret");
+
+        ArrDigitalRepository entity = (ArrDigitalRepository) vo.createEntity(null);
+
+        assertEquals("elza", entity.getApiKeyId());
+        assertEquals("secret", entity.getApiKeyValue());
+    }
+
+    /** An empty key would sign the requests to the DA API with an empty secret. */
+    @Test
+    void createEntity_da_blankApiKeyIsCleared() {
+        ArrDigitalRepositoryVO vo = createVO(DigitalRepositoryType.DA);
+        vo.setApiKeyId("");
+        vo.setApiKeyValue("  ");
+
+        ArrDigitalRepository entity = (ArrDigitalRepository) vo.createEntity(null);
+
+        assertNull(entity.getApiKeyId());
+        assertNull(entity.getApiKeyValue());
+    }
+
+    @Test
+    void createEntity_da_tlsVerifyDefaultsToTrue() {
+        ArrDigitalRepository entity = (ArrDigitalRepository) createVO(DigitalRepositoryType.DA)
+                .createEntity(null);
+
+        assertTrue(entity.getTlsVerify());
+    }
+
+    @Test
+    void createEntity_da_keepsSkippedTlsVerification() {
+        ArrDigitalRepositoryVO vo = createVO(DigitalRepositoryType.DA);
+        vo.setTlsVerify(false);
+
+        ArrDigitalRepository entity = (ArrDigitalRepository) vo.createEntity(null);
+
+        assertFalse(entity.getTlsVerify());
+        assertFalse(ArrDigitalRepositoryVO.newInstance(entity).getTlsVerify());
+    }
+
+    @Test
+    void createEntity_da_keepsFileTransferSettings() {
+        ArrDigitalRepositoryVO vo = createVO(DigitalRepositoryType.DA);
+        vo.setFileTransferUrl(" https://ft.example/transfer ");
+        vo.setFileTransferType(" GetMetadata_ELZA ");
+
+        ArrDigitalRepository entity = (ArrDigitalRepository) vo.createEntity(null);
+
+        assertEquals("https://ft.example/transfer", entity.getFileTransferUrl());
+        assertEquals("GetMetadata_ELZA", entity.getFileTransferType());
+
+        ArrDigitalRepositoryVO copy = ArrDigitalRepositoryVO.newInstance(entity);
+        assertEquals("https://ft.example/transfer", copy.getFileTransferUrl());
+        assertEquals("GetMetadata_ELZA", copy.getFileTransferType());
+    }
+
+    /** An emptied field returns the repository to the derived endpoint and no type. */
+    @Test
+    void createEntity_da_blankFileTransferSettingsAreCleared() {
+        ArrDigitalRepositoryVO vo = createVO(DigitalRepositoryType.DA);
+        vo.setFileTransferUrl("  ");
+        vo.setFileTransferType("");
+
+        ArrDigitalRepository entity = (ArrDigitalRepository) vo.createEntity(null);
+
+        assertNull(entity.getFileTransferUrl());
+        assertNull(entity.getFileTransferType());
+    }
+
+    @Test
+    void createEntity_otherType_ignoresFileTransferSettings() {
+        ArrDigitalRepositoryVO vo = createVO(DigitalRepositoryType.WSDL);
+        vo.setFileTransferUrl("https://ft.example/transfer");
+        vo.setFileTransferType("GetMetadata_ELZA");
+
+        ArrDigitalRepository entity = (ArrDigitalRepository) vo.createEntity(null);
+
+        assertNull(entity.getFileTransferUrl());
+        assertNull(entity.getFileTransferType());
+    }
+
     @Test
     void createEntity_da_zeroSyncDelayDisablesSynchronization() {
         ArrDigitalRepositoryVO vo = createVO(DigitalRepositoryType.DA);

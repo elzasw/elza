@@ -504,6 +504,7 @@ public class ItemTypeUpdater {
                 .findByItemSpecIn(itemSpecs).stream()
                 .collect(Collectors.groupingBy(a -> a.getItemSpec().getItemSpecId()));
         List<RulItemSpec> removed = new ArrayList<>();
+        List<RulItemTypeSpecAssign> removedAssignments = new ArrayList<>();
         for (RulItemSpec itemSpec : itemSpecs) {
             List<RulItemSpecDeclaration> remaining = declarationsBySpec.getOrDefault(itemSpec.getItemSpecId(),
                                                                                      List.of());
@@ -522,8 +523,11 @@ public class ItemTypeUpdater {
                     .flatMap(d -> assignsByDeclaration.getOrDefault(d.getItemSpecDeclarationId(), List.of()).stream())
                     .toList();
             syncAssignments(saved, remaining, assigns,
-                            assignmentsBySpec.getOrDefault(itemSpec.getItemSpecId(), List.of()), summary);
+                            assignmentsBySpec.getOrDefault(itemSpec.getItemSpecId(), List.of()), summary,
+                            removedAssignments);
         }
+        checkAssignmentsRemovable(removedAssignments);
+        deleteSpecToTypeAssignments.addAll(removedAssignments);
         checkSpecsRemovable(removed);
         deleteItemSpecs.addAll(removed);
         itemTypeSpecAssignRepository.flush();
@@ -531,12 +535,14 @@ public class ItemTypeUpdater {
 
     /**
      * The assignments of the specification: one per item type assigned by any declaration; the position
-     * and {@code view-after} from the owner's declaration of the pair, else from the winning one.
+     * and {@code view-after} from the owner's declaration of the pair, else from the winning one. The
+     * assignments no package declares any more are added to {@code removedAssignments}.
      */
     private void syncAssignments(final RulItemSpec itemSpec, final List<RulItemSpecDeclaration> declarations,
                                  final List<RulItemSpecAssignDeclaration> assigns,
                                  final List<RulItemTypeSpecAssign> assignments,
-                                 final PackageDeclarations summary) {
+                                 final PackageDeclarations summary,
+                                 final List<RulItemTypeSpecAssign> removedAssignments) {
         Map<Integer, Integer> rank = new HashMap<>();
         List<RulItemSpecDeclaration> ordered = summary.ordered(declarations, RulItemSpecDeclaration::getRulPackage);
         for (int i = 0; i < ordered.size(); i++) {
@@ -566,15 +572,31 @@ public class ItemTypeUpdater {
             assignment.setViewAfterSpecCode(assign.getViewAfterSpecCode());
             itemTypeSpecAssignRepository.save(assignment);
         }
-        // assignments no package declares any more
-        for (RulItemTypeSpecAssign removed : current.values()) {
-            long used = itemRepository.countByTypeAndSpec(removed.getItemType(), itemSpec)
-                    + apItemRepository.countByTypeAndSpec(removed.getItemType(), itemSpec)
-                    + apRevItemRepository.countByTypeAndSpec(removed.getItemType(), itemSpec);
-            if (used > 0) {
-                throw specInUse(itemSpec.getCode() + " / " + removed.getItemType().getCode(), used);
+        removedAssignments.addAll(current.values());
+    }
+
+    /**
+     * Assignments to be removed: refused while items use the specification with the item type.
+     */
+    private void checkAssignmentsRemovable(final List<RulItemTypeSpecAssign> assignments) {
+        if (assignments.isEmpty()) {
+            return;
+        }
+        // only a specification used at all needs the count per item type
+        Set<Integer> usedSpecIds = findUsedSpecIds(assignments.stream().map(RulItemTypeSpecAssign::getItemSpec)
+                .distinct().toList());
+        for (RulItemTypeSpecAssign assignment : assignments) {
+            RulItemSpec itemSpec = assignment.getItemSpec();
+            if (!usedSpecIds.contains(itemSpec.getItemSpecId())) {
+                continue;
             }
-            deleteSpecToTypeAssignments.add(removed);
+            RulItemType itemType = assignment.getItemType();
+            long used = itemRepository.countByTypeAndSpec(itemType, itemSpec)
+                    + apItemRepository.countByTypeAndSpec(itemType, itemSpec)
+                    + apRevItemRepository.countByTypeAndSpec(itemType, itemSpec);
+            if (used > 0) {
+                throw specInUse(itemSpec.getCode() + " / " + itemType.getCode(), used);
+            }
         }
     }
 
@@ -582,13 +604,30 @@ public class ItemTypeUpdater {
      * Specifications to be removed: refused while items use them.
      */
     private void checkSpecsRemovable(final List<RulItemSpec> itemSpecs) {
+        if (itemSpecs.isEmpty()) {
+            return;
+        }
+        Set<Integer> usedSpecIds = findUsedSpecIds(itemSpecs);
         for (RulItemSpec itemSpec : itemSpecs) {
-            long used = itemRepository.countBySpec(itemSpec) + apItemRepository.countBySpec(itemSpec)
-                    + apRevItemRepository.countBySpec(itemSpec);
-            if (used > 0) {
+            if (usedSpecIds.contains(itemSpec.getItemSpecId())) {
+                long used = itemRepository.countBySpec(itemSpec) + apItemRepository.countBySpec(itemSpec)
+                        + apRevItemRepository.countBySpec(itemSpec);
                 throw specInUse(itemSpec.getCode(), used);
             }
         }
+    }
+
+    /**
+     * Ids of the specifications used by descriptions, entities or entity revisions. One query per table:
+     * a package import or removal checks hundreds of specifications, and a query per specification
+     * flushes the whole persistence context each time.
+     */
+    private Set<Integer> findUsedSpecIds(final Collection<RulItemSpec> itemSpecs) {
+        Set<Integer> usedSpecIds = new HashSet<>();
+        itemRepository.findUsedSpecs(itemSpecs).forEach(s -> usedSpecIds.add(s.getItemSpecId()));
+        apItemRepository.findUsedSpecs(itemSpecs).forEach(s -> usedSpecIds.add(s.getItemSpecId()));
+        apRevItemRepository.findUsedSpecs(itemSpecs).forEach(s -> usedSpecIds.add(s.getItemSpecId()));
+        return usedSpecIds;
     }
 
     private static AbstractException specInUse(final String codes, final long count) {
@@ -641,10 +680,8 @@ public class ItemTypeUpdater {
         }
 
         if (CollectionUtils.isNotEmpty(deleteItemSpecs)) {
-            for (RulItemSpec rulItemSpec : deleteItemSpecs) {
-                itemAptypeRepository.deleteByItemSpec(rulItemSpec);
-                itemAptypeRepository.flush();
-            }
+            itemAptypeRepository.deleteByItemSpecIn(deleteItemSpecs);
+            itemAptypeRepository.flush();
             itemTypeSpecAssignRepository.deleteByItemSpecIn(deleteItemSpecs);
             itemTypeSpecAssignRepository.flush();
             itemSpecRepository.deleteAll(deleteItemSpecs);
@@ -652,10 +689,8 @@ public class ItemTypeUpdater {
         }
 
         if (CollectionUtils.isNotEmpty(deleteItemTypes)) {
-            for (RulItemType rulItemType : deleteItemTypes) {
-                itemAptypeRepository.deleteByItemType(rulItemType);
-                itemAptypeRepository.flush();
-            }
+            itemAptypeRepository.deleteByItemTypeIn(deleteItemTypes);
+            itemAptypeRepository.flush();
             itemTypeSpecAssignRepository.deleteByItemTypeIn(deleteItemTypes);
             assignDeclarationRepository.deleteAll(assignDeclarationRepository.findByItemTypes(deleteItemTypes));
 

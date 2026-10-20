@@ -9,7 +9,7 @@ Czech archival management system with Java/Spring Boot backend and React/TypeScr
 ├── elza-react/         # Frontend: React/TypeScript/Redux (~480 TSX files)
 ├── elza-web/           # Spring Boot entry point (thin wrapper around elza-core)
 ├── elza-ws-api/        # WSDL/SOAP Web Services API definitions
-├── docs/               # Documentation (design notes, plans)
+├── docs/               # Guides (admin, user, implementation) + design/ (design records, see design/README.md)
 ├── package-cz-base/    # Czech base data package (institutions, etc.)
 ├── rules-cz-zp2015/    # Czech archival rules (ZP2015)
 ├── rules-simple-dev/   # Simple dev rules
@@ -96,8 +96,8 @@ mvn exec:exec -Pnpm-install
 # Start backend (in elza-web/)
 mvn spring-boot:run
 
-# Start frontend dev server (in elza-react/, Node.js v17+)
-mvn exec:exec -Pfrontend-dev-legacy
+# Start frontend dev server (in elza-react/, Node.js 20+; runs `npm start`)
+mvn exec:exec -Pfrontend-dev
 
 # Release build with React
 mvn -Prelease install
@@ -154,4 +154,5 @@ Existing comments in this codebase are predominantly Czech. New comments should 
 
 - Database changes must go through Liquibase migrations (XML changesets in `elza-core`; Java-based migrations in `dbchangelog/`).
 - **Static data needs a transaction.** `StaticDataService.getData()` — and everything built on it: `PackageTexts` (translated package texts, request language), `StaticDataProvider` lookups, VO factories — works only inside a transaction. A controller method that reaches it must be `@Transactional` (`readOnly = true` with the Spring annotation; some older controllers use `jakarta.transaction.Transactional`, which has no `readOnly`). Missing it does **not** fail reliably: the provider is a thread-local that is set when a transaction starts and never cleared, so a request on a Tomcat thread that served a transactional request earlier still finds a stale provider. Tests then pass locally and fail in CI depending on test order ("Static data provider for transaction not found"). When adding a `getData()`/`PackageTexts` call to existing code, check every controller path that reaches it for `@Transactional`, and do not count a green controller test as proof.
+- Design documents live in `docs/design/` and follow `docs/design/README.md`: current state and rationale, no dates or history, unfinished work in a final "Open work" section.
 - REST API changes start from the OpenAPI spec (`elza-core/src/main/resources/rest/elza-openapi.yml`); the TypeScript client in `elza-react/src/api/generated/` is regenerated from it.

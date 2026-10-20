@@ -385,6 +385,9 @@ export interface ExternalSystem {
     elzaCode?: string;
     publishOnlyApproved?: boolean;
     userInfo?: unknown;
+    scope?: number | null;
+    digitalRepositoryType?: string;
+    viewDaoUrl?: string;
     viewFileUrl?: string;
     viewThumbnailUrl?: string;
     sendNotification?: boolean;
@@ -393,6 +396,9 @@ export interface ExternalSystem {
     onReceived?: string;
     syncDelay?: number;
     statusPollInterval?: number;
+    fileTransferUrl?: string;
+    fileTransferType?: string;
+    tlsVerify?: boolean;
 }
 
 type KMLExternalSystem = Omit<ExternalSystem, "username" | "password" | "elzaCode" | "publishOnlyApproved" | "userInfo" | "viewFileUrl" | "viewThumbnailUrl" | "sendNotification">;

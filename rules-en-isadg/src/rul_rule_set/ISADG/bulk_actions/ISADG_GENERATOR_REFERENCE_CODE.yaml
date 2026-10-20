@@ -1,7 +1,0 @@
-!UnitIdGenerator
-name: Generator of reference codes
-itemType: ISADG_REFERENCE_CODE
-previousIdCode: ISADG_OTHER_ID
-previousIdSpecCode: ISADG_OTHER_ID_FORMER
-levelTypeCode: ISADG_LEVEL
-extraDelimiterAfter: ISADG_LEVEL_SERIES

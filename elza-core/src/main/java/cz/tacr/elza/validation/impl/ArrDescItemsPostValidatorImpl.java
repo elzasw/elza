@@ -19,6 +19,7 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataUriRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
@@ -29,6 +30,7 @@ import cz.tacr.elza.drools.ValidationRules;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.service.DescriptionItemServiceInternal;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.cache.NodeCacheService;
@@ -65,6 +67,9 @@ public class ArrDescItemsPostValidatorImpl implements ArrDescItemsPostValidator 
 	@Autowired
     private ApStateRepository stateRepository;
 
+    @Autowired
+    private LevelRepository levelRepository;
+
     @Override
     public List<DataValidationResult> postValidateNodeDescItems(final ArrLevel level,
                                                                 final ArrFundVersion version) {
@@ -85,7 +90,8 @@ public class ArrDescItemsPostValidatorImpl implements ArrDescItemsPostValidator 
         
         // Read entities
         Map<Integer, ApState> apStatesMap = Collections.emptyMap();
-        Set<Integer> apIds = new HashSet<>();        
+        Set<Integer> apIds = new HashSet<>();
+        Set<Integer> linkedNodeIds = new HashSet<>();
         for (ArrDescItem descItem : descItems) {
 			if(descItem.getData() == null) {
 				continue;
@@ -93,8 +99,18 @@ public class ArrDescItemsPostValidatorImpl implements ArrDescItemsPostValidator 
 			ArrData data = HibernateUtils.unproxy(descItem.getData());
 			if(data instanceof ArrDataRecordRef) {
 				apIds.add (  ((ArrDataRecordRef) data).getRecordId() );
+			} else if (data instanceof ArrDataUriRef) {
+                Integer linkedNodeId = ((ArrDataUriRef) data).getNodeId();
+                if (linkedNodeId != null) {
+                    linkedNodeIds.add(linkedNodeId);
+                }
 			}
 		}
+        // link targets without an active level are deleted units of description
+        Set<Integer> deletedLinkedNodeIds = new HashSet<>(linkedNodeIds);
+        if (!linkedNodeIds.isEmpty()) {
+            deletedLinkedNodeIds.removeAll(levelRepository.findNodeIdsWithActiveLevel(linkedNodeIds));
+        }
         if(apIds.size()>0) {
         	// read states
 			List<ApState> apStates = stateRepository.findLastByAccessPointIds(apIds);
@@ -105,7 +121,8 @@ public class ArrDescItemsPostValidatorImpl implements ArrDescItemsPostValidator 
         List<RulItemTypeExt> nodeTypes = ruleService.getDescriptionItemTypes(version, level.getNode());
 
         // create validator and validate
-        Validator validator = new Validator(nodeTypes, descItems, descItemFactory, apStatesMap);
+        Validator validator = new Validator(nodeTypes, descItems, descItemFactory, apStatesMap,
+                deletedLinkedNodeIds);
         validator.validate();
 
         List<DataValidationResult> validationResultList = validator.getValidationResultList();

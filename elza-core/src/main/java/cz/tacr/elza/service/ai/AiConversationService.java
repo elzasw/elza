@@ -40,6 +40,7 @@ import cz.tacr.elza.aiprovider.client.vo.TaskAccepted;
 import cz.tacr.elza.aiprovider.client.vo.TaskMetadata;
 import cz.tacr.elza.aiprovider.client.vo.TaskParameterInfo;
 import cz.tacr.elza.aiprovider.client.vo.TaskTypeInfo;
+import cz.tacr.elza.controller.vo.AiBranchSizeVO;
 import cz.tacr.elza.controller.vo.AiContextNodeVO;
 import cz.tacr.elza.controller.vo.AiContextObjectVO;
 import cz.tacr.elza.core.ElzaLocale;
@@ -151,7 +152,7 @@ public class AiConversationService {
         aiConversationRepository.save(conversation);
 
         submitExchange(conversation, externalSystem, vo.getTaskType(), vo.getProfile(),
-                       vo.getUserInstructions(), vo.getParameters(), vo.getContext(), null);
+                       vo.getUserInstructions(), vo.getParameters(), vo.getContext(), null, vo.getScope(), null);
         return getDetail(conversation, externalSystem);
     }
 
@@ -181,10 +182,21 @@ public class AiConversationService {
             }
         }
 
+        // A continuation (provider contract 0.18.0) resumes the last finished
+        // exchange's work where it stopped — a branch check at its price limit:
+        // it reuses that exchange's task type and parameters and the stored
+        // context, and echoes the provider's token; the request's own type,
+        // parameters, context and scope are ignored (the provider continues the
+        // same run with the same configuration).
+        boolean continuation = StringUtils.isNotBlank(vo.getContinuation());
+        if (continuation && lastDone == null) {
+            throw new BusinessException("A continuation needs a finished exchange to continue",
+                    BaseCode.INVALID_STATE);
+        }
         // A follow-up may move the user's context; when it carries one, it
         // replaces the conversation's stored context, otherwise the stored one
         // is reused for this exchange.
-        List<AiContextObjectVO> context = vo.getContext();
+        List<AiContextObjectVO> context = continuation ? null : vo.getContext();
         if (context != null) {
             conversation.setContextType(primaryContextType(context));
             conversation.setContext(serializeContext(context));
@@ -199,11 +211,32 @@ public class AiConversationService {
         // submits elza.enhanceDescription into a revision thread); the exchange
         // still continues the conversation — parentTaskId stays the previous
         // exchange's task, and the provider chains it regardless of type.
-        String taskType = vo.getTaskType() != null ? vo.getTaskType() : last.getTaskType();
+        String taskType = continuation ? lastDone.getTaskType()
+                : vo.getTaskType() != null ? vo.getTaskType() : last.getTaskType();
+        List<AiContextObjectVO> parameters = continuation ? deserializeContext(lastDone.getParameters())
+                : vo.getParameters();
+        if (continuation) {
+            logger.info("AI conversation {} continues exchange {} (task {}) with the provider's continuation",
+                    conversationId, lastDone.getAiRequestId(), lastDone.getTaskUid());
+        }
         submitExchange(conversation, externalSystem, taskType, profile,
-                       vo.getUserInstructions(), vo.getParameters(), context,
-                       lastDone == null ? null : lastDone.getTaskUid());
+                       vo.getUserInstructions(), parameters, context,
+                       lastDone == null ? null : lastDone.getTaskUid(),
+                       continuation ? null : vo.getScope(), continuation ? vo.getContinuation() : null);
         return getDetail(conversation, externalSystem);
+    }
+
+    /**
+     * Size of the branch under a level — the confirmation figure of
+     * <i>Kontrola větve</i> (the {@code scope = branch} run). A level the user
+     * cannot read, or that does not exist, is not found (one answer for both,
+     * so existence does not leak).
+     */
+    @Transactional(readOnly = true)
+    public AiBranchSizeVO branchSize(final Integer fundId, final Integer nodeId) {
+        Integer levels = contextResolver.countBranchLevels(fundId, nodeId)
+                .orElseThrow(() -> notFound("Description level not found", nodeId));
+        return new AiBranchSizeVO().levels(levels);
     }
 
     /** Renames one of the current user's conversations (the history list title). */
@@ -318,7 +351,7 @@ public class AiConversationService {
     private void submitExchange(final AiConversation conversation, final AiExternalSystem externalSystem,
                                 final String taskType, final String profile, final String userInstructions,
                                 final List<AiContextObjectVO> parameters, final List<AiContextObjectVO> context,
-                                final String parentTaskUid) {
+                                final String parentTaskUid, final String scope, final String continuation) {
         AiRequest request = new AiRequest();
         request.setAiConversationId(conversation.getAiConversationId());
         request.setRequestId(UUID.randomUUID().toString());
@@ -340,7 +373,7 @@ public class AiConversationService {
                 .appVersion(appVersion);
 
         Map<String, AiObject> taskParameters = buildParameters(taskType, parameters, context,
-                externalSystem, conversation.getUserId());
+                externalSystem, conversation.getUserId(), scope);
         List<AiObject> resolvedContext = contextResolver.resolveAll(context);
         appendOutlineForSubject(taskParameters, parameters, context, resolvedContext);
 
@@ -353,6 +386,7 @@ public class AiConversationService {
                 .context(resolvedContext)
                 .tools(toolRegistry.toolNames())
                 .parentTaskId(parentTaskUid)
+                .continuation(continuation)
                 .metadata(metadata);
         addEvent(request, AiRequestEvent.TYPE_SUBMIT, toJson(submitTask));
 
@@ -416,7 +450,8 @@ public class AiConversationService {
                                                   final List<AiContextObjectVO> parameterContext,
                                                   final List<AiContextObjectVO> contextObjects,
                                                   final AiExternalSystem externalSystem,
-                                                  final Integer userId) {
+                                                  final Integer userId,
+                                                  final String scope) {
         Map<String, AiObject> parameters = new HashMap<>();
         List<TaskParameterInfo> declared = declaredParameters(externalSystem, taskType, userId);
 
@@ -442,7 +477,7 @@ public class AiConversationService {
                 continue;
             }
             if (ObjectType.ELZA_REVISION_CONFIG.equals(declaredParam.getType())) {
-                parameters.put(declaredParam.getName(), defaultRevisionConfig());
+                parameters.put(declaredParam.getName(), defaultRevisionConfig(scope));
                 continue;
             }
             if (contextObjects == null || contextObjects.isEmpty()) {
@@ -505,13 +540,18 @@ public class AiConversationService {
     }
 
     /**
-     * The default {@code elza.revisionConfig}: all checks (omitted = all), scope
-     * derived from the payload, findings in the deployment's language. A run
-     * configuration UI (check selection) can replace this later.
+     * The default {@code elza.revisionConfig}: all checks (omitted = all), the
+     * scope the panel asked for ({@code branch} = the provider pulls and checks
+     * the whole subtree under the subject — <i>Kontrola větve</i>; omitted =
+     * derived from the payload, the unit check), findings in the deployment's
+     * language. A run configuration UI (check selection) can replace this later.
      */
-    private AiObject defaultRevisionConfig() {
+    private AiObject defaultRevisionConfig(final String scope) {
         String language = elzaLocale.getLocale().toLanguageTag();
         RevisionConfig config = new RevisionConfig();
+        if (StringUtils.isNotBlank(scope)) {
+            config.setScope(scope.trim());
+        }
         if (StringUtils.isNotBlank(language) && !"und".equals(language)) {
             config.setLanguage(language);
         }

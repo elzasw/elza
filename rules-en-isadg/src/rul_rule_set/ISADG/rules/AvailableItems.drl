@@ -57,14 +57,14 @@ then
     $itemType.setType(RulItemType.Type.REQUIRED);
 end
 
-rule "ISAD(G) 3.1.4: the root of the fonds is a fonds"
+rule "ISAD(G) 3.1.4: the root is a fonds or a collection"
 no-loop
 when
     $itemType : RulItemTypeExt(code == "ISADG_LEVEL")
     ActiveLevel( parent == null )
-    $itemSpec : RulItemSpecExt(code == "ISADG_LEVEL_FONDS") from $itemType.rulItemSpecList
+    $itemSpec : RulItemSpecExt(code in ("ISADG_LEVEL_FONDS", "ISADG_LEVEL_COLLECTION")) from $itemType.rulItemSpecList
 then
-    $itemSpec.setType(RulItemSpec.Type.REQUIRED);
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
 
 rule "ISAD(G) 3.1.4: below a fonds"
@@ -78,13 +78,24 @@ then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
 
+rule "ISAD(G) 3.1.4: below a collection"
+no-loop
+when
+    $itemType : RulItemTypeExt(code == "ISADG_LEVEL")
+    ActiveLevel( parent != null && $parentItems : parent.ownDescItems )
+    DescItem( type == "ISADG_LEVEL" && specCode == "ISADG_LEVEL_COLLECTION" ) from $parentItems
+    $itemSpec : RulItemSpecExt(code in ("ISADG_LEVEL_SUBFONDS", "ISADG_LEVEL_SERIES", "ISADG_LEVEL_FILE", "ISADG_LEVEL_ITEM")) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+end
+
 rule "ISAD(G) 3.1.4: below a subfonds"
 no-loop
 when
     $itemType : RulItemTypeExt(code == "ISADG_LEVEL")
     ActiveLevel( parent != null && $parentItems : parent.ownDescItems )
     DescItem( type == "ISADG_LEVEL" && specCode == "ISADG_LEVEL_SUBFONDS" ) from $parentItems
-    $itemSpec : RulItemSpecExt(code in ("ISADG_LEVEL_SERIES", "ISADG_LEVEL_FILE", "ISADG_LEVEL_ITEM")) from $itemType.rulItemSpecList
+    $itemSpec : RulItemSpecExt(code in ("ISADG_LEVEL_SUBFONDS", "ISADG_LEVEL_SERIES", "ISADG_LEVEL_FILE", "ISADG_LEVEL_ITEM")) from $itemType.rulItemSpecList
 then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
@@ -170,10 +181,9 @@ then
     $itemType.setType(RulItemType.Type.POSSIBLE);
 end
 
-rule "A container below the root"
+rule "A container at every level, the root included"
 no-loop
 when
-    ActiveLevel( parent != null )
     $itemType : RulItemTypeExt(code == "ISADG_CONTAINER")
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);

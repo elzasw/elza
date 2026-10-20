@@ -2,6 +2,7 @@ package cz.tacr.elza.print;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Collections;
@@ -25,6 +26,7 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrChange.Type;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
@@ -206,5 +208,37 @@ public class OutputModelTest extends AbstractServiceTest {
         // Flush any pending operations
         helperTestService.waitForWorkers();
         em.flush();
+    }
+
+    /**
+     * A link to a deleted unit of description prints without its target instead of failing
+     * the output (the deleted node has no cache row).
+     */
+    @Test
+    public void linkedDeletedNodeIsNull() {
+        TransactionTemplate tt = new TransactionTemplate(txManager);
+        authorizeAsAdmin();
+
+        FundInfo fi = tt.execute(r -> createFund("F-link"));
+        ArrLevel level = tt.execute(r -> fundLevelService.addNewLevel(fi.getFundVersion(), fi.getRootNode(),
+                fi.getRootNode(), AddLevelDirection.CHILD, "Série", null, null, null, null).get(0));
+        helperTestService.waitForWorkers();
+
+        // adding the level locked the root: delete with the current node versions
+        tt.executeWithoutResult(r -> fundLevelService.deleteLevel(fi.getFundVersion(),
+                em.find(ArrNode.class, level.getNodeId()), em.find(ArrNode.class, fi.getRootNode().getNodeId()),
+                false));
+        helperTestService.waitForWorkers();
+
+        tt.executeWithoutResult(r -> {
+            OutputContext outputContext = applicationContext.getBean(OutputContext.class);
+            OutputModel outputModel = new OutputModel(outputContext, staticDataService, elzaLocale,
+                    fundRepository, fundTreeProvider, nodeCacheService, institutionRepository, apStateRepository,
+                    bindingRepository, null, structObjRepos, itemRepository,
+                    bindingStateRepository, indexRepository,
+                    legacyDaoLinkRepository, fsLinkRepository, exportConfig, structObjService, em,
+                    dataService);
+            assertNull(outputModel.getNode(level.getNode()));
+        });
     }
 }

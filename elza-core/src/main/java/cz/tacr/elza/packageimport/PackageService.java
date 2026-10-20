@@ -103,6 +103,7 @@ import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.WfIssueState;
 import cz.tacr.elza.domain.WfIssueType;
 import cz.tacr.elza.domain.WfTaskType;
+import cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge;
 import cz.tacr.elza.domain.bridge.IndexConfigReaderImpl;
 import cz.tacr.elza.domain.projection.NodeIdFundVersionIdInfo;
 import cz.tacr.elza.exception.AbstractException;
@@ -877,6 +878,9 @@ public class PackageService {
                 staticDataService.refreshForCurrentThread();
 
                 cacheService.resetCache(CacheInvalidateEvent.Type.ALL);
+
+                // the search fields of the package (index-search) before its entities are regenerated
+                ApCachedAccessPointBridge.refreshSearchConfig();
 
                 // Try to reload all actions
                 // Note: static data have to be reloaded before bulk actions
@@ -3169,6 +3173,7 @@ public class PackageService {
             public void afterCommit() {
                 staticDataService.refreshForCurrentThread();
                 cacheService.resetCache(CacheInvalidateEvent.Type.ALL);
+                ApCachedAccessPointBridge.refreshSearchConfig();
             }
         });
     }

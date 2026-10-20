@@ -274,6 +274,9 @@ public class SearchEntitiesTool implements AiTool {
             case PREFER_NAMES -> ApSearchArea.PREFER_NAMES;
             case ALL_NAMES -> ApSearchArea.ALL_NAMES;
             case ALL_PARTS -> ApSearchArea.ALL_PARTS;
+            // A code this build does not know (the generated client's forward-
+            // compatibility case): the default area, never a failed call.
+            case UNKNOWN_DEFAULT_OPEN_API -> ApSearchArea.ALL_NAMES;
         };
     }
 

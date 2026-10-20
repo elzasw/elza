@@ -31,6 +31,7 @@
     <t type="MESSAGE" code="CORE/ARR_UNDEFINED_NOT_ALLOWED" field="text">The item {0} cannot have the value “{1}”.</t>
     <!-- {0} item type, {1} id of the entity -->
     <t type="MESSAGE" code="CORE/ARR_DELETED_ENTITY_REF" field="text">The item {0} refers to an invalidated entity (id: {1}).</t>
+    <t type="MESSAGE" code="CORE/ARR_BROKEN_NODE_REF" field="text">The item {0} refers to a deleted or unknown unit of description ({1}).</t>
 
     <!-- terms used as arguments -->
     <t type="MESSAGE" code="CORE/UNDEFINED_VALUE" field="text">undefined</t>

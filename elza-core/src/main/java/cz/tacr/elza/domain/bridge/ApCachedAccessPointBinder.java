@@ -11,6 +11,8 @@ import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.STATE;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.REV_STATE;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.VALIDATION_RESULT;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.ASSIGNED_TO;
+import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.INDEX_TYPE_FIELD;
+import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.TRANS;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.USERNAME;
 import static cz.tacr.elza.domain.bridge.LuceneAnalyzerConfigurer.ANALYZED;
 import static cz.tacr.elza.domain.bridge.LuceneAnalyzerConfigurer.NOT_ANALYZED;
@@ -47,6 +49,10 @@ import java.util.Map;
  * - getItemTypeCodes()
  * a také jako kombinací kódů ItemType + ItemSpec
  * - getItemSpecCodesByTypeCode(itemTypeCode)
+ *
+ * The fields of an index type named by the search configuration ({@code index-type}) are declared
+ * by templates ({@code data_<name>_ix}, {@code _ix_trans}, {@code _ix_analyzed}), so a field of a
+ * package imported after the start needs no restart.
  */
 public class ApCachedAccessPointBinder implements TypeBinder {
 
@@ -77,6 +83,20 @@ public class ApCachedAccessPointBinder implements TypeBinder {
 	        fields.put(name + ANALYZED, createAnalyzedField(name));
 	        fields.put(name + NOT_ANALYZED, createNotAnalyzedField(name));
         }
+
+        // index fields of the search configuration (index-type), see ApCachedAccessPointBridge.addIndexTypeField
+        context.indexSchemaElement()
+                .fieldTemplate("indexTypeAnalyzed", f -> f.asString().analyzer(CLASSIC_TOKENIZER_CZ))
+                .matchingPathGlob(DATA + "_*" + INDEX_TYPE_FIELD + ANALYZED)
+                .multiValued();
+        context.indexSchemaElement()
+                .fieldTemplate("indexTypeTrans", f -> f.asString())
+                .matchingPathGlob(DATA + "_*" + INDEX_TYPE_FIELD + TRANS)
+                .multiValued();
+        context.indexSchemaElement()
+                .fieldTemplate("indexTypeExact", f -> f.asString())
+                .matchingPathGlob(DATA + "_*" + INDEX_TYPE_FIELD)
+                .multiValued();
 
         // pole obsahující odkaz na jinou entitu
         createIntField(REL_AP_ID);

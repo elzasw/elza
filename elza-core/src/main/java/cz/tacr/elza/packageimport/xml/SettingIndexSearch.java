@@ -114,7 +114,8 @@ public class SettingIndexSearch extends Setting {
 
     /**
      * Item fields searched by the text search in the area - the configured fields other than the
-     * entity id and the index fields ({@code index}, {@code pref_index}, {@code <part type>_index}).
+     * entity id, the index fields ({@code index}, {@code pref_index}, {@code <part type>_index}) and
+     * the fields of an index type ({@link #indexTypeFields(String)}).
      *
      * @param area null - any part: all item fields; {@code pref} - the preferred part: the fields
      *             {@code pref_<item type>}; a part type code in lower case - names of the part type:
@@ -127,13 +128,13 @@ public class SettingIndexSearch extends Setting {
         if (fields == null) {
             return result;
         }
-        String prefPrefix = PREFIX_PREF + SEPARATOR;
         for (Field field : fields) {
             String name = field.getName();
-            if (name.equals(FIELD_ACCESSPOINT_ID) || name.equals(INDEX) || name.endsWith(SEPARATOR + INDEX)) {
+            if (name.equals(FIELD_ACCESSPOINT_ID) || name.equals(INDEX) || name.endsWith(SEPARATOR + INDEX)
+                    || field.getIndexType() != null) {
                 continue;
             }
-            boolean pref = name.startsWith(prefPrefix);
+            boolean pref = field.preferredPartOnly();
             boolean searched;
             if (area == null) {
                 searched = true;
@@ -145,6 +146,30 @@ public class SettingIndexSearch extends Setting {
             if (searched) {
                 result.add(field);
             }
+        }
+        return result;
+    }
+
+    /**
+     * Fields of an index type (attribute {@code index-type}): an index of the index rules other than
+     * the display name, e.g. {@code REAL_NAME}, matched as a whole against the whole search text.
+     * They take no part in the search by words.
+     *
+     * @param area null or a part type code - every field; {@code pref} - the preferred part: the
+     *             fields prefixed by {@code pref_}
+     * @return fields in the order of the configuration
+     */
+    public List<Field> indexTypeFields(@Nullable String area) {
+        List<Field> result = new ArrayList<>();
+        if (fields == null) {
+            return result;
+        }
+        boolean preferredOnly = PREFIX_PREF.equals(area);
+        for (Field field : fields) {
+            if (field.getIndexType() == null || (preferredOnly && !field.preferredPartOnly())) {
+                continue;
+            }
+            result.add(field);
         }
         return result;
     }
@@ -175,6 +200,13 @@ public class SettingIndexSearch extends Setting {
         @XmlAttribute(name = "part-type")
         private String partType;
 
+        /**
+         * Index type of the index rules the field holds (e.g. {@code REAL_NAME}); null for an item
+         * field. A field prefixed by {@code pref_} holds the index of the preferred part only.
+         */
+        @XmlAttribute(name = "index-type")
+        private String indexType;
+
         static Field of(String name, Float boost, Float boostExact, Float boostTransExact,
                         Float boostFulltext, Boolean transliterate) {
             Field field = new Field();
@@ -185,6 +217,11 @@ public class SettingIndexSearch extends Setting {
             field.boostFulltext = boostFulltext;
             field.transliterate = transliterate;
             return field;
+        }
+
+        /** True for a field of the preferred part only (name prefixed by {@code pref_}). */
+        public boolean preferredPartOnly() {
+            return name != null && name.startsWith(PREFIX_PREF + SEPARATOR);
         }
 
         public String getName() {
@@ -241,6 +278,14 @@ public class SettingIndexSearch extends Setting {
 
         public void setPartType(String partType) {
             this.partType = partType;
+        }
+
+        public String getIndexType() {
+            return indexType;
+        }
+
+        public void setIndexType(String indexType) {
+            this.indexType = indexType;
         }
     }
 }

@@ -520,7 +520,7 @@ Monitoring
 ==========
 
 ``management.*`` (the management port) and ``elza.monitoring.scheduler.*``
-are described in :doc:`08-monitoring`.
+are described in :doc:`09-monitoring`.
 
 Diagnostics
 ===========

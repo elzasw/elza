@@ -187,7 +187,8 @@ export function deleteFundHistory(fundId) {
 export function exportFund(fundId, { exportFilter, includeUUID, includeAccessPoints, includeDaos }) {
     let requestData = {
         fundsSections: [{fundVersionId: fundId}],
-        exportFilter,
+        // "Bez filtru" is the empty select value; the backend expects no filter at all
+        exportFilter: exportFilter || undefined,
         includeUUID,
         includeAccessPoints,
         includeDaos,

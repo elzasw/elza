@@ -19,6 +19,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Objects;
 
@@ -35,6 +36,8 @@ import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
+import cz.tacr.elza.domain.ArrDao;
+import cz.tacr.elza.repository.DaoRepository;
 import cz.tacr.elza.service.DaoSyncService;
 import cz.tacr.elza.test.controller.vo.Fund;
 import cz.tacr.elza.test.controller.vo.ItemDataResult;
@@ -64,6 +67,9 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
     static final String PACKAGE_ID1 = "PackageId1";
     static final String TEXT_VALUE_XY = "value xy";
     static final String TEXT_VALUE_YZ = "value yz";
+
+    @Autowired
+    private DaoRepository daoRepository;
 
     private ObjectFactory objFactory = new ObjectFactory();
     private DaoService daoServiceClient;
@@ -366,6 +372,39 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         assertTrue(descItemTextVO.getReadOnly() == null || !descItemTextVO.getReadOnly());
 
         helperTestService.waitForWorkers();
+    }
+
+    /**
+     * Re-import of a linked DAO whose stored scenario uses an item type the rules no
+     * longer have (an item type renamed in a rules package). The removal of the old
+     * scenario items skips the unknown item instead of failing the whole import.
+     */
+    @Test
+    public void reimportWithStoredItemTypeUnknownToRules() {
+        fundInfo = createFund(FUND_NAME, FUND_CODE);
+        fundVersion = getOpenVersion(fundInfo);
+
+        DaoPackage daoPackage = createDaoPackage(FUND_CODE, DIGIT_REPO_CODE, PACKAGE_ID1, DaoType.LEVEL,
+                                                 "Testovaci DAO", createDaoScenarios(TEXT_VALUE_XY));
+        daoServiceClient._import(createDaoImport(daoPackage));
+        helperTestService.waitForWorkers();
+
+        // the rules "renamed" SRD_TITLE: the stored scenario still uses the old code
+        ArrDao dao = daoRepository.findOneByCode(PACKAGE_ID1);
+        assertNotNull(dao);
+        assertTrue(dao.getAttributes().contains("type=\"" + SRD_TITLE + "\""));
+        dao.setAttributes(dao.getAttributes().replace("type=\"" + SRD_TITLE + "\"", "type=\"SRD_TITLE_REMOVED\""));
+        daoRepository.save(dao);
+
+        DaoPackage daoPackage2 = createDaoPackage(FUND_CODE, DIGIT_REPO_CODE, PACKAGE_ID1, DaoType.LEVEL,
+                                                  "Testovaci DAO", createDaoScenarios(TEXT_VALUE_YZ));
+        daoServiceClient._import(createDaoImport(daoPackage2));
+        helperTestService.waitForWorkers();
+
+        // the import went through and the stored scenario now holds the new attributes
+        ArrDao daoAfter = daoRepository.findOneByCode(PACKAGE_ID1);
+        assertTrue(daoAfter.getAttributes().contains(TEXT_VALUE_YZ));
+        Assertions.assertFalse(daoAfter.getAttributes().contains("SRD_TITLE_REMOVED"));
     }
 
     // shodne s vyse, jen maximalni interakce pres WS

@@ -22,6 +22,24 @@ export const useTableStyles = makeStyles({
     tableRow: {
         cursor: 'pointer',
     },
+    errorLink: {
+        maxWidth: '100%',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
+        textAlign: 'start',
+        color: tokens.colorPaletteRedForeground1,
+    },
+    errorTooltip: {
+        maxWidth: '600px',
+        whiteSpace: 'pre-wrap',
+        overflowWrap: 'anywhere',
+    },
+    errorTooltipHint: {
+        marginTop: tokens.spacingVerticalXS,
+        fontStyle: 'italic',
+        opacity: '0.8',
+    },
 });
 
 export const useToolbarStyles = makeStyles({

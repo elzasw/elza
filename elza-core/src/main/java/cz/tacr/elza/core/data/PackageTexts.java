@@ -193,6 +193,33 @@ public class PackageTexts {
         return text(entityType, entityCode, TranslationEntityType.NAME, sourceName, requestLanguage());
     }
 
+    /**
+     * Name in the language of the current request, for a text whose source is not loaded with the
+     * translations (type groups live in the UI settings of a rule set): the source name counts as the
+     * text in the language of the package that wrote it, at that language's place in the chain.
+     *
+     * @param sourcePackageId
+     *            package that wrote the source name, null when unknown (the source name comes last)
+     */
+    public String name(TranslationEntityType entityType, String entityCode, String sourceName,
+                       Integer sourcePackageId) {
+        StaticDataProvider sdp = staticDataService.getData();
+        RulPackage sourcePackage = sourcePackageId != null ? sdp.getPackageById(sourcePackageId) : null;
+        Integer sourceLanguageId = sourcePackage != null ? sourcePackage.getLanguageId() : null;
+        PackageTranslations translations = sdp.getTranslations();
+        for (SysLanguage candidate : fallbackChain(requestLanguage())) {
+            String value = translations.get(entityType, entityCode, TranslationEntityType.NAME,
+                                            candidate.getLanguageId());
+            if (value != null) {
+                return value;
+            }
+            if (candidate.getLanguageId().equals(sourceLanguageId)) {
+                return sourceName;
+            }
+        }
+        return sourceName;
+    }
+
     public String name(RulItemType itemType) {
         return name(itemType, requestLanguage());
     }

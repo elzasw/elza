@@ -388,15 +388,19 @@ public class UnitDateConverter {
     }
 
     /**
-     * Brackets of an estimate to square brackets, aliases of the interval delimiter (en dash) to the
-     * delimiter, surrounding white space removed.
+     * No-break spaces to plain spaces, brackets of an estimate to square brackets, aliases of the
+     * interval delimiter (en dash) to the delimiter, surrounding white space removed.
      *
      * @param input text k normalizaci
      * @return normalizovaný text
      */
     private static String normalizeInput(final String input) {
         UnitDateLexicon.Common common = LEXICON.common();
-        String result = input.trim();
+        String result = input;
+        for (String space : common.spaceAliases) {
+            result = result.replace(space, " ");
+        }
+        result = result.trim();
         for (String open : common.estimateOpen) {
             result = result.replace(open, "[");
         }

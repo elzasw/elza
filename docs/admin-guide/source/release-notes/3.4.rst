@@ -12,6 +12,167 @@ change, a step during the upgrade) name the configuration key and link to
 the relevant chapter. Before an upgrade, read the entries of all builds
 between the installed and the new version; see :doc:`/03-upgrade`.
 
+3.4.11
+======
+
+Before the upgrade
+------------------
+
+* Change: 10146 - Security audit log (``elza.siemLogFile``): the field
+  names follow the OSSEC/Wazuh schema (``srcuser``, ``dstuser``,
+  ``srcip``, ``result``, ``reason``, ``msg``, ...), fields without meaning
+  for a SIEM (``LOG_FILE``, ``SIEM_LOG_FILE``, ``@version``,
+  ``logger_name``, ``thread_name``, ``level_value``) are removed and the
+  events are identified by ``event_type`` and ``action`` (e.g. a login is
+  ``user_login`` with ``result`` ``success`` or ``failed``). **The format
+  is not compatible with the previous one; adjust the decoders and rules
+  of the SIEM system.** See :doc:`/05-security`.
+* Change: 10146 - Behind a reverse proxy, the security audit log records
+  the address of the client (``srcip``) when
+  ``elza.security.acceptForwardedHeaders`` is enabled. **The proxy must
+  replace the header** ``X-Forwarded-For`` **with the address of the
+  client** (NGINX ``$remote_addr``, Apache
+  ``RequestHeader unset X-Forwarded-For early``); otherwise a client can
+  choose the logged address. See :ref:`reverse-proxy-client-address`.
+* Change: 10146 - The administrator from the configuration
+  (``elza.security.admin.username`` / ``.password``) is replaced by the list
+  ``elza.security.override`` of user names and passwords. A missing user is
+  created as an administrator without a password in the database; a listed
+  user logs in with their own password or with the configured one, which is
+  no longer written to the database. **With** ``elza.security.admin.*``
+  **set, the application does not start**; move the entry to
+  ``elza.security.override``. See :ref:`install-users-from-config`.
+* Removed: 10146 - Recovering access with ``elza.security.recovery.username``
+  and ``elza.security.recovery.password``; the keys are ignored. Access is
+  recovered with ``elza.security.override``, whose use is written to the
+  security audit log; see :doc:`/05-security`. **Remove the recovery keys
+  from** :file:`elza.yaml`.
+
+New
+---
+
+* New: 10146 - Security audit log - new events: logout, password change,
+  creation, activation, deactivation and renaming of users (including the first
+  administrator of the initial setup), changes of permissions of users
+  and groups, group membership, creation and deletion of groups, creation
+  (including an import) and deletion of archival funds and deletion of
+  their history. A failed
+  login states the method (``authentication_type``) and a stable reason
+  (``INVALID_USERNAME``, ``INVALID_PASSWORD``, ``INACTIVE_USER``, ...); a
+  rejected JWT is logged as well. A login with the password from
+  ``elza.security.override`` is logged as ``OVERRIDE``, and every startup
+  records the users with such a password (``override_active``).
+
+Changes
+-------
+
+* Change: 9800 - The text search of archival entities puts the entity
+  whose name is typed the way it is commonly used first ("Petr Pytelka",
+  "Československá akademie věd"). The names of CZ_BASE entities get the
+  index ``REAL_NAME`` - the name without supplements and degrees, a person
+  as forename and surname - and the whole search text is matched against
+  it whatever the order of the words and the diacritics. After the upgrade
+  the CZ_BASE entities are regenerated in the background (the queue of
+  entity validation); the ranking improves as the run proceeds. A rules
+  package states such a field in ``index-search`` with ``index-type``, see
+  the implementation guide.
+* Change: 10146 - Security audit log - a successful login with a JWT or an
+  API key, which is checked on every request, is logged at most once per
+  hour for the same key (or user) and address; failures are always
+  logged.
+* Change: 10133 - Digital archive: the change package carries the
+  contextual archival description of the AIP (``EAD-CONTEXT.xml``) from
+  ELZA - the fund root, the path to the units linked to the AIP and their
+  subtrees - instead of a fixed sample. An AIP linked to units of more than
+  one fund is not exported; the export reports it. See
+  :doc:`/08-digital-repositories`.
+* Change: 10165 - EAD output of the ZP2015 rules follows the Czech EAD3
+  profile ``CZ_EAD3_PROFILE_20260501`` (new and corrected mappings, roles
+  of entities given as text are written as weak entities). Units are
+  identified by ``id="uuid-…"``; **the URI in** ``base``
+  **(https://archdesc.nacr.cz/dids/…) is no longer written** - adjust
+  systems that read it. Units linked to the digital archive refer to the
+  AIP (``dao href="aip:…"``).
+
+3.4.10
+======
+
+Before the upgrade
+------------------
+
+* Fix: 10128 - Storage of binary files (DMS): the move into the new
+  structure in 3.4.8 and 3.4.9 set aside the files with an identifier from
+  1000 to 9999 into ``dms/_migrating/`` and did not take them back; their
+  attachments and outputs report "Požadovaný soubor neexistuje". At the
+  first start, 3.4.10 runs the move again: it puts every file whose
+  database row points elsewhere to its place. This repairs installations
+  upgraded to 3.4.8 or 3.4.9 and is the only move for older ones. Files
+  that no database row claims stay in ``dms/_migrating/``; nothing is
+  deleted. **Before the upgrade, back up the database and the dms
+  directory from the same moment** (see :doc:`/10-backup`); **after it,
+  read the report** ``dms/_migration-<date>-<time>.txt``: ``MISSING``
+  rows have no file, ``ORPHAN`` files have no row, ``FAILED`` rows could
+  not be moved and must be put in place by hand.
+* Change: REST API - the bulk actions of a fund version are listed by
+  ``GET /api/v1/action/fund-version/{fundVersionId}`` with the kind of each
+  action (``type``), and the persistent sort is run by
+  ``POST /api/v1/action/fund-version/{fundVersionId}/persistent-sort``,
+  which finds the sort of the rules of the fund itself. The endpoint
+  ``POST /api/action/queue/persistentSort/{versionId}/{code}`` is removed;
+  update scripts that call it.
+
+New
+---
+
+* New: Rules package ISADG - archival description of fonds according to
+  the international standard ISAD(G), in English, with a user guide. It
+  uses ``ISAAR_CPF`` for creators and access points, is delivered with
+  ELZA and is imported when ``elza.packages.enabled`` lists it. This is
+  its first version, for trial use: printed outputs and EAD3 export are
+  not available yet. Installations with ZP2015 see no change. See
+  :ref:`install-packages`.
+* New: ELZA DA - entry URL ``<ELZA_URL>/da/<DA_CODE>/aip/<AIP_ID>``
+  opens an AIP by its identifier in the digital archive. It goes to the
+  linked description unit, or to the package in its fund. See
+  :doc:`/07-integrations`. The AIP list can be filtered by the code of
+  the digital archive.
+
+Changes
+-------
+
+* Change: The persistent sort in the context menu of the tree and the
+  refresh of the tree after it follow the rules of the fund: the action is
+  recognised by its kind, not by a fixed name, so every rules package names
+  its own. *Compute and visualise EJ* is offered only for funds whose rules
+  have the action (ZP2015). The persistent sort is not offered for a run
+  over several funds, whatever the rules call it.
+* Change: The description of a unit sent to a WSDL digital repository or a
+  digitization front desk with a linked digital object (the DID of the DAO
+  web services) carries the identifier of the unit only. The script
+  :file:`groovy/createDid.groovy` in the working directory, which added the
+  title, the reference code and the date, is no longer read and can be
+  deleted; it had not worked since 2020.
+* Change: The text search of archival entities searches the name elements
+  that the rules packages list for the search (with ``ISAAR_CPF`` its
+  names as well); the search with CZ_BASE does not change.
+* Change: 9970 - The dialog of a new output offers *No filter* as the
+  empty choice of the output filter.
+
+Fixes
+-----
+
+* Fix: 10127 - A bulk action copying description elements into its result
+  (ZP2015 *Agregace úvodu*) failed with "Error while writing JSON" when the
+  elements contained an attachment or a date.
+* Fix: ELZA DA - with two digital archives using the same AIP code, a
+  change reported by one archive (e.g. an invalidation) could be applied
+  to the AIP of the other.
+* Fix: A failed persistent sort or *Compute and visualise EJ* is reported;
+  before, only a finished or interrupted run was. The tree refreshed after
+  the action is the tree of its fund, not of the fund shown at that moment.
+* Fix: The persistent sort on the page of bulk actions keeps the direction
+  and the specification of the run it starts from.
+
 3.4.9
 =====
 
@@ -78,11 +239,6 @@ New
   are never deleted.
 * New: ELZA DA - a new setting of the DA repository, *Batch status check
   interval (s)*, default 2 seconds (before 100 ms).
-* New: ELZA DA - entry URL ``<ELZA_URL>/da/<DA_CODE>/aip/<AIP_ID>``
-  opens an AIP by its identifier in the digital archive. It goes to the
-  linked description unit, or to the package in its fund. See
-  :doc:`/07-integrations`. The AIP list can be filtered by the code of
-  the digital archive.
 * New: 10070 - Structured objects (storage units, access restrictions, ...)
   are exported to CSV from the panel of the fund (three dots → *Export to
   CSV*), with the filter of the panel applied. The ID column is the value
@@ -91,24 +247,6 @@ New
 Changes
 -------
 
-* Change: The persistent sort in the context menu of the tree and the
-  refresh of the tree after it follow the rules of the fund: the action is
-  recognised by its kind, not by a fixed name, so every rules package names
-  its own. *Compute and visualise EJ* is offered only for funds whose rules
-  have the action (ZP2015). The persistent sort is not offered for a run
-  over several funds, whatever the rules call it.
-* Change: REST API - the bulk actions of a fund version are listed by
-  ``GET /api/v1/action/fund-version/{fundVersionId}`` with the kind of each
-  action (``type``), and the persistent sort is run by
-  ``POST /api/v1/action/fund-version/{fundVersionId}/persistent-sort``,
-  which finds the sort of the rules of the fund itself. The endpoint
-  ``POST /api/action/queue/persistentSort/{versionId}/{code}`` is removed.
-* Change: The description of a unit sent to a WSDL digital repository or a
-  digitization front desk with a linked digital object (the DID of the DAO
-  web services) carries the identifier of the unit only. The script
-  :file:`groovy/createDid.groovy` in the working directory, which added the
-  title, the reference code and the date, is no longer read and can be
-  deleted; it had not worked since 2020.
 * Change: ELZA DA - a batch the digital archive prepares for download or
   processes after an export no longer stops the other communication with
   it and survives a restart of ELZA. A failure to reach the archive is
@@ -127,11 +265,6 @@ Changes
 Fixes
 -----
 
-* Fix: A failed persistent sort or *Compute and visualise EJ* is reported;
-  before, only a finished or interrupted run was. The tree refreshed after
-  the action is the tree of its fund, not of the fund shown at that moment.
-* Fix: The persistent sort on the page of bulk actions keeps the direction
-  and the specification of the run it starts from.
 * Fix: ELZA DA - a package whose PREMIS file has another name, or no PREMIS
   file, is no longer refused.
 * Fix: ELZA DA - a description unit with an attached AIP whose metadata
@@ -158,7 +291,7 @@ Before the upgrade
   and a new regular consistency check runs (``elza.dms.check.cron``).
   **Before the upgrade, back up the database and the dms directory from
   the same moment**; returning to an older version requires restoring
-  both. See :doc:`/09-backup`.
+  both. See :doc:`/10-backup`.
 * Removed: The ``FULL_SYNC`` mode of
   ``elza.webservice.fonds.adminPermissionMode`` - the web service only adds
   fund administrators (``ADD_ONLY``). With ``FULL_SYNC`` the application
@@ -412,7 +545,7 @@ Fixes
   external system settings at the first start
 * New: Health and metrics available on a separate management port
   (default ``8081`` on ``127.0.0.1``), fix of the LDAP health check, see
-  :doc:`/08-monitoring`
+  :doc:`/09-monitoring`
 * New: Monitoring of the task scheduler - metrics and settings
   ``elza.monitoring.scheduler.*``
 * Fix: 9594 - Digital entities - preview of files with a special
@@ -452,7 +585,7 @@ Fixes
 * New: Bulk actions over several funds - selection of funds by a filter
   evaluated on the server, reworked dialog for starting bulk actions
 * New: Health monitoring and Prometheus metrics of the processing queue
-  (see :doc:`/08-monitoring`)
+  (see :doc:`/09-monitoring`)
 * Fix: Cache records are deleted in batches (stability and performance)
 
 3.4.0-RC-1

@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -24,6 +26,8 @@ import cz.tacr.elza.controller.vo.AiMarkdownBlockVO;
  */
 @Component
 public class AiBlockMapperRegistry {
+
+    private static final Logger logger = LoggerFactory.getLogger(AiBlockMapperRegistry.class);
 
     private final Map<String, AiBlockMapper> byObjectType = new HashMap<>();
 
@@ -56,6 +60,15 @@ public class AiBlockMapperRegistry {
         if (root.isArray()) {
             int blockIndex = 0;
             for (JsonNode block : root) {
+                if (block.isNull()) {
+                    // An object type this build does not implement: the provider
+                    // client deserializes it to null (ApiClientAiProvider), so the
+                    // rest of the output still renders. Logged, never silent.
+                    logger.warn("AI request {}: output block {} has an object type unknown to this build "
+                            + "— skipped (update Elza to render it)", aiRequestId, blockIndex);
+                    blockIndex++;
+                    continue;
+                }
                 String objectType = block.path("objectType").asText(null);
                 AiBlockMapper mapper = objectType == null ? null : byObjectType.get(objectType);
                 if (mapper != null) {

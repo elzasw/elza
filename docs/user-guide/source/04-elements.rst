@@ -21,9 +21,9 @@ Identity statement
 ------------------
 
 =====  ===========================  ================================================================
-3.1.1  Reference code               Identifies the unit within the fonds; the generator numbers the
-                                    units by their position (:doc:`03-levels`). Country and
-                                    repository codes are added in outputs.
+3.1.1  Reference code               Identifies the unit within the fonds, in the convention of
+                                    the archive; unique in the fonds (:doc:`03-levels`). Country
+                                    and repository codes are added in outputs.
 \      Other identifier             A former reference code, an accession number or another
                                     identifier; choose the kind. Repeatable.
 3.1.2  Title                        Formal or supplied title of the unit.
@@ -52,8 +52,8 @@ Identity statement
                                     the material type is maps and plans or technical drawings.
 \      Duration (minutes)           Offered when the material type is sound recordings or moving
                                     images.
-3.1.4  Level of description         Fonds, subfonds, series, subseries, file or item
-                                    (:doc:`03-levels`).
+3.1.4  Level of description         Fonds or collection, subfonds, series, subseries, file or
+                                    item (:doc:`03-levels`).
 =====  ===========================  ================================================================
 
 A sample. The fonds *Smith family papers*: extent "128 boxes (12.5 linear

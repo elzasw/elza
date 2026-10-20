@@ -134,7 +134,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.context.ApplicationContext;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.PageRequest;
@@ -202,6 +201,8 @@ public class DaService {
 
     @Autowired
     private ApplicationContext applicationContext;
+    @Autowired
+    private DaEadContextGenerator eadContextGenerator;
     @Autowired
     private UserService userService;
     @Autowired
@@ -1039,54 +1040,10 @@ public class DaService {
     }
 
     private Path createEad(DaAip aip, Path aipDir) throws IOException {
-//        List<DaDao> daDaoList = daoRepository.findByAipAndDeleteChangeIsNull(aip); //TODO zatím zakomentováno, nutno ujasnit, jak má vypadat výstup. Použit defaultní soubor
-//        List<DaDaoItem> daDaoItemList = daDaoItemRepository.findByDaoInAndDeleteChangeIsNull(daDaoList);
-//        Did did = new Did();
-//        for (DaDaoItem daDaoItem : daDaoItemList) {
-//            ArrData data = daDaoItem.getData();
-//            DataType type = data.getType();
-//
-//
-//            switch (type) {
-//                case STRING -> {
-//                    ArrDataString arrDataString = dataStringRepository.findById(data.getDataId()).orElse(null);
-//                    if (arrDataString != null) {
-//                        Abstract abs = new Abstract();
-//                        abs.getContent().add(arrDataString.getStringValue());
-//                        did.getMDid().add(abs);
-//                    }
-//                }
-//                case UNITDATE -> {
-//                    ArrDataUnitdate arrDataUnitdate = dataUnitdateRepository.findById(data.getDataId()).orElse(null);
-//                    if (arrDataUnitdate != null) {
-//                        Unitdatestructured unitdatestructured = new Unitdatestructured();
-//                        Daterange daterange = new Daterange();
-//                        Fromdate fromDate = new Fromdate();
-//                        fromDate.setStandarddate(arrDataUnitdate.getValueFrom());
-//                        daterange.setFromdate(fromDate);
-//                        Todate todate = new Todate();
-//                        todate.setStandarddate(arrDataUnitdate.getValueTo());
-//                        daterange.setTodate(todate);
-//                        unitdatestructured.setDaterange(daterange);
-//                        did.getMDid().add(unitdatestructured);
-//                    }
-//
-//                }
-//                default -> {}
-//            }
-//
-//
-//        }
-//        Archdesc archdesc = new Archdesc();
-//        archdesc.setDid(did);
-//        Ead ead = new Ead();
-//        ead.setArchdesc(archdesc);
-//        EadReaderWriter.marshal(ead, Path.of(aipDir.toString(), "EAD.xml"));
-        ClassPathResource classPathResource = new ClassPathResource("exportDaTemplates/EAD-CONTEXT.xml");
-        Path path = Paths.get(aipDir + "/metadata/descriptive");
+        Path path = aipDir.resolve("metadata/descriptive");
         Files.createDirectories(path);
-        Path resultPath = Paths.get(path + "/EAD-CONTEXT.xml");
-        Files.copy(classPathResource.getInputStream(), resultPath);
+        Path resultPath = path.resolve("EAD-CONTEXT.xml");
+        eadContextGenerator.write(aip, resultPath);
         return resultPath;
     }
 

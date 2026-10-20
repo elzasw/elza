@@ -16,6 +16,7 @@ import cz.tacr.elza.aiprovider.client.vo.TaskParameterInfo;
 import cz.tacr.elza.aiprovider.client.vo.TaskTypeInfo;
 import cz.tacr.elza.aiprovider.client.vo.UsageInfo;
 import cz.tacr.elza.controller.vo.AiAccountUsageVO;
+import cz.tacr.elza.controller.vo.AiBranchSizeVO;
 import cz.tacr.elza.controller.vo.AiConversationCreateVO;
 import cz.tacr.elza.controller.vo.AiConversationDetailVO;
 import cz.tacr.elza.controller.vo.AiConversationUpdateVO;
@@ -64,6 +65,11 @@ public class AiProviderController implements AiproviderApi {
     public ResponseEntity<AiUsageBalanceVO> aiProviderGetUsage(String id) {
         AiExternalSystem extSystem = aiProviderService.findAiSystemByCodeOrId(id);
         return ResponseEntity.ok(toVO(aiProviderService.getUsage(extSystem)));
+    }
+
+    @Override
+    public ResponseEntity<AiBranchSizeVO> aiProviderGetBranchSize(Integer fundId, Integer nodeId) {
+        return ResponseEntity.ok(aiConversationService.branchSize(fundId, nodeId));
     }
 
     /** Maps the provider's /usage document to the client's balance view. */

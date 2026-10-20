@@ -11,6 +11,8 @@ import lexiconJson from '../../../../../elza-core/src/main/resources/unitdate/le
 export interface LexiconCommon {
     intervalDelimiter: string;
     intervalDelimiterAliases: string[];
+    /** characters read as a plain space (no-break spaces) */
+    spaceAliases: string[];
     spacedIntervalDelimiter: string;
     estimateIntervalDelimiter: string;
     estimateOpen: string[];

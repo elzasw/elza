@@ -3854,9 +3854,10 @@ model AiDisplayBlock {
 
 /**
  * One server-suggested follow-up: the button label and the exchange it
- * submits. The same shape a future provider-emitted `elza.taskSuggestion`
- * result block maps onto — today the server composes these itself (per check
- * finding).
+ * submits. Two producers: the server composes one per check finding ("prepare
+ * the fix"), and the provider's `elza.taskSuggestion` result blocks (provider
+ * contract 0.18.0 — chat handing over a drafted edit, a stopped branch check
+ * offering its next part) map onto it one to one.
  */
 model AiFollowUpAction {
     /** Button label, in the deployment's language. */
@@ -3865,6 +3866,16 @@ model AiFollowUpAction {
     taskType?: string;
     /** The seeded user instruction the follow-up submits. */
     userInstructions: string;
+    /** Why the step is suggested — one sentence shown as the button's tooltip. */
+    reason?: string;
+    /**
+     * Opaque provider token of a follow-up that RESUMES the previous exchange's
+     * work where it stopped (a branch check at its price limit). The client
+     * echoes it verbatim in `AiRequestCreate.continuation`; such a follow-up
+     * reuses the previous exchange's task type, parameters and the stored
+     * context — the provider continues the same run.
+     */
+    continuation?: string;
 }
 
 /** Plain-text answer — `content` is rendered verbatim, never parsed as markdown. */
@@ -4118,6 +4129,17 @@ model AiCustomerUsage {
  * with a quota refusal. Both members are optional: a provider without credit
  * accounting returns an empty object.
  */
+/**
+ * Size of the branch under a description level — what *Kontrola větve* will
+ * download and check (the provider pulls the subtree through its
+ * `getArchivalBranch` tool, paged, and checks it in windows). Shown in the
+ * confirmation before the run; a level without subordinate levels has 0.
+ */
+model AiBranchSize {
+    /** Levels in the whole subtree under the level (the level itself excluded). */
+    levels: int32;
+}
+
 model AiUsageBalance {
     /** Credit state of the account the user's key bills to. */
     account?: AiAccountUsage;
@@ -4325,6 +4347,13 @@ model AiConversationCreate {
     parameters?: AiContextObject[];
     /** Supplementary context objects; Elza resolves them into the provider's `context`. */
     context?: AiContextObject[];
+    /**
+     * `elza.revision` only — the run's scope: `branch` = the provider downloads the
+     * whole subtree under the subject level (the `getArchivalBranch` tool, paged) and
+     * checks it in windows inside one task (*Kontrola větve*); omitted = the unit check
+     * of the subject alone. Carried into the synthesized `elza.revisionConfig`.
+     */
+    scope?: string;
 }
 
 /** Follow-up exchange submitted into an existing conversation. */
@@ -4343,6 +4372,16 @@ model AiRequestCreate {
     parameters?: AiContextObject[];
     /** Supplementary context objects (see `AiConversationCreate.context`). */
     context?: AiContextObject[];
+    /** The run's scope for `elza.revision` (see `AiConversationCreate.scope`); omitted = the unit check. */
+    scope?: string;
+    /**
+     * The `continuation` of an `AiFollowUpAction` the previous exchange offered:
+     * this exchange resumes that exchange's work where it stopped. The server
+     * reuses the previous finished exchange's task type and parameters and the
+     * conversation's stored context (`taskType`, `parameters`, `context` and
+     * `scope` of this request are ignored) and echoes the token to the provider.
+     */
+    continuation?: string;
 }
 
 /** One step of an exchange's log — the transparency view ("what was sent/received"). */
@@ -4457,6 +4496,25 @@ namespace ElzaAPI.AiProvider {
         @path id: string;
     ): AiUsageBalance | {
         /** Id does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Size of the branch under a description level, for the confirmation of
+     * *Kontrola větve* (the `scope = branch` run of `elza.revision`): how many
+     * levels the provider will download and check. Counted from the open
+     * version's tree cache under the user's fund read permission; a level the
+     * user cannot read, or that does not exist, is answered with 404.
+     */
+    @route("/branch-size")
+    @get op getBranchSize(
+        /** `ArrFund.fundId` of the level's fund. */
+        @query fundId: int32,
+        /** `ArrNode.nodeId` of the level. */
+        @query nodeId: int32,
+    ): AiBranchSize | {
+        /** Level not found or not readable */
         @Http.statusCode statusCode: 404;
         @body data: BaseException;
     };

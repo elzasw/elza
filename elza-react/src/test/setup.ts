@@ -10,7 +10,13 @@
  */
 
 import '@testing-library/jest-dom/vitest';
+import { configure } from '@testing-library/react';
 import { afterAll, afterEach, beforeAll, beforeEach, vi } from 'vitest';
+
+// findBy*/waitFor resolve as soon as the expectation holds, so a longer limit
+// only delays failures. The default 1000 ms is too tight on a CI runner whose
+// CPU is saturated while vitest is still collecting the remaining test files.
+configure({ asyncUtilTimeout: 3000 });
 
 // Stub the global serverContextPath before any module reads it (e.g.
 // websocketActions.jsx builds the STOMP URL from window.serverContextPath at

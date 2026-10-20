@@ -113,6 +113,8 @@
     <t type="ITEM_TYPE" code="ISADG_ATTACHMENT" field="shortcut">Příloha</t>
     <t type="ITEM_SPEC" code="ISADG_LEVEL_FONDS" field="name">Fond</t>
     <t type="ITEM_SPEC" code="ISADG_LEVEL_FONDS" field="shortcut">Fond</t>
+    <t type="ITEM_SPEC" code="ISADG_LEVEL_COLLECTION" field="name">Sbírka</t>
+    <t type="ITEM_SPEC" code="ISADG_LEVEL_COLLECTION" field="shortcut">Sbírka</t>
     <t type="ITEM_SPEC" code="ISADG_LEVEL_SUBFONDS" field="name">Dílčí fond</t>
     <t type="ITEM_SPEC" code="ISADG_LEVEL_SUBFONDS" field="shortcut">Dílčí fond</t>
     <t type="ITEM_SPEC" code="ISADG_LEVEL_SERIES" field="name">Série</t>
@@ -375,8 +377,9 @@
     <t type="TYPE_GROUP" code="ISADG/08_CONTAINER" field="name">Ukládací jednotka</t>
     <t type="TYPE_GROUP" code="ISADG/09_ACCESS_POINTS" field="name">Přístupové body a digitální objekty</t>
     <t type="TYPE_GROUP" code="ISADG/10_FINDING_AID" field="name">Archivní pomůcka</t>
-    <t type="MESSAGE" code="ISADG/ROOT_IS_FONDS" field="text">Kořen archivního souboru musí mít úroveň Fond (ISAD(G) 3.1.4).</t>
+    <t type="MESSAGE" code="ISADG/ROOT_LEVEL" field="text">Kořen musí mít úroveň Fond nebo Sbírka (ISAD(G) 3.1.4).</t>
     <t type="MESSAGE" code="ISADG/LEVEL_ORDER" field="text">Úroveň popisu neodpovídá úrovni nadřazené jednotky popisu (ISAD(G) 3.1.4).</t>
     <t type="MESSAGE" code="ISADG/DATE_OUTSIDE_PARENT" field="text">Datace vzniku leží mimo dataci nadřazené jednotky popisu (ISAD(G) 3.1.3).</t>
-    <t type="MESSAGE" code="ISADG/CONTAINER_MISSING" field="text">Jednotka popisu ani jednotky nad ní nemají ukládací jednotku.</t>
+    <t type="MESSAGE" code="ISADG/REFERENCE_CODE_DUPLICATE" field="text">Referenční označení není v archivním souboru jedinečné (ISAD(G) 3.1.1).</t>
+    <t type="MESSAGE" code="ISADG/CONTAINER_MISSING" field="text">Jednotka popisu nemá ukládací jednotku, sousední jednotka ji má.</t>
 </translations>

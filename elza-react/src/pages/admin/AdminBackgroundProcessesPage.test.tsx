@@ -89,6 +89,26 @@ describe('AdminBackgroundProcessesPage', () => {
         expect(screen.getByText(/queue ID #42/i)).toBeInTheDocument();
     });
 
+    it('shows a thread that has not started yet as starting', async () => {
+        const queues = [
+            {
+                ...QUEUES[1],
+                currentThreads: [{fundVersionId: 7, requestId: 43, beginTime: null as string | null, currentId: 100}],
+            },
+        ];
+        server.use(
+            http.get('/api/v1/admin/async-requests', () => HttpResponse.json(queues)),
+            http.get('/api/v1/admin/async-requests/NODE', () => HttpResponse.json([])),
+        );
+
+        renderPage();
+
+        await userEvent.click(await screen.findByRole('button', {name: /Description unit validation/i}));
+
+        expect(await screen.findByText('Starting')).toBeInTheDocument();
+        expect(screen.queryByText(/Running since/i)).not.toBeInTheDocument();
+    });
+
     it('reports a failed load and keeps the page usable', async () => {
         server.use(http.get('/api/v1/admin/async-requests', () => new HttpResponse(null, {status: 500})));
 

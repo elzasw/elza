@@ -760,6 +760,21 @@ public class RuleService {
     }
 
     /**
+     * Revalidates the nodes that link (URI-REF) to the given nodes. Called when the link targets
+     * are deleted or restored, so the referring nodes show or drop the broken link error.
+     *
+     * @param linkedNodeIds ids of the link targets
+     */
+    public void revalidateNodesWithNodeRef(final Collection<Integer> linkedNodeIds) {
+        if (CollectionUtils.isEmpty(linkedNodeIds)) {
+            return;
+        }
+        List<NodeIdFundVersionIdInfo> pairs = ObjectListIterator.findIterable(linkedNodeIds,
+                nodeRepository::findNodeIdFundversionIdByLinkedNodeIds);
+        asyncRequestService.enqueueNodesGrouped(pairs);
+    }
+
+    /**
      * Smaže všechny vybrané stavy.
      *
      *

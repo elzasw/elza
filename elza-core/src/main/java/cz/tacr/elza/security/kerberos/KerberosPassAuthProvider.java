@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -74,7 +75,10 @@ public class KerberosPassAuthProvider implements AuthenticationProvider {
 			siemAuditLogger.loginSuccess(username, sourceIp, AuthenticationType.KERBEROS);
 			return ret;
 		} catch (UsernameNotFoundException e) {
-			siemAuditLogger.loginFailed(username, sourceIp, "INVALID_USERNAME");
+			siemAuditLogger.loginFailed(username, sourceIp, AuthenticationType.KERBEROS, "INVALID_USERNAME", null);
+			throw e;
+		} catch (LockedException e) {
+			siemAuditLogger.loginFailed(username, sourceIp, AuthenticationType.KERBEROS, "INACTIVE_USER", null);
 			throw e;
 		}
 	}

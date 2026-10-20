@@ -11,6 +11,7 @@ global DataValidationResults dvResults;
 
 function int rank(String level) {
     if ("ISADG_LEVEL_FONDS".equals(level)) return 1;
+    if ("ISADG_LEVEL_COLLECTION".equals(level)) return 1;
     if ("ISADG_LEVEL_SUBFONDS".equals(level)) return 2;
     if ("ISADG_LEVEL_SERIES".equals(level)) return 3;
     if ("ISADG_LEVEL_SUBSERIES".equals(level)) return 4;
@@ -19,23 +20,31 @@ function int rank(String level) {
     return 0;
 }
 
-// A level fits below the parent's level when it ranks lower; from the series down a level may also
-// nest in its own kind; a subfonds fits only directly below the fonds.
+// A level fits below the parent's level when it ranks lower; from the subfonds down a level may also
+// nest in its own kind (ISAD(G) 3.1.4: "first level sub-fonds, second level sub-fonds").
 function boolean fitsBelow(String child, String parent) {
     int c = rank(child);
     int p = rank(parent);
     if (c == 0 || p == 0) return true;
-    if ("ISADG_LEVEL_SUBFONDS".equals(child)) return p == 1;
     if (c > p) return true;
-    return c == p && c >= 3;
+    return c == p && c >= 2;
 }
 
-rule "ISAD(G) 3.1.4: the root of the fonds is a fonds"
+// Whether the level carries a container of its own.
+function boolean hasContainer(Level level) {
+    if (level == null || level.getDescItems() == null) return false;
+    for (DescItem item : level.getDescItems()) {
+        if ("ISADG_CONTAINER".equals(item.getType())) return true;
+    }
+    return false;
+}
+
+rule "ISAD(G) 3.1.4: the root is a fonds or a collection"
 when
     $activeLevel : ActiveLevel( parent == null )
-    not DescItem( type == "ISADG_LEVEL" && specCode == "ISADG_LEVEL_FONDS" ) from $activeLevel.ownDescItems
+    not DescItem( type == "ISADG_LEVEL" && specCode in ("ISADG_LEVEL_FONDS", "ISADG_LEVEL_COLLECTION") ) from $activeLevel.ownDescItems
 then
-    dvResults.createMissing("ISADG_LEVEL", "ROOT_IS_FONDS", "The root of the fonds must have the level Fonds (ISAD(G) 3.1.4).", "ISADG_POL_BASIC");
+    dvResults.createMissing("ISADG_LEVEL", "ROOT_LEVEL", "The root must have the level Fonds or Collection (ISAD(G) 3.1.4).", "ISADG_POL_BASIC");
 end
 
 rule "ISAD(G) 3.1.4: the level fits below the level of the parent"
@@ -59,11 +68,24 @@ then
     dvResults.createMissing("ISADG_DATE", "DATE_OUTSIDE_PARENT", "The dates of creation lie outside the dates of the parent unit (ISAD(G) 3.1.3).", "ISADG_POL_BASIC");
 end
 
-rule "Every file or item at the end of a branch is in a container"
+// The code is assigned by the archivist in the convention of the archive; core answers whether
+// another unit of the fonds carries the same value (DescItem.duplicateInFund, UNITID items only).
+rule "ISAD(G) 3.1.1: the reference code is unique in the fonds"
+when
+    $activeLevel : ActiveLevel()
+    $code : DescItem( type == "ISADG_REFERENCE_CODE" && duplicateInFund ) from $activeLevel.ownDescItems
+then
+    dvResults.createError($code.getDescItemId(), "REFERENCE_CODE_DUPLICATE", "The reference code is not unique in the fonds (ISAD(G) 3.1.1).", "ISADG_POL_REFERENCE_CODE");
+end
+
+// ISAD(G) has no container element and many conventions keep the location outside the finding aid,
+// so a container is demanded only where a neighbour of the unit has one.
+rule "A file or item without a container next to one with a container"
 when
     $activeLevel : ActiveLevel( !hasChildren )
     DescItem( type == "ISADG_LEVEL" && specCode in ("ISADG_LEVEL_FILE", "ISADG_LEVEL_ITEM") ) from $activeLevel.ownDescItems
     not ( $level : Level( $items : descItems ) and DescItem( type == "ISADG_CONTAINER" ) from $items )
+    eval( hasContainer($activeLevel.getSiblingBefore()) || hasContainer($activeLevel.getSiblingAfter()) )
 then
-    dvResults.createMissing("ISADG_CONTAINER", "CONTAINER_MISSING", "The unit and the units above it have no container.", "ISADG_POL_CONTAINER");
+    dvResults.createMissing("ISADG_CONTAINER", "CONTAINER_MISSING", "The unit has no container, while a neighbouring unit has one.", "ISADG_POL_CONTAINER");
 end

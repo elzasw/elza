@@ -46,6 +46,9 @@ public final class UnitDateLexicon {
         /** Characters read as the interval delimiter (en dash) */
         public final List<String> intervalDelimiterAliases;
 
+        /** Characters read as a plain space (no-break spaces, which Java's \s does not match) */
+        public final List<String> spaceAliases;
+
         /** Delimiter of an interval written with spaces (" - "); it may separate dates containing "-" */
         public final String spacedIntervalDelimiter;
 
@@ -71,6 +74,7 @@ public final class UnitDateLexicon {
         Common(final JsonNode node) {
             intervalDelimiter = node.get("intervalDelimiter").asText();
             intervalDelimiterAliases = strings(node.get("intervalDelimiterAliases"));
+            spaceAliases = strings(node.get("spaceAliases"));
             spacedIntervalDelimiter = node.get("spacedIntervalDelimiter").asText();
             estimateIntervalDelimiter = node.get("estimateIntervalDelimiter").asText();
             estimateOpen = strings(node.get("estimateOpen"));

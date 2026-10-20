@@ -35,7 +35,7 @@ public interface ArrFsLinkRepository extends JpaRepository<ArrFsLink, Integer> {
      * (path, nodeId, fundId, fundName) tuples. Paths are repository-relative
      * in the canonical '/' form. Used to mark browsed items as linked and to
      * expose the linking node/fund in the browser popover. Global scope per
-     * §8 item 3 of fs-repo-analysis.md — no fund predicate.
+     * §5 item 3 of fs-repo-analysis.md — no fund predicate.
      */
     @Query("SELECT dl.path, dl.nodeId, n.fund.fundId, n.fund.name" +
             " FROM arr_fs_link dl" +

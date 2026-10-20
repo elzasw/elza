@@ -22,8 +22,9 @@ published separately in Czech.
    05-security
    06-reverse-proxy
    07-integrations
-   08-monitoring
-   09-backup
-   10-troubleshooting
-   11-legacy-upgrades
-   12-release-notes
+   08-digital-repositories
+   09-monitoring
+   10-backup
+   11-troubleshooting
+   12-legacy-upgrades
+   13-release-notes

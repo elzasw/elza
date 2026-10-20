@@ -459,6 +459,14 @@ The ``INDEX`` script receives the part as ``PART`` and returns a
 - ``addIndex("SHORT_NAME", ...)`` on the preferred name: the short name
   of an institution described by the entity and of the institution in
   statistics (otherwise the display name is used).
+- ``addIndex("REAL_NAME", ...)`` on a name: the name as it is commonly
+  used, without supplements and degrees, a person in the natural order of
+  the words (``Petr Pytelka`` for the display name ``Pytelka, Petr``).
+  The text search matches the whole search text against it when the
+  package states the field in ``index-search`` (:ref:`index-search`); a
+  validation rule marks it repeatable among the names of an entity
+  (CZ_BASE: R_UNQ_002), because two names differing only in a supplement
+  share it.
 - ``setKeyValue`` and further ``addIndex`` values as the rule set needs.
 
 ``ap-type`` (attribute)
@@ -737,18 +745,31 @@ them, and ranks them on one scale.
                        boost-trans-exact="200.0" boost-fulltext="200.0" transliterate="true"/>
            <ns10:field name="nm_main" part-type="PT_NAME" boost="10.0" boost-exact="50.0"
                        boost-trans-exact="40.0" transliterate="true"/>
+           <ns10:field name="pref_real_name" index-type="REAL_NAME" boost-exact="1000.0"
+                       boost-trans-exact="800.0" boost-fulltext="400.0"/>
        </index-search>
    </settings>
 
 ``name`` (required, attribute) - field of the index: an item type code or
 ``<part type>_index`` in lower case (any part), prefixed by ``pref_`` for
-the preferred part. ``boost`` - weight of a match by wildcard;
-``boost-exact`` and ``boost-trans-exact`` - weight of an exact match, as
-written and transliterated; ``boost-fulltext`` - weight of a match of the
-whole search text (an index field without it gets four times ``boost``, an
-item field none); ``transliterate`` - the field is indexed also without
-diacritics (takes effect after reindexing); ``part-type`` - the part type
-holding the item, see below.
+the preferred part; with ``index-type`` any name. ``boost`` - weight of a
+match by wildcard; ``boost-exact`` and ``boost-trans-exact`` - weight of
+an exact match, as written and transliterated; ``boost-fulltext`` - weight
+of a match of the whole search text (an index field without it gets four
+times ``boost``, an item field none); ``transliterate`` - the field is
+indexed also without diacritics (takes effect after reindexing);
+``part-type`` - the part type holding the item, see below.
+
+``index-type`` - the field holds an index of the ``INDEX`` entity rules
+(e.g. ``REAL_NAME``, see :file:`rul_entity_rule.xml` above) instead of an
+item, prefixed by ``pref_`` the index of the preferred part only, otherwise
+of every part. The whole search text is matched against the whole index value:
+``boost-exact`` whatever the case, the punctuation and the order of the
+words (``pytelka, petr`` matches ``Petr Pytelka``), ``boost-trans-exact``
+whatever the diacritics as well, ``boost-fulltext`` by the words. Such a
+field takes no part in the search by words (``boost`` has no meaning) and
+needs no restart; entities indexed before the field was stated get it
+when they are reindexed.
 
 The application states the fields every entity has: ``accessPointId``,
 ``index`` and ``pref_index`` (the names produced by ``INDEX`` entity rules).
@@ -769,8 +790,9 @@ type installed later is searched after a restart.
 fields; a field stated by several packages is taken, as a whole, from the
 package that depends on the other (packages without a dependency between
 them are ordered by code). Deleting the package brings the fields of the
-others back. The index bridge reads the configuration at startup, so a
-change of ``transliterate`` needs a restart and reindexing.
+others back. The index bridge reads the configuration at startup and after
+every package import or removal; a change of ``transliterate`` takes effect
+after reindexing.
 
 .. _translation-files:
 

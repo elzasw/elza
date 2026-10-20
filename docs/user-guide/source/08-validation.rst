@@ -19,8 +19,8 @@ The rule set reports:
 - **Missing recommended elements.** The reference code and the dates of
   creation below the fonds. A recommended element missing is a reminder,
   not an error.
-- **The root is a fonds.** *The root of the fonds must have the level
-  Fonds (ISAD(G) 3.1.4).*
+- **The root is a fonds or a collection.** *The root must have the level
+  Fonds or Collection (ISAD(G) 3.1.4).*
 - **The level fits below the parent's level.** *The level of description
   does not fit below the level of the parent unit (ISAD(G) 3.1.4).*
   Reported when a level was changed or a unit moved so that, for
@@ -30,9 +30,13 @@ The rule set reports:
   lie outside the dates of the parent unit (ISAD(G) 3.1.3).* The dates of
   a series contain the dates of its files; widen the dates of the parent
   or correct the unit.
-- **Every file or item at the end of a branch is in a container.** *The
-  unit and the units above it have no container.* A container on a
-  parent counts (:doc:`05-containers`).
+- **The reference code is unique in the fonds.** *The reference code is
+  not unique in the fonds (ISAD(G) 3.1.1).* Reported on every unit that
+  carries the code; change the code of one of them (:doc:`03-levels`).
+- **A file or item without a container next to one with a container.**
+  *The unit has no container, while a neighbouring unit has one.* A
+  container on a parent counts; where no neighbour has a container,
+  nothing is reported (:doc:`05-containers`).
 
 The messages are shown in the language of the user interface: the
 English texts above, or their Czech translation.
@@ -46,16 +50,9 @@ the unit - for a branch that is not processed yet, or where the rule does
 not apply:
 
 - **Basic** - the elements and the hierarchy;
-- **Reference codes** - the reference codes (recommended below the fonds);
-- **Containers** - the containers at the end of the branches.
+- **Reference codes** - the reference codes (recommended below the fonds,
+  unique in the fonds);
+- **Containers** - a container missing next to a unit that has one.
 
 Switching a policy off hides its findings; it does not change the
 description.
-
-Generating reference codes
---------------------------
-
-The bulk action *Generator of reference codes* fills the reference codes
-of a branch by the position of the units (:doc:`03-levels`). Run it after
-the hierarchy is settled; moving units afterwards changes their position
-but not their codes, and the validation does not report the difference.

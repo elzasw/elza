@@ -2,6 +2,8 @@ package cz.tacr.elza.controller.vo;
 
 import static cz.tacr.elza.service.dao.FileSystemRepoService.FILE_URI_PREFIX;
 
+import org.apache.commons.lang3.StringUtils;
+
 import cz.tacr.elza.api.DaDownloadMethod;
 import cz.tacr.elza.api.DaOnReceivedAction;
 import cz.tacr.elza.api.DigitalRepositoryType;
@@ -36,6 +38,12 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
     private Integer syncDelay;
 
     private Integer statusPollInterval;
+
+    private String fileTransferUrl;
+
+    private String fileTransferType;
+
+    private Boolean tlsVerify;
 
     public String getViewDaoUrl() {
         return viewDaoUrl;
@@ -117,6 +125,30 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
         this.statusPollInterval = statusPollInterval;
     }
 
+    public String getFileTransferUrl() {
+        return fileTransferUrl;
+    }
+
+    public void setFileTransferUrl(String fileTransferUrl) {
+        this.fileTransferUrl = fileTransferUrl;
+    }
+
+    public String getFileTransferType() {
+        return fileTransferType;
+    }
+
+    public void setFileTransferType(String fileTransferType) {
+        this.fileTransferType = fileTransferType;
+    }
+
+    public Boolean getTlsVerify() {
+        return tlsVerify;
+    }
+
+    public void setTlsVerify(Boolean tlsVerify) {
+        this.tlsVerify = tlsVerify;
+    }
+
     @Override
     public SysExternalSystem createEntity(ApScope scope) {
         ArrDigitalRepository entity = new ArrDigitalRepository();
@@ -142,7 +174,9 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
             entity.setViewDaoUrl(viewDaoUrl);
             entity.setViewFileUrl(viewFileUrl);
             entity.setViewThumbnailUrl(viewThumbnailUrl);
-            entity.setSendNotification(sendNotification);
+            // notifications about linked objects exist only for a WSDL repository
+            entity.setSendNotification(digitalRepositoryType == DigitalRepositoryType.WSDL
+                    ? sendNotification : Boolean.FALSE);
         }
         if (multipleLinks != null) {
             entity.setMultipleLinks(multipleLinks);
@@ -165,6 +199,15 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
                             BaseCode.PROPERTY_IS_INVALID).set("statusPollInterval", statusPollInterval);
                 }
                 entity.setStatusPollInterval(statusPollInterval);
+            }
+            // an empty key would sign the API requests with an empty secret; no key = no signature
+            entity.setApiKeyId(StringUtils.trimToNull(getApiKeyId()));
+            entity.setApiKeyValue(StringUtils.trimToNull(getApiKeyValue()));
+            // an empty value means the default (derived endpoint, no type)
+            entity.setFileTransferUrl(StringUtils.trimToNull(fileTransferUrl));
+            entity.setFileTransferType(StringUtils.trimToNull(fileTransferType));
+            if (tlsVerify != null) {
+                entity.setTlsVerify(tlsVerify);
             }
         }
 
@@ -195,6 +238,9 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
         vo.setOnReceived(src.getOnReceived());
         vo.setSyncDelay(src.getSyncDelay());
         vo.setStatusPollInterval(src.getStatusPollInterval());
+        vo.setFileTransferUrl(src.getFileTransferUrl());
+        vo.setFileTransferType(src.getFileTransferType());
+        vo.setTlsVerify(src.getTlsVerify());
         return vo;
     }
 }

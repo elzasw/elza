@@ -179,6 +179,10 @@
     "defaultMessage": "Running threads",
     "srcHash": "jRrMV0X_4DcG"
   },
+  "admin.bulk.title.starting": {
+    "defaultMessage": "Starting",
+    "srcHash": "5wFN76sQIPQ9"
+  },
   "admin.bulk.title.totalThreadCount": {
     "defaultMessage": "Threads in total",
     "srcHash": "LhV5444RkALK"
@@ -455,6 +459,18 @@
     "defaultMessage": "Digital archive",
     "srcHash": "iPgFLR6539C0"
   },
+  "admin.extSystem.daFileTransferType": {
+    "defaultMessage": "File Transfer download request type",
+    "srcHash": "o7xK0GHTaht5"
+  },
+  "admin.extSystem.daFileTransferUrl": {
+    "defaultMessage": "File Transfer URL",
+    "srcHash": "3ygcpKeNu9Zm"
+  },
+  "admin.extSystem.daFileTransferUrlDerived": {
+    "defaultMessage": "{url} (derived from URL)",
+    "srcHash": "gzn62uQ5-tUB"
+  },
   "admin.extSystem.daQueue": {
     "defaultMessage": "Digital archive request queue",
     "srcHash": "zeuzMGQwHRZ-"
@@ -470,6 +486,18 @@
   "admin.extSystem.daSyncDelay": {
     "defaultMessage": "Synchronization interval (s), 0 = no synchronization",
     "srcHash": "wXgprAUB_RPo"
+  },
+  "admin.extSystem.daTlsVerify": {
+    "defaultMessage": "Verify TLS certificate",
+    "srcHash": "LB2UuaEVmxmg"
+  },
+  "admin.extSystem.daTlsVerify.false": {
+    "defaultMessage": "No - trust any certificate (e.g. self-signed)",
+    "srcHash": "hjsneuGT7Api"
+  },
+  "admin.extSystem.daTlsVerify.true": {
+    "defaultMessage": "Yes",
+    "srcHash": "HFtwBBU9Smvu"
   },
   "admin.extSystem.delete.confirm": {
     "defaultMessage": "Do you really want to delete this external system?",
@@ -1857,6 +1885,10 @@
     "defaultMessage": "Select a report...",
     "srcHash": "ecrUhpCIacEx"
   },
+  "aiAssistant.action.branchCheck": {
+    "defaultMessage": "Branch check",
+    "srcHash": "pOhi8OG7QW78"
+  },
   "aiAssistant.action.cancel": {
     "defaultMessage": "Cancel",
     "srcHash": "bHfYpLCt8F6P"
@@ -1996,6 +2028,26 @@
   "aiAssistant.block.unsupported": {
     "defaultMessage": "Unsupported content type.",
     "srcHash": "kqb8iHc_uQ8i"
+  },
+  "aiAssistant.branch.confirm": {
+    "defaultMessage": "The branch under the selected description unit has {levels, plural, one {# subordinate level} other {# subordinate levels}}. The check downloads them and goes through them window by window in one run; you can stop it at any time. Start?",
+    "srcHash": "zxLguBx1QMYI"
+  },
+  "aiAssistant.branch.empty": {
+    "defaultMessage": "The selected description unit has no subordinate levels.",
+    "srcHash": "3StU_ZrKMUzm"
+  },
+  "aiAssistant.branch.loadFailed": {
+    "defaultMessage": "The size of the branch could not be determined.",
+    "srcHash": "l5O-05emNuRq"
+  },
+  "aiAssistant.branch.start": {
+    "defaultMessage": "Start",
+    "srcHash": "vxF0us80z5om"
+  },
+  "aiAssistant.branch.title": {
+    "defaultMessage": "Branch check",
+    "srcHash": "pOhi8OG7QW78"
   },
   "aiAssistant.context.accessPoint": {
     "defaultMessage": "Access point",
@@ -7357,6 +7409,10 @@
     "defaultMessage": "Download CSV",
     "srcHash": "1LaqY8gF6JE1"
   },
+  "fundTree.action.move": {
+    "defaultMessage": "Move",
+    "srcHash": "730fZgopGFE4"
+  },
   "fundTree.action.open": {
     "defaultMessage": "Open in the current tab",
     "srcHash": "aVnnU1TSMXvq"
@@ -8385,6 +8441,10 @@
     "defaultMessage": "System",
     "srcHash": "YXO4Du8RKZTK"
   },
+  "publication.error.title": {
+    "defaultMessage": "Error message",
+    "srcHash": "LsvOIxfwdqnc"
+  },
   "publication.state.FETCHED": {
     "defaultMessage": "Fetched",
     "srcHash": "Kfq47bGGJOHQ"
@@ -8505,6 +8565,10 @@
     "defaultMessage": "New publication system",
     "srcHash": "Iq-OuY10Pc1a"
   },
+  "publication.table.error.hint": {
+    "defaultMessage": "Click to show the full message",
+    "srcHash": "Wa5ukmmwe7wr"
+  },
   "publication.table.menu.copy": {
     "defaultMessage": "Copy to...",
     "srcHash": "TrAUJO6JN4TZ"
@@ -8516,6 +8580,10 @@
   "publication.table.menu.download": {
     "defaultMessage": "Download",
     "srcHash": "xxAzjqAuIzkG"
+  },
+  "publication.table.menu.error": {
+    "defaultMessage": "Show error",
+    "srcHash": "NpDaypnO5HHo"
   },
   "registry.add.type": {
     "defaultMessage": "Entity class",

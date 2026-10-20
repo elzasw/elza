@@ -33,7 +33,7 @@ import {modalDialogShow} from 'actions/global/modalDialog.jsx';
 import {FOCUS_KEYS} from '../../constants.tsx';
 import {PersistentSortDialog} from './PersistentSortDialog';
 import {WebApi} from '../../actions/WebApi';
-import {getFundVersion, JAVA_ATTR_CLASS, urlFundGrid, ZP2015_INTRO_VYPOCET_EJ} from '../../constants';
+import {getFundVersion, JAVA_ATTR_CLASS, urlFundGrid, urlFundMovements, ZP2015_INTRO_VYPOCET_EJ} from '../../constants';
 import {Link} from 'react-router-dom';
 import { showQuoteModal, messages as quoteMessages } from './quote';
 
@@ -116,6 +116,9 @@ class FundTreeMain extends React.Component {
         e.stopPropagation();
 
         const dataGridUrl = urlFundGrid(fund.id, getFundVersion(fund), undefined, node.id);
+        const movementsUrl = urlFundMovements(fund.id, getFundVersion(fund), node.id);
+        // the server refuses moves in a closed version
+        const isMoveAllowed = !readMode && !fund.closed;
 
         const menu = (
             <ul className="dropdown-menu">
@@ -125,6 +128,11 @@ class FundTreeMain extends React.Component {
                 <Dropdown.Item as={Link} to={dataGridUrl} onClick={() => this.props.dispatch(contextMenuHide())}>
                     {<FormattedMessage {...arrPanelMessages.fundTreeActionOpenInDataGrid} />}
                 </Dropdown.Item>
+                {isMoveAllowed && (
+                    <Dropdown.Item as={Link} to={movementsUrl} onClick={() => this.props.dispatch(contextMenuHide())}>
+                        {<FormattedMessage {...arrPanelMessages.fundTreeActionMove} />}
+                    </Dropdown.Item>
+                )}
                 <Dropdown.Item onClick={this.handleQuote(node)}>
                     <FormattedMessage {...quoteMessages.quoteTitle}/>
                 </Dropdown.Item>

@@ -51,6 +51,8 @@ public enum CoreMessage {
     ARR_UNDEFINED_NOT_ALLOWED(2, "The item {0} cannot have the value “{1}”."),
     // {0} item type, {1} id of the entity
     ARR_DELETED_ENTITY_REF(2, "The item {0} refers to an invalidated entity (id: {1})."),
+    // {0} item type, {1} description of the link, or its value when it has none
+    ARR_BROKEN_NODE_REF(2, "The item {0} refers to a deleted or unknown unit of description ({1})."),
 
     // terms used as arguments of other messages
     /** The word for a value marked as undefined ({@code ArrangementService.UNDEFINED}). */

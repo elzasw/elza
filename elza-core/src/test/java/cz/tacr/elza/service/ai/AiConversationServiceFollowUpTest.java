@@ -147,6 +147,23 @@ class AiConversationServiceFollowUpTest {
         assertThat(storedRequest().getTaskType()).isEqualTo("elza.revision");
     }
 
+    @Test
+    void aContinuationReusesThePreviousExchangeAndEchoesTheToken() {
+        // The suggested "next part" of a stopped branch check: whatever the
+        // request names, the previous finished exchange's type is kept, its
+        // parameters re-resolved, and the provider's token echoed verbatim.
+        service.createRequest(5, new AiRequestCreateVO()
+                .taskType("elza.enhanceDescription")
+                .userInstructions("Pokračuj v kontrole větve další částí.")
+                .continuation("b1:24:4711"));
+
+        SubmitTask submitted = submittedTask();
+        assertThat(submitted.getTaskType()).isEqualTo("elza.revision");
+        assertThat(submitted.getParentTaskId()).isEqualTo("t-parent-42");
+        assertThat(submitted.getContinuation()).isEqualTo("b1:24:4711");
+        assertThat(storedRequest().getTaskType()).isEqualTo("elza.revision");
+    }
+
     private SubmitTask submittedTask() {
         ArgumentCaptor<SubmitTask> captor = ArgumentCaptor.forClass(SubmitTask.class);
         verify(api).submitTask(any(OffsetDateTime.class), captor.capture());

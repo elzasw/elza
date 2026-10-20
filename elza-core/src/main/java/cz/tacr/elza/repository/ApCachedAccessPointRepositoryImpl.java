@@ -7,12 +7,14 @@ import static cz.tacr.elza.domain.ArrDescItem.NORM_TO;
 import static cz.tacr.elza.domain.ArrDescItem.REL_AP_ID;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.AP_TYPE_ID;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.INDEX;
+import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.INDEX_TYPE_FIELD;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.NM_MAIN;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.PREFIX_PREF;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.PREF_INDEX;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.SCOPE_ID;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.SEPARATOR;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.STATE;
+import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.TRANS;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.VALIDATION_RESULT;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.REV_STATE;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.USERNAME;
@@ -52,6 +54,7 @@ import cz.tacr.elza.domain.ApCachedAccessPoint;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.RevStateApproval;
+import cz.tacr.elza.domain.bridge.IndexValueNormalizer;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPartType;
@@ -415,6 +418,45 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
         if (StringUtils.isEmpty(partTypeCode) || !partTypeCode.equals(PREFIX_PREF)) {
             addFullTextFieldBoost(factory, bool, INDEX, searchLower);
         }
+
+        // Fields of an index type (CZ_BASE: pref_real_name, real_name) - the whole text against the whole name
+        for (SettingIndexSearch.Field field : settingsService.getIndexSearch().indexTypeFields(partTypeCode)) {
+            addIndexTypeFieldBoost(factory, bool, field, search);
+        }
+    }
+
+    /**
+     * Clauses of a field of an index type ({@code index-type}): the exact match of the whole search
+     * text ({@code boost-exact}; case, punctuation and the order of the words do not matter, see
+     * {@link IndexValueNormalizer}), the same without diacritics ({@code boost-trans-exact}) and the
+     * BM25 match of the text on the tokenized value ({@code boost-fulltext}). The fields are declared
+     * by templates, so they exist whether or not an entity has written them.
+     */
+    private void addIndexTypeFieldBoost(SearchPredicateFactory factory,
+                                        BooleanPredicateClausesStep<?> bool,
+                                        SettingIndexSearch.Field field,
+                                        String search) {
+        String exact = IndexValueNormalizer.exact(search);
+        if (exact.isEmpty()) {
+            return;
+        }
+        String base = addDataPrefix(field.getName()) + INDEX_TYPE_FIELD;
+        if (field.getBoostExact() != null) {
+            bool.should(factory.match().field(base).matching(exact).boost(field.getBoostExact()));
+        }
+        if (field.getBoostTransExact() != null) {
+            bool.should(factory.match().field(base + TRANS)
+                    .matching(IndexValueNormalizer.transliteratedExact(search))
+                    .boost(field.getBoostTransExact()));
+        }
+        if (field.getBoostFulltext() != null) {
+            bool.should(factory.match().field(base + ANALYZED).matching(search.toLowerCase()).boost(field.getBoostFulltext()));
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("addIndexTypeFieldBoost: field='{}' (resolved='{}'), indexType={}, exact='{}', boostExact={}, boostTransExact={}, boostFulltext={}",
+                      field.getName(), base, field.getIndexType(), exact, field.getBoostExact(),
+                      field.getBoostTransExact(), field.getBoostFulltext());
+        }
     }
 
     /**
@@ -606,9 +648,10 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
         }
         StringBuilder sb = new StringBuilder("Search config (INDEX_SEARCH) fields:\n");
         for (SettingIndexSearch.Field field : sis.getFields()) {
-            sb.append(String.format("  field='%s', boost=%s, boostExact=%s, boostTransExact=%s, boostFulltext=%s, transliterate=%s%n",
+            sb.append(String.format("  field='%s', boost=%s, boostExact=%s, boostTransExact=%s, boostFulltext=%s, transliterate=%s, indexType=%s%n",
                                     field.getName(), field.getBoost(), field.getBoostExact(),
-                                    field.getBoostTransExact(), field.getBoostFulltext(), field.getTransliterate()));
+                                    field.getBoostTransExact(), field.getBoostFulltext(), field.getTransliterate(),
+                                    field.getIndexType()));
         }
         log.trace(sb.toString());
     }

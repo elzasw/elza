@@ -1,10 +1,14 @@
 package cz.tacr.elza.packageimport;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -30,6 +34,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import cz.tacr.elza.ElzaCoreMain;
 import cz.tacr.elza.controller.AccessPointController;
 import cz.tacr.elza.controller.ApController;
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemStringVO;
@@ -63,9 +68,10 @@ import cz.tacr.elza.repository.ItemTypeRepository;
 
 /**
  * An entity description framework without CZ_BASE: the test package {@code entity-standalone-test}
- * declares PERSON (as the parent only), PERSON_INDIVIDUAL, PT_NAME, PT_BODY, PT_REL, NM_MAIN and NOTE itself, has no AUTO_ITEMS script and none
- * of the CAM item types. The core must create, index and validate its entities, create users from
- * tokens and institutions.
+ * declares PERSON (as the parent only), PERSON_INDIVIDUAL, PT_NAME, PT_BODY, PT_REL, NM_MAIN, its own
+ * name items and NOTE itself, has no AUTO_ITEMS script and none of the CAM item types. The core must
+ * create, index and validate its entities, create users from tokens and institutions, and rank the
+ * search by the index the package states in {@code index-search}.
  *
  * <p>Packages stay installed across test classes, so the class removes all of them first; later test
  * classes import the packages they need again. Context configuration matches {@code AbstractTest} so
@@ -221,6 +227,47 @@ public class StandaloneFrameworkTest {
         assertEquals("Nov", institution.getShortName());
     }
 
+    /**
+     * The whole search text matched against the REAL_NAME index (stated by the package in
+     * {@code index-search}, read by the index bridge at its import) ranks the entity whose common
+     * name the user typed above an entity whose shorter catalogue name merely contains the words;
+     * the match ignores the order of the words and the diacritics.
+     */
+    @Test
+    @Order(5)
+    void realNameRanksTheCommonNameFirst() {
+        ApScope scope = txGet(() -> scopeRepository.save(newScope("STD_SEARCH")));
+        // "Rumburak, Petr (zlý čaroděj)", REAL_NAME "Petr Rumburak"
+        Integer wanted = createPerson(scope, string("NM_MAIN", "Rumburak"), string("STD_MINOR", "Petr"),
+                                      string("STD_SUP", "zlý čaroděj"));
+        // "Rumburak, Petr Abel", REAL_NAME "Petr Abel Rumburak": the shorter catalogue name
+        Integer other = createPerson(scope, string("NM_MAIN", "Rumburak"), string("STD_MINOR", "Petr Abel"));
+
+        // indexing is asynchronous (outbox polling) and the validation queue reindexes a new entity once more
+        awaitSearch(List.of(wanted, other), "petr rumburak", scope);
+        awaitSearch(List.of(wanted, other), "Rumburák, Petr", scope);
+        // every word must match a field of the entity: the index of the common name adds no recall
+        awaitSearch(List.of(other), "petr abel rumburak", scope);
+    }
+
+    private void awaitSearch(List<Integer> expected, String text, ApScope scope) {
+        await().atMost(30, SECONDS).pollInterval(200, MILLISECONDS).untilAsserted(
+                () -> assertEquals(expected, search(text, scope), text));
+    }
+
+    private Integer createPerson(ApScope scope, ApItemVO... items) {
+        return txGet(() -> accessPointService.createAccessPoint(scope,
+                staticDataService.getData().getApTypeByCode("PERSON_INDIVIDUAL"), form("PT_NAME", items))
+                .getAccessPointId());
+    }
+
+    /** Ids of the entities of the scope found by the text search, in the order of the search. */
+    private List<Integer> search(String text, ApScope scope) {
+        return txGet(() -> accessPointService.findUseLuceneQueries(text, null, null, null, scope.getScopeId(),
+                                                                    null, null, 0, 10, staticDataService.getData())
+                .getRows().stream().map(ApAccessPointVO::getId).toList());
+    }
+
     private ApScope newScope(String code) {
         ApScope scope = new ApScope();
         scope.setCode(code);
@@ -229,10 +276,10 @@ public class StandaloneFrameworkTest {
         return scope;
     }
 
-    private ApPartFormVO form(String partType, ApItemVO item) {
+    private ApPartFormVO form(String partType, ApItemVO... items) {
         ApPartFormVO form = new ApPartFormVO();
         form.setPartTypeCode(partType);
-        form.setItems(new java.util.ArrayList<>(List.of(item)));
+        form.setItems(new ArrayList<>(List.of(items)));
         return form;
     }
 

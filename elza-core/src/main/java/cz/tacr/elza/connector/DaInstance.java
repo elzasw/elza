@@ -18,9 +18,17 @@ public class DaInstance {
 
     private final String url;
 
+    private final String fileTransferUrl;
+
     private static final String FILETRANSFER_URL = "/ws/ft";
 
-    public DaInstance(final String url, final String apiKey, final String apiValue, final String username, final String password) {
+    /**
+     * @param fileTransferUrl File Transfer endpoint; blank = {@code url} + {@code /ws/ft}
+     * @param tlsVerify       false = trust any TLS certificate of the DA (REST API and File Transfer)
+     */
+    public DaInstance(final String url, final String fileTransferUrl,
+                      final String apiKey, final String apiValue, final String username, final String password,
+                      final boolean tlsVerify) {
         if (StringUtils.isEmpty(url)) {
             throw new IllegalArgumentException("Není nastavena properta da.url pro připojení api");
         } else if (StringUtils.isEmpty(apiKey)) {
@@ -33,16 +41,19 @@ public class DaInstance {
 //            throw new IllegalArgumentException("Není nastavena properta da.password pro připojení api");
         }
         this.url = StringUtils.stripEnd(url.trim(), "/");
+        this.fileTransferUrl = resolveFileTransferUrl(url, fileTransferUrl);
         String apiUrl = getApiUrl();
-        ApiClientDa apiClientDa = new ApiClientDa(apiUrl, apiKey, apiValue);
+        ApiClientDa apiClientDa = new ApiClientDa(apiUrl, apiKey, apiValue, tlsVerify);
         defaultApi = new DefaultApi(apiClientDa);
-        fileTransferClient = FileTransfer.createClient(createClientConfig(url + FILETRANSFER_URL, username, password));
+        fileTransferClient = FileTransfer.createClient(createClientConfig(this.fileTransferUrl, username, password, tlsVerify));
         fileTransferClient.start();
-        logger.debug("Inicializován konektor na DA: {} (apiKey: {})", apiUrl, apiKey);
+        logger.debug("Inicializován konektor na DA: {} (apiKey: {}, tlsVerify: {})", apiUrl, apiKey, tlsVerify);
     }
 
-    private ClientConfig createClientConfig(final String url, final String username, final String password) {
+    private ClientConfig createClientConfig(final String url, final String username, final String password,
+                                            final boolean tlsVerify) {
         ClientConfig clientConfig = new ClientConfig(url);
+        clientConfig.setTlsVerify(tlsVerify);
     	if (username != null) {
             ClientConfig.Authorization authorization = new ClientConfig.Authorization();
             authorization.setAuthorizationType("Basic");
@@ -58,7 +69,18 @@ public class DaInstance {
     }
 
     public String getFileTransferUrl() {
-        return url + FILETRANSFER_URL;
+        return fileTransferUrl;
+    }
+
+    /**
+     * File Transfer endpoint of a DA repository: the configured one, or the API URL
+     * (without a trailing slash) + {@code /ws/ft}.
+     */
+    public static String resolveFileTransferUrl(final String url, final String fileTransferUrl) {
+        if (StringUtils.isNotBlank(fileTransferUrl)) {
+            return fileTransferUrl.trim();
+        }
+        return StringUtils.stripEnd(url.trim(), "/") + FILETRANSFER_URL;
     }
 
     public DefaultApi getDefaultApi() {

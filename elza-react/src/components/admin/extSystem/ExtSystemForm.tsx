@@ -167,7 +167,39 @@ export const daSettingsMessages = defineMessages({
         id: 'admin.extSystem.daStatusPollIntervalMin',
         defaultMessage: 'Interval musí být alespoň 1 s',
     },
+    fileTransferUrl: {
+        id: 'admin.extSystem.daFileTransferUrl',
+        defaultMessage: 'File Transfer URL',
+    },
+    fileTransferUrlDerived: {
+        id: 'admin.extSystem.daFileTransferUrlDerived',
+        defaultMessage: '{url} (odvozeno z URL)',
+    },
+    fileTransferType: {
+        id: 'admin.extSystem.daFileTransferType',
+        defaultMessage: 'Typ požadavku File Transfer při stahování',
+    },
+    tlsVerify: {
+        id: 'admin.extSystem.daTlsVerify',
+        defaultMessage: 'Ověřovat TLS certifikát',
+    },
+    tlsVerifyTrue: {
+        id: 'admin.extSystem.daTlsVerify.true',
+        defaultMessage: 'Ano',
+    },
+    tlsVerifyFalse: {
+        id: 'admin.extSystem.daTlsVerify.false',
+        defaultMessage: 'Ne - důvěřovat jakémukoli certifikátu (např. self-signed)',
+    },
 });
+
+const FILE_TRANSFER_PATH = '/ws/ft';
+
+/** File Transfer endpoint the server derives from the repository URL when none is configured. */
+export function deriveFileTransferUrl(url?: string): string | undefined {
+    const base = url?.trim().replace(/\/+$/, '');
+    return base ? base + FILE_TRANSFER_PATH : undefined;
+}
 
 export const DA_DOWNLOAD_METHOD_MESSAGE: Record<string, MessageDescriptor> = {
     [DaDownloadMethod.Standard]: daSettingsMessages.downloadMethodStandard,
@@ -204,6 +236,9 @@ type ExtSystemFormValues = {
     onReceived?: string;
     syncDelay?: number;
     statusPollInterval?: number;
+    fileTransferUrl?: string;
+    fileTransferType?: string;
+    tlsVerify?: boolean;
 };
 
 type Scope = {
@@ -244,6 +279,12 @@ function isDaRepository(values: ExtSystemFormValues) {
         && values.digitalRepositoryType === DigitalRepositoryType.Da;
 }
 
+/** Notifications about linked objects are sent only to a WSDL repository. */
+function isWsdlRepository(values: ExtSystemFormValues) {
+    return values[JAVA_ATTR_CLASS] === EXT_SYSTEM_CLASS.ArrDigitalRepository
+        && values.digitalRepositoryType === DigitalRepositoryType.Wsdl;
+}
+
 function validate(values: ExtSystemFormValues) {
     const classJ = values[JAVA_ATTR_CLASS];
     let requiredFields = [...REQUIRED_FIELDS.abstractExtSystem];
@@ -253,7 +294,7 @@ function validate(values: ExtSystemFormValues) {
     } else if (classJ === EXT_SYSTEM_CLASS.ArrDigitalRepository) {
         requiredFields = requiredFields.concat(
             REQUIRED_FIELDS[EXT_SYSTEM_CLASS.ArrDigitalRepository]
-                .filter((name) => !(name === 'sendNotification' && isFilesystemRepository(values))),
+                .filter((name) => !(name === 'sendNotification' && !isWsdlRepository(values))),
         );
         if (isDaRepository(values)) {
             requiredFields = requiredFields.concat(REQUIRED_FIELDS.daRepository);
@@ -293,6 +334,7 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
     const classJ = values[JAVA_ATTR_CLASS];
     const isFsRepo = isFilesystemRepository(values);
     const isDaRepo = isDaRepository(values);
+    const isWsdlRepo = isWsdlRepository(values);
     const allowedApTypes = isUpdate
         ? INTERCHANGEABLE_TYPES.find((group) => group.includes(values.type as AP_EXT_SYSTEM_TYPE)) ?? [values.type]
         : Object.values(AP_EXT_SYSTEM_TYPE);
@@ -414,7 +456,7 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
                             />
                         </>
                     )}
-                    {!isFsRepo && (
+                    {isWsdlRepo && (
                         <Field
                             name="sendNotification"
                             type="select"
@@ -458,6 +500,34 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
                                         {intl.formatMessage(DA_DOWNLOAD_METHOD_MESSAGE[i])}
                                     </option>
                                 ))}
+                            </Field>
+                            {values.downloadMethod === DaDownloadMethod.FileTransfer && (
+                                <Field
+                                    name="fileTransferType"
+                                    type="text"
+                                    component={FormInputField}
+                                    label={intl.formatMessage(daSettingsMessages.fileTransferType)}
+                                />
+                            )}
+                            {/* exports always go over File Transfer, so the endpoint is offered for any method */}
+                            <Field
+                                name="fileTransferUrl"
+                                type="text"
+                                component={FormInputField}
+                                label={intl.formatMessage(daSettingsMessages.fileTransferUrl)}
+                                placeholder={deriveFileTransferUrl(values.url)}
+                            />
+                            {/* an unset value is shown and saved as the server default: verify */}
+                            <Field
+                                name="tlsVerify"
+                                type="select"
+                                component={FormInputField}
+                                label={intl.formatMessage(daSettingsMessages.tlsVerify)}
+                                format={(v?: boolean) => (v === false ? 'false' : 'true')}
+                                parse={(v: string) => v !== 'false'}
+                            >
+                                <option value="true">{intl.formatMessage(daSettingsMessages.tlsVerifyTrue)}</option>
+                                <option value="false">{intl.formatMessage(daSettingsMessages.tlsVerifyFalse)}</option>
                             </Field>
                             <Field
                                 name="onReceived"
@@ -529,7 +599,8 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
             )}
             {(classJ === EXT_SYSTEM_CLASS.ApExternalSystem ||
                 classJ === EXT_SYSTEM_CLASS.GisExternalSystem ||
-                classJ === EXT_SYSTEM_CLASS.AiExternalSystem) && (
+                classJ === EXT_SYSTEM_CLASS.AiExternalSystem ||
+                isDaRepo) && (
                 <>
                     <Field
                         name="apiKeyId"

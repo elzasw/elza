@@ -264,7 +264,7 @@ const ArrRefTemplates = ({descItemTypes, onUpdateBase, onClose, fundId, onCreate
                                                                                 )
                                                                             }
                                                                         >
-                                                                            {<FormattedMessage {...globalMessages.save} />}
+                                                                            {<FormattedMessage {...globalMessages.edit} />}
                                                                         </Dropdown.Item>
                                                                         <Dropdown.Item
                                                                             onClick={() => onDeleteMapping(i.id)}

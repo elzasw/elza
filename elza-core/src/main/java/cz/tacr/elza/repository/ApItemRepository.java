@@ -26,6 +26,9 @@ public interface ApItemRepository extends JpaRepository<ApItem, Integer> {
     @Query("SELECT COUNT(i) FROM ApItem i WHERE i.itemSpec = ?1")
     long countBySpec(cz.tacr.elza.domain.RulItemSpec itemSpec);
 
+    @Query("SELECT DISTINCT i.itemSpec FROM ApItem i WHERE i.itemSpec IN ?1")
+    List<cz.tacr.elza.domain.RulItemSpec> findUsedSpecs(Collection<cz.tacr.elza.domain.RulItemSpec> itemSpecs);
+
     @Query("SELECT COUNT(i) FROM ApItem i WHERE i.itemType = ?1 AND i.itemSpec = ?2")
     long countByTypeAndSpec(RulItemType itemType, cz.tacr.elza.domain.RulItemSpec itemSpec);
 

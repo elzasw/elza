@@ -19,6 +19,7 @@ import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrInhibitedItem;
@@ -72,12 +73,16 @@ public class ModelFactory {
      * Vytvoří hodnoty atributu.
      *
      * @param descItems hodnoty atributu
+     * @param duplicateChecker
+     *            answers whether a UNITID value is carried by another unit of the fund; null when
+     *            the model needs no such answer
      * @return seznam vo hodnot atributu
      */
     static public List<DescItem> createDescItems(@Nullable final List<ArrDescItem> descItems,
 	        DescItemFactory descItemFactory,
 	        StructuredItemRepository itemRepos,
-	        ApProvider apProvider)
+	        ApProvider apProvider,
+	        @Nullable UnitIdDuplicateChecker duplicateChecker)
     {
     	if(descItems==null) {
     		return new ArrayList<>();
@@ -105,6 +110,16 @@ public class ModelFactory {
                 } else if (data.getType() == DataType.UNITDATE) {
                     ArrDataUnitdate unitDate = HibernateUtils.unproxy(data);
                     voDescItem.setUnitDate(unitDate);
+                } else if (data.getType() == DataType.UNITID) {
+                    ArrDataUnitid unitId = HibernateUtils.unproxy(data);
+                    String value = unitId.getUnitId();
+                    voDescItem.setString(value);
+                    if (duplicateChecker != null) {
+                        Integer nodeId = descItem.getNodeId();
+                        Integer itemTypeId = descItem.getItemTypeId();
+                        voDescItem.setDuplicateInFundCheck(
+                                () -> duplicateChecker.isDuplicate(nodeId, itemTypeId, value));
+                    }
                 } else if (data.getType() == DataType.RECORD_REF) {
                 	// store entity id as integer value
                     ArrDataRecordRef recordRef = HibernateUtils.unproxy(data);

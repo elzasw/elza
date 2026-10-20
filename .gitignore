@@ -51,6 +51,7 @@ elza-web/lucene
 elza-web/groovy
 elza-web/work/
 elza-core/work/
+elza-core/bin/
 
 run.bat
 elza-core/src/main/resources/xsd/META-INF/*.episode

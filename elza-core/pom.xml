@@ -16,7 +16,7 @@
         <barcode4j.version>2.4.0</barcode4j.version>
         <webmvc-ui.version>2.8.17</webmvc-ui.version> <!-- 3.x targets Spring Boot 4 -->
         <h2.version>2.2.222</h2.version> <!-- specially for query from ReportServiceQuery.java, v2.3.x causes errors -->
-        <ft.version>2.0</ft.version> <!-- com.lightcomp.ft : file-transfer -->
+        <ft.version>2.1</ft.version> <!-- com.lightcomp.ft : file-transfer -->
         <jaxb.version>4.0.11</jaxb.version> <!-- 4.0.0 -->
         <swagger.version>2.2.19</swagger.version> <!-- latest version 2.2.40 -->
     </properties>
@@ -367,10 +367,6 @@
 			<artifactId>janino</artifactId>
 		</dependency>
 		<dependency>
-            <groupId>com.sun.xml.messaging.saaj</groupId>
-            <artifactId>saaj-impl</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.lightcomp.ft</groupId>
             <artifactId>file-transfer</artifactId>
             <version>${ft.version}</version>
@@ -773,6 +769,7 @@
                                 <modelNameMapping>AiAccountUsage=AiAccountUsageVO</modelNameMapping>
                                 <modelNameMapping>AiCustomerUsage=AiCustomerUsageVO</modelNameMapping>
                                 <modelNameMapping>AiUsageBalance=AiUsageBalanceVO</modelNameMapping>
+                                <modelNameMapping>AiBranchSize=AiBranchSizeVO</modelNameMapping>
                                 <modelNameMapping>AiMyKey=AiMyKeyVO</modelNameMapping>
                                 <modelNameMapping>AiMyKeyUpdate=AiMyKeyUpdateVO</modelNameMapping>
                                 <modelNameMapping>AiProviderInfo=AiProviderInfoVO</modelNameMapping>
@@ -845,6 +842,11 @@
                             <configOptions>
                                 <useJakartaEe>true</useJakartaEe>
                                 <library>restclient</library>
+                                <!-- Kontrakt providera roste aditivne: neznamy kod enumu
+                                     (novy ObjectType v resultTypes, novy stav ulohy) se
+                                     mapuje na UNKNOWN_DEFAULT_OPEN_API misto vyjimky pri
+                                     parsovani odpovedi. -->
+                                <enumUnknownDefaultCase>true</enumUnknownDefaultCase>
                             </configOptions>
                         </configuration>
                     </execution>

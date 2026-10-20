@@ -776,8 +776,8 @@
         <!-- Step 3b: split arr_dao_link into a JOINED hierarchy. The base table
              keeps the shared spine (node, changes, link_type); each target shape
              gets its own subtype table with real NOT NULL constraints, replacing
-             the convention of nullable column groups. See da-migration.md par. 3
-             and fs-repo-analysis.md par. 5.4. -->
+             the convention of nullable column groups. See da-migration.md par. 2.1
+             and fs-repo-analysis.md par. 3.4. -->
         <createTable tableName="arr_legacy_dao_link">
             <column name="dao_link_id" type="int">
                 <constraints primaryKey="true" primaryKeyName="pk_arr_legacy_dao_link" nullable="false"/>
