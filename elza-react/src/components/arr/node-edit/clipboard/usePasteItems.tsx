@@ -1,5 +1,5 @@
 import { WebApi } from 'actions';
-import { NodeFormData } from 'elza-api';
+import { NodeFormData, NodeItem } from 'elza-api';
 import { useIntl } from 'react-intl';
 import { addToastrDanger, addToastrSuccess, addToastrWarning } from 'components/shared/toastr/ToastrActions';
 import { useAppThunkDispatch } from 'utils/hooks';
@@ -27,7 +27,10 @@ function countLines(lines: string[]) {
     return Array.from(counts, ([line, count]) => (count > 1 ? `${line} (${count}×)` : line));
 }
 
-/** Appends the clipboard items to the node, following the paste rules, and reports the result in a toast. */
+/**
+ * Appends the clipboard items to the node, following the paste rules, and reports the result in a toast.
+ * Resolves to the items created on the node; none when the paste failed.
+ */
 export function usePasteItems() {
     const dispatch = useAppThunkDispatch();
     const { formatMessage } = useIntl();
@@ -67,10 +70,10 @@ export function usePasteItems() {
         fundId,
         fundVersionId,
         itemTypeId,
-    }: PasteItemsParams) {
+    }: PasteItemsParams): Promise<NodeItem[]> {
         const clipboard = readItemClipboard();
         if (!clipboard) {
-            return;
+            return [];
         }
 
         const { plan, createItems } = preparePaste({
@@ -90,7 +93,7 @@ export function usePasteItems() {
             } catch (error) {
                 const errorMessage = (error as { errorMessage?: string } | undefined)?.errorMessage;
                 dispatch(addToastrDanger(formatMessage(clipboardMessages.pasteFailed), errorMessage ?? null));
-                return;
+                return [];
             }
         }
 
@@ -115,5 +118,6 @@ export function usePasteItems() {
         ) : null;
 
         dispatch(hasProblems ? addToastrWarning(title, details) : addToastrSuccess(title, details));
+        return createItems;
     };
 }

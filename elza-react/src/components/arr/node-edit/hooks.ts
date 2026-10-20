@@ -17,6 +17,8 @@ import {
   clearLocalStorageItemValues,
   clearStaleNewItemValues,
   createEmptyDescItem,
+  hasLocalStorageItemValues,
+  isEmptyItemValue,
   moveLocalStorageItemValues,
 } from "../item-form/desc-items/utils";
 import { consumePendingTemplateCallback } from "./pendingTemplateItems";
@@ -120,6 +122,7 @@ export function useNodeFormData(
   const [markedForClean, setMarkedForClean] = useState<
     { id: number; localId: string }[]
   >([]);
+  const [emptyLocalIdsForClean, setEmptyLocalIdsForClean] = useState<string[]>([]);
   const [storedData, setStoredData] = useState<NodeData>();
 
   const applyStoredData = useCallback(
@@ -192,7 +195,7 @@ export function useNodeFormData(
       const survivingItems = addedFormItems.filter(({ localId }) => {
         return !markedForClean.find(
           ({ localId: _localId }) => localId === _localId,
-        );
+        ) && !emptyLocalIdsForClean.includes(localId);
       });
 
       // Recompute the position of each locally added empty item so it sits after
@@ -240,6 +243,7 @@ export function useNodeFormData(
       dataTypeRefs,
       itemTypeRefs,
       markedForClean,
+      emptyLocalIdsForClean,
       nodeId,
       nodeVersionId,
       options?.skipForcedItems,
@@ -423,6 +427,29 @@ export function useNodeFormData(
     }
   }
 
+  /**
+   * Runs a save that creates items without the form, e.g. a paste from the item clipboard. The empty
+   * fields added locally for the types it created items of leave together with the refresh that brings
+   * the new items; like in `createDescItem`, the refresh waits for the save to finish.
+   */
+  async function createItemsOutsideForm(save: () => Promise<NodeItem[]>) {
+    setIsSaving(true);
+    try {
+      const createdItems = await save();
+      const filledTypeIds = createdItems.map(({ itemTypeId }) => itemTypeId);
+      const emptyLocalIds = addedFormItems
+        .filter(({ item }) => {
+          const isFilledType = filledTypeIds.includes(item.itemTypeId);
+          const isEmpty = isEmptyItemValue(item) && !hasLocalStorageItemValues(item);
+          return isFilledType && isEmpty;
+        })
+        .map(({ localId }) => localId);
+      setEmptyLocalIdsForClean((prev) => [...prev, ...emptyLocalIds]);
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
   function updateDescItem(item: NodeItem, localId?: string) {
     if (!item.data?.dataId && localId) {
       const updateList = (prev: FormItem[]) =>
@@ -467,6 +494,7 @@ export function useNodeFormData(
     addEmptyDescItem,
     deleteDescItem,
     createDescItem,
+    createItemsOutsideForm,
     updateDescItem,
     parent: formData?.parent,
   };
