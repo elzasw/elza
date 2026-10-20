@@ -51,6 +51,7 @@ type Props = {
 
 const RelationFilterModal = ({
     handleSubmit,
+    change,
     onClose,
     refTables,
     onlyMainPart,
@@ -95,6 +96,13 @@ const RelationFilterModal = ({
                            type="autocomplete"
                            component={FormInputField}
                            items={[{id: null, name: intl.formatMessage(filterMessages.selectAll)},...itemTypes]}
+                           onChange={(_event, newItemType, previousItemType) => {
+                               const isItemTypeChanged = newItemType?.id !== previousItemType?.id;
+                               if (isItemTypeChanged) {
+                                   change('itemSpec', undefined);
+                                   change('obj', undefined);
+                               }
+                           }}
                            disabled={submitting}
                     />
                 </Col>
@@ -104,6 +112,12 @@ const RelationFilterModal = ({
                            label={intl.formatMessage(filterMessages.relationsSpec)}
                            component={FormInputField}
                            items={itemSpecs}
+                           onChange={(_event, newItemSpec, previousItemSpec) => {
+                               const isItemSpecChanged = newItemSpec?.id !== previousItemSpec?.id;
+                               if (isItemSpecChanged) {
+                                   change('obj', undefined);
+                               }
+                           }}
                            disabled={submitting}
                     />
                 </Col>}
