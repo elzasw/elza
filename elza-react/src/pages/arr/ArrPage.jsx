@@ -303,6 +303,8 @@ class ArrPage extends ArrParentPage {
                         false,
                         null,
                         true,
+                        null,
+                        true,
                     ),
                 );
             }
@@ -653,7 +655,7 @@ class ArrPage extends ArrParentPage {
         if (node.parentNode == null) {
             node.parentNode = createFundRoot(activeFund);
         }
-        this.props.dispatch(fundSelectSubNode(activeFund.versionId, node.id, node.parentNode, undefined, undefined, undefined, undefined, undefined, true));
+        this.props.dispatch(fundSelectSubNode(activeFund.versionId, node.id, node.parentNode, undefined, undefined, true, undefined, undefined, true));
     }
 
     handleShowVisiblePolicies(activeFund) {
