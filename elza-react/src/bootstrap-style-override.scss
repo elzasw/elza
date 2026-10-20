@@ -103,6 +103,16 @@ textarea.form-control {
     border: $primary-border;
 }
 
+// The dark theme sets .dark on body, not Bootstrap's data-bs-theme,
+// so Bootstrap's own dark-mode rules never apply.
+.dark {
+    --bs-secondary-color: #{$shade-7};
+
+    .btn-close {
+        filter: var(--bs-btn-close-white-filter);
+    }
+}
+
 // BS4 kompatibilní styles
 .w-100 {
     width: 100%
