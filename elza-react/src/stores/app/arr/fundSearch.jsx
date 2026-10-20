@@ -25,7 +25,9 @@ export default function fundSearch(state = initialState, action = {}) {
     let index;
     switch (action.type) {
         case types.FUND_SEARCH_FULLTEXT_CHANGE: {
-            if (action.fulltext === '' && !action.filters) {
+            const isFulltextCleared = action.fulltext === '' && !action.filters;
+            const isFiltersCleared = action.filters?.length === 0;
+            if (isFulltextCleared || isFiltersCleared) {
                 return {
                     ...initialState,
                     isIdSearch: state.isIdSearch,
