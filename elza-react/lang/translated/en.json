@@ -811,6 +811,10 @@
     "defaultMessage": "Abort",
     "srcHash": "9YT0BCq6FrWl"
   },
+  "admin.import.detail.cancelHint": {
+    "defaultMessage": "Ends the batch for good; the remaining items are not processed, data already imported is kept",
+    "srcHash": "QqTU66jo-HVm"
+  },
   "admin.import.detail.col.apsCreated": {
     "defaultMessage": "Entities created",
     "srcHash": "xpFuJ4Abmtk7"
@@ -855,6 +859,10 @@
     "defaultMessage": "Test run",
     "srcHash": "7Ojblc1j9KwR"
   },
+  "admin.import.detail.dryRunHint": {
+    "defaultMessage": "Validates the item files without writing anything to the funds",
+    "srcHash": "75k1g6SSJeNu"
+  },
   "admin.import.detail.empty": {
     "defaultMessage": "The batch contains no items",
     "srcHash": "P7aTHnugokPr"
@@ -870,6 +878,10 @@
   "admin.import.detail.errorShow": {
     "defaultMessage": "Show the error",
     "srcHash": "NpDaypnO5HHo"
+  },
+  "admin.import.detail.filesDeletedAt": {
+    "defaultMessage": "Files deleted",
+    "srcHash": "2dKl4pe7eRG6"
   },
   "admin.import.detail.filesPurged": {
     "defaultMessage": "The input files of the batch were removed by the retention sweep; it cannot be run any more",
@@ -895,9 +907,25 @@
     "defaultMessage": "Pause",
     "srcHash": "84XhoaA240bs"
   },
+  "admin.import.detail.pauseHint": {
+    "defaultMessage": "Stops processing once the current item is finished; the batch can be started again",
+    "srcHash": "zG0k92aFHVML"
+  },
+  "admin.import.detail.progress": {
+    "defaultMessage": "Processed {done} of {total}",
+    "srcHash": "QNtS8F7wzy2H"
+  },
+  "admin.import.detail.progressErrors": {
+    "defaultMessage": "{errors, plural, one {# error} other {# errors}}",
+    "srcHash": "5BLW7mrJz3Y4"
+  },
   "admin.import.detail.remove": {
     "defaultMessage": "Delete",
     "srcHash": "oe4iuqXX4rqm"
+  },
+  "admin.import.detail.removeHint": {
+    "defaultMessage": "Deletes the batch together with its items; data imported into the funds is kept",
+    "srcHash": "N2xEyIEZdDA0"
   },
   "admin.import.detail.removeItem": {
     "defaultMessage": "Remove the item",
@@ -910,6 +938,10 @@
   "admin.import.detail.start": {
     "defaultMessage": "Start",
     "srcHash": "vxF0us80z5om"
+  },
+  "admin.import.detail.startHint": {
+    "defaultMessage": "Imports the items not processed yet, one by one in order; a paused or failed batch resumes from the first unprocessed item",
+    "srcHash": "erzHv2TaXehu"
   },
   "admin.import.detail.upload": {
     "defaultMessage": "Upload a file",

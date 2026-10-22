@@ -347,6 +347,8 @@ public class ImpBatchService {
                 itemFailed = true;
             }
 
+            publishItemChange(batchId);
+
             if (itemFailed) {
                 hadError = true;
                 if (!batch.isSkipError()) {
@@ -419,13 +421,16 @@ public class ImpBatchService {
         }
 
         ImportPositionParams positionParams = resolvePairing(item, batch);
+        // Root levels can only be skipped when the payload goes into an existing fund; a new fund
+        // is built from the file's own root.
+        boolean ignoreRootNodes = batch.isIgnoreRootNodes() && positionParams != null;
 
         DEImportParams params = new DEImportParams(
                 batch.getScope().getScopeId(),
                 1000,
                 10000,
                 positionParams,
-                batch.isIgnoreRootNodes());
+                ignoreRootNodes);
 
         ImportSummary summary = new ImportSummary();
         params.addImportPhaseChangeListeners(new SummaryCapture(summary));
@@ -638,6 +643,15 @@ public class ImpBatchService {
      * Records an item's failure in its own transaction so the message survives the rollback of
      * the work transaction that threw.
      */
+    /**
+     * Lets the batch detail refresh its item list. The runner has no transaction of its own and
+     * publishEvent needs an active synchronization for its after-commit hook, so a short one is opened.
+     */
+    private void publishItemChange(int batchId) {
+        transactionTemplate.executeWithoutResult(s ->
+                eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.IMPORT_BATCH_ITEM_CHANGE, batchId)));
+    }
+
     private void markItemError(int itemId, Throwable error) {
         ImpItem item = itemRepository.findById(itemId).orElse(null);
         if (item == null) {

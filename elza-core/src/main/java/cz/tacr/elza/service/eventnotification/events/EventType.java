@@ -119,7 +119,8 @@ public enum EventType {
     ISSUE_UPDATE(EventIdInIssueList.class),
 
     BULK_ACTION_STATE_CHANGE(EventIdInVersion.class),
-    IMPORT_BATCH_STATE_CHANGE(EventId.class);
+    IMPORT_BATCH_STATE_CHANGE(EventId.class),
+    IMPORT_BATCH_ITEM_CHANGE(EventId.class);
 
     private Class<? extends AbstractEventSimple> eventClass;
 

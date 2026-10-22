@@ -8,12 +8,15 @@ import {
     DialogSurface,
     DialogTitle,
     Spinner,
+    Badge,
+    ToggleButton,
     Table,
     TableBody,
     TableCell,
     TableHeader,
     TableHeaderCell,
     TableRow,
+    ProgressBar,
     Tag,
     Tooltip,
     Menu,
@@ -22,6 +25,7 @@ import {
     MenuList,
     MenuItem,
     makeStyles,
+    mergeClasses,
     tokens,
 } from '@fluentui/react-components';
 import {
@@ -39,8 +43,8 @@ import {
 } from '@fluentui/react-icons';
 import { Api } from 'api';
 import { BatchImportType, BatchState, ImportBatch, ImportBatchDescCsv, ImportBatchEdx, ImportItem, ImportItemError, ItemState } from 'elza-api';
-import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
-import { FormattedDate, FormattedMessage, FormattedTime, defineMessages, useIntl } from 'react-intl';
+import { ChangeEvent, ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import { FormattedDate, FormattedMessage, FormattedTime, MessageDescriptor, defineMessages, useIntl } from 'react-intl';
 import { useHistory, useParams } from 'react-router';
 import { showConfirmDialog } from 'components/shared/dialog';
 import { Ribbon } from 'components/index.jsx';
@@ -50,6 +54,8 @@ import { EventType } from 'typings/websocket/EventType';
 import { AdminLayout } from '../shared/layout/AdminLayout';
 import { useThunkDispatch } from 'utils/hooks';
 import { ServerFolderDialog } from '../../components/admin/import/ServerFolderDialog';
+import { batchSettingsMessages } from '../../components/admin/import/messages';
+import { globalMessages } from 'components/shared/lang';
 import { WebApi } from 'actions/WebApi';
 
 const messages = defineMessages({
@@ -94,14 +100,56 @@ const messages = defineMessages({
         id: 'admin.import.detail.removeItem',
         defaultMessage: 'Odstranit položku',
     },
+    startHint: {
+        id: 'admin.import.detail.startHint',
+        defaultMessage: 'Importuje dosud nezpracované položky postupně v pořadí; pozastavenou nebo neúspěšnou dávku spustí znovu od první nezpracované položky',
+    },
+    dryRunHint: {
+        id: 'admin.import.detail.dryRunHint',
+        defaultMessage: 'Ověří soubory položek bez zápisu do archivních souborů',
+    },
+    pauseHint: {
+        id: 'admin.import.detail.pauseHint',
+        defaultMessage: 'Zastaví zpracování po dokončení aktuální položky; dávku lze znovu spustit',
+    },
+    cancelHint: {
+        id: 'admin.import.detail.cancelHint',
+        defaultMessage: 'Ukončí dávku natrvalo; zbývající položky se nezpracují, už importovaná data zůstanou',
+    },
+    removeHint: {
+        id: 'admin.import.detail.removeHint',
+        defaultMessage: 'Smaže dávku včetně položek; importovaná data v archivních souborech zůstanou',
+    },
+    filesDeletedAt: {
+        id: 'admin.import.detail.filesDeletedAt',
+        defaultMessage: 'Soubory odstraněny',
+    },
+    progress: {
+        id: 'admin.import.detail.progress',
+        defaultMessage: 'Zpracováno {done} z {total}',
+    },
+    progressErrors: {
+        id: 'admin.import.detail.progressErrors',
+        defaultMessage: '{errors, plural, one {# chyba} few {# chyby} other {# chyb}}',
+    },
 });
 
 const useStyles = makeStyles({
     container: { display: 'flex', flexDirection: 'column', gap: tokens.spacingVerticalL, padding: '16px' },
+    // The header keeps its natural height, the batch card takes the rest of the panel.
+    detail: { display: 'grid', gridTemplateRows: 'auto minmax(0, 1fr)', height: '100%', boxSizing: 'border-box' },
+    batchCard: { minHeight: 0 },
+    // Settings scroll away with the list, so the table gets the whole card once the user scrolls.
+    batchScroll: { flexGrow: 1, minHeight: 0, overflow: 'auto', display: 'flex', flexDirection: 'column', gap: tokens.spacingVerticalM },
+    stickyHeader: { position: 'sticky', top: 0, zIndex: 1, backgroundColor: tokens.colorNeutralBackground1 },
+    progress: { display: 'flex', flexDirection: 'column', gap: tokens.spacingVerticalXS, flexShrink: 0 },
+    stateSummary: { display: 'flex', alignItems: 'center', gap: tokens.spacingHorizontalXS, flexWrap: 'wrap' },
     header: { display: 'flex', alignItems: 'center', gap: tokens.spacingHorizontalM, flexWrap: 'wrap' },
     actions: { display: 'flex', gap: tokens.spacingHorizontalS, flexWrap: 'wrap' },
-    settings: { display: 'grid', gridTemplateColumns: 'auto 1fr', columnGap: tokens.spacingHorizontalL, rowGap: tokens.spacingVerticalS, padding: tokens.spacingVerticalM },
-    label: { color: tokens.colorNeutralForeground3 },
+    settings: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', columnGap: tokens.spacingHorizontalXXL, rowGap: tokens.spacingVerticalS },
+    field: { display: 'flex', flexDirection: 'column' },
+    rowStart: { gridColumnStart: 1 },
+    label: { color: tokens.colorNeutralForeground3, fontSize: tokens.fontSizeBase200 },
     spacer: { flex: 1 },
     empty: { padding: tokens.spacingVerticalM, color: tokens.colorNeutralForeground3, textAlign: 'center' },
     hidden: { display: 'none' },
@@ -127,6 +175,30 @@ const CAN_CANCEL: BatchState[] = [BatchState.Preparation, BatchState.InProgress,
 const RUNNING: BatchState[] = [BatchState.InProgress, BatchState.TestInProgress];
 const canDelete = (state: BatchState) => !RUNNING.includes(state);
 const CAN_EDIT_ITEMS: BatchState[] = [BatchState.Preparation, BatchState.TestFinished];
+// Item states in their lifecycle order, as shown in the summary above the table.
+const ITEM_STATE_ORDER: ItemState[] = [ItemState.Ready, ItemState.Running, ItemState.TestRunFinished, ItemState.Finished, ItemState.Error];
+const ITEM_STATE_COLOR: Partial<Record<ItemState, 'danger' | 'success' | 'informative'>> = {
+    [ItemState.Error]: 'danger',
+    [ItemState.Finished]: 'success',
+    [ItemState.TestRunFinished]: 'informative',
+};
+
+interface SettingProps {
+    label: MessageDescriptor;
+    // Starts a new grid row, so the row's settings line up under the first column.
+    startsRow?: boolean;
+    children: ReactNode;
+}
+
+function Setting({ label, startsRow, children }: SettingProps) {
+    const styles = useStyles();
+    return (
+        <div className={mergeClasses(styles.field, startsRow && styles.rowStart)}>
+            <span className={styles.label}><FormattedMessage {...label} /></span>
+            <span>{children}</span>
+        </div>
+    );
+}
 
 export function AdminImportBatchDetailPage() {
     const styles = useStyles();
@@ -139,9 +211,9 @@ export function AdminImportBatchDetailPage() {
 
     const [batch, setBatch] = useState<ImportBatch | null>(null);
     const [items, setItems] = useState<ImportItem[]>([]);
-    const [loading, setLoading] = useState(true);
     const [showFolderDialog, setShowFolderDialog] = useState(false);
     const [errorDetail, setErrorDetail] = useState<ImportItemError | null>(null);
+    const [stateFilter, setStateFilter] = useState<ItemState | null>(null);
     const [scopeMap, setScopeMap] = useState<Record<number, string>>({});
     const [folderConfigured, setFolderConfigured] = useState<boolean | null>(null);
 
@@ -149,28 +221,30 @@ export function AdminImportBatchDetailPage() {
     const zipInputRef = useRef<HTMLInputElement>(null);
 
     const reload = useCallback(async () => {
-        setLoading(true);
-        try {
-            const [batchRes, itemsRes, scopes] = await Promise.all([
-                Api.importBatches.importBatchGet(batchId),
-                Api.importBatches.importBatchListItems(batchId),
-                WebApi.getAllScopes(),
-            ]);
-            setBatch(batchRes.data as ImportBatch);
-            setItems(itemsRes.data ?? []);
-            const map: Record<number, string> = {};
-            for (const s of (scopes ?? []) as Array<{ id: number; name: string }>) {
-                map[s.id] = s.name;
-            }
-            setScopeMap(map);
-        } finally {
-            setLoading(false);
-        }
+        const [batchRes, itemsRes] = await Promise.all([
+            Api.importBatches.importBatchGet(batchId),
+            Api.importBatches.importBatchListItems(batchId),
+        ]);
+        setBatch(batchRes.data as ImportBatch);
+        setItems(itemsRes.data ?? []);
     }, [batchId]);
 
     useEffect(() => {
         reload();
     }, [reload]);
+
+    useEffect(() => {
+        let cancelled = false;
+        WebApi.getAllScopes().then((scopes: Array<{ id: number; name: string }> | undefined) => {
+            if (cancelled) return;
+            const map: Record<number, string> = {};
+            for (const s of scopes ?? []) {
+                map[s.id] = s.name;
+            }
+            setScopeMap(map);
+        });
+        return () => { cancelled = true; };
+    }, []);
 
     useEffect(() => {
         let cancelled = false;
@@ -180,11 +254,20 @@ export function AdminImportBatchDetailPage() {
         return () => { cancelled = true; };
     }, []);
 
+    // Item events come once per processed item; coalesce them so a batch of small files
+    // does not turn into a request per item.
+    const refreshTimer = useRef<number | undefined>(undefined);
+    useEffect(() => () => window.clearTimeout(refreshTimer.current), []);
+
     useEffect(() => {
         const listener = websocket.addListener((msg: { eventType?: string; ids?: number[] }) => {
-            if (msg.eventType !== EventType.IMPORT_BATCH_STATE_CHANGE) return;
+            if (msg.eventType !== EventType.IMPORT_BATCH_STATE_CHANGE && msg.eventType !== EventType.IMPORT_BATCH_ITEM_CHANGE) return;
             if (!msg.ids?.includes(batchId)) return;
-            reload();
+            if (refreshTimer.current != null) return;
+            refreshTimer.current = window.setTimeout(() => {
+                refreshTimer.current = undefined;
+                reload();
+            }, 1000);
         });
         return () => websocket.removeListener(listener);
     }, [websocket, batchId, reload]);
@@ -234,7 +317,7 @@ export function AdminImportBatchDetailPage() {
         setErrorDetail(data);
     };
 
-    if (loading || !batch) {
+    if (!batch) {
         return <AdminLayout ribbon={<Ribbon />} centerPanel={<div className={styles.container}><Spinner /></div>} />;
     }
 
@@ -245,186 +328,237 @@ export function AdminImportBatchDetailPage() {
     const canEditItems = CAN_EDIT_ITEMS.includes(state);
     // The retention sweep dropped the input files, so there is nothing left for a run to read.
     const filesPurged = batch.filesDeletedAt != null;
+    const noItems = items.length === 0;
+    const running = RUNNING.includes(state);
+    const doneState = state === BatchState.TestInProgress ? ItemState.TestRunFinished : ItemState.Finished;
+    const doneCount = items.filter(it => it.state === doneState).length;
+    const errorCount = items.filter(it => it.state === ItemState.Error).length;
+    const stateCounts = ITEM_STATE_ORDER
+        .map(s => ({ state: s, count: items.filter(it => it.state === s).length }))
+        .filter(c => c.count > 0);
+    // A filter on a state that no item is in any more (e.g. all errors re-run) shows the whole list.
+    const activeFilter = stateCounts.some(c => c.state === stateFilter) ? stateFilter : null;
+    const visibleItems = activeFilter ? items.filter(it => it.state === activeFilter) : items;
+    const yesNo = (value?: boolean) => intl.formatMessage(value ? globalMessages.yes : globalMessages.no);
+    // Wrapped in a tooltip only when the folder is unavailable, an empty Tooltip still pops up.
+    const folderButton = (
+        <Button icon={<FolderRegular />} onClick={() => setShowFolderDialog(true)} disabled={folderConfigured !== true}>
+            <FormattedMessage {...messages.fromFolder} />
+        </Button>
+    );
 
     const content = (
         <>
-            <div className={styles.container}>
+            <div className={mergeClasses(styles.container, styles.detail)}>
                 <div className={styles.header}>
                     <Button appearance="subtle" icon={<ArrowLeftRegular />} onClick={() => history.push(URL_ADMIN_IMPORT)}>
                         <FormattedMessage {...messages.back} />
                     </Button>
                     <h2 style={{ margin: 0 }}>{batch.name}</h2>
+                    <Tag size="small">{batch.importType}</Tag>
                     <Tag size="small" appearance="brand">{state}</Tag>
                     <div className={styles.spacer} />
                     <div className={styles.actions}>
                         {CAN_START.includes(state) && (
-                            <Tooltip content={filesPurged ? intl.formatMessage(messages.filesPurged) : ''} relationship="label" withArrow>
-                                <Button icon={<PlayRegular />} appearance="primary" onClick={onStart} disabled={filesPurged}>
+                            <Tooltip content={intl.formatMessage(filesPurged ? messages.filesPurged : messages.startHint)} relationship="description" withArrow>
+                                <Button icon={<PlayRegular />} appearance="primary" onClick={onStart} disabled={filesPurged || noItems}>
                                     <FormattedMessage {...messages.start} />
                                 </Button>
                             </Tooltip>
                         )}
                         {CAN_DRY_RUN.includes(state) && (
-                            <Tooltip content={filesPurged ? intl.formatMessage(messages.filesPurged) : ''} relationship="label" withArrow>
-                                <Button icon={<BeakerRegular />} onClick={onDryRun} disabled={filesPurged}>
+                            <Tooltip content={intl.formatMessage(filesPurged ? messages.filesPurged : messages.dryRunHint)} relationship="description" withArrow>
+                                <Button icon={<BeakerRegular />} onClick={onDryRun} disabled={filesPurged || noItems}>
                                     <FormattedMessage {...messages.dryRun} />
                                 </Button>
                             </Tooltip>
                         )}
-                        {CAN_PAUSE.includes(state) && <Button icon={<PauseRegular />} onClick={onPause}><FormattedMessage {...messages.pause} /></Button>}
-                        {CAN_CANCEL.includes(state) && <Button icon={<StopRegular />} onClick={onCancel}><FormattedMessage {...messages.cancel} /></Button>}
-                        {canDelete(state) && <Button icon={<DeleteRegular />} onClick={onDelete}><FormattedMessage {...messages.remove} /></Button>}
+                        {CAN_PAUSE.includes(state) && (
+                            <Tooltip content={intl.formatMessage(messages.pauseHint)} relationship="description" withArrow>
+                                <Button icon={<PauseRegular />} onClick={onPause}><FormattedMessage {...messages.pause} /></Button>
+                            </Tooltip>
+                        )}
+                        {CAN_CANCEL.includes(state) && (
+                            <Tooltip content={intl.formatMessage(messages.cancelHint)} relationship="description" withArrow>
+                                <Button icon={<StopRegular />} onClick={onCancel} disabled={noItems}><FormattedMessage {...messages.cancel} /></Button>
+                            </Tooltip>
+                        )}
+                        {canDelete(state) && (
+                            <Tooltip content={intl.formatMessage(messages.removeHint)} relationship="description" withArrow>
+                                <Button icon={<DeleteRegular />} onClick={onDelete}><FormattedMessage {...messages.remove} /></Button>
+                            </Tooltip>
+                        )}
                     </div>
                 </div>
 
-                <Card>
-                    <h3><FormattedMessage {...messages.settings} /></h3>
-                    <div className={styles.settings}>
-                        <span className={styles.label}>importType</span><span>{batch.importType}</span>
-                        <span className={styles.label}>skipError</span><span>{String(batch.skipError)}</span>
-                        <span className={styles.label}>keepFiles</span><span>{String(batch.keepFiles)}</span>
-                        {edx && (<>
-                            <span className={styles.label}>fundImportStrategy</span><span>{edx.fundImportStrategy}</span>
-                            <span className={styles.label}>fundPairKey</span><span>{edx.fundPairKey ?? '—'}</span>
-                            <span className={styles.label}>ignoreRootNodes</span><span>{String(edx.ignoreRootNodes)}</span>
-                            <span className={styles.label}>scope</span><span>{edx.scopeId != null ? (scopeMap[edx.scopeId] ?? edx.scopeId) : '—'}</span>
-                        </>)}
-                        {csv && (<>
-                            <span className={styles.label}>separator</span><span>{csv.separator ?? '—'}</span>
-                            <span className={styles.label}>encoding</span><span>{csv.encoding ?? '—'}</span>
-                        </>)}
-                        {filesPurged && (<>
-                            <span className={styles.label}>filesDeletedAt</span>
-                            <span>
-                                <FormattedDate value={batch.filesDeletedAt} />
-                                {' '}
-                                <FormattedTime value={batch.filesDeletedAt} />
-                            </span>
-                        </>)}
-                    </div>
-                </Card>
+                <Card className={styles.batchCard}>
+                    <div className={styles.batchScroll}>
+                        <h3 style={{ margin: 0 }}><FormattedMessage {...messages.settings} /></h3>
+                        <div className={styles.settings}>
+                            {edx && (<>
+                                <Setting label={batchSettingsMessages.fundImportStrategy}>{edx.fundImportStrategy}</Setting>
+                                <Setting label={batchSettingsMessages.fundPairKey}>{edx.fundPairKey ?? '—'}</Setting>
+                                <Setting label={batchSettingsMessages.scope}>{edx.scopeId != null ? (scopeMap[edx.scopeId] ?? edx.scopeId) : '—'}</Setting>
+                            </>)}
+                            {csv && (<>
+                                <Setting label={batchSettingsMessages.separator}>{csv.separator ?? '—'}</Setting>
+                                <Setting label={batchSettingsMessages.encoding}>{csv.encoding ?? '—'}</Setting>
+                            </>)}
+                            {filesPurged && (
+                                <Setting label={messages.filesDeletedAt}>
+                                    <FormattedDate value={batch.filesDeletedAt} />
+                                    {' '}
+                                    <FormattedTime value={batch.filesDeletedAt} />
+                                </Setting>
+                            )}
+                            {edx && <Setting label={batchSettingsMessages.ignoreRootNodes} startsRow>{yesNo(edx.ignoreRootNodes)}</Setting>}
+                            <Setting label={batchSettingsMessages.skipError} startsRow={!edx}>{yesNo(batch.skipError)}</Setting>
+                            <Setting label={batchSettingsMessages.keepFiles}>{yesNo(batch.keepFiles)}</Setting>
+                        </div>
 
-                <Card>
-                    <div className={styles.header}>
-                        <h3 style={{ margin: 0 }}><FormattedMessage {...messages.items} /></h3>
-                        <div className={styles.spacer} />
-                        {canEditItems && (
-                            <div className={styles.actions}>
-                                <Button icon={<ArrowUploadRegular />} onClick={() => fileInputRef.current?.click()}>
-                                    <FormattedMessage {...messages.upload} />
-                                </Button>
-                                <Button icon={<ArchiveRegular />} onClick={() => zipInputRef.current?.click()}>
-                                    <FormattedMessage {...messages.uploadZip} />
-                                </Button>
-                                <Tooltip
-                                    content={folderConfigured === false ? intl.formatMessage(messages.folderNotConfigured) : ''}
-                                    relationship="label"
-                                    withArrow
-                                >
-                                    <Button
-                                        icon={<FolderRegular />}
-                                        onClick={() => setShowFolderDialog(true)}
-                                        disabled={folderConfigured !== true}
-                                    >
-                                        <FormattedMessage {...messages.fromFolder} />
+                        <div className={styles.header}>
+                            <h3 style={{ margin: 0 }}><FormattedMessage {...messages.items} /></h3>
+                            {items.length > 0 && (
+                                <div className={styles.stateSummary}>
+                                    <Badge appearance="outline" color="informative">{items.length}</Badge>
+                                    {stateCounts.map(c => (
+                                        <ToggleButton
+                                            key={c.state}
+                                            size="small"
+                                            shape="circular"
+                                            checked={activeFilter === c.state}
+                                            onClick={() => setStateFilter(activeFilter === c.state ? null : c.state)}
+                                        >
+                                            {c.state}
+                                            {' '}
+                                            <Badge size="small" appearance="tint" color={ITEM_STATE_COLOR[c.state] ?? 'subtle'}>{c.count}</Badge>
+                                        </ToggleButton>
+                                    ))}
+                                </div>
+                            )}
+                            <div className={styles.spacer} />
+                            {canEditItems && (
+                                <div className={styles.actions}>
+                                    <Button icon={<ArrowUploadRegular />} onClick={() => fileInputRef.current?.click()}>
+                                        <FormattedMessage {...messages.upload} />
                                     </Button>
-                                </Tooltip>
+                                    <Button icon={<ArchiveRegular />} onClick={() => zipInputRef.current?.click()}>
+                                        <FormattedMessage {...messages.uploadZip} />
+                                    </Button>
+                                    {folderConfigured === false ? (
+                                        <Tooltip content={intl.formatMessage(messages.folderNotConfigured)} relationship="description" withArrow>
+                                            {folderButton}
+                                        </Tooltip>
+                                    ) : folderButton}
+                                </div>
+                            )}
+                            <input ref={fileInputRef} type="file" className={styles.hidden} onChange={onUploadFile} />
+                            <input ref={zipInputRef} type="file" accept=".zip,application/zip" className={styles.hidden} onChange={onUploadZip} />
+                        </div>
+                        {running && items.length > 0 && (
+                            <div className={styles.progress}>
+                                <ProgressBar value={(doneCount + errorCount) / items.length} />
+                                <span className={styles.label}>
+                                    <FormattedMessage {...messages.progress} values={{ done: doneCount, total: items.length }} />
+                                    {errorCount > 0 && (<>
+                                        {' · '}
+                                        <FormattedMessage {...messages.progressErrors} values={{ errors: errorCount }} />
+                                    </>)}
+                                </span>
                             </div>
                         )}
-                        <input ref={fileInputRef} type="file" className={styles.hidden} onChange={onUploadFile} />
-                        <input ref={zipInputRef} type="file" accept=".zip,application/zip" className={styles.hidden} onChange={onUploadZip} />
-                    </div>
-                    {items.length === 0 ? (
-                        <div className={styles.empty}><FormattedMessage {...messages.empty} /></div>
-                    ) : (
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHeaderCell><FormattedMessage {...messages.colOrder} /></TableHeaderCell>
-                                    <TableHeaderCell><FormattedMessage {...messages.colName} /></TableHeaderCell>
-                                    <TableHeaderCell><FormattedMessage {...messages.colState} /></TableHeaderCell>
-                                    <TableHeaderCell><FormattedMessage {...messages.colNodes} /></TableHeaderCell>
-                                    <TableHeaderCell><FormattedMessage {...messages.colNodesUpdated} /></TableHeaderCell>
-                                    <TableHeaderCell><FormattedMessage {...messages.colApsCreated} /></TableHeaderCell>
-                                    <TableHeaderCell><FormattedMessage {...messages.colApsPaired} /></TableHeaderCell>
-                                    <TableHeaderCell />
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {items.map(it => (
-                                    <TableRow key={it.itemId}>
-                                        <TableCell>{it.execOrder}</TableCell>
-                                        <TableCell>{it.itemName}</TableCell>
-                                        <TableCell>
-                                            <Tag size="small">{it.state}</Tag>
-                                            {it.state === ItemState.Error && (
-                                                <Button
-                                                    appearance="subtle"
-                                                    size="small"
-                                                    icon={<ErrorCircleRegular />}
-                                                    title={intl.formatMessage(messages.errorShow)}
-                                                    onClick={() => onShowError(it.itemId)}
-                                                />
-                                            )}
-                                        </TableCell>
-                                        <TableCell>{it.nodesCreated ?? 0}</TableCell>
-                                        <TableCell>{it.nodesUpdated ?? 0}</TableCell>
-                                        <TableCell>{it.apsCreated ?? 0}</TableCell>
-                                        <TableCell>{it.apsPaired ?? 0}</TableCell>
-                                        <TableCell>
-                                            {it.state === ItemState.Finished && (() => {
-                                                const funds = (it.resultFundIds && it.resultFundIds.length > 0)
-                                                    ? it.resultFundIds
-                                                    : (it.fundId != null ? [it.fundId] : []);
-                                                if (funds.length === 0) return null;
-                                                if (funds.length === 1) {
-                                                    return (
-                                                        <Button
-                                                            appearance="subtle"
-                                                            icon={<OpenRegular />}
-                                                            title={intl.formatMessage(messages.openFund)}
-                                                            onClick={() => history.push(urlFundTree(funds[0]))}
-                                                        />
-                                                    );
-                                                }
-                                                return (
-                                                    <Menu>
-                                                        <MenuTrigger disableButtonEnhancement>
+                        {items.length === 0 ? (
+                            <div className={styles.empty}><FormattedMessage {...messages.empty} /></div>
+                        ) : (
+                            <Table>
+                                <TableHeader className={styles.stickyHeader}>
+                                    <TableRow>
+                                        <TableHeaderCell><FormattedMessage {...messages.colOrder} /></TableHeaderCell>
+                                        <TableHeaderCell><FormattedMessage {...messages.colName} /></TableHeaderCell>
+                                        <TableHeaderCell><FormattedMessage {...messages.colState} /></TableHeaderCell>
+                                        <TableHeaderCell><FormattedMessage {...messages.colNodes} /></TableHeaderCell>
+                                        <TableHeaderCell><FormattedMessage {...messages.colNodesUpdated} /></TableHeaderCell>
+                                        <TableHeaderCell><FormattedMessage {...messages.colApsCreated} /></TableHeaderCell>
+                                        <TableHeaderCell><FormattedMessage {...messages.colApsPaired} /></TableHeaderCell>
+                                        <TableHeaderCell />
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {visibleItems.map(it => (
+                                        <TableRow key={it.itemId}>
+                                            <TableCell>{it.execOrder}</TableCell>
+                                            <TableCell>{it.itemName}</TableCell>
+                                            <TableCell>
+                                                <Tag size="small">{it.state}</Tag>
+                                                {it.state === ItemState.Error && (
+                                                    <Button
+                                                        appearance="subtle"
+                                                        size="small"
+                                                        icon={<ErrorCircleRegular />}
+                                                        title={intl.formatMessage(messages.errorShow)}
+                                                        onClick={() => onShowError(it.itemId)}
+                                                    />
+                                                )}
+                                            </TableCell>
+                                            <TableCell>{it.nodesCreated ?? 0}</TableCell>
+                                            <TableCell>{it.nodesUpdated ?? 0}</TableCell>
+                                            <TableCell>{it.apsCreated ?? 0}</TableCell>
+                                            <TableCell>{it.apsPaired ?? 0}</TableCell>
+                                            <TableCell>
+                                                {it.state === ItemState.Finished && (() => {
+                                                    const funds = (it.resultFundIds && it.resultFundIds.length > 0)
+                                                        ? it.resultFundIds
+                                                        : (it.fundId != null ? [it.fundId] : []);
+                                                    if (funds.length === 0) return null;
+                                                    if (funds.length === 1) {
+                                                        return (
                                                             <Button
                                                                 appearance="subtle"
                                                                 icon={<OpenRegular />}
                                                                 title={intl.formatMessage(messages.openFund)}
+                                                                onClick={() => history.push(urlFundTree(funds[0]))}
                                                             />
-                                                        </MenuTrigger>
-                                                        <MenuPopover>
-                                                            <MenuList>
-                                                                {funds.map(fid => (
-                                                                    <MenuItem
-                                                                        key={fid}
-                                                                        onClick={() => history.push(urlFundTree(fid))}
-                                                                    >
-                                                                        {`AS #${fid}`}
-                                                                    </MenuItem>
-                                                                ))}
-                                                            </MenuList>
-                                                        </MenuPopover>
-                                                    </Menu>
-                                                );
-                                            })()}
-                                            {((canEditItems && it.state !== ItemState.Finished) || it.state === ItemState.Error) && (
-                                                <Button
-                                                    appearance="subtle"
-                                                    icon={<DeleteRegular />}
-                                                    title={intl.formatMessage(messages.removeItem)}
-                                                    onClick={() => onRemoveItem(it.itemId)}
-                                                />
-                                            )}
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    )}
+                                                        );
+                                                    }
+                                                    return (
+                                                        <Menu>
+                                                            <MenuTrigger disableButtonEnhancement>
+                                                                <Button
+                                                                    appearance="subtle"
+                                                                    icon={<OpenRegular />}
+                                                                    title={intl.formatMessage(messages.openFund)}
+                                                                />
+                                                            </MenuTrigger>
+                                                            <MenuPopover>
+                                                                <MenuList>
+                                                                    {funds.map(fid => (
+                                                                        <MenuItem
+                                                                            key={fid}
+                                                                            onClick={() => history.push(urlFundTree(fid))}
+                                                                        >
+                                                                            {`AS #${fid}`}
+                                                                        </MenuItem>
+                                                                    ))}
+                                                                </MenuList>
+                                                            </MenuPopover>
+                                                        </Menu>
+                                                    );
+                                                })()}
+                                                {((canEditItems && it.state !== ItemState.Finished) || it.state === ItemState.Error) && (
+                                                    <Button
+                                                        appearance="subtle"
+                                                        icon={<DeleteRegular />}
+                                                        title={intl.formatMessage(messages.removeItem)}
+                                                        onClick={() => onRemoveItem(it.itemId)}
+                                                    />
+                                                )}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        )}
+                    </div>
                 </Card>
             </div>
 
