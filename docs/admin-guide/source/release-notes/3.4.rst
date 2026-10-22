@@ -62,6 +62,11 @@ New
   rejected JWT is logged as well. A login with the password from
   ``elza.security.override`` is logged as ``OVERRIDE``, and every startup
   records the users with such a password (``override_active``).
+* New: 10161 - CAM - the external system has the option *Verify TLS
+  certificate*; a new system verifies the certificate of CAM. Existing
+  systems are set to *No* by the upgrade and keep trusting any
+  certificate, as before. **Where CAM has a valid certificate, switch the
+  option to** *Yes*. See :doc:`/07-integrations`.
 
 Changes
 -------

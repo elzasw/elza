@@ -126,8 +126,6 @@ export const fieldMessages = defineMessages({
     publishOnlyApproved: { id: 'admin.extSystem.publishOnlyApproved', defaultMessage: 'Odeslání jen schválených' },
     publishOnlyApprovedTrue: { id: 'admin.extSystem.publishOnlyApproved.true', defaultMessage: 'Ano' },
     publishOnlyApprovedFalse: { id: 'admin.extSystem.publishOnlyApproved.false', defaultMessage: 'Ne' },
-    submitAdd: { id: 'admin.extSystem.submit.add', defaultMessage: 'Přidat' },
-    submitEdit: { id: 'admin.extSystem.submit.edit', defaultMessage: 'Upravit' },
 });
 
 export const daSettingsMessages = defineMessages({
@@ -398,6 +396,18 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
                             />
                         </Col>
                     </Row>
+                    {/* an unset value is shown and saved as the server default: verify */}
+                    <Field
+                        name="tlsVerify"
+                        type="select"
+                        component={FormInputField}
+                        label={intl.formatMessage(daSettingsMessages.tlsVerify)}
+                        format={(v?: boolean) => (v === false ? 'false' : 'true')}
+                        parse={(v: string) => v !== 'false'}
+                    >
+                        <option value="true">{intl.formatMessage(daSettingsMessages.tlsVerifyTrue)}</option>
+                        <option value="false">{intl.formatMessage(daSettingsMessages.tlsVerifyFalse)}</option>
+                    </Field>
                 </div>
             )}
             {classJ === EXT_SYSTEM_CLASS.GisExternalSystem && (
@@ -674,7 +684,16 @@ const ExtSystemForm = ({ initialValues, onSubmitForm }: Props) => {
                     <ExtSystemFormFields isUpdate={isUpdate} defaultScopes={defaultScopes} />
                     <Modal.Footer>
                         <Button type="submit" variant="outline-secondary" disabled={pristine || submitting}>
-                            {intl.formatMessage(isUpdate ? fieldMessages.submitEdit : fieldMessages.submitAdd)}
+                            {intl.formatMessage(globalMessages.save)}
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="link"
+                            // keeps the focus in the field, so its blur shows no validation error that would shift the button away from the click
+                            onMouseDown={(e: React.MouseEvent) => e.preventDefault()}
+                            onClick={() => dispatch(modalDialogHide())}
+                        >
+                            {intl.formatMessage(globalMessages.cancel)}
                         </Button>
                     </Modal.Footer>
                 </Form>

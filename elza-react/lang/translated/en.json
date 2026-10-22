@@ -599,14 +599,6 @@
     "defaultMessage": "Yes",
     "srcHash": "HFtwBBU9Smvu"
   },
-  "admin.extSystem.submit.add": {
-    "defaultMessage": "Add",
-    "srcHash": "5L0IaEkXdddR"
-  },
-  "admin.extSystem.submit.edit": {
-    "defaultMessage": "Edit",
-    "srcHash": "7D1xFD_em0Dr"
-  },
   "admin.extSystem.syncDelay": {
     "defaultMessage": "Synchronisation interval (s)",
     "srcHash": "7T9gh0rWSgFP"
@@ -7012,6 +7004,10 @@
   "exception.ext.RECORD_NOT_FOUND": {
     "defaultMessage": "The record was not found",
     "srcHash": "CSvUs72mg2qt"
+  },
+  "exception.ext.TLS_CERTIFICATE_ERROR": {
+    "defaultMessage": "The TLS certificate of the external system was not verified. Check the server certificate, or turn off “Verify TLS certificate” in the external system settings.",
+    "srcHash": "iTM91-mfVWFp"
   },
   "exception.out.ALREADY_DELETED": {
     "defaultMessage": "An already deleted output cannot be deleted",

@@ -76,7 +76,7 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
 
         expect(select(container, 'sendNotification')).not.toBeNull();
         fireEvent.change(input(container, 'name')!, { target: { value: 'Repozitář WSDL' } });
-        fireEvent.click(screen.getByRole('button', { name: 'Upravit' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Uložit' }));
 
         await vi.waitFor(() => expect(onSubmitForm).toHaveBeenCalledTimes(1));
     });
@@ -96,7 +96,7 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
 
         expect(select(container, 'sendNotification')).toBeNull();
         fireEvent.change(input(container, 'name')!, { target: { value: 'Archiv' } });
-        fireEvent.click(screen.getByRole('button', { name: 'Upravit' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Uložit' }));
 
         await vi.waitFor(() => expect(onSubmitForm).toHaveBeenCalledTimes(1));
     });
@@ -116,7 +116,7 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
 
         expect(select(container, 'tlsVerify')!.value).toBe('true');
         fireEvent.change(select(container, 'tlsVerify')!, { target: { value: 'false' } });
-        fireEvent.click(screen.getByRole('button', { name: 'Upravit' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Uložit' }));
 
         await vi.waitFor(() => expect(onSubmitForm).toHaveBeenCalledTimes(1));
         expect(onSubmitForm.mock.calls[0][0]).toMatchObject({ tlsVerify: false });
@@ -137,7 +137,7 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
 
         fireEvent.change(input(container, 'apiKeyId')!, { target: { value: 'elza' } });
         fireEvent.change(input(container, 'apiKeyValue')!, { target: { value: 'secret' } });
-        fireEvent.click(screen.getByRole('button', { name: 'Upravit' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Uložit' }));
 
         await vi.waitFor(() => expect(onSubmitForm).toHaveBeenCalledTimes(1));
         expect(onSubmitForm.mock.calls[0][0]).toMatchObject({ apiKeyId: 'elza', apiKeyValue: 'secret' });
@@ -163,7 +163,7 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
         fireEvent.change(select(container, 'onReceived')!, { target: { value: DaOnReceivedAction.DownloadMetadata } });
         fireEvent.change(input(container, 'syncDelay')!, { target: { value: '3600' } });
         fireEvent.change(input(container, 'statusPollInterval')!, { target: { value: '5' } });
-        fireEvent.click(screen.getByRole('button', { name: 'Upravit' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Uložit' }));
 
         await vi.waitFor(() => expect(onSubmitForm).toHaveBeenCalledTimes(1));
         expect(onSubmitForm.mock.calls[0][0]).toMatchObject({
@@ -214,7 +214,7 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
 
         fireEvent.change(input(container, 'fileTransferUrl')!, { target: { value: 'https://ft.example/transfer' } });
         fireEvent.change(input(container, 'fileTransferType')!, { target: { value: 'GetMetadata_ELZA' } });
-        fireEvent.click(screen.getByRole('button', { name: 'Upravit' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Uložit' }));
 
         await vi.waitFor(() => expect(onSubmitForm).toHaveBeenCalledTimes(1));
         expect(onSubmitForm.mock.calls[0][0]).toMatchObject({
@@ -238,7 +238,7 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
         );
 
         fireEvent.change(input(container, 'statusPollInterval')!, { target: { value: '0' } });
-        fireEvent.click(screen.getByRole('button', { name: 'Upravit' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Uložit' }));
 
         expect(await screen.findByText('Interval musí být alespoň 1 s')).toBeInTheDocument();
         expect(onSubmitForm).not.toHaveBeenCalled();

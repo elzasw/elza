@@ -1433,4 +1433,17 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="20261020120000" author="sergey.iryupin">
+        <!-- Whether the TLS certificate of a CAM is verified. Existing CAM systems keep their
+             behaviour: the client never checked the certificate. New systems verify. -->
+        <addColumn tableName="ap_external_system">
+            <column name="tls_verify" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <sql>
+            UPDATE ap_external_system SET tls_verify = false
+        </sql>
+    </changeSet>
+
 </databaseChangeLog>

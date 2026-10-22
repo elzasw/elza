@@ -289,6 +289,15 @@ export function AdminExtSystemDetail() {
 
                         <ScopeValue scopes={scopes} id={extSystem.scope} />
                         <FieldValue extSystem={extSystem} field="syncDelay" />
+
+                        <h4><FormattedMessage {...daSettingsMessages.tlsVerify} /></h4>
+                        <span>
+                            <FormattedMessage
+                                {...(extSystem.tlsVerify === false
+                                    ? daSettingsMessages.tlsVerifyFalse
+                                    : daSettingsMessages.tlsVerifyTrue)}
+                            />
+                        </span>
                     </div>
                 )}
                 {classJ === EXT_SYSTEM_CLASS.GisExternalSystem && (
@@ -397,8 +406,8 @@ export function AdminExtSystemDetail() {
                     </div>
                 )}
                 <div>
-                    <FieldValue extSystem={extSystem} field="name" />
                     <FieldValue extSystem={extSystem} field="code" />
+                    <FieldValue extSystem={extSystem} field="name" />
                     <FieldValue extSystem={extSystem} field="url" />
                     {!isFsRepo && <FieldValue extSystem={extSystem} field="username" />}
                     {!isFsRepo && <SecretValue extSystem={extSystem} field="password" />}
