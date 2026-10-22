@@ -59,7 +59,7 @@ class TagsField extends AbstractReactComponent {
     };
 
     render() {
-        const {renderTagItem, fieldComponent, fieldComponentProps, error, label, touched, ...otherProps} = this.props;
+        const {renderTagItem, fieldComponent, fieldComponentProps, error, label, touched, className, ...otherProps} = this.props;
 
         const {onChange, onBlur, onFocus, onUpdate, onDragStart} = otherProps;
 
@@ -73,8 +73,12 @@ class TagsField extends AbstractReactComponent {
 
         const fieldValue = this.getFieldValue();
 
+        // Form.Control passes the validation state as class names. Only "is-invalid" is kept (the rest are
+        // input styles), so that Bootstrap shows the .invalid-feedback rendered after this field.
+        const isInvalid = (className || '').split(' ').includes('is-invalid');
+
         return (
-            <div>
+            <div className={isInvalid ? 'is-invalid' : undefined}>
                 {field}
                 <div className="selected-data-container">
                     {fieldValue.map((item, index) => {

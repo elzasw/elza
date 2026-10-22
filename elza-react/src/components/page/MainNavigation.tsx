@@ -49,7 +49,7 @@ const messages = defineMessages({
 export const MainNavigation = React.forwardRef<HTMLButtonElement>(function MainNavigation(_props, ref) {
     const userDetail = useAppSelector(state => state.userDetail);
 
-    const canSeeFunds = userDetail.hasOne(perms.FUND_RD_ALL, perms.FUND_RD);
+    const canSeeFunds = userDetail.hasOne(perms.FUND_RD_ALL, perms.FUND_RD, perms.FUND_CREATE);
     const canSeeAdmin = userDetail.hasOne(
         perms.ADMIN,
         perms.USR_PERM,
