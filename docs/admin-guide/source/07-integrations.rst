@@ -65,6 +65,23 @@ the external systems during the upgrade to 3.4.
 The state of the synchronisation queue can be monitored with the metrics
 described in :doc:`09-monitoring`.
 
+TLS certificate
+---------------
+
+The option *Verify TLS certificate* of the external system decides how
+the certificate of CAM is checked:
+
+- *Yes* (the default for a new system) - the certificate and its host
+  name are verified as usual.
+- *No* - any certificate is trusted and its host name is not checked,
+  for internal servers with a self-signed certificate. The signed
+  requests are then not protected against a man-in-the-middle; prefer
+  adding the certificate of the server to the Java truststore of ELZA.
+
+External systems created before ELZA 3.4.11 are set to *No* by the
+upgrade, because the certificate of CAM was never verified before. Where
+CAM has a valid certificate, switch the option to *Yes*.
+
 Changing CAM to CAM complete
 ----------------------------
 

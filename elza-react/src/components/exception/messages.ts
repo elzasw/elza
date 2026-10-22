@@ -86,6 +86,7 @@ export const exceptionMessages = defineMessages({
     "exception.ext.EXTERNAL_SYSTEM_ERROR": { id: "exception.ext.EXTERNAL_SYSTEM_ERROR", defaultMessage: "Chyba z externího systému" },
     "exception.ext.IMPORT_FAIL": { id: "exception.ext.IMPORT_FAIL", defaultMessage: "Selhání importu" },
     "exception.ext.RECORD_NOT_FOUND": { id: "exception.ext.RECORD_NOT_FOUND", defaultMessage: "Záznam nebyl nalezen" },
+    "exception.ext.TLS_CERTIFICATE_ERROR": { id: "exception.ext.TLS_CERTIFICATE_ERROR", defaultMessage: "TLS certifikát externího systému nebyl ověřen. Ověřte certifikát serveru, případně v nastavení externího systému vypněte „Ověřovat TLS certifikát“." },
     "exception.out.ALREADY_DELETED": { id: "exception.out.ALREADY_DELETED", defaultMessage: "Nelze smazat již smazaný výstup" },
     "exception.out.CANNOT_CHANGE_STATE": { id: "exception.out.CANNOT_CHANGE_STATE", defaultMessage: "Nelze změnit stav" },
     "exception.out.CANNOT_CLONE_DELETED": { id: "exception.out.CANNOT_CLONE_DELETED", defaultMessage: "Nelze klonovat smazaný výstup" },

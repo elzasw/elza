@@ -25,7 +25,10 @@ public class CamInstance {
 
     private final String url;
 
-    public CamInstance(final String url, final String apiKey, final String apiValue) {
+    /**
+     * @param tlsVerify false = trust any TLS certificate of the CAM
+     */
+    public CamInstance(final String url, final String apiKey, final String apiValue, final boolean tlsVerify) {
         if (StringUtils.isEmpty(url)) {
             throw new IllegalArgumentException("Není nastavena properta cam.url pro připojení api");
         } else if (StringUtils.isEmpty(apiKey)) {
@@ -35,13 +38,13 @@ public class CamInstance {
         }
         this.url = StringUtils.stripEnd(url.trim(), "/");
         String apiUrl = getApiUrl();
-        ApiClientCam apiClientCam = new ApiClientCam(apiUrl, apiKey, apiValue);
+        ApiClientCam apiClientCam = new ApiClientCam(apiUrl, apiKey, apiValue, tlsVerify);
         searchApi = new SearchApi(apiClientCam);
         entityApi = new EntityApi(apiClientCam);
         exportApi = new ExportApi(apiClientCam);
         batchUpdatesApi = new BatchUpdatesApi(apiClientCam);
         updatesApi = new UpdatesApi(apiClientCam);
-        logger.debug("Inicializován konektor na CAM: {} (apiKey: {})", apiUrl, apiKey);
+        logger.debug("Inicializován konektor na CAM: {} (apiKey: {}, tlsVerify: {})", apiUrl, apiKey, tlsVerify);
     }
 
     public String getApiUrl() {

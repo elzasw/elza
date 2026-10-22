@@ -21,7 +21,9 @@ public class ApExternalSystemVO extends SysExternalSystemVO {
 
 	private Boolean publishOnlyApproved;
 
-	private Integer syncDelay;	
+	private Integer syncDelay;
+
+	private Boolean tlsVerify;
 
     public ApExternalSystemType getType() {
         return type;
@@ -65,6 +67,14 @@ public class ApExternalSystemVO extends SysExternalSystemVO {
 	    this.syncDelay = syncDelay;
 	}	
 
+    public Boolean getTlsVerify() {
+        return tlsVerify;
+    }
+
+    public void setTlsVerify(Boolean tlsVerify) {
+        this.tlsVerify = tlsVerify;
+    }
+
     public String getUserInfo() {
         return userInfo;
     }
@@ -82,6 +92,9 @@ public class ApExternalSystemVO extends SysExternalSystemVO {
         entity.setUserInfo(userInfo);
         entity.setPublishOnlyApproved(publishOnlyApproved);
         entity.setSyncDelay(syncDelay);
+        if (tlsVerify != null) {
+            entity.setTlsVerify(tlsVerify);
+        }
         this.fillEntity(entity);
         return entity;
     }
@@ -108,6 +121,7 @@ public class ApExternalSystemVO extends SysExternalSystemVO {
         vo.setPublishOnlyApproved(src.getPublishOnlyApproved());
         vo.setUserInfo(src.getUserInfo());
         vo.setSyncDelay(src.getSyncDelay());
+        vo.setTlsVerify(src.getTlsVerify());
         return vo;
     }
 }
