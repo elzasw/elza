@@ -722,6 +722,8 @@ class ArrPage extends ArrParentPage {
                     ref="fundVisiblePolicies"
                     items={nodesPolicy.items}
                     selectedItem={activeNode !== null ? activeNode.selectedSubNodeId : null}
+                    // the row height is set in DiscrepanciesList.scss, the scroll position is computed from this value
+                    itemHeight={25}
                     renderItemContent={this.renderPolicyItem}
                     onSelect={this.handleSelectVisiblePoliciesNode.bind(this, activeFund)}
                     /*onDoubleClick={this.handleShowVisiblePolicies.bind(this, activeFund)}*/

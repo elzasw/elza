@@ -495,6 +495,7 @@ class ListBox extends AbstractReactComponent {
             return (
                 <div
                     className={'listbox-item' + (active ? ' active' : '')}
+                    ref={'item-' + index}
                     key={index}
                     data-id={index}
                     onMouseDown={this.handleClick.bind(this, index)}
