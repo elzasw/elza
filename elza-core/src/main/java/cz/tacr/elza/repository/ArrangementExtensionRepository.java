@@ -23,7 +23,7 @@ public interface ArrangementExtensionRepository extends JpaRepository<RulArrange
 
     List<RulArrangementExtension> findByRulPackage(RulPackage rulPackage);
 
-    List<RulArrangementExtension> findByRuleSet(RulRuleSet ruleSet);
+    List<RulArrangementExtension> findByRuleSetOrderByNameAsc(RulRuleSet ruleSet);
 
     List<RulArrangementExtension> findByRulPackageAndRuleSet(RulPackage rulPackage, RulRuleSet ruleSet);
 

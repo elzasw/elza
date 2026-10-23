@@ -1030,7 +1030,7 @@ public class RuleService {
         ArrFundVersion version = fundVersionRepository.findById(fundVersionId)
                 .orElseThrow(version(fundVersionId));
         RulRuleSet ruleSet = version.getRuleSet();
-        return arrangementExtensionRepository.findByRuleSet(ruleSet);
+        return arrangementExtensionRepository.findByRuleSetOrderByNameAsc(ruleSet);
     }
 
     /**
