@@ -148,9 +148,25 @@ public class ItemSyncImportProcessor implements ItemSyncProcessor {
                 }
             }
             log.error("Failed to synchronize access points: {}", queueItemIds.size(), e);
+            if (queueItemIds.size() == 1) {
+                // The local processing of one entity failed; the failure is recorded on the queue item
+                // and the queue goes on, so one entity cannot stop the synchronization of all others
+                // (the processor retries the queue item otherwise, and would do so forever). The user
+                // synchronizes the entity again once the cause is resolved.
+                apConnectService.setQueueItemStateTA(queueItemIds.get(0),
+                                                     ExtAsyncQueueState.ERROR,
+                                                     "Error: synchronization failed: ES -> ELZA, " + failureMessage(e));
+                return true;
+            }
+            // several items: the processor retries them one by one, which isolates the failing one
             throw e;
         }
 
+    }
+
+    private static String failureMessage(Exception e) {
+        String message = e.getMessage();
+        return message != null && !message.isBlank() ? message : e.toString();
     }
 
     public void addQueueItem(ExtSyncsQueueItem queueItem) {

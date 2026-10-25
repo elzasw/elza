@@ -98,6 +98,14 @@ Changes
   **(https://archdesc.nacr.cz/dids/…) is no longer written** - adjust
   systems that read it. Units linked to the digital archive refer to the
   AIP (``dao href="aip:…"``).
+* Fix: 10181 - CAM synchronization stopped completely (since 3.4.9) when CAM
+  reported an entity as replaced (merged) and its ELZA record was in another
+  scope than the external system; the record was retried forever. Such
+  entities are now replaced and invalidated as before. A record whose
+  synchronization fails for any other reason no longer blocks the others:
+  its item in the synchronization queue ends in the state ``ERROR`` with
+  the reason, and the record is synchronized again from the user interface
+  once the cause is resolved.
 
 3.4.10
 ======
