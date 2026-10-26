@@ -55,6 +55,17 @@ public interface DaSyncQueueItemRepository extends JpaRepository<DaSyncQueueItem
     @Query("SELECT MIN(i.nextAttemptAt) FROM da_sync_queue_item i WHERE i.state IN :states AND i.active = true")
     OffsetDateTime findEarliestAttempt(@Param("states") Collection<DaSyncQueueItem.QueueItemState> states);
 
+    /** Active items in the given states whose exchanges keep failing. */
+    @Query("SELECT COUNT(i) FROM da_sync_queue_item i"
+            + " WHERE i.state IN :states AND i.active = true AND i.failingSince IS NOT NULL")
+    long countFailing(@Param("states") Collection<DaSyncQueueItem.QueueItemState> states);
+
+    /** Since when the longest failing of the active items in the given states fails; null when none does. */
+    @Query("SELECT MIN(i.failingSince) FROM da_sync_queue_item i WHERE i.state IN :states AND i.active = true")
+    OffsetDateTime findFailingSince(@Param("states") Collection<DaSyncQueueItem.QueueItemState> states);
+
+    long countByStateInAndActiveIsTrue(Collection<DaSyncQueueItem.QueueItemState> states);
+
     /**
      * Action items carried by the AIP's active queue items in the given states - what a newly
      * queued request for the same AIP supersedes.
@@ -73,7 +84,7 @@ public interface DaSyncQueueItemRepository extends JpaRepository<DaSyncQueueItem
                                                @Param("states") Collection<DaSyncQueueItem.QueueItemState> states);
 
     @Modifying
-    @Query("UPDATE da_sync_queue_item i SET i.active = false " +
+    @Query("UPDATE da_sync_queue_item i SET i.active = false, i.failingSince = null " +
             "WHERE i.code = :code " +
             "AND i.digitalRepository = :digitalRepository " +
             "AND i.state IN :states " +

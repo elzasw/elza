@@ -1,6 +1,7 @@
 package cz.tacr.elza.service.da;
 
 import cz.tacr.da.ApiException;
+import cz.tacr.elza.api.AipProblemType;
 import cz.tacr.elza.api.AipType;
 import cz.tacr.elza.api.DaAipActionItemState;
 import cz.tacr.elza.api.DaDownloadMethod;
@@ -100,7 +101,8 @@ public class DaImportExtSyncsProcessor implements Runnable {
     /**
      * Downloads the prepared batch using the method configured on the repository.
      * The standard HTTP download is refused by the DA with 413 when the batch is too
-     * large; in that case the administrator has to switch the repository to File Transfer.
+     * large; in that case the administrator has to switch the repository to File Transfer,
+     * which the problem recorded on the items says.
      */
     private SpooledContent downloadBatch(ArrDigitalRepository digitalRepository, String batchId) throws ApiException, IOException {
         DaDownloadMethod method = digitalRepository.getDownloadMethod() == null
@@ -112,9 +114,10 @@ public class DaImportExtSyncsProcessor implements Runnable {
             return daService.downloadDownload(digitalRepository, batchId);
         } catch (ApiException e) {
             if (e.getCode() == FILE_TRANSFER_ERROR_CODE) {
-                throw new IllegalStateException("Repository " + digitalRepository.getCode()
-                        + " refused the standard download of batch " + batchId
-                        + " (HTTP 413); switch the repository download method to File Transfer.", e);
+                throw new AipProblemException(AipProblemType.DOWNLOAD_ERROR,
+                        "digitální archiv odmítl dávku " + batchId + " vydat standardním stažením, je příliš velká"
+                                + " (HTTP 413); v nastavení digitálního archivu přepněte způsob stahování"
+                                + " na File Transfer", null, e);
             }
             throw e;
         }
@@ -140,9 +143,9 @@ public class DaImportExtSyncsProcessor implements Runnable {
             logger.debug("Requested download batch {} of {} item(s)", batchId, items.size());
             return true;
         } catch (Exception ex) {
-            logger.error("Failed to request a download batch of {} queue item(s), the items will be retried.",
-                         items.size(), ex);
             daService.recordDownloadFailure(items, ex);
+            DaRequestFailure.log(logger, digitalRepository,
+                                 "download batch of " + items.size() + " item(s) could not be requested", items, ex);
             importListSize = 1;
             return false;
         }
@@ -175,8 +178,9 @@ public class DaImportExtSyncsProcessor implements Runnable {
                             batchId, DaRequestFailure.describe(ex));
                 daService.returnToPending(batch, ex);
             } else {
-                logger.error("Failed to obtain download batch {}, it will be asked for again.", batchId, ex);
                 daService.recordDownloadFailure(batch, ex);
+                DaRequestFailure.log(logger, digitalRepository, "download batch " + batchId + " could not be obtained",
+                                     batch, ex);
             }
             return false;
         }

@@ -195,6 +195,18 @@
     "defaultMessage": "{done, plural, one {Done for # request} other {Done for # requests}}{skipped, plural, =0 {} one { · # skipped} other { · # skipped}}",
     "srcHash": "jcJx3F-1dLnS"
   },
+  "admin.daQueue.action.markFailed": {
+    "defaultMessage": "Mark as failed",
+    "srcHash": "hdJcy_DNI6Rx"
+  },
+  "admin.daQueue.action.markFailed.confirm": {
+    "defaultMessage": "End the download of AIP “{aipCode}”? The download stops being retried and the request ends with an error, which is also recorded on the AIP and in the user's action. Once the package is fixed in the digital archive, the request can be repeated.",
+    "srcHash": "2AMuJNvRwD6k"
+  },
+  "admin.daQueue.action.markFailed.title": {
+    "defaultMessage": "The download stops being retried and the request ends as failed. Once the package is fixed in the digital archive, use Repeat.",
+    "srcHash": "zQGTN2ha9DKU"
+  },
   "admin.daQueue.action.nothing": {
     "defaultMessage": "The action applies to none of the selected requests",
     "srcHash": "NEpOoEQoVdwg"
@@ -258,6 +270,10 @@
   "admin.daQueue.col.changed": {
     "defaultMessage": "State changed",
     "srcHash": "FvctuYd2d4QQ"
+  },
+  "admin.daQueue.col.failingSince": {
+    "defaultMessage": "Failing since",
+    "srcHash": "5LVKs19cyfVr"
   },
   "admin.daQueue.col.id": {
     "defaultMessage": "ID",

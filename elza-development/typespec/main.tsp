@@ -282,6 +282,8 @@ model DaQueueItemVO {
     attemptCount: integer;
     /** Not before this time is the request taken again; null = now */
     nextAttemptAt?: utcDateTime;
+    /** Since when the exchanges about the request keep failing; null when the last one succeeded */
+    failingSince?: utcDateTime;
     /** When the state was last set */
     stateDate?: utcDateTime;
     /** Why the request is in its state (failures, DA answers) */
@@ -3741,6 +3743,19 @@ namespace ElzaAPI.ExternalSystem {
      */
     @route("/digitalrepository/{id}/queue/withdraw")
     @post op daQueueWithdraw(
+        /** digital repository (external system) ID */
+        @path id: integer;
+        /** Queue item IDs */
+        @body itemIds: integer[];
+    ): DaQueueActionResult;
+
+    /**
+     * Ends the selected waiting downloads that keep failing (e.g. a package the DA cannot
+     * prepare until it is fixed there) as failed, with their last failure. Once the cause is
+     * removed, they can be repeated.
+     */
+    @route("/digitalrepository/{id}/queue/mark-failed")
+    @post op daQueueMarkFailed(
         /** digital repository (external system) ID */
         @path id: integer;
         /** Queue item IDs */

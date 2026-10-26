@@ -3655,6 +3655,38 @@ paths:
                 $ref: '#/components/schemas/DaQueueItemPage'
       tags:
         - externalsystems
+  /extsystem/digitalrepository/{id}/queue/mark-failed:
+    post:
+      operationId: ExternalSystem_daQueueMarkFailed
+      description: |-
+        Ends the selected waiting downloads that keep failing (e.g. a package the DA cannot
+        prepare until it is fixed there) as failed, with their last failure. Once the cause is
+        removed, they can be repeated.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: digital repository (external system) ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaQueueActionResult'
+      tags:
+        - externalsystems
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: integer
+        description: Queue item IDs
   /extsystem/digitalrepository/{id}/queue/repeat:
     post:
       operationId: ExternalSystem_daQueueRepeat
@@ -9464,6 +9496,10 @@ components:
           type: string
           format: date-time
           description: Not before this time is the request taken again; null = now
+        failingSince:
+          type: string
+          format: date-time
+          description: Since when the exchanges about the request keep failing; null when the last one succeeded
         stateDate:
           type: string
           format: date-time

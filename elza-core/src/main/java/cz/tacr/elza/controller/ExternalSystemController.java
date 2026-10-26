@@ -114,6 +114,11 @@ public class ExternalSystemController implements ExternalsystemsApi {
     }
 
     @Override
+    public ResponseEntity<DaQueueActionResult> externalSystemDaQueueMarkFailed(Integer id, List<Integer> itemIds) {
+        return ResponseEntity.ok(daQueueService.markFailed(id, itemIds));
+    }
+
+    @Override
     public ResponseEntity<DaQueueActionResult> externalSystemDaQueueRepeat(Integer id, List<Integer> itemIds) {
         return ResponseEntity.ok(daQueueService.repeat(id, itemIds));
     }

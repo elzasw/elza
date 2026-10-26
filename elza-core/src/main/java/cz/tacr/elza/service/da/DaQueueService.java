@@ -9,6 +9,7 @@ import java.util.function.Predicate;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -33,6 +34,8 @@ import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DaSyncQueueItemRepository;
 import cz.tacr.elza.service.ExternalSystemService;
+import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.domain.SysExternalSystem;
 
 /**
@@ -70,6 +73,12 @@ public class DaQueueService {
     private DaService daService;
     @Autowired
     private ExternalSystemService externalSystemService;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private DaCommunicationLock communicationLock;
+    @Autowired
+    private ApplicationContext applicationContext;
 
     /** What the list is filtered by; null and empty values do not filter. */
     public record Filter(boolean all, @Nullable Collection<QueueItemState> states,
@@ -109,6 +118,33 @@ public class DaQueueService {
     public DaQueueActionResult withdraw(Integer repositoryId, Collection<Integer> itemIds) {
         return apply(repositoryId, itemIds, DaService::isUndelivered, items -> {
             daService.withdraw(items);
+            return items.size();
+        });
+    }
+
+    /**
+     * Ends failing downloads. Unlike the other actions it changes the state of requests a
+     * processor may hold in flight - it would save them back over the ended state - so it waits
+     * for the exchange in progress and holds the lock over its commit.
+     */
+    @AuthMethod(permission = UsrPermission.Permission.ADMIN)
+    public DaQueueActionResult markFailed(Integer repositoryId, Collection<Integer> itemIds) {
+        communicationLock.lock();
+        try {
+            return applicationContext.getBean(DaQueueService.class).markFailedLocked(repositoryId, itemIds);
+        } finally {
+            communicationLock.unlock();
+        }
+    }
+
+    /** {@link #markFailed} under {@link DaCommunicationLock}. */
+    @AuthMethod(permission = UsrPermission.Permission.ADMIN)
+    @Transactional
+    public DaQueueActionResult markFailedLocked(Integer repositoryId, Collection<Integer> itemIds) {
+        UserDetail user = userService.getLoggedUserDetail();
+        String username = user == null ? null : user.getUsername();
+        return apply(repositoryId, itemIds, DaService::isFailingDownload, items -> {
+            daService.markFailed(items, username);
             return items.size();
         });
     }
@@ -193,6 +229,7 @@ public class DaQueueService {
         vo.setBatchId(item.getBatchId());
         vo.setAttemptCount(item.getAttemptCount() == null ? 0 : item.getAttemptCount());
         vo.setNextAttemptAt(item.getNextAttemptAt());
+        vo.setFailingSince(item.getFailingSince());
         vo.setStateDate(item.getDate());
         vo.setStateMessage(item.getStateMessage());
         DaAipAction action = item.getAipActionItem() == null ? null : item.getAipActionItem().getAipAction();

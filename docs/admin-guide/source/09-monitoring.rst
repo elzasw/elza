@@ -69,13 +69,15 @@ configured (``elza.security.ldap.ad-domain``); it then checks the
 configured LDAP server. It can be switched off with
 ``management.health.ldap.enabled: false``.
 
+.. _monitoring-metrics:
+
 ELZA metrics
 ============
 
 Besides the standard metrics of the JVM, the HTTP server
 (``http_server_requests_*``), the database connection pool (HikariCP) and
-the system, ELZA publishes metrics of its synchronisation queue with
-external systems (typically CAM) and of its task scheduler. The metrics
+the system, ELZA publishes metrics of its synchronisation queues with
+external systems (CAM and digital archives) and of its task scheduler. The metrics
 have no labels; queue values are aggregated over all configured external
 systems. Age metrics return ``-1`` when there is nothing to measure.
 
@@ -110,6 +112,21 @@ systems. Age metrics return ``-1`` when there is nothing to measure.
        entered its state. Grows when the queue is not processed, which the
        last-success metric cannot see.
      - above 3600
+   * - ``elza_da_failing_age_seconds``
+     - Seconds the longest failing waiting request of a digital archive
+       queue has been failing. Such a request is retried without end, for
+       example a package the digital archive cannot prepare until it is
+       fixed there; the administrator either has it fixed or marks the
+       request as failed in the queue (see :ref:`da-queue`).
+     - above 14400
+   * - ``elza_da_failing_count``
+     - Number of waiting requests of digital archive queues whose
+       exchanges with the digital archive keep failing.
+     - none
+   * - ``elza_da_error_count``
+     - Number of digital archive queue requests that ended in error
+       (download, processing or export) and were not repeated.
+     - none
    * - ``elza_scheduler_heartbeat_age_seconds``
      - Seconds since the task scheduler last ticked. Grows without limit
        when the scheduler is frozen, which stops CAM synchronisation and

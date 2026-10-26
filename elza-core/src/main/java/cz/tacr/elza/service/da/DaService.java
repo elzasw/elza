@@ -13,6 +13,7 @@ import cz.tacr.da.controller.vo.IngestIngestStatus;
 import cz.tacr.da.controller.vo.RequestState;
 import cz.tacr.da.controller.vo.UpdatedAips;
 import cz.tacr.da.controller.vo.UpdatedInfo;
+import cz.tacr.elza.api.AipProblemType;
 import cz.tacr.elza.api.AipType;
 import cz.tacr.elza.api.DaAipActionItemState;
 import cz.tacr.elza.api.DaAipActionType;
@@ -195,6 +196,9 @@ public class DaService {
      * exception message from bloating the row.
      */
     private static final int STATE_MESSAGE_MAX_LENGTH = 4000;
+
+    /** Opens the number of attempts appended to the state message of a failing item. */
+    private static final String ATTEMPTS_NOTE = " (pokusů: ";
 
     /** Why a request for an AIP the digital archive invalidated is not carried out. */
     static final String AIP_INVALIDATED = "AIP byl v digitálním archivu zneplatněn.";
@@ -1433,20 +1437,38 @@ public class DaService {
             item.setState(state);
             item.setBatchId(batchId);
             item.setDate(now);
-            item.setStateMessage(null);
+            // a batch the DA accepted proves nothing yet - it may give the batch up again; a
+            // failing item keeps its failure until the DA answers about the batch as expected
+            if (item.getFailingSince() == null) {
+                item.setStateMessage(null);
+            }
             item.setNextAttemptAt(now.plus(Duration.ofMillis(statusPollMillis(digitalRepository))));
         }
         syncQueueItemRepository.saveAll(items);
     }
 
-    /** The DA still works on the batch; the next question is due after the status interval. */
+    /**
+     * The DA still works on the batch; the next question is due after the status interval. The
+     * DA answered as expected, so a failure the items recorded before is over.
+     */
     @Transactional
     public void scheduleNextCheck(Collection<DaSyncQueueItem> items, ArrDigitalRepository digitalRepository) {
         OffsetDateTime next = OffsetDateTime.now().plus(Duration.ofMillis(statusPollMillis(digitalRepository)));
         for (DaSyncQueueItem item : items) {
             item.setNextAttemptAt(next);
+            if (item.getFailingSince() != null) {
+                item.setFailingSince(null);
+                item.setStateMessage(null);
+            }
         }
         syncQueueItemRepository.saveAll(items);
+    }
+
+    /** A failure of an exchange about the item; the first of a run of them starts it. */
+    private static void startFailing(DaSyncQueueItem item, OffsetDateTime now) {
+        if (item.getFailingSince() == null) {
+            item.setFailingSince(now);
+        }
     }
 
     /**
@@ -1490,7 +1512,8 @@ public class DaService {
             item.setAttemptCount(attempts);
             item.setDate(now);
             item.setNextAttemptAt(now.plus(retryDelay(repositoryOf(item), attempts)));
-            item.setStateMessage(StringUtils.abbreviate(description + " (pokusů: " + attempts + ")",
+            startFailing(item, now);
+            item.setStateMessage(StringUtils.abbreviate(description + ATTEMPTS_NOTE + attempts + ")",
                                                         STATE_MESSAGE_MAX_LENGTH));
         }
         syncQueueItemRepository.saveAll(items);
@@ -1520,6 +1543,16 @@ public class DaService {
     /** Whether the request waits and the DA has not received it - only such can be cancelled. */
     static boolean isUndelivered(DaSyncQueueItem item) {
         return BooleanUtils.isTrue(item.getActive()) && UNDELIVERED_STATES.contains(item.getState());
+    }
+
+    /**
+     * Whether the request is a download that waits and keeps failing - only such can be marked
+     * as failed by the user.
+     */
+    static boolean isFailingDownload(DaSyncQueueItem item) {
+        return BooleanUtils.isTrue(item.getActive())
+                && DOWNLOAD_WAITING_STATES.contains(item.getState())
+                && item.getFailingSince() != null;
     }
 
     /** Whether the request ended by an error and nothing newer replaced it. */
@@ -1597,6 +1630,36 @@ public class DaService {
         return repeated;
     }
 
+    /**
+     * Ends failing downloads the user gave up on - typically a package the DA keeps failing to
+     * prepare until it is fixed there. The requests end as failed, with the last failure, on
+     * the AIP and the action as well; once the package is fixed, the user repeats them.
+     *
+     * @param items failing downloads ({@link #isFailingDownload})
+     * @param username who ended them; null when not known
+     */
+    @Transactional
+    public void markFailed(Collection<DaSyncQueueItem> items, @Nullable String username) {
+        String endedBy = "Stahování ukončil uživatel" + (StringUtils.isBlank(username) ? "" : " " + username);
+        Map<DaSyncQueueItem, AipProblem> problems = new LinkedHashMap<>();
+        for (DaSyncQueueItem item : items) {
+            problems.put(item, AipProblem.derived(AipProblemType.DOWNLOAD_ERROR,
+                    endedBy + ATTEMPTS_NOTE + item.getAttemptCount() + ")."
+                            + lastFailure(item.getStateMessage())));
+        }
+        failQueueItems(problems, DaSyncQueueItem.QueueItemState.IMPORT_ERROR);
+    }
+
+    /** The failure the state message of a failing download describes, without the retry notes. */
+    private static String lastFailure(@Nullable String stateMessage) {
+        if (StringUtils.isBlank(stateMessage)) {
+            return "";
+        }
+        String failure = StringUtils.substringBeforeLast(stateMessage, ATTEMPTS_NOTE).strip();
+        failure = StringUtils.removeEnd(failure, AipProblem.DOWNLOAD_RETRY_NOTE.strip()).strip();
+        return " Poslední chyba: " + failure;
+    }
+
     @Transactional
     public void updateAipToQueueItems(List<DaSyncQueueItem> syncQueueItemList) {
         if (CollectionUtils.isNotEmpty(syncQueueItemList)) {
@@ -1638,6 +1701,7 @@ public class DaService {
                 syncQueueItem.setStateMessage(StringUtils.abbreviate(stateMessage, STATE_MESSAGE_MAX_LENGTH));
                 syncQueueItem.setDate(now);
                 syncQueueItem.setNextAttemptAt(null);
+                syncQueueItem.setFailingSince(null);
             }
             syncQueueItemRepository.saveAll(syncQueueItemList);
         }
@@ -1661,8 +1725,9 @@ public class DaService {
             syncQueueItem.setAttemptCount(attempts);
             syncQueueItem.setDate(now);
             syncQueueItem.setNextAttemptAt(now.plus(retryDelay(repositoryOf(syncQueueItem), attempts)));
+            startFailing(syncQueueItem, now);
             syncQueueItem.setStateMessage(StringUtils.abbreviate(
-                    problem.description() + " (pokusů: " + attempts + ")", STATE_MESSAGE_MAX_LENGTH));
+                    problem.description() + ATTEMPTS_NOTE + attempts + ")", STATE_MESSAGE_MAX_LENGTH));
             recordAipProblem(syncQueueItem, problem);
         }
         syncQueueItemRepository.saveAll(syncQueueItemList);
@@ -1729,6 +1794,8 @@ public class DaService {
                 syncQueueItem.setState(state);
                 syncQueueItem.setStateMessage(StringUtils.abbreviate(problem.description(), STATE_MESSAGE_MAX_LENGTH));
                 syncQueueItem.setDate(now);
+                syncQueueItem.setNextAttemptAt(null);
+                syncQueueItem.setFailingSince(null);
                 recordAipProblem(syncQueueItem, problem);
                 actionService.completeFromQueue(List.of(syncQueueItem), DaAipActionItemState.ERROR,
                                                 problem.description());
@@ -2041,6 +2108,12 @@ public class DaService {
             DaSyncQueueItem.QueueItemState.IMPORT_NEW,
             DaSyncQueueItem.QueueItemState.UPDATE,
             DaSyncQueueItem.QueueItemState.EXPORT_NEW);
+
+    /** Downloads waiting for the queue, requested from the DA or not. */
+    private static final List<DaSyncQueueItem.QueueItemState> DOWNLOAD_WAITING_STATES = List.of(
+            DaSyncQueueItem.QueueItemState.IMPORT_NEW,
+            DaSyncQueueItem.QueueItemState.UPDATE,
+            DaSyncQueueItem.QueueItemState.DOWNLOAD_REQUESTED);
 
     /** Requests waiting for the queue, delivered to the DA or not. */
     private static final List<DaSyncQueueItem.QueueItemState> WAITING_STATES = List.of(

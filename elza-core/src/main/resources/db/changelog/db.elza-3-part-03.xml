@@ -1446,4 +1446,19 @@
         </sql>
     </changeSet>
 
+    <changeSet id="20261025120000" author="ppy">
+        <!-- Since when the exchanges about a queue item keep failing; null after an exchange
+             that succeeded. Monitoring reports how long the DA queue has been stuck from it.
+             A waiting item whose last exchange failed still carries the failure in its state
+             message; the time of that failure is the best known start. -->
+        <addColumn tableName="da_sync_queue_item">
+            <column name="failing_since" type="timestamp with time zone"/>
+        </addColumn>
+        <sql>
+            UPDATE da_sync_queue_item SET failing_since = date
+            WHERE active = true AND attempt_count > 0 AND state_message IS NOT NULL
+              AND state IN ('IMPORT_NEW', 'UPDATE', 'DOWNLOAD_REQUESTED', 'EXPORT_NEW', 'EXPORT_SENT')
+        </sql>
+    </changeSet>
+
 </databaseChangeLog>

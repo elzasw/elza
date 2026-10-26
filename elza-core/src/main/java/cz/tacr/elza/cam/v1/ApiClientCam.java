@@ -78,12 +78,9 @@ public class ApiClientCam extends ApiClient {
                 String xNdaDate = OffsetDateTime.now(ZoneOffset.UTC).format(X_NDA_DATE_FORMATTER);
                 String dataToHash = getHost(request) + request.method() + "/" + String.join("/", request.url().pathSegments()) + StringUtils.defaultString(request.url().query()) + xNdaDate;
                 String signature = computeHmac(apiValue, dataToHash);
-                if (log.isDebugEnabled()) {
-                    log.debug("Data to hash: {}", dataToHash);
-                            log.debug("Authorization NDA-HMAC-SHA256 (KeyId={}, KeyValue={}), Signature={}", apiKey,
-                                      apiValue,
-                                      signature);
-                }
+                // neither the key value nor the signature is logged: the signature with the signed data
+                // would let the request be replayed while its date is accepted
+                log.debug("Authorization NDA-HMAC-SHA256 KeyId={}, signed data: {}", apiKey, dataToHash);
                 String authorization = "NDA-HMAC-SHA256 KeyId=" + apiKey + ",Signature=" + signature;
                 Request newRequest = request.newBuilder()
                         .addHeader(X_NDA_DATE, xNdaDate)

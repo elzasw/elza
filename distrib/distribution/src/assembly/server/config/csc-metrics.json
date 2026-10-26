@@ -71,6 +71,43 @@
       "source": { "metric": "elza_cam_pending_oldest_age_seconds" }
     },
     {
+      "key": "elza.da.failing_age_seconds",
+      "name": { "en": "Longest failing DA request", "cs": "Nejdéle selhávající požadavek DA" },
+      "description": {
+        "en": "Seconds the longest failing waiting request of a digital archive (DA) queue has been failing; -1 when none fails or the application is not fully started. A failing request is retried without end - e.g. a package the DA cannot prepare until it is fixed there - so only this age tells that the queue is stuck. Resolved by fixing the cause in the DA, or by marking the request as failed in the DA queue.",
+        "cs": "Počet sekund, po které selhává nejdéle selhávající čekající požadavek fronty digitálního archivu (DA); -1 když žádný neselhává nebo aplikace není plně spuštěna. Selhávající požadavek se opakuje bez omezení - např. balíček, který DA nedokáže připravit, dokud se v něm neopraví - takže jen toto stáří ukazuje, že fronta uvízla. Řeší se odstraněním příčiny v DA, nebo označením požadavku za chybný ve frontě DA."
+      },
+      "unit": "s",
+      "type": "gauge",
+      "monitored": true,
+      "threshold": { "direction": "above", "level": 14400 },
+      "source": { "metric": "elza_da_failing_age_seconds" }
+    },
+    {
+      "key": "elza.da.failing_count",
+      "name": { "en": "Failing DA requests", "cs": "Selhávající požadavky DA" },
+      "description": {
+        "en": "Number of waiting requests of digital archive queues whose exchanges with the DA keep failing (they are retried), summed across all digital archives. Diagnostic; the age metric carries the alert.",
+        "cs": "Počet čekajících požadavků front digitálních archivů, jejichž výměna s DA opakovaně selhává (opakují se), sečteno přes všechny digitální archivy. Diagnostika; alert nese metrika stáří."
+      },
+      "unit": "count",
+      "type": "gauge",
+      "monitored": false,
+      "source": { "metric": "elza_da_failing_count" }
+    },
+    {
+      "key": "elza.da.error_count",
+      "name": { "en": "DA requests in error", "cs": "Chybné požadavky DA" },
+      "description": {
+        "en": "Number of digital archive queue requests that ended in error (download, processing or export) and were not repeated, summed across all digital archives. Informational: a failed request stays until the user repeats it.",
+        "cs": "Počet požadavků front digitálních archivů, které skončily chybou (stažení, zpracování nebo export) a nebyly zopakovány, sečteno přes všechny digitální archivy. Informativní: chybný požadavek zůstává, dokud jej uživatel nezopakuje."
+      },
+      "unit": "count",
+      "type": "gauge",
+      "monitored": false,
+      "source": { "metric": "elza_da_error_count" }
+    },
+    {
       "key": "elza.users.connected",
       "name": { "en": "Connected users", "cs": "Připojení uživatelé" },
       "description": {

@@ -28,6 +28,9 @@ public record AipProblem(AipProblemType type, String description, @Nullable Stri
     /** Separates the causes in the technical detail, from the failure towards its root. */
     private static final String CAUSE_SEPARATOR = "\n  příčina: ";
 
+    /** Ends the description of a failed download, which is retried. */
+    static final String DOWNLOAD_RETRY_NOTE = " Stažení bude opakováno.";
+
     /** A problem derived from the state of the AIP - there is no failure behind it to trace. */
     public static AipProblem derived(AipProblemType type, String description) {
         return new AipProblem(type, description, null, null);
@@ -60,9 +63,10 @@ public record AipProblem(AipProblemType type, String description, @Nullable Stri
      * successful download makes it obsolete.
      */
     public static AipProblem downloadFailure(Throwable failure) {
+        String reason = DaRequestFailure.describe(failure);
         return new AipProblem(AipProblemType.DOWNLOAD_ERROR,
-                "Balíček se nepodařilo stáhnout z digitálního archivu: " + reason(failure)
-                        + ". Stažení bude opakováno.",
+                "Balíček se nepodařilo stáhnout z digitálního archivu: " + reason
+                        + (reason.endsWith(".") ? "" : ".") + DOWNLOAD_RETRY_NOTE,
                 causeChain(failure), null);
     }
 
@@ -95,7 +99,7 @@ public record AipProblem(AipProblemType type, String description, @Nullable Stri
      * cause in the chain was written to be read by them.
      */
     @Nullable
-    private static AipProblemException describedCause(Throwable failure) {
+    static AipProblemException describedCause(Throwable failure) {
         AipProblemException described = firstCauseOfType(failure, AipProblemException.class);
         return described != null && StringUtils.isNotBlank(described.getMessage()) ? described : null;
     }

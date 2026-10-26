@@ -35,6 +35,7 @@ export const messages = defineMessages({
     colMessage: { id: 'admin.daQueue.col.message', defaultMessage: 'Zpráva' },
     colRequestedBy: { id: 'admin.daQueue.col.requestedBy', defaultMessage: 'Požádal' },
     colVersion: { id: 'admin.daQueue.col.version', defaultMessage: 'Verze AIP' },
+    colFailingSince: { id: 'admin.daQueue.col.failingSince', defaultMessage: 'Selhává od' },
 
     now: { id: 'admin.daQueue.now', defaultMessage: 'teď' },
     inactive: { id: 'admin.daQueue.inactive', defaultMessage: 'neaktivní' },
@@ -72,6 +73,15 @@ export const messages = defineMessages({
     repeatTitle: {
         id: 'admin.daQueue.action.repeat.title',
         defaultMessage: 'Neúspěšné stažení se vyžádá znovu, neúspěšný export odešle nový změnový balíček',
+    },
+    markFailed: { id: 'admin.daQueue.action.markFailed', defaultMessage: 'Označit jako chybné' },
+    markFailedTitle: {
+        id: 'admin.daQueue.action.markFailed.title',
+        defaultMessage: 'Stahování se přestane opakovat a požadavek skončí chybou. Až bude balíček v digitálním archivu opraven, použijte Opakovat.',
+    },
+    markFailedConfirm: {
+        id: 'admin.daQueue.action.markFailed.confirm',
+        defaultMessage: 'Ukončit stahování AIP „{aipCode}“? Stahování se přestane opakovat a požadavek skončí chybou, která se zaznamená i u AIP a v akci uživatele. Až bude balíček v digitálním archivu opraven, lze požadavek Opakovat.',
     },
     actionDone: {
         id: 'admin.daQueue.action.done',
