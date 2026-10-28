@@ -170,7 +170,7 @@ public class ApiClientDa extends ApiClient {
             Mac hmac = Mac.getInstance("HmacSHA256");
             byte[] bytes = apiValue.getBytes(StandardCharsets.UTF_8);
             hmac.init(new SecretKeySpec(bytes, hmac.getAlgorithm()));
-            byte[] result = hmac.doFinal(dataToHash.getBytes());
+            byte[] result = hmac.doFinal(dataToHash.getBytes(StandardCharsets.UTF_8));
 
             return Base64.getEncoder().withoutPadding().encodeToString(result);
         } catch (GeneralSecurityException | IllegalArgumentException e) {

@@ -117,6 +117,10 @@ Changes
   be signed with the API key (e.g. an empty key value), it was sent with
   ``Signature=null`` and rejected by the archive without the cause in the
   log. The call now fails with the cause.
+* Fix: 10190 - Digital archive: the signature with the API key depended on
+  the default charset of the system; a request whose path contained
+  characters outside ASCII (e.g. an AIP identifier with diacritics) was
+  rejected by the archive on Windows. The signed text is always UTF-8.
 
 3.4.10
 ======

@@ -9,7 +9,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.concurrent.atomic.AtomicReference;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 
 import org.junit.jupiter.api.Test;
 
@@ -42,6 +47,10 @@ public class ApiClientDaTest {
      * the last interceptor answers instead of the network.
      */
     private static Request sentRequest(ApiClientDa apiClient) throws IOException {
+        return sentRequest(apiClient, "/updates?count=1");
+    }
+
+    private static Request sentRequest(ApiClientDa apiClient, String path) throws IOException {
         AtomicReference<Request> sent = new AtomicReference<>();
         OkHttpClient client = apiClient.getHttpClient().newBuilder()
                 .addInterceptor(chain -> {
@@ -55,7 +64,7 @@ public class ApiClientDaTest {
                             .build();
                 })
                 .build();
-        client.newCall(new Request.Builder().url(URL + "/updates?count=1").build()).execute().close();
+        client.newCall(new Request.Builder().url(URL + path).build()).execute().close();
         return sent.get();
     }
 
@@ -122,6 +131,25 @@ public class ApiClientDaTest {
 
         // base64("user:")
         assertEquals("Basic dXNlcjo=", request.header(ApiClientDa.AUTHORIZATION));
+    }
+
+    /**
+     * The signed text holds the decoded path, so a non-ASCII identifier must be signed as UTF-8
+     * whatever the platform charset. The build runs tests with {@code file.encoding=UTF-8}; to
+     * check another charset run with {@code -DargLine=-Dfile.encoding=Cp1250}.
+     */
+    @Test
+    void apiKey_signsNonAsciiPathAsUtf8() throws Exception {
+        Request request = sentRequest(createClient(DaApiAuthentication.API_KEY, true), "/download/result/Žluťoučký-1");
+
+        String signedText = "da.example" + "GET" + "/api/download/result/Žluťoučký-1"
+                + request.header(ApiClientDa.X_NDA_DATE);
+        Mac hmac = Mac.getInstance("HmacSHA256");
+        hmac.init(new SecretKeySpec("secret".getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
+        String expected = Base64.getEncoder().withoutPadding()
+                .encodeToString(hmac.doFinal(signedText.getBytes(StandardCharsets.UTF_8)));
+
+        assertEquals("NDA-HMAC-SHA256 KeyId=elza,Signature=" + expected, request.header(ApiClientDa.AUTHORIZATION));
     }
 
     /** An empty key value cannot sign; the request must not leave with a null signature. */
