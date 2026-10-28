@@ -40,3 +40,4 @@ Administrators and users are served by the guides in `docs/admin-guide`, `docs/u
 | [ai-task-events.md](ai-task-events.md) | AI provider task events and the per-user push |
 | [ead3-export.md](ead3-export.md) | EAD3 export against the Czech EAD3 profile: decisions, remaining gaps and proposed changes (partly a proposal) |
 | [entity-real-name-index.md](entity-real-name-index.md) | Entity search: the `REAL_NAME` index of names and the search fields of an index type (`index-search`) |
+| [fund-lock.md](fund-lock.md) | Fund lock: shared edits versus exclusive runs, one fund per `ArrChange`, enforcement by `createChange` and a persist listener (proposal) |
