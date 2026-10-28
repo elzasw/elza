@@ -28,6 +28,7 @@ import {
     daSettingsMessages,
     DA_DOWNLOAD_METHOD_MESSAGE,
     DA_ON_RECEIVED_MESSAGE,
+    DA_API_AUTHENTICATION_MESSAGE,
     deriveFileTransferUrl,
 } from './ExtSystemForm';
 
@@ -375,6 +376,13 @@ export function AdminExtSystemDetail() {
                                             ? daSettingsMessages.tlsVerifyFalse
                                             : daSettingsMessages.tlsVerifyTrue)}
                                     />
+                                </span>
+
+                                <h4><FormattedMessage {...daSettingsMessages.apiAuthentication} /></h4>
+                                <span>
+                                    {DA_API_AUTHENTICATION_MESSAGE[extSystem.apiAuthentication!] && (
+                                        <FormattedMessage {...DA_API_AUTHENTICATION_MESSAGE[extSystem.apiAuthentication!]} />
+                                    )}
                                 </span>
 
                                 <h4><FormattedMessage {...daSettingsMessages.onReceived} /></h4>

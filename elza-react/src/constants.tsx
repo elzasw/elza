@@ -45,6 +45,13 @@ export enum DaOnReceivedAction {
     DownloadMetadata = "DOWNLOAD_METADATA",
 }
 
+/** How ELZA authenticates its calls to the REST API of a DA repository. */
+export enum DaApiAuthentication {
+    None = "NONE",
+    ApiKey = "API_KEY",
+    Basic = "BASIC",
+}
+
 export enum MODAL_DIALOG_VARIANT {
     LARGE = 'dialog-lg',
     FULLSCREEN = 'dialog-fullscreen',

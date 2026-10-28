@@ -12,6 +12,7 @@ import cz.tacr.da.controller.vo.DownloadDownloadStatus;
 import cz.tacr.da.controller.vo.IngestIngestResult;
 import cz.tacr.da.controller.vo.IngestIngestStatus;
 import cz.tacr.da.controller.vo.UpdatedAips;
+import cz.tacr.elza.api.DaApiAuthentication;
 import cz.tacr.elza.api.DigitalRepositoryType;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.service.da.vo.DaUploadRequestImpl;
@@ -158,7 +159,8 @@ public class DaConnector {
         try {
             UpdatedAips updates = daInstance.getDefaultApi().updates(1, null);
             result.setAvailable(true);
-            StringBuilder message = new StringBuilder("DA API responds");
+            StringBuilder message = new StringBuilder("DA API responds (authentication: ")
+                    .append(digitalRepository.getApiAuthentication()).append(")");
             if (updates != null && updates.getAipIds() != null && !updates.getAipIds().isEmpty()) {
                 message.append("; first available AIP: ").append(updates.getAipIds().get(0).getAipId());
             } else {
@@ -169,6 +171,10 @@ public class DaConnector {
                     .append(" is not covered by this test");
             if (Boolean.FALSE.equals(digitalRepository.getTlsVerify())) {
                 message.append(". The TLS certificate is not verified");
+            }
+            if (digitalRepository.getApiAuthentication() == DaApiAuthentication.BASIC
+                    && StringUtils.startsWithIgnoreCase(daInstance.getApiUrl(), "http:")) {
+                message.append(". HTTP Basic sends the password unencrypted, use HTTPS");
             }
             result.setMessage(message.toString());
         } catch (ApiException e) {
@@ -223,6 +229,7 @@ public class DaConnector {
     private static DaInstance createInstance(ArrDigitalRepository digitalRepository) {
         return new DaInstance(digitalRepository.getUrl(),
                 digitalRepository.getFileTransferUrl(),
+                digitalRepository.getApiAuthentication(),
                 digitalRepository.getApiKeyId(),
                 digitalRepository.getApiKeyValue(),
                 digitalRepository.getUsername(),

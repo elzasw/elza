@@ -67,6 +67,13 @@ New
   systems are set to *No* by the upgrade and keep trusting any
   certificate, as before. **Where CAM has a valid certificate, switch the
   option to** *Yes*. See :doc:`/07-integrations`.
+* New: 10188 - DA - the repository has the option *REST API authentication*:
+  *None*, *API key* (NDA-HMAC-SHA256 signature) or *HTTP Basic* with the
+  username and password of the repository, which File Transfer uses as
+  well. The upgrade sets *API key* for repositories with both parts of
+  the API key filled in and *None* for the others, so their behaviour
+  does not change. The API key is stored only with the *API key* method.
+  See :doc:`/08-digital-repositories`.
 
 Changes
 -------

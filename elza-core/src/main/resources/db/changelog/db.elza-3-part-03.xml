@@ -1461,4 +1461,21 @@
         </sql>
     </changeSet>
 
+    <changeSet id="20261028120000" author="ppy">
+        <!-- How ELZA authenticates its calls to the REST API of a DA (NONE, API_KEY, BASIC).
+             Existing DA repositories keep their behaviour: the requests were signed exactly
+             when both parts of the API key were set, otherwise they carried no authentication. -->
+        <addColumn tableName="arr_digital_repository">
+            <column name="api_authentication" type="nvarchar(50)" defaultValue="NONE">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <sql>
+            UPDATE arr_digital_repository SET api_authentication = 'API_KEY'
+            WHERE digital_repository_type = 'DA'
+              AND external_system_id IN (SELECT external_system_id FROM sys_external_system
+                                         WHERE api_key_id IS NOT NULL AND api_key_value IS NOT NULL)
+        </sql>
+    </changeSet>
+
 </databaseChangeLog>

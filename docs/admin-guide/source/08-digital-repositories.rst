@@ -75,13 +75,27 @@ File Transfer URL
    the URL as ``<URL>/ws/ft``; the form shows the derived address as a
    hint, and the detail of the repository shows the address in use.
    Fill it in only when the archive runs File Transfer elsewhere.
+REST API authentication
+   How ELZA authenticates its calls to the REST API:
+
+   - *None* - the requests carry no authentication.
+   - *API key (NDA-HMAC-SHA256)* - ELZA signs every request with the key
+     (headers ``Authorization: NDA-HMAC-SHA256`` and ``X-NDA-Date``); the
+     key value itself is not sent. Requires *ApiKey - ID* and
+     *ApiKey - value*.
+   - *HTTP Basic (username and password)* - every request carries
+     *Username* and *Password*, the same ones File Transfer uses.
+     Requires *Username*. Use it only over HTTPS: Basic sends the
+     password with every request, merely encoded.
+
+   The setting does not affect File Transfer.
 ApiKey - ID, ApiKey - value
-   API key for the REST API. With both filled in, ELZA signs every request
-   with the key (``Authorization: NDA-HMAC-SHA256``); without them, the
-   requests carry no authentication.
+   API key for the *API key* authentication. Offered and stored only
+   with that method.
 Username, Password
-   Credentials for File Transfer (HTTP Basic). Without a username, File
-   Transfer connects without authentication.
+   Credentials for File Transfer (HTTP Basic), and for the REST API with
+   the *HTTP Basic* authentication. Without a username, File Transfer
+   connects without authentication.
 Verify TLS certificate
    *Yes* (the default) - the certificate of the archive is verified for
    the REST API and File Transfer alike. *No* - any certificate is

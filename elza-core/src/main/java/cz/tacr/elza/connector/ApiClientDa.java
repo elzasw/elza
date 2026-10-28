@@ -1,9 +1,11 @@
 package cz.tacr.elza.connector;
 
 import cz.tacr.da.ApiClient;
+import cz.tacr.elza.api.DaApiAuthentication;
 import cz.tacr.elza.common.security.NoCheckTrustManager;
 import cz.tacr.elza.exception.SystemException;
 import jakarta.validation.constraints.NotNull;
+import okhttp3.Credentials;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -79,23 +81,47 @@ public class ApiClientDa extends ApiClient {
     }
 
     /**
-     * @param apiKey    API key id; with {@code apiValue} every request is signed (NDA-HMAC-SHA256),
-     *                  without them the requests carry no authentication
-     * @param tlsVerify false = trust any server certificate and skip the host name check
-     *                  (internal servers with a self-signed certificate)
+     * @param authentication {@code API_KEY} signs every request with {@code apiKey} and
+     *                       {@code apiValue} (NDA-HMAC-SHA256), {@code BASIC} sends
+     *                       {@code username} and {@code password}, {@code NONE} sends nothing
+     * @param tlsVerify      false = trust any server certificate and skip the host name check
+     *                       (internal servers with a self-signed certificate)
      */
     public ApiClientDa(@NotNull final String url,
+                       @NotNull final DaApiAuthentication authentication,
                        final String apiKey,
                        final String apiValue,
+                       final String username,
+                       final String password,
                        final boolean tlsVerify) {
         super();
         setBasePath(url);
-        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        OkHttpClient.Builder builder = new OkHttpClient.Builder()
+                .connectTimeout(CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS)
+                .readTimeout(CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS)
+                .writeTimeout(CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS);
         if (!tlsVerify) {
             trustAnyCertificate(builder);
         }
-        if (apiKey != null && apiValue != null) {
-            builder.addInterceptor(chain -> signRequest(chain, apiKey, apiValue));
+        switch (authentication) {
+            case API_KEY -> {
+                if (apiKey == null || apiValue == null) {
+                    throw new IllegalArgumentException("API key authentication requires the key id and value");
+                }
+                builder.addInterceptor(chain -> signRequest(chain, apiKey, apiValue));
+            }
+            case BASIC -> {
+                if (username == null) {
+                    throw new IllegalArgumentException("Basic authentication requires a username");
+                }
+                String credentials = Credentials.basic(username, StringUtils.defaultString(password),
+                                                       StandardCharsets.UTF_8);
+                builder.addInterceptor(chain -> chain.proceed(chain.request().newBuilder()
+                        .header(AUTHORIZATION, credentials)
+                        .build()));
+            }
+            case NONE -> {
+            }
         }
         builder.addInterceptor(RESPONSE_LOGGING_INTERCEPTOR);
         setHttpClient(builder.build());
@@ -116,11 +142,6 @@ public class ApiClientDa extends ApiClient {
 
     private Response signRequest(Interceptor.Chain chain, final String apiKey, final String apiValue)
             throws IOException {
-        chain = chain
-                .withConnectTimeout(CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS)
-                .withReadTimeout(CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS)
-                .withWriteTimeout(CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS);
-
         Request request = chain.request();
         String xNdaDate = OffsetDateTime.now(ZoneOffset.UTC).format(X_NDA_DATE_FORMATTER);
         String dataToHash = getHost(request) + request.method() + "/" + String.join("/", request.url().pathSegments()) + StringUtils.defaultString(request.url().query()) + xNdaDate;

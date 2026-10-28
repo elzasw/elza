@@ -475,6 +475,22 @@
     "defaultMessage": "Digital archive",
     "srcHash": "iPgFLR6539C0"
   },
+  "admin.extSystem.daApiAuthentication": {
+    "defaultMessage": "REST API authentication",
+    "srcHash": "asGeGtBWQba6"
+  },
+  "admin.extSystem.daApiAuthentication.apiKey": {
+    "defaultMessage": "API key (NDA-HMAC-SHA256)",
+    "srcHash": "gemwSkEQtZcu"
+  },
+  "admin.extSystem.daApiAuthentication.basic": {
+    "defaultMessage": "HTTP Basic (username and password)",
+    "srcHash": "reQNLXZO4H8c"
+  },
+  "admin.extSystem.daApiAuthentication.none": {
+    "defaultMessage": "None",
+    "srcHash": "RVXTtEKovoRq"
+  },
   "admin.extSystem.daFileTransferType": {
     "defaultMessage": "File Transfer download request type",
     "srcHash": "o7xK0GHTaht5"

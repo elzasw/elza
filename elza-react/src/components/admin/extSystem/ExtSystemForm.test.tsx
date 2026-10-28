@@ -1,7 +1,13 @@
 import { describe, it, expect, vi } from 'vitest';
 
 import { renderWithProviders, screen, fireEvent } from 'test/test-utils';
-import { JAVA_ATTR_CLASS, DigitalRepositoryType, DaDownloadMethod, DaOnReceivedAction } from '../../../constants';
+import {
+    JAVA_ATTR_CLASS,
+    DigitalRepositoryType,
+    DaDownloadMethod,
+    DaOnReceivedAction,
+    DaApiAuthentication,
+} from '../../../constants';
 import ExtSystemForm, { EXT_SYSTEM_CLASS } from './ExtSystemForm';
 
 /**
@@ -89,6 +95,7 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
                     id: 7,
                     downloadMethod: DaDownloadMethod.Standard,
                     onReceived: DaOnReceivedAction.None,
+                    apiAuthentication: DaApiAuthentication.None,
                 })}
                 onSubmitForm={onSubmitForm}
             />,
@@ -109,6 +116,7 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
                     id: 7,
                     downloadMethod: DaDownloadMethod.Standard,
                     onReceived: DaOnReceivedAction.None,
+                    apiAuthentication: DaApiAuthentication.None,
                 })}
                 onSubmitForm={onSubmitForm}
             />,
@@ -130,17 +138,76 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
                     id: 7,
                     downloadMethod: DaDownloadMethod.Standard,
                     onReceived: DaOnReceivedAction.None,
+                    apiAuthentication: DaApiAuthentication.None,
                 })}
                 onSubmitForm={onSubmitForm}
             />,
         );
 
+        expect(input(container, 'apiKeyId')).toBeNull();
+        fireEvent.change(select(container, 'apiAuthentication')!, { target: { value: DaApiAuthentication.ApiKey } });
         fireEvent.change(input(container, 'apiKeyId')!, { target: { value: 'elza' } });
         fireEvent.change(input(container, 'apiKeyValue')!, { target: { value: 'secret' } });
         fireEvent.click(screen.getByRole('button', { name: 'Uložit' }));
 
         await vi.waitFor(() => expect(onSubmitForm).toHaveBeenCalledTimes(1));
-        expect(onSubmitForm.mock.calls[0][0]).toMatchObject({ apiKeyId: 'elza', apiKeyValue: 'secret' });
+        expect(onSubmitForm.mock.calls[0][0]).toMatchObject({
+            apiAuthentication: DaApiAuthentication.ApiKey,
+            apiKeyId: 'elza',
+            apiKeyValue: 'secret',
+        });
+    });
+
+    it.each([
+        [DaApiAuthentication.ApiKey, 'apiKeyValue'],
+        [DaApiAuthentication.Basic, 'username'],
+    ])('ověření %s se neuloží bez %s', async (authentication, missing) => {
+        const onSubmitForm = vi.fn().mockResolvedValue(undefined);
+        const { container } = renderWithProviders(
+            <ExtSystemForm
+                initialValues={repository(DigitalRepositoryType.Da, {
+                    id: 7,
+                    downloadMethod: DaDownloadMethod.Standard,
+                    onReceived: DaOnReceivedAction.None,
+                    apiAuthentication: authentication,
+                    apiKeyId: 'elza',
+                })}
+                onSubmitForm={onSubmitForm}
+            />,
+        );
+
+        fireEvent.change(input(container, 'name')!, { target: { value: 'Archiv' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Uložit' }));
+
+        await vi.waitFor(() => expect(input(container, missing)!.classList).toContain('is-invalid'));
+        expect(onSubmitForm).not.toHaveBeenCalled();
+    });
+
+    it('ověření Basic používá uživatelské jméno a heslo, API klíč nenabízí', async () => {
+        const onSubmitForm = vi.fn().mockResolvedValue(undefined);
+        const { container } = renderWithProviders(
+            <ExtSystemForm
+                initialValues={repository(DigitalRepositoryType.Da, {
+                    id: 7,
+                    downloadMethod: DaDownloadMethod.Standard,
+                    onReceived: DaOnReceivedAction.None,
+                    apiAuthentication: DaApiAuthentication.Basic,
+                })}
+                onSubmitForm={onSubmitForm}
+            />,
+        );
+
+        expect(input(container, 'apiKeyId')).toBeNull();
+        fireEvent.change(input(container, 'username')!, { target: { value: 'elza' } });
+        fireEvent.change(input(container, 'password')!, { target: { value: 'secret' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Uložit' }));
+
+        await vi.waitFor(() => expect(onSubmitForm).toHaveBeenCalledTimes(1));
+        expect(onSubmitForm.mock.calls[0][0]).toMatchObject({
+            apiAuthentication: DaApiAuthentication.Basic,
+            username: 'elza',
+            password: 'secret',
+        });
     });
 
     it('odešle zvolené hodnoty', async () => {
@@ -152,6 +219,7 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
                     sendNotification: 'false',
                     downloadMethod: DaDownloadMethod.Standard,
                     onReceived: DaOnReceivedAction.None,
+                    apiAuthentication: DaApiAuthentication.None,
                     syncDelay: 300,
                     statusPollInterval: 2,
                 })}
@@ -207,6 +275,7 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
                     sendNotification: 'false',
                     downloadMethod: DaDownloadMethod.FileTransfer,
                     onReceived: DaOnReceivedAction.None,
+                    apiAuthentication: DaApiAuthentication.None,
                 })}
                 onSubmitForm={onSubmitForm}
             />,
@@ -232,6 +301,7 @@ describe('ExtSystemForm - nastavení stahování AIP', () => {
                     sendNotification: 'false',
                     downloadMethod: DaDownloadMethod.Standard,
                     onReceived: DaOnReceivedAction.None,
+                    apiAuthentication: DaApiAuthentication.None,
                 })}
                 onSubmitForm={onSubmitForm}
             />,

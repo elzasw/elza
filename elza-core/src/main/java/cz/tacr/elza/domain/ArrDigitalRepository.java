@@ -1,6 +1,7 @@
 package cz.tacr.elza.domain;
 
 import cz.tacr.elza.api.DaDownloadMethod;
+import cz.tacr.elza.api.DaApiAuthentication;
 import cz.tacr.elza.api.DaOnReceivedAction;
 import cz.tacr.elza.api.DigitalRepositoryType;
 import jakarta.persistence.Column;
@@ -93,6 +94,13 @@ public class ArrDigitalRepository extends SysExternalSystem {
     @Column(nullable = false)
     private Boolean tlsVerify = Boolean.TRUE;
 
+    /**
+     * How the calls to the REST API of a DA repository are authenticated.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(length = StringLength.LENGTH_ENUM, nullable = false)
+    private DaApiAuthentication apiAuthentication = DaApiAuthentication.NONE;
+
     public ArrDigitalRepository() {
     }
 
@@ -111,6 +119,7 @@ public class ArrDigitalRepository extends SysExternalSystem {
 		this.fileTransferUrl = ardr.getFileTransferUrl();
 		this.fileTransferType = ardr.getFileTransferType();
 		this.tlsVerify = ardr.getTlsVerify();
+		this.apiAuthentication = ardr.getApiAuthentication();
     }
 
 	/**
@@ -239,6 +248,14 @@ public class ArrDigitalRepository extends SysExternalSystem {
 
     public void setTlsVerify(Boolean tlsVerify) {
         this.tlsVerify = tlsVerify;
+    }
+
+    public DaApiAuthentication getApiAuthentication() {
+        return apiAuthentication;
+    }
+
+    public void setApiAuthentication(DaApiAuthentication apiAuthentication) {
+        this.apiAuthentication = apiAuthentication;
     }
 
     @Override
