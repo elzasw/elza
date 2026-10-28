@@ -161,6 +161,10 @@ public class ApiClientDa extends ApiClient {
         return request.url().host();
     }
 
+    /**
+     * @throws SystemException when the signature cannot be computed (e.g. an empty key value);
+     *                         the request is then not sent
+     */
     private String computeHmac(final String apiValue, final String dataToHash) {
         try {
             Mac hmac = Mac.getInstance("HmacSHA256");
@@ -169,8 +173,8 @@ public class ApiClientDa extends ApiClient {
             byte[] result = hmac.doFinal(dataToHash.getBytes());
 
             return Base64.getEncoder().withoutPadding().encodeToString(result);
-        } catch (Exception e) {
-            return null;
+        } catch (GeneralSecurityException | IllegalArgumentException e) {
+            throw new SystemException("Failed to sign the DA request with the API key", e);
         }
     }
 }

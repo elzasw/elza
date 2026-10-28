@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 
 import cz.tacr.elza.api.DaApiAuthentication;
 import cz.tacr.elza.common.security.NoCheckTrustManager;
+import cz.tacr.elza.exception.SystemException;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
@@ -121,6 +122,14 @@ public class ApiClientDaTest {
 
         // base64("user:")
         assertEquals("Basic dXNlcjo=", request.header(ApiClientDa.AUTHORIZATION));
+    }
+
+    /** An empty key value cannot sign; the request must not leave with a null signature. */
+    @Test
+    void apiKey_unsignable_failsWithoutSending() {
+        ApiClientDa apiClient = new ApiClientDa(URL, DaApiAuthentication.API_KEY, "elza", "", null, null, true);
+
+        assertThrows(SystemException.class, () -> sentRequest(apiClient));
     }
 
     @Test

@@ -113,6 +113,10 @@ Changes
   its item in the synchronization queue ends in the state ``ERROR`` with
   the reason, and the record is synchronized again from the user interface
   once the cause is resolved.
+* Fix: 10189 - Digital archive: when the request to the REST API could not
+  be signed with the API key (e.g. an empty key value), it was sent with
+  ``Signature=null`` and rejected by the archive without the cause in the
+  log. The call now fails with the cause.
 
 3.4.10
 ======
