@@ -1,9 +1,7 @@
 package cz.tacr.elza.connector;
 
 import com.lightcomp.ft.client.Client;
-import com.lightcomp.ft.client.DownloadRequest;
 import com.lightcomp.ft.client.Transfer;
-import com.lightcomp.ft.simple.DwnldRequestImpl;
 import com.lightcomp.ft.xsd.v1.GenericDataType;
 import cz.tacr.da.ApiException;
 import cz.tacr.da.controller.DefaultApi;
@@ -15,6 +13,7 @@ import cz.tacr.da.controller.vo.UpdatedAips;
 import cz.tacr.elza.api.DaApiAuthentication;
 import cz.tacr.elza.api.DigitalRepositoryType;
 import cz.tacr.elza.domain.ArrDigitalRepository;
+import cz.tacr.elza.service.da.vo.DaDownloadRequestImpl;
 import cz.tacr.elza.service.da.vo.DaUploadRequestImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +39,9 @@ public class DaConnector {
     private static final Logger logger = LoggerFactory.getLogger(DaConnector.class);
 
     public static final int FILE_TRANSFER_ERROR_CODE = 413;
+
+    /** Transfer type of a batch download, as the DA communication standard defines it. */
+    public static final String DEFAULT_FILE_TRANSFER_TYPE = "download";
 
     private final Map<Integer, DaInstance> instanceMap = new HashMap<>();
 
@@ -95,17 +97,21 @@ public class DaConnector {
     }
 
     /**
-     * Downloads the prepared batch over File Transfer. The request carries the batch id and,
-     * when the repository configures one, a type the DA can use to pick its download handler.
+     * Downloads the prepared batch over File Transfer into {@code downloadDir}. The request
+     * carries the batch id and the transfer type: the one configured on the repository, otherwise
+     * {@link #DEFAULT_FILE_TRANSFER_TYPE} as the DA communication standard defines it. The client
+     * returns normally from a failed transfer, so the outcome is read from the request.
+     *
+     * @throws IllegalStateException when the transfer failed or was canceled
      */
     public void downloadFileTransfer(ArrDigitalRepository digitalRepository, String batchId, Path downloadDir) {
         GenericDataType genericDataType = new GenericDataType();
         genericDataType.setId(batchId);
-        if (StringUtils.isNotBlank(digitalRepository.getFileTransferType())) {
-            genericDataType.setType(digitalRepository.getFileTransferType());
-        }
-        DownloadRequest downloadRequest = new DwnldRequestImpl(downloadDir, genericDataType);
+        genericDataType.setType(StringUtils.defaultIfBlank(digitalRepository.getFileTransferType(),
+                                                           DEFAULT_FILE_TRANSFER_TYPE));
+        DaDownloadRequestImpl downloadRequest = new DaDownloadRequestImpl(downloadDir, genericDataType);
         getFileTransferClient(digitalRepository).downloadSync(downloadRequest);
+        downloadRequest.checkDelivered();
     }
 
     public IngestIngestStatus ingestStatus(ArrDigitalRepository digitalRepository, String batchId) {

@@ -12,6 +12,26 @@ change, a step during the upgrade) name the configuration key and link to
 the relevant chapter. Before an upgrade, read the entries of all builds
 between the installed and the new version; see :doc:`/03-upgrade`.
 
+3.4.12
+======
+
+Fixes
+-----
+
+* Fix: DA - a batch downloaded over File Transfer is accepted as the
+  directory tree the DA communication standard prescribes (one directory
+  per package); a single delivered zip file is accepted as well. The
+  download request sends the transfer type ``download`` defined by the
+  standard when *File Transfer download request type* is empty; see
+  :doc:`/08-digital-repositories`.
+* Fix: DA - a File Transfer download that failed is reported with the
+  outcome of the transfer instead of a missing file; the cause is in the
+  server log (``com.lightcomp.ft``).
+* Fix: DA - an action over AIPs (loading of metadata, update and repair)
+  whose download fails finishes with the error instead of running until
+  the queue succeeds; the queue keeps retrying the download, which is
+  followed on the AIP and in the queue view.
+
 3.4.11
 ======
 

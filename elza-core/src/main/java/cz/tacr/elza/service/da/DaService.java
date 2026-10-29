@@ -1715,6 +1715,11 @@ public class DaService {
      * DA holds the package and every retry may succeed. The failure is described on each item and as a problem of
      * its AIP - an AIP the DA announced but ELZA could never download is created from what the
      * change carries, so the user finds it in the AIP list instead of only in the queue.
+     *
+     * The action item a queue item carries out is finished with the failure, although the queue
+     * item itself goes on: the retries come at growing intervals that nobody watches in a dialog,
+     * and the user who asked for the action is told right away that the package is not coming
+     * yet. The retries are followed on the AIP and in the queue.
      */
     @Transactional
     public void recordDownloadFailure(List<DaSyncQueueItem> syncQueueItemList, Exception failure) {
@@ -1731,6 +1736,7 @@ public class DaService {
             recordAipProblem(syncQueueItem, problem);
         }
         syncQueueItemRepository.saveAll(syncQueueItemList);
+        actionService.completeFromQueue(syncQueueItemList, DaAipActionItemState.ERROR, problem.description());
     }
 
     /**
@@ -2195,22 +2201,55 @@ public class DaService {
     /**
      * Downloads the prepared batch over File Transfer; the caller closes the returned content,
      * which deletes the downloaded file.
+     *
+     * The DA communication standard delivers a batch over File Transfer as a set of directories,
+     * one per package, so the delivered tree is packed into the zip the processing of a batch
+     * expects - the same layout the standard download returns. A DA that delivers the batch as a
+     * single zip file is accepted as well.
      */
     public SpooledContent downloadFileTransfer(ArrDigitalRepository digitalRepository, String batchId) throws IOException {
         Path downloadDir = Files.createTempDirectory(batchId);
         try {
             daConnector.downloadFileTransfer(digitalRepository, batchId, downloadDir);
-            Path downloaded;
-            try (Stream<Path> str = Files.walk(downloadDir)
-                    .filter(p -> Files.isRegularFile(p) && p.getFileName().toString().endsWith(".zip"))) {
-                downloaded = str.findFirst().orElseThrow(() -> new IllegalStateException("Nenalezen stažený soubor přes Filetransfer"));
-            }
-            // keep only the package, the download directory is removed below
             Path zip = Files.createTempFile("da-ft-", ".zip");
-            Files.move(downloaded, zip, StandardCopyOption.REPLACE_EXISTING);
+            try {
+                packDelivered(downloadDir, zip);
+            } catch (IOException | RuntimeException e) {
+                Files.deleteIfExists(zip);
+                throw e;
+            }
             return SpooledContent.ofTempFile(zip);
         } finally {
             PathUtils.deleteDirectory(downloadDir);
+        }
+    }
+
+    /**
+     * Puts what File Transfer delivered into {@code downloadDir} into {@code zip}: a single zip
+     * file is moved as it is, anything else is packed with the entries named relative to the
+     * download directory.
+     *
+     * @throws IllegalStateException when nothing was delivered
+     */
+    static void packDelivered(Path downloadDir, Path zip) throws IOException {
+        List<Path> files;
+        try (Stream<Path> str = Files.walk(downloadDir)) {
+            files = str.filter(Files::isRegularFile).toList();
+        }
+        if (files.isEmpty()) {
+            throw new IllegalStateException("File Transfer nepřenesl žádný soubor dávky");
+        }
+        if (files.size() == 1 && files.get(0).getFileName().toString().endsWith(".zip")) {
+            Files.move(files.get(0), zip, StandardCopyOption.REPLACE_EXISTING);
+            return;
+        }
+        try (ZipOutputStream zipOut = new ZipOutputStream(Files.newOutputStream(zip))) {
+            File[] children = downloadDir.toFile().listFiles();
+            if (children != null) {
+                for (File child : children) {
+                    zipFile(child, child.getName(), zipOut);
+                }
+            }
         }
     }
 

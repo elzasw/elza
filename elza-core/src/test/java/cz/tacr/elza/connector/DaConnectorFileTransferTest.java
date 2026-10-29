@@ -1,8 +1,10 @@
 package cz.tacr.elza.connector;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -51,29 +53,71 @@ public class DaConnectorFileTransferTest {
         assertEquals("GetMetadata_ELZA", data.getType());
     }
 
+    /** The DA communication standard names the download transfer {@code download}. */
     @Test
-    void downloadFileTransfer_withoutTypeSendsBatchIdOnly() {
+    void downloadFileTransfer_withoutTypeSendsStandardType() {
         GenericDataType data = download(null);
 
         assertEquals("batch-1", data.getId());
-        assertNull(data.getType());
+        assertEquals("download", data.getType());
+        assertEquals("download", DaConnector.DEFAULT_FILE_TRANSFER_TYPE);
+    }
+
+    @Test
+    void downloadFileTransfer_blankTypeSendsStandardType() {
+        assertEquals("download", download("  ").getType());
+    }
+
+    /**
+     * The client returns normally from a failed transfer and reports it through the request
+     * only; a download that returned nothing must not pass as delivered.
+     */
+    @Test
+    void downloadFileTransfer_failedTransferThrows() {
+        Client client = mock(Client.class);
+        doAnswer(inv -> {
+            inv.getArgument(0, DownloadRequest.class).onTransferFailed();
+            return null;
+        }).when(client).downloadSync(any());
+
+        IllegalStateException e = assertThrows(IllegalStateException.class,
+                () -> download(client, "GetMetadata_ELZA"));
+        assertTrue(e.getMessage().contains("batch-1"), e.getMessage());
+        assertTrue(e.getMessage().contains("selhal"), e.getMessage());
+    }
+
+    @Test
+    void downloadFileTransfer_canceledTransferThrows() {
+        Client client = mock(Client.class);
+        doAnswer(inv -> {
+            inv.getArgument(0, DownloadRequest.class).onTransferCanceled();
+            return null;
+        }).when(client).downloadSync(any());
+
+        IllegalStateException e = assertThrows(IllegalStateException.class,
+                () -> download(client, "GetMetadata_ELZA"));
+        assertTrue(e.getMessage().contains("zrušen"), e.getMessage());
     }
 
     private static GenericDataType download(String fileTransferType) {
+        Client client = mock(Client.class);
+        download(client, fileTransferType);
+
+        ArgumentCaptor<DownloadRequest> request = ArgumentCaptor.forClass(DownloadRequest.class);
+        verify(client).downloadSync(request.capture());
+        return request.getValue().getData();
+    }
+
+    private static void download(Client client, String fileTransferType) {
         ArrDigitalRepository repository = new ArrDigitalRepository();
         repository.setDigitalRepositoryType(DigitalRepositoryType.DA);
         repository.setFileTransferType(fileTransferType);
 
-        Client client = mock(Client.class);
         DaInstance daInstance = mock(DaInstance.class);
         when(daInstance.getFileTransferClient()).thenReturn(client);
         DaConnector connector = spy(new DaConnector());
         doReturn(daInstance).when(connector).get(any());
 
         connector.downloadFileTransfer(repository, "batch-1", Path.of("download"));
-
-        ArgumentCaptor<DownloadRequest> request = ArgumentCaptor.forClass(DownloadRequest.class);
-        verify(client).downloadSync(request.capture());
-        return request.getValue().getData();
     }
 }

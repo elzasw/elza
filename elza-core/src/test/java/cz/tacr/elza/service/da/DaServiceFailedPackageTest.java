@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -42,6 +43,7 @@ import cz.tacr.elza.repository.AipStateRepository;
 import cz.tacr.elza.repository.DaChangeRepository;
 import cz.tacr.elza.repository.DaLocalCacheRepository;
 import cz.tacr.elza.repository.DaSyncQueueItemRepository;
+import cz.tacr.elza.service.ExternalSystemService;
 
 /**
  * A package that arrives and cannot be processed must be as visible as one that could not be
@@ -203,6 +205,35 @@ public class DaServiceFailedPackageTest {
         verifyNoInteractions(localCacheRepository);
         assertNull(knownState.getMetadataLoad());
         assertNull(knownState.getCompleteAipLoad());
+    }
+
+    /**
+     * A download that failed goes on in the queue, retried at growing intervals, but the request
+     * the user is watching is finished with the failure now - a dialog that waits for the retries
+     * would never end.
+     */
+    @Test
+    void failedDownloadFinishesTheActionItemWhileTheQueueRetries() {
+        ExternalSystemService externalSystemService = mock(ExternalSystemService.class);
+        when(externalSystemService.getDigitalRepository(3)).thenReturn(repository);
+        setField(service, "externalSystemService", externalSystemService);
+        syncQueueItem.setState(DaSyncQueueItem.QueueItemState.DOWNLOAD_REQUESTED);
+
+        service.recordDownloadFailure(List.of(syncQueueItem),
+                                      new IllegalStateException("File Transfer nepřenesl žádný soubor dávky"));
+
+        // the queue item waits for its retry
+        assertEquals(DaSyncQueueItem.QueueItemState.DOWNLOAD_REQUESTED, syncQueueItem.getState());
+        assertEquals(1, syncQueueItem.getAttemptCount());
+        assertNotNull(syncQueueItem.getNextAttemptAt());
+        assertTrue(syncQueueItem.getStateMessage().contains("File Transfer nepřenesl žádný soubor dávky"),
+                   syncQueueItem.getStateMessage());
+
+        // the action item is told now, with the note that the download goes on
+        ArgumentCaptor<String> message = ArgumentCaptor.forClass(String.class);
+        verify(actionService).completeFromQueue(eq(List.of(syncQueueItem)), eq(DaAipActionItemState.ERROR),
+                                                message.capture());
+        assertTrue(message.getValue().contains("Stažení bude opakováno"), message.getValue());
     }
 
     private static InputStream zipOf(String entryName, String content) throws IOException {

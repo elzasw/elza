@@ -140,12 +140,16 @@ AIP download method
    the download then fails with a message asking to switch the repository
    to File Transfer.
 File Transfer download request type
-   Offered only with the File Transfer method. Optional value sent with
-   every download request as the type of the request (``type`` of
-   ``GenericDataType``, next to the batch identifier in ``id``). Archives
-   that serve several kinds of downloads on one endpoint use it to choose
-   the handler; agree on the value with the operator of the archive. When
-   empty, no type is sent.
+   Offered only with the File Transfer method. Value sent with every
+   download request as the type of the request (``type`` of
+   ``GenericDataType``, next to the batch identifier in ``id``). When
+   empty, ``download`` is sent, which is the type the DA communication
+   standard defines. Fill it in only for an archive that expects another
+   value; agree on it with the operator of the archive.
+
+   The archive delivers the batch as a directory tree, one directory per
+   package, as the standard prescribes; a batch delivered as a single zip
+   file is accepted as well.
 Batch status check interval (s)
    Pause between two questions about the state of a batch, for downloads
    and exports alike; the default is 2 seconds, the minimum 1 second.
