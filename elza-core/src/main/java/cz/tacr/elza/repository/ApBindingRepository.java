@@ -25,6 +25,10 @@ public interface ApBindingRepository extends ElzaJpaRepository<ApBinding, Intege
     ApBinding findByValueAndExternalSystemCode(@Param("archiveEntityId") String archiveEntityId,
                                            @Param("externalSystemCode") String externalSystemCode);
 
+    @Query("SELECT bin FROM ap_binding bin JOIN bin.apExternalSystem aes WHERE bin.value = :value AND aes.type IN :types")
+    List<ApBinding> findByValueAndExternalSystemTypes(@Param("value") String value,
+                                                      @Param("types") Collection<ApExternalSystemType> types);
+
     @Query("SELECT bin FROM ap_binding bin JOIN bin.apExternalSystem aes WHERE bin.value IN :values AND aes.type = :type")
     List<ApBinding> findByValuesAndExternalSystemType(@Param("values") Collection<String> values,
                                                       @Param("type") ApExternalSystemType type);

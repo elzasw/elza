@@ -11,7 +11,6 @@ import cz.tacr.elza.domain.DaChangeType;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.repository.AipRepository;
 import cz.tacr.elza.repository.AipStateRepository;
-import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ArrDaLinkRepository;
 import cz.tacr.elza.repository.DaChangeRepository;
 import cz.tacr.elza.repository.FundRepository;
@@ -35,6 +34,7 @@ import gov.loc.premis.v3.SignificantPropertiesComplexType;
 import gov.loc.premis.v3.StringPlusAuthority;
 import jakarta.transaction.Transactional;
 import jakarta.xml.bind.JAXBException;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,8 +67,6 @@ public class PackageInfoService {
     private DaChangeRepository changeRepository;
 
     @Autowired
-    private ApAccessPointRepository accessPointRepository;
-    @Autowired
     private AipStateRepository aipStateRepository;
     @Autowired
     private FundRepository fundRepository;
@@ -82,6 +80,9 @@ public class PackageInfoService {
     private DaLinkCloser linkCloser;
 
     private static final Logger logger = LoggerFactory.getLogger(PackageInfoService.class);
+
+    /** Length of {@code da_aip_state.originator_cam_id}. */
+    static final int ORIGINATOR_CAM_ID_MAX_LENGTH = 50;
 
     @Transactional
     public DaAipState processPackageInfo(ArrDigitalRepository digitalRepository, File file) throws IOException, JAXBException {
@@ -151,6 +152,19 @@ public class PackageInfoService {
             aipStateRepository.save(oldAipState);
         }
 
+        for (Event event : eventList) {
+            if (event.getOriginator() != null) {
+                List<String> nameList = event.getOriginator().getNameList();
+                if (!nameList.isEmpty()) {
+                    aipState.setOriginator(nameList.get(0));
+                }
+                // The CAM identifier of the originator (agentIdentifierType CAM_ID) is kept as
+                // received; the access point is resolved with the other references.
+                aipState.setOriginatorCamId(StringUtils.abbreviate(
+                        StringUtils.trimToNull(event.getOriginator().getCamId()), ORIGINATOR_CAM_ID_MAX_LENGTH));
+            }
+        }
+
         resolveReferences(aipState, oldAipState);
         if (oldAipState != null && !Objects.equals(fundIdOf(oldAipState), fundIdOf(aipState))) {
             closeLinksOutsideFund(daAip, aipState.getFund());
@@ -158,26 +172,19 @@ public class PackageInfoService {
         // links may have been closed above, and the new state starts without a link state
         linkStateResolver.updateLinkState(aipState);
 
-        for (Event event : eventList) {
-            if (event.getOriginator() != null) {
-                List<String> nameList = event.getOriginator().getNameList();
-                if (!nameList.isEmpty()) {
-                    aipState.setOriginator(nameList.get(0));
-                }
-                accessPointRepository.findById(Integer.valueOf(event.getOriginator().getCamId())).ifPresent(aipState::setOriginatorAccessPoint);
-            }
-        }
         return aipStateRepository.save(aipState);
     }
 
     /**
-     * Resolves the institution and the fund the package names; what cannot be resolved is recorded
-     * as a problem of the AIP so the user can find and fix it.
+     * Resolves the institution, the fund and the originator the package names; what cannot be
+     * resolved is recorded as a problem of the AIP so the user can find and fix it.
      *
      * A new version naming the same institution and fund stays where the AIP was, even if looking
      * them up again would now give another answer (a renumbered fund, a second fund with the same
      * number) - only the package itself moves an AIP. The same fund code under another institution
-     * is another fund, so the former fund is not found again by its code.
+     * is another fund, so the former fund is not found again by its code. The originator resolved
+     * for the previous version is kept the same way while the new version names the same CAM
+     * identifier.
      *
      * @param previous the state of the previous version, null for a new AIP
      */
@@ -190,6 +197,10 @@ public class PackageInfoService {
                 aipState.setFund(previous.getFund());
             } else if (!sameInstitution) {
                 formerFund = previous.getFund();
+            }
+            if (aipState.getOriginatorCamId() != null
+                    && Objects.equals(previous.getOriginatorCamId(), aipState.getOriginatorCamId())) {
+                aipState.setOriginatorAccessPoint(previous.getOriginatorAccessPoint());
             }
         }
         referenceResolver.resolveReferences(aipState, formerFund);

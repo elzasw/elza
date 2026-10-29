@@ -2659,10 +2659,6 @@ public class ClientFactoryVO {
 
     public AipDetailVO createAipDetail(DaAip daAip) {
         DaAipState state = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(Collections.singletonList(daAip)).get(0);
-        ParInstitution originator = null;
-        if(state.getOriginatorAccessPoint() != null) {
-            originator = institutionRepository.findByAccessPoint(state.getOriginatorAccessPoint());
-        }
         List<ArrDaoLink> daoLinks = null;
         Map<Integer, TreeNodeVO> treeNodeMap = null;
         if (state.getFund() != null) {
@@ -2676,10 +2672,10 @@ public class ClientFactoryVO {
                     .collect(Collectors.toMap(TreeNodeVO::getId, v -> v));
         }
 
-        return createAipDetailVO(daAip, state, originator, daoLinks, treeNodeMap);
+        return createAipDetailVO(daAip, state, daoLinks, treeNodeMap);
     }
 
-    private AipDetailVO createAipDetailVO(DaAip src, DaAipState state, ParInstitution originator, List<ArrDaoLink> daoLinks, Map<Integer, TreeNodeVO> treeNodeMap) {
+    private AipDetailVO createAipDetailVO(DaAip src, DaAipState state, List<ArrDaoLink> daoLinks, Map<Integer, TreeNodeVO> treeNodeMap) {
         AipDetailVO vo = new AipDetailVO();
         vo.setAipId(src.getAipId());
         vo.setCode(src.getCode());
@@ -2704,11 +2700,15 @@ public class ClientFactoryVO {
                 ApIndex displayName = indexRepository.findByPartAndIndexType(state.getInstitution().getAccessPoint().getPreferredPart(), DISPLAY_NAME);
                 vo.setInstitution(createParInstitutionGen(state.getInstitution(), displayName));
             }
-            if (originator != null) {
-                ApIndex displayName = indexRepository.findByPartAndIndexType(state.getOriginatorAccessPoint().getPreferredPart(), DISPLAY_NAME);
-                vo.setOriginatorInstitution(createParInstitutionGen(originator, displayName));
+            // the originator is any access point - a corporate body, a person or a family
+            if (state.getOriginatorAccessPoint() != null) {
+                ApAccessPoint originator = state.getOriginatorAccessPoint();
+                vo.setOriginatorAccessPointId(originator.getAccessPointId());
+                ApIndex displayName = indexRepository.findByPartAndIndexType(originator.getPreferredPart(), DISPLAY_NAME);
+                vo.setOriginatorAccessPointName(displayName != null ? displayName.getIndexValue() : null);
             }
             vo.setOriginator(state.getOriginator());
+            vo.setOriginatorCamId(state.getOriginatorCamId());
             vo.setIngestionCode(state.getIngestionCode());
             vo.setReferenceNumber(state.getReferenceNumber());
             vo.setNadChangeCode(state.getNadChangeCode());

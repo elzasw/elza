@@ -14,14 +14,21 @@ import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import cz.tacr.elza.api.AipProblemType;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApBinding;
+import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.DaAipState;
 import cz.tacr.elza.domain.ParInstitution;
+import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApBindingRepository;
+import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 
@@ -35,6 +42,9 @@ public class DaAipReferenceResolverTest {
 
     private FundRepository fundRepository;
     private InstitutionRepository institutionRepository;
+    private ApBindingRepository bindingRepository;
+    private ApBindingStateRepository bindingStateRepository;
+    private ApAccessPointRepository accessPointRepository;
 
     private ParInstitution institution;
     private ArrFund fund;
@@ -61,6 +71,13 @@ public class DaAipReferenceResolverTest {
         resolver = new DaAipReferenceResolver();
         setField(resolver, "fundRepository", fundRepository);
         setField(resolver, "institutionRepository", institutionRepository);
+        bindingRepository = mock(ApBindingRepository.class);
+        bindingStateRepository = mock(ApBindingStateRepository.class);
+        accessPointRepository = mock(ApAccessPointRepository.class);
+        when(bindingRepository.findByValueAndExternalSystemTypes(any(), any())).thenReturn(Collections.emptyList());
+        setField(resolver, "bindingRepository", bindingRepository);
+        setField(resolver, "bindingStateRepository", bindingStateRepository);
+        setField(resolver, "accessPointRepository", accessPointRepository);
     }
 
     private static DaAipState state(String institutionCode, String fundCode) {
@@ -280,6 +297,102 @@ public class DaAipReferenceResolverTest {
 
         assertNull(aipState.getProblemType());
         assertNull(aipState.getProblemDescription());
+    }
+
+    /** An AIP whose institution and fund are known, so only the originator is in question. */
+    private DaAipState soundState(String originatorCamId) {
+        DaAipState aipState = state("INST-1", "42");
+        aipState.setInstitution(institution);
+        aipState.setFund(fund);
+        aipState.setOriginatorCamId(originatorCamId);
+        return aipState;
+    }
+
+    private static ApAccessPoint accessPoint(int id) {
+        ApAccessPoint accessPoint = new ApAccessPoint();
+        accessPoint.setAccessPointId(id);
+        return accessPoint;
+    }
+
+    @Test
+    void originatorIsResolvedByItsCamBinding() {
+        ApAccessPoint accessPoint = accessPoint(7);
+        ApBinding binding = new ApBinding();
+        ApBindingState bindingState = new ApBindingState();
+        bindingState.setAccessPoint(accessPoint);
+        when(bindingRepository.findByValueAndExternalSystemTypes(eq("1234567"), any())).thenReturn(List.of(binding));
+        when(bindingStateRepository.findActiveByBinding(binding)).thenReturn(Optional.of(bindingState));
+        DaAipState aipState = soundState("1234567");
+
+        assertTrue(resolver.resolveReferences(aipState));
+
+        assertSame(accessPoint, aipState.getOriginatorAccessPoint());
+        assertNull(aipState.getProblemType());
+        assertNull(aipState.getProblemDescription());
+    }
+
+    /** An entity taken over from CAM keeps its UUID even where the binding is by the entity id. */
+    @Test
+    void originatorIsResolvedByItsUuidWhenNoBindingCarriesTheIdentifier() {
+        ApAccessPoint accessPoint = accessPoint(7);
+        String uuid = "7d4b3c2a-1e0f-4a5b-9c8d-123456789abc";
+        when(accessPointRepository.findAccessPointByUuid(uuid)).thenReturn(accessPoint);
+        DaAipState aipState = soundState(uuid);
+
+        assertTrue(resolver.resolveReferences(aipState));
+
+        assertSame(accessPoint, aipState.getOriginatorAccessPoint());
+        assertNull(aipState.getProblemType());
+    }
+
+    @Test
+    void unknownOriginatorIsAProblemTheUserIsToldAbout() {
+        DaAipState aipState = soundState("1234567");
+
+        assertFalse(resolver.resolveReferences(aipState));
+
+        assertNull(aipState.getOriginatorAccessPoint());
+        assertEquals(AipProblemType.UNKNOWN_ORIGINATOR, aipState.getProblemType());
+        assertTrue(aipState.getProblemDescription().contains("1234567"), aipState.getProblemDescription());
+        assertTrue(aipState.getProblemDescription().contains("CAM"), aipState.getProblemDescription());
+    }
+
+    /** A package that names the originator without a CAM identifier has nothing to resolve. */
+    @Test
+    void originatorWithoutCamIdentifierIsNoProblem() {
+        DaAipState aipState = soundState(null);
+        aipState.setOriginator("Univerzita Karlova. 1. lékařská fakulta");
+
+        assertFalse(resolver.resolveReferences(aipState));
+
+        assertNull(aipState.getProblemType());
+        assertNull(aipState.getProblemDescription());
+        verify(bindingRepository, never()).findByValueAndExternalSystemTypes(any(), any());
+    }
+
+    @Test
+    void unresolvedInstitutionOutranksUnresolvedOriginator() {
+        DaAipState aipState = state("INST-X", "42");
+        aipState.setFund(fund);
+        aipState.setOriginatorCamId("1234567");
+
+        assertFalse(resolver.resolveReferences(aipState));
+
+        assertEquals(AipProblemType.UNKNOWN_INSTITUTION, aipState.getProblemType());
+        assertTrue(aipState.getProblemDescription().contains("INST-X"));
+        assertTrue(aipState.getProblemDescription().contains("1234567"));
+    }
+
+    @Test
+    void alreadyResolvedOriginatorIsKept() {
+        ApAccessPoint accessPoint = accessPoint(7);
+        DaAipState aipState = soundState("1234567");
+        aipState.setOriginatorAccessPoint(accessPoint);
+
+        assertFalse(resolver.resolveReferences(aipState));
+
+        assertSame(accessPoint, aipState.getOriginatorAccessPoint());
+        verify(bindingRepository, never()).findByValueAndExternalSystemTypes(any(), any());
     }
 
     private static void setField(Object target, String fieldName, Object value) {

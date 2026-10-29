@@ -8274,13 +8274,18 @@ components:
           allOf:
             - $ref: '#/components/schemas/ParInstitutionGen'
           description: Instituce
-        originatorInstitution:
-          allOf:
-            - $ref: '#/components/schemas/ParInstitutionGen'
-          description: Instituce původce
+        originatorAccessPointId:
+          type: integer
+          description: Id přístupového bodu původce, je-li původce dohledán podle identifikátoru CAM
+        originatorAccessPointName:
+          type: string
+          description: Jméno přístupového bodu původce
         originator:
           type: string
-          description: Původce
+          description: Původce dle balíčku
+        originatorCamId:
+          type: string
+          description: Identifikátor původce v CAM dle balíčku
         unitdateFrom:
           type: string
           description: Datace od
@@ -8445,6 +8450,7 @@ components:
         - METADATA_ERROR
         - UNKNOWN_FUND
         - UNKNOWN_INSTITUTION
+        - UNKNOWN_ORIGINATOR
       description: Problém, který brání zpracování AIPu nebo jeho navázání na archivní popis
     AipType:
       type: string

@@ -836,12 +836,12 @@ public class DaService {
             if (referenceResolver.resolveReferences(aipState)) {
                 resolvedStates.add(aipState);
                 sink.finished(aipId);
+            } else if (aipState.getProblemDescription() != null) {
+                sink.skipped(aipId, aipState.getProblemDescription());
             } else if (aipState.getFund() != null) {
-                sink.skipped(aipId, "Instituce i archivní soubor jsou dohledané, není co měnit.");
+                sink.skipped(aipId, "Instituce, archivní soubor i původce jsou dohledaní, není co měnit.");
             } else {
-                sink.skipped(aipId, aipState.getProblemDescription() != null
-                        ? aipState.getProblemDescription()
-                        : "Archivní soubor se podle údajů balíčku nepodařilo dohledat.");
+                sink.skipped(aipId, "Archivní soubor se podle údajů balíčku nepodařilo dohledat.");
             }
         }
         aipStateRepository.saveAll(stateList);

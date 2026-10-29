@@ -31,6 +31,17 @@ Fixes
   whose download fails finishes with the error instead of running until
   the queue succeeds; the queue keeps retrying the download, which is
   followed on the AIP and in the queue view.
+* Change: DA - the originator of a package (the agent of the creation
+  event in PACKAGE-INFO.xml) is resolved by its CAM identifier
+  (``agentIdentifierType`` ``CAM_ID``, the entity id or UUID in CAM) to
+  the access point taken over from CAM, whatever its type. An identifier
+  that matches no access point is recorded as the AIP problem *Nenalezen
+  původce*; take the entity over from CAM and run *Aktualizace a oprava
+  AIP*. A package without the identifier keeps the originator by name and
+  has no problem. Such a package failed before with "Cannot parse null
+  string".
+* Fix: DA - the result dialog of an action over AIPs shows the message of
+  each AIP in a readable colour.
 
 3.4.11
 ======

@@ -1399,7 +1399,11 @@ enum AipProblemType {
     /**
      * Instituce AIPu nebyla v ELZA nalezena
      */
-    UNKNOWN_INSTITUTION
+    UNKNOWN_INSTITUTION,
+    /**
+     * Původce uvedený identifikátorem CAM nebyl mezi přístupovými body nalezen
+     */
+    UNKNOWN_ORIGINATOR
 }
 
 /**
@@ -1475,13 +1479,21 @@ model AipDetailVO {
      */
     institution?: ParInstitutionGen;
     /**
-     * Instituce původce
+     * Id přístupového bodu původce, je-li původce dohledán podle identifikátoru CAM
      */
-    originatorInstitution?: ParInstitutionGen;
+    originatorAccessPointId?: integer;
     /**
-     * Původce
+     * Jméno přístupového bodu původce
+     */
+    originatorAccessPointName?: string;
+    /**
+     * Původce dle balíčku
      */
     originator?: string;
+    /**
+     * Identifikátor původce v CAM dle balíčku
+     */
+    originatorCamId?: string;
     /**
      * Datace od
      */

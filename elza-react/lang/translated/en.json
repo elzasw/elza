@@ -2913,6 +2913,10 @@
     "defaultMessage": "Institution not found",
     "srcHash": "Y5L6HoEz8FfT"
   },
+  "aip.problem.UNKNOWN_ORIGINATOR": {
+    "defaultMessage": "Originator not found",
+    "srcHash": "XivGMDIOok4F"
+  },
   "aip.queueState.DOWNLOAD_REQUESTED": {
     "defaultMessage": "DA is preparing the download",
     "srcHash": "atPmFfYZMYi7"
