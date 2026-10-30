@@ -26,6 +26,10 @@ Fixes
   download request sends the transfer type ``download`` defined by the
   standard when *File Transfer download request type* is empty; see
   :doc:`/08-digital-repositories`.
+* Fix: DA - a unit date in the archival description of a package written
+  as an interval that closes within the period it opens (a day as
+  D-D, a year as Y-Y) is read as that single period; the import
+  of the package no longer ends with an unexpected error.
 * Fix: DA - a package delivered inside the batch as one zip file in the
   directory of the AIP, or with its own root directory (named by the UUID
   of the package) inside, is unwrapped and loaded; a package that cannot

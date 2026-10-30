@@ -103,6 +103,13 @@ final class EadUnitdateParser {
             throw new EadContentException("začátek intervalu " + FORMATTER_ISO.format(from.value())
                     + " je pozdější než jeho konec " + FORMATTER_ISO.format(to.value()));
         }
+        if (formats.length == 2 && formats[0] == formats[1]
+                && alignTo(from.value(), formats[0], false).equals(to.value())) {
+            // An interval closing within the period it opens (D-D on one day, Y-Y in one year)
+            // is that single period: ELZA records a single period with the same two values and
+            // takes an interval for at least two periods.
+            formats = new FormatType[] { formats[0] };
+        }
         if (formats.length == 1) {
             // A single period: ELZA shows only its beginning, so the end has to close that
             // same period or the date shown would not be the date written.
