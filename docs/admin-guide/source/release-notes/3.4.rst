@@ -20,7 +20,9 @@ Fixes
 
 * Fix: DA - a batch downloaded over File Transfer is accepted as the
   directory tree the DA communication standard prescribes (one directory
-  per package); a single delivered zip file is accepted as well. The
+  per package); a single zip file delivered in place of the tree is
+  accepted as well, while a zip inside the directory of a package is a
+  part of that package. The
   download request sends the transfer type ``download`` defined by the
   standard when *File Transfer download request type* is empty; see
   :doc:`/08-digital-repositories`.

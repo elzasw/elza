@@ -2244,8 +2244,10 @@ public class DaService {
 
     /**
      * Puts what File Transfer delivered into {@code downloadDir} into {@code zip}: a single zip
-     * file is moved as it is, anything else is packed with the entries named relative to the
-     * download directory.
+     * file lying directly in the download directory is the batch itself and is moved as it is,
+     * anything else is packed with the entries named relative to the download directory. A zip
+     * inside a package directory is a part of that package, even when it is all the batch holds
+     * - the directory names the AIP and must stay.
      *
      * @throws IllegalStateException when nothing was delivered
      */
@@ -2257,7 +2259,8 @@ public class DaService {
         if (files.isEmpty()) {
             throw new IllegalStateException("File Transfer nepřenesl žádný soubor dávky");
         }
-        if (files.size() == 1 && files.get(0).getFileName().toString().endsWith(".zip")) {
+        if (files.size() == 1 && files.get(0).getFileName().toString().endsWith(".zip")
+                && downloadDir.equals(files.get(0).getParent())) {
             Files.move(files.get(0), zip, StandardCopyOption.REPLACE_EXISTING);
             return;
         }

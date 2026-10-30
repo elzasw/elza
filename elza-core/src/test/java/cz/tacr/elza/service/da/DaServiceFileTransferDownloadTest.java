@@ -84,6 +84,26 @@ public class DaServiceFileTransferDownloadTest {
         }
     }
 
+    /**
+     * A batch of one package whose content is one zip: the directory names the AIP, so the zip
+     * is a file of the tree, not the batch.
+     */
+    @Test
+    void aSingleZipInsideAPackageDirectoryIsPartOfTheTree() throws IOException {
+        delivering(dir -> {
+            try (ZipOutputStream zip = new ZipOutputStream(
+                    Files.newOutputStream(write(dir.resolve("310415/dbdf00d0-85c4.zip"))))) {
+                zip.putNextEntry(new ZipEntry("dbdf00d0-85c4/METS.xml"));
+                zip.write("<mets/>".getBytes(StandardCharsets.UTF_8));
+                zip.closeEntry();
+            }
+        });
+
+        try (SpooledContent content = service.downloadFileTransfer(repository, "batch-1")) {
+            assertEquals(List.of("310415/dbdf00d0-85c4.zip"), entriesOf(content));
+        }
+    }
+
     @Test
     void nothingDeliveredIsAFailureOfTheDownload() {
         delivering(dir -> { });
@@ -120,8 +140,13 @@ public class DaServiceFileTransferDownloadTest {
     }
 
     private static void write(Path file, String content) throws IOException {
+        Files.writeString(write(file), content);
+    }
+
+    /** @return the file, with its directory created */
+    private static Path write(Path file) throws IOException {
         Files.createDirectories(file.getParent());
-        Files.writeString(file, content);
+        return file;
     }
 
     private static List<String> entriesOf(SpooledContent content) throws IOException {
