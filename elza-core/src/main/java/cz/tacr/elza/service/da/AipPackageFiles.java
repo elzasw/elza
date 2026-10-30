@@ -5,6 +5,8 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipEntry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -79,7 +81,7 @@ final class AipPackageFiles {
     static Path mets(Path root) {
         Path mets = root.resolve(METS);
         if (!Files.isRegularFile(mets)) {
-            throw AipProblemException.metadata("Balíček neobsahuje soubor " + METS);
+            throw AipProblemException.metadata("Balíček neobsahuje soubor " + METS + contentsNote(root));
         }
         return mets;
     }
@@ -91,7 +93,90 @@ final class AipPackageFiles {
                 return packageInfo;
             }
         }
-        throw AipProblemException.metadata("Balíček neobsahuje soubor PACKAGE-INFO.xml");
+        throw AipProblemException.metadata("Balíček neobsahuje soubor PACKAGE-INFO.xml" + contentsNote(root));
+    }
+
+    /** How many entries of a directory a message names before it says "and more". */
+    private static final int LISTED_ENTRIES = 10;
+
+    /**
+     * What a directory holds, for a message about a file that is not there: the names of its
+     * entries say what the DA sent instead, which the name of the missing file does not.
+     */
+    static String contentsNote(Path dir) {
+        List<String> names;
+        try (Stream<Path> children = Files.list(dir)) {
+            names = children.map(p -> p.getFileName().toString() + (Files.isDirectory(p) ? "/" : ""))
+                    .sorted()
+                    .toList();
+        } catch (IOException e) {
+            return "";
+        }
+        if (names.isEmpty()) {
+            return " (balíček je prázdný)";
+        }
+        String listed = String.join(", ", names.subList(0, Math.min(names.size(), LISTED_ENTRIES)));
+        if (names.size() > LISTED_ENTRIES) {
+            listed += " a dalších " + (names.size() - LISTED_ENTRIES);
+        }
+        return " (obsahuje: " + listed + ")";
+    }
+
+    /**
+     * Brings a delivered package to the layout the processing reads: the root METS and the
+     * metadata directly in the directory of the AIP. A DA may deliver the package as one zip
+     * file in that directory, and the package may keep its own root directory (named by its
+     * UUID, as the exchange format has it) inside - both are unwrapped here, so that the stored
+     * package has one layout whatever the DA does. Anything else is left as it is and reported
+     * by the file that is missing.
+     */
+    static void normalizeDelivered(Path aipDir) throws IOException {
+        List<Path> children = children(aipDir);
+        if (children.size() == 1 && Files.isRegularFile(children.get(0))
+                && children.get(0).getFileName().toString().toLowerCase().endsWith(".zip")) {
+            Path zip = children.get(0);
+            Path unpacked = Files.createTempDirectory(aipDir, "unpacked");
+            unzip(zip, unpacked);
+            Files.delete(zip);
+            moveChildrenUp(unpacked);
+            children = children(aipDir);
+        }
+        if (children.size() == 1 && Files.isDirectory(children.get(0))
+                && !Files.isRegularFile(aipDir.resolve(METS))
+                && !Files.isRegularFile(aipDir.resolve(PACKAGE_INFO_ALONE))
+                && !Files.isRegularFile(aipDir.resolve(PACKAGE_INFO))) {
+            moveChildrenUp(children.get(0));
+        }
+    }
+
+    private static List<Path> children(Path dir) throws IOException {
+        try (Stream<Path> children = Files.list(dir)) {
+            return children.toList();
+        }
+    }
+
+    private static void unzip(Path zip, Path into) throws IOException {
+        try (ZipInputStream zipInputStream = new ZipInputStream(Files.newInputStream(zip))) {
+            ZipEntry entry;
+            while ((entry = zipInputStream.getNextEntry()) != null) {
+                Path filePath = resolveInside(into, entry.getName());
+                if (entry.isDirectory()) {
+                    Files.createDirectories(filePath);
+                } else {
+                    Files.createDirectories(filePath.getParent());
+                    Files.copy(zipInputStream, filePath);
+                }
+            }
+        }
+    }
+
+    /** Moves the entries of a directory into its parent and removes the then empty directory. */
+    private static void moveChildrenUp(Path dir) throws IOException {
+        Path parent = dir.getParent();
+        for (Path child : children(dir)) {
+            Files.move(child, parent.resolve(child.getFileName()));
+        }
+        Files.delete(dir);
     }
 
     /**

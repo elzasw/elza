@@ -169,6 +169,8 @@ import java.util.function.Supplier;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.TreeSet;
+import java.util.Set;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -1862,6 +1864,7 @@ public class DaService {
                 }
                 DaAipState aipState;
                 try {
+                    AipPackageFiles.normalizeDelivered(aipDir.toPath());
                     Path packageInfo = AipPackageFiles.packageInfo(aipDir.toPath());
                     aipState = packageInfoService.processPackageInfo(digitalRepository, packageInfo.toFile());
                     // The load flags of the AIP are set by storing the package, so a package is
@@ -1885,6 +1888,21 @@ public class DaService {
                     Path zipDir = createZip(aipDir, resourcePathResolver.getAipDir());
                     DaSyncQueueItem syncQueueItem = syncQueueItemMap.getOrDefault(aipState.getDaAip().getCode(), null);
                     applicationContext.getBean(DaService.class).createImportLocalCache(aipState, digitalRepository, aipType, zipDir, syncQueueItem);
+                }
+            }
+
+            // An item whose package the batch does not carry has nothing to be loaded from; it
+            // would otherwise be closed as loaded with the rest of the batch. The names the
+            // batch does carry say what the DA sent instead.
+            Set<String> deliveredCodes = aipDirSet.stream().map(File::getName).collect(Collectors.toSet());
+            for (DaSyncQueueItem item : syncQueueItemList) {
+                if (!deliveredCodes.contains(item.getCode()) && !failedItems.containsKey(item)) {
+                    String delivered = deliveredCodes.isEmpty() ? "dávka je prázdná"
+                            : "dávka obsahuje: " + String.join(", ", new TreeSet<>(deliveredCodes));
+                    AipProblem problem = AipProblem.of(AipProblemException.metadata(
+                            "Dávka neobsahuje balíček AIP " + item.getCode() + " (" + delivered + ")"));
+                    logger.error("Balíček {} v dávce chybí: {}", item.getCode(), problem.description());
+                    failedItems.put(item, problem);
                 }
             }
 

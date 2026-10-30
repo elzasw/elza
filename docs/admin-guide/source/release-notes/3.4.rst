@@ -24,6 +24,12 @@ Fixes
   download request sends the transfer type ``download`` defined by the
   standard when *File Transfer download request type* is empty; see
   :doc:`/08-digital-repositories`.
+* Fix: DA - a package delivered inside the batch as one zip file in the
+  directory of the AIP, or with its own root directory (named by the UUID
+  of the package) inside, is unwrapped and loaded; a package that cannot
+  be read reports what it holds instead of the missing file. An AIP whose
+  package the batch does not carry fails with the names the batch does
+  carry, instead of being closed as loaded.
 * Fix: DA - a File Transfer download that failed is reported with the
   outcome of the transfer instead of a missing file; the cause is in the
   server log (``com.lightcomp.ft``).
