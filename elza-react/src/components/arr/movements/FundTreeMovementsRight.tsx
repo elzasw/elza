@@ -4,8 +4,8 @@
 
 import { useEffect } from 'react';
 import type { MouseEvent } from 'react';
-import { Dropdown } from 'react-bootstrap';
 import { FormattedMessage } from 'react-intl';
+import type { ContextMenuItem } from 'components/shared/context-menu/ContextMenu';
 import FundTreeLazy from '../FundTreeLazy';
 import { nodeMessages } from '../nodeMessages';
 import { showNodeInForm } from './showNodeInForm';
@@ -110,13 +110,13 @@ export function FundTreeMovementsRight(props: Props) {
         e.preventDefault();
         e.stopPropagation();
 
-        const menu = (
-            <ul className="dropdown-menu">
-                <Dropdown.Item onClick={() => handleShowInForm(node)}>
-                    <FormattedMessage {...nodeMessages.fundBulkModificationsActionOpen} />
-                </Dropdown.Item>
-            </ul>
-        );
+        const menu: ContextMenuItem[] = [
+            {
+                key: 'open',
+                label: <FormattedMessage {...nodeMessages.fundBulkModificationsActionOpen} />,
+                onClick: () => handleShowInForm(node),
+            },
+        ];
 
         dispatch(fundTreeFocusNode(FUND_TREE_AREA_MOVEMENTS_RIGHT, versionId, node));
         dispatch(contextMenuShow(FundTreeMovementsRight, menu, { x: e.clientX, y: e.clientY }));

@@ -25,7 +25,6 @@ import FundBulkModificationsForm, { OperationType } from './FundBulkModification
 import FundFilterSettings from './FundFilterSettings';
 import { FundDataGridCellForm } from './node-edit/FundDataGridCellForm';
 import ArrSearchForm from './ArrSearchForm';
-import { Dropdown } from 'react-bootstrap';
 import { Button } from '../ui';
 import { modalDialogHide, modalDialogShow } from 'actions/global/modalDialog';
 import {
@@ -842,24 +841,26 @@ class FundDataGridClass extends AbstractReactComponent {
         e.preventDefault();
         e.stopPropagation();
 
-        var menu = (
-            <ul className="dropdown-menu">
-                <Dropdown.Item onClick={this.handleSelectInNewTab.bind(this, row)}>
-                    {<FormattedMessage {...nodeMessages.fundBulkModificationsActionOpenInNewTab} />}
-                </Dropdown.Item>
-                <Dropdown.Item onClick={this.handleSelectInTab.bind(this, row)}>
-                    {<FormattedMessage {...nodeMessages.fundBulkModificationsActionOpen} />}
-                </Dropdown.Item>
-                <Dropdown.Item
-                    onClick={() => {
-                        this.props.dispatch(contextMenuHide());
-                        this.handleEdit(row, rowIndex, col, colIndex);
-                    }}
-                >
-                    {<FormattedMessage {...globalMessages.edit} />}
-                </Dropdown.Item>
-            </ul>
-        );
+        var menu = [
+            {
+                key: 'openInNewTab',
+                label: <FormattedMessage {...nodeMessages.fundBulkModificationsActionOpenInNewTab} />,
+                onClick: () => this.handleSelectInNewTab(row),
+            },
+            {
+                key: 'open',
+                label: <FormattedMessage {...nodeMessages.fundBulkModificationsActionOpen} />,
+                onClick: () => this.handleSelectInTab(row),
+            },
+            {
+                key: 'edit',
+                label: <FormattedMessage {...globalMessages.edit} />,
+                onClick: () => {
+                    this.props.dispatch(contextMenuHide());
+                    this.handleEdit(row, rowIndex, col, colIndex);
+                },
+            },
+        ];
 
         this.props.dispatch(contextMenuShow(this, menu, { x: e.clientX, y: e.clientY }));
     }

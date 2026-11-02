@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { http, HttpResponse } from 'msw';
-import React, { isValidElement } from 'react';
+import React from 'react';
 import { useSelector } from 'react-redux';
 
 import { renderWithProviders, screen, fireEvent, createTestStore, act, waitFor } from 'test/test-utils';
@@ -11,6 +11,8 @@ import { fundTreeInvalidate, fundTreeSelectNode } from 'actions/arr/fundTree';
 import * as types from 'actions/constants/ActionTypes';
 import type { Fund } from 'typings/store';
 import type { TreeNodeVO } from 'typings/Outputs';
+import { ContextMenu } from 'components/shared/context-menu/ContextMenu';
+import type { ContextMenuItem } from 'components/shared/context-menu/ContextMenu';
 import { FundTreeMovementsLeft } from './FundTreeMovementsLeft';
 
 /**
@@ -51,7 +53,7 @@ type TestFund = Fund & { fundTreeMovementsLeft: MovementsTree };
 
 interface TestState {
     arrRegion: { funds: TestFund[] };
-    contextMenu: { visible: boolean; menu: unknown; position: { x: number; y: number } | null };
+    contextMenu: { visible: boolean; menu: ContextMenuItem[] | null; position: { x: number; y: number } | null };
     router: { navigateTo: string | null; method: string | null };
 }
 
@@ -257,12 +259,9 @@ describe('FundTreeMovementsLeft', () => {
         const { contextMenu } = store.getState() as TestState;
         expect(contextMenu.visible).toBe(true);
         expect(contextMenu.position).toEqual({ x: 30, y: 40 });
-        if (!isValidElement(contextMenu.menu)) {
-            throw new Error('Kontextové menu není element');
-        }
 
-        renderWithProviders(contextMenu.menu, { store });
-        fireEvent.click(screen.getByText('Zobrazit ve formuláři JP'));
+        renderWithProviders(<ContextMenu {...contextMenu} />, { store });
+        fireEvent.click(screen.getByRole('menuitem', { name: 'Zobrazit ve formuláři JP' }));
 
         const state = store.getState() as TestState;
         expect(state.contextMenu.visible).toBe(false);

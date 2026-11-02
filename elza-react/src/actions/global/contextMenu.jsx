@@ -7,7 +7,7 @@ import * as types from 'actions/constants/ActionTypes';
 /**
  * Zobrazení menu.
  * @param {Object} component jaká komponenta menu chce zobrazit
- * @param {Object} menu obsah menu - <ul className="dropdown-menu"> a její obsah
+ * @param {Array} menu položky menu - pole {key, label, onClick} nebo {key, label, to} (ContextMenuItem v ContextMenu.tsx)
  * @param {Object} position pozice
  */
 export function contextMenuShow(component, menu, position = {x: 0, y: 0}) {

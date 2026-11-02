@@ -29,7 +29,7 @@ export {default as StoreHorizontalLoader} from 'components/shared/loading/StoreH
 export {default as VirtualList} from 'components/shared/virtual-list/VirtualList';
 export {default as AddRemoveList} from 'components/shared/list/AddRemoveList';
 // export {default as Accordion} from 'components/shared/accordion/Accordion'; -- Nepoužívaná komponenta
-export {default as ContextMenu} from 'components/shared/context-menu/ContextMenu';
+export {ContextMenu} from 'components/shared/context-menu/ContextMenu';
 export {default as ModalDialog} from 'components/shared/dialog/ModalDialog';
 export {default as WebSocket} from 'components/shared/web-socket/WebSocket';
 // export {default as Login} from 'components/shared/login/Login'; -- Nelze reexportovat Cyklická závislost
