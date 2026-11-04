@@ -78,7 +78,7 @@ the certificate of CAM is checked:
   requests are then not protected against a man-in-the-middle; prefer
   adding the certificate of the server to the Java truststore of ELZA.
 
-External systems created before ELZA 3.4.11 are set to *No* by the
+External systems created before ELZA 3.4.12 are set to *No* by the
 upgrade, because the certificate of CAM was never verified before. Where
 CAM has a valid certificate, switch the option to *Yes*.
 

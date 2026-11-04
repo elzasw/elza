@@ -32,9 +32,41 @@ Before the upgrade
   used by another process stops the start with a message naming the
   port. See :doc:`/09-monitoring`.
 
+New
+---
+
+* New: 10161 - CAM - the external system has the option *Verify TLS
+  certificate*; a new system verifies the certificate of CAM. Existing
+  systems are set to *No* by the upgrade and keep trusting any
+  certificate, as before. **Where CAM has a valid certificate, switch the
+  option to** *Yes*. See :doc:`/07-integrations`.
+* New: 10188 - DA - the repository has the option *REST API authentication*:
+  *None*, *API key* (NDA-HMAC-SHA256 signature) or *HTTP Basic* with the
+  username and password of the repository, which File Transfer uses as
+  well. The upgrade sets *API key* for repositories with both parts of
+  the API key filled in and *None* for the others, so their behaviour
+  does not change. The API key is stored only with the *API key* method.
+  See :doc:`/08-digital-repositories`.
+
 Fixes
 -----
 
+* Fix: 10181 - CAM synchronization stopped completely (since 3.4.9) when CAM
+  reported an entity as replaced (merged) and its ELZA record was in another
+  scope than the external system; the record was retried forever. Such
+  entities are now replaced and invalidated as before. A record whose
+  synchronization fails for any other reason no longer blocks the others:
+  its item in the synchronization queue ends in the state ``ERROR`` with
+  the reason, and the record is synchronized again from the user interface
+  once the cause is resolved.
+* Fix: 10189 - Digital archive: when the request to the REST API could not
+  be signed with the API key (e.g. an empty key value), it was sent with
+  ``Signature=null`` and rejected by the archive without the cause in the
+  log. The call now fails with the cause.
+* Fix: 10190 - Digital archive: the signature with the API key depended on
+  the default charset of the system; a request whose path contained
+  characters outside ASCII (e.g. an AIP identifier with diacritics) was
+  rejected by the archive on Windows. The signed text is always UTF-8.
 * Fix: DA - a batch downloaded over File Transfer is accepted as the
   directory tree the DA communication standard prescribes (one directory
   per package); a single zip file delivered in place of the tree is
@@ -122,19 +154,6 @@ New
   rejected JWT is logged as well. A login with the password from
   ``elza.security.override`` is logged as ``OVERRIDE``, and every startup
   records the users with such a password (``override_active``).
-* New: 10161 - CAM - the external system has the option *Verify TLS
-  certificate*; a new system verifies the certificate of CAM. Existing
-  systems are set to *No* by the upgrade and keep trusting any
-  certificate, as before. **Where CAM has a valid certificate, switch the
-  option to** *Yes*. See :doc:`/07-integrations`.
-* New: 10188 - DA - the repository has the option *REST API authentication*:
-  *None*, *API key* (NDA-HMAC-SHA256 signature) or *HTTP Basic* with the
-  username and password of the repository, which File Transfer uses as
-  well. The upgrade sets *API key* for repositories with both parts of
-  the API key filled in and *None* for the others, so their behaviour
-  does not change. The API key is stored only with the *API key* method.
-  See :doc:`/08-digital-repositories`.
-
 Changes
 -------
 
@@ -165,22 +184,6 @@ Changes
   **(https://archdesc.nacr.cz/dids/…) is no longer written** - adjust
   systems that read it. Units linked to the digital archive refer to the
   AIP (``dao href="aip:…"``).
-* Fix: 10181 - CAM synchronization stopped completely (since 3.4.9) when CAM
-  reported an entity as replaced (merged) and its ELZA record was in another
-  scope than the external system; the record was retried forever. Such
-  entities are now replaced and invalidated as before. A record whose
-  synchronization fails for any other reason no longer blocks the others:
-  its item in the synchronization queue ends in the state ``ERROR`` with
-  the reason, and the record is synchronized again from the user interface
-  once the cause is resolved.
-* Fix: 10189 - Digital archive: when the request to the REST API could not
-  be signed with the API key (e.g. an empty key value), it was sent with
-  ``Signature=null`` and rejected by the archive without the cause in the
-  log. The call now fails with the cause.
-* Fix: 10190 - Digital archive: the signature with the API key depended on
-  the default charset of the system; a request whose path contained
-  characters outside ASCII (e.g. an AIP identifier with diacritics) was
-  rejected by the archive on Windows. The signed text is always UTF-8.
 
 3.4.10
 ======
