@@ -12,15 +12,14 @@ Management port
 ===============
 
 The monitoring endpoints are enabled by default. They are published on a
-separate management port, ``8081``, bound to ``127.0.0.1``, so they are
-reachable only from the server itself. The application port is not
-affected. The built-in defaults are:
+separate management port bound to ``127.0.0.1``, so they are reachable
+only from the server itself. The application port is not affected. The
+built-in defaults are:
 
 .. code-block:: yaml
 
    management:
      server:
-       port: 8081
        address: 127.0.0.1
      endpoints:
        web:
@@ -35,6 +34,29 @@ affected. The built-in defaults are:
 Only the ``health`` and ``prometheus`` endpoints are published. Any value
 can be overridden in :file:`elza.yaml` or with an environment variable
 (for example ``MANAGEMENT_SERVER_PORT``).
+
+The management port is set by ``management.server.port``:
+
+* Not set (default): the first free port after the application port
+  (``server.port`` + 1, + 2, ... up to + 10) is used. With the default
+  application port ``8080`` it is ``8081``. The port in use is written to
+  the log at start (``Management (actuator) port is not configured ...,
+  using 8081 on 127.0.0.1``). When no port in the range is free, ELZA
+  does not start.
+* Set: exactly that port is used. ELZA does not start when the port
+  equals ``server.port`` or another process already listens on it; the
+  log names the port.
+* ``-1``: the monitoring endpoints are switched off.
+
+Set the port explicitly when a monitoring tool or the CSC client needs a
+fixed address, for example when several ELZA instances run on one
+server:
+
+.. code-block:: yaml
+
+   management:
+     server:
+       port: 9081
 
 .. warning::
 

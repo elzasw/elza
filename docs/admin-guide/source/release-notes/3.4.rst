@@ -15,6 +15,23 @@ between the installed and the new version; see :doc:`/03-upgrade`.
 3.4.12
 ======
 
+Before the upgrade
+------------------
+
+* Change: Monitoring - without ``management.server.port`` in
+  :file:`elza.yaml`, the management port is the first free port after the
+  application port (``server.port`` + 1, + 2, ...) instead of a fixed
+  ``8081``. With the default application port ``8080`` nothing changes.
+  An installation whose application port is not ``8080`` gets a different
+  management port; **if a monitoring tool or the CSC client uses**
+  ``8081``, **set** ``management.server.port: 8081`` **before the
+  upgrade**. An installation with ``server.port: 8081`` did not start in
+  3.4.0 - 3.4.11 ("Management-specific server address cannot be
+  configured ..."); it now starts with the management port ``8082``. A
+  configured management port that equals the application port or is
+  used by another process stops the start with a message naming the
+  port. See :doc:`/09-monitoring`.
+
 Fixes
 -----
 
