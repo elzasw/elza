@@ -1235,6 +1235,10 @@
     "defaultMessage": "Import",
     "srcHash": "LP-bqr9WygAm"
   },
+  "admin.nav.publicationSystems": {
+    "defaultMessage": "Publication systems",
+    "srcHash": "JVEhBNPL5uVO"
+  },
   "admin.packages.action.import": {
     "defaultMessage": "Import",
     "srcHash": "yTA6PZurxTjn"
@@ -1542,6 +1546,22 @@
   "admin.perms.tabs.scopes.perm.AP_SCOPE_WR": {
     "defaultMessage": "Creating and changing new entities",
     "srcHash": "cIX0FW8KSTUD"
+  },
+  "admin.publicationSystem.action.add": {
+    "defaultMessage": "Add publication system",
+    "srcHash": "mMLML3zCyeY6"
+  },
+  "admin.publicationSystem.empty": {
+    "defaultMessage": "No publication systems",
+    "srcHash": "Iazj7YZDqlu3"
+  },
+  "admin.publicationSystem.inactive": {
+    "defaultMessage": "Inactive",
+    "srcHash": "n80bnCxv2JnC"
+  },
+  "admin.publicationSystem.title": {
+    "defaultMessage": "Publication systems",
+    "srcHash": "JVEhBNPL5uVO"
   },
   "admin.resetServerCache.success": {
     "defaultMessage": "Server caches have been reset",
@@ -8577,6 +8597,10 @@
     "defaultMessage": "Test",
     "srcHash": "Uy6qvZV0iA2_"
   },
+  "publication.system.inactiveNotice": {
+    "defaultMessage": "The publication system is deactivated and cannot be used for publishing.",
+    "srcHash": "KW0MGUjl8TCy"
+  },
   "publication.system.label.code": {
     "defaultMessage": "Code",
     "srcHash": "lHt70Q2si8jP"
@@ -8593,14 +8617,6 @@
     "defaultMessage": "Name",
     "srcHash": "EQAs0dy3Z5es"
   },
-  "publication.system.label.permExport": {
-    "defaultMessage": "Export permission",
-    "srcHash": "3_sdb1qHY7x-"
-  },
-  "publication.system.label.permPublication": {
-    "defaultMessage": "Publication permission",
-    "srcHash": "Kuut2mrHYbOT"
-  },
   "publication.system.label.storedCount": {
     "defaultMessage": "Number of stored exports",
     "srcHash": "v3GPVe7VPJSe"
@@ -8609,21 +8625,13 @@
     "defaultMessage": "Required permission",
     "srcHash": "AKQVCTH2-p7q"
   },
+  "publication.system.section.permissionsHint": {
+    "defaultMessage": "A user can run a publication if they have at least one of the checked permissions.",
+    "srcHash": "xNkUOmpbSyar"
+  },
   "publication.system.section.storage": {
     "defaultMessage": "Storing exports",
     "srcHash": "Tz_W5kCpNNTC"
-  },
-  "publication.systems.dialog.add": {
-    "defaultMessage": "Add",
-    "srcHash": "5L0IaEkXdddR"
-  },
-  "publication.systems.dialog.close": {
-    "defaultMessage": "Close",
-    "srcHash": "0r4EKpo4ZhJv"
-  },
-  "publication.systems.dialog.title": {
-    "defaultMessage": "Publication systems management",
-    "srcHash": "3R1qxdjYgTmM"
   },
   "publication.systems.new": {
     "defaultMessage": "New publication system",
@@ -9032,10 +9040,6 @@
   "ribbon.action.arr.fund.newFundAction": {
     "defaultMessage": "Prepare a new function",
     "srcHash": "VZpC_dpwhqTw"
-  },
-  "ribbon.action.arr.fund.publicationSystems": {
-    "defaultMessage": "Publication systems management",
-    "srcHash": "3R1qxdjYgTmM"
   },
   "ribbon.action.arr.fund.request.delete": {
     "defaultMessage": "Delete request",

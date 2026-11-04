@@ -14,6 +14,7 @@ const messages = defineMessages({
 import {
     AdminExtSystemPage,
     AdminInstitutionPage,
+    AdminPublicationSystemPage,
     AdminFundPage,
     AdminGroupPage,
     AdminLogsPage,
@@ -71,7 +72,8 @@ import {
     URL_DA,
     PUBLICATION,
     URL_COMPONENT,
-    URL_ADMIN_DA
+    URL_ADMIN_DA,
+    URL_ADMIN_PUBLICATION_SYSTEM,
 } from '../constants.tsx';
 import AdminBackgroundProcessesPage from './admin/AdminBackgroundProcessesPage';
 import AdminDaQueuePage from './admin/AdminDaQueuePage';
@@ -310,6 +312,8 @@ class Layout extends AbstractReactComponent {
                                             <Route path="/admin/extSystem" component={AdminExtSystemPage} />
                                             <Route path="/admin/institution/:id" component={AdminInstitutionPage} />
                                             <Route path="/admin/institution" component={AdminInstitutionPage} />
+                                            <Route path={URL_ADMIN_PUBLICATION_SYSTEM + "/:id"} component={AdminPublicationSystemPage} />
+                                            <Route path={URL_ADMIN_PUBLICATION_SYSTEM} component={AdminPublicationSystemPage} />
                                             <Route path="/admin/logs" component={AdminLogsPage} />
                                             <Route path="/admin/import/:id" component={AdminImportBatchDetailPage} />
                                             <Route path="/admin/import" component={AdminImportPage} />

@@ -23,8 +23,4 @@ export const fundMessages = defineMessages({
         id: "ribbon.action.arr.fund.import",
         defaultMessage: "Import ze souboru",
     },
-    publicationSystems: {
-        id: "ribbon.action.arr.fund.publicationSystems",
-        defaultMessage: "Správa publikačních systémů",
-    },
 });
