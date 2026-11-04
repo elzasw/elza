@@ -67,7 +67,7 @@ Fixes
   the default charset of the system; a request whose path contained
   characters outside ASCII (e.g. an AIP identifier with diacritics) was
   rejected by the archive on Windows. The signed text is always UTF-8.
-* Fix: DA - a batch downloaded over File Transfer is accepted as the
+* Fix: 10191 - DA - a batch downloaded over File Transfer is accepted as the
   directory tree the DA communication standard prescribes (one directory
   per package); a single zip file delivered in place of the tree is
   accepted as well, while a zip inside the directory of a package is a
@@ -75,24 +75,24 @@ Fixes
   download request sends the transfer type ``download`` defined by the
   standard when *File Transfer download request type* is empty; see
   :doc:`/08-digital-repositories`.
-* Fix: DA - a unit date in the archival description of a package written
+* Fix: 10195 - DA - a unit date in the archival description of a package written
   as an interval that closes within the period it opens (a day as
   D-D, a year as Y-Y) is read as that single period; the import
   of the package no longer ends with an unexpected error.
-* Fix: DA - a package delivered inside the batch as one zip file in the
+* Fix: 10191 - DA - a package delivered inside the batch as one zip file in the
   directory of the AIP, or with its own root directory (named by the UUID
   of the package) inside, is unwrapped and loaded; a package that cannot
   be read reports what it holds instead of the missing file. An AIP whose
   package the batch does not carry fails with the names the batch does
   carry, instead of being closed as loaded.
-* Fix: DA - a File Transfer download that failed is reported with the
+* Fix: 10191 - DA - a File Transfer download that failed is reported with the
   outcome of the transfer instead of a missing file; the cause is in the
   server log (``com.lightcomp.ft``).
-* Fix: DA - an action over AIPs (loading of metadata, update and repair)
+* Fix: 10191 - DA - an action over AIPs (loading of metadata, update and repair)
   whose download fails finishes with the error instead of running until
   the queue succeeds; the queue keeps retrying the download, which is
   followed on the AIP and in the queue view.
-* Change: DA - the originator of a package (the agent of the creation
+* Change: 10192 - DA - the originator of a package (the agent of the creation
   event in PACKAGE-INFO.xml) is resolved by its CAM identifier
   (``agentIdentifierType`` ``CAM_ID``, the entity id or UUID in CAM) to
   the access point taken over from CAM, whatever its type. An identifier
@@ -101,7 +101,7 @@ Fixes
   AIP*. A package without the identifier keeps the originator by name and
   has no problem. Such a package failed before with "Cannot parse null
   string".
-* Fix: DA - the result dialog of an action over AIPs shows the message of
+* Fix: 10191 - DA - the result dialog of an action over AIPs shows the message of
   each AIP in a readable colour.
 
 3.4.11
@@ -154,6 +154,7 @@ New
   rejected JWT is logged as well. A login with the password from
   ``elza.security.override`` is logged as ``OVERRIDE``, and every startup
   records the users with such a password (``override_active``).
+
 Changes
 -------
 
