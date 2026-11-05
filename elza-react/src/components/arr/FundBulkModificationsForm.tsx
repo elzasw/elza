@@ -62,6 +62,7 @@ const getDefaultItemsArea = ({
 
 const validate = (values: SubmitValues, props: { refType: RulDescItemTypeExtVO, dataType: RulDataTypeVO }) => {
     const errors: any = {};
+    const isEnumType = props.dataType.code === RulDataTypeCodeEnum.ENUM;
 
     if (!values.operationType) {
         errors.operationType = getIntl().formatMessage(globalMessages.validationRequired);
@@ -82,7 +83,7 @@ const validate = (values: SubmitValues, props: { refType: RulDescItemTypeExtVO, 
             break;
         case OperationType.REPLACE:
         case OperationType.APPEND:
-            if (!values.replaceText) {
+            if (!isEnumType && !values.replaceText) {
                 errors.replaceText = getIntl().formatMessage(globalMessages.validationRequired);
             }
 
@@ -228,8 +229,9 @@ const FundBulkModificationsForm = ({
         // !useSpecification && (INT, STRING, TEXT, UNITDATE, UNITID, BIT, FORMATTED_TEXT, )
         switch (dataType.code) {
             case RulDataTypeCodeEnum.STRUCTURED:
-            case RulDataTypeCodeEnum.ENUM:
                 return false;
+            case RulDataTypeCodeEnum.ENUM:
+                return true;
             case RulDataTypeCodeEnum.TEXT:
             case RulDataTypeCodeEnum.STRING:
             case RulDataTypeCodeEnum.FORMATTED_TEXT:
@@ -504,6 +506,8 @@ const FundBulkModificationsForm = ({
                                 }}
                             </Field>
                         );
+                        break;
+                    case RulDataTypeCodeEnum.ENUM:
                         break;
                     default:
                         operationInputs.push(
