@@ -75,11 +75,6 @@ public class DaImportExtSyncsProcessor implements Runnable {
 
     private static final int DEFAULT_IMPORT_LIST_SIZE = 100;
 
-    private static final List<DaSyncQueueItem.QueueItemState> QUEUE_STATES = List.of(
-            DaSyncQueueItem.QueueItemState.IMPORT_NEW,
-            DaSyncQueueItem.QueueItemState.UPDATE,
-            DaSyncQueueItem.QueueItemState.DOWNLOAD_REQUESTED);
-
     private int importListSize = DEFAULT_IMPORT_LIST_SIZE;
 
     private enum ThreadStatus {
@@ -329,7 +324,10 @@ public class DaImportExtSyncsProcessor implements Runnable {
                     boolean requested = exchange(this::requestNextBatch);
                     if (!processed && !requested) {
                         try {
-                            idle(DaService.idleMillis(daService.getEarliestAttempt(QUEUE_STATES), QUEUE_CHECK_TIME_INTERVAL));
+                            idle(DaService.idleMillis(daService.getEarliestAttempt(
+                                    DaSyncQueueItem.QueueItemState.DOWNLOAD_REQUESTED,
+                                    DaSyncQueueItem.QueueItemState.UPDATE, DaSyncQueueItem.QueueItemState.IMPORT_NEW),
+                                    QUEUE_CHECK_TIME_INTERVAL));
                         } catch (InterruptedException e) {
                             logger.error(e.getMessage(), e);
                             break;

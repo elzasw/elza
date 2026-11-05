@@ -164,6 +164,30 @@ public class DaAsyncQueueTest extends AbstractServiceTest {
         assertEquals(List.of(waiting), nextDownloads());
     }
 
+    /**
+     * A due item of a repository with a batch in flight cannot be taken, so the processor sleeps
+     * until the next question about the batch instead of looking at the queue again at once.
+     */
+    @Test
+    void theIdleWaitIgnoresWaitingItemsOfABusyRepository() {
+        OffsetDateTime question = OffsetDateTime.now().plusSeconds(2);
+        Integer inFlight = item(aip("aip-1"), QueueItemState.DOWNLOAD_REQUESTED, "b1", question);
+        item(aip("aip-2"), QueueItemState.IMPORT_NEW, null, OffsetDateTime.now().minusMinutes(1));
+        Integer export = item(aip("aip-3"), QueueItemState.EXPORT_NEW, null, OffsetDateTime.now().minusMinutes(2));
+
+        assertTrue(Duration.between(question, daService.getEarliestAttempt(QueueItemState.DOWNLOAD_REQUESTED,
+                QueueItemState.UPDATE, QueueItemState.IMPORT_NEW)).abs().toMillis() < 1,
+                   "the next question about the batch, not the waiting item");
+        assertEquals(reload(export).getNextAttemptAt().toInstant(),
+                     daService.getEarliestAttempt(QueueItemState.EXPORT_SENT, QueueItemState.EXPORT_NEW).toInstant(),
+                     "a download in flight does not hold back an export");
+
+        daService.changeQueueItemsState(List.of(reload(inFlight)), QueueItemState.IMPORT_OK);
+        assertTrue(daService.getEarliestAttempt(QueueItemState.DOWNLOAD_REQUESTED,
+                QueueItemState.UPDATE, QueueItemState.IMPORT_NEW).isBefore(OffsetDateTime.now()),
+                   "the waiting item is due once the batch is over");
+    }
+
     @Test
     void anItemIsTakenWhenDueAndRetryNowTakesItAtOnce() {
         DaAip aip = aip("aip-1");

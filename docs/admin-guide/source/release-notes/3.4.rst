@@ -114,6 +114,13 @@ Fixes
   the AIP stayed without metadata. The upgrade changes ``da_dao.label`` to
   ``text``, so the name is stored whole. Load the affected AIPs again with
   *Aktualizace a oprava AIP*.
+* Fix: 10210 - DA - while a download batch was being prepared by the DA,
+  the import of packages read the queue about 12 times a second instead of
+  waiting for the next status question (every 2 s by default), which kept
+  the database server permanently busy. The export of change packages
+  behaved the same way while a sent batch was being ingested. The upgrade
+  adds an index on ``da_sync_queue_item`` (``state``, ``active``,
+  ``next_attempt_at``).
 
 3.4.11
 ======

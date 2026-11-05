@@ -1371,12 +1371,8 @@ public class DaService {
                                               DaSyncQueueItem.QueueItemState... states) {
         Pageable pageable = PageRequest.of(0, pageSize);
 
-        List<Integer> busy = new ArrayList<>(syncQueueItemRepository.findRepositoriesWithState(inFlightState));
-        if (busy.isEmpty()) {
-            busy.add(-1); // NOT IN () is not valid SQL
-        }
         Iterable<DaSyncQueueItem> syncQueueItemIterable = syncQueueItemRepository.findDueByStates(Arrays.asList(states),
-                OffsetDateTime.now(), busy, pageable);
+                OffsetDateTime.now(), busyRepositories(inFlightState), pageable);
         List<DaSyncQueueItem> syncQueueItemList = new ArrayList<>();
 
         if (syncQueueItemIterable.iterator().hasNext()) {
@@ -1418,13 +1414,29 @@ public class DaService {
         return batch;
     }
 
+    /** Repositories with a batch of the given state in flight; never empty - NOT IN () is not valid SQL. */
+    private List<Integer> busyRepositories(DaSyncQueueItem.QueueItemState inFlightState) {
+        List<Integer> busy = new ArrayList<>(syncQueueItemRepository.findRepositoriesWithState(inFlightState));
+        if (busy.isEmpty()) {
+            busy.add(-1);
+        }
+        return busy;
+    }
+
     /**
-     * @return when the processor of the given states has to look at the queue again at the
-     *         latest, or null when no item waits for a time
+     * When the processor has to look at the queue again at the latest: the next question about a
+     * batch in flight, or the earliest waiting item it can take - one of a repository without a
+     * batch in flight, as {@link #getNextItems} takes them.
+     *
+     * @param inFlightState the state of a batch in flight of this direction
+     * @param states        the states of the waiting items
+     * @return the time, or null when no item waits for a time
      */
     @Transactional
-    public OffsetDateTime getEarliestAttempt(Collection<DaSyncQueueItem.QueueItemState> states) {
-        return syncQueueItemRepository.findEarliestAttempt(states);
+    public OffsetDateTime getEarliestAttempt(DaSyncQueueItem.QueueItemState inFlightState,
+                                             DaSyncQueueItem.QueueItemState... states) {
+        return syncQueueItemRepository.findEarliestAttempt(inFlightState, Arrays.asList(states),
+                                                           busyRepositories(inFlightState));
     }
 
     /**

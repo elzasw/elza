@@ -51,9 +51,18 @@ public interface DaSyncQueueItemRepository extends JpaRepository<DaSyncQueueItem
     List<DaSyncQueueItem> findByBatchIdAndStateAndActiveIsTrueOrderBySyncQueueItemId(String batchId,
                                                                                     DaSyncQueueItem.QueueItemState state);
 
-    /** When the earliest of the waiting items is to be taken; null when none waits for a time. */
-    @Query("SELECT MIN(i.nextAttemptAt) FROM da_sync_queue_item i WHERE i.state IN :states AND i.active = true")
-    OffsetDateTime findEarliestAttempt(@Param("states") Collection<DaSyncQueueItem.QueueItemState> states);
+    /**
+     * When the earliest of the items a processor can take is due: the next question about a batch
+     * in flight, or a waiting item of a repository without a batch in flight. Waiting items of a
+     * busy repository are left out - they cannot be taken before its batch is over, however long
+     * they have been due. Null when none waits for a time.
+     */
+    @Query("SELECT MIN(i.nextAttemptAt) FROM da_sync_queue_item i WHERE i.active = true"
+            + " AND (i.state = :inFlightState"
+            + " OR (i.state IN :states AND i.digitalRepository.externalSystemId NOT IN :busyRepositoryIds))")
+    OffsetDateTime findEarliestAttempt(@Param("inFlightState") DaSyncQueueItem.QueueItemState inFlightState,
+                                       @Param("states") Collection<DaSyncQueueItem.QueueItemState> states,
+                                       @Param("busyRepositoryIds") Collection<Integer> busyRepositoryIds);
 
     /** Active items in the given states whose exchanges keep failing. */
     @Query("SELECT COUNT(i) FROM da_sync_queue_item i"
