@@ -13,6 +13,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity(name = "da_dao")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "preferredPart", "lastUpdate"})
@@ -42,7 +44,8 @@ public class DaDao {
     @Column(name = "code", length = StringLength.LENGTH_250, nullable = false)
     private String code;
 
-    @Column(name = "label", length = StringLength.LENGTH_250)
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
+    @Column(name = "label")
     private String label;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = DaLevelView.class)

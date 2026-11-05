@@ -1489,4 +1489,10 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="20261105130000" author="ppy">
+        <!-- The label of a DAO is taken from the package as it comes (METS LABEL of a level,
+             a representation or a file); its length is not limited. -->
+        <modifyDataType tableName="da_dao" columnName="label" newDataType="${type.text}"/>
+    </changeSet>
+
 </databaseChangeLog>

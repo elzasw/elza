@@ -108,6 +108,12 @@ Fixes
   details of a page at once; with tens of thousands of AIPs it took minutes.
   A search without a page size returns 25 AIPs. The upgrade adds indexes
   on ``da_sync_queue_item`` and ``da_aip_state``.
+* Fix: 10212 - DA - loading the metadata of a package failed with "value
+  too long for type character varying(250)" when the name of a level, a
+  representation or a file in the package was longer than 250 characters;
+  the AIP stayed without metadata. The upgrade changes ``da_dao.label`` to
+  ``text``, so the name is stored whole. Load the affected AIPs again with
+  *Aktualizace a oprava AIP*.
 
 3.4.11
 ======
