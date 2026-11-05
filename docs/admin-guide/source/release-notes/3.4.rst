@@ -121,6 +121,11 @@ Fixes
   behaved the same way while a sent batch was being ingested. The upgrade
   adds an index on ``da_sync_queue_item`` (``state``, ``active``,
   ``next_attempt_at``).
+* Fix: 10211 - DA - the list of AIPs no longer loads the whole tree of
+  every fund with linked AIPs to show the names of the linked units. With
+  more funds than the tree cache holds (``elza.levelTreeCache.size``, 30
+  by default), the trees were repeatedly evicted and loaded again, and the
+  tree and arrangement of other users waited meanwhile.
 
 3.4.11
 ======

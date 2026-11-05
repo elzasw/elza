@@ -31,6 +31,7 @@ import cz.tacr.elza.controller.vo.OperationLogicalType;
 import cz.tacr.elza.controller.vo.OperationTextType;
 import cz.tacr.elza.controller.vo.SearchParams;
 import cz.tacr.elza.controller.vo.TextValueFilter;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFund;
@@ -203,6 +204,28 @@ public class AipEntryLookupTest extends AbstractServiceTest {
         assertEquals(2, links.size());
         assertNull(links.get(wholeNodeId).getDaoCode(), "a link of the whole AIP has no part");
         assertEquals(PART_CODE, links.get(partNodeId).getDaoCode());
+
+        Map<Integer, String> treeNames = treeNames(fund, List.of(wholeNodeId, partNodeId));
+        assertEquals(treeNames.get(wholeNodeId), links.get(wholeNodeId).getName());
+        assertEquals(treeNames.get(partNodeId), links.get(partNodeId).getName());
+    }
+
+    /** The list names the linked units as the tree does, the root of the fund included. */
+    @Test
+    public void unitNamesWithoutTheTreeMatchTheTree() {
+        FundInfo fund = tx().execute(t -> createFund("F-da-names"));
+        List<Integer> nodeIds = List.of(fund.getRootNodeId(), childNodeId(fund));
+
+        Map<Integer, String> names = tx().execute(t -> levelTreeCacheService.getNodeNames(nodeIds,
+                fundVersionRepository.findById(fund.getFundVersion().getFundVersionId()).orElseThrow()));
+
+        assertEquals(treeNames(fund, nodeIds), names);
+    }
+
+    private Map<Integer, String> treeNames(FundInfo fund, List<Integer> nodeIds) {
+        return tx().execute(t -> levelTreeCacheService
+                .getNodesByIds(nodeIds, fund.getFundVersion().getFundVersionId()).stream()
+                .collect(Collectors.toMap(TreeNodeVO::getId, TreeNodeVO::getName)));
     }
 
     /**

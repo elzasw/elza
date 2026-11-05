@@ -435,6 +435,47 @@ public class LevelTreeCacheService implements NodePermissionChecker {
     }
 
     /**
+     * Names of the units as the tree shows them, without the tree of the version.
+     *
+     * A name is built from the unit's own description items, so it is read from them directly and
+     * the version tree is neither loaded into the cache nor locked. That suits lists spanning many
+     * funds, where loading whole trees would evict the trees users work with. Reference marks are
+     * not returned - they need the position of every ancestor.
+     *
+     * @param nodeIds ids of the units
+     * @param version fund version the names are read in
+     * @return name by node id
+     */
+    public Map<Integer, String> getNodeNames(final Collection<Integer> nodeIds,
+                                             final ArrFundVersion version) {
+        if (nodeIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        ViewTitles viewTitles = configView.getViewTitles(version.getRuleSetId(), version.getFundId());
+        Map<Integer, TitleItemsByType> valuesMap = descriptionItemService.createNodeValuesByItemTypeCodeMap(nodeIds,
+                getDescriptionItemTypes(viewTitles), version.getLockChangeId(), null);
+
+        Map<Integer, ArrDao> daoLevelMap = new HashMap<>();
+        if (displayDaoId) {
+            for (ArrLegacyDaoLink daoLink : ObjectListIterator.findIterable(nodeIds,
+                    legacyDaoLinkRepository::findByNodeIdsAndFetchDao)) {
+                if (daoLink.getDao().getDaoType().equals(DaoType.LEVEL)) {
+                    daoLevelMap.put(daoLink.getNodeId(), daoLink.getDao());
+                }
+            }
+        }
+
+        Map<Integer, String> result = new HashMap<>(nodeIds.size());
+        for (Integer nodeId : nodeIds) {
+            String defaultTitle = nodeId.equals(version.getRootNodeId())
+                    ? createRootTitle(version.getFund(), viewTitles, nodeId)
+                    : createDefaultTitle(viewTitles, nodeId);
+            result.put(nodeId, viewTitles.getTreeItem().build(valuesMap.get(nodeId), daoLevelMap.get(nodeId), defaultTitle));
+        }
+        return result;
+    }
+
+    /**
      * Vyhledá a seřadí JP.
      *
      * @param nodeIds        seznam id potřebných uzlů

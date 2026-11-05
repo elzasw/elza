@@ -2667,7 +2667,7 @@ public class ClientFactoryVO {
                                Map<Integer, DaSyncQueueItem> importItemByAip,
                                Map<Integer, DaSyncQueueItem> exportItemByAip,
                                Map<Integer, List<ArrDaoLink>> linksByAip,
-                               Map<Integer, TreeNodeVO> treeNodeMap) {
+                               Map<Integer, String> nodeNameMap) {
     }
 
     public List<AipDetailVO> createAips(List<DaAip> aips) {
@@ -2735,7 +2735,8 @@ public class ClientFactoryVO {
             itemByAip.putIfAbsent(item.getAip().getAipId(), item);
         }
 
-        // links are listed for AIPs belonging to a fund, their units are read from the tree of that fund
+        // links are listed for AIPs belonging to a fund; only the names of their units are shown,
+        // so they are read without the tree of the fund - a page may span dozens of large funds
         Map<Integer, List<ArrDaoLink>> linksByAip = new HashMap<>();
         fundIdByAip.keySet().forEach(aipId -> linksByAip.put(aipId, new ArrayList<>()));
         Map<Integer, Set<Integer>> nodeIdsByFund = new HashMap<>();
@@ -2744,17 +2745,14 @@ public class ClientFactoryVO {
             linksByAip.get(link.getAipId()).add(link);
             nodeIdsByFund.computeIfAbsent(fundIdByAip.get(link.getAipId()), k -> new HashSet<>()).add(link.getNodeId());
         }
-        Map<Integer, TreeNodeVO> treeNodeMap = new HashMap<>();
+        Map<Integer, String> nodeNameMap = new HashMap<>();
         for (ArrFundVersion fundVersion : ObjectListIterator.findIterable(nodeIdsByFund.keySet(),
                 fundVersionRepository::findByFundIdsAndLockChangeIsNull)) {
-            Set<Integer> nodeIds = nodeIdsByFund.get(fundVersion.getFundId());
-            for (TreeNodeVO treeNode : levelTreeCacheService.getNodesByIds(nodeIds, fundVersion)) {
-                treeNodeMap.put(treeNode.getId(), treeNode);
-            }
+            nodeNameMap.putAll(levelTreeCacheService.getNodeNames(nodeIdsByFund.get(fundVersion.getFundId()), fundVersion));
         }
 
         return new AipPageData(stateByAip, fundById, institutionById, displayNameByAccessPoint,
-                importItemByAip, exportItemByAip, linksByAip, treeNodeMap);
+                importItemByAip, exportItemByAip, linksByAip, nodeNameMap);
     }
 
     private AipDetailVO createAipDetailVO(DaAip src, AipPageData data) {
@@ -2830,7 +2828,7 @@ public class ClientFactoryVO {
 
         List<ArrDaoLink> daoLinks = data.linksByAip().get(aipId);
         if (CollectionUtils.isNotEmpty(daoLinks)) {
-            vo.setLinkedNodes(createLinkedNodeVOs(daoLinks, data.treeNodeMap()));
+            vo.setLinkedNodes(createLinkedNodeVOs(daoLinks, data.nodeNameMap()));
         }
 
         return vo;
@@ -2861,11 +2859,10 @@ public class ClientFactoryVO {
         return vo;
     }
 
-    private List<LinkedNodeVO> createLinkedNodeVOs(List<ArrDaoLink> daoLinks, Map<Integer, TreeNodeVO> treeNodeMap) {
+    private List<LinkedNodeVO> createLinkedNodeVOs(List<ArrDaoLink> daoLinks, Map<Integer, String> nodeNameMap) {
         List<LinkedNodeVO> linkedNodeList = new ArrayList<>();
         for (ArrDaoLink daoLink : daoLinks) {
-            TreeNodeVO treeNode = treeNodeMap.get(daoLink.getNodeId());
-            linkedNodeList.add(createLinkedNode(daoLink, treeNode));
+            linkedNodeList.add(createLinkedNode(daoLink, nodeNameMap.get(daoLink.getNodeId())));
         }
         return linkedNodeList;
     }
@@ -2874,8 +2871,8 @@ public class ClientFactoryVO {
      * The type tells the client whether the link binds the whole package (AIP) or one of its
      * parts, which the detail shows as two different things.
      */
-    private LinkedNodeVO createLinkedNode(ArrDaoLink daoLink, TreeNodeVO treeNode) {
-        LinkedNodeVO vo = new LinkedNodeVO(daoLink.getDaoLinkId(), treeNode.getId(), treeNode.getName());
+    private LinkedNodeVO createLinkedNode(ArrDaoLink daoLink, String nodeName) {
+        LinkedNodeVO vo = new LinkedNodeVO(daoLink.getDaoLinkId(), daoLink.getNodeId(), nodeName);
         if (daoLink.getLinkType() != null) {
             vo.setLinkType(mapArrDaoLink(daoLink.getLinkType()));
         }
@@ -2943,7 +2940,7 @@ public class ClientFactoryVO {
             for (ArrDaoLink daoLink : daoLinks) {
                 TreeNodeVO treeNode = treeNodeMap.get(daoLink.getNodeId());
                 if(treeNode != null) {
-                    linkedNodeList.add(createLinkedNode(daoLink, treeNode));
+                    linkedNodeList.add(createLinkedNode(daoLink, treeNode.getName()));
                 }
             }
             return linkedNodeList;
