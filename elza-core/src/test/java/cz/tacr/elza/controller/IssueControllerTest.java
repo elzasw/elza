@@ -23,6 +23,8 @@ import org.slf4j.LoggerFactory;
 
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ArrFundBaseVO;
+import cz.tacr.elza.controller.vo.ArrFundVersionVO;
+import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
 import cz.tacr.elza.controller.vo.WfCommentVO;
@@ -34,6 +36,9 @@ import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.domain.UsrAuthentication;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.test.controller.vo.Fund;
+import cz.tacr.elza.test.controller.vo.NodeBrief;
+import cz.tacr.elza.test.controller.vo.NodeData;
+import cz.tacr.elza.test.controller.vo.NodeDataParam;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class IssueControllerTest extends AbstractControllerTest {
@@ -317,8 +322,103 @@ public class IssueControllerTest extends AbstractControllerTest {
     }
 
     /**
+     * An open issue on a node is visible to issue administrators and issue list members,
+     * reading the fund is not enough.
+     */
+    @Test
+    public void openIssueVisibilityTest() throws Exception {
+        Fund fund = createFund("Test issue visibility", "TST2");
+        ArrFundVersionVO fundVersion = getOpenVersion(fund);
+        Integer rootNodeId = getRootNodeId(fundVersion);
+
+        ApAccessPointVO ap = findRecord(null, null, null, null, null).get(0);
+
+        UsrUserVO issueAdminVO = createAdmin("issueAdmin", fund.getId(), ap);
+
+        UsrUserVO issueAdminAllVO = createUser("issueAdminAll", ap);
+        addUserPermission(issueAdminAllVO.getId(),
+                Arrays.asList(createPermission(Permission.FUND_ISSUE_ADMIN_ALL), createPermission(Permission.FUND_RD_ALL)));
+
+        UsrUserVO memberVO = createUser("issueListMember", ap);
+        addUserPermission(memberVO.getId(), Arrays.asList(createPermission(Permission.FUND_RD_ALL)));
+
+        UsrUserVO readerVO = createUser("fundReader", ap);
+        addUserPermission(readerVO.getId(), Arrays.asList(createPermission(Permission.FUND_RD_ALL)));
+
+        try {
+            WfIssueListVO issueListVO = new WfIssueListVO();
+            issueListVO.setFundId(fund.getId());
+            issueListVO.setName("Visibility");
+            issueListVO.setOpen(true);
+            issueListVO.setRdUsers(Arrays.asList(memberVO));
+            issueListVO.setWrUsers(Arrays.asList(memberVO));
+            Integer issueListId = addIssueList(issueListVO).getId();
+
+            WfIssueVO issueVO = new WfIssueVO();
+            issueVO.setIssueListId(issueListId);
+            issueVO.setNodeId(rootNodeId);
+            issueVO.setIssueTypeId(findAllIssueTypes().get(0).getId());
+            issueVO.setDescription("description");
+            runAsUser(memberVO.getUsername(), () -> addIssue(issueVO));
+
+            assertOpenIssueVisibility(issueAdminVO, fundVersion.getId(), rootNodeId, true);
+            assertOpenIssueVisibility(issueAdminAllVO, fundVersion.getId(), rootNodeId, true);
+            assertOpenIssueVisibility(memberVO, fundVersion.getId(), rootNodeId, true);
+            assertOpenIssueVisibility(readerVO, fundVersion.getId(), rootNodeId, false);
+        } finally {
+            deleteUserFundAllPermission(readerVO.getId());
+            deleteUserFundAllPermission(memberVO.getId());
+            deleteUserFundAllPermission(issueAdminAllVO.getId());
+            deleteUserFundAllPermission(issueAdminVO.getId());
+            helperTestService.waitForWorkers();
+            deleteFund(fund.getId());
+        }
+    }
+
+    /**
+     * Checks both places that show open issues of a node: the issue icon in the node header
+     * (siblings in node data) and the previous/next node with an issue.
+     */
+    private void assertOpenIssueVisibility(UsrUserVO userVO, Integer fundVersionId, Integer nodeId, boolean visible)
+            throws Exception {
+        runAsUser(userVO.getUsername(), () -> {
+            int expectedNodeCount = visible ? 1 : 0;
+            assertEquals(expectedNodeCount, getIssueNodeCount(fundVersionId), userVO.getUsername());
+
+            NodeDataParam nodeDataParam = new NodeDataParam();
+            nodeDataParam.setFundVersionId(fundVersionId);
+            nodeDataParam.setNodeId(nodeId);
+            nodeDataParam.setFormData(false);
+            nodeDataParam.setParents(false);
+            nodeDataParam.setChildren(false);
+            nodeDataParam.setSiblingsFrom(0);
+            nodeDataParam.setSiblingsMaxCount(1);
+            NodeData nodeData = nodeApi.nodeGetNodeData(nodeDataParam);
+
+            NodeBrief nodeBrief = nodeData.getSiblings().get(0);
+            boolean issueShown = !nodeBrief.getIssues().isEmpty();
+            assertEquals(nodeId, nodeBrief.getId());
+            assertEquals(visible, issueShown, userVO.getUsername());
+            return null;
+        });
+    }
+
+    private Integer getRootNodeId(ArrFundVersionVO fundVersion) {
+        ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
+        input.setVersionId(fundVersion.getId());
+        TreeData treeData = getFundTree(input);
+        return treeData.getNodes().iterator().next().getId();
+    }
+
+    private UsrPermissionVO createPermission(Permission permission) {
+        UsrPermissionVO permissionVO = new UsrPermissionVO();
+        permissionVO.setPermission(permission);
+        return permissionVO;
+    }
+
+    /**
      * Zalozeni testovaciho AS
-     * @throws ApiException 
+     * @throws ApiException
      */
     private Fund createFund() {
         Fund fund = createFund("Test issue", "TST1");

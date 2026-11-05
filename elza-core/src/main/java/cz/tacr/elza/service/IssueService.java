@@ -580,7 +580,7 @@ public class IssueService {
             return Collections.emptyList();
         }
 
-        Integer userId = userDetail.hasPermission(Permission.ADMIN) ? null : userDetail.getId();
+        Integer userId = issueDataService.getIssueListFilterUserId(fund.getFundId(), userDetail);
 
         return issueRepository.findNodeIdWithOpenIssueByFundId(fund.getFundId(), userId);
     }

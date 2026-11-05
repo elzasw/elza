@@ -2773,7 +2773,7 @@ private void processEvent(AbstractEventSimple event) {
 
         LinkedHashMap<Integer, Node> nodeMap = getNodes(nodesMap, parentNode, param, fundVersion);
 
-        Map<Integer, List<WfIssue>> nodeToIssueMap = issueDataService.groupOpenIssueByNodeId(nodeMap.keySet(), userDetail);
+        Map<Integer, List<WfIssue>> nodeToIssueMap = issueDataService.groupOpenIssueByNodeId(fundVersion.getFundId(), nodeMap.keySet(), userDetail);
 
         List<NodeBrief> accordionNodes = convertToNodeBrief(nodeMap.values(), nodeToIssueMap);
 
@@ -2831,7 +2831,7 @@ private void processEvent(AbstractEventSimple event) {
 
         LinkedHashMap<Integer, Node> nodeMap = getNodes(nodesMap, parentNode, param, fundVersion);
 
-        Map<Integer, List<WfIssue>> nodeToIssueMap = issueDataService.groupOpenIssueByNodeId(nodeMap.keySet(), userDetail);
+        Map<Integer, List<WfIssue>> nodeToIssueMap = issueDataService.groupOpenIssueByNodeId(fundVersion.getFundId(), nodeMap.keySet(), userDetail);
 
         List<AccordionNodeVO> accordionNodes = convertToAccordionNode(nodeMap.values(), nodeToIssueMap);
 

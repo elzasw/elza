@@ -90,13 +90,31 @@ public class IssueDataService {
     }
 
     /**
+     * Returns the user whose issue list permissions restrict the visible issue lists of the fund.
+     * Issue administrators of the fund see all its issue lists without being added to them.
+     *
+     * @param fundId     fund identifier
+     * @param userDetail logged user
+     * @return user identifier, or null when the user sees all issue lists of the fund
+     */
+    @Nullable
+    public Integer getIssueListFilterUserId(@NotNull Integer fundId, @NotNull UserDetail userDetail) {
+        boolean seesAllIssueLists = userDetail.getId() == null // virtuální uživatel, obdobně jako superadmin
+                || userDetail.hasPermission(Permission.ADMIN)
+                || userDetail.hasPermission(Permission.FUND_ISSUE_ADMIN_ALL)
+                || userDetail.hasPermission(Permission.FUND_ISSUE_ADMIN, fundId);
+        return seesAllIssueLists ? null : userDetail.getId();
+    }
+
+    /**
      * Seznam otevřených připomínek (tzn. nejsou v koncovém stavu) ze všech otevřených protokolů ke kontrétní JP.
      *
+     * @param fundId     identifikátor AS, do kterého jednotky popisu patří
      * @param nodeIds    seznam identifikátorů jednotek popisu
      * @param userDetail přihlášený uživatel
      * @return seznam připomínek groupovaných podle identifikátoru jednotky popisu
      */
-    public Map<Integer, List<WfIssue>> groupOpenIssueByNodeId(@NotNull Collection<Integer> nodeIds, UserDetail userDetail) {
+    public Map<Integer, List<WfIssue>> groupOpenIssueByNodeId(@NotNull Integer fundId, @NotNull Collection<Integer> nodeIds, UserDetail userDetail) {
         Validate.notNull(nodeIds, "Node ID list is null");
         if (nodeIds.isEmpty()) {
             return Collections.emptyMap();
@@ -104,7 +122,7 @@ public class IssueDataService {
         if (userDetail == null) {
             return Collections.emptyMap();
         }
-        Integer userId = userDetail.hasPermission(Permission.ADMIN) ? null : userDetail.getId();
+        Integer userId = getIssueListFilterUserId(fundId, userDetail);
         List<WfIssue> issueList = issueRepository.findOpenByNodeId(nodeIds, userId);
         return issueList.stream().collect(Collectors.groupingBy(issue -> issue.getNode().getNodeId()));
     }
@@ -135,7 +153,7 @@ public class IssueDataService {
         if (userDetail == null) {
             return Collections.emptyList();
         }
-        Integer userId = userDetail.hasPermission(Permission.ADMIN) ? null : userDetail.getId();
+        Integer userId = getIssueListFilterUserId(fund.getFundId(), userDetail);
         return issueRepository.findOpenByFundIdAndNodeNull(fund.getFundId(), userId);
     }
 
@@ -182,12 +200,7 @@ public class IssueDataService {
             return Collections.emptyList();
         }
 
-        Integer userId = userDetail.getId() == null // virtuální uživatel, obdobně jako superadmin
-                || userDetail.hasPermission(Permission.ADMIN)
-                || userDetail.hasPermission(Permission.FUND_ISSUE_ADMIN_ALL)
-                || userDetail.hasPermission(Permission.FUND_ISSUE_ADMIN, fund.getFundId())
-                ? null
-                : userDetail.getId();
+        Integer userId = getIssueListFilterUserId(fund.getFundId(), userDetail);
 
         return issueListRepository.findByFundIdWithPermission(fund.getFundId(), open, userId);
     }
