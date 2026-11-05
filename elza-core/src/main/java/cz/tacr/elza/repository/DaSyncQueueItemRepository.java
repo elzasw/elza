@@ -102,6 +102,15 @@ public interface DaSyncQueueItemRepository extends JpaRepository<DaSyncQueueItem
                                                                                    Collection<DaSyncQueueItem.QueueItemState> states);
 
     /**
+     * Active requests of the AIPs among the given states - what
+     * {@link #findFirstByAipAndStateInAndActiveIsTrueOrderBySyncQueueItemIdDesc} reads, for many
+     * AIPs at once; the caller picks the newest one of each AIP.
+     */
+    @Query("SELECT i FROM da_sync_queue_item i WHERE i.aip.aipId IN :aipIds AND i.state IN :states AND i.active = true")
+    List<DaSyncQueueItem> findActiveByAipIdsAndStates(@Param("aipIds") Collection<Integer> aipIds,
+                                                      @Param("states") Collection<DaSyncQueueItem.QueueItemState> states);
+
+    /**
      * Pairs (aipId, actionItemId) of the action items the given queue items are carrying out.
      *
      * A projection rather than the entities: the processor works with queue items read in an

@@ -27,7 +27,7 @@ const searchParams = (filter: AipsFilter = {}): SearchParams => {
     return {
         filters: (filters || []).map(entry => entry.filter),
         offset: from && from > 0 ? from : 0,
-        size: pageSize,
+        size: pageSize ?? DEFAULT_PAGE_SIZE,
         sort: sort || [],
     };
 }

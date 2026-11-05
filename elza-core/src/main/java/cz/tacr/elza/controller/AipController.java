@@ -10,6 +10,7 @@ import cz.tacr.elza.service.da.DaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -95,7 +96,12 @@ public class AipController implements AipsApi {
         return ResponseEntity.ok(clientFactoryVO.createAipAction(daService.aipExportAip(aipIds)));
     }
 
+    /**
+     * The search and the details of the found page are read in one transaction: the details read
+     * the objects connected to the AIPs of the page as they were when the page was found.
+     */
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<AipDetailFilteredResult> aipFindByFilter(SearchParams searchParams, Integer focusAipId) {
         AipService.AipSearchResult found = aipService.findAipDetailsByFilter(searchParams, focusAipId);
         FilteredResult<DaAip> aips = found.page();
@@ -143,6 +149,7 @@ public class AipController implements AipsApi {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ResponseEntity<AipDetailVO> aipGetAip(Integer aipId) {
         return ResponseEntity.ok(aipService.getAipDetail(aipId));
     }

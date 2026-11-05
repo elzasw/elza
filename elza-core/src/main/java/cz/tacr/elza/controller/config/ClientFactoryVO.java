@@ -10,6 +10,7 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,6 +52,7 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.bulkaction.BulkActionConfig;
 import cz.tacr.elza.common.FactoryUtils;
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.config.ConfigRules;
 import cz.tacr.elza.config.ConfigView;
@@ -295,6 +297,9 @@ public class ClientFactoryVO {
 
     @Autowired
     private InstitutionRepository institutionRepository;
+
+    @Autowired
+    private FundRepository fundRepository;
 
     /**
      * Konvertor pro INT data
@@ -2648,36 +2653,116 @@ public class ClientFactoryVO {
         return exportFilters.stream().map(i -> new RulExportFilterVO(i)).collect(Collectors.toList());
     }
 
-    public List<AipDetailVO> createAips(List<DaAip> aips) {
-        List<AipDetailVO> aipVOList = new ArrayList<>();
+    /**
+     * What the details of a page of AIPs carry, read for the whole page at once.
+     *
+     * The connected objects (funds, institutions, display names, queue items, links) are collected
+     * by their ids from the page and fetched with one query per kind, so the number of queries does
+     * not grow with the number of AIPs on the page.
+     */
+    private record AipPageData(Map<Integer, DaAipState> stateByAip,
+                               Map<Integer, ArrFund> fundById,
+                               Map<Integer, ParInstitution> institutionById,
+                               Map<Integer, ApIndex> displayNameByAccessPoint,
+                               Map<Integer, DaSyncQueueItem> importItemByAip,
+                               Map<Integer, DaSyncQueueItem> exportItemByAip,
+                               Map<Integer, List<ArrDaoLink>> linksByAip,
+                               Map<Integer, TreeNodeVO> treeNodeMap) {
+    }
 
+    public List<AipDetailVO> createAips(List<DaAip> aips) {
+        if (aips.isEmpty()) {
+            return new ArrayList<>();
+        }
+        AipPageData data = loadAipPageData(aips.stream().map(DaAip::getAipId).toList());
+
+        List<AipDetailVO> aipVOList = new ArrayList<>(aips.size());
         for (DaAip aip : aips) {
-           aipVOList.add(createAipDetail(aip));
+            aipVOList.add(createAipDetailVO(aip, data));
         }
         return aipVOList;
     }
 
     public AipDetailVO createAipDetail(DaAip daAip) {
-        DaAipState state = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(Collections.singletonList(daAip)).get(0);
-        List<ArrDaoLink> daoLinks = null;
-        Map<Integer, TreeNodeVO> treeNodeMap = null;
-        if (state.getFund() != null) {
-            daoLinks = new ArrayList<>(daLinkRepository.findByAipIdAndDeleteChangeIsNull(daAip.getAipId()));
-            Set<Integer> nodeIds = daoLinks.stream()
-                    .map(ArrDaoLink::getNodeId)
-                    .collect(Collectors.toSet());
-
-            ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(state.getFund().getFundId());
-            treeNodeMap = levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()).stream()
-                    .collect(Collectors.toMap(TreeNodeVO::getId, v -> v));
-        }
-
-        return createAipDetailVO(daAip, state, daoLinks, treeNodeMap);
+        return createAips(Collections.singletonList(daAip)).get(0);
     }
 
-    private AipDetailVO createAipDetailVO(DaAip src, DaAipState state, List<ArrDaoLink> daoLinks, Map<Integer, TreeNodeVO> treeNodeMap) {
+    private AipPageData loadAipPageData(List<Integer> aipIds) {
+        Map<Integer, DaAipState> stateByAip = ObjectListIterator.findIterable(aipIds,
+                aipStateRepository::findActiveByAipIds).stream()
+                .collect(Collectors.toMap(s -> s.getDaAip().getAipId(), Function.identity(), (a, b) -> a));
+
+        // ids of the connected objects; reading the id of a lazy reference does not load it
+        Map<Integer, Integer> fundIdByAip = new HashMap<>();
+        Set<Integer> institutionIds = new HashSet<>();
+        Set<Integer> accessPointIds = new HashSet<>();
+        stateByAip.forEach((aipId, state) -> {
+            if (state.getFund() != null) {
+                fundIdByAip.put(aipId, state.getFund().getFundId());
+            }
+            if (state.getInstitution() != null) {
+                institutionIds.add(state.getInstitution().getInstitutionId());
+            }
+            if (state.getOriginatorAccessPoint() != null) {
+                accessPointIds.add(state.getOriginatorAccessPoint().getAccessPointId());
+            }
+        });
+
+        Map<Integer, ArrFund> fundById = ObjectListIterator.findIterable(new HashSet<>(fundIdByAip.values()),
+                fundRepository::findAllById).stream()
+                .collect(Collectors.toMap(ArrFund::getFundId, Function.identity()));
+
+        Map<Integer, ParInstitution> institutionById = ObjectListIterator.findIterable(institutionIds,
+                institutionRepository::findByIdsFetchType).stream()
+                .collect(Collectors.toMap(ParInstitution::getInstitutionId, Function.identity()));
+        institutionById.values().forEach(institution -> accessPointIds.add(institution.getAccessPointId()));
+
+        Map<Integer, ApIndex> displayNameByAccessPoint = ObjectListIterator.findIterable(accessPointIds,
+                ids -> indexRepository.findPreferredPartIndexByAccessPointIdsAndIndexType(ids, DISPLAY_NAME)).stream()
+                .collect(Collectors.toMap(i -> i.getPart().getAccessPointId(), Function.identity(), (a, b) -> a));
+
+        // the newest active request of each AIP, one for the import and one for the export
+        Collection<DaSyncQueueItem.QueueItemState> importStates = DaService.getQueueImportStates();
+        Set<DaSyncQueueItem.QueueItemState> queueStates = new HashSet<>(importStates);
+        queueStates.addAll(DaService.getQueueExportStates());
+        Map<Integer, DaSyncQueueItem> importItemByAip = new HashMap<>();
+        Map<Integer, DaSyncQueueItem> exportItemByAip = new HashMap<>();
+        List<DaSyncQueueItem> queueItems = ObjectListIterator.findIterable(aipIds,
+                ids -> daSyncQueueItemRepository.findActiveByAipIdsAndStates(ids, queueStates));
+        queueItems.sort(Comparator.comparing(DaSyncQueueItem::getSyncQueueItemId).reversed());
+        for (DaSyncQueueItem item : queueItems) {
+            Map<Integer, DaSyncQueueItem> itemByAip = importStates.contains(item.getState()) ? importItemByAip : exportItemByAip;
+            itemByAip.putIfAbsent(item.getAip().getAipId(), item);
+        }
+
+        // links are listed for AIPs belonging to a fund, their units are read from the tree of that fund
+        Map<Integer, List<ArrDaoLink>> linksByAip = new HashMap<>();
+        fundIdByAip.keySet().forEach(aipId -> linksByAip.put(aipId, new ArrayList<>()));
+        Map<Integer, Set<Integer>> nodeIdsByFund = new HashMap<>();
+        for (ArrDaLink link : ObjectListIterator.findIterable(fundIdByAip.keySet(),
+                daLinkRepository::findByAipIdsAndDeleteChangeIsNull)) {
+            linksByAip.get(link.getAipId()).add(link);
+            nodeIdsByFund.computeIfAbsent(fundIdByAip.get(link.getAipId()), k -> new HashSet<>()).add(link.getNodeId());
+        }
+        Map<Integer, TreeNodeVO> treeNodeMap = new HashMap<>();
+        for (ArrFundVersion fundVersion : ObjectListIterator.findIterable(nodeIdsByFund.keySet(),
+                fundVersionRepository::findByFundIdsAndLockChangeIsNull)) {
+            Set<Integer> nodeIds = nodeIdsByFund.get(fundVersion.getFundId());
+            for (TreeNodeVO treeNode : levelTreeCacheService.getNodesByIds(nodeIds, fundVersion)) {
+                treeNodeMap.put(treeNode.getId(), treeNode);
+            }
+        }
+
+        return new AipPageData(stateByAip, fundById, institutionById, displayNameByAccessPoint,
+                importItemByAip, exportItemByAip, linksByAip, treeNodeMap);
+    }
+
+    private AipDetailVO createAipDetailVO(DaAip src, AipPageData data) {
+        Integer aipId = src.getAipId();
+        DaAipState state = data.stateByAip().get(aipId);
+
         AipDetailVO vo = new AipDetailVO();
-        vo.setAipId(src.getAipId());
+        vo.setAipId(aipId);
         vo.setCode(src.getCode());
         vo.setDigitalRepositoryId(src.getDigitalRepository().getExternalSystemId());
         vo.setDigitalRepositoryCode(src.getDigitalRepository().getCode());
@@ -2686,7 +2771,7 @@ public class ClientFactoryVO {
             vo.setAipVersion(state.getAipVersion());
 
             if (state.getFund() != null) {
-                vo.setFund(createFundGen(state.getFund()));
+                vo.setFund(createFundGen(data.fundById().get(state.getFund().getFundId())));
             }
             vo.setFundCode(state.getFundCode());
             if (state.getUnitdateFrom() != null) {
@@ -2697,14 +2782,15 @@ public class ClientFactoryVO {
             }
             vo.setInstitutionCode(state.getInstitutionCode());
             if (state.getInstitution() != null) {
-                ApIndex displayName = indexRepository.findByPartAndIndexType(state.getInstitution().getAccessPoint().getPreferredPart(), DISPLAY_NAME);
-                vo.setInstitution(createParInstitutionGen(state.getInstitution(), displayName));
+                ParInstitution institution = data.institutionById().get(state.getInstitution().getInstitutionId());
+                vo.setInstitution(createParInstitutionGen(institution,
+                        data.displayNameByAccessPoint().get(institution.getAccessPointId())));
             }
             // the originator is any access point - a corporate body, a person or a family
             if (state.getOriginatorAccessPoint() != null) {
-                ApAccessPoint originator = state.getOriginatorAccessPoint();
-                vo.setOriginatorAccessPointId(originator.getAccessPointId());
-                ApIndex displayName = indexRepository.findByPartAndIndexType(originator.getPreferredPart(), DISPLAY_NAME);
+                Integer originatorId = state.getOriginatorAccessPoint().getAccessPointId();
+                vo.setOriginatorAccessPointId(originatorId);
+                ApIndex displayName = data.displayNameByAccessPoint().get(originatorId);
                 vo.setOriginatorAccessPointName(displayName != null ? displayName.getIndexValue() : null);
             }
             vo.setOriginator(state.getOriginator());
@@ -2728,22 +2814,23 @@ public class ClientFactoryVO {
             }
         }
 
-        DaSyncQueueItem importSyncQueueItem = daSyncQueueItemRepository.findFirstByAipAndStateInAndActiveIsTrueOrderBySyncQueueItemIdDesc(src, DaService.getQueueImportStates());
+        DaSyncQueueItem importSyncQueueItem = data.importItemByAip().get(aipId);
         if (importSyncQueueItem != null) {
             vo.setImportState(mapQueueItemState(importSyncQueueItem.getState()));
             vo.setImportStateMessage(importSyncQueueItem.getStateMessage());
             vo.setImportStateDate(importSyncQueueItem.getDate());
         }
 
-        DaSyncQueueItem exportSyncQueueItem = daSyncQueueItemRepository.findFirstByAipAndStateInAndActiveIsTrueOrderBySyncQueueItemIdDesc(src, DaService.getQueueExportStates());
+        DaSyncQueueItem exportSyncQueueItem = data.exportItemByAip().get(aipId);
         if (exportSyncQueueItem != null) {
             vo.setExportState(mapQueueItemState(exportSyncQueueItem.getState()));
             vo.setExportStateMessage(exportSyncQueueItem.getStateMessage());
             vo.setExportStateDate(exportSyncQueueItem.getDate());
         }
 
+        List<ArrDaoLink> daoLinks = data.linksByAip().get(aipId);
         if (CollectionUtils.isNotEmpty(daoLinks)) {
-            vo.setLinkedNodes(createLinkedNodeVOs(daoLinks, treeNodeMap));
+            vo.setLinkedNodes(createLinkedNodeVOs(daoLinks, data.treeNodeMap()));
         }
 
         return vo;

@@ -1478,4 +1478,15 @@
         </sql>
     </changeSet>
 
+    <changeSet id="20261105120000" author="ppy">
+        <!-- The list of AIPs reads the active state and the active import/export queue items
+             of the AIPs on the page by aip_id. -->
+        <createIndex tableName="da_sync_queue_item" indexName="ix_da_sync_queue_item_aip">
+            <column name="aip_id"/>
+        </createIndex>
+        <createIndex tableName="da_aip_state" indexName="ix_da_aip_state_aip">
+            <column name="aip_id"/>
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

@@ -39,6 +39,9 @@ public interface ArrDaLinkRepository extends JpaRepository<ArrDaLink, Integer> {
     @Query("SELECT adl FROM arr_da_link adl WHERE adl.aip.aipId = :aipId AND adl.deleteChange IS NULL")
     List<ArrDaLink> findByAipIdAndDeleteChangeIsNull(@Param("aipId") Integer aipId);
 
+    @Query("SELECT adl FROM arr_da_link adl LEFT JOIN FETCH adl.daDao WHERE adl.aip.aipId IN :aipIds AND adl.deleteChange IS NULL")
+    List<ArrDaLink> findByAipIdsAndDeleteChangeIsNull(@Param("aipIds") Collection<Integer> aipIds);
+
     List<ArrDaLink> findByAip_AipIdAndDaDaoIsNullAndDeleteChangeIsNull(Integer aipId);
 
     List<ArrDaLink> findByDaDaoInAndDeleteChangeIsNull(Collection<DaDao> daDaos);

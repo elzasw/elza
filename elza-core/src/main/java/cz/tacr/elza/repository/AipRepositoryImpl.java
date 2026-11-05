@@ -11,7 +11,6 @@ import cz.tacr.elza.repository.filter.AipFilterValueType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Tuple;
-import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -22,13 +21,25 @@ import java.util.Map;
 /**
  */
 public class AipRepositoryImpl implements AipRepositoryCustom {
+
+    /**
+     * Page size of a search that does not set one. The list never returns all AIPs at once:
+     * each of them is turned into a detail, and an archive holds tens of thousands of them.
+     */
+    public static final int DEFAULT_PAGE_SIZE = 25;
+
     @PersistenceContext
     private EntityManager entityManager;
+
+    private static int pageSize(final SearchParams params) {
+        Integer size = params.getSize();
+        return size == null || size <= 0 ? DEFAULT_PAGE_SIZE : size;
+    }
 
     @Override
     public FilteredResult<DaAip> findAipsByFilter(final SearchParams params) {
         int firstResult = params.getOffset() == null ? 0 : params.getOffset();
-        int maxResults = params.getSize() == null ? 0 : params.getSize();
+        int maxResults = pageSize(params);
 
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<DaAip> query = cb.createQuery(DaAip.class);
@@ -49,12 +60,10 @@ public class AipRepositoryImpl implements AipRepositoryCustom {
         query.where(condition).orderBy(prepareOrder(sortKeys(params.getSort()), cb, joins));
         queryCount.where(conditionCount);
 
-        TypedQuery<DaAip> tq = entityManager.createQuery(query)
-                .setFirstResult(firstResult);
-        if (maxResults > 0) {
-            tq.setMaxResults(maxResults);
-        }
-        List<DaAip> list = tq.getResultList();
+        List<DaAip> list = entityManager.createQuery(query)
+                .setFirstResult(firstResult)
+                .setMaxResults(maxResults)
+                .getResultList();
         int count = entityManager.createQuery(queryCount).getSingleResult().intValue();
 
         return new FilteredResult<>(firstResult, maxResults, count, list);
@@ -72,7 +81,7 @@ public class AipRepositoryImpl implements AipRepositoryCustom {
      */
     @Override
     public Integer findAipPageOffset(final SearchParams params, final Integer aipId) {
-        int pageSize = params.getSize() == null ? 0 : params.getSize();
+        int pageSize = pageSize(params);
 
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         List<SortKey> keys = sortKeys(params.getSort());
@@ -92,7 +101,7 @@ public class AipRepositoryImpl implements AipRepositoryCustom {
                         sortsBefore(keys, values, cb, joins)));
 
         int rank = entityManager.createQuery(query).getSingleResult().intValue();
-        return pageSize > 0 ? (rank / pageSize) * pageSize : 0;
+        return (rank / pageSize) * pageSize;
     }
 
     /**

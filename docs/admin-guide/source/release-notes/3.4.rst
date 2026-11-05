@@ -103,6 +103,11 @@ Fixes
   string".
 * Fix: 10191 - DA - the result dialog of an action over AIPs shows the message of
   each AIP in a readable colour.
+* Fix: 10209 - DA - the list of AIPs (*Digital archive - Packages*) opens
+  with one page of packages instead of loading all of them, and reads the
+  details of a page at once; with tens of thousands of AIPs it took minutes.
+  A search without a page size returns 25 AIPs. The upgrade adds indexes
+  on ``da_sync_queue_item`` and ``da_aip_state``.
 
 3.4.11
 ======
