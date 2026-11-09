@@ -45,7 +45,13 @@ import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
+import cz.tacr.elza.controller.vo.BulkAppendRequest;
+import cz.tacr.elza.controller.vo.BulkItemValue;
+import cz.tacr.elza.controller.vo.BulkNodeSelection;
+import cz.tacr.elza.controller.vo.BulkSelectionType;
+import cz.tacr.elza.controller.vo.ItemData;
 import cz.tacr.elza.controller.vo.NodeItem;
+import cz.tacr.elza.controller.vo.NodeRef;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
@@ -98,6 +104,7 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.ExceptionThrow;
 import cz.tacr.elza.repository.InhibitedItemRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
@@ -2194,6 +2201,242 @@ public class DescriptionItemService {
             throw new SystemException("Neplatný typ atributu " + dataType.getCode(),
                     BaseCode.INVALID_STATE);
         }
+    }
+
+    /**
+     * Data types accepted by bulk append, the same set as the text-based {@link #placeDescItemValues} supports.
+     */
+    private static final Set<DataType> BULK_APPEND_DATA_TYPES = Set.of(DataType.TEXT, DataType.FORMATTED_TEXT,
+            DataType.STRING, DataType.INT, DataType.UNITID, DataType.UNITDATE, DataType.RECORD_REF, DataType.BIT,
+            DataType.URI_REF, DataType.DECIMAL, DataType.ENUM);
+
+    /**
+     * Result of a bulk append.
+     *
+     * @param created          number of created values, counted per node and value
+     * @param skippedDuplicate number of values not created because the node already had an equal value
+     * @param changedNodes     number of nodes that received at least one value
+     */
+    public record BulkAppendResult(int created, int skippedDuplicate, int changedNodes) {
+    }
+
+    /**
+     * Appends values of one item type to the selected nodes as one change.
+     *
+     * The whole request is validated before the first write. A node gets only the values it does not
+     * have yet (same specification and equal data). Only nodes that get a value are locked, against the
+     * client's version for the NODES selection, and the change is created only when a value is added.
+     *
+     * @param fundVersionId open fund version
+     * @param request       item type, node selection and values
+     * @return counts of created and skipped values
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
+    public BulkAppendResult appendDescItemValues(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
+                                                 final BulkAppendRequest request) {
+        ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
+        checkFundVersionLock(fundVersion);
+
+        StaticDataProvider sdp = staticDataService.getData();
+        ItemType itemType = sdp.getItemTypeById(request.getItemTypeId());
+        if (itemType == null) {
+            throw new ObjectNotFoundException("Nebyl nalezen typ atributu: " + request.getItemTypeId(), BaseCode.ID_NOT_EXIST)
+                    .setId(request.getItemTypeId());
+        }
+        FundContext fundContext = FundContext.newInstance(fundVersion, arrangementService, sdp);
+        List<ArrDescItem> templates = createBulkAppendTemplates(itemType, request.getValues(), fundContext);
+        Map<Integer, Integer> nodeVersions = getBulkSelectionNodeVersions(fundVersion, request.getSelection());
+
+        MultipleItemChangeContext changeContext = createChangeContext(fundVersion.getFundVersionId());
+        ArrChange change = null;
+        int created = 0;
+        int skippedDuplicate = 0;
+        int changedNodes = 0;
+
+        for (List<Integer> partNodeIds : Lists.partition(new ArrayList<>(nodeVersions.keySet()),
+                                                         ObjectListIterator.getMaxBatchSize())) {
+            List<ArrNode> partNodes = nodeRepository.findAllById(partNodeIds);
+            Map<Integer, List<ArrDescItem>> nodeItemsByNodeId = findOpenByNodesAndType(partNodes, itemType.getEntity())
+                    .stream()
+                    .collect(Collectors.groupingBy(ArrDescItem::getNodeId));
+
+            for (ArrNode dbNode : partNodes) {
+                List<ArrDescItem> nodeItems = nodeItemsByNodeId.getOrDefault(dbNode.getNodeId(), Collections.emptyList());
+                List<ArrDescItem> newTemplates = templates.stream()
+                        .filter(template -> nodeItems.stream().noneMatch(nodeItem -> isEqualItemValue(nodeItem, template)))
+                        .toList();
+                skippedDuplicate += templates.size() - newTemplates.size();
+                if (newTemplates.isEmpty()) {
+                    continue;
+                }
+
+                if (change == null) {
+                    change = arrangementInternalService.createChange(ArrChange.Type.BATCH_CHANGE_DESC_ITEM);
+                }
+                Integer clientVersion = nodeVersions.get(dbNode.getNodeId());
+                ArrNode lockNode = clientVersion == null ? dbNode : createLockNode(dbNode.getNodeId(), clientVersion);
+                arrangementService.lockNode(dbNode, lockNode, change);
+
+                int position = nodeItems.stream().mapToInt(ArrDescItem::getPosition).max().orElse(0);
+                for (ArrDescItem template : newTemplates) {
+                    position++;
+                    ArrDescItem descItem = new ArrDescItem();
+                    descItem.setNode(dbNode);
+                    descItem.setItemType(template.getItemType());
+                    descItem.setItemSpec(template.getItemSpec());
+                    descItem.setData(template.getData());
+                    descItem.setCreateChange(change);
+                    descItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
+                    descItem.setPosition(position);
+
+                    // the template data are copied, so one template serves all nodes
+                    ArrDescItem savedItem = descItemFactory.saveItemVersionWithData(descItem, true);
+                    changeContext.addCreatedItem(savedItem);
+                    arrangementCacheService.addToCacheNode(savedItem, changeContext);
+                    created++;
+                }
+                changedNodes++;
+                changeContext.flushIfNeeded();
+            }
+        }
+        changeContext.flush();
+
+        return new BulkAppendResult(created, skippedDuplicate, changedNodes);
+    }
+
+    /**
+     * Validates the values of a bulk append and converts them to unsaved items without a node.
+     */
+    private List<ArrDescItem> createBulkAppendTemplates(final ItemType itemType,
+                                                        final List<BulkItemValue> values,
+                                                        final FundContext fundContext) {
+        if (CollectionUtils.isEmpty(values)) {
+            throw new BusinessException("Musí být zadána alespoň jedna hodnota", BaseCode.PROPERTY_NOT_EXIST)
+                    .set(BaseCode.PARAM_PROPERTY, "values");
+        }
+        DataType dataType = itemType.getDataType();
+        if (!BULK_APPEND_DATA_TYPES.contains(dataType)) {
+            throw new BusinessException("Hromadné přidání nepodporuje datový typ " + dataType.getCode(),
+                    BaseCode.PROPERTY_HAS_INVALID_TYPE)
+                    .set("itemTypeId", itemType.getItemTypeId())
+                    .set("dataType", dataType.getCode());
+        }
+
+        List<ArrDescItem> templates = new ArrayList<>(values.size());
+        for (BulkItemValue value : values) {
+            ItemData itemData = value.getData();
+            boolean dataTypeMatches = itemData != null && itemData.getDataType() != null
+                    && DataType.valueOf(itemData.getDataType().name()) == dataType;
+            if (!dataTypeMatches) {
+                throw new BusinessException("Datový typ hodnoty neodpovídá typu atributu", BaseCode.PROPERTY_HAS_INVALID_TYPE)
+                        .set("itemTypeId", itemType.getItemTypeId())
+                        .set("dataType", dataType.getCode());
+            }
+
+            ArrDescItem template = new ArrDescItem();
+            template.setItemType(itemType.getEntity());
+            if (value.getItemSpecId() != null) {
+                RulItemSpec itemSpec = itemType.getItemSpecById(value.getItemSpecId());
+                if (itemSpec == null) {
+                    throw new BusinessException("Specifikace neodpovídá typu atributu", BaseCode.ID_NOT_EXIST)
+                            .set("itemTypeId", itemType.getItemTypeId())
+                            .set("itemSpecId", value.getItemSpecId());
+                }
+                template.setItemSpec(itemSpec);
+            }
+            template.setData(createBulkAppendData(itemData));
+            itemService.checkValidTypeAndSpec(fundContext, template, false);
+
+            boolean repeated = templates.stream().anyMatch(other -> isEqualItemValue(other, template));
+            if (repeated) {
+                throw new BusinessException("Přidávané hodnoty se nesmí opakovat", BaseCode.PROPERTY_IS_INVALID)
+                        .set(BaseCode.PARAM_PROPERTY, "values");
+            }
+            templates.add(template);
+        }
+        return templates;
+    }
+
+    private ArrData createBulkAppendData(final ItemData itemData) {
+        ArrData data = factoryDO.createArrData(itemData);
+        if (data instanceof ArrDataRecordRef recordRef) {
+            Integer accessPointId = recordRef.getRecordId();
+            if (accessPointId == null) {
+                throw new BusinessException("Musí být vyplněna archivní entita", BaseCode.PROPERTY_NOT_EXIST)
+                        .set(BaseCode.PARAM_PROPERTY, "value");
+            }
+            // createArrData only references the entity, existence is checked here
+            recordRef.setRecord(apAccessPointRepository.findById(accessPointId).orElseThrow(ExceptionThrow.ap(accessPointId)));
+        }
+        if (data instanceof ArrDataText dataText) {
+            Validate.isTrue(StringUtils.isNotBlank(dataText.getTextValue()), "Textové pole nesmí být prázdné");
+        }
+        if (data instanceof ArrDataString dataString) {
+            Validate.isTrue(StringUtils.isNotBlank(dataString.getStringValue()), "Stringové pole nesmí být prázdné");
+        }
+        return data;
+    }
+
+    /**
+     * Same specification and equal data; an undefined item equals nothing.
+     */
+    private boolean isEqualItemValue(final ArrDescItem item, final ArrDescItem template) {
+        boolean sameSpec = Objects.equals(item.getItemSpecId(), template.getItemSpecId());
+        if (item.isUndefined() || !sameSpec) {
+            return false;
+        }
+        ArrData itemData = HibernateUtils.unproxy(item.getData());
+        return itemData.isEqualValue(template.getData());
+    }
+
+    /**
+     * Resolves the node selection of a bulk change to node ids, each with the client's version.
+     * The version is null for the whole-fund selection, where nodes are locked as loaded.
+     */
+    private Map<Integer, Integer> getBulkSelectionNodeVersions(final ArrFundVersion fundVersion,
+                                                               final BulkNodeSelection selection) {
+        Set<Integer> versionNodeIds = levelTreeCacheService.getAllNodeIdsByVersionAndParent(fundVersion, null,
+                ArrangementController.Depth.SUBTREE);
+        Map<Integer, Integer> nodeVersions = new LinkedHashMap<>();
+
+        if (selection.getSelectionType() == BulkSelectionType.FUND) {
+            if (CollectionUtils.isNotEmpty(selection.getNodes())) {
+                throw new BusinessException("Při výběru celého AS se JP nezadávají", BaseCode.PROPERTY_IS_INVALID)
+                        .set(BaseCode.PARAM_PROPERTY, "nodes");
+            }
+            versionNodeIds.forEach(nodeId -> nodeVersions.put(nodeId, null));
+            return nodeVersions;
+        }
+
+        if (CollectionUtils.isEmpty(selection.getNodes())) {
+            throw new BusinessException("Musí být zadána alespoň jedna JP", BaseCode.PROPERTY_NOT_EXIST)
+                    .set(BaseCode.PARAM_PROPERTY, "nodes");
+        }
+        for (NodeRef nodeRef : selection.getNodes()) {
+            Validate.notNull(nodeRef.getId(), "Nebyl vyplněn identifikátor uzlu JP");
+            Validate.notNull(nodeRef.getVersion(), "Nebyla vyplněna verze uzlu JP");
+            if (!versionNodeIds.contains(nodeRef.getId())) {
+                if (!nodeRepository.existsById(nodeRef.getId())) {
+                    throw ExceptionThrow.node(nodeRef.getId()).get();
+                }
+                throw new BusinessException("JP nepatří do verze AS", BaseCode.INVALID_STATE)
+                        .set("nodeId", nodeRef.getId())
+                        .set("fundVersionId", fundVersion.getFundVersionId());
+            }
+            nodeVersions.put(nodeRef.getId(), nodeRef.getVersion());
+        }
+        return nodeVersions;
+    }
+
+    /**
+     * Detached node carrying the client's version; saving it through {@link ArrangementService#lockNode}
+     * fails with an optimistic-lock error when the node changed in the meantime.
+     */
+    private ArrNode createLockNode(final Integer nodeId, final Integer version) {
+        ArrNode lockNode = new ArrNode();
+        lockNode.setNodeId(nodeId);
+        lockNode.setVersion(version);
+        return lockNode;
     }
 
     /**
