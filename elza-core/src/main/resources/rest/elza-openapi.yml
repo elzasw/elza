@@ -3500,6 +3500,42 @@ paths:
             schema:
               $ref: '#/components/schemas/NodeItem'
         description: attribute value
+  /descItems/{fundVersionId}/bulk-append:
+    put:
+      operationId: DescItem_appendDescItems
+      description: |-
+        Append values of one item type to the selected nodes as one change.
+        The request is applied completely or not at all. A node gets a value only when it has
+        no equal value of the item type yet; only nodes that get a value are changed.
+      parameters:
+        - name: fundVersionId
+          in: path
+          required: true
+          description: id version AS
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkChangeResult'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - descitems
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkAppendRequest'
+        description: values and the node selection
   /descItems/{fundVersionId}/create:
     put:
       operationId: DescItem_createDescItem
@@ -9183,6 +9219,75 @@ components:
       description: |-
         Druh hromadné akce - značka YAML jejího nastavení bez "!" (`!PersistentSort` -> `PersistentSort`).
         Části `!MultiAction` (`!DateRange`, `!UnitCount`, ...) nejsou samostatné akce, a tak ani druhy.
+    BulkAppendRequest:
+      type: object
+      required:
+        - itemTypeId
+        - selection
+        - values
+      properties:
+        itemTypeId:
+          type: integer
+          description: Item type of all values
+        selection:
+          $ref: '#/components/schemas/BulkNodeSelection'
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/BulkItemValue'
+          description: Values added after the last value of the item type in each node, in this order; no two may be equal
+      description: Values of one item type appended to the selected nodes
+    BulkChangeResult:
+      type: object
+      required:
+        - created
+        - skippedDuplicate
+        - changedNodes
+      properties:
+        created:
+          type: integer
+          description: Number of created values, counted per node and value
+        skippedDuplicate:
+          type: integer
+          description: Number of values not created because the node already had an equal value
+        changedNodes:
+          type: integer
+          description: Number of nodes that received at least one value
+      description: Result of a bulk change
+    BulkItemValue:
+      type: object
+      required:
+        - data
+      properties:
+        itemSpecId:
+          type: integer
+          description: Item specification; required exactly when the item type has specifications
+        data:
+          allOf:
+            - $ref: '#/components/schemas/ItemData'
+          description: Value; its dataType must match the data type of the item type
+      description: One value of a bulk change
+    BulkNodeSelection:
+      type: object
+      required:
+        - selectionType
+      properties:
+        selectionType:
+          $ref: '#/components/schemas/BulkSelectionType'
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/NodeRef'
+          description: |-
+            Nodes of the selection; required and non-empty for NODES, empty for FUND.
+            Every node must belong to the fund version.
+      description: Nodes a bulk change applies to
+    BulkSelectionType:
+      type: string
+      enum:
+        - NODES
+        - FUND
+      description: How the nodes of a bulk change are selected
     ConnectionType:
       type: string
       enum:
@@ -12054,6 +12159,19 @@ components:
       allOf:
         - $ref: '#/components/schemas/BaseItem'
       description: Náhrada za `ArrItemVO`
+    NodeRef:
+      type: object
+      required:
+        - id
+        - version
+      properties:
+        id:
+          type: integer
+          description: Node id
+        version:
+          type: integer
+          description: Node version known to the client
+      description: Node reference with the client's version for the optimistic-lock check
     NodeSearchResult:
       type: object
       required:
