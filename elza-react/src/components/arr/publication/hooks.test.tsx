@@ -54,4 +54,14 @@ describe('useCanUsePublicationType', () => {
         expect(renderCanUse(permissionsMap, OTHER_FUND_ID)(createType(true, false))).toBe(false);
         expect(renderCanUse(permissionsMap)(createType(false, true))).toBe(false);
     });
+
+    it('oprávnění k publikaci stačí jen pro AS, ke kterému je přidělené', () => {
+        const permissionsMap = {
+            FUND_PUBLISH: { permission: 'FUND_PUBLISH', fundIdsMap: { [FUND_ID]: true } },
+        };
+
+        expect(renderCanUse(permissionsMap)(createType(false, true))).toBe(true);
+        expect(renderCanUse(permissionsMap, OTHER_FUND_ID)(createType(false, true))).toBe(false);
+        expect(renderCanUse(permissionsMap)(createType(true, false))).toBe(false);
+    });
 });
