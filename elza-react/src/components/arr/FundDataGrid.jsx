@@ -29,6 +29,7 @@ import { Button } from '../ui';
 import { modalDialogHide, modalDialogShow } from 'actions/global/modalDialog';
 import {
     FILTER_NULL_VALUE,
+    fundBulkAppend,
     fundBulkModifications,
     fundDataFulltextClear,
     fundDataFulltextExtended,
@@ -786,6 +787,11 @@ class FundDataGridClass extends AbstractReactComponent {
             }
 
             const response = selectionType !== 'FUND' || await dispatch(showConfirmDialog(this.props.intl.formatMessage(nodeMessages.fundBulkModificationsWarn)));
+            if (response && data.operationType === 'append') {
+                return this.props.dispatch(
+                    fundBulkAppend(versionId, refType.id, data.appendItemValues, nodes, selectionType),
+                );
+            }
             if (response) {
                 return this.props.dispatch(
                     fundBulkModifications(

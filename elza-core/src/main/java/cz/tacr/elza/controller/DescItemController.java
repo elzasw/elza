@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import cz.tacr.elza.controller.vo.BulkAppendRequest;
+import cz.tacr.elza.controller.vo.BulkChangeResult;
 import cz.tacr.elza.controller.vo.DataString;
 import cz.tacr.elza.controller.vo.DataText;
 import cz.tacr.elza.controller.vo.DataType;
@@ -110,5 +112,31 @@ public class DescItemController implements DescitemsApi {
         ArrDescItem descItemDeleted = descriptionItemService.deleteDescriptionItem(nodeItem.getItemObjectId(), nodeItem.getNodeVersion(), nodeItem.getNodeId(), fundVersionId, false);
 
         return ResponseEntity.ok(formService.createItemDataResult(descItemDeleted));
+    }
+
+    /**
+     * Bulk append of values of one item type to the selected nodes.
+     *
+     * @param fundVersionId     fund version id
+     * @param bulkAppendRequest item type, node selection and values
+     * @return counts of created and skipped values
+     */
+    @Override
+    @Transactional
+    // PUT /descItems/{fundVersionId}/bulk-append
+    public ResponseEntity<BulkChangeResult> descItemAppendDescItems(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                                                    @RequestBody final BulkAppendRequest bulkAppendRequest) {
+        Validate.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
+        Validate.notNull(bulkAppendRequest, "Hodnoty musí být vyplněny");
+        Validate.notNull(bulkAppendRequest.getItemTypeId(), "Nebyl vyplněn identifikátor typu atributu");
+        Validate.notNull(bulkAppendRequest.getSelection(), "Nebyl vyplněn výběr JP");
+        Validate.notNull(bulkAppendRequest.getSelection().getSelectionType(), "Nebyl vyplněn typ výběru JP");
+
+        DescriptionItemService.BulkAppendResult result = descriptionItemService.appendDescItemValues(fundVersionId, bulkAppendRequest);
+
+        return ResponseEntity.ok(new BulkChangeResult()
+                .created(result.created())
+                .skippedDuplicate(result.skippedDuplicate())
+                .changedNodes(result.changedNodes()));
     }
 }

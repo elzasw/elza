@@ -5176,6 +5176,71 @@ namespace ElzaAPI.BulkAction {
     };
 }
 
+/**
+ * How the nodes of a bulk change are selected
+ */
+enum BulkSelectionType {
+    /** Nodes listed in the request */
+    NODES,
+    /** Root node of the fund version and all its descendants */
+    FUND
+}
+
+/**
+ * Node reference with the client's version for the optimistic-lock check
+ */
+model NodeRef {
+    /** Node id */
+    id: integer;
+    /** Node version known to the client */
+    version: integer;
+}
+
+/**
+ * Nodes a bulk change applies to
+ */
+model BulkNodeSelection {
+    selectionType: BulkSelectionType;
+    /**
+     * Nodes of the selection; required and non-empty for NODES, empty for FUND.
+     * Every node must belong to the fund version.
+     */
+    nodes?: NodeRef[];
+}
+
+/**
+ * One value of a bulk change
+ */
+model BulkItemValue {
+    /** Item specification; required exactly when the item type has specifications */
+    itemSpecId?: integer;
+    /** Value; its dataType must match the data type of the item type */
+    data: ItemData;
+}
+
+/**
+ * Values of one item type appended to the selected nodes
+ */
+model BulkAppendRequest {
+    /** Item type of all values */
+    itemTypeId: integer;
+    selection: BulkNodeSelection;
+    /** Values added after the last value of the item type in each node, in this order; no two may be equal */
+    values: BulkItemValue[];
+}
+
+/**
+ * Result of a bulk change
+ */
+model BulkChangeResult {
+    /** Number of created values, counted per node and value */
+    created: integer;
+    /** Number of values not created because the node already had an equal value */
+    skippedDuplicate: integer;
+    /** Number of nodes that received at least one value */
+    changedNodes: integer;
+}
+
 @tag("descitems")
 @route("/descItems")
 namespace ElzaAPI.DescItem {
@@ -5218,6 +5283,23 @@ namespace ElzaAPI.DescItem {
         @body body: NodeItem;
     ): ItemDataResult | {
         /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Append values of one item type to the selected nodes as one change.
+     * The request is applied completely or not at all. A node gets a value only when it has
+     * no equal value of the item type yet; only nodes that get a value are changed.
+     */
+    @route("/{fundVersionId}/bulk-append")
+    @put op appendDescItems(
+        /** id version AS */
+        @path fundVersionId: integer,
+        /** values and the node selection */
+        @body body: BulkAppendRequest
+    ): BulkChangeResult | {
+        /** Fund version, node or access point does not exist */
         @Http.statusCode statusCode: 404;
         @body data: BaseException;
     };
