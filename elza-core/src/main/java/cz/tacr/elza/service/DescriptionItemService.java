@@ -2022,7 +2022,6 @@ public class DescriptionItemService {
      *            popis odkazu, pokud se jedná o odkaz (text)
      * @param allNodes
      *            vložit u všech JP
-     * @param append
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public void placeDescItemValues(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
@@ -2030,8 +2029,7 @@ public class DescriptionItemService {
                                     final Collection<ArrNode> nodes,
                                     final RulItemSpec newItemSpecification,
                                     final Set<RulItemSpec> specifications, final String text, final String description,
-                                    final boolean allNodes,
-                                    final boolean append) {
+                                    final boolean allNodes) {
 
         if (itemType.hasSpecifications()) {
             if(newItemSpecification == null) {
@@ -2061,18 +2059,16 @@ public class DescriptionItemService {
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.BATCH_CHANGE_DESC_ITEM);
 
         MultipleItemChangeContext changeContext = createChangeContext(version.getFundVersionId());
-        if (!append) {
-            // remove old values
-            for (ArrDescItem descItem : descItems) {
-                if (descItem.getReadOnly() != null && descItem.getReadOnly()) {
-                    throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
-                }
-
-                deleteDescriptionItem(descItem, version, change, false, changeContext);
-                changeContext.flushIfNeeded();
+        // remove old values
+        for (ArrDescItem descItem : descItems) {
+            if (descItem.getReadOnly() != null && descItem.getReadOnly()) {
+                throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
             }
-            changeContext.flush();
+
+            deleteDescriptionItem(descItem, version, change, false, changeContext);
+            changeContext.flushIfNeeded();
         }
+        changeContext.flush();
 
         //pokud má specifikaci musíme zkontrolovat,
         //jestli nemá již nějakou hodnotu specifikace nastavenou (jinou než přišla v parametru seznamu specifikací)
@@ -2081,7 +2077,7 @@ public class DescriptionItemService {
         // ?? Je to k něčemu ?? Možná by šlo zcela odstranit
         //
         Set<ArrNode> ignoreNodes = new HashSet<>();
-        if (!append && itemType.hasSpecifications() && nodes.size() > 0) {
+        if (itemType.hasSpecifications() && nodes.size() > 0) {
             List<ArrDescItem> remainSpecItems = findOpenByNodesAndType(nodes, itemType.getEntity());
             ignoreNodes = remainSpecItems.stream().map(ArrDescItem::getNode).collect(Collectors.toSet());
         }
@@ -2096,25 +2092,7 @@ public class DescriptionItemService {
             dbNodes = nodeRepository.findAllById(nodesMap.keySet());
         }
 
-        // count max current position
-        Map<Integer, Integer> nodeIdToPos = Collections.emptyMap();
-        if (append) {
-            nodeIdToPos = new HashMap<>();
-            List<ArrDescItem> remainItems = descItemRepository.findOpenByNodesAndType(dbNodes, itemType.getEntity());
-            for (ArrDescItem descItem : remainItems) {
-                Integer position = nodeIdToPos.get(descItem.getNodeId());
-                if (position == null || descItem.getPosition() > position) {
-                    nodeIdToPos.put(descItem.getNodeId(), descItem.getPosition());
-                }
-            }
-        }
-
         for (ArrNode dbNode : dbNodes) {
-
-            // update position according current position
-            Integer lastPosition = nodeIdToPos.get(dbNode.getNodeId());
-            int position = (lastPosition != null) ? lastPosition + 1 : 1;
-
             if (ignoreNodes.contains(dbNode)) {
                 continue;
             }
@@ -2131,7 +2109,7 @@ public class DescriptionItemService {
             newDescItem.setItemSpec(newItemSpecification);
             newDescItem.setCreateChange(change);
             newDescItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
-            newDescItem.setPosition(position);
+            newDescItem.setPosition(1);
 
             ArrDescItem savedItem = descItemFactory.saveItemVersionWithData(newDescItem, true);
             changeContext.addCreatedItem(savedItem);
