@@ -1,4 +1,6 @@
 import { createContext, ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import { DATA_GRID_PAGE_SIZES } from 'components/shared/datagrid/pageSizes';
+import { getUserSettings, useUserSettings } from 'contexts/user/useSettings';
 import { CellFocus, DataGridViewContextValue, DataGridViewState, DATA_GRID_VIEW_DEFAULT } from './types';
 
 export const DataGridViewContext = createContext<DataGridViewContextValue | null>(null);
@@ -42,6 +44,15 @@ interface LoadedView {
     restorePending: boolean;
 }
 
+// A fresh view starts with the page size the user last picked (a browser-wide user setting).
+function defaultView(): DataGridViewState {
+    const pageSize = getUserSettings().dataGridPageSize;
+    if (pageSize != null && DATA_GRID_PAGE_SIZES.includes(pageSize)) {
+        return { ...DATA_GRID_VIEW_DEFAULT, pageSize };
+    }
+    return DATA_GRID_VIEW_DEFAULT;
+}
+
 function loadView(versionId: number): LoadedView {
     // In-memory state (same page load) wins; its restore, if any, already ran.
     const cached = viewCache.get(versionId);
@@ -52,13 +63,13 @@ function loadView(versionId: number): LoadedView {
     const lastHighlight = loadLastHighlight();
     if (lastHighlight && lastHighlight.versionId === versionId) {
         const view = {
-            ...DATA_GRID_VIEW_DEFAULT,
+            ...defaultView(),
             restoreNodeId: lastHighlight.nodeId,
             restoreDescItemTypeId: lastHighlight.descItemTypeId,
         };
         return { view, restorePending: true };
     }
-    return { view: DATA_GRID_VIEW_DEFAULT, restorePending: false };
+    return { view: defaultView(), restorePending: false };
 }
 
 interface Props {
@@ -97,7 +108,10 @@ export function DataGridViewProvider({ versionId, children }: Props) {
         setView(prev => (prev.pageIndex === pageIndex ? prev : { ...prev, pageIndex }));
     }, []);
 
+    const { update: updateUserSettings } = useUserSettings();
+
     const setPageSize = useCallback((pageSize: number) => {
+        updateUserSettings({ dataGridPageSize: pageSize });
         setView(prev => ({
             ...prev,
             pageSize,
@@ -106,7 +120,7 @@ export function DataGridViewProvider({ versionId, children }: Props) {
             selectedRowIndexes: [],
             cellFocus: { row: 0, col: 0 },
         }));
-    }, []);
+    }, [updateUserSettings]);
 
     const setSelectedIds = useCallback((selectedIds: Array<string | number>) => {
         setView(prev => ({ ...prev, selectedIds }));

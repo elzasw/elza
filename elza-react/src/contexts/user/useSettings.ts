@@ -150,6 +150,8 @@ export interface UserSettingsData {
     institutionViewMode?: 'grid' | 'list';
     institutionSortField?: 'name' | 'internalCode';
     institutionSortDir?: 'asc' | 'desc';
+    /** Rows per page in the fund table view, shared by all funds. */
+    dataGridPageSize?: number;
 }
 
 const LOCAL_STORAGE_KEY = 'ELZA-USER-SETTINGS';

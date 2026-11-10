@@ -8,6 +8,7 @@ import {normalizeInt, validateInt} from 'components/validate.jsx';
 import {Shortcuts} from 'react-shortcuts';
 import {PropTypes} from 'prop-types';
 import defaultKeymap from './DataGridPaginationKeymap.jsx';
+import {DATA_GRID_PAGE_SIZES} from './pageSizes';
 
 import './DataGridPagination.scss';
 import { FormattedMessage, defineMessages } from 'react-intl';
@@ -160,7 +161,7 @@ class DataGridPagination extends AbstractReactComponent {
         const {onSetPageIndex, onChangePageSize, itemsCount, pageSize, pageIndex} = this.props;
         const pagesCount = getPagesCount(itemsCount, pageSize);
 
-        const options = [25, 50, 100, 250, 1000].map(val => (
+        const options = DATA_GRID_PAGE_SIZES.map(val => (
             <option key={val} value={val}>
                 {val}
             </option>

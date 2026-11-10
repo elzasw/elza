@@ -1,5 +1,6 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { useUserSettings } from 'contexts/user/useSettings';
 import { DataGridViewProvider, __resetViewCacheForTests } from './DataGridViewProvider';
 import { useDataGridView } from './useDataGridView';
 
@@ -35,7 +36,15 @@ function renderView(versionId = VERSION_ID) {
     });
 }
 
+function setStoredPageSize(dataGridPageSize: number | undefined) {
+    const { result, unmount } = renderHook(() => useUserSettings());
+    act(() => result.current.update({ dataGridPageSize }));
+    unmount();
+}
+
 afterEach(() => {
+    // User settings live in a module-level snapshot, so clearing localStorage alone does not reset them.
+    setStoredPageSize(undefined);
     localStorage.clear();
     sessionStorage.clear();
     // Clear the module-level cache so each test starts as if freshly reloaded.
@@ -76,6 +85,33 @@ describe('DataGridViewProvider', () => {
         expect(result.current.view.pageIndex).toBe(0);
         expect(result.current.view.selectedRowIndexes).toEqual([]);
         expect(result.current.view.selectedIds).toEqual([]);
+    });
+
+    it('keeps the picked page size across a reload, for every fund', () => {
+        const first = renderView();
+        act(() => first.result.current.setPageSize(100));
+        first.unmount();
+
+        __resetViewCacheForTests();
+
+        expect(renderView().result.current.view.pageSize).toBe(100);
+        expect(renderView(VERSION_ID + 1).result.current.view.pageSize).toBe(100);
+    });
+
+    it('applies the stored page size also when restoring a highlight after a reload', () => {
+        setStoredPageSize(250);
+        localStorage.setItem(LAST_HIGHLIGHT_KEY, JSON.stringify({ versionId: VERSION_ID, nodeId: 77 }));
+
+        const { result } = renderView();
+
+        expect(result.current.view.pageSize).toBe(250);
+        expect(result.current.restorePending).toBe(true);
+    });
+
+    it('ignores a stored page size the pagination does not offer', () => {
+        setStoredPageSize(30);
+
+        expect(renderView().result.current.view.pageSize).toBe(25);
     });
 
     it('clears selection on setPageIndex but goToPage leaves it untouched', () => {
