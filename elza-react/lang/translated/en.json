@@ -4445,6 +4445,22 @@
     "defaultMessage": "Set",
     "srcHash": "-u_5AWdGRhoi"
   },
+  "arr.fund.bulkModifications.appendResult": {
+    "defaultMessage": "{created, plural, one {# value added} other {# values added}}{skipped, plural, =0 {.} one {, # value skipped because it already existed.} other {, # values skipped because they already existed.}}",
+    "srcHash": "mptoNHjgOsxq"
+  },
+  "arr.fund.bulkModifications.appendValues.add": {
+    "defaultMessage": "Add value",
+    "srcHash": "t95ov2A7JVST"
+  },
+  "arr.fund.bulkModifications.appendValues.notNumber": {
+    "defaultMessage": "Not a number",
+    "srcHash": "sUNFSBx_iqNK"
+  },
+  "arr.fund.bulkModifications.appendValues.remove": {
+    "defaultMessage": "Remove value",
+    "srcHash": "IVYj00FdyOiM"
+  },
   "arr.fund.bulkModifications.descItemType": {
     "defaultMessage": "Description element",
     "srcHash": "XiZVb4j65GrQ"
