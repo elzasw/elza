@@ -53,10 +53,6 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 @RequestMapping(value = "/api/import")
 public class DEImportController {
 
-    private final DEImportService importService;
-
-    private final IEventNotificationService eventNotificationService;
-
     @Autowired
     private ImpBatchService batchService;
     @Autowired
@@ -67,6 +63,10 @@ public class DEImportController {
     private ScopeRepository scopeRepository;
     @Autowired
     private UserService userService;
+
+    private final DEImportService importService;
+
+    private final IEventNotificationService eventNotificationService;
 
     @Autowired
     public DEImportController(DEImportService importService, IEventNotificationService eventNotificationService) {
@@ -110,18 +110,18 @@ public class DEImportController {
             }
         }
 
-        // validate XSD up front regardless of the execution mode
-        try (InputStream is = srcFile.getInputStream()) {
-            importService.validateData(is);
-        } catch (IOException e) {
-            throw new SystemException("Failed to read import source", e);
-        }
-
         // New-fund imports run through the batch pipeline (async, tracked, retryable);
         // callers that need the old synchronous behaviour (integration tests) opt out
         // with asBatch=false. Position-based imports are always synchronous.
         if (importPositionParams == null && !Boolean.FALSE.equals(asBatch)) {
             return runAsBatch(scopeId, srcFile, ignoreRootNodes, xmlFile.getOriginalFilename());
+        }
+
+        // validate XSD only in synchronous mode
+        try (InputStream is = srcFile.getInputStream()) {
+            importService.validateData(is);
+        } catch (IOException e) {
+            throw new SystemException("Failed to read import source", e);
         }
 
         DEImportParams params = new DEImportParams(scopeId, 1000, 10000, importPositionParams, ignoreRootNodes);

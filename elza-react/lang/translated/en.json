@@ -923,6 +923,10 @@
     "defaultMessage": "Items",
     "srcHash": "Yf_IqxKGgSV3"
   },
+  "admin.import.detail.maxFileSize": {
+    "defaultMessage": "Maximum file size: {size}",
+    "srcHash": "jo2qwFUW-mKZ"
+  },
   "admin.import.detail.openFund": {
     "defaultMessage": "Open the fund",
     "srcHash": "rlLGSM_wYoAB"
@@ -970,6 +974,10 @@
   "admin.import.detail.upload": {
     "defaultMessage": "Upload a file",
     "srcHash": "Bk4rARXxQsxf"
+  },
+  "admin.import.detail.uploadTooLarge": {
+    "defaultMessage": "File “{name}” ({size}) exceeds the allowed size of {limit}",
+    "srcHash": "URbKo5iCaNEp"
   },
   "admin.import.detail.uploadZip": {
     "defaultMessage": "Upload a ZIP",
@@ -7777,6 +7785,10 @@
     "defaultMessage": "Stack",
     "srcHash": "5VFkEkLOckau"
   },
+  "global.exception.network": {
+    "defaultMessage": "The connection to the server was interrupted",
+    "srcHash": "_5SooR_EvIcQ"
+  },
   "global.geometry.label.objects": {
     "defaultMessage": "Shapes",
     "srcHash": "K90kS6v06PVw"
@@ -7957,6 +7969,10 @@
     "defaultMessage": "File",
     "srcHash": "XuE2x3rNQQt-"
   },
+  "import.maxFileSize": {
+    "defaultMessage": "Maximum file size: {size}",
+    "srcHash": "jo2qwFUW-mKZ"
+  },
   "import.registryScope": {
     "defaultMessage": "Entity scope",
     "srcHash": "SlY5BtKXdR6t"
@@ -7964,6 +7980,10 @@
   "import.running": {
     "defaultMessage": "Import in progress",
     "srcHash": "tkvNE-8-A86L"
+  },
+  "import.selectedFileSize": {
+    "defaultMessage": "Selected file size: {size}",
+    "srcHash": "XomHhTwW_vPr"
   },
   "import.title.fund": {
     "defaultMessage": "Import archival fund",

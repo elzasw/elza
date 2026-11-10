@@ -436,10 +436,16 @@ public class ImpBatchService {
         params.addImportPhaseChangeListeners(new SummaryCapture(summary));
 
         try (InputStream in = dmsService.newInputStream(item.getDmsFile())) {
-            if (dryRun) {
-                deImportService.validateData(in);
-                return;
-            }
+            deImportService.validateData(in);
+        } catch (IOException e) {
+            throw new BusinessException("Failed to read the source file: " + e.getMessage(), BaseCode.INVALID_STATE);
+        }
+
+        if (dryRun) {
+        	return;
+        }
+
+        try (InputStream in = dmsService.newInputStream(item.getDmsFile())) {
             deImportService.importData(in, params);
         } catch (IOException e) {
             throw new BusinessException("Failed to read the source file: " + e.getMessage(), BaseCode.INVALID_STATE);

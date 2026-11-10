@@ -72,5 +72,8 @@ logging:
   level:
     cz.tacr.elza: debug
 
-multipart:
-  maxFileSize: 10000000
+# Upload size limits (defaults: 25MB per file, 100MB per request).
+#elza:
+#  upload:
+#    max_file_size: 25MB
+#    max_request_size: 100MB

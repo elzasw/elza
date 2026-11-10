@@ -2962,6 +2962,16 @@ model ImportServerFolderEntry {
     size?: int64;
 }
 
+/**
+ * Upload size limits enforced by the server. A value of -1 means no limit.
+ */
+model UploadLimits {
+    /** Maximum size of a single uploaded file in bytes. */
+    maxFileSize: int64;
+    /** Maximum size of the whole multipart request in bytes. */
+    maxRequestSize: int64;
+}
+
 /** Stav API klíče. */
 enum ApiKeyState {
     ACTIVE,
@@ -3580,6 +3590,13 @@ namespace ElzaAPI.ImportBatch {
         @Http.statusCode statusCode: 409;
         @body error: BaseException;
     };
+
+    /**
+     * Upload size limits enforced by the server, so the UI can reject a file that is too
+     * large before sending it. Available to any authenticated user.
+     */
+    @route("/upload-limits")
+    @get op uploadLimits(): UploadLimits;
 
     /**
      * Removes an item from its batch. Allowed only while the batch is in

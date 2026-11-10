@@ -43,7 +43,7 @@ import {
 } from '@fluentui/react-icons';
 import { Api } from 'api';
 import { BatchImportType, BatchState, ImportBatch, ImportBatchDescCsv, ImportBatchEdx, ImportItem, ImportItemError, ItemState } from 'elza-api';
-import { ChangeEvent, ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import { ChangeEvent, ReactElement, ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { FormattedDate, FormattedMessage, FormattedTime, MessageDescriptor, defineMessages, useIntl } from 'react-intl';
 import { useHistory, useParams } from 'react-router';
 import { showConfirmDialog } from 'components/shared/dialog';
@@ -53,6 +53,9 @@ import { URL_ADMIN_IMPORT, urlFundTree } from '../../constants';
 import { EventType } from 'typings/websocket/EventType';
 import { AdminLayout } from '../shared/layout/AdminLayout';
 import { useThunkDispatch } from 'utils/hooks';
+import { exceedsUploadLimit, useUploadLimits } from 'utils/hooks/useUploadLimits';
+import { humanFileSize } from 'components/Utils.jsx';
+import { addToastrDanger } from 'components/shared/toastr/ToastrActions';
 import { ServerFolderDialog } from '../../components/admin/import/ServerFolderDialog';
 import { batchSettingsMessages } from '../../components/admin/import/messages';
 import { globalMessages } from 'components/shared/lang';
@@ -69,6 +72,11 @@ const messages = defineMessages({
     items: { id: 'admin.import.detail.items', defaultMessage: 'Položky' },
     upload: { id: 'admin.import.detail.upload', defaultMessage: 'Nahrát soubor' },
     uploadZip: { id: 'admin.import.detail.uploadZip', defaultMessage: 'Nahrát ZIP' },
+    maxFileSize: { id: 'admin.import.detail.maxFileSize', defaultMessage: 'Maximální velikost souboru: {size}' },
+    uploadTooLarge: {
+        id: 'admin.import.detail.uploadTooLarge',
+        defaultMessage: 'Soubor „{name}“ ({size}) je větší než povolená velikost {limit}',
+    },
     fromFolder: { id: 'admin.import.detail.fromFolder', defaultMessage: 'Ze složky na serveru' },
     confirmCancel: { id: 'admin.import.detail.confirmCancel', defaultMessage: 'Opravdu chcete dávku přerušit?' },
     confirmDelete: { id: 'admin.import.detail.confirmDelete', defaultMessage: 'Opravdu chcete dávku smazat?' },
@@ -206,6 +214,8 @@ export function AdminImportBatchDetailPage() {
     const history = useHistory();
     const dispatch = useThunkDispatch();
     const websocket = useWebsocket();
+    const uploadLimits = useUploadLimits();
+    const maxFileSize = uploadLimits?.maxFileSize ?? -1;
     const { id } = useParams<{ id: string }>();
     const batchId = Number(id);
 
@@ -300,16 +310,36 @@ export function AdminImportBatchDetailPage() {
         }
     };
 
+    // An oversized upload makes the server drop the connection, so it is rejected before sending.
+    const fitsUploadLimit = (file: File) => {
+        if (!exceedsUploadLimit(file, maxFileSize)) return true;
+        dispatch(addToastrDanger(intl.formatMessage(messages.uploadTooLarge, {
+            name: file.name,
+            size: humanFileSize(file.size),
+            limit: humanFileSize(maxFileSize),
+        })));
+        return false;
+    };
+    const withSizeHint = (button: ReactElement) => maxFileSize >= 0 ? (
+        <Tooltip
+            content={intl.formatMessage(messages.maxFileSize, { size: humanFileSize(maxFileSize) })}
+            relationship="description"
+            withArrow
+        >
+            {button}
+        </Tooltip>
+    ) : button;
+
     const onUploadFile = async (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         e.target.value = '';
-        if (!file) return;
+        if (!file || !fitsUploadLimit(file)) return;
         await runAction(() => Api.importBatches.importBatchUploadItem(batchId, file));
     };
     const onUploadZip = async (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         e.target.value = '';
-        if (!file) return;
+        if (!file || !fitsUploadLimit(file)) return;
         await runAction(() => Api.importBatches.importBatchUploadZip(batchId, file));
     };
     const onShowError = async (itemId: number) => {
@@ -439,12 +469,16 @@ export function AdminImportBatchDetailPage() {
                             <div className={styles.spacer} />
                             {canEditItems && (
                                 <div className={styles.actions}>
-                                    <Button icon={<ArrowUploadRegular />} onClick={() => fileInputRef.current?.click()}>
-                                        <FormattedMessage {...messages.upload} />
-                                    </Button>
-                                    <Button icon={<ArchiveRegular />} onClick={() => zipInputRef.current?.click()}>
-                                        <FormattedMessage {...messages.uploadZip} />
-                                    </Button>
+                                    {withSizeHint(
+                                        <Button icon={<ArrowUploadRegular />} onClick={() => fileInputRef.current?.click()}>
+                                            <FormattedMessage {...messages.upload} />
+                                        </Button>
+                                    )}
+                                    {withSizeHint(
+                                        <Button icon={<ArchiveRegular />} onClick={() => zipInputRef.current?.click()}>
+                                            <FormattedMessage {...messages.uploadZip} />
+                                        </Button>
+                                    )}
                                     {folderConfigured === false ? (
                                         <Tooltip content={intl.formatMessage(messages.folderNotConfigured)} relationship="description" withArrow>
                                             {folderButton}

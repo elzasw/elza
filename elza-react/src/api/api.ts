@@ -35,8 +35,13 @@ const messages = defineMessages({
         id: "global.exception.bad.request.tech",
         defaultMessage: "Syntaxe požadavku odeslaného na server je chybná",
     },
+    networkError: {
+        id: "global.exception.network",
+        defaultMessage: "Spojení se serverem bylo přerušeno",
+    },
 });
 import { createException } from 'components/ExceptionUtils.jsx';
+import { addToastrDanger } from 'components/shared/toastr/ToastrActions';
 import { clearSession } from 'actions/global/login';
 import { store } from 'stores/index.jsx';
 
@@ -164,10 +169,19 @@ function resolveException(error: AxiosError<Error>) {
                 statusText: statusText,
             };
         }
+    } else if (error.request && !globalAxios.isCancel(error)) {
+        // the request was sent but no response arrived: connection reset, server down, ...
+        result = {
+            type: 'network',
+            message: getIntl().formatMessage(messages.networkError),
+        };
     }
     console.error('ERROR', result);
 
     if (store) {
+        if (result.type === 'network') {
+            store.dispatch(addToastrDanger(result.message));
+        }
         const exceptionToast = result.createToaster ? createException(result) : undefined;
         if (exceptionToast) {
             store.dispatch(exceptionToast);

@@ -1280,6 +1280,22 @@ paths:
                 $ref: '#/components/schemas/BaseException'
       tags:
         - import-batches
+  /admin/import/upload-limits:
+    get:
+      operationId: ImportBatch_uploadLimits
+      description: |-
+        Upload size limits enforced by the server, so the UI can reject a file that is too
+        large before sending it. Available to any authenticated user.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadLimits'
+      tags:
+        - import-batches
   /admin/import/{id}:
     get:
       operationId: ImportBatch_get
@@ -13548,6 +13564,21 @@ components:
           format: binary
       required:
         - file
+    UploadLimits:
+      type: object
+      required:
+        - maxFileSize
+        - maxRequestSize
+      properties:
+        maxFileSize:
+          type: integer
+          format: int64
+          description: Maximum size of a single uploaded file in bytes.
+        maxRequestSize:
+          type: integer
+          format: int64
+          description: Maximum size of the whole multipart request in bytes.
+      description: Upload size limits enforced by the server. A value of -1 means no limit.
     UploadZipBody:
       type: object
       properties:

@@ -177,7 +177,11 @@ spring:
         # MSSQL
         #dialect: org.hibernate.dialect.SQLServer2008Dialect
 
-multipart.maxFileSize: 10000000
+# Upload size limits (defaults: 25MB per file, 100MB per request).
+#elza:
+#  upload:
+#    max_file_size: 50MB
+#    max_request_size: 100MB
 
 # Actuator (health + Prometheus metrics for the local CSC reporting client).
 # The application already applies these defaults in code; uncomment only to
